@@ -30,6 +30,7 @@ class DataError(Exception):
 
 def main(
     dataset: str,
+    latest: bool,
     input_uri: str,
     output_uri: str,
     partition: Optional[str] = None,
@@ -52,6 +53,19 @@ def main(
             for p in base_paths
             if "import_date=" in p
         ]
+        partitions = sorted(list(set(partitions)))
+        if not partitions:
+            logger.warning("No partitions found under %s", bucket_prefix)
+            return
+
+        # Sort by import_date extracted from path
+        partitions.sort(key=lambda p: int(search(r"import_date=(\d{8})", p).group(1)))
+
+        if latest:
+            # pick only the latest one
+            latest_partition = partitions[-1]
+            logger.info(f"Latest partition selected: {latest_partition}")
+            partitions = [latest_partition]
 
     logger.info("Partitions to process: %s", partitions)
 
@@ -71,7 +85,7 @@ def main(
             snapshot_df.drop(
                 [Keys.year, Keys.month, Keys.day, Keys.import_date]
             ).write_parquet(destination, compression="snappy")
-        logger.info(f"✅ Wrote snapshot to {output_path}")
+        logger.info(f"Wrote snapshot to {output_path}")
 
 
 def build_snapshot_table_from_delta(
@@ -187,6 +201,10 @@ if __name__ == "__main__":
             "dataset type",
         ),
         (
+            "--latest",
+            "latest flag",
+        ),
+        (
             "--input_uri",
             "S3 URI of input data, in this case the flattened CQC locations data",
         ),
@@ -198,6 +216,7 @@ if __name__ == "__main__":
 
     main(
         dataset=args.dataset,
+        latest=args.latest,
         input_uri=args.input_uri,
         output_uri=args.output_uri,
     )

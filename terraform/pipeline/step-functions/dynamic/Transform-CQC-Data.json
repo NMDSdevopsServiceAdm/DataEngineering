@@ -87,6 +87,8 @@
                         "script": "cqc_locations_3_full_flattened.py",
                         "cqc_dataset_arg_name": "--dataset",
                         "cqc_dataset_arg_value": "locations",
+                        "cqc_latest_arg_name": "--latest",
+                        "cqc_latest_arg_value": true,
                         "cqc_source_arg_name": "--input_uri",
                         "cqc_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
                         "cqc_destination_arg_name": "--output_uri",
@@ -112,7 +114,7 @@
                           "ContainerOverrides": [
                             {
                               "Name": "cqc-api-container",
-                              "Command.$": "States.Array($.script, $.cqc_dataset_arg_name, $.cqc_dataset_arg_value, $.cqc_source_arg_name, $.cqc_source_arg_location, $.cqc_destination_arg_name, $.cqc_destination_arg_location)"
+                              "Command.$": "States.Array($.script, $.cqc_dataset_arg_name, $.cqc_latest_arg_name, $.cqc_latest_arg_value, $.cqc_dataset_arg_value, $.cqc_source_arg_name, $.cqc_source_arg_location, $.cqc_destination_arg_name, $.cqc_destination_arg_location)"
                             }
                           ]
                         }
