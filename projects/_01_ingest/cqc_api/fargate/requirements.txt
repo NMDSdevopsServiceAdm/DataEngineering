@@ -5,3 +5,4 @@ ratelimit==2.2.1
 pointblank==0.13.1
 css_inline==0.17.0
 pyarrow==21.0.0
+s3fs>=0.4.2
