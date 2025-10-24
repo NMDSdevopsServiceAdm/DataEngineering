@@ -187,7 +187,6 @@ class FlattenUtilsData:
         ),
         (None, None, None, None),
     ]
-
     expected_impute_missing_struct_multiple_partitions_and_missing_data_rows = [
         ("1-001", "1-001", "1-002", "1-002"),
         ("20240101", "20240201", "20240101", "20240201"),
