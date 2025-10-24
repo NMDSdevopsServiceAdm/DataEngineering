@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 import polars as pl
 import polars.testing as pl_testing
 
-import lambdas.utils.snapshots as job
+import lambdas.create_dataset_snapshot.utils.snapshots as job
 
 PATCH_PATH = "lambdas.utils.snapshots"
 
