@@ -213,6 +213,11 @@ if __name__ == "__main__":
             "S3 URI of output data, in this case the full flattened CQC locations data",
         ),
     )
+    latest_value = args.latest
+    if isinstance(latest_value, bool):
+        latest = latest_value
+    else:
+        latest = str(latest_value).strip().lower() in ("true", "1", "yes")
 
     main(
         dataset=args.dataset,

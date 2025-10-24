@@ -88,7 +88,7 @@
                         "cqc_dataset_arg_name": "--dataset",
                         "cqc_dataset_arg_value": "locations",
                         "cqc_latest_arg_name": "--latest",
-                        "cqc_latest_arg_value": true,
+                        "cqc_latest_arg_value": "true",
                         "cqc_source_arg_name": "--input_uri",
                         "cqc_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
                         "cqc_destination_arg_name": "--output_uri",
