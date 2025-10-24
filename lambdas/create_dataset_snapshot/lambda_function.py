@@ -29,7 +29,7 @@ def lambda_handler(event, context):
     )
     fs = S3FileSystem()
     base_paths = fs.find(
-        f"s3//{input_parse.group('bucket')}/{input_parse.group('read_folder')}"
+        f"s3://{input_parse.group('bucket')}/{input_parse.group('read_folder')}"
     )
     partitions = [
         p.replace(
