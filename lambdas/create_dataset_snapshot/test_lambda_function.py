@@ -10,9 +10,8 @@ sys.modules["s3fs"] = mock_s3fs_module
 mock_utils_module = MagicMock()
 sys.modules["utils"] = mock_utils_module
 
-from lambda_function import lambda_handler
-
 import lambdas.utils.snapshots as job
+from lambdas.create_dataset_snapshot.lambda_function import lambda_handler
 
 PATCH_PATH = "projects.tools.delta_data_remodel.jobs.utils"
 

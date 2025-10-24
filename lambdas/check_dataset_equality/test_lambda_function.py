@@ -2,7 +2,8 @@ import unittest
 from unittest.mock import patch
 
 import polars as pl
-from lambda_function import lambda_handler
+
+from lambdas.check_dataset_equality.lambda_function import lambda_handler
 
 
 class TestLambdaFunction(unittest.TestCase):
