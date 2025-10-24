@@ -1,21 +1,19 @@
 {
   "Comment": "State machine for polars version of ind cqc estimates pipeline",
-  "StartAt": "Set parameters",
+  "StartAt": "Set Prepare ASCWDS Job Role Counts Parameters",
   "States": {
-    "Set parameters": {
+    "Set Prepare ASCWDS Job Role Counts Parameters": {
       "Type": "Pass",
       "Result": {
-        "Script_name": "estimate_ind_cqc_filled_posts_by_job_role.py",
-        "estimated_ind_cqc_filled_posts_source_name": "--estimated_ind_cqc_filled_posts_source",
-        "estimated_ind_cqc_filled_posts_source_value": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/",
+        "Script_name": "prepare_job_role_counts.py",
         "cleaned_ascwds_worker_source_name": "--cleaned_ascwds_worker_source",
         "cleaned_ascwds_worker_source_value": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-        "estimated_ind_cqc_filled_posts_by_job_role_destination_name": "--estimated_ind_cqc_filled_posts_by_job_role_destination",
-        "estimated_ind_cqc_filled_posts_by_job_role_destination_value": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts_by_job_role_polars/"
+        "prepared_ascwds_job_role_counts_destination_name": "--prepared_ascwds_job_role_counts_destination",
+        "prepared_ascwds_job_role_counts_destination_value": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=prepared_ascwds_job_role_counts/"
       },
-      "Next": "Run Estimate Filled Posts By Job Role"
+      "Next": "Prepare ASCWDS Job Role Counts"
     },
-    "Run Estimate Filled Posts By Job Role": {
+    "Prepare ASCWDS Job Role Counts": {
       "Type": "Task",
       "Resource": "arn:aws:states:::ecs:runTask.sync",
       "Parameters": {
@@ -36,7 +34,57 @@
           "ContainerOverrides": [
             {
               "Name": "_03_independent_cqc-container",
-              "Command.$": "States.Array($.Script_name, $.estimated_ind_cqc_filled_posts_source_name, $.estimated_ind_cqc_filled_posts_source_value, $.cleaned_ascwds_worker_source_name, $.cleaned_ascwds_worker_source_value, $.estimated_ind_cqc_filled_posts_by_job_role_destination_name, $.estimated_ind_cqc_filled_posts_by_job_role_destination_value)"
+              "Command.$": "States.Array($.Script_name, $.cleaned_ascwds_worker_source_name, $.cleaned_ascwds_worker_source_value, $.prepared_ascwds_job_role_counts_destination_name, $.prepared_ascwds_job_role_counts_destination_value)"
+            }
+          ]
+        }
+      },
+      "Next": "Set Estimate Filled Posts By Job Role Parameters",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "Handle Error and Run Crawlers"
+        }
+      ]
+    },
+    "Set Estimate Filled Posts By Job Role Parameters": {
+      "Type": "Pass",
+      "Result": {
+        "Script_name": "estimate_ind_cqc_filled_posts_by_job_role.py",
+        "estimated_ind_cqc_filled_posts_source_name": "--estimated_ind_cqc_filled_posts_source",
+        "estimated_ind_cqc_filled_posts_source_value": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/",
+        "prepared_ascwds_job_role_counts_source_name": "--prepared_ascwds_job_role_counts_source",
+        "prepared_ascwds_job_role_counts_source_value": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=prepared_ascwds_job_role_counts/",
+        "estimated_ind_cqc_filled_posts_by_job_role_destination_name": "--estimated_ind_cqc_filled_posts_by_job_role_destination",
+        "estimated_ind_cqc_filled_posts_by_job_role_destination_value": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts_by_job_role_polars/"
+      },
+      "Next": "Estimate Filled Posts By Job Role"
+    },
+    "Estimate Filled Posts By Job Role": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${independent_cqc_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids
+            },
+            "SecurityGroups": [
+              "${independent_cqc_security_group_id}"
+            ],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_03_independent_cqc-container",
+              "Command.$": "States.Array($.Script_name, $.estimated_ind_cqc_filled_posts_source_name, $.estimated_ind_cqc_filled_posts_source_value, $.prepared_ascwds_job_role_counts_source_name, $.prepared_ascwds_job_role_counts_source_value, $.estimated_ind_cqc_filled_posts_by_job_role_destination_name, $.estimated_ind_cqc_filled_posts_by_job_role_destination_value)"
             }
           ]
         }
