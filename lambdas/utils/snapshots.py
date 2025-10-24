@@ -45,6 +45,7 @@ def build_snapshot_table_from_delta(
 
     """
     for snapshot in get_snapshots(bucket, read_folder, dataset):
+        # get import date from partition str and save as timepoint
         if snapshot.item(1, Keys.import_date) == timepoint:
             return snapshot
         latest = snapshot
