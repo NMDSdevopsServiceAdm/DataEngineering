@@ -1,5 +1,5 @@
 from datetime import datetime
-from re import match
+from re import match, search
 from typing import Generator, Optional
 
 import polars as pl
@@ -30,7 +30,7 @@ def build_snapshot_table_from_delta(
     bucket: str,
     read_folder: str,
     dataset: str,
-    timepoint: int,
+    partition: str,
 ) -> Optional[pl.DataFrame]:
     """
     Gets full snapshot of data at a given timepoint
@@ -38,22 +38,32 @@ def build_snapshot_table_from_delta(
         bucket (str): delta dataset bucket
         read_folder (str): delta dataset folder
         dataset (str): CQC organisation type (locations or providers)
-        timepoint (int): timepoint to get data for (yyyymmdd)
+        partition (int): partition string of the base path which is used to get data for timepoint (yyyymmdd)
 
     Returns:
         Optional[pl.DataFrame]: Snapshot pl.DataFrame, if one exists, else None
 
     """
+    # get import date from partition str and save as timepoint
+    timepoint = int(search(r"import_date=(\d{8})", partition).group(1))
     for snapshot in get_snapshots(bucket, read_folder, dataset):
-        # get import date from partition str and save as timepoint
         if snapshot.item(1, Keys.import_date) == timepoint:
             return snapshot
-        latest = snapshot
-    else:
-        logger.info(
-            f"No snapshot found for: {timepoint}, returning most recent snapshot: {latest}"
-        )
-        return latest
+
+    logger.info(
+        f"No snapshot found for partition {partition} (import_date={timepoint})"
+    )
+    return None
+    # for snapshot in get_snapshots(bucket, read_folder, dataset):
+    #     # get import date from partition str and save as timepoint
+    #     if snapshot.item(1, Keys.import_date) == timepoint:
+    #         return snapshot
+    #     latest = snapshot
+    # else:
+    #     logger.info(
+    #         f"No snapshot found for: {timepoint}, returning most recent snapshot: {latest}"
+    #     )
+    #     return latest
 
 
 def get_snapshots(

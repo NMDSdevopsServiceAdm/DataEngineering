@@ -47,7 +47,7 @@ def lambda_handler(event, context):
             bucket=input_parse.group("bucket"),
             read_folder=input_parse.group("read_folder"),
             dataset=event["dataset"],
-            timepoint=partition,
+            partition=partition,
         )
         output_uri = event["output_uri"] + f"import_date={date_int}/file.parquet"
 
