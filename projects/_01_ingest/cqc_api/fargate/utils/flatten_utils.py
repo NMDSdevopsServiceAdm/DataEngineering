@@ -27,18 +27,15 @@ def impute_missing_struct_columns(
         pl.LazyFrame: LazyFrame with a new set of columns called `imputed_<column_name>` containing imputed values.
     """
     identifier_col = CQCLClean.location_id
-    date_col = CQCLClean.cqc_location_import_date
+    date_col = CQCLClean.import_date
 
     lf = lf.sort([identifier_col, date_col])
 
     for column_name in column_names:
         new_col = f"imputed_{column_name}"
 
-        field_names = lf.collect_schema()[column_name].fields
-        field_cols = [pl.col(f"{column_name}.{f}") for f in field_names]
-
         lf = lf.with_columns(
-            pl.when(pl.any_horizontal([c.is_not_null() for c in field_cols]))
+            pl.when((pl.col(column_name).list.len().fill_null(0) > 0))
             .then(pl.col(column_name))
             .otherwise(None)
             .alias(new_col)
