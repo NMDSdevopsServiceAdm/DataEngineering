@@ -32,9 +32,11 @@ def lambda_handler(event, context):
         f"s3://{input_parse.group('bucket')}/{input_parse.group('read_folder')}"
     )
     bucket_prefix = f"{input_parse.group('bucket')}/{input_parse.group('read_folder')}/"
-
+    logger.info("bucket_prefix is %s", bucket_prefix)
     partitions = [
-        p.replace(bucket_prefix, "") for p in base_paths if "import_date=" in p
+        p.removeprefix(bucket_prefix).removesuffix(".parquet")
+        for p in base_paths
+        if "import_date=" in p
     ]
     ## For all partitions make snapshot
     logger.info("partitions found %s", partitions)
