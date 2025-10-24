@@ -18,7 +18,8 @@ def lambda_handler(event, context):
     input_parse = match(
         "s3://(?P<bucket>[\w\-=.]+)/(?P<read_folder>[\w/-=.]+)", event["input_uri"]
     )
-
+    year = event["snapshot_date"]
+    logger.info("year is %s", year)
     date_int = int(
         datetime.strptime(event["snapshot_date"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime(
             "%Y%m%d"
@@ -36,7 +37,7 @@ def lambda_handler(event, context):
     partitions = [
         "/".join(p.removeprefix(bucket_prefix).split("/")[:-1])
         for p in base_paths
-        if "import_date=" in p
+        if "import_date=" in p and (year is None or f"year={year}/" in p)
     ]
     ## For all partitions make snapshot
     logger.info("partitions found %s", partitions)
