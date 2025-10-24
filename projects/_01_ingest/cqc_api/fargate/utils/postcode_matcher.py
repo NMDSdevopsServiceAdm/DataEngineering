@@ -44,6 +44,7 @@ def run_postcode_matching(
     Returns:
         pl.LazyFrame: Fully matched LazyFrame.
     """
+    # TODO - this filtering is no longer required as it's filtered in the new process already.
     # Filter locations to only those which are required to have a postcode match.
     locations_lf = locations_lf.filter(
         (pl.col(CQCLClean.registration_status) == RegistrationStatus.registered)
