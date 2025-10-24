@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
 
 - Added validation script for flatten CQC location process and test script for this validation.
 
+- Build full locations dataset (cqc_locations_03_full_flattened) from delta flattened dataset (cqc_locations_02_delta_flattened) using existing create_snapshot_dataset lambda function.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
