@@ -79,11 +79,45 @@
               "Type": "Parallel",
               "Branches": [
                 {
-                  "StartAt": "(placeholder) Build Full CQC Locations",
+                  "StartAt": "Set Build Full flatten CQC Locations Parameters",
                   "States": {
-                    "(placeholder) Build Full CQC Locations": {
+                    "Set Build Full flatten CQC Locations Parameters": {
                       "Type": "Pass",
-                      "Result": "Placeholder for Build Full CQC Locations",
+                      "Result": {
+                        "script": "cqc_locations_3_full_flattened.py",
+                        "cqc_dataset_arg_name": "--dataset",
+                        "cqc_dataset_arg_value": "locations",
+                        "cqc_source_arg_name": "--input_uri",
+                        "cqc_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
+                        "cqc_destination_arg_name": "--output_uri",
+                        "cqc_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/"
+                      },
+                      "Next": "Build Full flatten CQC Locations"
+                    },
+                    "Build Full flatten CQC Locations": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${cqc_api_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${cqc_api_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command.$": "States.Array($.script, $.cqc_dataset_arg_name, $.cqc_dataset_arg_value, $.cqc_source_arg_name, $.cqc_source_arg_location, $.cqc_destination_arg_name, $.cqc_destination_arg_location)"
+                            }
+                          ]
+                        }
+                      },
+                      "ResultPath": "$.fullflattenedLocationResult",
                       "Next": "Set Clean Full CQC Locations Parameters"
                     },
                     "Set Clean Full CQC Locations Parameters": {
