@@ -31,3 +31,7 @@ class CleaningUtilsSchemas:
             (AWPClean.ascwds_workplace_import_date, pl.Date()),
         ]
     )
+
+    sample_col_to_date_schema = pl.Schema(
+        [("input_date_string", pl.String()), ("expected_date_date", pl.Date())]
+    )

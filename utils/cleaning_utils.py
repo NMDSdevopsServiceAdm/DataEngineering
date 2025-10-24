@@ -98,6 +98,7 @@ def set_bounds_for_columns(
     return df
 
 
+# converted to polars -> polars_utils\cleaning_utils.column_to_date
 def column_to_date(
     df: DataFrame,
     column_to_format: str,

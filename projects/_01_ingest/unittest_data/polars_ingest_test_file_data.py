@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
@@ -9,6 +9,99 @@ from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
 )
+
+
+@dataclass
+class FlattenUtilsData:
+    clean_registration_date_column_rows = [
+        ("loc_1", "loc_2", "loc_3"),
+        (date(2018, 1, 1), date(2023, 7, 1), date(2018, 1, 1)),
+        ("20231101", "20240101", "20231101"),
+    ]
+
+    expected_clean_registration_date_column_rows = [
+        ("loc_1", "loc_2", "loc_3"),
+        (date(2018, 1, 1), date(2023, 7, 1), date(2018, 1, 1)),
+        ("20231101", "20240101", "20231101"),
+        (date(2018, 1, 1), date(2023, 7, 1), date(2018, 1, 1)),
+    ]
+
+    time_in_registration_date_column_rows = [
+        ("loc_1", "loc_2", "loc_3"),
+        (
+            datetime(2018, 1, 1, 0, 0, 0),
+            datetime(2023, 7, 1, 15, 19, 0),
+            datetime(2018, 1, 1),
+        ),
+        ("20231101", "20240101", "20231101"),
+    ]
+
+    expected_time_in_registration_date_column_rows = [
+        ("loc_1", "loc_2", "loc_3"),
+        (
+            datetime(2018, 1, 1, 0, 0, 0),
+            datetime(2023, 7, 1, 15, 19, 0),
+            datetime(2018, 1, 1),
+        ),
+        ("20231101", "20240101", "20231101"),
+        (
+            date(2018, 1, 1),
+            date(2023, 7, 1),
+            date(2018, 1, 1),
+        ),
+    ]
+
+    registration_date_after_import_date_column_rows = [
+        ("loc_1", "loc_2", "loc_3"),
+        (date(2018, 1, 1), date(2023, 7, 1), date(2018, 1, 1)),
+        ("20121101", "20240101", "20131101"),
+    ]
+
+    expected_registration_date_after_import_date_column_rows = [
+        ("loc_1", "loc_2", "loc_3"),
+        (date(2018, 1, 1), date(2023, 7, 1), date(2018, 1, 1)),
+        ("20121101", "20240101", "20131101"),
+        (date(2012, 11, 1), date(2023, 7, 1), date(2013, 11, 1)),
+    ]
+
+    registration_date_missing_single_reg_date_for_loc_column_rows = [
+        ("loc_1", "loc_1", "loc_1"),
+        (None, date(2023, 7, 1), date(2023, 7, 1)),
+        ("20240101", "20240201", "20240301"),
+    ]
+
+    expected_registration_date_missing_single_reg_date_for_loc_column_rows = [
+        ("loc_1", "loc_1", "loc_1"),
+        (None, date(2023, 7, 1), date(2023, 7, 1)),
+        ("20240101", "20240201", "20240301"),
+        (date(2023, 7, 1), date(2023, 7, 1), date(2023, 7, 1)),
+    ]
+
+    registration_date_missing_multiple_reg_date_for_loc_column_rows = [
+        ("loc_1", "loc_1", "loc_1"),
+        (None, date(2023, 8, 1), date(2023, 7, 1)),
+        ("20240101", "20240201", "20240301"),
+    ]
+
+    expected_registration_date_missing_multiple_reg_date_for_loc_column_rows = [
+        ("loc_1", "loc_1", "loc_1"),
+        (None, date(2023, 8, 1), date(2023, 7, 1)),
+        ("20240101", "20240201", "20240301"),
+        (date(2023, 7, 1), date(2023, 8, 1), date(2023, 7, 1)),
+    ]
+
+    registration_date_missing_for_all_loc_rows = [
+        ("loc_1", "loc_1", "loc_1"),
+        (None, None, None),
+        ("20240201", "20240101", "20240301"),
+    ]
+
+    expected_registration_date_missing_for_all_loc_rows = [
+        ("loc_1", "loc_1", "loc_1"),
+        (None, None, None),
+        ("20240201", "20240101", "20240301"),
+        (date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1)),
+    ]
 
 
 @dataclass

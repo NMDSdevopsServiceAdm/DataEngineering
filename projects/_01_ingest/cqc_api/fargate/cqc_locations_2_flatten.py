@@ -1,4 +1,6 @@
+import projects._01_ingest.cqc_api.fargate.utils.flatten_utils as FUtils
 from polars_utils import logger, utils
+from polars_utils.cleaning_utils import column_to_date
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
@@ -51,9 +53,16 @@ def main(
 
     # TODO - create_cleaned_registration_date_column
     # TODO - column_to_date (imputed_registration_date)
+    cqc_lf = column_to_date(cqc_lf, CQCLClean.registration_date)
+    cqc_lf = FUtils.clean_and_impute_registration_date(cqc_lf)
+
     # TODO - format_date_fields (both registration dates)
+    # Dont need this?  both registration dates are already dates?
 
     # TODO - column_to_date (cqc_location_import_date)
+    cqc_lf = column_to_date(
+        cqc_lf, Keys.import_date, CQCLClean.cqc_location_import_date
+    )
 
     # TODO - clean_provider_id_column
     # TODO - select_rows_with_non_null_value (provider_id)
