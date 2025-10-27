@@ -206,5 +206,25 @@
   "specialism": [[],[],[]],
   "ageGroup": [[],[],[]],
   "settingServices": [[],[],[]],
-  "assessment": [[],[],[]]
+  "assessment": [[],[],[]],
+  "year": [
+    null,
+    null,
+    null
+  ],
+  "month": [
+    null,
+    null,
+    null
+  ],
+  "day": [
+    null,
+    null,
+    null
+  ],
+  "import_date": [
+    null,
+    null,
+    null
+  ]
 }
