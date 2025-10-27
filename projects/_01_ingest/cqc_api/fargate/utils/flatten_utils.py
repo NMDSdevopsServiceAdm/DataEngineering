@@ -40,7 +40,10 @@ def impute_missing_struct_columns(
             pl.col(new_col)
             .forward_fill()
             .backward_fill()
-            .over(partition_by=CQCLClean.location_id, order_by=CQCLClean.import_date)
+            .over(
+                partition_by=CQCLClean.location_id,
+                order_by=CQCLClean.import_date,
+            )
             .alias(new_col)
         )
 
