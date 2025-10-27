@@ -104,6 +104,15 @@ class LocationsCleanUtilsSchema:
         ]
     )
 
+    impute_missing_values_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.import_date, pl.String()),
+            (CQCLClean.provider_id, pl.String()),
+            (CQCLClean.services_offered, pl.List(pl.String())),
+        ]
+    )
+
     assign_cqc_sector_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),
