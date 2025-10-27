@@ -199,7 +199,7 @@ def sink_to_parquet(
                 )
 
             logger.info("Schema before converting columns to string:")
-            logger.info(lazy_df.collect_schema())
+            logger.info(lazy_df.schema())
 
             conv_cols = [
                 col for col in partition_cols if col in ("year", "import_date")
@@ -217,7 +217,7 @@ def sink_to_parquet(
             )
 
             logger.info("Schema after converting columns to string:")
-            logger.info(lazy_df.collect_schema())
+            logger.info(lazy_df.schema())
 
             lazy_df.sink_parquet(path=path, mkdir=True, engine="streaming")
             logger.info(
