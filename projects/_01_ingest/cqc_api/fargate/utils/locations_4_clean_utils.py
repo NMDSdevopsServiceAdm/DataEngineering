@@ -8,16 +8,15 @@ from utils.column_values.categorical_column_values import Sector
 
 def clean_provider_id_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Cleans provider ID column, removing long IDs and then forwards and backwards filling the value
+    Cleans Provider ID column by removing long IDs then forwards and backwards filling the value.
 
-     1. Replace provider ids with more than 14 characters with Null
-     2. Forward and backwards fill missing provider ids over location id
+     1. Replace `provider_id` strings with more than 14 characters with Null
+     2. Forward and backwards fill missing `provider_id` over location id
     Args:
-        cqc_lf (pl.LazyFrame): Dataframe with provider id column
+        cqc_lf (pl.LazyFrame): Dataframe with `provider_id` column
 
     Returns:
-        pl.LazyFrame: Dataframe with cleaned provider id column
-
+        pl.LazyFrame: Dataframe with cleaned `provider_id` column
     """
     cqc_lf = cqc_lf.with_columns(
         pl.when(pl.col(CQCLClean.provider_id).str.len_chars() <= 14)
@@ -30,7 +29,10 @@ def clean_provider_id_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.col(CQCLClean.provider_id)
         .forward_fill()
         .backward_fill()
-        .over(CQCLClean.location_id)
+        .over(
+            partition_by=CQCLClean.location_id,
+            order_by=CQCLClean.import_date,
+        )
     )
     return cqc_lf
 
