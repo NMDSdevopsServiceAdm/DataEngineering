@@ -198,6 +198,9 @@ def sink_to_parquet(
                     [pl.col(c).cast(pl.Utf8).str.zfill(2) for c in pad_cols]
                 )
 
+            logger.info("Schema before converting columns to string:")
+            logger.info(lazy_df.collect_schema())
+
             conv_cols = [
                 col for col in partition_cols if col in ("year", "import_date")
             ]
@@ -212,6 +215,10 @@ def sink_to_parquet(
                 include_key=False,
                 by=partition_cols,
             )
+
+            logger.info("Schema after converting columns to string:")
+            logger.info(lazy_df.collect_schema())
+
             lazy_df.sink_parquet(path=path, mkdir=True, engine="streaming")
             logger.info(
                 f"LazyFrame sunk to Parquet at {output_path} partitioned by {partition_cols}"
