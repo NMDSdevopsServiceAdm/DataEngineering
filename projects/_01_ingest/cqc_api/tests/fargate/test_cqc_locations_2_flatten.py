@@ -31,7 +31,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
             self.TEST_SOURCE, schema=ANY, selected_columns=ANY
         )
 
-        self.assertEqual(column_to_date_mock.call_count, 2)
+        self.assertEqual(column_to_date_mock.call_count, 3)
         clean_and_impute_registration_date_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
