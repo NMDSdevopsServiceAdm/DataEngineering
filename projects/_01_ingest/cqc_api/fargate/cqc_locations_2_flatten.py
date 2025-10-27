@@ -88,18 +88,6 @@ def main(
 
     # TODO - drop unrequired cols
 
-    # Cast partition keys to strings.
-    conv_cols = [col for col in cqc_partition_keys if col in ("year", "import_date")]
-
-    if conv_cols:
-        cqc_lf = cqc_lf.with_columns([pl.col(c).cast(pl.Utf8) for c in conv_cols])
-
-    logger.info("Schema after converting columns to string:")
-    logger.info(cqc_lf.collect_schema())
-
-    logger.info("Execution plan:")
-    logger.info(cqc_lf.explain())
-
     # Store flattened data in s3
     utils.sink_to_parquet(
         cqc_lf,
