@@ -13,7 +13,6 @@ from projects._01_ingest.unittest_data.polars_ingest_test_file_schema import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_values.categorical_column_values import Sector
 
 PATCH_PATH = "projects._01_ingest.cqc_api.fargate.utils.flatten_utils"
 
