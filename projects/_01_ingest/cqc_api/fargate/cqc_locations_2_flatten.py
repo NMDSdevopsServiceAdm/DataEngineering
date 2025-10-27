@@ -46,9 +46,7 @@ def main(
     )
     logger.info("CQC Location LazyFrame read in")
 
-    # TODO - remove_records_from_locations_data
-
-    # TODO - remove locations who have never been a social care locations
+    # TODO - (1119) remove_records_from_locations_data
 
     # TODO - create_cleaned_registration_date_column
     # TODO - column_to_date (imputed_registration_date)
@@ -56,8 +54,7 @@ def main(
 
     # TODO - column_to_date (cqc_location_import_date)
 
-    # TODO - impute_historic_relationships
-
+    # TODO - (1155) move fUtils.impute_missing_struct_columns to cqc_locations_4_full_clean
     cqc_lf = fUtils.impute_missing_struct_columns(
         cqc_lf,
         [
@@ -67,17 +64,14 @@ def main(
         ],
     )
 
-    # TODO - remove_locations_that_never_had_regulated_activities
+    # TODO - (1154) extract_from_struct (services_offered, specialisms_offered)
 
-    # TODO - extract_from_struct (services_offered, specialisms_offered)
+    # TODO - (1128) classify_specialisms (dementia, learning_disabilities, mental_health)
 
-    # TODO - classify_specialisms (dementia, learning_disabilities, mental_health)
+    # TODO - (1127) allocate_primary_service_type
+    # TODO - (1127) realign_carehome_column_with_primary_service
 
-    # TODO - allocate_primary_service_type
-    # TODO - realign_carehome_column_with_primary_service
-
-    # TODO - extract_registered_manager_names
-    # TODO - add_related_location_column
+    # TODO - (1129) extract_registered_manager_names
 
     # TODO - drop unrequired cols
 
