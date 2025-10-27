@@ -59,6 +59,7 @@ def column_to_date(
     lf = lf.with_columns(
         pl.col(column_to_format)
         .cast(pl.String())
+        .str.replace_all("-", "")
         .str.to_date(string_format)
         .alias(new_column)
     )

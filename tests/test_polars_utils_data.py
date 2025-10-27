@@ -52,7 +52,11 @@ class CleaningUtilsData:
         (None,),
     ]
 
-    column_to_date_rows = [
+    column_to_date_with_hyphens_rows = [
+        ("2023-01-02", "2022-05-04", "2019-12-07", "1908-12-05"),
+        (date(2023, 1, 2), date(2022, 5, 4), date(2019, 12, 7), date(1908, 12, 5)),
+    ]
+    column_to_date_without_hyphens_rows = [
         ("20230102", "20220504", "20191207", "19081205"),
         (date(2023, 1, 2), date(2022, 5, 4), date(2019, 12, 7), date(1908, 12, 5)),
     ]

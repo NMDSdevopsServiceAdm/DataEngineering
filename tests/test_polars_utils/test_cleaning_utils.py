@@ -143,37 +143,63 @@ class AddAlignedDateColumnsTests(PolarsCleaningUtilsTests):
 
 class ColumnToDateTests(unittest.TestCase):
     def setUp(self):
-        self.sample_lf = pl.LazyFrame(
-            data=Data.column_to_date_rows, schema=Schemas.sample_col_to_date_schema
+        self.column_to_date_with_hyphens_lf = pl.LazyFrame(
+            data=Data.column_to_date_with_hyphens_rows,
+            schema=Schemas.sample_col_to_date_schema,
+        )
+        self.column_to_date_without_hyphens_lf = pl.LazyFrame(
+            data=Data.column_to_date_without_hyphens_rows,
+            schema=Schemas.sample_col_to_date_schema,
         )
 
     def test_column_to_date_changes_data_type_to_date(self):
-        returned_lf = job.column_to_date(self.sample_lf, "input_date_string")
-        self.assertEqual(returned_lf.collect_schema().dtypes()[0], pl.Date())
+        returned_with_hyphens_lf = job.column_to_date(
+            self.column_to_date_with_hyphens_lf, "input_date_string"
+        )
+        returned_without_hyphens_lf = job.column_to_date(
+            self.column_to_date_without_hyphens_lf, "input_date_string"
+        )
+        self.assertEqual(
+            returned_with_hyphens_lf.collect_schema().dtypes()[0], pl.Date()
+        )
+        self.assertEqual(
+            returned_without_hyphens_lf.collect_schema().dtypes()[0], pl.Date()
+        )
 
     def test_column_to_date_inserts_new_column_if_specified(self):
-        returned_lf = job.column_to_date(
-            self.sample_lf, "input_date_string", "new_column"
+        returned_with_hyphens_lf = job.column_to_date(
+            self.column_to_date_with_hyphens_lf, "input_date_string", "new_column"
         )
-        self.assertTrue("new_column" in returned_lf.columns)
-        self.assertEqual(returned_lf.collect_schema().dtypes()[2], pl.Date())
+        self.assertTrue("new_column" in returned_with_hyphens_lf.columns)
+        self.assertEqual(
+            returned_with_hyphens_lf.collect_schema().dtypes()[2], pl.Date()
+        )
 
     def test_column_to_date_leaves_old_column_untouched_if_new_col_given(self):
-        returned_lf = job.column_to_date(
-            self.sample_lf, "input_date_string", "new_column"
+        returned_with_hyphens_lf = job.column_to_date(
+            self.column_to_date_with_hyphens_lf, "input_date_string", "new_column"
         )
         pl_testing.assert_frame_equal(
-            returned_lf.select("input_date_string"),
-            self.sample_lf.select("input_date_string"),
+            returned_with_hyphens_lf.select("input_date_string"),
+            self.column_to_date_with_hyphens_lf.select("input_date_string"),
         )
 
     def test_column_to_date_returns_expected_values(self):
-        returned_lf = job.column_to_date(
-            self.sample_lf, "input_date_string", "new_column"
+        returned_with_hyphens_lf = job.column_to_date(
+            self.column_to_date_with_hyphens_lf, "input_date_string", "new_column"
+        )
+        returned_without_hyphens_lf = job.column_to_date(
+            self.column_to_date_without_hyphens_lf, "input_date_string", "new_column"
         )
         pl_testing.assert_frame_equal(
-            returned_lf.select("new_column"),
-            self.sample_lf.select("expected_date_date").rename(
+            returned_with_hyphens_lf.select("new_column"),
+            self.column_to_date_with_hyphens_lf.select("expected_date_date").rename(
+                {"expected_date_date": "new_column"}
+            ),
+        )
+        pl_testing.assert_frame_equal(
+            returned_without_hyphens_lf.select("new_column"),
+            self.column_to_date_without_hyphens_lf.select("expected_date_date").rename(
                 {"expected_date_date": "new_column"}
             ),
         )
