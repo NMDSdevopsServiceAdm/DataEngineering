@@ -219,6 +219,9 @@ def sink_to_parquet(
             logger.info("Schema after converting columns to string:")
             logger.info(lazy_df.collect_schema())
 
+            logger.info("Execution plan:")
+            logger.info(lazy_df.explain())
+
             lazy_df.sink_parquet(path=path, mkdir=True, engine="streaming")
             logger.info(
                 f"LazyFrame sunk to Parquet at {output_path} partitioned by {partition_cols}"
