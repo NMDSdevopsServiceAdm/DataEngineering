@@ -1,8 +1,8 @@
 import polars as pl
 
-import projects._01_ingest.cqc_api.fargate.utils.flatten_utils as FUtils
 from polars_utils import logger, utils
 from polars_utils.cleaning_utils import column_to_date
+from projects._01_ingest.cqc_api.fargate.utils import flatten_utils as fUtils
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
@@ -49,14 +49,12 @@ def main(
     )
     logger.info("CQC Location LazyFrame read in")
 
-    # TODO - remove_records_from_locations_data
-
-    # TODO - remove locations who have never been a social care locations
+    # TODO - (1119) remove_records_from_locations_data
 
     # TODO - create_cleaned_registration_date_column
     # TODO - column_to_date (imputed_registration_date)
     cqc_lf = column_to_date(cqc_lf, CQCLClean.registration_date)
-    cqc_lf = FUtils.clean_and_impute_registration_date(cqc_lf)
+    cqc_lf = fUtils.clean_and_impute_registration_date(cqc_lf)
 
     # TODO - format_date_fields (both registration dates)
     cqc_lf = column_to_date(cqc_lf, CQCLClean.deregistration_date)
@@ -66,25 +64,24 @@ def main(
         cqc_lf, Keys.import_date, CQCLClean.cqc_location_import_date
     )
 
-    # TODO - clean_provider_id_column
-    # TODO - select_rows_with_non_null_value (provider_id)
-    # TODO - add_cqc_sector_column_to_cqc_locations_dataframe
+    # TODO - (1155) move fUtils.impute_missing_struct_columns to cqc_locations_4_full_clean
+    cqc_lf = fUtils.impute_missing_struct_columns(
+        cqc_lf,
+        [
+            CQCLClean.gac_service_types,
+            CQCLClean.regulated_activities,
+            CQCLClean.specialisms,
+        ],
+    )
 
-    # TODO - impute_historic_relationships
+    # TODO - (1154) extract_from_struct (services_offered, specialisms_offered)
 
-    # TODO - impute_missing_struct_column (gac_service_types, regulated_activities, specialisms)
+    # TODO - (1128) classify_specialisms (dementia, learning_disabilities, mental_health)
 
-    # TODO - remove_locations_that_never_had_regulated_activities
+    # TODO - (1127) allocate_primary_service_type
+    # TODO - (1127) realign_carehome_column_with_primary_service
 
-    # TODO - extract_from_struct (services_offered, specialisms_offered)
-
-    # TODO - classify_specialisms (dementia, learning_disabilities, mental_health)
-
-    # TODO - allocate_primary_service_type
-    # TODO - realign_carehome_column_with_primary_service
-
-    # TODO - extract_registered_manager_names
-    # TODO - add_related_location_column
+    # TODO - (1129) extract_registered_manager_names
 
     # TODO - drop unrequired cols
 

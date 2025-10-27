@@ -619,6 +619,7 @@ def get_relationships_where_type_is_predecessor(df: DataFrame) -> DataFrame:
     return df
 
 
+# Converted to polars -> projects._01_ingest.cqc_api.fargate.utils.flatten_utils.impute_missing_struct_columns
 def impute_missing_struct_column(df: DataFrame, column_name: str) -> DataFrame:
     """
     Imputes missing rows in a struct col in the DataFrame by filling with known values from other import_dates.

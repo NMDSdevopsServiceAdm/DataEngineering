@@ -19,6 +19,64 @@ from utils.column_names.raw_data_files.ons_columns import (
 
 @dataclass
 class FlattenUtilsSchema:
+    impute_missing_struct_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.import_date, pl.String()),
+            (
+                CQCLClean.gac_service_types,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCLClean.name: pl.String(),
+                            CQCLClean.description: pl.String(),
+                        }
+                    )
+                ),
+            ),
+            (
+                CQCLClean.specialisms,
+                pl.List(pl.Struct({CQCLClean.name: pl.String()})),
+            ),
+        ]
+    )
+    expected_impute_missing_struct_one_col_schema = pl.Schema(
+        list(impute_missing_struct_schema.items())
+        + [
+            (
+                CQCLClean.imputed_gac_service_types,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCLClean.name: pl.String(),
+                            CQCLClean.description: pl.String(),
+                        }
+                    )
+                ),
+            )
+        ]
+    )
+    expected_impute_missing_struct_two_cols_schema = pl.Schema(
+        list(impute_missing_struct_schema.items())
+        + [
+            (
+                CQCLClean.imputed_gac_service_types,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCLClean.name: pl.String(),
+                            CQCLClean.description: pl.String(),
+                        }
+                    )
+                ),
+            ),
+            (
+                CQCLClean.imputed_specialisms,
+                pl.List(pl.Struct({CQCLClean.name: pl.String()})),
+            ),
+        ]
+    )
+
     clean_registration_date_column_input_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),
@@ -106,6 +164,27 @@ class ExtractRegisteredManagerNamesSchema:
     expected_add_registered_manager_names_schema = pl.Schema(
         list(add_registered_manager_names_full_lf_schema.items())
         + [(CQCLClean.registered_manager_names, pl.List(pl.String()))]
+    )
+
+
+@dataclass
+class LocationsCleanUtilsSchema:
+    clean_provider_id_column_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.provider_id, pl.String()),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+
+    assign_cqc_sector_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCL.provider_id, pl.String()),
+        ]
+    )
+    expected_assign_cqc_sector_schema = pl.Schema(
+        list(assign_cqc_sector_schema.items()) + [(CQCLClean.cqc_sector, pl.String())]
     )
 
 

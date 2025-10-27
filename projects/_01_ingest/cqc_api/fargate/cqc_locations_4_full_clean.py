@@ -1,6 +1,7 @@
 import polars as pl
 
 from polars_utils import logger, utils
+from projects._01_ingest.cqc_api.fargate.utils import locations_4_clean_utils as cUtils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -16,6 +17,7 @@ from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
 )
+from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 
 logger = logger.get_logger(__name__)
 
@@ -44,9 +46,11 @@ def main(
         pl.col(CQCLClean.type) == LocationType.social_care_identifier
     )
 
-    # TODO - remove_specialist_colleges
+    # TODO - (1115) remove_specialist_colleges
 
-    # TODO - save deregistered locations for reconciliation process
+    # TODO - (1153) impute_historic_relationships
+
+    # TODO - (1116) save deregistered locations for reconciliation process
     # - filter to deregistered locations only in the most recent import date
     # - select cols req by reconciliation process
     #   (CQCLClean.cqc_location_import_date, CQCLClean.location_id, CQCLClean.registration_status, CQCLClean.deregistration_date)
@@ -57,13 +61,26 @@ def main(
         pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
     )
 
+    cqc_reg_lf = cUtils.clean_provider_id_column(cqc_reg_lf)
+    cqc_reg_lf = cqc_reg_lf.filter(pl.col(CQCLClean.provider_id).is_not_null())
+
+    cqc_reg_lf = cUtils.assign_cqc_sector(
+        cqc_reg_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
+    )
+
+    # TODO - (1155) move fUtils.impute_missing_struct_columns from cqc_locations_2_flatten to utils.flatten_utils
+
+    # TODO - (1118) remove_locations_that_never_had_regulated_activities
+
+    # TODO - (1125) add_related_location_column
+
     # Scan parquet to get ONS Postcode Directory data in LazyFrame format
     ons_lf = utils.scan_parquet(
         ons_postcode_directory_source,
         selected_columns=ons_cols_to_import,
     )
-    logger.info("CQC Location LazyFrame read in")
-    # TODO - join in ONS postcode data / run_postcode_matching (filter to relevant locations only if haven't already)
+    logger.info("ONS Postcode Directory LazyFrame read in")
+    # TODO - (1117) join in ONS postcode data / run_postcode_matching (filter to relevant locations only if haven't already)
 
     # Store cleaned registered data in s3
     utils.sink_to_parquet(

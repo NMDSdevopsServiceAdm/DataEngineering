@@ -2,7 +2,7 @@ import boto3
 import polars as pl
 import polars.testing as pl_testing
 
-from lambdas.utils import snapshots
+from lambdas.create_dataset_snapshot.utils import snapshots
 
 
 def list_bucket_objects(bucket: str, prefix: str) -> list[str]:
