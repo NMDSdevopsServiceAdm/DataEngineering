@@ -17,7 +17,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
     mock_cqc_locations_data = Mock(name="cqc_locations_data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.fUtils.clean_provider_id_column")
+    @patch(f"{PATCH_PATH}.cUtils.clean_provider_id_column")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_cqc_locations_data)
     def test_main_runs_successfully(
         self,
