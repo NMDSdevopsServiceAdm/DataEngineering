@@ -1,5 +1,3 @@
-import polars as pl
-
 from polars_utils import logger, utils
 from projects._01_ingest.cqc_api.fargate.utils import flatten_utils as fUtils
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
@@ -7,7 +5,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 
 logger = logger.get_logger(__name__)
 
@@ -58,13 +55,6 @@ def main(
     # TODO - format_date_fields (both registration dates)
 
     # TODO - column_to_date (cqc_location_import_date)
-
-    cqc_lf = fUtils.clean_provider_id_column(cqc_lf=cqc_lf)
-    cqc_lf = cqc_lf.filter(pl.col(CQCLClean.provider_id).is_not_null())
-
-    cqc_lf = fUtils.assign_cqc_sector(
-        cqc_lf=cqc_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
-    )
 
     # TODO - impute_historic_relationships
 

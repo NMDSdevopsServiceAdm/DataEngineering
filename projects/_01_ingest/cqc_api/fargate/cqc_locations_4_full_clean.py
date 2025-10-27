@@ -1,6 +1,7 @@
 import polars as pl
 
 from polars_utils import logger, utils
+from projects._01_ingest.cqc_api.fargate.utils import locations_4_clean_utils as cUtils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -56,6 +57,11 @@ def main(
     cqc_reg_lf = cqc_lf.filter(
         pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
     )
+
+    cqc_lf = cUtils.clean_provider_id_column(cqc_lf=cqc_lf)
+    cqc_lf = cqc_lf.filter(pl.col(CQCLClean.provider_id).is_not_null())
+
+    # TODO - add_cqc_sector_column_to_cqc_locations_dataframe
 
     # Scan parquet to get ONS Postcode Directory data in LazyFrame format
     ons_lf = utils.scan_parquet(

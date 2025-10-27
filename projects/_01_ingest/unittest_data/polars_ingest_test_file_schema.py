@@ -19,24 +19,6 @@ from utils.column_names.raw_data_files.ons_columns import (
 
 @dataclass
 class FlattenUtilsSchema:
-    clean_provider_id_column_schema = pl.Schema(
-        [
-            (CQCL.location_id, pl.String()),
-            (CQCL.provider_id, pl.String()),
-            (Keys.import_date, pl.String()),
-        ]
-    )
-
-    assign_cqc_sector_schema = pl.Schema(
-        [
-            (CQCL.location_id, pl.String()),
-            (CQCL.provider_id, pl.String()),
-        ]
-    )
-    expected_assign_cqc_sector_schema = pl.Schema(
-        list(assign_cqc_sector_schema.items()) + [(CQCLClean.cqc_sector, pl.String())]
-    )
-
     impute_missing_struct_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
@@ -165,6 +147,17 @@ class ExtractRegisteredManagerNamesSchema:
     expected_add_registered_manager_names_schema = pl.Schema(
         list(add_registered_manager_names_full_lf_schema.items())
         + [(CQCLClean.registered_manager_names, pl.List(pl.String()))]
+    )
+
+
+@dataclass
+class LocationsCleanUtilsSchema:
+    clean_provider_id_column_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.provider_id, pl.String()),
+            (Keys.import_date, pl.String()),
+        ]
     )
 
 
