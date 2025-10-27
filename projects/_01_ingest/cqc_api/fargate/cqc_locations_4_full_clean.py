@@ -44,9 +44,11 @@ def main(
         pl.col(CQCLClean.type) == LocationType.social_care_identifier
     )
 
-    # TODO - remove_specialist_colleges
+    # TODO - (1115) remove_specialist_colleges
 
-    # TODO - save deregistered locations for reconciliation process
+    # TODO - (1153) impute_historic_relationships
+
+    # TODO - (1116) save deregistered locations for reconciliation process
     # - filter to deregistered locations only in the most recent import date
     # - select cols req by reconciliation process
     #   (CQCLClean.cqc_location_import_date, CQCLClean.location_id, CQCLClean.registration_status, CQCLClean.deregistration_date)
@@ -57,13 +59,21 @@ def main(
         pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
     )
 
+    # TODO - (1120) clean provider_id and add cqc_sector
+
+    # TODO - (1155) move fUtils.impute_missing_struct_columns from cqc_locations_2_flatten to utils.flatten_utils
+
+    # TODO - (1118) remove_locations_that_never_had_regulated_activities
+
+    # TODO - (1125) add_related_location_column
+
     # Scan parquet to get ONS Postcode Directory data in LazyFrame format
     ons_lf = utils.scan_parquet(
         ons_postcode_directory_source,
         selected_columns=ons_cols_to_import,
     )
     logger.info("CQC Location LazyFrame read in")
-    # TODO - join in ONS postcode data / run_postcode_matching (filter to relevant locations only if haven't already)
+    # TODO - (1117) join in ONS postcode data / run_postcode_matching (filter to relevant locations only if haven't already)
 
     # Store cleaned registered data in s3
     utils.sink_to_parquet(
