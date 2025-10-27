@@ -10,6 +10,9 @@ from projects._01_ingest.unittest_data.polars_ingest_test_file_data import (
 from projects._01_ingest.unittest_data.polars_ingest_test_file_schema import (
     LocationsCleanUtilsSchema as Schemas,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 
 PATCH_PATH = "projects._01_ingest.cqc_api.fargate.utils.locations_4_clean_utils"
 
@@ -55,3 +58,35 @@ class CleanProviderIdColumnTests(unittest.TestCase):
         returned_lf = job.clean_provider_id_column(lf)
 
         pl_testing.assert_frame_equal(expected_lf, returned_lf)
+
+
+class AssignCqcSectorTests(unittest.TestCase):
+    def test_assigns_local_authority(self):
+        lf = pl.LazyFrame(
+            data=Data.assign_cqc_sector,
+            schema=Schemas.assign_cqc_sector_schema,
+        )
+        local_authority_provider_ids = lf.collect()[CQCLClean.provider_id].to_list()
+
+        result_lf = job.assign_cqc_sector(lf, local_authority_provider_ids)
+
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_assign_cqc_sector_local_authority,
+            schema=Schemas.expected_assign_cqc_sector_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+
+    def test_assigns_independent(self):
+        lf = pl.LazyFrame(
+            data=Data.assign_cqc_sector,
+            schema=Schemas.assign_cqc_sector_schema,
+        )
+        local_authority_provider_ids = ["non-matching-id-1", "non-matching-id-2"]
+
+        result_lf = job.assign_cqc_sector(lf, local_authority_provider_ids)
+
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_assign_cqc_sector_independent,
+            schema=Schemas.expected_assign_cqc_sector_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)

@@ -1005,6 +1005,21 @@ class LocationsCleanUtilsData:
         ("20240101", "20240101", "20240101"),
     ]
 
+    assign_cqc_sector = [
+        ("1-001", "1-002"),
+        ("1-0001", "1-0002"),
+    ]
+    expected_assign_cqc_sector_local_authority = [
+        ("1-001", "1-002"),
+        ("1-0001", "1-0002"),
+        (Sector.local_authority, Sector.local_authority),
+    ]
+    expected_assign_cqc_sector_independent = [
+        ("1-001", "1-002"),
+        ("1-0001", "1-0002"),
+        (Sector.independent, Sector.independent),
+    ]
+
 
 @dataclass
 class PostcodeMatcherTest:

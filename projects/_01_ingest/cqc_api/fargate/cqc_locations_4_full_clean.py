@@ -17,6 +17,7 @@ from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
 )
+from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 
 logger = logger.get_logger(__name__)
 
@@ -61,7 +62,9 @@ def main(
     cqc_lf = cUtils.clean_provider_id_column(cqc_lf=cqc_lf)
     cqc_lf = cqc_lf.filter(pl.col(CQCLClean.provider_id).is_not_null())
 
-    # TODO - add_cqc_sector_column_to_cqc_locations_dataframe
+    cqc_lf = cUtils.assign_cqc_sector(
+        cqc_lf=cqc_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
+    )
 
     # Scan parquet to get ONS Postcode Directory data in LazyFrame format
     ons_lf = utils.scan_parquet(

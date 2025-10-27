@@ -160,6 +160,16 @@ class LocationsCleanUtilsSchema:
         ]
     )
 
+    assign_cqc_sector_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCL.provider_id, pl.String()),
+        ]
+    )
+    expected_assign_cqc_sector_schema = pl.Schema(
+        list(assign_cqc_sector_schema.items()) + [(CQCLClean.cqc_sector, pl.String())]
+    )
+
 
 @dataclass
 class PostcodeMatcherTest:
