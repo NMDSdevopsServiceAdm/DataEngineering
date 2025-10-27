@@ -57,7 +57,7 @@ def main(
     cqc_lf = FUtils.clean_and_impute_registration_date(cqc_lf)
 
     # TODO - format_date_fields (both registration dates)
-    # Dont need this?  both registration dates are already dates?
+    cqc_lf = column_to_date(cqc_lf, CQCLClean.deregistration_date)
 
     # TODO - column_to_date (cqc_location_import_date)
     cqc_lf = column_to_date(
