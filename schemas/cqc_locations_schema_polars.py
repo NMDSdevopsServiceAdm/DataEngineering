@@ -1,6 +1,5 @@
 import polars as pl
 
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as NewColNames,
 )
@@ -361,9 +360,5 @@ POLARS_LOCATION_SCHEMA = pl.Schema(
                 )
             ),
         ),
-        (Keys.year, pl.String()),
-        (Keys.month, pl.String()),
-        (Keys.day, pl.String()),
-        (Keys.import_date, pl.String()),
     ]
 )
