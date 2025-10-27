@@ -53,6 +53,21 @@ def column_to_date(
     new_column: str = None,
     string_format: str = import_date_s3_uri_format,
 ) -> pl.LazyFrame:
+    """
+    Converts a single column of strings to dates.
+
+    Strings in column_to_format can be formatted as either 20250101 or 2025-01-01. The conversion will overwrite the
+    column_to_format unless new_column is provided.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with columns that contain dates in string format.
+        column_to_format (str): The column name with dates as strings.
+        new_column (str): Optional. A new column name for the converted strings.
+        string_format (str): Defaults to "%Y%m%d".
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with strings converted to dates.
+    """
     if new_column is None:
         new_column = column_to_format
 
