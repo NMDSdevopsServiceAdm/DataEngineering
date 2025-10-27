@@ -261,10 +261,6 @@ jobs:
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=full_providers_api/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=full_providers_api/"
       - aws-s3/sync:
