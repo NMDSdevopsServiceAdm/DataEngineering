@@ -61,11 +61,11 @@ def main(
         pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
     )
 
-    cqc_lf = cUtils.clean_provider_id_column(cqc_lf=cqc_lf)
-    cqc_lf = cqc_lf.filter(pl.col(CQCLClean.provider_id).is_not_null())
+    cqc_reg_lf = cUtils.clean_provider_id_column(cqc_reg_lf)
+    cqc_reg_lf = cqc_reg_lf.filter(pl.col(CQCLClean.provider_id).is_not_null())
 
-    cqc_lf = cUtils.assign_cqc_sector(
-        cqc_lf=cqc_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
+    cqc_reg_lf = cUtils.assign_cqc_sector(
+        cqc_reg_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
     )
 
     # TODO - (1155) move fUtils.impute_missing_struct_columns from cqc_locations_2_flatten to utils.flatten_utils
