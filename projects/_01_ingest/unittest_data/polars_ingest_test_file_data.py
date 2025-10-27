@@ -188,28 +188,31 @@ class FlattenUtilsData:
     ]
 
     impute_missing_struct_out_of_order_dates_rows = [
-        ("1-001", "1-001", "1-001"),
-        ("20240101", "20240201", "20240301"),
+        ("1-001", "1-001", "1-001", "1-001"),
+        ("20240301", "20240201", "20240401", "20240101"),
         (
-            [{"name": "A", "description": "First"}],
-            [{"name": "A", "description": "First"}],
-            [{"name": "A", "description": "First"}],
+            [{"name": "A", "description": "Third"}],
+            [{"name": "A", "description": "Second"}],
+            None,
+            None,
         ),
-        (None, None, None),
+        (None, None, None, None),
     ]
     expected_impute_missing_struct_out_of_order_dates_rows = [
-        ("1-001", "1-001", "1-001"),
-        ("20240101", "20240201", "20240301"),
+        ("1-001", "1-001", "1-001", "1-001"),
+        ("20240301", "20240201", "20240401", "20240101"),
         (
-            [{"name": "A", "description": "First"}],
-            [{"name": "A", "description": "First"}],
-            [{"name": "A", "description": "First"}],
+            [{"name": "A", "description": "Third"}],
+            [{"name": "A", "description": "Second"}],
+            None,
+            None,
         ),
-        (None, None, None),
+        (None, None, None, None),
         (
-            [{"name": "A", "description": "First"}],
-            [{"name": "A", "description": "First"}],
-            [{"name": "A", "description": "First"}],
+            [{"name": "A", "description": "Third"}],
+            [{"name": "A", "description": "Second"}],
+            [{"name": "A", "description": "Third"}],
+            [{"name": "A", "description": "Second"}],
         ),
     ]
 

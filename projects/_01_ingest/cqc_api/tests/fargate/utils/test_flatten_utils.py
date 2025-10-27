@@ -107,10 +107,8 @@ class ImputeMissingStructColumnsTests(unittest.TestCase):
         )
 
         result_lf = job.impute_missing_struct_columns(lf, [CQCLClean.gac_service_types])
-        result_df = result_lf.collect()
-        expected_df = expected_lf.collect()
 
-        pl_testing.assert_frame_equal(result_df, expected_df)
+        pl_testing.assert_frame_equal(result_lf, expected_lf)
 
     def test_multiple_struct_columns_independent_imputation(self):
         """Ensures multiple struct columns are imputed independently and correctly."""
@@ -127,10 +125,8 @@ class ImputeMissingStructColumnsTests(unittest.TestCase):
         result_lf = job.impute_missing_struct_columns(
             lf, [CQCLClean.gac_service_types, CQCLClean.specialisms]
         )
-        result_df = result_lf.collect()
-        expected_df = expected_lf.collect()
 
-        pl_testing.assert_frame_equal(result_df, expected_df)
+        pl_testing.assert_frame_equal(result_lf, expected_lf)
 
     def test_empty_and_partial_structs(self):
         """Treats empty structs or all-null structs as missing, but preserves partially filled ones."""
@@ -145,10 +141,8 @@ class ImputeMissingStructColumnsTests(unittest.TestCase):
         )
 
         result_lf = job.impute_missing_struct_columns(lf, [CQCLClean.gac_service_types])
-        result_df = result_lf.collect()
-        expected_df = expected_lf.collect()
 
-        pl_testing.assert_frame_equal(result_df, expected_df)
+        pl_testing.assert_frame_equal(result_lf, expected_lf)
 
     def test_imputation_partitions_correctly(self):
         """Verifies imputation does not leak values across location_id partitions."""
@@ -163,12 +157,10 @@ class ImputeMissingStructColumnsTests(unittest.TestCase):
         )
 
         result_lf = job.impute_missing_struct_columns(lf, [CQCLClean.gac_service_types])
-        result_df = result_lf.collect()
-        expected_df = expected_lf.collect()
 
-        pl_testing.assert_frame_equal(result_df, expected_df)
+        pl_testing.assert_frame_equal(result_lf, expected_lf)
 
-    def test_out_of_order_dates_are_sorted_before_imputation(self):
+    def test_out_of_order_dates_are_ordered_before_imputation(self):
         """Ensures imputation follows chronological order based on date column."""
 
         lf = pl.LazyFrame(
@@ -181,10 +173,8 @@ class ImputeMissingStructColumnsTests(unittest.TestCase):
         )
 
         result_lf = job.impute_missing_struct_columns(lf, [CQCLClean.gac_service_types])
-        result_df = result_lf.collect()
-        expected_df = expected_lf.collect()
 
-        pl_testing.assert_frame_equal(result_df, expected_df)
+        pl_testing.assert_frame_equal(result_lf, expected_lf)
 
     def test_fully_null_column_remains_null_after_imputation(self):
         """If a struct column is entirely null, imputed column should remain all nulls."""
@@ -199,10 +189,8 @@ class ImputeMissingStructColumnsTests(unittest.TestCase):
         )
 
         result_lf = job.impute_missing_struct_columns(lf, [CQCLClean.gac_service_types])
-        result_df = result_lf.collect()
-        expected_df = expected_lf.collect()
 
-        pl_testing.assert_frame_equal(result_df, expected_df)
+        pl_testing.assert_frame_equal(result_lf, expected_lf)
 
     def test_multiple_partitions_with_varied_missing_patterns(self):
         """Tests complex case with several partitions, ensuring each is filled correctly."""
@@ -217,7 +205,5 @@ class ImputeMissingStructColumnsTests(unittest.TestCase):
         )
 
         result_lf = job.impute_missing_struct_columns(lf, [CQCLClean.gac_service_types])
-        result_df = result_lf.collect()
-        expected_df = expected_lf.collect()
 
-        pl_testing.assert_frame_equal(result_df, expected_df)
+        pl_testing.assert_frame_equal(result_lf, expected_lf)

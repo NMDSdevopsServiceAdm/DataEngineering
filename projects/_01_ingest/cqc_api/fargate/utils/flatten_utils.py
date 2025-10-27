@@ -79,11 +79,6 @@ def impute_missing_struct_columns(
     Returns:
         pl.LazyFrame: LazyFrame with a new set of columns called `imputed_<column_name>` containing imputed values.
     """
-    identifier_col = CQCLClean.location_id
-    date_col = CQCLClean.import_date
-
-    lf = lf.sort([identifier_col, date_col])
-
     for column_name in column_names:
         new_col = f"imputed_{column_name}"
 
@@ -98,7 +93,10 @@ def impute_missing_struct_columns(
             pl.col(new_col)
             .forward_fill()
             .backward_fill()
-            .over(identifier_col)
+            .over(
+                partition_by=CQCLClean.location_id,
+                order_by=CQCLClean.import_date,
+            )
             .alias(new_col)
         )
 
