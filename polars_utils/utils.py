@@ -204,7 +204,10 @@ def sink_to_parquet(
 
             if conv_cols:
                 lazy_df = lazy_df.with_columns(
-                    [pl.col(c).cast(pl.String()) for c in conv_cols]
+                    pl.format({}, pl.col("year")).alias("year")
+                )
+                lazy_df = lazy_df.with_columns(
+                    pl.format({}, pl.col("import_date")).alias("import_date")
                 )
 
             path = pl.PartitionByKey(
