@@ -59,6 +59,8 @@ def main(
         pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
     )
 
+    # TODO - (1120) clean provider_id and add cqc_sector
+
     # TODO - (1155) move fUtils.impute_missing_struct_columns from cqc_locations_2_flatten to utils.flatten_utils
 
     # TODO - (1118) remove_locations_that_never_had_regulated_activities
