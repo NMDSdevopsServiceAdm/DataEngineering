@@ -1,6 +1,7 @@
 import polars as pl
 
 from polars_utils import logger, utils
+from projects._01_ingest.cqc_api.fargate.utils import locations_4_clean_utils as cUtils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -16,6 +17,7 @@ from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
 )
+from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 
 logger = logger.get_logger(__name__)
 
@@ -59,7 +61,12 @@ def main(
         pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
     )
 
-    # TODO - (1120) clean provider_id and add cqc_sector
+    cqc_reg_lf = cUtils.clean_provider_id_column(cqc_reg_lf)
+    cqc_reg_lf = cqc_reg_lf.filter(pl.col(CQCLClean.provider_id).is_not_null())
+
+    cqc_reg_lf = cUtils.assign_cqc_sector(
+        cqc_reg_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
+    )
 
     # TODO - (1155) move fUtils.impute_missing_struct_columns from cqc_locations_2_flatten to utils.flatten_utils
 
@@ -72,7 +79,7 @@ def main(
         ons_postcode_directory_source,
         selected_columns=ons_cols_to_import,
     )
-    logger.info("CQC Location LazyFrame read in")
+    logger.info("ONS Postcode Directory LazyFrame read in")
     # TODO - (1117) join in ONS postcode data / run_postcode_matching (filter to relevant locations only if haven't already)
 
     # Store cleaned registered data in s3

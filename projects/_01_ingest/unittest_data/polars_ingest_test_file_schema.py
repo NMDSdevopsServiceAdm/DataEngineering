@@ -151,6 +151,27 @@ class ExtractRegisteredManagerNamesSchema:
 
 
 @dataclass
+class LocationsCleanUtilsSchema:
+    clean_provider_id_column_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.provider_id, pl.String()),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+
+    assign_cqc_sector_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCL.provider_id, pl.String()),
+        ]
+    )
+    expected_assign_cqc_sector_schema = pl.Schema(
+        list(assign_cqc_sector_schema.items()) + [(CQCLClean.cqc_sector, pl.String())]
+    )
+
+
+@dataclass
 class PostcodeMatcherTest:
     locations_schema = pl.Schema(
         [
