@@ -53,6 +53,8 @@ def main(
 
     # TODO - create_cleaned_registration_date_column
     # TODO - column_to_date (imputed_registration_date)
+    logger.info("Schema before function")
+    logger.info(cqc_lf.collect_schema())
     cqc_lf = column_to_date(cqc_lf, CQCLClean.registration_date)
     cqc_lf = FUtils.clean_and_impute_registration_date(cqc_lf)
 
@@ -63,6 +65,9 @@ def main(
     cqc_lf = column_to_date(
         cqc_lf, Keys.import_date, CQCLClean.cqc_location_import_date
     )
+
+    logger.info("Schema after function")
+    logger.info(cqc_lf.collect_schema())
 
     # TODO - clean_provider_id_column
     # TODO - select_rows_with_non_null_value (provider_id)
