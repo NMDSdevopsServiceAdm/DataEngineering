@@ -117,7 +117,7 @@ class ImputeMissingStructColumnsTests(unittest.TestCase):
 
         pl_testing.assert_frame_equal(result_lf, expected_lf)
 
-    def test_out_of_order_dates_are_sorted_before_imputation(self):
+    def test_out_of_order_dates_are_ordered_before_imputation(self):
         """Ensures imputation follows chronological order based on date column."""
 
         lf = pl.LazyFrame(
