@@ -207,8 +207,8 @@ def sink_to_parquet(
 
             if conv_cols:
                 lazy_df = lazy_df.with_columns(
-                    [pl.col(c).cast(pl.Utf8).alias(c) for c in conv_cols]
-                ).select(pl.all())
+                    [pl.col(c).cast(pl.Utf8).str for c in conv_cols]
+                )
 
             path = pl.PartitionByKey(
                 base_path=f"{output_path}",
