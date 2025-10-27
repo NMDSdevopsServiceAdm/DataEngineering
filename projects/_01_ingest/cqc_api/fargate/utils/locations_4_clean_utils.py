@@ -8,10 +8,8 @@ from utils.column_values.categorical_column_values import Sector
 
 def clean_provider_id_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Cleans Provider ID column by removing long IDs then forwards and backwards filling the value.
+    Replaces `provider_id` strings with more than 14 characters with null.
 
-     1. Replace `provider_id` strings with more than 14 characters with Null
-     2. Forward and backwards fill missing `provider_id` over location id
     Args:
         cqc_lf (pl.LazyFrame): Dataframe with `provider_id` column
 
@@ -24,16 +22,33 @@ def clean_provider_id_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
         .otherwise(None)
         .alias(CQCLClean.provider_id)
     )
+    return cqc_lf
 
-    cqc_lf = cqc_lf.with_columns(
-        pl.col(CQCLClean.provider_id)
-        .forward_fill()
-        .backward_fill()
-        .over(
-            partition_by=CQCLClean.location_id,
-            order_by=CQCLClean.import_date,
+
+def impute_missing_values(
+    cqc_lf: pl.LazyFrame, cols_to_impute: list[str]
+) -> pl.LazyFrame:
+    """
+    Imputes missing values in specified columns by forward and backwards filling over location ID.
+
+    Args:
+        cqc_lf (pl.LazyFrame): Dataframe with columns to impute
+        cols_to_impute (list[str]): List of column names to impute missing values for
+
+    Returns:
+        pl.LazyFrame: Dataframe with imputed columns
+    """
+    for col in cols_to_impute:
+        cqc_lf = cqc_lf.with_columns(
+            pl.col(col)
+            .forward_fill()
+            .backward_fill()
+            .over(
+                partition_by=CQCLClean.location_id,
+                order_by=CQCLClean.import_date,
+            )
         )
-    )
+
     return cqc_lf
 
 
