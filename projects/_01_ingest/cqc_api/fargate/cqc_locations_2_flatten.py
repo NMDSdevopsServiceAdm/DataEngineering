@@ -85,6 +85,12 @@ def main(
 
     # TODO - drop unrequired cols
 
+    # Make partition keys strings.
+    cqc_lf = cqc_lf.with_columns(pl.col(Keys.year).cast(pl.String()).alias(Keys.year))
+    cqc_lf = cqc_lf.with_columns(
+        pl.col(Keys.import_date).cast(pl.String()).alias(Keys.import_date)
+    )
+
     # Store flattened data in s3
     utils.sink_to_parquet(
         cqc_lf,
