@@ -31,3 +31,13 @@ class CleaningUtilsSchemas:
             (AWPClean.ascwds_workplace_import_date, pl.Date()),
         ]
     )
+
+
+@dataclass
+class RawDataAdjustmentsSchemas:
+    locations_data_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            ("other_column", pl.String()),
+        ]
+    )
