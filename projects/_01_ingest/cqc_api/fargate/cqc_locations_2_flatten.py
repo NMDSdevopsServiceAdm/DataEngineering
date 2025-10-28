@@ -60,9 +60,9 @@ def main(
     cqc_lf = column_to_date(cqc_lf, CQCLClean.deregistration_date)
 
     # TODO - column_to_date (cqc_location_import_date)
-    # cqc_lf = column_to_date(
-    #     cqc_lf, Keys.import_date, CQCLClean.cqc_location_import_date
-    # )
+    cqc_lf = column_to_date(
+        cqc_lf, Keys.import_date, CQCLClean.cqc_location_import_date
+    )
 
     # TODO - (1155) move fUtils.impute_missing_struct_columns to cqc_locations_4_full_clean
     cqc_lf = fUtils.impute_missing_struct_columns(
