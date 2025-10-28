@@ -552,6 +552,7 @@ def extract_from_struct(
     return df
 
 
+# converted to polars -> projects\_01_ingest\cqc_api\fargate\utils\locations_4_clean_utils.py
 def allocate_primary_service_type(df: DataFrame) -> DataFrame:
     """
     Allocates the primary service type for each row in the DataFrame based on the descriptions in the 'imputed_gac_service_types' field.
@@ -588,6 +589,7 @@ def allocate_primary_service_type(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects\_01_ingest\cqc_api\fargate\utils\locations_4_clean_utils.py
 def realign_carehome_column_with_primary_service(df: DataFrame) -> DataFrame:
     """
     Allocates the location as a care_home if primary_service_type is a care home.

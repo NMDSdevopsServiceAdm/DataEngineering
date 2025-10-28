@@ -123,6 +123,26 @@ class LocationsCleanUtilsSchema:
         list(assign_cqc_sector_schema.items()) + [(CQCLClean.cqc_sector, pl.String())]
     )
 
+    primary_service_type_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.provider_id, pl.String()),
+            (CQCLClean.services_offered, pl.List(pl.String())),
+        ]
+    )
+    expected_primary_service_type_schema = pl.Schema(
+        list(primary_service_type_schema.items())
+        + [(CQCLClean.primary_service_type, pl.String())]
+    )
+
+    realign_carehome_column_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.care_home, pl.String()),
+            (CQCLClean.primary_service_type, pl.String()),
+        ]
+    )
+
 
 @dataclass
 class PostcodeMatcherTest:
