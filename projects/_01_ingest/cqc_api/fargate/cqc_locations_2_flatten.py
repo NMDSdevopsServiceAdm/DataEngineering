@@ -1,3 +1,5 @@
+import polars as pl
+
 from polars_utils import logger, utils
 from projects._01_ingest.cqc_api.fargate.utils import flatten_utils as fUtils
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
@@ -5,6 +7,9 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 
 logger = logger.get_logger(__name__)
 
@@ -54,17 +59,23 @@ def main(
 
     # TODO - column_to_date (cqc_location_import_date)
 
-    # TODO - (1155) move fUtils.impute_missing_struct_columns to cqc_locations_4_full_clean
-    cqc_lf = fUtils.impute_missing_struct_columns(
-        cqc_lf,
-        [
-            CQCLClean.gac_service_types,
-            CQCLClean.regulated_activities,
-            CQCLClean.specialisms,
-        ],
+    cqc_lf = cqc_lf.with_columns(
+        (
+            pl.col(CQCL.gac_service_types)
+            .list.eval(pl.element().struct.field(CQCL.description))
+            .alias(CQCLClean.services_offered)
+        ),
+        (
+            pl.col(CQCL.specialisms)
+            .list.eval(pl.element().struct.field(CQCL.name))
+            .alias(CQCLClean.specialisms_offered)
+        ),
+        (
+            pl.col(CQCL.regulated_activities)
+            .list.eval(pl.element().struct.field(CQCL.name))
+            .alias(CQCLClean.regulated_activities_offered)
+        ),
     )
-
-    # TODO - (1154) extract_from_struct (services_offered, specialisms_offered)
 
     # TODO - (1128) classify_specialisms (dementia, learning_disabilities, mental_health)
 
@@ -73,7 +84,9 @@ def main(
 
     # TODO - (1129) extract_registered_manager_names
 
-    # TODO - drop unrequired cols
+    cqc_lf = cqc_lf.drop(
+        CQCL.gac_service_types, CQCL.specialisms, CQCL.regulated_activities
+    )
 
     # Store flattened data in s3
     utils.sink_to_parquet(
