@@ -3,7 +3,7 @@ import polars as pl
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_values.categorical_column_values import Sector
+from utils.column_values.categorical_column_values import RelatedLocation, Sector
 
 
 def clean_provider_id_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -72,4 +72,30 @@ def assign_cqc_sector(cqc_lf: pl.LazyFrame, la_provider_ids: list[str]) -> pl.La
         .otherwise(pl.lit(Sector.independent))
         .alias(CQCLClean.cqc_sector)
     )
+    return cqc_lf
+
+
+def add_related_location_flag(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Adds a column which flags whether the location was related to a previous location or not.
+
+    1. If the length of imputed relationships is more than 0 then flag 'Y'
+    2. Otherwise, flag 'N'
+
+    Args:
+        cqc_lf (pl.LazyFrame): A LazyFrame with the imputed_relationships column.
+
+    Returns:
+        pl.LazyFrame: LazyFrame with an added related_location column.
+    """
+
+    # imputed_relationships has not been created when this branch was made. Find the test data from pyspark version.
+
+    cqc_lf = cqc_lf.with_columns(
+        pl.when(pl.col(CQCLClean.imputed_relationships).list.len() > 0)
+        .then(pl.lit(RelatedLocation.has_related_location))
+        .otherwise(pl.lit(RelatedLocation.no_related_location))
+        .alias(CQCLClean.related_location)
+    )
+
     return cqc_lf
