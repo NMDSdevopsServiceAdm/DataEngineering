@@ -74,7 +74,9 @@ def main(
     )
 
     # TODO - (1127) allocate_primary_service_type
+    cqc_reg_lf = cUtils.allocate_primary_service_type(cqc_reg_lf)
     # TODO - (1127) realign_carehome_column_with_primary_service
+    cqc_reg_lf = cUtils.realign_carehome_column_with_primary_service(cqc_reg_lf)
 
     cqc_reg_lf = cqc_reg_lf.filter(
         pl.col(CQCLClean.provider_id).is_not_null(),
