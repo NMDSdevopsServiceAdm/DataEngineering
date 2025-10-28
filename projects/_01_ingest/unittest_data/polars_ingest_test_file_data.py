@@ -14,200 +14,7 @@ from utils.column_values.categorical_column_values import (
 
 @dataclass
 class FlattenUtilsData:
-    impute_missing_struct_single_struct_col_rows = [
-        ("1-001", "1-001", "1-001", "1-001"),
-        ("20240101", "20240201", "20240301", "20240401"),
-        (
-            None,
-            [],
-            [{"name": "Name A", "description": "Desc A"}],
-            None,
-        ),
-        (None, None, None, None),
-    ]
-    expected_impute_missing_struct_single_struct_col_rows = [
-        ("1-001", "1-001", "1-001", "1-001"),
-        ("20240101", "20240201", "20240301", "20240401"),
-        (
-            None,
-            [],
-            [{"name": "Name A", "description": "Desc A"}],
-            None,
-        ),
-        (None, None, None, None),
-        (
-            [{"name": "Name A", "description": "Desc A"}],
-            [{"name": "Name A", "description": "Desc A"}],
-            [{"name": "Name A", "description": "Desc A"}],
-            [{"name": "Name A", "description": "Desc A"}],
-        ),
-    ]
-
-    impute_missing_struct_multiple_struct_cols_rows = [
-        ("1-001", "1-001", "1-001"),
-        ("20240101", "20240201", "20240301"),
-        (
-            None,
-            [{"name": "A", "description": "a"}],
-            None,
-        ),
-        (
-            [{"name": "Spec X"}],
-            None,
-            None,
-        ),
-    ]
-    expected_impute_missing_struct_multiple_struct_cols_rows = [
-        ("1-001", "1-001", "1-001"),
-        ("20240101", "20240201", "20240301"),
-        (
-            None,
-            [{"name": "A", "description": "a"}],
-            None,
-        ),
-        (
-            [{"name": "Spec X"}],
-            None,
-            None,
-        ),
-        (
-            [{"name": "A", "description": "a"}],
-            [{"name": "A", "description": "a"}],
-            [{"name": "A", "description": "a"}],
-        ),
-        (
-            [{"name": "Spec X"}],
-            [{"name": "Spec X"}],
-            [{"name": "Spec X"}],
-        ),
-    ]
-
-    impute_missing_struct_empty_and_partial_structs_rows = [
-        ("1-001", "1-001", "1-001"),
-        ("20240101", "20240201", "20240301"),
-        (
-            [],
-            [{"name": "OnlyName", "description": None}],
-            None,
-        ),
-        (None, None, None),
-    ]
-    expected_impute_missing_struct_empty_and_partial_structs_rows = [
-        ("1-001", "1-001", "1-001"),
-        ("20240101", "20240201", "20240301"),
-        (
-            [],
-            [{"name": "OnlyName", "description": None}],
-            None,
-        ),
-        (None, None, None),
-        (
-            [{"name": "OnlyName", "description": None}],
-            [{"name": "OnlyName", "description": None}],
-            [{"name": "OnlyName", "description": None}],
-        ),
-    ]
-
-    impute_missing_struct_imputation_partitions_rows = [
-        ("1-001", "1-001", "1-002", "1-002"),
-        ("20240101", "20240201", "20240101", "20240201"),
-        (
-            None,
-            [{"name": "X", "description": "Desc"}],
-            [{"name": "Y", "description": "Other"}],
-            None,
-        ),
-        (None, None, None, None),
-    ]
-    expected_impute_missing_struct_imputation_partitions_rows = [
-        ("1-001", "1-001", "1-002", "1-002"),
-        ("20240101", "20240201", "20240101", "20240201"),
-        (
-            None,
-            [{"name": "X", "description": "Desc"}],
-            [{"name": "Y", "description": "Other"}],
-            None,
-        ),
-        (None, None, None, None),
-        (
-            [{"name": "X", "description": "Desc"}],
-            [{"name": "X", "description": "Desc"}],
-            [{"name": "Y", "description": "Other"}],
-            [{"name": "Y", "description": "Other"}],
-        ),
-    ]
-
-    impute_missing_struct_out_of_order_dates_rows = [
-        ("1-001", "1-001", "1-001", "1-001"),
-        ("20240301", "20240201", "20240401", "20240101"),
-        (
-            [{"name": "A", "description": "Third"}],
-            [{"name": "A", "description": "Second"}],
-            None,
-            None,
-        ),
-        (None, None, None, None),
-    ]
-    expected_impute_missing_struct_out_of_order_dates_rows = [
-        ("1-001", "1-001", "1-001", "1-001"),
-        ("20240301", "20240201", "20240401", "20240101"),
-        (
-            [{"name": "A", "description": "Third"}],
-            [{"name": "A", "description": "Second"}],
-            None,
-            None,
-        ),
-        (None, None, None, None),
-        (
-            [{"name": "A", "description": "Third"}],
-            [{"name": "A", "description": "Second"}],
-            [{"name": "A", "description": "Third"}],
-            [{"name": "A", "description": "Second"}],
-        ),
-    ]
-
-    impute_missing_struct_fully_null_rows = [
-        ("1-001", "1-001"),
-        ("20240101", "20240201"),
-        (None, None),
-        (None, None),
-    ]
-    expected_impute_missing_struct_fully_null_rows = [
-        ("1-001", "1-001"),
-        ("20240101", "20240201"),
-        (None, None),
-        (None, None),
-        (None, None),
-    ]
-
-    impute_missing_struct_multiple_partitions_and_missing_data_rows = [
-        ("1-001", "1-001", "1-002", "1-002"),
-        ("20240101", "20240201", "20240101", "20240201"),
-        (
-            [{"name": "A", "description": "X"}],
-            None,
-            None,
-            [{"name": "B", "description": "Y"}],
-        ),
-        (None, None, None, None),
-    ]
-    expected_impute_missing_struct_multiple_partitions_and_missing_data_rows = [
-        ("1-001", "1-001", "1-002", "1-002"),
-        ("20240101", "20240201", "20240101", "20240201"),
-        (
-            [{"name": "A", "description": "X"}],
-            None,
-            None,
-            [{"name": "B", "description": "Y"}],
-        ),
-        (None, None, None, None),
-        (
-            [{"name": "A", "description": "X"}],
-            [{"name": "A", "description": "X"}],
-            [{"name": "B", "description": "Y"}],
-            [{"name": "B", "description": "Y"}],
-        ),
-    ]
+    pass
 
 
 @dataclass
@@ -971,38 +778,106 @@ class ExtractRegisteredManagerNamesData:
 @dataclass
 class LocationsCleanUtilsData:
     clean_provider_id_column_rows = [
-        ("1-001", "1-001", "1-001", "1-002", "1-002", "1-002"),
-        (
-            "1-123456789",
-            "1-123456789",
-            "1-123456789",
-            "1-223456789",
-            "1-223456789",
-            "1-223456789",
-        ),
-        ("20240101", "20240201", "20240301", "20240101", "20240201", "20240301"),
-    ]
-
-    missing_provider_id_column_rows = [
-        ("1-001", "1-001", "1-001", "1-001", "1-001"),
-        (None, "1-123456789", None, "1-223456789", None),
-        ("20240101", "20240201", "20240301", "20240401", "20240501"),
-    ]
-    expected_fill_missing_provider_id_column_rows = [
-        ("1-001", "1-001", "1-001", "1-001", "1-001"),
-        ("1-123456789", "1-123456789", "1-123456789", "1-223456789", "1-223456789"),
-        ("20240101", "20240201", "20240301", "20240401", "20240501"),
+        ("1-001", "1-001"),
+        ("1-123456789", "1-123"),
+        ("20240101", "20240201"),
     ]
 
     long_provider_id_column_rows = [
-        ("1-001", "1-002", "1-003"),
-        ("1-223456789 1-223456789", "1-223456789", "1-223456789"),
-        ("20240101", "20240101", "20240101"),
+        ("1-001",),
+        ("1-223456789 1-223456789",),
+        ("20240101",),
     ]
     expected_long_provider_id_column_rows = [
-        ("1-001", "1-002", "1-003"),
-        (None, "1-223456789", "1-223456789"),
-        ("20240101", "20240101", "20240101"),
+        ("1-001",),
+        (None,),
+        ("20240101",),
+    ]
+
+    impute_missing_values_single_col_rows = [
+        ("1-001", "1-001", "1-001", "1-001"),
+        ("20240101", "20240201", "20240301", "20240401"),
+        (None, None, "Prov ID", None),
+        (None, None, None, None),
+    ]
+    expected_impute_missing_values_single_col_rows = [
+        ("1-001", "1-001", "1-001", "1-001"),
+        ("20240101", "20240201", "20240301", "20240401"),
+        ("Prov ID", "Prov ID", "Prov ID", "Prov ID"),
+        (None, None, None, None),
+    ]
+
+    impute_missing_values_multiple_cols_rows = [
+        ("1-001", "1-001", "1-001"),
+        ("20240101", "20240201", "20240301"),
+        (None, "Prov ID", None),
+        (
+            ["Service 1", "Service 2"],
+            None,
+            None,
+        ),
+    ]
+    expected_impute_missing_values_multiple_cols_rows = [
+        ("1-001", "1-001", "1-001"),
+        ("20240101", "20240201", "20240301"),
+        ("Prov ID", "Prov ID", "Prov ID"),
+        (
+            ["Service 1", "Service 2"],
+            ["Service 1", "Service 2"],
+            ["Service 1", "Service 2"],
+        ),
+    ]
+
+    impute_missing_values_imputation_partitions_rows = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        ("20240101", "20240201", "20240101", "20240201"),
+        (None, "1-101", "1-102", None),
+        (None, None, None, None),
+    ]
+    expected_impute_missing_values_imputation_partitions_rows = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        ("20240101", "20240201", "20240101", "20240201"),
+        ("1-101", "1-101", "1-102", "1-102"),
+        (None, None, None, None),
+    ]
+
+    impute_missing_values_out_of_order_dates_rows = [
+        ("1-001", "1-001", "1-001", "1-001"),
+        ("20240301", "20240201", "20240401", "20240101"),
+        ("1-103", "1-102", None, None),
+        (None, None, None, None),
+    ]
+    expected_impute_missing_values_out_of_order_dates_rows = [
+        ("1-001", "1-001", "1-001", "1-001"),
+        ("20240301", "20240201", "20240401", "20240101"),
+        ("1-103", "1-102", "1-103", "1-102"),
+        (None, None, None, None),
+    ]
+
+    impute_missing_values_fully_null_rows = [
+        ("1-001", "1-001"),
+        ("20240101", "20240201"),
+        (None, None),
+        (None, None),
+    ]
+    expected_impute_missing_values_fully_null_rows = [
+        ("1-001", "1-001"),
+        ("20240101", "20240201"),
+        (None, None),
+        (None, None),
+    ]
+
+    impute_missing_values_multiple_partitions_and_missing_data_rows = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        ("20240101", "20240201", "20240201", "20240101"),
+        ("1-101", None, None, "1-102"),
+        (None, ["Service 1", "Service 2"], None, None),
+    ]
+    expected_impute_missing_values_multiple_partitions_and_missing_data_rows = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        ("20240101", "20240201", "20240201", "20240101"),
+        ("1-101", "1-101", "1-102", "1-102"),
+        (["Service 1", "Service 2"], ["Service 1", "Service 2"], None, None),
     ]
 
     assign_cqc_sector = [
