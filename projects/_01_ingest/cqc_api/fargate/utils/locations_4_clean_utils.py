@@ -131,13 +131,11 @@ def realign_carehome_column_with_primary_service(lf: pl.LazyFrame) -> pl.LazyFra
     """
     lf = lf.with_columns(
         pl.when(
-            (
-                pl.col(CQCLClean.primary_service_type)
-                == PrimaryServiceType.care_home_with_nursing
-            )
-            | (
-                pl.col(CQCLClean.primary_service_type)
-                == PrimaryServiceType.care_home_only
+            pl.col(CQCLClean.primary_service_type).is_in(
+                [
+                    PrimaryServiceType.care_home_with_nursing,
+                    PrimaryServiceType.care_home_only,
+                ]
             )
         )
         .then(pl.lit(CareHome.care_home))
