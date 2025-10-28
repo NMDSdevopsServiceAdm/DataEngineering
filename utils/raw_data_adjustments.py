@@ -73,6 +73,7 @@ def remove_duplicate_workplaces_in_raw_workplace_data(
     return raw_workplace_df
 
 
+# converted to polars -> polars_utils.raw_data_adjustments.py
 def remove_records_from_locations_data(
     raw_locations_df: DataFrame,
 ) -> DataFrame:
