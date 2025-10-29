@@ -9,7 +9,7 @@ def flatten_struct_fields(
     lf: pl.LazyFrame, mappings: list[tuple[str, str, str]]
 ) -> pl.LazyFrame:
     """
-    Flattens the `field` from struct column `struct_col` into a new column `new_col` from a mappings list.
+    Flattens the field from a struct column into a new column by looping through a given mappings list.
 
     Args:
         lf (pl.LazyFrame): Polars LazyFrame
