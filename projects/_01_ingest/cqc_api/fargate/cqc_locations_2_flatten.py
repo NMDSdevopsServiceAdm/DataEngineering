@@ -46,6 +46,7 @@ def main(
         selected_columns=cqc_location_cols_to_import,
     )
     logger.info("CQC Location LazyFrame read in")
+    logger.info(f"Schema: {cqc_lf.collect_schema()}")
 
     # TODO - (1119) remove_records_from_locations_data
 
