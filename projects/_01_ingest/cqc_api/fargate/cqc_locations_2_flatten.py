@@ -1,3 +1,5 @@
+import polars as pl
+
 from polars_utils import logger, utils
 from polars_utils.cleaning_utils import column_to_date
 from projects._01_ingest.cqc_api.fargate.utils import flatten_utils as fUtils
@@ -34,6 +36,16 @@ cqc_location_cols_to_import = [
     Keys.day,
 ]
 
+cqc_flatten_schema = pl.Schema(
+    list(POLARS_LOCATION_SCHEMA.items())
+    + [
+        (Keys.import_date, pl.String()),
+        (Keys.year, pl.String()),
+        (Keys.month, pl.String()),
+        (Keys.day, pl.String()),
+    ]
+)
+
 
 def main(
     cqc_locations_api_delta_source: str,
@@ -42,7 +54,7 @@ def main(
     # Scan parquet to get CQC locations delta data in LazyFrame format
     cqc_lf = utils.scan_parquet(
         cqc_locations_api_delta_source,
-        schema=POLARS_LOCATION_SCHEMA,
+        schema=cqc_flatten_schema,
         selected_columns=cqc_location_cols_to_import,
     )
     logger.info("CQC Location LazyFrame read in")
