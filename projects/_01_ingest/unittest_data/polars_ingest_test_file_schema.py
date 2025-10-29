@@ -19,7 +19,27 @@ from utils.column_names.raw_data_files.ons_columns import (
 
 @dataclass
 class FlattenUtilsSchema:
-    pass
+    flatten_struct_fields_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.import_date, pl.String()),
+            (
+                "struct_1",
+                pl.List(pl.Struct({"field_1": pl.String(), "field_2": pl.String()})),
+            ),
+            (
+                "struct_2",
+                pl.List(pl.Struct({"field_1": pl.String(), "field_2": pl.String()})),
+            ),
+        ]
+    )
+    expected_flatten_struct_fields_schema = pl.Schema(
+        list(flatten_struct_fields_schema.items())
+        + [
+            ("struct_1_field_1", pl.List(pl.String())),
+            ("struct_2_field_2", pl.List(pl.String())),
+        ]
+    )
 
 
 @dataclass
