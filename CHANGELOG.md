@@ -85,6 +85,8 @@ All notable changes to this project will be documented in this file.
 
 - Moved the preparation of worker job role data into its own polars task in the ind CQC estimates pipeline.
 
+- Converted cleaning util add_related_location_flag from pyspark to polars. Called the util in cqc_locations_4_full_clean.py script.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
