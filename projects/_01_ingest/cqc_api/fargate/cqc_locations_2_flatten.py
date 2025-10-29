@@ -46,7 +46,6 @@ def main(
     )
     logger.info("CQC Location LazyFrame read in")
 
-    # TODO - (1119) remove_records_from_locations_data
     cqc_lf = cqc_lf.filter(raw_data_adjustments.is_valid_location())
 
     # TODO - create_cleaned_registration_date_column
