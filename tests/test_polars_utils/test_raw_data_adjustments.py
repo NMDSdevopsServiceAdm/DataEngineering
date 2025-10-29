@@ -13,17 +13,22 @@ class IsValidLocationTests(unittest.TestCase):
         self.test_with_multiple_rows_to_remove_lf = pl.LazyFrame(
             Data.locations_data_with_multiple_rows_to_remove,
             Schemas.locations_data_schema,
+            orient="row",
         )
-        self.test_with_single_rows_to_remove_lf = pl.LazyFrame(
-            Data.locations_data_with_single_rows_to_remove,
+        self.test_with_only_rows_to_remove_lf = pl.LazyFrame(
+            Data.locations_data_with_only_rows_to_remove,
             Schemas.locations_data_schema,
+            orient="row",
         )
         self.test_without_rows_to_remove_df = pl.LazyFrame(
             Data.locations_data_without_rows_to_remove,
             Schemas.locations_data_schema,
+            orient="row",
         )
         self.expected_lf = pl.LazyFrame(
-            Data.locations_data_without_rows_to_remove, Schemas.locations_data_schema
+            Data.locations_data_without_rows_to_remove,
+            Schemas.locations_data_schema,
+            orient="row",
         )
 
     def test_remove_records_from_locations_data_removes_multiple_rows_when_they_match_the_criteria(
@@ -35,14 +40,16 @@ class IsValidLocationTests(unittest.TestCase):
 
         pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
 
-    def test_remove_records_from_locations_data_removes_single_rows_when_it_matches_the_criteria(
+    def test_remove_records_from_locations_data_returns_empty_lazyframe_when_all_input_rows_match_the_criteria(
         self,
     ):
-        returned_lf = self.test_with_single_rows_to_remove_lf.filter(
+        returned_lf = self.test_with_only_rows_to_remove_lf.filter(
             job.is_valid_location()
         )
-
-        pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
+        returned_df = (
+            returned_lf.collect()
+        )  # LazyFrame's have no length or is_empty method, so need to collect.
+        self.assertTrue(returned_df.is_empty())
 
     def test_remove_records_from_locations_data_does_not_remove_rows_when_they_do_not_match_the_criteria(
         self,

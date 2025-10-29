@@ -69,9 +69,9 @@ class RawDataAdjustmentsData:
         + invalid_locations_list_tuples
     )
 
-    locations_data_with_single_rows_to_remove = [
-        ("loc_1", "other")
-    ] + invalid_locations_list_tuples
+    locations_data_with_only_rows_to_remove = (
+        invalid_locations_list_tuples + invalid_locations_list_tuples
+    )
 
     locations_data_without_rows_to_remove = [
         ("loc_1", "other"),
