@@ -195,3 +195,57 @@ class ImputeHistoricRelationshipsTests(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class GetRelationshipsWhereTypeIsPredecessorTests(unittest.TestCase):
+    def test_get_relationships_where_type_is_none_returns_none(self):
+        test_lf = pl.LazyFrame(
+            data=Data.get_relationships_where_type_is_none_returns_none_rows,
+            schema=Schemas.get_relationships_where_type_is_predecessor_schema,
+        )
+        returned_lf = job.get_predecessor_relationships(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_get_relationships_where_type_is_none_returns_none_rows,
+            schema=Schemas.expected_get_relationships_where_type_is_predecessor_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_get_relationships_where_type_is_successor_returns_none(self):
+        test_lf = pl.LazyFrame(
+            data=Data.get_relationships_where_type_is_successor_returns_none_rows,
+            schema=Schemas.get_relationships_where_type_is_predecessor_schema,
+        )
+        returned_lf = job.get_predecessor_relationships(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_get_relationships_where_type_is_successor_returns_none_rows,
+            schema=Schemas.expected_get_relationships_where_type_is_predecessor_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_get_relationships_where_type_is_predecessor_returns_predecessor(self):
+        test_lf = pl.LazyFrame(
+            data=Data.get_relationships_where_type_is_predecessor_returns_predecessor_rows,
+            schema=Schemas.get_relationships_where_type_is_predecessor_schema,
+        )
+        returned_lf = job.get_predecessor_relationships(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_get_relationships_where_type_is_predecessor_returns_predecessor_rows,
+            schema=Schemas.expected_get_relationships_where_type_is_predecessor_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_get_relationships_where_type_has_both_types_only_returns_predecessor(self):
+        test_lf = pl.LazyFrame(
+            data=Data.get_relationships_where_type_has_both_types_only_returns_predecessor_rows,
+            schema=Schemas.get_relationships_where_type_is_predecessor_schema,
+        )
+        returned_lf = job.get_predecessor_relationships(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_get_relationships_where_type_has_both_types_only_returns_predecessor_rows,
+            schema=Schemas.expected_get_relationships_where_type_is_predecessor_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

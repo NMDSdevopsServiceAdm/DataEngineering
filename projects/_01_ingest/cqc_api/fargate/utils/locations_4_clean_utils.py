@@ -60,34 +60,28 @@ def assign_cqc_sector(cqc_lf: pl.LazyFrame, la_provider_ids: list[str]) -> pl.La
     return cqc_lf
 
 
-def impute_historic_relationships(lf: pl.LazyFrame) -> pl.LazyFrame:
+def impute_historic_relationships(
+    cqc_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
     """
     Imputes historic relationships for locations in the given LazyFrame.
 
-    If a location is 'Deregistered' it can have both Predecessors (a previous linked location) and
-    Successors (the location it was linked to after closing). A 'Registered' location can only have
-    Predecessors. As we are backdating data, locations which were Deregistered when the 'relationship'
-    data was first added will need any references to Successors removing when they were previously
-    Registered. In order to do this, the function performs the following steps:
-
-    1. Adds a column 'first_known_relationships' with the first non-null relationship for each location.
-    2. Filters the relationships to include only those of type 'HSCA Predecessor'.
-    3. Adds a column 'imputed_relationships' based on the following conditions:
+    1. Get the first non-null relationship for each location id: first_known_relationships
+    2. Get first known relationship which is 'HSCA Predecessor': relationships_predecessors_only
+    3. Impute relationships such that:
        - If 'relationships' is not null, use 'relationships'.
        - If 'registration_status' is 'deregistered', use 'first_known_relationships'.
        - If 'registration_status' is 'registered', use 'relationships_predecessors_only'.
-    4. Drops the intermediate columns 'first_known_relationships' and 'relationships_predecessors_only'.
+    4. Drop intermediate columns
 
     Args:
-        lf (pl.LazyFrame): Input LazyFrame containing location data and relationships.
+        cqc_lf (pl.LazyFrame): Dataframe with relationship columns
 
     Returns:
-        pl.LazyFrame: LazyFrame with imputed historic relationships.
+        pl.LazyFrame: Dataframe with imputed relationship columns
     """
-    print("Input lf")
-    print(lf.collect().glimpse())
-
-    lf = lf.with_columns(
+    # 1. Get the first non-null relationship for each location id: first_known_relationships
+    cqc_lf = cqc_lf.with_columns(
         pl.col(CQCLClean.relationships)
         .drop_nulls()
         .first()
@@ -95,88 +89,68 @@ def impute_historic_relationships(lf: pl.LazyFrame) -> pl.LazyFrame:
             partition_by=CQCLClean.location_id,
             order_by=CQCLClean.cqc_location_import_date,
         )
-        .alias(CQCLClean.first_known_relationships)
+        .alias(CQCLClean.first_known_relationships),
     )
 
-    print("After creating first_known_relationships")
-    print(lf.collect().glimpse())
+    # 2. Get first known relationship which is 'HSCA Predecessor': relationships_predecessors_only
+    cqc_lf = get_predecessor_relationships(cqc_lf)
 
-    # get_relationships_where_type_is_predecessor
-    lf = lf.with_columns(
-        pl.col(CQCLClean.first_known_relationships)
-        .list.eval(
-            pl.when(
-                pl.element().struct.field(CQCLClean.type) == "HSCA Predecessor"
-            ).then(pl.element())
-        )
-        .alias(CQCLClean.relationships_predecessors_only)
-    )
-
-    print("After creating relationships_predecessors_only")
-    print(lf.collect().glimpse())
-
-    lf = lf.with_columns(
+    # 3. Impute relationships
+    cqc_lf = cqc_lf.with_columns(
         pl.when(pl.col(CQCLClean.relationships).is_not_null())
         .then(pl.col(CQCLClean.relationships))
         .when(pl.col(CQCLClean.registration_status) == RegistrationStatus.deregistered)
-        .then(CQCLClean.first_known_relationships)
+        .then(pl.col(CQCLClean.first_known_relationships))
         .when(pl.col(CQCLClean.registration_status) == RegistrationStatus.registered)
-        .then(CQCLClean.relationships_predecessors_only)
+        .then(pl.col(CQCLClean.relationships_predecessors_only))
         .alias(CQCLClean.imputed_relationships)
     )
 
-    print("After creating imputed_relationships")
-    print(lf.collect().glimpse())
-
-    lf = lf.drop(
-        CQCLClean.first_known_relationships,
-        CQCLClean.relationships_predecessors_only,
+    # 4. Drop intermediate columns
+    cqc_lf = cqc_lf.drop(
+        CQCLClean.first_known_relationships, CQCLClean.relationships_predecessors_only
     )
 
-    return lf
+    return cqc_lf
 
 
-# def get_relationships_where_type_is_predecessor(lf: pl.LazyFrame) -> pl.LazyFrame:
-#     """
-#     Filters and aggregates relationships of type 'HSCA Predecessor' for each location.
+def get_predecessor_relationships(
+    cqc_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """
+    Filters and aggregates relationships of type 'HSCA Predecessor' for each location.
 
-#     This function performs the following steps:
-#     1. Selects distinct location_id and first_known_relationships columns.
-#     2. Explodes the first_known_relationships column to create a row for each relationship.
-#     3. Filters the exploded relationships to include only those of type 'HSCA Predecessor'.
-#     4. Groups by location_id and collects the set of 'HSCA Predecessor' relationships.
-#     5. Joins the original LazyFrame with the aggregated LazyFrame on location_id.
+    1. For each location id flatten first known relationship column.
+    2. Filter flattened relationships for type 'HSCA Predecessor'
+    3. Recollate flattened relationships to single row per location id.
+    4. Join to input
 
-#     Args:
-#         lf (pl.LazyFrame): Input LazyFrame containing location data and relationships.
+    Args:
+        cqc_lf (pl.LazyFrame): Dataframe with first known relationship column
 
-#     Returns:
-#         pl.LazyFrame: LazyFrame with an additional column for 'HSCA Predecessor' relationships.
-#     """
-#     distinct_lf = lf.select(
-#         CQCLClean.location_id, CQCLClean.first_known_relationships
-#     ).unique()
+    Returns:
+        pl.LazyFrame: Dataframe with additional predecessor relationship column
 
-#     # loop through the list of dicts (first known relationships column).
-#     # For each element within the list (a dict), go to the key = type and check if it is HSCA Predecessor.
-#     # If it is then keep that element of the list.
-#     # If it is not then remove that element.
-#     # You end up with a list with only type = HSCA Predecessor elements from the original list.
+    """
+    # 1. For each location id flatten first known relationship column.
+    location_id_map = cqc_lf.select(
+        CQCLClean.location_id, CQCLClean.first_known_relationships
+    ).unique()
 
-#     # Do I need to do this in a sub function?  Just do it imputation, then you dont need to join.
+    all_relationships = location_id_map.explode([CQCLClean.first_known_relationships])
 
-#     distinct_lf = distinct_lf.with_columns(
-#         pl.col(CQCLClean.first_known_relationships)
-#         .list.eval(
-#             pl.when(
-#                 pl.element().struct.field(CQCLClean.type) == "HSCA Predecessor"
-#             ).then(pl.element())
-#         )
-#         .alias(CQCLClean.relationships_predecessors_only)
-#     )
+    # 2. Filter flattened relationships for type 'HSCA Predecessor'
+    predecessor_relationships = all_relationships.filter(
+        pl.col(CQCLClean.first_known_relationships).struct.field(CQCLClean.type)
+        == "HSCA Predecessor"
+    ).rename(
+        {CQCLClean.first_known_relationships: CQCLClean.relationships_predecessors_only}
+    )
 
-#     distinct_lf = distinct_lf.drop(CQCLClean.first_known_relationships)
+    # 3. Recollate flattened relationships to single row per location id.
+    predecessor_agg = predecessor_relationships.group_by(CQCLClean.location_id).all()
 
-#     lf = lf.join(distinct_lf, CQCLClean.location_id, "left")
+    # 4. Join to input
+    cqc_lf = cqc_lf.join(predecessor_agg, on=CQCLClean.location_id, how="left")
 
-#     return lf
+    return cqc_lf

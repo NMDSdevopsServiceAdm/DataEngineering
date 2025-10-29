@@ -209,6 +209,45 @@ class LocationsCleanUtilsSchema:
         ]
     )
 
+    get_relationships_where_type_is_predecessor_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCL.registration_status, pl.String()),
+            (
+                CQCLClean.first_known_relationships,
+                pl.List(
+                    pl.Struct(
+                        [
+                            pl.Field(CQCL.related_location_id, pl.String()),
+                            pl.Field(CQCL.related_location_name, pl.String()),
+                            pl.Field(CQCL.type, pl.String()),
+                            pl.Field(CQCL.reason, pl.String()),
+                        ]
+                    )
+                ),
+            ),
+        ]
+    )
+    expected_get_relationships_where_type_is_predecessor_schema = pl.Schema(
+        list(get_relationships_where_type_is_predecessor_schema.items())
+        + [
+            (
+                CQCLClean.relationships_predecessors_only,
+                pl.List(
+                    pl.Struct(
+                        [
+                            pl.Field(CQCL.related_location_id, pl.String()),
+                            pl.Field(CQCL.related_location_name, pl.String()),
+                            pl.Field(CQCL.type, pl.String()),
+                            pl.Field(CQCL.reason, pl.String()),
+                        ]
+                    )
+                ),
+            )
+        ]
+    )
+
 
 @dataclass
 class PostcodeMatcherTest:
