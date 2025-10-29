@@ -83,6 +83,7 @@ def main(
     )
 
     # TODO - (1125) add_related_location_column
+    cqc_reg_lf = cUtils.add_related_location_flag(cqc_reg_lf)
 
     # Scan parquet to get ONS Postcode Directory data in LazyFrame format
     ons_lf = utils.scan_parquet(
