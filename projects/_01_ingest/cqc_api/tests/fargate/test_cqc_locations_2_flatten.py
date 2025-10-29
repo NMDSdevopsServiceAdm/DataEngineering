@@ -19,10 +19,12 @@ class CqcLocationsFlattenTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.fUtils.impute_missing_struct_columns")
+    @patch(f"{PATCH_PATH}.column_to_date")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_cqc_locations_data)
     def test_main_runs_successfully(
         self,
         scan_parquet_mock: Mock,
+        column_to_date_mock: Mock,
         impute_missing_struct_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -31,6 +33,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
         scan_parquet_mock.assert_called_once_with(
             self.TEST_SOURCE, schema=ANY, selected_columns=ANY
         )
+        self.assertEqual(column_to_date_mock.call_count, 3)
         impute_missing_struct_columns_mock.assert_called_once_with(
             ANY,
             [

@@ -1,4 +1,5 @@
 from polars_utils import logger, utils
+from polars_utils.cleaning_utils import column_to_date
 from projects._01_ingest.cqc_api.fargate.utils import flatten_utils as fUtils
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -48,11 +49,13 @@ def main(
 
     # TODO - (1119) remove_records_from_locations_data
 
-    # TODO - create_cleaned_registration_date_column
-    # TODO - column_to_date (imputed_registration_date)
-    # TODO - format_date_fields (both registration dates)
+    cqc_lf = column_to_date(cqc_lf, CQCLClean.registration_date)
+    cqc_lf = column_to_date(cqc_lf, CQCLClean.deregistration_date)
+    cqc_lf = column_to_date(
+        cqc_lf, Keys.import_date, CQCLClean.cqc_location_import_date
+    )
 
-    # TODO - column_to_date (cqc_location_import_date)
+    # TODO - create_cleaned_registration_date_column
 
     # TODO - (1155) move fUtils.impute_missing_struct_columns to cqc_locations_4_full_clean
     cqc_lf = fUtils.impute_missing_struct_columns(
