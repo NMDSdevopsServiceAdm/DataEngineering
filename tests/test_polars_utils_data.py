@@ -1,5 +1,7 @@
+import json
 from dataclasses import dataclass
 from datetime import date
+from pathlib import Path
 
 
 @dataclass
@@ -72,3 +74,28 @@ class CleaningUtilsData:
         ("20230102", "20220504", "20191207", "19081205"),
         (date(2023, 1, 2), date(2022, 5, 4), date(2019, 12, 7), date(1908, 12, 5)),
     ]
+
+
+@dataclass
+class RawDataAdjustmentsData:
+    CONFIG = Path(__file__).parent.parent / "polars_utils" / "exclusions.json"
+    EXCLUSIONS = json.loads(CONFIG.read_text())
+
+    invalid_locations_list = EXCLUSIONS["locationId"].values()
+    invalid_locations_list_tuples = [(i, "other") for i in invalid_locations_list]
+
+    locations_data_with_multiple_rows_to_remove = (
+        [("loc_1", "other")]
+        + invalid_locations_list_tuples
+        + invalid_locations_list_tuples
+    )
+
+    locations_data_with_only_rows_to_remove = (
+        invalid_locations_list_tuples + invalid_locations_list_tuples
+    )
+
+    locations_data_without_rows_to_remove = [
+        ("loc_1", "other"),
+    ]
+
+    expected_locations_data = locations_data_without_rows_to_remove
