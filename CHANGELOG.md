@@ -133,6 +133,10 @@ All notable changes to this project will be documented in this file.
 - Stopped the filtering of non social care, deregistered and specialist college locations in the cleaning of delta locations data.
   The removal of these not required locations happens in merge_ind_cqc_data job.
 
+- Added tests for raw data adjustment function is_valid_location.
+
+- Added removal of invalid locations to cqc_locations_2_flatten task and its validation check comparator dataframe.
+
 ### Improved
 
 

@@ -1,6 +1,6 @@
 import polars as pl
 
-from polars_utils import logger, utils
+from polars_utils import logger, raw_data_adjustments, utils
 from projects._01_ingest.cqc_api.fargate.utils import flatten_utils as fUtils
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -51,7 +51,7 @@ def main(
     )
     logger.info("CQC Location LazyFrame read in")
 
-    # TODO - (1119) remove_records_from_locations_data
+    cqc_lf = cqc_lf.filter(raw_data_adjustments.is_valid_location())
 
     # TODO - create_cleaned_registration_date_column
     # TODO - column_to_date (imputed_registration_date)

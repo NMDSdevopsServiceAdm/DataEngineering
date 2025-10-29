@@ -44,7 +44,9 @@ def main(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=compare_columns_to_import,
     )
-    expected_row_count = compare_df.height
+    expected_row_count = compare_df.filter(
+        raw_data_adjustments.is_valid_location()
+    ).height
 
     validation = (
         pb.Validate(
