@@ -62,15 +62,25 @@ def main(
     )
 
     cqc_reg_lf = cUtils.clean_provider_id_column(cqc_reg_lf)
-    cqc_reg_lf = cqc_reg_lf.filter(pl.col(CQCLClean.provider_id).is_not_null())
+
+    cqc_reg_lf = cUtils.impute_missing_values(
+        cqc_reg_lf,
+        [
+            CQCLClean.provider_id,
+            CQCLClean.services_offered,
+            CQCLClean.specialisms_offered,
+            CQCLClean.regulated_activities_offered,
+        ],
+    )
+
+    cqc_reg_lf = cqc_reg_lf.filter(
+        pl.col(CQCLClean.provider_id).is_not_null(),
+        pl.col(CQCLClean.regulated_activities_offered).is_not_null(),
+    )
 
     cqc_reg_lf = cUtils.assign_cqc_sector(
         cqc_reg_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
     )
-
-    # TODO - (1155) move fUtils.impute_missing_struct_columns from cqc_locations_2_flatten to utils.flatten_utils
-
-    # TODO - (1118) remove_locations_that_never_had_regulated_activities
 
     # TODO - (1125) add_related_location_column
 

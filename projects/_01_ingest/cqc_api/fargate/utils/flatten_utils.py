@@ -5,46 +5,30 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 
 
-def impute_missing_struct_columns(
-    lf: pl.LazyFrame, column_names: list[str]
+def flatten_struct_fields(
+    lf: pl.LazyFrame, mappings: list[tuple[str, str, str]]
 ) -> pl.LazyFrame:
     """
-    Imputes missing (None or empty struct) entries in multiple struct columns in a LazyFrame.
-
-    Steps:
-    1. Sort the LazyFrame by date for each location ID.
-    2. For each column,
-        - Creates a new column with the prefix 'imputed_
-        - Copies over non-missing struct values (treating empty structs as null)
-        - Forward-fills (populate with last known value) missing entries.
-        - Backward-fills (next known) missing entries.
+    Flattens the field from a struct column into a new column by looping through a given mappings list.
 
     Args:
-        lf (pl.LazyFrame): Input LazyFrame containing the struct column.
-        column_names (list[str]): Names of struct columns to impute.
+        lf (pl.LazyFrame): Polars LazyFrame
+        mappings (list[tuple[str, str, str]]):
+            A list of tuples specifying (struct_col, field, new_col), where:
+                - struct_col: Name of the column containing list-of-structs.
+                - field: Name of the field to extract from each struct.
+                - new_col: Name of the output column to hold the extracted values.
 
     Returns:
-        pl.LazyFrame: LazyFrame with a new set of columns called `imputed_<column_name>` containing imputed values.
+        pl.LazyFrame: Polars LazyFrame with flattened columns
     """
-    for column_name in column_names:
-        new_col = f"imputed_{column_name}"
-
+    for struct_col, field, new_col in mappings:
         lf = lf.with_columns(
-            pl.when((pl.col(column_name).list.len().fill_null(0) > 0))
-            .then(pl.col(column_name))
-            .otherwise(None)
-            .alias(new_col)
-        )
-
-        lf = lf.with_columns(
-            pl.col(new_col)
-            .forward_fill()
-            .backward_fill()
-            .over(
-                partition_by=CQCLClean.location_id,
-                order_by=CQCLClean.import_date,
+            (
+                pl.col(struct_col)
+                .list.eval(pl.element().struct.field(field))
+                .alias(new_col)
             )
-            .alias(new_col)
         )
 
     return lf
