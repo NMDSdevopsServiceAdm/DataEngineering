@@ -189,6 +189,6 @@ class AddColumnRelatedLocationTests(unittest.TestCase):
             data=Data.expected_add_related_location_column_rows,
             schema=Schemas.expected_add_related_location_column_schema,
         )
-        returned_lf = job.add_related_location_flag(test_lf)
+        returned_lf = job.add_related_location_column(test_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

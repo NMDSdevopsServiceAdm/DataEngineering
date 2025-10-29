@@ -75,7 +75,7 @@ def assign_cqc_sector(cqc_lf: pl.LazyFrame, la_provider_ids: list[str]) -> pl.La
     return cqc_lf
 
 
-def add_related_location_flag(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
+def add_related_location_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Adds a column which flags whether the location was related to a previous location or not.
 
