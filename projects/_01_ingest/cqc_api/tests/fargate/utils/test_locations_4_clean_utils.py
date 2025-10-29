@@ -90,3 +90,108 @@ class AssignCqcSectorTests(unittest.TestCase):
             schema=Schemas.expected_assign_cqc_sector_schema,
         )
         pl_testing.assert_frame_equal(expected_lf, result_lf)
+
+
+class ImputeHistoricRelationshipsTests(unittest.TestCase):
+    def test_impute_historic_relationships_when_type_is_none_returns_none(self):
+        test_lf = pl.LazyFrame(
+            data=Data.impute_historic_relationships_when_type_is_none_returns_none_rows,
+            schema=Schemas.impute_historic_relationships_schema,
+        )
+        returned_lf = job.impute_historic_relationships(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_historic_relationships_when_type_is_none_returns_none_rows,
+            schema=Schemas.expected_impute_historic_relationships_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_impute_historic_relationships_when_type_is_predecessor_returns_predecessor(
+        self,
+    ):
+        test_lf = pl.LazyFrame(
+            data=Data.impute_historic_relationships_when_type_is_predecessor_returns_predecessor_rows,
+            schema=Schemas.impute_historic_relationships_schema,
+        )
+        returned_lf = job.impute_historic_relationships(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_historic_relationships_when_type_is_predecessor_returns_predecessor_rows,
+            schema=Schemas.expected_impute_historic_relationships_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_impute_historic_relationships_when_type_is_successor_returns_none_when_registered(
+        self,
+    ):
+        test_lf = pl.LazyFrame(
+            data=Data.impute_historic_relationships_when_type_is_successor_returns_none_when_registered_rows,
+            schema=Schemas.impute_historic_relationships_schema,
+        )
+        returned_lf = job.impute_historic_relationships(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_historic_relationships_when_type_is_successor_returns_none_when_registered_rows,
+            schema=Schemas.expected_impute_historic_relationships_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_impute_historic_relationships_when_type_is_successor_returns_successor_when_deregistered(
+        self,
+    ):
+        test_lf = pl.LazyFrame(
+            data=Data.impute_historic_relationships_when_type_is_successor_returns_successor_when_deregistered_rows,
+            schema=Schemas.impute_historic_relationships_schema,
+        )
+        returned_lf = job.impute_historic_relationships(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_historic_relationships_when_type_is_successor_returns_successor_when_deregistered_rows,
+            schema=Schemas.expected_impute_historic_relationships_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_impute_historic_relationships_when_type_has_both_types_only_returns_predecessors_when_registered(
+        self,
+    ):
+        test_lf = pl.LazyFrame(
+            data=Data.impute_historic_relationships_when_type_has_both_types_only_returns_predecessors_when_registered_rows,
+            schema=Schemas.impute_historic_relationships_schema,
+        )
+        returned_lf = job.impute_historic_relationships(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_historic_relationships_when_type_has_both_types_only_returns_predecessors_when_registered_rows,
+            schema=Schemas.expected_impute_historic_relationships_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_impute_historic_relationships_when_type_has_both_types_returns_original_values_when_deregistered(
+        self,
+    ):
+        test_lf = pl.LazyFrame(
+            data=Data.impute_historic_relationships_when_type_has_both_types_returns_original_values_when_deregistered_rows,
+            schema=Schemas.impute_historic_relationships_schema,
+        )
+        returned_lf = job.impute_historic_relationships(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_historic_relationships_when_type_has_both_types_returns_original_values_when_deregistered_rows,
+            schema=Schemas.expected_impute_historic_relationships_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_impute_historic_relationships_where_different_relationships_over_time_returns_first_found(
+        self,
+    ):
+        test_lf = pl.LazyFrame(
+            data=Data.impute_historic_relationships_where_different_relationships_over_time_returns_first_found_rows,
+            schema=Schemas.impute_historic_relationships_schema,
+        )
+        returned_lf = job.impute_historic_relationships(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_historic_relationships_where_different_relationships_over_time_returns_first_found_rows,
+            schema=Schemas.expected_impute_historic_relationships_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

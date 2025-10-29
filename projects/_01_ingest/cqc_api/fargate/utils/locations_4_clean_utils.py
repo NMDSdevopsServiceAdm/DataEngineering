@@ -84,6 +84,9 @@ def impute_historic_relationships(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: LazyFrame with imputed historic relationships.
     """
+    print("Input lf")
+    print(lf.collect().glimpse())
+
     lf = lf.with_columns(
         pl.col(CQCLClean.relationships)
         .drop_nulls()
@@ -94,6 +97,9 @@ def impute_historic_relationships(lf: pl.LazyFrame) -> pl.LazyFrame:
         )
         .alias(CQCLClean.first_known_relationships)
     )
+
+    print("After creating first_known_relationships")
+    print(lf.collect().glimpse())
 
     # get_relationships_where_type_is_predecessor
     lf = lf.with_columns(
@@ -106,6 +112,9 @@ def impute_historic_relationships(lf: pl.LazyFrame) -> pl.LazyFrame:
         .alias(CQCLClean.relationships_predecessors_only)
     )
 
+    print("After creating relationships_predecessors_only")
+    print(lf.collect().glimpse())
+
     lf = lf.with_columns(
         pl.when(pl.col(CQCLClean.relationships).is_not_null())
         .then(pl.col(CQCLClean.relationships))
@@ -115,6 +124,9 @@ def impute_historic_relationships(lf: pl.LazyFrame) -> pl.LazyFrame:
         .then(CQCLClean.relationships_predecessors_only)
         .alias(CQCLClean.imputed_relationships)
     )
+
+    print("After creating imputed_relationships")
+    print(lf.collect().glimpse())
 
     lf = lf.drop(
         CQCLClean.first_known_relationships,
