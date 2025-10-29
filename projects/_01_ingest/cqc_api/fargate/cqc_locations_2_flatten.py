@@ -36,16 +36,6 @@ cqc_location_cols_to_import = [
     Keys.day,
 ]
 
-# cqc_flatten_schema = pl.Schema(
-#     list(POLARS_LOCATION_SCHEMA.items())
-#     + [
-#         (Keys.import_date, pl.String()),
-#         (Keys.year, pl.String()),
-#         (Keys.month, pl.String()),
-#         (Keys.day, pl.String()),
-#     ]
-# )
-
 
 def main(
     cqc_locations_api_delta_source: str,
@@ -58,7 +48,6 @@ def main(
         selected_columns=cqc_location_cols_to_import,
     )
     logger.info("CQC Location LazyFrame read in")
-    logger.info(f"Schema at start: {cqc_lf.collect_schema()}")
 
     # TODO - (1119) remove_records_from_locations_data
 
@@ -90,7 +79,6 @@ def main(
     # TODO - (1129) extract_registered_manager_names
 
     # TODO - drop unrequired cols
-    logger.info(f"Schema at end: {cqc_lf.collect_schema()}")
 
     # Store flattened data in s3
     utils.sink_to_parquet(
