@@ -19,61 +19,25 @@ from utils.column_names.raw_data_files.ons_columns import (
 
 @dataclass
 class FlattenUtilsSchema:
-    impute_missing_struct_schema = pl.Schema(
+    flatten_struct_fields_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
             (CQCLClean.import_date, pl.String()),
             (
-                CQCLClean.gac_service_types,
-                pl.List(
-                    pl.Struct(
-                        {
-                            CQCLClean.name: pl.String(),
-                            CQCLClean.description: pl.String(),
-                        }
-                    )
-                ),
+                "struct_1",
+                pl.List(pl.Struct({"field_1": pl.String(), "field_2": pl.String()})),
             ),
             (
-                CQCLClean.specialisms,
-                pl.List(pl.Struct({CQCLClean.name: pl.String()})),
+                "struct_2",
+                pl.List(pl.Struct({"field_1": pl.String(), "field_2": pl.String()})),
             ),
         ]
     )
-    expected_impute_missing_struct_one_col_schema = pl.Schema(
-        list(impute_missing_struct_schema.items())
+    expected_flatten_struct_fields_schema = pl.Schema(
+        list(flatten_struct_fields_schema.items())
         + [
-            (
-                CQCLClean.imputed_gac_service_types,
-                pl.List(
-                    pl.Struct(
-                        {
-                            CQCLClean.name: pl.String(),
-                            CQCLClean.description: pl.String(),
-                        }
-                    )
-                ),
-            )
-        ]
-    )
-    expected_impute_missing_struct_two_cols_schema = pl.Schema(
-        list(impute_missing_struct_schema.items())
-        + [
-            (
-                CQCLClean.imputed_gac_service_types,
-                pl.List(
-                    pl.Struct(
-                        {
-                            CQCLClean.name: pl.String(),
-                            CQCLClean.description: pl.String(),
-                        }
-                    )
-                ),
-            ),
-            (
-                CQCLClean.imputed_specialisms,
-                pl.List(pl.Struct({CQCLClean.name: pl.String()})),
-            ),
+            ("struct_1_field_1", pl.List(pl.String())),
+            ("struct_2_field_2", pl.List(pl.String())),
         ]
     )
 
@@ -157,6 +121,15 @@ class LocationsCleanUtilsSchema:
             (CQCLClean.location_id, pl.String()),
             (CQCLClean.provider_id, pl.String()),
             (Keys.import_date, pl.String()),
+        ]
+    )
+
+    impute_missing_values_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.import_date, pl.String()),
+            (CQCLClean.provider_id, pl.String()),
+            (CQCLClean.services_offered, pl.List(pl.String())),
         ]
     )
 
