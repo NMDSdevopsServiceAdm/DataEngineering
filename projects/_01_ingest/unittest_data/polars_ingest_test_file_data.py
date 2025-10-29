@@ -8,6 +8,7 @@ from utils.column_values.categorical_column_values import (
     CareHome,
     LocationType,
     RegistrationStatus,
+    RelatedLocation,
     Sector,
 )
 
@@ -893,6 +894,71 @@ class LocationsCleanUtilsData:
         ("1-001", "1-002"),
         ("1-0001", "1-0002"),
         (Sector.independent, Sector.independent),
+    ]
+
+    add_related_location_column_rows = [
+        ("1-001", "1-002", "1-003", "1-004"),
+        (
+            None,
+            [],
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+                {
+                    CQCL.related_location_id: "2",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+            ],
+        ),
+    ]
+    expected_add_related_location_column_rows = [
+        ("1-001", "1-002", "1-003", "1-004"),
+        (
+            None,
+            [],
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+                {
+                    CQCL.related_location_id: "2",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+            ],
+        ),
+        (
+            RelatedLocation.no_related_location,
+            RelatedLocation.no_related_location,
+            RelatedLocation.has_related_location,
+            RelatedLocation.has_related_location,
+        ),
     ]
 
 

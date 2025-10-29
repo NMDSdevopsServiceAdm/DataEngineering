@@ -88,9 +88,6 @@ def add_related_location_flag(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: LazyFrame with an added related_location column.
     """
-
-    # imputed_relationships has not been created when this branch was made. Find the test data from pyspark version.
-
     cqc_lf = cqc_lf.with_columns(
         pl.when(pl.col(CQCLClean.imputed_relationships).list.len() > 0)
         .then(pl.lit(RelatedLocation.has_related_location))

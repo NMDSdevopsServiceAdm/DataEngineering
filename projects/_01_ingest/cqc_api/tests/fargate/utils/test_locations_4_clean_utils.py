@@ -177,3 +177,18 @@ class AssignCqcSectorTests(unittest.TestCase):
             schema=Schemas.expected_assign_cqc_sector_schema,
         )
         pl_testing.assert_frame_equal(expected_lf, result_lf)
+
+
+class AddColumnRelatedLocationTests(unittest.TestCase):
+    def test_add_related_location_column_returns_correct_values(self):
+        test_lf = pl.LazyFrame(
+            data=Data.add_related_location_column_rows,
+            schema=Schemas.add_related_location_column_schema,
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_add_related_location_column_rows,
+            schema=Schemas.expected_add_related_location_column_schema,
+        )
+        returned_lf = job.add_related_location_flag(test_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

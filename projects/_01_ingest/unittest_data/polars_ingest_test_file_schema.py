@@ -123,6 +123,29 @@ class LocationsCleanUtilsSchema:
         list(assign_cqc_sector_schema.items()) + [(CQCLClean.cqc_sector, pl.String())]
     )
 
+    add_related_location_column_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (
+                CQCLClean.imputed_relationships,
+                pl.List(
+                    pl.Struct(
+                        [
+                            pl.Field(CQCL.related_location_id, pl.String()),
+                            pl.Field(CQCL.related_location_name, pl.String()),
+                            pl.Field(CQCL.type, pl.String()),
+                            pl.Field(CQCL.reason, pl.String()),
+                        ]
+                    )
+                ),
+            ),
+        ]
+    )
+    expected_add_related_location_column_schema = pl.Schema(
+        list(add_related_location_column_schema.items())
+        + [(CQCLClean.related_location, pl.String())]
+    )
+
 
 @dataclass
 class PostcodeMatcherTest:
