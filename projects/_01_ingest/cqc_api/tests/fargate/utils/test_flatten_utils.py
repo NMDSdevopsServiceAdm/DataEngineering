@@ -29,6 +29,7 @@ class FlattenStructFieldsTests(unittest.TestCase):
         lf = pl.LazyFrame(
             data=Data.flatten_struct_fields_empty_struct_row,
             schema=Schemas.flatten_struct_fields_schema,
+            orient="row",
         )
 
         returned_lf = job.flatten_struct_fields(lf, self.mappings)
@@ -36,6 +37,7 @@ class FlattenStructFieldsTests(unittest.TestCase):
         expected_lf = pl.LazyFrame(
             data=Data.expected_flatten_struct_fields_empty_struct_row,
             schema=Schemas.expected_flatten_struct_fields_schema,
+            orient="row",
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
@@ -45,6 +47,7 @@ class FlattenStructFieldsTests(unittest.TestCase):
         lf = pl.LazyFrame(
             data=Data.flatten_struct_fields_populated_struct_row,
             schema=Schemas.flatten_struct_fields_schema,
+            orient="row",
         )
 
         returned_lf = job.flatten_struct_fields(lf, self.mappings)
@@ -52,6 +55,7 @@ class FlattenStructFieldsTests(unittest.TestCase):
         expected_lf = pl.LazyFrame(
             data=Data.expected_flatten_struct_fields_populated_struct_row,
             schema=Schemas.expected_flatten_struct_fields_schema,
+            orient="row",
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

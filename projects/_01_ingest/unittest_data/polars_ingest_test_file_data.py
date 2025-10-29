@@ -15,34 +15,28 @@ from utils.column_values.categorical_column_values import (
 @dataclass
 class FlattenUtilsData:
     flatten_struct_fields_empty_struct_row = [
-        ("1-001",),
-        ("20250101",),
-        (None,),
-        (None,),
+        ("1-001", "20250101", None, None),
     ]
     expected_flatten_struct_fields_empty_struct_row = [
-        ("1-001",),
-        ("20250101",),
-        (None,),
-        (None,),
-        (None,),
-        (None,),
+        ("1-001", "20250101", None, None, None, None),
     ]
 
     field_1 = "field_1"
     field_2 = "field_2"
     flatten_struct_fields_populated_struct_row = [
-        ("1-001", "1-002"),
-        ("20250101", "20250101"),
         (
+            "1-001",
+            "20250101",
             [
                 {field_1: "s1f1a1", field_2: "s1f2a1"},
                 {field_1: "s1f1a2", field_2: "s1f2a2"},
             ],
-            [{field_1: "s1f1x", field_2: "s1f2y"}],
+            [{field_1: "s2f1a", field_2: "s2f2a"}],
         ),
         (
-            [{field_1: "s2f1a", field_2: "s2f2a"}],
+            "1-002",
+            "20250101",
+            [{field_1: "s1f1x", field_2: "s1f2y"}, {field_1: None, field_2: None}],
             [
                 {field_1: "s2f1x1", field_2: "s2f2y1"},
                 {field_1: "s2f1x2", field_2: "s2f2y2"},
@@ -50,24 +44,28 @@ class FlattenUtilsData:
         ),
     ]
     expected_flatten_struct_fields_populated_struct_row = [
-        ("1-001", "1-002"),
-        ("20250101", "20250101"),
         (
+            "1-001",
+            "20250101",
             [
                 {field_1: "s1f1a1", field_2: "s1f2a1"},
                 {field_1: "s1f1a2", field_2: "s1f2a2"},
             ],
-            [{field_1: "s1f1x", field_2: "s1f2y"}],
+            [{field_1: "s2f1a", field_2: "s2f2a"}],
+            ["s1f1a1", "s1f1a2"],
+            ["s2f2a"],
         ),
         (
-            [{field_1: "s2f1a", field_2: "s2f2a"}],
+            "1-002",
+            "20250101",
+            [{field_1: "s1f1x", field_2: "s1f2y"}, {field_1: None, field_2: None}],
             [
                 {field_1: "s2f1x1", field_2: "s2f2y1"},
                 {field_1: "s2f1x2", field_2: "s2f2y2"},
             ],
+            ["s1f1x", None],
+            ["s2f2y1", "s2f2y2"],
         ),
-        (["s1f1a1", "s1f1a2"], ["s1f1x"]),
-        (["s2f2a"], ["s2f2y1", "s2f2y2"]),
     ]
 
 
