@@ -43,3 +43,32 @@ def add_aligned_date_column(
     )
 
     return primary_lf_with_aligned_dates
+
+
+def column_to_date(
+    lf: pl.LazyFrame,
+    column: str,
+    new_column: str = None,
+) -> pl.LazyFrame:
+    """
+    Converts a string column (YYYYmmDD or YYYY-mm-DD) to a Polars Date column.
+
+    The conversion will overwrite the column_to_format unless new_column is provided.
+
+    Args:
+        lf (pl.LazyFrame): Input Polars LazyFrame.
+        column (str): Column name to convert.
+        new_column (str): Optional. If None, overwrites the original column.
+
+    Returns:
+        pl.LazyFrame: LazyFrame with the converted date column.
+    """
+    string_format = "%Y%m%d"
+    target_col = new_column or column
+
+    return lf.with_columns(
+        pl.col(column)
+        .str.replace_all("-", "")
+        .str.to_date(string_format)
+        .alias(target_col)
+    )
