@@ -45,7 +45,7 @@ def impute_missing_values(
             .backward_fill()
             .over(
                 partition_by=CQCLClean.location_id,
-                order_by=CQCLClean.import_date,
+                order_by=CQCLClean.cqc_location_import_date,
             )
         )
 
