@@ -15,10 +15,12 @@ class CqcLocationsFlattenTests(unittest.TestCase):
     mock_cqc_locations_data = Mock(name="cqc_locations_data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.fUtils.flatten_struct_fields")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_cqc_locations_data)
     def test_main_runs_successfully(
         self,
         scan_parquet_mock: Mock,
+        flatten_struct_fields_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
@@ -26,6 +28,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
         scan_parquet_mock.assert_called_once_with(
             self.TEST_SOURCE, schema=ANY, selected_columns=ANY
         )
+        flatten_struct_fields_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,

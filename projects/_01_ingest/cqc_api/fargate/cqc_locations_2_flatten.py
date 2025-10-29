@@ -59,23 +59,12 @@ def main(
 
     # TODO - column_to_date (cqc_location_import_date)
 
-    cqc_lf = cqc_lf.with_columns(
-        (
-            pl.col(CQCL.gac_service_types)
-            .list.eval(pl.element().struct.field(CQCL.description))
-            .alias(CQCLClean.services_offered)
-        ),
-        (
-            pl.col(CQCL.specialisms)
-            .list.eval(pl.element().struct.field(CQCL.name))
-            .alias(CQCLClean.specialisms_offered)
-        ),
-        (
-            pl.col(CQCL.regulated_activities)
-            .list.eval(pl.element().struct.field(CQCL.name))
-            .alias(CQCLClean.regulated_activities_offered)
-        ),
-    )
+    fields_to_flatten = [
+        (CQCL.gac_service_types, CQCL.description, CQCLClean.services_offered),
+        (CQCL.specialisms, CQCL.name, CQCLClean.specialisms_offered),
+        (CQCL.regulated_activities, CQCL.name, CQCLClean.regulated_activities_offered),
+    ]
+    cqc_lf = fUtils.flatten_struct_fields(cqc_lf, fields_to_flatten)
 
     # TODO - (1128) classify_specialisms (dementia, learning_disabilities, mental_health)
 
