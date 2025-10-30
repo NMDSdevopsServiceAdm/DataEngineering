@@ -37,12 +37,20 @@ def main(
         entire_delta_lf, existing_full_import_dates
     )
 
+    logger.info(f"existing_full_import_dates: {existing_full_import_dates}")
+    logger.info(
+        "existing_full_import_dates types:",
+        [type(x) for x in existing_full_import_dates[:3]],
+    )
+
+    logger.info(f"import_dates_to_process: {import_dates_to_process}")
+    logger.info(
+        "import_dates_to_process types:", [type(x) for x in import_dates_to_process[:3]]
+    )
+
     if not import_dates_to_process:
         logger.info("No new import_dates require processing. Job complete")
         return
-
-    logger.info(f"existing_full_import_dates: {existing_full_import_dates}")
-    logger.info(f"import_dates_to_process: {import_dates_to_process}")
 
     full_lf = fUtils.load_latest_snapshot(
         full_flattened_destination, existing_full_import_dates
