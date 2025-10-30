@@ -67,7 +67,7 @@ def impute_historic_relationships(
     Imputes historic relationships for locations in the given LazyFrame.
 
     1. Get the first non-null relationship for each location id: first_known_relationships
-    2. Get first known relationship which is 'HSCA Predecessor': relationships_predecessors_only
+    2. Add relationships_predecessors_only column.
     3. Impute relationships such that:
        - If 'relationships' is not null, use 'relationships'.
        - If 'registration_status' is 'deregistered', use 'first_known_relationships'.
@@ -92,7 +92,7 @@ def impute_historic_relationships(
         .alias(CQCLClean.first_known_relationships),
     )
 
-    # 2. Get first known relationship which is 'HSCA Predecessor': relationships_predecessors_only
+    # 2. Add relationships_predecessors_only column.
     cqc_lf = get_predecessor_relationships(cqc_lf)
 
     # 3. Impute relationships
@@ -118,28 +118,29 @@ def get_predecessor_relationships(
     cqc_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
     """
-    Filters and aggregates relationships of type 'HSCA Predecessor' for each location.
+    Filters the column first_known_relationships to only relationships dict elements where type = 'HSCA Predecessor'.
+    The first_known_relationships column is then renamed relationships_predecessors_only.
 
-    1. For each location id flatten first known relationship column.
-    2. Filter flattened relationships for type 'HSCA Predecessor'
-    3. Recollate flattened relationships to single row per location id.
-    4. Join to input
+    1. For each location id explode first_known_relationships list into rows.
+    2. Filter exploded relationships for type 'HSCA Predecessor'
+    3. Recollate exploded relationships to single row per location id.
+    4. Join to collated predecessor relationships to input.
 
     Args:
-        cqc_lf (pl.LazyFrame): Dataframe with first known relationship column
+        cqc_lf (pl.LazyFrame): Lazyframe with first known relationship column.
 
     Returns:
-        pl.LazyFrame: Dataframe with additional predecessor relationship column
+        pl.LazyFrame: Lazyframe with additional predecessor relationship column.
 
     """
-    # 1. For each location id flatten first known relationship column.
+    # 1. For each location id explode first_known_relationships list into rows.
     location_id_map = cqc_lf.select(
         CQCLClean.location_id, CQCLClean.first_known_relationships
     ).unique()
 
     all_relationships = location_id_map.explode([CQCLClean.first_known_relationships])
 
-    # 2. Filter flattened relationships for type 'HSCA Predecessor'
+    # 2. Filter exploded relationships for type 'HSCA Predecessor'
     predecessor_relationships = all_relationships.filter(
         pl.col(CQCLClean.first_known_relationships).struct.field(CQCLClean.type)
         == "HSCA Predecessor"
@@ -147,10 +148,10 @@ def get_predecessor_relationships(
         {CQCLClean.first_known_relationships: CQCLClean.relationships_predecessors_only}
     )
 
-    # 3. Recollate flattened relationships to single row per location id.
+    # 3. Recollate exploded relationships to single row per location id.
     predecessor_agg = predecessor_relationships.group_by(CQCLClean.location_id).all()
 
-    # 4. Join to input
+    # 4. Join to collated predecessor relationships to input.
     cqc_lf = cqc_lf.join(predecessor_agg, on=CQCLClean.location_id, how="left")
 
     return cqc_lf
