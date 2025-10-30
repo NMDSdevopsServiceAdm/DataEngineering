@@ -28,6 +28,7 @@ def main(
     # Scan delta flattened data in LazyFrame format
     entire_delta_lf = utils.scan_parquet(delta_flattened_source)
     logger.info("CQC Location delta flattened LazyFrame read in")
+    expected_schema = entire_delta_lf.collect_schema()
 
     # Identify unique import_dates in source delta data, sorted in order
     source_import_dates = (
@@ -98,6 +99,9 @@ def main(
                 pl.lit(date_str[6:8]).alias(Keys.day),
             ]
         )
+
+        # Apply schema from the collected delta to ensure consistent dtypes
+        merged_lf = merged_lf.cast(expected_schema)
 
         # Store this snapshot in data in S3
         utils.sink_to_parquet(
