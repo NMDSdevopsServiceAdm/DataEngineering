@@ -180,6 +180,7 @@ def impute_historic_relationships(
     )
 
     # 2. Add relationships_predecessors_only column.
+    # Note. This can be done with list evaluation instead of exploding, filtering, joining.
     cqc_lf = get_predecessor_relationships(cqc_lf)
 
     # 3. Impute relationships
