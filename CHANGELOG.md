@@ -85,8 +85,6 @@ All notable changes to this project will be documented in this file.
 
 - Moved the preparation of worker job role data into its own polars task in the ind CQC estimates pipeline.
 
-- Converted cleaning util add_related_location_flag from pyspark to polars. Called the util in cqc_locations_4_full_clean.py script.
-
 - Decided not to convert the pyspark utils impute_historic_relationships and get_relationships_where_type_is_predecessor.
   Instead I have:
   Added relationships to flatten_struct_fields to extract types into new column relationships_types.
