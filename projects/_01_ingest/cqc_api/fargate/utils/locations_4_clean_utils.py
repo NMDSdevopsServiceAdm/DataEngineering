@@ -146,7 +146,7 @@ def realign_carehome_column_with_primary_service(lf: pl.LazyFrame) -> pl.LazyFra
     return lf
 
 
-def clean_and_impute_registration_date_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
+def clean_and_impute_registration_date(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Adds a new column imputed_registration_date.
 
@@ -183,3 +183,5 @@ def clean_and_impute_registration_date_column(cqc_lf: pl.LazyFrame) -> pl.LazyFr
         .otherwise(pl.col(CQCLClean.imputed_registration_date))
         .alias(CQCLClean.imputed_registration_date)
     )
+
+    return cqc_lf

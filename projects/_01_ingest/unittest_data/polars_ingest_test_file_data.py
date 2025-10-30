@@ -1000,11 +1000,11 @@ class LocationsCleanUtilsData:
         ("1-003", date(2025, 1, 1), date(2025, 1, 2),), # registration date before import date.
     ]
     expected_clean_and_impute_registration_date_rows = [
-        ("1-001", date(2025, 1, 10), date(2025, 1, 2),),
-        ("1-002", date(2025, 1, 10), date(2025, 1, 2),),
-        ("1-002", date(2025, 1, 3), date(2025, 1, 2),),
-        ("1-002", date(2025, 1, 1), date(2025, 1, 2),),
-        ("1-003", date(2025, 1, 1), date(2025, 1, 2),),
+        ("1-001", date(2025, 1, 10), date(2025, 1, 2), date(2025, 1, 2)),
+        ("1-002", date(2025, 1, 10), date(2025, 1, 2), date(2025, 1, 1)),
+        ("1-002", date(2025, 1, 3), date(2025, 1, 2), date(2025, 1, 1)),
+        ("1-002", date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 1)),
+        ("1-003", date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 1)),
     ]
     # fmt: on
 

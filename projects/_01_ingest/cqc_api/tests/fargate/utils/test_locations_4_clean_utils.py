@@ -216,4 +216,17 @@ class RealignCareHomeColumnWthPrimaryServiceTests(unittest.TestCase):
 
 
 class CleanAndImputeRegistrationDateColumnTests(unittest.TestCase):
-    """"""
+    def test_clean_and_impute_registration_date_returns_expected_data(self):
+        test_lf = pl.LazyFrame(
+            data=Data.clean_and_impute_registration_date_rows,
+            schema=Schemas.clean_and_impute_registration_date_schema,
+            orient="row",
+        )
+        returned_lf = job.clean_and_impute_registration_date(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_clean_and_impute_registration_date_rows,
+            schema=Schemas.expected_clean_and_impute_registration_date_schema,
+            orient="row",
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

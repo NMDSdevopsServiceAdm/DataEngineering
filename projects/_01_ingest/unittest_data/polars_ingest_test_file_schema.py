@@ -163,6 +163,20 @@ class LocationsCleanUtilsSchema:
         ]
     )
 
+    clean_and_impute_registration_date_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.registration_date, pl.Date()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+        ]
+    )
+    expected_clean_and_impute_registration_date_schema = pl.Schema(
+        list(clean_and_impute_registration_date_schema.items())
+        + [
+            (CQCLClean.imputed_registration_date, pl.Date()),
+        ]
+    )
+
 
 @dataclass
 class PostcodeMatcherTest:
