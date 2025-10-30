@@ -365,15 +365,15 @@ class TestListS3ParquetImportDates(unittest.TestCase):
     @patch(f"{PATCH_PATH}.boto3.client")
     def test_no_objects(self, mock_boto_client_mock: Mock):
         """Test when the S3 prefix has no import_date folders."""
-        # Mock paginator to return empty CommonPrefixes
+        # Mock paginator to return empty Contents
         mock_s3 = MagicMock()
         mock_paginator = MagicMock()
-        mock_paginator.paginate.return_value = [{"CommonPrefixes": []}]
+        mock_paginator.paginate.return_value = [{"Contents": []}]
         mock_s3.get_paginator.return_value = mock_paginator
         mock_boto_client_mock.return_value = mock_s3
 
         result = utils.list_s3_parquet_import_dates(
-            "s3://test_bucket/domain=test_domain/"
+            "s3://test_bucket/domain=test_domain/dataset=test_dataset/"
         )
         self.assertEqual(result, [])
 
@@ -386,15 +386,15 @@ class TestListS3ParquetImportDates(unittest.TestCase):
         mock_paginator = MagicMock()
         mock_paginator.paginate.return_value = [
             {
-                "CommonPrefixes": [
+                "Contents": [
                     {
-                        "Prefix": "domain=test_domain/dataset=test_dataset/year=2025/month=12/day=01/import_date=20251201/"
+                        "Key": "domain=test_domain/dataset=test_dataset/year=2025/month=12/day=01/import_date=20251201/file.parquet"
                     },
                     {
-                        "Prefix": "domain=test_domain/dataset=test_dataset/year=2023/month=05/day=01/import_date=20230501/"
+                        "Key": "domain=test_domain/dataset=test_dataset/year=2023/month=05/day=01/import_date=20230501/file.parquet"
                     },
                     {
-                        "Prefix": "domain=test_domain/dataset=test_dataset/year=2024/month=01/day=01/import_date=20240101/"
+                        "Key": "domain=test_domain/dataset=test_dataset/year=2024/month=01/day=01/import_date=20240101/file.parquet"
                     },
                 ]
             }
@@ -403,7 +403,7 @@ class TestListS3ParquetImportDates(unittest.TestCase):
         mock_boto_client_mock.return_value = mock_s3
 
         result = utils.list_s3_parquet_import_dates(
-            "s3://test_bucket/domain=test_domain/"
+            "s3://test_bucket/domain=test_domain/dataset=test_dataset/"
         )
         # Should be sorted
         self.assertEqual(result, [20230501, 20240101, 20251201])
@@ -415,10 +415,12 @@ class TestListS3ParquetImportDates(unittest.TestCase):
         mock_paginator = MagicMock()
         mock_paginator.paginate.return_value = [
             {
-                "CommonPrefixes": [
-                    {"Prefix": "domain=test_domain/dataset=test_dataset/other=123/"},
+                "Contents": [
                     {
-                        "Prefix": "domain=test_domain/dataset=test_dataset/year=2023/month=05/day=01/import_date=20230501/"
+                        "Key": "domain=test_domain/dataset=test_dataset/other=123/file.parquet"
+                    },
+                    {
+                        "Key": "domain=test_domain/dataset=test_dataset/year=2023/month=05/day=01/import_date=20230501/file.parquet"
                     },
                 ]
             }
@@ -427,7 +429,7 @@ class TestListS3ParquetImportDates(unittest.TestCase):
         mock_boto_client_mock.return_value = mock_s3
 
         result = utils.list_s3_parquet_import_dates(
-            "s3://test_bucket/domain=test_domain/"
+            "s3://test_bucket/domain=test_domain/dataset=test_dataset/"
         )
         self.assertEqual(result, [20230501])
 
@@ -436,7 +438,7 @@ class TestListS3ParquetImportDates(unittest.TestCase):
         """Ensure s3 URI is parsed correctly into bucket and prefix."""
         mock_s3 = MagicMock()
         mock_paginator = MagicMock()
-        mock_paginator.paginate.return_value = [{"CommonPrefixes": []}]
+        mock_paginator.paginate.return_value = [{"Contents": []}]
         mock_s3.get_paginator.return_value = mock_paginator
         mock_boto_client_mock.return_value = mock_s3
 
