@@ -41,6 +41,9 @@ def main(
         logger.info("No new import_dates require processing. Job complete")
         return
 
+    logger.info(f"existing_full_import_dates: {existing_full_import_dates}")
+    logger.info(f"import_dates_to_process: {import_dates_to_process}")
+
     full_lf = fUtils.load_latest_snapshot(
         full_flattened_destination, existing_full_import_dates
     )
