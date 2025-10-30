@@ -291,21 +291,30 @@ def list_s3_parquet_import_dates(s3_prefix: str) -> list[int]:
 
     s3_client = boto3.client("s3")
     match_uri = re.match(r"s3://([^/]+)/(.+)", s3_prefix)
+    if not match_uri:
+        util_logger.error(f"Could not parse S3 prefix: {s3_prefix}")
+        return []
+
     bucket = match_uri.group(1)
     prefix = match_uri.group(2).rstrip("/")
+    util_logger.info(f"Parsed bucket={bucket}, prefix={prefix}")
 
     paginator = s3_client.get_paginator("list_objects_v2")
     pages = paginator.paginate(Bucket=bucket, Prefix=prefix + "/", Delimiter="/")
 
-    print(f"s3_prefix: {s3_prefix}")
-    print(f"pages: {pages}")
-
     dates = []
-    for page in pages:
-        for common_prefix in page.get("CommonPrefixes", []):
-            m = re.search(r"import_date=(\d{8})", common_prefix.get("Prefix", ""))
+    for page_index, page in enumerate(pages):
+        util_logger.info(f"Processing page {page_index}")
+        common_prefixes = page.get("CommonPrefixes", [])
+        util_logger.info(f"Found {len(common_prefixes)} CommonPrefixes in this page")
+        for cp_index, common_prefix in enumerate(common_prefixes):
+            prefix_str = common_prefix.get("Prefix", "")
+            util_logger.info(f"Checking CommonPrefix {cp_index}: {prefix_str}")
+            m = re.search(r"import_date=(\d{8})", prefix_str)
             if m:
-                dates.append(int(m.group(1)))
+                date_val = int(m.group(1))
+                util_logger.info(f"Found import_date: {date_val}")
+                dates.append(date_val)
 
     return sorted(dates)
 
