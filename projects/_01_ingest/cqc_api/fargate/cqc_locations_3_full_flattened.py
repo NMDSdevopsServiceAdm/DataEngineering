@@ -1,9 +1,6 @@
-from pathlib import Path
-
 import polars as pl
 
 from polars_utils import logger, utils
-from schemas.cqc_locations_delta_flattened_schema import LOCATIONS_FLATTENED_SCHEMA
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -29,16 +26,12 @@ def main(
     """
 
     # Scan delta flattened data in LazyFrame format
-    delta_lf = utils.scan_parquet(delta_flattened_source)
-    # schema=LOCATIONS_FLATTENED_SCHEMA, # TODO - update and include schema once finalised
+    entire_delta_lf = utils.scan_parquet(delta_flattened_source)
     logger.info("CQC Location delta flattened LazyFrame read in")
-
-    # TEMP - re-name lf but don't do anything
-    full_lf = delta_lf
 
     # Identify unique import_dates in source delta data, sorted in order
     source_import_dates = (
-        delta_lf.select(Keys.import_date)
+        entire_delta_lf.select(Keys.import_date)
         .unique()
         .sort(Keys.import_date)
         .collect()
@@ -57,7 +50,7 @@ def main(
     ]
 
     if not import_dates_to_process:
-        logger.info("No new import_dates to process. Exiting.")
+        logger.info("No new import_dates require processing.")
         return
 
     logger.info(
@@ -65,15 +58,53 @@ def main(
     )
 
     # Loop through new import_dates in date order
+    full_lf = None
+    for index, delta_import_date in enumerate(sorted(import_dates_to_process)):
+        logger.info(
+            f"Processing import_date={delta_import_date} ({index+1} of {len(import_dates_to_process)})"
+        )
 
-    # Store flattened data in s3 - TODO - include in loop
-    utils.sink_to_parquet(
-        full_lf,
-        full_flattened_destination,
-        logger=logger,
-        partition_cols=cqc_partition_keys,
-        append=False,
-    )
+        # Filter delta for this import_date
+        delta_lf = entire_delta_lf.filter(pl.col(Keys.import_date) == delta_import_date)
+
+        # Merge with previous full snapshot
+        if full_lf is None and not dest_import_dates:
+            # first ever snapshot
+            full_lf = delta_lf
+        else:
+            # Load previous full snapshot from destination if exists and get the latest full snapshot
+            if full_lf is None:
+                latest_existing_date = max(dest_import_dates)
+
+                full_lf = utils.scan_parquet(full_flattened_destination).filter(
+                    pl.col(Keys.import_date) == latest_existing_date
+                )
+
+            # Merge delta with previous full snapshot, keeping latest record for each location_id
+            full_lf = pl.concat([full_lf, delta_lf]).unique(
+                subset=[CQCLClean.location_id], keep="last"
+            )
+            # Assign partition columns based on current import_date
+            date_str = str(latest_existing_date)
+            full_lf = full_lf.with_columns(
+                [
+                    pl.lit(date_str).alias(Keys.import_date),
+                    pl.lit(date_str[:4]).alias(Keys.year),
+                    pl.lit(date_str[4:6]).alias(Keys.month),
+                    pl.lit(date_str[6:8]).alias(Keys.day),
+                ]
+            )
+
+            # Store flattened data in s3 - TODO - include in loop
+            utils.sink_to_parquet(
+                full_lf,
+                full_flattened_destination,
+                logger=logger,
+                partition_cols=cqc_partition_keys,
+                append=False,
+            )
+
+        logger.info("All new import_dates processed successfully")
 
 
 if __name__ == "__main__":
