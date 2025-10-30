@@ -31,3 +31,20 @@ class CleaningUtilsSchemas:
             (AWPClean.ascwds_workplace_import_date, pl.Date()),
         ]
     )
+
+    col_to_date_string_schema = pl.Schema([("date_col", pl.String())])
+    col_to_date_integer_schema = pl.Schema([("date_col", pl.Int64())])
+    expected_col_to_date_schema = pl.Schema([("date_col", pl.Date())])
+    expected_col_to_date_with_new_col_schema = pl.Schema(
+        [("date_col", pl.String()), ("new_date_col", pl.Date())]
+    )
+
+
+@dataclass
+class RawDataAdjustmentsSchemas:
+    locations_data_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            ("other_column", pl.String()),
+        ]
+    )
