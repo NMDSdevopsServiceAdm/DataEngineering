@@ -70,6 +70,7 @@ def main(
             CQCLClean.services_offered,
             CQCLClean.specialisms_offered,
             CQCLClean.regulated_activities_offered,
+            CQCLClean.relationships_types,
         ],
     )
 
