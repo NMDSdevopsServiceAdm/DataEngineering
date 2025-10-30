@@ -85,6 +85,8 @@ All notable changes to this project will be documented in this file.
 
 - Moved the preparation of worker job role data into its own polars task in the ind CQC estimates pipeline.
 
+- Converted cleaning util impute_historic_relationships from pyspark to polars.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
