@@ -297,6 +297,9 @@ def list_s3_parquet_import_dates(s3_prefix: str) -> list[int]:
     paginator = s3_client.get_paginator("list_objects_v2")
     pages = paginator.paginate(Bucket=bucket, Prefix=prefix + "/", Delimiter="/")
 
+    print(f"s3_prefix: {s3_prefix}")
+    print(f"pages: {pages}")
+
     dates = []
     for page in pages:
         for common_prefix in page.get("CommonPrefixes", []):
