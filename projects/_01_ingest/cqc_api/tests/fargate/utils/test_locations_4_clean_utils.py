@@ -184,6 +184,7 @@ class AllocatePrimaryServiceTests(unittest.TestCase):
         test_primary_service_lf = pl.LazyFrame(
             data=Data.primary_service_type_rows,
             schema=Schemas.primary_service_type_schema,
+            orient="row",
         )
         expected_lf = pl.LazyFrame(
             data=Data.expected_primary_service_type_rows,
@@ -193,11 +194,6 @@ class AllocatePrimaryServiceTests(unittest.TestCase):
 
         self.assertTrue(CQCLClean.primary_service_type in returned_lf.columns)
 
-        primary_service_values = (
-            returned_lf.collect().height
-        )  # The tests for the spark job checked the number of elements in the primary service column, but null elements would also be counted. Not sure this test is relevant.
-        self.assertEqual(primary_service_values, 10)
-
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
@@ -206,6 +202,7 @@ class RealignCareHomeColumnWthPrimaryServiceTests(unittest.TestCase):
         test_realign_carehome_column_lf = pl.LazyFrame(
             data=Data.realign_carehome_column_rows,
             schema=Schemas.realign_carehome_column_schema,
+            orient="row",
         )
         returned_lf = job.realign_carehome_column_with_primary_service(
             test_realign_carehome_column_lf

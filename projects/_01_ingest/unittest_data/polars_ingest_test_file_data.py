@@ -949,239 +949,49 @@ class LocationsCleanUtilsData:
         (Sector.independent, Sector.independent),
     ]
 
+    # fmt: off
     primary_service_type_rows = [
-        (
-            "1-001",
-            "1-0001",
-            [
-                Services.domiciliary_care_service,
-            ],
-        ),
-        (
-            "1-002",
-            "1-0002",
-            [
-                Services.care_home_service_with_nursing,
-            ],
-        ),
-        (
-            "1-003",
-            "1-0003",
-            [
-                Services.care_home_service_without_nursing,
-            ],
-        ),
-        (
-            "1-004",
-            "1-0004",
-            [
-                Services.care_home_service_with_nursing,
-                Services.care_home_service_without_nursing,
-            ],
-        ),
-        (
-            "1-005",
-            "1-0005",
-            [
-                Services.care_home_service_without_nursing,
-                "Fake service",
-            ],
-        ),
-        (
-            "1-006",
-            "1-0006",
-            [
-                Services.care_home_service_with_nursing,
-                Services.domiciliary_care_service,
-            ],
-        ),
-        (
-            "1-007",
-            "1-0007",
-            [
-                Services.care_home_service_without_nursing,
-                Services.care_home_service_with_nursing,
-            ],
-        ),
-        (
-            "1-008",
-            "1-0008",
-            [
-                Services.care_home_service_without_nursing,
-                Services.domiciliary_care_service,
-            ],
-        ),
-        (
-            "1-009",
-            "1-0009",
-            [
-                Services.domiciliary_care_service,
-                Services.care_home_service_without_nursing,
-            ],
-        ),
-        (
-            "1-010",
-            "1-0010",
-            [
-                Services.domiciliary_care_service,
-                Services.care_home_service_with_nursing,
-            ],
-        ),
+        ("1-001", "1-0001", [Services.domiciliary_care_service,],),
+        ("1-002", "1-0002", [Services.care_home_service_with_nursing,],),
+        ("1-003", "1-0003", [Services.care_home_service_without_nursing,],),
+        ("1-004", "1-0004", [Services.care_home_service_with_nursing, Services.care_home_service_without_nursing,],),
+        ("1-005", "1-0005", [Services.care_home_service_without_nursing, "Fake service",],),
+        ("1-006", "1-0006", [Services.care_home_service_with_nursing, Services.domiciliary_care_service,],),
+        ("1-007", "1-0007", [Services.care_home_service_without_nursing, Services.care_home_service_with_nursing,],),
+        ("1-008", "1-0008", [Services.care_home_service_without_nursing, Services.domiciliary_care_service,],),
+        ("1-009", "1-0009", [Services.domiciliary_care_service, Services.care_home_service_without_nursing,],),
+        ("1-010", "1-0010", [Services.domiciliary_care_service, Services.care_home_service_with_nursing,],),
     ]
     expected_primary_service_type_rows = [
-        (
-            "1-001",
-            "1-0001",
-            [
-                Services.domiciliary_care_service,
-            ],
-            PrimaryServiceType.non_residential,
-        ),
-        (
-            "1-002",
-            "1-0002",
-            [
-                Services.care_home_service_with_nursing,
-            ],
-            PrimaryServiceType.care_home_with_nursing,
-        ),
-        (
-            "1-003",
-            "1-0003",
-            [
-                Services.care_home_service_without_nursing,
-            ],
-            PrimaryServiceType.care_home_only,
-        ),
-        (
-            "1-004",
-            "1-0004",
-            [
-                Services.care_home_service_with_nursing,
-                Services.care_home_service_without_nursing,
-            ],
-            PrimaryServiceType.care_home_with_nursing,
-        ),
-        (
-            "1-005",
-            "1-0005",
-            [
-                Services.care_home_service_without_nursing,
-                "Fake service",
-            ],
-            PrimaryServiceType.care_home_only,
-        ),
-        (
-            "1-006",
-            "1-0006",
-            [
-                Services.care_home_service_with_nursing,
-                Services.domiciliary_care_service,
-            ],
-            PrimaryServiceType.care_home_with_nursing,
-        ),
-        (
-            "1-007",
-            "1-0007",
-            [
-                Services.care_home_service_without_nursing,
-                Services.care_home_service_with_nursing,
-            ],
-            PrimaryServiceType.care_home_with_nursing,
-        ),
-        (
-            "1-008",
-            "1-0008",
-            [
-                Services.care_home_service_without_nursing,
-                Services.domiciliary_care_service,
-            ],
-            PrimaryServiceType.care_home_only,
-        ),
-        (
-            "1-009",
-            "1-0009",
-            [
-                Services.domiciliary_care_service,
-                Services.care_home_service_without_nursing,
-            ],
-            PrimaryServiceType.care_home_only,
-        ),
-        (
-            "1-010",
-            "1-0010",
-            [
-                Services.domiciliary_care_service,
-                Services.care_home_service_with_nursing,
-            ],
-            PrimaryServiceType.care_home_with_nursing,
-        ),
+        ("1-001", "1-0001", [Services.domiciliary_care_service,], PrimaryServiceType.non_residential,),
+        ("1-002", "1-0002", [Services.care_home_service_with_nursing,], PrimaryServiceType.care_home_with_nursing,),
+        ("1-003", "1-0003", [Services.care_home_service_without_nursing,], PrimaryServiceType.care_home_only,),
+        ("1-004", "1-0004", [Services.care_home_service_with_nursing, Services.care_home_service_without_nursing,], PrimaryServiceType.care_home_with_nursing,),
+        ("1-005", "1-0005", [Services.care_home_service_without_nursing, "Fake service",], PrimaryServiceType.care_home_only,),
+        ("1-006", "1-0006", [Services.care_home_service_with_nursing, Services.domiciliary_care_service,], PrimaryServiceType.care_home_with_nursing,),
+        ("1-007", "1-0007", [Services.care_home_service_without_nursing, Services.care_home_service_with_nursing,], PrimaryServiceType.care_home_with_nursing,),
+        ("1-008", "1-0008", [Services.care_home_service_without_nursing, Services.domiciliary_care_service,], PrimaryServiceType.care_home_only,),
+        ("1-009", "1-0009", [Services.domiciliary_care_service, Services.care_home_service_without_nursing,], PrimaryServiceType.care_home_only,),
+        ("1-010", "1-0010", [Services.domiciliary_care_service, Services.care_home_service_with_nursing,], PrimaryServiceType.care_home_with_nursing,),
     ]
 
     realign_carehome_column_rows = [
-        (
-            "1-001",
-            CareHome.care_home,
-            PrimaryServiceType.care_home_only,
-        ),
-        (
-            "1-002",
-            CareHome.not_care_home,
-            PrimaryServiceType.care_home_only,
-        ),
-        (
-            "1-003",
-            CareHome.care_home,
-            PrimaryServiceType.care_home_with_nursing,
-        ),
-        (
-            "1-004",
-            CareHome.not_care_home,
-            PrimaryServiceType.care_home_with_nursing,
-        ),
-        (
-            "1-005",
-            CareHome.care_home,
-            PrimaryServiceType.non_residential,
-        ),
-        (
-            "1-006",
-            CareHome.not_care_home,
-            PrimaryServiceType.non_residential,
-        ),
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only,),
+        ("1-002", CareHome.not_care_home, PrimaryServiceType.care_home_only,),
+        ("1-003", CareHome.care_home, PrimaryServiceType.care_home_with_nursing,),
+        ("1-004", CareHome.not_care_home, PrimaryServiceType.care_home_with_nursing,),
+        ("1-005", CareHome.care_home, PrimaryServiceType.non_residential,),
+        ("1-006", CareHome.not_care_home, PrimaryServiceType.non_residential,),
     ]
     expected_realign_carehome_column_rows = [
-        (
-            "1-001",
-            CareHome.care_home,
-            PrimaryServiceType.care_home_only,
-        ),
-        (
-            "1-002",
-            CareHome.care_home,
-            PrimaryServiceType.care_home_only,
-        ),
-        (
-            "1-003",
-            CareHome.care_home,
-            PrimaryServiceType.care_home_with_nursing,
-        ),
-        (
-            "1-004",
-            CareHome.care_home,
-            PrimaryServiceType.care_home_with_nursing,
-        ),
-        (
-            "1-005",
-            CareHome.not_care_home,
-            PrimaryServiceType.non_residential,
-        ),
-        (
-            "1-006",
-            CareHome.not_care_home,
-            PrimaryServiceType.non_residential,
-        ),
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only,),
+        ("1-002", CareHome.care_home, PrimaryServiceType.care_home_only,),
+        ("1-003", CareHome.care_home, PrimaryServiceType.care_home_with_nursing,),
+        ("1-004", CareHome.care_home, PrimaryServiceType.care_home_with_nursing,),
+        ("1-005", CareHome.not_care_home, PrimaryServiceType.non_residential,),
+        ("1-006", CareHome.not_care_home, PrimaryServiceType.non_residential,),
     ]
+    # fmt: on
 
 
 @dataclass
