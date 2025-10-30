@@ -6,7 +6,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_values.categorical_column_values import (
     CareHome,
     PrimaryServiceType,
-    RegistrationStatus,
     Sector,
     Services,
 )
@@ -145,101 +144,3 @@ def realign_carehome_column_with_primary_service(lf: pl.LazyFrame) -> pl.LazyFra
     )
 
     return lf
-
-
-def impute_historic_relationships(
-    cqc_lf: pl.LazyFrame,
-) -> pl.LazyFrame:
-    """
-    Imputes historic relationships for locations in the given LazyFrame.
-
-    1. Get the first non-null relationship for each location id: first_known_relationships
-    2. Add relationships_predecessors_only column.
-    3. Impute relationships such that:
-       - If 'relationships' is not null, use 'relationships'.
-       - If 'registration_status' is 'deregistered', use 'first_known_relationships'.
-       - If 'registration_status' is 'registered', use 'relationships_predecessors_only'.
-    4. Drop intermediate columns
-
-    Args:
-        cqc_lf (pl.LazyFrame): LazyFrame with relationship columns
-
-    Returns:
-        pl.LazyFrame: LazyFrame with imputed relationship columns
-    """
-    # 1. Get the first non-null relationship for each location id: first_known_relationships
-    cqc_lf = cqc_lf.with_columns(
-        pl.col(CQCLClean.relationships)
-        .drop_nulls()
-        .first()
-        .over(
-            partition_by=CQCLClean.location_id,
-            order_by=CQCLClean.cqc_location_import_date,
-        )
-        .alias(CQCLClean.first_known_relationships),
-    )
-
-    # 2. Add relationships_predecessors_only column.
-    # Note. This can be done with list evaluation instead of exploding, filtering, joining.
-    cqc_lf = get_predecessor_relationships(cqc_lf)
-
-    # 3. Impute relationships
-    cqc_lf = cqc_lf.with_columns(
-        pl.when(pl.col(CQCLClean.relationships).is_not_null())
-        .then(pl.col(CQCLClean.relationships))
-        .when(pl.col(CQCLClean.registration_status) == RegistrationStatus.deregistered)
-        .then(pl.col(CQCLClean.first_known_relationships))
-        .when(pl.col(CQCLClean.registration_status) == RegistrationStatus.registered)
-        .then(pl.col(CQCLClean.relationships_predecessors_only))
-        .alias(CQCLClean.imputed_relationships)
-    )
-
-    # 4. Drop intermediate columns
-    cqc_lf = cqc_lf.drop(
-        CQCLClean.first_known_relationships, CQCLClean.relationships_predecessors_only
-    )
-
-    return cqc_lf
-
-
-def get_predecessor_relationships(
-    cqc_lf: pl.LazyFrame,
-) -> pl.LazyFrame:
-    """
-    Filters the column first_known_relationships to only relationships dict elements where type = 'HSCA Predecessor'.
-    The first_known_relationships column is then renamed relationships_predecessors_only.
-
-    1. For each location id explode first_known_relationships list into rows.
-    2. Filter exploded relationships for type 'HSCA Predecessor'
-    3. Recollate exploded relationships to single row per location id.
-    4. Join to collated predecessor relationships to input.
-
-    Args:
-        cqc_lf (pl.LazyFrame): Lazyframe with first known relationship column.
-
-    Returns:
-        pl.LazyFrame: Lazyframe with additional predecessor relationship column.
-
-    """
-    # 1. For each location id explode first_known_relationships list into rows.
-    location_id_map = cqc_lf.select(
-        CQCLClean.location_id, CQCLClean.first_known_relationships
-    ).unique()
-
-    all_relationships = location_id_map.explode([CQCLClean.first_known_relationships])
-
-    # 2. Filter exploded relationships for type 'HSCA Predecessor'
-    predecessor_relationships = all_relationships.filter(
-        pl.col(CQCLClean.first_known_relationships).struct.field(CQCLClean.type)
-        == "HSCA Predecessor"
-    ).rename(
-        {CQCLClean.first_known_relationships: CQCLClean.relationships_predecessors_only}
-    )
-
-    # 3. Recollate exploded relationships to single row per location id.
-    predecessor_agg = predecessor_relationships.group_by(CQCLClean.location_id).all()
-
-    # 4. Join to collated predecessor relationships to input.
-    cqc_lf = cqc_lf.join(predecessor_agg, on=CQCLClean.location_id, how="left")
-
-    return cqc_lf

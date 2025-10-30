@@ -48,8 +48,6 @@ def main(
 
     # TODO - (1115) remove_specialist_colleges
 
-    cqc_lf = cUtils.impute_historic_relationships(cqc_lf)
-
     # TODO - (1116) save deregistered locations for reconciliation process
     # - filter to deregistered locations only in the most recent import date
     # - select cols req by reconciliation process
