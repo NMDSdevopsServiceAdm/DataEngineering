@@ -36,11 +36,33 @@ def main(
     # TEMP - re-name lf but don't do anything
     full_lf = delta_lf
 
-    # Identify unique import_dates, sorted in order
+    # Identify unique import_dates in source delta data, sorted in order
+    source_import_dates = (
+        delta_lf.select(Keys.import_date)
+        .unique()
+        .sort(Keys.import_date)
+        .collect()
+        .to_series()
+        .to_list()
+    )
+    logger.info(f"Found {len(source_import_dates)} import_dates in delta data source.")
 
     # Identify import_dates already present in destination
+    dest_import_dates = utils.list_s3_parquet_import_dates(full_flattened_destination)
+    logger.info(f"Found {len(dest_import_dates)} import_dates already in destination.")
 
     # Determine which import_dates to process, if any
+    import_dates_to_process = [
+        d for d in source_import_dates if d not in dest_import_dates
+    ]
+
+    if not import_dates_to_process:
+        logger.info("No new import_dates to process. Exiting.")
+        return
+
+    logger.info(
+        f"Processing {len(import_dates_to_process)} new import_dates: {import_dates_to_process}"
+    )
 
     # Loop through new import_dates in date order
 
