@@ -291,14 +291,10 @@ def list_s3_parquet_import_dates(s3_prefix: str) -> list[int]:
 
     match_uri = re.match(r"s3://([^/]+)/(.+)", s3_prefix)
     if not match_uri:
-        util_logger.error(f"Could not parse S3 prefix: {s3_prefix}")
-        print(f"Could not parse S3 prefix: {s3_prefix}")
         return []
 
     bucket = match_uri.group(1)
     prefix = match_uri.group(2).rstrip("/")
-    util_logger.info(f"Parsed bucket={bucket}, prefix={prefix}")
-    print(f"Parsed bucket={bucket}, prefix={prefix}")
 
     s3_client = boto3.client("s3")
     paginator = s3_client.get_paginator("list_objects_v2")
@@ -312,8 +308,6 @@ def list_s3_parquet_import_dates(s3_prefix: str) -> list[int]:
             if m:
                 date_val = int(m.group(1))
                 dates.append(date_val)
-                util_logger.debug(f"Found import_date {date_val} in key: {key}")
-                print(f"Found import_date {date_val} in key: {key}")
 
     return sorted(dates)
 

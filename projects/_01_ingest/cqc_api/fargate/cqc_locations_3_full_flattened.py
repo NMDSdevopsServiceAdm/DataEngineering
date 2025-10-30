@@ -37,17 +37,6 @@ def main(
         entire_delta_lf, existing_full_import_dates
     )
 
-    logger.info(f"existing_full_import_dates: {existing_full_import_dates}")
-    logger.info(
-        "existing_full_import_dates types:",
-        [type(x) for x in existing_full_import_dates[:3]],
-    )
-
-    logger.info(f"import_dates_to_process: {import_dates_to_process}")
-    logger.info(
-        "import_dates_to_process types:", [type(x) for x in import_dates_to_process[:3]]
-    )
-
     if not import_dates_to_process:
         logger.info("No new import_dates require processing. Job complete")
         return
@@ -56,24 +45,24 @@ def main(
         full_flattened_destination, existing_full_import_dates
     )
 
-    # for delta_import_date in sorted(import_dates_to_process):
-    #     logger.info(f"Processing import_date={delta_import_date}")
+    for delta_import_date in sorted(import_dates_to_process):
+        logger.info(f"Processing import_date={delta_import_date}")
 
-    #     delta_lf = entire_delta_lf.filter(pl.col(Keys.import_date) == delta_import_date)
+        delta_lf = entire_delta_lf.filter(pl.col(Keys.import_date) == delta_import_date)
 
-    #     merged_lf = fUtils.create_full_snapshot(full_lf, delta_lf)
-    #     merged_lf = fUtils.apply_partitions(merged_lf, delta_import_date)
-    #     merged_lf = merged_lf.cast(expected_schema)
+        merged_lf = fUtils.create_full_snapshot(full_lf, delta_lf)
+        merged_lf = fUtils.apply_partitions(merged_lf, delta_import_date)
+        merged_lf = merged_lf.cast(expected_schema)
 
-    #     utils.sink_to_parquet(
-    #         merged_lf,
-    #         full_flattened_destination,
-    #         logger=logger,
-    #         partition_cols=cqc_partition_keys,
-    #         append=False,
-    #     )
+        utils.sink_to_parquet(
+            merged_lf,
+            full_flattened_destination,
+            logger=logger,
+            partition_cols=cqc_partition_keys,
+            append=False,
+        )
 
-    #     full_lf = merged_lf
+        full_lf = merged_lf
 
 
 if __name__ == "__main__":
