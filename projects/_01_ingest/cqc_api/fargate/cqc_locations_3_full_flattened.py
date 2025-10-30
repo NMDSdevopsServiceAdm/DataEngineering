@@ -48,24 +48,24 @@ def main(
         full_flattened_destination, existing_full_import_dates
     )
 
-    for delta_import_date in sorted(import_dates_to_process):
-        logger.info(f"Processing import_date={delta_import_date}")
+    # for delta_import_date in sorted(import_dates_to_process):
+    #     logger.info(f"Processing import_date={delta_import_date}")
 
-        delta_lf = entire_delta_lf.filter(pl.col(Keys.import_date) == delta_import_date)
+    #     delta_lf = entire_delta_lf.filter(pl.col(Keys.import_date) == delta_import_date)
 
-        merged_lf = fUtils.create_full_snapshot(full_lf, delta_lf)
-        merged_lf = fUtils.apply_partitions(merged_lf, delta_import_date)
-        merged_lf = merged_lf.cast(expected_schema)
+    #     merged_lf = fUtils.create_full_snapshot(full_lf, delta_lf)
+    #     merged_lf = fUtils.apply_partitions(merged_lf, delta_import_date)
+    #     merged_lf = merged_lf.cast(expected_schema)
 
-        utils.sink_to_parquet(
-            merged_lf,
-            full_flattened_destination,
-            logger=logger,
-            partition_cols=cqc_partition_keys,
-            append=False,
-        )
+    #     utils.sink_to_parquet(
+    #         merged_lf,
+    #         full_flattened_destination,
+    #         logger=logger,
+    #         partition_cols=cqc_partition_keys,
+    #         append=False,
+    #     )
 
-        full_lf = merged_lf
+    #     full_lf = merged_lf
 
 
 if __name__ == "__main__":
