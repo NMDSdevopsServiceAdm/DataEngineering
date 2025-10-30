@@ -8,7 +8,7 @@ import unittest
 from datetime import datetime
 from glob import glob
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import boto3
 import polars as pl
@@ -359,6 +359,90 @@ class TestGetArgs(TestUtils):
             # When / Then
             with self.assertRaises(argparse.ArgumentError):
                 utils.get_args(*args)
+
+
+class TestListS3ParquetImportDates(unittest.TestCase):
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_no_objects(self, mock_boto_client_mock: Mock):
+        """Test when the S3 prefix has no import_date folders."""
+        # Mock paginator to return empty CommonPrefixes
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [{"CommonPrefixes": []}]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client_mock.return_value = mock_s3
+
+        result = utils.list_s3_parquet_import_dates(
+            "s3://test_bucket/domain=test_domain/"
+        )
+        self.assertEqual(result, [])
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_multiple_import_dates_sorted_chronologically(
+        self, mock_boto_client_mock: Mock
+    ):
+        """Test multiple import_date folders are sorted chronologically in list."""
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [
+            {
+                "CommonPrefixes": [
+                    {
+                        "Prefix": "domain=test_domain/dataset=test_dataset/year=2025/month=12/day=01/import_date=20251201/"
+                    },
+                    {
+                        "Prefix": "domain=test_domain/dataset=test_dataset/year=2023/month=05/day=01/import_date=20230501/"
+                    },
+                    {
+                        "Prefix": "domain=test_domain/dataset=test_dataset/year=2024/month=01/day=01/import_date=20240101/"
+                    },
+                ]
+            }
+        ]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client_mock.return_value = mock_s3
+
+        result = utils.list_s3_parquet_import_dates(
+            "s3://test_bucket/domain=test_domain/"
+        )
+        # Should be sorted
+        self.assertEqual(result, [20230501, 20240101, 20251201])
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_invalid_prefix_format(self, mock_boto_client_mock: Mock):
+        """Test that non-import_date prefixes are ignored."""
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [
+            {
+                "CommonPrefixes": [
+                    {"Prefix": "domain=test_domain/dataset=test_dataset/other=123/"},
+                    {
+                        "Prefix": "domain=test_domain/dataset=test_dataset/year=2023/month=05/day=01/import_date=20230501/"
+                    },
+                ]
+            }
+        ]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client_mock.return_value = mock_s3
+
+        result = utils.list_s3_parquet_import_dates(
+            "s3://test_bucket/domain=test_domain/"
+        )
+        self.assertEqual(result, [20230501])
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_bucket_and_prefix_parsing(self, mock_boto_client_mock: Mock):
+        """Ensure s3 URI is parsed correctly into bucket and prefix."""
+        mock_s3 = MagicMock()
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [{"CommonPrefixes": []}]
+        mock_s3.get_paginator.return_value = mock_paginator
+        mock_boto_client_mock.return_value = mock_s3
+
+        # Should not raise an error
+        result = utils.list_s3_parquet_import_dates("s3://test_bucket/path/to/prefix/")
+        self.assertEqual(result, [])
 
 
 class TestEmptyS3Folder(unittest.TestCase):
