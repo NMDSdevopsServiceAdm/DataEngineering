@@ -137,6 +137,9 @@ All notable changes to this project will be documented in this file.
 
 - Added removal of invalid locations to cqc_locations_2_flatten task and its validation check comparator dataframe.
 
+- Converted CQC cleaning functions allocate_primary_service_type and realign_carehome_column_with_primary_service from pyspark to polars.
+  The code exists in a cleaning utils script now, instead of in the job script.
+
 ### Improved
 
 

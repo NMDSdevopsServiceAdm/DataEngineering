@@ -177,3 +177,39 @@ class AssignCqcSectorTests(unittest.TestCase):
             schema=Schemas.expected_assign_cqc_sector_schema,
         )
         pl_testing.assert_frame_equal(expected_lf, result_lf)
+
+
+class AllocatePrimaryServiceTests(unittest.TestCase):
+    def test_allocate_primary_service_type(self):
+        test_primary_service_lf = pl.LazyFrame(
+            data=Data.primary_service_type_rows,
+            schema=Schemas.primary_service_type_schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_primary_service_type_rows,
+            schema=Schemas.expected_primary_service_type_schema,
+        )
+        returned_lf = job.allocate_primary_service_type(test_primary_service_lf)
+
+        self.assertTrue(CQCLClean.primary_service_type in returned_lf.columns)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class RealignCareHomeColumnWthPrimaryServiceTests(unittest.TestCase):
+    def test_care_home_values_match_expected_data(self):
+        test_realign_carehome_column_lf = pl.LazyFrame(
+            data=Data.realign_carehome_column_rows,
+            schema=Schemas.realign_carehome_column_schema,
+            orient="row",
+        )
+        returned_lf = job.realign_carehome_column_with_primary_service(
+            test_realign_carehome_column_lf
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_realign_carehome_column_rows,
+            schema=Schemas.realign_carehome_column_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
