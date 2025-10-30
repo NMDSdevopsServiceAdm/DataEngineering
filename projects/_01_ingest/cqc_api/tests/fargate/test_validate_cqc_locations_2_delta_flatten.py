@@ -1,17 +1,17 @@
 import json
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import ANY, Mock, call, patch
 
 import polars as pl
 
-import projects._01_ingest.cqc_api.fargate.validate_cqc_locations_1_api_delta_download as job
+import projects._01_ingest.cqc_api.fargate.validate_cqc_locations_2_delta_flatten as job
 
 PATCH_PATH = (
-    "projects._01_ingest.cqc_api.fargate.validate_cqc_locations_1_api_delta_download"
+    "projects._01_ingest.cqc_api.fargate.validate_cqc_locations_2_delta_flatten"
 )
 
 
-class ValidateLocationsRawTests(unittest.TestCase):
+class ValidateLocationsFlattenTests(unittest.TestCase):
     def setUp(self) -> None:
         self.raw_df = pl.DataFrame(
             [
@@ -38,11 +38,14 @@ class ValidateLocationsRawTests(unittest.TestCase):
         mock_read_parquet.return_value = self.raw_df
 
         # When
-        job.main("bucket", "my/dataset/", "my/reports/")
+        job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
 
         # Then
-        mock_read_parquet.assert_called_once_with(
-            "s3://bucket/my/dataset/", exclude_complex_types=True
+        mock_read_parquet.assert_has_calls(
+            [
+                call("s3://bucket/my/dataset/", exclude_complex_types=True),
+                call("s3://bucket/other/dataset/", selected_columns=ANY),
+            ]
         )
         mock_write_reports.assert_called_once()
 
@@ -51,39 +54,43 @@ class ValidateLocationsRawTests(unittest.TestCase):
 
         self.assertDictContainsSubset(
             {
-                "i": 1,
-                "assertion_type": "col_vals_not_null",
-                "column": "locationId",
+                "assertion_type": "row_count_match",
                 "all_passed": True,
             },
             report_json[0],
         )
+
         self.assertDictContainsSubset(
             {
-                "i": 2,
                 "assertion_type": "col_vals_not_null",
-                "column": "import_date",
+                "column": "locationId",
                 "all_passed": True,
             },
             report_json[1],
         )
         self.assertDictContainsSubset(
             {
-                "i": 3,
                 "assertion_type": "col_vals_not_null",
-                "column": "name",
-                "all_passed": False,
+                "column": "import_date",
+                "all_passed": True,
             },
             report_json[2],
         )
         self.assertDictContainsSubset(
             {
-                "i": 4,
                 "assertion_type": "rows_distinct",
                 "column": ["locationId", "import_date"],
                 "all_passed": False,
             },
             report_json[3],
+        )
+        self.assertDictContainsSubset(
+            {
+                "assertion_type": "col_vals_between",
+                "column": "locationId_length",
+                "all_passed": True,
+            },
+            report_json[4],
         )
 
 
