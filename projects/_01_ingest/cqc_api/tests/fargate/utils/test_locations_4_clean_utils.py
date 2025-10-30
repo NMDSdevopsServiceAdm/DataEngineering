@@ -213,3 +213,7 @@ class RealignCareHomeColumnWthPrimaryServiceTests(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class CleanAndImputeRegistrationDateColumnTests(unittest.TestCase):
+    """"""
