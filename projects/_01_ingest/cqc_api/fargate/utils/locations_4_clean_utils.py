@@ -162,10 +162,10 @@ def impute_historic_relationships(
     4. Drop intermediate columns
 
     Args:
-        cqc_lf (pl.LazyFrame): Dataframe with relationship columns
+        cqc_lf (pl.LazyFrame): LazyFrame with relationship columns
 
     Returns:
-        pl.LazyFrame: Dataframe with imputed relationship columns
+        pl.LazyFrame: LazyFrame with imputed relationship columns
     """
     # 1. Get the first non-null relationship for each location id: first_known_relationships
     cqc_lf = cqc_lf.with_columns(
