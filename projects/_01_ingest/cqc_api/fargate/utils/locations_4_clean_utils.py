@@ -154,7 +154,7 @@ def add_related_location_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     If the columns relationships_types contains "HSCA Predecessor" then "Y", otherwise "N".
 
     Args:
-        cqc_lf (pl.LazyFrame): A LazyFrame with the imputed_relationships column.
+        cqc_lf (pl.LazyFrame): A LazyFrame with the relationships_types column.
 
     Returns:
         pl.LazyFrame: LazyFrame with an added related_location column.
