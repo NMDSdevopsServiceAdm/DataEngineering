@@ -85,7 +85,10 @@ All notable changes to this project will be documented in this file.
 
 - Moved the preparation of worker job role data into its own polars task in the ind CQC estimates pipeline.
 
-- Converted cleaning util impute_historic_relationships from pyspark to polars.
+- Decided not to convert the pyspark utils impute_historic_relationships and get_relationships_where_type_is_predecessor.
+  Instead I have:
+  Added relationships to flatten_struct_fields to extract types into new column relationships_types.
+  Added relationships_types to impute_missing_values to back/forward fill gaps.
 
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
