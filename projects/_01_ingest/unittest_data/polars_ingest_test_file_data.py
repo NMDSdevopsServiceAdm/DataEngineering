@@ -1023,34 +1023,7 @@ class LocationsCleanUtilsData:
             ],
         ),
     ]
-    expected_add_related_location_column_rows = [
-        ("1-001", "1-002", "1-003", "1-004"),
-        (
-            None,
-            [],
-            [
-                {
-                    CQCL.related_location_id: "1",
-                    CQCL.related_location_name: "name",
-                    CQCL.type: "type",
-                    CQCL.reason: "reason",
-                }
-            ],
-            [
-                {
-                    CQCL.related_location_id: "1",
-                    CQCL.related_location_name: "name",
-                    CQCL.type: "type",
-                    CQCL.reason: "reason",
-                },
-                {
-                    CQCL.related_location_id: "2",
-                    CQCL.related_location_name: "name",
-                    CQCL.type: "type",
-                    CQCL.reason: "reason",
-                },
-            ],
-        ),
+    expected_add_related_location_column_rows = add_related_location_column_rows + [
         (
             RelatedLocation.no_related_location,
             RelatedLocation.no_related_location,
