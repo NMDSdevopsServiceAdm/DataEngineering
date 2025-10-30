@@ -997,12 +997,14 @@ class LocationsCleanUtilsData:
         ("1-002", date(2025, 1, 10), date(2025, 1, 2),), # registration date after import date, has other import dates.
         ("1-002", date(2025, 1, 10), date(2025, 1, 11),), # registration date after import date, has other import dates.
         ("1-003", date(2025, 1, 1), date(2025, 1, 2),), # registration date before import date.
+        ("1-003", date(2025, 1, 1), date(2025, 1, 1),), # registration date same as import date.
     ]
     expected_clean_and_impute_registration_date_rows = [
         ("1-001", date(2025, 1, 10), date(2025, 1, 2), date(2025, 1, 2)),
         ("1-002", date(2025, 1, 10), date(2025, 1, 2), date(2025, 1, 2)),
         ("1-002", date(2025, 1, 10), date(2025, 1, 11), date(2025, 1, 2)),
         ("1-003", date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 1)),
+        ("1-003", date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 1)),
     ]
     # fmt: on
 
