@@ -992,36 +992,11 @@ class LocationsCleanUtilsData:
         ("1-005", CareHome.not_care_home, PrimaryServiceType.non_residential,),
         ("1-006", CareHome.not_care_home, PrimaryServiceType.non_residential,),
     ]
-    # fmt: on
+
 
     add_related_location_column_rows = [
         ("1-001", "1-002", "1-003", "1-004"),
-        (
-            None,
-            [],
-            [
-                {
-                    CQCL.related_location_id: "1",
-                    CQCL.related_location_name: "name",
-                    CQCL.type: "type",
-                    CQCL.reason: "reason",
-                }
-            ],
-            [
-                {
-                    CQCL.related_location_id: "1",
-                    CQCL.related_location_name: "name",
-                    CQCL.type: "type",
-                    CQCL.reason: "reason",
-                },
-                {
-                    CQCL.related_location_id: "2",
-                    CQCL.related_location_name: "name",
-                    CQCL.type: "type",
-                    CQCL.reason: "reason",
-                },
-            ],
-        ),
+        (None, [], ["HSCA Predecessor",], ["HSCA Predecessor", "Anything else"],),
     ]
     expected_add_related_location_column_rows = add_related_location_column_rows + [
         (
@@ -1031,6 +1006,7 @@ class LocationsCleanUtilsData:
             RelatedLocation.has_related_location,
         ),
     ]
+    # fmt: on
 
 
 @dataclass

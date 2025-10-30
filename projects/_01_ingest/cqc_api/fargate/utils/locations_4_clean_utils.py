@@ -151,8 +151,7 @@ def add_related_location_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Adds a column which flags whether the location was related to a previous location or not.
 
-    1. If the length of imputed relationships is more than 0 then flag 'Y'
-    2. Otherwise, flag 'N'
+    If the columns relationships_types contains "HSCA Predecessor" then "Y", otherwise "N".
 
     Args:
         cqc_lf (pl.LazyFrame): A LazyFrame with the imputed_relationships column.
@@ -161,7 +160,7 @@ def add_related_location_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: LazyFrame with an added related_location column.
     """
     cqc_lf = cqc_lf.with_columns(
-        pl.when(pl.col(CQCLClean.imputed_relationships).list.len() > 0)
+        pl.when(pl.col(CQCLClean.relationships_types).list.contains("HSCA Predecessor"))
         .then(pl.lit(RelatedLocation.has_related_location))
         .otherwise(pl.lit(RelatedLocation.no_related_location))
         .alias(CQCLClean.related_location)

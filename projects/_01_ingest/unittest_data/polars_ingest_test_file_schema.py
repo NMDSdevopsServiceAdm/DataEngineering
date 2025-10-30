@@ -167,17 +167,8 @@ class LocationsCleanUtilsSchema:
         [
             (CQCL.location_id, pl.String()),
             (
-                CQCLClean.imputed_relationships,
-                pl.List(
-                    pl.Struct(
-                        [
-                            pl.Field(CQCL.related_location_id, pl.String()),
-                            pl.Field(CQCL.related_location_name, pl.String()),
-                            pl.Field(CQCL.type, pl.String()),
-                            pl.Field(CQCL.reason, pl.String()),
-                        ]
-                    )
-                ),
+                CQCLClean.relationships_types,
+                pl.List(pl.String()),
             ),
         ]
     )
