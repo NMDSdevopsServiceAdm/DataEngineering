@@ -21,10 +21,12 @@ class CqcLocationsFlattenTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.cUtils.allocate_primary_service_type")
     @patch(f"{PATCH_PATH}.cUtils.assign_cqc_sector")
     @patch(f"{PATCH_PATH}.cUtils.clean_provider_id_column")
+    @patch(f"{PATCH_PATH}.cUtils.impute_historic_relationships")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_cqc_locations_data)
     def test_main_runs_successfully(
         self,
         scan_parquet_mock: Mock,
+        impute_historic_relationships_mock: Mock,
         clean_provider_id_column_mock: Mock,
         assign_cqc_sector_mock: Mock,
         allocate_primary_service_type_mock: Mock,
@@ -44,6 +46,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
                 call(self.TEST_ONS_SOURCE, selected_columns=ANY),
             ]
         )
+        impute_historic_relationships_mock.assert_called_once()
         clean_provider_id_column_mock.assert_called_once()
         assign_cqc_sector_mock.assert_called_once()
         allocate_primary_service_type_mock.assert_called_once()
