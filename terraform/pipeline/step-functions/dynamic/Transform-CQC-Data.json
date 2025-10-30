@@ -110,7 +110,7 @@
                           "ContainerOverrides": [
                             {
                               "Name": "cqc-api-container",
-                              "Command.$": "States.Array($.script, $.cqc_dataset_arg_name, $.cqc_dataset_arg_value, $.cqc_latest_arg_name, $.cqc_latest_arg_value, $.cqc_source_arg_name, $.cqc_source_arg_location, $.cqc_destination_arg_name, $.cqc_destination_arg_location)"
+                              "Command.$": "States.Array($.script, $.cqc_source_arg_name, $.cqc_source_arg_location, $.cqc_destination_arg_name, $.cqc_destination_arg_location)"
                             }
                           ]
                         }
