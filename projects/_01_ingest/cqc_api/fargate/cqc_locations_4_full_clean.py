@@ -46,6 +46,8 @@ def main(
         pl.col(CQCLClean.type) == LocationType.social_care_identifier
     )
 
+    cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)
+
     # TODO - (1115) remove_specialist_colleges
 
     # TODO - (1153) impute_historic_relationships
