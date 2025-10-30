@@ -993,17 +993,15 @@ class LocationsCleanUtilsData:
     ]
 
     clean_and_impute_registration_date_rows = [
-        ("1-001", date(2025, 1, 10), date(2025, 1, 2),), # registration date after import date, no other registration date.
-        ("1-002", date(2025, 1, 10), date(2025, 1, 2),), # registration date after import date, has other registration dates.
-        ("1-002", date(2025, 1, 3), date(2025, 1, 2),), # registration date after import date, has other registration dates.
-        ("1-002", date(2025, 1, 1), date(2025, 1, 2),), # registration date after import date, has other registration dates.
+        ("1-001", date(2025, 1, 10), date(2025, 1, 2),), # registration date after import date, no other import dates.
+        ("1-002", date(2025, 1, 10), date(2025, 1, 2),), # registration date after import date, has other import dates.
+        ("1-002", date(2025, 1, 10), date(2025, 1, 11),), # registration date after import date, has other import dates.
         ("1-003", date(2025, 1, 1), date(2025, 1, 2),), # registration date before import date.
     ]
     expected_clean_and_impute_registration_date_rows = [
         ("1-001", date(2025, 1, 10), date(2025, 1, 2), date(2025, 1, 2)),
-        ("1-002", date(2025, 1, 10), date(2025, 1, 2), date(2025, 1, 1)),
-        ("1-002", date(2025, 1, 3), date(2025, 1, 2), date(2025, 1, 1)),
-        ("1-002", date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 1)),
+        ("1-002", date(2025, 1, 10), date(2025, 1, 2), date(2025, 1, 2)),
+        ("1-002", date(2025, 1, 10), date(2025, 1, 11), date(2025, 1, 2)),
         ("1-003", date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 1)),
     ]
     # fmt: on
