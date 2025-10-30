@@ -85,6 +85,8 @@ All notable changes to this project will be documented in this file.
 
 - Moved the preparation of worker job role data into its own polars task in the ind CQC estimates pipeline.
 
+- Converted clean_and_impute_registration_date function from pyspark to polars.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
