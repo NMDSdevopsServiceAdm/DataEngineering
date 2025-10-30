@@ -7,15 +7,69 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 from utils.column_values.categorical_column_values import (
     CareHome,
     LocationType,
+    PrimaryServiceType,
     RegistrationStatus,
     RelatedLocation,
     Sector,
+    Services,
 )
 
 
 @dataclass
 class FlattenUtilsData:
-    pass
+    flatten_struct_fields_empty_struct_row = [
+        ("1-001", "20250101", None, None),
+    ]
+    expected_flatten_struct_fields_empty_struct_row = [
+        ("1-001", "20250101", None, None, None, None),
+    ]
+
+    field_1 = "field_1"
+    field_2 = "field_2"
+    flatten_struct_fields_populated_struct_row = [
+        (
+            "1-001",
+            "20250101",
+            [
+                {field_1: "s1f1a1", field_2: "s1f2a1"},
+                {field_1: "s1f1a2", field_2: "s1f2a2"},
+            ],
+            [{field_1: "s2f1a", field_2: "s2f2a"}],
+        ),
+        (
+            "1-002",
+            "20250101",
+            [{field_1: "s1f1x", field_2: "s1f2y"}, {field_1: None, field_2: None}],
+            [
+                {field_1: "s2f1x1", field_2: "s2f2y1"},
+                {field_1: "s2f1x2", field_2: "s2f2y2"},
+            ],
+        ),
+    ]
+    expected_flatten_struct_fields_populated_struct_row = [
+        (
+            "1-001",
+            "20250101",
+            [
+                {field_1: "s1f1a1", field_2: "s1f2a1"},
+                {field_1: "s1f1a2", field_2: "s1f2a2"},
+            ],
+            [{field_1: "s2f1a", field_2: "s2f2a"}],
+            ["s1f1a1", "s1f1a2"],
+            ["s2f2a"],
+        ),
+        (
+            "1-002",
+            "20250101",
+            [{field_1: "s1f1x", field_2: "s1f2y"}, {field_1: None, field_2: None}],
+            [
+                {field_1: "s2f1x1", field_2: "s2f2y1"},
+                {field_1: "s2f1x2", field_2: "s2f2y2"},
+            ],
+            ["s1f1x", None],
+            ["s2f2y1", "s2f2y2"],
+        ),
+    ]
 
 
 @dataclass
@@ -797,20 +851,20 @@ class LocationsCleanUtilsData:
 
     impute_missing_values_single_col_rows = [
         ("1-001", "1-001", "1-001", "1-001"),
-        ("20240101", "20240201", "20240301", "20240401"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1), date(2024, 4, 1)),
         (None, None, "Prov ID", None),
         (None, None, None, None),
     ]
     expected_impute_missing_values_single_col_rows = [
         ("1-001", "1-001", "1-001", "1-001"),
-        ("20240101", "20240201", "20240301", "20240401"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1), date(2024, 4, 1)),
         ("Prov ID", "Prov ID", "Prov ID", "Prov ID"),
         (None, None, None, None),
     ]
 
     impute_missing_values_multiple_cols_rows = [
         ("1-001", "1-001", "1-001"),
-        ("20240101", "20240201", "20240301"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)),
         (None, "Prov ID", None),
         (
             ["Service 1", "Service 2"],
@@ -820,7 +874,7 @@ class LocationsCleanUtilsData:
     ]
     expected_impute_missing_values_multiple_cols_rows = [
         ("1-001", "1-001", "1-001"),
-        ("20240101", "20240201", "20240301"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)),
         ("Prov ID", "Prov ID", "Prov ID"),
         (
             ["Service 1", "Service 2"],
@@ -831,52 +885,52 @@ class LocationsCleanUtilsData:
 
     impute_missing_values_imputation_partitions_rows = [
         ("1-001", "1-001", "1-002", "1-002"),
-        ("20240101", "20240201", "20240101", "20240201"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 1, 1), date(2024, 2, 1)),
         (None, "1-101", "1-102", None),
         (None, None, None, None),
     ]
     expected_impute_missing_values_imputation_partitions_rows = [
         ("1-001", "1-001", "1-002", "1-002"),
-        ("20240101", "20240201", "20240101", "20240201"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 1, 1), date(2024, 2, 1)),
         ("1-101", "1-101", "1-102", "1-102"),
         (None, None, None, None),
     ]
 
     impute_missing_values_out_of_order_dates_rows = [
         ("1-001", "1-001", "1-001", "1-001"),
-        ("20240301", "20240201", "20240401", "20240101"),
+        (date(2024, 3, 1), date(2024, 2, 1), date(2024, 4, 1), date(2024, 1, 1)),
         ("1-103", "1-102", None, None),
         (None, None, None, None),
     ]
     expected_impute_missing_values_out_of_order_dates_rows = [
         ("1-001", "1-001", "1-001", "1-001"),
-        ("20240301", "20240201", "20240401", "20240101"),
+        (date(2024, 3, 1), date(2024, 2, 1), date(2024, 4, 1), date(2024, 1, 1)),
         ("1-103", "1-102", "1-103", "1-102"),
         (None, None, None, None),
     ]
 
     impute_missing_values_fully_null_rows = [
         ("1-001", "1-001"),
-        ("20240101", "20240201"),
+        (date(2024, 1, 1), date(2024, 2, 1)),
         (None, None),
         (None, None),
     ]
     expected_impute_missing_values_fully_null_rows = [
         ("1-001", "1-001"),
-        ("20240101", "20240201"),
+        (date(2024, 1, 1), date(2024, 2, 1)),
         (None, None),
         (None, None),
     ]
 
     impute_missing_values_multiple_partitions_and_missing_data_rows = [
         ("1-001", "1-001", "1-002", "1-002"),
-        ("20240101", "20240201", "20240201", "20240101"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 2, 1), date(2024, 1, 1)),
         ("1-101", None, None, "1-102"),
         (None, ["Service 1", "Service 2"], None, None),
     ]
     expected_impute_missing_values_multiple_partitions_and_missing_data_rows = [
         ("1-001", "1-001", "1-002", "1-002"),
-        ("20240101", "20240201", "20240201", "20240101"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 2, 1), date(2024, 1, 1)),
         ("1-101", "1-101", "1-102", "1-102"),
         (["Service 1", "Service 2"], ["Service 1", "Service 2"], None, None),
     ]
@@ -895,6 +949,50 @@ class LocationsCleanUtilsData:
         ("1-0001", "1-0002"),
         (Sector.independent, Sector.independent),
     ]
+
+    # fmt: off
+    primary_service_type_rows = [
+        ("1-001", "1-0001", [Services.domiciliary_care_service,],),
+        ("1-002", "1-0002", [Services.care_home_service_with_nursing,],),
+        ("1-003", "1-0003", [Services.care_home_service_without_nursing,],),
+        ("1-004", "1-0004", [Services.care_home_service_with_nursing, Services.care_home_service_without_nursing,],),
+        ("1-005", "1-0005", [Services.care_home_service_without_nursing, "Fake service",],),
+        ("1-006", "1-0006", [Services.care_home_service_with_nursing, Services.domiciliary_care_service,],),
+        ("1-007", "1-0007", [Services.care_home_service_without_nursing, Services.care_home_service_with_nursing,],),
+        ("1-008", "1-0008", [Services.care_home_service_without_nursing, Services.domiciliary_care_service,],),
+        ("1-009", "1-0009", [Services.domiciliary_care_service, Services.care_home_service_without_nursing,],),
+        ("1-010", "1-0010", [Services.domiciliary_care_service, Services.care_home_service_with_nursing,],),
+    ]
+    expected_primary_service_type_rows = [
+        ("1-001", "1-0001", [Services.domiciliary_care_service,], PrimaryServiceType.non_residential,),
+        ("1-002", "1-0002", [Services.care_home_service_with_nursing,], PrimaryServiceType.care_home_with_nursing,),
+        ("1-003", "1-0003", [Services.care_home_service_without_nursing,], PrimaryServiceType.care_home_only,),
+        ("1-004", "1-0004", [Services.care_home_service_with_nursing, Services.care_home_service_without_nursing,], PrimaryServiceType.care_home_with_nursing,),
+        ("1-005", "1-0005", [Services.care_home_service_without_nursing, "Fake service",], PrimaryServiceType.care_home_only,),
+        ("1-006", "1-0006", [Services.care_home_service_with_nursing, Services.domiciliary_care_service,], PrimaryServiceType.care_home_with_nursing,),
+        ("1-007", "1-0007", [Services.care_home_service_without_nursing, Services.care_home_service_with_nursing,], PrimaryServiceType.care_home_with_nursing,),
+        ("1-008", "1-0008", [Services.care_home_service_without_nursing, Services.domiciliary_care_service,], PrimaryServiceType.care_home_only,),
+        ("1-009", "1-0009", [Services.domiciliary_care_service, Services.care_home_service_without_nursing,], PrimaryServiceType.care_home_only,),
+        ("1-010", "1-0010", [Services.domiciliary_care_service, Services.care_home_service_with_nursing,], PrimaryServiceType.care_home_with_nursing,),
+    ]
+
+    realign_carehome_column_rows = [
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only,),
+        ("1-002", CareHome.not_care_home, PrimaryServiceType.care_home_only,),
+        ("1-003", CareHome.care_home, PrimaryServiceType.care_home_with_nursing,),
+        ("1-004", CareHome.not_care_home, PrimaryServiceType.care_home_with_nursing,),
+        ("1-005", CareHome.care_home, PrimaryServiceType.non_residential,),
+        ("1-006", CareHome.not_care_home, PrimaryServiceType.non_residential,),
+    ]
+    expected_realign_carehome_column_rows = [
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only,),
+        ("1-002", CareHome.care_home, PrimaryServiceType.care_home_only,),
+        ("1-003", CareHome.care_home, PrimaryServiceType.care_home_with_nursing,),
+        ("1-004", CareHome.care_home, PrimaryServiceType.care_home_with_nursing,),
+        ("1-005", CareHome.not_care_home, PrimaryServiceType.non_residential,),
+        ("1-006", CareHome.not_care_home, PrimaryServiceType.non_residential,),
+    ]
+    # fmt: on
 
     add_related_location_column_rows = [
         ("1-001", "1-002", "1-003", "1-004"),

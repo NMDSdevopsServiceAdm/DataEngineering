@@ -139,3 +139,71 @@ class AddAlignedDateColumnsTests(PolarsCleaningUtilsTests):
             returned_lf.select(self.column_order_for_assertion),
             expected_lf.select(self.column_order_for_assertion),
         )
+
+
+class ColumnToDateTests(unittest.TestCase):
+    def test_converts_date_string_without_hyphens_to_date(self):
+        lf = pl.LazyFrame(
+            data=Data.column_to_date_string_without_hyphens_rows,
+            schema=Schemas.col_to_date_string_schema,
+        )
+
+        returned_lf = job.column_to_date(lf, "date_col")
+
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_column_to_date_rows,
+            schema=Schemas.expected_col_to_date_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_converts_date_integer_without_hyphens_to_date(self):
+        lf = pl.LazyFrame(
+            data=Data.column_to_date_integer_without_hyphens_rows,
+            schema=Schemas.col_to_date_integer_schema,
+        )
+
+        returned_lf = job.column_to_date(lf, "date_col")
+
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_column_to_date_rows,
+            schema=Schemas.expected_col_to_date_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+        self.assertEqual(returned_lf.collect_schema(), expected_lf.collect_schema())
+
+    def test_converts_date_string_with_hyphens_to_date(self):
+        lf = pl.LazyFrame(
+            data=Data.column_to_date_string_with_hyphens_rows,
+            schema=Schemas.col_to_date_string_schema,
+        )
+
+        returned_lf = job.column_to_date(lf, "date_col")
+
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_column_to_date_rows,
+            schema=Schemas.expected_col_to_date_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+        self.assertEqual(returned_lf.collect_schema(), expected_lf.collect_schema())
+
+    def test_adds_a_new_column_with_converted_date(self):
+        lf = pl.LazyFrame(
+            data=Data.column_to_date_with_new_col_rows,
+            schema=Schemas.col_to_date_string_schema,
+        )
+
+        returned_lf = job.column_to_date(lf, "date_col", "new_date_col")
+
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_column_to_date_with_new_col_rows,
+            schema=Schemas.expected_col_to_date_with_new_col_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+        self.assertEqual(returned_lf.collect_schema(), expected_lf.collect_schema())

@@ -73,6 +73,10 @@ def main(
         ],
     )
 
+    cqc_reg_lf = cUtils.allocate_primary_service_type(cqc_reg_lf)
+
+    cqc_reg_lf = cUtils.realign_carehome_column_with_primary_service(cqc_reg_lf)
+
     cqc_reg_lf = cqc_reg_lf.filter(
         pl.col(CQCLClean.provider_id).is_not_null(),
         pl.col(CQCLClean.regulated_activities_offered).is_not_null(),
