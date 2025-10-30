@@ -81,12 +81,12 @@ def main(
                 )
 
             # Merge delta with previous full snapshot, keeping latest record for each location_id
-            full_lf = pl.concat([full_lf, delta_lf]).unique(
+            merged_lf = pl.concat([full_lf, delta_lf]).unique(
                 subset=[CQCLClean.location_id], keep="last"
             )
             # Assign partition columns based on current import_date
-            date_str = str(latest_existing_date)
-            full_lf = full_lf.with_columns(
+            date_str = str(delta_import_date)
+            merged_lf = merged_lf.with_columns(
                 [
                     pl.lit(date_str).alias(Keys.import_date),
                     pl.lit(date_str[:4]).alias(Keys.year),
@@ -95,16 +95,19 @@ def main(
                 ]
             )
 
-            # Store flattened data in s3 - TODO - include in loop
+            # Store this snapshot in data in S3
             utils.sink_to_parquet(
-                full_lf,
+                merged_lf,
                 full_flattened_destination,
                 logger=logger,
                 partition_cols=cqc_partition_keys,
                 append=False,
             )
 
-        logger.info("All new import_dates processed successfully")
+            # Reassign this merged snapshot for next delta if required
+            full_lf = merged_lf
+
+    logger.info("All new import_dates processed successfully")
 
 
 if __name__ == "__main__":
