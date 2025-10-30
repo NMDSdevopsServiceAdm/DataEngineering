@@ -127,7 +127,7 @@ class LocationsCleanUtilsSchema:
     impute_missing_values_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
-            (CQCLClean.import_date, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.provider_id, pl.String()),
             (CQCLClean.services_offered, pl.List(pl.String())),
         ]

@@ -32,6 +32,13 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    col_to_date_string_schema = pl.Schema([("date_col", pl.String())])
+    col_to_date_integer_schema = pl.Schema([("date_col", pl.Int64())])
+    expected_col_to_date_schema = pl.Schema([("date_col", pl.Date())])
+    expected_col_to_date_with_new_col_schema = pl.Schema(
+        [("date_col", pl.String()), ("new_date_col", pl.Date())]
+    )
+
 
 @dataclass
 class RawDataAdjustmentsSchemas:
