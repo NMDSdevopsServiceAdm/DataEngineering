@@ -68,9 +68,7 @@ def main(
     cqc_lf = fUtils.flatten_struct_fields(cqc_lf, fields_to_flatten)
 
     # TODO - (1128) classify_specialisms (dementia, learning_disabilities, mental_health)
-
-    # TODO - (1127) allocate_primary_service_type
-    # TODO - (1127) realign_carehome_column_with_primary_service
+    # Move this into cqc_locations_4_full_clean. After imputation happens.
 
     # TODO - (1129) extract_registered_manager_names
 
