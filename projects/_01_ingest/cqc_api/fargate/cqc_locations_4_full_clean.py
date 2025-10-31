@@ -50,8 +50,6 @@ def main(
 
     # TODO - (1115) remove_specialist_colleges
 
-    # TODO - (1153) impute_historic_relationships
-
     # TODO - (1116) save deregistered locations for reconciliation process
     # - filter to deregistered locations only in the most recent import date
     # - select cols req by reconciliation process
@@ -72,6 +70,7 @@ def main(
             CQCLClean.services_offered,
             CQCLClean.specialisms_offered,
             CQCLClean.regulated_activities_offered,
+            CQCLClean.relationships_types,
         ],
     )
 
