@@ -37,6 +37,9 @@ def impute_missing_values(
     """
     Imputes missing values in specified columns by forward and backwards filling over location ID.
 
+    If a col's type in cols_to_impute is a list, then empty lists in that col are replaced with null before
+    values are filled forwards and backwards.
+
     Args:
         cqc_lf (pl.LazyFrame): Dataframe with columns to impute
         cols_to_impute (list[str]): List of column names to impute missing values for
