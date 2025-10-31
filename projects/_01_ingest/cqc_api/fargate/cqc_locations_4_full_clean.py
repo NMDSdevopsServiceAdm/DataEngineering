@@ -48,8 +48,6 @@ def main(
 
     # TODO - (1115) remove_specialist_colleges
 
-    # TODO - (1153) impute_historic_relationships
-
     # TODO - (1116) save deregistered locations for reconciliation process
     # - filter to deregistered locations only in the most recent import date
     # - select cols req by reconciliation process
@@ -70,6 +68,7 @@ def main(
             CQCLClean.services_offered,
             CQCLClean.specialisms_offered,
             CQCLClean.regulated_activities_offered,
+            CQCLClean.relationships_types,
         ],
     )
 
@@ -86,7 +85,8 @@ def main(
         cqc_reg_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
     )
 
-    # TODO - (1125) add_related_location_column
+    cqc_reg_lf = cUtils.add_related_location_column(cqc_reg_lf)
+    cqc_reg_lf = cqc_reg_lf.drop(CQCLClean.relationships_types)
 
     # Scan parquet to get ONS Postcode Directory data in LazyFrame format
     ons_lf = utils.scan_parquet(

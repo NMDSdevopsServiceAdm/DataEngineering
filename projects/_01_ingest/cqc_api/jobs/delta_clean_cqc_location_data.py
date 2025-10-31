@@ -525,6 +525,7 @@ def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
     return df
 
 
+# Converted to polars -> Used polars functions flatten_struct_fields and impute_missing_values instead.
 def impute_historic_relationships(df: DataFrame) -> DataFrame:
     """
     Imputes historic relationships for locations in the given DataFrame.
@@ -580,6 +581,7 @@ def impute_historic_relationships(df: DataFrame) -> DataFrame:
     return df
 
 
+# Converted to polars -> Used polars functions flatten_struct_fields and impute_missing_values instead.
 def get_relationships_where_type_is_predecessor(df: DataFrame) -> DataFrame:
     """
     Filters and aggregates relationships of type 'HSCA Predecessor' for each location.
@@ -792,6 +794,7 @@ def realign_carehome_column_with_primary_service(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects\_01_ingest\cqc_api\fargate\utils\locations_4_clean_utils.py
 def add_related_location_column(df: DataFrame) -> DataFrame:
     """
     Adds a column which flags whether the location was related to a previous location or not

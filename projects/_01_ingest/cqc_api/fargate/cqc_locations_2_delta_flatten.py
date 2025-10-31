@@ -64,6 +64,7 @@ def main(
         (CQCL.gac_service_types, CQCL.description, CQCLClean.services_offered),
         (CQCL.specialisms, CQCL.name, CQCLClean.specialisms_offered),
         (CQCL.regulated_activities, CQCL.name, CQCLClean.regulated_activities_offered),
+        (CQCL.relationships, CQCL.type, CQCLClean.relationships_types),
     ]
     cqc_lf = fUtils.flatten_struct_fields(cqc_lf, fields_to_flatten)
 
@@ -73,7 +74,10 @@ def main(
     # TODO - (1129) extract_registered_manager_names
 
     cqc_lf = cqc_lf.drop(
-        CQCL.gac_service_types, CQCL.specialisms, CQCL.regulated_activities
+        CQCL.gac_service_types,
+        CQCL.specialisms,
+        CQCL.regulated_activities,
+        CQCL.relationships,
     )
 
     # Store flattened data in s3

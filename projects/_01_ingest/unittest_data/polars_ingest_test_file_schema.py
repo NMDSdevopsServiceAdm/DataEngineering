@@ -163,6 +163,20 @@ class LocationsCleanUtilsSchema:
         ]
     )
 
+    add_related_location_column_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (
+                CQCLClean.relationships_types,
+                pl.List(pl.String()),
+            ),
+        ]
+    )
+    expected_add_related_location_column_schema = pl.Schema(
+        list(add_related_location_column_schema.items())
+        + [(CQCLClean.related_location, pl.String())]
+    )
+
 
 @dataclass
 class PostcodeMatcherTest:
