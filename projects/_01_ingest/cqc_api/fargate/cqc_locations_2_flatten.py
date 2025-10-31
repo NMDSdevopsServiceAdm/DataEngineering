@@ -1,9 +1,14 @@
-from polars_utils import logger, utils
+from polars_utils import logger, raw_data_adjustments, utils
+from polars_utils.cleaning_utils import column_to_date
+from projects._01_ingest.cqc_api.fargate.utils import flatten_utils as fUtils
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 
 logger = logger.get_logger(__name__)
 
@@ -45,37 +50,35 @@ def main(
     )
     logger.info("CQC Location LazyFrame read in")
 
-    # TODO - remove_records_from_locations_data
+    cqc_lf = cqc_lf.filter(raw_data_adjustments.is_valid_location())
 
-    # TODO - remove locations who have never been a social care locations
+    cqc_lf = column_to_date(cqc_lf, CQCLClean.registration_date)
+    cqc_lf = column_to_date(cqc_lf, CQCLClean.deregistration_date)
+    cqc_lf = column_to_date(
+        cqc_lf, Keys.import_date, CQCLClean.cqc_location_import_date
+    )
 
     # TODO - create_cleaned_registration_date_column
-    # TODO - column_to_date (imputed_registration_date)
-    # TODO - format_date_fields (both registration dates)
 
-    # TODO - column_to_date (cqc_location_import_date)
+    fields_to_flatten = [
+        (CQCL.gac_service_types, CQCL.description, CQCLClean.services_offered),
+        (CQCL.specialisms, CQCL.name, CQCLClean.specialisms_offered),
+        (CQCL.regulated_activities, CQCL.name, CQCLClean.regulated_activities_offered),
+        (CQCL.relationships, CQCL.type, CQCLClean.relationships_types),
+    ]
+    cqc_lf = fUtils.flatten_struct_fields(cqc_lf, fields_to_flatten)
 
-    # TODO - clean_provider_id_column
-    # TODO - select_rows_with_non_null_value (provider_id)
-    # TODO - add_cqc_sector_column_to_cqc_locations_dataframe
+    # TODO - (1128) classify_specialisms (dementia, learning_disabilities, mental_health)
+    # Move this into cqc_locations_4_full_clean. After imputation happens.
 
-    # TODO - impute_historic_relationships
+    # TODO - (1129) extract_registered_manager_names
 
-    # TODO - impute_missing_struct_column (gac_service_types, regulated_activities, specialisms)
-
-    # TODO - remove_locations_that_never_had_regulated_activities
-
-    # TODO - extract_from_struct (services_offered, specialisms_offered)
-
-    # TODO - classify_specialisms (dementia, learning_disabilities, mental_health)
-
-    # TODO - allocate_primary_service_type
-    # TODO - realign_carehome_column_with_primary_service
-
-    # TODO - extract_registered_manager_names
-    # TODO - add_related_location_column
-
-    # TODO - drop unrequired cols
+    cqc_lf = cqc_lf.drop(
+        CQCL.gac_service_types,
+        CQCL.specialisms,
+        CQCL.regulated_activities,
+        CQCL.relationships,
+    )
 
     # Store flattened data in s3
     utils.sink_to_parquet(

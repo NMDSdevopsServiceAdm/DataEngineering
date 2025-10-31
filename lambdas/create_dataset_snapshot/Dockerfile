@@ -8,11 +8,11 @@ COPY lambdas/create_dataset_snapshot/requirements.txt .
 RUN pip install -r requirements.txt
 
 # Copy function code
-COPY lambdas/create_dataset_snapshot/lambda_function.py .
-COPY lambdas/utils/snapshots.py utils/
+COPY lambdas/create_dataset_snapshot/create_dataset_snapshot.py .
+COPY lambdas/create_dataset_snapshot/utils lambdas/create_dataset_snapshot/utils/
 COPY utils/column_names utils/column_names/
 COPY schemas schemas/
 COPY polars_utils polars_utils/
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
-CMD [ "lambda_function.lambda_handler" ]
+CMD [ "create_dataset_snapshot.lambda_handler" ]

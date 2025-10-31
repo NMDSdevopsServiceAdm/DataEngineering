@@ -85,6 +85,13 @@ All notable changes to this project will be documented in this file.
 
 - Moved the preparation of worker job role data into its own polars task in the ind CQC estimates pipeline.
 
+- Decided not to convert the pyspark utils impute_historic_relationships and get_relationships_where_type_is_predecessor.
+  Instead I have:
+  Added relationships to flatten_struct_fields to extract types into new column relationships_types.
+  Added relationships_types to impute_missing_values to back/forward fill gaps.
+
+- Converted cleaning util add_related_location_flag from pyspark to polars. Called the util in cqc_locations_4_full_clean.py script.
+
 - Reverted merge_ind_cqc_data job to state on 15th September, before using dimension datasets.
 
 ### Improved
@@ -134,6 +141,13 @@ All notable changes to this project will be documented in this file.
 
 - Stopped the filtering of non social care, deregistered and specialist college locations in the cleaning of delta locations data.
   The removal of these not required locations happens in merge_ind_cqc_data job.
+
+- Added tests for raw data adjustment function is_valid_location.
+
+- Added removal of invalid locations to cqc_locations_2_flatten task and its validation check comparator dataframe.
+
+- Converted CQC cleaning functions allocate_primary_service_type and realign_carehome_column_with_primary_service from pyspark to polars.
+  The code exists in a cleaning utils script now, instead of in the job script.
 
 ### Improved
 

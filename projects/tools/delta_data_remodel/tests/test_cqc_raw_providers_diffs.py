@@ -6,7 +6,7 @@ from re import match
 import polars as pl
 import requests
 
-from lambdas.utils.snapshots import get_snapshots
+from lambdas.create_dataset_snapshot.utils.snapshots import get_snapshots
 from projects.tools.delta_data_remodel.jobs.raw_providers_schema import (
     raw_providers_schema,
 )

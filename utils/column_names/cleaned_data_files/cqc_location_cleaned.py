@@ -36,7 +36,9 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     primary_service_type: str = "primary_service_type"
     provider_name: str = "provider_name"
     registered_manager_names: str = "registered_manager_names"
+    regulated_activities_offered: str = "regulated_activities_offered"
     related_location: str = "related_location"
+    relationships_types: str = "relationships_types"
     relationships_exploded: str = NewCqcLocationApiColumns.relationships + "_exploded"
     relationships_predecessors_only: str = (
         NewCqcLocationApiColumns.relationships + "_predecessors_only"

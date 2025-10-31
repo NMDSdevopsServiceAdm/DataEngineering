@@ -18,6 +18,31 @@ from utils.column_names.raw_data_files.ons_columns import (
 
 
 @dataclass
+class FlattenUtilsSchema:
+    flatten_struct_fields_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.import_date, pl.String()),
+            (
+                "struct_1",
+                pl.List(pl.Struct({"field_1": pl.String(), "field_2": pl.String()})),
+            ),
+            (
+                "struct_2",
+                pl.List(pl.Struct({"field_1": pl.String(), "field_2": pl.String()})),
+            ),
+        ]
+    )
+    expected_flatten_struct_fields_schema = pl.Schema(
+        list(flatten_struct_fields_schema.items())
+        + [
+            ("struct_1_field_1", pl.List(pl.String())),
+            ("struct_2_field_2", pl.List(pl.String())),
+        ]
+    )
+
+
+@dataclass
 class ExtractRegisteredManagerNamesSchema:
     contact_struct = pl.Struct(
         [
@@ -86,6 +111,70 @@ class ExtractRegisteredManagerNamesSchema:
     expected_add_registered_manager_names_schema = pl.Schema(
         list(add_registered_manager_names_full_lf_schema.items())
         + [(CQCLClean.registered_manager_names, pl.List(pl.String()))]
+    )
+
+
+@dataclass
+class LocationsCleanUtilsSchema:
+    clean_provider_id_column_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.provider_id, pl.String()),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+
+    impute_missing_values_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.provider_id, pl.String()),
+            (CQCLClean.services_offered, pl.List(pl.String())),
+        ]
+    )
+
+    assign_cqc_sector_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCL.provider_id, pl.String()),
+        ]
+    )
+    expected_assign_cqc_sector_schema = pl.Schema(
+        list(assign_cqc_sector_schema.items()) + [(CQCLClean.cqc_sector, pl.String())]
+    )
+
+    primary_service_type_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.provider_id, pl.String()),
+            (CQCLClean.services_offered, pl.List(pl.String())),
+        ]
+    )
+    expected_primary_service_type_schema = pl.Schema(
+        list(primary_service_type_schema.items())
+        + [(CQCLClean.primary_service_type, pl.String())]
+    )
+
+    realign_carehome_column_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.care_home, pl.String()),
+            (CQCLClean.primary_service_type, pl.String()),
+        ]
+    )
+
+    add_related_location_column_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (
+                CQCLClean.relationships_types,
+                pl.List(pl.String()),
+            ),
+        ]
+    )
+    expected_add_related_location_column_schema = pl.Schema(
+        list(add_related_location_column_schema.items())
+        + [(CQCLClean.related_location, pl.String())]
     )
 
 
