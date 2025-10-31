@@ -33,12 +33,22 @@ class GetImportDatesToProcessTests(unittest.TestCase):
 
 
 class LoadLatestSnapshotTests(unittest.TestCase):
-    pass
+    def test_load_latest_snapshot_when_no_existing_snapshots(self):
+        result = job.load_latest_snapshot("s3://fake_path", [])
+        self.assertIsNone(result)
+
+    def test_load_latest_snapshot_returns_latest_lf(self):
+        pass
 
 
 class CreateFullSnapshotTests(unittest.TestCase):
-    pass
+    def test_create_full_snapshot_when_first_lf_copies_lf(self):
+        pass
+
+    def test_create_full_snapshot_merges_lfs_and_retains_latest_data(self):
+        pass
 
 
 class ApplyPartitionsTests(unittest.TestCase):
-    pass
+    def test_apply_partitions(self):
+        pass
