@@ -1,6 +1,8 @@
 from polars_utils import logger, raw_data_adjustments, utils
 from polars_utils.cleaning_utils import column_to_date
-from projects._01_ingest.cqc_api.fargate.utils import flatten_utils as fUtils
+from projects._01_ingest.cqc_api.fargate.utils import (
+    locations_2_delta_flatten_utils as fUtils,
+)
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
