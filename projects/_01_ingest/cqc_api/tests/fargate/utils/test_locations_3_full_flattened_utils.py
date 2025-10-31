@@ -19,7 +19,17 @@ PATCH_PATH = (
 
 
 class GetImportDatesToProcessTests(unittest.TestCase):
-    pass
+    def test_get_import_dates_to_process(self):
+        lf = pl.LazyFrame(
+            data=Data.get_import_dates_to_process,
+            schema=Schemas.get_import_dates_to_process_schema,
+        )
+
+        returned_list = job.get_import_dates_to_process(
+            lf, Data.get_import_dates_existing
+        )
+
+        self.assertEqual(returned_list, Data.expected_import_dates_to_process_list)
 
 
 class LoadLatestSnapshotTests(unittest.TestCase):

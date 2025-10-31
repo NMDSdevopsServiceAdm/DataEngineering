@@ -44,7 +44,12 @@ class FlattenUtilsSchema:
 
 @dataclass
 class FullFlattenUtilsSchema:
-    pass
+    get_import_dates_to_process_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.import_date, pl.Int32()),
+        ]
+    )
 
 
 @dataclass
