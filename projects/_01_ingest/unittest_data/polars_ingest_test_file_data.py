@@ -9,6 +9,7 @@ from utils.column_values.categorical_column_values import (
     LocationType,
     PrimaryServiceType,
     RegistrationStatus,
+    RelatedLocation,
     Sector,
     Services,
 )
@@ -990,6 +991,20 @@ class LocationsCleanUtilsData:
         ("1-004", CareHome.care_home, PrimaryServiceType.care_home_with_nursing,),
         ("1-005", CareHome.not_care_home, PrimaryServiceType.non_residential,),
         ("1-006", CareHome.not_care_home, PrimaryServiceType.non_residential,),
+    ]
+
+
+    add_related_location_column_rows = [
+        ("1-001", "1-002", "1-003", "1-004"),
+        (None, [], ["HSCA Predecessor",], ["HSCA Predecessor", "Anything else"],),
+    ]
+    expected_add_related_location_column_rows = add_related_location_column_rows + [
+        (
+            RelatedLocation.no_related_location,
+            RelatedLocation.no_related_location,
+            RelatedLocation.has_related_location,
+            RelatedLocation.has_related_location,
+        ),
     ]
     # fmt: on
 
