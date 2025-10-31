@@ -87,7 +87,8 @@ def main(
         cqc_reg_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
     )
 
-    # TODO - (1125) add_related_location_column
+    cqc_reg_lf = cUtils.add_related_location_column(cqc_reg_lf)
+    cqc_reg_lf = cqc_reg_lf.drop(CQCLClean.relationships_types)
 
     # Scan parquet to get ONS Postcode Directory data in LazyFrame format
     ons_lf = utils.scan_parquet(

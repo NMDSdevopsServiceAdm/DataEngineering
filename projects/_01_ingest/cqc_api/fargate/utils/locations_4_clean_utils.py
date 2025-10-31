@@ -6,6 +6,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_values.categorical_column_values import (
     CareHome,
     PrimaryServiceType,
+    RelatedLocation,
     Sector,
     Services,
 )
@@ -144,6 +145,28 @@ def realign_carehome_column_with_primary_service(lf: pl.LazyFrame) -> pl.LazyFra
     )
 
     return lf
+
+
+def add_related_location_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Adds a column which flags whether the location was related to a previous location or not.
+
+    If the columns relationships_types contains "HSCA Predecessor" then "Y", otherwise "N".
+
+    Args:
+        cqc_lf (pl.LazyFrame): A LazyFrame with the relationships_types column.
+
+    Returns:
+        pl.LazyFrame: LazyFrame with an added related_location column.
+    """
+    cqc_lf = cqc_lf.with_columns(
+        pl.when(pl.col(CQCLClean.relationships_types).list.contains("HSCA Predecessor"))
+        .then(pl.lit(RelatedLocation.has_related_location))
+        .otherwise(pl.lit(RelatedLocation.no_related_location))
+        .alias(CQCLClean.related_location)
+    )
+
+    return cqc_lf
 
 
 def clean_and_impute_registration_date(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
