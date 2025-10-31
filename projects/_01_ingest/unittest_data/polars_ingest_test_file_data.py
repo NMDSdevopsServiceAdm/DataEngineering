@@ -73,6 +73,11 @@ class FlattenUtilsData:
 
 
 @dataclass
+class FullFlattenUtilsData:
+    pass
+
+
+@dataclass
 class ExtractRegisteredManagerNamesData:
     explode_contacts_information_when_single_contact = [
         ("1-001",),

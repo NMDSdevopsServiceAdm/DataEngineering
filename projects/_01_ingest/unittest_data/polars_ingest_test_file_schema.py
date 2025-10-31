@@ -43,6 +43,11 @@ class FlattenUtilsSchema:
 
 
 @dataclass
+class FullFlattenUtilsSchema:
+    pass
+
+
+@dataclass
 class ExtractRegisteredManagerNamesSchema:
     contact_struct = pl.Struct(
         [
