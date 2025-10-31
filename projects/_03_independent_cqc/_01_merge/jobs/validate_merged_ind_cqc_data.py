@@ -45,12 +45,7 @@ def main(
     rules = Rules.rules_to_check
 
     rules[RuleName.size_of_dataset] = cqc_location_df.filter(
-        (cqc_location_df[CQCLClean.type] == LocationType.social_care_identifier)
-        & (cqc_location_df[CQCLClean.cqc_sector] == Sector.independent)
-        & (
-            cqc_location_df[CQCLClean.registration_status]
-            == RegistrationStatus.registered
-        )
+        (cqc_location_df[CQCLClean.cqc_sector] == Sector.independent)
     ).count()
 
     check_result_df = validate_dataset(merged_ind_cqc_df, rules)
