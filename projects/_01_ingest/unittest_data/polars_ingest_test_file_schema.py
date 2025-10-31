@@ -66,14 +66,14 @@ class ExtractRegisteredManagerNamesSchema:
             (CQCLClean.location_id, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.care_home, pl.String()),
-            (CQCLClean.imputed_regulated_activities, activity_struct_list),
+            (CQCLClean.regulated_activities, activity_struct_list),
         ]
     )
     expected_explode_contacts_information_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),
-            (CQCLClean.imputed_regulated_activities, activity_struct),
+            (CQCLClean.regulated_activities, activity_struct),
             (CQCLClean.contacts_exploded, contact_struct),
         ]
     )

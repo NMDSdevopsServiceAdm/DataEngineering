@@ -1,6 +1,9 @@
 from polars_utils import logger, raw_data_adjustments, utils
 from polars_utils.cleaning_utils import column_to_date
 from projects._01_ingest.cqc_api.fargate.utils import flatten_utils as fUtils
+from projects._01_ingest.cqc_api.fargate.utils.extract_registered_manager_names import (
+    extract_registered_manager_names,
+)
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
@@ -71,7 +74,7 @@ def main(
     # TODO - (1128) classify_specialisms (dementia, learning_disabilities, mental_health)
     # Move this into cqc_locations_4_full_clean. After imputation happens.
 
-    # TODO - (1129) extract_registered_manager_names
+    cqc_lf = extract_registered_manager_names(cqc_lf)
 
     cqc_lf = cqc_lf.drop(
         CQCL.gac_service_types,
