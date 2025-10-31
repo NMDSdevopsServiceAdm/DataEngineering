@@ -94,6 +94,12 @@ All notable changes to this project will be documented in this file.
 
 - Converted clean_and_impute_registration_date function from pyspark to polars.
 
+- Changed the behaivour of impute_missing_values in locations_4_clean_utils.
+  Empty lists were being copied in the forward/backward fill, since it looks for non-null values.
+  I've added another loop to go through the schema, if a columns datatype is a list, then replace empty lists in that
+  column with null.
+  Then the imputation happens as before, but only populated lists are used for filling.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
