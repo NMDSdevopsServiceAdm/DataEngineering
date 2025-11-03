@@ -15,6 +15,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
     mock_cqc_locations_data = Mock(name="cqc_locations_data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.extract_registered_manager_names")
     @patch(f"{PATCH_PATH}.fUtils.flatten_struct_fields")
     @patch(f"{PATCH_PATH}.column_to_date")
     @patch(f"{PATCH_PATH}.raw_data_adjustments.is_valid_location")
@@ -25,6 +26,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
         is_valid_location_mock: Mock,
         column_to_date_mock: Mock,
         flatten_struct_fields_mock: Mock,
+        extract_registered_manager_names_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
@@ -35,6 +37,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
         is_valid_location_mock.assert_called_once()
         self.assertEqual(column_to_date_mock.call_count, 3)
         flatten_struct_fields_mock.assert_called_once()
+        extract_registered_manager_names_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,

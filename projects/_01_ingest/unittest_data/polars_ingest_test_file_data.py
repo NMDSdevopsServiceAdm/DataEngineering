@@ -1064,6 +1064,93 @@ class LocationsCleanUtilsData:
     ]
     # fmt: on
 
+    clean_and_impute_registration_date_when_reg_date_before_or_equal_to_import_date_rows = [
+        ("1-001", "1-002"),
+        (date(2025, 1, 1), date(2025, 1, 1)),
+        (date(2025, 1, 1), date(2025, 1, 2)),
+    ]
+    expected_clean_and_impute_registration_date_when_reg_date_before_or_equal_to_import_date_rows = (
+        clean_and_impute_registration_date_when_reg_date_before_or_equal_to_import_date_rows
+        + [
+            (date(2025, 1, 1), date(2025, 1, 1)),
+        ]
+    )
+    clean_and_impute_registration_date_when_reg_date_null_rows = [
+        ("1-001",),
+        (None,),
+        (date(2025, 1, 1),),
+    ]
+    expected_clean_and_impute_registration_date_when_reg_date_null_rows = (
+        clean_and_impute_registration_date_when_reg_date_null_rows
+        + [
+            (date(2025, 1, 1),),
+        ]
+    )
+    clean_and_impute_registration_date_when_reg_date_after_import_date_and_only_one_reg_date_rows = [
+        ("1-001",),
+        (date(2025, 1, 2),),
+        (date(2025, 1, 1),),
+    ]
+    expected_clean_and_impute_registration_date_when_reg_date_after_import_date_and_only_one_reg_date_rows = (
+        clean_and_impute_registration_date_when_reg_date_after_import_date_and_only_one_reg_date_rows
+        + [
+            (date(2025, 1, 1),),
+        ]
+    )
+    clean_and_impute_registration_date_when_reg_date_after_import_date_and_has_other_acceptable_reg_date_rows = [
+        ("1-001", "1-001"),
+        (date(2025, 1, 5), date(2025, 1, 1)),
+        (date(2025, 1, 4), date(2025, 1, 3)),
+    ]
+    expected_clean_and_impute_registration_date_when_reg_date_after_import_date_and_has_other_acceptable_reg_date_rows = (
+        clean_and_impute_registration_date_when_reg_date_after_import_date_and_has_other_acceptable_reg_date_rows
+        + [
+            (date(2025, 1, 1), date(2025, 1, 1)),
+        ]
+    )
+    clean_and_impute_registration_date_when_reg_date_after_import_date_and_import_date_out_of_order_rows = [
+        ("1-001", "1-001"),
+        (date(2025, 1, 5), date(2025, 1, 6)),
+        (date(2025, 1, 4), date(2025, 1, 3)),
+    ]
+    expected_clean_and_impute_registration_date_when_reg_date_after_import_date_and_import_date_out_of_order_rows = (
+        clean_and_impute_registration_date_when_reg_date_after_import_date_and_import_date_out_of_order_rows
+        + [
+            (date(2025, 1, 3), date(2025, 1, 3)),
+        ]
+    )
+    # fmt: off
+    clean_and_impute_registration_date_when_given_mixed_scenarios_rows = [
+        ("1-001", "1-002", "1-002", "1-003", "1-003"),
+        (
+            date(2025, 1, 10), # registration date after import date, no other import dates.
+            date(2025, 1, 10), # registration date after import date, has other import dates.
+            date(2025, 1, 10), # registration date after import date, has other import dates.
+            date(2025, 1, 1), # registration date before import date.
+            date(2025, 1, 1) # registration date same as import date.
+        ),
+        (
+            date(2025, 1, 2),
+            date(2025, 1, 2),
+            date(2025, 1, 11),
+            date(2025, 1, 2),
+            date(2025, 1, 1)
+        ),
+    ]
+    expected_clean_and_impute_registration_date_when_given_mixed_scenarios_rows = (
+        clean_and_impute_registration_date_when_given_mixed_scenarios_rows
+        + [
+            (
+                date(2025, 1, 2),
+                date(2025, 1, 2),
+                date(2025, 1, 2),
+                date(2025, 1, 1),
+                date(2025, 1, 1)
+            )
+        ]
+    )
+    # fmt: on
+
 
 @dataclass
 class PostcodeMatcherTest:
