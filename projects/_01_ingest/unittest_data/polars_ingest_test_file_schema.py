@@ -58,6 +58,16 @@ class FullFlattenUtilsSchema:
         ]
     )
 
+    apply_partitions_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.year, pl.Int32()),
+            (CQCLClean.month, pl.Int32()),
+            (CQCLClean.day, pl.Int32()),
+            (CQCLClean.import_date, pl.Int32()),
+        ]
+    )
+
 
 @dataclass
 class ExtractRegisteredManagerNamesSchema:

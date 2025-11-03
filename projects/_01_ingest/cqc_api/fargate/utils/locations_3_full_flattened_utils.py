@@ -97,9 +97,9 @@ def apply_partitions(lf: pl.LazyFrame, import_date: int | str) -> pl.LazyFrame:
 
     return lf.with_columns(
         [
-            pl.lit(date_str).alias(Keys.import_date),
-            pl.lit(date_str[:4]).alias(Keys.year),
-            pl.lit(date_str[4:6]).alias(Keys.month),
-            pl.lit(date_str[6:8]).alias(Keys.day),
+            pl.lit(date_str).cast(pl.Int32).alias(Keys.import_date),
+            pl.lit(date_str[:4]).cast(pl.Int32).alias(Keys.year),
+            pl.lit(date_str[4:6]).cast(pl.Int32).alias(Keys.month),
+            pl.lit(date_str[6:8]).cast(pl.Int32).alias(Keys.day),
         ]
     )

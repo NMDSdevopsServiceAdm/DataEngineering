@@ -91,6 +91,23 @@ class FullFlattenUtilsData:
         (20250201, 20250201),
     ]
 
+    apply_partitions = [
+        ("1-001", "1-002", "1-003", "1-004"),
+        (2025, 2025, 2025, 2025),
+        (2, 2, 2, 3),
+        (1, 1, 1, 2),
+        (20250201, 20250201, 20250201, 20250302),
+    ]
+    apply_partitions_import_date_int = 20250302
+    apply_partitions_import_date_str = "20250302"
+    expected_apply_partitions = [
+        ("1-001", "1-002", "1-003", "1-004"),
+        (2025, 2025, 2025, 2025),
+        (3, 3, 3, 3),
+        (2, 2, 2, 2),
+        (20250302, 20250302, 20250302, 20250302),
+    ]
+
 
 @dataclass
 class ExtractRegisteredManagerNamesData:

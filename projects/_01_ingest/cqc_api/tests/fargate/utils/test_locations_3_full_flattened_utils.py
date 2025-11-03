@@ -67,5 +67,32 @@ class CreateFullSnapshotTests(unittest.TestCase):
 
 
 class ApplyPartitionsTests(unittest.TestCase):
-    def test_apply_partitions(self):
-        pass
+    def test_apply_partitions_when_import_date_is_int(self):
+        lf = pl.LazyFrame(
+            data=Data.apply_partitions,
+            schema=Schemas.apply_partitions_schema,
+        )
+
+        returned_lf = job.apply_partitions(lf, Data.apply_partitions_import_date_int)
+
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_apply_partitions,
+            schema=Schemas.apply_partitions_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_apply_partitions_when_import_date_is_str(self):
+        lf = pl.LazyFrame(
+            data=Data.apply_partitions,
+            schema=Schemas.apply_partitions_schema,
+        )
+
+        returned_lf = job.apply_partitions(lf, Data.apply_partitions_import_date_str)
+
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_apply_partitions,
+            schema=Schemas.apply_partitions_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
