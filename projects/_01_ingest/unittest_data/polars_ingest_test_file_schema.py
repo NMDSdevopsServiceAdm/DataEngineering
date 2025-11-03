@@ -220,6 +220,13 @@ class LocationsCleanUtilsSchema:
         ]
     )
 
+    remove_specialist_colleges_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.services_offered, pl.List(pl.String())),
+        ]
+    )
+
 
 @dataclass
 class PostcodeMatcherTest:

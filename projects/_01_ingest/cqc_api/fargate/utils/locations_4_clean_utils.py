@@ -230,3 +230,29 @@ def clean_and_impute_registration_date(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
     return cqc_lf
+
+
+def remove_specialist_colleges(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Removes rows where 'Specialist college service' is the only service in 'services_offered' list column.
+
+    We do not include locations which are only specialist colleges in our
+    estimates. This function identifies and removes the ones listed in the locations dataset.
+
+    Args:
+        cqc_lf (pl.LazyFrame): A LazyFrame with column services_offered.
+
+    Returns:
+        pl.LazyFrame: The imput LazyFrame with locations which are only specialist colleges removed.
+    """
+
+    cqc_lf = cqc_lf.filter(
+        (pl.col(CQCLClean.services_offered).list.len() != 1)
+        | (
+            pl.col(CQCLClean.services_offered).list.first()
+            != Services.specialist_college_service
+        )
+        | pl.col(CQCLClean.services_offered).is_null()
+    )
+
+    return cqc_lf
