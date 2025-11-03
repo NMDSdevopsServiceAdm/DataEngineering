@@ -325,11 +325,9 @@ class IndCqcColumns:
     services_offered: str = CQCLClean.services_offered
     single_period_rate_of_change = "single_period_rate_of_change"
     specialisms_offered: str = CQCLClean.specialisms_offered
-    specialist_generalist_other_dementia: str = (
-        CQCLClean.specialist_generalist_other_dementia
-    )
-    specialist_generalist_other_lda: str = CQCLClean.specialist_generalist_other_lda
-    specialist_generalist_other_mh: str = CQCLClean.specialist_generalist_other_mh
+    specialism_dementia: str = CQCLClean.specialism_dementia
+    specialism_learning_disabilities: str = CQCLClean.specialism_learning_disabilities
+    specialism_mental_health: str = CQCLClean.specialism_mental_health
     standardised_residual: str = "standardised_residual"
     submitted_ascwds_data: str = "submitted_ascwds_data"
     sum_non_rm_managerial_estimated_filled_posts: str = (

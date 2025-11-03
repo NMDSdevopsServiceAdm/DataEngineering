@@ -236,7 +236,7 @@ def clean_and_impute_registration_date(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def classify_specialisms(
-    cqc_lf: pl.LazyFrame, list_of_specialisms: list
+    cqc_lf: pl.LazyFrame, list_of_specialisms: list[str]
 ) -> pl.LazyFrame:
     """
     Adds a new column per element in given list_of_specialisms to show if the location is
@@ -248,7 +248,7 @@ def classify_specialisms(
 
     Args:
         cqc_lf (pl.LazyFrame): A LazyFrame with the column specialisms_offered.
-        list_of_specialisms (list): A list of values from specialisms_offered you want to classify locations by.
+        list_of_specialisms (list[str]): A list of values from specialisms_offered to classify locations by.
 
     Returns:
         pl.LazyFrame: The input LazyFrame with additional columns per element in given list_of_specialisms.
@@ -266,7 +266,7 @@ def classify_specialisms(
                 .when(specialisms_col.list.contains(s))
                 .then(pl.lit(SpecGenOther.generalist))
                 .otherwise(pl.lit(SpecGenOther.other))
-                .alias(f"specialist_generalist_other_{s}".replace(" ", "_").lower())
+                .alias(f"specialism_{s}".replace(" ", "_").lower())
             )
             for s in list_of_specialisms
         ]
