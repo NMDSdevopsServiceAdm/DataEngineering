@@ -253,16 +253,16 @@ jobs:
             echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=postcode_corrections/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
+          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api/"
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=full_providers_api/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=full_providers_api/"
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=postcode_corrections/"
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory_cleaned/"
@@ -304,11 +304,22 @@ jobs:
           command: |
             export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"
             export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"
-            cd terraform/pipeline
-            terraform init -input=false -backend-config=../non_prod.s3.tfbackend
             export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
             export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
+            # --- Safeguard to never destroy main ---
+            if [ "$SANITISED_CIRCLE_BRANCH" = "main" ]; then
+              echo "Skipping destroy for main branch"
+              exit 0
+            fi
+            # --- Select workspace ---
+            cd terraform/pipeline
+            terraform init -input=false -backend-config=../non_prod.s3.tfbackend
             terraform workspace select ${SANITISED_CIRCLE_BRANCH}
+            # --- Force-empty dataset bucket for this branch ---
+            BUCKET_NAME="sfc-${SANITISED_CIRCLE_BRANCH}-datasets"
+            echo "Force-emptying branch bucket: ${BUCKET_NAME}"
+            aws s3 rm "s3://${BUCKET_NAME}" --recursive || true
+            # --- Run destroy ---
             terraform destroy -auto-approve
       - run:
           name: delete workspace
