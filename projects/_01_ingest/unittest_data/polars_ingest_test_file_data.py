@@ -935,6 +935,31 @@ class LocationsCleanUtilsData:
         (["Service 1", "Service 2"], ["Service 1", "Service 2"], None, None),
     ]
 
+    impute_missing_values_overwrites_empty_lists_rows = [
+        ("1-001", "1-001", "1-001", "1-001", "1-001"),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 3, 1),
+            date(2024, 4, 1),
+            date(2024, 5, 1),
+        ),
+        ("1-101", "1-101", "1-101", "1-101", "1-101"),
+        ([], ["Service 1"], [], ["Service 2"], None),
+    ]
+    expected_impute_missing_values_overwrites_empty_lists_rows = [
+        ("1-001", "1-001", "1-001", "1-001", "1-001"),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 3, 1),
+            date(2024, 4, 1),
+            date(2024, 5, 1),
+        ),
+        ("1-101", "1-101", "1-101", "1-101", "1-101"),
+        (["Service 1"], ["Service 1"], ["Service 1"], ["Service 2"], ["Service 2"]),
+    ]
+
     assign_cqc_sector = [
         ("1-001", "1-002"),
         ("1-0001", "1-0002"),

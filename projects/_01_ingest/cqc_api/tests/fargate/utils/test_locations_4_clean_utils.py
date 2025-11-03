@@ -146,6 +146,24 @@ class ImputeMissingValuesTests(unittest.TestCase):
 
         pl_testing.assert_frame_equal(result_lf, expected_lf)
 
+    def test_overwrites_empty_lists(self):
+        """Tests empty lists are replaced by correct poplulated list"""
+
+        lf = pl.LazyFrame(
+            Data.impute_missing_values_overwrites_empty_lists_rows,
+            schema=Schemas.impute_missing_values_schema,
+        )
+        expected_lf = pl.LazyFrame(
+            Data.expected_impute_missing_values_overwrites_empty_lists_rows,
+            schema=Schemas.impute_missing_values_schema,
+        )
+
+        result_lf = job.impute_missing_values(
+            lf, [CQCLClean.provider_id, CQCLClean.services_offered]
+        )
+
+        pl_testing.assert_frame_equal(result_lf, expected_lf)
+
 
 class AssignCqcSectorTests(unittest.TestCase):
     def test_assigns_local_authority(self):
