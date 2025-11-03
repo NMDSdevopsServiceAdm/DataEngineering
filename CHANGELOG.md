@@ -94,6 +94,9 @@ All notable changes to this project will be documented in this file.
 
 - Converted clean_and_impute_registration_date function from pyspark to polars.
 
+- Added call for premade polars util extract_registered_manager_names to cqc_locations_2_flatten, which will create
+  registered_manager_names column. Also added registered_manager_names column to impute_missing_values in cqc_locations_4_full_clean.
+
 - Changed the behaivour of impute_missing_values in locations_4_clean_utils.
   Empty lists were being copied in the forward/backward fill, since it looks for non-null values.
   I've added another loop to go through the schema, if a columns datatype is a list, then replace empty lists in that

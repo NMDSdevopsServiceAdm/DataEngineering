@@ -28,12 +28,12 @@ def extract_registered_manager_names(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def explode_contacts_information(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Explodes the `imputed_regulated_activities` array and then the `contacts` array.
+    Explodes the `regulated_activities` array and then the `contacts` array.
 
     Only rows with non-null contacts are retained.
 
     Args:
-        lf (pl.LazyFrame): Input Polars LazyFrame with `imputed_regulated_activities`.
+        lf (pl.LazyFrame): Input Polars LazyFrame with `regulated_activities`.
 
     Returns:
         pl.LazyFrame: LazyFrame with each contact exploded into its own row in `contacts_exploded`.
@@ -42,16 +42,16 @@ def explode_contacts_information(lf: pl.LazyFrame) -> pl.LazyFrame:
         [
             CQCLClean.location_id,
             CQCLClean.cqc_location_import_date,
-            CQCLClean.imputed_regulated_activities,
+            CQCLClean.regulated_activities,
         ]
     )
 
     # Explode regulated activities
-    lf = lf.explode(CQCLClean.imputed_regulated_activities)
+    lf = lf.explode(CQCLClean.regulated_activities)
 
     # Explode contacts inside each regulated activity
     lf = lf.with_columns(
-        pl.col(CQCLClean.imputed_regulated_activities)
+        pl.col(CQCLClean.regulated_activities)
         .struct.field(CQCLClean.contacts)
         .alias(CQCLClean.contacts_exploded)
     ).explode(CQCLClean.contacts_exploded)
