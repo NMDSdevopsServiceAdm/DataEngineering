@@ -58,6 +58,15 @@ class FullFlattenUtilsSchema:
         ]
     )
 
+    create_full_snapshot_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.care_home, pl.String()),
+            (CQCLClean.number_of_beds, pl.Int32()),
+            (CQCLClean.import_date, pl.Int32()),
+        ]
+    )
+
     apply_partitions_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),

@@ -13,6 +13,9 @@ from projects._01_ingest.unittest_data.polars_ingest_test_file_data import (
 from projects._01_ingest.unittest_data.polars_ingest_test_file_schema import (
     FullFlattenUtilsSchema as Schemas,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 
 PATCH_PATH = (
     "projects._01_ingest.cqc_api.fargate.utils.locations_3_full_flattened_utils"
@@ -59,11 +62,33 @@ class LoadLatestSnapshotTests(unittest.TestCase):
 
 
 class CreateFullSnapshotTests(unittest.TestCase):
-    def test_create_full_snapshot_when_first_lf_copies_lf(self):
-        pass
+    def setUp(self) -> None:
+        self.full_lf = pl.LazyFrame(
+            data=Data.create_full_snapshot_full_lf,
+            schema=Schemas.create_full_snapshot_schema,
+        )
+        self.delta_lf = pl.LazyFrame(
+            data=Data.create_full_snapshot_delta_lf,
+            schema=Schemas.create_full_snapshot_schema,
+        )
 
-    def test_create_full_snapshot_merges_lfs_and_retains_latest_data(self):
-        pass
+    def test_returns_delta_lf_when_full_lf_is_none(self):
+        returned_lf = job.create_full_snapshot(None, self.delta_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, self.delta_lf)
+
+    def test_merges_lfs_and_retains_latest_data_for_each_location(self):
+        returned_lf = job.create_full_snapshot(self.full_lf, self.delta_lf)
+
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_create_full_snapshot_lf,
+            schema=Schemas.create_full_snapshot_schema,
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf.sort(CQCLClean.location_id),
+            expected_lf.sort(CQCLClean.location_id),
+        )
 
 
 class ApplyPartitionsTests(unittest.TestCase):
