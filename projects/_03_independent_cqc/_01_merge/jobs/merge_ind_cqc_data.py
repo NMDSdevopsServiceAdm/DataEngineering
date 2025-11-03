@@ -117,7 +117,7 @@ def main(
 
     cqc_location_df = utils.read_from_parquet(
         cleaned_cqc_location_source,
-        selected_columns=cleaned_cqc_locations_columns_to_import,
+        # selected_columns=cleaned_cqc_locations_columns_to_import,
     )
 
     ascwds_workplace_df = utils.read_from_parquet(
