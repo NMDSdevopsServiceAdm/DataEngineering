@@ -29,23 +29,17 @@ def main(
     expected_schema = entire_delta_lf.collect_schema()
     logger.info("CQC Location delta flattened LazyFrame read in")
 
-    existing_full_import_dates = utils.list_s3_parquet_import_dates(
-        full_flattened_destination
+    dates_to_process, processed_dates = fUtils.allocate_import_dates(
+        delta_flattened_source, full_flattened_destination
     )
 
-    import_dates_to_process = fUtils.get_import_dates_to_process(
-        entire_delta_lf, existing_full_import_dates
-    )
-
-    if not import_dates_to_process:
+    if not dates_to_process:
         logger.info("No new import_dates require processing. Job complete")
         return
 
-    full_lf = fUtils.load_latest_snapshot(
-        full_flattened_destination, existing_full_import_dates
-    )
+    full_lf = fUtils.load_latest_snapshot(full_flattened_destination, processed_dates)
 
-    for delta_import_date in sorted(import_dates_to_process):
+    for delta_import_date in sorted(dates_to_process):
         logger.info(f"Processing import_date={delta_import_date}")
 
         delta_lf = entire_delta_lf.filter(pl.col(Keys.import_date) == delta_import_date)

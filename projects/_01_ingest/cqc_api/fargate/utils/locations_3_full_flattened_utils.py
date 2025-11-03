@@ -7,34 +7,30 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
-def get_import_dates_to_process(
-    delta_source_lf: pl.LazyFrame,
-    existing_full_import_dates: list[str],
-) -> list[str]:
+def allocate_import_dates(
+    delta_flattened_s3_uri: str, full_flattened_s3_uri: str
+) -> tuple[list[str], list[str]]:
     """
-    Identify which import_dates exist in the source data but haven't been processed into the full file format.
+    Create a list of import_dates which need processing and a list of dates already processed.
+
+    All dates in the delta dataset need to be converted to full files.
+    `all_dates` represents all `import_dates` found in S3 for the delta dataset.
+    `processed_dates` represents all `import_dates` found in S3 for the full dataset which have already been processed.
+    `dates_to_process` are all import dates in `all_dates` which are not found in `processed_dates`.
 
     Args:
-        delta_source_lf (pl.LazyFrame): LazyFrame of the delta flattened source data.
-        existing_full_import_dates (list[str]): List of import_dates already present in the full flattened destination.
+        delta_flattened_s3_uri (str): S3 URI for delta flattened files
+        full_flattened_s3_uri (str): S3 URI for full flattened files
 
     Returns:
-        list[str]: List of import_dates to process.
+        tuple[list[str], list[str]]: List of import_dates to process and a list of dates already processed.
     """
-    source_import_dates = (
-        delta_source_lf.select(Keys.import_date)
-        .unique()
-        .sort(Keys.import_date)
-        .collect()
-        .to_series()
-        .to_list()
-    )
+    all_dates = utils.list_s3_parquet_import_dates(delta_flattened_s3_uri)
+    processed_dates = utils.list_s3_parquet_import_dates(full_flattened_s3_uri)
 
-    import_dates_to_process = [
-        d for d in source_import_dates if d not in existing_full_import_dates
-    ]
+    dates_to_process = [d for d in all_dates if d not in processed_dates]
 
-    return import_dates_to_process
+    return dates_to_process, processed_dates
 
 
 def load_latest_snapshot(

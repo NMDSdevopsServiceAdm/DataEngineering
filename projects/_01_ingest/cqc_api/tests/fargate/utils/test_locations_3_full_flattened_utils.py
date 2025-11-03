@@ -22,28 +22,39 @@ PATCH_PATH = (
 )
 
 
-class GetImportDatesToProcessTests(unittest.TestCase):
-    def test_get_import_dates_to_process_when_existing_list_populated(self):
-        lf = pl.LazyFrame(
-            data=Data.get_import_dates_to_process,
-            schema=Schemas.get_import_dates_to_process_schema,
+class AllocateImportDatesTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.delta_dates = [20250101, 20250201, 20250301]
+
+    @patch(f"{PATCH_PATH}.utils.list_s3_parquet_import_dates")
+    def test_allocate_import_dates_when_processed_list_populated(
+        self, list_s3_mock: Mock
+    ):
+        processed_dates = [20250101]
+        list_s3_mock.side_effect = [self.delta_dates, processed_dates]
+
+        returned_dates_to_process, returned_processed_dates = job.allocate_import_dates(
+            "s3://delta_path", "s3://full_path"
         )
 
-        returned_list = job.get_import_dates_to_process(
-            lf, Data.get_import_dates_existing
+        self.assertEqual(list_s3_mock.call_count, 2)
+
+        self.assertEqual(returned_dates_to_process, [20250201, 20250301])
+        self.assertEqual(returned_processed_dates, processed_dates)
+
+    @patch(f"{PATCH_PATH}.utils.list_s3_parquet_import_dates")
+    def test_allocate_import_dates_when_processed_list_empty(self, list_s3_mock: Mock):
+        processed_dates = []
+        list_s3_mock.side_effect = [self.delta_dates, processed_dates]
+
+        returned_dates_to_process, returned_processed_dates = job.allocate_import_dates(
+            "s3://delta_path", "s3://full_path"
         )
 
-        self.assertEqual(returned_list, Data.expected_dates_to_process_when_existing)
+        self.assertEqual(list_s3_mock.call_count, 2)
 
-    def test_get_import_dates_to_process_when_existing_list_empty(self):
-        lf = pl.LazyFrame(
-            data=Data.get_import_dates_to_process,
-            schema=Schemas.get_import_dates_to_process_schema,
-        )
-
-        returned_list = job.get_import_dates_to_process(lf, [])
-
-        self.assertEqual(returned_list, Data.expected_dates_to_process_when_no_existing)
+        self.assertEqual(returned_dates_to_process, self.delta_dates)
+        self.assertEqual(returned_processed_dates, processed_dates)
 
 
 class LoadLatestSnapshotTests(unittest.TestCase):
