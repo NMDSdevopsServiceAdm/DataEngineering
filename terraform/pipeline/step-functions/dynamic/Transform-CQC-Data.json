@@ -43,7 +43,7 @@
               "Result": {
                 "script": "cqc_locations_2_flatten.py",
                 "cqc_source_arg_name": "--cqc_locations_api_delta_source",
-                "cqc_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
+                "cqc_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/",
                 "cqc_destination_arg_name": "--cqc_locations_flattened_destination",
                 "cqc_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/"
               },
