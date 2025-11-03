@@ -41,7 +41,7 @@
             "Set Flatten Delta CQC Locations Parameters": {
               "Type": "Pass",
               "Result": {
-                "script": "cqc_locations_2_flatten.py",
+                "script": "cqc_locations_2_delta_flatten.py",
                 "cqc_source_arg_name": "--cqc_locations_api_delta_source",
                 "cqc_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
                 "cqc_destination_arg_name": "--cqc_locations_flattened_destination",
@@ -79,11 +79,43 @@
               "Type": "Parallel",
               "Branches": [
                 {
-                  "StartAt": "(placeholder) Build Full CQC Locations",
+                  "StartAt": "Set Full Flatten CQC Locations Parameters",
                   "States": {
-                    "(placeholder) Build Full CQC Locations": {
+                    "Set Full Flatten CQC Locations Parameters": {
                       "Type": "Pass",
-                      "Result": "Placeholder for Build Full CQC Locations",
+                      "Result": {
+                        "script": "cqc_locations_3_full_flattened.py",
+                        "cqc_source_arg_name": "--delta_flattened_source",
+                        "cqc_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
+                        "cqc_destination_arg_name": "--full_flattened_destination",
+                        "cqc_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/"
+                      },
+                      "Next": "Build Full flatten CQC Locations"
+                    },
+                    "Build Full flatten CQC Locations": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${cqc_api_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${cqc_api_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command.$": "States.Array($.script, $.cqc_source_arg_name, $.cqc_source_arg_location, $.cqc_destination_arg_name, $.cqc_destination_arg_location)"
+                            }
+                          ]
+                        }
+                      },
+                      "ResultPath": "$.fullflattenedLocationResult",
                       "Next": "Set Clean Full CQC Locations Parameters"
                     },
                     "Set Clean Full CQC Locations Parameters": {
@@ -91,7 +123,7 @@
                       "Result": {
                         "script": "cqc_locations_4_full_clean.py",
                         "cqc_full_flat_source_arg_name": "--cqc_locations_full_flattened_source",
-                        "cqc_full_flat_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
+                        "cqc_full_flat_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/",
                         "ons_pd_source_arg_name": "--ons_postcode_directory_source",
                         "ons_pd_source_arg_location": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
                         "cqc_registered_destination_arg_name": "--cqc_registered_locations_cleaned_destination",
@@ -140,7 +172,7 @@
                     "Set Validate Flatten Delta CQC Locations Parameters": {
                       "Type": "Pass",
                       "Result": {
-                        "script": "validate_cqc_locations_2_flatten.py",
+                        "script": "validate_cqc_locations_2_delta_flatten.py",
                         "bucket_name_arg": "--bucket_name",
                         "bucket_name": "${dataset_bucket_name}",
                         "source_path_arg": "--source_path",

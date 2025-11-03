@@ -77,6 +77,55 @@ class FlattenUtilsData:
 
 
 @dataclass
+class FullFlattenUtilsData:
+    load_latest_snapshot = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        (20250101, 20250201, 20250201, 20250301),
+    ]
+    load_latest_snapshot_existing_dates = [20250101, 20250201]
+    expected_load_latest_snapshot = [
+        ("1-001", "1-002"),
+        (20250201, 20250201),
+    ]
+
+    create_full_snapshot_full_lf = [
+        ("1-001", "1-002", "1-003"),
+        ("Y", "Y", "Y"),
+        (1, 2, 3),
+        (20250101, 20250101, 20250101),
+    ]
+    create_full_snapshot_delta_lf = [
+        ("1-002", "1-004"),
+        ("Y", "N"),
+        (4, None),
+        (20250201, 20250201),
+    ]
+    expected_create_full_snapshot_lf = [
+        ("1-001", "1-002", "1-003", "1-004"),
+        ("Y", "Y", "Y", "N"),
+        (1, 4, 3, None),
+        (20250101, 20250201, 20250101, 20250201),
+    ]
+
+    apply_partitions = [
+        ("1-001", "1-002", "1-003", "1-004"),
+        (2025, 2025, 2025, 2025),
+        (2, 2, 2, 3),
+        (1, 1, 1, 2),
+        (20250201, 20250201, 20250201, 20250302),
+    ]
+    apply_partitions_import_date_int = 20250302
+    apply_partitions_import_date_str = "20250302"
+    expected_apply_partitions = [
+        ("1-001", "1-002", "1-003", "1-004"),
+        (2025, 2025, 2025, 2025),
+        (3, 3, 3, 3),
+        (2, 2, 2, 2),
+        (20250302, 20250302, 20250302, 20250302),
+    ]
+
+
+@dataclass
 class ExtractRegisteredManagerNamesData:
     explode_contacts_information_when_single_contact = [
         ("1-001",),
