@@ -43,6 +43,35 @@ class FlattenUtilsSchema:
 
 
 @dataclass
+class FullFlattenUtilsSchema:
+    load_latest_snapshot_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.import_date, pl.Int32()),
+        ]
+    )
+
+    create_full_snapshot_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.care_home, pl.String()),
+            (CQCLClean.number_of_beds, pl.Int32()),
+            (CQCLClean.import_date, pl.Int32()),
+        ]
+    )
+
+    apply_partitions_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.year, pl.Int32()),
+            (CQCLClean.month, pl.Int32()),
+            (CQCLClean.day, pl.Int32()),
+            (CQCLClean.import_date, pl.Int32()),
+        ]
+    )
+
+
+@dataclass
 class ExtractRegisteredManagerNamesSchema:
     contact_struct = pl.Struct(
         [
