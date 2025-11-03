@@ -1,6 +1,7 @@
 import argparse
 import logging
 import uuid
+from datetime import date
 from pathlib import Path
 
 import boto3
@@ -13,6 +14,54 @@ util_logger.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 util_logger.addHandler(logging.StreamHandler())
 util_logger.handlers[0].setFormatter(formatter)
+
+
+def scan_parquet(
+    source: str | Path,
+    schema: pl.Schema | None = None,
+    selected_columns: list[str] | None = None,
+) -> pl.LazyFrame:
+    """
+    Reads in parquet into a LazyFrame
+
+    Args:
+        source (str | Path): the full path in s3 of the dataset
+        schema (pl.Schema | None, optional): Polars schema to apply to dataset read
+        selected_columns (list[str] | None, optional): list of columns to return as a
+            subset of the columns in the schema. Defaults to None.
+
+    Returns:
+        pl.LazyFrame: the raw data as a polars LazyFrame
+
+    Raises:
+        FileNotFoundError: if there are no files in the source directory
+
+    """
+    if isinstance(source, str):
+        source = source.strip("/") + "/"
+
+        # Check if directory exists.
+        s3_client = boto3.client("s3")
+        response = s3_client.list_objects_v2(
+            Bucket=source.split("/")[2],
+            Prefix=source.split("/", 3)[3],
+            MaxKeys=1,
+        )
+        if "Contents" not in response:
+            raise FileNotFoundError(f"No files in {source}")
+
+    lf = pl.scan_parquet(
+        source,
+        schema=schema,
+        cast_options=pl.ScanCastOptions(
+            missing_struct_fields="insert",
+            extra_struct_fields="ignore",
+        ),
+        extra_columns="ignore",
+        missing_columns="insert",
+    ).select(selected_columns or cs.all())
+
+    return lf
 
 
 def read_parquet(
@@ -46,23 +95,7 @@ def read_parquet(
         )
     else:
         logging.info("Determining schema from dataset scan")
-        # Polars may only scan the first hive partition to establish the schema.
-        # By including missing_columns="insert", we prevent a failure but will
-        # exclude columns introduced in later partitions.
-        # TODO: establish full schema from latest data
-        raw = (
-            pl.scan_parquet(
-                source,
-                cast_options=pl.ScanCastOptions(
-                    missing_struct_fields="insert",
-                    extra_struct_fields="ignore",
-                ),
-                extra_columns="ignore",
-                missing_columns="insert",
-            )
-            .select(selected_columns or cs.all())
-            .collect()
-        )
+        raw = scan_parquet(source, selected_columns=selected_columns).collect()
 
     if not exclude_complex_types:
         return raw
@@ -75,6 +108,7 @@ def write_to_parquet(
     output_path: str | Path,
     logger: logging.Logger = util_logger,
     append: bool = True,
+    partition_cols: list[str] | None = None,
 ) -> None:
     """Writes a Polars DataFrame to a Parquet file.
 
@@ -90,6 +124,7 @@ def write_to_parquet(
             If not provided, a default logger will be used (or you can ensure
             `util_logger` is globally available).
         append (bool): Whether to append to existing files or overwrite them. Defaults to False.
+        partition_cols (list[str] | None): List of columns to partition by (optional - mutually exclusive with append).
 
     Return:
         None
@@ -105,8 +140,81 @@ def write_to_parquet(
             output_path += fname
         else:
             output_path = output_path / fname
-    df.write_parquet(output_path)
-    logger.info("Parquet written to {}".format(output_path))
+
+    if not partition_cols:
+        df.write_parquet(output_path)
+        logger.info("Parquet written to {}".format(output_path))
+    else:
+        df.rechunk().write_parquet(
+            output_path,
+            use_pyarrow=True,
+            pyarrow_options={"compression": "snappy", "partition_cols": partition_cols},
+        )
+
+
+def sink_to_parquet(
+    lazy_df: pl.LazyFrame,
+    output_path: str | Path,
+    partition_cols: list[str] | None = None,
+    logger: logging.Logger = None,
+    append: bool = True,
+) -> None:
+    """
+    Sinks a Polars LazyFrame directly to Parquet using sink_parquet (fully lazy), with optional partitioning.
+
+    Args:
+        lazy_df (pl.LazyFrame): The Polars LazyFrame to write.
+        output_path (str | Path): Directory path to sink Parquet files.
+        partition_cols (list[str] | None): Columns to partition by. Defaults to None.
+        logger (logging.Logger): Optional logger for messages. Defaults to None.
+        append (bool): Whether to append (True) or overwrite (False). Defaults to True.
+
+    Returns:
+        None: This function does not return any value.
+
+    Raises:
+        Exception: If writing the LazyFrame to Parquet fails, e.g., due to file system errors, invalid paths, or issues with the LazyFrame.
+    """
+    if logger is None:
+        logger = logging.getLogger(__name__)
+
+    if lazy_df is None or len(lazy_df.collect_schema().names()) == 0:
+        logger.info("The provided LazyFrame was empty. No data was written.")
+        return
+
+    if append:
+        fname = f"{uuid.uuid4()}.parquet"
+        if isinstance(output_path, str):
+            output_path += fname
+        else:
+            output_path = output_path / fname
+
+    try:
+        if partition_cols:
+            pad_cols = [col for col in partition_cols if col in ("day", "month")]
+
+            if pad_cols:
+                lazy_df = lazy_df.with_columns(
+                    [pl.col(c).cast(pl.Utf8).str.zfill(2) for c in pad_cols]
+                )
+
+            path = pl.PartitionByKey(
+                base_path=f"{output_path}",
+                include_key=False,
+                by=partition_cols,
+            )
+            lazy_df.sink_parquet(path=path, mkdir=True, engine="streaming")
+            logger.info(
+                f"LazyFrame sunk to Parquet at {output_path} partitioned by {partition_cols}"
+            )
+        else:
+            lazy_df.sink_parquet(output_path, engine="streaming")
+            logger.info(
+                f"LazyFrame sunk to Parquet at {output_path} without partitioning"
+            )
+    except Exception as e:
+        logger.error(f"Failed to sink LazyFrame to Parquet: {e}")
+        raise
 
 
 def get_args(*args: tuple) -> argparse.Namespace:
@@ -137,7 +245,29 @@ def get_args(*args: tuple) -> argparse.Namespace:
         raise argparse.ArgumentError(None, "Error parsing argument")
 
 
-def generate_s3_dir(destination_prefix, domain, dataset, date, version="1.0.0"):
+def generate_s3_dir(
+    destination_prefix: str,
+    domain: str,
+    dataset: str,
+    date: date,
+    version: str = "1.0.0",
+) -> str:
+    """Generates an s3 URI from componant parts of the address and prints the location to stdout (standard output stream).
+
+    Example:
+        generate_s3_dir("s3://my-bucket", "my-domain", "my-dataset", date.today(), "1.0.0")
+        returns "s3://my-bucket/domain=my-domain/dataset=my-dataset/version=1.0.0/year=YYYY/month=MM/day=DD/import_date=YYYYMMDD/"
+
+    Args:
+        destination_prefix(str): The address of the s3 bucket.
+        domain(str): The value of the domain key for the URI path.
+        dataset(str): The value of the dataset key for the URI path.
+        date(date): The date to be used to construct the import_date, year, month, and day partition values for the URI path.
+        version(str): The value of the version key for the URI path. Defaults to "1.0.0".
+
+    Returns:
+        str: The desired s3 URI
+    """
     year = f"{date.year}"
     month = f"{date.month:02d}"
     day = f"{date.day:02d}"
@@ -184,6 +314,17 @@ def send_sns_notification(
     message: str,
     region_name: str = "eu-west-2",
 ) -> None:
+    """Publish an SNS notification based on given data.
+
+    Args:
+        topic_arn(str): The ARN for the SNS topic.
+        subject(str): The SNS subject line.
+        message(str): The SNS message.
+        region_name(str): Sets the region for the boto3 client. Defaults to "eu-west-2"
+
+    Raises:
+        ClientError: If there is an error writing to SNS
+    """
     sns_client = boto3.client("sns", region_name=region_name)
     try:
         sns_client.publish(TopicArn=topic_arn, Subject=subject, Message=message)
@@ -220,3 +361,17 @@ def parse_arg_by_type(arg: str) -> bool | int | float | str:
             return str(stripped)
     except (ValueError, TypeError, IndexError):
         return str(arg)
+
+
+def split_s3_uri(uri: str) -> tuple[str, str]:
+    """
+    Converts a given string of an s3 uri into its bucket and key names
+
+    Args:
+        uri (str): The s3 uri to be split.
+
+    Returns:
+        tuple[str, str]: A tuple of the bucket and key substrings from the s3 uri.
+    """
+    bucket, prefix = uri.replace("s3://", "").split("/", 1)
+    return bucket, prefix

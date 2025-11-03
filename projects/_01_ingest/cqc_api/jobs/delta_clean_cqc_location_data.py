@@ -85,6 +85,7 @@ ons_cols_to_import = [
 def main(
     cqc_location_source: str,
     cleaned_ons_postcode_directory_source: str,
+    manual_postcode_corrections_source: str,
     cleaned_cqc_location_destination: str,
     gac_service_destination: str,
     regulated_activities_destination: str,
@@ -230,6 +231,7 @@ def main(
         ons_postcode_directory_df,
         postcode_matching_destination,
         dimension_update_date,
+        manual_postcode_corrections_source,
     )
 
     cqc_location_df = cqc_location_df.drop(CQCL.postal_code, CQCL.postal_address_line1)
@@ -254,6 +256,7 @@ def create_postcode_matching_dimension(
     postcode_df: DataFrame,
     dimension_location: str,
     dimension_update_date: str,
+    manual_postcode_corrections_source: str,
 ) -> DataFrame:
     """
     Creates (or updates) the postcode matching dimension by comparing current CQC data
@@ -270,6 +273,7 @@ def create_postcode_matching_dimension(
         dimension_location (str): S3 path where the dimension data should be stored
             dimension parquet file is stored.
         dimension_update_date (str): Date string in 'YYYYMMDD' format for creating partition keys.
+        manual_postcode_corrections_source (str): The s3 URI for the incorrect postcode csv.
 
     Returns:
         DataFrame: Dataframe of delta dimension table, with rows of the changes since the last update.
@@ -292,6 +296,7 @@ def create_postcode_matching_dimension(
             Keys.import_date,
         ),
         postcode_df,
+        manual_postcode_corrections_source,
     )
 
     if previous_dimension:
@@ -411,6 +416,8 @@ def fill_missing_provider_ids_from_other_rows(cqc_df: DataFrame) -> DataFrame:
     return cqc_df
 
 
+# converted to polars -> projects\_01_ingest\cqc_api\fargate\utils\locations_4_clean_utils.py
+# renamed as clean_and_impute_registration_date.
 def create_cleaned_registration_date_column(cqc_df: DataFrame) -> DataFrame:
     """
     Adds a new column which is a cleaned and imputed copy of registrationdate.
@@ -520,6 +527,7 @@ def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
     return df
 
 
+# Converted to polars -> Used polars functions flatten_struct_fields and impute_missing_values instead.
 def impute_historic_relationships(df: DataFrame) -> DataFrame:
     """
     Imputes historic relationships for locations in the given DataFrame.
@@ -575,6 +583,7 @@ def impute_historic_relationships(df: DataFrame) -> DataFrame:
     return df
 
 
+# Converted to polars -> Used polars functions flatten_struct_fields and impute_missing_values instead.
 def get_relationships_where_type_is_predecessor(df: DataFrame) -> DataFrame:
     """
     Filters and aggregates relationships of type 'HSCA Predecessor' for each location.
@@ -614,6 +623,7 @@ def get_relationships_where_type_is_predecessor(df: DataFrame) -> DataFrame:
     return df
 
 
+# Converted to polars -> projects._01_ingest.cqc_api.fargate.utils.flatten_utils.impute_missing_struct_columns
 def impute_missing_struct_column(df: DataFrame, column_name: str) -> DataFrame:
     """
     Imputes missing rows in a struct col in the DataFrame by filling with known values from other import_dates.
@@ -786,6 +796,7 @@ def realign_carehome_column_with_primary_service(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects\_01_ingest\cqc_api\fargate\utils\locations_4_clean_utils.py
 def add_related_location_column(df: DataFrame) -> DataFrame:
     """
     Adds a column which flags whether the location was related to a previous location or not
@@ -845,6 +856,7 @@ if __name__ == "__main__":
     (
         cqc_location_source,
         cleaned_ons_postcode_directory_source,
+        manual_postcode_corrections_source,
         cleaned_cqc_location_destination,
         gac_service_dest,
         regulated_activities_dest,
@@ -858,6 +870,10 @@ if __name__ == "__main__":
         (
             "--cleaned_ons_postcode_directory_source",
             "Source s3 directory for parquet ONS postcode directory dataset",
+        ),
+        (
+            "--manual_postcode_corrections_source",
+            "Source s3 location for incorrect postcode csv dataset",
         ),
         (
             "--cleaned_cqc_location_destination",
@@ -883,6 +899,7 @@ if __name__ == "__main__":
     main(
         cqc_location_source,
         cleaned_ons_postcode_directory_source,
+        manual_postcode_corrections_source,
         cleaned_cqc_location_destination,
         gac_service_dest,
         regulated_activities_dest,

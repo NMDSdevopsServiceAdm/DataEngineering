@@ -164,6 +164,7 @@ def is_csv(filename):
     return filename.endswith(".csv")
 
 
+# converted to polars -> polars_utils.utils.py
 def split_s3_uri(uri):
     bucket, prefix = uri.replace("s3://", "").split("/", 1)
     return bucket, prefix

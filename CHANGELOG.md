@@ -22,6 +22,10 @@ All notable changes to this project will be documented in this file.
 
 - Tagging added by default to all Terraform elements
 
+- Plan of action for new CQC Ingestion process.
+
+- Added validation script for flatten CQC location process and test script for this validation.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
@@ -71,9 +75,30 @@ All notable changes to this project will be documented in this file.
 
 - Removed locations from CQC delta clean when registration status or location type are null.
 
+- Added placeholder tasks for new processes in [Transform-CQC-Data step function](./terraform/pipeline/step-functions/dynamic/Transform-CQC-Data.json).
+
 - Changed CQC location clean validation script expected row count to exclude raw data adjustment locations.
 
+- Created a job to flatten CQC location data to remove some unwanted data and simplify complex struct columns.
+
+- Created a job to clean the full CQC location data to remove some unwanted data, join in ONS postcode data and split registered and deregistered locations.
+
+- Moved the preparation of worker job role data into its own polars task in the ind CQC estimates pipeline.
+
+- Decided not to convert the pyspark utils impute_historic_relationships and get_relationships_where_type_is_predecessor.
+  Instead I have:
+  Added relationships to flatten_struct_fields to extract types into new column relationships_types.
+  Added relationships_types to impute_missing_values to back/forward fill gaps.
+
+- Converted cleaning util add_related_location_flag from pyspark to polars. Called the util in cqc_locations_4_full_clean.py script.
+
+- Converted clean_and_impute_registration_date function from pyspark to polars.
+
+- Added call for premade polars util extract_registered_manager_names to cqc_locations_2_flatten, which will create
+  registered_manager_names column. Also added registered_manager_names column to impute_missing_values in cqc_locations_4_full_clean.
+
 ### Improved
+- Moved postcode corrections dictionary into a csv file in s3.
 
 
 ## [v2025.08.0] - 09/09/2025
@@ -82,6 +107,8 @@ All notable changes to this project will be documented in this file.
 - New function added within flatten_cqc_ratings_job to flatten the new assessment column which is now used by CQC to publish the ratings data.
 
 - Added current_lsoa21 column to the IND CQC pipeline. This column is now included across all jobs, ensuring it is present the Archive outputs.
+
+- Added a new generic sink_to_parquet function in polars_utils for saving LazyFrames to s3.
 
 
 ### Changed
@@ -117,6 +144,13 @@ All notable changes to this project will be documented in this file.
 
 - Stopped the filtering of non social care, deregistered and specialist college locations in the cleaning of delta locations data.
   The removal of these not required locations happens in merge_ind_cqc_data job.
+
+- Added tests for raw data adjustment function is_valid_location.
+
+- Added removal of invalid locations to cqc_locations_2_flatten task and its validation check comparator dataframe.
+
+- Converted CQC cleaning functions allocate_primary_service_type and realign_carehome_column_with_primary_service from pyspark to polars.
+  The code exists in a cleaning utils script now, instead of in the job script.
 
 ### Improved
 

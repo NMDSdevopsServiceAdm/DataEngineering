@@ -8,18 +8,19 @@ import unittest
 from datetime import datetime
 from glob import glob
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import boto3
 import polars as pl
+import polars.testing as pl_testing
 from botocore.exceptions import ClientError
 from moto import mock_aws, sns
 from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
 
 from polars_utils import utils
-from polars_utils.utils import write_to_parquet
 
 SRC_PATH = "polars_utils.validation.actions"
+PATCH_PATH = "polars_utils.utils"
 
 
 class TestUtils(unittest.TestCase):
@@ -59,6 +60,61 @@ class TestUtils(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
+
+
+@patch(f"{PATCH_PATH}.boto3.client")
+class TestScanParquet(TestUtils):
+    def test_uses_schema(self, mock_s3_client: Mock):
+        # GIVEN
+        #   Dataframe written to parquet and schema is directly inferred
+        self.df.write_parquet(self.temp_dir / "df.parquet")
+        schema = self.df.schema
+        #   File mocked as existing
+        mock_s3_client.return_value.list_objects_v2.return_value = ["Contents"]
+
+        # WHEN
+        return_lf = utils.scan_parquet(source=self.temp_dir, schema=schema)
+
+        # THEN
+        #   The returned instance should be a LazyFrame
+        self.assertIsInstance(return_lf, pl.LazyFrame)
+        #   The returned lf should be equal to the dataframe that was originally written out
+        pl_testing.assert_frame_equal(self.df.lazy(), return_lf)
+
+    def test_infers_schema_if_not_provided(self, mock_s3_client: Mock):
+        # GIVEN
+        #   Dataframe written to parquet but no schema is inferred
+        self.df.write_parquet(self.temp_dir / "df.parquet")
+        #   File mocked as existing
+        mock_s3_client.return_value.list_objects_v2.return_value = ["Contents"]
+
+        # WHEN
+        return_lf = utils.scan_parquet(source=self.temp_dir)
+
+        # THEN
+        #   The returned instance should be a LazyFrame
+        self.assertIsInstance(return_lf, pl.LazyFrame)
+        #   The returned lf should be equal to the dataframe that was originally written out
+        pl_testing.assert_frame_equal(self.df.lazy(), return_lf)
+
+    def test_selects_columns(self, mock_s3_client: Mock):
+        # GIVEN
+        #   Dataframe written to parquet but no schema is inferred
+        self.df.write_parquet(self.temp_dir / "df.parquet")
+        selected_columns = ["someId"]
+        #   File mocked as existing
+        mock_s3_client.return_value.list_objects_v2.return_value = ["Contents"]
+
+        # WHEN
+        return_lf = utils.scan_parquet(
+            source=self.temp_dir, selected_columns=selected_columns
+        )
+
+        # THEN
+        #   The returned instance should be a LazyFrame
+        self.assertIsInstance(return_lf, pl.LazyFrame)
+        #   The returned lf should be equal to the dataframe that was originally written out
+        pl_testing.assert_frame_equal(self.df.select("someId").lazy(), return_lf)
 
 
 class TestReadParquet(TestUtils):
@@ -124,18 +180,105 @@ class TestWriteParquet(TestUtils):
     def test_write_parquet_writes_with_append(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
         destination: str = str(self.temp_dir) + "/"
-        write_to_parquet(df, destination, self.logger)
-        write_to_parquet(df, destination, self.logger)
+        utils.write_to_parquet(df, destination, self.logger)
+        utils.write_to_parquet(df, destination, self.logger)
         self.assertEqual(len(glob(destination + "/**", recursive=True)), 3)
 
     def test_write_parquet_writes_with_overwrite(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
         destination = self.temp_dir / "test.parquet"
-        write_to_parquet(df, destination, self.logger, append=False)
-        write_to_parquet(df, destination, self.logger, append=False)
+        utils.write_to_parquet(df, destination, self.logger, append=False)
+        utils.write_to_parquet(df, destination, self.logger, append=False)
 
         files = glob(os.path.join(self.temp_dir, "*.parquet"))
         self.assertEqual(len(files), 1)
+
+
+class TestSinkParquet(TestUtils):
+    def test_sink_parquet_does_nothing_for_empty_lazyframe(self):
+        lazy_df: pl.LazyFrame = pl.DataFrame({}).lazy()
+        destination = self.temp_dir / "test.parquet"
+        with self.assertLogs(self.logger) as cm:
+            utils.sink_to_parquet(
+                lazy_df, destination, None, logger=self.logger, append=False
+            )
+        self.assertFalse(destination.exists())
+        self.assertTrue(
+            "The provided LazyFrame was empty. No data was written." in cm.output[0]
+        )
+
+    def test_sink_parquet_writes_simple_lazyframe(self):
+        df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+        lazy_df = df.lazy()
+        destination: str = str(self.temp_dir) + "/"
+        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=True)
+        files = glob(os.path.join(str(destination), "*.parquet"))
+        self.assertEqual(len(files), 1)
+
+    def test_sink_parquet_writes_with_append(self):
+        df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
+        lazy_df = df.lazy()
+        destination: str = str(self.temp_dir) + "/"
+        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=True)
+        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=True)
+        files = glob(os.path.join(destination, "*.parquet"))
+        self.assertEqual(len(files), 2)
+
+    def test_sink_parquet_writes_with_overwrite(self):
+        df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
+        lazy_df = df.lazy()
+        destination = self.temp_dir / "test.parquet"
+        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=False)
+        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=False)
+
+        files = glob(os.path.join(self.temp_dir, "*.parquet"))
+        self.assertEqual(len(files), 1)
+
+    def test_sink_parquet_with_partitioning(self):
+        df: pl.DataFrame = pl.DataFrame(
+            {"a": [1, 2, 1, 2], "b": [4, 5, 6, 7], "part": ["x", "x", "y", "y"]}
+        )
+        lazy_df = df.lazy()
+        destination = self.temp_dir / "partition_test"
+        utils.sink_to_parquet(
+            lazy_df,
+            destination,
+            partition_cols=["part"],
+            logger=self.logger,
+            append=False,
+        )
+        partitions = [d.name for d in destination.iterdir() if d.is_dir()]
+        self.assertTrue(set(partitions) == {"part=x", "part=y"})
+
+    def test_day_month_partition_casting(self):
+        lazy_df = pl.LazyFrame(
+            {
+                "id": ["1-001", "1-002"],
+                "value": [1, 200],
+                "year": [2024, 2025],
+                "month": [4, 11],
+                "day": [15, 5],
+            }
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+
+            utils.sink_to_parquet(
+                lazy_df,
+                output_path,
+                partition_cols=["year", "month", "day"],
+                append=False,
+            )
+
+            written_files = [str(p) for p in output_path.rglob("*.parquet")]
+
+            expected_partition_1 = Path("year=2024", "month=04", "day=15")
+            expected_partition_2 = Path("year=2025", "month=11", "day=05")
+
+            self.assertEqual(len(written_files), 2)
+            self.assertTrue(any(str(expected_partition_1) in p for p in written_files))
+            self.assertTrue(any(str(expected_partition_2) in p for p in written_files))
 
 
 class TestGenerateS3Dir(TestUtils):
@@ -329,3 +472,12 @@ class SendSnsNotificationTests(TestUtils):
         self.assertEqual("[1, 2, 3]", utils.parse_arg_by_type("[1, 2, 3]"))
         self.assertEqual("{1:2, 3:4}", utils.parse_arg_by_type("{1:2, 3:4}"))
         self.assertEqual("2025-06-19", utils.parse_arg_by_type("2025-06-19"))
+
+
+class TestSplitS3Uri(TestUtils):
+    def test_split_s3_uri(self):
+        s3_uri = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/"
+        bucket_name, key_name = utils.split_s3_uri(s3_uri)
+
+        self.assertEqual(bucket_name, "sfc-data-engineering-raw")
+        self.assertEqual(key_name, "domain=ASCWDS/dataset=workplace/")

@@ -5,8 +5,8 @@ from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 
 import utils.cleaning_utils as cUtils
-from projects._01_ingest.cqc_api.utils.postcode_replacement_dictionary import (
-    ManualPostcodeCorrections,
+from projects._01_ingest.cqc_api.utils.utils import (
+    read_manual_postcode_corrections_csv_to_dict,
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
@@ -23,9 +23,11 @@ from utils.column_values.categorical_column_values import (
 )
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.utils.postcode_matcher.py
 def run_postcode_matching(
     locations_df: DataFrame,
     postcode_df: DataFrame,
+    manual_postcode_corrections_source: str,
 ) -> DataFrame:
     """
     Runs full postcode matching logic and raises error if final validation fails.
@@ -43,6 +45,7 @@ def run_postcode_matching(
     Args:
         locations_df (DataFrame): DataFrame of workplaces with postcodes.
         postcode_df (DataFrame): ONS postcode directory.
+        manual_postcode_corrections_source (str): The s3 URI for the incorrect postcode csv.
 
     Returns:
         DataFrame: Fully matched DataFrame.
@@ -89,7 +92,9 @@ def run_postcode_matching(
     )
 
     # Step 3 - Replace known postcode issues using the invalid postcode dictionary.
-    amended_locations_df = amend_invalid_postcodes(unmatched_reassigned_locations_df)
+    amended_locations_df = amend_invalid_postcodes(
+        unmatched_reassigned_locations_df, manual_postcode_corrections_source
+    )
     matched_amended_locations_df, unmatched_amended_locations_df = join_postcode_data(
         amended_locations_df, postcode_df, CQCLClean.postcode_cleaned
     )
@@ -120,6 +125,7 @@ def run_postcode_matching(
     return final_matched_df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.utils.postcode_matcher.py
 def clean_postcode_column(
     df: DataFrame, postcode_col: str, cleaned_col_name: str, drop_col: bool
 ) -> DataFrame:
@@ -144,6 +150,7 @@ def clean_postcode_column(
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.utils.postcode_matcher.py
 def join_postcode_data(
     locations_df: DataFrame,
     postcode_df: DataFrame,
@@ -176,6 +183,7 @@ def join_postcode_data(
     return matched_df, unmatched_df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.utils.postcode_matcher.py
 def get_first_successful_postcode_match(
     unmatched_df: DataFrame,
     matched_df: DataFrame,
@@ -226,7 +234,10 @@ def get_first_successful_postcode_match(
     return reassigned_df
 
 
-def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
+# converted to polars -> projects._01_ingest.cqc_api.fargate.utils.postcode_matcher.py
+def amend_invalid_postcodes(
+    df: DataFrame, manual_postcode_corrections_source: str
+) -> DataFrame:
     """
     Replace invalid postcodes in the DataFrame using a predefined mapping.
 
@@ -236,11 +247,14 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
 
     Args:
         df (DataFrame): Input DataFrame containing a column of postcodes.
+        manual_postcode_corrections_source (str): The s3 URI for the incorrect postcode csv.
 
     Returns:
         DataFrame: A new DataFrame with amended postcodes.
     """
-    mapping_dict: Dict[str, str] = ManualPostcodeCorrections.postcode_corrections_dict
+    mapping_dict: Dict[str, str] = read_manual_postcode_corrections_csv_to_dict(
+        manual_postcode_corrections_source
+    )
 
     mapping_expr = F.create_map([F.lit(x) for kv in mapping_dict.items() for x in kv])
 
@@ -254,6 +268,7 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.utils.postcode_matcher.py
 def truncate_postcode(df: DataFrame) -> DataFrame:
     """
     Creates a new column which has the last 2 characters of the postcode cleaned column removed
@@ -272,6 +287,7 @@ def truncate_postcode(df: DataFrame) -> DataFrame:
     )
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.utils.postcode_matcher.py
 def create_truncated_postcode_df(df: DataFrame) -> DataFrame:
     """
     Generates a DataFrame containing one representative row for each truncated postcode.
@@ -322,6 +338,7 @@ def create_truncated_postcode_df(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.utils.postcode_matcher.py
 def raise_error_if_unmatched(unmatched_df: DataFrame) -> None:
     """
     Raise error if there are any unmatched postcodes left.
@@ -362,6 +379,7 @@ def raise_error_if_unmatched(unmatched_df: DataFrame) -> None:
     raise TypeError(f"Unmatched postcodes found: {errors}")
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.utils.postcode_matcher.py
 def combine_matched_dataframes(dataframes: List[DataFrame]) -> DataFrame:
     """
     Combines a list of DataFrames using unionByName.

@@ -28,12 +28,12 @@ variable "tag_name" {
 
 variable "cpu_size" {
   type    = number
-  default = 4096
+  default = 8192
 }
 
 variable "ram_size" {
   type    = number
-  default = 16384
+  default = 61440
 }
 
 variable "environment" {

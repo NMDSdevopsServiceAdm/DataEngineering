@@ -18,7 +18,7 @@
                 "endDate.$": "$$.State.EnteredTime"
               },
               "ResultSelector": {
-                "script": "delta_download_cqc_providers.py",
+                "script": "cqc_providers_1_api_delta_download.py",
                 "dest_arg": "--destination_prefix",
                 "dest_value": "${dataset_bucket_uri}",
                 "start_arg": "--start_timestamp",
@@ -109,7 +109,7 @@
                 "endDate.$": "$$.State.EnteredTime"
               },
               "ResultSelector": {
-                "script": "delta_download_cqc_locations.py",
+                "script": "cqc_locations_1_api_delta_download.py",
                 "dest_arg": "--destination_prefix",
                 "dest_value": "${dataset_bucket_uri}",
                 "start_arg": "--start_timestamp",
@@ -158,7 +158,7 @@
                 "Type": "String"
               },
               "ResultSelector": {
-                "script": "validate_delta_locations_api_raw.py",
+                "script": "validate_cqc_locations_1_api_delta_download.py",
                 "bucket_name_arg": "--bucket_name",
                 "bucket_name": "${dataset_bucket_name}",
                 "source_path_arg": "--source_path",
