@@ -107,6 +107,8 @@ All notable changes to this project will be documented in this file.
   column with null.
   Then the imputation happens as before, but only populated lists are used for filling.
 
+- Converted function remove_specialist_colleges from pyspark to polars.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
