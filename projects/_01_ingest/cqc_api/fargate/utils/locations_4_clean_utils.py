@@ -167,3 +167,53 @@ def add_related_location_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
     return cqc_lf
+
+
+def clean_and_impute_registration_date(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Adds a new column imputed_registration_date.
+
+    1. Copy registration_date into imputed_registration_date when it is prior to earliest cqc_location_import_date, otherwise null.
+    2. Fill nulls in imputed_registration_date based on:
+        - when locationid has a registration_date at any point in time, then fill with min registration_date.
+        - when locationid has no registration_date at any point in time, then fill with min cqc_location_import_date.
+
+    Args:
+        cqc_lf (pl.LazyFrame): A LazyFrame with columns registration_date and cqc_location_import_date.
+
+    Returns:
+        pl.LazyFrame: Input LazyFrame with new column imputed_registration_date.
+
+    """
+
+    # 1. Copy registration_date into imputed_registration_date
+    cqc_lf = cqc_lf.with_columns(
+        pl.when(
+            pl.col(CQCLClean.registration_date)
+            <= pl.col(CQCLClean.cqc_location_import_date)
+            .min()
+            .over(CQCLClean.location_id)
+        )
+        .then(pl.col(CQCLClean.registration_date))
+        .otherwise(None)
+        .alias(CQCLClean.imputed_registration_date)
+    )
+
+    # 2. Fill nulls in imputed_registration_date
+    cqc_lf = cqc_lf.with_columns(
+        pl.when(pl.col(CQCLClean.imputed_registration_date).is_null())
+        .then(
+            pl.col(CQCLClean.imputed_registration_date)
+            .min()
+            .over(CQCLClean.location_id)
+            .fill_null(
+                pl.col(CQCLClean.cqc_location_import_date)
+                .min()
+                .over(CQCLClean.location_id)
+            )
+        )
+        .otherwise(pl.col(CQCLClean.imputed_registration_date))
+        .alias(CQCLClean.imputed_registration_date)
+    )
+
+    return cqc_lf

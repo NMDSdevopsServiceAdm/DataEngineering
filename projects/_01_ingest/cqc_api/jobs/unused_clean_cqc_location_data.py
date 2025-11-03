@@ -230,6 +230,8 @@ def fill_missing_provider_ids_from_other_rows(cqc_df: DataFrame) -> DataFrame:
     return cqc_df
 
 
+# converted to polars -> projects\_01_ingest\cqc_api\fargate\utils\locations_4_clean_utils.py
+# renamed as clean_and_impute_registration_date.
 def create_cleaned_registration_date_column(cqc_df: DataFrame) -> DataFrame:
     """
     Adds a new column which is a cleaned and imputed copy of registrationdate.

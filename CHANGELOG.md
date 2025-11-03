@@ -92,6 +92,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted cleaning util add_related_location_flag from pyspark to polars. Called the util in cqc_locations_4_full_clean.py script.
 
+- Converted clean_and_impute_registration_date function from pyspark to polars.
+
 - Added call for premade polars util extract_registered_manager_names to cqc_locations_2_flatten, which will create
   registered_manager_names column. Also added registered_manager_names column to impute_missing_values in cqc_locations_4_full_clean.
 
