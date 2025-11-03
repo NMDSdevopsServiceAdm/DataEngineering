@@ -316,7 +316,7 @@ jobs:
             terraform init -input=false -backend-config=../non_prod.s3.tfbackend
             terraform workspace select ${SANITISED_CIRCLE_BRANCH}
             # --- Force-empty dataset bucket for this branch ---
-            BUCKET_NAME=$(cat datasets_bucket_name)
+            BUCKET_NAME="sfc-${SANITISED_CIRCLE_BRANCH}-datasets"
             echo "Force-emptying branch bucket: ${BUCKET_NAME}"
             aws s3 rm "s3://${BUCKET_NAME}" --recursive || true
             # --- Run destroy ---
