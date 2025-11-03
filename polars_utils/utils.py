@@ -1,5 +1,6 @@
 import argparse
 import logging
+import re
 import uuid
 from datetime import date
 from pathlib import Path
@@ -275,6 +276,40 @@ def generate_s3_dir(
     output_dir = f"{destination_prefix}/domain={domain}/dataset={dataset}/version={version}/year={year}/month={month}/day={day}/import_date={import_date}/"
     print(f"Generated output s3 dir: {output_dir}")
     return output_dir
+
+
+def list_s3_parquet_import_dates(s3_prefix: str) -> list[int]:
+    """
+    List import_dates present in a partitioned S3 path.
+
+    Args:
+        s3_prefix (str): Base S3 path to the full flattened dataset.
+
+    Returns:
+        list[int]: Sorted list of import_date integers.
+    """
+
+    match_uri = re.match(r"s3://([^/]+)/(.+)", s3_prefix)
+    if not match_uri:
+        return []
+
+    bucket = match_uri.group(1)
+    prefix = match_uri.group(2).rstrip("/")
+
+    s3_client = boto3.client("s3")
+    paginator = s3_client.get_paginator("list_objects_v2")
+    pages = paginator.paginate(Bucket=bucket, Prefix=prefix + "/")
+
+    dates = []
+    for page in pages:
+        for obj in page.get("Contents", []):
+            key = obj["Key"]
+            m = re.search(r"import_date=(\d{8})", key)
+            if m:
+                date_val = int(m.group(1))
+                dates.append(date_val)
+
+    return sorted(dates)
 
 
 def empty_s3_folder(bucket_name: str, prefix: str) -> None:
