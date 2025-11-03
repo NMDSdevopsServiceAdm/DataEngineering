@@ -191,6 +191,21 @@ class LocationsCleanUtilsSchema:
         ]
     )
 
+    classify_specialisms_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.specialisms_offered, pl.List(pl.String())),
+        ]
+    )
+    exected_classify_specialisms_schema = pl.Schema(
+        list(classify_specialisms_schema.items())
+        + [
+            ("specialist_generalist_other_dementia", pl.String()),
+            ("specialist_generalist_other_learning_disabilities", pl.String()),
+            ("specialist_generalist_other_mental_health_conditions", pl.String()),
+        ]
+    )
+
 
 @dataclass
 class PostcodeMatcherTest:
