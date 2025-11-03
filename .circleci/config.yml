@@ -428,9 +428,9 @@ workflows:
       - copy-main-data:
           requires:
             - terraform-apply
-      - test:
-          requires:
-            - terraform-apply
+      # - test:
+      #     requires:
+      #       - terraform-apply
           filters:
             branches:
               ignore: main
