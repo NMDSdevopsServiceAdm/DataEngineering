@@ -51,6 +51,13 @@ class FullFlattenUtilsSchema:
         ]
     )
 
+    load_latest_snapshot_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.import_date, pl.Int32()),
+        ]
+    )
+
 
 @dataclass
 class ExtractRegisteredManagerNamesSchema:

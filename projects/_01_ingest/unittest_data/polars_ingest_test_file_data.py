@@ -75,11 +75,21 @@ class FlattenUtilsData:
 @dataclass
 class FullFlattenUtilsData:
     get_import_dates_to_process = [
-        ("1-001", "1-001", "1-001", "1-001"),
+        ("1-001", "1-001", "1-002", "1-002"),
         (20250101, 20250201, 20250201, 20250301),
     ]
     get_import_dates_existing = [20250101]
     expected_import_dates_to_process_list = [20250201, 20250301]
+
+    load_latest_snapshot = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        (20250101, 20250201, 20250201, 20250301),
+    ]
+    load_latest_snapshot_existing_dates = [20250101, 20250201]
+    expected_load_latest_snapshot = [
+        ("1-001", "1-002"),
+        (20250201, 20250201),
+    ]
 
 
 @dataclass

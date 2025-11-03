@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
@@ -34,11 +35,27 @@ class GetImportDatesToProcessTests(unittest.TestCase):
 
 class LoadLatestSnapshotTests(unittest.TestCase):
     def test_load_latest_snapshot_when_no_existing_snapshots(self):
-        result = job.load_latest_snapshot("s3://fake_path", [])
+        result = job.load_latest_snapshot("s3://some_path", [])
         self.assertIsNone(result)
 
-    def test_load_latest_snapshot_returns_latest_lf(self):
-        pass
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_load_latest_snapshot_returns_latest_lf(self, scan_parquet_mock: Mock):
+        lf = pl.LazyFrame(
+            data=Data.load_latest_snapshot,
+            schema=Schemas.load_latest_snapshot_schema,
+        )
+        scan_parquet_mock.return_value = lf
+
+        returned_lf = job.load_latest_snapshot(
+            "s3://some_path", Data.load_latest_snapshot_existing_dates
+        )
+
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_load_latest_snapshot,
+            schema=Schemas.load_latest_snapshot_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class CreateFullSnapshotTests(unittest.TestCase):
