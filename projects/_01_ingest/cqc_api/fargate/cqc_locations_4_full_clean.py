@@ -16,6 +16,7 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
+    Specialisms,
 )
 from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 
@@ -90,6 +91,13 @@ def main(
 
     cqc_reg_lf = cUtils.add_related_location_column(cqc_reg_lf)
     cqc_reg_lf = cqc_reg_lf.drop(CQCLClean.relationships_types)
+
+    list_of_specialisms = [
+        Specialisms.dementia,
+        Specialisms.learning_disabilities,
+        Specialisms.mental_health,
+    ]
+    cqc_reg_lf = cUtils.classify_specialisms(cqc_reg_lf, list_of_specialisms)
 
     # Scan parquet to get ONS Postcode Directory data in LazyFrame format
     ons_lf = utils.scan_parquet(
