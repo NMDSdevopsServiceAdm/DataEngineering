@@ -935,7 +935,7 @@ class LocationsCleanUtilsData:
         (["Service 1", "Service 2"], ["Service 1", "Service 2"], None, None),
     ]
 
-    impute_missing_values_overwrite_empty_lists_rows = [
+    impute_missing_values_overwrites_empty_lists_rows = [
         ("1-001", "1-001", "1-001", "1-001", "1-001"),
         (
             date(2024, 1, 1),
@@ -947,7 +947,7 @@ class LocationsCleanUtilsData:
         ("1-101", "1-101", "1-101", "1-101", "1-101"),
         ([], ["Service 1"], [], ["Service 2"], None),
     ]
-    expected_impute_missing_values_overwrite_empty_lists_rows = [
+    expected_impute_missing_values_overwrites_empty_lists_rows = [
         ("1-001", "1-001", "1-001", "1-001", "1-001"),
         (
             date(2024, 1, 1),

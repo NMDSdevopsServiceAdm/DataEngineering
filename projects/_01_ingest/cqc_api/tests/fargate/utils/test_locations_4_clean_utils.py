@@ -146,15 +146,15 @@ class ImputeMissingValuesTests(unittest.TestCase):
 
         pl_testing.assert_frame_equal(result_lf, expected_lf)
 
-    def test_multiple_partitions_with_varied_missing_patterns(self):
+    def test_overwrites_empty_lists(self):
         """Tests empty lists are replaced by correct poplulated list"""
 
         lf = pl.LazyFrame(
-            Data.impute_missing_values_overwrite_empty_lists_rows,
+            Data.impute_missing_values_overwrites_empty_lists_rows,
             schema=Schemas.impute_missing_values_schema,
         )
         expected_lf = pl.LazyFrame(
-            Data.expected_impute_missing_values_overwrite_empty_lists_rows,
+            Data.expected_impute_missing_values_overwrites_empty_lists_rows,
             schema=Schemas.impute_missing_values_schema,
         )
 
