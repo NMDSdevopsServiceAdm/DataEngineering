@@ -1,11 +1,13 @@
 import polars as pl
 
+from polars_utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_values.categorical_column_values import (
     CareHome,
     PrimaryServiceType,
+    RegistrationStatus,
     RelatedLocation,
     Sector,
     Services,
@@ -13,6 +15,40 @@ from utils.column_values.categorical_column_values import (
 from utils.column_values.categorical_column_values import (
     SpecialistGeneralistOther as SpecGenOther,
 )
+
+
+def save_deregistered_locations(
+    cqc_lf: pl.LazyFrame, cqc_deregistered_locations_destination: str
+) -> None:
+    """
+    Filters to deregistered locations from the most recent import date and saves as parquet file.
+
+    Steps performed:
+    1. Selects only the required columns.
+    2. Filters rows where registration_status is 'deregistered'.
+    3. Keeps only rows corresponding to the latest cqc_location_import_date.
+    4. Writes the resulting LazyFrame to the specified Parquet destination.
+
+    Args:
+        cqc_lf (pl.LazyFrame): LazyFrame containing CQC location data.
+        cqc_deregistered_locations_destination (str): S3 URI to save CQC deregistered locations data.
+    """
+    required_columns = [
+        CQCLClean.cqc_location_import_date,
+        CQCLClean.location_id,
+        CQCLClean.registration_status,
+        CQCLClean.deregistration_date,
+    ]
+
+    cqc_lf = cqc_lf.select(*required_columns).filter(
+        pl.col(CQCLClean.registration_status) == RegistrationStatus.deregistered
+    )
+
+    cqc_lf = utils.filter_to_maximum_value_in_column(
+        cqc_lf, CQCLClean.cqc_location_import_date
+    )
+
+    utils.sink_to_parquet(cqc_lf, cqc_deregistered_locations_destination, append=False)
 
 
 def clean_provider_id_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:

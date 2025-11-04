@@ -51,12 +51,7 @@ def main(
 
     # TODO - (1115) remove_specialist_colleges
 
-    # TODO - (1116) save deregistered locations for reconciliation process
-    # - filter to deregistered locations only in the most recent import date
-    # - select cols req by reconciliation process
-    #   (CQCLClean.cqc_location_import_date, CQCLClean.location_id, CQCLClean.registration_status, CQCLClean.deregistration_date)
-    # - sink parquet to s3
-    # - Create ticket to update reconciliation process after this (some steps won't be required now)
+    cUtils.save_deregistered_locations(cqc_lf, cqc_deregistered_locations_destination)
 
     cqc_reg_lf = cqc_lf.filter(
         pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
