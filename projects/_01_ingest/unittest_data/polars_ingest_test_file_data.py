@@ -886,13 +886,14 @@ class ExtractRegisteredManagerNamesData:
 @dataclass
 class LocationsCleanUtilsData:
     # fmt: off
-    save_deregistered_locations_rows  = [
-        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.registered, date(2025, 1, 1)),
+    save_latest_full_snapshot_rows  = [
+        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.registered, None),
         ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.deregistered, date(2025, 1, 1)),
-        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.registered, date(2025, 1, 1)),
+        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.registered, None),
         ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1)),
     ]
-    expected_save_deregistered_locations_rows = [
+    expected_save_latest_full_snapshot_rows = [
+        (date(2025, 2, 1), "1-001", RegistrationStatus.registered, None),
         (date(2025, 2, 1), "1-001", RegistrationStatus.deregistered, date(2025, 1, 1)),
     ]
     # fmt: on

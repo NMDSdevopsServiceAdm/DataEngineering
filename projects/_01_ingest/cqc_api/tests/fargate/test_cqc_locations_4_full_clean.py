@@ -7,7 +7,7 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 PATCH_PATH = "projects._01_ingest.cqc_api.fargate.cqc_locations_4_full_clean"
 
 
-class CqcLocationsFlattenTests(unittest.TestCase):
+class CqcLocationsFullCleanTests(unittest.TestCase):
     TEST_CQC_SOURCE = "some/cqc/source"
     TEST_ONS_SOURCE = "some/ons/source"
     TEST_REG_DESTINATION = "some/reg/destination"
@@ -25,13 +25,13 @@ class CqcLocationsFlattenTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.cUtils.assign_cqc_sector")
     @patch(f"{PATCH_PATH}.cUtils.clean_provider_id_column")
     @patch(f"{PATCH_PATH}.cUtils.clean_and_impute_registration_date")
-    @patch(f"{PATCH_PATH}.cUtils.save_deregistered_locations")
+    @patch(f"{PATCH_PATH}.cUtils.save_latest_full_snapshot")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_cqc_locations_data)
     def test_main_runs_successfully(
         self,
         scan_parquet_mock: Mock,
         clean_and_impute_registration_date_mock: Mock,
-        save_deregistered_locations_mock: Mock,
+        save_latest_full_snapshot_mock: Mock,
         clean_provider_id_column_mock: Mock,
         assign_cqc_sector_mock: Mock,
         remove_specialist_colleges_mock: Mock,
@@ -55,7 +55,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
             ]
         )
         clean_and_impute_registration_date_mock.assert_called_once()
-        save_deregistered_locations_mock.assert_called_once()
+        save_latest_full_snapshot_mock.assert_called_once()
         clean_provider_id_column_mock.assert_called_once()
         assign_cqc_sector_mock.assert_called_once()
         remove_specialist_colleges_mock.assert_called_once()

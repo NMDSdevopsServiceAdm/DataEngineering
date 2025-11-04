@@ -35,7 +35,7 @@ def main(
     cqc_locations_full_flattened_source: str,
     ons_postcode_directory_source: str,
     cqc_registered_locations_cleaned_destination: str,
-    cqc_deregistered_locations_destination: str,
+    cqc_full_snapshot_destination: str,
 ) -> None:
     # Scan parquet to get CQC locations full data in LazyFrame format
     cqc_lf = utils.scan_parquet(
@@ -49,7 +49,7 @@ def main(
 
     cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)
 
-    cUtils.save_deregistered_locations(cqc_lf, cqc_deregistered_locations_destination)
+    cUtils.save_latest_full_snapshot(cqc_lf, cqc_full_snapshot_destination)
 
     cqc_reg_lf = cqc_lf.filter(
         pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
@@ -129,8 +129,8 @@ if __name__ == "__main__":
             "S3 URI to save full cleaned CQC registered locations data to",
         ),
         (
-            "--cqc_deregistered_locations_destination",
-            "S3 URI to save full cleaned CQC deregistered locations data to",
+            "--cqc_full_snapshot_destination",
+            "S3 URI to save the latest full snapshot of CQC registered and deregistered locations",
         ),
     )
 
@@ -138,7 +138,7 @@ if __name__ == "__main__":
         cqc_locations_full_flattened_source=args.cqc_locations_full_flattened_source,
         ons_postcode_directory_source=args.ons_postcode_directory_source,
         cqc_registered_locations_cleaned_destination=args.cqc_registered_locations_cleaned_destination,
-        cqc_deregistered_locations_destination=args.cqc_deregistered_locations_destination,
+        cqc_full_snapshot_destination=args.cqc_full_snapshot_destination,
     )
 
     logger.info("Finished Clean Full CQC Locations job")

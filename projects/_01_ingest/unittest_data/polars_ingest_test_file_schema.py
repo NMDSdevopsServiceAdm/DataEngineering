@@ -145,7 +145,7 @@ class ExtractRegisteredManagerNamesSchema:
 
 @dataclass
 class LocationsCleanUtilsSchema:
-    save_deregistered_locations_schema = pl.Schema(
+    save_latest_full_snapshot_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
             (CQCLClean.provider_id, pl.String()),
@@ -154,7 +154,7 @@ class LocationsCleanUtilsSchema:
             (CQCLClean.deregistration_date, pl.Date()),
         ]
     )
-    expected_save_deregistered_locations_schema = pl.Schema(
+    expected_save_latest_full_snapshot_schema = pl.Schema(
         [
             (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.location_id, pl.String()),

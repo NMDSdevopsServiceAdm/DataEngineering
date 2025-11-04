@@ -17,21 +17,18 @@ from utils.column_values.categorical_column_values import (
 )
 
 
-def save_deregistered_locations(
-    cqc_lf: pl.LazyFrame, cqc_deregistered_locations_destination: str
+def save_latest_full_snapshot(
+    cqc_lf: pl.LazyFrame, cqc_full_snapshot_destination: str
 ) -> None:
     """
-    Filters to deregistered locations from the most recent import date and saves as parquet file.
+    Saves selected columns for the most recent import date as a parquet file.
 
-    Steps performed:
-    1. Selects only the required columns.
-    2. Filters rows where registration_status is 'deregistered'.
-    3. Keeps only rows corresponding to the latest cqc_location_import_date.
-    4. Writes the resulting LazyFrame to the specified Parquet destination.
+    All registered and deregistered locations in the latest full snapshot of CQC locations are saved.
+    This data is used in the Skills for Care (SfC) internal reconciliation process.
 
     Args:
         cqc_lf (pl.LazyFrame): LazyFrame containing CQC location data.
-        cqc_deregistered_locations_destination (str): S3 URI to save CQC deregistered locations data.
+        cqc_full_snapshot_destination (str): S3 URI to save CQC deregistered locations data.
     """
     required_columns = [
         CQCLClean.cqc_location_import_date,
@@ -40,15 +37,13 @@ def save_deregistered_locations(
         CQCLClean.deregistration_date,
     ]
 
-    cqc_lf = cqc_lf.select(*required_columns).filter(
-        pl.col(CQCLClean.registration_status) == RegistrationStatus.deregistered
-    )
+    cqc_lf = cqc_lf.select(*required_columns)
 
     cqc_lf = utils.filter_to_maximum_value_in_column(
         cqc_lf, CQCLClean.cqc_location_import_date
     )
 
-    utils.sink_to_parquet(cqc_lf, cqc_deregistered_locations_destination, append=False)
+    utils.sink_to_parquet(cqc_lf, cqc_full_snapshot_destination, append=False)
 
 
 def clean_provider_id_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
