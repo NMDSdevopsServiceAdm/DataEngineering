@@ -885,6 +885,18 @@ class ExtractRegisteredManagerNamesData:
 
 @dataclass
 class LocationsCleanUtilsData:
+    # fmt: off
+    save_deregistered_locations_rows  = [
+        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.registered, date(2025, 1, 1)),
+        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.deregistered, date(2025, 1, 1)),
+        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.registered, date(2025, 1, 1)),
+        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1)),
+    ]
+    expected_save_deregistered_locations_rows = [
+        (date(2025, 2, 1), "1-001", RegistrationStatus.deregistered, date(2025, 1, 1)),
+    ]
+    # fmt: on
+
     clean_provider_id_column_rows = [
         ("1-001", "1-001"),
         ("1-123456789", "1-123"),

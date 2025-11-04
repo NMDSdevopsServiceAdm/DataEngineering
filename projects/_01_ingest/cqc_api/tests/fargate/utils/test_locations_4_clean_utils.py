@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import ANY, Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
@@ -15,6 +16,42 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 
 PATCH_PATH = "projects._01_ingest.cqc_api.fargate.utils.locations_4_clean_utils"
+
+
+class SaveDeregisteredLocationsTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.lf = pl.LazyFrame(
+            data=Data.save_deregistered_locations_rows,
+            schema=Schemas.save_deregistered_locations_schema,
+            orient="row",
+        )
+        self.destination_path = "some/path"
+
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.filter_to_maximum_value_in_column")
+    def test_imported_functions_are_called(
+        self, filter_to_max_mock: Mock, sink_to_parquet_mock: Mock
+    ):
+        job.save_deregistered_locations(self.lf, self.destination_path)
+
+        filter_to_max_mock.assert_called_once()
+        sink_to_parquet_mock.assert_called_once_with(
+            ANY, self.destination_path, append=False
+        )
+
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    def test_expected_lazyframe_is_stored(self, sink_to_parquet_mock: Mock):
+        job.save_deregistered_locations(self.lf, self.destination_path)
+
+        returned_lf = sink_to_parquet_mock.call_args[0][0]
+
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_save_deregistered_locations_rows,
+            schema=Schemas.expected_save_deregistered_locations_schema,
+            orient="row",
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class CleanProviderIdColumnTests(unittest.TestCase):
