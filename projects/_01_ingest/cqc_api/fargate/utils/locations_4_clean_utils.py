@@ -7,7 +7,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_values.categorical_column_values import (
     CareHome,
     PrimaryServiceType,
-    RegistrationStatus,
     RelatedLocation,
     Sector,
     Services,
