@@ -15,16 +15,16 @@ PATCH_PATH: str = "projects._02_sfc_internal.reconciliation.jobs.reconciliation"
 
 
 class ReconciliationTests(unittest.TestCase):
-    TEST_CQC_LOCATION_API_SOURCE = "some/source"
+    TEST_CQC_DEREG_LOCATIONS_SOURCE = "some/source"
     TEST_ASCWDS_WORKPLACE_SOURCE = "another/source"
     TEST_SINGLE_SUB_DESTINATION = "some/destination"
     TEST_PARENT_DESTINATION = "another/destination"
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
-        self.test_cqc_location_api_df = self.spark.createDataFrame(
-            Data.input_cqc_location_api_rows,
-            Schemas.input_cqc_location_api_schema,
+        self.test_cqc_dereg_locations_df = self.spark.createDataFrame(
+            Data.input_cqc_dereg_locations_rows,
+            Schemas.input_cqc_dereg_locations_schema,
         )
         self.test_clean_ascwds_workplace_df = self.spark.createDataFrame(
             Data.input_ascwds_workplace_rows,
@@ -46,12 +46,12 @@ class MainTests(ReconciliationTests):
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
-            self.test_cqc_location_api_df,
+            self.test_cqc_dereg_locations_df,
             self.test_clean_ascwds_workplace_df,
         ]
 
         job.main(
-            self.TEST_CQC_LOCATION_API_SOURCE,
+            self.TEST_CQC_DEREG_LOCATIONS_SOURCE,
             self.TEST_ASCWDS_WORKPLACE_SOURCE,
             self.TEST_SINGLE_SUB_DESTINATION,
             self.TEST_PARENT_DESTINATION,

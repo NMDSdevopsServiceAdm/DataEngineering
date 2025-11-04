@@ -63,7 +63,7 @@
               "Parameters": {
                 "JobName": "${reconciliation_job_name}",
                 "Arguments": {
-                  "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_deregistered/",
+                  "--cqc_deregistered_locations_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_deregistered/",
                   "--ascwds_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/",
                   "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_singles_and_subs",
                   "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_parents"
