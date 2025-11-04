@@ -157,6 +157,8 @@ def filter_to_locations_relevant_to_reconcilition_process(
     dereg_before_current_month = (
         F.col(CQCL.registration_status) == RegistrationStatus.deregistered
     ) & (F.col(CQCL.deregistration_date) < first_of_most_recent_month)
+    dereg_since_prev_month = F.col(CQCL.deregistration_date) >= first_of_previous_month
+    null_registration_status = F.col(CQCL.registration_status).isNull()
     ascwds_parent = (
         F.col(ReconColumn.parents_or_singles_and_subs)
         == ParentsOrSinglesAndSubs.parents
@@ -165,11 +167,13 @@ def filter_to_locations_relevant_to_reconcilition_process(
         F.col(ReconColumn.parents_or_singles_and_subs)
         == ParentsOrSinglesAndSubs.singles_and_subs
     )
-    dereg_since_prev_month = F.col(CQCL.deregistration_date) >= first_of_previous_month
 
     df = df.where(
-        dereg_before_current_month
-        & (ascwds_parent | (ascwds_single_or_sub & dereg_since_prev_month))
+        null_registration_status
+        | (
+            dereg_before_current_month
+            & (ascwds_parent | (ascwds_single_or_sub & dereg_since_prev_month))
+        )
     )
     return df
 
