@@ -17,7 +17,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
     mock_cqc_locations_data = Mock(name="cqc_locations_data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.cUtils.run_postcode_matching")
+    @patch(f"{PATCH_PATH}.pmUtils.run_postcode_matching")
     @patch(f"{PATCH_PATH}.cUtils.classify_specialisms")
     @patch(f"{PATCH_PATH}.cUtils.add_related_location_column")
     @patch(f"{PATCH_PATH}.cUtils.realign_carehome_column_with_primary_service")
