@@ -109,6 +109,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted cleaning util classify_specialisms from pyspark to polars.
 
+- Converted function remove_specialist_colleges from pyspark to polars.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
