@@ -425,8 +425,7 @@ def filter_to_maximum_value_in_column(
     Returns:
         pl.LazyFrame: Filtered LazyFrame containing only rows with the maximum value.
     """
-    max_value = lf.select(pl.col(column_to_filter).max().alias("max_value"))
-
-    return lf.join(
-        max_value, left_on=column_to_filter, right_on="max_value", how="inner"
-    )
+    max_value: str = "max_value"
+    lf = lf.with_columns(pl.col(column_to_filter).max().alias(max_value))
+    lf = lf.filter(pl.col(column_to_filter) == pl.col(max_value))
+    return lf.drop(max_value)
