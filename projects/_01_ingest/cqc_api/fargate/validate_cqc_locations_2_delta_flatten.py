@@ -1,10 +1,8 @@
 import sys
 
 import pointblank as pb
-import polars as pl
 
 from polars_utils import raw_data_adjustments, utils
-from polars_utils.expressions import str_length_cols
 from polars_utils.logger import get_logger
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
@@ -12,7 +10,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.column_names.validation_table_columns import Validation
 
 compare_columns_to_import = [
     Keys.import_date,
@@ -37,9 +34,8 @@ def main(
     """
     source_df = utils.read_parquet(
         f"s3://{bucket_name}/{source_path}", exclude_complex_types=True
-    ).with_columns(
-        str_length_cols([CQCLClean.location_id]),
     )
+
     compare_df = utils.read_parquet(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=compare_columns_to_import,
@@ -66,12 +62,11 @@ def main(
             [
                 CQCLClean.location_id,
                 Keys.import_date,
+                CQCLClean.cqc_location_import_date,
             ]
         )
         # index columns
-        .rows_distinct([CQCLClean.location_id, Keys.import_date])
-        # between (inclusive)
-        .col_vals_between(Validation.location_id_length, 3, 14).interrogate()
+        .rows_distinct([CQCLClean.location_id, Keys.import_date]).interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
 
