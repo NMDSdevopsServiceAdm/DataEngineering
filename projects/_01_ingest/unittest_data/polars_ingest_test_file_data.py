@@ -12,6 +12,10 @@ from utils.column_values.categorical_column_values import (
     RelatedLocation,
     Sector,
     Services,
+    Specialisms,
+)
+from utils.column_values.categorical_column_values import (
+    SpecialistGeneralistOther as SpecGenOther,
 )
 
 
@@ -1168,6 +1172,31 @@ class LocationsCleanUtilsData:
         ]
     )
     # fmt: on
+
+    test_list_of_specialisms = [
+        Specialisms.dementia,
+        Specialisms.learning_disabilities,
+        Specialisms.mental_health,
+    ]
+    classify_specialisms_rows = [
+        ("1-001", "1-002", "1-003"),
+        (
+            [Specialisms.dementia],
+            [Specialisms.dementia, Specialisms.learning_disabilities],
+            [Specialisms.adults_over_65],
+        ),
+    ]
+    expected_classify_specialisms_rows = [
+        ("1-001", "1-002", "1-003"),
+        (
+            [Specialisms.dementia],
+            [Specialisms.dementia, Specialisms.learning_disabilities],
+            [Specialisms.adults_over_65],
+        ),
+        (SpecGenOther.specialist, SpecGenOther.generalist, SpecGenOther.other),
+        (SpecGenOther.other, SpecGenOther.generalist, SpecGenOther.other),
+        (SpecGenOther.other, SpecGenOther.other, SpecGenOther.other),
+    ]
 
 
 @dataclass

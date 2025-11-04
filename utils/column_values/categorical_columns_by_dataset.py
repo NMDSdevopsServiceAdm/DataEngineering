@@ -159,14 +159,14 @@ class CleanedIndCQCCategoricalValues:
         IndCQC.ascwds_filtering_rule
     )
     related_location_column_values = RelatedLocation(CQCLClean.related_location)
-    specialist_generalist_other_dementia_column_values = SpecialistGeneralistOther(
-        IndCQC.specialist_generalist_other_dementia
+    specialism_dementia_column_values = SpecialistGeneralistOther(
+        IndCQC.specialism_dementia
     )
-    specialist_generalist_other_lda_column_values = SpecialistGeneralistOther(
-        IndCQC.specialist_generalist_other_lda
+    specialism_learning_disabilities_column_values = SpecialistGeneralistOther(
+        IndCQC.specialism_learning_disabilities
     )
-    specialist_generalist_other_mh_column_values = SpecialistGeneralistOther(
-        IndCQC.specialist_generalist_other_mh
+    specialism_mental_health_column_values = SpecialistGeneralistOther(
+        IndCQC.specialism_mental_health
     )
 
 

@@ -140,9 +140,9 @@ POLARS_SPECIALISM_DIMENSION_SCHEMA = pl.Schema(
             pl.List(pl.Struct({CleanedColNames.name: pl.String()})),
         ),
         (CleanedColNames.specialisms_offered, pl.List(pl.String())),
-        (CleanedColNames.specialist_generalist_other_dementia, pl.String()),
-        (CleanedColNames.specialist_generalist_other_lda, pl.String()),
-        (CleanedColNames.specialist_generalist_other_mh, pl.String()),
+        (CleanedColNames.specialism_dementia, pl.String()),
+        (CleanedColNames.specialism_learning_disabilities, pl.String()),
+        (CleanedColNames.specialism_mental_health, pl.String()),
     ]
 )
 

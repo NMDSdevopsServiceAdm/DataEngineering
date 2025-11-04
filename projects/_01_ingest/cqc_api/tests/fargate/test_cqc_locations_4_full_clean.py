@@ -17,6 +17,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
     mock_cqc_locations_data = Mock(name="cqc_locations_data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.cUtils.classify_specialisms")
     @patch(f"{PATCH_PATH}.cUtils.add_related_location_column")
     @patch(f"{PATCH_PATH}.cUtils.realign_carehome_column_with_primary_service")
     @patch(f"{PATCH_PATH}.cUtils.allocate_primary_service_type")
@@ -33,6 +34,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
         allocate_primary_service_type_mock: Mock,
         realign_carehome_column_with_primary_service_mock: Mock,
         add_related_location_column_mock: Mock,
+        classify_specialisms_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -54,6 +56,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
         allocate_primary_service_type_mock.assert_called_once()
         realign_carehome_column_with_primary_service_mock.assert_called_once()
         add_related_location_column_mock.assert_called_once()
+        classify_specialisms_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_REG_DESTINATION,
