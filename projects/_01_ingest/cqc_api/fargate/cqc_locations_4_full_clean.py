@@ -49,67 +49,67 @@ def main(
 
     cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)
 
-    cUtils.save_latest_full_snapshot(cqc_lf.clone(), cqc_full_snapshot_destination)
+    cUtils.save_latest_full_snapshot(cqc_lf, cqc_full_snapshot_destination)
 
-    cqc_reg_lf = cqc_lf.filter(
-        pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
-    )
+    # cqc_reg_lf = cqc_lf.filter(
+    #     pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
+    # )
 
-    cqc_reg_lf = cUtils.clean_provider_id_column(cqc_reg_lf)
+    # cqc_reg_lf = cUtils.clean_provider_id_column(cqc_reg_lf)
 
-    cqc_reg_lf = cUtils.impute_missing_values(
-        cqc_reg_lf,
-        [
-            CQCLClean.provider_id,
-            CQCLClean.services_offered,
-            CQCLClean.specialisms_offered,
-            CQCLClean.regulated_activities_offered,
-            CQCLClean.relationships_types,
-            CQCLClean.registered_manager_names,
-        ],
-    )
+    # cqc_reg_lf = cUtils.impute_missing_values(
+    #     cqc_reg_lf,
+    #     [
+    #         CQCLClean.provider_id,
+    #         CQCLClean.services_offered,
+    #         CQCLClean.specialisms_offered,
+    #         CQCLClean.regulated_activities_offered,
+    #         CQCLClean.relationships_types,
+    #         CQCLClean.registered_manager_names,
+    #     ],
+    # )
 
-    cqc_reg_lf = cUtils.allocate_primary_service_type(cqc_reg_lf)
+    # cqc_reg_lf = cUtils.allocate_primary_service_type(cqc_reg_lf)
 
-    cqc_reg_lf = cUtils.realign_carehome_column_with_primary_service(cqc_reg_lf)
+    # cqc_reg_lf = cUtils.realign_carehome_column_with_primary_service(cqc_reg_lf)
 
-    cqc_reg_lf = cqc_reg_lf.filter(
-        pl.col(CQCLClean.provider_id).is_not_null(),
-        pl.col(CQCLClean.regulated_activities_offered).is_not_null(),
-    )
+    # cqc_reg_lf = cqc_reg_lf.filter(
+    #     pl.col(CQCLClean.provider_id).is_not_null(),
+    #     pl.col(CQCLClean.regulated_activities_offered).is_not_null(),
+    # )
 
-    cqc_reg_lf = cUtils.remove_specialist_colleges(cqc_reg_lf)
+    # cqc_reg_lf = cUtils.remove_specialist_colleges(cqc_reg_lf)
 
-    cqc_reg_lf = cUtils.assign_cqc_sector(
-        cqc_reg_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
-    )
+    # cqc_reg_lf = cUtils.assign_cqc_sector(
+    #     cqc_reg_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
+    # )
 
-    cqc_reg_lf = cUtils.add_related_location_column(cqc_reg_lf)
-    cqc_reg_lf = cqc_reg_lf.drop(CQCLClean.relationships_types)
+    # cqc_reg_lf = cUtils.add_related_location_column(cqc_reg_lf)
+    # cqc_reg_lf = cqc_reg_lf.drop(CQCLClean.relationships_types)
 
-    list_of_specialisms = [
-        Specialisms.dementia,
-        Specialisms.learning_disabilities,
-        Specialisms.mental_health,
-    ]
-    cqc_reg_lf = cUtils.classify_specialisms(cqc_reg_lf, list_of_specialisms)
+    # list_of_specialisms = [
+    #     Specialisms.dementia,
+    #     Specialisms.learning_disabilities,
+    #     Specialisms.mental_health,
+    # ]
+    # cqc_reg_lf = cUtils.classify_specialisms(cqc_reg_lf, list_of_specialisms)
 
-    # Scan parquet to get ONS Postcode Directory data in LazyFrame format
-    ons_lf = utils.scan_parquet(
-        ons_postcode_directory_source,
-        selected_columns=ons_cols_to_import,
-    )
-    logger.info("ONS Postcode Directory LazyFrame read in")
-    # TODO - (1117) join in ONS postcode data / run_postcode_matching (filter to relevant locations only if haven't already)
+    # # Scan parquet to get ONS Postcode Directory data in LazyFrame format
+    # ons_lf = utils.scan_parquet(
+    #     ons_postcode_directory_source,
+    #     selected_columns=ons_cols_to_import,
+    # )
+    # logger.info("ONS Postcode Directory LazyFrame read in")
+    # # TODO - (1117) join in ONS postcode data / run_postcode_matching (filter to relevant locations only if haven't already)
 
-    # Store cleaned registered data in s3
-    utils.sink_to_parquet(
-        cqc_reg_lf,
-        cqc_registered_locations_cleaned_destination,
-        logger=logger,
-        partition_cols=cqc_partition_keys,
-        append=False,
-    )
+    # # Store cleaned registered data in s3
+    # utils.sink_to_parquet(
+    #     cqc_reg_lf,
+    #     cqc_registered_locations_cleaned_destination,
+    #     logger=logger,
+    #     partition_cols=cqc_partition_keys,
+    #     append=False,
+    # )
 
 
 if __name__ == "__main__":
