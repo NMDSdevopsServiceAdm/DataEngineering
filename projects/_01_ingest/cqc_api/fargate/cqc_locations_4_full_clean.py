@@ -1,7 +1,10 @@
 import polars as pl
 
 from polars_utils import logger, utils
-from projects._01_ingest.cqc_api.fargate.utils import locations_4_clean_utils as cUtils
+from projects._01_ingest.cqc_api.fargate.utils import (
+    locations_4_clean_utils as cUtils,
+    postcode_matcher as pmUtils,
+)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -105,8 +108,13 @@ def main(
         selected_columns=ons_cols_to_import,
     )
     logger.info("ONS Postcode Directory LazyFrame read in")
-    # TODO - (1117) join in ONS postcode data / run_postcode_matching (filter to relevant locations only if haven't already)
-
+    
+    # Postcode Matching
+    cqc_reg_lf = pmUtils.run_postcode_matching(
+        cqc_reg_lf,
+        ons_lf,
+        "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/",
+    )
     # Store cleaned registered data in s3
     utils.sink_to_parquet(
         cqc_reg_lf,
