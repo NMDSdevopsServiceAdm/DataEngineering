@@ -1210,6 +1210,38 @@ class LocationsCleanUtilsData:
         (SpecGenOther.other, SpecGenOther.other, SpecGenOther.other),
     ]
 
+    remove_specialist_colleges_rows = [
+        ("1-001", "1-002", "1-003", "1-004", "1-005"),
+        (
+            [Services.care_home_service_with_nursing],
+            [
+                Services.care_home_service_with_nursing,
+                Services.domiciliary_care_service,
+            ],
+            [
+                Services.care_home_service_with_nursing,
+                Services.specialist_college_service,
+            ],
+            None,
+            [Services.specialist_college_service],
+        ),
+    ]
+    expected_remove_specialist_colleges_rows = [
+        ("1-001", "1-002", "1-003", "1-004"),
+        (
+            [Services.care_home_service_with_nursing],
+            [
+                Services.care_home_service_with_nursing,
+                Services.domiciliary_care_service,
+            ],
+            [
+                Services.care_home_service_with_nursing,
+                Services.specialist_college_service,
+            ],
+            None,
+        ),
+    ]
+
 
 @dataclass
 class PostcodeMatcherTest:

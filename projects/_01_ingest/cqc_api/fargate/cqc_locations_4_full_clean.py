@@ -49,8 +49,6 @@ def main(
 
     cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)
 
-    # TODO - (1115) remove_specialist_colleges
-
     cUtils.save_deregistered_locations(cqc_lf, cqc_deregistered_locations_destination)
 
     cqc_reg_lf = cqc_lf.filter(
@@ -79,6 +77,8 @@ def main(
         pl.col(CQCLClean.provider_id).is_not_null(),
         pl.col(CQCLClean.regulated_activities_offered).is_not_null(),
     )
+
+    cqc_reg_lf = cUtils.remove_specialist_colleges(cqc_reg_lf)
 
     cqc_reg_lf = cUtils.assign_cqc_sector(
         cqc_reg_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
