@@ -49,7 +49,7 @@ def main(
 
     cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)
 
-    cUtils.save_latest_full_snapshot(cqc_lf, cqc_full_snapshot_destination)
+    cUtils.save_latest_full_snapshot(cqc_lf.clone(), cqc_full_snapshot_destination)
 
     cqc_reg_lf = cqc_lf.filter(
         pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
