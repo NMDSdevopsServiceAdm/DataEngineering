@@ -49,7 +49,21 @@ def main(
 
     cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)
 
-    cUtils.save_latest_full_snapshot(cqc_lf, cqc_full_snapshot_destination)
+    # cUtils.save_latest_full_snapshot(cqc_lf, cqc_full_snapshot_destination)
+    required_columns = [
+        CQCLClean.cqc_location_import_date,
+        CQCLClean.location_id,
+        CQCLClean.registration_status,
+        CQCLClean.deregistration_date,
+    ]
+
+    cqc_lf = cqc_lf.select(*required_columns)
+
+    cqc_lf = utils.filter_to_maximum_value_in_column(
+        cqc_lf, CQCLClean.cqc_location_import_date
+    )
+
+    utils.sink_to_parquet(cqc_lf, cqc_full_snapshot_destination, append=False)
 
     # cqc_reg_lf = cqc_lf.filter(
     #     pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
