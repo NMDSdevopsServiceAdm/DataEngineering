@@ -129,7 +129,7 @@
                         "cqc_registered_destination_arg_name": "--cqc_registered_locations_cleaned_destination",
                         "cqc_registered_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/",
                         "cqc_latest_snapshot_destination_arg_name": "--cqc_full_snapshot_destination",
-                        "cqc_latest_snapshot_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_deregistered/"
+                        "cqc_latest_snapshot_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/"
                       },
                       "Next": "Clean Full CQC Locations"
                     },
