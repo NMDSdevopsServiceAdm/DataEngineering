@@ -425,11 +425,17 @@ def filter_to_maximum_value_in_column(
     Returns:
         pl.LazyFrame: Filtered LazyFrame containing only rows with the maximum value.
     """
-    logging.info(lf.collect().head())
+    df1 = lf.collect()
+    logging.info(f"orig rows: {df1.height}")
+    logging.info(df1.head())
     max_value = lf.select(pl.col(column_to_filter).max().alias("max_value"))
-    logging.info(max_value.collect().head())
+    df2 = max_value.collect()
+    logging.info(f"orig rows: {df2.height}")
+    logging.info(df2.head())
 
     lf = lf.join(max_value, left_on=column_to_filter, right_on="max_value", how="inner")
-    logging.info(lf.collect().head())
+    df3 = lf.collect()
+    logging.info(f"orig rows: {df3.height}")
+    logging.info(df3.head())
 
     return lf
