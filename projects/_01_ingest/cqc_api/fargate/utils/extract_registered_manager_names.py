@@ -74,6 +74,18 @@ def select_and_create_full_name(lf: pl.LazyFrame) -> pl.LazyFrame:
             - `cqc_location_import_date`
             - `contacts_full_name`: full name of the contact
     """
+    # Remove rows where either given name or family name are null.
+    invalid_rows = (
+        pl.col(CQCLClean.contacts_exploded)
+        .struct.field(CQCLClean.person_given_name)
+        .is_null()
+    ) | (
+        pl.col(CQCLClean.contacts_exploded)
+        .struct.field(CQCLClean.person_family_name)
+        .is_null()
+    )
+    lf = lf.remove(invalid_rows)
+
     full_name_col = pl.concat_str(
         [
             pl.col(CQCLClean.contacts_exploded).struct.field(
