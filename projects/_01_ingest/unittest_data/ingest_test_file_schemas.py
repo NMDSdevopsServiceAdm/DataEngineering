@@ -2044,9 +2044,7 @@ class CQCLocationsSchema:
     expected_classify_specialisms_schema = StructType(
         [
             *classify_specialisms_schema,
-            StructField(
-                CQCLClean.specialist_generalist_other_dementia, StringType(), True
-            ),
+            StructField(CQCLClean.specialism_dementia, StringType(), True),
         ]
     )
 

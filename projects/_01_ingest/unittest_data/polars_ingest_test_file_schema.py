@@ -220,6 +220,21 @@ class LocationsCleanUtilsSchema:
         ]
     )
 
+    classify_specialisms_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.specialisms_offered, pl.List(pl.String())),
+        ]
+    )
+    exected_classify_specialisms_schema = pl.Schema(
+        list(classify_specialisms_schema.items())
+        + [
+            (CQCLClean.specialism_dementia, pl.String()),
+            (CQCLClean.specialism_learning_disabilities, pl.String()),
+            (CQCLClean.specialism_mental_health, pl.String()),
+        ]
+    )
+
     remove_specialist_colleges_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),

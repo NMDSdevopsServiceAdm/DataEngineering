@@ -340,6 +340,26 @@ class CleanAndImputeRegistrationDateColumnTests(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class ClassifySpecialismsTests(unittest.TestCase):
+    def test_classify_specialisms(self):
+        test_lf = pl.LazyFrame(
+            data=Data.classify_specialisms_rows,
+            schema=Schemas.classify_specialisms_schema,
+        )
+        returned_lf = job.classify_specialisms(
+            test_lf, list_of_specialisms=Data.test_list_of_specialisms
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_classify_specialisms_rows,
+            schema=Schemas.exected_classify_specialisms_schema,
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+        )
+
+
 class RemoveSpecialistCollegesTests(unittest.TestCase):
     def test_remove_specialist_colleges_removes_only_specialist_colleges(self):
         test_lf = pl.LazyFrame(
