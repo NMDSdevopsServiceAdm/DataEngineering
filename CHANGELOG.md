@@ -109,6 +109,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted cleaning util classify_specialisms from pyspark to polars.
 
+- Converted function remove_specialist_colleges from pyspark to polars.
+
 - Changed the behaviour of extract_registered_manager_names so it discards names when given or family name is null.
 
 ### Improved
