@@ -213,7 +213,6 @@ class IndCqcColumns:
         "imputed_filled_posts_per_bed_ratio_model"
     )
     imputed_registration_date: str = CQCLClean.imputed_registration_date
-    imputed_regulated_activities: str = CQCLClean.imputed_regulated_activities
     imputed_specialisms: str = CQCLClean.imputed_specialisms
     interpolation_model: str = "interpolation_model"
     last_ascwds_submission: str = "last_ascwds_submission"
@@ -311,6 +310,7 @@ class IndCqcColumns:
     registered_manager_count: str = "registered_manager_count"
     registered_manager_names: str = CQCLClean.registered_manager_names
     registration_date: str = CQCLClean.registration_date
+    regulated_activities_offered: str = CQCLClean.regulated_activities_offered
     related_location: str = CQCLClean.related_location
     residual: str = "residual"
     residuals_ascwds_filled_posts_clean_dedup_non_res_pir: str = (

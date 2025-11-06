@@ -43,7 +43,7 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.dormancy,
     CQCLClean.care_home,
     CQCLClean.number_of_beds,
-    CQCLClean.imputed_regulated_activities,
+    CQCLClean.regulated_activities_offered,
     CQCLClean.imputed_gac_service_types,
     CQCLClean.services_offered,
     CQCLClean.imputed_specialisms,

@@ -1629,15 +1629,7 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),
             StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
             StructField(
-                CQCLClean.imputed_regulated_activities,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(CQCL.name, StringType(), True),
-                            StructField(CQCL.code, StringType(), True),
-                        ]
-                    )
-                ),
+                IndCQC.regulated_activities_offered, ArrayType(StringType()), True
             ),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
@@ -1669,17 +1661,7 @@ class NonResAscwdsFeaturesSchema(object):
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),
             StructField(
-                IndCQC.imputed_regulated_activities,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(IndCQC.name, StringType(), True),
-                            StructField(IndCQC.code, StringType(), True),
-                        ]
-                    ),
-                    True,
-                ),
-                True,
+                IndCQC.regulated_activities_offered, ArrayType(StringType()), True
             ),
             StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
             StructField(IndCQC.primary_service_type, StringType(), False),

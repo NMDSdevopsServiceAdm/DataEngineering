@@ -15,7 +15,7 @@ def extract_registered_manager_names(lf: pl.LazyFrame) -> pl.LazyFrame:
     - Adds a list of unique names per location and import date into the original LazyFrame.
 
     Args:
-        lf (pl.LazyFrame): Input Polars LazyFrame containing `imputed_regulated_activities` array.
+        lf (pl.LazyFrame): Input Polars LazyFrame containing `regulated_activities` array.
 
     Returns:
         pl.LazyFrame: LazyFrame with a new column `registered_manager_names` containing unique full names.
