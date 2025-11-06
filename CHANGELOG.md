@@ -121,6 +121,8 @@ All notable changes to this project will be documented in this file.
 
 - Moved creation of cqc_locations_import_date from flatten to clean job so it populates all time periods correctly.
 
+- Removed all CQC jobs, utils and tests no longer being used
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
