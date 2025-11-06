@@ -16,6 +16,7 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
+    Specialisms,
 )
 from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 
@@ -47,8 +48,6 @@ def main(
     )
 
     cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)
-
-    # TODO - (1115) remove_specialist_colleges
 
     # TODO - (1116) save deregistered locations for reconciliation process
     # - filter to deregistered locations only in the most recent import date
@@ -84,12 +83,21 @@ def main(
         pl.col(CQCLClean.regulated_activities_offered).is_not_null(),
     )
 
+    cqc_reg_lf = cUtils.remove_specialist_colleges(cqc_reg_lf)
+
     cqc_reg_lf = cUtils.assign_cqc_sector(
         cqc_reg_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
     )
 
     cqc_reg_lf = cUtils.add_related_location_column(cqc_reg_lf)
     cqc_reg_lf = cqc_reg_lf.drop(CQCLClean.relationships_types)
+
+    list_of_specialisms = [
+        Specialisms.dementia,
+        Specialisms.learning_disabilities,
+        Specialisms.mental_health,
+    ]
+    cqc_reg_lf = cUtils.classify_specialisms(cqc_reg_lf, list_of_specialisms)
 
     # Scan parquet to get ONS Postcode Directory data in LazyFrame format
     ons_lf = utils.scan_parquet(

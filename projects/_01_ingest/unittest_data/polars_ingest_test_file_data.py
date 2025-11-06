@@ -12,6 +12,10 @@ from utils.column_values.categorical_column_values import (
     RelatedLocation,
     Sector,
     Services,
+    Specialisms,
+)
+from utils.column_values.categorical_column_values import (
+    SpecialistGeneralistOther as SpecGenOther,
 )
 
 
@@ -681,9 +685,9 @@ class ExtractRegisteredManagerNamesData:
     ]
 
     select_and_create_full_name_when_given_or_family_name_or_null = [
-        ("1-001", "1-002"),
-        (date(2024, 1, 1), date(2024, 1, 1)),
-        (CareHome.care_home, CareHome.care_home),
+        ("1-001", "1-002", "1-003"),
+        (date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1)),
+        (CareHome.care_home, CareHome.care_home, CareHome.care_home),
         (
             {
                 CQCL.person_family_name: None,
@@ -697,23 +701,24 @@ class ExtractRegisteredManagerNamesData:
                 CQCL.person_roles: ["Registered Manager"],
                 CQCL.person_title: "M",
             },
+            {
+                CQCL.person_family_name: "Surname",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
         ),
     ]
     expected_select_and_create_full_name_when_given_or_family_name_or_null = [
-        ("1-001", "1-002"),
-        (date(2024, 1, 1), date(2024, 1, 1)),
-        (None, None),
+        ("1-003",),
+        (date(2024, 1, 1),),
+        ("Name Surname",),
     ]
 
     select_and_create_full_name_without_contact = [
         ("1-001",),
         (date(2024, 1, 1),),
         (CareHome.care_home,),
-        (None,),
-    ]
-    expected_select_and_create_full_name_without_contact = [
-        ("1-001",),
-        (date(2024, 1, 1),),
         (None,),
     ]
 
@@ -1168,6 +1173,63 @@ class LocationsCleanUtilsData:
         ]
     )
     # fmt: on
+
+    test_list_of_specialisms = [
+        Specialisms.dementia,
+        Specialisms.learning_disabilities,
+        Specialisms.mental_health,
+    ]
+    classify_specialisms_rows = [
+        ("1-001", "1-002", "1-003"),
+        (
+            [Specialisms.dementia],
+            [Specialisms.dementia, Specialisms.learning_disabilities],
+            [Specialisms.adults_over_65],
+        ),
+    ]
+    expected_classify_specialisms_rows = [
+        ("1-001", "1-002", "1-003"),
+        (
+            [Specialisms.dementia],
+            [Specialisms.dementia, Specialisms.learning_disabilities],
+            [Specialisms.adults_over_65],
+        ),
+        (SpecGenOther.specialist, SpecGenOther.generalist, SpecGenOther.other),
+        (SpecGenOther.other, SpecGenOther.generalist, SpecGenOther.other),
+        (SpecGenOther.other, SpecGenOther.other, SpecGenOther.other),
+    ]
+
+    remove_specialist_colleges_rows = [
+        ("1-001", "1-002", "1-003", "1-004", "1-005"),
+        (
+            [Services.care_home_service_with_nursing],
+            [
+                Services.care_home_service_with_nursing,
+                Services.domiciliary_care_service,
+            ],
+            [
+                Services.care_home_service_with_nursing,
+                Services.specialist_college_service,
+            ],
+            None,
+            [Services.specialist_college_service],
+        ),
+    ]
+    expected_remove_specialist_colleges_rows = [
+        ("1-001", "1-002", "1-003", "1-004"),
+        (
+            [Services.care_home_service_with_nursing],
+            [
+                Services.care_home_service_with_nursing,
+                Services.domiciliary_care_service,
+            ],
+            [
+                Services.care_home_service_with_nursing,
+                Services.specialist_college_service,
+            ],
+            None,
+        ),
+    ]
 
 
 @dataclass

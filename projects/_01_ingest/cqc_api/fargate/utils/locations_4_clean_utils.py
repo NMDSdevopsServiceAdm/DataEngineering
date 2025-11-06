@@ -10,6 +10,9 @@ from utils.column_values.categorical_column_values import (
     Sector,
     Services,
 )
+from utils.column_values.categorical_column_values import (
+    SpecialistGeneralistOther as SpecGenOther,
+)
 
 
 def clean_provider_id_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -228,5 +231,69 @@ def clean_and_impute_registration_date(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
         .otherwise(pl.col(CQCLClean.imputed_registration_date))
         .alias(CQCLClean.imputed_registration_date)
     )
+
+    return cqc_lf
+
+
+def classify_specialisms(
+    cqc_lf: pl.LazyFrame, list_of_specialisms: list[str]
+) -> pl.LazyFrame:
+    """
+    Adds a new column per element in given list_of_specialisms to show if the location is
+    a 'specialist', 'generalist' or 'other' in that specialism.
+
+    A specialist is a location that only offers the given specialism.
+    A generalist is a location that offers the given specialism amongst other specialisms.
+    Other is location that does not offer the given specialism.
+
+    Args:
+        cqc_lf (pl.LazyFrame): A LazyFrame with the column specialisms_offered.
+        list_of_specialisms (list[str]): A list of values from specialisms_offered to classify locations by.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with additional columns per element in given list_of_specialisms.
+    """
+    specialisms_col = pl.col(CQCLClean.specialisms_offered)
+
+    cqc_lf = cqc_lf.with_columns(
+        [
+            (
+                pl.when(
+                    (specialisms_col.list.contains(s))
+                    & (specialisms_col.list.len() == 1)
+                )
+                .then(pl.lit(SpecGenOther.specialist))
+                .when(specialisms_col.list.contains(s))
+                .then(pl.lit(SpecGenOther.generalist))
+                .otherwise(pl.lit(SpecGenOther.other))
+                .alias(f"specialism_{s}".replace(" ", "_").lower())
+            )
+            for s in list_of_specialisms
+        ]
+    )
+
+    return cqc_lf
+
+
+def remove_specialist_colleges(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Removes rows where 'Specialist college service' is the only service in 'services_offered' list column.
+
+    We do not include locations which are only specialist colleges in our
+    estimates. This function identifies and removes the ones listed in the locations dataset.
+
+    Args:
+        cqc_lf (pl.LazyFrame): A LazyFrame with column services_offered.
+
+    Returns:
+        pl.LazyFrame: The imput LazyFrame with locations which are only specialist colleges removed.
+    """
+
+    specialist_college_only = (pl.col(CQCLClean.services_offered).list.len() == 1) & (
+        pl.col(CQCLClean.services_offered).list.first()
+        == Services.specialist_college_service
+    )
+
+    cqc_lf = cqc_lf.remove(specialist_college_only)
 
     return cqc_lf
