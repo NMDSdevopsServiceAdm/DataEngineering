@@ -4,9 +4,6 @@ from io import BytesIO
 from botocore.response import StreamingBody
 
 import projects._01_ingest.cqc_api.utils.utils as job
-from projects._01_ingest.unittest_data.ingest_test_file_data import (
-    CQCLocationsData as Data,
-)
 from tests.unit.test_utils import StubberClass, StubberType
 
 
@@ -38,5 +35,5 @@ class ReadManualPostcodeCorrectionsCsvTests(unittest.TestCase):
         returned_dict = job.read_manual_postcode_corrections_csv_to_dict(
             "s3://test-bucket/my-test/key/", stubber.get_s3_client()
         )
-        expected_dict = Data.expected_postcode_dict
+        expected_dict = {"AB12CE": "AB12CD", "EF12GI": "EF12GH"}
         self.assertEqual(returned_dict, expected_dict)

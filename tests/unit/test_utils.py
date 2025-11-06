@@ -19,8 +19,6 @@ from pyspark.sql.types import (
     StructType,
 )
 
-from tests.test_data.unit_test_data import JoinDimensionData as Data
-from tests.test_data.unit_test_schemas import JoinDimensionSchemas as Schemas
 from tests.test_file_data import UtilsData
 from tests.test_file_schemas import UtilsSchema
 from utils import utils
