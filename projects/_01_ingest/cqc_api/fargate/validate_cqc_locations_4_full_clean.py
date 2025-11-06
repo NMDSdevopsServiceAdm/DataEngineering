@@ -191,5 +191,3 @@ if __name__ == "__main__":
 
     main(args.bucket_name, args.source_path, args.reports_path)
     logger.info(f"Validation of {args.source_path} complete")
-    main(args.bucket_name, args.source_path, args.reports_path)
-    logger.info(f"Validation of {args.source_path} complete")
