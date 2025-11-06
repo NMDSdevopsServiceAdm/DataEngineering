@@ -28,7 +28,6 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.location_id,
     CQCLClean.type,
     CQCLClean.cqc_sector,
-    CQCLClean.registration_status,
 ]
 
 

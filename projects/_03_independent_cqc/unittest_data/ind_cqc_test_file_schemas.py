@@ -113,7 +113,6 @@ class ValidateMergedIndCqcData:
             StructField(CQCLClean.cqc_sector, StringType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
-            StructField(CQCLClean.registration_status, StringType(), True),
             StructField(CQCLClean.type, StringType(), True),
         ]
     )
@@ -127,7 +126,6 @@ class ValidateMergedIndCqcData:
             StructField(IndCQC.name, StringType(), True),
             StructField(IndCQC.provider_id, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.registration_status, StringType(), True),
             StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
@@ -320,7 +318,6 @@ class ValidateImputedIndCqcAscwdsAndPir:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.provider_id, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.registration_status, StringType(), True),
             StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
@@ -1583,7 +1580,6 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.name, StringType(), True),
             StructField(IndCQC.provider_id, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.registration_status, StringType(), True),
             StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
