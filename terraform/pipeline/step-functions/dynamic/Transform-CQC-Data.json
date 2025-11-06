@@ -131,7 +131,7 @@
                         "cqc_deregistered_destination_arg_name": "--cqc_deregistered_locations_destination",
                         "cqc_deregistered_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_deregistered/",
                         "manual_postcode_corrections_source_arg_name": "--manual_postcode_corrections_source",
-                        "manual_postcode_corrections_source_arg_location": "${dataset_bucket_uri}/domain=CQC/dataset=postcode_corrections/"
+                        "manual_postcode_corrections_source_arg_location": "${dataset_bucket_uri}/domain=CQC/dataset=postcode_corrections/manual_postcode_corrections.csv"
                       },
                       "Next": "Clean Full CQC Locations"
                     },
