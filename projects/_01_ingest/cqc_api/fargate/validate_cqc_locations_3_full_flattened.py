@@ -40,7 +40,6 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             [
                 CQCLClean.location_id,
                 Keys.import_date,
-                CQCLClean.cqc_location_import_date,
             ]
         )
         # index columns
