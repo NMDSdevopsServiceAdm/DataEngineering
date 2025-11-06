@@ -113,6 +113,8 @@ All notable changes to this project will be documented in this file.
 
 - Changed the behaviour of extract_registered_manager_names so it discards names when given or family name is null.
 
+- Moved creation of cqc_locations_import_date from flatten to clean job so it populates all time periods correctly.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
