@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
 
 - Added validation script for flatten CQC location process and test script for this validation.
 
+- Added Postcode Matching call within cqc_location_4_full_clean job.
+
 - Added validation script for locations_3_full_flattened process and test script for this validation.
 
 ### Changed
