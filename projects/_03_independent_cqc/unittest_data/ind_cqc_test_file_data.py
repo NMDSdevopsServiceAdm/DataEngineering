@@ -97,10 +97,10 @@ class MergeIndCQCData:
 class ValidateMergedIndCqcData:
     # fmt: off
     cqc_locations_rows = [
-        (date(2024, 1, 1), "1-001", "Independent", "Y", 10, LocationType.social_care_identifier),
-        (date(2024, 1, 1), "1-002", "Independent", "N", None, LocationType.social_care_identifier),
-        (date(2024, 2, 1), "1-001", "Independent", "Y", 10, LocationType.social_care_identifier),
-        (date(2024, 2, 1), "1-002", "Independent", "N", None, LocationType.social_care_identifier),
+        (date(2024, 1, 1), "1-001", "Independent", "Y", 10),
+        (date(2024, 1, 1), "1-002", "Independent", "N", None),
+        (date(2024, 2, 1), "1-001", "Independent", "Y", 10),
+        (date(2024, 2, 1), "1-002", "Independent", "N", None),
     ]
     # fmt: on
 
