@@ -723,7 +723,12 @@ class ExtractRegisteredManagerNamesData:
 
     add_registered_manager_names_full_lf = [
         ("1-001", "1-001", "1-002", "1-002"),
-        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 1, 1), date(2024, 2, 1)),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+        ),
         (
             CareHome.care_home,
             CareHome.care_home,
@@ -734,7 +739,12 @@ class ExtractRegisteredManagerNamesData:
 
     registered_manager_names_without_duplicates = [
         ("1-001", "1-001", "1-002", "1-002"),
-        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 1, 1), date(2024, 2, 1)),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+        ),
         (
             "Name Surname_1",
             "Name Surname_2",
@@ -744,7 +754,12 @@ class ExtractRegisteredManagerNamesData:
     ]
     expected_add_registered_manager_names_without_duplicates = [
         ("1-001", "1-001", "1-002", "1-002"),
-        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 1, 1), date(2024, 2, 1)),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+        ),
         (
             CareHome.care_home,
             CareHome.care_home,
@@ -780,7 +795,12 @@ class ExtractRegisteredManagerNamesData:
     ]
     expected_add_registered_manager_names_with_duplicates = [
         ("1-001", "1-001", "1-002", "1-002"),
-        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 1, 1), date(2024, 2, 1)),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+        ),
         (
             CareHome.care_home,
             CareHome.care_home,
@@ -820,7 +840,12 @@ class ExtractRegisteredManagerNamesData:
     ]
     expected_registered_manager_names_with_locations_with_multiple_managers = [
         ("1-001", "1-001", "1-002", "1-002"),
-        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 1, 1), date(2024, 2, 1)),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+        ),
         (
             CareHome.care_home,
             CareHome.care_home,
@@ -842,7 +867,12 @@ class ExtractRegisteredManagerNamesData:
     ]
     expected_registered_manager_names_with_locations_without_contact_names = [
         ("1-001", "1-001", "1-002", "1-002"),
-        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 1, 1), date(2024, 2, 1)),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+        ),
         (
             CareHome.care_home,
             CareHome.care_home,
