@@ -7,7 +7,7 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 PATCH_PATH = "projects._01_ingest.cqc_api.fargate.cqc_locations_2_delta_flatten"
 
 
-class CqcLocationsFlattenTests(unittest.TestCase):
+class CqcLocationsDeltaFlattenTests(unittest.TestCase):
     TEST_SOURCE = "some/source"
     TEST_DESTINATION = "some/destination"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -35,7 +35,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
             self.TEST_SOURCE, schema=ANY, selected_columns=ANY
         )
         is_valid_location_mock.assert_called_once()
-        self.assertEqual(column_to_date_mock.call_count, 3)
+        self.assertEqual(column_to_date_mock.call_count, 2)
         flatten_struct_fields_mock.assert_called_once()
         extract_registered_manager_names_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
