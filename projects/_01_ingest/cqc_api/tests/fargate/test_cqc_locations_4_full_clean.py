@@ -22,6 +22,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.cUtils.add_related_location_column")
     @patch(f"{PATCH_PATH}.cUtils.realign_carehome_column_with_primary_service")
     @patch(f"{PATCH_PATH}.cUtils.allocate_primary_service_type")
+    @patch(f"{PATCH_PATH}.cUtils.remove_specialist_colleges")
     @patch(f"{PATCH_PATH}.cUtils.assign_cqc_sector")
     @patch(f"{PATCH_PATH}.cUtils.clean_provider_id_column")
     @patch(f"{PATCH_PATH}.cUtils.clean_and_impute_registration_date")
@@ -32,6 +33,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
         clean_and_impute_registration_date_mock: Mock,
         clean_provider_id_column_mock: Mock,
         assign_cqc_sector_mock: Mock,
+        remove_specialist_colleges_mock: Mock,
         allocate_primary_service_type_mock: Mock,
         realign_carehome_column_with_primary_service_mock: Mock,
         add_related_location_column_mock: Mock,
@@ -55,6 +57,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
         clean_and_impute_registration_date_mock.assert_called_once()
         clean_provider_id_column_mock.assert_called_once()
         assign_cqc_sector_mock.assert_called_once()
+        remove_specialist_colleges_mock.assert_called_once()
         allocate_primary_service_type_mock.assert_called_once()
         realign_carehome_column_with_primary_service_mock.assert_called_once()
         add_related_location_column_mock.assert_called_once()

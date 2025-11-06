@@ -184,7 +184,7 @@ class SelectAndCreateFullNameTests(unittest.TestCase):
             returned_lf.collect()["contacts_full_name"][0],
         )
 
-    def test_when_names_partially_completed_returns_null_name(self):
+    def test_when_names_partially_completed_returns_only_complete_names(self):
         # GIVEN
         #   Data where contacts only have either given or family name populated
         input_lf = pl.LazyFrame(
@@ -201,13 +201,10 @@ class SelectAndCreateFullNameTests(unittest.TestCase):
             data=Data.expected_select_and_create_full_name_when_given_or_family_name_or_null,
             schema=Schemas.expected_select_and_create_full_name_schema,
         )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-        #   The returned full name should be null
-        self.assertEqual(
-            [None, None], returned_lf.collect()["contacts_full_name"].to_list()
-        )
 
-    def test_when_no_contacts_returns_null_name(self):
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_when_no_contacts_returns_empty_lf(self):
         # GIVEN
         #   Data where location has no contacts
         input_lf = pl.LazyFrame(
@@ -221,12 +218,10 @@ class SelectAndCreateFullNameTests(unittest.TestCase):
         # THEN
         #   The returned dataframe should have a location_id, import date and full name column
         expected_lf = pl.LazyFrame(
-            data=Data.expected_select_and_create_full_name_without_contact,
+            data=[],
             schema=Schemas.expected_select_and_create_full_name_schema,
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
-        #   The returned full name should be null
-        self.assertEqual(None, returned_lf.collect()["contacts_full_name"][0])
 
 
 class AddRegisteredManagerNamesTests(unittest.TestCase):
