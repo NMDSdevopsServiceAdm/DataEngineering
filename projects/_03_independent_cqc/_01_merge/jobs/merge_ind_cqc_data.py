@@ -2,7 +2,9 @@ import os
 import sys
 
 os.environ["SPARK_VERSION"] = "3.5"
+
 from typing import Optional
+
 from pyspark.sql import DataFrame
 
 import utils.cleaning_utils as cUtils
