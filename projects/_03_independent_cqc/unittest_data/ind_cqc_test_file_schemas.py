@@ -3147,17 +3147,7 @@ class IndCQCDataUtils:
     allocate_primary_service_type_second_level_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
-            StructField(
-                CQCLClean.imputed_gac_service_types,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(CQCL.name, StringType(), True),
-                            StructField(CQCL.description, StringType(), True),
-                        ]
-                    )
-                ),
-            ),
+            StructField(CQCLClean.services_offered, ArrayType(StringType(), True)),
         ]
     )
     expected_allocate_primary_service_type_second_level_schema = StructType(
