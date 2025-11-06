@@ -111,6 +111,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted function remove_specialist_colleges from pyspark to polars.
 
+- Changed the behaviour of extract_registered_manager_names so it discards names when given or family name is null.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 

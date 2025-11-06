@@ -11,7 +11,7 @@ def extract_registered_manager_names(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     This function:
     - Explodes the regulated activities and contacts arrays.
-    - Concatenates given and family names into a full name.
+    - Concatenates populated given and family names into a full name.
     - Adds a list of unique names per location and import date into the original LazyFrame.
 
     Args:
@@ -63,7 +63,8 @@ def explode_contacts_information(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def select_and_create_full_name(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Selects relevant columns and creates a full name column by concatenating given and family names.
+    Removes rows where the given or family name values in contacts_exploded dict are null, then concatenates
+    the given and family name values into a new column called full_name_col.
 
     Args:
         lf (pl.LazyFrame): LazyFrame with exploded `contacts_exploded` struct column.
@@ -74,6 +75,18 @@ def select_and_create_full_name(lf: pl.LazyFrame) -> pl.LazyFrame:
             - `cqc_location_import_date`
             - `contacts_full_name`: full name of the contact
     """
+    # Remove rows where either given name or family name are null.
+    invalid_rows = (
+        pl.col(CQCLClean.contacts_exploded)
+        .struct.field(CQCLClean.person_given_name)
+        .is_null()
+    ) | (
+        pl.col(CQCLClean.contacts_exploded)
+        .struct.field(CQCLClean.person_family_name)
+        .is_null()
+    )
+    lf = lf.remove(invalid_rows)
+
     full_name_col = pl.concat_str(
         [
             pl.col(CQCLClean.contacts_exploded).struct.field(

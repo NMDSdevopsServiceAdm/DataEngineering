@@ -685,9 +685,9 @@ class ExtractRegisteredManagerNamesData:
     ]
 
     select_and_create_full_name_when_given_or_family_name_or_null = [
-        ("1-001", "1-002"),
-        (date(2024, 1, 1), date(2024, 1, 1)),
-        (CareHome.care_home, CareHome.care_home),
+        ("1-001", "1-002", "1-003"),
+        (date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1)),
+        (CareHome.care_home, CareHome.care_home, CareHome.care_home),
         (
             {
                 CQCL.person_family_name: None,
@@ -701,23 +701,24 @@ class ExtractRegisteredManagerNamesData:
                 CQCL.person_roles: ["Registered Manager"],
                 CQCL.person_title: "M",
             },
+            {
+                CQCL.person_family_name: "Surname",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
         ),
     ]
     expected_select_and_create_full_name_when_given_or_family_name_or_null = [
-        ("1-001", "1-002"),
-        (date(2024, 1, 1), date(2024, 1, 1)),
-        (None, None),
+        ("1-003",),
+        (date(2024, 1, 1),),
+        ("Name Surname",),
     ]
 
     select_and_create_full_name_without_contact = [
         ("1-001",),
         (date(2024, 1, 1),),
         (CareHome.care_home,),
-        (None,),
-    ]
-    expected_select_and_create_full_name_without_contact = [
-        ("1-001",),
-        (date(2024, 1, 1),),
         (None,),
     ]
 
