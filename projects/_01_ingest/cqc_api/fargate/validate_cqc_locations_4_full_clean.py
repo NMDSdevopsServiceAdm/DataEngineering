@@ -3,6 +3,7 @@ import sys
 import pointblank as pb
 
 from polars_utils import utils
+from polars_utils.expressions import str_length_cols
 from polars_utils.logger import get_logger
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
@@ -10,6 +11,14 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.validation_table_columns import Validation
+from utils.column_values.categorical_column_values import (
+    LocationType,
+    RegistrationStatus,
+)
+from utils.column_values.categorical_columns_by_dataset import (
+    LocationsApiCleanedCategoricalValues as CatValues,
+)
 
 logger = get_logger(__name__)
 
@@ -25,6 +34,8 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
     """
     source_df = utils.read_parquet(
         f"s3://{bucket_name}/{source_path}", exclude_complex_types=True
+    ).with_columns(
+        str_length_cols([CQCLClean.location_id, CQCLClean.provider_id]),
     )
 
     validation = (
@@ -41,13 +52,11 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
                 CQCLClean.location_id,
                 Keys.import_date,
                 CQCLClean.cqc_location_import_date,
+                CQCLClean.name,
+                CQCLClean.type,
                 CQCLClean.imputed_registration_date,
                 CQCLClean.registration_status,
                 CQCLClean.provider_id,
-                CQCLClean.services_offered,
-                CQCLClean.specialisms_offered,
-                CQCLClean.regulated_activities_offered,
-                CQCLClean.registered_manager_names,
                 CQCLClean.primary_service_type,
                 CQCLClean.care_home,
                 CQCLClean.cqc_sector,
@@ -59,17 +68,113 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             ]
         )
         # index columns
-        .rows_distinct([CQCLClean.location_id, Keys.import_date]).interrogate()
-        # social care only
-        # registered locations only = Registered
-        # CQCLClean.primary_service_type = CHWN COH non-res
-        # CQCLClean.care_home = Y/N
-        # no specialist colleges
-        # CQCLClean.cqc_sector = LA/IND
-        # CQCLClean.related_location = Y/N
-        # CQCLClean.specialism_dementia = spec/gen/other
-        # CQCLClean.specialism_learning_disabilities = spec/gen/other
-        # CQCLClean.specialism_mental_health = spec/gen/other
+        .rows_distinct(
+            [
+                CQCLClean.location_id,
+                CQCLClean.cqc_location_import_date,
+                Keys.import_date,
+            ]
+        )
+        # categorical column values match expected set
+        .col_vals_in_set(CQCLClean.type, [LocationType.social_care_identifier])
+        .col_vals_in_set(CQCLClean.registration_status, [RegistrationStatus.registered])
+        .col_vals_in_set(
+            CQCLClean.primary_service_type,
+            CatValues.primary_service_type_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            CQCLClean.care_home, CatValues.care_home_column_values.categorical_values
+        )
+        .col_vals_in_set(
+            CQCLClean.cqc_sector, CatValues.sector_column_values.categorical_values
+        )
+        .col_vals_in_set(
+            CQCLClean.related_location,
+            CatValues.related_location_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            CQCLClean.specialism_dementia,
+            CatValues.specialism_dementia_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            CQCLClean.specialism_learning_disabilities,
+            CatValues.specialism_learning_disabilities_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            CQCLClean.specialism_mental_health,
+            CatValues.specialism_mental_health_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            CQCLClean.dormancy,
+            # na_pass is not an optional parameter to .col_vals_in_set
+            # extending list to allow for null values as not included
+            # in categorical values
+            [*CatValues.dormancy_column_values.categorical_values, None],
+        )
+        # catagorical column unique values count matches expected count
+        .specially(
+            vl.is_unique_count_equal(
+                CQCLClean.primary_service_type,
+                CatValues.primary_service_type_column_values.count_of_categorical_values,
+            ),
+            brief=f"{CQCLClean.primary_service_type} needs to be one of {CatValues.primary_service_type_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                CQCLClean.care_home,
+                CatValues.care_home_column_values.count_of_categorical_values,
+            ),
+            brief=f"{CQCLClean.care_home} needs to be one of {CatValues.care_home_column_values.categorical_values}",
+        )
+        # no specialist colleges - Cant check, list type
+        .specially(
+            vl.is_unique_count_equal(
+                CQCLClean.cqc_sector,
+                CatValues.sector_column_values.count_of_categorical_values,
+            ),
+            brief=f"{CQCLClean.cqc_sector} needs to be one of {CatValues.sector_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                CQCLClean.related_location,
+                CatValues.related_location_column_values.count_of_categorical_values,
+            ),
+            brief=f"{CQCLClean.related_location} needs to be one of {CatValues.related_location_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                CQCLClean.specialism_dementia,
+                CatValues.specialism_dementia_column_values.count_of_categorical_values,
+            ),
+            brief=f"{CQCLClean.specialism_dementia} needs to be one of {CatValues.specialism_dementia_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                CQCLClean.specialism_learning_disabilities,
+                CatValues.specialism_learning_disabilities_column_values.count_of_categorical_values,
+            ),
+            brief=f"{CQCLClean.specialism_learning_disabilities} needs to be one of {CatValues.specialism_learning_disabilities_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                CQCLClean.specialism_mental_health,
+                CatValues.specialism_mental_health_column_values.count_of_categorical_values,
+            ),
+            brief=f"{CQCLClean.specialism_mental_health} needs to be one of {CatValues.specialism_mental_health_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                CQCLClean.dormancy,
+                CatValues.dormancy_column_values.count_of_categorical_values,
+            ),
+            brief=f"{CQCLClean.dormancy} needs to be null, or one of {CatValues.dormancy_column_values.categorical_values}",
+        )
+        # numeric column values are between (inclusive)
+        .col_vals_between(Validation.location_id_length, 3, 14)
+        .col_vals_between(Validation.provider_id_length, 3, 14)
+        # numeric column values are greater than or equal to
+        .col_vals_ge(CQCLClean.number_of_beds, 0, na_pass=True)
+        .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
 
@@ -84,5 +189,7 @@ if __name__ == "__main__":
     )
     logger.info(f"Starting validation for {args.source_path}")
 
+    main(args.bucket_name, args.source_path, args.reports_path)
+    logger.info(f"Validation of {args.source_path} complete")
     main(args.bucket_name, args.source_path, args.reports_path)
     logger.info(f"Validation of {args.source_path} complete")
