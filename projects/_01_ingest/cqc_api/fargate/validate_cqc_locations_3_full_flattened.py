@@ -59,5 +59,5 @@ if __name__ == "__main__":
     )
     logger.info(f"Starting validation for {args.source_path}")
 
-    main(args.bucket_name, args.source_path, args.reports_path, args.compare_path)
+    main(args.bucket_name, args.source_path, args.reports_path)
     logger.info(f"Validation of {args.source_path} complete")
