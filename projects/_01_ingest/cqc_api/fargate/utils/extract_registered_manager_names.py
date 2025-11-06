@@ -41,7 +41,7 @@ def explode_contacts_information(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.select(
         [
             CQCLClean.location_id,
-            CQCLClean.import_date,
+            CQCLClean.cqc_location_import_date,
             CQCLClean.regulated_activities,
         ]
     )
@@ -71,7 +71,7 @@ def select_and_create_full_name(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: LazyFrame containing:
             - `location_id`
-            - `import_date`
+            - `cqc_location_import_date`
             - `contacts_full_name`: full name of the contact
     """
     full_name_col = pl.concat_str(
@@ -86,7 +86,9 @@ def select_and_create_full_name(lf: pl.LazyFrame) -> pl.LazyFrame:
         ]
     ).alias(CQCLClean.contacts_full_name)
 
-    lf = lf.select([CQCLClean.location_id, CQCLClean.import_date, full_name_col])
+    lf = lf.select(
+        [CQCLClean.location_id, CQCLClean.cqc_location_import_date, full_name_col]
+    )
     return lf
 
 
@@ -97,21 +99,21 @@ def add_registered_manager_names(
     Adds a column of registered manager names to the original LazyFrame.
 
     This function:
-    - Groups `contact_names_lf` by `location_id` and `import_date`.
+    - Groups `contact_names_lf` by `location_id` and `cqc_location_import_date`.
     - Collects unique values from `contacts_full_name` into a grouped list of names.
     - Joins the grouped names back into the original LazyFrame (`lf`).
 
     Args:
         lf (pl.LazyFrame): Original LazyFrame containing `location_id` and
-            `import_date`.
+            `cqc_location_import_date`.
         contact_names_lf  (pl.LazyFrame): LazyFrame containing the `contacts_full_name`,
-            `location_id` and `import_date` columns.
+            `location_id` and `cqc_location_import_date` columns.
 
     Returns:
         pl.LazyFrame: Original LazyFrame with an added `registered_manager_names` column
         containing a list of unique manager names.
     """
-    join_keys: list[str] = [CQCLClean.location_id, CQCLClean.import_date]
+    join_keys: list[str] = [CQCLClean.location_id, CQCLClean.cqc_location_import_date]
 
     grouped_lf = contact_names_lf.group_by(join_keys).agg(
         pl.col(CQCLClean.contacts_full_name)

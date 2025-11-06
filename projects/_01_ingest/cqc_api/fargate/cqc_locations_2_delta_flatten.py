@@ -47,6 +47,7 @@ def main(
     cqc_locations_api_delta_source: str,
     cqc_locations_flattened_destination: str,
 ) -> None:
+    # Scan parquet to get CQC locations delta data in LazyFrame format
     cqc_lf = utils.scan_parquet(
         cqc_locations_api_delta_source,
         schema=POLARS_LOCATION_SCHEMA,
@@ -58,6 +59,11 @@ def main(
 
     cqc_lf = column_to_date(cqc_lf, CQCLClean.registration_date)
     cqc_lf = column_to_date(cqc_lf, CQCLClean.deregistration_date)
+    cqc_lf = column_to_date(
+        cqc_lf, Keys.import_date, CQCLClean.cqc_location_import_date
+    )
+
+    # TODO - create_cleaned_registration_date_column
 
     fields_to_flatten = [
         (CQCL.gac_service_types, CQCL.description, CQCLClean.services_offered),
@@ -66,6 +72,9 @@ def main(
         (CQCL.relationships, CQCL.type, CQCLClean.relationships_types),
     ]
     cqc_lf = fUtils.flatten_struct_fields(cqc_lf, fields_to_flatten)
+
+    # TODO - (1128) classify_specialisms (dementia, learning_disabilities, mental_health)
+    # Move this into cqc_locations_4_full_clean. After imputation happens.
 
     cqc_lf = extract_registered_manager_names(cqc_lf)
 
@@ -76,6 +85,7 @@ def main(
         CQCL.relationships,
     )
 
+    # Store flattened data in s3
     utils.sink_to_parquet(
         cqc_lf,
         cqc_locations_flattened_destination,

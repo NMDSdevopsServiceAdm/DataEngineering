@@ -62,6 +62,7 @@ def main(
             [
                 CQCLClean.location_id,
                 Keys.import_date,
+                CQCLClean.cqc_location_import_date,
             ]
         )
         # index columns

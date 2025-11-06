@@ -35,7 +35,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
             self.TEST_SOURCE, schema=ANY, selected_columns=ANY
         )
         is_valid_location_mock.assert_called_once()
-        self.assertEqual(column_to_date_mock.call_count, 2)
+        self.assertEqual(column_to_date_mock.call_count, 3)
         flatten_struct_fields_mock.assert_called_once()
         extract_registered_manager_names_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(

@@ -93,7 +93,7 @@ class ExtractRegisteredManagerNamesSchema:
     explode_contacts_information_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
-            (CQCLClean.import_date, pl.Int32()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.care_home, pl.String()),
             (CQCLClean.regulated_activities, activity_struct_list),
         ]
@@ -101,7 +101,7 @@ class ExtractRegisteredManagerNamesSchema:
     expected_explode_contacts_information_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
-            (CQCLClean.import_date, pl.Int32()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.regulated_activities, activity_struct),
             (CQCLClean.contacts_exploded, contact_struct),
         ]
@@ -110,7 +110,7 @@ class ExtractRegisteredManagerNamesSchema:
     select_and_create_full_name_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
-            (CQCLClean.import_date, pl.Int32()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.care_home, pl.String()),
             (CQCLClean.contacts_exploded, contact_struct),
         ]
@@ -118,7 +118,7 @@ class ExtractRegisteredManagerNamesSchema:
     expected_select_and_create_full_name_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
-            (CQCLClean.import_date, pl.Int32()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.contacts_full_name, pl.String()),
         ]
     )
@@ -126,14 +126,14 @@ class ExtractRegisteredManagerNamesSchema:
     add_registered_manager_names_full_lf_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
-            (CQCLClean.import_date, pl.Int32()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.care_home, pl.String()),
         ]
     )
     registered_manager_names_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
-            (CQCLClean.import_date, pl.Int32()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.contacts_full_name, pl.String()),
         ]
     )
