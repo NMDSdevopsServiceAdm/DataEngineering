@@ -115,6 +115,8 @@ All notable changes to this project will be documented in this file.
 
 - Changed the behaviour of extract_registered_manager_names so it discards names when given or family name is null.
 
+- Called Postcode Matching function from the new cleaning job. 
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 

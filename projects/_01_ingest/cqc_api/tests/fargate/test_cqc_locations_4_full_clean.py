@@ -12,6 +12,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
     TEST_ONS_SOURCE = "some/ons/source"
     TEST_REG_DESTINATION = "some/reg/destination"
     TEST_DEREG_DESTINATION = "some/reg/destination"
+    TEST_MANUAL_POSTCODE_CORRETIONS_SOURCE = "some/ons/source"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     mock_cqc_locations_data = Mock(name="cqc_locations_data")
@@ -46,6 +47,7 @@ class CqcLocationsFlattenTests(unittest.TestCase):
             self.TEST_ONS_SOURCE,
             self.TEST_REG_DESTINATION,
             self.TEST_DEREG_DESTINATION,
+            self.TEST_MANUAL_POSTCODE_CORRETIONS_SOURCE,
         )
 
         scan_parquet_mock.assert_has_calls(

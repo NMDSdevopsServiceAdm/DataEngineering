@@ -39,6 +39,7 @@ def main(
     ons_postcode_directory_source: str,
     cqc_registered_locations_cleaned_destination: str,
     cqc_deregistered_locations_destination: str,
+    manual_postcode_corrections_source: str,
 ) -> None:
     # Scan parquet to get CQC locations full data in LazyFrame format
     cqc_lf = utils.scan_parquet(
@@ -113,7 +114,7 @@ def main(
     cqc_reg_lf = pmUtils.run_postcode_matching(
         cqc_reg_lf,
         ons_lf,
-        "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/",
+        manual_postcode_corrections_source,
     )
     # Store cleaned registered data in s3
     utils.sink_to_parquet(
@@ -145,6 +146,10 @@ if __name__ == "__main__":
             "--cqc_deregistered_locations_destination",
             "S3 URI to save full cleaned CQC deregistered locations data to",
         ),
+        (
+            "--manual_postcode_corrections_source",
+            "Source s3 location for incorrect postcode csv dataset",
+        ),
     )
 
     main(
@@ -152,6 +157,7 @@ if __name__ == "__main__":
         ons_postcode_directory_source=args.ons_postcode_directory_source,
         cqc_registered_locations_cleaned_destination=args.cqc_registered_locations_cleaned_destination,
         cqc_deregistered_locations_destination=args.cqc_deregistered_locations_destination,
+        manual_postcode_corrections_source = args.manual_postcode_corrections_source,
     )
 
     logger.info("Finished Clean Full CQC Locations job")
