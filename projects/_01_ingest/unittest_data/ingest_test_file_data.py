@@ -4,22 +4,10 @@ from datetime import date
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResColumns as CTNR,
 )
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
 from utils.column_values.categorical_column_values import (
-    CareHome,
     LocationType,
     MainJobRoleLabels,
-    PrimaryServiceType,
-    RegistrationStatus,
-    RelatedLocation,
-    Sector,
-    Services,
-    Specialisms,
-    SpecialistGeneralistOther,
 )
-from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 
 
 @dataclass
