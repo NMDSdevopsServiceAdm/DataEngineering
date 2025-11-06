@@ -3171,41 +3171,6 @@ class CQCLocationsData:
         ),
     ]
 
-    classify_specialisms_rows = [
-        ("loc 1", [Specialisms.dementia]),
-        (
-            "loc 2",
-            [
-                Specialisms.dementia,
-                Specialisms.eating_disorders,
-                Specialisms.mental_health,
-            ],
-        ),
-        ("loc 3", [Specialisms.eating_disorders]),
-    ]
-
-    expected_classify_specialisms_rows = [
-        (
-            "loc 1",
-            [Specialisms.dementia],
-            SpecialistGeneralistOther.specialist,
-        ),
-        (
-            "loc 2",
-            [
-                Specialisms.dementia,
-                Specialisms.eating_disorders,
-                Specialisms.mental_health,
-            ],
-            SpecialistGeneralistOther.generalist,
-        ),
-        (
-            "loc 3",
-            [Specialisms.eating_disorders],
-            SpecialistGeneralistOther.other,
-        ),
-    ]
-
     sector_rows = [
         "1-10000000002",
         "1-10000000003",

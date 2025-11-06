@@ -1655,19 +1655,6 @@ class CQCLocationsSchema:
         ]
     )
 
-    classify_specialisms_schema = StructType(
-        [
-            StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.specialisms_offered, ArrayType(StringType()), True),
-        ]
-    )
-    expected_classify_specialisms_schema = StructType(
-        [
-            *classify_specialisms_schema,
-            StructField(CQCLClean.specialism_dementia, StringType(), True),
-        ]
-    )
-
     rows_without_cqc_sector_schema = StructType(
         [
             StructField(CQCLClean.provider_id, StringType(), True),
