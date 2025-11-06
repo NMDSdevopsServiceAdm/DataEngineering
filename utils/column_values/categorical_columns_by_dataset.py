@@ -187,7 +187,7 @@ class ImputedIndCqcAscwdsAndPirCategoricalValues:
 class FeatureEngineeringCategoricalValues:
     current_region_column_values = Region(IndCQC.current_region)
     services_column_values = Services(IndCQC.services_offered)
-    specialisms_column_values = Specialisms(IndCQC.imputed_specialisms)
+    specialisms_column_values = Specialisms(IndCQC.specialisms_offered)
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
     dormancy_column_values = Dormancy(IndCQC.dormancy)
     related_location_column_values = RelatedLocation(IndCQC.related_location)

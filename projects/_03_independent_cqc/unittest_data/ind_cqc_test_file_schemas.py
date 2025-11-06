@@ -1686,13 +1686,7 @@ class ValidateCareHomeIndCqcFeaturesData:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
-            StructField(
-                IndCQC.imputed_specialisms,
-                ArrayType(
-                    StructType([StructField(IndCQC.name, StringType(), True)]), True
-                ),
-                True,
-            ),
+            StructField(IndCQC.specialisms_offered, ArrayType(StringType(), True)),
         ]
     )
     care_home_ind_cqc_features_schema = StructType(
@@ -1722,13 +1716,7 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcSchema:
             StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.services_offered, ArrayType(StringType(), True)),
-            StructField(
-                IndCQC.imputed_specialisms,
-                ArrayType(
-                    StructType([StructField(IndCQC.name, StringType(), True)]), True
-                ),
-                True,
-            ),
+            StructField(IndCQC.specialisms_offered, ArrayType(StringType(), True)),
         ]
     )
     non_res_ascwds_ind_cqc_features_schema = StructType(
@@ -1749,13 +1737,7 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcSchema:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.services_offered, ArrayType(StringType(), True)),
-            StructField(
-                IndCQC.imputed_specialisms,
-                ArrayType(
-                    StructType([StructField(IndCQC.name, StringType(), True)]), True
-                ),
-                True,
-            ),
+            StructField(IndCQC.specialisms_offered, ArrayType(StringType(), True)),
         ]
     )
     non_res_ascwds_ind_cqc_features_schema = StructType(

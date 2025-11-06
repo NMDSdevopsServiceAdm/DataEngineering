@@ -211,7 +211,6 @@ class IndCqcColumns:
         "imputed_filled_posts_per_bed_ratio_model"
     )
     imputed_registration_date: str = CQCLClean.imputed_registration_date
-    imputed_specialisms: str = CQCLClean.imputed_specialisms
     interpolation_model: str = "interpolation_model"
     last_ascwds_submission: str = "last_ascwds_submission"
     last_filled_posts: str = "last_filled_posts"

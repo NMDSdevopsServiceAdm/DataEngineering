@@ -4175,10 +4175,10 @@ class NonResAscwdsFeaturesData(object):
 class ValidateCareHomeIndCqcFeaturesData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.care_home, [{"name": "Name"}]),
-        ("1-000000002", date(2024, 1, 1), CareHome.care_home, [{"name": "Name"}]),
-        ("1-000000001", date(2024, 1, 9), CareHome.care_home, [{"name": "Name"}]),
-        ("1-000000002", date(2024, 1, 9), CareHome.care_home, [{"name": "Name"}]),
+        ("1-000000001", date(2024, 1, 1), CareHome.care_home, ["Specialism Name"]),
+        ("1-000000002", date(2024, 1, 1), CareHome.care_home, ["Specialism Name"]),
+        ("1-000000001", date(2024, 1, 9), CareHome.care_home, ["Specialism Name"]),
+        ("1-000000002", date(2024, 1, 9), CareHome.care_home, ["Specialism Name"]),
     ]
 
     care_home_ind_cqc_features_rows = [
@@ -4189,11 +4189,11 @@ class ValidateCareHomeIndCqcFeaturesData:
     ]
 
     calculate_expected_size_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.care_home, [{"name": "Name"}]),
+        ("1-001", date(2024, 1, 1), CareHome.care_home, ["Specialism Name"]),
         ("1-002", date(2024, 1, 1), CareHome.care_home, None),
-        ("1-003", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name"}]),
+        ("1-003", date(2024, 1, 1), CareHome.not_care_home, ["Specialism Name"]),
         ("1-004", date(2024, 1, 1), CareHome.not_care_home, None),
-        ("1-005", date(2024, 1, 1), None, [{"name": "Name"}]),
+        ("1-005", date(2024, 1, 1), None, ["Specialism Name"]),
         ("1-006", date(2024, 1, 1), None, None),
     ]
     # fmt: on
@@ -4203,10 +4203,10 @@ class ValidateCareHomeIndCqcFeaturesData:
 class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.not_dormant, ["Name"], [{"name": "Name"}]),
-        ("1-001", date(2024, 1, 9), CareHome.not_care_home, Dormancy.dormant, ["Name"], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 9), CareHome.not_care_home, Dormancy.not_dormant, ["Name"], [{"name": "Name"}]),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.not_dormant, ["Name"], ["Specialism Name"]),
+        ("1-001", date(2024, 1, 9), CareHome.not_care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]),
+        ("1-002", date(2024, 1, 9), CareHome.not_care_home, Dormancy.not_dormant, ["Name"], ["Specialism Name"]),
     ]
     # fmt: on
 
@@ -4219,11 +4219,11 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
 
     # fmt: off
     calculate_expected_size_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], [{"name": "Name"}]),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]),
         ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], None), # filtered - null specialism
-        ("1-003", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, None, [{"name": "Name"}]), # filtered - null service
-        ("1-005", date(2024, 1, 1), CareHome.not_care_home, None, ["Name"], [{"name": "Name"}]), # filtered - null dormancy
-        ("1-004", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, ["Name"], [{"name": "Name"}]), # filtered - care home
+        ("1-003", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, None, ["Specialism Name"]), # filtered - null service
+        ("1-005", date(2024, 1, 1), CareHome.not_care_home, None, ["Name"], ["Specialism Name"]), # filtered - null dormancy
+        ("1-004", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]), # filtered - care home
     ]
     # fmt: on
 
@@ -4232,10 +4232,10 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
 class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, ["Name"], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, ["Name"], [{"name": "Name"}]),
-        ("1-001", date(2024, 1, 9), CareHome.not_care_home, ["Name"], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 9), CareHome.not_care_home, ["Name"], [{"name": "Name"}]),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
+        ("1-001", date(2024, 1, 9), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
+        ("1-002", date(2024, 1, 9), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
     ]
     # fmt: on
 
@@ -4248,11 +4248,11 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
 
     # fmt: off
     calculate_expected_size_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, ["Name"], [{"name": "Name"}]),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
         ("1-002", date(2024, 1, 1), CareHome.not_care_home, ["Name"], None), # filtered - null specialism
-        ("1-003", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name"}]), # filtered - null service
-        ("1-004", date(2024, 1, 1), CareHome.care_home, ["Name"], [{"name": "Name"}]), # filtered - care home
-        ("1-005", date(2025, 1, 2), CareHome.not_care_home, ["Name"], [{"name": "Name"}]), # filtered - date after 1/1/2025
+        ("1-003", date(2024, 1, 1), CareHome.not_care_home, None, ["Specialism Name"]), # filtered - null service
+        ("1-004", date(2024, 1, 1), CareHome.care_home, ["Name"], ["Specialism Name"]), # filtered - care home
+        ("1-005", date(2025, 1, 2), CareHome.not_care_home, ["Name"], ["Specialism Name"]), # filtered - date after 1/1/2025
     ]
     # fmt: on
 

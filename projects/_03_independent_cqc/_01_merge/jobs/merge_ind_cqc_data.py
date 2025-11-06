@@ -45,7 +45,6 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.number_of_beds,
     CQCLClean.regulated_activities_offered,
     CQCLClean.services_offered,
-    CQCLClean.imputed_specialisms,
     CQCLClean.specialisms_offered,
     CQCLClean.specialism_dementia,
     CQCLClean.specialism_learning_disabilities,
