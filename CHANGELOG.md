@@ -115,6 +115,8 @@ All notable changes to this project will be documented in this file.
 
 - Changed the behaviour of extract_registered_manager_names so it discards names when given or family name is null.
 
+- Amended column names and formats to match the new data at the end of CQC locations clean.
+
 - Updated all the references of delta cqc data to point to new version 3.1.0.
 
 ### Improved
