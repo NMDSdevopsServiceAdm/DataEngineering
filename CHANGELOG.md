@@ -28,6 +28,8 @@ All notable changes to this project will be documented in this file.
 
 - Added Postcode Matching call within cqc_location_4_full_clean job.
 
+- Added validation script for locations_3_full_flattened process and test script for this validation.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
@@ -114,6 +116,8 @@ All notable changes to this project will be documented in this file.
 - Converted function remove_specialist_colleges from pyspark to polars.
 
 - Changed the behaviour of extract_registered_manager_names so it discards names when given or family name is null.
+
+- Updated all the references of delta cqc data to point to new version 3.1.0.
 
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
