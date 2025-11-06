@@ -8,9 +8,6 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    NewCqcLocationApiColumns as CQCL,
-)
 
 
 def remove_duplicate_worker_in_raw_worker_data(raw_worker_df: DataFrame) -> DataFrame:
@@ -71,26 +68,6 @@ def remove_duplicate_workplaces_in_raw_workplace_data(
     )
 
     return raw_workplace_df
-
-
-# converted to polars -> polars_utils.raw_data_adjustments.py
-def remove_records_from_locations_data(
-    raw_locations_df: DataFrame,
-) -> DataFrame:
-    """
-    This function removes records from the locations dataset.
-    """
-    raw_locations_df = raw_locations_df.where(
-        (
-            raw_locations_df[CQCL.location_id]
-            != RecordsToRemoveInLocationsData.dental_practice
-        )
-        & (
-            raw_locations_df[CQCL.location_id]
-            != RecordsToRemoveInLocationsData.temp_registration
-        )
-    )
-    return raw_locations_df
 
 
 @dataclass

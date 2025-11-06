@@ -1034,23 +1034,3 @@ class RawDataAdjustments:
         ("20250101", "12345", "other_data"),
         ("20250101", "67890", "other_data"),
     ]
-
-    locations_data_with_multiple_rows_to_remove = [
-        ("loc_1", "other"),
-        (RecordsToRemoveInLocationsData.dental_practice, "other"),
-        (RecordsToRemoveInLocationsData.dental_practice, "something else"),
-        (RecordsToRemoveInLocationsData.temp_registration, "other"),
-        (RecordsToRemoveInLocationsData.temp_registration, "something else"),
-    ]
-
-    locations_data_with_single_rows_to_remove = [
-        ("loc_1", "other"),
-        (RecordsToRemoveInLocationsData.dental_practice, "other"),
-        (RecordsToRemoveInLocationsData.temp_registration, "other"),
-    ]
-
-    locations_data_without_rows_to_remove = [
-        ("loc_1", "other"),
-    ]
-
-    expected_locations_data = locations_data_without_rows_to_remove
