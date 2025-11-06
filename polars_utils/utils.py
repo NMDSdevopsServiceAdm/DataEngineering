@@ -209,7 +209,12 @@ def sink_to_parquet(
                 f"LazyFrame sunk to Parquet at {output_path} partitioned by {partition_cols}"
             )
         else:
-            lazy_df.sink_parquet(output_path, mkdir=True, engine="streaming")
+            path = pl.PartitionByKey(
+                base_path=f"{output_path}",
+                include_key=False,
+                by=[],
+            )
+            lazy_df.sink_parquet(path=path, mkdir=True, engine="streaming")
             logger.info(
                 f"LazyFrame sunk to Parquet at {output_path} without partitioning"
             )
