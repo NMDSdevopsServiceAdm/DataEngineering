@@ -68,7 +68,7 @@ if __name__ == "__main__":
         domain="CQC_delta",
         dataset="delta_locations_api",
         date=output_date,
-        version="3.0.0",
+        version="3.1.0",
     )
 
     main(destination, start, end)

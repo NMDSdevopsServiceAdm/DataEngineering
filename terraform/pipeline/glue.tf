@@ -387,7 +387,7 @@ module "delta_clean_cqc_location_data_job" {
   number_of_workers = 5
 
   job_parameters = {
-    "--cqc_location_source"                   = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0",
+    "--cqc_location_source"                   = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0",
     "--cleaned_ons_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
     "--manual_postcode_corrections_source"    = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=postcode_corrections/manual_postcode_corrections.csv",
     "--cleaned_cqc_location_destination"      = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=delta_locations_api_cleaned/",
@@ -408,7 +408,7 @@ module "reconciliation_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_location_api_source"                    = "${module.datasets_bucket.bucket_uri}domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
+    "--cqc_location_api_source"                    = "${module.datasets_bucket.bucket_uri}domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
     "--ascwds_reconciliation_source"               = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
     "--reconciliation_single_and_subs_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_reconciliation_singles_and_subs"
     "--reconciliation_parents_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_reconciliation_parents"
