@@ -46,7 +46,6 @@ ind_cqc_columns = [
     IndCQC.dormancy,
     IndCQC.number_of_beds,
     IndCQC.number_of_beds_banded,
-    IndCQC.imputed_gac_service_types,
     IndCQC.imputed_registration_date,
     IndCQC.related_location,
     IndCQC.time_registered,

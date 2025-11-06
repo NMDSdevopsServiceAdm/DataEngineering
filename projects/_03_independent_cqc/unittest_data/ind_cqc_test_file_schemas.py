@@ -1721,17 +1721,7 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcSchema:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.dormancy, StringType(), True),
-            StructField(
-                IndCQC.imputed_gac_service_types,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(CQCL.name, StringType(), True),
-                            StructField(CQCL.description, StringType(), True),
-                        ]
-                    )
-                ),
-            ),
+            StructField(IndCQC.services_offered, ArrayType(StringType(), True)),
             StructField(
                 IndCQC.imputed_specialisms,
                 ArrayType(
@@ -1758,17 +1748,7 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcSchema:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.care_home, StringType(), False),
-            StructField(
-                IndCQC.imputed_gac_service_types,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(CQCL.name, StringType(), True),
-                            StructField(CQCL.description, StringType(), True),
-                        ]
-                    )
-                ),
-            ),
+            StructField(IndCQC.services_offered, ArrayType(StringType(), True)),
             StructField(
                 IndCQC.imputed_specialisms,
                 ArrayType(
@@ -1852,17 +1832,7 @@ class ModelFeatures:
     add_array_column_count_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(
-                IndCQC.gac_service_types,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(CQCL.name, StringType(), True),
-                            StructField(CQCL.description, StringType(), True),
-                        ]
-                    )
-                ),
-            ),
+            StructField(IndCQC.services_offered, ArrayType(StringType(), True)),
         ]
     )
     expected_add_array_column_count_schema = StructType(

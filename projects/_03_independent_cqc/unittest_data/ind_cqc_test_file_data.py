@@ -4203,10 +4203,10 @@ class ValidateCareHomeIndCqcFeaturesData:
 class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.not_dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-001", date(2024, 1, 9), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 9), CareHome.not_care_home, Dormancy.not_dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], [{"name": "Name"}]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.not_dormant, ["Name"], [{"name": "Name"}]),
+        ("1-001", date(2024, 1, 9), CareHome.not_care_home, Dormancy.dormant, ["Name"], [{"name": "Name"}]),
+        ("1-002", date(2024, 1, 9), CareHome.not_care_home, Dormancy.not_dormant, ["Name"], [{"name": "Name"}]),
     ]
     # fmt: on
 
@@ -4219,11 +4219,11 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
 
     # fmt: off
     calculate_expected_size_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], None), # filtered - null specialism
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], [{"name": "Name"}]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], None), # filtered - null specialism
         ("1-003", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, None, [{"name": "Name"}]), # filtered - null service
-        ("1-005", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - null dormancy
-        ("1-004", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - care home
+        ("1-005", date(2024, 1, 1), CareHome.not_care_home, None, ["Name"], [{"name": "Name"}]), # filtered - null dormancy
+        ("1-004", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, ["Name"], [{"name": "Name"}]), # filtered - care home
     ]
     # fmt: on
 
@@ -4232,10 +4232,10 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
 class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-001", date(2024, 1, 9), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 9), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, ["Name"], [{"name": "Name"}]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, ["Name"], [{"name": "Name"}]),
+        ("1-001", date(2024, 1, 9), CareHome.not_care_home, ["Name"], [{"name": "Name"}]),
+        ("1-002", date(2024, 1, 9), CareHome.not_care_home, ["Name"], [{"name": "Name"}]),
     ]
     # fmt: on
 
@@ -4248,11 +4248,11 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
 
     # fmt: off
     calculate_expected_size_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], None), # filtered - null specialism
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, ["Name"], [{"name": "Name"}]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, ["Name"], None), # filtered - null specialism
         ("1-003", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name"}]), # filtered - null service
-        ("1-004", date(2024, 1, 1), CareHome.care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - care home
-        ("1-005", date(2025, 1, 2), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - date after 1/1/2025
+        ("1-004", date(2024, 1, 1), CareHome.care_home, ["Name"], [{"name": "Name"}]), # filtered - care home
+        ("1-005", date(2025, 1, 2), CareHome.not_care_home, ["Name"], [{"name": "Name"}]), # filtered - date after 1/1/2025
     ]
     # fmt: on
 
@@ -4323,32 +4323,17 @@ class ModelFeatures:
     ]
 
     add_array_column_count_with_one_element_rows = [
-        ("1-001", [{CQCL.name: "name", CQCL.description: "description"}]),
+        ("1-001", ["name"]),
     ]
     expected_add_array_column_count_with_one_element_rows = [
-        ("1-001", [{CQCL.name: "name", CQCL.description: "description"}], 1),
+        ("1-001", ["name"], 1),
     ]
 
     add_array_column_count_with_multiple_elements_rows = [
-        (
-            "1-001",
-            [
-                {CQCL.name: "name_1", CQCL.description: "description_1"},
-                {CQCL.name: "name_2", CQCL.description: "description_2"},
-                {CQCL.name: "name_3", CQCL.description: "description_3"},
-            ],
-        ),
+        ("1-001", ["name_1", "name_2", "name_3"]),
     ]
     expected_add_array_column_count_with_multiple_elements_rows = [
-        (
-            "1-001",
-            [
-                {CQCL.name: "name_1", CQCL.description: "description_1"},
-                {CQCL.name: "name_2", CQCL.description: "description_2"},
-                {CQCL.name: "name_3", CQCL.description: "description_3"},
-            ],
-            3,
-        ),
+        ("1-001", ["name_1", "name_2", "name_3"], 3),
     ]
 
     add_array_column_count_with_empty_array_rows = [

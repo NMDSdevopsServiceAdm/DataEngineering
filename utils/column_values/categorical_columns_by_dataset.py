@@ -186,7 +186,7 @@ class ImputedIndCqcAscwdsAndPirCategoricalValues:
 @dataclass
 class FeatureEngineeringCategoricalValues:
     current_region_column_values = Region(IndCQC.current_region)
-    services_column_values = Services(IndCQC.imputed_gac_service_types)
+    services_column_values = Services(IndCQC.services_offered)
     specialisms_column_values = Specialisms(IndCQC.imputed_specialisms)
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
     dormancy_column_values = Dormancy(IndCQC.dormancy)

@@ -200,11 +200,9 @@ class IndCqcColumns:
     first_non_null_value: str = "first_non_null_value"
     first_rolling_average: str = "first_rolling_average"
     first_submission_time: str = "first_submission_time"
-    gac_service_types: str = CQCLClean.gac_service_types
     has_non_null_value: str = "has_non_null_value"
     imputed_ascwds_job_role_counts: str = "imputed_ascwds_job_role_counts"
     imputed_ascwds_job_role_ratios: str = "imputed_ascwds_job_role_ratios"
-    imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
     imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
     imputed_posts_non_res_combined_model: str = "imputed_posts_non_res_combined_model"
