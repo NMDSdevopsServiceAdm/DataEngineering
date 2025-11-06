@@ -125,7 +125,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     archive_filled_posts_estimates_job_name                                 = module.archive_filled_posts_estimates_job.job_name
     validate_providers_api_raw_delta_data_job_name                          = module.validate_providers_api_raw_delta_data_job.job_name
     clean_cqc_provider_data_job_name                                        = module.clean_cqc_provider_data_job.job_name
-    clean_cqc_location_data_job_name                                        = module.delta_clean_cqc_location_data_job.job_name
     validate_providers_api_cleaned_data_job_name                            = module.validate_providers_api_cleaned_data_job.job_name
     prepare_dpr_external_job_name                                           = module.prepare_dpr_external_data_job.job_name
     prepare_dpr_survey_job_name                                             = module.prepare_dpr_survey_data_job.job_name
