@@ -1513,4 +1513,11 @@ class ValidateCqcLocations4FullCleanTest:
         (SpecGenOther.generalist,),
         (Dormancy.not_dormant),
         (10,),
+        (date(2025, 3, 1),),
+        ("contemporary_cssr",),
+        ("contemporary_region",),
+        (date(2025, 3, 1),),
+        ("current_cssr",),
+        ("current_region",),
+        ("current_rural_urban_ind_11",),
     ]

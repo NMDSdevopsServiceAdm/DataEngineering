@@ -64,7 +64,13 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
                 CQCLClean.specialism_dementia,
                 CQCLClean.specialism_learning_disabilities,
                 CQCLClean.specialism_mental_health,
-                # Add geography columns here after PR for branch 1117 is merged
+                CQCLClean.contemporary_ons_import_date,
+                CQCLClean.contemporary_cssr,
+                CQCLClean.contemporary_region,
+                CQCLClean.current_ons_import_date,
+                CQCLClean.current_cssr,
+                CQCLClean.current_region,
+                CQCLClean.current_rural_urban_ind_11,
             ]
         )
         # index columns
@@ -111,6 +117,26 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             # in categorical values
             [*CatValues.dormancy_column_values.categorical_values, None],
         )
+        .col_vals_in_set(
+            CQCLClean.contemporary_cssr,
+            CatValues.contemporary_cssr_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            CQCLClean.contemporary_region,
+            CatValues.contemporary_region_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            CQCLClean.current_cssr,
+            CatValues.current_cssr_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            CQCLClean.current_region,
+            CatValues.current_region_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            CQCLClean.current_rural_urban_ind_11,
+            CatValues.current_rui_column_values.categorical_values,
+        )
         # catagorical column unique values count matches expected count
         .specially(
             vl.is_unique_count_equal(
@@ -126,7 +152,6 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             ),
             brief=f"{CQCLClean.care_home} needs to be one of {CatValues.care_home_column_values.categorical_values}",
         )
-        # no specialist colleges - Cant check, list type
         .specially(
             vl.is_unique_count_equal(
                 CQCLClean.cqc_sector,
@@ -168,6 +193,41 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
                 CatValues.dormancy_column_values.count_of_categorical_values,
             ),
             brief=f"{CQCLClean.dormancy} needs to be null, or one of {CatValues.dormancy_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                CQCLClean.contemporary_cssr,
+                CatValues.contemporary_cssr_column_values.count_of_categorical_values,
+            ),
+            brief=f"{CQCLClean.contemporary_cssr} needs to be null, or one of {CatValues.contemporary_cssr_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                CQCLClean.contemporary_region,
+                CatValues.contemporary_region_column_values.count_of_categorical_values,
+            ),
+            brief=f"{CQCLClean.contemporary_region} needs to be null, or one of {CatValues.contemporary_region_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                CQCLClean.current_cssr,
+                CatValues.current_cssr_column_values.count_of_categorical_values,
+            ),
+            brief=f"{CQCLClean.current_cssr} needs to be null, or one of {CatValues.current_cssr_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                CQCLClean.current_region,
+                CatValues.current_region_column_values.count_of_categorical_values,
+            ),
+            brief=f"{CQCLClean.current_region} needs to be null, or one of {CatValues.current_region_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                CQCLClean.current_rural_urban_ind_11,
+                CatValues.current_rui_column_values.count_of_categorical_values,
+            ),
+            brief=f"{CQCLClean.current_rural_urban_ind_11} needs to be null, or one of {CatValues.current_rui_column_values.categorical_values}",
         )
         # numeric column values are between (inclusive)
         .col_vals_between(Validation.location_id_length, 3, 14)

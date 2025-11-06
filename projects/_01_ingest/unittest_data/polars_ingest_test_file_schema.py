@@ -411,5 +411,12 @@ class ValidateCqcLocations4FullCleanTest:
             (CQCLClean.specialism_mental_health, pl.String()),
             (CQCLClean.dormancy, pl.String()),
             (CQCLClean.number_of_beds, pl.Int64()),
+            (CQCLClean.contemporary_ons_import_date, pl.Date()),
+            (CQCLClean.contemporary_cssr, pl.String()),
+            (CQCLClean.contemporary_region, pl.String()),
+            (CQCLClean.current_ons_import_date, pl.Date()),
+            (CQCLClean.current_cssr, pl.String()),
+            (CQCLClean.current_region, pl.String()),
+            (CQCLClean.current_rural_urban_ind_11, pl.String()),
         ]
     )
