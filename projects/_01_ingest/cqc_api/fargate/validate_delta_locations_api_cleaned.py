@@ -66,10 +66,10 @@ def main(
             actions=GLOBAL_ACTIONS,
         )
         # dataset size
-        # .row_count_match(
-        #     expected_row_count,
-        #     brief=f"Cleaned file has {source_df.height} rows but expecting {expected_row_count} rows",
-        # )
+        .row_count_match(
+            expected_row_count,
+            brief=f"Cleaned file has {source_df.height} rows but expecting {expected_row_count} rows",
+        )
         # complete columns
         .col_vals_not_null(
             [
@@ -77,7 +77,7 @@ def main(
                 CQCLClean.cqc_location_import_date,
                 CQCLClean.provider_id,
                 CQCLClean.cqc_sector,
-                # CQCLClean.registration_status,
+                CQCLClean.registration_status,
                 CQCLClean.imputed_registration_date,
                 CQCLClean.name,
                 CQCLClean.type,
@@ -93,17 +93,17 @@ def main(
         # greater than or equal to
         .col_vals_ge(CQCLClean.number_of_beds, 0, na_pass=True)
         # between (inclusive)
-        # .col_vals_between(CQCLClean.number_of_beds, 0, 500, na_pass=True)
+        .col_vals_between(CQCLClean.number_of_beds, 0, 500, na_pass=True)
         .col_vals_between(Validation.location_id_length, 3, 14)
         .col_vals_between(Validation.provider_id_length, 3, 14)
         # categorical
         .col_vals_in_set(
             CQCLClean.cqc_sector, CatValues.sector_column_values.categorical_values
         )
-        # .col_vals_in_set(
-        #     CQCLClean.registration_status,
-        #     CatValues.registration_status_column_values.categorical_values,
-        # )
+        .col_vals_in_set(
+            CQCLClean.registration_status,
+            CatValues.registration_status_column_values.categorical_values,
+        )
         .col_vals_in_set(
             CQCLClean.dormancy,
             # na_pass is not an optional parameter to .col_vals_in_set
@@ -123,13 +123,13 @@ def main(
             ),
             brief=f"{CQCLClean.cqc_sector} needs to be one of {CatValues.sector_column_values.categorical_values}",
         )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         CQCLClean.registration_status,
-        #         CatValues.registration_status_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{CQCLClean.registration_status} needs to be one of {CatValues.registration_status_column_values.categorical_values}",
-        # )
+        .specially(
+            vl.is_unique_count_equal(
+                CQCLClean.registration_status,
+                CatValues.registration_status_column_values.count_of_categorical_values,
+            ),
+            brief=f"{CQCLClean.registration_status} needs to be one of {CatValues.registration_status_column_values.categorical_values}",
+        )
         .specially(
             vl.is_unique_count_equal(
                 CQCLClean.dormancy,

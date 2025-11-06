@@ -26,11 +26,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.column_values.categorical_column_values import (
-    LocationType,
-    RegistrationStatus,
-    Sector,
-)
+from utils.column_values.categorical_column_values import Sector
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -83,18 +79,21 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.total_staff_bounded,
     AWPClean.worker_records_bounded,
 ]
+
 cleaned_cqc_pir_columns_to_import = [
     CQCPIRClean.care_home,
     CQCPIRClean.cqc_pir_import_date,
     CQCPIRClean.location_id,
     CQCPIRClean.pir_people_directly_employed_cleaned,
 ]
+
 cleaned_ct_non_res_columns_to_import = [
     CTNRClean.cqc_id,
     CTNRClean.ct_non_res_import_date,
     CTNRClean.care_home,
     CTNRClean.cqc_care_workers_employed,
 ]
+
 cleaned_ct_care_home_columns_to_import = [
     CTCHClean.cqc_id,
     CTCHClean.ct_care_home_import_date,
@@ -123,12 +122,15 @@ def main(
         cleaned_ascwds_workplace_source,
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
     )
+
     cqc_pir_df = utils.read_from_parquet(
         cleaned_cqc_pir_source, selected_columns=cleaned_cqc_pir_columns_to_import
     )
+
     ct_non_res_df = utils.read_from_parquet(
         cleaned_ct_non_res_source, selected_columns=cleaned_ct_non_res_columns_to_import
     )
+
     ct_care_home_df = utils.read_from_parquet(
         cleaned_ct_care_home_source,
         selected_columns=cleaned_ct_care_home_columns_to_import,
@@ -186,15 +188,18 @@ def join_data_into_cqc_df(
 ) -> DataFrame:
     """
     Function to join a data file into the CQC locations data set.
+
     Some data needs to be matched on the care home column as well as location ID and import date, so
     there is an option to specify that. Other data doesn't require that match, so this option defaults
     to None (not required for matching).
+
     Args:
         cqc_df (DataFrame): The CQC location DataFrame.
         join_df (DataFrame): The DataFrame to join in.
         join_location_id_col (str): The name of the location ID column in the DataFrame to join in.
         join_import_date_col (str): The name of the import date column in the DataFrame to join in.
         join_care_home_col (Optional[str]): The name of the care home column if required for the join.
+
     Returns:
         DataFrame: Original CQC locations DataFrame with the second DataFrame joined in.
     """
@@ -204,21 +209,26 @@ def join_data_into_cqc_df(
         CQCLClean.cqc_location_import_date,
         join_import_date_col,
     )
+
     join_df = join_df.withColumnRenamed(join_location_id_col, CQCLClean.location_id)
+
     cols_to_join_on = [join_import_date_col, CQCLClean.location_id]
     if join_care_home_col:
         cols_to_join_on = cols_to_join_on + [join_care_home_col]
+
     cqc_df_with_join_data = cqc_df_with_join_import_date.join(
         join_df,
         cols_to_join_on,
         "left",
     )
+
     return cqc_df_with_join_data
 
 
 if __name__ == "__main__":
     print("Spark job 'merge_ind_cqc_data' starting...")
     print(f"Job parameters: {sys.argv}")
+
     (
         cleaned_cqc_location_source,
         cleaned_cqc_pir_source,
@@ -260,4 +270,5 @@ if __name__ == "__main__":
         cleaned_ct_care_home_source,
         destination,
     )
+
     print("Spark job 'merge_ind_cqc_data' complete")

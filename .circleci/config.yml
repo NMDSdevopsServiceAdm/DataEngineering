@@ -285,28 +285,8 @@ jobs:
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=full_providers_api/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=full_providers_api/"
-      # - aws-s3/sync:
-      #     aws-region: AWS_REGION
-      #     from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
-      #     to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
-      # - aws-s3/sync:
-      #     aws-region: AWS_REGION
-      #     from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
-      #     to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC/dataset=locations_api/version=2.1.1/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=locations_api/version=2.1.1/"
-      # - aws-s3/sync:
-      #     aws-region: AWS_REGION
-      #     from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api_cleaned/"
-      #     to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api_cleaned/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory_cleaned/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ONS/dataset=postcode_directory_cleaned/"
+          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC/dataset=pir_cleaned/"
@@ -428,9 +408,9 @@ workflows:
       - copy-main-data:
           requires:
             - terraform-apply
-      # - test:
-      #     requires:
-      #       - terraform-apply
+      - test:
+          requires:
+            - terraform-apply
           filters:
             branches:
               ignore: main

@@ -338,9 +338,7 @@ def join_dimension(
     current_dimension = current_dimension.repartition(
         primary_key, DimensionKeys.import_date
     )
-    fact_df = fact_df.repartition(
-        primary_key, DimensionKeys.import_date
-    ).withColumnRenamed(DimensionKeys.import_date, "d_import_date")
+    fact_df = fact_df.repartition(primary_key, DimensionKeys.import_date)
 
     joined_df = fact_df.join(
         F.broadcast(
@@ -348,10 +346,10 @@ def join_dimension(
         ),
         [
             primary_key,
-            # Keys.import_date,
+            Keys.import_date,
         ],
         how="left",
-    ).drop("d_import_date")
+    )
 
     window_spec = Window.partitionBy(primary_key).orderBy(
         F.col(DimensionKeys.import_date)
