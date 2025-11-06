@@ -7,7 +7,6 @@ from utils.column_values.categorical_column_values import (
     PrimaryServiceType,
     Sector,
 )
-from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.validation.validation_rule_custom_type import CustomValidationRules
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
