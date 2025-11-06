@@ -157,7 +157,7 @@ if __name__ == "__main__":
         ons_postcode_directory_source=args.ons_postcode_directory_source,
         cqc_registered_locations_cleaned_destination=args.cqc_registered_locations_cleaned_destination,
         cqc_deregistered_locations_destination=args.cqc_deregistered_locations_destination,
-        manual_postcode_corrections_source = args.manual_postcode_corrections_source,
+        manual_postcode_corrections_source=args.manual_postcode_corrections_source,
     )
 
     logger.info("Finished Clean Full CQC Locations job")
