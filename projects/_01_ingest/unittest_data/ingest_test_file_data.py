@@ -958,17 +958,6 @@ class ValidatePIRCleanedData:
 
 
 @dataclass
-class ValidateLocationsAPIRawData:
-    raw_cqc_locations_rows = [
-        ("1-00001", "20240101", "1-001", "name", LocationType.social_care_identifier),
-        ("1-00002", "20240101", "1-001", "name", LocationType.social_care_identifier),
-        ("1-00001", "20240201", "1-001", "name", LocationType.social_care_identifier),
-        ("1-00002", "20240201", "1-001", "name", LocationType.social_care_identifier),
-        ("1-00002", "20240201", "1-001", "name", LocationType.social_care_identifier),
-    ]
-
-
-@dataclass
 class ValidateProvidersAPIRawData:
     # fmt: off
     raw_cqc_providers_rows = [

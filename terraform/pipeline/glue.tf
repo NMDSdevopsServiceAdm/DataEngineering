@@ -438,22 +438,6 @@ module "merge_coverage_data_job" {
   }
 }
 
-module "validate_locations_api_cleaned_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/cqc_api/jobs"
-  script_name     = "validate_locations_api_cleaned_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--raw_cqc_location_source"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/"
-    "--cleaned_cqc_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
-    "--report_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_locations_api_cleaned/"
-  }
-}
-
 module "validate_providers_api_cleaned_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_01_ingest/cqc_api/jobs"
@@ -709,21 +693,6 @@ module "validate_ascwds_worker_raw_data_job" {
   job_parameters = {
     "--raw_ascwds_worker_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
     "--report_destination"       = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_worker_raw/"
-  }
-}
-
-module "validate_locations_api_raw_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/cqc_api/jobs"
-  script_name     = "validate_locations_api_raw_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--raw_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/"
-    "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_locations_api_raw/"
   }
 }
 
