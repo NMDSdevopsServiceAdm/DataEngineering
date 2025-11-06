@@ -1,6 +1,7 @@
 import polars as pl
 
 from polars_utils import logger, utils
+from polars_utils.cleaning_utils import column_to_date
 from projects._01_ingest.cqc_api.fargate.utils import locations_4_clean_utils as cUtils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
@@ -47,23 +48,13 @@ def main(
         pl.col(CQCLClean.type) == LocationType.social_care_identifier
     )
 
-    cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)
-
-    # cUtils.save_latest_full_snapshot(cqc_lf, cqc_full_snapshot_destination)
-    required_columns = [
-        CQCLClean.cqc_location_import_date,
-        CQCLClean.location_id,
-        CQCLClean.registration_status,
-        CQCLClean.deregistration_date,
-    ]
-
-    cqc_lf = cqc_lf.select(*required_columns)
-
-    cqc_lf = utils.filter_to_maximum_value_in_column(
-        cqc_lf, CQCLClean.cqc_location_import_date
+    cqc_lf = column_to_date(
+        cqc_lf, Keys.import_date, CQCLClean.cqc_location_import_date
     )
 
-    utils.sink_to_parquet(cqc_lf, cqc_full_snapshot_destination, append=False)
+    cUtils.save_latest_full_snapshot(cqc_lf, cqc_full_snapshot_destination)
+
+    # cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)
 
     # cqc_reg_lf = cqc_lf.filter(
     #     pl.col(CQCLClean.registration_status) == RegistrationStatus.registered

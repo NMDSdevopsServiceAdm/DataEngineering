@@ -16,30 +16,32 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
 
     mock_cqc_locations_data = Mock(name="cqc_locations_data")
 
-    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.cUtils.classify_specialisms")
-    @patch(f"{PATCH_PATH}.cUtils.add_related_location_column")
-    @patch(f"{PATCH_PATH}.cUtils.realign_carehome_column_with_primary_service")
-    @patch(f"{PATCH_PATH}.cUtils.allocate_primary_service_type")
-    @patch(f"{PATCH_PATH}.cUtils.remove_specialist_colleges")
-    @patch(f"{PATCH_PATH}.cUtils.assign_cqc_sector")
-    @patch(f"{PATCH_PATH}.cUtils.clean_provider_id_column")
-    @patch(f"{PATCH_PATH}.cUtils.clean_and_impute_registration_date")
+    # @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    # @patch(f"{PATCH_PATH}.cUtils.classify_specialisms")
+    # @patch(f"{PATCH_PATH}.cUtils.add_related_location_column")
+    # @patch(f"{PATCH_PATH}.cUtils.realign_carehome_column_with_primary_service")
+    # @patch(f"{PATCH_PATH}.cUtils.allocate_primary_service_type")
+    # @patch(f"{PATCH_PATH}.cUtils.remove_specialist_colleges")
+    # @patch(f"{PATCH_PATH}.cUtils.assign_cqc_sector")
+    # @patch(f"{PATCH_PATH}.cUtils.clean_provider_id_column")
+    # @patch(f"{PATCH_PATH}.cUtils.clean_and_impute_registration_date")
     @patch(f"{PATCH_PATH}.cUtils.save_latest_full_snapshot")
+    @patch(f"{PATCH_PATH}.column_to_date")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_cqc_locations_data)
     def test_main_runs_successfully(
         self,
         scan_parquet_mock: Mock,
-        clean_and_impute_registration_date_mock: Mock,
+        column_to_date_mock: Mock,
         save_latest_full_snapshot_mock: Mock,
-        clean_provider_id_column_mock: Mock,
-        assign_cqc_sector_mock: Mock,
-        remove_specialist_colleges_mock: Mock,
-        allocate_primary_service_type_mock: Mock,
-        realign_carehome_column_with_primary_service_mock: Mock,
-        add_related_location_column_mock: Mock,
-        classify_specialisms_mock: Mock,
-        sink_to_parquet_mock: Mock,
+        # clean_and_impute_registration_date_mock: Mock,
+        # clean_provider_id_column_mock: Mock,
+        # assign_cqc_sector_mock: Mock,
+        # remove_specialist_colleges_mock: Mock,
+        # allocate_primary_service_type_mock: Mock,
+        # realign_carehome_column_with_primary_service_mock: Mock,
+        # add_related_location_column_mock: Mock,
+        # classify_specialisms_mock: Mock,
+        # sink_to_parquet_mock: Mock,
     ):
         job.main(
             self.TEST_CQC_SOURCE,
@@ -54,19 +56,20 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
                 call(self.TEST_ONS_SOURCE, selected_columns=ANY),
             ]
         )
-        clean_and_impute_registration_date_mock.assert_called_once()
+        column_to_date_mock.assert_called_once()
         save_latest_full_snapshot_mock.assert_called_once()
-        clean_provider_id_column_mock.assert_called_once()
-        assign_cqc_sector_mock.assert_called_once()
-        remove_specialist_colleges_mock.assert_called_once()
-        allocate_primary_service_type_mock.assert_called_once()
-        realign_carehome_column_with_primary_service_mock.assert_called_once()
-        add_related_location_column_mock.assert_called_once()
-        classify_specialisms_mock.assert_called_once()
-        sink_to_parquet_mock.assert_called_once_with(
-            ANY,
-            self.TEST_REG_DESTINATION,
-            logger=ANY,
-            partition_cols=self.partition_keys,
-            append=False,
-        )
+        # clean_and_impute_registration_date_mock.assert_called_once()
+        # clean_provider_id_column_mock.assert_called_once()
+        # assign_cqc_sector_mock.assert_called_once()
+        # remove_specialist_colleges_mock.assert_called_once()
+        # allocate_primary_service_type_mock.assert_called_once()
+        # realign_carehome_column_with_primary_service_mock.assert_called_once()
+        # add_related_location_column_mock.assert_called_once()
+        # classify_specialisms_mock.assert_called_once()
+        # sink_to_parquet_mock.assert_called_once_with(
+        #     ANY,
+        #     self.TEST_REG_DESTINATION,
+        #     logger=ANY,
+        #     partition_cols=self.partition_keys,
+        #     append=False,
+        # )
