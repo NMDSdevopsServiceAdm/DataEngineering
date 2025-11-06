@@ -10,7 +10,7 @@ from utils import utils
 
 
 def main(
-    cqc_deregistered_locations_source: str,
+    cqc_locations_snapshot_source: str,
     ascwds_reconciliation_source: str,
     reconciliation_single_and_subs_destination: str,
     reconciliation_parents_destination: str,
@@ -18,7 +18,7 @@ def main(
     spark = utils.get_spark()
     spark.sql("set spark.sql.broadcastTimeout = 1000")
 
-    cqc_location_df = utils.read_from_parquet(cqc_deregistered_locations_source)
+    cqc_location_df = utils.read_from_parquet(cqc_locations_snapshot_source)
     ascwds_workplace_df = utils.read_from_parquet(ascwds_reconciliation_source)
 
     (
@@ -71,14 +71,14 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     (
-        cqc_deregistered_locations_source,
+        cqc_locations_snapshot_source,
         ascwds_reconciliation_source,
         reconciliation_single_and_subs_destination,
         reconciliation_parents_destination,
     ) = utils.collect_arguments(
         (
-            "--cqc_deregistered_locations_source",
-            "Source s3 directory for CQC deregistered locations dataset",
+            "--cqc_locations_snapshot_source",
+            "Source s3 directory for latest run CQC locations snapshot dataset",
         ),
         (
             "--ascwds_reconciliation_source",
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         ),
     )
     main(
-        cqc_deregistered_locations_source,
+        cqc_locations_snapshot_source,
         ascwds_reconciliation_source,
         reconciliation_single_and_subs_destination,
         reconciliation_parents_destination,
