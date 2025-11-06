@@ -3,6 +3,7 @@ import polars as pl
 from polars_utils import logger, utils
 from polars_utils.cleaning_utils import column_to_date
 from projects._01_ingest.cqc_api.fargate.utils import locations_4_clean_utils as cUtils
+from projects._01_ingest.cqc_api.fargate.utils import postcode_matcher as pmUtils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -37,6 +38,7 @@ def main(
     ons_postcode_directory_source: str,
     cqc_registered_locations_cleaned_destination: str,
     cqc_full_snapshot_destination: str,
+    manual_postcode_corrections_source: str,
 ) -> None:
     # Scan parquet to get CQC locations full data in LazyFrame format
     cqc_lf = utils.scan_parquet(
@@ -99,15 +101,18 @@ def main(
     ]
     cqc_reg_lf = cUtils.classify_specialisms(cqc_reg_lf, list_of_specialisms)
 
-    # Scan parquet to get ONS Postcode Directory data in LazyFrame format
     ons_lf = utils.scan_parquet(
         ons_postcode_directory_source,
         selected_columns=ons_cols_to_import,
     )
     logger.info("ONS Postcode Directory LazyFrame read in")
-    # TODO - (1117) join in ONS postcode data / run_postcode_matching (filter to relevant locations only if haven't already)
 
-    # Store cleaned registered data in s3
+    cqc_reg_lf = pmUtils.run_postcode_matching(
+        cqc_reg_lf,
+        ons_lf,
+        manual_postcode_corrections_source,
+    )
+
     utils.sink_to_parquet(
         cqc_reg_lf,
         cqc_registered_locations_cleaned_destination,
@@ -137,6 +142,10 @@ if __name__ == "__main__":
             "--cqc_full_snapshot_destination",
             "S3 URI to save the latest full snapshot of CQC registered and deregistered locations",
         ),
+        (
+            "--manual_postcode_corrections_source",
+            "Source s3 location for incorrect postcode csv dataset",
+        ),
     )
 
     main(
@@ -144,6 +153,7 @@ if __name__ == "__main__":
         ons_postcode_directory_source=args.ons_postcode_directory_source,
         cqc_registered_locations_cleaned_destination=args.cqc_registered_locations_cleaned_destination,
         cqc_full_snapshot_destination=args.cqc_full_snapshot_destination,
+        manual_postcode_corrections_source=args.manual_postcode_corrections_source,
     )
 
     logger.info("Finished Clean Full CQC Locations job")
