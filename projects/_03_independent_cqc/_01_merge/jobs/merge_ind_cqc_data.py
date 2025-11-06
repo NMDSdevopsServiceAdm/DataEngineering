@@ -271,4 +271,3 @@ if __name__ == "__main__":
     )
 
     print("Spark job 'merge_ind_cqc_data' complete")
-    print("Spark job 'merge_ind_cqc_data' complete")
