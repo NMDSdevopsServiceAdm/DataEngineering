@@ -43,7 +43,7 @@
               "Result": {
                 "script": "cqc_locations_2_delta_flatten.py",
                 "cqc_source_arg_name": "--cqc_locations_api_delta_source",
-                "cqc_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
+                "cqc_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/",
                 "cqc_destination_arg_name": "--cqc_locations_flattened_destination",
                 "cqc_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/"
               },
@@ -116,7 +116,46 @@
                         }
                       },
                       "ResultPath": "$.fullflattenedLocationResult",
-                      "Next": "Set Clean Full CQC Locations Parameters"
+                      "Next": "Set Validate Build Full flatten CQC Locations Parameters"
+                    },
+                    "Set Validate Build Full flatten CQC Locations Parameters": {
+                      "Type": "Pass",
+                      "Result": {
+                        "script": "validate_cqc_locations_3_full_flattened.py",
+                        "bucket_name_arg": "--bucket_name",
+                        "bucket_name": "${dataset_bucket_name}",
+                        "source_path_arg": "--source_path",
+                        "source_path": "domain=CQC_delta/dataset=cqc_locations_03_full_flattened/",
+                        "reports_path_arg": "--reports_path",
+                        "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_03_full_flattened/"
+                      },
+                      "Next": "Validate Build Full flatten CQC Locations"
+                    },
+                    "Validate Build Full flatten CQC Locations": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${cqc_api_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${cqc_api_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path)"
+                            }
+                          ]
+                        }
+                      },
+                      "Next": "Set Clean Full CQC Locations Parameters",
+                      "ResultPath": "$.validateBuildFullflattenCQCLocationsResult"
                     },
                     "Set Clean Full CQC Locations Parameters": {
                       "Type": "Pass",
@@ -129,7 +168,9 @@
                         "cqc_registered_destination_arg_name": "--cqc_registered_locations_cleaned_destination",
                         "cqc_registered_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/",
                         "cqc_deregistered_destination_arg_name": "--cqc_deregistered_locations_destination",
-                        "cqc_deregistered_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_deregistered/"
+                        "cqc_deregistered_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_deregistered/",
+                        "manual_postcode_corrections_source_arg_name": "--manual_postcode_corrections_source",
+                        "manual_postcode_corrections_source_arg_location": "${dataset_bucket_uri}/domain=CQC/dataset=postcode_corrections/manual_postcode_corrections.csv"
                       },
                       "Next": "Clean Full CQC Locations"
                     },
@@ -151,7 +192,7 @@
                           "ContainerOverrides": [
                             {
                               "Name": "cqc-api-container",
-                              "Command.$": "States.Array($.script, $.cqc_full_flat_source_arg_name, $.cqc_full_flat_source_arg_location, $.ons_pd_source_arg_name, $.ons_pd_source_arg_location, $.cqc_registered_destination_arg_name, $.cqc_registered_destination_arg_location, $.cqc_deregistered_destination_arg_name, $.cqc_deregistered_destination_arg_location)"
+                              "Command.$": "States.Array($.script, $.cqc_full_flat_source_arg_name, $.cqc_full_flat_source_arg_location, $.ons_pd_source_arg_name, $.ons_pd_source_arg_location, $.cqc_registered_destination_arg_name, $.cqc_registered_destination_arg_location, $.cqc_deregistered_destination_arg_name, $.cqc_deregistered_destination_arg_location, $.manual_postcode_corrections_source_arg_name, $.manual_postcode_corrections_source_arg_location)"
                             }
                           ]
                         }
@@ -180,7 +221,7 @@
                         "reports_path_arg": "--reports_path",
                         "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_02_delta_flattened/",
                         "compare_path_arg": "--compare_path",
-                        "compare_path": "domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
+                        "compare_path": "domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
                       },
                       "Next": "Validate Flatten Delta CQC Locations"
                     },

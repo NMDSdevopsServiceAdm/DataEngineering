@@ -12,11 +12,13 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
     TEST_ONS_SOURCE = "some/ons/source"
     TEST_REG_DESTINATION = "some/reg/destination"
     TEST_DEREG_DESTINATION = "some/reg/destination"
+    TEST_MANUAL_POSTCODE_CORRETIONS_SOURCE = "some/ons/source"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     mock_cqc_locations_data = Mock(name="cqc_locations_data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.pmUtils.run_postcode_matching")
     @patch(f"{PATCH_PATH}.cUtils.classify_specialisms")
     @patch(f"{PATCH_PATH}.cUtils.add_related_location_column")
     @patch(f"{PATCH_PATH}.cUtils.realign_carehome_column_with_primary_service")
@@ -39,6 +41,7 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
         realign_carehome_column_with_primary_service_mock: Mock,
         add_related_location_column_mock: Mock,
         classify_specialisms_mock: Mock,
+        run_postcode_matching_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -46,6 +49,7 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
             self.TEST_ONS_SOURCE,
             self.TEST_REG_DESTINATION,
             self.TEST_DEREG_DESTINATION,
+            self.TEST_MANUAL_POSTCODE_CORRETIONS_SOURCE,
         )
 
         scan_parquet_mock.assert_has_calls(
@@ -63,6 +67,7 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
         realign_carehome_column_with_primary_service_mock.assert_called_once()
         add_related_location_column_mock.assert_called_once()
         classify_specialisms_mock.assert_called_once()
+        run_postcode_matching_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_REG_DESTINATION,
