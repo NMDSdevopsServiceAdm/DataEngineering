@@ -9,11 +9,6 @@ from pyspark.sql import Column, DataFrame, SparkSession, Window
 from pyspark.sql import functions as F
 from pyspark.sql.types import StructType
 
-from utils.column_names.ind_cqc_pipeline_columns import (
-    DimensionPartitionKeys as DimensionKeys,
-)
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-
 TWO_MB = 2000000
 
 

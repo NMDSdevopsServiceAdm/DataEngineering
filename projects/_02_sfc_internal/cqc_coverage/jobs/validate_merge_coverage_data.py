@@ -10,7 +10,6 @@ from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import DimensionPartitionKeys as Keys
 from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.validation.validation_rules.merged_coverage_validation_rules import (
     MergedCoverageValidationRules as Rules,
