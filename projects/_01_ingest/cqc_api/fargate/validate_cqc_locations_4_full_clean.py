@@ -1,9 +1,10 @@
 import sys
 
 import pointblank as pb
+import polars as pl
 
 from polars_utils import utils
-from polars_utils.expressions import str_length_cols
+from polars_utils.expressions import has_value, str_length_cols
 from polars_utils.logger import get_logger
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
@@ -33,9 +34,43 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         reports_path (str): the output path to write reports to
     """
     source_df = utils.read_parquet(
-        f"s3://{bucket_name}/{source_path}", exclude_complex_types=True
+        f"s3://{bucket_name}/{source_path}", exclude_complex_types=False
     ).with_columns(
         str_length_cols([CQCLClean.location_id, CQCLClean.provider_id]),
+    )
+
+    # Add a boolean column for each imputed list column where false = empty list or null.
+    suffix_is_populated = "_is_populated"
+    source_df = source_df.with_columns(
+        has_value(source_df, CQCLClean.services_offered, CQCLClean.location_id).alias(
+            f"{CQCLClean.services_offered}{suffix_is_populated}"
+        ),
+        has_value(
+            source_df, CQCLClean.specialisms_offered, CQCLClean.location_id
+        ).alias(f"{CQCLClean.specialisms_offered}{suffix_is_populated}"),
+        has_value(
+            source_df, CQCLClean.regulated_activities_offered, CQCLClean.location_id
+        ).alias(f"{CQCLClean.regulated_activities_offered}{suffix_is_populated}"),
+        has_value(
+            source_df, CQCLClean.registered_manager_names, CQCLClean.location_id
+        ).alias(f"{CQCLClean.registered_manager_names}{suffix_is_populated}"),
+    )
+
+    # Get the first element of list columns to check for not being null.
+    suffix_first_element = "_first_element"
+    source_df = source_df.with_columns(
+        pl.col(CQCLClean.services_offered)
+        .list.first()
+        .alias(f"{CQCLClean.services_offered}{suffix_first_element}"),
+        pl.col(CQCLClean.specialisms_offered)
+        .list.first()
+        .alias(f"{CQCLClean.specialisms_offered}{suffix_first_element}"),
+        pl.col(CQCLClean.regulated_activities_offered)
+        .list.first()
+        .alias(f"{CQCLClean.regulated_activities_offered}{suffix_first_element}"),
+        pl.col(CQCLClean.registered_manager_names)
+        .list.first()
+        .alias(f"{CQCLClean.registered_manager_names}{suffix_first_element}"),
     )
 
     validation = (
@@ -57,6 +92,10 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
                 CQCLClean.imputed_registration_date,
                 CQCLClean.registration_status,
                 CQCLClean.provider_id,
+                f"{CQCLClean.services_offered}{suffix_first_element}",
+                f"{CQCLClean.specialisms_offered}{suffix_first_element}",
+                f"{CQCLClean.regulated_activities_offered}{suffix_first_element}",
+                f"{CQCLClean.registered_manager_names}{suffix_first_element}",
                 CQCLClean.primary_service_type,
                 CQCLClean.care_home,
                 CQCLClean.cqc_sector,
@@ -234,6 +273,25 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         .col_vals_between(Validation.provider_id_length, 3, 14)
         # numeric column values are greater than or equal to
         .col_vals_ge(CQCLClean.number_of_beds, 0, na_pass=True)
+        # bollean column values are all true
+        .col_vals_expr(
+            pl.col(f"{CQCLClean.services_offered}{suffix_is_populated}") == True,
+            brief=f"{CQCLClean.services_offered}{suffix_is_populated} must be True",
+        )
+        .col_vals_expr(
+            pl.col(f"{CQCLClean.specialisms_offered}{suffix_is_populated}") == True,
+            brief=f"{CQCLClean.specialisms_offered}{suffix_is_populated} must be True",
+        )
+        .col_vals_expr(
+            pl.col(f"{CQCLClean.regulated_activities_offered}{suffix_is_populated}")
+            == True,
+            brief=f"{CQCLClean.regulated_activities_offered}{suffix_is_populated} must be True",
+        )
+        .col_vals_expr(
+            pl.col(f"{CQCLClean.registered_manager_names}{suffix_is_populated}")
+            == True,
+            brief=f"{CQCLClean.registered_manager_names}{suffix_is_populated} must be True",
+        )
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
