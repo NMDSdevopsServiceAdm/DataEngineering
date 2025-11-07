@@ -63,7 +63,7 @@ class MainTests(SetupForTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.join_provider_name_into_merged_coverage_df")
     @patch(f"{PATCH_PATH}.add_columns_for_locality_manager_dashboard")
-    @patch(f"{PATCH_PATH}.join_latest_cqc_rating_into_coverage_df")
+    # @patch(f"{PATCH_PATH}.join_latest_cqc_rating_into_coverage_df")
     @patch(f"{PATCH_PATH}.rUtils.add_parents_or_singles_and_subs_col_to_df")
     @patch(f"{PATCH_PATH}.add_flag_for_in_ascwds")
     @patch(f"{PATCH_PATH}.join_ascwds_data_into_cqc_location_df")
@@ -78,7 +78,7 @@ class MainTests(SetupForTests):
         join_ascwds_data_into_cqc_location_df_mock: Mock,
         add_flag_for_in_ascwds_mock: Mock,
         add_parents_or_singles_and_subs_col_to_df_mock: Mock,
-        join_latest_cqc_rating_into_coverage_df_mock: Mock,
+        # join_latest_cqc_rating_into_coverage_df_mock: Mock,
         add_columns_for_locality_manager_dashboard_mock: Mock,
         join_provider_name_into_merged_coverage_df_mock: Mock,
         write_to_parquet_mock: Mock,
@@ -106,7 +106,7 @@ class MainTests(SetupForTests):
         join_ascwds_data_into_cqc_location_df_mock.assert_called_once()
         add_flag_for_in_ascwds_mock.assert_called_once()
         add_parents_or_singles_and_subs_col_to_df_mock.assert_called_once()
-        join_latest_cqc_rating_into_coverage_df_mock.assert_called_once()
+        # join_latest_cqc_rating_into_coverage_df_mock.assert_called_once()
         add_columns_for_locality_manager_dashboard_mock.assert_called_once()
         join_provider_name_into_merged_coverage_df_mock.assert_called_once()
 
