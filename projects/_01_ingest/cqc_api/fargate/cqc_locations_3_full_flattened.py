@@ -27,7 +27,7 @@ def main(
     # Scan delta flattened data in LazyFrame format
     entire_delta_lf = utils.scan_parquet(delta_flattened_source)
     expected_schema = entire_delta_lf.collect_schema()
-    logger.info("CQC Location delta flattened LazyFrame read in")
+    logger.info(f"CQC Location delta flattened LazyFrame read in. Schema is: {expected_schema}")
 
     dates_to_process, processed_dates = fUtils.allocate_import_dates(
         delta_flattened_source, full_flattened_destination
