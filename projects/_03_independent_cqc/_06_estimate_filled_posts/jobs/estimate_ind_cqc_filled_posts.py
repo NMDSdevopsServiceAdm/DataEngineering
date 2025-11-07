@@ -36,6 +36,7 @@ ind_cqc_columns = [
     IndCQC.location_id,
     IndCQC.name,
     IndCQC.provider_id,
+    IndCQC.regulated_activities_offered,
     IndCQC.services_offered,
     IndCQC.specialisms_offered,
     IndCQC.specialism_dementia,
