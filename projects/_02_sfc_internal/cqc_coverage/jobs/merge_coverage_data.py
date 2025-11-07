@@ -368,10 +368,6 @@ if __name__ == "__main__":
 
     (
         cleaned_cqc_location_source,
-        gac_services_source,
-        regulated_activities_source,
-        specialisms_source,
-        postcode_matching_source,
         workplace_for_reconciliation_source,
         cqc_ratings_source,
         cleaned_cqc_providers_source,
