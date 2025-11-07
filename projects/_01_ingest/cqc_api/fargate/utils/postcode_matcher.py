@@ -166,6 +166,8 @@ def join_postcode_data(
     Returns:
         Tuple[pl.LazyFrame, pl.LazyFrame]: Matched and unmatched LazyFrames.
     """
+    orig_columns = locations_lf.collect_schema().names()
+
     joined_lf = locations_lf.join(
         postcode_lf,
         [ONSClean.contemporary_ons_import_date, postcode_col],
@@ -176,9 +178,7 @@ def join_postcode_data(
 
     matched_lf = joined_lf.filter(matched_cssr)
 
-    unmatched_lf = joined_lf.remove(matched_cssr).select(
-        *list(locations_lf.schema.keys())
-    )
+    unmatched_lf = joined_lf.remove(matched_cssr).select(*orig_columns)
 
     return matched_lf, unmatched_lf
 
