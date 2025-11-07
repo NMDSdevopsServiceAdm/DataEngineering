@@ -156,14 +156,14 @@ def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
 
     The function builds a chain of when/otherwise clauses using the keys from the lookup_dict.
     The last key in the lookup_dict becomes the first when clause to evaluate.
-    For example, when imputed_gac_service_types[description] == "Shared Lives" then return "Shared Lives".
+    For example, when `services_offered` == "Shared Lives" then return "Shared Lives".
     Therefore, the lookup_dict order determines which service type is allocated to a location.
 
-    When none of the imputed_gac_service_types[description] are in the lookup_dict keys, then the row
+    When none of the `services_offered` are in the lookup_dict keys, then the row
     gets the default value 'Other non-residential'.
 
     Args:
-        df (DataFrame): The input DataFrame containing the 'imputed_gac_service_types' column.
+        df (DataFrame): The input DataFrame containing the 'services_offered' column.
 
     Returns:
         DataFrame: The DataFrame with the new 'primary_service_type_second_level' column added.
@@ -174,9 +174,8 @@ def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
 
     condition = default_value
     for description, primary_service_type_second_level in lookup_dict:
-        match_description = F.exists(
-            F.col(IndCQC.imputed_gac_service_types),
-            lambda x: x[CQCL.description] == description,
+        match_description = F.array_contains(
+            F.col(IndCQC.services_offered), description
         )
         condition = F.when(
             match_description, primary_service_type_second_level

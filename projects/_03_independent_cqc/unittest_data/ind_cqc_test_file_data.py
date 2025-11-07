@@ -25,7 +25,6 @@ from utils.column_values.categorical_column_values import (
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
     Region,
-    RegistrationStatus,
     RelatedLocation,
     Sector,
     Services,
@@ -98,19 +97,19 @@ class MergeIndCQCData:
 class ValidateMergedIndCqcData:
     # fmt: off
     cqc_locations_rows = [
-        (date(2024, 1, 1), "1-001", "Independent", "Y", 10, RegistrationStatus.registered, LocationType.social_care_identifier),
-        (date(2024, 1, 1), "1-002", "Independent", "N", None, RegistrationStatus.registered, LocationType.social_care_identifier),
-        (date(2024, 2, 1), "1-001", "Independent", "Y", 10, RegistrationStatus.registered, LocationType.social_care_identifier),
-        (date(2024, 2, 1), "1-002", "Independent", "N", None, RegistrationStatus.registered, LocationType.social_care_identifier),
+        (date(2024, 1, 1), "1-001", "Independent", "Y", 10),
+        (date(2024, 1, 1), "1-002", "Independent", "N", None),
+        (date(2024, 2, 1), "1-001", "Independent", "Y", 10),
+        (date(2024, 2, 1), "1-002", "Independent", "N", None),
     ]
     # fmt: on
 
     # fmt: off
     merged_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5),
-        ("1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5),
-        ("1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5),
-        ("1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5),
+        ("1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5),
+        ("1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5),
+        ("1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5),
+        ("1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5),
     ]
     # fmt: on
 
@@ -343,10 +342,10 @@ class ValidateImputedIndCqcAscwdsAndPir:
     ]
 
     imputed_ind_cqc_ascwds_and_pir_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, 5, "source", 5.0, 5),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, 5, "source", 5.0, 5),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, 5, "source", 5.0, 5),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, 5, "source", 5.0, 5),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, 5, "source", 5.0, 5),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, 5, "source", 5.0, 5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, 5, "source", 5.0, 5),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, 5, "source", 5.0, 5),
     ]
     # fmt: on
 
@@ -4076,10 +4075,10 @@ class ValidateCleanedIndCqcData:
     ]
 
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "01"),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "01"),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "09"),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "09"),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "01"),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "01"),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "09"),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "09"),
     ]
     # fmt: on
 
@@ -4176,10 +4175,10 @@ class NonResAscwdsFeaturesData(object):
 class ValidateCareHomeIndCqcFeaturesData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.care_home, [{"name": "Name"}]),
-        ("1-000000002", date(2024, 1, 1), CareHome.care_home, [{"name": "Name"}]),
-        ("1-000000001", date(2024, 1, 9), CareHome.care_home, [{"name": "Name"}]),
-        ("1-000000002", date(2024, 1, 9), CareHome.care_home, [{"name": "Name"}]),
+        ("1-000000001", date(2024, 1, 1), CareHome.care_home, ["Specialism Name"]),
+        ("1-000000002", date(2024, 1, 1), CareHome.care_home, ["Specialism Name"]),
+        ("1-000000001", date(2024, 1, 9), CareHome.care_home, ["Specialism Name"]),
+        ("1-000000002", date(2024, 1, 9), CareHome.care_home, ["Specialism Name"]),
     ]
 
     care_home_ind_cqc_features_rows = [
@@ -4190,11 +4189,11 @@ class ValidateCareHomeIndCqcFeaturesData:
     ]
 
     calculate_expected_size_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.care_home, [{"name": "Name"}]),
+        ("1-001", date(2024, 1, 1), CareHome.care_home, ["Specialism Name"]),
         ("1-002", date(2024, 1, 1), CareHome.care_home, None),
-        ("1-003", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name"}]),
+        ("1-003", date(2024, 1, 1), CareHome.not_care_home, ["Specialism Name"]),
         ("1-004", date(2024, 1, 1), CareHome.not_care_home, None),
-        ("1-005", date(2024, 1, 1), None, [{"name": "Name"}]),
+        ("1-005", date(2024, 1, 1), None, ["Specialism Name"]),
         ("1-006", date(2024, 1, 1), None, None),
     ]
     # fmt: on
@@ -4204,10 +4203,10 @@ class ValidateCareHomeIndCqcFeaturesData:
 class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.not_dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-001", date(2024, 1, 9), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 9), CareHome.not_care_home, Dormancy.not_dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.not_dormant, ["Name"], ["Specialism Name"]),
+        ("1-001", date(2024, 1, 9), CareHome.not_care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]),
+        ("1-002", date(2024, 1, 9), CareHome.not_care_home, Dormancy.not_dormant, ["Name"], ["Specialism Name"]),
     ]
     # fmt: on
 
@@ -4220,11 +4219,11 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
 
     # fmt: off
     calculate_expected_size_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], None), # filtered - null specialism
-        ("1-003", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, None, [{"name": "Name"}]), # filtered - null service
-        ("1-005", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - null dormancy
-        ("1-004", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - care home
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], None), # filtered - null specialism
+        ("1-003", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, None, ["Specialism Name"]), # filtered - null service
+        ("1-005", date(2024, 1, 1), CareHome.not_care_home, None, ["Name"], ["Specialism Name"]), # filtered - null dormancy
+        ("1-004", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]), # filtered - care home
     ]
     # fmt: on
 
@@ -4233,10 +4232,10 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
 class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-001", date(2024, 1, 9), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 9), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
+        ("1-001", date(2024, 1, 9), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
+        ("1-002", date(2024, 1, 9), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
     ]
     # fmt: on
 
@@ -4249,11 +4248,11 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
 
     # fmt: off
     calculate_expected_size_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], None), # filtered - null specialism
-        ("1-003", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name"}]), # filtered - null service
-        ("1-004", date(2024, 1, 1), CareHome.care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - care home
-        ("1-005", date(2025, 1, 2), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - date after 1/1/2025
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, ["Name"], None), # filtered - null specialism
+        ("1-003", date(2024, 1, 1), CareHome.not_care_home, None, ["Specialism Name"]), # filtered - null service
+        ("1-004", date(2024, 1, 1), CareHome.care_home, ["Name"], ["Specialism Name"]), # filtered - care home
+        ("1-005", date(2025, 1, 2), CareHome.not_care_home, ["Name"], ["Specialism Name"]), # filtered - date after 1/1/2025
     ]
     # fmt: on
 
@@ -4324,32 +4323,17 @@ class ModelFeatures:
     ]
 
     add_array_column_count_with_one_element_rows = [
-        ("1-001", [{CQCL.name: "name", CQCL.description: "description"}]),
+        ("1-001", ["name"]),
     ]
     expected_add_array_column_count_with_one_element_rows = [
-        ("1-001", [{CQCL.name: "name", CQCL.description: "description"}], 1),
+        ("1-001", ["name"], 1),
     ]
 
     add_array_column_count_with_multiple_elements_rows = [
-        (
-            "1-001",
-            [
-                {CQCL.name: "name_1", CQCL.description: "description_1"},
-                {CQCL.name: "name_2", CQCL.description: "description_2"},
-                {CQCL.name: "name_3", CQCL.description: "description_3"},
-            ],
-        ),
+        ("1-001", ["name_1", "name_2", "name_3"]),
     ]
     expected_add_array_column_count_with_multiple_elements_rows = [
-        (
-            "1-001",
-            [
-                {CQCL.name: "name_1", CQCL.description: "description_1"},
-                {CQCL.name: "name_2", CQCL.description: "description_2"},
-                {CQCL.name: "name_3", CQCL.description: "description_3"},
-            ],
-            3,
-        ),
+        ("1-001", ["name_1", "name_2", "name_3"], 3),
     ]
 
     add_array_column_count_with_empty_array_rows = [
@@ -5915,253 +5899,30 @@ class IndCQCDataUtils:
         ("loc 1", 3, None, 25.0, 50.0),
     ]
 
+    # fmt: off
     allocate_primary_service_type_second_level_rows = [
-        (
-            "1-001",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Some other service type",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Shared Lives",
-                },
-            ],
-        ),
-        (
-            "1-002",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Care home service with nursing",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Shared Lives",
-                },
-            ],
-        ),
-        (
-            "1-003",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Care home service without nursing",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Care home service with nursing",
-                },
-            ],
-        ),
-        (
-            "1-004",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Domiciliary care service",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Care home service without nursing",
-                },
-            ],
-        ),
-        (
-            "1-005",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Community health care services - Nurses Agency only",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Domiciliary care service",
-                },
-            ],
-        ),
-        (
-            "1-006",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Residential substance misuse treatment and/or rehabilitation service",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Extra Care housing services",
-                },
-            ],
-        ),
-        (
-            "1-007",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Hospice services",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Residential substance misuse treatment and/or rehabilitation service",
-                },
-            ],
-        ),
-        (
-            "1-008",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Rehabilitation services",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Acute services with overnight beds",
-                },
-            ],
-        ),
-        (
-            "1-009",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Some other service type",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Rehabilitation services",
-                },
-            ],
-        ),
+        ("1-001", ["Some other service type", "Shared Lives"]),
+        ("1-002", ["Care home service with nursing", "Shared Lives"]),
+        ("1-003", ["Care home service without nursing", "Care home service with nursing"]),
+        ("1-004", ["Domiciliary care service", "Care home service without nursing"]),
+        ("1-005", ["Community health care services - Nurses Agency only", "Domiciliary care service"]),
+        ("1-006", ["Residential substance misuse treatment and/or rehabilitation service", "Extra Care housing services"]),
+        ("1-007", ["Hospice services", "Residential substance misuse treatment and/or rehabilitation service"]),
+        ("1-008", ["Rehabilitation services", "Acute services with overnight beds"]),
+        ("1-009", ["Some other service type", "Rehabilitation services"]),
     ]
     expected_allocate_primary_service_type_second_level_rows = [
-        (
-            "1-001",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Some other service type",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Shared Lives",
-                },
-            ],
-            PrimaryServiceTypeSecondLevel.shared_lives,
-        ),
-        (
-            "1-002",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Care home service with nursing",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Shared Lives",
-                },
-            ],
-            PrimaryServiceTypeSecondLevel.shared_lives,
-        ),
-        (
-            "1-003",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Care home service without nursing",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Care home service with nursing",
-                },
-            ],
-            PrimaryServiceTypeSecondLevel.care_home_with_nursing,
-        ),
-        (
-            "1-004",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Domiciliary care service",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Care home service without nursing",
-                },
-            ],
-            PrimaryServiceTypeSecondLevel.care_home_only,
-        ),
-        (
-            "1-005",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Community health care services - Nurses Agency only",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Domiciliary care service",
-                },
-            ],
-            PrimaryServiceTypeSecondLevel.non_residential,
-        ),
-        (
-            "1-006",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Residential substance misuse treatment and/or rehabilitation service",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Extra Care housing services",
-                },
-            ],
-            PrimaryServiceTypeSecondLevel.non_residential,
-        ),
-        (
-            "1-007",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Hospice services",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Residential substance misuse treatment and/or rehabilitation service",
-                },
-            ],
-            PrimaryServiceTypeSecondLevel.other_residential,
-        ),
-        (
-            "1-008",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Rehabilitation services",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Acute services with overnight beds",
-                },
-            ],
-            PrimaryServiceTypeSecondLevel.other_residential,
-        ),
-        (
-            "1-009",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Some other service type",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Rehabilitation services",
-                },
-            ],
-            PrimaryServiceTypeSecondLevel.other_non_residential,
-        ),
+        ("1-001", ["Some other service type", "Shared Lives"], PrimaryServiceTypeSecondLevel.shared_lives),
+        ("1-002", ["Care home service with nursing", "Shared Lives"], PrimaryServiceTypeSecondLevel.shared_lives),
+        ("1-003", ["Care home service without nursing", "Care home service with nursing"], PrimaryServiceTypeSecondLevel.care_home_with_nursing),
+        ("1-004", ["Domiciliary care service", "Care home service without nursing"], PrimaryServiceTypeSecondLevel.care_home_only),
+        ("1-005", ["Community health care services - Nurses Agency only", "Domiciliary care service"], PrimaryServiceTypeSecondLevel.non_residential),
+        ("1-006", ["Residential substance misuse treatment and/or rehabilitation service", "Extra Care housing services"], PrimaryServiceTypeSecondLevel.non_residential),
+        ("1-007", ["Hospice services", "Residential substance misuse treatment and/or rehabilitation service"], PrimaryServiceTypeSecondLevel.other_residential),
+        ("1-008", ["Rehabilitation services", "Acute services with overnight beds"], PrimaryServiceTypeSecondLevel.other_residential),
+        ("1-009", ["Some other service type", "Rehabilitation services"], PrimaryServiceTypeSecondLevel.other_non_residential),
     ]
+    # fmt: on
 
 
 @dataclass

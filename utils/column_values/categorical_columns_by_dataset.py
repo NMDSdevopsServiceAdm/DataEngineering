@@ -98,10 +98,6 @@ class MergedIndCQCCategoricalValues:
         IndCQC.cqc_sector, value_to_remove=Sector.local_authority
     )
     dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
-    registration_status_column_values = RegistrationStatus(
-        IndCQC.registration_status,
-        value_to_remove=RegistrationStatus.deregistered,
-    )
     primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
     current_region_column_values = Region(IndCQC.current_region)
     contemporary_region_column_values = Region(IndCQC.contemporary_region)
@@ -125,10 +121,6 @@ class MergedCoverageCategoricalValues:
     dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
     in_ascwds_column_values = InAscwds(CoverageColumns.in_ascwds)
     primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
-    registration_status_column_values = RegistrationStatus(
-        IndCQC.registration_status,
-        value_to_remove=RegistrationStatus.deregistered,
-    )
 
 
 @dataclass
@@ -138,10 +130,6 @@ class CleanedIndCQCCategoricalValues:
         IndCQC.cqc_sector, value_to_remove=Sector.local_authority
     )
     dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
-    registration_status_column_values = RegistrationStatus(
-        IndCQC.registration_status,
-        value_to_remove=RegistrationStatus.deregistered,
-    )
     primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
     current_region_column_values = Region(IndCQC.current_region)
     contemporary_region_column_values = Region(IndCQC.contemporary_region)
@@ -177,10 +165,6 @@ class ImputedIndCqcAscwdsAndPirCategoricalValues:
         IndCQC.cqc_sector, value_to_remove=Sector.local_authority
     )
     dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
-    registration_status_column_values = RegistrationStatus(
-        IndCQC.registration_status,
-        value_to_remove=RegistrationStatus.deregistered,
-    )
     primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
     current_region_column_values = Region(IndCQC.current_region)
     contemporary_region_column_values = Region(IndCQC.contemporary_region)
@@ -202,8 +186,8 @@ class ImputedIndCqcAscwdsAndPirCategoricalValues:
 @dataclass
 class FeatureEngineeringCategoricalValues:
     current_region_column_values = Region(IndCQC.current_region)
-    services_column_values = Services(IndCQC.imputed_gac_service_types)
-    specialisms_column_values = Specialisms(IndCQC.imputed_specialisms)
+    services_column_values = Services(IndCQC.services_offered)
+    specialisms_column_values = Specialisms(IndCQC.specialisms_offered)
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
     dormancy_column_values = Dormancy(IndCQC.dormancy)
     related_location_column_values = RelatedLocation(IndCQC.related_location)
