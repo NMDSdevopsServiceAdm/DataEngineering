@@ -119,6 +119,8 @@ All notable changes to this project will be documented in this file.
 
 - Updated all the references of delta cqc data to point to new version 3.1.0.
 
+- Updated SfC Merge coverage job and S3 paths following removal of dimensions.
+
 - Moved creation of cqc_locations_import_date from flatten to clean job so it populates all time periods correctly.
 
 ### Improved
