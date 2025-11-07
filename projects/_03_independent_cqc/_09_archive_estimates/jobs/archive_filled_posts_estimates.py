@@ -62,7 +62,6 @@ MONTHLY_ARCHIVE_COLUMNS = [
     IndCQC.regulated_activities_offered,
     IndCQC.related_location,
     IndCQC.specialisms_offered,
-    IndCQC.specialisms_offered,
     IndCQC.total_staff_bounded,
     IndCQC.worker_records_bounded,
 ]
