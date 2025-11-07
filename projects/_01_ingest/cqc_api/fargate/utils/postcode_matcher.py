@@ -171,10 +171,14 @@ def join_postcode_data(
         [ONSClean.contemporary_ons_import_date, postcode_col],
         "left",
     )
-    matched_lf = joined_lf.filter(pl.col(ONSClean.current_cssr).is_not_null())
 
-    unmatched_lf = joined_lf.filter(pl.col(ONSClean.current_cssr).is_null())
-    unmatched_lf = unmatched_lf.select(*locations_lf.columns)
+    matched_cssr = pl.col(ONSClean.current_cssr).is_not_null()
+
+    matched_lf = joined_lf.filter(matched_cssr)
+
+    unmatched_lf = joined_lf.remove(matched_cssr).select(
+        *list(locations_lf.schema.keys())
+    )
 
     return matched_lf, unmatched_lf
 
