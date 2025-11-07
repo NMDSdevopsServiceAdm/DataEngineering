@@ -1,10 +1,9 @@
 import polars as pl
 
 from polars_utils import logger, utils
-from projects._01_ingest.cqc_api.fargate.utils import (
-    locations_4_clean_utils as cUtils,
-    postcode_matcher as pmUtils,
-)
+from polars_utils.cleaning_utils import column_to_date
+from projects._01_ingest.cqc_api.fargate.utils import locations_4_clean_utils as cUtils
+from projects._01_ingest.cqc_api.fargate.utils import postcode_matcher as pmUtils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -49,6 +48,10 @@ def main(
 
     cqc_lf = cqc_lf.filter(
         pl.col(CQCLClean.type) == LocationType.social_care_identifier
+    )
+
+    cqc_lf = column_to_date(
+        cqc_lf, Keys.import_date, CQCLClean.cqc_location_import_date
     )
 
     cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)

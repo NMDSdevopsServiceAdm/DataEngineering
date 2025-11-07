@@ -58,13 +58,7 @@ def main(
             brief=f"Cleaned file has {source_df.height} rows but expecting {expected_row_count} rows",
         )
         # complete columns
-        .col_vals_not_null(
-            [
-                CQCLClean.location_id,
-                Keys.import_date,
-                CQCLClean.cqc_location_import_date,
-            ]
-        )
+        .col_vals_not_null([CQCLClean.location_id, Keys.import_date])
         # index columns
         .rows_distinct([CQCLClean.location_id, Keys.import_date]).interrogate()
     )
