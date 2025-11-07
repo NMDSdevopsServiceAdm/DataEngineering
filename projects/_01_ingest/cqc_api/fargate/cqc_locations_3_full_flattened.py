@@ -46,7 +46,7 @@ def main(
 
         merged_lf = fUtils.create_full_snapshot(full_lf, delta_lf)
         merged_lf = fUtils.apply_partitions(merged_lf, delta_import_date)
-        merged_lf = merged_lf.cast(expected_schema)
+        # merged_lf = merged_lf.cast(expected_schema)
 
         utils.sink_to_parquet(
             merged_lf,
