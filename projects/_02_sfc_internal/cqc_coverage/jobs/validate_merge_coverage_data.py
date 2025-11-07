@@ -68,22 +68,12 @@ if __name__ == "__main__":
 
     (
         cleaned_cqc_location_source,
-        gac_dimension_source,
-        postcode_dimension_source,
         merged_coverage_data_source,
         report_destination,
     ) = utils.collect_arguments(
         (
             "--cleaned_cqc_location_source",
             "Source s3 directory for parquet CQC locations cleaned dataset",
-        ),
-        (
-            "--gac_dimension_source",
-            "Source S3 directory for parquet GAC services dimension of the cleaned CQC locations dataset",
-        ),
-        (
-            "--postcode_dimension_source",
-            "Source S3 directory for parquet postcode matching dimension of the cleaned CQC locations dataset",
         ),
         (
             "--merged_coverage_data_source",
@@ -97,8 +87,6 @@ if __name__ == "__main__":
     try:
         main(
             cleaned_cqc_location_source,
-            gac_dimension_source,
-            postcode_dimension_source,
             merged_coverage_data_source,
             report_destination,
         )
