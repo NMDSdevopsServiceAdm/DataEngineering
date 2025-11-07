@@ -10,8 +10,6 @@ from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import DimensionPartitionKeys as Keys
-
 from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.validation.validation_rules.merged_coverage_validation_rules import (
     MergedCoverageValidationRules as Rules,
@@ -21,42 +19,14 @@ from utils.validation.validation_utils import (
     validate_dataset,
 )
 
-postcode_dim_import_cols = [
-    CQCLClean.location_id,
-    CQCLClean.postal_code,
-    Keys.import_date,
-    Keys.last_updated,
-]
-gac_dim_import_cols = [
-    CQCLClean.location_id,
-    CQCLClean.care_home,
-    Keys.import_date,
-    Keys.last_updated,
-]
-
 
 def main(
     cleaned_cqc_location_source: str,
-    gac_dimension_source: str,
-    postcode_dimension_source: str,
     merged_coverage_data_source: str,
     report_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
         cleaned_cqc_location_source,
-    )
-    gac_dimension_df = utils.read_from_parquet(
-        gac_dimension_source, selected_columns=gac_dim_import_cols
-    )
-    cqc_location_df = utils.join_dimension(
-        cqc_location_df, gac_dimension_df, primary_key=CQCLClean.location_id
-    )
-
-    postcode_dimension_df = utils.read_from_parquet(
-        postcode_dimension_source, selected_columns=postcode_dim_import_cols
-    )
-    cqc_location_df = utils.join_dimension(
-        cqc_location_df, postcode_dimension_df, primary_key=CQCLClean.location_id
     )
 
     merged_coverage_df = utils.read_from_parquet(
