@@ -100,7 +100,7 @@ class MainTests(SetupForTests):
             self.TEST_REDUCED_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_mock.call_count, 4)
+        self.assertEqual(read_from_parquet_mock.call_count, 3)
         reduce_dataset_to_earliest_file_per_month_mock.assert_called_once()
         self.assertEqual(remove_duplicates_based_on_column_order_mock.call_count, 2)
         join_ascwds_data_into_cqc_location_df_mock.assert_called_once()
