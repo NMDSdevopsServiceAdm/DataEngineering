@@ -87,7 +87,7 @@ All notable changes to this project will be documented in this file.
 
 - Created a job to flatten CQC location data to remove some unwanted data and simplify complex struct columns.
 
-- Created a job to build a full flattened snapshot for each CQC location import data.
+- Created a job to build a full snapshot for each CQC location import data from a delta dataset.
 
 - Created a job to clean the full CQC location data to remove some unwanted data, join in ONS postcode data and split registered and deregistered locations.
 
