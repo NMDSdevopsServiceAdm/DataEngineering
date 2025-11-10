@@ -127,6 +127,8 @@ All notable changes to this project will be documented in this file.
 
 - Moved creation of cqc_locations_import_date from flatten to clean job so it populates all time periods correctly.
 
+- Converted function allocate_primary_service_type_second_level from pyspark to polars and called it in cqc_locations_4_full_clean.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 

@@ -242,6 +242,17 @@ class LocationsCleanUtilsSchema:
         ]
     )
 
+    allocate_primary_service_type_second_level_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.services_offered, pl.List(pl.String())),
+        ]
+    )
+    expected_allocate_primary_service_type_second_level_schema = pl.Schema(
+        list(allocate_primary_service_type_second_level_schema.items())
+        + [(CQCLClean.primary_service_type_second_level, pl.String())]
+    )
+
 
 @dataclass
 class PostcodeMatcherTest:

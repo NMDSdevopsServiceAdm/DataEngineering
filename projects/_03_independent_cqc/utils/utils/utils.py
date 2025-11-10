@@ -150,6 +150,7 @@ def get_selected_value(
     return df
 
 
+# converted to polars -> projects\_01_ingest\cqc_api\fargate\utils\locations_4_clean_utils.py
 def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
     """
     Adds a column called primary_service_type_second_level which shows the allocated service type per location.

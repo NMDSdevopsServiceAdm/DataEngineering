@@ -373,3 +373,20 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class AllocatePrimaryServiceTypeSecondLevel(unittest.TestCase):
+    def test_allocate_primary_service_type_second_level_returns_expected_data(
+        self,
+    ):
+        test_lf = pl.LazyFrame(
+            data=Data.allocate_primary_service_type_second_level_rows,
+            schema=Schemas.allocate_primary_service_type_second_level_schema,
+        )
+        returned_lf = job.allocate_primary_service_type_second_level(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_allocate_primary_service_type_second_level_rows,
+            schema=Schemas.expected_allocate_primary_service_type_second_level_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
