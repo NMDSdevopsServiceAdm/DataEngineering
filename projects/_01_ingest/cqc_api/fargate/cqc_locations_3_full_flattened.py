@@ -35,7 +35,7 @@ if __name__ == "__main__":
         ),
     )
 
-    convert_delta_to_full(
+    main(
         delta_source=args.delta_source,
         full_destination=args.full_destination,
     )
