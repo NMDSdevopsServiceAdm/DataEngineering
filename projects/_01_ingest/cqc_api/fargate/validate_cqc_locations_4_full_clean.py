@@ -58,6 +58,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
                 CQCLClean.registration_status,
                 CQCLClean.provider_id,
                 CQCLClean.primary_service_type,
+                CQCLClean.primary_service_type_second_level,
                 CQCLClean.care_home,
                 CQCLClean.cqc_sector,
                 CQCLClean.related_location,
@@ -87,6 +88,10 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         .col_vals_in_set(
             CQCLClean.primary_service_type,
             CatValues.primary_service_type_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            CQCLClean.primary_service_type_second_level,
+            CatValues.primary_service_type_second_level_column_values.categorical_values,
         )
         .col_vals_in_set(
             CQCLClean.care_home, CatValues.care_home_column_values.categorical_values
@@ -144,6 +149,13 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
                 CatValues.primary_service_type_column_values.count_of_categorical_values,
             ),
             brief=f"{CQCLClean.primary_service_type} needs to be one of {CatValues.primary_service_type_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                CQCLClean.primary_service_type_second_level,
+                CatValues.primary_service_type_second_level_column_values.count_of_categorical_values,
+            ),
+            brief=f"{CQCLClean.primary_service_type_second_level} needs to be one of {CatValues.primary_service_type_second_level_column_values.categorical_values}",
         )
         .specially(
             vl.is_unique_count_equal(
