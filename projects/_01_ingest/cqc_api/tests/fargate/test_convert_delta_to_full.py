@@ -62,7 +62,7 @@ class CqcLocationsFullFlattenTests(unittest.TestCase):
         scan_parquet_mock.return_value = Mock(name="delta_lf")
         get_dates_mock.return_value = [20231001], []
         load_snapshot_mock.return_value = Mock(name="full_lf")
-        create_full_mock.side_effect = lambda full, delta: delta
+        create_full_mock.side_effect = lambda full, delta, primary_key: delta
         apply_partitions_mock.side_effect = lambda lf, date: lf
 
         job.main(self.TEST_SOURCE, self.TEST_DEST, self.TEST_DATASET_NAME)
@@ -95,7 +95,9 @@ class CqcLocationsFullFlattenTests(unittest.TestCase):
         apply_partitions_mock.side_effect = lambda lf, date: lf
 
         # simulate merging
-        create_full_mock.side_effect = lambda full, delta: Mock(name=f"merged_{delta}")
+        create_full_mock.side_effect = lambda full, delta, primary_key: Mock(
+            name=f"merged_{delta}"
+        )
 
         job.main(self.TEST_SOURCE, self.TEST_DEST, self.TEST_DATASET_NAME)
 
