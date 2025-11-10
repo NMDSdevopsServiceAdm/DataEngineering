@@ -261,12 +261,8 @@ jobs:
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=full_providers_api/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=full_providers_api/"
+          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=cqc_providers_02_full/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=cqc_providers_02_full/"
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/"
