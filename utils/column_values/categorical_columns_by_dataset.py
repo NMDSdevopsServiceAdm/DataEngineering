@@ -67,6 +67,15 @@ class LocationsApiCleanedCategoricalValues:
     current_cssr_column_values = CurrentCSSR(CQCLClean.current_cssr)
     contemporary_cssr_column_values = ContemporaryCSSR(CQCLClean.contemporary_cssr)
     related_location_column_values = RelatedLocation(CQCLClean.related_location)
+    specialism_dementia_column_values = SpecialistGeneralistOther(
+        IndCQC.specialism_dementia
+    )
+    specialism_learning_disabilities_column_values = SpecialistGeneralistOther(
+        IndCQC.specialism_learning_disabilities
+    )
+    specialism_mental_health_column_values = SpecialistGeneralistOther(
+        IndCQC.specialism_mental_health
+    )
 
 
 @dataclass

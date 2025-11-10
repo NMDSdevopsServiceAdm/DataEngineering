@@ -5,9 +5,13 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_values.categorical_column_values import (
+    RUI,
     CareHome,
+    ContemporaryCSSR,
+    Dormancy,
     LocationType,
     PrimaryServiceType,
+    Region,
     RegistrationStatus,
     RelatedLocation,
     Sector,
@@ -1465,4 +1469,34 @@ class PostcodeMatcherTest:
         ("AA11AA", "AA12AA", "ZZ11AA", "ZZ12AA"),
         ("CSSR 1", "CSSR 1", "CSSR 2", "CSSR 3"),
         (None, None, "ZZ11", "ZZ12"),
+    ]
+
+
+@dataclass
+class ValidateCqcLocations4FullCleanTest:
+    validation_rows = [
+        ("1-001",),
+        ("20250101",),
+        (date(2025, 1, 1),),
+        ("name",),
+        (LocationType.social_care_identifier,),
+        (date(2024, 1, 1),),
+        (RegistrationStatus.registered,),
+        ("1-0001",),
+        (PrimaryServiceType.non_residential,),
+        (CareHome.care_home,),
+        (Sector.independent,),
+        (RelatedLocation.has_related_location,),
+        (SpecGenOther.generalist,),
+        (SpecGenOther.generalist,),
+        (SpecGenOther.generalist,),
+        (Dormancy.not_dormant),
+        (10,),
+        (date(2025, 3, 1),),
+        (ContemporaryCSSR.barking_and_dagenham,),
+        (Region.london,),
+        (date(2025, 3, 1),),
+        (ContemporaryCSSR.barking_and_dagenham,),
+        (Region.london,),
+        (RUI.urban_major,),
     ]
