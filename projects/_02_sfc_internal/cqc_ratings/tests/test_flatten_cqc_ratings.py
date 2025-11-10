@@ -96,7 +96,7 @@ class MainTests(FlattenCQCRatingsTests):
         )
 
         self.assertEqual(read_from_parquet_mock.call_count, 3)
-        filter_to_first_import_of_most_recent_month_mock.assert_called_once()
+        self.assertEqual(filter_to_first_import_of_most_recent_month_mock.call_count, 2)
         prepare_current_ratings_mock.assert_called_once()
         prepare_historic_ratings_mock.assert_called_once()
         prepare_assessment_ratings_mock.assert_called_once()

@@ -81,10 +81,10 @@ def main(
             F.col(f"raw.{CQCL.assessment}").alias(CQCL.assessment),
         )
     )
+    cqc_location_df = filter_to_first_import_of_most_recent_month(cqc_location_df)
     ascwds_workplace_df = utils.read_from_parquet(
         ascwds_workplace_source, ascwds_workplace_columns
     )
-
     ascwds_workplace_df = filter_to_first_import_of_most_recent_month(
         ascwds_workplace_df
     )
