@@ -23,6 +23,9 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedColumns as CQCPClean,
 )
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -38,12 +41,26 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.location_id,
     CQCLClean.cqc_location_import_date,
     CQCLClean.name,
+    CQCLClean.postal_code,
     CQCLClean.provider_id,
     CQCLClean.cqc_sector,
     CQCLClean.registration_status,
     CQCLClean.imputed_registration_date,
     CQCLClean.dormancy,
+    CQCLClean.care_home,
     CQCLClean.number_of_beds,
+    CQCLClean.primary_service_type,
+    CQCLClean.regulated_activities_offered,
+    CQCLClean.specialisms_offered,
+    CQCLClean.specialism_dementia,
+    CQCLClean.specialism_learning_disabilities,
+    CQCLClean.specialism_mental_health,
+    CQCLClean.services_offered,
+    ONSClean.current_ons_import_date,
+    ONSClean.current_cssr,
+    ONSClean.current_icb,
+    ONSClean.current_region,
+    ONSClean.current_rural_urban_ind_11,
     Keys.year,
     Keys.month,
     Keys.day,
@@ -102,10 +119,11 @@ def main(
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
     )
 
-    cqc_ratings_df = utils.read_from_parquet(
-        cqc_ratings_source,
-        selected_columns=cqc_ratings_columns_to_import,
-    )
+    # TODO add ratings back in when ready
+    # cqc_ratings_df = utils.read_from_parquet(
+    #     cqc_ratings_source,
+    #     selected_columns=cqc_ratings_columns_to_import,
+    # )
     cqc_providers_df = utils.read_from_parquet(
         cleaned_cqc_providers_source,
         selected_columns=cleaned_cqc_providers_columns_to_import,
@@ -144,9 +162,10 @@ def main(
         merged_coverage_df
     )
 
-    merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
-        merged_coverage_df, cqc_ratings_df
-    )
+    # TODO add ratings back in when ready
+    # merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
+    #     merged_coverage_df, cqc_ratings_df
+    # )
 
     merged_coverage_df = add_columns_for_locality_manager_dashboard(merged_coverage_df)
     merged_coverage_df = join_provider_name_into_merged_coverage_df(
@@ -351,10 +370,6 @@ if __name__ == "__main__":
 
     (
         cleaned_cqc_location_source,
-        gac_services_source,
-        regulated_activities_source,
-        specialisms_source,
-        postcode_matching_source,
         workplace_for_reconciliation_source,
         cqc_ratings_source,
         cleaned_cqc_providers_source,
@@ -364,22 +379,6 @@ if __name__ == "__main__":
         (
             "--cleaned_cqc_location_source",
             "Source s3 directory for parquet CQC locations cleaned dataset",
-        ),
-        (
-            "--gac_services_dimension_source",
-            "Source s3 directory for parquet GAC services dimension",
-        ),
-        (
-            "--regulated_activities_dimension_source",
-            "Source s3 directory for parquet Regulated Activities dimension",
-        ),
-        (
-            "--specialisms_dimension_source",
-            "Source s3 directory for parquet Services dimension",
-        ),
-        (
-            "--postcode_matching_dimension_source",
-            "Source s3 directory for parquet Postcode Matching dimension",
         ),
         (
             "--workplace_for_reconciliation_source",
@@ -401,10 +400,6 @@ if __name__ == "__main__":
     )
     main(
         cleaned_cqc_location_source,
-        gac_services_source,
-        regulated_activities_source,
-        specialisms_source,
-        postcode_matching_source,
         workplace_for_reconciliation_source,
         cqc_ratings_source,
         cleaned_cqc_providers_source,

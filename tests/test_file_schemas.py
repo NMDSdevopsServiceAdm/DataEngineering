@@ -264,7 +264,6 @@ class EstimateIndCQCFilledPostsSchemas:
                 IndCQC.contemporary_rural_urban_indicator_2011, StringType(), True
             ),
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
-            StructField(IndCQC.registration_status, StringType(), True),
         ]
     )
 

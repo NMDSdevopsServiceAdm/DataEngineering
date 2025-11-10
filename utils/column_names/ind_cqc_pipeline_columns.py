@@ -196,11 +196,9 @@ class IndCqcColumns:
     first_non_null_value: str = "first_non_null_value"
     first_rolling_average: str = "first_rolling_average"
     first_submission_time: str = "first_submission_time"
-    gac_service_types: str = CQCLClean.gac_service_types
     has_non_null_value: str = "has_non_null_value"
     imputed_ascwds_job_role_counts: str = "imputed_ascwds_job_role_counts"
     imputed_ascwds_job_role_ratios: str = "imputed_ascwds_job_role_ratios"
-    imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
     imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
     imputed_posts_non_res_combined_model: str = "imputed_posts_non_res_combined_model"
@@ -209,8 +207,6 @@ class IndCqcColumns:
         "imputed_filled_posts_per_bed_ratio_model"
     )
     imputed_registration_date: str = CQCLClean.imputed_registration_date
-    imputed_regulated_activities: str = CQCLClean.imputed_regulated_activities
-    imputed_specialisms: str = CQCLClean.imputed_specialisms
     interpolation_model: str = "interpolation_model"
     last_ascwds_submission: str = "last_ascwds_submission"
     last_filled_posts: str = "last_filled_posts"
@@ -307,7 +303,7 @@ class IndCqcColumns:
     registered_manager_count: str = "registered_manager_count"
     registered_manager_names: str = CQCLClean.registered_manager_names
     registration_date: str = CQCLClean.registration_date
-    registration_status: str = CQCLClean.registration_status
+    regulated_activities_offered: str = CQCLClean.regulated_activities_offered
     related_location: str = CQCLClean.related_location
     residual: str = "residual"
     residuals_ascwds_filled_posts_clean_dedup_non_res_pir: str = (

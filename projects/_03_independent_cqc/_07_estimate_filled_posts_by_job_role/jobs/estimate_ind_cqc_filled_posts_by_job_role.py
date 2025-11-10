@@ -42,7 +42,6 @@ estimated_ind_cqc_filled_posts_columns_to_import = [
     IndCQC.care_home,
     IndCQC.dormancy,
     IndCQC.number_of_beds,
-    IndCQC.imputed_gac_service_types,
     IndCQC.imputed_registration_date,
     IndCQC.registered_manager_names,
     IndCQC.ascwds_workplace_import_date,
