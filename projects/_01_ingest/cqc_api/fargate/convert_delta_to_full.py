@@ -2,7 +2,7 @@ import polars as pl
 
 from polars_utils import logger, utils
 from projects._01_ingest.cqc_api.fargate.utils import (
-    locations_3_full_flattened_utils as fUtils,
+    convert_delta_to_full_utils as fUtils,
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
@@ -17,7 +17,7 @@ cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 def main(
     delta_flattened_source: str,
     full_flattened_destination: str,
-    dataset_name: str,
+    dataset: str,
 ) -> None:
     """
     Builds a full dataset from delta files for named datasets.
@@ -27,19 +27,19 @@ def main(
     Args:
         delta_flattened_source (str): S3 URI to read delta flattened CQC locations data from
         full_flattened_destination (str): S3 URI to save full flattened CQC locations data to
-        dataset_name (str): Dataset name ('locations' or 'providers').
+        dataset (str): Dataset name ('locations' or 'providers').
 
     Raises:
-        ValueError: If the dataset_name is not supported
+        ValueError: If the dataset is not supported
     """
-    match dataset_name:
+    match dataset:
         case "locations":
             primary_key = CQCLClean.location_id
         case "providers":
             primary_key = CQCLClean.provider_id
         case _:
             raise ValueError(
-                f"Unknown dataset name: {dataset_name}. Must be either 'locations' or 'providers'."
+                f"Unknown dataset name: {dataset}. Must be either 'locations' or 'providers'."
             )
 
     # Scan delta flattened data in LazyFrame format

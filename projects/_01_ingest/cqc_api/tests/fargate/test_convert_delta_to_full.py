@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import Mock, patch
 
-import projects._01_ingest.cqc_api.fargate.cqc_locations_3_full_flattened as job
+import projects._01_ingest.cqc_api.fargate.convert_delta_to_full as job
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
-PATCH_PATH = "projects._01_ingest.cqc_api.fargate.cqc_locations_3_full_flattened"
+PATCH_PATH = "projects._01_ingest.cqc_api.fargate.convert_delta_to_full"
 
 
 class CqcLocationsFullFlattenTests(unittest.TestCase):

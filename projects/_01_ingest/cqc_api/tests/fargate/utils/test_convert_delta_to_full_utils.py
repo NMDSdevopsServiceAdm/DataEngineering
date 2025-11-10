@@ -4,9 +4,7 @@ from unittest.mock import Mock, patch
 import polars as pl
 import polars.testing as pl_testing
 
-from projects._01_ingest.cqc_api.fargate.utils import (
-    locations_3_full_flattened_utils as job,
-)
+from projects._01_ingest.cqc_api.fargate.utils import convert_delta_to_full_utils as job
 from projects._01_ingest.unittest_data.polars_ingest_test_file_data import (
     FullFlattenUtilsData as Data,
 )
@@ -17,9 +15,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 
-PATCH_PATH = (
-    "projects._01_ingest.cqc_api.fargate.utils.locations_3_full_flattened_utils"
-)
+PATCH_PATH = "projects._01_ingest.cqc_api.fargate.utils.convert_delta_to_full_utils"
 
 
 class AllocateImportDatesTests(unittest.TestCase):
