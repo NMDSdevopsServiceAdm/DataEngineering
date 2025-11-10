@@ -37,7 +37,7 @@ def main(
     cqc_locations_full_flattened_source: str,
     ons_postcode_directory_source: str,
     cqc_registered_locations_cleaned_destination: str,
-    cqc_deregistered_locations_destination: str,
+    cqc_full_snapshot_destination: str,
     manual_postcode_corrections_source: str,
 ) -> None:
     # Scan parquet to get CQC locations full data in LazyFrame format
@@ -54,14 +54,9 @@ def main(
         cqc_lf, Keys.import_date, CQCLClean.cqc_location_import_date
     )
 
-    cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)
+    cUtils.save_latest_full_snapshot(cqc_lf, cqc_full_snapshot_destination)
 
-    # TODO - (1116) save deregistered locations for reconciliation process
-    # - filter to deregistered locations only in the most recent import date
-    # - select cols req by reconciliation process
-    #   (CQCLClean.cqc_location_import_date, CQCLClean.location_id, CQCLClean.registration_status, CQCLClean.deregistration_date)
-    # - sink parquet to s3
-    # - Create ticket to update reconciliation process after this (some steps won't be required now)
+    cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)
 
     cqc_reg_lf = cqc_lf.filter(
         pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
@@ -106,20 +101,18 @@ def main(
     ]
     cqc_reg_lf = cUtils.classify_specialisms(cqc_reg_lf, list_of_specialisms)
 
-    # Scan parquet to get ONS Postcode Directory data in LazyFrame format
     ons_lf = utils.scan_parquet(
         ons_postcode_directory_source,
         selected_columns=ons_cols_to_import,
     )
     logger.info("ONS Postcode Directory LazyFrame read in")
 
-    # Postcode Matching
     cqc_reg_lf = pmUtils.run_postcode_matching(
         cqc_reg_lf,
         ons_lf,
         manual_postcode_corrections_source,
     )
-    # Store cleaned registered data in s3
+
     utils.sink_to_parquet(
         cqc_reg_lf,
         cqc_registered_locations_cleaned_destination,
@@ -146,8 +139,8 @@ if __name__ == "__main__":
             "S3 URI to save full cleaned CQC registered locations data to",
         ),
         (
-            "--cqc_deregistered_locations_destination",
-            "S3 URI to save full cleaned CQC deregistered locations data to",
+            "--cqc_full_snapshot_destination",
+            "S3 URI to save the latest full snapshot of CQC registered and deregistered locations",
         ),
         (
             "--manual_postcode_corrections_source",
@@ -159,7 +152,7 @@ if __name__ == "__main__":
         cqc_locations_full_flattened_source=args.cqc_locations_full_flattened_source,
         ons_postcode_directory_source=args.ons_postcode_directory_source,
         cqc_registered_locations_cleaned_destination=args.cqc_registered_locations_cleaned_destination,
-        cqc_deregistered_locations_destination=args.cqc_deregistered_locations_destination,
+        cqc_full_snapshot_destination=args.cqc_full_snapshot_destination,
         manual_postcode_corrections_source=args.manual_postcode_corrections_source,
     )
 

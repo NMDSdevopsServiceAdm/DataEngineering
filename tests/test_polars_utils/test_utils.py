@@ -5,7 +5,7 @@ import shutil
 import sys
 import tempfile
 import unittest
-from datetime import datetime
+from datetime import date, datetime
 from glob import glob
 from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
@@ -567,3 +567,42 @@ class TestSplitS3Uri(TestUtils):
 
         self.assertEqual(bucket_name, "sfc-data-engineering-raw")
         self.assertEqual(key_name, "domain=ASCWDS/dataset=workplace/")
+
+
+class TestFilterToMaximumValueInColumn(TestUtils):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.lf = pl.LazyFrame(
+            {
+                "id": ["1", "2", "3"],
+                "date_col": [date(2024, 1, 1), date(2024, 1, 1), date(2023, 1, 1)],
+                "string_col": ["20220101", "20230101", "20240101"],
+            }
+        )
+
+    def test_filters_correctly_with_date_column(self):
+        returned_lf = utils.filter_to_maximum_value_in_column(self.lf, "date_col")
+
+        expected_lf = pl.LazyFrame(
+            {
+                "id": ["1", "2"],
+                "date_col": [date(2024, 1, 1), date(2024, 1, 1)],
+                "string_col": ["20220101", "20230101"],
+            }
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_filters_correctly_with_string_column(self):
+        returned_lf = utils.filter_to_maximum_value_in_column(self.lf, "string_col")
+
+        expected_lf = pl.LazyFrame(
+            {
+                "id": ["3"],
+                "date_col": [date(2023, 1, 1)],
+                "string_col": ["20240101"],
+            }
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

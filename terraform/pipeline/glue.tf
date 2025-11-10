@@ -377,29 +377,6 @@ module "clean_cqc_provider_data_job" {
   }
 }
 
-module "delta_clean_cqc_location_data_job" {
-  source            = "../modules/glue-job"
-  script_dir        = "projects/_01_ingest/cqc_api/jobs"
-  script_name       = "delta_clean_cqc_location_data.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-  worker_type       = "G.2X"
-  number_of_workers = 5
-
-  job_parameters = {
-    "--cqc_location_source"                   = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0",
-    "--cleaned_ons_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-    "--manual_postcode_corrections_source"    = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=postcode_corrections/manual_postcode_corrections.csv",
-    "--cleaned_cqc_location_destination"      = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=delta_locations_api_cleaned/",
-    "--gac_service_destination"               = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_gac_service/",
-    "--regulated_activities_destination"      = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_regulated_activities/",
-    "--specialisms_destination"               = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_specialisms/",
-    "--postcode_matching_destination"         = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_postcode_matching/"
-  }
-  extra_conf = " --conf spark.sql.autoBroadcastJoinThreshold=-1"
-}
-
 module "reconciliation_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_02_sfc_internal/reconciliation/jobs"
@@ -409,7 +386,7 @@ module "reconciliation_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_location_api_source"                    = "${module.datasets_bucket.bucket_uri}domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
+    "--cqc_locations_snapshot_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/"
     "--ascwds_reconciliation_source"               = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
     "--reconciliation_single_and_subs_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_reconciliation_singles_and_subs"
     "--reconciliation_parents_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_reconciliation_parents"
@@ -455,22 +432,6 @@ module "merge_coverage_data_job" {
     "--cleaned_cqc_providers_source"        = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=full_providers_api_cleaned/"
     "--merged_coverage_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/"
     "--reduced_coverage_destination"        = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
-  }
-}
-
-module "validate_locations_api_cleaned_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/cqc_api/jobs"
-  script_name     = "validate_locations_api_cleaned_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--raw_cqc_location_source"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/"
-    "--cleaned_cqc_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
-    "--report_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_locations_api_cleaned/"
   }
 }
 
@@ -727,36 +688,6 @@ module "validate_ascwds_worker_raw_data_job" {
   job_parameters = {
     "--raw_ascwds_worker_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
     "--report_destination"       = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_worker_raw/"
-  }
-}
-
-module "validate_locations_api_raw_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/cqc_api/jobs"
-  script_name     = "validate_locations_api_raw_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--raw_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/"
-    "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_locations_api_raw/"
-  }
-}
-
-module "validate_providers_api_raw_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/cqc_api/jobs"
-  script_name     = "validate_providers_api_raw_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/"
-    "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_providers_api_raw/"
   }
 }
 
