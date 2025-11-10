@@ -19,7 +19,8 @@ PATCH_PATH = "projects._02_sfc_internal.cqc_ratings.jobs.flatten_cqc_ratings"
 
 
 class FlattenCQCRatingsTests(unittest.TestCase):
-    TEST_LOCATIONS_SOURCE = "some/directory"
+    TEST_LOCATIONS_SNAPSHOT_SOURCE = "some/directory"
+    TEST_LOCATIONS_RAW_DELTA_SOURCE = "some/directory"
     TEST_WORKPLACE_SOURCE = "some/directory"
     TEST_CQC_RATINGS_DESTINATION = "some/other/directory"
     TEST_BENCHMARK_RATINGS_DESTINATION = "some/other/directory"
@@ -85,7 +86,8 @@ class MainTests(FlattenCQCRatingsTests):
         ]
 
         job.main(
-            self.TEST_LOCATIONS_SOURCE,
+            self.TEST_LOCATIONS_SNAPSHOT_SOURCE,
+            self.TEST_LOCATIONS_RAW_DELTA_SOURCE,
             self.TEST_WORKPLACE_SOURCE,
             self.TEST_CQC_RATINGS_DESTINATION,
             self.TEST_BENCHMARK_RATINGS_DESTINATION,
