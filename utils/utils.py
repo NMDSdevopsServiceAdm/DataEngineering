@@ -9,11 +9,6 @@ from pyspark.sql import Column, DataFrame, SparkSession, Window
 from pyspark.sql import functions as F
 from pyspark.sql.types import StructType
 
-from utils.column_names.ind_cqc_pipeline_columns import (
-    DimensionPartitionKeys as DimensionKeys,
-)
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-
 TWO_MB = 2000000
 
 
@@ -304,66 +299,3 @@ def select_rows_with_non_null_value(df: DataFrame, column: str) -> DataFrame:
         DataFrame: A DataFrame containing only the rows where the specified column has non-null values.
     """
     return df.filter(F.col(column).isNotNull())
-
-
-def join_dimension(
-    fact_df: DataFrame, dimension_df: DataFrame, primary_key: str
-) -> DataFrame:
-    """
-    Joins the most up-to-date version of a dimension onto a fact table.
-    It then fills any values which are missing due to the delta nature of the dimension.
-    Args:
-        fact_df (DataFrame): The fact table to join onto.
-        dimension_df (DataFrame): The dimension table to join.
-        primary_key (str): The name of the primary key column which links the two dataframes, in addition to import_date
-
-    Returns:
-        DataFrame: The fact table joined with the dimension table.
-
-    """
-    window_spec_dim = Window.partitionBy(
-        primary_key, DimensionKeys.import_date
-    ).orderBy(F.col(DimensionKeys.last_updated).desc())
-    current_dimension = (
-        dimension_df.withColumn("row_num", F.row_number().over(window_spec_dim))
-        .filter(F.col("row_num") == 1)
-        .drop(
-            "row_num",
-            DimensionKeys.year,
-            DimensionKeys.month,
-            DimensionKeys.day,
-            DimensionKeys.last_updated,
-        )
-    )
-
-    current_dimension = current_dimension.repartition(
-        primary_key, DimensionKeys.import_date
-    )
-    fact_df = fact_df.repartition(primary_key, DimensionKeys.import_date)
-
-    joined_df = fact_df.join(
-        F.broadcast(
-            current_dimension,
-        ),
-        [
-            primary_key,
-            Keys.import_date,
-        ],
-        how="left",
-    )
-
-    window_spec = Window.partitionBy(primary_key).orderBy(
-        F.col(DimensionKeys.import_date)
-    )
-
-    for dim_col in [
-        c
-        for c in current_dimension.columns
-        if c not in [primary_key, DimensionKeys.import_date]
-    ]:
-
-        joined_df = joined_df.withColumn(
-            dim_col, F.last(dim_col, ignorenulls=True).over(window_spec)
-        )
-
-    return joined_df

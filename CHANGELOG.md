@@ -131,6 +131,8 @@ All notable changes to this project will be documented in this file.
 
 - Updated the SfC reconciliation process based on the new datasets.
 
+- Removed all CQC jobs, utils and tests no longer being used
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
