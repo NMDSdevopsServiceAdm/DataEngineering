@@ -542,6 +542,284 @@ class FlattenCQCRatings:
                     },
                 },
             ],
+            [
+                {
+                    CQCL.assessment_plan_published_datetime: "assessment_plan_published_datetime",
+                    CQCL.ratings: {
+                        CQCL.overall: [
+                            {
+                                CQCL.rating: CQCRatingsValues.good,
+                                CQCL.status: CQCCurrentOrHistoricValues.current,
+                                CQCL.key_question_ratings: [
+                                    {
+                                        CQCL.name: CQCL.safe,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.well_led,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.caring,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.responsive,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.effective,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                    },
+                                ],
+                            },
+                            {
+                                CQCL.rating: CQCRatingsValues.requires_improvement,
+                                CQCL.status: CQCCurrentOrHistoricValues.historic,
+                                CQCL.key_question_ratings: [
+                                    {
+                                        CQCL.name: CQCL.safe,
+                                        CQCL.rating: CQCRatingsValues.requires_improvement,
+                                        CQCL.status: "Assessed",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.well_led,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.caring,
+                                        CQCL.rating: CQCRatingsValues.requires_improvement,
+                                        CQCL.status: "Assessed",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.responsive,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.effective,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                    },
+                                ],
+                            },
+                        ],
+                        CQCL.asg_ratings: [
+                            {
+                                CQCL.assessment_plan_id: "AP001",
+                                CQCL.title: "title",
+                                CQCL.assessment_date: "assessment_date_historic",
+                                CQCL.assessment_plan_status: "Assessed",
+                                CQCL.name: "Care Homes",
+                                CQCL.rating: CQCRatingsValues.good,
+                                CQCL.status: CQCCurrentOrHistoricValues.historic,
+                                CQCL.key_question_ratings: [
+                                    {
+                                        CQCL.name: CQCL.safe,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.well_led,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.caring,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.responsive,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.effective,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                ],
+                            },
+                            {
+                                CQCL.assessment_plan_id: "AP002",
+                                CQCL.title: "title",
+                                CQCL.assessment_date: "assessment_date_historic",
+                                CQCL.assessment_plan_status: "Assessed",
+                                CQCL.name: "Care Homes",
+                                CQCL.rating: CQCRatingsValues.good,
+                                CQCL.status: CQCCurrentOrHistoricValues.historic,
+                                CQCL.key_question_ratings: [
+                                    {
+                                        CQCL.name: CQCL.safe,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.well_led,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.caring,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.responsive,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.effective,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                ],
+                            },
+                            {
+                                CQCL.assessment_plan_id: "AP003",
+                                CQCL.title: "title",
+                                CQCL.assessment_date: "assessment_date_current",
+                                CQCL.assessment_plan_status: "Assessed",
+                                CQCL.name: "Care Homes",
+                                CQCL.rating: CQCRatingsValues.good,
+                                CQCL.status: CQCCurrentOrHistoricValues.current,
+                                CQCL.key_question_ratings: [
+                                    {
+                                        CQCL.name: CQCL.safe,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.well_led,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.caring,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.responsive,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.effective,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                ],
+                            },
+                            {
+                                CQCL.assessment_plan_id: "AP004",
+                                CQCL.title: "title",
+                                CQCL.assessment_date: "assessment_date_current",
+                                CQCL.assessment_plan_status: "Assessed",
+                                CQCL.name: "Supported Living",
+                                CQCL.rating: CQCRatingsValues.requires_improvement,
+                                CQCL.status: CQCCurrentOrHistoricValues.current,
+                                CQCL.key_question_ratings: [
+                                    {
+                                        CQCL.name: CQCL.safe,
+                                        CQCL.rating: CQCRatingsValues.requires_improvement,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.well_led,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.caring,
+                                        CQCL.rating: CQCRatingsValues.requires_improvement,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.responsive,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.effective,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                ],
+                            },
+                            {
+                                CQCL.assessment_plan_id: "AP005",
+                                CQCL.title: "title",
+                                CQCL.assessment_date: "assessment_date_historic",
+                                CQCL.assessment_plan_status: "Assessed",
+                                CQCL.name: "Supported Living",
+                                CQCL.rating: CQCRatingsValues.requires_improvement,
+                                CQCL.status: CQCCurrentOrHistoricValues.historic,
+                                CQCL.key_question_ratings: [
+                                    {
+                                        CQCL.name: CQCL.safe,
+                                        CQCL.rating: CQCRatingsValues.requires_improvement,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.well_led,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.caring,
+                                        CQCL.rating: CQCRatingsValues.requires_improvement,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.responsive,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                    {
+                                        CQCL.name: CQCL.effective,
+                                        CQCL.rating: CQCRatingsValues.good,
+                                        CQCL.status: "Assessed",
+                                        CQCL.percentage_score: "15",
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                }
+            ],
         ),
     ]
     test_ascwds_workplace_rows = [("loc_1", "estab_1", "20240101", "2021", "01", "01")]
