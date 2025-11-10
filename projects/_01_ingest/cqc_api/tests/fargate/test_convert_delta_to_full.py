@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import Mock, patch
 
-import projects._01_ingest.cqc_api.fargate.convert_delta_to_full as job
+import projects._01_ingest.cqc_api.fargate.utils.convert_delta_to_full as job
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
-PATCH_PATH = "projects._01_ingest.cqc_api.fargate.convert_delta_to_full"
+PATCH_PATH = "projects._01_ingest.cqc_api.fargate.utils.convert_delta_to_full"
 
 
 class ConvertDeltaToFullTests(unittest.TestCase):
@@ -34,7 +34,9 @@ class ConvertDeltaToFullTests(unittest.TestCase):
         create_full_mock.side_effect = lambda full, delta: delta
         apply_partitions_mock.side_effect = lambda lf, date: lf
 
-        job.main(self.TEST_SOURCE, self.TEST_DEST, self.TEST_DATASET_NAME)
+        job.convert_delta_to_full(
+            self.TEST_SOURCE, self.TEST_DEST, self.TEST_DATASET_NAME
+        )
 
         scan_parquet_mock.assert_called_once()
         get_dates_mock.assert_called_once()
@@ -65,7 +67,9 @@ class ConvertDeltaToFullTests(unittest.TestCase):
         create_full_mock.side_effect = lambda full, delta, primary_key: delta
         apply_partitions_mock.side_effect = lambda lf, date: lf
 
-        job.main(self.TEST_SOURCE, self.TEST_DEST, self.TEST_DATASET_NAME)
+        job.convert_delta_to_full(
+            self.TEST_SOURCE, self.TEST_DEST, self.TEST_DATASET_NAME
+        )
 
         scan_parquet_mock.assert_called_once()
         get_dates_mock.assert_called_once()
@@ -99,7 +103,9 @@ class ConvertDeltaToFullTests(unittest.TestCase):
             name=f"merged_{delta}"
         )
 
-        job.main(self.TEST_SOURCE, self.TEST_DEST, self.TEST_DATASET_NAME)
+        job.convert_delta_to_full(
+            self.TEST_SOURCE, self.TEST_DEST, self.TEST_DATASET_NAME
+        )
 
         scan_parquet_mock.assert_called_once()
         get_dates_mock.assert_called_once()
@@ -110,7 +116,7 @@ class ConvertDeltaToFullTests(unittest.TestCase):
 
     def test_value_error_raised_if_unknown_dataset_name(self):
         with self.assertRaises(ValueError) as context:
-            job.main(self.TEST_SOURCE, self.TEST_DEST, "invalid_name")
+            job.convert_delta_to_full(self.TEST_SOURCE, self.TEST_DEST, "invalid_name")
 
         self.assertIn(
             "Unknown dataset name: invalid_name. Must be either 'locations' or 'providers'.",
