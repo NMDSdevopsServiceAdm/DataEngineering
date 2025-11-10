@@ -115,6 +115,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted function remove_specialist_colleges from pyspark to polars.
 
+- Changed how columns are selected in postcode matcher to keep polars in lazy mode.
+
 - Changed the behaviour of extract_registered_manager_names so it discards names when given or family name is null.
 
 - Amended column names and formats to match the new data at the end of CQC locations clean.
