@@ -432,6 +432,7 @@ class ValidateCqcLocations4FullCleanTest:
             (CQCLClean.registration_status, pl.String()),
             (CQCLClean.provider_id, pl.String()),
             (CQCLClean.primary_service_type, pl.String()),
+            (CQCLClean.primary_service_type_second_level, pl.String()),
             (CQCLClean.care_home, pl.String()),
             (CQCLClean.cqc_sector, pl.String()),
             (CQCLClean.related_location, pl.String()),

@@ -1553,6 +1553,7 @@ class ValidateCqcLocations4FullCleanTest:
         (RegistrationStatus.registered,),
         ("1-0001",),
         (PrimaryServiceType.non_residential,),
+        (PrimaryServiceTypeSecondLevel.non_residential,),
         (CareHome.care_home,),
         (Sector.independent,),
         (RelatedLocation.has_related_location,),
