@@ -1,9 +1,6 @@
 import polars as pl
 
 from polars_utils import utils
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
-)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
@@ -57,14 +54,15 @@ def load_latest_snapshot(
 
 
 def create_full_snapshot(
-    full_lf: pl.LazyFrame | None, delta_lf: pl.LazyFrame
+    full_lf: pl.LazyFrame | None, delta_lf: pl.LazyFrame, primary_key: str
 ) -> pl.LazyFrame:
     """
-    Merge delta into full snapshot, keeping latest record per location_id.
+    Merge delta into full snapshot, keeping latest record per primary_key.
 
     Args:
         full_lf (pl.LazyFrame | None): Existing full flattened LazyFrame or None if first snapshot.
         delta_lf (pl.LazyFrame): Delta flattened LazyFrame to merge.
+        primary_key (str): Unique identifier for the dataset.
 
     Returns:
         pl.LazyFrame: Merged LazyFrame (or just delta_lf if full_lf is None).
@@ -72,10 +70,7 @@ def create_full_snapshot(
     if full_lf is None:
         return delta_lf
 
-    merged_lf = pl.concat([full_lf, delta_lf]).unique(
-        subset=[CQCLClean.location_id], keep="last"
-    )
-    return merged_lf
+    return pl.concat([full_lf, delta_lf]).unique(subset=[primary_key], keep="last")
 
 
 def apply_partitions(lf: pl.LazyFrame, import_date: int | str) -> pl.LazyFrame:

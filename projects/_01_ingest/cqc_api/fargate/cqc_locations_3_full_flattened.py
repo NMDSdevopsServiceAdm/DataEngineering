@@ -4,6 +4,9 @@ from polars_utils import logger, utils
 from projects._01_ingest.cqc_api.fargate.utils import (
     locations_3_full_flattened_utils as fUtils,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 logger = logger.get_logger(__name__)
@@ -14,27 +17,42 @@ cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 def main(
     delta_flattened_source: str,
     full_flattened_destination: str,
+    dataset_name: str,
 ) -> None:
     """
-    Builds a full flattened CQC locations dataset from delta files.
+    Builds a full dataset from delta files for named datasets.
 
     Only processes import_dates not already present in the destination.
 
     Args:
         delta_flattened_source (str): S3 URI to read delta flattened CQC locations data from
         full_flattened_destination (str): S3 URI to save full flattened CQC locations data to
+        dataset_name (str): Dataset name ('locations' or 'providers').
+
+    Raises:
+        ValueError: If the dataset_name is not supported
     """
+    match dataset_name:
+        case "locations":
+            primary_key = CQCLClean.location_id
+        case "providers":
+            primary_key = CQCLClean.provider_id
+        case _:
+            raise ValueError(
+                f"Unknown dataset name: {dataset_name}. Must be either 'locations' or 'providers'."
+            )
+
     # Scan delta flattened data in LazyFrame format
     entire_delta_lf = utils.scan_parquet(delta_flattened_source)
     expected_schema = entire_delta_lf.collect_schema()
-    logger.info("CQC Location delta flattened LazyFrame read in")
+    logger.info("Delta dataset LazyFrame read in")
 
     dates_to_process, processed_dates = fUtils.allocate_import_dates(
         delta_flattened_source, full_flattened_destination
     )
 
     if not dates_to_process:
-        logger.info("No new import_dates require processing. Job complete")
+        logger.info("No new import_dates require processing. Job complete.")
         return
 
     full_lf = fUtils.load_latest_snapshot(full_flattened_destination, processed_dates)
@@ -44,7 +62,7 @@ def main(
 
         delta_lf = entire_delta_lf.filter(pl.col(Keys.import_date) == delta_import_date)
 
-        merged_lf = fUtils.create_full_snapshot(full_lf, delta_lf)
+        merged_lf = fUtils.create_full_snapshot(full_lf, delta_lf, primary_key)
         merged_lf = fUtils.apply_partitions(merged_lf, delta_import_date)
         merged_lf = merged_lf.cast(expected_schema)
 

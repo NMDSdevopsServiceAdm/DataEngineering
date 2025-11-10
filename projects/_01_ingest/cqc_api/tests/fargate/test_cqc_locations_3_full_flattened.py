@@ -10,6 +10,7 @@ PATCH_PATH = "projects._01_ingest.cqc_api.fargate.cqc_locations_3_full_flattened
 class CqcLocationsFullFlattenTests(unittest.TestCase):
     TEST_SOURCE = "s3://some/source"
     TEST_DEST = "s3://some/dest"
+    TEST_DATASET_NAME = "locations"
     PARTITION_KEYS = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
@@ -33,7 +34,7 @@ class CqcLocationsFullFlattenTests(unittest.TestCase):
         create_full_mock.side_effect = lambda full, delta: delta
         apply_partitions_mock.side_effect = lambda lf, date: lf
 
-        job.main(self.TEST_SOURCE, self.TEST_DEST)
+        job.main(self.TEST_SOURCE, self.TEST_DEST, self.TEST_DATASET_NAME)
 
         scan_parquet_mock.assert_called_once()
         get_dates_mock.assert_called_once()
@@ -64,7 +65,7 @@ class CqcLocationsFullFlattenTests(unittest.TestCase):
         create_full_mock.side_effect = lambda full, delta: delta
         apply_partitions_mock.side_effect = lambda lf, date: lf
 
-        job.main(self.TEST_SOURCE, self.TEST_DEST)
+        job.main(self.TEST_SOURCE, self.TEST_DEST, self.TEST_DATASET_NAME)
 
         scan_parquet_mock.assert_called_once()
         get_dates_mock.assert_called_once()
@@ -96,7 +97,7 @@ class CqcLocationsFullFlattenTests(unittest.TestCase):
         # simulate merging
         create_full_mock.side_effect = lambda full, delta: Mock(name=f"merged_{delta}")
 
-        job.main(self.TEST_SOURCE, self.TEST_DEST)
+        job.main(self.TEST_SOURCE, self.TEST_DEST, self.TEST_DATASET_NAME)
 
         scan_parquet_mock.assert_called_once()
         get_dates_mock.assert_called_once()
@@ -104,3 +105,12 @@ class CqcLocationsFullFlattenTests(unittest.TestCase):
         self.assertEqual(create_full_mock.call_count, 2)
         self.assertEqual(apply_partitions_mock.call_count, 2)
         self.assertEqual(sink_mock.call_count, 2)
+
+    def test_value_error_raised_if_unknown_dataset_name(self):
+        with self.assertRaises(ValueError) as context:
+            job.main(self.TEST_SOURCE, self.TEST_DEST, "invalid_name")
+
+        self.assertIn(
+            "Unknown dataset name: invalid_name. Must be either 'locations' or 'providers'.",
+            str(context.exception),
+        )

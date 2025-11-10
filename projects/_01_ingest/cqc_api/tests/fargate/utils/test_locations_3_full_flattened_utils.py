@@ -92,14 +92,17 @@ class CreateFullSnapshotTests(unittest.TestCase):
             data=Data.create_full_snapshot_delta_lf,
             schema=Schemas.create_full_snapshot_schema,
         )
+        self.primary_key = CQCLClean.location_id
 
     def test_returns_delta_lf_when_full_lf_is_none(self):
-        returned_lf = job.create_full_snapshot(None, self.delta_lf)
+        returned_lf = job.create_full_snapshot(None, self.delta_lf, self.primary_key)
 
         pl_testing.assert_frame_equal(returned_lf, self.delta_lf)
 
     def test_merges_lfs_and_retains_latest_data_for_each_location(self):
-        returned_lf = job.create_full_snapshot(self.full_lf, self.delta_lf)
+        returned_lf = job.create_full_snapshot(
+            self.full_lf, self.delta_lf, self.primary_key
+        )
 
         expected_lf = pl.LazyFrame(
             data=Data.expected_create_full_snapshot_lf,
@@ -107,8 +110,8 @@ class CreateFullSnapshotTests(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(
-            returned_lf.sort(CQCLClean.location_id),
-            expected_lf.sort(CQCLClean.location_id),
+            returned_lf.sort(self.primary_key),
+            expected_lf.sort(self.primary_key),
         )
 
 
