@@ -53,13 +53,33 @@ ascwds_workplace_columns = [
 
 
 def main(
-    cqc_location_source: str,
+    cqc_locations_snapshot_source: str,
+    cqc_locations_raw_delta_source: str,
     ascwds_workplace_source: str,
     cqc_ratings_destination: str,
     benchmark_ratings_destination: str,
 ):
-    cqc_location_df = utils.read_from_parquet(
-        cqc_location_source, cqc_location_columns, LOCATION_SCHEMA
+    cqc_location_df = utils.read_from_parquet(cqc_locations_snapshot_source)
+    window = Window.partitionBy(CQCL.location_id).orderBy(F.desc(Keys.import_date))
+    cqc_raw_location_df = (
+        utils.read_from_parquet(
+            cqc_locations_raw_delta_source,
+            cqc_location_columns,
+            LOCATION_SCHEMA,
+        )
+        .withColumn("row_num", F.row_number().over(window))
+        .filter(F.col("row_num") == 1)
+        .drop("row_num")
+    )
+    cqc_location_df = (
+        cqc_location_df.alias("clean")
+        .join(cqc_raw_location_df.alias("raw"), on=[CQCL.location_id], how="left")
+        .select(
+            "clean.*",
+            F.col(f"raw.{CQCL.current_ratings}").alias(CQCL.current_ratings),
+            F.col(f"raw.{CQCL.historic_ratings}").alias(CQCL.historic_ratings),
+            F.col(f"raw.{CQCL.assessment}").alias(CQCL.assessment),
+        )
     )
     ascwds_workplace_df = utils.read_from_parquet(
         ascwds_workplace_source, ascwds_workplace_columns
@@ -828,14 +848,19 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     (
-        cqc_location_source,
+        cqc_locations_snapshot_source,
+        cqc_locations_raw_delta_source,
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
     ) = utils.collect_arguments(
         (
-            "--cqc_location_source",
-            "Source s3 directory for parquet CQC locations dataset",
+            "--cqc_locations_snapshot_source",
+            "Source s3 directory for latest run CQC locations snapshot dataset",
+        ),
+        (
+            "--cqc_locations_raw_delta_source",
+            "Source s3 directory for Raw CQC locations delta dataset",
         ),
         (
             "--ascwds_workplace_source",
@@ -851,7 +876,8 @@ if __name__ == "__main__":
         ),
     )
     main(
-        cqc_location_source,
+        cqc_locations_snapshot_source,
+        cqc_locations_raw_delta_source,
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
