@@ -412,3 +412,22 @@ def split_s3_uri(uri: str) -> tuple[str, str]:
     """
     bucket, prefix = uri.replace("s3://", "").split("/", 1)
     return bucket, prefix
+
+
+def filter_to_maximum_value_in_column(
+    lf: pl.LazyFrame, column_to_filter: str
+) -> pl.LazyFrame:
+    """
+    Filters a LazyFrame to only include rows where `column_to_filter` has the maximum value.
+
+    Args:
+        lf (pl.LazyFrame): Input LazyFrame.
+        column_to_filter (str): Name of the column to filter on.
+
+    Returns:
+        pl.LazyFrame: Filtered LazyFrame containing only rows with the maximum value.
+    """
+    max_value: str = "max_value"
+    lf = lf.with_columns(pl.col(column_to_filter).max().alias(max_value))
+    lf = lf.filter(pl.col(column_to_filter) == pl.col(max_value))
+    return lf.drop(max_value)

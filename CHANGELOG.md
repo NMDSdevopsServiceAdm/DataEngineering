@@ -127,6 +127,10 @@ All notable changes to this project will be documented in this file.
 
 - Moved creation of cqc_locations_import_date from flatten to clean job so it populates all time periods correctly.
 
+- Saved the latest full snapshot of CQC locations.
+
+- Updated the SfC reconciliation process based on the new datasets.
+
 - Removed all CQC jobs, utils and tests no longer being used
 
 ### Improved

@@ -52,12 +52,12 @@ class ReconciliationSchema:
             StructField(AWPClean.region_id, StringType(), True),
         ]
     )
-    input_cqc_location_api_schema = StructType(
+    input_cqc_dereg_locations_schema = StructType(
         [
-            StructField(Keys.import_date, StringType(), True),
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCL.registration_status, StringType(), True),
-            StructField(CQCL.deregistration_date, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.registration_status, StringType(), True),
+            StructField(CQCLClean.deregistration_date, DateType(), True),
         ]
     )
 
@@ -65,16 +65,6 @@ class ReconciliationSchema:
 @dataclass
 class ReconciliationUtilsSchema:
     input_ascwds_workplace_schema = ReconciliationSchema.input_ascwds_workplace_schema
-    input_cqc_location_api_schema = ReconciliationSchema.input_cqc_location_api_schema
-
-    expected_prepared_most_recent_cqc_location_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCL.registration_status, StringType(), True),
-            StructField(CQCL.deregistration_date, DateType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-        ]
-    )
 
     dates_to_use_schema = StructType(
         [

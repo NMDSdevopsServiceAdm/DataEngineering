@@ -263,6 +263,7 @@ def latest_datefield_for_grouping(
     return latest_date_df
 
 
+# converted to polars -> polars_utils.utils.filter_to_maximum_value_in_column
 def filter_df_to_maximum_value_in_column(
     df: DataFrame, column_to_filter_on: str
 ) -> DataFrame:

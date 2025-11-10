@@ -7,21 +7,10 @@ from projects._02_sfc_internal.reconciliation.utils import (
     reconciliation_utils as rUtils,
 )
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
-
-cqc_locations_columns_to_import = [
-    Keys.import_date,
-    CQCL.location_id,
-    CQCL.registration_status,
-    CQCL.deregistration_date,
-]
 
 
 def main(
-    cqc_location_api_source: str,
+    cqc_locations_snapshot_source: str,
     ascwds_reconciliation_source: str,
     reconciliation_single_and_subs_destination: str,
     reconciliation_parents_destination: str,
@@ -29,12 +18,9 @@ def main(
     spark = utils.get_spark()
     spark.sql("set spark.sql.broadcastTimeout = 1000")
 
-    cqc_location_df = utils.read_from_parquet(
-        cqc_location_api_source, cqc_locations_columns_to_import
-    )
+    cqc_location_df = utils.read_from_parquet(cqc_locations_snapshot_source)
     ascwds_workplace_df = utils.read_from_parquet(ascwds_reconciliation_source)
 
-    cqc_location_df = rUtils.prepare_most_recent_cqc_location_df(cqc_location_df)
     (
         first_of_most_recent_month,
         first_of_previous_month,
@@ -85,14 +71,14 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     (
-        cqc_location_api_source,
+        cqc_locations_snapshot_source,
         ascwds_reconciliation_source,
         reconciliation_single_and_subs_destination,
         reconciliation_parents_destination,
     ) = utils.collect_arguments(
         (
-            "--cqc_location_api_source",
-            "Source s3 directory for initial CQC location api dataset",
+            "--cqc_locations_snapshot_source",
+            "Source s3 directory for latest run CQC locations snapshot dataset",
         ),
         (
             "--ascwds_reconciliation_source",
@@ -108,7 +94,7 @@ if __name__ == "__main__":
         ),
     )
     main(
-        cqc_location_api_source,
+        cqc_locations_snapshot_source,
         ascwds_reconciliation_source,
         reconciliation_single_and_subs_destination,
         reconciliation_parents_destination,

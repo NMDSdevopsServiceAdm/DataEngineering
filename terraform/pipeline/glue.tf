@@ -385,7 +385,7 @@ module "reconciliation_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_location_api_source"                    = "${module.datasets_bucket.bucket_uri}domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
+    "--cqc_locations_snapshot_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/"
     "--ascwds_reconciliation_source"               = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
     "--reconciliation_single_and_subs_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_reconciliation_singles_and_subs"
     "--reconciliation_parents_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_reconciliation_parents"
