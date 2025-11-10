@@ -353,8 +353,8 @@ module "flatten_cqc_ratings_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_locations_snapshot_source"  = "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/"
-    "--cqc_locations_raw_delta_source" = "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
+    "--cqc_locations_snapshot_source"  = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/"
+    "--cqc_locations_raw_delta_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
     "--ascwds_workplace_source"        = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
     "--cqc_ratings_destination"        = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
     "--benchmark_ratings_destination"  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
