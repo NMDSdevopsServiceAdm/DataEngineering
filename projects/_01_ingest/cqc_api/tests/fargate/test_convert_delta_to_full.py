@@ -14,10 +14,10 @@ class ConvertDeltaToFullTests(unittest.TestCase):
     PARTITION_KEYS = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.fUtils.apply_partitions")
-    @patch(f"{PATCH_PATH}.fUtils.create_full_snapshot")
-    @patch(f"{PATCH_PATH}.fUtils.load_latest_snapshot")
-    @patch(f"{PATCH_PATH}.fUtils.allocate_import_dates")
+    @patch(f"{PATCH_PATH}.cUtils.apply_partitions")
+    @patch(f"{PATCH_PATH}.cUtils.create_full_snapshot")
+    @patch(f"{PATCH_PATH}.cUtils.load_latest_snapshot")
+    @patch(f"{PATCH_PATH}.cUtils.allocate_import_dates")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_no_new_import_dates(
         self,
@@ -44,10 +44,10 @@ class ConvertDeltaToFullTests(unittest.TestCase):
         sink_mock.assert_not_called()
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.fUtils.apply_partitions")
-    @patch(f"{PATCH_PATH}.fUtils.create_full_snapshot")
-    @patch(f"{PATCH_PATH}.fUtils.load_latest_snapshot")
-    @patch(f"{PATCH_PATH}.fUtils.allocate_import_dates")
+    @patch(f"{PATCH_PATH}.cUtils.apply_partitions")
+    @patch(f"{PATCH_PATH}.cUtils.create_full_snapshot")
+    @patch(f"{PATCH_PATH}.cUtils.load_latest_snapshot")
+    @patch(f"{PATCH_PATH}.cUtils.allocate_import_dates")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_first_snapshot(
         self,
@@ -75,10 +75,10 @@ class ConvertDeltaToFullTests(unittest.TestCase):
         sink_mock.assert_called_once()
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.fUtils.apply_partitions")
-    @patch(f"{PATCH_PATH}.fUtils.create_full_snapshot")
-    @patch(f"{PATCH_PATH}.fUtils.load_latest_snapshot")
-    @patch(f"{PATCH_PATH}.fUtils.allocate_import_dates")
+    @patch(f"{PATCH_PATH}.cUtils.apply_partitions")
+    @patch(f"{PATCH_PATH}.cUtils.create_full_snapshot")
+    @patch(f"{PATCH_PATH}.cUtils.load_latest_snapshot")
+    @patch(f"{PATCH_PATH}.cUtils.allocate_import_dates")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_multiple_new_import_dates(
         self,
