@@ -113,8 +113,6 @@ class ValidateMergedIndCqcData:
             StructField(CQCLClean.cqc_sector, StringType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
-            StructField(CQCLClean.registration_status, StringType(), True),
-            StructField(CQCLClean.type, StringType(), True),
         ]
     )
     merged_ind_cqc_schema = StructType(
@@ -127,17 +125,10 @@ class ValidateMergedIndCqcData:
             StructField(IndCQC.name, StringType(), True),
             StructField(IndCQC.provider_id, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.registration_status, StringType(), True),
             StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(
-                IndCQC.services_offered,
-                ArrayType(
-                    StringType(),
-                ),
-                True,
-            ),
+            StructField(IndCQC.services_offered, ArrayType(StringType()), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.contemporary_ons_import_date, DateType(), True),
             StructField(IndCQC.contemporary_cssr, StringType(), True),
@@ -320,7 +311,6 @@ class ValidateImputedIndCqcAscwdsAndPir:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.provider_id, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.registration_status, StringType(), True),
             StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
@@ -1583,7 +1573,6 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.name, StringType(), True),
             StructField(IndCQC.provider_id, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.registration_status, StringType(), True),
             StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
@@ -1633,15 +1622,7 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),
             StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
             StructField(
-                CQCLClean.imputed_regulated_activities,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(CQCL.name, StringType(), True),
-                            StructField(CQCL.code, StringType(), True),
-                        ]
-                    )
-                ),
+                IndCQC.regulated_activities_offered, ArrayType(StringType()), True
             ),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
@@ -1673,17 +1654,7 @@ class NonResAscwdsFeaturesSchema(object):
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),
             StructField(
-                IndCQC.imputed_regulated_activities,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(IndCQC.name, StringType(), True),
-                            StructField(IndCQC.code, StringType(), True),
-                        ]
-                    ),
-                    True,
-                ),
-                True,
+                IndCQC.regulated_activities_offered, ArrayType(StringType()), True
             ),
             StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
             StructField(IndCQC.primary_service_type, StringType(), False),
@@ -1708,13 +1679,7 @@ class ValidateCareHomeIndCqcFeaturesData:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
-            StructField(
-                IndCQC.imputed_specialisms,
-                ArrayType(
-                    StructType([StructField(IndCQC.name, StringType(), True)]), True
-                ),
-                True,
-            ),
+            StructField(IndCQC.specialisms_offered, ArrayType(StringType(), True)),
         ]
     )
     care_home_ind_cqc_features_schema = StructType(
@@ -1743,24 +1708,8 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcSchema:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.dormancy, StringType(), True),
-            StructField(
-                IndCQC.imputed_gac_service_types,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(CQCL.name, StringType(), True),
-                            StructField(CQCL.description, StringType(), True),
-                        ]
-                    )
-                ),
-            ),
-            StructField(
-                IndCQC.imputed_specialisms,
-                ArrayType(
-                    StructType([StructField(IndCQC.name, StringType(), True)]), True
-                ),
-                True,
-            ),
+            StructField(IndCQC.services_offered, ArrayType(StringType(), True)),
+            StructField(IndCQC.specialisms_offered, ArrayType(StringType(), True)),
         ]
     )
     non_res_ascwds_ind_cqc_features_schema = StructType(
@@ -1780,24 +1729,8 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcSchema:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.care_home, StringType(), False),
-            StructField(
-                IndCQC.imputed_gac_service_types,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(CQCL.name, StringType(), True),
-                            StructField(CQCL.description, StringType(), True),
-                        ]
-                    )
-                ),
-            ),
-            StructField(
-                IndCQC.imputed_specialisms,
-                ArrayType(
-                    StructType([StructField(IndCQC.name, StringType(), True)]), True
-                ),
-                True,
-            ),
+            StructField(IndCQC.services_offered, ArrayType(StringType(), True)),
+            StructField(IndCQC.specialisms_offered, ArrayType(StringType(), True)),
         ]
     )
     non_res_ascwds_ind_cqc_features_schema = StructType(
@@ -1874,17 +1807,7 @@ class ModelFeatures:
     add_array_column_count_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(
-                IndCQC.gac_service_types,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(CQCL.name, StringType(), True),
-                            StructField(CQCL.description, StringType(), True),
-                        ]
-                    )
-                ),
-            ),
+            StructField(IndCQC.services_offered, ArrayType(StringType(), True)),
         ]
     )
     expected_add_array_column_count_schema = StructType(
@@ -3224,17 +3147,7 @@ class IndCQCDataUtils:
     allocate_primary_service_type_second_level_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
-            StructField(
-                CQCLClean.imputed_gac_service_types,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(CQCL.name, StringType(), True),
-                            StructField(CQCL.description, StringType(), True),
-                        ]
-                    )
-                ),
-            ),
+            StructField(CQCLClean.services_offered, ArrayType(StringType(), True)),
         ]
     )
     expected_allocate_primary_service_type_second_level_schema = StructType(

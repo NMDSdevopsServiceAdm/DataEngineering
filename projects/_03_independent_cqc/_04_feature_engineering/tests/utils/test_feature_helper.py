@@ -111,7 +111,7 @@ class AddArrayColumnCountTests(LocationsFeatureEngineeringTests):
         self.returned_df = job.add_array_column_count(
             df=test_df,
             new_col_name=IndCQC.service_count,
-            col_to_check=IndCQC.gac_service_types,
+            col_to_check=IndCQC.services_offered,
         )
 
     def test_add_array_column_count_adds_new_column(self):
@@ -136,7 +136,7 @@ class AddArrayColumnCountTests(LocationsFeatureEngineeringTests):
         returned_df = job.add_array_column_count(
             df=test_df,
             new_col_name=IndCQC.service_count,
-            col_to_check=IndCQC.gac_service_types,
+            col_to_check=IndCQC.services_offered,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_add_array_column_count_with_multiple_elements_rows,
@@ -152,7 +152,7 @@ class AddArrayColumnCountTests(LocationsFeatureEngineeringTests):
         returned_df = job.add_array_column_count(
             df=test_df,
             new_col_name=IndCQC.service_count,
-            col_to_check=IndCQC.gac_service_types,
+            col_to_check=IndCQC.services_offered,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_add_array_column_count_with_empty_array_rows,
@@ -168,7 +168,7 @@ class AddArrayColumnCountTests(LocationsFeatureEngineeringTests):
         returned_df = job.add_array_column_count(
             df=test_df,
             new_col_name=IndCQC.service_count,
-            col_to_check=IndCQC.gac_service_types,
+            col_to_check=IndCQC.services_offered,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_add_array_column_count_with_null_value_rows,
