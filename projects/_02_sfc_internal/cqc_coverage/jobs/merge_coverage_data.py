@@ -28,9 +28,6 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 )
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
-from utils.column_names.ind_cqc_pipeline_columns import (
-    DimensionPartitionKeys as DimensionKeys,
-)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import (
     CQCCurrentOrHistoricValues,
@@ -44,48 +41,30 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.location_id,
     CQCLClean.cqc_location_import_date,
     CQCLClean.name,
+    CQCLClean.postal_code,
     CQCLClean.provider_id,
     CQCLClean.cqc_sector,
     CQCLClean.registration_status,
     CQCLClean.imputed_registration_date,
     CQCLClean.dormancy,
-    CQCLClean.number_of_beds,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
-]
-gac_dim_columns_to_import = [
-    CQCLClean.location_id,
-    CQCLClean.imputed_gac_service_types,
-    CQCLClean.services_offered,
-    CQCLClean.primary_service_type,
     CQCLClean.care_home,
-    Keys.import_date,
-    DimensionKeys.last_updated,
-]
-ra_dim_columns_to_import = [
-    CQCLClean.location_id,
-    CQCLClean.imputed_regulated_activities,
-    Keys.import_date,
-    DimensionKeys.last_updated,
-]
-specialism_dim_columns_to_import = [
-    CQCLClean.location_id,
-    CQCLClean.imputed_specialisms,
-    Keys.import_date,
-    DimensionKeys.last_updated,
-]
-pcm_dim_columns_to_import = [
-    CQCLClean.location_id,
-    CQCLClean.postal_code,
+    CQCLClean.number_of_beds,
+    CQCLClean.primary_service_type,
+    CQCLClean.regulated_activities_offered,
+    CQCLClean.specialisms_offered,
+    CQCLClean.specialism_dementia,
+    CQCLClean.specialism_learning_disabilities,
+    CQCLClean.specialism_mental_health,
+    CQCLClean.services_offered,
     ONSClean.current_ons_import_date,
     ONSClean.current_cssr,
     ONSClean.current_icb,
     ONSClean.current_region,
     ONSClean.current_rural_urban_ind_11,
+    Keys.year,
+    Keys.month,
+    Keys.day,
     Keys.import_date,
-    DimensionKeys.last_updated,
 ]
 
 cleaned_ascwds_workplace_columns_to_import = [
@@ -119,10 +98,6 @@ cleaned_cqc_providers_columns_to_import = [
 
 def main(
     cleaned_cqc_location_source: str,
-    gac_dim_source: str,
-    reg_act_dim_source: str,
-    spec_dim_source: str,
-    pcm_dim_source: str,
     workplace_for_reconciliation_source: str,
     cqc_ratings_source: str,
     cleaned_cqc_providers_source: str,
@@ -138,44 +113,17 @@ def main(
         cleaned_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,
     )
-    gac_dim_df = utils.read_from_parquet(
-        gac_dim_source,
-        selected_columns=gac_dim_columns_to_import,
-    )
-    cqc_location_df = utils.join_dimension(
-        cqc_location_df, gac_dim_df, CQCLClean.location_id
-    )
-
-    reg_act_dim_df = utils.read_from_parquet(
-        reg_act_dim_source, selected_columns=ra_dim_columns_to_import
-    )
-    cqc_location_df = utils.join_dimension(
-        cqc_location_df, reg_act_dim_df, CQCLClean.location_id
-    )
-
-    spec_dim_df = utils.read_from_parquet(
-        spec_dim_source, selected_columns=specialism_dim_columns_to_import
-    )
-    cqc_location_df = utils.join_dimension(
-        cqc_location_df, spec_dim_df, CQCLClean.location_id
-    )
-
-    pcm_dim_df = utils.read_from_parquet(
-        pcm_dim_source, selected_columns=pcm_dim_columns_to_import
-    )
-    cqc_location_df = utils.join_dimension(
-        cqc_location_df, pcm_dim_df, CQCLClean.location_id
-    )
 
     ascwds_workplace_df = utils.read_from_parquet(
         workplace_for_reconciliation_source,
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
     )
 
-    cqc_ratings_df = utils.read_from_parquet(
-        cqc_ratings_source,
-        selected_columns=cqc_ratings_columns_to_import,
-    )
+    # TODO add ratings back in when ready
+    # cqc_ratings_df = utils.read_from_parquet(
+    #     cqc_ratings_source,
+    #     selected_columns=cqc_ratings_columns_to_import,
+    # )
     cqc_providers_df = utils.read_from_parquet(
         cleaned_cqc_providers_source,
         selected_columns=cleaned_cqc_providers_columns_to_import,
@@ -214,9 +162,10 @@ def main(
         merged_coverage_df
     )
 
-    merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
-        merged_coverage_df, cqc_ratings_df
-    )
+    # TODO add ratings back in when ready
+    # merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
+    #     merged_coverage_df, cqc_ratings_df
+    # )
 
     merged_coverage_df = add_columns_for_locality_manager_dashboard(merged_coverage_df)
     merged_coverage_df = join_provider_name_into_merged_coverage_df(
@@ -421,10 +370,6 @@ if __name__ == "__main__":
 
     (
         cleaned_cqc_location_source,
-        gac_services_source,
-        regulated_activities_source,
-        specialisms_source,
-        postcode_matching_source,
         workplace_for_reconciliation_source,
         cqc_ratings_source,
         cleaned_cqc_providers_source,
@@ -434,22 +379,6 @@ if __name__ == "__main__":
         (
             "--cleaned_cqc_location_source",
             "Source s3 directory for parquet CQC locations cleaned dataset",
-        ),
-        (
-            "--gac_services_dimension_source",
-            "Source s3 directory for parquet GAC services dimension",
-        ),
-        (
-            "--regulated_activities_dimension_source",
-            "Source s3 directory for parquet Regulated Activities dimension",
-        ),
-        (
-            "--specialisms_dimension_source",
-            "Source s3 directory for parquet Services dimension",
-        ),
-        (
-            "--postcode_matching_dimension_source",
-            "Source s3 directory for parquet Postcode Matching dimension",
         ),
         (
             "--workplace_for_reconciliation_source",
@@ -471,10 +400,6 @@ if __name__ == "__main__":
     )
     main(
         cleaned_cqc_location_source,
-        gac_services_source,
-        regulated_activities_source,
-        specialisms_source,
-        postcode_matching_source,
         workplace_for_reconciliation_source,
         cqc_ratings_source,
         cleaned_cqc_providers_source,
