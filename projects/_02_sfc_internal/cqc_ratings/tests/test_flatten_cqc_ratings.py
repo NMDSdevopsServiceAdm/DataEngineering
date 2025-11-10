@@ -30,6 +30,9 @@ class FlattenCQCRatingsTests(unittest.TestCase):
         self.test_cqc_locations_df = self.spark.createDataFrame(
             Data.test_cqc_locations_rows, schema=Schema.test_cqc_locations_schema
         )
+        self.test_cqc_locations_raw_df = self.spark.createDataFrame(
+            Data.test_cqc_locations_rows, schema=Schema.test_cqc_locations_schema
+        )
         self.test_ascwds_df = self.spark.createDataFrame(
             Data.test_ascwds_workplace_rows, schema=Schema.test_ascwds_workplace_schema
         )
@@ -55,14 +58,12 @@ class MainTests(FlattenCQCRatingsTests):
     @patch(f"{PATCH_PATH}.prepare_assessment_ratings")
     @patch(f"{PATCH_PATH}.prepare_historic_ratings")
     @patch(f"{PATCH_PATH}.prepare_current_ratings")
-    @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
     @patch(f"{PATCH_PATH}.filter_to_first_import_of_most_recent_month")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
         filter_to_first_import_of_most_recent_month_mock: Mock,
-        select_rows_with_value_mock: Mock,
         prepare_current_ratings_mock: Mock,
         prepare_historic_ratings_mock: Mock,
         prepare_assessment_ratings_mock: Mock,
@@ -82,6 +83,7 @@ class MainTests(FlattenCQCRatingsTests):
     ):
         read_from_parquet_mock.side_effect = [
             self.test_cqc_locations_df,
+            self.test_cqc_locations_raw_df,
             self.test_ascwds_df,
         ]
 
@@ -93,9 +95,8 @@ class MainTests(FlattenCQCRatingsTests):
             self.TEST_BENCHMARK_RATINGS_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_mock.call_count, 2)
-        self.assertEqual(filter_to_first_import_of_most_recent_month_mock.call_count, 2)
-        select_rows_with_value_mock.assert_called_once()
+        self.assertEqual(read_from_parquet_mock.call_count, 3)
+        filter_to_first_import_of_most_recent_month_mock.assert_called_once()
         prepare_current_ratings_mock.assert_called_once()
         prepare_historic_ratings_mock.assert_called_once()
         prepare_assessment_ratings_mock.assert_called_once()

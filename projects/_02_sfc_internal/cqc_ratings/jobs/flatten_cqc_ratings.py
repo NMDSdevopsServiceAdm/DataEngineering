@@ -71,20 +71,17 @@ def main(
         .filter(F.col("row_num") == 1)
         .drop("row_num")
     )
-    cqc_location_df = cqc_location_df.alias("clean").join(
-        cqc_raw_location_df.alias("raw"), on=[CQCL.location_id], how="left"
+    cqc_location_df = (
+        cqc_location_df.alias("clean")
+        .join(cqc_raw_location_df.alias("raw"), on=[CQCL.location_id], how="left")
+        .select("clean.*")
     )
     ascwds_workplace_df = utils.read_from_parquet(
         ascwds_workplace_source, ascwds_workplace_columns
     )
 
-    cqc_location_df = filter_to_first_import_of_most_recent_month(cqc_location_df)
     ascwds_workplace_df = filter_to_first_import_of_most_recent_month(
         ascwds_workplace_df
-    )
-
-    cqc_location_df = utils.select_rows_with_value(
-        cqc_location_df, CQCL.type, LocationType.social_care_identifier
     )
 
     current_ratings_df = prepare_current_ratings(cqc_location_df)
