@@ -31,10 +31,6 @@ class PartitionKeys:
     year: str = "year"
 
 
-class DimensionPartitionKeys(PartitionKeys):
-    last_updated: str = "last_updated"
-
-
 class ArchivePartitionKeys:
     archive_day: str = "archive_day"
     archive_month: str = "archive_month"

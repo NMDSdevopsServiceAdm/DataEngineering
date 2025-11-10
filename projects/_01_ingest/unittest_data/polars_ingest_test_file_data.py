@@ -5,10 +5,14 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_values.categorical_column_values import (
+    RUI,
     CareHome,
+    ContemporaryCSSR,
+    Dormancy,
     LocationType,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
+    Region,
     RegistrationStatus,
     RelatedLocation,
     Sector,
@@ -850,6 +854,19 @@ class ExtractRegisteredManagerNamesData:
 
 @dataclass
 class LocationsCleanUtilsData:
+    # fmt: off
+    save_latest_full_snapshot_rows  = [
+        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.registered, None),
+        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.deregistered, date(2025, 1, 1)),
+        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.registered, None),
+        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1)),
+    ]
+    expected_save_latest_full_snapshot_rows = [
+        (date(2025, 2, 1), "1-001", RegistrationStatus.registered, None),
+        (date(2025, 2, 1), "1-001", RegistrationStatus.deregistered, date(2025, 1, 1)),
+    ]
+    # fmt: on
+
     clean_provider_id_column_rows = [
         ("1-001", "1-001"),
         ("1-123456789", "1-123"),
@@ -1521,4 +1538,34 @@ class PostcodeMatcherTest:
         ("AA11AA", "AA12AA", "ZZ11AA", "ZZ12AA"),
         ("CSSR 1", "CSSR 1", "CSSR 2", "CSSR 3"),
         (None, None, "ZZ11", "ZZ12"),
+    ]
+
+
+@dataclass
+class ValidateCqcLocations4FullCleanTest:
+    validation_rows = [
+        ("1-001",),
+        ("20250101",),
+        (date(2025, 1, 1),),
+        ("name",),
+        (LocationType.social_care_identifier,),
+        (date(2024, 1, 1),),
+        (RegistrationStatus.registered,),
+        ("1-0001",),
+        (PrimaryServiceType.non_residential,),
+        (CareHome.care_home,),
+        (Sector.independent,),
+        (RelatedLocation.has_related_location,),
+        (SpecGenOther.generalist,),
+        (SpecGenOther.generalist,),
+        (SpecGenOther.generalist,),
+        (Dormancy.not_dormant),
+        (10,),
+        (date(2025, 3, 1),),
+        (ContemporaryCSSR.barking_and_dagenham,),
+        (Region.london,),
+        (date(2025, 3, 1),),
+        (ContemporaryCSSR.barking_and_dagenham,),
+        (Region.london,),
+        (RUI.urban_major,),
     ]

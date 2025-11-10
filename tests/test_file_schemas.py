@@ -415,10 +415,3 @@ class RawDataAdjustments:
             StructField("other_column", StringType(), True),
         ]
     )
-
-    locations_data_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField("other_column", StringType(), True),
-        ]
-    )

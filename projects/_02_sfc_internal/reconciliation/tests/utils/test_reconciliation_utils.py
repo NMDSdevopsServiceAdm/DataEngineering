@@ -35,34 +35,12 @@ class ReconciliationTests(unittest.TestCase):
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
-        self.test_cqc_location_api_df = self.spark.createDataFrame(
-            Data.input_cqc_location_api_rows,
-            Schemas.input_cqc_location_api_schema,
-        )
         self.test_clean_ascwds_workplace_df = self.spark.createDataFrame(
             Data.input_ascwds_workplace_rows,
             Schemas.input_ascwds_workplace_schema,
         )
 
         warnings.simplefilter("ignore", ResourceWarning)
-
-
-class PrepareMostRecentCqcLocationDataTests(ReconciliationTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_prepare_most_recent_cqc_location_df_returns_expected_dataframe(self):
-        returned_df = job.prepare_most_recent_cqc_location_df(
-            self.test_cqc_location_api_df
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_prepared_most_recent_cqc_location_rows,
-            Schemas.expected_prepared_most_recent_cqc_location_schema,
-        )
-        returned_data = returned_df.sort(CQCL.location_id).collect()
-        expected_data = expected_df.sort(CQCL.location_id).collect()
-
-        self.assertEqual(returned_data, expected_data)
 
 
 class CollectDatesToUseTests(ReconciliationTests):

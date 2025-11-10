@@ -145,6 +145,24 @@ class ExtractRegisteredManagerNamesSchema:
 
 @dataclass
 class LocationsCleanUtilsSchema:
+    save_latest_full_snapshot_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.provider_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.registration_status, pl.String()),
+            (CQCLClean.deregistration_date, pl.Date()),
+        ]
+    )
+    expected_save_latest_full_snapshot_schema = pl.Schema(
+        [
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.registration_status, pl.String()),
+            (CQCLClean.deregistration_date, pl.Date()),
+        ]
+    )
+
     clean_provider_id_column_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
@@ -397,5 +415,37 @@ class PostcodeMatcherTest:
             (CQCLClean.postcode_cleaned, pl.String()),
             (ONSClean.current_cssr, pl.String()),
             (CQCLClean.postcode_truncated, pl.String()),
+        ]
+    )
+
+
+@dataclass
+class ValidateCqcLocations4FullCleanTest:
+    validation_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (Keys.import_date, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.name, pl.String()),
+            (CQCLClean.type, pl.String()),
+            (CQCLClean.imputed_registration_date, pl.Date()),
+            (CQCLClean.registration_status, pl.String()),
+            (CQCLClean.provider_id, pl.String()),
+            (CQCLClean.primary_service_type, pl.String()),
+            (CQCLClean.care_home, pl.String()),
+            (CQCLClean.cqc_sector, pl.String()),
+            (CQCLClean.related_location, pl.String()),
+            (CQCLClean.specialism_dementia, pl.String()),
+            (CQCLClean.specialism_learning_disabilities, pl.String()),
+            (CQCLClean.specialism_mental_health, pl.String()),
+            (CQCLClean.dormancy, pl.String()),
+            (CQCLClean.number_of_beds, pl.Int64()),
+            (CQCLClean.contemporary_ons_import_date, pl.Date()),
+            (CQCLClean.contemporary_cssr, pl.String()),
+            (CQCLClean.contemporary_region, pl.String()),
+            (CQCLClean.current_ons_import_date, pl.Date()),
+            (CQCLClean.current_cssr, pl.String()),
+            (CQCLClean.current_region, pl.String()),
+            (CQCLClean.current_rural_urban_ind_11, pl.String()),
         ]
     )

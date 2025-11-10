@@ -30,6 +30,8 @@ All notable changes to this project will be documented in this file.
 
 - Added validation script for locations_3_full_flattened process and test script for this validation.
 
+- Added validation script for locations_4_full_clean process and test script for this validation.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
@@ -126,6 +128,12 @@ All notable changes to this project will be documented in this file.
 - Updated SfC Merge coverage job and S3 paths following removal of dimensions.
 
 - Moved creation of cqc_locations_import_date from flatten to clean job so it populates all time periods correctly.
+
+- Saved the latest full snapshot of CQC locations.
+
+- Updated the SfC reconciliation process based on the new datasets.
+
+- Removed all CQC jobs, utils and tests no longer being used
 
 - Converted function allocate_primary_service_type_second_level from pyspark to polars and called it in cqc_locations_4_full_clean.
 
