@@ -85,9 +85,9 @@
                       "Type": "Pass",
                       "Result": {
                         "script": "convert_delta_to_full.py",
-                        "delta_source_arg_name": "--delta_flattened_source",
+                        "delta_source_arg_name": "--delta_source",
                         "delta_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
-                        "full_destination_arg_name": "--full_flattened_destination",
+                        "full_destination_arg_name": "--full_destination",
                         "full_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/",
                         "dataset_arg": "--dataset",
                         "dataset_name": "locations"

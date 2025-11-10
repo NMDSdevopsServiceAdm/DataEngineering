@@ -7,7 +7,7 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 PATCH_PATH = "projects._01_ingest.cqc_api.fargate.convert_delta_to_full"
 
 
-class CqcLocationsFullFlattenTests(unittest.TestCase):
+class ConvertDeltaToFullTests(unittest.TestCase):
     TEST_SOURCE = "s3://some/source"
     TEST_DEST = "s3://some/dest"
     TEST_DATASET_NAME = "locations"

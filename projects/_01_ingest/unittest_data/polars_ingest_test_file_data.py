@@ -81,7 +81,7 @@ class FlattenUtilsData:
 
 
 @dataclass
-class FullFlattenUtilsData:
+class ConvertDeltaToFullUtilsData:
     load_latest_snapshot = [
         ("1-001", "1-001", "1-002", "1-002"),
         (20250101, 20250201, 20250201, 20250301),
