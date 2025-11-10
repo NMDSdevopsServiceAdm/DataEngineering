@@ -71,15 +71,8 @@ def main(
         .filter(F.col("row_num") == 1)
         .drop("row_num")
     )
-    cqc_location_df = (
-        cqc_location_df.alias("clean")
-        .join(cqc_raw_location_df.alias("raw"), on=[CQCL.location_id], how="left")
-        .select(
-            "clean.*",
-            F.col(f"raw.{CQCL.current_ratings}").alias(CQCL.current_ratings),
-            F.col(f"raw.{CQCL.historic_ratings}").alias(CQCL.historic_ratings),
-            F.col(f"raw.{CQCL.assessment}").alias(CQCL.assessment),
-        )
+    cqc_location_df = cqc_location_df.alias("clean").join(
+        cqc_raw_location_df.alias("raw"), on=[CQCL.location_id], how="left"
     )
     ascwds_workplace_df = utils.read_from_parquet(
         ascwds_workplace_source, ascwds_workplace_columns
