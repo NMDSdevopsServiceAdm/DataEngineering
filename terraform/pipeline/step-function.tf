@@ -15,7 +15,7 @@ resource "aws_sfn_state_machine" "run_crawler" {
 
   logging_configuration {
     log_destination        = "${aws_cloudwatch_log_group.state_machines_2.arn}:*"
-    include_execution_data = true
+    include_execution_data = false
     level                  = "ERROR"
   }
 
