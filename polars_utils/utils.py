@@ -51,11 +51,8 @@ def scan_parquet(
         if "Contents" not in response:
             raise FileNotFoundError(f"No files in {source}")
 
-    # Ensure we only pick up Parquet files regardless of compression
-    source_pattern = str(source) + "**/*.parquet"
-
     lf = pl.scan_parquet(
-        source_pattern,
+        source,
         schema=schema,
         cast_options=pl.ScanCastOptions(
             missing_struct_fields="insert",
