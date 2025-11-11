@@ -438,3 +438,15 @@ class ValidateCqcLocations4FullCleanTest:
             (CQCLClean.current_rural_urban_ind_11, pl.String()),
         ]
     )
+
+
+@dataclass
+class ValidateCqcLocations4FullLatestSnapshotTest:
+    validation_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.registration_status, pl.String()),
+            (CQCLClean.deregistration_date, pl.Date()),
+        ]
+    )

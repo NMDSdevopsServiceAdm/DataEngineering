@@ -241,6 +241,47 @@
                         }
                       },
                       "ResultPath": "$.validateCleanFullCQCLocationsResult",
+                      "Next": "Validate Clean Full CQC Locations"
+                    },
+                    "Set Validate Clean Full Latest Snapshot Parameters": {
+                      "Type": "Pass",
+                      "Result": {
+                        "script": "validate_cqc_locations_4_full_latest_snapshot.py",
+                        "bucket_name_arg": "--bucket_name",
+                        "bucket_name": "${dataset_bucket_name}",
+                        "source_path_arg": "--source_path",
+                        "source_path": "domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/",
+                        "reports_path_arg": "--reports_path",
+                        "reports_path": "data_validation_reports/dataset=data_validation_reports_cqc_locations_04_latest_snapshot/"
+                      },
+                      "Next": "Validate Clean Full Latest Snapshot"
+                    },
+                    "Validate Clean Full Latest Snapshot": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${cqc_api_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": [
+                              "${cqc_api_security_group_id}"
+                            ],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path)"
+                            }
+                          ]
+                        }
+                      },
+                      "ResultPath": "$.validateCleanFullLatestSnapshotResult",
                       "End": true
                     }
                   }
