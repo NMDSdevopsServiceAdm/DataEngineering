@@ -300,7 +300,6 @@ jobs:
           from: "s3://sfc-main-pipeline-resources/models/"
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/models/"
 
-
   terraform-destroy:
     working_directory: /tmp/project
     docker:
