@@ -124,6 +124,7 @@
         },
         {
           "StartAt": "Flatten Delta CQC Locations",
+          "States": {
             "Flatten Delta CQC Locations": {
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
