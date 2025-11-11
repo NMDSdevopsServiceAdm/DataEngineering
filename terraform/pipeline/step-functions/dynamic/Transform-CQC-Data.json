@@ -241,7 +241,7 @@
                         }
                       },
                       "ResultPath": "$.validateCleanFullCQCLocationsResult",
-                      "Next": "Validate Clean Full CQC Locations"
+                      "Next": "Set Validate Clean Full Latest Snapshot Parameters"
                     },
                     "Set Validate Clean Full Latest Snapshot Parameters": {
                       "Type": "Pass",
