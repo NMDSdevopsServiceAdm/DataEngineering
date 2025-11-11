@@ -13,11 +13,11 @@ resource "aws_sfn_state_machine" "run_crawler" {
   type       = "STANDARD"
   definition = templatefile("step-functions/Run-Crawler.json", {})
 
-  # logging_configuration {
-  #   log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-  #   include_execution_data = true
-  #   level                  = "ERROR"
-  # }
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
 
   depends_on = [
     aws_iam_policy.step_function_iam_policy
