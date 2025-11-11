@@ -14,7 +14,7 @@ resource "aws_sfn_state_machine" "run_crawler" {
   definition = templatefile("step-functions/Run-Crawler.json", {})
 
   logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    log_destination        = "${aws_cloudwatch_log_group.state_machines_2.arn}:*"
     include_execution_data = true
     level                  = "ERROR"
   }
@@ -66,7 +66,7 @@ resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
   })
 
   logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group_2.state_machines.arn}:*"
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
     include_execution_data = true
     level                  = "ERROR"
   }
@@ -191,7 +191,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
   })
 
   logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group_2.state_machines.arn}:*"
+    log_destination        = "${aws_cloudwatch_log_group.state_machines_2.arn}:*"
     include_execution_data = true
     level                  = "ERROR"
   }
@@ -204,11 +204,13 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
 
 
 resource "aws_cloudwatch_log_group" "state_machines" {
-  name_prefix = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
+  name_prefix       = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines-1"
+  retention_in_days = 14
 }
 
-resource "aws_cloudwatch_log_group_2" "state_machines" {
-  name_prefix = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
+resource "aws_cloudwatch_log_group" "state_machines_2" {
+  name_prefix       = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines-2"
+  retention_in_days = 14
 }
 
 resource "aws_iam_role" "step_function_iam_role" {
