@@ -23,7 +23,7 @@ def scan_parquet(
     selected_columns: list[str] | None = None,
 ) -> pl.LazyFrame:
     """
-    Reads in parquet into a LazyFrame
+    Reads parquet files into a Polars LazyFrame
 
     Args:
         source (str | Path): the full path in s3 of the dataset
@@ -51,8 +51,11 @@ def scan_parquet(
         if "Contents" not in response:
             raise FileNotFoundError(f"No files in {source}")
 
+    # Ensure we only pick up Parquet files regardless of compression
+    source_pattern = str(source) + "**/*.parquet"
+
     lf = pl.scan_parquet(
-        source,
+        source_pattern,
         schema=schema,
         cast_options=pl.ScanCastOptions(
             missing_struct_fields="insert",
