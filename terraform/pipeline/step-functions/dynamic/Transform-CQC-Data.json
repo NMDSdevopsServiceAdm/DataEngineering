@@ -35,7 +35,6 @@
                   ]
                 }
               },
-              "ResultPath": "$.flattenedProviderResult",
               "Next": "Build Full and Validate Flattened Providers"
             },
             "Build Full and Validate Flattened Providers": {
@@ -84,7 +83,6 @@
                           ]
                         }
                       },
-                      "ResultPath": "$.validateFlattenDeltaCQCProvidersResult",
                       "End": true
                     }
                   }
@@ -152,7 +150,6 @@
                   ]
                 }
               },
-              "ResultPath": "$.flattenedLocationResult",
               "Next": "Build Full and Validate Flattened Locations"
             },
             "Build Full and Validate Flattened Locations": {
@@ -189,7 +186,6 @@
                           ]
                         }
                       },
-                      "ResultPath": "$.fullflattenedLocationResult",
                       "End": true
                     }
                   }
@@ -228,7 +224,6 @@
                           ]
                         }
                       },
-                      "ResultPath": "$.validateFlattenDeltaCQCLocationsResult",
                       "End": true
                     }
                   }
@@ -272,7 +267,6 @@
                           ]
                         }
                       },
-                      "ResultPath": "$.cleanedLocationResult",
                       "End": true
                     }
                   }
@@ -308,7 +302,6 @@
                           ]
                         }
                       },
-                      "ResultPath": "$.validateBuildFullflattenCQCLocationsResult",
                       "End": true
                     }
                   }
@@ -352,7 +345,6 @@
                           ]
                         }
                       },
-                      "ResultPath": "$.validateCleanFullCQCLocationsResult",
                       "End": true
                     }
                   }
