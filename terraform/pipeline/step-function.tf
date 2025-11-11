@@ -8,7 +8,7 @@ locals {
 
 # Created explicitly as required by dynamic step functions
 resource "aws_sfn_state_machine" "run_crawler" {
-  name       = "/aws/vendedlogs/states/${local.workspace_prefix}-Run-Crawler"
+  name       = "${local.workspace_prefix}-Run-Crawler"
   role_arn   = aws_iam_role.step_function_iam_role.arn
   type       = "STANDARD"
   definition = templatefile("step-functions/Run-Crawler.json", {})
@@ -205,6 +205,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
 
 resource "aws_cloudwatch_log_group" "state_machines" {
   name_prefix = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
+  retention_in_days = 10
 }
 
 resource "aws_iam_role" "step_function_iam_role" {
