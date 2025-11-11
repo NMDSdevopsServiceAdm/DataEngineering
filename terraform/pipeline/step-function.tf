@@ -204,7 +204,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
 
 
 resource "aws_cloudwatch_log_group" "state_machines" {
-  name              = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
+  name_prefix       = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
   retention_in_days = 7
 }
 
