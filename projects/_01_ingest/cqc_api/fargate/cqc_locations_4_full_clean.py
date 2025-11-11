@@ -32,8 +32,6 @@ ons_cols_to_import = [
     *current_geography_columns,
 ]
 
-# Test commit.
-
 
 def main(
     cqc_locations_full_flattened_source: str,
