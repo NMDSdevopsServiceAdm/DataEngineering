@@ -14,7 +14,7 @@ resource "aws_sfn_state_machine" "run_crawler" {
   definition = templatefile("step-functions/Run-Crawler.json", {})
 
   logging_configuration {
-    log_destination        = local.log_groups[0]
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
     include_execution_data = false
     level                  = "ERROR"
   }
@@ -41,7 +41,7 @@ resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
   })
 
   logging_configuration {
-    log_destination        = local.log_groups[1]
+    log_destination        = "${aws_cloudwatch_log_group.state_machines_2.arn}:*"
     include_execution_data = false
     level                  = "ERROR"
   }
@@ -66,7 +66,7 @@ resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
   })
 
   logging_configuration {
-    log_destination        = local.log_groups[0]
+    log_destination        = "${aws_cloudwatch_log_group.state_machines_3.arn}:*"
     include_execution_data = true
     level                  = "ERROR"
   }
@@ -191,7 +191,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
   })
 
   logging_configuration {
-    log_destination        = local.log_groups[parseint(substr(md5(each.key), 0, 8), 16) % length(local.log_groups)]
+    log_destination        = "${local.log_groups[parseint(substr(md5(each.key), 0, 8), 16) % length(local.log_groups)]}:*"
     include_execution_data = false
     level                  = "ERROR"
   }
