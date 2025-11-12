@@ -6,50 +6,9 @@
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "Clean CQC Provider Data",
+          "StartAt": "Flatten Delta CQC Providers",
           "States": {
-            "Clean CQC Provider Data": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${clean_cqc_provider_data_job_name}",
-                "Arguments": {
-                  "--cqc_provider_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_providers_api/version=3.0.0/",
-                  "--cqc_provider_cleaned": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_providers_api_cleaned/"
-                }
-              },
-              "Next": "Validate Providers Cleaned"
-            },
-            "Validate Providers Cleaned": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${validate_providers_api_cleaned_data_job_name}",
-                "Arguments": {
-                  "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_providers_api/version=3.0.0/",
-                  "--cleaned_cqc_providers_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_providers_api_cleaned/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_providers_api_cleaned/"
-                }
-              },
-              "End": true
-            }
-          }
-        },
-        {
-          "StartAt": "Set Flatten Delta CQC Locations Parameters",
-          "States": {
-            "Set Flatten Delta CQC Locations Parameters": {
-              "Type": "Pass",
-              "Result": {
-                "script": "cqc_locations_2_delta_flatten.py",
-                "cqc_source_arg_name": "--cqc_locations_api_delta_source",
-                "cqc_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/",
-                "cqc_destination_arg_name": "--cqc_locations_flattened_destination",
-                "cqc_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/"
-              },
-              "Next": "Flatten Delta CQC Locations"
-            },
-            "Flatten Delta CQC Locations": {
+            "Flatten Delta CQC Providers": {
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
@@ -67,155 +26,33 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command.$": "States.Array($.script, $.cqc_source_arg_name, $.cqc_source_arg_location, $.cqc_destination_arg_name, $.cqc_destination_arg_location)"
+                      "Command": [
+                        "cqc_providers_2_delta_flatten.py",
+                        "--delta_api_source", "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
+                        "--flattened_destination", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_providers_02_delta_flattened/"
+                      ]
                     }
                   ]
                 }
               },
-              "ResultPath": "$.flattenedLocationResult",
-              "Next": "Build, Clean and Validate Locations"
+              "Next": "Build Full and Validate Flattened Providers"
             },
-            "Build, Clean and Validate Locations": {
+            "Build Full and Validate Flattened Providers": {
               "Type": "Parallel",
               "Branches": [
                 {
-                  "StartAt": "Set Full Flatten CQC Locations Parameters",
+                  "StartAt": "Build Full flatten CQC Providers",
                   "States": {
-                    "Set Full Flatten CQC Locations Parameters": {
+                    "Build Full flatten CQC Providers": {
                       "Type": "Pass",
-                      "Result": {
-                        "script": "convert_delta_to_full.py",
-                        "delta_source_arg_name": "--delta_source",
-                        "delta_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
-                        "full_destination_arg_name": "--full_destination",
-                        "full_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/",
-                        "dataset_arg": "--dataset",
-                        "dataset_name": "locations"
-                      },
-                      "Next": "Build Full flatten CQC Locations"
-                    },
-                    "Build Full flatten CQC Locations": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask.sync",
-                      "Parameters": {
-                        "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${cqc_api_task_arn}",
-                        "LaunchType": "FARGATE",
-                        "NetworkConfiguration": {
-                          "AwsvpcConfiguration": {
-                            "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${cqc_api_security_group_id}"],
-                            "AssignPublicIp": "ENABLED"
-                          }
-                        },
-                        "Overrides": {
-                          "ContainerOverrides": [
-                            {
-                              "Name": "cqc-api-container",
-                              "Command.$": "States.Array($.script, $.delta_source_arg_name, $.delta_source_arg_location, $.full_destination_arg_name, $.full_destination_arg_location, $.dataset_arg, $.dataset_name)"
-                            }
-                          ]
-                        }
-                      },
-                      "ResultPath": "$.fullflattenedLocationResult",
-                      "Next": "Set Validate Build Full flatten CQC Locations Parameters"
-                    },
-                    "Set Validate Build Full flatten CQC Locations Parameters": {
-                      "Type": "Pass",
-                      "Result": {
-                        "script": "validate_cqc_locations_3_full_flattened.py",
-                        "bucket_name_arg": "--bucket_name",
-                        "bucket_name": "${dataset_bucket_name}",
-                        "source_path_arg": "--source_path",
-                        "source_path": "domain=CQC_delta/dataset=cqc_locations_03_full_flattened/",
-                        "reports_path_arg": "--reports_path",
-                        "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_03_full_flattened/"
-                      },
-                      "Next": "Validate Build Full flatten CQC Locations"
-                    },
-                    "Validate Build Full flatten CQC Locations": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask.sync",
-                      "Parameters": {
-                        "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${cqc_api_task_arn}",
-                        "LaunchType": "FARGATE",
-                        "NetworkConfiguration": {
-                          "AwsvpcConfiguration": {
-                            "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${cqc_api_security_group_id}"],
-                            "AssignPublicIp": "ENABLED"
-                          }
-                        },
-                        "Overrides": {
-                          "ContainerOverrides": [
-                            {
-                              "Name": "cqc-api-container",
-                              "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path)"
-                            }
-                          ]
-                        }
-                      },
-                      "Next": "Set Clean Full CQC Locations Parameters",
-                      "ResultPath": "$.validateBuildFullflattenCQCLocationsResult"
-                    },
-                    "Set Clean Full CQC Locations Parameters": {
-                      "Type": "Pass",
-                      "Result": {
-                        "script": "cqc_locations_4_full_clean.py",
-                        "cqc_full_flat_source_arg_name": "--cqc_locations_full_flattened_source",
-                        "cqc_full_flat_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/",
-                        "ons_pd_source_arg_name": "--ons_postcode_directory_source",
-                        "ons_pd_source_arg_location": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-                        "cqc_registered_destination_arg_name": "--cqc_registered_locations_cleaned_destination",
-                        "cqc_registered_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/",
-                        "cqc_latest_snapshot_destination_arg_name": "--cqc_full_snapshot_destination",
-                        "cqc_latest_snapshot_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/",
-                        "manual_postcode_corrections_source_arg_name": "--manual_postcode_corrections_source",
-                        "manual_postcode_corrections_source_arg_location": "${dataset_bucket_uri}/domain=CQC/dataset=postcode_corrections/manual_postcode_corrections.csv"
-                      },
-                      "Next": "Clean Full CQC Locations"
-                    },
-                    "Clean Full CQC Locations": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask.sync",
-                      "Parameters": {
-                        "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${cqc_api_task_arn}",
-                        "LaunchType": "FARGATE",
-                        "NetworkConfiguration": {
-                          "AwsvpcConfiguration": {
-                            "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${cqc_api_security_group_id}"],
-                            "AssignPublicIp": "ENABLED"
-                          }
-                        },
-                        "Overrides": {
-                          "ContainerOverrides": [
-                            {
-                              "Name": "cqc-api-container",
-                              "Command.$": "States.Array($.script, $.cqc_full_flat_source_arg_name, $.cqc_full_flat_source_arg_location, $.ons_pd_source_arg_name, $.ons_pd_source_arg_location, $.cqc_registered_destination_arg_name, $.cqc_registered_destination_arg_location, $.cqc_latest_snapshot_destination_arg_name, $.cqc_latest_snapshot_destination_arg_location, $.manual_postcode_corrections_source_arg_name, $.manual_postcode_corrections_source_arg_location)"
-                            }
-                          ]
-                        }
-                      },
-                      "ResultPath": "$.cleanedLocationResult",
-                      "Next": "Set Validate Clean Full CQC Locations Parameters"
-                    },
-                    "Set Validate Clean Full CQC Locations Parameters": {
-                      "Type": "Pass",
-                      "Result": {
-                        "script": "validate_cqc_locations_4_full_clean.py",
-                        "bucket_name_arg": "--bucket_name",
-                        "bucket_name": "${dataset_bucket_name}",
-                        "source_path_arg": "--source_path",
-                        "source_path": "domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/",
-                        "reports_path_arg": "--reports_path",
-                        "reports_path": "data_validation_reports/dataset=data_validation_reports_cqc_locations_04_full_cleaned_registered/"
-                      },
-                      "Next": "Validate Clean Full CQC Locations"
-                    },
-                    "Validate Clean Full CQC Locations": {
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate Flatten Delta CQC Providers",
+                  "States": {
+                    "Validate Flatten Delta CQC Providers": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
@@ -235,34 +72,127 @@
                           "ContainerOverrides": [
                             {
                               "Name": "cqc-api-container",
-                              "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path)"
+                              "Command": [
+                                "validate_cqc_providers_2_delta_flatten.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=CQC_delta/dataset=cqc_providers_02_delta_flattened/",
+                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_providers_02_delta_flattened/",
+                                "--compare_path", "domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/"
+                              ]
                             }
                           ]
                         }
                       },
-                      "ResultPath": "$.validateCleanFullCQCLocationsResult",
+                      "End": true
+                    }
+                  }
+                }
+              ],
+              "Next": "Clean Full and Validate Flattened Providers"
+            },
+            "Clean Full and Validate Flattened Providers": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Clean Full CQC Providers",
+                  "States": {
+                    "Clean Full CQC Providers": {
+                      "Type": "Pass",
                       "End": true
                     }
                   }
                 },
                 {
-                  "StartAt": "Set Validate Flatten Delta CQC Locations Parameters",
+                  "StartAt": "Validate Build Full flatten CQC Providers",
                   "States": {
-                    "Set Validate Flatten Delta CQC Locations Parameters": {
+                    "Validate Build Full flatten CQC Providers": {
                       "Type": "Pass",
-                      "Result": {
-                        "script": "validate_cqc_locations_2_delta_flatten.py",
-                        "bucket_name_arg": "--bucket_name",
-                        "bucket_name": "${dataset_bucket_name}",
-                        "source_path_arg": "--source_path",
-                        "source_path": "domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
-                        "reports_path_arg": "--reports_path",
-                        "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_02_delta_flattened/",
-                        "compare_path_arg": "--compare_path",
-                        "compare_path": "domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
+                      "End": true
+                    }
+                  }
+                }
+              ],
+              "Next": "Validate Clean Full CQC Providers"
+            },
+            "Validate Clean Full CQC Providers": {
+              "Type": "Pass",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Flatten Delta CQC Locations",
+          "States": {
+            "Flatten Delta CQC Locations": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${cqc_api_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${cqc_api_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "cqc-api-container",
+                      "Command": [
+                        "cqc_locations_2_delta_flatten.py",
+                        "--cqc_locations_api_delta_source", "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/",
+                        "--cqc_locations_flattened_destination", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "Next": "Build Full and Validate Flattened Locations"
+            },
+            "Build Full and Validate Flattened Locations": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Build Full flatten CQC Locations",
+                  "States": {
+                    "Build Full flatten CQC Locations": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${cqc_api_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${cqc_api_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command": [
+                                "convert_delta_to_full.py",
+                                "--delta_source", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
+                                "--full_destination", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/",
+                                "--dataset", "locations"
+                              ]
+                            }
+                          ]
+                        }
                       },
-                      "Next": "Validate Flatten Delta CQC Locations"
-                    },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate Flatten Delta CQC Locations",
+                  "States": {
                     "Validate Flatten Delta CQC Locations": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
@@ -283,12 +213,147 @@
                           "ContainerOverrides": [
                             {
                               "Name": "cqc-api-container",
-                              "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path, $.compare_path_arg, $.compare_path)"
+                              "Command": [
+                                "validate_cqc_locations_2_delta_flatten.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
+                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_02_delta_flattened/",
+                                "--compare_path", "domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
+                              ]
                             }
                           ]
                         }
                       },
-                      "ResultPath": "$.validateFlattenDeltaCQCLocationsResult",
+                      "End": true
+                    }
+                  }
+                }
+              ],
+              "Next": "Clean Full and Validate Flattened Locations"
+            },
+            "Clean Full and Validate Flattened Locations": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Clean Full CQC Locations",
+                  "States": {
+                    "Clean Full CQC Locations": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${cqc_api_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${cqc_api_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command": [
+                                "cqc_locations_4_full_clean.py",
+                                "--cqc_locations_full_flattened_source", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/",
+                                "--ons_postcode_directory_source", "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
+                                "--cqc_registered_locations_cleaned_destination", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/",
+                                "--cqc_full_snapshot_destination", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/",
+                                "--manual_postcode_corrections_source", "${dataset_bucket_uri}/domain=CQC/dataset=postcode_corrections/manual_postcode_corrections.csv"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate Build Full flatten CQC Locations",
+                  "States": {
+                    "Validate Build Full flatten CQC Locations": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${cqc_api_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${cqc_api_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command": [
+                                "validate_cqc_locations_3_full_flattened.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=CQC_delta/dataset=cqc_locations_03_full_flattened/",
+                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_03_full_flattened/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                }
+              ],
+              "Next": "Validate Full Locations"
+            },
+            "Validate Full Locations": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Validate Full Clean Registered CQC Locations",
+                  "States": {
+                    "Validate Full Clean Registered CQC Locations": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${cqc_api_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": [
+                              "${cqc_api_security_group_id}"
+                            ],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command": [
+                                "validate_cqc_locations_4_full_clean.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/",
+                                "--reports_path", "data_validation_reports/dataset=data_validation_reports_cqc_locations_04_full_cleaned_registered/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate Latest Snapshot CQC Locations",
+                  "States": {
+                    "Validate Latest Snapshot CQC Locations": {
+                      "Type": "Pass",
                       "End": true
                     }
                   }
