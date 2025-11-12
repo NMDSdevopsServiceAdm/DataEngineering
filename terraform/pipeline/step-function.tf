@@ -41,8 +41,8 @@ resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
   })
 
   logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
+    log_destination        = "${aws_cloudwatch_log_group.state_machines_2.arn}:*"
+    include_execution_data = false
     level                  = "ERROR"
   }
 
@@ -66,7 +66,7 @@ resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
   })
 
   logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    log_destination        = "${aws_cloudwatch_log_group.state_machines_2.arn}:*"
     include_execution_data = true
     level                  = "ERROR"
   }
@@ -192,7 +192,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
 
   logging_configuration {
     log_destination        = "${aws_cloudwatch_log_group.state_machines_2.arn}:*"
-    include_execution_data = true
+    include_execution_data = false
     level                  = "ERROR"
   }
 
@@ -210,7 +210,7 @@ resource "aws_cloudwatch_log_group" "state_machines" {
 
 resource "aws_cloudwatch_log_group" "state_machines_2" {
   name_prefix       = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines-2"
-  retention_in_days = 14
+  retention_in_days = 7
 }
 
 resource "aws_iam_role" "step_function_iam_role" {
