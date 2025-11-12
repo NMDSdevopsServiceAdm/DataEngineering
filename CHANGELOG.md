@@ -135,6 +135,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed all CQC jobs, utils and tests no longer being used
 
+- Updated input parameter for the flatten CQC ratings job. Ratings columns are now retrieved from the raw data and joined with the latest locations snapshot, which is the new input source for the job.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
