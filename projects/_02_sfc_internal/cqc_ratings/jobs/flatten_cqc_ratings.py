@@ -29,17 +29,17 @@ from utils.value_labels.cqc_ratings.label_dictionary import (
     unknown_ratings_labels_dict as UnknownRatings,
 )
 
-cqc_location_columns = [
+delta_columns = [
     CQCL.location_id,
     Keys.import_date,
-    Keys.year,
-    Keys.month,
-    Keys.day,
     CQCL.current_ratings,
     CQCL.historic_ratings,
     CQCL.assessment,
+]
+
+snapshot_columns = [
+    CQCL.location_id,
     CQCL.registration_status,
-    CQCL.type,
 ]
 
 ascwds_workplace_columns = [
@@ -53,30 +53,38 @@ ascwds_workplace_columns = [
 
 
 def main(
-    cqc_location_source: str,
+    cqc_full_snapshot_source: str,
+    cqc_locations_api_delta_source: str,
     ascwds_workplace_source: str,
     cqc_ratings_destination: str,
     benchmark_ratings_destination: str,
 ):
-    cqc_location_df = utils.read_from_parquet(
-        cqc_location_source, cqc_location_columns, LOCATION_SCHEMA
+    cqc_latest_full = utils.read_from_parquet(
+        cqc_full_snapshot_source, snapshot_columns
     )
+    cqc_delta_raw = utils.read_from_parquet(
+        cqc_locations_api_delta_source,
+        delta_columns,
+        LOCATION_SCHEMA,
+    )
+    cqc_latest_delta_raw = keep_latest_per_key(
+        cqc_delta_raw, CQCL.location_id, Keys.import_date
+    )
+
+    cqc_ratings_df = cqc_latest_full.join(
+        cqc_latest_delta_raw, on=[CQCL.location_id], how="left"
+    )
+
     ascwds_workplace_df = utils.read_from_parquet(
         ascwds_workplace_source, ascwds_workplace_columns
     )
-
-    cqc_location_df = filter_to_first_import_of_most_recent_month(cqc_location_df)
     ascwds_workplace_df = filter_to_first_import_of_most_recent_month(
         ascwds_workplace_df
     )
 
-    cqc_location_df = utils.select_rows_with_value(
-        cqc_location_df, CQCL.type, LocationType.social_care_identifier
-    )
-
-    current_ratings_df = prepare_current_ratings(cqc_location_df)
-    historic_ratings_df = prepare_historic_ratings(cqc_location_df)
-    assessment_ratings_df = prepare_assessment_ratings(cqc_location_df)
+    current_ratings_df = prepare_current_ratings(cqc_ratings_df)
+    historic_ratings_df = prepare_historic_ratings(cqc_ratings_df)
+    assessment_ratings_df = prepare_assessment_ratings(cqc_ratings_df)
 
     raise_error_when_assessment_df_contains_overall_data(assessment_ratings_df)
 
@@ -110,6 +118,31 @@ def main(
         benchmark_ratings_df,
         benchmark_ratings_destination,
         mode="overwrite",
+    )
+
+
+def keep_latest_per_key(df: DataFrame, key_col: str, order_col: str) -> DataFrame:
+    """
+    Retains only the latest row for each unique key in a DataFrame based on a specified ordering column.
+
+    This function applies a window function partitioned by `key_col` and ordered descending by `order_col`.
+    It assigns row numbers within each partition and filters to keep only the row with row number 1,
+    effectively returning the latest row per key.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        key_col (str): The column name to partition by (e.g., 'location_id').
+        order_col (str): The column name used to determine the latest row (e.g., 'import_date'). The row with the highest value in this column per key is kept.
+
+    Returns:
+        DataFrame: A DataFrame containing only the latest row per key, with the `row_num` column removed.
+
+    """
+    window = Window.partitionBy(key_col).orderBy(F.desc(order_col))
+    return (
+        df.withColumn("row_num", F.row_number().over(window))
+        .filter(F.col("row_num") == 1)
+        .drop("row_num")
     )
 
 
@@ -828,14 +861,19 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     (
-        cqc_location_source,
+        cqc_full_snapshot_source,
+        cqc_locations_api_delta_source,
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
     ) = utils.collect_arguments(
         (
-            "--cqc_location_source",
-            "Source s3 directory for parquet CQC locations dataset",
+            "--cqc_full_snapshot_source",
+            "Source s3 directory for the latest full snapshot of CQC registered and deregistered locations dataset",
+        ),
+        (
+            "--cqc_locations_api_delta_source",
+            "Source s3 directory for raw CQC locations delta dataset",
         ),
         (
             "--ascwds_workplace_source",
@@ -851,7 +889,8 @@ if __name__ == "__main__":
         ),
     )
     main(
-        cqc_location_source,
+        cqc_full_snapshot_source,
+        cqc_locations_api_delta_source,
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
