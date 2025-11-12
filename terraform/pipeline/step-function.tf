@@ -14,7 +14,7 @@ resource "aws_sfn_state_machine" "run_crawler" {
   definition = templatefile("step-functions/Run-Crawler.json", {})
 
   logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    log_destination        = local.log_groups[each.key_hash % length(local.log_groups)]
     include_execution_data = false
     level                  = "ERROR"
   }
@@ -41,7 +41,7 @@ resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
   })
 
   logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    log_destination        = local.log_groups[each.key_hash % length(local.log_groups)]
     include_execution_data = false
     level                  = "ERROR"
   }
@@ -66,7 +66,7 @@ resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
   })
 
   logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines_2.arn}:*"
+    log_destination        = local.log_groups[each.key_hash % length(local.log_groups)]
     include_execution_data = true
     level                  = "ERROR"
   }
@@ -191,7 +191,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
   })
 
   logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines_2.arn}:*"
+    log_destination        = local.log_groups[each.key_hash % length(local.log_groups)]
     include_execution_data = false
     level                  = "ERROR"
   }
@@ -202,7 +202,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
   ]
 }
 
-
 resource "aws_cloudwatch_log_group" "state_machines" {
   name_prefix       = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines-1"
   retention_in_days = 14
@@ -211,6 +210,19 @@ resource "aws_cloudwatch_log_group" "state_machines" {
 resource "aws_cloudwatch_log_group" "state_machines_2" {
   name_prefix       = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines-2"
   retention_in_days = 7
+}
+
+resource "aws_cloudwatch_log_group" "state_machines_3" {
+  name_prefix       = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines-3"
+  retention_in_days = 7
+}
+
+locals {
+  log_groups = [
+    aws_cloudwatch_log_group.state_machines.arn,
+    aws_cloudwatch_log_group.state_machines_2.arn,
+    aws_cloudwatch_log_group.state_machines_3.arn
+  ]
 }
 
 resource "aws_iam_role" "step_function_iam_role" {
