@@ -135,6 +135,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed all CQC jobs, utils and tests no longer being used
 
+- Removed logging from step functions.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
