@@ -13,12 +13,6 @@ resource "aws_sfn_state_machine" "run_crawler" {
   type       = "STANDARD"
   definition = templatefile("step-functions/Run-Crawler.json", {})
 
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = false
-    level                  = "ERROR"
-  }
-
   depends_on = [
     aws_iam_policy.step_function_iam_policy
   ]
@@ -40,12 +34,6 @@ resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
     trigger_sfc_internal_pipeline_state_machine_arn = aws_sfn_state_machine.sf_pipelines["SfC-Internal"].arn
   })
 
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines_2.arn}:*"
-    include_execution_data = false
-    level                  = "ERROR"
-  }
-
   depends_on = [
     aws_iam_policy.step_function_iam_policy,
     module.datasets_bucket,
@@ -64,12 +52,6 @@ resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
     ingest_cqc_api_state_machine_arn                 = aws_sfn_state_machine.sf_pipelines["Ingest-CQC-API-Delta"].arn
     trigger_workforce_intelligence_state_machine_arn = aws_sfn_state_machine.workforce_intelligence_state_machine.arn
   })
-
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines_3.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
 
   depends_on = [
     aws_iam_policy.step_function_iam_policy,
@@ -190,12 +172,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     model_name        = "non_res_pir"
   })
 
-  logging_configuration {
-    log_destination        = "${local.log_groups[parseint(substr(md5(each.key), 0, 8), 16) % length(local.log_groups)]}:*"
-    include_execution_data = false
-    level                  = "ERROR"
-  }
-
   depends_on = [
     aws_iam_policy.step_function_iam_policy,
     module.datasets_bucket
@@ -203,26 +179,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
 }
 
 resource "aws_cloudwatch_log_group" "state_machines" {
-  name_prefix       = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines-1"
-  retention_in_days = 14
-}
-
-resource "aws_cloudwatch_log_group" "state_machines_2" {
-  name_prefix       = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines-2"
-  retention_in_days = 7
-}
-
-resource "aws_cloudwatch_log_group" "state_machines_3" {
-  name_prefix       = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines-3"
-  retention_in_days = 7
-}
-
-locals {
-  log_groups = [
-    aws_cloudwatch_log_group.state_machines.arn,
-    aws_cloudwatch_log_group.state_machines_2.arn,
-    aws_cloudwatch_log_group.state_machines_3.arn
-  ]
+  name_prefix = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
 }
 
 resource "aws_iam_role" "step_function_iam_role" {
