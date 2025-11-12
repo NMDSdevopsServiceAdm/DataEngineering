@@ -1,9 +1,9 @@
 import unittest
 from unittest.mock import Mock, patch
 
-import projects._01_ingest.cqc_api.fargate.cqc_providers_2_full as job
+import projects._01_ingest.cqc_api.fargate.cqc_providers_3_full_flattened as job
 
-PATCH_PATH = "projects._01_ingest.cqc_api.fargate.cqc_providers_2_full"
+PATCH_PATH = "projects._01_ingest.cqc_api.fargate.cqc_providers_3_full_flattened"
 
 
 class CqcProvidersFullTests(unittest.TestCase):
