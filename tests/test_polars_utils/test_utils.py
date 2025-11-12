@@ -462,13 +462,17 @@ class TestEmptyS3Folder(unittest.TestCase):
         # Given
         paginator = mock_s3_client.return_value.get_paginator.return_value
         paginator.paginate.return_value.search.return_value = [None]
+
         # When
-        with self.assertLogs(level="INFO") as cm:
+        f = io.StringIO()
+        with redirect_stdout(f):
             utils.empty_s3_folder("my-bucket", "some/prefix/")
+        output = f.getvalue()
+
         # Then
         self.assertIn(
             "Skipping emptying folder - no objects matching prefix some/prefix/",
-            cm.output[0],
+            output,
         )
         mock_s3_client.return_value.delete_objects.assert_not_called()
 
@@ -522,16 +526,20 @@ class SendSnsNotificationTests(TestUtils):
     def test_send_sns_notification_raises_clienterror_and_logs_with_wrong_arn(self):
         client = boto3.client("sns", region_name="eu-west-2")
         topic = client.create_topic(Name="test-topic")
-        with self.assertLogs(level="ERROR") as cm:
+
+        f = io.StringIO()
+        with redirect_stdout(f):
             with self.assertRaises(ClientError):
                 utils.send_sns_notification(
                     topic_arn="silly_arn",
                     subject="Test Subject",
                     message="Test Message",
                 )
+        output = f.getvalue()
+
         self.assertIn(
             "There was an error writing to SNS - check your IAM permissions and that you have the right topic ARN",
-            cm.output[1],
+            output,
         )
 
     @mock_aws
@@ -541,16 +549,20 @@ class SendSnsNotificationTests(TestUtils):
     ):
         client = boto3.client("sns", region_name="eu-west-2")
         topic = client.create_topic(Name="test-topic")
-        with self.assertLogs(level="ERROR") as cm:
+
+        f = io.StringIO()
+        with redirect_stdout(f):
             with self.assertRaises(ClientError):
                 utils.send_sns_notification(
                     topic_arn=topic["TopicArn"],
                     subject="Test Subject",
                     message="Test Message",
                 )
+        output = f.getvalue()
+
         self.assertIn(
             "There was an error writing to SNS - check your IAM permissions and that you have the right topic ARN",
-            cm.output[1],
+            output,
         )
 
     def test_parse_args_converts_simple_data_types(self):
