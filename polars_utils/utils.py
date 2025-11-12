@@ -1,5 +1,4 @@
 import argparse
-import logging
 import re
 import uuid
 from datetime import date
@@ -9,12 +8,6 @@ import boto3
 import polars as pl
 import polars.selectors as cs
 from botocore.exceptions import ClientError
-
-util_logger = logging.getLogger(__name__)
-util_logger.setLevel(logging.INFO)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-util_logger.addHandler(logging.StreamHandler())
-util_logger.handlers[0].setFormatter(formatter)
 
 
 def scan_parquet(
@@ -95,7 +88,7 @@ def read_parquet(
             schema=schema,
         )
     else:
-        logging.info("Determining schema from dataset scan")
+        print("Determining schema from dataset scan")
         raw = scan_parquet(source, selected_columns=selected_columns).collect()
 
     if not exclude_complex_types:
@@ -107,23 +100,19 @@ def read_parquet(
 def write_to_parquet(
     df: pl.DataFrame,
     output_path: str | Path,
-    logger: logging.Logger = util_logger,
     append: bool = True,
     partition_cols: list[str] | None = None,
 ) -> None:
     """Writes a Polars DataFrame to a Parquet file.
 
-    If the DataFrame is empty, an informational message is logged, and no file
-    is written. Otherwise, the DataFrame is written to the specified path,
+    If the DataFrame is empty, an informational message is printed, and no file is written.
+    Otherwise, the DataFrame is written to the specified path,
     optionally partitioned by the given keys.
 
     Args:
         df (pl.DataFrame): The Polars DataFrame to write.
         output_path (str | Path): The file path where the Parquet file(s) will be written.
             This must be a directory if append is set to True.
-        logger (logging.Logger): An optional logger instance to use for logging messages.
-            If not provided, a default logger will be used (or you can ensure
-            `util_logger` is globally available).
         append (bool): Whether to append to existing files or overwrite them. Defaults to False.
         partition_cols (list[str] | None): List of columns to partition by (optional - mutually exclusive with append).
 
@@ -132,7 +121,7 @@ def write_to_parquet(
     """
 
     if df.height == 0:
-        logger.info("The provided dataframe was empty. No data was written.")
+        print("The provided dataframe was empty. No data was written.")
         return
 
     if append:
@@ -144,7 +133,7 @@ def write_to_parquet(
 
     if not partition_cols:
         df.write_parquet(output_path)
-        logger.info("Parquet written to {}".format(output_path))
+        print("Parquet written to {}".format(output_path))
     else:
         df.rechunk().write_parquet(
             output_path,
@@ -157,7 +146,6 @@ def sink_to_parquet(
     lazy_df: pl.LazyFrame,
     output_path: str | Path,
     partition_cols: list[str] | None = None,
-    logger: logging.Logger = None,
     append: bool = True,
 ) -> None:
     """
@@ -167,7 +155,6 @@ def sink_to_parquet(
         lazy_df (pl.LazyFrame): The Polars LazyFrame to write.
         output_path (str | Path): Directory path to sink Parquet files.
         partition_cols (list[str] | None): Columns to partition by. Defaults to None.
-        logger (logging.Logger): Optional logger for messages. Defaults to None.
         append (bool): Whether to append (True) or overwrite (False). Defaults to True.
 
     Returns:
@@ -176,11 +163,8 @@ def sink_to_parquet(
     Raises:
         Exception: If writing the LazyFrame to Parquet fails, e.g., due to file system errors, invalid paths, or issues with the LazyFrame.
     """
-    if logger is None:
-        logger = logging.getLogger(__name__)
-
     if lazy_df is None or len(lazy_df.collect_schema().names()) == 0:
-        logger.info("The provided LazyFrame was empty. No data was written.")
+        print("The provided LazyFrame was empty. No data was written.")
         return
 
     if append:
@@ -205,18 +189,16 @@ def sink_to_parquet(
                 by=partition_cols,
             )
             lazy_df.sink_parquet(path=path, mkdir=True, engine="streaming")
-            logger.info(
+            print(
                 f"LazyFrame sunk to Parquet at {output_path} partitioned by {partition_cols}"
             )
         else:
             lazy_df.sink_parquet(
                 f"{output_path}file.parquet", mkdir=True, engine="streaming"
             )
-            logger.info(
-                f"LazyFrame sunk to Parquet at {output_path} without partitioning"
-            )
+            print(f"LazyFrame sunk to Parquet at {output_path} without partitioning")
     except Exception as e:
-        logger.error(f"Failed to sink LazyFrame to Parquet: {e}")
+        print(f"ERROR: Failed to sink LazyFrame to Parquet: {e}")
         raise
 
 
@@ -337,11 +319,11 @@ def empty_s3_folder(bucket_name: str, prefix: str) -> None:
             to_delete.append({"Key": item["Key"]})
 
     if not to_delete:
-        logging.info(f"Skipping emptying folder - no objects matching prefix {prefix}")
+        print(f"Skipping emptying folder - no objects matching prefix {prefix}")
         return
 
     keys_str = "\n".join([obj["Key"] for obj in to_delete])
-    logging.info(f"Deleting {len(to_delete):} objects:\n{keys_str}")
+    print(f"Deleting {len(to_delete):} objects:\n{keys_str}")
     s3_client.delete_objects(Bucket=bucket_name, Delete={"Objects": to_delete})
 
 
@@ -366,9 +348,9 @@ def send_sns_notification(
     try:
         sns_client.publish(TopicArn=topic_arn, Subject=subject, Message=message)
     except ClientError as e:
-        util_logger.error(e)
-        util_logger.error(
-            "There was an error writing to SNS - check your IAM permissions and that you have the right topic ARN"
+        print(f"ERROR: {e}")
+        print(
+            "ERROR: There was an error writing to SNS - check your IAM permissions and that you have the right topic ARN"
         )
         raise
 

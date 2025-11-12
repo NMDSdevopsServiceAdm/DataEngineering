@@ -1,4 +1,4 @@
-from polars_utils import logger, raw_data_adjustments, utils
+from polars_utils import raw_data_adjustments, utils
 from polars_utils.cleaning_utils import column_to_date
 from projects._01_ingest.cqc_api.fargate.utils import (
     locations_2_delta_flatten_utils as fUtils,
@@ -14,8 +14,6 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-
-logger = logger.get_logger(__name__)
 
 cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -52,7 +50,7 @@ def main(
         schema=POLARS_LOCATION_SCHEMA,
         selected_columns=cqc_location_cols_to_import,
     )
-    logger.info("CQC Location LazyFrame read in")
+    print("CQC Location LazyFrame read in")
 
     cqc_lf = cqc_lf.filter(raw_data_adjustments.is_valid_location())
 
@@ -79,14 +77,13 @@ def main(
     utils.sink_to_parquet(
         cqc_lf,
         cqc_locations_flattened_destination,
-        logger=logger,
         partition_cols=cqc_partition_keys,
         append=False,
     )
 
 
 if __name__ == "__main__":
-    logger.info("Running Flatten CQC Locations job")
+    print("Running Flatten CQC Locations job")
 
     args = utils.get_args(
         (
@@ -104,4 +101,4 @@ if __name__ == "__main__":
         cqc_locations_flattened_destination=args.cqc_locations_flattened_destination,
     )
 
-    logger.info("Finished Flatten CQC Locations job")
+    print("Finished Flatten CQC Locations job")

@@ -1,17 +1,7 @@
-import logging
-import sys
-
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as JRUtils
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -88,7 +78,6 @@ def main(
         lazy_df=estimated_ind_cqc_filled_posts_by_job_role_lf,
         output_path=estimated_ind_cqc_filled_posts_by_job_role_destination,
         partition_cols=partition_keys,
-        logger=logger,
         append=False,
     )
 

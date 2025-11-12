@@ -1,22 +1,14 @@
-from enum import Enum
-import boto3
-from botocore.exceptions import ClientError
-from projects._03_independent_cqc._05_model.utils.model import Model
-import pickle
 import io
 import json
-from typing import Literal
 import os
-import logging
-import sys
+import pickle
+from enum import Enum
+from typing import Literal
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+import boto3
+from botocore.exceptions import ClientError
 
+from projects._03_independent_cqc._05_model.utils.model import Model
 
 REGION = os.environ.get("AWS_REGION", "eu-west-2")
 
@@ -38,7 +30,7 @@ class ModelVersionManager:
 
     def __init__(self, s3_bucket, s3_prefix, param_store_name, default_patch=False):
         if param_store_name[0] != "/":
-            logger.info(
+            print(
                 "Parameter store name must be fully-qualified, including leading slash, e.g. /my/model/version"
             )
             raise ValueError("Parameter store name must be fully-qualified")
@@ -68,7 +60,7 @@ class ModelVersionManager:
             raw_value = json.loads(response["Parameter"]["Value"])
             return raw_value["Current Version"]
         except ClientError as e:
-            logger.error(f"Boto3 Error while retrieving parameter: {e}")
+            print(f"ERROR: Boto3 Error while retrieving parameter: {e}")
             raise
 
     def update_parameter_store(self, new_version: str) -> None:
@@ -90,11 +82,11 @@ class ModelVersionManager:
                 Type="String",
                 Overwrite=True,
             )
-            logger.info(
+            print(
                 f"Successfully updated Parameter Store with new version: {new_version}"
             )
         except Exception as e:
-            logger.error(f"Error updating Parameter Store: {e}")
+            print(f"ERROR: Error updating Parameter Store: {e}")
             raise
 
     def increment_version(self, current_version: str, change_type: ChangeType) -> str:
@@ -146,12 +138,12 @@ class ModelVersionManager:
             new_version = self.increment_version(current_version, change_type)
             return new_version
         except (self.ssm_client.exceptions.ParameterNotFound, ClientError):
-            logger.error(
-                f"Parameter '{self.param_store_name}' not found. Initializing to 0.1.0."
+            print(
+                f"ERROR: Parameter '{self.param_store_name}' not found. Initializing to 0.1.0."
             )
             return "0.1.0"
         except ValueError as e:
-            logger.error(f"Error getting new version: {e}")
+            print(f"ERROR: Error getting new version: {e}")
             raise
 
     def save_model(self, model: Model, new_version: str) -> str:
@@ -181,11 +173,11 @@ class ModelVersionManager:
             "Is this a \n1. Major?\n2. Minor?\n3. Patch change?\n(1/2/3): "
         ).lower()
         if selection not in ["1", "2", "3"] and prompt_num == 0:
-            logger.error("Invalid change type. Try again, choose 1, 2 or 3.")
+            print("ERROR: Invalid change type. Try again, choose 1, 2 or 3.")
             repeat_result = self.prompt_change(prompt_num=1)
             return repeat_result
         elif selection not in ["1", "2", "3"]:
-            logger.error("Invalid change type. Model not saved.")
+            print("ERROR: Invalid change type. Model not saved.")
             raise ValueError("Invalid change type.")
         match selection:
             case "1":
@@ -211,7 +203,7 @@ class ModelVersionManager:
                 "Do you want to save this new model version? (only yes to save): "
             ).lower()
             if should_save != "yes":
-                logger.error("Model not saved. Exiting.")
+                print("ERROR: Model not saved. Exiting.")
                 return
             change_type = self.prompt_change()
 
@@ -219,6 +211,6 @@ class ModelVersionManager:
         loc = self.save_model(model, new_version)
         model.set_version(new_version)
         self.storage_location_uri = loc
-        logger.info(f"Saved model to {loc}")
+        print(f"Saved model to {loc}")
         self.update_parameter_store(new_version)
         self.current_version = new_version

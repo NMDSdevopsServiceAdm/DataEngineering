@@ -1,6 +1,6 @@
 import polars as pl
 
-from polars_utils import logger, utils
+from polars_utils import utils
 from polars_utils.cleaning_utils import column_to_date
 from projects._01_ingest.cqc_api.fargate.utils import locations_4_clean_utils as cUtils
 from projects._01_ingest.cqc_api.fargate.utils import postcode_matcher as pmUtils
@@ -22,8 +22,6 @@ from utils.column_values.categorical_column_values import (
 )
 from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 
-logger = logger.get_logger(__name__)
-
 cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 ons_cols_to_import = [
@@ -44,7 +42,7 @@ def main(
     cqc_lf = utils.scan_parquet(
         cqc_locations_full_flattened_source,
     )
-    logger.info("Full Flattened CQC Location LazyFrame read in")
+    print("Full Flattened CQC Location LazyFrame read in")
 
     cqc_lf = cqc_lf.filter(
         pl.col(CQCLClean.type) == LocationType.social_care_identifier
@@ -105,7 +103,7 @@ def main(
         ons_postcode_directory_source,
         selected_columns=ons_cols_to_import,
     )
-    logger.info("ONS Postcode Directory LazyFrame read in")
+    print("ONS Postcode Directory LazyFrame read in")
 
     cqc_reg_lf = pmUtils.run_postcode_matching(
         cqc_reg_lf,
@@ -116,14 +114,13 @@ def main(
     utils.sink_to_parquet(
         cqc_reg_lf,
         cqc_registered_locations_cleaned_destination,
-        logger=logger,
         partition_cols=cqc_partition_keys,
         append=False,
     )
 
 
 if __name__ == "__main__":
-    logger.info("Running Clean Full CQC Locations job")
+    print("Running Clean Full CQC Locations job")
 
     args = utils.get_args(
         (
@@ -156,4 +153,4 @@ if __name__ == "__main__":
         manual_postcode_corrections_source=args.manual_postcode_corrections_source,
     )
 
-    logger.info("Finished Clean Full CQC Locations job")
+    print("Finished Clean Full CQC Locations job")

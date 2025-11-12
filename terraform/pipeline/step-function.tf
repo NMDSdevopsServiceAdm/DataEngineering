@@ -13,12 +13,6 @@ resource "aws_sfn_state_machine" "run_crawler" {
   type       = "STANDARD"
   definition = templatefile("step-functions/Run-Crawler.json", {})
 
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
-
   depends_on = [
     aws_iam_policy.step_function_iam_policy
   ]
@@ -40,12 +34,6 @@ resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
     trigger_sfc_internal_pipeline_state_machine_arn = aws_sfn_state_machine.sf_pipelines["SfC-Internal"].arn
   })
 
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
-
   depends_on = [
     aws_iam_policy.step_function_iam_policy,
     module.datasets_bucket,
@@ -64,12 +52,6 @@ resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
     ingest_cqc_api_state_machine_arn                 = aws_sfn_state_machine.sf_pipelines["Ingest-CQC-API-Delta"].arn
     trigger_workforce_intelligence_state_machine_arn = aws_sfn_state_machine.workforce_intelligence_state_machine.arn
   })
-
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
 
   depends_on = [
     aws_iam_policy.step_function_iam_policy,
@@ -189,12 +171,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     preprocessor_name = "preprocess_non_res_pir"
     model_name        = "non_res_pir"
   })
-
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
 
   depends_on = [
     aws_iam_policy.step_function_iam_policy,

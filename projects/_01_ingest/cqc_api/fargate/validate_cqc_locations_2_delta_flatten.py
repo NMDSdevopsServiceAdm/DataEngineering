@@ -3,7 +3,6 @@ import sys
 import pointblank as pb
 
 from polars_utils import raw_data_adjustments, utils
-from polars_utils.logger import get_logger
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -15,9 +14,6 @@ compare_columns_to_import = [
     Keys.import_date,
     CQCLClean.location_id,
 ]
-
-
-logger = get_logger(__name__)
 
 
 def main(
@@ -66,7 +62,7 @@ def main(
 
 
 if __name__ == "__main__":
-    logger.info(f"Validation script called with parameters: {sys.argv}")
+    print(f"Validation script called with parameters: {sys.argv}")
 
     args = utils.get_args(
         ("--bucket_name", "S3 bucket for source dataset and validation report"),
@@ -77,7 +73,7 @@ if __name__ == "__main__":
             "The filepath to a dataset to compare against for expected size",
         ),
     )
-    logger.info(f"Starting validation for {args.source_path}")
+    print(f"Starting validation for {args.source_path}")
 
     main(args.bucket_name, args.source_path, args.reports_path, args.compare_path)
-    logger.info(f"Validation of {args.source_path} complete")
+    print(f"Validation of {args.source_path} complete")

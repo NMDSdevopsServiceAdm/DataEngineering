@@ -1,10 +1,11 @@
 import argparse
-import logging
+import io
 import os
 import shutil
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from datetime import date, datetime
 from glob import glob
 from pathlib import Path
@@ -24,7 +25,6 @@ PATCH_PATH = "polars_utils.utils"
 
 
 class TestUtils(unittest.TestCase):
-    logger = logging.getLogger(__name__)
 
     def setUp(self):
         self.temp_dir = Path(tempfile.mkdtemp())
@@ -162,33 +162,41 @@ class TestWriteParquet(TestUtils):
         df: pl.DataFrame = pl.DataFrame({})
         # destination: str = os.path.join(self.temp_dir, "test.parquet")
         destination = self.temp_dir / "test.parquet"
-        with self.assertLogs(self.logger) as cm:
-            utils.write_to_parquet(df, destination, self.logger, append=False)
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            utils.write_to_parquet(df, destination, append=False)
+        output = f.getvalue()
+
         self.assertFalse(destination.exists())
         self.assertTrue(
-            "The provided dataframe was empty. No data was written." in cm.output[0]
+            "The provided dataframe was empty. No data was written." in output
         )
 
     def test_write_parquet_writes_simple_dataframe(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
         destination = self.temp_dir / "test.parquet"
-        with self.assertLogs(self.logger) as cm:
-            utils.write_to_parquet(df, destination, self.logger, append=False)
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            utils.write_to_parquet(df, destination, append=False)
+        output = f.getvalue()
+
         self.assertTrue(Path(destination).exists())
-        self.assertTrue(f"Parquet written to {destination}" in cm.output[0])
+        self.assertTrue(f"Parquet written to {destination}" in output)
 
     def test_write_parquet_writes_with_append(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
         destination: str = str(self.temp_dir) + "/"
-        utils.write_to_parquet(df, destination, self.logger)
-        utils.write_to_parquet(df, destination, self.logger)
+        utils.write_to_parquet(df, destination)
+        utils.write_to_parquet(df, destination)
         self.assertEqual(len(glob(destination + "/**", recursive=True)), 3)
 
     def test_write_parquet_writes_with_overwrite(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
         destination = self.temp_dir / "test.parquet"
-        utils.write_to_parquet(df, destination, self.logger, append=False)
-        utils.write_to_parquet(df, destination, self.logger, append=False)
+        utils.write_to_parquet(df, destination, append=False)
+        utils.write_to_parquet(df, destination, append=False)
 
         files = glob(os.path.join(self.temp_dir, "*.parquet"))
         self.assertEqual(len(files), 1)
@@ -198,20 +206,22 @@ class TestSinkParquet(TestUtils):
     def test_sink_parquet_does_nothing_for_empty_lazyframe(self):
         lazy_df: pl.LazyFrame = pl.DataFrame({}).lazy()
         destination = self.temp_dir / "test.parquet"
-        with self.assertLogs(self.logger) as cm:
-            utils.sink_to_parquet(
-                lazy_df, destination, None, logger=self.logger, append=False
-            )
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            utils.sink_to_parquet(lazy_df, destination, None, append=False)
+        output = f.getvalue()
+
         self.assertFalse(destination.exists())
         self.assertTrue(
-            "The provided LazyFrame was empty. No data was written." in cm.output[0]
+            "The provided LazyFrame was empty. No data was written." in output
         )
 
     def test_sink_parquet_writes_simple_lazyframe(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
         lazy_df = df.lazy()
         destination: str = str(self.temp_dir) + "/"
-        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=True)
+        utils.sink_to_parquet(lazy_df, destination, append=True)
         files = glob(os.path.join(str(destination), "*.parquet"))
         self.assertEqual(len(files), 1)
 
@@ -219,8 +229,8 @@ class TestSinkParquet(TestUtils):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
         lazy_df = df.lazy()
         destination: str = str(self.temp_dir) + "/"
-        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=True)
-        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=True)
+        utils.sink_to_parquet(lazy_df, destination, append=True)
+        utils.sink_to_parquet(lazy_df, destination, append=True)
         files = glob(os.path.join(destination, "*.parquet"))
         self.assertEqual(len(files), 2)
 
@@ -228,8 +238,8 @@ class TestSinkParquet(TestUtils):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
         lazy_df = df.lazy()
         destination = self.temp_dir / "test.parquet"
-        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=False)
-        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=False)
+        utils.sink_to_parquet(lazy_df, destination, append=False)
+        utils.sink_to_parquet(lazy_df, destination, append=False)
 
         files = glob(os.path.join(self.temp_dir, "*.parquet"))
         self.assertEqual(len(files), 1)
@@ -244,7 +254,6 @@ class TestSinkParquet(TestUtils):
             lazy_df,
             destination,
             partition_cols=["part"],
-            logger=self.logger,
             append=False,
         )
         partitions = [d.name for d in destination.iterdir() if d.is_dir()]
