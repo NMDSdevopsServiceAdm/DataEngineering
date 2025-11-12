@@ -191,7 +191,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
   })
 
   logging_configuration {
-    log_destination        = local.log_groups[tonumber(substr(md5(each.key), 0, 8)) % length(local.log_groups)]
+    log_destination        = local.log_groups[parseint(substr(md5(each.key), 0, 8), 16) % length(local.log_groups)]
     include_execution_data = false
     level                  = "ERROR"
   }
