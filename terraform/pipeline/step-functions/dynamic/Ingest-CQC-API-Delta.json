@@ -18,7 +18,7 @@
                 "endDate.$": "$$.State.EnteredTime"
               },
               "ResultSelector": {
-                "script": "cqc_providers_1_api_delta_download.py",
+                "script": "cqc_providers_1_delta_api_download.py",
                 "dest_arg": "--destination_prefix",
                 "dest_value": "${dataset_bucket_uri}",
                 "start_arg": "--start_timestamp",

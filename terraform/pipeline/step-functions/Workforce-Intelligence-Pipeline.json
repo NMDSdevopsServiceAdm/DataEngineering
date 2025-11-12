@@ -117,7 +117,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::states:startExecution",
               "Parameters": {
-                "StateMachineArn": "${trigger_sfc_internal_pipeline_state_machine_arn}",
+                "StateMachineArn": "${sfc_internal_pipeline_state_machine_arn}",
                 "Input": {
                   "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
                 }
@@ -133,7 +133,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::states:startExecution",
               "Parameters": {
-                "StateMachineArn": "${trigger_ind_cqc_pipeline_state_machine_arn}",
+                "StateMachineArn": "${ind_cqc_pipeline_state_machine_arn}",
                 "Input": {
                   "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
                 }
