@@ -2,18 +2,22 @@ import sys
 
 import pointblank as pb
 
-from polars_utils import raw_data_adjustments, utils
+from polars_utils import utils
+from polars_utils.logger import get_logger
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
-)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CQCP,
+)
 
 compare_columns_to_import = [
     Keys.import_date,
-    CQCLClean.location_id,
+    CQCP.provider_id,
 ]
+
+
+logger = get_logger(__name__)
 
 
 def main(
@@ -36,9 +40,7 @@ def main(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=compare_columns_to_import,
     )
-    expected_row_count = compare_df.filter(
-        raw_data_adjustments.is_valid_location()
-    ).height
+    expected_row_count = compare_df.height
 
     validation = (
         pb.Validate(
@@ -54,15 +56,15 @@ def main(
             brief=f"Flattened file has {source_df.height} rows but expecting {expected_row_count} rows",
         )
         # complete columns
-        .col_vals_not_null([CQCLClean.location_id, Keys.import_date])
+        .col_vals_not_null([CQCP.provider_id, Keys.import_date])
         # index columns
-        .rows_distinct([CQCLClean.location_id, Keys.import_date]).interrogate()
+        .rows_distinct([CQCP.provider_id, Keys.import_date]).interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
 
 
 if __name__ == "__main__":
-    print(f"Validation script called with parameters: {sys.argv}")
+    logger.info(f"Validation script called with parameters: {sys.argv}")
 
     args = utils.get_args(
         ("--bucket_name", "S3 bucket for source dataset and validation report"),
@@ -73,7 +75,7 @@ if __name__ == "__main__":
             "The filepath to a dataset to compare against for expected size",
         ),
     )
-    print(f"Starting validation for {args.source_path}")
+    logger.info(f"Starting validation for {args.source_path}")
 
     main(args.bucket_name, args.source_path, args.reports_path, args.compare_path)
-    print(f"Validation of {args.source_path} complete")
+    logger.info(f"Validation of {args.source_path} complete")

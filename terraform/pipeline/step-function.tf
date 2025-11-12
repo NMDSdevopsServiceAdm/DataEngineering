@@ -24,14 +24,14 @@ resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/Workforce-Intelligence-Pipeline.json", {
-    dataset_bucket_uri                              = module.datasets_bucket.bucket_uri
-    dataset_bucket_name                             = module.datasets_bucket.bucket_name
-    data_validation_reports_crawler_name            = module.data_validation_reports_crawler.crawler_name
-    pipeline_failure_lambda_function_arn            = aws_lambda_function.error_notification_lambda.arn
-    transform_ascwds_state_machine_arn              = aws_sfn_state_machine.sf_pipelines["Transform-ASCWDS-Data"].arn
-    transform_cqc_data_state_machine_arn            = aws_sfn_state_machine.sf_pipelines["Transform-CQC-Data"].arn
-    trigger_ind_cqc_pipeline_state_machine_arn      = aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
-    trigger_sfc_internal_pipeline_state_machine_arn = aws_sfn_state_machine.sf_pipelines["SfC-Internal"].arn
+    dataset_bucket_uri                      = module.datasets_bucket.bucket_uri
+    dataset_bucket_name                     = module.datasets_bucket.bucket_name
+    data_validation_reports_crawler_name    = module.data_validation_reports_crawler.crawler_name
+    pipeline_failure_lambda_function_arn    = aws_lambda_function.error_notification_lambda.arn
+    transform_ascwds_state_machine_arn      = aws_sfn_state_machine.sf_pipelines["Transform-ASCWDS-Data"].arn
+    transform_cqc_data_state_machine_arn    = aws_sfn_state_machine.sf_pipelines["Transform-CQC-Data"].arn
+    ind_cqc_pipeline_state_machine_arn      = aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
+    sfc_internal_pipeline_state_machine_arn = aws_sfn_state_machine.sf_pipelines["SfC-Internal"].arn
   })
 
   depends_on = [
@@ -47,10 +47,10 @@ resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/CQC-And-ASCWDS-Orchestrator.json", {
-    dataset_bucket_uri                               = module.datasets_bucket.bucket_uri
-    dataset_bucket_name                              = module.datasets_bucket.bucket_name
-    ingest_cqc_api_state_machine_arn                 = aws_sfn_state_machine.sf_pipelines["Ingest-CQC-API-Delta"].arn
-    trigger_workforce_intelligence_state_machine_arn = aws_sfn_state_machine.workforce_intelligence_state_machine.arn
+    dataset_bucket_uri                       = module.datasets_bucket.bucket_uri
+    dataset_bucket_name                      = module.datasets_bucket.bucket_name
+    ingest_cqc_api_state_machine_arn         = aws_sfn_state_machine.sf_pipelines["Ingest-CQC-API-Delta"].arn
+    workforce_intelligence_state_machine_arn = aws_sfn_state_machine.workforce_intelligence_state_machine.arn
   })
 
   depends_on = [
@@ -140,7 +140,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     cqc_crawler_name                     = module.cqc_crawler.crawler_name
     cqc_crawler_delta_name               = module.cqc_crawler_delta.crawler_name # TODO: remove and point back to main crawler
     dpr_crawler_name                     = module.dpr_crawler.crawler_name
-    data_engineering_ascwds_crawler_name = module.ascwds_crawler.crawler_name
     ons_crawler_name                     = module.ons_crawler.crawler_name
     sfc_crawler_name                     = module.sfc_crawler.crawler_name
     ct_crawler_name                      = module.capacity_tracker_crawler.crawler_name
@@ -322,10 +321,9 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         "Resource" : [
           module.cqc-api.task_arn,
           module._03_independent_cqc.task_arn,
-          aws_ecs_cluster.polars_cluster.arn,
-          aws_ecs_cluster.polars_cluster.arn,
           module.model_preprocess.task_arn,
-          module.model_retrain.task_arn
+          module.model_retrain.task_arn,
+          aws_ecs_cluster.polars_cluster.arn
         ]
       },
       {
@@ -336,10 +334,9 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module.cqc-api.task_role_arn,
           module.model_retrain.task_exc_role_arn,
           module.model_retrain.task_role_arn,
-          module.model_preprocess.task_role_arn,
           module.model_preprocess.task_exc_role_arn,
+          module.model_preprocess.task_role_arn,
           module._03_independent_cqc.task_exc_role_arn,
-          module.cqc-api.task_role_arn,
           module._03_independent_cqc.task_role_arn
         ],
         Condition = {
