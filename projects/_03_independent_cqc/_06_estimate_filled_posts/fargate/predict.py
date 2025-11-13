@@ -1,7 +1,6 @@
 import json
 import os
 import pickle
-import sys
 
 import boto3
 import polars as pl

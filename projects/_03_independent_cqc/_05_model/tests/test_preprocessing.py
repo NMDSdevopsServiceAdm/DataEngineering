@@ -12,11 +12,8 @@ import polars.testing as pl_testing
 from botocore.exceptions import ClientError
 from polars.exceptions import ColumnNotFoundError
 
-from projects._03_independent_cqc._05_model.fargate.preprocessing.preprocessing import (
-    main_preprocessor,
-    preprocess_non_res_pir,
-    preprocess_remove_nulls,
-    validate_model_definition,
+from projects._03_independent_cqc._05_model.fargate.preprocessing import (
+    preprocessing as job,
 )
 from projects._03_independent_cqc._05_model.utils.model import ModelType
 
@@ -58,7 +55,7 @@ class TestPreprocessing(unittest.TestCase):
             "a": 1,
             "b": 2,
         }
-        main_preprocessor("dummy_model", preprocessor)
+        job.main_preprocessor("dummy_model", preprocessor)
         preprocessor.assert_called_once_with(**expected_kwargs)
 
     @patch.dict(f"{PATCH_STEM}.model_definitions", fake_definition)
@@ -70,7 +67,7 @@ class TestPreprocessing(unittest.TestCase):
                 preprocessor = DummyProcessor()
                 preprocessor.__str__.return_value = "DummyProcessor at xyz"
                 preprocessor.side_effect = FileNotFoundError("foo")
-                main_preprocessor("dummy_model", preprocessor)
+                job.main_preprocessor("dummy_model", preprocessor)
         output = f.getvalue()
         self.assertIn("foo", output)
         self.assertIn(
@@ -80,25 +77,25 @@ class TestPreprocessing(unittest.TestCase):
 
     def test_validate_raises_value_error_if_model_id_not_present(self):
         with self.assertRaises(ValueError):
-            validate_model_definition("silly_model", fake_definition)
+            job.validate_model_definition("silly_model", fake_definition)
 
     def test_validate_raises_value_error_if_no_processor_kwargs_present(self):
         with self.assertRaises(ValueError):
             sample_definition = fake_definition.copy()
             sample_definition["dummy_model"].pop("preprocessor_kwargs")
-            validate_model_definition("dummy_model", sample_definition)
+            job.validate_model_definition("dummy_model", sample_definition)
 
     def test_validate_raises_value_error_if_no_source_present(self):
         with self.assertRaises(ValueError):
             sample_definition = fake_definition.copy()
             sample_definition["dummy_model"].pop("source_prefix")
-            validate_model_definition("dummy_model", sample_definition)
+            job.validate_model_definition("dummy_model", sample_definition)
 
     def test_validate_raises_value_error_if_no_destination_present(self):
         with self.assertRaises(ValueError):
             sample_definition = fake_definition.copy()
             sample_definition["dummy_model"].pop("processed_location")
-            validate_model_definition("dummy_model", sample_definition)
+            job.validate_model_definition("dummy_model", sample_definition)
 
     @patch.dict(f"{PATCH_STEM}.model_definitions", fake_definition)
     @patch(f"{PATCH_STEM}.boto3.client")
@@ -113,7 +110,7 @@ class TestPreprocessing(unittest.TestCase):
         with redirect_stdout(f):
             with self.assertRaises(ValueError):
                 preprocessor = DummyProcessor()
-                main_preprocessor("silly_model", preprocessor)
+                job.main_preprocessor("silly_model", preprocessor)
         output = f.getvalue()
         self.assertIn("silly_model", output)
         self.assertIn("invalid or missing", output)
@@ -133,7 +130,7 @@ class TestPreprocessing(unittest.TestCase):
         with redirect_stdout(f):
             with self.assertRaises(ClientError):
                 preprocessor = DummyProcessor()
-                main_preprocessor("dummy_model", preprocessor)
+                job.main_preprocessor("dummy_model", preprocessor)
         output = f.getvalue()
         self.assertIn("StepFunction AWS service", output)
 
@@ -148,19 +145,19 @@ class TestPreprocessNonResPir(unittest.TestCase):
         os.mkdir(self.destination)
         with patch(f"{PATCH_STEM}.pl.read_parquet") as mock_read_parquet:
             mock_read_parquet.return_value = self.df_test
-            preprocess_non_res_pir(self.s3_uri, self.destination, lazy=False)
+            job.preprocess_non_res_pir(self.s3_uri, self.destination, lazy=False)
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
 
     @patch(f"{PATCH_STEM}.pl.read_parquet")
     def test_preprocess_non_res_pir_reads_dataframe(self, mock_read_parquet):
-        preprocess_non_res_pir(self.s3_uri, self.destination)
+        job.preprocess_non_res_pir(self.s3_uri, self.destination)
         mock_read_parquet.assert_called_once_with(self.s3_uri)
 
     @patch(f"{PATCH_STEM}.pl.scan_parquet")
     def test_preprocess_non_res_pir_reads_lazyframe(self, mock_scan_parquet):
-        preprocess_non_res_pir(self.s3_uri, self.destination, lazy=True)
+        job.preprocess_non_res_pir(self.s3_uri, self.destination, lazy=True)
         mock_scan_parquet.assert_called_once_with(self.s3_uri)
 
     def test_preprocess_non_res_pir_returns_correct_columns_from_read(self):
@@ -214,7 +211,7 @@ class TestPreprocessNonResPir(unittest.TestCase):
         self.assertEqual(df.filter(pl.col("abs_resid") > 500).shape[0], 0)
 
     def test_preprocess_works_with_lazy_frames(self):
-        preprocess_non_res_pir(str(SAMPLE_DATA_PATH), self.destination, lazy=True)
+        job.preprocess_non_res_pir(str(SAMPLE_DATA_PATH), self.destination, lazy=True)
         df = pl.read_parquet(self.destination)
         self.assertEqual(df.shape[0], 3)
         ids = set(df["locationId"].to_list())
@@ -224,7 +221,7 @@ class TestPreprocessNonResPir(unittest.TestCase):
         f = io.StringIO()
         with redirect_stdout(f):
             with self.assertRaises((pl.exceptions.PolarsError, FileNotFoundError)):
-                preprocess_non_res_pir(
+                job.preprocess_non_res_pir(
                     "my/nonexistent/path", self.destination, lazy=False
                 )
         output = f.getvalue()
@@ -255,7 +252,7 @@ class TestPreprocessRemoveNulls(unittest.TestCase):
     def test_writes_dataframe_unchanged_if_no_columns_provided(self):
         with patch(f"{PATCH_STEM}.pl.read_parquet") as mock_read_parquet:
             mock_read_parquet.return_value = self.sample_df
-            preprocess_remove_nulls(self.s3_uri, self.destination, [])
+            job.preprocess_remove_nulls(self.s3_uri, self.destination, [])
         result_df = pl.read_parquet(f"{self.destination}/processed.parquet")
         self.assertEqual((5, 4), result_df.shape)
         pl_testing.assert_frame_equal(self.sample_df, result_df)
@@ -263,14 +260,14 @@ class TestPreprocessRemoveNulls(unittest.TestCase):
     def test_preprocess_remove_nulls_basic_execution_single_column(self):
         with patch(f"{PATCH_STEM}.pl.read_parquet") as mock_read_parquet:
             mock_read_parquet.return_value = self.sample_df
-            preprocess_remove_nulls(self.s3_uri, self.destination, ["price"])
+            job.preprocess_remove_nulls(self.s3_uri, self.destination, ["price"])
         result_df = pl.read_parquet(f"{self.destination}/processed.parquet")
         self.assertEqual((4, 4), result_df.shape)
 
     def test_preprocess_remove_nulls_basic_execution_multiple_column(self):
         with patch(f"{PATCH_STEM}.pl.read_parquet") as mock_read_parquet:
             mock_read_parquet.return_value = self.sample_df
-            preprocess_remove_nulls(
+            job.preprocess_remove_nulls(
                 self.s3_uri, self.destination, ["price", "description", "inventory"]
             )
         result_df = pl.read_parquet(f"{self.destination}/processed.parquet")
@@ -280,6 +277,6 @@ class TestPreprocessRemoveNulls(unittest.TestCase):
         with patch(f"{PATCH_STEM}.pl.read_parquet") as mock_read_parquet:
             mock_read_parquet.return_value = self.sample_df
             with self.assertRaises(ColumnNotFoundError):
-                preprocess_remove_nulls(
+                job.preprocess_remove_nulls(
                     self.s3_uri, self.destination, ["no_such_column"]
                 )

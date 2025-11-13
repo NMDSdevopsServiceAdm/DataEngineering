@@ -1,12 +1,10 @@
-from random import random, choices
-import string
-import polars as pl
 import pickle
-from projects._03_independent_cqc._05_model.utils.model import (
-    Model,
-    ModelType,
-    ModelNotTrainedError,
-)
+import string
+from random import choices, random
+
+import polars as pl
+
+from projects._03_independent_cqc._05_model.utils.model import Model, ModelType
 
 
 def main():

@@ -1,21 +1,17 @@
 import unittest
 from unittest.mock import patch
 
-from polars import scan_parquet, DataFrame
+from polars import DataFrame, scan_parquet
 from sklearn.linear_model import LinearRegression
 
-from projects._03_independent_cqc._05_model.utils.model import (
-    Model,
-    ModelType,
-    ModelNotTrainedError,
-)
+from projects._03_independent_cqc._05_model.utils import model as job
 
 PATCH_PATH = "projects._03_independent_cqc._05_model.utils.model"
 
 
 class TestModel(unittest.TestCase):
-    standard_model = Model(
-        model_type=ModelType.SIMPLE_LINEAR.value,
+    standard_model = job.Model(
+        model_type=job.ModelType.SIMPLE_LINEAR.value,
         model_identifier="test_linear_model",
         model_params={},
         version_parameter_location="/some/location",
@@ -23,8 +19,8 @@ class TestModel(unittest.TestCase):
         target_columns=["target"],
         feature_columns=["column1", "column2"],
     )
-    ice_cream_model = Model(
-        model_type=ModelType.SIMPLE_LINEAR.value,
+    ice_cream_model = job.Model(
+        model_type=job.ModelType.SIMPLE_LINEAR.value,
         model_identifier="test_linear_model_ice_cream",
         model_params={},
         version_parameter_location="/some/location",
@@ -38,7 +34,9 @@ class TestModel(unittest.TestCase):
         self.lf = self.lf.with_row_index()
 
     def test_model_linear_regression_instantiates(self):
-        self.assertEqual(self.standard_model.model_type, ModelType.SIMPLE_LINEAR.value)
+        self.assertEqual(
+            self.standard_model.model_type, job.ModelType.SIMPLE_LINEAR.value
+        )
         self.assertEqual(self.standard_model.model_identifier, "test_linear_model")
         self.assertEqual(self.standard_model.model_params, {})
         self.assertEqual(
@@ -57,7 +55,7 @@ class TestModel(unittest.TestCase):
     ):
         mock_model_type.SILLY_MODEL.value = "silly_model"
         with self.assertRaises(ValueError):
-            model = Model(
+            model = job.Model(
                 model_type=mock_model_type.SILLY_MODEL.value,
                 model_identifier="test_linear_model",
                 model_params={},
@@ -139,7 +137,7 @@ class TestModel(unittest.TestCase):
         model = self.standard_model
         data = self.lf
         _, test = model.create_train_and_test_datasets(data=data, seed=123)
-        with self.assertRaises(ModelNotTrainedError):
+        with self.assertRaises(job.ModelNotTrainedError):
             model.validate(test)
 
     def test_model_predict_returns_polars_dataframe(self):

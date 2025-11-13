@@ -1,11 +1,11 @@
-import unittest
-from projects._03_independent_cqc._06_estimate_filled_posts.fargate.predict import (
-    predict,
-    TargetsNotFound,
-    FeaturesNotFound,
-)
-import polars as pl
 import pickle
+import unittest
+
+import polars as pl
+
+from projects._03_independent_cqc._06_estimate_filled_posts.fargate import (
+    predict as job,
+)
 
 DATA = [
     {
@@ -275,7 +275,7 @@ class TestModelPrediction(unittest.TestCase):
         self.wrong_data2 = pl.DataFrame(WRONG_DATA2)
 
     def test_predict_returns_dataframe_with_same_schema_as_source(self):
-        result = predict(self.standard_data, self.model1)
+        result = job.predict(self.standard_data, self.model1)
         self.assertIsInstance(result, pl.DataFrame)
         self.assertEqual(result.shape, (len(DATA), 6))
         self.assertListEqual(
@@ -284,13 +284,13 @@ class TestModelPrediction(unittest.TestCase):
         )
 
     def test_predict_populates_single_target_column(self):
-        result = predict(self.standard_data, self.model1)
+        result = job.predict(self.standard_data, self.model1)
         result_values = result["target1"].to_list()
         self.assertTrue(all([v != 0 for v in result_values]))
         self.assertTrue(all(v is not None for v in result_values))
 
     def test_predict_populates_multiple_columns(self):
-        result = predict(self.standard_data, self.model2)
+        result = job.predict(self.standard_data, self.model2)
         result_values1 = result["target1"].to_list()
         self.assertTrue(all([v != 0 for v in result_values1]))
         self.assertTrue(all(v is not None for v in result_values1))
@@ -299,9 +299,9 @@ class TestModelPrediction(unittest.TestCase):
         self.assertTrue(all(v is not None for v in result_values2))
 
     def test_raises_exception_if_target_columns_not_present(self):
-        with self.assertRaises(TargetsNotFound):
-            predict(self.wrong_data1, self.model2)
+        with self.assertRaises(job.TargetsNotFound):
+            job.predict(self.wrong_data1, self.model2)
 
     def test_raises_exception_if_feature_columns_not_present(self):
-        with self.assertRaises(FeaturesNotFound):
-            predict(self.wrong_data2, self.model2)
+        with self.assertRaises(job.FeaturesNotFound):
+            job.predict(self.wrong_data2, self.model2)

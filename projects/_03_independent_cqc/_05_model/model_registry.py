@@ -1,5 +1,6 @@
-from projects._03_independent_cqc._05_model.utils.model import ModelType
 import os
+
+from projects._03_independent_cqc._05_model.utils.model import ModelType
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT")
 
