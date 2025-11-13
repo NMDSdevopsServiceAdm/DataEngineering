@@ -145,6 +145,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted function allocate_primary_service_type_second_level from pyspark to polars and called it in cqc_locations_4_full_clean.
 
+- Change the order of function calls in cqc_locations_4_full_clean so filtering to registered locations only happens after imputation.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
