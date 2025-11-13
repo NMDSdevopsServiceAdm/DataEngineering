@@ -1570,3 +1570,13 @@ class ValidateCqcLocations4FullCleanTest:
         (Region.london,),
         (RUI.urban_major,),
     ]
+
+
+@dataclass
+class ValidateCqcLocations4FullLatestSnapshotTest:
+    validation_rows = [
+        ("1-001",),
+        (date(2025, 1, 1),),
+        (RegistrationStatus.registered,),
+        (date(2024, 1, 1),),
+    ]
