@@ -94,7 +94,7 @@ def main(
     )
 
     cqc_reg_lf = cUtils.add_related_location_column(cqc_reg_lf)
-    # cqc_reg_lf = cqc_reg_lf.drop(CQCLClean.relationships_types)
+    cqc_reg_lf = cqc_reg_lf.drop(CQCLClean.relationships_types)
 
     list_of_specialisms = [
         Specialisms.dementia,
