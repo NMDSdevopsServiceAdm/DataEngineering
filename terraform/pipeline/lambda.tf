@@ -269,13 +269,3 @@ resource "aws_cloudwatch_log_group" "error_notification_lambda" {
   name              = "/aws/lambda/${aws_lambda_function.error_notification_lambda.function_name}"
   retention_in_days = 30
 }
-
-resource "aws_cloudwatch_log_group" "create_snapshot_lambda" {
-  name              = "/aws/lambda/${aws_lambda_function.create_snapshot_lambda.function_name}"
-  retention_in_days = 30
-}
-
-resource "aws_cloudwatch_log_group" "check_datasets_equal_lambda" {
-  name              = "/aws/lambda/${aws_lambda_function.check_datasets_equal.function_name}"
-  retention_in_days = 30
-}
