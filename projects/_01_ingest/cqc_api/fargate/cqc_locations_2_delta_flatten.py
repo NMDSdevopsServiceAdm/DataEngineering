@@ -1,8 +1,6 @@
 from polars_utils import logger, raw_data_adjustments, utils
 from polars_utils.cleaning_utils import column_to_date
-from projects._01_ingest.cqc_api.fargate.utils import (
-    locations_2_delta_flatten_utils as fUtils,
-)
+from projects._01_ingest.cqc_api.fargate.utils import flatten_utils as fUtils
 from projects._01_ingest.cqc_api.fargate.utils.extract_registered_manager_names import (
     extract_registered_manager_names,
 )

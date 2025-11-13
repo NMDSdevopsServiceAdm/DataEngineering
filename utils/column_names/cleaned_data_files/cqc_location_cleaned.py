@@ -34,6 +34,7 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     postcode_cleaned: str = NewCqcLocationApiColumns.postal_code + "_cleaned"
     postcode_truncated: str = postcode_cleaned + "_truncated"
     primary_service_type: str = "primary_service_type"
+    primary_service_type_second_level: str = primary_service_type + "_second_level"
     provider_name: str = "provider_name"
     registered_manager_names: str = "registered_manager_names"
     regulated_activities_offered: str = "regulated_activities_offered"

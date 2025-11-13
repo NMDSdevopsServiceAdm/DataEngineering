@@ -4,7 +4,7 @@ from unittest.mock import ANY, Mock, patch
 import polars as pl
 import polars.testing as pl_testing
 
-from projects._01_ingest.cqc_api.fargate.utils import locations_4_clean_utils as job
+from projects._01_ingest.cqc_api.fargate.utils import cleaning_utils as job
 from projects._01_ingest.unittest_data.polars_ingest_test_file_data import (
     LocationsCleanUtilsData as Data,
 )
@@ -15,7 +15,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 
-PATCH_PATH = "projects._01_ingest.cqc_api.fargate.utils.locations_4_clean_utils"
+PATCH_PATH = "projects._01_ingest.cqc_api.fargate.utils.cleaning_utils"
 
 
 class SaveLatestFullSnapshotTests(unittest.TestCase):
@@ -407,6 +407,23 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
         expected_lf = pl.LazyFrame(
             data=Data.expected_remove_specialist_colleges_rows,
             schema=Schemas.remove_specialist_colleges_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class AllocatePrimaryServiceTypeSecondLevel(unittest.TestCase):
+    def test_allocate_primary_service_type_second_level_returns_expected_data(
+        self,
+    ):
+        test_lf = pl.LazyFrame(
+            data=Data.allocate_primary_service_type_second_level_rows,
+            schema=Schemas.allocate_primary_service_type_second_level_schema,
+        )
+        returned_lf = job.allocate_primary_service_type_second_level(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_allocate_primary_service_type_second_level_rows,
+            schema=Schemas.expected_allocate_primary_service_type_second_level_schema,
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

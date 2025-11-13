@@ -22,6 +22,7 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.cUtils.classify_specialisms")
     @patch(f"{PATCH_PATH}.cUtils.add_related_location_column")
     @patch(f"{PATCH_PATH}.cUtils.realign_carehome_column_with_primary_service")
+    @patch(f"{PATCH_PATH}.cUtils.allocate_primary_service_type_second_level")
     @patch(f"{PATCH_PATH}.cUtils.allocate_primary_service_type")
     @patch(f"{PATCH_PATH}.cUtils.remove_specialist_colleges")
     @patch(f"{PATCH_PATH}.cUtils.assign_cqc_sector")
@@ -40,6 +41,7 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
         assign_cqc_sector_mock: Mock,
         remove_specialist_colleges_mock: Mock,
         allocate_primary_service_type_mock: Mock,
+        allocate_primary_service_type_second_level_mock: Mock,
         realign_carehome_column_with_primary_service_mock: Mock,
         add_related_location_column_mock: Mock,
         classify_specialisms_mock: Mock,
@@ -67,6 +69,7 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
         assign_cqc_sector_mock.assert_called_once()
         remove_specialist_colleges_mock.assert_called_once()
         allocate_primary_service_type_mock.assert_called_once()
+        allocate_primary_service_type_second_level_mock.assert_called_once()
         realign_carehome_column_with_primary_service_mock.assert_called_once()
         add_related_location_column_mock.assert_called_once()
         classify_specialisms_mock.assert_called_once()
