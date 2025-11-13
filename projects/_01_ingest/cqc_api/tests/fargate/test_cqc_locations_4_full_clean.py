@@ -30,10 +30,12 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.cUtils.clean_and_impute_registration_date")
     @patch(f"{PATCH_PATH}.cUtils.save_latest_full_snapshot")
     @patch(f"{PATCH_PATH}.column_to_date")
+    @patch(f"{PATCH_PATH}.raw_data_adjustments.is_valid_location")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_cqc_locations_data)
     def test_main_runs_successfully(
         self,
         scan_parquet_mock: Mock,
+        is_valid_location_mock: Mock,
         column_to_date_mock: Mock,
         save_latest_full_snapshot_mock: Mock,
         clean_and_impute_registration_date_mock: Mock,
@@ -62,6 +64,7 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
                 call(self.TEST_ONS_SOURCE, selected_columns=ANY),
             ]
         )
+        is_valid_location_mock.assert_called_once()
         column_to_date_mock.assert_called_once()
         save_latest_full_snapshot_mock.assert_called_once()
         clean_and_impute_registration_date_mock.assert_called_once()
