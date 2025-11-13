@@ -361,22 +361,6 @@ module "flatten_cqc_ratings_job" {
   }
 }
 
-module "clean_cqc_provider_data_job" {
-  source            = "../modules/glue-job"
-  script_dir        = "projects/_01_ingest/cqc_api/jobs"
-  script_name       = "clean_cqc_provider_data.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-  worker_type       = "G.1X"
-  number_of_workers = 4
-
-  job_parameters = {
-    "--cqc_provider_source"  = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=full_providers_api/version=3.0.0/"
-    "--cqc_provider_cleaned" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=full_providers_api_cleaned/"
-  }
-}
-
 module "reconciliation_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_02_sfc_internal/reconciliation/jobs"
@@ -429,25 +413,9 @@ module "merge_coverage_data_job" {
     "--cleaned_cqc_location_source"         = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/"
     "--workplace_for_reconciliation_source" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
     "--cqc_ratings_source"                  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
-    "--cleaned_cqc_providers_source"        = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=full_providers_api_cleaned/"
+    "--cleaned_cqc_providers_source"        = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=cqc_providers_04_full_cleaned/"
     "--merged_coverage_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/"
     "--reduced_coverage_destination"        = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
-  }
-}
-
-module "validate_providers_api_cleaned_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/cqc_api/jobs"
-  script_name     = "validate_providers_api_cleaned_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--raw_cqc_provider_source"      = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=full_providers_api/version=3.0.0/"
-    "--cleaned_cqc_providers_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=full_providers_api_cleaned/"
-    "--report_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_providers_api_cleaned/"
   }
 }
 
