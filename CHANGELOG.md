@@ -147,6 +147,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted function allocate_primary_service_type_second_level from pyspark to polars and called it in cqc_locations_4_full_clean.
 
+- Added last logged in date and la permissions to columns imported in merge_coverage_data job.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
