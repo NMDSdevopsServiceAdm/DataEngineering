@@ -57,7 +57,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             ]
         )
         # categorical column values match expected set
-        .col_vals_in_set(CQCLClean.registration_status, [RegistrationStatus.registered])
+        .col_vals_in_set(CQCLClean.registration_status, [RegistrationStatus.registered,RegistrationStatus.deregistered])
         # numeric column values are between (inclusive)
         .col_vals_between(Validation.location_id_length, 3, 14).interrogate()
     )

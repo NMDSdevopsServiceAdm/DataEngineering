@@ -211,7 +211,7 @@
                         "source_path_arg": "--source_path",
                         "source_path": "domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/",
                         "reports_path_arg": "--reports_path",
-                        "reports_path": "data_validation_reports/dataset=data_validation_reports_cqc_locations_04_full_cleaned_registered/"
+                        "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_04_full_cleaned_registered/"
                       },
                       "Next": "Validate Clean Full CQC Locations"
                     },
@@ -252,7 +252,7 @@
                         "source_path_arg": "--source_path",
                         "source_path": "domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/",
                         "reports_path_arg": "--reports_path",
-                        "reports_path": "data_validation_reports/dataset=data_validation_reports_cqc_locations_04_latest_snapshot/"
+                        "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_04_latest_snapshot/"
                       },
                       "Next": "Validate Clean Full Latest Snapshot"
                     },
