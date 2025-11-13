@@ -31,21 +31,6 @@ from utils.value_labels.reconciliation.label_dictionary import (
 )
 
 
-def prepare_most_recent_cqc_location_df(cqc_location_df: DataFrame) -> DataFrame:
-    cqc_location_df = cUtils.column_to_date(
-        cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
-    ).drop(Keys.import_date)
-    cqc_location_df = utils.filter_df_to_maximum_value_in_column(
-        cqc_location_df, CQCLClean.cqc_location_import_date
-    )
-    cqc_location_df = utils.format_date_fields(
-        cqc_location_df,
-        date_column_identifier=CQCL.deregistration_date,
-        raw_date_format="yyyy-MM-dd",
-    )
-    return cqc_location_df
-
-
 def collect_dates_to_use(df: DataFrame) -> Tuple[date, date]:
     most_recent: str = "most_recent"
     start_of_month: str = "start_of_month"
@@ -154,26 +139,40 @@ def join_cqc_location_data_into_ascwds_workplace_df(
 def filter_to_locations_relevant_to_reconcilition_process(
     df: DataFrame, first_of_most_recent_month: date, first_of_previous_month: date
 ) -> DataFrame:
+    """
+    Filters locations relevant for the reconciliation process.
+
+    Includes locations that are either:
+    1. Deregistered before the start of the current month and are parent accounts.
+    2. Singles or sub-accounts that deregistered during the previous month.
+
+    Args:
+        df (DataFrame): Input DataFrame containing location data.
+        first_of_most_recent_month (date): First day of the most recent month.
+        first_of_previous_month (date): First day of the previous month.
+
+    Returns:
+        DataFrame: Filtered DataFrame relevant for reconciliation.
+    """
+    dereg_before_current_month = (
+        F.col(CQCL.registration_status) == RegistrationStatus.deregistered
+    ) & (F.col(CQCL.deregistration_date) < first_of_most_recent_month)
+    dereg_since_prev_month = F.col(CQCL.deregistration_date) >= first_of_previous_month
+    null_registration_status = F.col(CQCL.registration_status).isNull()
+    ascwds_parent = (
+        F.col(ReconColumn.parents_or_singles_and_subs)
+        == ParentsOrSinglesAndSubs.parents
+    )
+    ascwds_single_or_sub = (
+        F.col(ReconColumn.parents_or_singles_and_subs)
+        == ParentsOrSinglesAndSubs.singles_and_subs
+    )
+
     df = df.where(
-        F.col(CQCL.registration_status).isNull()
+        null_registration_status
         | (
-            (
-                (F.col(CQCL.registration_status) == RegistrationStatus.deregistered)
-                & (F.col(CQCL.deregistration_date) < first_of_most_recent_month)
-            )
-            & (
-                (
-                    F.col(ReconColumn.parents_or_singles_and_subs)
-                    == ParentsOrSinglesAndSubs.parents
-                )
-                | (
-                    (
-                        F.col(ReconColumn.parents_or_singles_and_subs)
-                        == ParentsOrSinglesAndSubs.singles_and_subs
-                    )
-                    & (F.col(CQCL.deregistration_date) >= first_of_previous_month)
-                )
-            )
+            dereg_before_current_month
+            & (ascwds_parent | (ascwds_single_or_sub & dereg_since_prev_month))
         )
     )
     return df

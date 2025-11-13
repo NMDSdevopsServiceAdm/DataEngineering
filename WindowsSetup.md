@@ -38,7 +38,7 @@ jdk-8u....-windows-x64.exe
 4. This will open a screen where you need to add credentials into the fields:
 
 Field | To be filled with
---- | --- 
+--- | ---
 Server | athena.eu-west-2.amazonaws.com
 Port | 443
 S3 Staging Directory | s3://skillsforcare/tableau-staging-directory/
@@ -59,7 +59,7 @@ Secret Access Key | Tableau user AWS secret key from the AWS credentials page. A
 2. In 'system variables', select 'new' and add the following:
 
 Variable name | Value
---- | --- 
+--- | ---
 HADOOP_HOME | C:\hadoop-3.2.2
 JAVA_HOME | C:\jdk
 
@@ -77,8 +77,8 @@ C:\Users\_your_name_\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\_your_name_\AppData\Local\Programs\Git\cmd
 C:\Users\_your_name_\.pyenv\pyenv-win\bin
 C:\Users\_your_name_\.pyenv\pyenv-win\shims
-C:\Users\_your_name_\AppData\Roaming\Python\Python3.11
-C:\Users\_your_name_\AppData\Roaming\Python\Python3.11\Scripts
+C:\Users\_your_name_\AppData\Roaming\Python\Python311
+C:\Users\_your_name_\AppData\Roaming\Python\Python311\Scripts
 ```
 
 ### Adding user variables (requires IT):
@@ -86,13 +86,13 @@ C:\Users\_your_name_\AppData\Roaming\Python\Python3.11\Scripts
 
 2. Under 'user variables', select `path` and then select `edit`
 
-3. Add the below path variables replacing "_your_name_" for your windows user name. 
+3. Add the below path variables replacing "_your_name_" for your windows user name.
 ```
 C:\Users\_your_name_\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\_your_name_\AppData\Local\Programs\Git\cmd
 C:\Users\_your_name_\.pyenv\pyenv-win\bin
-C:\Users\_your_name_\AppData\Roaming\Python\Python3.11\
-C:\Users\_your_name_\AppData\Roaming\Python\Python3.11\Scripts
+C:\Users\_your_name_\AppData\Roaming\Python\Python311\
+C:\Users\_your_name_\AppData\Roaming\Python\Python311\Scripts
 %HADOOP_HOME%\bin
 ```
 
@@ -111,15 +111,15 @@ PYENV_HOME | C:\Users\_your_name_\.pyenv\pyenv-win\
 
 2. Go to https://www.python.org/downloads/
 
-3. Select Ctrl+F and search for `3.11.12`
+3. Select Ctrl+F and search for `3.11.9`
 
 4. Click on the `Download` button
 
 5. Scroll down and select `Windows installer (64-bit)`
 
-6. In your download folder, click on `python-3.11.12-amd64` and install Python manually (in order to change the file location to the location below)
+6. In your download folder, click on `python-3.11.9-amd64` and install Python manually (in order to change the file location to the location below)
 
-7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming\Python\Python3.11`
+7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming\Python\Python311`
 
 **Note:** When you set the location for python to install, make sure it matches to the system and user variables for python path we set in the previous step.
 
@@ -280,7 +280,7 @@ Python
 
 ```
 <br>
-    
+
 10. Right click on the folder again, add a file named `settings.json` and paste in the code below:
 <i>Note: Replace `_your_name_` and `_your_code_` in the filepath with your personal options:</i>
 ```
@@ -329,13 +329,56 @@ Python
 
 
 ### aws credentials
+
+#### Prod (i.e. existing) aws account
 1. Open cmd
 
-2. Type `aws configure`
+2. Type `aws configure --profile <prod profile name>`, where `<prod profile name>` is whatever name you want to use to refer to prod
 
 3. Add your aws access key and secret access key
 4. Region: eu-west-2
 5. Default output format: json
+6. In prod account AWS console, click on your name in the top right, and navigate to `Security Credentials` in the drop down. On the Security Credentials page, scroll down to Multi-factor Authentication. Copy the value of the `Identifier` field (it should look like `arn:aws:iam::344210435447:mfa/*********`i).
+7. Paste `mfa_serial=<mfa arn>` (where `mfa_arn` is the arn obtained in step 6) into your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom (under `[<prod profile name>]`)
+8. Run `aws sts get-caller-identity --profile <prod profile name>` and verify that the response looks like:
+```
+{
+    "UserId": *****
+    "Account": "344210435447",
+    "Arn": "arn:aws:iam::344210435447:user/<your username>"
+}
+```
+
+Any command that you run via AWS CLI will need the `--profile <prod profile name>` argument in order to run against this environment.
+
+If you've previously set up your AWS CLI to point to this environment, it is recommended to remove the credentials from the default profile by deleting the `aws_access_key_id` and `aws_secret_access_key` lines from the `[default]` profile in [`%USERPROFILE%\.aws\credentials`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html). This will ensure you always have to explicitly specify the AWS account you want to run the command against by using the associated `--profile`
+
+
+#### Non-prod (i.e. new) aws account
+1. Open cmd
+
+2. Type `aws configure --profile <non-prod profile name>`, where `<non-prod profile name>` is whatever name you want to use to refer to non-prod
+
+3. Add the same aws access key and secret access key as you used above (you can find these in [`%USERPROFILE%\.aws\credentials`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) if you don't have them to hand
+4. Region: eu-west-2
+5. Default output format: json
+6. In *prod* account AWS console, click on your name in the top right, and navigate to `Security Credentials` in the drop down. On the Security Credentials page, scroll down to Multi-factor Authentication. Copy the value of the `Identifier` field (it should look like `arn:aws:iam::344210435447:mfa/*********`i).
+7. Paste the following into your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom (under `[<non-prod profile name>]`) (where `mfa_arn` is the arn obtained in step 6):
+```
+     mfa_serial=<mfa arn>
+     source_profile=<prod profile name>
+     role_arn=arn:aws:iam::856699698263:role/CrossAccountAccessRole
+```
+8. Run `aws sts get-caller-identity --profile <non-prod profile name>` and verify that the response looks like:
+```
+{
+    "UserId": *****
+    "Account": "856699698263",
+    "Arn": "arn:aws:iam::856699698263::assumed-role/CrossAccountAccessRole/******"
+}
+```
+
+Any command that you run via AWS CLI will need the `--profile <non-prod profile name>` argument in order to run against this environment.
 
 
 ### Set up your AWS crendentials as terraform variables

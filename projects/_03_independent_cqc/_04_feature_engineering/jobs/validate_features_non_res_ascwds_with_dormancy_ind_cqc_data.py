@@ -26,8 +26,8 @@ cleaned_ind_cqc_columns_to_import = [
     IndCQC.location_id,
     IndCQC.care_home,
     IndCQC.dormancy,
-    IndCQC.imputed_gac_service_types,
-    IndCQC.imputed_specialisms,
+    IndCQC.services_offered,
+    IndCQC.specialisms_offered,
 ]
 
 
@@ -77,8 +77,8 @@ def calculate_expected_size_of_non_res_ascwds_with_dormancy_ind_cqc_features_dat
     """
     expected_size = cleaned_ind_cqc_df.where(
         (cleaned_ind_cqc_df[IndCQC.care_home] == CareHome.not_care_home)
-        & (cleaned_ind_cqc_df[IndCQC.imputed_gac_service_types].isNotNull())
-        & (cleaned_ind_cqc_df[IndCQC.imputed_specialisms].isNotNull())
+        & (cleaned_ind_cqc_df[IndCQC.services_offered].isNotNull())
+        & (cleaned_ind_cqc_df[IndCQC.specialisms_offered].isNotNull())
         & (cleaned_ind_cqc_df[IndCQC.dormancy].isNotNull())
     ).count()
     return expected_size

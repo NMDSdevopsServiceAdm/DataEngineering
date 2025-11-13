@@ -20,7 +20,6 @@ class ImputedIndCqcAscwdsAndPirValidationRules:
             IndCqcColumns.care_home,
             IndCqcColumns.provider_id,
             IndCqcColumns.cqc_sector,
-            IndCqcColumns.registration_status,
             IndCqcColumns.imputed_registration_date,
             IndCqcColumns.primary_service_type,
             IndCqcColumns.contemporary_ons_import_date,
@@ -64,7 +63,6 @@ class ImputedIndCqcAscwdsAndPirValidationRules:
         RuleName.categorical_values_in_columns: {
             IndCqcColumns.care_home: CatValues.care_home_column_values.categorical_values,
             IndCqcColumns.cqc_sector: CatValues.sector_column_values.categorical_values,
-            IndCqcColumns.registration_status: CatValues.registration_status_column_values.categorical_values,
             IndCqcColumns.dormancy: CatValues.dormancy_column_values.categorical_values,
             IndCqcColumns.primary_service_type: CatValues.primary_service_type_column_values.categorical_values,
             IndCqcColumns.contemporary_cssr: CatValues.contemporary_cssr_column_values.categorical_values,
@@ -78,7 +76,6 @@ class ImputedIndCqcAscwdsAndPirValidationRules:
         RuleName.distinct_values: {
             IndCqcColumns.care_home: CatValues.care_home_column_values.count_of_categorical_values,
             IndCqcColumns.cqc_sector: CatValues.sector_column_values.count_of_categorical_values,
-            IndCqcColumns.registration_status: CatValues.registration_status_column_values.count_of_categorical_values,
             IndCqcColumns.dormancy: CatValues.dormancy_column_values.count_of_categorical_values,
             IndCqcColumns.primary_service_type: CatValues.primary_service_type_column_values.count_of_categorical_values,
             IndCqcColumns.contemporary_cssr: CatValues.contemporary_cssr_column_values.count_of_categorical_values,

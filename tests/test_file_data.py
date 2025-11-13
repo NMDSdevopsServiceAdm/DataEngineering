@@ -7,7 +7,6 @@ from utils.column_values.categorical_column_values import (
     PrimaryServiceType,
     Sector,
 )
-from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.validation.validation_rule_custom_type import CustomValidationRules
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
@@ -387,20 +386,20 @@ class CleaningUtilsData:
 class EstimateIndCQCFilledPostsData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-1783948", date(2022, 2, 1), "South East", "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, None, "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "lsoa", "Rural hamlet and isolated dwellings in a sparse setting", "rule_1", "Registered"),
-        ("1-1783948", date(2022, 1, 1), "South East", "South East", 0, ["Domiciliary care service"], "non-residential", 5, 67.0, 67.0, "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "lsoa", "Rural hamlet and isolated dwellings in a sparse setting", "rule_2", "Registered"),
-        ("1-348374832", date(2022, 1, 12), "Merseyside", "Merseyside", 0, ["Extra Care housing services"], "non-residential", None, 34.0, 34.0, "N", "Local authority", "Rural hamlet and isolated dwellings", "lsoa", "Rural hamlet and isolated dwellings", "rule_3", "Registered"),
-        ("1-683746776", date(2022, 1, 1), "Merseyside", "Merseyside", 0, ["Doctors treatment service", "Long term conditions services", "Shared Lives"], "non-residential", 34, None, None, "N", "Local authority", "Rural hamlet and isolated dwellings", "lsoa", "Rural hamlet and isolated dwellings", "rule_1", "Registered"),
-        ("1-10478686", date(2022, 1, 1), "London Senate", "London Senate", 0, ["Community health care services - Nurses Agency only"], "non-residential", None, None, None, "N", "", "Rural hamlet and isolated dwellings", "lsoa", "Rural hamlet and isolated dwellings", "rule_1", "Registered"),
-        ("1-10235302415", date(2022, 1, 12), "South West", "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, None, None, "N", "Independent", "Rural hamlet and isolated dwellings", "lsoa", "Rural hamlet and isolated dwellings", "rule_3", "Registered"),
-        ("1-1060912125", date(2022, 1, 12), "Yorkshire and the Humber", "Yorkshire and the Humber", 0, ["Hospice services at home"], "non-residential", 34, None, None, "N", "Independent", "Rural hamlet and isolated dwellings", "lsoa", "Rural hamlet and isolated dwellings", "rule_2", "Registered"),
-        ("1-107095666", date(2022, 3, 1), "Yorkshire and the Humber", "Yorkshire and the Humber", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, None, None, "N", "Independent", "Urban city and town", "lsoa", "Urban city and town", "rule_3", "Registered"),
-        ("1-108369587", date(2022, 3, 8), "South West", "South West", 0, ["Specialist college service"], "non-residential", 15, None, None, "N", "Independent", "Rural town and fringe in a sparse setting", "lsoa", "Rural town and fringe in a sparse setting", "rule_1", "Registered"),
-        ("1-10758359583", date(2022, 3, 8), None, None, 0, ["Mobile doctors service"], "non-residential", 17, None, None, "N", "Local authority", "Urban city and town", "lsoa", "Urban city and town", "rule_2", "Registered"),
-        ("1-000000001", date(2022, 3, 8), "Yorkshire and the Humber", "Yorkshire and the Humber", 67, ["Care home service with nursing"], "Care home with nursing", None, None, None, "Y", "Local authority", "Urban city and town", "lsoa", "Urban city and town", "rule_1", "Registered"),
-        ("1-10894414510", date(2022, 3, 8), "Yorkshire and the Humber", "Yorkshire and the Humber", 10, ["Care home service with nursing"], "Care home with nursing", 0, 25.0, 25.0, "Y", "Independent", "Urban city and town", "lsoa", "Urban city and town", "rule_3", "Registered"),
-        ("1-108950835", date(2022, 3, 15), "Merseyside", "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, None, "Y", "", "Urban city and town", "lsoa", "Urban city and town", "rule_1", "Registered"),
-        ("1-108967195", date(2022, 4, 22), "North West", "North West", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, None, "N", "Independent", "Urban city and town", "lsoa", "Urban city and town", "rule_3", "Registered"),
+        ("1-1783948", date(2022, 2, 1), "South East", "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, None, "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "lsoa", "Rural hamlet and isolated dwellings in a sparse setting", "rule_1"),
+        ("1-1783948", date(2022, 1, 1), "South East", "South East", 0, ["Domiciliary care service"], "non-residential", 5, 67.0, 67.0, "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "lsoa", "Rural hamlet and isolated dwellings in a sparse setting", "rule_2"),
+        ("1-348374832", date(2022, 1, 12), "Merseyside", "Merseyside", 0, ["Extra Care housing services"], "non-residential", None, 34.0, 34.0, "N", "Local authority", "Rural hamlet and isolated dwellings", "lsoa", "Rural hamlet and isolated dwellings", "rule_3"),
+        ("1-683746776", date(2022, 1, 1), "Merseyside", "Merseyside", 0, ["Doctors treatment service", "Long term conditions services", "Shared Lives"], "non-residential", 34, None, None, "N", "Local authority", "Rural hamlet and isolated dwellings", "lsoa", "Rural hamlet and isolated dwellings", "rule_1"),
+        ("1-10478686", date(2022, 1, 1), "London Senate", "London Senate", 0, ["Community health care services - Nurses Agency only"], "non-residential", None, None, None, "N", "", "Rural hamlet and isolated dwellings", "lsoa", "Rural hamlet and isolated dwellings", "rule_1"),
+        ("1-10235302415", date(2022, 1, 12), "South West", "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, None, None, "N", "Independent", "Rural hamlet and isolated dwellings", "lsoa", "Rural hamlet and isolated dwellings", "rule_3"),
+        ("1-1060912125", date(2022, 1, 12), "Yorkshire and the Humber", "Yorkshire and the Humber", 0, ["Hospice services at home"], "non-residential", 34, None, None, "N", "Independent", "Rural hamlet and isolated dwellings", "lsoa", "Rural hamlet and isolated dwellings", "rule_2"),
+        ("1-107095666", date(2022, 3, 1), "Yorkshire and the Humber", "Yorkshire and the Humber", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, None, None, "N", "Independent", "Urban city and town", "lsoa", "Urban city and town", "rule_3"),
+        ("1-108369587", date(2022, 3, 8), "South West", "South West", 0, ["Specialist college service"], "non-residential", 15, None, None, "N", "Independent", "Rural town and fringe in a sparse setting", "lsoa", "Rural town and fringe in a sparse setting", "rule_1"),
+        ("1-10758359583", date(2022, 3, 8), None, None, 0, ["Mobile doctors service"], "non-residential", 17, None, None, "N", "Local authority", "Urban city and town", "lsoa", "Urban city and town", "rule_2"),
+        ("1-000000001", date(2022, 3, 8), "Yorkshire and the Humber", "Yorkshire and the Humber", 67, ["Care home service with nursing"], "Care home with nursing", None, None, None, "Y", "Local authority", "Urban city and town", "lsoa", "Urban city and town", "rule_1"),
+        ("1-10894414510", date(2022, 3, 8), "Yorkshire and the Humber", "Yorkshire and the Humber", 10, ["Care home service with nursing"], "Care home with nursing", 0, 25.0, 25.0, "Y", "Independent", "Urban city and town", "lsoa", "Urban city and town", "rule_3"),
+        ("1-108950835", date(2022, 3, 15), "Merseyside", "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, None, "Y", "", "Urban city and town", "lsoa", "Urban city and town", "rule_1"),
+        ("1-108967195", date(2022, 4, 22), "North West", "North West", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, None, "N", "Independent", "Urban city and town", "lsoa", "Urban city and town", "rule_3"),
     ]
     # fmt: on
 
@@ -1034,23 +1033,3 @@ class RawDataAdjustments:
         ("20250101", "12345", "other_data"),
         ("20250101", "67890", "other_data"),
     ]
-
-    locations_data_with_multiple_rows_to_remove = [
-        ("loc_1", "other"),
-        (RecordsToRemoveInLocationsData.dental_practice, "other"),
-        (RecordsToRemoveInLocationsData.dental_practice, "something else"),
-        (RecordsToRemoveInLocationsData.temp_registration, "other"),
-        (RecordsToRemoveInLocationsData.temp_registration, "something else"),
-    ]
-
-    locations_data_with_single_rows_to_remove = [
-        ("loc_1", "other"),
-        (RecordsToRemoveInLocationsData.dental_practice, "other"),
-        (RecordsToRemoveInLocationsData.temp_registration, "other"),
-    ]
-
-    locations_data_without_rows_to_remove = [
-        ("loc_1", "other"),
-    ]
-
-    expected_locations_data = locations_data_without_rows_to_remove

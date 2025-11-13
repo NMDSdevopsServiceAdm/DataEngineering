@@ -56,11 +56,13 @@ class LocationsApiCleanedCategoricalValues:
     sector_column_values = Sector(CQCLClean.cqc_sector)
     dormancy_column_values = Dormancy(CQCLClean.dormancy, contains_null_values=True)
     registration_status_column_values = RegistrationStatus(
-        CQCLClean.registration_status,
-        value_to_remove=RegistrationStatus.deregistered,
+        CQCLClean.registration_status
     )
     primary_service_type_column_values = PrimaryServiceType(
         CQCLClean.primary_service_type
+    )
+    primary_service_type_second_level_column_values = PrimaryServiceTypeSecondLevel(
+        CQCLClean.primary_service_type_second_level
     )
     current_region_column_values = Region(CQCLClean.current_region)
     contemporary_region_column_values = Region(CQCLClean.contemporary_region)
@@ -68,6 +70,15 @@ class LocationsApiCleanedCategoricalValues:
     current_cssr_column_values = CurrentCSSR(CQCLClean.current_cssr)
     contemporary_cssr_column_values = ContemporaryCSSR(CQCLClean.contemporary_cssr)
     related_location_column_values = RelatedLocation(CQCLClean.related_location)
+    specialism_dementia_column_values = SpecialistGeneralistOther(
+        IndCQC.specialism_dementia
+    )
+    specialism_learning_disabilities_column_values = SpecialistGeneralistOther(
+        IndCQC.specialism_learning_disabilities
+    )
+    specialism_mental_health_column_values = SpecialistGeneralistOther(
+        IndCQC.specialism_mental_health
+    )
 
 
 @dataclass
@@ -99,10 +110,6 @@ class MergedIndCQCCategoricalValues:
         IndCQC.cqc_sector, value_to_remove=Sector.local_authority
     )
     dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
-    registration_status_column_values = RegistrationStatus(
-        IndCQC.registration_status,
-        value_to_remove=RegistrationStatus.deregistered,
-    )
     primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
     current_region_column_values = Region(IndCQC.current_region)
     contemporary_region_column_values = Region(IndCQC.contemporary_region)
@@ -126,10 +133,6 @@ class MergedCoverageCategoricalValues:
     dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
     in_ascwds_column_values = InAscwds(CoverageColumns.in_ascwds)
     primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
-    registration_status_column_values = RegistrationStatus(
-        IndCQC.registration_status,
-        value_to_remove=RegistrationStatus.deregistered,
-    )
 
 
 @dataclass
@@ -139,10 +142,6 @@ class CleanedIndCQCCategoricalValues:
         IndCQC.cqc_sector, value_to_remove=Sector.local_authority
     )
     dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
-    registration_status_column_values = RegistrationStatus(
-        IndCQC.registration_status,
-        value_to_remove=RegistrationStatus.deregistered,
-    )
     primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
     current_region_column_values = Region(IndCQC.current_region)
     contemporary_region_column_values = Region(IndCQC.contemporary_region)
@@ -160,14 +159,14 @@ class CleanedIndCQCCategoricalValues:
         IndCQC.ascwds_filtering_rule
     )
     related_location_column_values = RelatedLocation(CQCLClean.related_location)
-    specialist_generalist_other_dementia_column_values = SpecialistGeneralistOther(
-        IndCQC.specialist_generalist_other_dementia
+    specialism_dementia_column_values = SpecialistGeneralistOther(
+        IndCQC.specialism_dementia
     )
-    specialist_generalist_other_lda_column_values = SpecialistGeneralistOther(
-        IndCQC.specialist_generalist_other_lda
+    specialism_learning_disabilities_column_values = SpecialistGeneralistOther(
+        IndCQC.specialism_learning_disabilities
     )
-    specialist_generalist_other_mh_column_values = SpecialistGeneralistOther(
-        IndCQC.specialist_generalist_other_mh
+    specialism_mental_health_column_values = SpecialistGeneralistOther(
+        IndCQC.specialism_mental_health
     )
 
 
@@ -178,10 +177,6 @@ class ImputedIndCqcAscwdsAndPirCategoricalValues:
         IndCQC.cqc_sector, value_to_remove=Sector.local_authority
     )
     dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
-    registration_status_column_values = RegistrationStatus(
-        IndCQC.registration_status,
-        value_to_remove=RegistrationStatus.deregistered,
-    )
     primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
     current_region_column_values = Region(IndCQC.current_region)
     contemporary_region_column_values = Region(IndCQC.contemporary_region)
@@ -203,8 +198,8 @@ class ImputedIndCqcAscwdsAndPirCategoricalValues:
 @dataclass
 class FeatureEngineeringCategoricalValues:
     current_region_column_values = Region(IndCQC.current_region)
-    services_column_values = Services(IndCQC.imputed_gac_service_types)
-    specialisms_column_values = Specialisms(IndCQC.imputed_specialisms)
+    services_column_values = Services(IndCQC.services_offered)
+    specialisms_column_values = Specialisms(IndCQC.specialisms_offered)
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
     dormancy_column_values = Dormancy(IndCQC.dormancy)
     related_location_column_values = RelatedLocation(IndCQC.related_location)

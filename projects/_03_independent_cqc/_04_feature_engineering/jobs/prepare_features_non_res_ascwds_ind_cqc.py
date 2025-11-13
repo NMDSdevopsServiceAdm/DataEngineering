@@ -51,7 +51,7 @@ def main(
     )
 
     features_df = add_array_column_count(
-        features_df, IndCQC.activity_count, IndCQC.imputed_regulated_activities
+        features_df, IndCQC.activity_count, IndCQC.regulated_activities_offered
     )
     features_df = cap_integer_at_max_value(
         features_df,

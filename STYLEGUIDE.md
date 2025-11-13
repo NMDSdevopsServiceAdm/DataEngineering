@@ -8,8 +8,8 @@
 - Use meaningful variable names, especially for intermediate values
 - Don't leave commented-out code or `.show()` functions in production scripts
 - Remove unused variables and imports before committing
-- Use logging, not print statements
 - For temporary or in-development code, use clear `# TODO:` or `# FIXME:` comments (and create a Trello card for each)
+- For Polars code, use [LazyFrame](https://docs.pola.rs/api/python/stable/reference/lazyframe/index.html) where possible
 
 ## Code Organisation
 - All code should be stored in the `projects/` folder
@@ -19,9 +19,11 @@
 projects/
 ├── my_project/              # A specific project
 │   ├── _01_ingest/          # A numbered stage or dataset/job
+│   │   ├── fargate/         # Polars jobs and orchestration
 │   │   ├── jobs/            # Spark jobs and orchestration
 │   │   ├── utils/           # Utilities specific to this stage
 │   │   └── tests/           # Unit tests (mirroring jobs/utils structure)
+│   │       ├── fargate/
 │   │       ├── jobs/
 │   │       └── utils/
 │   ├── _02_clean/
@@ -39,9 +41,9 @@ projects/
   - **By processing stage/job** (numbering them `_01_ingest`, `_02_clean`, etc.)
 
 Each folder should contain:
-  - `jobs/`: for job logic
+  - `jobs/` / `fargate/`: for job logic (jobs for Spark code and fargate for Polars code)
   - `utils/`: for helper functions specific to this job/stage
-  - `tests/`: for corresponding tests (also split into `jobs/` and `utils/`)
+  - `tests/`: for corresponding tests (also split into `jobs/` / `fargate/` and `utils/`)
 
 ### Utility Function Location Rules
 | Function usage scope                              | Location                                                |
@@ -51,6 +53,8 @@ Each folder should contain:
 | Used by **multiple projects**                     | `projects/utils/utils.py`                               |
 
 ## Imports
+Note: The VS Code extension 'isort' will do this automatically whenever a file is saved.
+
 - Follow standard three-section order:
   1. Standard library imports
   2. Third-party package imports (e.g. `pandas`, `pyspark`)
@@ -104,6 +108,17 @@ def your_function(df: DataFrame) -> DataFrame:
 - Always reference columns via that module — do not hardcode strings
 - Helps consistency and reduces typos
 
+## Dataset Names in AWS S3
+- Athena uses the dataset partition to name the tables so we will use this structure when saving files to S3
+- `{dataset}_{sub_dataset_if_relevant}_{order_of_process_if_relevant}_{very_brief_description}`
+
+Examples:
+    `dataset=cqc_providers_01_delta_api`
+    `dataset=cqc_locations_01_delta_api`
+    `dataset=cqc_locations_02_delta_flattened`
+    `dataset=ind_cqc_01_merged`
+    `dataset=ind_cqc_02_cleaned`
+
 ## Naming Conventions
 - Use `snake_case` for variables and functions
 - Use `PascalCase` for class names
@@ -113,20 +128,25 @@ def your_function(df: DataFrame) -> DataFrame:
 - Group tests for each function in a test class
 - Include at least one test per function/method
 - Each test function should test **one specific behaviour**
-- Use mock objects if setup is complex
+- Use mock objects if setup is complex or if it is an orchestrator function
 - Store test data rows and schemas in the relevant `test_file_data.py` and `test_file_schemas.py`
 - File naming: `test_<module>.py`
 - Class naming: `YourFunctionNameTests`
-- Test naming: `test_<unit_of_work>_<expected_outcome>()`
+- Test naming: `test_<expected_behaviour>()` or `test_when_<scenario>_returns_<expected_outcome>()`
 
 Example:
 
 ```python
-class TransformDataTests:
-    def test_transform_data_removes_nulls(self):
-        ...
+class CleanIdColumnTests:
+    def test_does_not_change_valid_ids(self):
+        input_lf = pl.LazyFrame(...)
 
-    def test_transform_data_renames_columns(self):
+        returned_lf = job.function_name(...)
+
+        expected_lf = pl.LazyFrame(...)
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+
+    def test_when_no_id_returns_null(self):
         ...
     ...
 ```

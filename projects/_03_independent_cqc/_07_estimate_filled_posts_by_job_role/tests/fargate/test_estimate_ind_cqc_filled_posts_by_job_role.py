@@ -6,45 +6,51 @@ import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargat
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role"
 
 
-class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
+class MainTests(unittest.TestCase):
     ESTIMATE_SOURCE = "some/source"
-    ASCWDS_WORKER_SOURCE = "some/other/source"
-    OUTPUT_DIR = "some/destination"
+    PREPARED_JOB_ROLE_COUNTS_SOURCE = "some/other/source"
+    ESTIMATES_DESTINATION = "some/destination"
 
+    mock_estimate_data = Mock(name="estimate_data")
+    mock_prepared_job_role_counts_data = Mock(name="prepared_job_role_counts_data")
 
-class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
-    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.pl.scan_parquet")
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.JRUtils.join_worker_to_estimates_dataframe")
+    @patch(
+        f"{PATCH_PATH}.utils.scan_parquet",
+        return_value=[mock_estimate_data, mock_prepared_job_role_counts_data],
+    )
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
-        write_to_parquet_mock: Mock,
+        join_worker_to_estimates_dataframe_mock: Mock,
+        sink_to_parquet_mock: Mock,
     ):
-        estimated_ind_cqc_filled_posts_scan_mock = Mock()
-        cleaned_ascwds_worker_scan_mock = Mock()
-        scan_parquet_mock.side_effect = [
-            estimated_ind_cqc_filled_posts_scan_mock,
-            cleaned_ascwds_worker_scan_mock,
-        ]
-
-        job.main(self.ESTIMATE_SOURCE, self.ASCWDS_WORKER_SOURCE, self.OUTPUT_DIR)
+        job.main(
+            self.ESTIMATE_SOURCE,
+            self.PREPARED_JOB_ROLE_COUNTS_SOURCE,
+            self.ESTIMATES_DESTINATION,
+        )
 
         self.assertEqual(scan_parquet_mock.call_count, 2)
         scan_parquet_mock.assert_has_calls(
             [
                 call(
-                    self.ESTIMATE_SOURCE,
+                    source=self.ESTIMATE_SOURCE,
+                    selected_columns=job.estimated_ind_cqc_filled_posts_columns_to_import,
                 ),
                 call(
-                    self.ASCWDS_WORKER_SOURCE,
+                    source=self.PREPARED_JOB_ROLE_COUNTS_SOURCE,
+                    selected_columns=job.prepared_ascwds_job_role_counts_columns_to_import,
                 ),
             ]
         )
-        estimated_ind_cqc_filled_posts_scan_mock.select.assert_called_once_with(
-            job.estimated_ind_cqc_filled_posts_columns_to_import
-        )
-        cleaned_ascwds_worker_scan_mock.select.assert_called_once_with(
-            job.cleaned_ascwds_worker_columns_to_import
-        )
 
-        write_to_parquet_mock.assert_called_once_with(ANY, self.OUTPUT_DIR, logger=ANY)
+        join_worker_to_estimates_dataframe_mock.assert_called_once()
+
+        sink_to_parquet_mock.assert_called_once_with(
+            lazy_df=ANY,
+            output_path=self.ESTIMATES_DESTINATION,
+            partition_cols=job.partition_keys,
+            append=False,
+        )

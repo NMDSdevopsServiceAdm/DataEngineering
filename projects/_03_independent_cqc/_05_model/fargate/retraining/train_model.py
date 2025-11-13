@@ -1,28 +1,18 @@
-import logging
 import os
 import sys
 
-from polars.exceptions import PolarsError
 from botocore.exceptions import ClientError
+from polars.exceptions import PolarsError
 
-from projects._03_independent_cqc._05_model.model_registry import (
-    model_definitions,
-)
+from polars_utils import utils
+from projects._03_independent_cqc._05_model.model_registry import model_definitions
 from projects._03_independent_cqc._05_model.utils.model import (
     Model,
     ModelNotTrainedError,
 )
-from polars_utils import utils
 from projects._03_independent_cqc._05_model.utils.version_manager import (
     ModelVersionManager,
 )
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 
 TOPIC_ARN = os.environ.get("MODEL_RETRAIN_TOPIC_ARN", default="test_retrain_model")
 S3_DATA_SOURCE = os.environ.get(
@@ -77,24 +67,24 @@ def main(model_name: str, seed: int = None) -> ModelVersionManager:
 
         model = Model(**{k: v for k, v in model_definition.items() if k in FIELD_LIST})
 
-        logger.info(f"Training model {model_name}...")
-        logger.info(f"Model: {model_definition}")
+        print(f"Training model {model_name}...")
+        print(f"Model: {model_definition}")
 
         data = model.get_raw_data(
             bucket_name=S3_DATA_SOURCE,
         )
-        logger.info(f"Raw Data: {data.collect().shape}")
+        print(f"Raw Data: {data.collect().shape}")
 
-        logger.info("Creating train and test datasets...")
+        print("Creating train and test datasets...")
         train_df, test_df = Model.create_train_and_test_datasets(data, seed=seed)
 
-        logger.info(f"Fitting {str(model.model)}...")
+        print(f"Fitting {str(model.model)}...")
         model.fit(train_df)
 
-        logger.info("Validating model...")
+        print("Validating model...")
         validation = model.validate(test_df)
 
-        logger.info("Saving model and version...")
+        print("Saving model and version...")
         version_manager = ModelVersionManager(
             s3_bucket=MODEL_S3_BUCKET,
             s3_prefix=f"{MODEL_S3_PREFIX}/{model_name}",
@@ -116,63 +106,63 @@ def main(model_name: str, seed: int = None) -> ModelVersionManager:
         return version_manager
 
     except KeyError as e:
-        logger.error(e)
-        logger.error(sys.argv)
-        logger.error("Check that the model name is valid.")
+        print(f"ERROR: {e}")
+        print(f"ERROR: {sys.argv}")
+        print("ERROR: Check that the model name is valid.")
         subject = ERROR_SUBJECT
         message = get_error_notification(model_name, str(e))
         raise
     except TypeError as e:
-        logger.error(e)
-        logger.error(sys.argv)
-        logger.error(
-            "It is likely the model failed to instantiate. Check the parameters."
+        print(f"ERROR: {e}")
+        print(f"ERROR: {sys.argv}")
+        print(
+            "ERROR: It is likely the model failed to instantiate. Check the parameters."
         )
         subject = ERROR_SUBJECT
         message = get_error_notification(model_name, str(e))
         raise
     except ValueError as e:
-        logger.error(e)
-        logger.error(sys.argv)
-        logger.error(
-            "Check that you specified a valid model_type in your model definition."
+        print(f"ERROR: {e}")
+        print(f"ERROR: {sys.argv}")
+        print(
+            "ERROR: Check that you specified a valid model_type in your model definition."
         )
-        logger.error(model_definitions[model_name])
+        print(f"ERROR: {model_definitions[model_name]}")
         subject = ERROR_SUBJECT
         message = get_error_notification(model_name, str(e))
         raise
     except PolarsError as e:
-        logger.error(e)
-        logger.error(sys.argv)
-        logger.error(
-            "This error originated in Polars. Check that Polars is able to read from S3."
+        print(f"ERROR: {e}")
+        print(f"ERROR: {sys.argv}")
+        print(
+            "ERROR: This error originated in Polars. Check that Polars is able to read from S3."
         )
         subject = ERROR_SUBJECT
         message = get_error_notification(model_name, str(e))
         raise
     except ModelNotTrainedError as e:
-        logger.error(e)
-        logger.error(sys.argv)
+        print(f"ERROR: {e}")
+        print(f"ERROR: {sys.argv}")
         subject = ERROR_SUBJECT
         message = get_error_notification(model_name, str(e))
         raise
     except ClientError as e:
-        logger.error(e)
-        logger.error(sys.argv)
-        logger.error(
-            "There was an error while serialising the model or saving the version parameter."
+        print(f"ERROR: {e}")
+        print(f"ERROR: {sys.argv}")
+        print(
+            "ERROR: There was an error while serialising the model or saving the version parameter."
         )
         subject = ERROR_SUBJECT
         message = get_error_notification(model_name, str(e))
         raise
     except Exception as e:
-        logger.error(e)
+        print(f"ERROR: {e}")
         subject = ERROR_SUBJECT
         message = get_error_notification(model_name, str(e))
         raise
     finally:
         if TOPIC_ARN == "test_retrain_model":
-            logger.warning("Test topic only, no live topic set.")
+            print("WARNING: Test topic only, no live topic set.")
         utils.send_sns_notification(
             subject=subject,
             message=message,

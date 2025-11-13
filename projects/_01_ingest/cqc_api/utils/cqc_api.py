@@ -1,4 +1,3 @@
-import logging
 from typing import Generator, Iterable, List
 
 import requests
@@ -13,9 +12,6 @@ ONE_MINUTE = 60
 DEFAULT_PAGE_SIZE = 500
 CQC_API_BASE_URL = "https://api.service.cqc.org.uk"
 USER_AGENT = "SkillsForCare"
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
 
 class NoProviderOrLocationException(Exception):
@@ -94,13 +90,11 @@ def get_all_objects(
         },
     )["totalPages"]
 
-    logger.info(f"Total pages: {total_pages}")
-    logger.info(f"Beginning CQC bulk download of {object_type}...")
+    print(f"Total pages: {total_pages}")
+    print(f"Beginning CQC bulk download of {object_type}...")
 
     for page_number in range(1, total_pages + 1):
-        logger.info(
-            f"Collecting {object_type} from API page {page_number}/{total_pages}"
-        )
+        print(f"Collecting {object_type} from API page {page_number}/{total_pages}")
         page_locations = get_page_objects(
             url, page_number, object_type, object_identifier, cqc_api_primary_key
         )
@@ -180,15 +174,15 @@ def get_updated_objects(
             page_number=page_number,
             per_page=per_page,
         )
-        logging.debug(f"Changes for page {page_number}: {changes_by_page}")
+        print(f"Changes for page {page_number}: {changes_by_page}")
 
         # Get total pages from first query
         if total_pages == -1:
             total_pages = changes_by_page["totalPages"]
-            logger.info(f"Total pages to search for changes: {total_pages}")
+            print(f"Total pages to search for changes: {total_pages}")
 
         if total_pages == 0:
-            logger.info(
+            print(
                 f"No {organisation_type}s updated between {start_timestamp} and {end_timestamp}"
             )
             return
@@ -199,14 +193,14 @@ def get_updated_objects(
                 yield get_object(id, object_type, cqc_api_primary_key)
             except NoProviderOrLocationException as err:
                 # CQC API changes URL returns unfetchable providerIds
-                logger.info(err)
-                logger.info(f"Unable to fetch data for providerId: {id}")
+                print(err)
+                print(f"Unable to fetch data for providerId: {id}")
 
         if changes_by_page["page"] == total_pages:
-            logger.info("Completed final page of changes.")
+            print("Completed final page of changes.")
             break
 
-        logger.info(f"Querying page {page_number + 1} of {total_pages}.")
+        print(f"Querying page {page_number + 1} of {total_pages}.")
         page_number += 1
 
 

@@ -34,19 +34,18 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     postcode_cleaned: str = NewCqcLocationApiColumns.postal_code + "_cleaned"
     postcode_truncated: str = postcode_cleaned + "_truncated"
     primary_service_type: str = "primary_service_type"
+    primary_service_type_second_level: str = primary_service_type + "_second_level"
     provider_name: str = "provider_name"
     registered_manager_names: str = "registered_manager_names"
+    regulated_activities_offered: str = "regulated_activities_offered"
     related_location: str = "related_location"
+    relationships_types: str = "relationships_types"
     relationships_exploded: str = NewCqcLocationApiColumns.relationships + "_exploded"
     relationships_predecessors_only: str = (
         NewCqcLocationApiColumns.relationships + "_predecessors_only"
     )
     services_offered: str = "services_offered"
     specialisms_offered: str = "specialisms_offered"
-    specialist_generalist_other_dementia: str = "specialist_generalist_other_dementia"
-    specialist_generalist_other_lda: str = (
-        "specialist_generalist_other_learning_disabilities"
-    )
-    specialist_generalist_other_mh: str = (
-        "specialist_generalist_other_mental_health_conditions"
-    )
+    specialism_dementia: str = "specialism_dementia"
+    specialism_learning_disabilities: str = "specialism_learning_disabilities"
+    specialism_mental_health: str = "specialism_mental_health_conditions"

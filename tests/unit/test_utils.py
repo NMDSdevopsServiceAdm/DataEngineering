@@ -19,8 +19,6 @@ from pyspark.sql.types import (
     StructType,
 )
 
-from tests.test_data.unit_test_data import JoinDimensionData as Data
-from tests.test_data.unit_test_schemas import JoinDimensionSchemas as Schemas
 from tests.test_file_data import UtilsData
 from tests.test_file_schemas import UtilsSchema
 from utils import utils
@@ -650,6 +648,7 @@ class GeneralUtilsTests(UtilsTests):
         csv_test = utils.is_csv(csv_name_without_extention)
         self.assertFalse(csv_test)
 
+    # converted to polars -> tests.test_polars_utils.test_utils.py
     def test_split_s3_uri(self):
         s3_uri = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/"
         bucket_name, prefix = utils.split_s3_uri(s3_uri)
@@ -881,30 +880,6 @@ class SelectRowsWithNonNullValueTests(UtilsTests):
         expected_data = expected_df.collect()
 
         self.assertEqual(returned_data, expected_data)
-
-
-class JoinDimensionTests(UtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_join_dimension_joins_dimension_with_simple_equivalence(self):
-        test_cqc_df = self.spark.createDataFrame(
-            Data.join_dimension_with_simple_equivalence_cqc_rows,
-            Schemas.join_dimension_with_simple_equivalence_cqc_schema,
-        )
-        test_dim_df = self.spark.createDataFrame(
-            Data.join_dimension_with_simple_equivalence_dim_rows,
-            Schemas.join_dimension_with_simple_equivalence_dim_schema,
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_join_dimension_with_simple_equivalence_rows,
-            Schemas.expected_join_dimension_with_simple_equivalence_schema,
-        )
-
-        result_df = utils.join_dimension(test_cqc_df, test_dim_df, "locationId")
-
-        self.assertEqual(result_df.count(), expected_df.count())
-        self.assertEqual(result_df.collect(), expected_df.collect())
 
 
 if __name__ == "__main__":

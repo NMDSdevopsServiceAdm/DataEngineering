@@ -1,12 +1,9 @@
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
-from polars_utils.logger import get_logger
 from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CareHome
-
-logger = get_logger(__name__)
 
 
 def estimate_non_res_capacity_tracker_filled_posts(df: DataFrame) -> DataFrame:
@@ -67,7 +64,7 @@ def calculate_care_worker_ratio(df: DataFrame) -> float:
     total_posts = df.agg(F.sum(df[IndCQC.estimate_filled_posts])).collect()[0][0]
 
     care_worker_ratio = total_care_workers / total_posts
-    logger.info(f"The care worker ratio used is: {care_worker_ratio}.")
+    print(f"The care worker ratio used is: {care_worker_ratio}.")
     return care_worker_ratio
 
 

@@ -1,23 +1,14 @@
 import json
 import os
-import sys
-import polars as pl
-from polars.exceptions import PolarsError, ColumnNotFoundError
-import logging
 from collections.abc import Callable
-from polars_utils import utils
-import boto3
-from botocore.exceptions import ClientError
-from projects._03_independent_cqc._05_model.model_registry import (
-    model_definitions,
-)
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+import boto3
+import polars as pl
+from botocore.exceptions import ClientError
+from polars.exceptions import ColumnNotFoundError, PolarsError
+
+from polars_utils import utils
+from projects._03_independent_cqc._05_model.model_registry import model_definitions
 
 
 def main_preprocessor(model_name: str, preprocessor: Callable[..., None]) -> None:
@@ -54,27 +45,25 @@ def main_preprocessor(model_name: str, preprocessor: Callable[..., None]) -> Non
         preprocessor_kwargs["source"] = source
         preprocessor_kwargs["destination"] = destination
 
-        logger.info("Getting Task Token for Step Function callback")
-        logger.info(
-            f"Invoking {preprocessor.__name__} with kwargs: {preprocessor_kwargs}"
-        )
+        print("Getting Task Token for Step Function callback")
+        print(f"Invoking {preprocessor.__name__} with kwargs: {preprocessor_kwargs}")
         preprocessor(**preprocessor_kwargs)
         result = {"result": "SUCCESS"}
         sfn.send_task_success(taskToken=task_token, output=json.dumps(result))
     except ClientError as e:
-        logger.error("There was an error calling the StepFunction AWS service")
-        logger.error(f"preprocessor error: {e}")
+        print("ERROR: There was an error calling the StepFunction AWS service")
+        print(f"ERROR: preprocessor error: {e}")
         raise
     except ValueError as e:
-        logger.error("There was an invalid or missing parameter in the invocation.")
-        logger.error(e)
+        print("ERROR: There was an invalid or missing parameter in the invocation.")
+        print(f"ERROR: {e}")
         sfn.send_task_failure(taskToken=task_token, error=str(e))
         raise
     except Exception as e:
-        logger.error(
-            f"There was an unexpected exception while executing preprocessor {preprocessor.__name__}."
+        print(
+            f"ERROR: There was an unexpected exception while executing preprocessor {preprocessor.__name__}."
         )
-        logger.error(e)
+        print(f"ERROR: {e}")
         sfn.send_task_failure(taskToken=task_token, error=str(e))
         raise
 
@@ -114,7 +103,7 @@ def preprocess_remove_nulls(
     """
     if source[-7:] != "parquet" and source[-1] != "/":
         source = source + "/"
-    logger.info(f"Reading data from {source} - the reading method is LAZY {lazy}")
+    print(f"Reading data from {source} - the reading method is LAZY {lazy}")
     try:
         data = pl.scan_parquet(source) if lazy else pl.read_parquet(source)
         result_df = None
@@ -128,7 +117,7 @@ def preprocess_remove_nulls(
                 condition = condition & c
             result_df = data.filter(condition)
 
-        logger.info(
+        print(
             f"Processing succeeded. Writing to {uri} - the writing method is LAZY {lazy}"
         )
         if lazy:
@@ -136,18 +125,18 @@ def preprocess_remove_nulls(
         else:
             result_df.write_parquet(uri)
 
-        logger.info("Finished writing to %s", uri)
+        print("Finished writing to %s", uri)
     except ColumnNotFoundError as e:
-        logger.error(
-            f"One or more of the specified columns {columns} are not present in {source}."
+        print(
+            f"ERROR: One or more of the specified columns {columns} are not present in {source}."
         )
-        logger.error(e)
+        print(f"ERROR: {e}")
         raise
     except (Exception, FileNotFoundError, PolarsError) as e:
-        logger.error(
-            f"Polars was not able to read or process the data in {source}, or send to {destination}"
+        print(
+            f"ERROR: Polars was not able to read or process the data in {source}, or send to {destination}"
         )
-        logger.error(f"Polars error: {e}")
+        print(f"ERROR: Polars error: {e}")
         raise
 
 
@@ -169,7 +158,7 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
     try:
         if source[-7:] != "parquet" and source[-1] != "/":
             source = source + "/"
-        logger.info(f"Reading data from {source} - the reading method is LAZY {lazy}")
+        print(f"Reading data from {source} - the reading method is LAZY {lazy}")
         data = pl.scan_parquet(source) if lazy else pl.read_parquet(source)
         required_columns = [
             "locationId",
@@ -178,7 +167,7 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
             "ascwds_filled_posts_deduplicated_clean",
             "pir_people_directly_employed_deduplicated",
         ]
-        logger.info("Read succeeded - processing...")
+        print("Read succeeded - processing...")
         result = (
             data.select(*required_columns)
             .filter(
@@ -205,7 +194,7 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
             .drop("abs_resid")
         )
         uri = f"{destination}/processed.parquet"
-        logger.info(
+        print(
             f"Processing succeeded. Writing to {uri} - the writing method is LAZY {lazy}"
         )
         if lazy:
@@ -213,10 +202,10 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
         else:
             result.write_parquet(uri)
     except (pl.exceptions.PolarsError, FileNotFoundError) as e:
-        logger.error(
-            f"Polars was not able to read or process the data in {source}, or send to {destination}"
+        print(
+            f"ERROR: Polars was not able to read or process the data in {source}, or send to {destination}"
         )
-        logger.error(f"Polars error: {e}")
+        print(f"ERROR: {e}")
         raise
 
 
@@ -233,8 +222,8 @@ if __name__ == "__main__":
         )
     preprocessor_id = model_definitions[parsed.model_name]["preprocessor"]
     if preprocessor_id not in locals():
-        logger.error(
-            "The processor name provided in the model definition does not match a local processor function."
+        print(
+            "ERROR: The processor name provided in the model definition does not match a local processor function."
         )
         raise ValueError(f"No such preprocessor: {preprocessor_id}")
     preprocessor = locals()[preprocessor_id]

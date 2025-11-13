@@ -1,22 +1,23 @@
+import io
+import os
+import shutil
+import tempfile
+import unittest
+from contextlib import redirect_stdout
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import polars as pl
+from botocore.exceptions import ClientError
+from polars.testing import assert_frame_equal
+
 from projects._03_independent_cqc._05_model.fargate.preprocessing.preprocessing import (
+    main_preprocessor,
     preprocess_non_res_pir,
     preprocess_remove_nulls,
-    logger,
-    main_preprocessor,
     validate_model_definition,
 )
 from projects._03_independent_cqc._05_model.utils.model import ModelType
-import unittest
-import os
-import polars as pl
-from polars.testing import assert_frame_equal
-from unittest.mock import patch, MagicMock
-import shutil
-import tempfile
-from pathlib import Path
-import logging
-from botocore.exceptions import ClientError
-
 
 PATCH_STEM = (
     "projects._03_independent_cqc._05_model.fargate.preprocessing.preprocessing"
@@ -62,17 +63,19 @@ class TestPreprocessing(unittest.TestCase):
     @patch.dict(f"{PATCH_STEM}.model_definitions", fake_definition)
     @patch(f"{PATCH_STEM}.boto3.client")
     def test_main_preprocessor_logs_errors(self, mock_boto_client):
-        with self.assertLogs(logger.name, level=logging.INFO) as cm:
+        f = io.StringIO()
+        with redirect_stdout(f):
             with self.assertRaises(FileNotFoundError):
                 preprocessor = DummyProcessor()
                 preprocessor.__str__.return_value = "DummyProcessor at xyz"
                 preprocessor.side_effect = FileNotFoundError("foo")
                 main_preprocessor("dummy_model", preprocessor)
-            self.assertIn("foo", cm.output[3])
-            self.assertIn(
-                f"There was an unexpected exception while executing preprocessor DummyProcessor.",
-                cm.output[2],
-            )
+        output = f.getvalue()
+        self.assertIn("foo", output)
+        self.assertIn(
+            f"ERROR: There was an unexpected exception while executing preprocessor DummyProcessor.",
+            output,
+        )
 
     def test_validate_raises_value_error_if_model_id_not_present(self):
         with self.assertRaises(ValueError):
@@ -105,13 +108,15 @@ class TestPreprocessing(unittest.TestCase):
         mock_sender = MagicMock()
         mock_boto_client.return_value = mock_client
         mock_client.send_task_failure = mock_sender
-        with self.assertLogs(logger.name, level=logging.INFO) as cm:
+        f = io.StringIO()
+        with redirect_stdout(f):
             with self.assertRaises(ValueError):
                 preprocessor = DummyProcessor()
                 main_preprocessor("silly_model", preprocessor)
-            self.assertIn("silly_model", cm.output[1])
-            self.assertIn("invalid or missing", cm.output[0])
-            mock_sender.assert_called_once()
+        output = f.getvalue()
+        self.assertIn("silly_model", output)
+        self.assertIn("invalid or missing", output)
+        mock_sender.assert_called_once()
 
     @patch.dict(f"{PATCH_STEM}.model_definitions", fake_definition)
     @patch(f"{PATCH_STEM}.boto3.client")
@@ -123,11 +128,13 @@ class TestPreprocessing(unittest.TestCase):
         mock_client.send_task_success.side_effect = ClientError(
             {"Error": {"Message": ""}}, "x"
         )
-        with self.assertLogs(logger.name, level=logging.INFO) as cm:
+        f = io.StringIO()
+        with redirect_stdout(f):
             with self.assertRaises(ClientError):
                 preprocessor = DummyProcessor()
                 main_preprocessor("dummy_model", preprocessor)
-            self.assertIn("StepFunction AWS service", cm.output[2])
+        output = f.getvalue()
+        self.assertIn("StepFunction AWS service", output)
 
 
 class TestPreprocessNonResPir(unittest.TestCase):
@@ -213,15 +220,17 @@ class TestPreprocessNonResPir(unittest.TestCase):
         self.assertEqual({"1-119187505", "1-2206520209", "1-118618710"}, ids)
 
     def test_preprocess_non_res_pir_logs_failure(self):
-        with self.assertLogs(logger.name, level=logging.INFO) as cm:
+        f = io.StringIO()
+        with redirect_stdout(f):
             with self.assertRaises((pl.exceptions.PolarsError, FileNotFoundError)):
                 preprocess_non_res_pir(
                     "my/nonexistent/path", self.destination, lazy=False
                 )
-            self.assertIn(
-                f"Polars was not able to read or process the data in my/nonexistent/path/, or send to {self.destination}",
-                cm.output[1],
-            )
+        output = f.getvalue()
+        self.assertIn(
+            f"ERROR: Polars was not able to read or process the data in my/nonexistent/path/, or send to {self.destination}",
+            output,
+        )
 
 
 class TestPreprocessRemoveNulls(unittest.TestCase):
