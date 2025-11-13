@@ -11,6 +11,7 @@ from utils.column_values.categorical_column_values import (
     Dormancy,
     LocationType,
     PrimaryServiceType,
+    PrimaryServiceTypeSecondLevel,
     Region,
     RegistrationStatus,
     RelatedLocation,
@@ -1211,6 +1212,74 @@ class LocationsCleanUtilsData:
         ),
     ]
 
+    allocate_primary_service_type_second_level_rows = [
+        (
+            "1-001",
+            "1-002",
+            "1-003",
+            "1-004",
+            "1-005",
+            "1-006",
+            "1-007",
+            "1-008",
+            "1-009",
+        ),
+        (
+            [
+                "Some other service type",
+                "Shared Lives",
+            ],
+            [
+                "Care home service with nursing",
+                "Shared Lives",
+            ],
+            [
+                "Care home service without nursing",
+                "Care home service with nursing",
+            ],
+            [
+                "Domiciliary care service",
+                "Care home service without nursing",
+            ],
+            [
+                "Community health care services - Nurses Agency only",
+                "Domiciliary care service",
+            ],
+            [
+                "Residential substance misuse treatment and/or rehabilitation service",
+                "Extra Care housing services",
+            ],
+            [
+                "Hospice services",
+                "Residential substance misuse treatment and/or rehabilitation service",
+            ],
+            [
+                "Rehabilitation services",
+                "Acute services with overnight beds",
+            ],
+            [
+                "Some other service type",
+                "Rehabilitation services",
+            ],
+        ),
+    ]
+    expected_allocate_primary_service_type_second_level_rows = (
+        allocate_primary_service_type_second_level_rows
+        + [
+            (
+                PrimaryServiceTypeSecondLevel.shared_lives,
+                PrimaryServiceTypeSecondLevel.shared_lives,
+                PrimaryServiceTypeSecondLevel.care_home_with_nursing,
+                PrimaryServiceTypeSecondLevel.care_home_only,
+                PrimaryServiceTypeSecondLevel.non_residential,
+                PrimaryServiceTypeSecondLevel.non_residential,
+                PrimaryServiceTypeSecondLevel.other_residential,
+                PrimaryServiceTypeSecondLevel.other_residential,
+                PrimaryServiceTypeSecondLevel.other_non_residential,
+            )
+        ]
+    )
+
 
 @dataclass
 class PostcodeMatcherTest:
@@ -1484,6 +1553,7 @@ class ValidateCqcLocations4FullCleanTest:
         (RegistrationStatus.registered,),
         ("1-0001",),
         (PrimaryServiceType.non_residential,),
+        (PrimaryServiceTypeSecondLevel.non_residential,),
         (CareHome.care_home,),
         (Sector.independent,),
         (RelatedLocation.has_related_location,),

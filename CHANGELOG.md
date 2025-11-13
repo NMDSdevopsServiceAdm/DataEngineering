@@ -71,13 +71,9 @@ All notable changes to this project will be documented in this file.
 
 - Copies the full prod data into branch for testing purposes as opposed to the small subset currently used.
 
-- Updated the build_snapshot_table_from_delta() function to retrieve the latest available data when the CQC API has not been executed on the step function run date.
-
 - Only check postcodes match for locations who provide social care and are registered at that point in time.
 
 - Removed validation check for a maximum of 500 beds in the CQC clean locations validation script.
-
-- Updated docker file for create_dataset_snapshot lambda function to explicitly copy polars_utils while running.
 
 - Removed locations from CQC delta clean when registration status or location type are null.
 
@@ -88,6 +84,8 @@ All notable changes to this project will be documented in this file.
 - Created a job to flatten CQC location data to remove some unwanted data and simplify complex struct columns.
 
 - Created a job to build a full snapshot for each CQC location import data from a delta dataset.
+
+- Used `convert_delta_to_full` function to build full locations and providers data in step functions.
 
 - Created a job to clean the full CQC location data to remove some unwanted data, join in ONS postcode data and split registered and deregistered locations.
 
@@ -141,7 +139,11 @@ All notable changes to this project will be documented in this file.
 
 - Removed logging from step functions.
 
+- Removed lambdas no longer being used (`check_dataset_equality` and `create_dataset_snapshot`)
+
 - Updated input parameter for the flatten CQC ratings job. Ratings columns are now retrieved from the raw data and joined with the latest locations snapshot, which is the new input source for the job.
+
+- Converted function allocate_primary_service_type_second_level from pyspark to polars and called it in cqc_locations_4_full_clean.
 
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.

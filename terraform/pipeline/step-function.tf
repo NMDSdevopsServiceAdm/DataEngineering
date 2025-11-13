@@ -74,7 +74,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
 
     # lambdas
     pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
-    create_snapshot_lambda_lambda_arn    = aws_lambda_function.create_snapshot_lambda.arn
 
     # step-functions - cannot include any from this for_each as circular dependency
     # if needed, create explicitly outside of this resource
@@ -286,9 +285,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "lambda:InvokeFunction"
         ],
         "Resource" : [
-          "${aws_lambda_function.error_notification_lambda.arn}*",
-          "${aws_lambda_function.create_snapshot_lambda.arn}*",
-          "${aws_lambda_function.check_datasets_equal.arn}*"
+          "${aws_lambda_function.error_notification_lambda.arn}*"
         ]
       },
       {
