@@ -8,8 +8,9 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import polars as pl
+import polars.testing as pl_testing
 from botocore.exceptions import ClientError
-from polars.testing import assert_frame_equal
+from polars.exceptions import ColumnNotFoundError
 
 from projects._03_independent_cqc._05_model.fargate.preprocessing.preprocessing import (
     main_preprocessor,
@@ -257,7 +258,7 @@ class TestPreprocessRemoveNulls(unittest.TestCase):
             preprocess_remove_nulls(self.s3_uri, self.destination, [])
         result_df = pl.read_parquet(f"{self.destination}/processed.parquet")
         self.assertEqual((5, 4), result_df.shape)
-        assert_frame_equal(self.sample_df, result_df)
+        pl_testing.assert_frame_equal(self.sample_df, result_df)
 
     def test_preprocess_remove_nulls_basic_execution_single_column(self):
         with patch(f"{PATCH_STEM}.pl.read_parquet") as mock_read_parquet:
@@ -278,7 +279,7 @@ class TestPreprocessRemoveNulls(unittest.TestCase):
     def test_raises_error_if_columns_not_present(self):
         with patch(f"{PATCH_STEM}.pl.read_parquet") as mock_read_parquet:
             mock_read_parquet.return_value = self.sample_df
-            with self.assertRaises(pl.ColumnNotFoundError):
+            with self.assertRaises(ColumnNotFoundError):
                 preprocess_remove_nulls(
                     self.s3_uri, self.destination, ["no_such_column"]
                 )
