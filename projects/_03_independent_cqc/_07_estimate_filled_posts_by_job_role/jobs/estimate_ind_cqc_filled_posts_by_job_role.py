@@ -39,6 +39,7 @@ estimated_ind_cqc_filled_posts_columns_to_import = [
     IndCQC.provider_id,
     IndCQC.services_offered,
     IndCQC.primary_service_type,
+    IndCQC.primary_service_type_second_level,
     IndCQC.care_home,
     IndCQC.dormancy,
     IndCQC.number_of_beds,

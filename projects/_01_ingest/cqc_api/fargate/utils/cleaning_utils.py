@@ -4,15 +4,20 @@ from polars_utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_values.categorical_column_values import CareHome, PrimaryServiceType
 from utils.column_values.categorical_column_values import (
-    CareHome,
-    PrimaryServiceType,
+    PrimaryServiceTypeSecondLevel as PSSL_values,
+)
+from utils.column_values.categorical_column_values import (
     RelatedLocation,
     Sector,
     Services,
 )
 from utils.column_values.categorical_column_values import (
     SpecialistGeneralistOther as SpecGenOther,
+)
+from utils.value_labels.ind_cqc_filled_posts.primary_service_type_mapping import (
+    CqcServiceToPrimaryServiceTypeSecondLevelLookup as PSSL_lookup,
 )
 
 
@@ -327,3 +332,38 @@ def remove_specialist_colleges(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     cqc_lf = cqc_lf.remove(specialist_college_only)
 
     return cqc_lf
+
+
+def allocate_primary_service_type_second_level(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Adds a column called primary_service_type_second_level which shows the allocated service type per location.
+
+    The function builds an expression of nested when clauses using the order of the keys in the
+    PSSL_lookup dict. For example, when 'services_offered' column contains 'key 1' then 'Value 1',
+    otherwise when 'services_offered' contains 'key 2' then 'value 2', otherwise...
+
+    Therefore, the lookup_dict order determines the priority of which primary_service_type_second_level
+    is allocated to a location if they have multiple 'services_offered'.
+    When none of the `services_offered` are in the lookup_dict keys, then the row
+    gets the default value 'Other non-residential'.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame containing the 'services_offered' column.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with a new column called 'primary_service_type_second_level'.
+    """
+
+    lookup_dict = list(PSSL_lookup.dict.items())
+
+    condition = pl.lit(PSSL_values.other_non_residential)
+    for description, primary_service_type_second_level in lookup_dict:
+        condition = (
+            pl.when(pl.col(CQCLClean.services_offered).list.contains(description))
+            .then(pl.lit(primary_service_type_second_level))
+            .otherwise(condition)
+        )
+
+    lf = lf.with_columns(condition.alias(CQCLClean.primary_service_type_second_level))
+
+    return lf

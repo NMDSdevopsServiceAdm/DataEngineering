@@ -5899,31 +5899,6 @@ class IndCQCDataUtils:
         ("loc 1", 3, None, 25.0, 50.0),
     ]
 
-    # fmt: off
-    allocate_primary_service_type_second_level_rows = [
-        ("1-001", ["Some other service type", "Shared Lives"]),
-        ("1-002", ["Care home service with nursing", "Shared Lives"]),
-        ("1-003", ["Care home service without nursing", "Care home service with nursing"]),
-        ("1-004", ["Domiciliary care service", "Care home service without nursing"]),
-        ("1-005", ["Community health care services - Nurses Agency only", "Domiciliary care service"]),
-        ("1-006", ["Residential substance misuse treatment and/or rehabilitation service", "Extra Care housing services"]),
-        ("1-007", ["Hospice services", "Residential substance misuse treatment and/or rehabilitation service"]),
-        ("1-008", ["Rehabilitation services", "Acute services with overnight beds"]),
-        ("1-009", ["Some other service type", "Rehabilitation services"]),
-    ]
-    expected_allocate_primary_service_type_second_level_rows = [
-        ("1-001", ["Some other service type", "Shared Lives"], PrimaryServiceTypeSecondLevel.shared_lives),
-        ("1-002", ["Care home service with nursing", "Shared Lives"], PrimaryServiceTypeSecondLevel.shared_lives),
-        ("1-003", ["Care home service without nursing", "Care home service with nursing"], PrimaryServiceTypeSecondLevel.care_home_with_nursing),
-        ("1-004", ["Domiciliary care service", "Care home service without nursing"], PrimaryServiceTypeSecondLevel.care_home_only),
-        ("1-005", ["Community health care services - Nurses Agency only", "Domiciliary care service"], PrimaryServiceTypeSecondLevel.non_residential),
-        ("1-006", ["Residential substance misuse treatment and/or rehabilitation service", "Extra Care housing services"], PrimaryServiceTypeSecondLevel.non_residential),
-        ("1-007", ["Hospice services", "Residential substance misuse treatment and/or rehabilitation service"], PrimaryServiceTypeSecondLevel.other_residential),
-        ("1-008", ["Rehabilitation services", "Acute services with overnight beds"], PrimaryServiceTypeSecondLevel.other_residential),
-        ("1-009", ["Some other service type", "Rehabilitation services"], PrimaryServiceTypeSecondLevel.other_non_residential),
-    ]
-    # fmt: on
-
 
 @dataclass
 class NullCtPostsToBedsOutliers:

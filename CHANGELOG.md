@@ -143,6 +143,8 @@ All notable changes to this project will be documented in this file.
 
 - Updated input parameter for the flatten CQC ratings job. Ratings columns are now retrieved from the raw data and joined with the latest locations snapshot, which is the new input source for the job.
 
+- Converted function allocate_primary_service_type_second_level from pyspark to polars and called it in cqc_locations_4_full_clean.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 

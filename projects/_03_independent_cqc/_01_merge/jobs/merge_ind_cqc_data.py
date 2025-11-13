@@ -51,6 +51,7 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.specialism_mental_health,
     CQCLClean.related_location,
     CQCLClean.primary_service_type,
+    CQCLClean.primary_service_type_second_level,
     CQCLClean.registered_manager_names,
     ONSClean.contemporary_ons_import_date,
     ONSClean.contemporary_cssr,
