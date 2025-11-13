@@ -3,9 +3,7 @@ import unittest
 import polars as pl
 import polars.testing as pl_testing
 
-from projects._01_ingest.cqc_api.fargate.utils import (
-    locations_2_delta_flatten_utils as job,
-)
+from projects._01_ingest.cqc_api.fargate.utils import flatten_utils as job
 from projects._01_ingest.unittest_data.polars_ingest_test_file_data import (
     FlattenUtilsData as Data,
 )
@@ -13,7 +11,7 @@ from projects._01_ingest.unittest_data.polars_ingest_test_file_schema import (
     FlattenUtilsSchema as Schemas,
 )
 
-PATCH_PATH = "projects._01_ingest.cqc_api.fargate.utils.locations_2_delta_flatten_utils"
+PATCH_PATH = "projects._01_ingest.cqc_api.fargate.utils.flatten_utils"
 
 
 class FlattenStructFieldsTests(unittest.TestCase):

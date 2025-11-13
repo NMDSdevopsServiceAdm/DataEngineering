@@ -133,7 +133,15 @@ All notable changes to this project will be documented in this file.
 
 - Updated the SfC reconciliation process based on the new datasets.
 
+- Refactored the Transform CQC pipeline to be more efficient.
+
+- Added parallel CQC providers jobs alongside locations.
+
 - Removed all CQC jobs, utils and tests no longer being used
+
+- Removed logging from step functions.
+
+- Updated input parameter for the flatten CQC ratings job. Ratings columns are now retrieved from the raw data and joined with the latest locations snapshot, which is the new input source for the job.
 
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
