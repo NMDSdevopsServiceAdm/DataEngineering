@@ -5,16 +5,6 @@
 #####################################################################################################
 
 # Get the latest image digests for this branch
-data "aws_ecr_image" "create_dataset_snapshot" {
-  repository_name = "lambda/create-snapshot"
-  image_tag       = terraform.workspace
-}
-
-data "aws_ecr_image" "check_datasets_equal" {
-  repository_name = "lambda/check-datasets-equal"
-  image_tag       = terraform.workspace
-}
-
 data "aws_ecr_image" "model_preprocess" {
   repository_name = "fargate/preprocessing"
   image_tag       = terraform.workspace
