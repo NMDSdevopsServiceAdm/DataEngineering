@@ -1,6 +1,6 @@
 import polars as pl
 
-from polars_utils import utils
+from polars_utils import raw_data_adjustments, utils
 from polars_utils.cleaning_utils import column_to_date
 from projects._01_ingest.cqc_api.fargate.utils import cleaning_utils as cUtils
 from projects._01_ingest.cqc_api.fargate.utils import postcode_matcher as pmUtils
@@ -43,6 +43,8 @@ def main(
         cqc_locations_full_flattened_source,
     )
     print("Full Flattened CQC Location LazyFrame read in")
+
+    cqc_lf = cqc_lf.filter(raw_data_adjustments.is_valid_location())
 
     cqc_lf = cqc_lf.filter(
         pl.col(CQCLClean.type) == LocationType.social_care_identifier
