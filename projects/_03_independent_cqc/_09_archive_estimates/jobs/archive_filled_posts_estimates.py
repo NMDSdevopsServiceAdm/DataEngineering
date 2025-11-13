@@ -36,6 +36,7 @@ MONTHLY_ARCHIVE_COLUMNS = [
     IndCQC.current_region,
     IndCQC.current_rural_urban_indicator_2011,
     IndCQC.current_lsoa21,
+    IndCQC.current_msoa21,
     IndCQC.dormancy,
     IndCQC.establishment_id,
     IndCQC.estimate_filled_posts,

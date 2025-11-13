@@ -32,6 +32,7 @@ estimated_ind_cqc_filled_posts_columns_to_import = [
     IndCQC.current_icb,
     IndCQC.current_rural_urban_indicator_2011,
     IndCQC.current_lsoa21,
+    IndCQC.current_msoa21,
     IndCQC.estimate_filled_posts,
     IndCQC.estimate_filled_posts_source,
     Keys.year,
