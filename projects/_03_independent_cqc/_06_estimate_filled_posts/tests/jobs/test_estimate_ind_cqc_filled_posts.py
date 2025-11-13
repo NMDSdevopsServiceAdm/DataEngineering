@@ -43,7 +43,6 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.allocate_primary_service_type_second_level")
     @patch(f"{PATCH_PATH}.estimate_non_res_capacity_tracker_filled_posts")
     @patch(f"{PATCH_PATH}.merge_columns_in_order")
     @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
@@ -62,7 +61,6 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         model_imputation_with_extrapolation_and_interpolation: Mock,
         merge_columns_in_order_mock: Mock,
         estimate_non_res_capacity_tracker_filled_posts_mock: Mock,
-        allocate_primary_service_type_second_level_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
@@ -96,7 +94,6 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         )
         self.assertEqual(merge_columns_in_order_mock.call_count, 1)
         estimate_non_res_capacity_tracker_filled_posts_mock.assert_called_once()
-        allocate_primary_service_type_second_level_mock.assert_called_once()
         self.assertEqual(write_to_parquet_patch.call_count, 1)
         write_to_parquet_patch.assert_any_call(
             ANY,
