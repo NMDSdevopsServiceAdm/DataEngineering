@@ -6,9 +6,6 @@ import pointblank as pb
 import polars as pl
 
 from polars_utils import utils
-from polars_utils.logger import get_logger
-
-logger = get_logger(__name__)
 
 
 def write_reports(validation: pb.Validate, bucket_name: str, reports_path: str) -> None:
@@ -39,7 +36,7 @@ def write_reports(validation: pb.Validate, bucket_name: str, reports_path: str) 
     try:
         validation.assert_below_threshold(level="error")
     except AssertionError:
-        logger.error("Data validation failed. See report for details.")
+        print("ERROR: Data validation failed. See report for details.")
         steps = json.loads(validation.get_json_report())
         # JSON report includes a detailed list of each validation step, including failures
         # Note that some 'steps' result in several steps in the execution

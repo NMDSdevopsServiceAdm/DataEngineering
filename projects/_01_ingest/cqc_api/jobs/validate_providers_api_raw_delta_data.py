@@ -1,4 +1,3 @@
-import logging
 import os
 import sys
 
@@ -14,9 +13,6 @@ from utils.validation.validation_utils import (
     raise_exception_if_any_checks_failed,
     validate_dataset,
 )
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
 
 def main(
@@ -37,8 +33,8 @@ def main(
 
 
 if __name__ == "__main__":
-    logger.info("Spark job 'validate_providers_api_raw_data' starting...")
-    logger.info(f"Job parameters: {sys.argv}")
+    print("Spark job 'validate_providers_api_raw_data' starting...")
+    print(f"Job parameters: {sys.argv}")
 
     (
         raw_cqc_provider_source,
@@ -64,4 +60,4 @@ if __name__ == "__main__":
             spark.sparkContext._gateway.shutdown_callback_server()
         spark.stop()
 
-    logger.info("Spark job 'validate_providers_api_raw_data' complete")
+    print("Spark job 'validate_providers_api_raw_data' complete")

@@ -1,10 +1,7 @@
 import projects._03_independent_cqc._01_merge.fargate.utils.utils as JRUtils
 from polars_utils import utils
-from polars_utils.logger import get_logger
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-
-logger = get_logger(__name__)
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -54,7 +51,6 @@ def main(
         lazy_df=aggregated_worker_lf,
         output_path=prepared_ascwds_job_role_counts_destination,
         partition_cols=partition_keys,
-        logger=logger,
         append=False,
     )
 
@@ -76,4 +72,4 @@ if __name__ == "__main__":
         prepared_ascwds_job_role_counts_destination=args.prepared_ascwds_job_role_counts_destination,
     )
 
-    logger.info("Finished preparing ascwds job role counts")
+    print("Finished preparing ascwds job role counts")

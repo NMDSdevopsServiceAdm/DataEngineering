@@ -1,11 +1,9 @@
-from polars_utils import logger, utils
+from polars_utils import utils
 from schemas.cqc_provider_schema_polars import POLARS_PROVIDER_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
-
-logger = logger.get_logger(__name__)
 
 cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -33,14 +31,13 @@ def main(delta_api_source: str, flattened_destination: str) -> None:
     utils.sink_to_parquet(
         cqc_lf,
         flattened_destination,
-        logger=logger,
         partition_cols=cqc_partition_keys,
         append=False,
     )
 
 
 if __name__ == "__main__":
-    logger.info("Running Flatten CQC providers job")
+    print("Running Flatten CQC providers job")
 
     args = utils.get_args(
         (
@@ -58,4 +55,4 @@ if __name__ == "__main__":
         flattened_destination=args.flattened_destination,
     )
 
-    logger.info("Finished Flatten CQC providers job")
+    print("Finished Flatten CQC providers job")

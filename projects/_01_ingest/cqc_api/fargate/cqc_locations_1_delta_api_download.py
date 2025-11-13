@@ -9,17 +9,12 @@ from datetime import datetime as dt
 import polars as pl
 
 from polars_utils import utils
-from polars_utils.logger import get_logger
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.aws_secrets_manager_utilities import get_secret
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as ColNames,
 )
-
-logger = get_logger(__name__)
-
-ISO_8601_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
 class InvalidTimestampArgumentError(Exception):
@@ -74,11 +69,11 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
                 "start_timestamp is after end_timestamp"
             )
 
-        logger.info(f'Getting SecretID "{SECRET_ID}"')
+        print(f'Getting SecretID "{SECRET_ID}"')
         secret = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
         cqc_api_primary_key_value: str = json.loads(secret)["Ocp-Apim-Subscription-Key"]
 
-        logger.info("Collecting locations with changes from API")
+        print("Collecting locations with changes from API")
         generator = cqc.get_updated_objects(
             object_type=CQC_OBJECT_TYPE,
             organisation_type=CQC_ORG_TYPE,
@@ -87,23 +82,23 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
         )
 
-        logger.info("Creating dataframe and writing to Parquet")
+        print("Creating dataframe and writing to Parquet")
         df: pl.DataFrame = pl.DataFrame(generator, POLARS_LOCATION_SCHEMA)
         df_unique: pl.DataFrame = df.unique(subset=[ColNames.location_id])
 
-        utils.write_to_parquet(df_unique, destination, logger=logger)
+        utils.write_to_parquet(df_unique, destination)
         return None
 
     except InvalidTimestampArgumentError as e:
-        logger.error(e)
-        logger.error(sys.argv)
+        print(f"ERROR: {e}")
+        print(f"ERROR: {sys.argv}")
         raise
     except FileNotFoundError as e:
-        logger.error(e)
-        logger.error(sys.argv)
+        print(f"ERROR: {e}")
+        print(f"ERROR: {sys.argv}")
         raise
     except Exception as e:
-        logger.error(e)
+        print(f"ERROR: {e}")
         raise
 
 
@@ -116,7 +111,7 @@ if __name__ == "__main__":
         ("--start_timestamp", "Start timestamp for location changes"),
         ("--end_timestamp", "End timestamp for location changes"),
     )
-    logger.info(f"Running job from {args.start_timestamp} to {args.end_timestamp}")
+    print(f"Running job from {args.start_timestamp} to {args.end_timestamp}")
 
     date_today = date.today()
     destination = utils.generate_s3_dir(

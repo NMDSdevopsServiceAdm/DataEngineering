@@ -1,19 +1,22 @@
+import io
 import pickle
 import unittest
-from unittest.mock import patch, MagicMock
-from projects._03_independent_cqc._05_model.utils.model import ModelType, Model
-from typing import Any
+from contextlib import redirect_stdout
+from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import Any
+from unittest.mock import MagicMock, patch
+
+import polars as pl
 from sklearn.base import BaseEstimator
 from sklearn.metrics import r2_score
-import polars as pl
-from pathlib import Path
 
 from projects._03_independent_cqc._05_model.fargate.retraining.train_model import (
     ModelVersionManager,
     main,
     model_definitions,
 )
+from projects._03_independent_cqc._05_model.utils.model import Model, ModelType
 
 PATCH_PATH = "projects._03_independent_cqc._05_model.fargate.retraining.train_model"
 
@@ -119,21 +122,27 @@ class TestMain(unittest.TestCase):
     def test_raises_key_error_and_logs_if_unrecognised_model_name(
         self, mock_sns_notification
     ):
-        with self.assertLogs(level="ERROR") as cm:
+        f = io.StringIO()
+        with redirect_stdout(f):
             with self.assertRaises(KeyError):
                 main(model_name="silly_model")
-        self.assertIn("Check that the model name is valid.", cm.output[2])
+        output = f.getvalue()
+
+        self.assertIn("Check that the model name is valid.", output)
 
     @patch.dict(model_definitions, {"some_model": invalid_definition})
     def test_raises_value_error_and_logs_if_invalid_model_type(
         self, mock_sns_notification
     ):
-        with self.assertLogs(level="ERROR") as cm:
+        f = io.StringIO()
+        with redirect_stdout(f):
             with self.assertRaises(ValueError):
                 main(model_name="some_model")
+        output = f.getvalue()
+
         self.assertIn(
             "Check that you specified a valid model_type in your model definition.",
-            cm.output[2],
+            output,
         )
 
     @patch.dict(
@@ -143,12 +152,15 @@ class TestMain(unittest.TestCase):
     def test_raises_type_error_and_logs_if_invalid_model_parameters(
         self, mock_sns_notification
     ):
-        with self.assertLogs(level="ERROR") as cm:
+        f = io.StringIO()
+        with redirect_stdout(f):
             with self.assertRaises(TypeError):
                 main(model_name="some_model")
+        output = f.getvalue()
+
         self.assertIn(
             "It is likely the model failed to instantiate. Check the parameters.",
-            cm.output[2],
+            output,
         )
 
     @patch.object(ModelVersionManager, "update_parameter_store")
