@@ -45,7 +45,7 @@ target "model_preprocess" {
 target "model_predict" {
   context = "."
   dockerfile = "./projects/_03_independent_cqc/_06_estimate_filled_posts/fargate/Dockerfile"
-  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/prediction:${CIRCLE_BRANCH}"]
+  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/prediction:${SANITISED_CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
   no-cache = true
 }
