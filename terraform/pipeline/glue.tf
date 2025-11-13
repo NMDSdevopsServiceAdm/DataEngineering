@@ -429,7 +429,7 @@ module "merge_coverage_data_job" {
     "--cleaned_cqc_location_source"         = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/"
     "--workplace_for_reconciliation_source" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
     "--cqc_ratings_source"                  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
-    "--cleaned_cqc_providers_source"        = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=full_providers_api_cleaned/"
+    "--cleaned_cqc_providers_source"        = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=cqc_providers_04_full_cleaned/"
     "--merged_coverage_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/"
     "--reduced_coverage_destination"        = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
   }
