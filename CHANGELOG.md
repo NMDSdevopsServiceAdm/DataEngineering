@@ -71,13 +71,9 @@ All notable changes to this project will be documented in this file.
 
 - Copies the full prod data into branch for testing purposes as opposed to the small subset currently used.
 
-- Updated the build_snapshot_table_from_delta() function to retrieve the latest available data when the CQC API has not been executed on the step function run date.
-
 - Only check postcodes match for locations who provide social care and are registered at that point in time.
 
 - Removed validation check for a maximum of 500 beds in the CQC clean locations validation script.
-
-- Updated docker file for create_dataset_snapshot lambda function to explicitly copy polars_utils while running.
 
 - Removed locations from CQC delta clean when registration status or location type are null.
 
@@ -140,6 +136,8 @@ All notable changes to this project will be documented in this file.
 - Removed all CQC jobs, utils and tests no longer being used
 
 - Removed logging from step functions.
+
+- Removed lambdas no longer being used (`check_dataset_equality` and `create_dataset_snapshot`)
 
 - Updated input parameter for the flatten CQC ratings job. Ratings columns are now retrieved from the raw data and joined with the latest locations snapshot, which is the new input source for the job.
 

@@ -11,28 +11,12 @@ variable "SANITISED_CIRCLE_BRANCH" {
 }
 
 group "all" {
-  targets = ["create_dataset_snapshot", "check_dataset_equality", "delta_cqc", "model_retrain", "model_preprocess", "_03_independent_cqc"]
+  targets = ["delta_cqc", "model_retrain", "model_preprocess", "_03_independent_cqc"]
 }
 
 # group "ingest" {
 #   targets = ["delta_cqc"]
 # }
-
-target "create_dataset_snapshot" {
-  context = "."
-  dockerfile = "./lambdas/create_dataset_snapshot/Dockerfile"
-  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot:${SANITISED_CIRCLE_BRANCH}"]
-  platforms = ["linux/amd64"]
-  no-cache = true
-}
-
-target "check_dataset_equality" {
-  context = "."
-  dockerfile = "./lambdas/check_dataset_equality/Dockerfile"
-  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/check-datasets-equal:${SANITISED_CIRCLE_BRANCH}"]
-  platforms = ["linux/amd64"]
-  no-cache = true
-}
 
 target "delta_cqc" {
   context = "."
