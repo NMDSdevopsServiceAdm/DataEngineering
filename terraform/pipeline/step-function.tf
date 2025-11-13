@@ -320,7 +320,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module._03_independent_cqc.task_arn,
           module.model_preprocess.task_arn,
           module.model_retrain.task_arn,
-          module.model_predict.task_arn
+          module.model_predict.task_arn,
           aws_ecs_cluster.polars_cluster.arn
         ]
       },
