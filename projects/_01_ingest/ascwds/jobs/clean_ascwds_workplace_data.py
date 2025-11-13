@@ -48,7 +48,6 @@ cols_required_for_reconciliation_df = [
     AWPClean.total_staff,
     AWPClean.worker_records,
     AWPClean.last_logged_in_date,
-    AWPClean.la_permission,
     Keys.year,
     Keys.month,
     Keys.day,
