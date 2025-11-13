@@ -89,6 +89,8 @@ All notable changes to this project will be documented in this file.
 
 - Created a job to build a full snapshot for each CQC location import data from a delta dataset.
 
+- Used `convert_delta_to_full` function to build full locations and providers data in step functions.
+
 - Created a job to clean the full CQC location data to remove some unwanted data, join in ONS postcode data and split registered and deregistered locations.
 
 - Moved the preparation of worker job role data into its own polars task in the ind CQC estimates pipeline.
@@ -142,6 +144,8 @@ All notable changes to this project will be documented in this file.
 - Removed logging from step functions.
 
 - Updated input parameter for the flatten CQC ratings job. Ratings columns are now retrieved from the raw data and joined with the latest locations snapshot, which is the new input source for the job.
+
+- Converted function allocate_primary_service_type_second_level from pyspark to polars and called it in cqc_locations_4_full_clean.
 
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.

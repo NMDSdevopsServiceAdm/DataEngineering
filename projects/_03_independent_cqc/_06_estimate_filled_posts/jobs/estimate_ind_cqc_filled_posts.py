@@ -23,10 +23,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_without_dormancy import (
     model_non_res_without_dormancy,
 )
-from projects._03_independent_cqc.utils.utils.utils import (
-    allocate_primary_service_type_second_level,
-    merge_columns_in_order,
-)
+from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -43,6 +40,7 @@ ind_cqc_columns = [
     IndCQC.specialism_learning_disabilities,
     IndCQC.specialism_mental_health,
     IndCQC.primary_service_type,
+    IndCQC.primary_service_type_second_level,
     IndCQC.care_home,
     IndCQC.dormancy,
     IndCQC.number_of_beds,
@@ -190,10 +188,6 @@ def main(
     )
 
     estimate_filled_posts_df = estimate_non_res_capacity_tracker_filled_posts(
-        estimate_filled_posts_df
-    )
-
-    estimate_filled_posts_df = allocate_primary_service_type_second_level(
         estimate_filled_posts_df
     )
 

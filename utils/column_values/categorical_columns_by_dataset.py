@@ -61,6 +61,9 @@ class LocationsApiCleanedCategoricalValues:
     primary_service_type_column_values = PrimaryServiceType(
         CQCLClean.primary_service_type
     )
+    primary_service_type_second_level_column_values = PrimaryServiceTypeSecondLevel(
+        CQCLClean.primary_service_type_second_level
+    )
     current_region_column_values = Region(CQCLClean.current_region)
     contemporary_region_column_values = Region(CQCLClean.contemporary_region)
     current_rui_column_values = RUI(CQCLClean.current_rural_urban_ind_11)
