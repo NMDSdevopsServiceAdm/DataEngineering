@@ -43,7 +43,7 @@ class FlattenUtilsSchema:
 
 
 @dataclass
-class FullFlattenUtilsSchema:
+class ConvertDeltaToFullUtilsSchema:
     load_latest_snapshot_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),

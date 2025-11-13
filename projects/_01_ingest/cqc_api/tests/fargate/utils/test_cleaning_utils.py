@@ -4,7 +4,7 @@ from unittest.mock import ANY, Mock, patch
 import polars as pl
 import polars.testing as pl_testing
 
-from projects._01_ingest.cqc_api.fargate.utils import locations_4_clean_utils as job
+from projects._01_ingest.cqc_api.fargate.utils import cleaning_utils as job
 from projects._01_ingest.unittest_data.polars_ingest_test_file_data import (
     LocationsCleanUtilsData as Data,
 )
@@ -15,7 +15,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 
-PATCH_PATH = "projects._01_ingest.cqc_api.fargate.utils.locations_4_clean_utils"
+PATCH_PATH = "projects._01_ingest.cqc_api.fargate.utils.cleaning_utils"
 
 
 class SaveLatestFullSnapshotTests(unittest.TestCase):

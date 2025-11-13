@@ -87,7 +87,7 @@ All notable changes to this project will be documented in this file.
 
 - Created a job to flatten CQC location data to remove some unwanted data and simplify complex struct columns.
 
-- Created a job to build a full flattened snapshot for each CQC location import data.
+- Created a job to build a full snapshot for each CQC location import data from a delta dataset.
 
 - Created a job to clean the full CQC location data to remove some unwanted data, join in ONS postcode data and split registered and deregistered locations.
 
@@ -133,7 +133,15 @@ All notable changes to this project will be documented in this file.
 
 - Updated the SfC reconciliation process based on the new datasets.
 
+- Refactored the Transform CQC pipeline to be more efficient.
+
+- Added parallel CQC providers jobs alongside locations.
+
 - Removed all CQC jobs, utils and tests no longer being used
+
+- Removed logging from step functions.
+
+- Updated input parameter for the flatten CQC ratings job. Ratings columns are now retrieved from the raw data and joined with the latest locations snapshot, which is the new input source for the job.
 
 - Converted function allocate_primary_service_type_second_level from pyspark to polars and called it in cqc_locations_4_full_clean.
 
