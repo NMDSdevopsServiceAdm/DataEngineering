@@ -429,10 +429,38 @@
                   }
                 },
                 {
-                  "StartAt": "Validate Latest Snapshot CQC Locations",
+                  "StartAt": "Validate Clean Full Latest Snapshot",
                   "States": {
-                    "Validate Latest Snapshot CQC Locations": {
-                      "Type": "Pass",
+                    "Validate Clean Full Latest Snapshot": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${cqc_api_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": [
+                              "${cqc_api_security_group_id}"
+                            ],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command": [
+                                "validate_cqc_locations_4_full_latest_snapshot.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/",
+                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_04_latest_snapshot/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
                       "End": true
                     }
                   }
