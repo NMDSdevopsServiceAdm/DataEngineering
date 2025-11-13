@@ -253,8 +253,12 @@ jobs:
             echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api/"
+          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_providers_api/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_providers_api/"
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_providers_api/"

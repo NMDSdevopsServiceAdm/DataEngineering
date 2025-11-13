@@ -14,7 +14,9 @@ logger = logger.get_logger(__name__)
 cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
-def main(delta_source: str, full_destination: str, dataset: str) -> None:
+def convert_delta_to_full(
+    delta_source: str, full_destination: str, dataset: str
+) -> None:
     """
     Builds a full dataset from delta files for named datasets.
 
@@ -71,32 +73,3 @@ def main(delta_source: str, full_destination: str, dataset: str) -> None:
         )
 
         full_lf = merged_lf
-
-
-if __name__ == "__main__":
-    logger.info(
-        "Running conversion from delta to full dataset job for {dataset} dataset"
-    )
-
-    args = utils.get_args(
-        (
-            "--delta_source",
-            "S3 URI to read delta flattened CQC locations data from",
-        ),
-        (
-            "--full_destination",
-            "S3 URI to save full flattened CQC locations data to",
-        ),
-        (
-            "--dataset",
-            "Dataset name ('locations' or 'providers')",
-        ),
-    )
-
-    main(
-        delta_source=args.delta_source,
-        full_destination=args.full_destination,
-        dataset=args.dataset,
-    )
-
-    logger.info("Finished converting delta to full dataset job")
