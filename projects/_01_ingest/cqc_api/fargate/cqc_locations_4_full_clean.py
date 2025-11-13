@@ -56,14 +56,10 @@ def main(
 
     cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)
 
-    cqc_reg_lf = cqc_lf.filter(
-        pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
-    )
+    cqc_lf = cUtils.clean_provider_id_column(cqc_lf)
 
-    cqc_reg_lf = cUtils.clean_provider_id_column(cqc_reg_lf)
-
-    cqc_reg_lf = cUtils.impute_missing_values(
-        cqc_reg_lf,
+    cqc_lf = cUtils.impute_missing_values(
+        cqc_lf,
         [
             CQCLClean.provider_id,
             CQCLClean.services_offered,
@@ -72,6 +68,10 @@ def main(
             CQCLClean.relationships_types,
             CQCLClean.registered_manager_names,
         ],
+    )
+
+    cqc_reg_lf = cqc_lf.filter(
+        pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
     )
 
     cqc_reg_lf = cUtils.allocate_primary_service_type(cqc_reg_lf)
