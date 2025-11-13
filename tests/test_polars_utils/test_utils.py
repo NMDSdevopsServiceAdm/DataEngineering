@@ -1,10 +1,11 @@
 import argparse
-import logging
+import io
 import os
 import shutil
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from datetime import date, datetime
 from glob import glob
 from pathlib import Path
@@ -24,7 +25,6 @@ PATCH_PATH = "polars_utils.utils"
 
 
 class TestUtils(unittest.TestCase):
-    logger = logging.getLogger(__name__)
 
     def setUp(self):
         self.temp_dir = Path(tempfile.mkdtemp())
@@ -162,33 +162,41 @@ class TestWriteParquet(TestUtils):
         df: pl.DataFrame = pl.DataFrame({})
         # destination: str = os.path.join(self.temp_dir, "test.parquet")
         destination = self.temp_dir / "test.parquet"
-        with self.assertLogs(self.logger) as cm:
-            utils.write_to_parquet(df, destination, self.logger, append=False)
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            utils.write_to_parquet(df, destination, append=False)
+        output = f.getvalue()
+
         self.assertFalse(destination.exists())
         self.assertTrue(
-            "The provided dataframe was empty. No data was written." in cm.output[0]
+            "The provided dataframe was empty. No data was written." in output
         )
 
     def test_write_parquet_writes_simple_dataframe(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
         destination = self.temp_dir / "test.parquet"
-        with self.assertLogs(self.logger) as cm:
-            utils.write_to_parquet(df, destination, self.logger, append=False)
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            utils.write_to_parquet(df, destination, append=False)
+        output = f.getvalue()
+
         self.assertTrue(Path(destination).exists())
-        self.assertTrue(f"Parquet written to {destination}" in cm.output[0])
+        self.assertTrue(f"Parquet written to {destination}" in output)
 
     def test_write_parquet_writes_with_append(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
         destination: str = str(self.temp_dir) + "/"
-        utils.write_to_parquet(df, destination, self.logger)
-        utils.write_to_parquet(df, destination, self.logger)
+        utils.write_to_parquet(df, destination)
+        utils.write_to_parquet(df, destination)
         self.assertEqual(len(glob(destination + "/**", recursive=True)), 3)
 
     def test_write_parquet_writes_with_overwrite(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
         destination = self.temp_dir / "test.parquet"
-        utils.write_to_parquet(df, destination, self.logger, append=False)
-        utils.write_to_parquet(df, destination, self.logger, append=False)
+        utils.write_to_parquet(df, destination, append=False)
+        utils.write_to_parquet(df, destination, append=False)
 
         files = glob(os.path.join(self.temp_dir, "*.parquet"))
         self.assertEqual(len(files), 1)
@@ -198,20 +206,22 @@ class TestSinkParquet(TestUtils):
     def test_sink_parquet_does_nothing_for_empty_lazyframe(self):
         lazy_df: pl.LazyFrame = pl.DataFrame({}).lazy()
         destination = self.temp_dir / "test.parquet"
-        with self.assertLogs(self.logger) as cm:
-            utils.sink_to_parquet(
-                lazy_df, destination, None, logger=self.logger, append=False
-            )
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            utils.sink_to_parquet(lazy_df, destination, None, append=False)
+        output = f.getvalue()
+
         self.assertFalse(destination.exists())
         self.assertTrue(
-            "The provided LazyFrame was empty. No data was written." in cm.output[0]
+            "The provided LazyFrame was empty. No data was written." in output
         )
 
     def test_sink_parquet_writes_simple_lazyframe(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
         lazy_df = df.lazy()
         destination: str = str(self.temp_dir) + "/"
-        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=True)
+        utils.sink_to_parquet(lazy_df, destination, append=True)
         files = glob(os.path.join(str(destination), "*.parquet"))
         self.assertEqual(len(files), 1)
 
@@ -219,8 +229,8 @@ class TestSinkParquet(TestUtils):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
         lazy_df = df.lazy()
         destination: str = str(self.temp_dir) + "/"
-        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=True)
-        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=True)
+        utils.sink_to_parquet(lazy_df, destination, append=True)
+        utils.sink_to_parquet(lazy_df, destination, append=True)
         files = glob(os.path.join(destination, "*.parquet"))
         self.assertEqual(len(files), 2)
 
@@ -228,8 +238,8 @@ class TestSinkParquet(TestUtils):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
         lazy_df = df.lazy()
         destination = self.temp_dir / "test.parquet"
-        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=False)
-        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=False)
+        utils.sink_to_parquet(lazy_df, destination, append=False)
+        utils.sink_to_parquet(lazy_df, destination, append=False)
 
         files = glob(os.path.join(self.temp_dir, "*.parquet"))
         self.assertEqual(len(files), 1)
@@ -244,7 +254,6 @@ class TestSinkParquet(TestUtils):
             lazy_df,
             destination,
             partition_cols=["part"],
-            logger=self.logger,
             append=False,
         )
         partitions = [d.name for d in destination.iterdir() if d.is_dir()]
@@ -453,13 +462,17 @@ class TestEmptyS3Folder(unittest.TestCase):
         # Given
         paginator = mock_s3_client.return_value.get_paginator.return_value
         paginator.paginate.return_value.search.return_value = [None]
+
         # When
-        with self.assertLogs(level="INFO") as cm:
+        f = io.StringIO()
+        with redirect_stdout(f):
             utils.empty_s3_folder("my-bucket", "some/prefix/")
+        output = f.getvalue()
+
         # Then
         self.assertIn(
             "Skipping emptying folder - no objects matching prefix some/prefix/",
-            cm.output[0],
+            output,
         )
         mock_s3_client.return_value.delete_objects.assert_not_called()
 
@@ -513,16 +526,20 @@ class SendSnsNotificationTests(TestUtils):
     def test_send_sns_notification_raises_clienterror_and_logs_with_wrong_arn(self):
         client = boto3.client("sns", region_name="eu-west-2")
         topic = client.create_topic(Name="test-topic")
-        with self.assertLogs(level="ERROR") as cm:
+
+        f = io.StringIO()
+        with redirect_stdout(f):
             with self.assertRaises(ClientError):
                 utils.send_sns_notification(
                     topic_arn="silly_arn",
                     subject="Test Subject",
                     message="Test Message",
                 )
+        output = f.getvalue()
+
         self.assertIn(
             "There was an error writing to SNS - check your IAM permissions and that you have the right topic ARN",
-            cm.output[1],
+            output,
         )
 
     @mock_aws
@@ -532,16 +549,20 @@ class SendSnsNotificationTests(TestUtils):
     ):
         client = boto3.client("sns", region_name="eu-west-2")
         topic = client.create_topic(Name="test-topic")
-        with self.assertLogs(level="ERROR") as cm:
+
+        f = io.StringIO()
+        with redirect_stdout(f):
             with self.assertRaises(ClientError):
                 utils.send_sns_notification(
                     topic_arn=topic["TopicArn"],
                     subject="Test Subject",
                     message="Test Message",
                 )
+        output = f.getvalue()
+
         self.assertIn(
             "There was an error writing to SNS - check your IAM permissions and that you have the right topic ARN",
-            cm.output[1],
+            output,
         )
 
     def test_parse_args_converts_simple_data_types(self):

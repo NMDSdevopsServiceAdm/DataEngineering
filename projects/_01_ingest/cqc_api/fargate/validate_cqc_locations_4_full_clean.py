@@ -4,7 +4,6 @@ import pointblank as pb
 
 from polars_utils import utils
 from polars_utils.expressions import str_length_cols
-from polars_utils.logger import get_logger
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -19,8 +18,6 @@ from utils.column_values.categorical_column_values import (
 from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CatValues,
 )
-
-logger = get_logger(__name__)
 
 
 def main(bucket_name: str, source_path: str, reports_path: str) -> None:
@@ -252,14 +249,14 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
 
 
 if __name__ == "__main__":
-    logger.info(f"Validation script called with parameters: {sys.argv}")
+    print(f"Validation script called with parameters: {sys.argv}")
 
     args = utils.get_args(
         ("--bucket_name", "S3 bucket for source dataset and validation report"),
         ("--source_path", "The filepath of the dataset to validate"),
         ("--reports_path", "The filepath to output reports"),
     )
-    logger.info(f"Starting validation for {args.source_path}")
+    print(f"Starting validation for {args.source_path}")
 
     main(args.bucket_name, args.source_path, args.reports_path)
-    logger.info(f"Validation of {args.source_path} complete")
+    print(f"Validation of {args.source_path} complete")

@@ -10,17 +10,12 @@ from typing import Generator
 import polars as pl
 
 from polars_utils import utils
-from polars_utils.logger import get_logger
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 from schemas.cqc_provider_schema_polars import POLARS_PROVIDER_SCHEMA
 from utils.aws_secrets_manager_utilities import get_secret
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
 )
-
-logger = get_logger(__name__)
-
-ISO_8601_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 SECRET_ID = os.environ.get("CQC_SECRET_NAME", "")
 AWS_REGION = os.environ.get("AWS_REGION", "")
@@ -64,24 +59,24 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         Exception: For any other unspecified errors that occur during API
             calls, secret retrieval, or data processing.
     """
-    logger.info("Starting Execution")
+    print("Starting Execution")
     try:
         destination = destination if destination[-1] == "/" else f"{destination}/"
 
         start_dt = dt.fromisoformat(start_timestamp.replace("Z", ""))
         end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))
 
-        logger.info("Validating start and end timestamps")
+        print("Validating start and end timestamps")
         if start_dt > end_dt:
             raise InvalidTimestampArgumentError(
                 "Start timestamp is after end timestamp"
             )
 
-        logger.info(f'Getting SecretID "{SECRET_ID}"')
+        print(f'Getting SecretID "{SECRET_ID}"')
         secret = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
         cqc_api_primary_key_value: str = json.loads(secret)["Ocp-Apim-Subscription-Key"]
 
-        logger.info("Collecting providers with changes from API")
+        print("Collecting providers with changes from API")
 
         generator: Generator[dict, None, None] = cqc.get_updated_objects(
             object_type=CQC_OBJECT_TYPE,
@@ -91,24 +86,24 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
         )
 
-        logger.info("Creating dataframe and writing to Parquet")
+        print("Creating dataframe and writing to Parquet")
         df: pl.DataFrame = pl.DataFrame(generator, POLARS_PROVIDER_SCHEMA)
         df_unique: pl.DataFrame = df.unique(subset=[ColNames.provider_id])
-        utils.write_to_parquet(df_unique, destination, logger=logger)
+        utils.write_to_parquet(df_unique, destination)
         return None
     except InvalidTimestampArgumentError:
-        logger.error(f"Start timestamp is after end timestamp: Args: {sys.argv}")
+        print(f"ERROR: Start timestamp is after end timestamp: Args: {sys.argv}")
         raise
     except FileNotFoundError:
-        logger.error(
-            f"{sys.argv[0]} was unable to write to destination. Args: {sys.argv}"
+        print(
+            f"ERROR: {sys.argv[0]} was unable to write to destination. Args: {sys.argv}"
         )
         raise
     except Exception as e:
-        logger.error(
-            f"An unspecified error occurred while calling the CQC API. Args: {sys.argv}"
+        print(
+            f"ERROR: An unspecified error occurred while calling the CQC API. Args: {sys.argv}"
         )
-        logger.error(e.with_traceback(e.__traceback__))
+        print(f"ERROR: {e.with_traceback(e.__traceback__)}")
         raise
 
 
@@ -121,7 +116,7 @@ if __name__ == "__main__":
         ("--start_timestamp", "Start timestamp for provider changes"),
         ("--end_timestamp", "End timestamp for provider changes"),
     )
-    logger.info(f"Running job from {args.start_timestamp} to {args.end_timestamp}")
+    print(f"Running job from {args.start_timestamp} to {args.end_timestamp}")
 
     todays_date = date.today()
     destination = utils.generate_s3_dir(

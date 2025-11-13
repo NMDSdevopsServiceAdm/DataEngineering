@@ -41,7 +41,6 @@ class CqcLocationsDeltaFlattenTests(unittest.TestCase):
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
-            logger=ANY,
             partition_cols=self.partition_keys,
             append=False,
         )

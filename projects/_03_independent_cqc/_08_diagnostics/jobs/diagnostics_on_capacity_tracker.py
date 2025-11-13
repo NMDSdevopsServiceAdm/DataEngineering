@@ -5,7 +5,6 @@ os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
 
-from polars_utils.logger import get_logger
 from projects._03_independent_cqc._08_diagnostics.utils import (
     diagnostics_utils as dUtils,
 )
@@ -13,8 +12,6 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome
-
-logger = get_logger(__name__)
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
@@ -53,7 +50,7 @@ def main(
     non_res_diagnostics_destination,
     non_res_summary_diagnostics_destination,
 ):
-    logger.info("Creating diagnostics for capacity tracker data")
+    print("Creating diagnostics for capacity tracker data")
 
     filled_posts_df: DataFrame = utils.read_from_parquet(
         estimate_filled_posts_source, estimate_filled_posts_columns
@@ -138,8 +135,8 @@ def run_diagnostics(
 
 
 if __name__ == "__main__":
-    logger.info("Spark job 'diagnostics_on_capacity_tracker_data' starting...")
-    logger.info(f"Job parameters: {sys.argv}")
+    print("Spark job 'diagnostics_on_capacity_tracker_data' starting...")
+    print(f"Job parameters: {sys.argv}")
 
     (
         estimate_filled_posts_source,
@@ -178,4 +175,4 @@ if __name__ == "__main__":
         non_res_summary_diagnostics_destination,
     )
 
-    logger.info("Spark job 'diagnostics_on_capacity_tracker_data' complete")
+    print("Spark job 'diagnostics_on_capacity_tracker_data' complete")

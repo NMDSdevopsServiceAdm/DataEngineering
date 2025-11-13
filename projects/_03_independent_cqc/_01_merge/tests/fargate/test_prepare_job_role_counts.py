@@ -37,6 +37,5 @@ class MainTests(unittest.TestCase):
             lazy_df=ANY,
             output_path=self.PREPARED_JOB_ROLE_COUNTS_DESTINATION,
             partition_cols=job.partition_keys,
-            logger=job.logger,
             append=False,
         )
