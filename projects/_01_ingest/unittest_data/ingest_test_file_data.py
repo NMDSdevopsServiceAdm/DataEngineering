@@ -955,14 +955,3 @@ class ValidatePIRCleanedData:
         ("1-000000001", date(2024, 1, 9), 10, "Y"),
         ("1-000000002", date(2024, 1, 9), 10, "Y"),
     ]
-
-
-@dataclass
-class ValidateProvidersAPIRawData:
-    # fmt: off
-    raw_cqc_providers_rows = [
-        ("1-000000001", "20240101", "name"),
-        ("1-000000002", "20240101", "name"),
-        ("1-000000001", "20240201", "name"),
-        ("1-000000002", "20240201", "name"),
-    ]

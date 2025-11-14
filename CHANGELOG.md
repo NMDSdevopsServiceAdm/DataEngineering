@@ -151,6 +151,8 @@ All notable changes to this project will be documented in this file.
 
 - Change the order of function calls in cqc_locations_4_full_clean so filtering to registered locations only happens after imputation.
 
+- Refactored validate_providers_api_raw to use PointBlank, and added the new validation script `validate_cqc_providers_1_delta_api_download.py` with its corresponding validation test.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 

@@ -70,12 +70,32 @@
             },
             "Validate Providers API Raw": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${validate_providers_api_raw_delta_data_job_name}",
-                "Arguments": {
-                  "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_validation_reports_delta_providers_api_raw/"
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${cqc_api_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": [
+                      "${cqc_api_security_group_id}"
+                    ],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "cqc-api-container",
+                      "Command": [
+                        "validate_cqc_providers_1_delta_api_download.py.py",
+                        "--bucket_name", "${dataset_bucket_name}",
+                        "--source_path", "domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
+                        "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_providers_01_delta_api_download/"
+                      ]
+                    }
+                  ]
                 }
               },
               "End": true
