@@ -285,6 +285,10 @@ jobs:
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=workplace/"
       - aws-s3/sync:
           aws-region: AWS_REGION
+          from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace_cleaned/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=workplace_cleaned/"
+      - aws-s3/sync:
+          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=worker/"
       - aws-s3/sync:
