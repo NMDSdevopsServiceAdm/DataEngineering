@@ -34,6 +34,8 @@ All notable changes to this project will be documented in this file.
 
 - Added validation script for locations_4_full_latest_snapshot dataset and test script for this validation.
 
+- Added current_msoa21 column to the IND CQC pipeline.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
