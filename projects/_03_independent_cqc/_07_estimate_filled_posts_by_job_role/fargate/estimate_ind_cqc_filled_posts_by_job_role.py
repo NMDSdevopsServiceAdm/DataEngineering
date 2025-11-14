@@ -5,7 +5,7 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
-estimated_ind_cqc_filled_posts_columns_to_import = [
+estimates_columns_to_import = [
     IndCQC.cqc_location_import_date,
     IndCQC.unix_time,
     IndCQC.location_id,
@@ -40,7 +40,7 @@ estimated_ind_cqc_filled_posts_columns_to_import = [
     Keys.day,
     Keys.import_date,
 ]
-prepared_ascwds_job_role_counts_columns_to_import = [
+ascwds_columns_to_import = [
     IndCQC.ascwds_worker_import_date,
     IndCQC.establishment_id,
     IndCQC.main_job_role_clean_labelled,
@@ -49,36 +49,34 @@ prepared_ascwds_job_role_counts_columns_to_import = [
 
 
 def main(
-    estimated_ind_cqc_filled_posts_source: str,
-    prepared_ascwds_job_role_counts_source: str,
-    estimated_ind_cqc_filled_posts_by_job_role_destination: str,
+    estimates_source: str,
+    ascwds_job_role_counts_source: str,
+    estimates_by_job_role_destination: str,
 ) -> None:
     """
     Creates estimates of filled posts split by main job role.
 
     Args:
-        estimated_ind_cqc_filled_posts_source (str): path to the estimates ind cqc filled posts data
-        prepared_ascwds_job_role_counts_source (str): path to the prepared ascwds job role counts data
-        estimated_ind_cqc_filled_posts_by_job_role_destination (str): destination for output
+        estimates_source (str): path to the estimates ind cqc filled posts data
+        ascwds_job_role_counts_source (str): path to the prepared ascwds job role counts data
+        estimates_by_job_role_destination (str): destination for output
     """
-    estimated_ind_cqc_filled_posts_lf = utils.scan_parquet(
-        source=estimated_ind_cqc_filled_posts_source,
-        selected_columns=estimated_ind_cqc_filled_posts_columns_to_import,
+    estimated_posts_lf = utils.scan_parquet(
+        source=estimates_source,
+        selected_columns=estimates_columns_to_import,
     )
-    prepared_ascwds_job_role_counts_lf = utils.scan_parquet(
-        source=prepared_ascwds_job_role_counts_source,
-        selected_columns=prepared_ascwds_job_role_counts_columns_to_import,
+    ascwds_job_role_counts_lf = utils.scan_parquet(
+        source=ascwds_job_role_counts_source,
+        selected_columns=ascwds_columns_to_import,
     )
 
-    estimated_ind_cqc_filled_posts_by_job_role_lf = (
-        JRUtils.join_worker_to_estimates_dataframe(
-            estimated_ind_cqc_filled_posts_lf, prepared_ascwds_job_role_counts_lf
-        )
+    estimated_job_role_posts_lf = JRUtils.join_worker_to_estimates_dataframe(
+        estimated_posts_lf, ascwds_job_role_counts_lf
     )
 
     utils.sink_to_parquet(
-        lazy_df=estimated_ind_cqc_filled_posts_by_job_role_lf,
-        output_path=estimated_ind_cqc_filled_posts_by_job_role_destination,
+        lazy_df=estimated_job_role_posts_lf,
+        output_path=estimates_by_job_role_destination,
         partition_cols=partition_keys,
         append=False,
     )
@@ -87,20 +85,20 @@ def main(
 if __name__ == "__main__":
     args = utils.get_args(
         (
-            "--estimated_ind_cqc_filled_posts_source",
+            "--estimates_source",
             "Source s3 directory for estimated ind cqc filled posts data",
         ),
         (
-            "--prepared_ascwds_job_role_counts_source",
+            "--ascwds_job_role_counts_source",
             "Source s3 directory for parquet ASCWDS worker job role counts dataset",
         ),
         (
-            "--estimated_ind_cqc_filled_posts_by_job_role_destination",
+            "--estimates_by_job_role_destination",
             "Destination s3 directory",
         ),
     )
     main(
-        estimated_ind_cqc_filled_posts_source=args.estimated_ind_cqc_filled_posts_source,
-        prepared_ascwds_job_role_counts_source=args.prepared_ascwds_job_role_counts_source,
-        estimated_ind_cqc_filled_posts_by_job_role_destination=args.estimated_ind_cqc_filled_posts_by_job_role_destination,
+        estimates_source=args.estimates_source,
+        ascwds_job_role_counts_source=args.ascwds_job_role_counts_source,
+        estimates_by_job_role_destination=args.estimates_by_job_role_destination,
     )
