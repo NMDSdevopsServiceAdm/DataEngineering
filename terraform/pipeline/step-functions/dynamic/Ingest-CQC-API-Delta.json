@@ -89,7 +89,7 @@
                     {
                       "Name": "cqc-api-container",
                       "Command": [
-                        "validate_cqc_providers_1_delta_api_download.py.py",
+                        "validate_cqc_providers_1_delta_api_download.py",
                         "--bucket_name", "${dataset_bucket_name}",
                         "--source_path", "domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
                         "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_providers_01_delta_api_download/"
