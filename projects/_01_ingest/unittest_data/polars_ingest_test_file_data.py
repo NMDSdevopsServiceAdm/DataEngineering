@@ -1569,6 +1569,12 @@ class ValidateCqcLocations4FullCleanTest:
         (ContemporaryCSSR.barking_and_dagenham,),
         (Region.london,),
         (RUI.urban_major,),
+        (
+            [
+                Services.care_home_service_with_nursing,
+                Services.care_home_service_without_nursing,
+            ],
+        ),
     ]
 
 

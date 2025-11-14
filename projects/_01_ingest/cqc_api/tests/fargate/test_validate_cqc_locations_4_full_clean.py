@@ -31,7 +31,7 @@ class ValidateLocationsFlattenTests(unittest.TestCase):
 
         mock_read_parquet.assert_called_once_with(
             "s3://bucket/my/dataset/",
-            exclude_complex_types=True,
+            exclude_complex_types=False,
         )
         mock_write_reports.assert_called_once()
 
