@@ -30,7 +30,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         reports_path (str): the output path to write reports to
     """
     source_df = utils.read_parquet(
-        f"s3://{bucket_name}/{source_path}", exclude_complex_types=True
+        f"s3://{bucket_name}/{source_path}", exclude_complex_types=False
     ).with_columns(
         str_length_cols([CQCLClean.location_id, CQCLClean.provider_id]),
     )
