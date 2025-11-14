@@ -119,11 +119,10 @@ def main(
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
     )
 
-    # TODO add ratings back in when ready
-    # cqc_ratings_df = utils.read_from_parquet(
-    #     cqc_ratings_source,
-    #     selected_columns=cqc_ratings_columns_to_import,
-    # )
+    cqc_ratings_df = utils.read_from_parquet(
+        cqc_ratings_source,
+        selected_columns=cqc_ratings_columns_to_import,
+    )
     cqc_providers_df = utils.read_from_parquet(
         cleaned_cqc_providers_source,
         selected_columns=cleaned_cqc_providers_columns_to_import,
@@ -162,10 +161,9 @@ def main(
         merged_coverage_df
     )
 
-    # TODO add ratings back in when ready
-    # merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
-    #     merged_coverage_df, cqc_ratings_df
-    # )
+    merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
+        merged_coverage_df, cqc_ratings_df
+    )
 
     merged_coverage_df = add_columns_for_locality_manager_dashboard(merged_coverage_df)
     merged_coverage_df = join_provider_name_into_merged_coverage_df(
