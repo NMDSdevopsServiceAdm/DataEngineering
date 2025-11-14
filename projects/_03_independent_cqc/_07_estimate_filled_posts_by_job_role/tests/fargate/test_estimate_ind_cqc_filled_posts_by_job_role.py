@@ -37,11 +37,11 @@ class MainTests(unittest.TestCase):
             [
                 call(
                     source=self.ESTIMATE_SOURCE,
-                    selected_columns=job.estimated_ind_cqc_filled_posts_columns_to_import,
+                    selected_columns=job.estimates_columns_to_import,
                 ),
                 call(
                     source=self.PREPARED_JOB_ROLE_COUNTS_SOURCE,
-                    selected_columns=job.prepared_ascwds_job_role_counts_columns_to_import,
+                    selected_columns=job.ascwds_columns_to_import,
                 ),
             ]
         )
