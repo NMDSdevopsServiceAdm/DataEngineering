@@ -122,7 +122,7 @@
                         "JobName": "${prepare_features_care_home_ind_cqc_job_name}",
                         "Arguments": {
                           "--ind_cqc_filled_posts_cleaned_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
-                          "--care_home_ind_cqc_04_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_care_home/"
+                          "--care_home_ind_cqc_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_care_home/"
                         }
                       },
                       "End": true
@@ -206,7 +206,7 @@
                         "JobName": "${validate_features_care_home_ind_cqc_data_job_name}",
                         "Arguments": {
                           "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
-                          "--care_home_ind_cqc_04_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_care_home/",
+                          "--care_home_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_care_home/",
                           "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_04_features_care_home/"
                         }
                       },
@@ -224,7 +224,7 @@
                         "JobName": "${validate_features_non_res_ascwds_with_dormancy_ind_cqc_data_job_name}",
                         "Arguments": {
                           "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
-                          "--non_res_ascwds_with_dormancy_ind_cqc_04_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_ascwds_with_dormancy/",
+                          "--non_res_ascwds_with_dormancy_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_ascwds_with_dormancy/",
                           "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_04_features_non_res_ascwds_with_dormancy/"
                         }
                       },
@@ -242,7 +242,7 @@
                         "JobName": "${validate_features_non_res_ascwds_without_dormancy_ind_cqc_data_job_name}",
                         "Arguments": {
                           "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
-                          "--non_res_ascwds_without_dormancy_ind_cqc_04_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_ascwds_without_dormancy/",
+                          "--non_res_ascwds_without_dormancy_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_ascwds_without_dormancy/",
                           "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_04_features_non_res_ascwds_without_dormancy/"
                         }
                       },
@@ -298,7 +298,7 @@
                               "Command": [
                                 "estimate_ind_cqc_filled_posts_by_job_role.py",
                                 "--estimated_ind_cqc_filled_posts_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
-                                "--ind_cqc_01_ascwds_prepared_job_role_counts_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_ascwds_prepared_job_role_counts/",
+                                "--ind_cqc_ascwds_prepared_job_role_counts_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_ascwds_prepared_job_role_counts/",
                                 "--estimated_ind_cqc_filled_posts_by_job_role_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_estimated_filled_posts_by_job_role_polars/"
                               ]
                             }
@@ -431,7 +431,7 @@
                       "Command": [
                         "prepare_job_role_counts.py",
                         "--cleaned_ascwds_worker_source", "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                        "--ind_cqc_01_ascwds_prepared_job_role_counts_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_ascwds_prepared_job_role_counts/"
+                        "--prepared_ascwds_job_role_counts_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_ascwds_prepared_job_role_counts/"
                       ]
                     }
                   ]
