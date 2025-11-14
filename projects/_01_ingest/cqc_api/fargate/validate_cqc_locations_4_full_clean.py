@@ -69,6 +69,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
                 CQCLClean.current_cssr,
                 CQCLClean.current_region,
                 CQCLClean.current_rural_urban_ind_11,
+                CQCLClean.services_offered,
             ]
         )
         # index columns
