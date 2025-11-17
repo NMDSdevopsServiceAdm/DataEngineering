@@ -156,10 +156,10 @@ All notable changes to this project will be documented in this file.
 - Refactored validate_providers_api_raw to use PointBlank, and added the new validation script `validate_cqc_providers_1_delta_api_download.py` with its corresponding validation test.
 
 - Changed the remove_duplicate_cqc_care_homes function as followed:
-  - changed function name to remove_dual_registration_cqc_care_homes
-  - updated doc string with information from CQC
-  - changed how ASC-WDS data is copied across dual registrations to coalesce the orginal value and the max over a window
-  - added location_id as a fallback column to distinguish identical locaitons consistantly
+  - changed function name to remove_dual_registration_cqc_care_homes.
+  - updated doc string with information from CQC.
+  - changed how ASC-WDS data is copied across dual registrations to coalesce the orginal value and the max over a window.
+  - added location_id as a fallback column to distinguish identical locations consistantly.
 
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
