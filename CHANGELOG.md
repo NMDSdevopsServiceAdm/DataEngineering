@@ -36,6 +36,8 @@ All notable changes to this project will be documented in this file.
 
 - Added current_msoa21 column to the IND CQC pipeline.
 
+- Added validation script for providers_3_full_flattened process and test script for this validation.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
