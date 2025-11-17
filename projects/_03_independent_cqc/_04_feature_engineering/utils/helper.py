@@ -31,6 +31,7 @@ def vectorise_dataframe(df: DataFrame, list_for_vectorisation: List[str]) -> Dat
     return loc_df
 
 
+# converted to polars -> projects._03_independent_cqc._04_feature_engineering.fargate.utils.feature_utils.py
 def expand_encode_and_extract_features(
     df: DataFrame, col_name: str, lookup_dict: Dict[str, str], is_array_col: bool
 ) -> Tuple[DataFrame, List[str]]:
@@ -69,6 +70,7 @@ def expand_encode_and_extract_features(
     return df, key_list
 
 
+# converted to polars -> projects._03_independent_cqc._04_feature_engineering.fargate.utils.feature_utils.py
 def add_array_column_count(
     df: DataFrame, new_col_name: str, col_to_check: str
 ) -> DataFrame:
@@ -91,6 +93,7 @@ def add_array_column_count(
     )
 
 
+# converted to polars -> projects._03_independent_cqc._04_feature_engineering.fargate.utils.feature_utils.py
 def cap_integer_at_max_value(
     df: DataFrame, col_name: str, max_value: int, new_col_name: str
 ) -> DataFrame:
@@ -116,6 +119,7 @@ def cap_integer_at_max_value(
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._04_feature_engineering.fargate.utils.feature_utils.py
 def add_date_index_column(df: DataFrame) -> DataFrame:
     """
     Creates an index column in the DataFrame based on the cqc_location_import_date column, partitioned by care_home.
@@ -142,6 +146,7 @@ def add_date_index_column(df: DataFrame) -> DataFrame:
     return df_with_index
 
 
+# converted to polars -> projects._03_independent_cqc._04_feature_engineering.fargate.utils.feature_utils.py
 def group_rural_urban_sparse_categories(df: DataFrame) -> DataFrame:
     """
     Copies the values in the rural urban indicator column into a new column and replaces all categories which contains the word "sparse" with "Sparse setting".
@@ -168,6 +173,7 @@ def group_rural_urban_sparse_categories(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._04_feature_engineering.fargate.utils.feature_utils.py
 def filter_without_dormancy_features_to_pre_2025(df: DataFrame) -> DataFrame:
     """
     Filters the DataFrame to include only rows with a cqc_location_import_date on or before 01/01/2025.
