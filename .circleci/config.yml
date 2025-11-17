@@ -253,24 +253,24 @@ jobs:
             echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
+          from: "s3://sfc-main-datasets/domain=CQC/dataset=delta_locations_api/version=3.1.0/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=delta_locations_api/version=3.1.0/"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_providers_api/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_providers_api/"
+          from: "s3://sfc-main-datasets/domain=CQC/dataset=delta_providers_api/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=delta_providers_api/"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/"
+          from: "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_03_full_flattened/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=cqc_locations_03_full_flattened/"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=cqc_providers_03_full_flattened/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=cqc_providers_03_full_flattened/"
+          from: "s3://sfc-main-datasets/domain=CQC/dataset=cqc_providers_03_full_flattened/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=cqc_providers_03_full_flattened/"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/"
+          from: "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/"
