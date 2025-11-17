@@ -418,7 +418,8 @@
                                 "validate_cqc_locations_4_full_clean.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/",
-                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_04_full_cleaned_registered/"
+                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_04_full_cleaned_registered/",
+                                "--compare_path", "domain=CQC_delta/dataset=cqc_locations_03_full_flattened/"
                               ]
                             }
                           ]

@@ -1575,6 +1575,11 @@ class ValidateCqcLocations4FullCleanTest:
                 Services.care_home_service_without_nursing,
             ],
         ),
+        (
+            [
+                "Accommodation for persons who require nursing or personal care",
+            ],
+        ),
     ]
 
 

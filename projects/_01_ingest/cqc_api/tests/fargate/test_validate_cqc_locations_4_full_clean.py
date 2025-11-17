@@ -27,11 +27,13 @@ class ValidateLocationsFlattenTests(unittest.TestCase):
     def test_validation_runs(self, mock_read_parquet: Mock, mock_write_reports: Mock):
         mock_read_parquet.side_effect = [self.validate_df, self.validate_df]
 
-        job.main("bucket", "my/dataset/", "my/reports/")
+        job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
 
-        mock_read_parquet.assert_called_once_with(
-            "s3://bucket/my/dataset/",
-            exclude_complex_types=False,
+        mock_read_parquet.assert_has_calls(
+            [
+                call("s3://bucket/my/dataset/", exclude_complex_types=False),
+                call("s3://bucket/other/dataset/", selected_columns=ANY),
+            ]
         )
         mock_write_reports.assert_called_once()
 
@@ -42,7 +44,7 @@ class ValidateLocationsFlattenTests(unittest.TestCase):
     ):
         mock_read_parquet.return_value = self.validate_df
 
-        job.main("bucket", "my/dataset/", "my/reports/")
+        job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
@@ -52,6 +54,7 @@ class ValidateLocationsFlattenTests(unittest.TestCase):
 
         # Check that key validations were run
         expected_assertions = {
+            "row_count_match",
             "col_vals_not_null",
             "rows_distinct",
             "col_vals_in_set",

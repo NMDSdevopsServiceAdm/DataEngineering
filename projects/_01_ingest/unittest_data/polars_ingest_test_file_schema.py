@@ -449,6 +449,7 @@ class ValidateCqcLocations4FullCleanTest:
             (CQCLClean.current_region, pl.String()),
             (CQCLClean.current_rural_urban_ind_11, pl.String()),
             (CQCLClean.services_offered, pl.List(pl.String())),
+            (CQCLClean.regulated_activities_offered, pl.List(pl.String())),
         ]
     )
 

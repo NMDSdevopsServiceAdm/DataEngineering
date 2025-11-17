@@ -1,11 +1,12 @@
 import sys
-
+import polars as pl
 import pointblank as pb
 
 from polars_utils import utils
 from polars_utils.expressions import str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from projects._01_ingest.cqc_api.fargate.utils import cleaning_utils as cUtils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -19,8 +20,19 @@ from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CatValues,
 )
 
+compare_columns_to_import = [
+    Keys.import_date,
+    CQCLClean.location_id,
+    CQCLClean.provider_id,
+    CQCLClean.type,
+    CQCLClean.registration_status,
+    CQCLClean.regulated_activities_offered,
+]
 
-def main(bucket_name: str, source_path: str, reports_path: str) -> None:
+
+def main(
+    bucket_name: str, source_path: str, reports_path: str, compare_path: str
+) -> None:
     """Validates a dataset according to a set of provided rules and produces a summary report as well as failure outputs.
 
     Args:
@@ -28,12 +40,33 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             - shoud correspond to workspace / feature branch name
         source_path (str): the source dataset path to be validated
         reports_path (str): the output path to write reports to
+        compare_path (str): path to a dataset to compare against for expected size
     """
     source_df = utils.read_parquet(
         f"s3://{bucket_name}/{source_path}", exclude_complex_types=False
     ).with_columns(
         str_length_cols([CQCLClean.location_id, CQCLClean.provider_id]),
     )
+
+    compare_df = utils.read_parquet(
+        f"s3://{bucket_name}/{compare_path}",
+        selected_columns=compare_columns_to_import,
+    )
+    compare_df = compare_df.filter(
+        pl.col(CQCLClean.type) == LocationType.social_care_identifier,
+        pl.col(CQCLClean.registration_status) == RegistrationStatus.registered,
+    )
+    compare_df = cUtils.impute_missing_values(
+        compare_df,
+        [
+            CQCLClean.provider_id,
+            CQCLClean.regulated_activities_offered,
+        ],
+    )
+    expected_row_count = compare_df.filter(
+        pl.col(CQCLClean.provider_id).is_not_null(),
+        pl.col(CQCLClean.regulated_activities_offered).is_not_null(),
+    ).height
 
     validation = (
         pb.Validate(
@@ -42,6 +75,11 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             thresholds=GLOBAL_THRESHOLDS,
             brief=True,
             actions=GLOBAL_ACTIONS,
+        )
+        # dataset size
+        .row_count_match(
+            expected_row_count,
+            brief=f"Flattened file has {source_df.height} rows but expecting {expected_row_count} rows",
         )
         # complete columns
         .col_vals_not_null(
@@ -70,6 +108,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
                 CQCLClean.current_region,
                 CQCLClean.current_rural_urban_ind_11,
                 CQCLClean.services_offered,
+                CQCLClean.regulated_activities_offered,
             ]
         )
         # index columns
