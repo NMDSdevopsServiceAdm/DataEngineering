@@ -27,7 +27,11 @@ class CqcProvidersFullCleanTests(unittest.TestCase):
     ):
         job.main(self.TEST_FLATTENED_SOURCE, self.TEST_CLEAN_DESTINATION)
 
-        scan_parquet_mock.assert_called_once_with(self.TEST_FLATTENED_SOURCE)
+        scan_parquet_mock.assert_called_once_with(
+            self.TEST_FLATTENED_SOURCE,
+            schema=job.POLARS_PROVIDER_SCHEMA,
+            selected_columns=job.cqc_provider_cols_to_import,
+        )
         column_to_date_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             ANY,

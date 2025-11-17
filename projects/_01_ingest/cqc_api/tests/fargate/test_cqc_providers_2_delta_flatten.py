@@ -21,9 +21,7 @@ class CqcProvidersDeltaFlattenTests(unittest.TestCase):
     ):
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
-        scan_parquet_mock.assert_called_once_with(
-            self.TEST_SOURCE, schema=ANY, selected_columns=ANY
-        )
+        scan_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
