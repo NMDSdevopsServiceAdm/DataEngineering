@@ -4,7 +4,6 @@ from projects._01_ingest.cqc_api.fargate.utils import flatten_utils as fUtils
 from projects._01_ingest.cqc_api.fargate.utils.extract_registered_manager_names import (
     extract_registered_manager_names,
 )
-from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -15,39 +14,12 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 
 cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
-cqc_location_cols_to_import = [
-    CQCLClean.location_id,
-    CQCLClean.provider_id,
-    CQCLClean.name,
-    CQCLClean.postal_address_line1,
-    CQCLClean.postal_code,
-    CQCLClean.registration_status,
-    CQCLClean.registration_date,
-    CQCLClean.deregistration_date,
-    CQCLClean.type,
-    CQCLClean.relationships,
-    CQCLClean.care_home,
-    CQCLClean.number_of_beds,
-    CQCLClean.dormancy,
-    CQCLClean.gac_service_types,
-    CQCLClean.regulated_activities,
-    CQCLClean.specialisms,
-    Keys.import_date,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-]
-
 
 def main(
     cqc_locations_api_delta_source: str,
     cqc_locations_flattened_destination: str,
 ) -> None:
-    cqc_lf = utils.scan_parquet(
-        cqc_locations_api_delta_source,
-        schema=POLARS_LOCATION_SCHEMA,
-        selected_columns=cqc_location_cols_to_import,
-    )
+    cqc_lf = utils.scan_parquet(cqc_locations_api_delta_source)
     print("CQC Location LazyFrame read in")
 
     cqc_lf = cqc_lf.filter(raw_data_adjustments.is_valid_location())
