@@ -3,10 +3,8 @@ import sys
 import pointblank as pb
 import polars as pl
 
-from polars_utils import utils
+from polars_utils import raw_data_adjustments, utils
 from polars_utils.expressions import has_value, str_length_cols
-from polars_utils.logger import get_logger
-from polars_utils.raw_data_adjustments import is_valid_location
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -16,14 +14,7 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_names.validation_table_columns import (
-    Validation,
-)
-from utils.column_values.categorical_column_values import (
-    LocationType,
-    RegistrationStatus,
-    Services,
-)
+from utils.column_names.validation_table_columns import Validation
 from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CatValues,
 )
@@ -37,9 +28,6 @@ compare_columns_to_import = [
     CQCL.gac_service_types,
     CQCL.regulated_activities,
 ]
-
-
-logger = get_logger(__name__)
 
 
 def main(
@@ -63,6 +51,7 @@ def main(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=compare_columns_to_import,
     )
+    expected_row_count = expected_size(compare_df)
 
     validation = (
         pb.Validate(
@@ -73,7 +62,10 @@ def main(
             actions=GLOBAL_ACTIONS,
         )
         # dataset size
-        .row_count_match(expected_size(compare_df))
+        .row_count_match(
+            expected_row_count,
+            brief=f"Cleaned file has {source_df.height} rows but expecting {expected_row_count} rows",
+        )
         # complete columns
         .col_vals_not_null(
             [
@@ -84,6 +76,7 @@ def main(
                 CQCLClean.registration_status,
                 CQCLClean.imputed_registration_date,
                 CQCLClean.name,
+                CQCLClean.type,
             ]
         )
         # index columns
@@ -93,8 +86,9 @@ def main(
                 CQCLClean.cqc_location_import_date,
             ],
         )
+        # greater than or equal to
+        .col_vals_ge(CQCLClean.number_of_beds, 0, na_pass=True)
         # between (inclusive)
-        .col_vals_between(CQCLClean.number_of_beds, 0, 500, na_pass=True)
         .col_vals_between(Validation.location_id_length, 3, 14)
         .col_vals_between(Validation.provider_id_length, 3, 14)
         # categorical
@@ -152,6 +146,7 @@ def main(
 
 def expected_size(df: pl.DataFrame) -> int:
     gac_services = pl.col(CQCL.gac_service_types)
+
     cleaned_df = df.with_columns(
         # nullify empty lists to avoid index out of bounds error
         pl.when(gac_services.list.len() > 0).then(gac_services),
@@ -159,24 +154,16 @@ def expected_size(df: pl.DataFrame) -> int:
         # TODO: remove regulated_activities
         has_value(df, CQCL.regulated_activities, CQCL.location_id),
         has_value(df, CQCL.provider_id, CQCL.location_id),
-        pl.col(CQCL.type) == LocationType.social_care_identifier,
-        pl.col(CQCL.registration_status) == RegistrationStatus.registered,
-        is_valid_location(),
-        ~(
-            (gac_services.list.len() == 1)
-            & (gac_services.is_not_null())
-            & (
-                gac_services.list[0].struct.field(CQCL.description)
-                == Services.specialist_college_service
-            )
-        ),
+        has_value(df, CQCL.registration_status, CQCL.location_id),
+        has_value(df, CQCL.type, CQCL.location_id),
+        raw_data_adjustments.is_valid_location(),
     )
-    logger.info(f"Expected size {cleaned_df.height}")
+    print(f"Expected size {cleaned_df.height}")
     return cleaned_df.height
 
 
 if __name__ == "__main__":
-    logger.info(f"Validation script called with parameters: {sys.argv}")
+    print(f"Validation script called with parameters: {sys.argv}")
 
     args = utils.get_args(
         ("--bucket_name", "S3 bucket for source dataset and validation report"),
@@ -187,7 +174,7 @@ if __name__ == "__main__":
             "The filepath to a dataset to compare against for expected size",
         ),
     )
-    logger.info(f"Starting validation for {args.source_path}")
+    print(f"Starting validation for {args.source_path}")
 
     main(args.bucket_name, args.source_path, args.reports_path, args.compare_path)
-    logger.info(f"Validation of {args.source_path} complete")
+    print(f"Validation of {args.source_path} complete")

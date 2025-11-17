@@ -260,11 +260,11 @@ class EstimateIndCQCFilledPostsSchemas:
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
             StructField(IndCQC.current_lsoa21, StringType(), True),
+            StructField(IndCQC.current_msoa21, StringType(), True),
             StructField(
                 IndCQC.contemporary_rural_urban_indicator_2011, StringType(), True
             ),
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
-            StructField(IndCQC.registration_status, StringType(), True),
         ]
     )
 
@@ -413,13 +413,6 @@ class RawDataAdjustments:
         [
             StructField(AWP.import_date, StringType(), True),
             StructField(AWP.establishment_id, StringType(), True),
-            StructField("other_column", StringType(), True),
-        ]
-    )
-
-    locations_data_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
             StructField("other_column", StringType(), True),
         ]
     )

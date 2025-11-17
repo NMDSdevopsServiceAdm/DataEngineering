@@ -13,12 +13,6 @@ resource "aws_sfn_state_machine" "run_crawler" {
   type       = "STANDARD"
   definition = templatefile("step-functions/Run-Crawler.json", {})
 
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
-
   depends_on = [
     aws_iam_policy.step_function_iam_policy
   ]
@@ -30,21 +24,15 @@ resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/Workforce-Intelligence-Pipeline.json", {
-    dataset_bucket_uri                              = module.datasets_bucket.bucket_uri
-    dataset_bucket_name                             = module.datasets_bucket.bucket_name
-    data_validation_reports_crawler_name            = module.data_validation_reports_crawler.crawler_name
-    pipeline_failure_lambda_function_arn            = aws_lambda_function.error_notification_lambda.arn
-    transform_ascwds_state_machine_arn              = aws_sfn_state_machine.sf_pipelines["Transform-ASCWDS-Data"].arn
-    transform_cqc_data_state_machine_arn            = aws_sfn_state_machine.sf_pipelines["Transform-CQC-Data"].arn
-    trigger_ind_cqc_pipeline_state_machine_arn      = aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
-    trigger_sfc_internal_pipeline_state_machine_arn = aws_sfn_state_machine.sf_pipelines["SfC-Internal"].arn
+    dataset_bucket_uri                      = module.datasets_bucket.bucket_uri
+    dataset_bucket_name                     = module.datasets_bucket.bucket_name
+    data_validation_reports_crawler_name    = module.data_validation_reports_crawler.crawler_name
+    pipeline_failure_lambda_function_arn    = aws_lambda_function.error_notification_lambda.arn
+    transform_ascwds_state_machine_arn      = aws_sfn_state_machine.sf_pipelines["Transform-ASCWDS-Data"].arn
+    transform_cqc_data_state_machine_arn    = aws_sfn_state_machine.sf_pipelines["Transform-CQC-Data"].arn
+    ind_cqc_pipeline_state_machine_arn      = aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
+    sfc_internal_pipeline_state_machine_arn = aws_sfn_state_machine.sf_pipelines["SfC-Internal"].arn
   })
-
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
 
   depends_on = [
     aws_iam_policy.step_function_iam_policy,
@@ -59,17 +47,11 @@ resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/CQC-And-ASCWDS-Orchestrator.json", {
-    dataset_bucket_uri                               = module.datasets_bucket.bucket_uri
-    dataset_bucket_name                              = module.datasets_bucket.bucket_name
-    ingest_cqc_api_state_machine_arn                 = aws_sfn_state_machine.sf_pipelines["Ingest-CQC-API-Delta"].arn
-    trigger_workforce_intelligence_state_machine_arn = aws_sfn_state_machine.workforce_intelligence_state_machine.arn
+    dataset_bucket_uri                       = module.datasets_bucket.bucket_uri
+    dataset_bucket_name                      = module.datasets_bucket.bucket_name
+    ingest_cqc_api_state_machine_arn         = aws_sfn_state_machine.sf_pipelines["Ingest-CQC-API-Delta"].arn
+    workforce_intelligence_state_machine_arn = aws_sfn_state_machine.workforce_intelligence_state_machine.arn
   })
-
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
 
   depends_on = [
     aws_iam_policy.step_function_iam_policy,
@@ -92,7 +74,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
 
     # lambdas
     pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
-    create_snapshot_lambda_lambda_arn    = aws_lambda_function.create_snapshot_lambda.arn
 
     # step-functions - cannot include any from this for_each as circular dependency
     # if needed, create explicitly outside of this resource
@@ -123,10 +104,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     diagnostics_on_known_filled_posts_job_name                              = module.diagnostics_on_known_filled_posts_job.job_name
     diagnostics_on_capacity_tracker_job_name                                = module.diagnostics_on_capacity_tracker_job.job_name
     archive_filled_posts_estimates_job_name                                 = module.archive_filled_posts_estimates_job.job_name
-    validate_providers_api_raw_delta_data_job_name                          = module.validate_providers_api_raw_delta_data_job.job_name
-    clean_cqc_provider_data_job_name                                        = module.clean_cqc_provider_data_job.job_name
-    clean_cqc_location_data_job_name                                        = module.delta_clean_cqc_location_data_job.job_name
-    validate_providers_api_cleaned_data_job_name                            = module.validate_providers_api_cleaned_data_job.job_name
     prepare_dpr_external_job_name                                           = module.prepare_dpr_external_data_job.job_name
     prepare_dpr_survey_job_name                                             = module.prepare_dpr_survey_data_job.job_name
     merge_dpr_data_job_name                                                 = module.merge_dpr_data_job.job_name
@@ -159,7 +136,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     cqc_crawler_name                     = module.cqc_crawler.crawler_name
     cqc_crawler_delta_name               = module.cqc_crawler_delta.crawler_name # TODO: remove and point back to main crawler
     dpr_crawler_name                     = module.dpr_crawler.crawler_name
-    data_engineering_ascwds_crawler_name = module.ascwds_crawler.crawler_name
     ons_crawler_name                     = module.ons_crawler.crawler_name
     sfc_crawler_name                     = module.sfc_crawler.crawler_name
     ct_crawler_name                      = module.capacity_tracker_crawler.crawler_name
@@ -190,12 +166,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     preprocessor_name = "preprocess_non_res_pir"
     model_name        = "non_res_pir"
   })
-
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
 
   depends_on = [
     aws_iam_policy.step_function_iam_policy,
@@ -311,19 +281,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "lambda:InvokeFunction"
         ],
         "Resource" : [
-          "${aws_lambda_function.error_notification_lambda.arn}*",
-          "${aws_lambda_function.create_snapshot_lambda.arn}*",
-          "${aws_lambda_function.check_datasets_equal.arn}*"
-        ]
-      },
-      {
-        "Effect" : "Allow",
-        "Action" : [
-          "glue:GetJobRuns"
-        ],
-        "Resource" : [
-          module.delta_cqc_locations_download_job.job_arn,
-          module.delta_cqc_providers_download_job.job_arn
+          "${aws_lambda_function.error_notification_lambda.arn}*"
         ]
       },
       {
@@ -357,10 +315,9 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         "Resource" : [
           module.cqc-api.task_arn,
           module._03_independent_cqc.task_arn,
-          aws_ecs_cluster.polars_cluster.arn,
-          aws_ecs_cluster.polars_cluster.arn,
           module.model_preprocess.task_arn,
-          module.model_retrain.task_arn
+          module.model_retrain.task_arn,
+          aws_ecs_cluster.polars_cluster.arn
         ]
       },
       {
@@ -371,10 +328,9 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module.cqc-api.task_role_arn,
           module.model_retrain.task_exc_role_arn,
           module.model_retrain.task_role_arn,
-          module.model_preprocess.task_role_arn,
           module.model_preprocess.task_exc_role_arn,
+          module.model_preprocess.task_role_arn,
           module._03_independent_cqc.task_exc_role_arn,
-          module.cqc-api.task_role_arn,
           module._03_independent_cqc.task_role_arn
         ],
         Condition = {

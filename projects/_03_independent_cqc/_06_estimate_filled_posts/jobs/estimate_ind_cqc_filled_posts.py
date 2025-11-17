@@ -23,10 +23,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_without_dormancy import (
     model_non_res_without_dormancy,
 )
-from projects._03_independent_cqc.utils.utils.utils import (
-    allocate_primary_service_type_second_level,
-    merge_columns_in_order,
-)
+from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -36,17 +33,18 @@ ind_cqc_columns = [
     IndCQC.location_id,
     IndCQC.name,
     IndCQC.provider_id,
+    IndCQC.regulated_activities_offered,
     IndCQC.services_offered,
     IndCQC.specialisms_offered,
-    IndCQC.specialist_generalist_other_dementia,
-    IndCQC.specialist_generalist_other_lda,
-    IndCQC.specialist_generalist_other_mh,
+    IndCQC.specialism_dementia,
+    IndCQC.specialism_learning_disabilities,
+    IndCQC.specialism_mental_health,
     IndCQC.primary_service_type,
+    IndCQC.primary_service_type_second_level,
     IndCQC.care_home,
     IndCQC.dormancy,
     IndCQC.number_of_beds,
     IndCQC.number_of_beds_banded,
-    IndCQC.imputed_gac_service_types,
     IndCQC.imputed_registration_date,
     IndCQC.related_location,
     IndCQC.time_registered,
@@ -79,6 +77,7 @@ ind_cqc_columns = [
     IndCQC.current_icb,
     IndCQC.current_rural_urban_indicator_2011,
     IndCQC.current_lsoa21,
+    IndCQC.current_msoa21,
     IndCQC.contemporary_cssr,
     IndCQC.contemporary_region,
     IndCQC.contemporary_sub_icb,
@@ -190,10 +189,6 @@ def main(
     )
 
     estimate_filled_posts_df = estimate_non_res_capacity_tracker_filled_posts(
-        estimate_filled_posts_df
-    )
-
-    estimate_filled_posts_df = allocate_primary_service_type_second_level(
         estimate_filled_posts_df
     )
 

@@ -25,10 +25,6 @@ PATCH_PATH: str = "projects._03_independent_cqc._01_merge.jobs.merge_ind_cqc_dat
 
 class MergeIndCQCDatasetTests(unittest.TestCase):
     TEST_CQC_LOCATION_SOURCE = "some/directory"
-    TEST_GAC_SOURCE = "some/directory"
-    TEST_REG_ACT_SOURCE = "some/directory"
-    TEST_SPEC_SOURCE = "some/directory"
-    TEST_PCM_SOURCE = "some/directory"
     TEST_CQC_PIR_SOURCE = "some/other/directory"
     TEST_ASCWDS_WORKPLACE_SOURCE = "some/other/directory"
     TEST_CT_NON_RES_SOURCE = "yet/another/directory"
@@ -54,21 +50,15 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.join_data_into_cqc_df")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
-    @patch(f"{PATCH_PATH}.utils.join_dimension")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
-        join_dimension_patch: Mock,
         select_rows_with_value_mock: Mock,
         join_data_into_cqc_df_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
-            self.test_clean_cqc_location_df,
-            self.test_clean_cqc_location_df,
-            self.test_clean_cqc_location_df,
-            self.test_clean_cqc_location_df,
             self.test_clean_cqc_location_df,
             self.test_data_with_care_home_col,
             self.test_data_without_care_home_col,
@@ -78,10 +68,6 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
 
         job.main(
             self.TEST_CQC_LOCATION_SOURCE,
-            self.TEST_GAC_SOURCE,
-            self.TEST_REG_ACT_SOURCE,
-            self.TEST_SPEC_SOURCE,
-            self.TEST_PCM_SOURCE,
             self.TEST_CQC_PIR_SOURCE,
             self.TEST_ASCWDS_WORKPLACE_SOURCE,
             self.TEST_CT_NON_RES_SOURCE,
@@ -89,11 +75,9 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
             self.TEST_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 9)
-        self.assertEqual(join_dimension_patch.call_count, 4)
-        self.assertEqual(select_rows_with_value_mock.call_count, 3)
+        self.assertEqual(read_from_parquet_patch.call_count, 5)
+        select_rows_with_value_mock.assert_called_once()
         self.assertEqual(join_data_into_cqc_df_mock.call_count, 4)
-
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,

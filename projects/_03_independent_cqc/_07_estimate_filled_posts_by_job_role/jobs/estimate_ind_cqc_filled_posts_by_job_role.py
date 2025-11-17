@@ -39,10 +39,10 @@ estimated_ind_cqc_filled_posts_columns_to_import = [
     IndCQC.provider_id,
     IndCQC.services_offered,
     IndCQC.primary_service_type,
+    IndCQC.primary_service_type_second_level,
     IndCQC.care_home,
     IndCQC.dormancy,
     IndCQC.number_of_beds,
-    IndCQC.imputed_gac_service_types,
     IndCQC.imputed_registration_date,
     IndCQC.registered_manager_names,
     IndCQC.ascwds_workplace_import_date,
@@ -58,6 +58,7 @@ estimated_ind_cqc_filled_posts_columns_to_import = [
     IndCQC.current_icb,
     IndCQC.current_rural_urban_indicator_2011,
     IndCQC.current_lsoa21,
+    IndCQC.current_msoa21,
     IndCQC.estimate_filled_posts,
     IndCQC.estimate_filled_posts_source,
     Keys.year,
@@ -94,12 +95,14 @@ def main(
         selected_columns=cleaned_ascwds_worker_columns_to_import,
     )
 
+    # Converted to polars - projects\_03_independent_cqc\_07_estimate_filled_posts_by_job_role\fargate\utils\utils.py
     aggregated_job_roles_per_establishment_df = (
         JRutils.aggregate_ascwds_worker_job_roles_per_establishment(
             cleaned_ascwds_worker_df, JRutils.list_of_job_roles_sorted
         )
     )
 
+    # Converted to polars - projects\_03_independent_cqc\_07_estimate_filled_posts_by_job_role\fargate\utils\utils.py
     estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.merge_dataframes(
         estimated_ind_cqc_filled_posts_df,
         aggregated_job_roles_per_establishment_df,
