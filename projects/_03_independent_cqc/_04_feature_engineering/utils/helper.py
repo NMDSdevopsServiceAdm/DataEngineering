@@ -173,7 +173,6 @@ def group_rural_urban_sparse_categories(df: DataFrame) -> DataFrame:
     return df
 
 
-# converted to polars -> projects._03_independent_cqc._04_feature_engineering.fargate.utils.feature_utils.py
 def filter_without_dormancy_features_to_pre_2025(df: DataFrame) -> DataFrame:
     """
     Filters the DataFrame to include only rows with a cqc_location_import_date on or before 01/01/2025.
