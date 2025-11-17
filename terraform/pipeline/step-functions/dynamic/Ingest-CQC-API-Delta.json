@@ -91,7 +91,7 @@
                       "Command": [
                         "validate_cqc_providers_1_delta_api_download.py",
                         "--bucket_name", "${dataset_bucket_name}",
-                        "--source_path", "domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
+                        "--source_path", "domain=CQC/dataset=delta_providers_api/version=3.0.0/",
                         "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_providers_01_delta_api_download/"
                       ]
                     }
@@ -168,7 +168,7 @@
                 "bucket_name_arg": "--bucket_name",
                 "bucket_name": "${dataset_bucket_name}",
                 "source_path_arg": "--source_path",
-                "source_path": "domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/",
+                "source_path": "domain=CQC/dataset=delta_locations_api/version=3.1.0/",
                 "reports_path_arg": "--reports_path",
                 "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_delta_locations_api_raw/"
               },
@@ -264,7 +264,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
-                "Name": "${cqc_crawler_delta_name}"
+                "Name": "${cqc_crawler_name}"
               },
               "End": true
             }
