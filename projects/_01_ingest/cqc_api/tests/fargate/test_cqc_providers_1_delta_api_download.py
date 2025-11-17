@@ -31,11 +31,14 @@ class TestDeltaDownloadCQCProviders(unittest.TestCase):
     @patch(f"{PATCH_PATH}.AWS_REGION", new="us-east-1")
     def test_main_gets_secret(self, mock_objects, mock_get_secret):
         mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
-        mock_objects.return_value = {}
-        dest = os.path.join(self.temp_dir, "test.parquet")
+        mock_objects.return_value = [
+            {"providerId": 1},
+            {"providerId": 2},
+            {"providerId": 3},
+        ]
         start = "2025-07-20T15:40:23Z"
         end = "2025-07-25T14:23:40Z"
-        main(dest, start, end)
+        main(self.temp_dir + "/", start, end)
         mock_get_secret.assert_called_once_with(
             secret_name="cqc-secret-name", region_name="us-east-1"
         )
@@ -118,14 +121,14 @@ class TestDeltaDownloadCQCProviders(unittest.TestCase):
         #   that we yield two distinct objects
         mock_objects.side_effect = [
             [
-                {"providerId": 1},
-                {"providerId": 2},
-                {"providerId": 3},
+                {"providerId": "1"},
+                {"providerId": "2"},
+                {"providerId": "3"},
             ],
             [
-                {"providerId": 4},
-                {"providerId": 5},
-                {"providerId": 6},
+                {"providerId": "4"},
+                {"providerId": "5"},
+                {"providerId": "6"},
             ],
         ]
         uuids = ["abc", "def"]
