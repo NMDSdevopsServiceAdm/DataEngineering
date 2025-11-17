@@ -83,7 +83,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         )
 
         print("Creating dataframe and writing to Parquet")
-        df: pl.DataFrame = pl.DataFrame(generator, POLARS_LOCATION_SCHEMA)
+        df: pl.DataFrame = pl.DataFrame(generator)
         df_unique: pl.DataFrame = df.unique(subset=[ColNames.location_id])
 
         utils.write_to_parquet(df_unique, destination)
