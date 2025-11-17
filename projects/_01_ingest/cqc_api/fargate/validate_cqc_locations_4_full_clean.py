@@ -3,6 +3,7 @@ import polars as pl
 import pointblank as pb
 
 from polars_utils import utils
+from polars_utils.cleaning_utils import column_to_date
 from polars_utils.expressions import str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
@@ -53,9 +54,8 @@ def main(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=compare_columns_to_import,
     )
-    compare_df = compare_df.filter(
-        pl.col(CQCLClean.type) == LocationType.social_care_identifier,
-        pl.col(CQCLClean.registration_status) == RegistrationStatus.registered,
+    compare_df = column_to_date(
+        compare_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
     compare_df = cUtils.impute_missing_values(
         compare_df,
@@ -65,6 +65,8 @@ def main(
         ],
     )
     expected_row_count = compare_df.filter(
+        pl.col(CQCLClean.type) == LocationType.social_care_identifier,
+        pl.col(CQCLClean.registration_status) == RegistrationStatus.registered,
         pl.col(CQCLClean.provider_id).is_not_null(),
         pl.col(CQCLClean.regulated_activities_offered).is_not_null(),
     ).height
