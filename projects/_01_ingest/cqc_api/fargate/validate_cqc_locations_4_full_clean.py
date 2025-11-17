@@ -28,7 +28,6 @@ compare_columns_to_import = [
     CQCLClean.type,
     CQCLClean.registration_status,
     CQCLClean.regulated_activities_offered,
-    CQCLClean.cqc_location_import_date,
 ]
 
 
