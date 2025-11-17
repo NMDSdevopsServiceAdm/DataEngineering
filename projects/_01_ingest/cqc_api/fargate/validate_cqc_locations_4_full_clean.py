@@ -295,8 +295,12 @@ if __name__ == "__main__":
         ("--bucket_name", "S3 bucket for source dataset and validation report"),
         ("--source_path", "The filepath of the dataset to validate"),
         ("--reports_path", "The filepath to output reports"),
+        (
+            "--compare_path",
+            "The filepath to a dataset to compare against for expected size",
+        ),
     )
     print(f"Starting validation for {args.source_path}")
 
-    main(args.bucket_name, args.source_path, args.reports_path)
+    main(args.bucket_name, args.source_path, args.reports_path, args.compare_path)
     print(f"Validation of {args.source_path} complete")
