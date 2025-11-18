@@ -11,7 +11,9 @@ import polars as pl
 
 from polars_utils import utils
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
-from schemas.cqc_provider_schema_polars import POLARS_PROVIDER_SCHEMA
+from schemas.cqc_provider_schema_overrides_polars import (
+    POLARS_PROVIDER_SCHEMA_OVERRIDES,
+)
 from utils.aws_secrets_manager_utilities import get_secret
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
@@ -89,7 +91,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         print("Creating dataframe and writing to Parquet")
         df: pl.DataFrame = pl.DataFrame(generator)
         df = df.with_columns(
-            [pl.col(k).cast(v) for k, v in POLARS_PROVIDER_SCHEMA.items()]
+            [pl.col(k).cast(v) for k, v in POLARS_PROVIDER_SCHEMA_OVERRIDES.items()]
         )
         df_unique: pl.DataFrame = df.unique(subset=[ColNames.provider_id])
         utils.write_to_parquet(df_unique, destination)
