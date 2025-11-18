@@ -87,8 +87,9 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         )
 
         print("Creating dataframe and writing to Parquet")
-        df: pl.DataFrame = pl.DataFrame(
-            generator, schema_overrides=POLARS_PROVIDER_SCHEMA
+        df: pl.DataFrame = pl.DataFrame(generator)
+        df = df.with_columns(
+            [pl.col(k).cast(v) for k, v in POLARS_PROVIDER_SCHEMA.items()]
         )
         df_unique: pl.DataFrame = df.unique(subset=[ColNames.provider_id])
         utils.write_to_parquet(df_unique, destination)

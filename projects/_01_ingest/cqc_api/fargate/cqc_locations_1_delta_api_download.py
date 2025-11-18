@@ -85,8 +85,9 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         )
 
         print("Creating dataframe and writing to Parquet")
-        df: pl.DataFrame = pl.DataFrame(
-            generator, schema_overrides=POLARS_LOCATION_SCHEMA_OVERRIDES
+        df: pl.DataFrame = pl.DataFrame(generator)
+        df = df.with_columns(
+            [pl.col(k).cast(v) for k, v in POLARS_LOCATION_SCHEMA_OVERRIDES.items()]
         )
         df_unique: pl.DataFrame = df.unique(subset=[ColNames.location_id])
 
