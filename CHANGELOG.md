@@ -212,6 +212,8 @@ All notable changes to this project will be documented in this file.
 - Converted CQC cleaning functions allocate_primary_service_type and realign_carehome_column_with_primary_service from pyspark to polars.
   The code exists in a cleaning utils script now, instead of in the job script.
 
+- Moved the filter to remove invalid locaitonids from cqc_locaitons_2_delta_flatten to cqc_locations_4_full_clean.
+
 ### Improved
 
 
