@@ -67,13 +67,13 @@ def main(
             CQCLClean.regulated_activities_offered,
         ],
     )
-
-    expected_row_count = compare_df.filter(
+    compare_df = compare_df.filter(
         pl.col(CQCLClean.registration_status) == RegistrationStatus.registered,
         pl.col(CQCLClean.provider_id).is_not_null(),
         pl.col(CQCLClean.regulated_activities_offered).is_not_null(),
-    ).height
-
+    )
+    compare_df = cUtils.remove_specialist_colleges(compare_df)
+    expected_row_count = compare_df.height
     validation = (
         pb.Validate(
             data=source_df,
