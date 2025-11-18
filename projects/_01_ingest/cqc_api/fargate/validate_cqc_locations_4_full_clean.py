@@ -56,6 +56,7 @@ def main(
     compare_df = column_to_date(
         compare_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
+    compare_df = cUtils.clean_provider_id_column(compare_df)
     compare_df = cUtils.impute_missing_values(
         compare_df,
         [
