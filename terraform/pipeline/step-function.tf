@@ -134,7 +134,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     ascwds_crawler_name                  = module.ascwds_crawler.crawler_name
     ind_cqc_filled_posts_crawler_name    = module.ind_cqc_filled_posts_crawler.crawler_name
     cqc_crawler_name                     = module.cqc_crawler.crawler_name
-    cqc_crawler_delta_name               = module.cqc_crawler_delta.crawler_name # TODO: remove and point back to main crawler
     dpr_crawler_name                     = module.dpr_crawler.crawler_name
     ons_crawler_name                     = module.ons_crawler.crawler_name
     sfc_crawler_name                     = module.sfc_crawler.crawler_name

@@ -353,8 +353,8 @@ module "flatten_cqc_ratings_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_full_snapshot_source"       = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/"
-    "--cqc_locations_api_delta_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
+    "--cqc_full_snapshot_source"       = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_locations_04_latest_snapshot/"
+    "--cqc_locations_api_delta_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=delta_locations_api/version=3.1.0/"
     "--ascwds_workplace_source"        = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
     "--cqc_ratings_destination"        = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
     "--benchmark_ratings_destination"  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
@@ -370,7 +370,7 @@ module "reconciliation_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_locations_snapshot_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/"
+    "--cqc_locations_snapshot_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_locations_04_latest_snapshot/"
     "--ascwds_reconciliation_source"               = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
     "--reconciliation_single_and_subs_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_reconciliation_singles_and_subs"
     "--reconciliation_parents_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_reconciliation_parents"
@@ -389,7 +389,7 @@ module "merge_ind_cqc_data_job" {
   number_of_workers = 5
 
   job_parameters = {
-    "--cleaned_cqc_location_source"     = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/"
+    "--cleaned_cqc_location_source"     = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
     "--cleaned_cqc_pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir_cleaned/"
     "--cleaned_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
     "--cleaned_ct_non_res_source"       = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
@@ -410,10 +410,10 @@ module "merge_coverage_data_job" {
   number_of_workers = 5
 
   job_parameters = {
-    "--cleaned_cqc_location_source"         = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/"
+    "--cleaned_cqc_location_source"         = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
     "--workplace_for_reconciliation_source" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
     "--cqc_ratings_source"                  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
-    "--cleaned_cqc_providers_source"        = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=cqc_providers_04_full_cleaned/"
+    "--cleaned_cqc_providers_source"        = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_providers_04_full_cleaned/"
     "--merged_coverage_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/"
     "--reduced_coverage_destination"        = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
   }
@@ -492,7 +492,7 @@ module "validate_merged_ind_cqc_data_job" {
   number_of_workers = 4
 
   job_parameters = {
-    "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/"
+    "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
     "--merged_ind_cqc_source"       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/"
     "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_merged_data/"
   }
@@ -508,7 +508,7 @@ module "validate_merge_coverage_data_job" {
   glue_version    = "5.0"
 
   job_parameters = {
-    "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/"
+    "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
     "--merged_coverage_data_source" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/"
     "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_sfc_merged_coverage_data/"
   }
@@ -853,13 +853,6 @@ module "data_validation_reports_crawler" {
 module "cqc_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "CQC"
-  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
-  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
-}
-
-module "cqc_crawler_delta" {
-  source                       = "../modules/glue-crawler"
-  dataset_for_crawler          = "CQC_delta"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
