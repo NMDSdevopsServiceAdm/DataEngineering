@@ -53,6 +53,9 @@ def main(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=compare_columns_to_import,
     )
+    compare_df = compare_df.filter(
+        pl.col(CQCLClean.type) == LocationType.social_care_identifier
+    )
     compare_df = column_to_date(
         compare_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
@@ -65,7 +68,6 @@ def main(
         ],
     )
     expected_row_count = compare_df.filter(
-        pl.col(CQCLClean.type) == LocationType.social_care_identifier,
         pl.col(CQCLClean.registration_status) == RegistrationStatus.registered,
         pl.col(CQCLClean.provider_id).is_not_null(),
         pl.col(CQCLClean.regulated_activities_offered).is_not_null(),
@@ -82,7 +84,7 @@ def main(
         # dataset size
         .row_count_match(
             expected_row_count,
-            brief=f"Flattened file has {source_df.height} rows but expecting {expected_row_count} rows",
+            brief=f"Cleaned file has {source_df.height} rows but expecting {expected_row_count} rows",
         )
         # complete columns
         .col_vals_not_null(
