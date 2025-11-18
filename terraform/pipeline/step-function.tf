@@ -104,7 +104,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     diagnostics_on_known_filled_posts_job_name                              = module.diagnostics_on_known_filled_posts_job.job_name
     diagnostics_on_capacity_tracker_job_name                                = module.diagnostics_on_capacity_tracker_job.job_name
     archive_filled_posts_estimates_job_name                                 = module.archive_filled_posts_estimates_job.job_name
-    validate_providers_api_raw_delta_data_job_name                          = module.validate_providers_api_raw_delta_data_job.job_name
     prepare_dpr_external_job_name                                           = module.prepare_dpr_external_data_job.job_name
     prepare_dpr_survey_job_name                                             = module.prepare_dpr_survey_data_job.job_name
     merge_dpr_data_job_name                                                 = module.merge_dpr_data_job.job_name
@@ -135,7 +134,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     ascwds_crawler_name                  = module.ascwds_crawler.crawler_name
     ind_cqc_filled_posts_crawler_name    = module.ind_cqc_filled_posts_crawler.crawler_name
     cqc_crawler_name                     = module.cqc_crawler.crawler_name
-    cqc_crawler_delta_name               = module.cqc_crawler_delta.crawler_name # TODO: remove and point back to main crawler
     dpr_crawler_name                     = module.dpr_crawler.crawler_name
     ons_crawler_name                     = module.ons_crawler.crawler_name
     sfc_crawler_name                     = module.sfc_crawler.crawler_name

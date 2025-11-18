@@ -18,12 +18,10 @@ class CqcLocationsDeltaFlattenTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.extract_registered_manager_names")
     @patch(f"{PATCH_PATH}.fUtils.flatten_struct_fields")
     @patch(f"{PATCH_PATH}.column_to_date")
-    @patch(f"{PATCH_PATH}.raw_data_adjustments.is_valid_location")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_cqc_locations_data)
     def test_main_runs_successfully(
         self,
         scan_parquet_mock: Mock,
-        is_valid_location_mock: Mock,
         column_to_date_mock: Mock,
         flatten_struct_fields_mock: Mock,
         extract_registered_manager_names_mock: Mock,
@@ -34,7 +32,6 @@ class CqcLocationsDeltaFlattenTests(unittest.TestCase):
         scan_parquet_mock.assert_called_once_with(
             self.TEST_SOURCE, schema=ANY, selected_columns=ANY
         )
-        is_valid_location_mock.assert_called_once()
         self.assertEqual(column_to_date_mock.call_count, 2)
         flatten_struct_fields_mock.assert_called_once()
         extract_registered_manager_names_mock.assert_called_once()

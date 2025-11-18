@@ -65,6 +65,7 @@ cleaned_cqc_locations_columns_to_import = [
     ONSClean.current_icb,
     ONSClean.current_region,
     ONSClean.current_lsoa21,
+    ONSClean.current_msoa21,
     ONSClean.current_rural_urban_ind_11,
     Keys.year,
     Keys.month,
