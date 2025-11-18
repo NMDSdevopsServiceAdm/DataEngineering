@@ -307,10 +307,10 @@ jobs:
           aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC/dataset=pir_cleaned/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=pir_cleaned/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-pipeline-resources/models/"
-          to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/models/"
+      # - aws-s3/sync:
+      #     aws-region: AWS_REGION
+      #     from: "s3://sfc-main-pipeline-resources/models/"
+      #     to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/models/"
 
   terraform-destroy:
     working_directory: /tmp/project
