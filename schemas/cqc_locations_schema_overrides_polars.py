@@ -216,40 +216,4 @@ POLARS_LOCATION_SCHEMA_OVERRIDES = {
             }
         )
     ),
-    NewColNames.unpublished_reports: pl.List(
-        pl.Struct({NewColNames.first_visit_date: pl.String()})
-    ),
-    NewColNames.provider_inspection_areas: pl.List(
-        pl.Struct(
-            {
-                NewColNames.inspection_area_id: pl.String(),
-                NewColNames.reports: pl.List(
-                    pl.Struct(
-                        {
-                            NewColNames.inspection_id: pl.String(),
-                            NewColNames.report_link_id: pl.String(),
-                            NewColNames.provider_id: pl.String(),
-                            NewColNames.location_id: pl.String(),
-                        }
-                    )
-                ),
-            }
-        )
-    ),
-    NewColNames.specialism: pl.List(
-        pl.Struct({NewColNames.code: pl.String(), NewColNames.name: pl.String()})
-    ),
-    NewColNames.age_group: pl.List(
-        pl.Struct({NewColNames.code: pl.String(), NewColNames.name: pl.String()})
-    ),
-    NewColNames.setting_services: pl.List(
-        pl.Struct(
-            {
-                NewColNames.setting_type_code: pl.String(),
-                NewColNames.setting_type_name: pl.String(),
-                NewColNames.service_type_code: pl.String(),
-                NewColNames.service_type_name: pl.String(),
-            }
-        )
-    ),
 }
