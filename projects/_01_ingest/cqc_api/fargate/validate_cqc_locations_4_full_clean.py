@@ -67,6 +67,7 @@ def main(
             CQCLClean.regulated_activities_offered,
         ],
     )
+
     expected_row_count = compare_df.filter(
         pl.col(CQCLClean.registration_status) == RegistrationStatus.registered,
         pl.col(CQCLClean.provider_id).is_not_null(),
