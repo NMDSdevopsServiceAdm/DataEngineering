@@ -36,6 +36,8 @@ All notable changes to this project will be documented in this file.
 
 - Added current_msoa21 column to the IND CQC pipeline.
 
+- Added validation script for providers_3_full_flattened process and test script for this validation.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
@@ -151,6 +153,10 @@ All notable changes to this project will be documented in this file.
 
 - Change the order of function calls in cqc_locations_4_full_clean so filtering to registered locations only happens after imputation.
 
+- Refactored validate_providers_api_raw to use PointBlank, and added the new validation script `validate_cqc_providers_1_delta_api_download.py` with its corresponding validation test.
+
+- Changed references of domain=CQC_delta to domain=CQC. The bulk download pipeline is no longer used, the delta pipeline has taken it's place.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
@@ -207,6 +213,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted CQC cleaning functions allocate_primary_service_type and realign_carehome_column_with_primary_service from pyspark to polars.
   The code exists in a cleaning utils script now, instead of in the job script.
+
+- Moved the filter to remove invalid locaitonids from cqc_locaitons_2_delta_flatten to cqc_locations_4_full_clean.
 
 ### Improved
 

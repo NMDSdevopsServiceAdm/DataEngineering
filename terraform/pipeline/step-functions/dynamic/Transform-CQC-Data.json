@@ -29,8 +29,8 @@
                       "Name": "cqc-api-container",
                       "Command": [
                         "cqc_providers_2_delta_flatten.py",
-                        "--delta_api_source", "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
-                        "--flattened_destination", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_providers_02_delta_flattened/"
+                        "--delta_api_source", "${dataset_bucket_uri}/domain=CQC/dataset=delta_providers_api/version=3.0.0/",
+                        "--flattened_destination", "${dataset_bucket_uri}/domain=CQC/dataset=cqc_providers_02_delta_flattened/"
                       ]
                     }
                   ]
@@ -64,8 +64,8 @@
                               "Name": "cqc-api-container",
                               "Command": [
                                 "cqc_providers_3_full_flattened.py",
-                                "--delta_source", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_providers_02_delta_flattened/",
-                                "--full_destination", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_providers_03_full_flattened/"
+                                "--delta_source", "${dataset_bucket_uri}/domain=CQC/dataset=cqc_providers_02_delta_flattened/",
+                                "--full_destination", "${dataset_bucket_uri}/domain=CQC/dataset=cqc_providers_03_full_flattened/"
                               ]
                             }
                           ]
@@ -101,9 +101,9 @@
                               "Command": [
                                 "validate_cqc_providers_2_delta_flatten.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=CQC_delta/dataset=cqc_providers_02_delta_flattened/",
+                                "--source_path", "domain=CQC/dataset=cqc_providers_02_delta_flattened/",
                                 "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_providers_02_delta_flattened/",
-                                "--compare_path", "domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/"
+                                "--compare_path", "domain=CQC/dataset=delta_providers_api/version=3.0.0/"
                               ]
                             }
                           ]
@@ -142,8 +142,8 @@
                               "Name": "cqc-api-container",
                               "Command": [
                                 "cqc_providers_4_full_clean.py",
-                                "--full_flattened_source", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_providers_03_full_flattened/",
-                                "--full_cleaned_destination", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_providers_04_full_cleaned/"
+                                "--full_flattened_source", "${dataset_bucket_uri}/domain=CQC/dataset=cqc_providers_03_full_flattened/",
+                                "--full_cleaned_destination", "${dataset_bucket_uri}/domain=CQC/dataset=cqc_providers_04_full_cleaned/"
                               ]
                             }
                           ]
@@ -157,7 +157,35 @@
                   "StartAt": "Validate Build Full flatten CQC Providers",
                   "States": {
                     "Validate Build Full flatten CQC Providers": {
-                      "Type": "Pass",
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${cqc_api_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": [
+                              "${cqc_api_security_group_id}"
+                            ],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command": [
+                                "validate_cqc_providers_3_full_flattened.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=CQC/dataset=cqc_providers_03_full_flattened/",
+                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_providers_03_full_flattened/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
                       "End": true
                     }
                   }
@@ -188,9 +216,9 @@
                       "Command": [
                         "validate_cqc_providers_4_full_clean.py",
                         "--bucket_name", "${dataset_bucket_name}",
-                        "--source_path", "domain=CQC_delta/dataset=cqc_providers_04_full_cleaned/",
+                        "--source_path", "domain=CQC/dataset=cqc_providers_04_full_cleaned/",
                         "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_providers_04_full_cleaned/",
-                        "--compare_path", "domain=CQC_delta/dataset=cqc_providers_03_full_flattened/"
+                        "--compare_path", "domain=CQC/dataset=cqc_providers_03_full_flattened/"
                       ]
                     }
                   ]
@@ -223,8 +251,8 @@
                       "Name": "cqc-api-container",
                       "Command": [
                         "cqc_locations_2_delta_flatten.py",
-                        "--cqc_locations_api_delta_source", "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/",
-                        "--cqc_locations_flattened_destination", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/"
+                        "--cqc_locations_api_delta_source", "${dataset_bucket_uri}/domain=CQC/dataset=delta_locations_api/version=3.1.0/",
+                        "--cqc_locations_flattened_destination", "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_02_delta_flattened/"
                       ]
                     }
                   ]
@@ -258,8 +286,8 @@
                               "Name": "cqc-api-container",
                               "Command": [
                                 "cqc_locations_3_full_flattened.py",
-                                "--delta_source", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
-                                "--full_destination", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/"
+                                "--delta_source", "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_02_delta_flattened/",
+                                "--full_destination", "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_03_full_flattened/"
                               ]
                             }
                           ]
@@ -295,9 +323,9 @@
                               "Command": [
                                 "validate_cqc_locations_2_delta_flatten.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
+                                "--source_path", "domain=CQC/dataset=cqc_locations_02_delta_flattened/",
                                 "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_02_delta_flattened/",
-                                "--compare_path", "domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
+                                "--compare_path", "domain=CQC/dataset=delta_locations_api/version=3.1.0/"
                               ]
                             }
                           ]
@@ -336,10 +364,10 @@
                               "Name": "cqc-api-container",
                               "Command": [
                                 "cqc_locations_4_full_clean.py",
-                                "--cqc_locations_full_flattened_source", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/",
+                                "--cqc_locations_full_flattened_source", "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_03_full_flattened/",
                                 "--ons_postcode_directory_source", "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-                                "--cqc_registered_locations_cleaned_destination", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/",
-                                "--cqc_full_snapshot_destination", "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/",
+                                "--cqc_registered_locations_cleaned_destination", "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/",
+                                "--cqc_full_snapshot_destination", "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_04_latest_snapshot/",
                                 "--manual_postcode_corrections_source", "${dataset_bucket_uri}/domain=CQC/dataset=postcode_corrections/manual_postcode_corrections.csv"
                               ]
                             }
@@ -374,7 +402,7 @@
                               "Command": [
                                 "validate_cqc_locations_3_full_flattened.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=CQC_delta/dataset=cqc_locations_03_full_flattened/",
+                                "--source_path", "domain=CQC/dataset=cqc_locations_03_full_flattened/",
                                 "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_03_full_flattened/"
                               ]
                             }
@@ -417,9 +445,9 @@
                               "Command": [
                                 "validate_cqc_locations_4_full_clean.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/",
+                                "--source_path", "domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/",
                                 "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_04_full_cleaned_registered/",
-                                "--compare_path", "domain=CQC_delta/dataset=cqc_locations_03_full_flattened/"
+                                "--compare_path", "domain=CQC/dataset=cqc_locations_03_full_flattened/"
                               ]
                             }
                           ]
@@ -455,7 +483,7 @@
                               "Command": [
                                 "validate_cqc_locations_4_full_latest_snapshot.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/",
+                                "--source_path", "domain=CQC/dataset=cqc_locations_04_latest_snapshot/",
                                 "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_04_latest_snapshot/"
                               ]
                             }
@@ -531,7 +559,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
-                "Name": "${cqc_crawler_delta_name}"
+                "Name": "${cqc_crawler_name}"
               },
               "End": true
             }
