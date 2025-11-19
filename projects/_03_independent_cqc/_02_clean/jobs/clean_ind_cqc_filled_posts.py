@@ -134,7 +134,7 @@ def remove_dual_registration_cqc_care_homes(df: DataFrame) -> DataFrame:
 
 
 def deduplicate_care_homes(
-    df: DataFrame, duplicate_columns: list, distinguishing_columns: list
+    df: DataFrame, duplicate_columns: list[str], distinguishing_columns: list[str]
 ) -> DataFrame:
     """
     Removes cqc locations with dual registration.
@@ -143,8 +143,8 @@ def deduplicate_care_homes(
 
     Args:
         df (DataFrame): A dataframe containing cqc location data and ascwds data.
-        duplicate_columns (list): A list of column names to identify duplicates.
-        distinguishing_columns (list): A list of the columns which will decide which of the duplicates to keep.
+        duplicate_columns (list[str]): A list of column names to identify duplicates.
+        distinguishing_columns (list[str]): A list of the columns which will decide which of the duplicates to keep.
 
     Returns:
         DataFrame: A dataframe with dual regestrations deduplicated.
