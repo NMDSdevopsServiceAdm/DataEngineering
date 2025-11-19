@@ -163,6 +163,11 @@ All notable changes to this project will be documented in this file.
   - changed how ASC-WDS data is copied across dual registrations to coalesce the orginal value and the max over a window.
   - added location_id as a fallback column to distinguish identical locations consistantly.
 
+- In cqc_locations_4_full_clean job, I moved the filtering to social care only locations to after the latest full snapshot is saved. So the latest full snapshot is now all cqc locations.
+  Then in the internal flatten ratings job, I added the filtering to social care only back in.
+  The merge coverage job doesn't use the latest full snapshot, it uses full_cleaned_registered, so no changes to this job.
+  The reconciliation job now uses all cqc locations. It does not filter to social care only.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
