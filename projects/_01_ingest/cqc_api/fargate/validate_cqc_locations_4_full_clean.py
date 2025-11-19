@@ -1,13 +1,13 @@
 import sys
-import polars as pl
 import pointblank as pb
 
 from polars_utils import utils
-from polars_utils.cleaning_utils import column_to_date
 from polars_utils.expressions import str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from projects._01_ingest.cqc_api.fargate.utils import cleaning_utils as cUtils
+from projects._01_ingest.cqc_api.utils.utils import (
+    get_expected_row_count_for_validation_full_clean,
+)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -54,27 +54,11 @@ def main(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=compare_columns_to_import,
     )
-    compare_df = compare_df.filter(
-        pl.col(CQCLClean.type) == LocationType.social_care_identifier
-    )
-    compare_df = column_to_date(
-        compare_df, Keys.import_date, CQCLClean.cqc_location_import_date
-    )
-    compare_df = cUtils.clean_provider_id_column(compare_df)
-    compare_df = cUtils.impute_missing_values(
-        compare_df,
-        [
-            CQCLClean.provider_id,
-            CQCLClean.regulated_activities_offered,
-        ],
-    )
-    compare_df = compare_df.filter(
-        pl.col(CQCLClean.registration_status) == RegistrationStatus.registered,
-        pl.col(CQCLClean.provider_id).is_not_null(),
-        pl.col(CQCLClean.regulated_activities_offered).is_not_null(),
-    )
-    compare_df = cUtils.remove_specialist_colleges(compare_df)
-    expected_row_count = compare_df.height
+    # compare_df = compare_df.filter(
+    #     pl.col(CQCLClean.type) == LocationType.social_care_identifier
+    # )
+
+    expected_row_count = get_expected_row_count_for_validation_full_clean(compare_df)
     validation = (
         pb.Validate(
             data=source_df,
