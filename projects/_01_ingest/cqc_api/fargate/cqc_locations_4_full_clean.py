@@ -44,16 +44,16 @@ def main(
     )
     print("Full Flattened CQC Location LazyFrame read in")
 
-    cqc_lf = cqc_lf.filter(
-        pl.col(CQCLClean.type) == LocationType.social_care_identifier,
-        raw_data_adjustments.is_valid_location(),
-    )
-
     cqc_lf = column_to_date(
         cqc_lf, Keys.import_date, CQCLClean.cqc_location_import_date
     )
 
     cUtils.save_latest_full_snapshot(cqc_lf, cqc_full_snapshot_destination)
+
+    cqc_lf = cqc_lf.filter(
+        pl.col(CQCLClean.type) == LocationType.social_care_identifier,
+        raw_data_adjustments.is_valid_location(),
+    )
 
     cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)
 
