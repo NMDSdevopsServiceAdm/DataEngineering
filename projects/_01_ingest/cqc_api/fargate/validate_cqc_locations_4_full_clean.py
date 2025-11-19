@@ -1,4 +1,5 @@
 import sys
+
 import pointblank as pb
 
 from polars_utils import utils
@@ -54,11 +55,8 @@ def main(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=compare_columns_to_import,
     )
-    # compare_df = compare_df.filter(
-    #     pl.col(CQCLClean.type) == LocationType.social_care_identifier
-    # )
-
     expected_row_count = get_expected_row_count_for_validation_full_clean(compare_df)
+
     validation = (
         pb.Validate(
             data=source_df,
