@@ -47,7 +47,7 @@ def get_expected_row_count_for_validation_full_clean(df: pl.DataFrame) -> int:
     Returns the expected row count for validation of a fully cleaned dataset.
     This function tries to replicate the cleaning process to get the row count.
 
-    Args
+    Args:
         df (pl.DataFrame): compare Dataframe to get expect row count from
 
     Returns:
