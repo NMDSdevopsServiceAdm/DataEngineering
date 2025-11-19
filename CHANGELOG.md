@@ -157,6 +157,13 @@ All notable changes to this project will be documented in this file.
 
 - Changed references of domain=CQC_delta to domain=CQC. The bulk download pipeline is no longer used, the delta pipeline has taken it's place.
 
+- Changed the locations and providers delta API download process as follows:
+  - Get all data from the API and assign it to a dataframe without a schema (column types are inferred).
+  - Override specific column types to match historic delta downloads.
+  - Store all CQC API delta data in dataset_delta_locations_api / dataset_delta_providers_api.
+  - Import only specific columns in full_clean job.
+
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
