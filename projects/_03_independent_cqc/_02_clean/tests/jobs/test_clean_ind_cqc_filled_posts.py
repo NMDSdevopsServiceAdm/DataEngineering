@@ -344,6 +344,9 @@ class CalculateTimeSinceDormant(CleanIndFilledPostsTests):
 
 
 class RemoveDualRegistrationCqcCareHomes(CleanIndFilledPostsTests):
+
+    # TODO: Add tests for the two sub functions and test for their calls.
+
     def setUp(self):
         super().setUp()
 
