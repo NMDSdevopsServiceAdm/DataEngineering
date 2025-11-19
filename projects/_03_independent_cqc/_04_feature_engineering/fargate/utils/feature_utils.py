@@ -51,7 +51,7 @@ def add_date_index_column(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def cap_integer_at_max_value(
-    lf: pl.LazyFrame, col_name: str, max_value: pl.Int8, new_col_name: str
+    lf: pl.LazyFrame, col_name: str, max_value: pl.Int32, new_col_name: str
 ) -> pl.LazyFrame:
     """
     Caps the non-null values in a specified column at a given maximum value and stores the result in a new column.
@@ -61,7 +61,7 @@ def cap_integer_at_max_value(
     Args:
         lf (pl.LazyFrame): The input LazyFrame.
         col_name (str): The name of the column to be capped.
-        max_value (pl.Int8): The maximum value allowed for the column.
+        max_value (pl.Int32): The maximum value allowed for the column.
         new_col_name (str): The name of the new column to store the capped values.
 
     Returns:
