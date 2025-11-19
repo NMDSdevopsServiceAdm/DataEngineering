@@ -5,7 +5,7 @@ from polars_utils import utils
 from polars_utils.expressions import str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from projects._01_ingest.cqc_api.utils.utils import (
+from projects._01_ingest.cqc_api.utils.validate_cqc_locations import (
     get_expected_row_count_for_validation_full_clean,
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
