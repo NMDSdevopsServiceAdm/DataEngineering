@@ -14,8 +14,8 @@
               "Parameters": {
                 "JobName": "${flatten_cqc_ratings_job_name}",
                 "Arguments": {
-                  "--cqc_full_snapshot_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/",
-                  "--cqc_locations_api_delta_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/",
+                  "--cqc_full_snapshot_source": "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_04_latest_snapshot/",
+                  "--cqc_locations_api_delta_source": "${dataset_bucket_uri}/domain=CQC/dataset=delta_locations_api/version=3.1.0/",
                   "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
                   "--cqc_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/",
                   "--benchmark_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
@@ -29,10 +29,10 @@
               "Parameters": {
                 "JobName": "${merge_coverage_data_job_name}",
                 "Arguments": {
-                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/",
+                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/",
                   "--workplace_for_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/",
                   "--cqc_ratings_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/",
-                  "--cleaned_cqc_providers_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_providers_04_full_cleaned/",
+                  "--cleaned_cqc_providers_source": "${dataset_bucket_uri}/domain=CQC/dataset=cqc_providers_04_full_cleaned/",
                   "--merged_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/",
                   "--reduced_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
                 }
@@ -45,7 +45,7 @@
               "Parameters": {
                 "JobName": "${validate_merge_coverage_data_job_name}",
                 "Arguments": {
-                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/",
+                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/",
                   "--merged_coverage_data_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/",
                   "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_sfc_merged_coverage_data/"
                 }
@@ -58,7 +58,7 @@
               "Parameters": {
                 "JobName": "${reconciliation_job_name}",
                 "Arguments": {
-                  "--cqc_locations_snapshot_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_latest_snapshot/",
+                  "--cqc_locations_snapshot_source": "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_04_latest_snapshot/",
                   "--ascwds_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/",
                   "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_singles_and_subs",
                   "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_parents"
