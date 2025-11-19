@@ -39,6 +39,7 @@ def save_latest_full_snapshot(
         CQCLClean.location_id,
         CQCLClean.registration_status,
         CQCLClean.deregistration_date,
+        CQCLClean.type,
     ]
 
     cqc_lf = cqc_lf.select(*required_columns)
