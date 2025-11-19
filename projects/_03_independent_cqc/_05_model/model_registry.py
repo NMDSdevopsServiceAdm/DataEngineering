@@ -19,6 +19,8 @@ model_definitions = {
     },
     "care_home_filled_posts_prediction": {
         "preprocessor": "preprocess_remove_nulls",
+        "source_prefix": "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_care_home",
+        "processed_location": "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_care_home_processed",
         "preprocessor_kwargs": {
             "columns": [
                 "activity_count_capped",
@@ -66,8 +68,6 @@ model_definitions = {
         "model_identifier": "care_home_filled_posts_prediction",
         "model_params": {"alpha": 0.001},
         "version_parameter_location": f"/models/{ENVIRONMENT}/care_home_filled_posts_prediction",
-        "source_prefix": "domain=ind_cqc_filled_posts/dataset=ind_cqc_features_care_home",
-        "processed_location": "domain=ind_cqc_filled_posts/dataset=ind_cqc_features_care_home_processed",
         "target_columns": ["imputed_filled_posts_per_bed_ratio_model"],
         "feature_columns": [
             "activity_count_capped",
