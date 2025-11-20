@@ -38,6 +38,8 @@ All notable changes to this project will be documented in this file.
 
 - Added validation script for providers_3_full_flattened process and test script for this validation.
 
+- Created a new folder and file structure to contain the model re-training process files.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
@@ -157,12 +159,22 @@ All notable changes to this project will be documented in this file.
 
 - Changed references of domain=CQC_delta to domain=CQC. The bulk download pipeline is no longer used, the delta pipeline has taken it's place.
 
+- Changed the remove_duplicate_cqc_care_homes function as followed:
+  - changed function name to remove_dual_registration_cqc_care_homes.
+  - updated doc string with information from CQC.
+  - changed how ASC-WDS data is copied across dual registrations to coalesce the orginal value and the max over a window.
+  - added location_id as a fallback column to distinguish identical locations consistantly.
+
+- In cqc_locations_4_full_clean job, I moved the filtering to social care only locations to after the latest full snapshot is saved. So the latest full snapshot is now all cqc locations.
+  Then in the internal flatten ratings job, I added the filtering to social care only back in.
+  The merge coverage job doesn't use the latest full snapshot, it uses full_cleaned_registered, so no changes to this job.
+  The reconciliation job now uses all cqc locations. It does not filter to social care only.
+
 - Changed the locations and providers delta API download process as follows:
   - Get all data from the API and assign it to a dataframe without a schema (column types are inferred).
   - Override specific column types to match historic delta downloads.
   - Store all CQC API delta data in dataset_delta_locations_api / dataset_delta_providers_api.
   - Import only specific columns in full_clean job.
-
 
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.

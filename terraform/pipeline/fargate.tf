@@ -71,3 +71,19 @@ module "_03_independent_cqc" {
   ]
   tag_name = terraform.workspace
 }
+
+module "_03_independent_cqc_model" {
+  source        = "../modules/fargate-task"
+  task_name     = "_03_independent_cqc_model"
+  ecr_repo_name = "fargate/_03_independent_cqc_model"
+  cluster_arn   = aws_ecs_cluster.model_cluster.arn
+  tag_name      = terraform.workspace
+  cpu_size      = 8192
+  ram_size      = 32768
+  environment = [
+    { "name" : "AWS_REGION", "value" : "eu-west-2" },
+    { "name" : "ENVIRONMENT", "value" : terraform.workspace == "default" ? "prod" : "dev" },
+    { "name" : "S3_SOURCE_BUCKET", "value" : module.datasets_bucket.bucket_name },
+    { "name" : "RESOURCES_BUCKET", "value" : module.pipeline_resources.bucket_name }
+  ]
+}
