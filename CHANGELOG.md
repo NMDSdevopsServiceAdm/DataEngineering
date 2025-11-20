@@ -38,6 +38,8 @@ All notable changes to this project will be documented in this file.
 
 - Added validation script for providers_3_full_flattened process and test script for this validation.
 
+- Created a new folder and file structure to contain the model re-training process files.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw

@@ -3,9 +3,7 @@ import unittest
 import polars as pl
 import polars.testing as pl_testing
 
-from projects._03_independent_cqc._04_feature_engineering.fargate.utils import (
-    feature_utils as job,
-)
+from projects._03_independent_cqc._04_model.utils import feature_utils as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     FeaturesEngineeringUtilsData as Data,
 )
