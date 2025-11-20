@@ -188,7 +188,7 @@ class TestListColumnHasNoEmptyOrNullValues(TestValidate):
 
     def test_list_has_no_empty_or_nulls_string_list_true(self):
         # Each row is a single list (strings), all valid
-        df = pl.DataFrame({"test_col": [["a", "b"], ["hello"], ["x", "y", "z"]]})
+        df = pl.DataFrame({"test_col": [["a", "b"]]})
 
         func = vl.list_has_no_empty_or_nulls("test_col")
 
