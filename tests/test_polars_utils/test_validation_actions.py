@@ -174,5 +174,58 @@ class TestIsUniqueCount(TestValidate):
         self.assertFalse(result)
 
 
+class TestListColumnHasNoEmptyOrNullValues(TestValidate):
+
+    def test_list_has_no_empty_or_nulls_int_list_true(self):
+        # Each row is a single list (integers), all valid
+        df = pl.DataFrame({"test_col": [[1, 2], [3], [4, 5, 6]]})
+
+        func = vl.list_has_no_empty_or_nulls("test_col")
+
+        result = func(df)
+
+        self.assertTrue(result)
+
+    def test_list_has_no_empty_or_nulls_string_list_true(self):
+        # Each row is a single list (strings), all valid
+        df = pl.DataFrame({"test_col": [["a", "b"], ["hello"], ["x", "y", "z"]]})
+
+        func = vl.list_has_no_empty_or_nulls("test_col")
+
+        result = func(df)
+
+        self.assertTrue(result)
+
+    def test_list_has_no_empty_or_nulls_list_is_empty_false(self):
+        # One row has an empty list
+        df = pl.DataFrame({"test_col": [[1], []]})
+
+        func = vl.list_has_no_empty_or_nulls("test_col")
+
+        result = func(df)
+
+        self.assertFalse(result)
+
+    def test_list_has_no_empty_or_nulls_list_contains_null_false(self):
+        # One row contains None inside the list
+        df = pl.DataFrame({"test_col": [[1, 2], [None, 3]]})
+
+        func = vl.list_has_no_empty_or_nulls("test_col")
+
+        result = func(df)
+
+        self.assertFalse(result)
+
+    def test_list_has_no_empty_or_nulls_list_is_none_false(self):
+        # One row is entirely None
+        df = pl.DataFrame({"test_col": [[1, 2], None]})
+
+        func = vl.list_has_no_empty_or_nulls("test_col")
+
+        result = func(df)
+
+        self.assertFalse(result)
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

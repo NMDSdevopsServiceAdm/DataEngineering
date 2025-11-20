@@ -123,7 +123,7 @@ def list_has_no_empty_or_nulls(column: str) -> Callable[[pl.DataFrame], bool]:
         # Condition 1: no empty lists
         no_empty = lists.list.len() > 0
         # Condition 2: no null elements in any list
-        no_nulls = lists.list.contains(None).fill_null(False) == False
+        no_nulls = lists.list.contains(None).fill_null(True) == False
 
         return bool((no_empty & no_nulls).all())
 
