@@ -121,7 +121,9 @@ def list_has_no_empty_or_nulls(column: str) -> Callable[[pl.DataFrame], bool]:
     def inner_callable(df: pl.DataFrame) -> bool:
         lists = df[column]
         # Condition 1: no empty lists
-        no_empty = pl.when(lists.is_not_null()).then(lists.list.len() > 0).otherwise(True)
+        no_empty = (
+            pl.when(lists.is_not_null()).then(lists.list.len() > 0).otherwise(True)
+        )
         # Condition 2: no null elements in any list
         no_nulls = lists.list.contains(None).fill_null(True) == False
 
