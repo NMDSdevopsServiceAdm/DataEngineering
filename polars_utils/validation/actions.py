@@ -98,3 +98,37 @@ def is_unique_count_equal(column: str, value: int) -> Callable[[pl.DataFrame], b
         return df.n_unique(subset=[column]) == value
 
     return inner_callable
+
+
+def list_has_no_empty_or_nulls(column: str) -> Callable[[pl.DataFrame], bool]:
+    """
+    Creates a validation function that checks whether a list-type column:
+      - has no empty lists
+      - has no lists containing any None/null values
+
+    This function returns another Callable for use in pointblank validations,
+    particularly with `specially`, which requires that the returned function
+    accepts only a single parameter (pl.DataFrame).
+
+    Args:
+        column (str): The list-type column to check.
+
+    Returns:
+        Callable[[pl.DataFrame], bool]: A function that returns True if all
+        lists in the column are non-empty and contain no None values.
+    """
+
+    def inner_callable(df: pl.DataFrame) -> bool:
+        # Extract the list column
+        lists = df[column]
+
+        # Condition 1: no empty lists
+        no_empty = lists.list.len() > 0
+
+        # Condition 2: no null elements in any list
+        no_nulls = lists.list.contains(None).fill_null(False) == False
+
+        # Entire column must satisfy both conditions
+        return bool((no_empty & no_nulls).all())
+
+    return inner_callable

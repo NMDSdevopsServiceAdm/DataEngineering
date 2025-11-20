@@ -1580,6 +1580,7 @@ class ValidateCqcLocations4FullCleanTest:
                 "Accommodation for persons who require nursing or personal care",
             ],
         ),
+        (["Name Surname"],),
     ]
 
 
