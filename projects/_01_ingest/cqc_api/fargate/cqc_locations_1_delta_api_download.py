@@ -10,7 +10,9 @@ import polars as pl
 
 from polars_utils import utils
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
-from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
+from schemas.cqc_locations_schema_overrides_polars import (
+    POLARS_LOCATION_SCHEMA_OVERRIDES,
+)
 from utils.aws_secrets_manager_utilities import get_secret
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as ColNames,
@@ -83,7 +85,15 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         )
 
         print("Creating dataframe and writing to Parquet")
-        df: pl.DataFrame = pl.DataFrame(generator, POLARS_LOCATION_SCHEMA)
+        df: pl.DataFrame = pl.DataFrame(generator)
+        df_schema = df.collect_schema()
+        df = df.with_columns(
+            [
+                pl.col(k).cast(v)
+                for k, v in POLARS_LOCATION_SCHEMA_OVERRIDES.items()
+                if k in df_schema.keys()
+            ]
+        )
         df_unique: pl.DataFrame = df.unique(subset=[ColNames.location_id])
 
         utils.write_to_parquet(df_unique, destination)

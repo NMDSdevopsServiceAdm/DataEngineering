@@ -62,7 +62,11 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
 
         scan_parquet_mock.assert_has_calls(
             [
-                call(self.TEST_CQC_SOURCE),
+                call(
+                    self.TEST_CQC_SOURCE,
+                    schema=job.POLARS_LOCATION_SCHEMA,
+                    selected_columns=job.cqc_location_cols_to_import,
+                ),
                 call(self.TEST_ONS_SOURCE, selected_columns=ANY),
             ]
         )

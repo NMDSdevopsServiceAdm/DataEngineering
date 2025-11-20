@@ -170,6 +170,12 @@ All notable changes to this project will be documented in this file.
   The merge coverage job doesn't use the latest full snapshot, it uses full_cleaned_registered, so no changes to this job.
   The reconciliation job now uses all cqc locations. It does not filter to social care only.
 
+- Changed the locations and providers delta API download process as follows:
+  - Get all data from the API and assign it to a dataframe without a schema (column types are inferred).
+  - Override specific column types to match historic delta downloads.
+  - Store all CQC API delta data in dataset_delta_locations_api / dataset_delta_providers_api.
+  - Import only specific columns in full_clean job.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
