@@ -59,10 +59,14 @@ class MainTests(FlattenCQCRatingsTests):
     @patch(f"{PATCH_PATH}.prepare_historic_ratings")
     @patch(f"{PATCH_PATH}.prepare_current_ratings")
     @patch(f"{PATCH_PATH}.filter_to_first_import_of_most_recent_month")
+    @patch(f"{PATCH_PATH}.keep_latest_per_key")
+    @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
+        select_rows_with_value_mock: Mock,
+        keep_latest_per_key_mock: Mock,
         filter_to_first_import_of_most_recent_month_mock: Mock,
         prepare_current_ratings_mock: Mock,
         prepare_historic_ratings_mock: Mock,
@@ -96,6 +100,8 @@ class MainTests(FlattenCQCRatingsTests):
         )
 
         self.assertEqual(read_from_parquet_mock.call_count, 3)
+        select_rows_with_value_mock.assert_called_once()
+        keep_latest_per_key_mock.assert_called_once()
         filter_to_first_import_of_most_recent_month_mock.assert_called_once()
         prepare_current_ratings_mock.assert_called_once()
         prepare_historic_ratings_mock.assert_called_once()
