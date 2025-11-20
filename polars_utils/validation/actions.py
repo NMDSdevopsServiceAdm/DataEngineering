@@ -119,16 +119,12 @@ def list_has_no_empty_or_nulls(column: str) -> Callable[[pl.DataFrame], bool]:
     """
 
     def inner_callable(df: pl.DataFrame) -> bool:
-        # Extract the list column
         lists = df[column]
-
         # Condition 1: no empty lists
         no_empty = lists.list.len() > 0
-
         # Condition 2: no null elements in any list
         no_nulls = lists.list.contains(None).fill_null(False) == False
 
-        # Entire column must satisfy both conditions
         return bool((no_empty & no_nulls).all())
 
     return inner_callable
