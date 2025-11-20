@@ -38,6 +38,9 @@ All notable changes to this project will be documented in this file.
 
 - Added validation script for providers_3_full_flattened process and test script for this validation.
 
+- Added ind_cqc_06_estimated_filled_posts dataset to circleci config datasets sync'd into branch.
+  Gave the dataset name the prefix "main_".
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
