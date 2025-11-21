@@ -5,7 +5,7 @@ def model_path(resources_bucket: str, model: str, version: str) -> str:
     Args:
         resources_bucket (str): The S3 bucket where pipeline resources are stored.
         model (str): The name of the model.
-        version (str): The version of the model.
+        version (str): The version of the model (e.g. "1.0.0").
 
     Returns:
         str: The S3 path for the specified model and version.
