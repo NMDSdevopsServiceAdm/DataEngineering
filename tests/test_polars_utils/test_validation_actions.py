@@ -196,6 +196,16 @@ class TestListColumnHasNoEmptyOrNullValues(TestValidate):
 
         self.assertTrue(result)
 
+    def test_list_has_no_empty_or_nulls_list_is_none_true(self):
+        # One row is entirely None
+        df = pl.DataFrame({"test_col": [[1, 2], None]})
+
+        func = vl.list_has_no_empty_or_nulls("test_col")
+
+        result = func(df)
+
+        self.assertTrue(result)
+
     def test_list_has_no_empty_or_nulls_list_is_empty_false(self):
         # One row has an empty list
         df = pl.DataFrame({"test_col": [[1], []]})
@@ -216,9 +226,9 @@ class TestListColumnHasNoEmptyOrNullValues(TestValidate):
 
         self.assertFalse(result)
 
-    def test_list_has_no_empty_or_nulls_list_is_none_false(self):
+    def test_list_has_no_empty_or_nulls_list_has_none_false(self):
         # One row is entirely None
-        df = pl.DataFrame({"test_col": [[1, 2], None]})
+        df = pl.DataFrame({"test_col": [[1, 2], [None, 1, 2]]})
 
         func = vl.list_has_no_empty_or_nulls("test_col")
 

@@ -120,13 +120,20 @@ def list_has_no_empty_or_nulls(column: str) -> Callable[[pl.DataFrame], bool]:
 
     def inner_callable(df: pl.DataFrame) -> bool:
         lists = df[column]
-        # Condition 1: no empty lists
-        no_empty = (
-            pl.when(lists.is_not_null()).then(lists.list.len() > 0).otherwise(True)
-        )
-        # Condition 2: no null elements in any list
-        no_nulls = lists.list.contains(None).fill_null(True) == False
+        # 1. Null list
+        is_null = lists.is_null()
 
-        return bool((no_empty & no_nulls).all())
+        # 2. Non-empty list
+        non_empty = lists.list.len() > 0
+
+        # 3. No None inside the list
+        no_inner_nulls = ~lists.list.contains(None)
+
+        # Full validity expression
+        valid_expr = is_null | (non_empty & no_inner_nulls)
+
+        valid_series = df.select(valid_expr).to_series()
+
+        return valid_series.all()
 
     return inner_callable
