@@ -309,6 +309,10 @@ jobs:
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=pir_cleaned/"
       - aws-s3/sync:
           aws-region: AWS_REGION
+          from: "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_06_estimated_filled_posts/"
+      - aws-s3/sync:
+          aws-region: AWS_REGION
           from: "s3://sfc-main-pipeline-resources/models/"
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/models/"
 
