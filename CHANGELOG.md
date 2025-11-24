@@ -43,6 +43,8 @@ All notable changes to this project will be documented in this file.
 - Added ind_cqc_06_estimated_filled_posts dataset to circleci config datasets sync'd into branch.
   Gave the dataset name the prefix "main_".
 
+- Created model versioning functions to get the last number and save model metadata.
+
 - Created the S3 paths for the modelling process to call on for loading and saving data.
 
 ### Changed
