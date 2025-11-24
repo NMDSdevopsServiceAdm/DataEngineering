@@ -119,6 +119,9 @@ class IndCqcColumns:
     ct_care_home_posts_per_bed_ratio: str = "ct_care_home_posts_per_bed_ratio"
     ct_care_home_total_employed: str = CTCHClean.ct_care_home_total_employed
     ct_care_home_total_employed_cleaned: str = ct_care_home_total_employed + "_cleaned"
+    ct_care_home_total_employed_cleaned_dedup: str = (
+        ct_care_home_total_employed_cleaned + "_deduplicated"
+    )
     ct_care_home_total_employed_imputed: str = ct_care_home_total_employed + "_imputed"
     ct_combined_care_home_and_non_res: str = "ct_combined_care_home_and_non_res"
     ct_combined_care_home_and_non_res_rate_of_change_trendline: str = (
@@ -155,6 +158,7 @@ class IndCqcColumns:
         ONSClean.current_rural_urban_ind_11 + "_for_non_res_model"
     )
     current_sub_icb: str = ONSClean.current_sub_icb
+    days_since_previous_submission: str = "days_since_previous_submission"
     difference_between_estimate_and_cqc_registered_managers: str = (
         "difference_between_estimate_and_cqc_registered_managers"
     )
@@ -284,6 +288,7 @@ class IndCqcColumns:
     prediction: str = "prediction"
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
+    previous_submission_import_date: str = "previous_submission_import_date"
     previous_submission_time: str = "previous_submission_time"
     previous_value: str = "previous_value"
     previous_value_unix_time: str = "previous_value_unix_time"
