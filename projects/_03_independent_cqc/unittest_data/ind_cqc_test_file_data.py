@@ -5963,3 +5963,46 @@ class NullCtPostsToBedsOutliers:
         ("1-005", 1, 0.65, None),
         ("1-006", 1, 6.01, None),
     ]
+
+
+@dataclass
+class NullValuesAfterConsecutiveRepetition:
+    null_values_after_consec_rep_with_reps_outside_limit_rows = [
+        ("1-001", 1, date(2025, 1, 1)),
+        ("1-001", 1, date(2025, 6, 1)),
+        ("1-001", 1, date(2025, 12, 1)),
+        ("1-001", 1, date(2026, 1, 1)),
+        ("1-001", 1, date(2026, 2, 1)),
+    ]
+    expected_null_values_after_consec_rep_with_reps_outside_limit_rows = [
+        ("1-001", 1, date(2025, 1, 1)),
+        ("1-001", 1, date(2025, 6, 1)),
+        ("1-001", 1, date(2025, 12, 1)),
+        ("1-001", 1, date(2026, 1, 1)),
+        ("1-001", None, date(2026, 2, 1)),
+    ]
+
+    null_values_after_consec_rep_with_repetition_but_without_reps_outside_limit_rows = [
+        ("1-001", 1, date(2025, 1, 1)),
+        ("1-001", 1, date(2025, 6, 1)),
+        ("1-001", 2, date(2025, 12, 1)),
+        ("1-001", 1, date(2026, 1, 1)),
+        ("1-001", 1, date(2026, 2, 1)),
+        ("1-002", 1, date(2025, 1, 1)),
+        ("1-002", 1, date(2025, 6, 1)),
+        ("1-002", None, date(2025, 12, 1)),
+        ("1-002", 1, date(2026, 1, 1)),
+        ("1-002", 1, date(2026, 2, 1)),
+    ]
+    expected_null_values_after_consec_rep_with_repetition_but_without_reps_outside_limit_rows = [
+        ("1-001", 1, date(2025, 1, 1)),
+        ("1-001", 1, date(2025, 6, 1)),
+        ("1-001", 2, date(2025, 12, 1)),
+        ("1-001", 1, date(2026, 1, 1)),
+        ("1-001", 1, date(2026, 2, 1)),
+        ("1-002", 1, date(2025, 1, 1)),
+        ("1-002", 1, date(2025, 6, 1)),
+        ("1-002", None, date(2025, 12, 1)),
+        ("1-002", 1, date(2026, 1, 1)),
+        ("1-002", 1, date(2026, 2, 1)),
+    ]

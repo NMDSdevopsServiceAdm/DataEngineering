@@ -30,12 +30,11 @@ def null_values_after_consecutive_repetition(
     Returns:
         DataFrame: The input with DataFrame with an additional column.
     """
-    # Deduplicate the CT value column.
+
     df = create_column_with_repeated_values_removed(
         df, column_to_clean, f"{column_to_clean}_deduplicated"
     )
 
-    # Get the last import date of deduplicated submissions.
     window_spec = Window.partitionBy(IndCQC.location_id).orderBy(
         IndCQC.cqc_location_import_date
     )
@@ -48,10 +47,9 @@ def null_values_after_consecutive_repetition(
         f"{column_to_clean}_deduplicated",
         IndCQC.cqc_location_import_date,
         IndCQC.previous_submission_import_date,
-        "first",
+        "last",
     )
 
-    # Get the difference between the last import date and the import date on that row.
     df = df.withColumn(
         IndCQC.days_since_previous_submission,
         F.date_diff(
@@ -59,11 +57,11 @@ def null_values_after_consecutive_repetition(
         ),
     )
 
-    # If that difference is less than or equal to limit then keep the original CT value (not the deduplicated column), otherwise null.
     df = df.withColumn(
         column_to_clean,
         F.when(
-            IndCQC.days_since_previous_submission <= REPETITION_LIMIT, column_to_clean
+            F.col(IndCQC.days_since_previous_submission) <= REPETITION_LIMIT,
+            F.col(column_to_clean),
         ).otherwise(None),
     )
 

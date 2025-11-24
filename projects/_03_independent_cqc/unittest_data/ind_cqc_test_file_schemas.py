@@ -3165,3 +3165,14 @@ class NullCtPostsToBedsOutliers:
             ),
         ]
     )
+
+
+@dataclass
+class NullValuesAfterConsecutiveRepetition:
+    null_values_after_consec_rep_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField("column_to_clean", IntegerType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
