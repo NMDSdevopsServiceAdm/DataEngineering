@@ -1,4 +1,4 @@
-def model_path(resources_bucket: str, model: str, version: str) -> str:
+def generate_model_path(resources_bucket: str, model: str, version: str) -> str:
     """
     Generate S3 path for model storage.
 
@@ -13,7 +13,7 @@ def model_path(resources_bucket: str, model: str, version: str) -> str:
     return f"s3://{resources_bucket}/models/{model}/{version}/"
 
 
-def features_path(data_bucket: str, model: str) -> str:
+def generate_features_path(data_bucket: str, model: str) -> str:
     """
     Generate S3 path for features dataset for the specified model.
 
@@ -27,7 +27,7 @@ def features_path(data_bucket: str, model: str) -> str:
     return f"s3://{data_bucket}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_{model}/"
 
 
-def predictions_path(data_bucket: str, model: str) -> str:
+def generate_predictions_path(data_bucket: str, model: str) -> str:
     """
     Generate S3 path for model predictions.
 
