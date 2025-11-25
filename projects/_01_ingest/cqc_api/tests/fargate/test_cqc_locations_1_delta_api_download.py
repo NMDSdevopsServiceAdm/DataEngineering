@@ -31,11 +31,14 @@ class TestDeltaDownloadCQCLocations(unittest.TestCase):
     @patch(f"{PATCH_PATH}.AWS_REGION", new="us-east-1")
     def test_main_gets_secret(self, mock_objects, mock_get_secret):
         mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
-        mock_objects.return_value = {}
-        dest = os.path.join(self.temp_dir, "test.parquet")
+        mock_objects.return_value = [
+            {"locationId": 1},
+            {"locationId": 2},
+            {"locationId": 3},
+        ]
         start = "2025-07-20T15:40:23Z"
         end = "2025-07-25T14:23:40Z"
-        main(dest, start, end)
+        main(self.temp_dir + "/", start, end)
         mock_get_secret.assert_called_once_with(
             secret_name="cqc-secret-name", region_name="us-east-1"
         )
@@ -120,14 +123,14 @@ class TestDeltaDownloadCQCLocations(unittest.TestCase):
         #   that we yield two distinct objects
         mock_objects.side_effect = [
             [
-                {"locationId": 1},
-                {"locationId": 2},
-                {"locationId": 3},
+                {"locationId": "1"},
+                {"locationId": "2"},
+                {"locationId": "3"},
             ],
             [
-                {"locationId": 4},
-                {"locationId": 5},
-                {"locationId": 6},
+                {"locationId": "4"},
+                {"locationId": "5"},
+                {"locationId": "6"},
             ],
         ]
         uuids = ["abc", "def"]
@@ -154,3 +157,26 @@ class TestDeltaDownloadCQCLocations(unittest.TestCase):
         #   and reading the directory should give us one dataframe with both timepoints
         result = pl.read_parquet(self.temp_dir)
         self.assertEqual(result["locationId"].str.to_integer().sum(), 21)
+
+    @patch(f"{PATCH_PATH}.utils.uuid")
+    @patch(f"{PATCH_PATH}.get_secret")
+    @patch(f"{PATCH_PATH}.cqc.get_updated_objects")
+    @patch(f"{PATCH_PATH}.SECRET_ID", new="cqc-secret-name")
+    @patch(f"{PATCH_PATH}.AWS_REGION", new="us-east-1")
+    def test_main_casts_type(self, mock_objects, mock_get_secret, mock_uuid):
+        mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
+        mock_objects.return_value = [
+            {"locationId": "1", "onspdLatitude": 10.0},
+        ]
+        file_name = "abc"
+        mock_uuid.uuid4.return_value = file_name
+        dest = f"{self.temp_dir}/{file_name}.parquet"
+        start = "2025-07-20T15:40:23Z"
+        end = "2025-07-25T14:23:40Z"
+        main(self.temp_dir + "/", start, end)
+        returned_result_schema = pl.read_parquet(dest).collect_schema()
+
+        self.assertTrue(
+            isinstance(mock_objects.return_value[0]["onspdLatitude"], float)
+        )
+        self.assertEqual(returned_result_schema["onspdLatitude"], pl.String())

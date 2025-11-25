@@ -34,6 +34,86 @@ class PrepareJobRoleCountsUtilsSchemas:
 
 
 @dataclass
+class FeaturesEngineeringUtilsSchemas:
+    add_array_column_count_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.services_offered, pl.List(pl.String())),
+        ]
+    )
+    expected_add_array_column_count_schema = pl.Schema(
+        list(add_array_column_count_schema.items())
+        + [(IndCQC.service_count, pl.UInt32())]
+    )
+
+    add_date_index_column_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.DataType()),
+        ]
+    )
+    expected_add_date_index_column_schema = pl.Schema(
+        list(add_date_index_column_schema.items())
+        + [(IndCQC.cqc_location_import_date_indexed, pl.UInt32())]
+    )
+
+    cap_integer_at_max_value_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.service_count, pl.Int32()),
+        ]
+    )
+    expected_cap_integer_at_max_value_schema = pl.Schema(
+        list(cap_integer_at_max_value_schema.items())
+        + [(IndCQC.service_count_capped, pl.Int32())]
+    )
+
+    col_with_categories: str = "categories"
+
+    expand_encode_and_extract_features_when_not_array_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (col_with_categories, pl.String()),
+        ]
+    )
+    expected_expand_encode_and_extract_features_when_not_array_schema = pl.Schema(
+        list(expand_encode_and_extract_features_when_not_array_schema.items())
+        + [
+            ("has_A", pl.Int8()),
+            ("has_B", pl.Int8()),
+            ("has_C", pl.Int8()),
+        ]
+    )
+
+    expand_encode_and_extract_features_when_is_array_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (col_with_categories, pl.List(pl.String())),
+        ]
+    )
+    expected_expand_encode_and_extract_features_when_is_array_schema = pl.Schema(
+        list(expand_encode_and_extract_features_when_is_array_schema.items())
+        + [
+            ("has_A", pl.Int8()),
+            ("has_B", pl.Int8()),
+            ("has_C", pl.Int8()),
+        ]
+    )
+
+    group_rural_urban_sparse_categories_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.current_rural_urban_indicator_2011, pl.String()),
+        ]
+    )
+    expected_group_rural_urban_sparse_categories_schema = pl.Schema(
+        list(group_rural_urban_sparse_categories_schema.items())
+        + [(IndCQC.current_rural_urban_indicator_2011_for_non_res_model, pl.String())]
+    )
+
+
+@dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsSchemas:
     estimates_df_before_join_schema = pl.Schema(
         [

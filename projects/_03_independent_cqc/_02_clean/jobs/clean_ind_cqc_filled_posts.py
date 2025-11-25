@@ -39,7 +39,7 @@ def main(
     locations_df = calculate_time_registered_for(locations_df)
     locations_df = calculate_time_since_dormant(locations_df)
 
-    locations_df = remove_duplicate_cqc_care_homes(locations_df)
+    locations_df = remove_dual_registration_cqc_care_homes(locations_df)
 
     locations_df = replace_zero_beds_with_null(locations_df)
     locations_df = populate_missing_care_home_number_of_beds(locations_df)
@@ -101,13 +101,19 @@ def main(
     )
 
 
-def remove_duplicate_cqc_care_homes(df: DataFrame) -> DataFrame:
+def remove_dual_registration_cqc_care_homes(df: DataFrame) -> DataFrame:
     """
-    Removes cqc locations with dual registration and ensures no loss of ascwds data.
+    Removes cqc care home locations with dual registration and ensures no loss of ascwds data.
 
-    This function removes one instance of cqc care home locations with dual registration. Duplicates
+    This function removes one instance of cqc care home locations with dual registration. These
     are identified using cqc_location_import_date, name, postcode, and carehome. Any ASCWDS data in either
     location is shared to the other and then the location with the newer registration date is removed.
+
+    The CQC locations dataset includes instances of 'dual registration', where two providers have evidenced to
+    CQC that they are both responsible for managing the regulated activities at a single location.
+    In this data, these instances appear as two separate lines, with different Location IDs, but with the same
+    names and addresses of services. To understand care provision in England accurately, one of these 'dual registered'
+    location pairs should be removed.
 
     Args:
         df (DataFrame): A dataframe containing cqc location data and ascwds data
@@ -121,14 +127,14 @@ def remove_duplicate_cqc_care_homes(df: DataFrame) -> DataFrame:
         IndCQC.postcode,
         IndCQC.care_home,
     ]
-    distinguishing_column = IndCQC.imputed_registration_date
+    distinguishing_columns = [IndCQC.imputed_registration_date, IndCQC.location_id]
     df = copy_ascwds_data_across_duplicate_rows(df, duplicate_columns)
-    df = deduplicate_care_homes(df, duplicate_columns, distinguishing_column)
+    df = deduplicate_care_homes(df, duplicate_columns, distinguishing_columns)
     return df
 
 
 def deduplicate_care_homes(
-    df: DataFrame, duplicate_columns: list, distinguishing_column: str
+    df: DataFrame, duplicate_columns: list[str], distinguishing_columns: list[str]
 ) -> DataFrame:
     """
     Removes cqc locations with dual registration.
@@ -137,8 +143,8 @@ def deduplicate_care_homes(
 
     Args:
         df (DataFrame): A dataframe containing cqc location data and ascwds data.
-        duplicate_columns (list): A list of column names to identify duplicates.
-        distinguishing_column (str): The name of the column which will decide which of the duplicates to keep.
+        duplicate_columns (list[str]): A list of column names to identify duplicates.
+        distinguishing_columns (list[str]): A list of the columns which will decide which of the duplicates to keep.
 
     Returns:
         DataFrame: A dataframe with dual regestrations deduplicated.
@@ -147,7 +153,7 @@ def deduplicate_care_homes(
     df = df.withColumn(
         temp_col,
         F.row_number().over(
-            Window.partitionBy(duplicate_columns).orderBy(distinguishing_column)
+            Window.partitionBy(duplicate_columns).orderBy(distinguishing_columns)
         ),
     )
     df = df.where(
@@ -172,23 +178,27 @@ def copy_ascwds_data_across_duplicate_rows(
     Returns:
         DataFrame: A dataframe with total_staff_bounded and worker_records_bounded copied across duplicate rows.
     """
-    window = (
-        Window.partitionBy(duplicate_columns)
-        .orderBy(IndCQC.imputed_registration_date)
-        .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+    window = Window.partitionBy(duplicate_columns)
+
+    df = df.withColumns(
+        {
+            IndCQC.total_staff_bounded: F.when(
+                df[IndCQC.care_home] == CareHome.care_home,
+                F.coalesce(
+                    F.col(IndCQC.total_staff_bounded),
+                    F.max(IndCQC.total_staff_bounded).over(window),
+                ),
+            ).otherwise(F.col(IndCQC.total_staff_bounded)),
+            IndCQC.worker_records_bounded: F.when(
+                df[IndCQC.care_home] == CareHome.care_home,
+                F.coalesce(
+                    F.col(IndCQC.worker_records_bounded),
+                    F.max(IndCQC.worker_records_bounded).over(window),
+                ),
+            ).otherwise(F.col(IndCQC.worker_records_bounded)),
+        },
     )
-    columns_to_copy = [IndCQC.total_staff_bounded, IndCQC.worker_records_bounded]
-    functions_to_run = [F.first, F.last]
-    for column in columns_to_copy:
-        for function in functions_to_run:
-            df = df.withColumn(
-                column,
-                F.when(
-                    (df[IndCQC.care_home] == CareHome.care_home)
-                    & (df[column].isNull()),
-                    function(column).over(window),
-                ).otherwise(F.col(column)),
-            )
+
     return df
 
 
