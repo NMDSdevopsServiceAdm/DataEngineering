@@ -282,7 +282,7 @@ def main(
         )
         .specially(
             vl.list_has_no_empty_or_nulls(CQCLClean.specialisms_offered),
-            brief="Registered manager names list must be non-empty and contain no nulls",
+            brief="Specialisms Offered list must be non-empty and contain no nulls",
         )
         # numeric column values are between (inclusive)
         .col_vals_between(Validation.location_id_length, 3, 14)
