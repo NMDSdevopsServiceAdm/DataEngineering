@@ -17,6 +17,9 @@ from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outli
 from projects._03_independent_cqc._02_clean.utils.clean_ct_care_home_outliers.clean_ct_care_home_outliers import (
     null_ct_posts_to_beds_outliers,
 )
+from projects._03_independent_cqc._02_clean.utils.clean_ct_care_home_outliers.clean_ct_repetition import (
+    null_ct_values_after_consecutive_repetition,
+)
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -90,6 +93,25 @@ def main(
     )
 
     locations_df = null_ct_posts_to_beds_outliers(locations_df)
+
+    # Move this function into a util script, or move all the ct cleaning into this script?
+    locations_df = create_column_with_repeated_values_removed(
+        locations_df,
+        IndCQC.ct_care_home_total_employed_cleaned,
+        IndCQC.ct_care_home_total_employed_cleaned_dedup,
+    )
+    locations_df = null_ct_values_after_consecutive_repetition(
+        locations_df, IndCQC.ct_care_home_total_employed_cleaned_dedup
+    )
+
+    locations_df = create_column_with_repeated_values_removed(
+        locations_df,
+        IndCQC.ct_non_res_care_workers_employed,
+        IndCQC.ct_non_res_care_workers_employed_dedup,
+    )
+    locations_df = null_ct_values_after_consecutive_repetition(
+        locations_df, IndCQC.ct_non_res_care_workers_employed_dedup
+    )
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 

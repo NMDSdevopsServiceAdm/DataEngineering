@@ -129,6 +129,9 @@ class IndCqcColumns:
     )
     ct_non_res_all_posts: str = "capacity_tracker_non_res_all_posts"
     ct_non_res_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
+    ct_non_res_care_workers_employed_dedup: str = (
+        ct_non_res_care_workers_employed + "_deduplicated"
+    )
     ct_non_res_care_workers_employed_imputed: str = (
         CTNRClean.cqc_care_workers_employed + "_imputed"
     )
@@ -158,7 +161,7 @@ class IndCqcColumns:
         ONSClean.current_rural_urban_ind_11 + "_for_non_res_model"
     )
     current_sub_icb: str = ONSClean.current_sub_icb
-    days_since_previous_submission: str = "days_since_previous_submission"
+    days_provider_has_repeated_value: str = "days_provider_has_repeated_value"
     difference_between_estimate_and_cqc_registered_managers: str = (
         "difference_between_estimate_and_cqc_registered_managers"
     )
@@ -304,6 +307,10 @@ class IndCqcColumns:
     )
     provider_id: str = CQCLClean.provider_id
     provider_name: str = CQCLClean.provider_name
+    provider_size_in_capacity_tracker: str = "provider_size_in_capacity_tracker"
+    provider_size_in_capacity_tracker_group: str = (
+        "provider_size_in_capacity_tracker_group"
+    )
     r2: str = "r2"
     registered_manager_count: str = "registered_manager_count"
     registered_manager_names: str = CQCLClean.registered_manager_names

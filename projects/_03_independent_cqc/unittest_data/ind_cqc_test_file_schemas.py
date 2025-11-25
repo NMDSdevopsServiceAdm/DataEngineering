@@ -3168,11 +3168,32 @@ class NullCtPostsToBedsOutliers:
 
 
 @dataclass
-class NullValuesAfterConsecutiveRepetition:
+class CleanCtRepetition:
     null_values_after_consec_rep_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.provider_id, StringType(), True),
             StructField("column_to_clean", IntegerType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    calculate_days_a_provider_has_been_repeating_values_schema = StructType(
+        [
+            StructField(IndCQC.provider_id, StringType(), True),
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned_dedup, IntegerType(), True
+            ),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    expected_calculate_days_a_provider_has_been_repeating_values_schema = StructType(
+        [
+            *calculate_days_a_provider_has_been_repeating_values_schema,
+            StructField(IndCQC.days_provider_has_repeated_value, IntegerType(), True),
         ]
     )
