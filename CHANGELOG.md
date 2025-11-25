@@ -40,6 +40,8 @@ All notable changes to this project will be documented in this file.
 
 - Created a new folder and file structure to contain the model re-training process files.
 
+- Added placeholder tasks for model retraining in the Ind CQC pipeline.
+
 - Added ind_cqc_06_estimated_filled_posts dataset to circleci config datasets sync'd into branch.
   Gave the dataset name the prefix "main_".
 
