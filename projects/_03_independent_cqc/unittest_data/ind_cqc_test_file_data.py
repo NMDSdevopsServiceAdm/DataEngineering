@@ -6008,24 +6008,56 @@ class CleanCtRepetition:
     ]
 
     calculate_days_a_provider_has_been_repeating_values_rows = [
-        ("1-0001", "1-001", 1, 1, date(2025, 1, 1)),
-        ("1-0001", "1-001", 1, None, date(2025, 2, 1)),
-        ("1-0001", "1-001", 1, None, date(2025, 3, 1)),
-        ("1-0001", "1-002", 1, 1, date(2025, 1, 1)),
-        ("1-0001", "1-002", 2, 2, date(2025, 2, 1)),
-        ("1-0001", "1-002", 3, 3, date(2025, 3, 1)),
-        ("1-0001", "1-003", 1, 1, date(2025, 1, 1)),
-        ("1-0001", "1-003", None, None, date(2025, 2, 1)),
-        ("1-0001", "1-003", 3, 3, date(2025, 3, 1)),
+        ("1-0001", 1, date(2025, 1, 1)),
+        ("1-0001", None, date(2025, 2, 1)),
+        ("1-0001", None, date(2025, 3, 1)),
+        ("1-0002", 1, date(2025, 1, 1)),
+        ("1-0002", 2, date(2025, 2, 1)),
+        ("1-0002", 3, date(2025, 3, 1)),
+        ("1-0003", 1, date(2025, 1, 1)),
+        ("1-0003", None, date(2025, 2, 1)),
+        ("1-0003", 3, date(2025, 3, 1)),
     ]
     expected_calculate_days_a_provider_has_been_repeating_values_rows = [
-        ("1-0001", "1-001", 1, 1, date(2025, 1, 1), 0),
-        ("1-0001", "1-001", 1, None, date(2025, 2, 1), 31),
-        ("1-0001", "1-001", 1, None, date(2025, 3, 1), 59),
-        ("1-0001", "1-002", 1, 1, date(2025, 1, 1), 0),
-        ("1-0001", "1-002", 2, 2, date(2025, 2, 1), 0),
-        ("1-0001", "1-002", 3, 3, date(2025, 3, 1), 0),
-        ("1-0001", "1-003", 1, 1, date(2025, 1, 1), 0),
-        ("1-0001", "1-003", None, None, date(2025, 2, 1), 31),
-        ("1-0001", "1-003", 3, 3, date(2025, 3, 1), 0),
+        ("1-0001", 1, date(2025, 1, 1), 0),
+        ("1-0001", None, date(2025, 2, 1), 31),
+        ("1-0001", None, date(2025, 3, 1), 59),
+        ("1-0002", 1, date(2025, 1, 1), 0),
+        ("1-0002", 2, date(2025, 2, 1), 0),
+        ("1-0002", 3, date(2025, 3, 1), 0),
+        ("1-0003", 1, date(2025, 1, 1), 0),
+        ("1-0003", None, date(2025, 2, 1), 31),
+        ("1-0003", 3, date(2025, 3, 1), 0),
+    ]
+
+    identify_large_providers_rows = [
+        ("1-0001", 49),
+        ("1-0002", 50),
+        ("1-0003", 51),
+        ("1-0004", None),
+    ]
+    expected_identify_large_providers_rows = [
+        ("1-0001", 49, None),
+        ("1-0002", 50, None),
+        ("1-0003", 51, "large provider"),
+        ("1-0004", None, None),
+    ]
+
+    clean_capacity_tracker_posts_repetition_rows = [
+        ("1-0001", 1, 1, "large provider", 185),
+        ("1-0002", 1, 1, "large provider", 186),
+        ("1-0003", 1, 1, None, 365),
+        ("1-0004", 1, 1, None, 366),
+    ]
+    expected_clean_capacity_tracker_posts_repetition_when_not_adding_new_column_rows = [
+        ("1-0001", 1, 1, "large provider", 185),
+        ("1-0002", None, 1, "large provider", 186),
+        ("1-0003", 1, 1, None, 365),
+        ("1-0004", None, 1, None, 366),
+    ]
+    expected_clean_capacity_tracker_posts_repetition_when_adding_new_column_rows = [
+        ("1-0001", 1, 1, "large provider", 185, 1),
+        ("1-0002", 1, 1, "large provider", 186, None),
+        ("1-0003", 1, 1, None, 365, 1),
+        ("1-0004", 1, 1, None, 366, None),
     ]

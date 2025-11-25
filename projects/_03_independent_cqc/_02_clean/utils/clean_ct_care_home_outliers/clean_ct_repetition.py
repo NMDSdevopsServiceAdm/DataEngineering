@@ -148,10 +148,12 @@ def clean_capacity_tracker_posts_repetition(
         DataFrame: The input with DataFrame with an additional column.
     """
     if add_as_new_column:
-        column_to_clean = f"{column_to_clean}_cleaned"
+        output_column = f"{column_to_clean}_cleaned"
+    else:
+        output_column = column_to_clean
 
     df = df.withColumn(
-        column_to_clean,
+        output_column,
         F.when(
             (
                 (

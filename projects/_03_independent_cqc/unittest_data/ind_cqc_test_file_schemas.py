@@ -3181,10 +3181,6 @@ class CleanCtRepetition:
     calculate_days_a_provider_has_been_repeating_values_schema = StructType(
         [
             StructField(IndCQC.provider_id, StringType(), True),
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(
-                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
-            ),
             StructField(
                 IndCQC.ct_care_home_total_employed_cleaned_dedup, IntegerType(), True
             ),
@@ -3196,4 +3192,42 @@ class CleanCtRepetition:
             *calculate_days_a_provider_has_been_repeating_values_schema,
             StructField(IndCQC.days_provider_has_repeated_value, IntegerType(), True),
         ]
+    )
+
+    identify_large_providers_schema = StructType(
+        [
+            StructField(IndCQC.provider_id, StringType(), True),
+            StructField("provider_level_values_column", StringType(), True),
+        ]
+    )
+    expected_identify_large_providers_schema = StructType(
+        [
+            *identify_large_providers_schema,
+            StructField(
+                IndCQC.provider_size_in_capacity_tracker_group, StringType(), True
+            ),
+        ]
+    )
+
+    clean_capacity_tracker_posts_repetition_schema = StructType(
+        [
+            StructField(IndCQC.provider_id, StringType()),
+            StructField(IndCQC.ct_care_home_total_employed_cleaned, IntegerType()),
+            StructField(IndCQC.ct_non_res_care_workers_employed, IntegerType()),
+            StructField(IndCQC.provider_size_in_capacity_tracker_group, StringType()),
+            StructField(IndCQC.days_provider_has_repeated_value, IntegerType()),
+        ]
+    )
+    expected_clean_capacity_tracker_posts_repetition_when_not_adding_new_column_schema = (
+        clean_capacity_tracker_posts_repetition_schema
+    )
+    expected_clean_capacity_tracker_posts_repetition_when_adding_new_column_schema = (
+        StructType(
+            [
+                *clean_capacity_tracker_posts_repetition_schema,
+                StructField(
+                    IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType()
+                ),
+            ]
+        )
     )

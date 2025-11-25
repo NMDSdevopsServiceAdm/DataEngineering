@@ -75,3 +75,62 @@ class CalculateDaysAProviderHasBeenRepeatingValues(CleanCtRepetitionTests):
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
+class IdentifyLargeProviders(CleanCtRepetitionTests):
+    def setUp(self):
+        super().setUp()
+
+    def test_identify_large_providers_returns_expected_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.identify_large_providers_rows,
+            Schemas.identify_large_providers_schema,
+        )
+        returned_df = job.identify_large_providers(
+            test_df, "provider_level_values_column"
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_identify_large_providers_rows,
+            Schemas.expected_identify_large_providers_schema,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
+class CleanCapacityTrackerPostsRepetition(CleanCtRepetitionTests):
+    def setUp(self):
+        super().setUp()
+        self.test_df = self.spark.createDataFrame(
+            Data.clean_capacity_tracker_posts_repetition_rows,
+            Schemas.clean_capacity_tracker_posts_repetition_schema,
+        )
+
+    def test_clean_capacity_tracker_posts_repetition_when_not_adding_new_column_returns_expected_values(
+        self,
+    ):
+
+        returned_df = job.clean_capacity_tracker_posts_repetition(
+            self.test_df, IndCQC.ct_care_home_total_employed_cleaned, False
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_clean_capacity_tracker_posts_repetition_when_not_adding_new_column_rows,
+            Schemas.expected_clean_capacity_tracker_posts_repetition_when_not_adding_new_column_schema,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_clean_capacity_tracker_posts_repetition_when_adding_new_column_returns_expected_values(
+        self,
+    ):
+
+        returned_df = job.clean_capacity_tracker_posts_repetition(
+            self.test_df, IndCQC.ct_non_res_care_workers_employed, True
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_clean_capacity_tracker_posts_repetition_when_adding_new_column_rows,
+            Schemas.expected_clean_capacity_tracker_posts_repetition_when_adding_new_column_schema,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())

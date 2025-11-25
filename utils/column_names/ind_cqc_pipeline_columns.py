@@ -129,6 +129,9 @@ class IndCqcColumns:
     )
     ct_non_res_all_posts: str = "capacity_tracker_non_res_all_posts"
     ct_non_res_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
+    ct_non_res_care_workers_employed_cleaned: str = (
+        ct_non_res_care_workers_employed + "_cleaned"
+    )
     ct_non_res_care_workers_employed_dedup: str = (
         ct_non_res_care_workers_employed + "_deduplicated"
     )
