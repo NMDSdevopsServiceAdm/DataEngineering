@@ -159,21 +159,19 @@ def clean_capacity_tracker_posts_repetition(
                     == LARGE_PROVIDER
                 )
                 & (
-                    F.col(IndCQC.days_since_previous_submission)
+                    F.col(IndCQC.days_provider_has_repeated_value)
                     <= REPETITION_LIMIT_LARGE_PROVIDER
                 )
             )
             | (
                 (F.col(IndCQC.provider_size_in_capacity_tracker_group).isNull())
                 & (
-                    F.col(IndCQC.days_since_previous_submission)
+                    F.col(IndCQC.days_provider_has_repeated_value)
                     <= REPETITION_LIMIT_ALL_LOCATIONS
                 )
             ),
             F.col(column_to_clean),
         ).otherwise(None),
     )
-
-    return df
 
     return df
