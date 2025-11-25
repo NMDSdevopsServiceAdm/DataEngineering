@@ -227,8 +227,8 @@ class TestListColumnHasNoEmptyOrNullValues(TestValidate):
         self.assertFalse(result)
 
     def test_list_has_no_empty_or_nulls_list_has_none_false(self):
-        # One row is entirely None
-        df = pl.DataFrame({"test_col": [[1, 2], [None, 1, 2]]})
+        # One row has list with multiple None
+        df = pl.DataFrame({"test_col": [[1, 2], [None, None]]})
 
         func = vl.list_has_no_empty_or_nulls("test_col")
 

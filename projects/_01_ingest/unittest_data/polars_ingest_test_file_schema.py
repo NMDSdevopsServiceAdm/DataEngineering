@@ -451,6 +451,7 @@ class ValidateCqcLocations4FullCleanTest:
             (CQCLClean.services_offered, pl.List(pl.String())),
             (CQCLClean.regulated_activities_offered, pl.List(pl.String())),
             (CQCLClean.registered_manager_names, pl.List(pl.String())),
+            (CQCLClean.specialisms_offered, pl.List(pl.String())),
         ]
     )
 

@@ -98,6 +98,7 @@ def main(
                 CQCLClean.current_rural_urban_ind_11,
                 CQCLClean.services_offered,
                 CQCLClean.regulated_activities_offered,
+                CQCLClean.specialisms_offered,
             ]
         )
         # index columns
@@ -277,6 +278,10 @@ def main(
         )
         .specially(
             vl.list_has_no_empty_or_nulls(CQCLClean.registered_manager_names),
+            brief="Registered manager names list must be non-empty and contain no nulls",
+        )
+        .specially(
+            vl.list_has_no_empty_or_nulls(CQCLClean.specialisms_offered),
             brief="Registered manager names list must be non-empty and contain no nulls",
         )
         # numeric column values are between (inclusive)

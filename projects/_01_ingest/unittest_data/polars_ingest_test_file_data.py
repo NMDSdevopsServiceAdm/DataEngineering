@@ -1581,6 +1581,12 @@ class ValidateCqcLocations4FullCleanTest:
             ],
         ),
         (["Name Surname"],),
+        (
+            [
+                Specialisms.dementia,
+                Specialisms.eating_disorders,
+            ],
+        ),
     ]
 
 
