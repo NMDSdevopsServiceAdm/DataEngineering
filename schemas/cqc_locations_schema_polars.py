@@ -21,8 +21,8 @@ POLARS_LOCATION_SCHEMA = pl.Schema(
         (NewColNames.onspd_icb_name, pl.String()),
         (NewColNames.ods_code, pl.String()),
         (NewColNames.registration_status, pl.String()),
-        (NewColNames.registration_date, pl.String()),
-        (NewColNames.deregistration_date, pl.String()),
+        (NewColNames.registration_date, pl.String()),  # why is this working?
+        (NewColNames.deregistration_date, pl.String()),  # should be date?
         (NewColNames.dormancy, pl.String()),
         (NewColNames.dormancy_start_date, pl.String()),
         (NewColNames.dormancy_end_date, pl.String()),
