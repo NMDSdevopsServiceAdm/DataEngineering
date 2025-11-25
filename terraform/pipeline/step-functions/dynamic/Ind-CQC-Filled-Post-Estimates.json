@@ -148,6 +148,57 @@
                   }
                 },
                 {
+                  "StartAt": "Build features - care home",
+                  "States": {
+                    "Build features - care home": {
+                    "Type": "Pass",
+                      "Next": "Train model - care home"
+                    },
+                    "Train model - care home": {
+                      "Type": "Pass",
+                      "Next": "Predict - care home"
+                    },
+                    "Predict - care home": {
+                      "Type": "Pass",
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Build features - non-residential without dormancy",
+                  "States": {
+                    "Build features - non-residential without dormancy": {
+                    "Type": "Pass",
+                      "Next": "Train model - non-residential without dormancy"
+                    },
+                    "Train model - non-residential without dormancy": {
+                      "Type": "Pass",
+                      "Next": "Predict - non-residential without dormancy"
+                    },
+                    "Predict - non-residential without dormancy": {
+                      "Type": "Pass",
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Build features - non-residential with dormancy",
+                  "States": {
+                    "Build features - non-residential with dormancy": {
+                    "Type": "Pass",
+                      "Next": "Train model - non-residential with dormancy"
+                    },
+                    "Train model - non-residential with dormancy": {
+                      "Type": "Pass",
+                      "Next": "Predict - non-residential with dormancy"
+                    },
+                    "Predict - non-residential with dormancy": {
+                      "Type": "Pass",
+                      "End": true
+                    }
+                  }
+                },
+                {
                   "StartAt": "Validate imputed data",
                   "States": {
                     "Validate imputed data": {
