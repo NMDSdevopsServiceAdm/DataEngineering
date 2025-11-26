@@ -3,24 +3,24 @@ import warnings
 
 from projects._03_independent_cqc._02_clean.utils import filtering_utils as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
-    ASCWDSFilteringUtilsData as Data,
+    CleanFilteringUtilsData as Data,
 )
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
-    ASCWDSFilteringUtilsSchemas as Schemas,
+    CleanFilteringUtilsSchemas as Schemas,
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import AscwdsFilteringRule
 
 
-class ASCWDSFilteringUtilsTests(unittest.TestCase):
+class CleanFilteringUtilsTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
-class AddFilteringRuleColumnTests(ASCWDSFilteringUtilsTests):
+class AddFilteringRuleColumnTests(CleanFilteringUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -44,7 +44,7 @@ class AddFilteringRuleColumnTests(ASCWDSFilteringUtilsTests):
         )
 
 
-class UpdateFilteringRuleTests(ASCWDSFilteringUtilsTests):
+class UpdateFilteringRuleTests(CleanFilteringUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 

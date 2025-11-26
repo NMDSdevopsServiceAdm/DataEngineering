@@ -1242,7 +1242,7 @@ class CalculateAscwdsFilledPostsDifferenceInRangeSchemas:
 
 
 @dataclass
-class ASCWDSFilteringUtilsSchemas:
+class CleanFilteringUtilsSchemas:
     add_filtering_column_schema = StructType(
         [
             StructField(

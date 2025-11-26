@@ -3556,7 +3556,7 @@ class CalculateAscwdsFilledPostsDifferenceInRangeData:
 
 
 @dataclass
-class ASCWDSFilteringUtilsData:
+class CleanFilteringUtilsData:
     add_filtering_column_rows = [
         ("loc 1", 10.0),
         ("loc 2", None),
