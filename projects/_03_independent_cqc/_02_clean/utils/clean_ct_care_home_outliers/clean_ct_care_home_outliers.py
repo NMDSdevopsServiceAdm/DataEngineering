@@ -7,7 +7,7 @@ MINIMUM_RATIO_CUTOFF: float = 0.66
 MAXIMUM_RATIO_CUTOFF: float = 6.0
 
 
-def null_ct_posts_to_beds_outliers(df: DataFrame) -> DataFrame:
+def clean_capacity_tracker_care_home_outliers(df: DataFrame) -> DataFrame:
     """
     Nulls capacity tracker values where posts to bed ratio is out of bounds.
 

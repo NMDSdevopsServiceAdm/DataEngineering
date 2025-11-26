@@ -24,7 +24,7 @@ class TestNullCtPostsToBedsOutliers(TestCleanCtCareHomeOutliers):
             Data.null_ct_posts_to_beds_outliers_rows,
             Schemas.null_ct_posts_to_beds_outliers_schema,
         )
-        self.returned_df = job.null_ct_posts_to_beds_outliers(test_df)
+        self.returned_df = job.clean_capacity_tracker_care_home_outliers(test_df)
         self.expected_df = self.spark.createDataFrame(
             Data.expected_null_ct_posts_to_beds_outliers_rows,
             Schemas.expected_null_ct_posts_to_beds_outliers_schema,
