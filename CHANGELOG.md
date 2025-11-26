@@ -184,6 +184,8 @@ All notable changes to this project will be documented in this file.
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
+- Improved the validation for CQC 4 full clean dataset by adding overall row count validation and null check validations for complex columns.
+
 
 ## [v2025.08.0] - 09/09/2025
 
