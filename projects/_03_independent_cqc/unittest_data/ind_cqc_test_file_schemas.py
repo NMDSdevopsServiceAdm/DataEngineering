@@ -1569,7 +1569,7 @@ class CleanCapacityTrackerCareHomeOutliersSchema:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.ct_care_home_posts_per_bed_ratio, DoubleType(), True),
-            StructField(IndCQC.ct_non_res_care_workers_employed, DoubleType(), True),
+            StructField(IndCQC.ct_care_home_total_employed, DoubleType(), True),
         ]
     )
 
