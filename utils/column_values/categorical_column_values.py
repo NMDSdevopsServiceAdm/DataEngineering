@@ -570,6 +570,12 @@ class AscwdsFilteringRule(ColumnValues):
 
 
 @dataclass
+class CTNonResFilteringRule(ColumnValues):
+    populated: str = "populated"
+    missing_data: str = "missing_data"
+
+
+@dataclass
 class RelatedLocation(ColumnValues):
     has_related_location: str = "Y"
     no_related_location: str = "N"

@@ -126,6 +126,9 @@ class IndCqcColumns:
     )
     ct_non_res_all_posts: str = "capacity_tracker_non_res_all_posts"
     ct_non_res_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
+    ct_non_res_care_workers_employed_cleaned: str = (
+        CTNRClean.cqc_care_workers_employed + "_cleaned"
+    )
     ct_non_res_care_workers_employed_imputed: str = (
         CTNRClean.cqc_care_workers_employed + "_imputed"
     )
@@ -135,6 +138,7 @@ class IndCqcColumns:
     ct_non_res_filled_post_estimate_source: str = (
         ct_non_res_filled_post_estimate + "_source"
     )
+    ct_non_res_filtering_rule: str = "ct_non_res_filtering_rule"
     ct_non_res_import_date: str = CTNRClean.ct_non_res_import_date
     current_ccg: str = ONSClean.current_ccg
     current_constituency: str = ONSClean.current_constituency
