@@ -45,6 +45,8 @@ All notable changes to this project will be documented in this file.
 
 - Created the S3 paths for the modelling process to call on for loading and saving data.
 
+- Generalised the functions to create and update a filtering column
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
