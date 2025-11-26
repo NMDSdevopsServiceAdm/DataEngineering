@@ -32,7 +32,7 @@ class CleanCapacityTrackerCareHomeOutliersTests(unittest.TestCase):
         add_filtering_rule_column_mock: Mock,
         null_posts_per_bed_outliers_mock: Mock,
     ):
-        job.clean_capacity_tracker_non_res_outliers(self.ind_cqc_df)
+        job.clean_capacity_tracker_care_home_outliers(self.ind_cqc_df)
 
         add_filtering_rule_column_mock.assert_called_once()
         null_posts_per_bed_outliers_mock.assert_called_once()

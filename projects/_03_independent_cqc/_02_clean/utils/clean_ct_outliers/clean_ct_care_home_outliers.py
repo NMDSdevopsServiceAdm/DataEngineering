@@ -11,7 +11,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CTCareHomeFilteringRule
 
 
-def clean_capacity_tracker_non_res_outliers(df: DataFrame) -> DataFrame:
+def clean_capacity_tracker_care_home_outliers(df: DataFrame) -> DataFrame:
     """
     Creates a clean version of Capacity Tracker care home data including a filtering rule column.
 
