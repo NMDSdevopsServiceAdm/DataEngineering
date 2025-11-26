@@ -1,7 +1,7 @@
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
-from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.ascwds_filtering_utils import (
+from projects._03_independent_cqc._02_clean.utils.filtering_utils import (
     update_filtering_rule,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -37,6 +37,11 @@ def null_filled_posts_where_locations_use_invalid_missing_data_code(
         ),
     )
     df = update_filtering_rule(
-        df, AscwdsFilteringRule.contained_invalid_missing_data_code
+        df,
+        IndCQC.ascwds_filtering_rule,
+        IndCQC.ascwds_filled_posts_dedup,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        AscwdsFilteringRule.populated,
+        AscwdsFilteringRule.contained_invalid_missing_data_code,
     )
     return df
