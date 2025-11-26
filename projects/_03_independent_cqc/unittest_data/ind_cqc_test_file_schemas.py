@@ -1563,6 +1563,33 @@ class CleanCapacityTrackerNonResOutliersSchema:
 
 
 @dataclass
+class CleanCapacityTrackerCareHomeOutliersSchema:
+    ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.ct_care_home_posts_per_bed_ratio, DoubleType(), True),
+            StructField(IndCQC.ct_non_res_care_workers_employed, DoubleType(), True),
+        ]
+    )
+
+
+@dataclass
+class NullCtPostsToBedsOutliers:
+    null_ct_posts_to_beds_outliers_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.ct_care_home_total_employed, IntegerType(), True),
+            StructField(IndCQC.ct_care_home_posts_per_bed_ratio, DoubleType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+            StructField(IndCQC.ct_care_home_filtering_rule, StringType(), False),
+        ]
+    )
+
+
+@dataclass
 class ValidateCleanedIndCqcData:
     merged_ind_cqc_schema = StructType(
         [
@@ -3155,24 +3182,5 @@ class IndCQCDataUtils:
         [
             *get_selected_value_schema,
             StructField("new_column", FloatType(), True),
-        ]
-    )
-
-
-@dataclass
-class NullCtPostsToBedsOutliers:
-    null_ct_posts_to_beds_outliers_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ct_care_home_total_employed, IntegerType(), True),
-            StructField(IndCQC.ct_care_home_posts_per_bed_ratio, FloatType(), True),
-        ]
-    )
-    expected_null_ct_posts_to_beds_outliers_schema = StructType(
-        [
-            *null_ct_posts_to_beds_outliers_schema,
-            StructField(
-                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
-            ),
         ]
     )

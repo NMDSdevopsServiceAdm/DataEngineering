@@ -115,6 +115,7 @@ class IndCqcColumns:
     )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
+    ct_care_home_filtering_rule: str = "ct_care_home_filtering_rule"
     ct_care_home_import_date: str = CTCHClean.ct_care_home_import_date
     ct_care_home_posts_per_bed_ratio: str = "ct_care_home_posts_per_bed_ratio"
     ct_care_home_total_employed: str = CTCHClean.ct_care_home_total_employed

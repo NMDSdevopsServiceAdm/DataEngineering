@@ -1,49 +1,38 @@
 import unittest
+import warnings
+from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_care_home_outliers as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
-    NullCtPostsToBedsOutliers as Data,
+    CleanCapacityTrackerCareHomeOutliersData as Data,
 )
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
-    NullCtPostsToBedsOutliers as Schemas,
+    CleanCapacityTrackerCareHomeOutliersSchema as Schemas,
 )
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+
+PATCH_PATH: str = (
+    "projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_care_home_outliers"
+)
 
 
-class TestCleanCtCareHomeOutliers(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
-
-
-class TestNullCtPostsToBedsOutliers(TestCleanCtCareHomeOutliers):
+class CleanCapacityTrackerCareHomeOutliersTests(unittest.TestCase):
     def setUp(self) -> None:
-        super().setUp()
-
-        test_df = self.spark.createDataFrame(
-            Data.null_ct_posts_to_beds_outliers_rows,
-            Schemas.null_ct_posts_to_beds_outliers_schema,
+        self.spark = utils.get_spark()
+        self.ind_cqc_df = self.spark.createDataFrame(
+            Data.ind_cqc_rows, Schemas.ind_cqc_schema
         )
-        self.returned_df = job.clean_capacity_tracker_care_home_outliers(test_df)
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_null_ct_posts_to_beds_outliers_rows,
-            Schemas.expected_null_ct_posts_to_beds_outliers_schema,
-        )
-        self.new_columns_added = [
-            column
-            for column in self.returned_df.columns
-            if column not in test_df.columns
-        ]
 
-    def test_null_ct_posts_to_beds_outliers_adds_1_expected_column(
+        warnings.filterwarnings("ignore", category=ResourceWarning)
+
+    @patch(f"{PATCH_PATH}.null_posts_per_bed_outliers")
+    @patch(f"{PATCH_PATH}.add_filtering_rule_column")
+    def test_functions_are_called(
         self,
+        add_filtering_rule_column_mock: Mock,
+        null_posts_per_bed_outliers_mock: Mock,
     ):
-        self.assertEqual(len(self.new_columns_added), 1)
-        self.assertEqual(
-            self.new_columns_added[0], IndCQC.ct_care_home_total_employed_cleaned
-        )
+        job.clean_capacity_tracker_non_res_outliers(self.ind_cqc_df)
 
-    def test_null_ct_posts_to_beds_outliers_returns_expected_values(
-        self,
-    ):
-        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+        add_filtering_rule_column_mock.assert_called_once()
+        null_posts_per_bed_outliers_mock.assert_called_once()

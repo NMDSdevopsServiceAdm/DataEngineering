@@ -570,6 +570,13 @@ class AscwdsFilteringRule(ColumnValues):
 
 
 @dataclass
+class CTCareHomeFilteringRule(ColumnValues):
+    populated: str = "populated"
+    missing_data: str = "missing_data"
+    beds_ratio_outlier: str = "beds_ratio_outlier"
+
+
+@dataclass
 class CTNonResFilteringRule(ColumnValues):
     populated: str = "populated"
     missing_data: str = "missing_data"
