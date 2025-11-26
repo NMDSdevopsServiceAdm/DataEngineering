@@ -45,6 +45,8 @@ All notable changes to this project will be documented in this file.
 
 - Created the S3 paths for the modelling process to call on for loading and saving data.
 
+- Generalised the functions to create and update a filtering column
+
 - Created a function to handle to various Capacity Tracker non-residential cleaning steps.
 
 ### Changed
