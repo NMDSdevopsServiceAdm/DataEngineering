@@ -43,6 +43,9 @@ All notable changes to this project will be documented in this file.
 - Added ind_cqc_06_estimated_filled_posts dataset to circleci config datasets sync'd into branch.
   Gave the dataset name the prefix "main_".
 
+- Added NHS Capacity Tracker filter to remove repeated submissions based on provider total post being the same
+  for too long.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
