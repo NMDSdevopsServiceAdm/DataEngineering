@@ -47,6 +47,8 @@ All notable changes to this project will be documented in this file.
 
 - Generalised the functions to create and update a filtering column
 
+- Created a function to handle to various Capacity Tracker non-residential cleaning steps.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
