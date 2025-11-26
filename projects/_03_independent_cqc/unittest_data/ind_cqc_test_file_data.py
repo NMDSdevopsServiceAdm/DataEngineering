@@ -4039,6 +4039,14 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
 
 
 @dataclass
+class CleanCapacityTrackerNonResOutliersData:
+    ind_cqc_rows = [
+        ("1-001", date(2025, 1, 1), 30.0),
+        ("1-002", date(2025, 1, 1), None),
+    ]
+
+
+@dataclass
 class ValidateCleanedIndCqcData:
     # fmt: off
     merged_ind_cqc_rows = [

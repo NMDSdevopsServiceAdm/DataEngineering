@@ -1,6 +1,6 @@
 import unittest
 
-import projects._03_independent_cqc._02_clean.utils.clean_ct_care_home_outliers.clean_ct_care_home_outliers as job
+import projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_care_home_outliers as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     NullCtPostsToBedsOutliers as Data,
 )

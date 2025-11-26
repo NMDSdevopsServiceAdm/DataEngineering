@@ -1552,6 +1552,17 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
 
 
 @dataclass
+class CleanCapacityTrackerNonResOutliersSchema:
+    ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.ct_non_res_care_workers_employed, DoubleType(), True),
+        ]
+    )
+
+
+@dataclass
 class ValidateCleanedIndCqcData:
     merged_ind_cqc_schema = StructType(
         [
