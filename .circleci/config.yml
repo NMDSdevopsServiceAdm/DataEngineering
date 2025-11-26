@@ -239,9 +239,11 @@ jobs:
             cd target && zip -r pydeequ-1.5.0.zip pydeequ && cd ..
             mv target/pydeequ-1.5.0.zip dependencies/pydeequ-1.5.0.zip
             rm -rf target
-      - aws-s3/sync:
-          from: dependencies
-          to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
+      - run:
+          name: Sync dependencies to S3
+          command: |
+            PIPELINE_RESOURCES=$(cat terraform/pipeline/pipeline_resources_bucket_name)
+            aws s3 sync dependencies "s3://$PIPELINE_RESOURCES/dependencies"
 
   copy-main-data:
     docker:
