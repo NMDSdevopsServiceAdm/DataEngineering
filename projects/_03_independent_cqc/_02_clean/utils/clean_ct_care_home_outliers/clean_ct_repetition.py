@@ -18,14 +18,12 @@ def null_ct_values_after_consecutive_repetition(
     column_to_clean: str,
 ) -> DataFrame:
     """
-    Adds a new column in which values are allowed to consecutively repeat for a limited time, but are then replaced with null.
+    Nulls Capacity Tracker values at locations within a provider when their provider total value repeats for too long.
+
+    When a provider has the same total value for more than a repetition limit, then all their location values are nulled after
+    the limit period, until the provider has a new total value.
     The repetition limit is 12 months, unless the provider as a whole is larger than 50 posts then the limit is 6 months.
     The provider size is determined by posts in their NHS Capacity Tracker submissions.
-
-    This function:
-        1. Adds a new column with deduplicated column_to_clean values.
-        2. Uses the deduplicated values to calculate the days between import_date and and the date a repeated value began.
-        4. Nulls values when the days between dates is above REPETITION_LIMIT.
 
     Args:
         df (DataFrame): A dataframe with consecutive import dates.
@@ -65,7 +63,7 @@ def null_ct_values_after_consecutive_repetition(
 
 def aggregate_values_to_provider_level(df: DataFrame, col_to_sum: str) -> DataFrame:
     """
-    Adds a new column with the provider level sum of column_to_clean values.
+    Adds a new column with the provider level sum of a given column.
     The new column will be named col_to_sum suffixed with "_provider_sum".
 
     Args:
@@ -126,8 +124,8 @@ def identify_large_providers(df: DataFrame, provider_level_values: str) -> DataF
     """
     Adds a column to flag large providers.
 
-    The lenght of time that locations have the same value in the Capacity Tracker is much shorter when
-    the provider has more than 50 posts.
+    Analysis of Capacity Tracker data showed a providers total posts changed more frequently when
+    they had 50+ posts. Around 80% of providers had up to posts.
 
     Args:
         df (DataFrame): A dataframe with import date and a deduplicated value column.
@@ -152,7 +150,7 @@ def clean_capacity_tracker_posts_repetition(
     column_to_clean: str,
 ) -> DataFrame:
     """
-    Nulls values in column_to_clean when days_since_previous_submission column is above limit the locations provider size.
+    Nulls values in column_to_clean when days_since_previous_submission is above the limit for the providers size.
 
     If the location is at a large provider then the repetition limit is less than locations at small providers.
 
