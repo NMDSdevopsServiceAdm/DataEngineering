@@ -1,5 +1,8 @@
 version: 2.1
 
+environment:
+  AWS_REGION: eu-west-2
+
 parameters:
   GHA_Actor:
     type: string
@@ -15,7 +18,7 @@ parameters:
     default: ""
 
 orbs:
-  aws-s3: circleci/aws-s3@3.0
+  aws-s3: circleci/aws-s3@4.1
   aws-cli: circleci/aws-cli@5.4.1
 
 jobs:
@@ -235,7 +238,6 @@ jobs:
             mv target/pydeequ-1.5.0.zip dependencies/pydeequ-1.5.0.zip
             rm -rf target
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: dependencies
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
 
@@ -252,67 +254,51 @@ jobs:
             echo 'export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"' >> "$BASH_ENV"
             echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC/dataset=delta_locations_api/version=3.1.0/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=delta_locations_api/version=3.1.0/"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC/dataset=delta_providers_api/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=delta_providers_api/"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_03_full_flattened/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=cqc_locations_03_full_flattened/"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC/dataset=cqc_providers_03_full_flattened/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=cqc_providers_03_full_flattened/"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=postcode_corrections/"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory_cleaned/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ONS/dataset=postcode_directory_cleaned/"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=workplace/"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace_cleaned/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=workplace_cleaned/"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=worker/"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker_cleaned/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=worker_cleaned/"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC/dataset=pir_cleaned/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=pir_cleaned/"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_06_estimated_filled_posts/"
       - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-pipeline-resources/models/"
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/models/"
 
