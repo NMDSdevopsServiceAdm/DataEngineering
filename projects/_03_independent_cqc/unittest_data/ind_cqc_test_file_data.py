@@ -5963,3 +5963,100 @@ class NullCtPostsToBedsOutliers:
         ("1-005", 1, 0.65, None),
         ("1-006", 1, 6.01, None),
     ]
+
+
+@dataclass
+class OutlierCleaningData:
+
+    # Simple dataset with two groups (A and B)
+    clean_outliers_input_rows = [
+        ("1-001", 10),
+        ("1-001", 11),
+        ("1-001", 12),
+        ("1-001", 200),  # OUTLIER
+        ("1-002", 50),
+        ("1-002", 51),
+        ("1-002", 400),  # OUTLIER
+    ]
+
+    # Expected result when remove_whole_record = True
+    expected_clean_outliers_remove_whole_rows = [
+        ("1-001", 10, 10),
+        ("1-001", 11, 11),
+        ("1-001", 12, 12),
+        ("1-002", 50, 50),
+        ("1-002", 51, 51),
+    ]
+
+    # Expected result when remove_whole_record = False (same for this design)
+    expected_clean_outliers_remove_value_only_rows = [
+        ("1-001", 10, 10),
+        ("1-001", 11, 11),
+        ("1-001", 12, 12),
+        ("1-001", 200, None),
+        ("1-002", 50, 50),
+        ("1-002", 51, 51),
+        ("1-002", 400, None),
+    ]
+
+    # ----------------------------
+    # INDIVIDUAL STEP TEST INPUTS
+    # ----------------------------
+
+    compute_group_median_rows = [
+        ("1-001", 10),
+        ("1-001", 20),
+        ("1-001", 30),
+    ]
+
+    expected_compute_group_median_rows = [
+        ("1-001", 10, 20),
+        ("1-001", 20, 20),
+        ("1-001", 30, 20),
+    ]
+
+    compute_abs_deviation_rows = expected_compute_group_median_rows
+
+    expected_abs_deviation_rows = [
+        ("1-001", 10, 20, 10),
+        ("1-001", 20, 20, 0),
+        ("1-001", 30, 20, 10),
+    ]
+
+    compute_mad_rows = expected_abs_deviation_rows
+
+    expected_mad_rows = [
+        ("1-001", 10, 20, 10, 10),
+        ("1-001", 20, 20, 0, 10),
+        ("1-001", 30, 20, 10, 10),
+    ]
+
+    compute_outlier_cutoff_rows = expected_mad_rows
+
+    expected_outlier_cutoff_rows = [
+        ("1-001", 10, 20, 10, 10, 10),
+        ("1-001", 20, 20, 0, 10, 10),
+        ("1-001", 30, 20, 10, 10, 10),
+    ]
+
+    flag_outliers_rows = expected_outlier_cutoff_rows
+
+    expected_flag_outliers_rows = [
+        ("1-001", 10, 20, 10, 10, 10, False),
+        ("1-001", 20, 20, 0, 10, 10, False),
+        ("1-001", 30, 20, 10, 10, 10, False),
+    ]
+
+    apply_outlier_cleaning_input_rows = [
+        ("1-001", 100, True),
+        ("1-001", 50, False),
+    ]
+
+    apply_outlier_cleaning_expected_rows = [
+        ("1-001", 100, True, None),
+        ("1-001", 50, False, 50),
+    ]
+
+    apply_outlier_cleaning_remove_row_expected_rows = [
+        ("1-001", 50, False, 50),
+    ]

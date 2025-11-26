@@ -43,6 +43,7 @@ class MainTests(CleanIndFilledPostsTests):
         super().setUp()
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.clean_outliers")
     @patch(f"{PATCH_PATH}.null_ct_posts_to_beds_outliers")
     @patch(f"{PATCH_PATH}.clean_ascwds_filled_post_outliers")
     @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
@@ -71,6 +72,7 @@ class MainTests(CleanIndFilledPostsTests):
         create_banded_bed_count_column_mock: Mock,
         clean_ascwds_filled_post_outliers_mock: Mock,
         null_ct_posts_to_beds_outliers_mock: Mock,
+        clean_outliers_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.merge_ind_cqc_test_df
@@ -92,6 +94,7 @@ class MainTests(CleanIndFilledPostsTests):
         create_banded_bed_count_column_mock.assert_called_once()
         clean_ascwds_filled_post_outliers_mock.assert_called_once()
         null_ct_posts_to_beds_outliers_mock.assert_called_once()
+        clean_outliers_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_once_with(
             ANY,

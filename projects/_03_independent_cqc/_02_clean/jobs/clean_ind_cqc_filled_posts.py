@@ -17,6 +17,9 @@ from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outli
 from projects._03_independent_cqc._02_clean.utils.clean_ct_care_home_outliers.clean_ct_care_home_outliers import (
     null_ct_posts_to_beds_outliers,
 )
+from projects._03_independent_cqc._02_clean.utils.clean_ct_care_home_outliers.clean_ct_outliers import (
+    clean_outliers,
+)
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -90,6 +93,22 @@ def main(
     )
 
     locations_df = null_ct_posts_to_beds_outliers(locations_df)
+
+    locations_df = clean_outliers(
+        locations_df,
+        IndCQC.location_id,
+        IndCQC.ct_care_home_total_employed_cleaned,
+        0.05,
+        False,
+    )
+
+    # locations_df = clean_outliers(
+    #     locations_df,
+    #     IndCQC.location_id,
+    #     IndCQC.ct_non_res_care_workers_employed,
+    #     0.10,
+    #     False,
+    # )
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 
