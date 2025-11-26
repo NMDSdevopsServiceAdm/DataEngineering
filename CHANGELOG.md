@@ -43,6 +43,8 @@ All notable changes to this project will be documented in this file.
 - Added ind_cqc_06_estimated_filled_posts dataset to circleci config datasets sync'd into branch.
   Gave the dataset name the prefix "main_".
 
+- Created the S3 paths for the modelling process to call on for loading and saving data.
+
 - Added NHS Capacity Tracker filter to remove repeated submissions based on provider total post being the same
   for too long.
 
@@ -184,6 +186,8 @@ All notable changes to this project will be documented in this file.
 
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
+
+- Improved the validation for CQC 4 full clean dataset by adding overall row count validation and null check validations for complex columns.
 
 
 ## [v2025.08.0] - 09/09/2025
