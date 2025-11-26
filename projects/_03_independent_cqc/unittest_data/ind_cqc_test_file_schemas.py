@@ -3169,12 +3169,26 @@ class NullCtPostsToBedsOutliers:
 
 @dataclass
 class CleanCtRepetition:
-    null_values_after_consec_rep_schema = StructType(
+    null_ct_values_after_consec_rep_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.provider_id, StringType(), True),
-            StructField("column_to_clean", IntegerType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    aggregate_values_to_provider_level_schema = null_ct_values_after_consec_rep_schema
+    expected_aggregate_values_to_provider_level_schema = StructType(
+        [
+            *null_ct_values_after_consec_rep_schema,
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned_provider_sum,
+                IntegerType(),
+                True,
+            ),
         ]
     )
 
@@ -3182,7 +3196,9 @@ class CleanCtRepetition:
         [
             StructField(IndCQC.provider_id, StringType(), True),
             StructField(
-                IndCQC.ct_care_home_total_employed_cleaned_dedup, IntegerType(), True
+                IndCQC.ct_care_home_total_employed_cleaned_provider_sum_dedupicated,
+                IntegerType(),
+                True,
             ),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
         ]
@@ -3197,7 +3213,11 @@ class CleanCtRepetition:
     identify_large_providers_schema = StructType(
         [
             StructField(IndCQC.provider_id, StringType(), True),
-            StructField("provider_level_values_column", StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned_provider_sum,
+                StringType(),
+                True,
+            ),
         ]
     )
     expected_identify_large_providers_schema = StructType(
@@ -3213,21 +3233,7 @@ class CleanCtRepetition:
         [
             StructField(IndCQC.provider_id, StringType()),
             StructField(IndCQC.ct_care_home_total_employed_cleaned, IntegerType()),
-            StructField(IndCQC.ct_non_res_care_workers_employed, IntegerType()),
             StructField(IndCQC.provider_size_in_capacity_tracker_group, StringType()),
             StructField(IndCQC.days_provider_has_repeated_value, IntegerType()),
         ]
-    )
-    expected_clean_capacity_tracker_posts_repetition_when_not_adding_new_column_schema = (
-        clean_capacity_tracker_posts_repetition_schema
-    )
-    expected_clean_capacity_tracker_posts_repetition_when_adding_new_column_schema = (
-        StructType(
-            [
-                *clean_capacity_tracker_posts_repetition_schema,
-                StructField(
-                    IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType()
-                ),
-            ]
-        )
     )

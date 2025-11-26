@@ -5967,44 +5967,109 @@ class NullCtPostsToBedsOutliers:
 
 @dataclass
 class CleanCtRepetition:
-    null_values_after_consec_rep_with_reps_outside_limit_rows = [
+    null_ct_values_after_consec_rep_with_provider_repetition_outside_limit_and_providers_are_small_rows = [
         ("1-001", "1-0001", 1, date(2025, 1, 1)),
-        ("1-001", "1-0001", 1, date(2025, 6, 1)),
-        ("1-001", "1-0001", 1, date(2025, 12, 1)),
+        ("1-002", "1-0001", 2, date(2025, 1, 1)),
         ("1-001", "1-0001", 1, date(2026, 1, 1)),
+        ("1-002", "1-0001", 2, date(2026, 1, 1)),
         ("1-001", "1-0001", 1, date(2026, 2, 1)),
+        ("1-002", "1-0001", 2, date(2026, 2, 1)),
+        ("1-003", "1-0002", 1, date(2025, 1, 1)),
+        ("1-004", "1-0002", 3, date(2025, 1, 1)),
+        ("1-003", "1-0002", None, date(2026, 1, 1)),
+        ("1-004", "1-0002", 4, date(2026, 1, 1)),
+        ("1-003", "1-0002", 2, date(2026, 2, 1)),
+        ("1-004", "1-0002", 2, date(2026, 2, 1)),
     ]
-    expected_null_values_after_consec_rep_with_reps_outside_limit_rows = [
+    expected_null_ct_values_after_consec_rep_with_provider_repetition_outside_limit_and_providers_are_small_rows = [
         ("1-001", "1-0001", 1, date(2025, 1, 1)),
-        ("1-001", "1-0001", 1, date(2025, 6, 1)),
-        ("1-001", "1-0001", 1, date(2025, 12, 1)),
+        ("1-002", "1-0001", 2, date(2025, 1, 1)),
         ("1-001", "1-0001", 1, date(2026, 1, 1)),
+        ("1-002", "1-0001", 2, date(2026, 1, 1)),
         ("1-001", "1-0001", None, date(2026, 2, 1)),
+        ("1-002", "1-0001", None, date(2026, 2, 1)),
+        ("1-003", "1-0002", 1, date(2025, 1, 1)),
+        ("1-004", "1-0002", 3, date(2025, 1, 1)),
+        ("1-003", "1-0002", None, date(2026, 1, 1)),
+        ("1-004", "1-0002", 4, date(2026, 1, 1)),
+        ("1-003", "1-0002", None, date(2026, 2, 1)),
+        ("1-004", "1-0002", None, date(2026, 2, 1)),
     ]
 
-    null_values_after_consec_rep_with_repetition_but_without_reps_outside_limit_rows = [
+    null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_small_rows = [
         ("1-001", "1-0001", 1, date(2025, 1, 1)),
-        ("1-001", "1-0001", 1, date(2025, 6, 1)),
-        ("1-001", "1-0001", 2, date(2025, 12, 1)),
-        ("1-001", "1-0001", 1, date(2026, 1, 1)),
-        ("1-001", "1-0001", 1, date(2026, 2, 1)),
-        ("1-002", "1-0001", 1, date(2025, 1, 1)),
-        ("1-002", "1-0001", 1, date(2025, 6, 1)),
-        ("1-002", "1-0001", None, date(2025, 12, 1)),
-        ("1-002", "1-0001", 1, date(2026, 1, 1)),
-        ("1-002", "1-0001", 1, date(2026, 2, 1)),
+        ("1-002", "1-0001", 2, date(2025, 1, 1)),
+        ("1-001", "1-0001", 3, date(2026, 2, 1)),
+        ("1-002", "1-0001", 4, date(2026, 2, 1)),
     ]
-    expected_null_values_after_consec_rep_with_repetition_but_without_reps_outside_limit_rows = [
+    expected_null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_small_rows = [
         ("1-001", "1-0001", 1, date(2025, 1, 1)),
-        ("1-001", "1-0001", 1, date(2025, 6, 1)),
-        ("1-001", "1-0001", 2, date(2025, 12, 1)),
-        ("1-001", "1-0001", 1, date(2026, 1, 1)),
-        ("1-001", "1-0001", 1, date(2026, 2, 1)),
+        ("1-002", "1-0001", 2, date(2025, 1, 1)),
+        ("1-001", "1-0001", 3, date(2026, 2, 1)),
+        ("1-002", "1-0001", 4, date(2026, 2, 1)),
+    ]
+
+    null_ct_values_after_consec_rep_with_provider_repetition_outside_limit_and_providers_are_large_rows = [
+        ("1-001", "1-0001", 50, date(2025, 1, 1)),
         ("1-002", "1-0001", 1, date(2025, 1, 1)),
+        ("1-001", "1-0001", 50, date(2025, 6, 1)),
         ("1-002", "1-0001", 1, date(2025, 6, 1)),
-        ("1-002", "1-0001", None, date(2025, 12, 1)),
-        ("1-002", "1-0001", 1, date(2026, 1, 1)),
-        ("1-002", "1-0001", 1, date(2026, 2, 1)),
+        ("1-001", "1-0001", 50, date(2025, 7, 1)),
+        ("1-002", "1-0001", 1, date(2025, 7, 1)),
+        ("1-003", "1-0002", 50, date(2025, 1, 1)),
+        ("1-004", "1-0002", 3, date(2025, 1, 1)),
+        ("1-003", "1-0002", None, date(2025, 6, 1)),
+        ("1-004", "1-0002", 53, date(2025, 6, 1)),
+        ("1-003", "1-0002", 51, date(2025, 7, 1)),
+        ("1-004", "1-0002", 2, date(2025, 7, 1)),
+    ]
+    expected_null_ct_values_after_consec_rep_with_provider_repetition_outside_limit_and_providers_are_large_rows = [
+        ("1-001", "1-0001", 50, date(2025, 1, 1)),
+        ("1-002", "1-0001", 1, date(2025, 1, 1)),
+        ("1-001", "1-0001", 50, date(2025, 6, 1)),
+        ("1-002", "1-0001", 1, date(2025, 6, 1)),
+        ("1-001", "1-0001", 50, date(2025, 7, 1)),
+        ("1-002", "1-0001", 1, date(2025, 7, 1)),
+        ("1-003", "1-0002", 50, date(2025, 1, 1)),
+        ("1-004", "1-0002", 3, date(2025, 1, 1)),
+        ("1-003", "1-0002", None, date(2025, 6, 1)),
+        ("1-004", "1-0002", 53, date(2025, 6, 1)),
+        ("1-003", "1-0002", 51, date(2025, 7, 1)),
+        ("1-004", "1-0002", 2, date(2025, 7, 1)),
+    ]
+
+    null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_large_rows = [
+        ("1-001", "1-0001", 50, date(2025, 1, 1)),
+        ("1-002", "1-0001", 1, date(2025, 1, 1)),
+        ("1-001", "1-0001", 50, date(2026, 2, 1)),
+        ("1-002", "1-0001", 2, date(2026, 2, 1)),
+    ]
+    expected_null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_large_rows = [
+        ("1-001", "1-0001", 50, date(2025, 1, 1)),
+        ("1-002", "1-0001", 1, date(2025, 1, 1)),
+        ("1-001", "1-0001", 50, date(2026, 2, 1)),
+        ("1-002", "1-0001", 2, date(2026, 2, 1)),
+    ]
+
+    aggregate_values_to_provider_level_rows = [
+        ("1-001", "1-0001", 1, date(2025, 1, 1)),
+        ("1-002", "1-0001", 1, date(2025, 1, 1)),
+        ("1-003", "1-0002", 1, date(2025, 1, 1)),
+        ("1-004", "1-0002", None, date(2025, 1, 1)),
+        ("1-005", "1-0003", None, date(2025, 1, 1)),
+        ("1-006", "1-0003", None, date(2025, 1, 1)),
+        ("1-001", "1-0001", 2, date(2025, 2, 1)),
+        ("1-002", "1-0001", 2, date(2025, 2, 1)),
+    ]
+    expected_aggregate_values_to_provider_level_rows = [
+        ("1-001", "1-0001", 1, date(2025, 1, 1), 2),
+        ("1-002", "1-0001", 1, date(2025, 1, 1), 2),
+        ("1-003", "1-0002", 1, date(2025, 1, 1), 1),
+        ("1-004", "1-0002", None, date(2025, 1, 1), 1),
+        ("1-005", "1-0003", None, date(2025, 1, 1), None),
+        ("1-006", "1-0003", None, date(2025, 1, 1), None),
+        ("1-001", "1-0001", 2, date(2025, 2, 1), 4),
+        ("1-002", "1-0001", 2, date(2025, 2, 1), 4),
     ]
 
     calculate_days_a_provider_has_been_repeating_values_rows = [
@@ -6044,20 +6109,14 @@ class CleanCtRepetition:
     ]
 
     clean_capacity_tracker_posts_repetition_rows = [
-        ("1-0001", 1, 1, "large provider", 185),
-        ("1-0002", 1, 1, "large provider", 186),
-        ("1-0003", 1, 1, None, 365),
-        ("1-0004", 1, 1, None, 366),
+        ("1-0001", 1, "large provider", 185),
+        ("1-0002", 1, "large provider", 186),
+        ("1-0003", 1, None, 365),
+        ("1-0004", 1, None, 366),
     ]
-    expected_clean_capacity_tracker_posts_repetition_when_not_adding_new_column_rows = [
-        ("1-0001", 1, 1, "large provider", 185),
-        ("1-0002", None, 1, "large provider", 186),
-        ("1-0003", 1, 1, None, 365),
-        ("1-0004", None, 1, None, 366),
-    ]
-    expected_clean_capacity_tracker_posts_repetition_when_adding_new_column_rows = [
-        ("1-0001", 1, 1, "large provider", 185, 1),
-        ("1-0002", 1, 1, "large provider", 186, None),
-        ("1-0003", 1, 1, None, 365, 1),
-        ("1-0004", 1, 1, None, 366, None),
+    expected_clean_capacity_tracker_posts_repetition_rows = [
+        ("1-0001", 1, "large provider", 185),
+        ("1-0002", None, "large provider", 186),
+        ("1-0003", 1, None, 365),
+        ("1-0004", None, None, 366),
     ]

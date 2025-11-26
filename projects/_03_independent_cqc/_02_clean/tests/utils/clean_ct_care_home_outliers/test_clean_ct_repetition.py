@@ -20,39 +20,96 @@ class null_ct_values_after_consecutive_repetition(CleanCtRepetitionTests):
     def setUp(self):
         super().setUp()
 
-    def test_null_values_after_consecutive_repetition_when_values_repeat_for_more_than_12_months(
+    def test_null_ct_values_after_consecutive_repetition_with_provider_repetition_outside_limit_and_providers_are_small(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.null_values_after_consec_rep_with_reps_outside_limit_rows,
-            Schemas.null_values_after_consec_rep_schema,
+            Data.null_ct_values_after_consec_rep_with_provider_repetition_outside_limit_and_providers_are_small_rows,
+            Schemas.null_ct_values_after_consec_rep_schema,
         )
         returned_df = job.null_ct_values_after_consecutive_repetition(
-            test_df, "column_to_clean"
+            test_df, IndCQC.ct_care_home_total_employed_cleaned
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_null_values_after_consec_rep_with_reps_outside_limit_rows,
-            Schemas.null_values_after_consec_rep_schema,
+            Data.expected_null_ct_values_after_consec_rep_with_provider_repetition_outside_limit_and_providers_are_small_rows,
+            Schemas.null_ct_values_after_consec_rep_schema,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_null_values_after_consecutive_repetition_when_values_do_not_repeat_for_more_than_12_months(
+    def test_null_ct_values_after_consecutive_repetition_without_provider_repetition_outside_limit_and_providers_are_small(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.null_values_after_consec_rep_with_repetition_but_without_reps_outside_limit_rows,
-            Schemas.null_values_after_consec_rep_schema,
+            Data.null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_small_rows,
+            Schemas.null_ct_values_after_consec_rep_schema,
         )
         returned_df = job.null_ct_values_after_consecutive_repetition(
-            test_df, "column_to_clean"
+            test_df, IndCQC.ct_care_home_total_employed_cleaned
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_null_values_after_consec_rep_with_repetition_but_without_reps_outside_limit_rows,
-            Schemas.null_values_after_consec_rep_schema,
+            Data.expected_null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_small_rows,
+            Schemas.null_ct_values_after_consec_rep_schema,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_null_ct_values_after_consecutive_repetition_with_provider_repetition_outside_limit_and_providers_are_large(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.null_ct_values_after_consec_rep_with_provider_repetition_outside_limit_and_providers_are_large_rows,
+            Schemas.null_ct_values_after_consec_rep_schema,
+        )
+        returned_df = job.null_ct_values_after_consecutive_repetition(
+            test_df, IndCQC.ct_care_home_total_employed_cleaned
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_null_ct_values_after_consec_rep_with_provider_repetition_outside_limit_and_providers_are_large_rows,
+            Schemas.null_ct_values_after_consec_rep_schema,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_null_ct_values_after_consecutive_repetition_without_provider_repetition_outside_limit_and_providers_are_large(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_large_rows,
+            Schemas.null_ct_values_after_consec_rep_schema,
+        )
+        returned_df = job.null_ct_values_after_consecutive_repetition(
+            test_df, IndCQC.ct_care_home_total_employed_cleaned
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_large_rows,
+            Schemas.null_ct_values_after_consec_rep_schema,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
+class AggregateValuesToProviderLevel(CleanCtRepetitionTests):
+    def setUp(self):
+        super().setUp()
+
+    def test_aggregate_values_to_provider_level_returns_expected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.aggregate_values_to_provider_level_rows,
+            Schemas.aggregate_values_to_provider_level_schema,
+        )
+        returned_df = job.aggregate_values_to_provider_level(
+            test_df, IndCQC.ct_care_home_total_employed_cleaned
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_aggregate_values_to_provider_level_rows,
+            Schemas.expected_aggregate_values_to_provider_level_schema,
+        )
+
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.sort(IndCQC.location_id).collect()
+
+        self.assertEqual(returned_data, expected_data)
 
 
 class CalculateDaysAProviderHasBeenRepeatingValues(CleanCtRepetitionTests):
@@ -67,7 +124,7 @@ class CalculateDaysAProviderHasBeenRepeatingValues(CleanCtRepetitionTests):
             Schemas.calculate_days_a_provider_has_been_repeating_values_schema,
         )
         returned_df = job.calculate_days_a_provider_has_been_repeating_values(
-            test_df, IndCQC.ct_care_home_total_employed_cleaned_dedup
+            test_df, IndCQC.ct_care_home_total_employed_cleaned_provider_sum_dedupicated
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_days_a_provider_has_been_repeating_values_rows,
@@ -89,7 +146,7 @@ class IdentifyLargeProviders(CleanCtRepetitionTests):
             Schemas.identify_large_providers_schema,
         )
         returned_df = job.identify_large_providers(
-            test_df, "provider_level_values_column"
+            test_df, IndCQC.ct_care_home_total_employed_cleaned_provider_sum
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_identify_large_providers_rows,
@@ -102,35 +159,20 @@ class IdentifyLargeProviders(CleanCtRepetitionTests):
 class CleanCapacityTrackerPostsRepetition(CleanCtRepetitionTests):
     def setUp(self):
         super().setUp()
-        self.test_df = self.spark.createDataFrame(
+
+    def test_clean_capacity_tracker_posts_repetition_returns_expected_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
             Data.clean_capacity_tracker_posts_repetition_rows,
             Schemas.clean_capacity_tracker_posts_repetition_schema,
         )
-
-    def test_clean_capacity_tracker_posts_repetition_when_not_adding_new_column_returns_expected_values(
-        self,
-    ):
-
         returned_df = job.clean_capacity_tracker_posts_repetition(
-            self.test_df, IndCQC.ct_care_home_total_employed_cleaned, False
+            test_df, IndCQC.ct_care_home_total_employed_cleaned
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_clean_capacity_tracker_posts_repetition_when_not_adding_new_column_rows,
-            Schemas.expected_clean_capacity_tracker_posts_repetition_when_not_adding_new_column_schema,
-        )
-
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-    def test_clean_capacity_tracker_posts_repetition_when_adding_new_column_returns_expected_values(
-        self,
-    ):
-
-        returned_df = job.clean_capacity_tracker_posts_repetition(
-            self.test_df, IndCQC.ct_non_res_care_workers_employed, True
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_clean_capacity_tracker_posts_repetition_when_adding_new_column_rows,
-            Schemas.expected_clean_capacity_tracker_posts_repetition_when_adding_new_column_schema,
+            Data.expected_clean_capacity_tracker_posts_repetition_rows,
+            Schemas.clean_capacity_tracker_posts_repetition_schema,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())

@@ -9,14 +9,13 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 POSTS_TO_DEFINE_LARGE_PROVIDER = 50
 LARGE_PROVIDER = "large provider"
-REPETITION_LIMIT_ALL_LOCATIONS = 365
+REPETITION_LIMIT_ALL_PROVIDERS = 365
 REPETITION_LIMIT_LARGE_PROVIDER = 185
 
 
 def null_ct_values_after_consecutive_repetition(
     df: DataFrame,
     column_to_clean: str,
-    add_as_new_column: bool,
 ) -> DataFrame:
     """
     Adds a new column in which values are allowed to consecutively repeat for a limited time, but are then replaced with null.
@@ -31,36 +30,55 @@ def null_ct_values_after_consecutive_repetition(
     Args:
         df (DataFrame): A dataframe with consecutive import dates.
         column_to_clean (str): A column with repeated values.
-        add_as_new_column (bool): True will created a new column with name of column_to_clean suffixed with "_cleaned".
 
     Returns:
         DataFrame: The input with DataFrame with an additional column.
     """
-    provider_level_values = "provider_level_values_column"
-    w = Window.partitionBy([IndCQC.provider_id, IndCQC.cqc_location_import_date])
-    df = df.withColumn(
-        provider_level_values,
-        F.sum(column_to_clean).over(w),
-    )
+    provider_values_col = f"{column_to_clean}_provider_sum"
+    provider_values_col_dedup = f"{column_to_clean}_provider_sum_deduplicated"
 
-    provider_level_values_deduplicated = "provider_level_values_column"
+    df = aggregate_values_to_provider_level(df, column_to_clean)
+
     df = create_column_with_repeated_values_removed(
         df,
-        provider_level_values,
-        provider_level_values_deduplicated,
+        provider_values_col,
+        provider_values_col_dedup,
     )
 
     df = calculate_days_a_provider_has_been_repeating_values(
-        df, provider_level_values_deduplicated
+        df, provider_values_col_dedup
     )
-    df = identify_large_providers(df, provider_level_values)
-    df = clean_capacity_tracker_posts_repetition(df, column_to_clean, add_as_new_column)
+    df = identify_large_providers(df, provider_values_col)
+    df = clean_capacity_tracker_posts_repetition(df, column_to_clean)
+
+    # TODO Add a column with wording to show which rows have been filtered for what reason.
 
     df = df.drop(
-        provider_level_values,
-        provider_level_values_deduplicated,
+        provider_values_col,
+        provider_values_col_dedup,
         IndCQC.days_provider_has_repeated_value,
         IndCQC.provider_size_in_capacity_tracker_group,
+    )
+
+    return df
+
+
+def aggregate_values_to_provider_level(df: DataFrame, col_to_sum: str) -> DataFrame:
+    """
+    Adds a new column with the provider level sum of column_to_clean values.
+    The new column will be named col_to_sum suffixed with "_provider_sum".
+
+    Args:
+        df (DataFrame): A dataframe with providerid and the column_to_sum.
+        col_to_sum (str): A column of values to sum.
+
+    Returns:
+        DataFrame: The input DataFrame with a new aggregated column.
+    """
+    w = Window.partitionBy([IndCQC.provider_id, IndCQC.cqc_location_import_date])
+    df = df.withColumn(
+        f"{col_to_sum}_provider_sum",
+        F.sum(col_to_sum).over(w),
     )
 
     return df
@@ -132,7 +150,6 @@ def identify_large_providers(df: DataFrame, provider_level_values: str) -> DataF
 def clean_capacity_tracker_posts_repetition(
     df: DataFrame,
     column_to_clean: str,
-    add_as_new_column: bool,
 ) -> DataFrame:
     """
     Nulls values in column_to_clean when days_since_previous_submission column is above limit the locations provider size.
@@ -142,18 +159,12 @@ def clean_capacity_tracker_posts_repetition(
     Args:
         df (DataFrame): A dataframe with consecutive import dates.
         column_to_clean (str): The column with repeated values.
-        add_as_new_column (bool): True will created a new column with name of column_to_clean suffixed with "_cleaned".
 
     Returns:
         DataFrame: The input with DataFrame with an additional column.
     """
-    if add_as_new_column:
-        output_column = f"{column_to_clean}_cleaned"
-    else:
-        output_column = column_to_clean
-
     df = df.withColumn(
-        output_column,
+        column_to_clean,
         F.when(
             (
                 (
@@ -169,7 +180,7 @@ def clean_capacity_tracker_posts_repetition(
                 (F.col(IndCQC.provider_size_in_capacity_tracker_group).isNull())
                 & (
                     F.col(IndCQC.days_provider_has_repeated_value)
-                    <= REPETITION_LIMIT_ALL_LOCATIONS
+                    <= REPETITION_LIMIT_ALL_PROVIDERS
                 )
             ),
             F.col(column_to_clean),
