@@ -38,7 +38,6 @@ def clean_capacity_tracker_non_res_outliers(df: DataFrame) -> DataFrame:
         CTNonResFilteringRule.missing_data,
     )
 
-    # TODO - #1226 filter repeated values
     # TODO - #1225 filter spikes
 
     df = null_ct_values_after_consecutive_repetition(
