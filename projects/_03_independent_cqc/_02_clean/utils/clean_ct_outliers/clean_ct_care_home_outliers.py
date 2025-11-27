@@ -44,7 +44,10 @@ def clean_capacity_tracker_care_home_outliers(df: DataFrame) -> DataFrame:
     df = null_posts_per_bed_outliers(df)
 
     df = null_ct_values_after_consecutive_repetition(
-        df, IndCQC.ct_care_home_total_employed_cleaned
+        df,
+        IndCQC.ct_care_home_total_employed,
+        IndCQC.ct_care_home_total_employed_cleaned,
+        True,
     )
 
     return df

@@ -2,10 +2,17 @@ from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 
 import projects._03_independent_cqc.utils.utils.utils as utils
+from projects._03_independent_cqc._02_clean.utils.filtering_utils import (
+    update_filtering_rule,
+)
 from projects._03_independent_cqc._02_clean.utils.utils import (
     create_column_with_repeated_values_removed,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import (
+    CTCareHomeFilteringRule,
+    CTNonResFilteringRule,
+)
 
 POSTS_TO_DEFINE_LARGE_PROVIDER = 50
 LARGE_PROVIDER = "large provider"
@@ -16,6 +23,8 @@ REPETITION_LIMIT_LARGE_PROVIDER = 185
 def null_ct_values_after_consecutive_repetition(
     df: DataFrame,
     column_to_clean: str,
+    cleaned_column_name: str,
+    care_home: bool,
 ) -> DataFrame:
     """
     Nulls Capacity Tracker values at locations within a provider when their provider total value repeats for too long.
@@ -28,6 +37,8 @@ def null_ct_values_after_consecutive_repetition(
     Args:
         df (DataFrame): A dataframe with consecutive import dates.
         column_to_clean (str): A column with repeated values.
+        cleaned_column_name (str): A column with cleaned values.
+        care_home (bool): True when cleaning care home values, False when cleaning non-residential values.
 
     Returns:
         DataFrame: The input with DataFrame with an additional column.
@@ -49,7 +60,23 @@ def null_ct_values_after_consecutive_repetition(
     df = identify_large_providers(df, provider_values_col)
     df = clean_capacity_tracker_posts_repetition(df, column_to_clean)
 
-    # TODO Add a column with wording to show which rows have been filtered for what reason.
+    if care_home:
+        filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
+        populated_rule = CTCareHomeFilteringRule.populated
+        new_rule_name = CTCareHomeFilteringRule.provider_repeats_total_posts
+    else:
+        filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
+        populated_rule = CTNonResFilteringRule.populated
+        new_rule_name = CTNonResFilteringRule.provider_repeats_total_posts
+
+    df = update_filtering_rule(
+        df,
+        filter_rule_column_name,
+        column_to_clean,
+        cleaned_column_name,
+        populated_rule,
+        new_rule_name,
+    )
 
     df = df.drop(
         provider_values_col,
