@@ -123,7 +123,7 @@ def main(
     df = combine_care_home_and_non_res_values_into_single_column(
         df,
         IndCQC.ct_care_home_total_employed_cleaned,
-        IndCQC.ct_non_res_care_workers_employed,
+        IndCQC.ct_non_res_care_workers_employed_cleaned,
         IndCQC.ct_combined_care_home_and_non_res,
     )
 
@@ -145,7 +145,7 @@ def main(
 
     df = model_imputation_with_extrapolation_and_interpolation(
         df,
-        IndCQC.ct_non_res_care_workers_employed,
+        IndCQC.ct_non_res_care_workers_employed_cleaned,
         IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
         IndCQC.ct_non_res_care_workers_employed_imputed,
         care_home=False,
