@@ -14,8 +14,11 @@ from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator
 from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers import (
     clean_ascwds_filled_post_outliers,
 )
-from projects._03_independent_cqc._02_clean.utils.clean_ct_care_home_outliers.clean_ct_care_home_outliers import (
-    null_ct_posts_to_beds_outliers,
+from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_care_home_outliers import (
+    clean_capacity_tracker_care_home_outliers,
+)
+from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_non_res_outliers import (
+    clean_capacity_tracker_non_res_outliers,
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -89,7 +92,8 @@ def main(
         IndCQC.ct_care_home_posts_per_bed_ratio,
     )
 
-    locations_df = null_ct_posts_to_beds_outliers(locations_df)
+    locations_df = clean_capacity_tracker_care_home_outliers(locations_df)
+    locations_df = clean_capacity_tracker_non_res_outliers(locations_df)
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 

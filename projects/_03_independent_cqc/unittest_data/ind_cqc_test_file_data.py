@@ -17,13 +17,12 @@ from utils.column_values.categorical_column_values import (
     RUI,
     AscwdsFilteringRule,
     CareHome,
+    CTCareHomeFilteringRule,
     Dormancy,
     EstimateFilledPostsSource,
     JobGroupLabels,
-    LocationType,
     MainJobRoleLabels,
     PrimaryServiceType,
-    PrimaryServiceTypeSecondLevel,
     Region,
     RelatedLocation,
     Sector,
@@ -3556,7 +3555,7 @@ class CalculateAscwdsFilledPostsDifferenceInRangeData:
 
 
 @dataclass
-class ASCWDSFilteringUtilsData:
+class CleanFilteringUtilsData:
     add_filtering_column_rows = [
         ("loc 1", 10.0),
         ("loc 2", None),
@@ -3565,114 +3564,43 @@ class ASCWDSFilteringUtilsData:
         ("loc 1", 10.0, AscwdsFilteringRule.populated),
         ("loc 2", None, AscwdsFilteringRule.missing_data),
     ]
+
+    # fmt: off
     update_filtering_rule_populated_to_nulled_rows = [
-        (
-            "loc 1",
-            10.0,
-            10.0,
-            AscwdsFilteringRule.populated,
-        ),
-        (
-            "loc 2",
-            10.0,
-            None,
-            AscwdsFilteringRule.populated,
-        ),
-        (
-            "loc 3",
-            10.0,
-            None,
-            AscwdsFilteringRule.missing_data,
-        ),
-    ]
-    update_filtering_rule_populated_to_winsorized_rows = [
-        (
-            "loc 1",
-            10.0,
-            9.0,
-            AscwdsFilteringRule.populated,
-        ),
-        (
-            "loc 2",
-            10.0,
-            11.0,
-            AscwdsFilteringRule.populated,
-        ),
-        (
-            "loc 3",
-            10.0,
-            10.0,
-            AscwdsFilteringRule.populated,
-        ),
-    ]
-    update_filtering_rule_winsorized_to_nulled_rows = [
-        (
-            "loc 1",
-            10.0,
-            9.0,
-            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
-        ),
-        (
-            "loc 2",
-            10.0,
-            None,
-            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
-        ),
+        ("loc 1", 10.0, 10.0, AscwdsFilteringRule.populated),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.populated),
+        ("loc 3", 10.0, None, AscwdsFilteringRule.missing_data),
     ]
     expected_update_filtering_rule_populated_to_nulled_rows = [
-        (
-            "loc 1",
-            10.0,
-            10.0,
-            AscwdsFilteringRule.populated,
-        ),
-        (
-            "loc 2",
-            10.0,
-            None,
-            AscwdsFilteringRule.contained_invalid_missing_data_code,
-        ),
-        (
-            "loc 3",
-            10.0,
-            None,
-            AscwdsFilteringRule.missing_data,
-        ),
+        ("loc 1", 10.0, 10.0, AscwdsFilteringRule.populated),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
+        ("loc 3", 10.0, None, AscwdsFilteringRule.missing_data),
+    ]
+    # fmt: on
+
+    # fmt: off
+    update_filtering_rule_populated_to_winsorized_rows = [
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.populated),
+        ("loc 2", 10.0, 11.0, AscwdsFilteringRule.populated),
+        ("loc 3", 10.0, 10.0, AscwdsFilteringRule.populated),
     ]
     expected_update_filtering_rule_populated_to_winsorized_rows = [
-        (
-            "loc 1",
-            10.0,
-            9.0,
-            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
-        ),
-        (
-            "loc 2",
-            10.0,
-            11.0,
-            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
-        ),
-        (
-            "loc 3",
-            10.0,
-            10.0,
-            AscwdsFilteringRule.populated,
-        ),
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 2", 10.0, 11.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 3", 10.0, 10.0, AscwdsFilteringRule.populated),
+    ]
+    # fmt: on
+
+    # fmt: off
+    update_filtering_rule_winsorized_to_nulled_rows = [
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
     ]
     expected_update_filtering_rule_winsorized_to_nulled_rows = [
-        (
-            "loc 1",
-            10.0,
-            9.0,
-            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
-        ),
-        (
-            "loc 2",
-            10.0,
-            None,
-            AscwdsFilteringRule.contained_invalid_missing_data_code,
-        ),
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
     ]
+    # fmt: on
 
 
 @dataclass
@@ -4106,6 +4034,44 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
             None,
             AscwdsFilteringRule.populated,
         ),
+    ]
+
+
+@dataclass
+class CleanCapacityTrackerNonResOutliersData:
+    ind_cqc_rows = [
+        ("1-001", date(2025, 1, 1), 30.0),
+        ("1-002", date(2025, 1, 1), None),
+    ]
+
+
+@dataclass
+class CleanCapacityTrackerCareHomeOutliersData:
+    ind_cqc_rows = [
+        ("1-001", date(2025, 1, 1), 1.5, 30.0),
+        ("1-002", date(2025, 1, 1), 1.5, None),
+        ("1-002", date(2025, 1, 1), None, 30.0),
+        ("1-002", date(2025, 1, 1), None, None),
+    ]
+
+
+@dataclass
+class NullCtPostsToBedsOutliers:
+    null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00, 1, CTCareHomeFilteringRule.populated),
+        ("1-002", 1, None, 1, CTCareHomeFilteringRule.populated),
+        ("1-003", None, 1.00, None, CTCareHomeFilteringRule.missing_data),
+        ("1-004", None, None, None, CTCareHomeFilteringRule.missing_data),
+        ("1-005", 1, 0.65, 1, CTCareHomeFilteringRule.populated),
+        ("1-006", 1, 6.01, 1, CTCareHomeFilteringRule.populated),
+    ]
+    expected_null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00, 1, CTCareHomeFilteringRule.populated),
+        ("1-002", 1, None, 1, CTCareHomeFilteringRule.populated),
+        ("1-003", None, 1.00, None, CTCareHomeFilteringRule.missing_data),
+        ("1-004", None, None, None, CTCareHomeFilteringRule.missing_data),
+        ("1-005", 1, 0.65, None, CTCareHomeFilteringRule.beds_ratio_outlier),
+        ("1-006", 1, 6.01, None, CTCareHomeFilteringRule.beds_ratio_outlier),
     ]
 
 
@@ -5942,24 +5908,4 @@ class IndCQCDataUtils:
         ("loc 1", 1, 1.0, 100.0, 50.0),
         ("loc 1", 2, 2.0, 50.0, 50.0),
         ("loc 1", 3, None, 25.0, 50.0),
-    ]
-
-
-@dataclass
-class NullCtPostsToBedsOutliers:
-    null_ct_posts_to_beds_outliers_rows = [
-        ("1-001", 1, 1.00),
-        ("1-002", 1, None),
-        ("1-003", None, 1.00),
-        ("1-004", None, None),
-        ("1-005", 1, 0.65),
-        ("1-006", 1, 6.01),
-    ]
-    expected_null_ct_posts_to_beds_outliers_rows = [
-        ("1-001", 1, 1.00, 1),
-        ("1-002", 1, None, 1),
-        ("1-003", None, 1.00, None),
-        ("1-004", None, None, None),
-        ("1-005", 1, 0.65, None),
-        ("1-006", 1, 6.01, None),
     ]

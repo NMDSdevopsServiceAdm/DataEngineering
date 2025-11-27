@@ -1,9 +1,6 @@
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
-from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.ascwds_filtering_utils import (
-    add_filtering_rule_column,
-)
 from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.null_filled_posts_where_locations_use_invalid_missing_data_code import (
     null_filled_posts_where_locations_use_invalid_missing_data_code,
 )
@@ -13,7 +10,11 @@ from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outli
 from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.winsorize_care_home_filled_posts_per_bed_ratio_outliers import (
     winsorize_care_home_filled_posts_per_bed_ratio_outliers,
 )
+from projects._03_independent_cqc._02_clean.utils.filtering_utils import (
+    add_filtering_rule_column,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import AscwdsFilteringRule
 
 
 def clean_ascwds_filled_post_outliers(df: DataFrame) -> DataFrame:
@@ -34,9 +35,16 @@ def clean_ascwds_filled_post_outliers(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         IndCQC.ascwds_filled_posts_dedup_clean, F.col(IndCQC.ascwds_filled_posts_dedup)
     )
-    df = add_filtering_rule_column(df)
+    df = add_filtering_rule_column(
+        df,
+        IndCQC.ascwds_filtering_rule,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        AscwdsFilteringRule.populated,
+        AscwdsFilteringRule.missing_data,
+    )
+
     df = null_filled_posts_where_locations_use_invalid_missing_data_code(df)
     df = null_grouped_providers(df)
-    filtered_df = winsorize_care_home_filled_posts_per_bed_ratio_outliers(df)
+    df = winsorize_care_home_filled_posts_per_bed_ratio_outliers(df)
 
-    return filtered_df
+    return df

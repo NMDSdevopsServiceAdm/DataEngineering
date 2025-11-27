@@ -1,6 +1,6 @@
 import unittest
 
-import projects._03_independent_cqc._02_clean.utils.clean_ct_care_home_outliers.clean_ct_care_home_outliers as job
+import projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.null_posts_per_bed_ratio_outliers as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     NullCtPostsToBedsOutliers as Data,
 )
@@ -24,26 +24,20 @@ class TestNullCtPostsToBedsOutliers(TestCleanCtCareHomeOutliers):
             Data.null_ct_posts_to_beds_outliers_rows,
             Schemas.null_ct_posts_to_beds_outliers_schema,
         )
-        self.returned_df = job.null_ct_posts_to_beds_outliers(test_df)
+        self.returned_df = job.null_posts_per_bed_outliers(test_df)
         self.expected_df = self.spark.createDataFrame(
             Data.expected_null_ct_posts_to_beds_outliers_rows,
-            Schemas.expected_null_ct_posts_to_beds_outliers_schema,
-        )
-        self.new_columns_added = [
-            column
-            for column in self.returned_df.columns
-            if column not in test_df.columns
-        ]
-
-    def test_null_ct_posts_to_beds_outliers_adds_1_expected_column(
-        self,
-    ):
-        self.assertEqual(len(self.new_columns_added), 1)
-        self.assertEqual(
-            self.new_columns_added[0], IndCQC.ct_care_home_total_employed_cleaned
+            Schemas.null_ct_posts_to_beds_outliers_schema,
         )
 
-    def test_null_ct_posts_to_beds_outliers_returns_expected_values(
-        self,
-    ):
+    def test_null_ct_posts_to_beds_outliers_returns_expected_values(self):
         self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+
+
+class RatioCutoffValueTests(TestCleanCtCareHomeOutliers):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_ratio_cutoffs_are_correct(self):
+        self.assertEqual(job.MINIMUM_RATIO_CUTOFF, 0.66)
+        self.assertEqual(job.MAXIMUM_RATIO_CUTOFF, 6.0)

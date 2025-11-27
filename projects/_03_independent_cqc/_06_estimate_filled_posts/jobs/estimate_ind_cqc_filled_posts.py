@@ -52,6 +52,7 @@ ind_cqc_columns = [
     IndCQC.registered_manager_names,
     IndCQC.ct_non_res_import_date,
     IndCQC.ct_non_res_care_workers_employed,
+    IndCQC.ct_non_res_care_workers_employed_cleaned,
     IndCQC.ct_non_res_care_workers_employed_imputed,
     IndCQC.ct_care_home_import_date,
     IndCQC.ct_care_home_total_employed,

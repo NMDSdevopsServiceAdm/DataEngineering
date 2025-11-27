@@ -4,7 +4,7 @@ from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
 import utils.cleaning_utils as cUtils
-from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.ascwds_filtering_utils import (
+from projects._03_independent_cqc._02_clean.utils.filtering_utils import (
     update_filtering_rule,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -91,7 +91,12 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
     winsorized_df = winsorize_outliers(care_homes_df)
 
     winsorized_df = update_filtering_rule(
-        winsorized_df, AscwdsFilteringRule.winsorized_beds_ratio_outlier
+        winsorized_df,
+        IndCQC.ascwds_filtering_rule,
+        IndCQC.ascwds_filled_posts_dedup,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        AscwdsFilteringRule.populated,
+        AscwdsFilteringRule.winsorized_beds_ratio_outlier,
     )
 
     output_df = combine_dataframes(winsorized_df, data_not_relevant_to_filter_df)

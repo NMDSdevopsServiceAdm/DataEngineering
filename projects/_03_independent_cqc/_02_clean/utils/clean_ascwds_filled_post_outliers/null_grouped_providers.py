@@ -4,7 +4,7 @@ from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 
 import utils.cleaning_utils as cUtils
-from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.ascwds_filtering_utils import (
+from projects._03_independent_cqc._02_clean.utils.filtering_utils import (
     update_filtering_rule,
 )
 from projects.utils.utils.utils import calculate_windowed_column
@@ -201,7 +201,12 @@ def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
     )
 
     df = update_filtering_rule(
-        df, rule_name=AscwdsFilteringRule.care_home_location_was_grouped_provider
+        df,
+        IndCQC.ascwds_filtering_rule,
+        IndCQC.ascwds_filled_posts_dedup,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        AscwdsFilteringRule.populated,
+        AscwdsFilteringRule.care_home_location_was_grouped_provider,
     )
     return df
 
@@ -262,7 +267,12 @@ def null_non_residential_grouped_providers(df: DataFrame) -> DataFrame:
     )
 
     df = update_filtering_rule(
-        df, rule_name=AscwdsFilteringRule.non_res_location_was_grouped_provider
+        df,
+        IndCQC.ascwds_filtering_rule,
+        IndCQC.ascwds_filled_posts_dedup,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        AscwdsFilteringRule.populated,
+        AscwdsFilteringRule.non_res_location_was_grouped_provider,
     )
 
     return df
