@@ -3212,7 +3212,7 @@ class CleanCtRepetition:
     )
     expected_aggregate_values_to_provider_level_schema = StructType(
         [
-            *null_ct_values_after_consec_rep_schema,
+            *aggregate_values_to_provider_level_schema,
             StructField(
                 IndCQC.ct_care_home_total_employed_cleaned_provider_sum,
                 IntegerType(),
