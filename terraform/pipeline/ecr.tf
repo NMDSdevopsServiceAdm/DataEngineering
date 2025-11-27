@@ -10,6 +10,11 @@ data "aws_ecr_image" "model_preprocess" {
   image_tag       = terraform.workspace
 }
 
+data "aws_ecr_image" "model_predict" {
+  repository_name = "fargate/prediction"
+  image_tag       = terraform.workspace
+}
+
 data "aws_vpc" "default" {
   default = true
 }

@@ -31,7 +31,8 @@
               ],
               "Command": [
                 "preprocessing.py",
-                "--model_name", "${non_res_pir_model_name}"
+                "--model_name",
+                "${care_home_model_name}"
               ]
             }
           ]
@@ -70,7 +71,40 @@
               "Name": "model-retrain-container",
               "Command": [
                 "train_model.py",
-                "--model_name", "${non_res_pir_model_name}"
+                "--model_name",
+                "${care_home_model_name}"
+              ]
+            }
+          ]
+        }
+      },
+      "Next": "Model Predict"
+    },
+    "Model Predict": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${model_cluster_arn}",
+        "TaskDefinition": "${predict_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids
+            },
+            "SecurityGroups": [
+              "${predict_security_group_id}"
+            ],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "model-predict-container",
+              "Command": [
+                "predict.py",
+                "--model_name",
+                "${care_home_model_name}"
               ]
             }
           ]
