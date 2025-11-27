@@ -290,15 +290,15 @@ jobs:
     resource_class: small
     steps:
       - checkout
+      - aws-cli/setup:
+          region: $AWS_REGION
       - run:
           name: Setup Environment
           command: |
-            echo 'export AWS_ACCESS_KEY_ID="${<< parameters.access_key >>}"' >> "$BASH_ENV"
-            echo 'export AWS_SECRET_ACCESS_KEY="${<< parameters.secret_key >>}"' >> "$BASH_ENV"
+            echo 'export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"' >> "$BASH_ENV"
+            echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
             echo 'export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"' >> $BASH_ENV
             echo 'export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")' >> $BASH_ENV
-      - aws-cli/setup:
-          region: $AWS_REGION
       - run:
           name: terraform destroy
           command: |
@@ -417,4 +417,6 @@ workflows:
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
     jobs:
-      - terraform-destroy
+      - terraform-destroy:
+          access_key: AWS_ACCESS_KEY_ID_non_prod
+          secret_key: AWS_SECRET_ACCESS_KEY_non_prod
