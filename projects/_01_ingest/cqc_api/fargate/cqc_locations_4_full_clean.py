@@ -4,7 +4,6 @@ from polars_utils import raw_data_adjustments, utils
 from polars_utils.cleaning_utils import column_to_date
 from projects._01_ingest.cqc_api.fargate.utils import cleaning_utils as cUtils
 from projects._01_ingest.cqc_api.fargate.utils import postcode_matcher as pmUtils
-from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -35,13 +34,14 @@ cqc_location_cols_to_import = [
     CQCLClean.registration_date,
     CQCLClean.deregistration_date,
     CQCLClean.type,
-    CQCLClean.relationships,
+    CQCLClean.relationships_types,
     CQCLClean.care_home,
     CQCLClean.number_of_beds,
     CQCLClean.dormancy,
-    CQCLClean.gac_service_types,
-    CQCLClean.regulated_activities,
-    CQCLClean.specialisms,
+    CQCLClean.services_offered,
+    CQCLClean.regulated_activities_offered,
+    CQCLClean.specialisms_offered,
+    CQCLClean.registered_manager_names,
     Keys.import_date,
     Keys.year,
     Keys.month,
@@ -65,7 +65,6 @@ def main(
     # Scan parquet to get CQC locations full data in LazyFrame format
     cqc_lf = utils.scan_parquet(
         cqc_locations_full_flattened_source,
-        schema=POLARS_LOCATION_SCHEMA,
         selected_columns=cqc_location_cols_to_import,
     )
     print("Full Flattened CQC Location LazyFrame read in")
