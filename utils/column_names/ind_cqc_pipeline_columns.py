@@ -120,6 +120,12 @@ class IndCqcColumns:
     ct_care_home_posts_per_bed_ratio: str = "ct_care_home_posts_per_bed_ratio"
     ct_care_home_total_employed: str = CTCHClean.ct_care_home_total_employed
     ct_care_home_total_employed_cleaned: str = ct_care_home_total_employed + "_cleaned"
+    ct_care_home_total_employed_cleaned_provider_sum: str = (
+        ct_care_home_total_employed_cleaned + "_provider_sum"
+    )
+    ct_care_home_total_employed_cleaned_provider_sum_dedupicated: str = (
+        ct_care_home_total_employed_cleaned_provider_sum + "_deduplicated"
+    )
     ct_care_home_total_employed_imputed: str = ct_care_home_total_employed + "_imputed"
     ct_combined_care_home_and_non_res: str = "ct_combined_care_home_and_non_res"
     ct_combined_care_home_and_non_res_rate_of_change_trendline: str = (
@@ -127,8 +133,14 @@ class IndCqcColumns:
     )
     ct_non_res_all_posts: str = "capacity_tracker_non_res_all_posts"
     ct_non_res_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
+    ct_non_res_care_workers_employed_provider_sum: str = (
+        ct_non_res_care_workers_employed + "_provider_sum"
+    )
+    ct_non_res_care_workers_employed_provider_sum_deduplicated: str = (
+        ct_non_res_care_workers_employed_provider_sum + "_deduplicated"
+    )
     ct_non_res_care_workers_employed_cleaned: str = (
-        CTNRClean.cqc_care_workers_employed + "_cleaned"
+        ct_non_res_care_workers_employed + "_cleaned"
     )
     ct_non_res_care_workers_employed_imputed: str = (
         CTNRClean.cqc_care_workers_employed + "_imputed"
@@ -160,6 +172,7 @@ class IndCqcColumns:
         ONSClean.current_rural_urban_ind_11 + "_for_non_res_model"
     )
     current_sub_icb: str = ONSClean.current_sub_icb
+    days_provider_has_repeated_value: str = "days_provider_has_repeated_value"
     difference_between_estimate_and_cqc_registered_managers: str = (
         "difference_between_estimate_and_cqc_registered_managers"
     )
@@ -289,6 +302,7 @@ class IndCqcColumns:
     prediction: str = "prediction"
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
+    previous_submission_import_date: str = "previous_submission_import_date"
     previous_submission_time: str = "previous_submission_time"
     previous_value: str = "previous_value"
     previous_value_unix_time: str = "previous_value_unix_time"
@@ -304,6 +318,9 @@ class IndCqcColumns:
     )
     provider_id: str = CQCLClean.provider_id
     provider_name: str = CQCLClean.provider_name
+    provider_size_in_capacity_tracker_group: str = (
+        "provider_size_in_capacity_tracker_group"
+    )
     r2: str = "r2"
     registered_manager_count: str = "registered_manager_count"
     registered_manager_names: str = CQCLClean.registered_manager_names
