@@ -3245,6 +3245,16 @@ class OutlierCleaningSchemas:
             StructField(
                 IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
+            StructField("cleaned_value", IntegerType(), True),
+        ]
+    )
+
+    final_cleaned_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
             StructField("outlier_flag", BooleanType(), True),
             StructField("cleaned_value", IntegerType(), True),
         ]

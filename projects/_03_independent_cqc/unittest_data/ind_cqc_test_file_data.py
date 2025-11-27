@@ -5968,18 +5968,38 @@ class NullCtPostsToBedsOutliers:
 @dataclass
 class OutlierCleaningData:
 
-    # Simple dataset with two groups (A and B)
+    no_outliers_input_rows = [
+        ("1-001", 10),
+        ("1-001", 11),
+        ("1-001", 12),
+        ("1-001", 13),
+        ("1-002", 50),
+        ("1-002", 50),
+        ("1-002", 51),
+        ("1-002", 51),
+    ]
+
+    no_outliers_expected_rows = [
+        ("1-001", 10, 10),
+        ("1-001", 11, 11),
+        ("1-001", 12, 12),
+        ("1-001", 13, 13),
+        ("1-002", 50, 50),
+        ("1-002", 50, 50),
+        ("1-002", 51, 51),
+        ("1-002", 51, 51),
+    ]
+
     clean_outliers_input_rows = [
         ("1-001", 10),
         ("1-001", 11),
         ("1-001", 12),
-        ("1-001", 200),  # OUTLIER
+        ("1-001", 200),
         ("1-002", 50),
         ("1-002", 51),
-        ("1-002", 400),  # OUTLIER
+        ("1-002", 400),
     ]
 
-    # Expected result when remove_whole_record = True
     expected_clean_outliers_remove_whole_rows = [
         ("1-001", 10, 10),
         ("1-001", 11, 11),
@@ -5988,7 +6008,6 @@ class OutlierCleaningData:
         ("1-002", 51, 51),
     ]
 
-    # Expected result when remove_whole_record = False (same for this design)
     expected_clean_outliers_remove_value_only_rows = [
         ("1-001", 10, 10),
         ("1-001", 11, 11),
@@ -5998,10 +6017,6 @@ class OutlierCleaningData:
         ("1-002", 51, 51),
         ("1-002", 400, None),
     ]
-
-    # ----------------------------
-    # INDIVIDUAL STEP TEST INPUTS
-    # ----------------------------
 
     compute_group_median_rows = [
         ("1-001", 10),

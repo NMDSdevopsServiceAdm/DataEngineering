@@ -47,11 +47,11 @@ class TestRemoveCTValueOutliers(TestCleanCtOutliers):
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_clean_outliers_remove_whole_record(
+    def test_clean_outliers_keeps_all_records_when_no_outliers(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.clean_outliers_input_rows,
+            Data.no_outliers_input_rows,
             Schemas.input_schema,
         )
 
@@ -68,7 +68,7 @@ class TestRemoveCTValueOutliers(TestCleanCtOutliers):
             "cleaned_value",
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_clean_outliers_remove_whole_rows,
+            Data.no_outliers_expected_rows,
             Schemas.cleaned_schema,
         )
 
@@ -219,7 +219,7 @@ class TestApplyCleaning(TestCleanCtOutliers):
 
         expected_df = self.spark.createDataFrame(
             Data.apply_outlier_cleaning_expected_rows,
-            Schemas.cleaned_schema,
+            Schemas.final_cleaned_schema,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
@@ -238,7 +238,7 @@ class TestApplyCleaning(TestCleanCtOutliers):
 
         expected_df = self.spark.createDataFrame(
             Data.apply_outlier_cleaning_remove_row_expected_rows,
-            Schemas.cleaned_schema,
+            Schemas.final_cleaned_schema,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
