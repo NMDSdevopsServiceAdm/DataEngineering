@@ -41,8 +41,8 @@ def clean_capacity_tracker_non_res_outliers(df: DataFrame) -> DataFrame:
     # TODO - #1226 filter repeated values
     # TODO - #1225 filter spikes
 
-    locations_df = null_ct_values_after_consecutive_repetition(
-        locations_df,
+    df = null_ct_values_after_consecutive_repetition(
+        df,
         IndCQC.ct_non_res_care_workers_employed,
         IndCQC.ct_non_res_care_workers_employed_cleaned,
         False,
