@@ -49,6 +49,8 @@ All notable changes to this project will be documented in this file.
 
 - Created a function to handle to various Capacity Tracker non-residential cleaning steps.
 
+- Added model registry.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
