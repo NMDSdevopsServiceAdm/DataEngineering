@@ -1,4 +1,5 @@
 from projects._03_independent_cqc._04_model.utils.value_labels import (
+    ModelTypes,
     RegionLabels,
     RelatedLocationLabels,
     RuralUrbanLabels,
@@ -11,7 +12,7 @@ model_registry = {
     "care_home": {
         "version": "7.0.0",
         "auto_retrain": True,
-        "model_type": "lasso",
+        "model_type": ModelTypes.lasso,
         "model_params": {"alpha": 0.001},
         "dependent": IndCQC.imputed_filled_posts_per_bed_ratio_model,
         "features": [
@@ -29,7 +30,7 @@ model_registry = {
     "non_residential_without_dormancy": {
         "version": "5.0.0",
         "auto_retrain": True,
-        "model_type": "lasso",
+        "model_type": ModelTypes.lasso,
         "model_params": {"alpha": 0.001},
         "dependent": IndCQC.imputed_filled_post_model,
         "features": [
@@ -48,7 +49,7 @@ model_registry = {
     "non_residential_with_dormancy": {
         "version": "6.0.0",
         "auto_retrain": True,
-        "model_type": "lasso",
+        "model_type": ModelTypes.lasso,
         "model_params": {"alpha": 0.001},
         "dependent": IndCQC.imputed_filled_post_model,
         "features": [
@@ -69,7 +70,7 @@ model_registry = {
     "non_res_pir": {
         "version": "3.0.0",
         "auto_retrain": True,
-        "model_type": "linear",
+        "model_type": ModelTypes.linear_regression,
         "model_params": {"fit_intercept": False},
         "dependent": IndCQC.ascwds_filled_posts_dedup_clean,
         "features": [IndCQC.pir_people_directly_employed_dedup],

@@ -6,6 +6,14 @@ from utils.column_values.categorical_columns_by_dataset import (
 
 
 @dataclass
+class ModelTypes:
+    """The possible model types in the independent CQC estimates pipeline"""
+
+    lasso: str = "lasso"
+    linear_regression: str = "linear_regression"
+
+
+@dataclass
 class RegionLabels:
     """The possible values of the current_region feature in the independent CQC estimates pipeline"""
 
