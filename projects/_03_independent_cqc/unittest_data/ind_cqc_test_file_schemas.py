@@ -3195,11 +3195,21 @@ class CleanCtRepetition:
             StructField(
                 IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
+            StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
         ]
     )
 
-    aggregate_values_to_provider_level_schema = null_ct_values_after_consec_rep_schema
+    aggregate_values_to_provider_level_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.provider_id, StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
     expected_aggregate_values_to_provider_level_schema = StructType(
         [
             *null_ct_values_after_consec_rep_schema,

@@ -1,6 +1,6 @@
 import unittest
 
-import projects._03_independent_cqc._02_clean.utils.clean_ct_care_home_outliers.clean_ct_repetition as job
+import projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_repetition as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     CleanCtRepetition as Data,
 )
@@ -20,7 +20,7 @@ class null_ct_values_after_consecutive_repetition(CleanCtRepetitionTests):
     def setUp(self):
         super().setUp()
 
-    def test_null_ct_values_after_consecutive_repetition_with_provider_repetition_outside_limit_and_providers_are_small(
+    def test_null_ct_values_after_consecutive_repetition_nulls_repeated_values_with_provider_repetition_outside_limit_and_providers_are_small(
         self,
     ):
         test_df = self.spark.createDataFrame(
@@ -28,7 +28,10 @@ class null_ct_values_after_consecutive_repetition(CleanCtRepetitionTests):
             Schemas.null_ct_values_after_consec_rep_schema,
         )
         returned_df = job.null_ct_values_after_consecutive_repetition(
-            test_df, IndCQC.ct_care_home_total_employed_cleaned
+            test_df,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            True,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_null_ct_values_after_consec_rep_with_provider_repetition_outside_limit_and_providers_are_small_rows,
@@ -37,7 +40,7 @@ class null_ct_values_after_consecutive_repetition(CleanCtRepetitionTests):
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_null_ct_values_after_consecutive_repetition_without_provider_repetition_outside_limit_and_providers_are_small(
+    def test_null_ct_values_after_consecutive_repetition_returns_input_values_without_provider_repetition_outside_limit_and_providers_are_small(
         self,
     ):
         test_df = self.spark.createDataFrame(
@@ -45,7 +48,10 @@ class null_ct_values_after_consecutive_repetition(CleanCtRepetitionTests):
             Schemas.null_ct_values_after_consec_rep_schema,
         )
         returned_df = job.null_ct_values_after_consecutive_repetition(
-            test_df, IndCQC.ct_care_home_total_employed_cleaned
+            test_df,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            True,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_small_rows,
@@ -54,7 +60,7 @@ class null_ct_values_after_consecutive_repetition(CleanCtRepetitionTests):
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_null_ct_values_after_consecutive_repetition_with_provider_repetition_outside_limit_and_providers_are_large(
+    def test_null_ct_values_after_consecutive_repetition_nulls_repeated_values_with_provider_repetition_outside_limit_and_providers_are_large(
         self,
     ):
         test_df = self.spark.createDataFrame(
@@ -62,7 +68,10 @@ class null_ct_values_after_consecutive_repetition(CleanCtRepetitionTests):
             Schemas.null_ct_values_after_consec_rep_schema,
         )
         returned_df = job.null_ct_values_after_consecutive_repetition(
-            test_df, IndCQC.ct_care_home_total_employed_cleaned
+            test_df,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            True,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_null_ct_values_after_consec_rep_with_provider_repetition_outside_limit_and_providers_are_large_rows,
@@ -71,7 +80,7 @@ class null_ct_values_after_consecutive_repetition(CleanCtRepetitionTests):
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_null_ct_values_after_consecutive_repetition_without_provider_repetition_outside_limit_and_providers_are_large(
+    def test_null_ct_values_after_consecutive_repetition_returns_input_values_without_provider_repetition_outside_limit_and_providers_are_large(
         self,
     ):
         test_df = self.spark.createDataFrame(
@@ -79,7 +88,10 @@ class null_ct_values_after_consecutive_repetition(CleanCtRepetitionTests):
             Schemas.null_ct_values_after_consec_rep_schema,
         )
         returned_df = job.null_ct_values_after_consecutive_repetition(
-            test_df, IndCQC.ct_care_home_total_employed_cleaned
+            test_df,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            True,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_large_rows,
