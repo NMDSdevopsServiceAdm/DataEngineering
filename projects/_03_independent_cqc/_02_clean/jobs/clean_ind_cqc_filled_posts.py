@@ -20,9 +20,6 @@ from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_car
 from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_non_res_outliers import (
     clean_capacity_tracker_non_res_outliers,
 )
-from projects._03_independent_cqc._02_clean.utils.clean_ct_care_home_outliers.clean_ct_repetition import (
-    null_ct_values_after_consecutive_repetition,
-)
 from projects._03_independent_cqc._02_clean.utils.utils import (
     create_column_with_repeated_values_removed,
 )
@@ -100,15 +97,6 @@ def main(
 
     locations_df = clean_capacity_tracker_care_home_outliers(locations_df)
     locations_df = clean_capacity_tracker_non_res_outliers(locations_df)
-
-    # what do you want the column at the end to be named?
-    locations_df = null_ct_values_after_consecutive_repetition(
-        locations_df, IndCQC.ct_care_home_total_employed_cleaned
-    )
-
-    locations_df = null_ct_values_after_consecutive_repetition(
-        locations_df, IndCQC.ct_non_res_care_workers_employed
-    )
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 

@@ -1,6 +1,9 @@
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
+from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_repetition import (
+    null_ct_values_after_consecutive_repetition,
+)
 from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.null_posts_per_bed_ratio_outliers import (
     null_posts_per_bed_outliers,
 )
@@ -39,5 +42,9 @@ def clean_capacity_tracker_care_home_outliers(df: DataFrame) -> DataFrame:
     )
 
     df = null_posts_per_bed_outliers(df)
+
+    df = null_ct_values_after_consecutive_repetition(
+        df, IndCQC.ct_care_home_total_employed_cleaned
+    )
 
     return df

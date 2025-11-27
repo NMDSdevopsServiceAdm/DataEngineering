@@ -142,7 +142,7 @@ def identify_large_providers(df: DataFrame, provider_level_values: str) -> DataF
         ).otherwise(None),
     )
 
-    return df.drop(IndCQC.provider_size_in_capacity_tracker)
+    return df
 
 
 def clean_capacity_tracker_posts_repetition(

@@ -318,7 +318,6 @@ class IndCqcColumns:
     )
     provider_id: str = CQCLClean.provider_id
     provider_name: str = CQCLClean.provider_name
-    provider_size_in_capacity_tracker: str = "provider_size_in_capacity_tracker"
     provider_size_in_capacity_tracker_group: str = (
         "provider_size_in_capacity_tracker_group"
     )

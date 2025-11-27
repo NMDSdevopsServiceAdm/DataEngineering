@@ -1,6 +1,9 @@
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
+from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_repetition import (
+    null_ct_values_after_consecutive_repetition,
+)
 from projects._03_independent_cqc._02_clean.utils.filtering_utils import (
     add_filtering_rule_column,
 )
@@ -37,5 +40,9 @@ def clean_capacity_tracker_non_res_outliers(df: DataFrame) -> DataFrame:
 
     # TODO - #1226 filter repeated values
     # TODO - #1225 filter spikes
+
+    locations_df = null_ct_values_after_consecutive_repetition(
+        locations_df, IndCQC.ct_non_res_care_workers_employed_cleaned
+    )
 
     return df
