@@ -4,7 +4,6 @@ from polars_utils import raw_data_adjustments, utils
 from polars_utils.cleaning_utils import column_to_date
 from projects._01_ingest.cqc_api.fargate.utils import cleaning_utils as cUtils
 from projects._01_ingest.cqc_api.fargate.utils import postcode_matcher as pmUtils
-from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
