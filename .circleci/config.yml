@@ -417,6 +417,4 @@ workflows:
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
     jobs:
-      - terraform-destroy:
-          access_key: AWS_ACCESS_KEY_ID_non_prod
-          secret_key: AWS_SECRET_ACCESS_KEY_non_prod
+      - terraform-destroy
