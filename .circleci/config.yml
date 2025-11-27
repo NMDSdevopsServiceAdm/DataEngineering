@@ -286,7 +286,7 @@ jobs:
   terraform-destroy:
     working_directory: /tmp/project
     docker:
-      - image: cimg/python:3.11.12
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
     resource_class: small
     steps:
       - checkout
@@ -297,6 +297,8 @@ jobs:
             echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> $BASH_ENV
             echo 'export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"' >> $BASH_ENV
             echo 'export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")' >> $BASH_ENV
+      - aws-cli/setup:
+          region: $AWS_REGION
       - run:
           name: terraform destroy
           command: |
