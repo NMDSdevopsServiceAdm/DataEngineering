@@ -20,7 +20,7 @@ from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_car
 from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_non_res_outliers import (
     clean_capacity_tracker_non_res_outliers,
 )
-from projects._03_independent_cqc._02_clean.utils.clean_ct_care_home_outliers.clean_ct_outliers import (
+from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_outliers import (
     clean_outliers,
 )
 from utils import utils
