@@ -51,11 +51,6 @@ jobs:
 
             docker buildx bake all --push
 
-            export BUCKET_NAME=$(cat terraform/pipeline/datasets_bucket_name)
-            echo "BUCKET_NAME: $BUCKET_NAME"
-            echo "CIRCLE_BRANCH: $CIRCLE_BRANCH"
-            echo "SANITISED_CIRCLE_BRANCH: $SANITISED_CIRCLE_BRANCH"
-
   test:
     docker:
       - image: cimg/python:3.11.12
@@ -304,7 +299,6 @@ jobs:
             export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"
             export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
             export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
-            export BUCKET_NAME=$(cat terraform/pipeline/datasets_bucket_name)
             # --- Safeguard to never destroy main ---
             if [ "$SANITISED_CIRCLE_BRANCH" = "main" ]; then
               echo "Skipping destroy for main branch"
@@ -315,8 +309,8 @@ jobs:
             terraform init -input=false -backend-config=../non_prod.s3.tfbackend
             terraform workspace select ${SANITISED_CIRCLE_BRANCH}
             # --- Force-empty dataset bucket for this branch ---
-            echo "Emptying dataset bucket: $BUCKET_NAME"
-            aws s3 rm "s3://${BUCKET_NAME}" --recursive || true
+            echo "Emptying dataset bucket: $SANITISED_CIRCLE_BRANCH"
+            aws s3 rm "s3://sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --recursive || true
             # --- Run destroy ---
             terraform destroy -auto-approve
       - run:
