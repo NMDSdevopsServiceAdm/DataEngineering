@@ -317,6 +317,10 @@ jobs:
       - run:
           name: delete workspace
           command: |
+            export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"
+            export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"
+            export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
             cd terraform/pipeline
             terraform workspace select default
             terraform workspace delete ${SANITISED_CIRCLE_BRANCH}
