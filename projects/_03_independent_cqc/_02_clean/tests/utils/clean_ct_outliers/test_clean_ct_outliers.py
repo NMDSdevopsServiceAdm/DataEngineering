@@ -233,7 +233,10 @@ class TestApplyCleaning(TestCleanCtOutliers):
         )
 
         returned_df = job.apply_outlier_cleaning(
-            df, IndCQC.ct_care_home_total_employed_cleaned, True
+            df,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            True,
         )
 
         expected_df = self.spark.createDataFrame(
