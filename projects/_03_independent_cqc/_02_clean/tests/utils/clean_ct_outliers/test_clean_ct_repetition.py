@@ -180,7 +180,9 @@ class CleanCapacityTrackerPostsRepetition(CleanCtRepetitionTests):
             Schemas.clean_capacity_tracker_posts_repetition_schema,
         )
         returned_df = job.clean_capacity_tracker_posts_repetition(
-            test_df, IndCQC.ct_care_home_total_employed_cleaned
+            test_df,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_care_home_total_employed_cleaned,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_clean_capacity_tracker_posts_repetition_rows,
