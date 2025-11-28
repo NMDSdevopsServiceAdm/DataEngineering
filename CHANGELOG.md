@@ -40,8 +40,20 @@ All notable changes to this project will be documented in this file.
 
 - Created a new folder and file structure to contain the model re-training process files.
 
+- Added placeholder tasks for model retraining in the Ind CQC pipeline.
+
 - Added ind_cqc_06_estimated_filled_posts dataset to circleci config datasets sync'd into branch.
   Gave the dataset name the prefix "main_".
+
+- Created model versioning functions to get the last number and save model metadata.
+
+- Created the S3 paths for the modelling process to call on for loading and saving data.
+
+- Generalised the functions to create and update a filtering column
+
+- Created a function to handle to various Capacity Tracker non-residential cleaning steps.
+
+- Added model registry.
 
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
@@ -181,6 +193,8 @@ All notable changes to this project will be documented in this file.
 
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
+
+- Improved the validation for CQC 4 full clean dataset by adding overall row count validation and null check validations for complex columns.
 
 
 ## [v2025.08.0] - 09/09/2025
