@@ -51,6 +51,11 @@ jobs:
 
             docker buildx bake all --push
 
+            export BUCKET_NAME=$(cat terraform/pipeline/datasets_bucket_name)
+            echo "BUCKET_NAME: $BUCKET_NAME"
+            echo "CIRCLE_BRANCH: $CIRCLE_BRANCH"
+            echo "SANITISED_CIRCLE_BRANCH: $SANITISED_CIRCLE_BRANCH"
+
   test:
     docker:
       - image: cimg/python:3.11.12
