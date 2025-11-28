@@ -299,6 +299,7 @@ jobs:
             export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"
             export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
             export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
+            export BUCKET_NAME=$(cat terraform/pipeline/datasets_bucket_name)
             # --- Safeguard to never destroy main ---
             if [ "$SANITISED_CIRCLE_BRANCH" = "main" ]; then
               echo "Skipping destroy for main branch"
@@ -309,7 +310,6 @@ jobs:
             terraform init -input=false -backend-config=../non_prod.s3.tfbackend
             terraform workspace select ${SANITISED_CIRCLE_BRANCH}
             # --- Force-empty dataset bucket for this branch ---
-            BUCKET_NAME=$(cat datasets_bucket_name)
             echo "Emptying dataset bucket: $BUCKET_NAME"
             aws s3 rm "s3://${BUCKET_NAME}" --recursive || true
             # --- Run destroy ---
