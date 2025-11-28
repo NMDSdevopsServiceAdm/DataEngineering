@@ -46,7 +46,7 @@ def main(
         compare_path (str): path to a dataset to compare against for expected size
     """
     source_df = utils.read_parquet(
-        f"s3://{bucket_name}/{source_path}", exclude_complex_types=False
+        f"s3://{bucket_name}/{source_path}", exclude_complex_types=True
     ).with_columns(
         str_length_cols([CQCLClean.location_id, CQCLClean.provider_id]),
     )
@@ -96,9 +96,9 @@ def main(
                 CQCLClean.current_cssr,
                 CQCLClean.current_region,
                 CQCLClean.current_rural_urban_ind_11,
-                CQCLClean.services_offered,
-                CQCLClean.regulated_activities_offered,
-                CQCLClean.specialisms_offered,
+                # CQCLClean.services_offered,
+                # CQCLClean.regulated_activities_offered,
+                # CQCLClean.specialisms_offered,
             ]
         )
         # index columns
