@@ -8,6 +8,9 @@ from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 
 import utils.cleaning_utils as cUtils
+from projects._03_independent_cqc._02_clean.utils.ascwds_duplicate_last_submission import (
+    duplicate_latest_known_value_into_following_two_rows,
+)
 from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
 )
@@ -79,6 +82,8 @@ def main(
     )
 
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
+
+    locations_df = duplicate_latest_known_value_into_following_two_rows(locations_df)
 
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
         locations_df,
