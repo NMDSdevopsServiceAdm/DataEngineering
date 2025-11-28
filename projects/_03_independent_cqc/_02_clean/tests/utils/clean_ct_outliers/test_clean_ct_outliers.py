@@ -1,6 +1,6 @@
 import unittest
 
-import projects._03_independent_cqc._02_clean.utils.clean_ct_care_home_outliers.clean_ct_outliers as job
+import projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_outliers as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     OutlierCleaningData as Data,
 )
@@ -38,7 +38,6 @@ class TestRemoveCTValueOutliers(TestCleanCtOutliers):
         returned_df = returned_df.select(
             IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
-            "cleaned_value",
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_clean_outliers_remove_whole_rows,
@@ -65,7 +64,6 @@ class TestRemoveCTValueOutliers(TestCleanCtOutliers):
         returned_df = returned_df.select(
             IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
-            "cleaned_value",
         )
         expected_df = self.spark.createDataFrame(
             Data.no_outliers_expected_rows,
@@ -92,7 +90,6 @@ class TestRemoveCTValueOutliers(TestCleanCtOutliers):
         returned_df = returned_df.select(
             IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
-            "cleaned_value",
         )
 
         expected_df = self.spark.createDataFrame(

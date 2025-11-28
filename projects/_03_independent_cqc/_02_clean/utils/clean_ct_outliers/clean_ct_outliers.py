@@ -10,6 +10,7 @@ def clean_outliers(
     remove_whole_record: bool,
 ) -> DataFrame:
 
+    columns_to_retun = df.columns
     df_median = compute_group_median(df, group_by_col, col_to_clean)
     df_deviation = compute_absolute_deviation(df_median, col_to_clean)
     df_mad = compute_mad(df_deviation, group_by_col)
@@ -19,7 +20,7 @@ def clean_outliers(
 
     cleaned_df = apply_outlier_cleaning(df_flags, col_to_clean, remove_whole_record)
 
-    return cleaned_df
+    return cleaned_df.select(columns_to_retun)
 
 
 def compute_group_median(df: DataFrame, group_col: str, col_to_clean: str) -> DataFrame:
@@ -72,7 +73,7 @@ def apply_outlier_cleaning(
 ) -> DataFrame:
 
     df = df.withColumn(
-        "cleaned_value",
+        col_to_clean,
         F.when(F.col("outlier_flag"), None).otherwise(F.col(col_to_clean)),
     )
     if remove_whole_record:
