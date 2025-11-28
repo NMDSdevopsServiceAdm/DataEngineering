@@ -23,7 +23,7 @@ from utils.column_values.categorical_column_values import (
 from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 
 cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
-
+"""
 cqc_location_cols_to_import = [
     CQCLClean.location_id,
     CQCLClean.provider_id,
@@ -47,7 +47,7 @@ cqc_location_cols_to_import = [
     Keys.month,
     Keys.day,
 ]
-
+"""
 ons_cols_to_import = [
     ONSClean.postcode,
     *contemporary_geography_columns,
@@ -65,7 +65,7 @@ def main(
     # Scan parquet to get CQC locations full data in LazyFrame format
     cqc_lf = utils.scan_parquet(
         cqc_locations_full_flattened_source,
-        selected_columns=cqc_location_cols_to_import,
+        # selected_columns=cqc_location_cols_to_import,
     )
     print("Full Flattened CQC Location LazyFrame read in")
 
