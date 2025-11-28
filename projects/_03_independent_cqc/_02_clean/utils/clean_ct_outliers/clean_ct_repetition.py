@@ -175,6 +175,7 @@ def identify_large_providers(df: DataFrame, provider_level_values: str) -> DataF
 def clean_capacity_tracker_posts_repetition(
     df: DataFrame,
     column_to_clean: str,
+    cleaned_column_name: str,
 ) -> DataFrame:
     """
     Nulls values in column_to_clean when days_since_previous_submission is above the limit for the providers size.
@@ -184,12 +185,13 @@ def clean_capacity_tracker_posts_repetition(
     Args:
         df (DataFrame): A dataframe with consecutive import dates.
         column_to_clean (str): The column with repeated values.
+        cleaned_column_name (str): A column with cleaned values.
 
     Returns:
         DataFrame: The input with DataFrame with an additional column.
     """
     df = df.withColumn(
-        column_to_clean,
+        cleaned_column_name,
         F.when(
             (
                 (
