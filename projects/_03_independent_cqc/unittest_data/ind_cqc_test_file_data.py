@@ -5915,14 +5915,14 @@ class IndCQCDataUtils:
 class OutlierCleaningData:
 
     no_outliers_input_rows = [
-        ("1-001", 10),
-        ("1-001", 11),
-        ("1-001", 12),
-        ("1-001", 13),
-        ("1-002", 50),
-        ("1-002", 50),
-        ("1-002", 51),
-        ("1-002", 51),
+        ("1-001", 10, CTCareHomeFilteringRule.populated),
+        ("1-001", 11, CTCareHomeFilteringRule.populated),
+        ("1-001", 12, CTCareHomeFilteringRule.populated),
+        ("1-001", 13, CTCareHomeFilteringRule.populated),
+        ("1-002", 50, CTCareHomeFilteringRule.populated),
+        ("1-002", 50, CTCareHomeFilteringRule.populated),
+        ("1-002", 51, CTCareHomeFilteringRule.populated),
+        ("1-002", 51, CTCareHomeFilteringRule.populated),
     ]
 
     no_outliers_expected_rows = [
@@ -5936,25 +5936,25 @@ class OutlierCleaningData:
         ("1-002", 51),
     ]
 
-    clean_outliers_input_rows = [
+    clean_random_spikes_input_rows = [
+        ("1-001", 10, CTCareHomeFilteringRule.populated),
+        ("1-001", 11, CTCareHomeFilteringRule.populated),
+        ("1-001", 12, CTCareHomeFilteringRule.populated),
+        ("1-001", 200, CTCareHomeFilteringRule.populated),
+        ("1-002", 50, CTCareHomeFilteringRule.populated),
+        ("1-002", 51, CTCareHomeFilteringRule.populated),
+        ("1-002", 400, CTCareHomeFilteringRule.populated),
+    ]
+
+    expected_clean_random_spikes_remove_whole_rows = [
         ("1-001", 10),
         ("1-001", 11),
         ("1-001", 12),
-        ("1-001", 200),
-        ("1-002", 50),
-        ("1-002", 51),
-        ("1-002", 400),
-    ]
-
-    expected_clean_outliers_remove_whole_rows = [
-        ("1-001", 10),
-        ("1-001", 11),
-        ("1-001", 12),
         ("1-002", 50),
         ("1-002", 51),
     ]
 
-    expected_clean_outliers_remove_value_only_rows = [
+    expected_clean_random_spikes_remove_value_only_rows = [
         ("1-001", 10),
         ("1-001", 11),
         ("1-001", 12),

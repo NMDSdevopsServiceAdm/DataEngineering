@@ -3195,6 +3195,7 @@ class OutlierCleaningSchemas:
             StructField(
                 IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
+            StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
         ]
     )
 

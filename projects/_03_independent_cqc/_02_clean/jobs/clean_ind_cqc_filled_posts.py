@@ -20,8 +20,8 @@ from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_car
 from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_non_res_outliers import (
     clean_capacity_tracker_non_res_outliers,
 )
-from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_outliers import (
-    clean_outliers,
+from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_random_spikes import (
+    clean_random_spikes,
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -98,21 +98,14 @@ def main(
     locations_df = clean_capacity_tracker_care_home_outliers(locations_df)
     locations_df = clean_capacity_tracker_non_res_outliers(locations_df)
 
-    locations_df = clean_outliers(
+    locations_df = clean_random_spikes(
         locations_df,
         IndCQC.location_id,
+        IndCQC.ct_care_home_total_employed_cleaned,
         IndCQC.ct_care_home_total_employed_cleaned,
         0.05,
         False,
     )
-
-    # locations_df = clean_outliers(
-    #     locations_df,
-    #     IndCQC.location_id,
-    #     IndCQC.ct_non_res_care_workers_employed,
-    #     0.10,
-    #     False,
-    # )
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 

@@ -1,6 +1,6 @@
 import unittest
 
-import projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_outliers as job
+import projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_random_spikes as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     OutlierCleaningData as Data,
 )
@@ -20,33 +20,34 @@ class TestRemoveCTValueOutliers(TestCleanCtOutliers):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_clean_outliers_remove_whole_record(
+    def test_clean_random_spikes_remove_whole_record(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.clean_outliers_input_rows,
+            Data.clean_random_spikes_input_rows,
             Schemas.input_schema,
         )
 
-        returned_df = job.clean_outliers(
+        returned_df = job.clean_random_spikes(
             test_df,
             IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_care_home_total_employed_cleaned,
             0.10,
             True,
-        )
-        returned_df = returned_df.select(
+            True,
+        ).select(
             IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_clean_outliers_remove_whole_rows,
+            Data.expected_clean_random_spikes_remove_whole_rows,
             Schemas.cleaned_schema,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_clean_outliers_keeps_all_records_when_no_outliers(
+    def test_clean_random_spikes_keeps_all_records_when_no_outliers(
         self,
     ):
         test_df = self.spark.createDataFrame(
@@ -54,14 +55,15 @@ class TestRemoveCTValueOutliers(TestCleanCtOutliers):
             Schemas.input_schema,
         )
 
-        returned_df = job.clean_outliers(
+        returned_df = job.clean_random_spikes(
             test_df,
             IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_care_home_total_employed_cleaned,
             0.10,
             True,
-        )
-        returned_df = returned_df.select(
+            True,
+        ).select(
             IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
         )
@@ -72,28 +74,29 @@ class TestRemoveCTValueOutliers(TestCleanCtOutliers):
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_clean_outliers_remove_value_only(
+    def test_clean_random_spikes_remove_value_only(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.clean_outliers_input_rows,
+            Data.clean_random_spikes_input_rows,
             Schemas.input_schema,
         )
 
-        returned_df = job.clean_outliers(
+        returned_df = job.clean_random_spikes(
             test_df,
             IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_care_home_total_employed_cleaned,
             0.10,
             False,
-        )
-        returned_df = returned_df.select(
+            True,
+        ).select(
             IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_clean_outliers_remove_value_only_rows,
+            Data.expected_clean_random_spikes_remove_value_only_rows,
             Schemas.cleaned_schema,
         )
 
