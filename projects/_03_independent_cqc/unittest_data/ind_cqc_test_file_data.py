@@ -5909,3 +5909,44 @@ class IndCQCDataUtils:
         ("loc 1", 2, 2.0, 50.0, 50.0),
         ("loc 1", 3, None, 25.0, 50.0),
     ]
+
+
+@dataclass
+class AscwdsDuplicateLastSubmission:
+    duplicate_latest_known_value_into_following_two_rows_when_last_known_value_is_before_latest_import_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), 2),
+        ("1-001", date(2025, 4, 1), None),
+        ("1-001", date(2025, 5, 1), None),
+        ("1-001", date(2025, 6, 1), None),
+    ]
+    expected_duplicate_latest_known_value_into_following_two_rows_when_last_known_value_is_before_latest_import_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), 2),
+        ("1-001", date(2025, 4, 1), 2),
+        ("1-001", date(2025, 5, 1), 2),
+        ("1-001", date(2025, 6, 1), None),
+    ]
+
+    duplicate_latest_known_value_into_following_two_rows_when_last_known_value_is_near_latest_import_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), 2),
+        ("1-001", date(2025, 4, 1), None),
+        ("1-002", date(2025, 1, 1), 1),
+        ("1-002", date(2025, 2, 1), None),
+        ("1-002", date(2025, 3, 1), None),
+        ("1-002", date(2025, 4, 1), 2),
+    ]
+    expected_duplicate_latest_known_value_into_following_two_rows_when_last_known_value_is_near_latest_import_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), 2),
+        ("1-001", date(2025, 4, 1), 2),
+        ("1-002", date(2025, 1, 1), 1),
+        ("1-002", date(2025, 2, 1), None),
+        ("1-002", date(2025, 3, 1), None),
+        ("1-002", date(2025, 4, 1), 2),
+    ]
