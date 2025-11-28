@@ -58,7 +58,9 @@ def null_ct_values_after_consecutive_repetition(
         df, provider_values_col_dedup
     )
     df = identify_large_providers(df, provider_values_col)
-    df = clean_capacity_tracker_posts_repetition(df, column_to_clean)
+    df = clean_capacity_tracker_posts_repetition(
+        df, column_to_clean, cleaned_column_name
+    )
 
     if care_home:
         filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
@@ -178,6 +180,11 @@ def clean_capacity_tracker_posts_repetition(
     cleaned_column_name: str,
 ) -> DataFrame:
     """
+    Copies values from column_to_clean to cleaned_column_name when the following condition is true.
+
+    Condition:
+        when provider
+
     Nulls values in column_to_clean when days_since_previous_submission is above the limit for the providers size.
 
     If the location is at a large provider then the repetition limit is less than locations at small providers.
