@@ -268,24 +268,22 @@ def main(
             ),
             brief=f"{CQCLClean.current_rural_urban_ind_11} needs to be null, or one of {CatValues.current_rui_column_values.categorical_values}",
         )
-        """
-        .specially(
-            vl.list_has_no_empty_or_nulls(CQCLClean.services_offered),
-            brief="Services offered list must be non-empty and contain no nulls",
-        )
-        .specially(
-            vl.list_has_no_empty_or_nulls(CQCLClean.regulated_activities_offered),
-            brief="Regulated activities offered list must be non-empty and contain no nulls",
-        )
-        .specially(
-            vl.list_has_no_empty_or_nulls(CQCLClean.registered_manager_names), # 106536 nulls
-            brief="Registered manager names list must be non-empty and contain no nulls",
-        )
-        .specially(
-            vl.list_has_no_empty_or_nulls(CQCLClean.specialisms_offered), # 797 nulls
-            brief="Specialisms Offered list must be non-empty and contain no nulls",
-        )
-        """
+        # .specially(
+        #    vl.list_has_no_empty_or_nulls(CQCLClean.services_offered),
+        #    brief="Services offered list must be non-empty and contain no nulls",
+        # )
+        # .specially(
+        #    vl.list_has_no_empty_or_nulls(CQCLClean.regulated_activities_offered),
+        #    brief="Regulated activities offered list must be non-empty and contain no nulls",
+        # )
+        # .specially(
+        #    vl.list_has_no_empty_or_nulls(CQCLClean.registered_manager_names), # 106536 nulls
+        #    brief="Registered manager names list must be non-empty and contain no nulls",
+        # )
+        # .specially(
+        #    vl.list_has_no_empty_or_nulls(CQCLClean.specialisms_offered), # 797 nulls
+        #    brief="Specialisms Offered list must be non-empty and contain no nulls",
+        # )
         # numeric column values are between (inclusive)
         .col_vals_between(Validation.location_id_length, 3, 14)
         .col_vals_between(Validation.provider_id_length, 3, 14)
