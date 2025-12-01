@@ -47,6 +47,7 @@ def clean_capacity_tracker_non_res_outliers(df: DataFrame) -> DataFrame:
         IndCQC.ct_non_res_care_workers_employed_cleaned,
         0.05,
         False,
+        False,
     )
 
     return df
