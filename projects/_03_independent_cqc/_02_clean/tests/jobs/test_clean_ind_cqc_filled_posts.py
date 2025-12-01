@@ -43,7 +43,7 @@ class MainTests(CleanIndFilledPostsTests):
         super().setUp()
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.clean_outliers")
+    @patch(f"{PATCH_PATH}.clean_random_spikes")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_care_home_outliers")
     @patch(f"{PATCH_PATH}.clean_ascwds_filled_post_outliers")
@@ -74,7 +74,7 @@ class MainTests(CleanIndFilledPostsTests):
         clean_ascwds_filled_post_outliers_mock: Mock,
         clean_capacity_tracker_care_home_outliers_mock: Mock,
         clean_capacity_tracker_non_res_outliers_mock: Mock,
-        clean_outliers_mock: Mock,
+        clean_random_spikes_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.merge_ind_cqc_test_df
@@ -97,7 +97,7 @@ class MainTests(CleanIndFilledPostsTests):
         clean_ascwds_filled_post_outliers_mock.assert_called_once()
         clean_capacity_tracker_care_home_outliers_mock.assert_called_once()
         clean_capacity_tracker_non_res_outliers_mock.assert_called_once()
-        clean_outliers_mock.assert_called_once()
+        clean_random_spikes_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_once_with(
             ANY,

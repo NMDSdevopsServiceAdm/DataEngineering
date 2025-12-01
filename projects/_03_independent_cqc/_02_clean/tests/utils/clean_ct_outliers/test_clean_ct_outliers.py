@@ -117,7 +117,6 @@ class TestComputeMedian(TestCleanCtOutliers):
             IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
         )
-
         expected_df = self.spark.createDataFrame(
             Data.expected_compute_group_median_rows,
             Schemas.median_schema,
@@ -198,7 +197,7 @@ class TestFlagOutliers(TestCleanCtOutliers):
 
         expected_df = self.spark.createDataFrame(
             Data.expected_flag_outliers_rows,
-            Schemas.flags_schema,
+            Schemas.expected_outlier_flags_schema,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
@@ -214,7 +213,10 @@ class TestApplyCleaning(TestCleanCtOutliers):
         )
 
         returned_df = job.apply_outlier_cleaning(
-            df, IndCQC.ct_care_home_total_employed_cleaned, False
+            df,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            False,
         )
 
         expected_df = self.spark.createDataFrame(

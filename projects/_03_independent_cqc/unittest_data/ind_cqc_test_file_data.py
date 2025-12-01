@@ -5965,47 +5965,47 @@ class OutlierCleaningData:
     ]
 
     compute_group_median_rows = [
-        ("1-001", 10),
-        ("1-001", 20),
-        ("1-001", 30),
+        ("1-001", 10, CTCareHomeFilteringRule.populated),
+        ("1-001", 20, CTCareHomeFilteringRule.populated),
+        ("1-001", 30, CTCareHomeFilteringRule.populated),
     ]
 
     expected_compute_group_median_rows = [
-        ("1-001", 10, 20),
-        ("1-001", 20, 20),
-        ("1-001", 30, 20),
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 20.0),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 20.0),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 20.0),
     ]
 
     compute_abs_deviation_rows = expected_compute_group_median_rows
 
     expected_abs_deviation_rows = [
-        ("1-001", 10, 20, 10),
-        ("1-001", 20, 20, 0),
-        ("1-001", 30, 20, 10),
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 20, 10),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 20, 0),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 20, 10),
     ]
 
     compute_mad_rows = expected_abs_deviation_rows
 
     expected_mad_rows = [
-        ("1-001", 10, 20, 10, 10),
-        ("1-001", 20, 20, 0, 10),
-        ("1-001", 30, 20, 10, 10),
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 20, 10, 10),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 20, 0, 10),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 20, 10, 10),
     ]
 
     compute_outlier_cutoff_rows = expected_mad_rows
 
     expected_outlier_cutoff_rows = [
-        ("1-001", 10, 20, 10, 10, 10),
-        ("1-001", 20, 20, 0, 10, 10),
-        ("1-001", 30, 20, 10, 10, 10),
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 20, 10, 10, 10),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 20, 0, 10, 10),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 20, 10, 10, 10),
     ]
 
     flag_outliers_rows = expected_outlier_cutoff_rows
 
     expected_flag_outliers_rows = [
-        ("1-001", 10, 20, 10, 10, 10, False),
-        ("1-001", 20, 20, 0, 10, 10, False),
-        ("1-001", 30, 20, 10, 10, 10, False),
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 20, 10, 10, 10, False),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 20, 0, 10, 10, False),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 20, 10, 10, 10, False),
     ]
 
     apply_outlier_cleaning_input_rows = [

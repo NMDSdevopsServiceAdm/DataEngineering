@@ -3205,7 +3205,8 @@ class OutlierCleaningSchemas:
             StructField(
                 IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
-            StructField("median_val", IntegerType(), True),
+            StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
+            StructField("median_val", DoubleType(), True),
         ]
     )
 
@@ -3215,6 +3216,7 @@ class OutlierCleaningSchemas:
             StructField(
                 IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
+            StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
             StructField("median_val", IntegerType(), True),
             StructField("abs_diff", IntegerType(), True),
         ]
@@ -3226,6 +3228,7 @@ class OutlierCleaningSchemas:
             StructField(
                 IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
+            StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
             StructField("median_val", IntegerType(), True),
             StructField("abs_diff", IntegerType(), True),
             StructField("mad", IntegerType(), True),
@@ -3238,6 +3241,7 @@ class OutlierCleaningSchemas:
             StructField(
                 IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
+            StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
             StructField("median_val", IntegerType(), True),
             StructField("abs_diff", IntegerType(), True),
             StructField("mad", IntegerType(), True),
@@ -3245,12 +3249,13 @@ class OutlierCleaningSchemas:
         ]
     )
 
-    flags_schema = StructType(
+    expected_outlier_flags_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(
                 IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
+            StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
             StructField("median_val", IntegerType(), True),
             StructField("abs_diff", IntegerType(), True),
             StructField("mad", IntegerType(), True),
