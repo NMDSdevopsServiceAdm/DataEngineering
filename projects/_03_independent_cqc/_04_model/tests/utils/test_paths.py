@@ -15,6 +15,13 @@ class GenerateModelPathTests(unittest.TestCase):
         self.assertEqual(returned_path, expected_path)
 
 
+class GenerateIndCqcPathTests(unittest.TestCase):
+    def test_returns_expected_path(self):
+        returned_path = job.generate_ind_cqc_path(DATASETS_BUCKET)
+        expected_path = "s3://sfc-test-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
+        self.assertEqual(returned_path, expected_path)
+
+
 class GenerateFeaturesPathTests(unittest.TestCase):
     def test_returns_expected_path(self):
         returned_path = job.generate_features_path(DATASETS_BUCKET, MODEL)
