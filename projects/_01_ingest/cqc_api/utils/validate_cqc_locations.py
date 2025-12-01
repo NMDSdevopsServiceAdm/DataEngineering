@@ -65,7 +65,7 @@ def add_list_column_validation_check_flags(
 
     Args:
         df (pl.DataFrame): Input Dataframe with complex columns
-        column (list[str]): The list of list-type columns to validate
+        columns (list[str]): The list of list-type columns to validate
 
     Returns:
         pl.DataFrame: DataFrame with a new bool validation passed column
