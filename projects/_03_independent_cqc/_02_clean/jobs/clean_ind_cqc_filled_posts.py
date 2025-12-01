@@ -105,6 +105,7 @@ def main(
         IndCQC.ct_care_home_total_employed_cleaned,
         0.05,
         False,
+        True,
     )
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
