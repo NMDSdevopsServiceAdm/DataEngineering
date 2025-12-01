@@ -8,6 +8,7 @@ from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from projects._01_ingest.cqc_api.utils.validate_cqc_locations import (
     get_expected_row_count_for_validation_full_clean,
+    add_list_column_validation_check_flags,
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
@@ -56,6 +57,9 @@ def main(
         selected_columns=compare_columns_to_import,
     )
     expected_row_count = get_expected_row_count_for_validation_full_clean(compare_df)
+    source_df = add_list_column_validation_check_flags(
+        source_df, [CQCLClean.regulated_activities_offered]
+    )
 
     validation = (
         pb.Validate(
@@ -110,6 +114,7 @@ def main(
             ]
         )
         # categorical column values match expected set
+        .col_vals_in_set("regulated_activities_offered_has_no_empty_or_null", [True])
         .col_vals_in_set(CQCLClean.type, [LocationType.social_care_identifier])
         .col_vals_in_set(CQCLClean.registration_status, [RegistrationStatus.registered])
         .col_vals_in_set(
