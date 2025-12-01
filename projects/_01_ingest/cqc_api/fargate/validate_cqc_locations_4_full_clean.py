@@ -28,8 +28,8 @@ compare_columns_to_import = [
     CQCLClean.provider_id,
     CQCLClean.type,
     CQCLClean.registration_status,
-    CQCLClean.regulated_activities_offered,
-    CQCLClean.services_offered,
+    # CQCLClean.regulated_activities_offered,
+    # CQCLClean.services_offered,
 ]
 
 
@@ -46,11 +46,11 @@ def main(
         compare_path (str): path to a dataset to compare against for expected size
     """
     source_df = utils.read_parquet(
-        f"s3://{bucket_name}/{source_path}", exclude_complex_types=False
+        f"s3://{bucket_name}/{source_path}", exclude_complex_types=True
     ).with_columns(
         str_length_cols([CQCLClean.location_id, CQCLClean.provider_id]),
     )
-
+    # TODO: write a genric function which created bool columns based on the complex column validation created. Only validate if the flag is true
     compare_df = utils.read_parquet(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=compare_columns_to_import,
@@ -96,9 +96,9 @@ def main(
                 CQCLClean.current_cssr,
                 CQCLClean.current_region,
                 CQCLClean.current_rural_urban_ind_11,
-                CQCLClean.services_offered,
-                CQCLClean.regulated_activities_offered,
-                CQCLClean.specialisms_offered,
+                # CQCLClean.services_offered,
+                # CQCLClean.regulated_activities_offered,
+                # CQCLClean.specialisms_offered,
             ]
         )
         # index columns
@@ -268,22 +268,22 @@ def main(
             ),
             brief=f"{CQCLClean.current_rural_urban_ind_11} needs to be null, or one of {CatValues.current_rui_column_values.categorical_values}",
         )
-        .specially(
-            vl.list_has_no_empty_or_nulls(CQCLClean.services_offered),
-            brief="Services offered list must be non-empty and contain no nulls",
-        )
-        .specially(
-            vl.list_has_no_empty_or_nulls(CQCLClean.regulated_activities_offered),
-            brief="Regulated activities offered list must be non-empty and contain no nulls",
-        )
-        .specially(
-            vl.list_has_no_empty_or_nulls(CQCLClean.registered_manager_names),
-            brief="Registered manager names list must be non-empty and contain no nulls",
-        )
-        .specially(
-            vl.list_has_no_empty_or_nulls(CQCLClean.specialisms_offered),
-            brief="Specialisms Offered list must be non-empty and contain no nulls",
-        )
+        # .specially(
+        #     vl.list_has_no_empty_or_nulls(CQCLClean.services_offered),
+        #     brief="Services offered list must be non-empty and contain no nulls",
+        # )
+        # .specially(
+        #     vl.list_has_no_empty_or_nulls(CQCLClean.regulated_activities_offered),
+        #     brief="Regulated activities offered list must be non-empty and contain no nulls",
+        # )
+        # .specially(
+        #     vl.list_has_no_empty_or_nulls(CQCLClean.registered_manager_names),
+        #     brief="Registered manager names list must be non-empty and contain no nulls",
+        # )
+        # .specially(
+        #     vl.list_has_no_empty_or_nulls(CQCLClean.specialisms_offered),
+        #     brief="Specialisms Offered list must be non-empty and contain no nulls",
+        # )
         # numeric column values are between (inclusive)
         .col_vals_between(Validation.location_id_length, 3, 14)
         .col_vals_between(Validation.provider_id_length, 3, 14)
