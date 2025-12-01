@@ -174,7 +174,7 @@ def select_and_filter_features_data(
 
     # Filter rows where all features are non-null
     lf_filtered = lf.filter(
-        pl.all([pl.col(feature).is_not_null() for feature in features_list])
+        pl.all_horizontal([pl.col(feature).is_not_null() for feature in features_list])
     )
 
     return lf_filtered.select(select_cols)
