@@ -10,13 +10,14 @@ def create_column_with_repeated_values_removed(
     df: DataFrame,
     column_to_clean: str,
     new_column_name: Optional[str] = None,
+    column_to_partition_by: str = IndCQC.location_id,
 ) -> DataFrame:
     """
     Some data we have (such as ASCWDS) repeats data until it is changed. This function creates a new column which converts repeated
-    values to nulls, so we only see newly submitted values once. This also happens as a result of joining the same datafile mulitple
+    values to nulls, so we only see newly submitted values once. This also happens as a result of joining the same datafile multiple
     times as part of the align dates field.
 
-    For each location, this function iterates over the dataframe in date order and compares the current column value to the
+    For each partition, this function iterates over the dataframe in date order and compares the current column value to the
     previously submitted value. If the value differs from the previously submitted value then enter that value into the new column.
     Otherwise null the value in the new column as it is a previously submitted value which has been repeated.
 
@@ -24,6 +25,7 @@ def create_column_with_repeated_values_removed(
         df (DataFrame): The dataframe to use
         column_to_clean (str): The name of the column to convert
         new_column_name (Optional [str]): If not provided, "_deduplicated" will be appended onto the original column name
+        column_to_partition_by (str): A column to partition by when deduplicating. Defaults to 'locationid'.
 
     Returns:
         DataFrame: A DataFrame with an addional column with repeated values changed to nulls.
@@ -33,7 +35,9 @@ def create_column_with_repeated_values_removed(
     if new_column_name is None:
         new_column_name = column_to_clean + "_deduplicated"
 
-    w = Window.partitionBy(IndCQC.location_id).orderBy(IndCQC.cqc_location_import_date)
+    w = Window.partitionBy(column_to_partition_by).orderBy(
+        IndCQC.cqc_location_import_date
+    )
 
     df_with_previously_submitted_value = df.withColumn(
         PREVIOUS_VALUE, F.lag(column_to_clean).over(w)

@@ -49,9 +49,7 @@ def null_ct_values_after_consecutive_repetition(
     df = aggregate_values_to_provider_level(df, column_to_clean)
 
     df = create_column_with_repeated_values_removed(
-        df,
-        provider_values_col,
-        provider_values_col_dedup,
+        df, provider_values_col, provider_values_col_dedup, IndCQC.provider_id
     )
 
     df = calculate_days_a_provider_has_been_repeating_values(
