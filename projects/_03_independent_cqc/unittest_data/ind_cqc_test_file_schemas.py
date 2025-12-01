@@ -1176,6 +1176,7 @@ class CleanIndCQCData:
     repeated_value_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.provider_id, StringType(), True),
             StructField("integer_column", IntegerType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
         ]
@@ -1183,9 +1184,7 @@ class CleanIndCQCData:
 
     expected_without_repeated_values_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField("integer_column", IntegerType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            *repeated_value_schema,
             StructField("integer_column_deduplicated", IntegerType(), True),
         ]
     )
