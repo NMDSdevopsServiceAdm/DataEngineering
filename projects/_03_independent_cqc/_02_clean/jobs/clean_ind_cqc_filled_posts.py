@@ -98,8 +98,6 @@ def main(
     locations_df = clean_capacity_tracker_care_home_outliers(locations_df)
     locations_df = clean_capacity_tracker_non_res_outliers(locations_df)
 
-    # pushing to get new data.
-
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 
     utils.write_to_parquet(
