@@ -191,6 +191,10 @@ All notable changes to this project will be documented in this file.
   - Store all CQC API delta data in dataset_delta_locations_api / dataset_delta_providers_api.
   - Import only specific columns in full_clean job.
 
+- Fixed validation failures for cleaned CQC locations caused by complex columns in the DataFrame, which prevented PointBlank from generating output reports.
+  - Updated the validation script to replicate the newly added filter from the cleaning process, ensuring row count validations now pass.
+  - Introduced a new function that creates boolean flag columns for complex-type columns and removes the original complex columns from the source DataFrame. These flag columns are now used in PointBlank validations to check for True values.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
