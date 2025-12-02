@@ -20,7 +20,29 @@ def clean_random_spikes(
     remove_whole_record: bool,
     care_home: bool,
 ) -> DataFrame:
+    """
+    Cleans random spikes (outliers) from a numerical column in a DataFrame.
 
+    The function computes the group-wise median and median absolute deviation (MAD),
+    flags outliers based on the specified proportion to filter, and either replaces
+    outlier values with null or removes entire records. Additionally, updates filtering
+    rules for care home or non-residential data.
+
+    Args:
+        df (DataFrame): Input DataFrame containing the data to clean.
+        group_by_col (str): Column name to group by when computing medians and MADs.
+        col_to_clean (str): Column name containing numerical values to clean.
+        cleaned_column_name (str): Name of the new column to store cleaned values.
+        proportion_to_filter (float): Proportion of extreme values to consider as outliers.
+        remove_whole_record (bool): If True, removes entire rows flagged as outliers;
+            if False, only replaces outlier values with null in the cleaned column.
+        care_home (bool): If True, applies care home-specific filtering rules;
+            otherwise, applies non-residential filtering rules.
+
+    Returns:
+        DataFrame: A new PySpark DataFrame with outliers cleaned, updated filtering rules,
+            and helper columns removed.
+    """
     df_median = compute_group_median(df, group_by_col, col_to_clean)
     df_deviation = compute_absolute_deviation(df_median, col_to_clean)
     df_mad = compute_mad(df_deviation, group_by_col)
@@ -60,7 +82,18 @@ def clean_random_spikes(
 
 
 def compute_group_median(df: DataFrame, group_col: str, col_to_clean: str) -> DataFrame:
+    """
+    Computes the median value of a numerical column within each group.
 
+    Args:
+        df (DataFrame): Input DataFrame.
+        group_col (str): Column name to group by.
+        col_to_clean (str): Column for which to compute the median.
+
+    Returns:
+        DataFrame: Original DataFrame joined with a new column 'median_val' containing
+        the group-wise median.
+    """
     median_df = df.groupBy(group_col).agg(
         F.expr(f"percentile({col_to_clean}, array(0.5))")[0].alias("median_val")
     )
@@ -69,12 +102,32 @@ def compute_group_median(df: DataFrame, group_col: str, col_to_clean: str) -> Da
 
 
 def compute_absolute_deviation(df: DataFrame, col_to_clean: str) -> DataFrame:
+    """
+    Computes the absolute deviation of each value from the group median.
 
+    Args:
+        df (DataFrame): DataFrame containing a 'median_val' column.
+        col_to_clean (str): Column for which to compute absolute deviation.
+
+    Returns:
+        DataFrame: DataFrame with a new column 'abs_diff' representing the absolute
+        deviation of each value from the median.
+    """
     return df.withColumn("abs_diff", F.abs(F.col(col_to_clean) - F.col("median_val")))
 
 
 def compute_mad(df: DataFrame, group_by_col: str) -> DataFrame:
+    """
+    Computes the median absolute deviation (MAD) of a column within each group.
 
+    Args:
+        df (DataFrame): DataFrame containing an 'abs_diff' column.
+        group_by_col (str): Column to group by when computing MAD.
+
+    Returns:
+        DataFrame: Original DataFrame joined with a new column 'mad' containing the
+        group-wise median absolute deviation.
+    """
     mad_df = df.groupBy(group_by_col).agg(
         F.expr("percentile(abs_diff, array(0.5))")[0].alias("mad")
     )
@@ -87,7 +140,19 @@ def compute_outlier_cutoff(
     group_by_col: str,
     proportion_to_filter: float,
 ) -> DataFrame:
+    """
+    Computes the threshold value beyond which a data point is considered an outlier
+    for each group, based on the specified proportion of extreme values.
 
+    Args:
+        df (DataFrame): DataFrame containing an 'abs_diff' column.
+        group_by_col (str): Column to group by when computing cutoff thresholds.
+        proportion_to_filter (float): Proportion of extreme values to consider as outliers.
+
+    Returns:
+        DataFrame: Original DataFrame joined with a new column 'abs_diff_cutoff'
+        containing the outlier threshold for each group.
+    """
     percentile = 1 - proportion_to_filter
 
     cutoff_df = df.groupBy(group_by_col).agg(
@@ -98,7 +163,17 @@ def compute_outlier_cutoff(
 
 
 def flag_outliers(df: DataFrame) -> DataFrame:
+    """
+    Flags outlier records based on whether the absolute deviation exceeds the
+    group-specific cutoff.
 
+    Args:
+        df (DataFrame): DataFrame containing 'abs_diff' and 'abs_diff_cutoff' columns.
+
+    Returns:
+        DataFrame: DataFrame with a new boolean column 'outlier_flag' where True indicates
+        an outlier.
+    """
     return df.withColumn("outlier_flag", F.col("abs_diff") > F.col("abs_diff_cutoff"))
 
 
@@ -108,7 +183,19 @@ def apply_outlier_cleaning(
     cleaned_column_name: str,
     remove_whole_record: bool,
 ) -> DataFrame:
+    """
+    Cleans outlier values in a numerical column based on an 'outlier_flag' column.
 
+    Args:
+        df (DataFrame): DataFrame containing 'outlier_flag'.
+        col_to_clean (str): Column to clean.
+        cleaned_column_name (str): Name of the new column to store cleaned values.
+        remove_whole_record (bool): If True, removes entire rows flagged as outliers;
+            otherwise, replaces outlier values with null in the cleaned column.
+
+    Returns:
+        DataFrame: DataFrame with outliers cleaned either by row removal or null replacement.
+    """
     df = df.withColumn(
         cleaned_column_name,
         F.when(F.col("outlier_flag"), None).otherwise(F.col(col_to_clean)),
