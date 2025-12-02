@@ -31,7 +31,7 @@ class ValidateLocationsFlattenTests(unittest.TestCase):
 
         mock_read_parquet.assert_has_calls(
             [
-                call("s3://bucket/my/dataset/", exclude_complex_types=False),
+                call("s3://bucket/my/dataset/", exclude_complex_types=True),
                 call("s3://bucket/other/dataset/", selected_columns=ANY),
             ]
         )
