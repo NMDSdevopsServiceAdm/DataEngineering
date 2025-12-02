@@ -114,6 +114,7 @@ def main(
             ]
         )
         # categorical column values match expected set
+        .col_vals_in_set("regulated_activities_offered_has_no_empty_or_null", [1])
         .col_vals_in_set(CQCLClean.type, [LocationType.social_care_identifier])
         .col_vals_in_set(CQCLClean.registration_status, [RegistrationStatus.registered])
         .col_vals_in_set(
@@ -272,14 +273,6 @@ def main(
             ),
             brief=f"{CQCLClean.current_rural_urban_ind_11} needs to be null, or one of {CatValues.current_rui_column_values.categorical_values}",
         )
-        .specially(
-            vl.is_unique_count_equal(
-                "regulated_activities_offered_has_no_empty_or_null",
-                1,
-            ),
-            brief=f"regulated_activities_offered_has_no_empty_or_null needs to be True for all records",
-        )
-        
         # .specially(
         #     vl.list_has_no_empty_or_nulls(CQCLClean.services_offered),
         #     brief="Services offered list must be non-empty and contain no nulls",
