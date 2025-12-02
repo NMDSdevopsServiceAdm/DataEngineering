@@ -25,7 +25,7 @@ class GenerateIndCqcPathTests(unittest.TestCase):
 class GenerateFeaturesPathTests(unittest.TestCase):
     def test_returns_expected_path(self):
         returned_path = job.generate_features_path(DATASETS_BUCKET, MODEL)
-        expected_path = "s3://sfc-test-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_model_a/"
+        expected_path = "s3://sfc-test-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_model_a_polars/"
         self.assertEqual(returned_path, expected_path)
 
 
