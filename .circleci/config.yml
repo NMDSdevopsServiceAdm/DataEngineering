@@ -299,7 +299,6 @@ jobs:
             export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"
             export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
             export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
-            export BRANCH_DATASET_BUCKET=$(cat terraform/pipeline/datasets_bucket_name)
             # --- Safeguard to never destroy main ---
             if [ "$SANITISED_CIRCLE_BRANCH" = "main" ]; then
               echo "Skipping destroy for main branch"
@@ -310,26 +309,26 @@ jobs:
             terraform init -input=false -backend-config=../non_prod.s3.tfbackend
             terraform workspace select ${SANITISED_CIRCLE_BRANCH}
             # --- Force-empty dataset bucket for this branch ---
-            echo "Emptying dataset bucket: $BRANCH_DATASET_BUCKET"
-            NB_OBJECTS=$(aws s3api list-object-versions --bucket $BRANCH_DATASET_BUCKET --query='length(Versions[*] || `[]` )' | awk '{ print $1 }')
+            echo "Emptying dataset bucket: s3://sfc-${SANITISED_CIRCLE_BRANCH}-datasets"
+            NB_OBJECTS=$(aws s3api list-object-versions --bucket "s3://sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --query='length(Versions[*] || `[]` )' | awk '{ print $1 }')
             echo "      '${NB_OBJECTS}' objects to remove"
             if [[ "$NB_OBJECTS" != "0" ]]; then
               start=$SECONDS
               while [[ $NB_OBJECTS -gt 0 ]]
               do
-                aws s3api delete-objects --bucket $BRANCH_DATASET_BUCKET --delete "$(aws s3api list-object-versions --bucket $BRANCH_DATASET_BUCKET --max-items 500 --query='{Objects: Versions[0:500].{Key:Key,VersionId:VersionId}}')" --query 'length(Deleted[*] || `[]` )' > /dev/null
+                aws s3api delete-objects --bucket "s3://sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --delete "$(aws s3api list-object-versions --bucket "s3://sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --max-items 500 --query='{Objects: Versions[0:500].{Key:Key,VersionId:VersionId}}')" --query 'length(Deleted[*] || `[]` )' > /dev/null
                 NB_OBJECTS=$((NB_OBJECTS  > 500 ? NB_OBJECTS - 500 : 0))
                 echo "      Removed batch of Objects... Remaining : $NB_OBJECTS ($(( SECONDS - start ))s)"
               done
             fi
 
-            NB_OBJECTS=$(aws s3api list-object-versions --bucket $BRANCH_DATASET_BUCKET --query='length(DeleteMarkers[*] || `[]` )' | awk '{ print $1 }')
+            NB_OBJECTS=$(aws s3api list-object-versions --bucket "s3://sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --query='length(DeleteMarkers[*] || `[]` )' | awk '{ print $1 }')
             echo "      '${NB_OBJECTS}' markers to remove"
             if [[ "$NB_OBJECTS" != "0" ]]; then
               start=$SECONDS
               while [[ $NB_OBJECTS -gt 0 ]]
               do
-                aws s3api delete-objects --bucket $BRANCH_DATASET_BUCKET --delete "$(aws s3api list-object-versions --bucket $BRANCH_DATASET_BUCKET --max-items 100 --query='{Objects: DeleteMarkers[0:100].{Key:Key,VersionId:VersionId}}')" --query 'length(Deleted[*] || `[]` )' > /dev/null
+                aws s3api delete-objects --bucket "s3://sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --delete "$(aws s3api list-object-versions --bucket "s3://sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --max-items 100 --query='{Objects: DeleteMarkers[0:100].{Key:Key,VersionId:VersionId}}')" --query 'length(Deleted[*] || `[]` )' > /dev/null
                 NB_OBJECTS=$((NB_OBJECTS  > 100 ? NB_OBJECTS - 100 : 0))
                 echo "      Removed batch of Markers... Remaining : $NB_OBJECTS (took $(( SECONDS - start ))s)"
               done
