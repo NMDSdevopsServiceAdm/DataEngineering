@@ -61,7 +61,7 @@ def main(
     source_df = add_list_column_validation_check_flags(
         source_df,
         [
-            CQCLClean.registration_status,
+            CQCLClean.specialisms_offered,
             CQCLClean.regulated_activities_offered,
             CQCLClean.services_offered,
             CQCLClean.registered_manager_names,

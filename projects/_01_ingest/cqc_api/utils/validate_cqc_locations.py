@@ -78,12 +78,12 @@ def add_list_column_validation_check_flags(
                 pl.col(col).is_null()
                 | ((pl.col(col).list.len() > 0) & (~pl.col(col).list.contains(None)))
             )
-            .cast(pl.Int8)
+            .cast(pl.Int64)
             .alias(f"{col}_has_no_empty_or_null")
         )
 
         completeness_expr = (
-            pl.col(col).is_not_null().cast(pl.Int8).alias(f"{col}_is_not_null")
+            pl.col(col).is_not_null().cast(pl.Int64).alias(f"{col}_is_not_null")
         )
 
         expressions.extend([validation_expr, completeness_expr])
