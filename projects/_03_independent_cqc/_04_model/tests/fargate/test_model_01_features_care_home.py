@@ -26,16 +26,16 @@ class ModelFeaturesCareHomeTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.fUtils.add_array_column_count")
     @patch(f"{PATCH_PATH}.fUtils.add_date_index_column")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_ind_cqc_data)
+    @patch(f"{PATCH_PATH}.vUtils.validate_model_definition")
     @patch(f"{PATCH_PATH}.pUtils.generate_features_path")
     @patch(f"{PATCH_PATH}.pUtils.generate_ind_cqc_path")
-    @patch(f"{PATCH_PATH}.vUtils.validate_model_definition")
     @patch(f"{PATCH_PATH}.model_registry", return_value=TEST_MODEL_REGISTRY)
     def test_main_runs_successfully(
         self,
         model_registry_mock: Mock,
-        validate_model_definition_mock: Mock,
         generate_ind_cqc_path_mock: Mock,
         generate_features_path_mock: Mock,
+        validate_model_definition_mock: Mock,
         scan_parquet_mock: Mock,
         add_date_index_column_mock: Mock,
         add_array_column_count_mock: Mock,
@@ -44,15 +44,11 @@ class ModelFeaturesCareHomeTests(unittest.TestCase):
         select_and_filter_features_data_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        job.main(
-            self.TEST_BUCKET_NAME,
-            self.TEST_MODEL_NAME,
-        )
+        job.main(self.TEST_BUCKET_NAME, self.TEST_MODEL_NAME)
 
-        scan_parquet_mock.assert_called_once()
-        validate_model_definition_mock.assert_called_once()
         generate_ind_cqc_path_mock.assert_called_once()
         generate_features_path_mock.assert_called_once()
+        validate_model_definition_mock.assert_called_once()
         scan_parquet_mock.assert_called_once()
         add_date_index_column_mock.assert_called_once()
         self.assertEqual(add_array_column_count_mock.call_count, 2)

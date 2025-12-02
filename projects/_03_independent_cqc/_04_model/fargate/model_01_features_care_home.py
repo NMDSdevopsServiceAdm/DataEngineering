@@ -26,8 +26,8 @@ def main(bucket_name: str, model_name: str) -> None:
     Creates a features dataset specific to the model.
 
     The steps in this function are:
-        1. Validate required model and model definitions exist
-        2. Create paths and model information from model registry
+        1. Create paths for source and destination files
+        2. Validate required model and model definitions exist, then assign them to variables
         3. Load source dataset
         4. Apply feature engineering steps
         5. Select relevant columns and non-null feature values
@@ -39,14 +39,14 @@ def main(bucket_name: str, model_name: str) -> None:
     """
     print(f"Creating {model_name} features dataset...")
 
+    source = pUtils.generate_ind_cqc_path(bucket_name)
+    destination = pUtils.generate_features_path(bucket_name, model_name)
+
     vUtils.validate_model_definition(
         model_name,
         required_keys=[MRKeys.dependent, MRKeys.features],
         model_registry=model_registry,
     )
-
-    source = pUtils.generate_ind_cqc_path(bucket_name)
-    destination = pUtils.generate_features_path(bucket_name, model_name)
     dependent_col = model_registry[model_name][MRKeys.dependent]
     feature_cols = model_registry[model_name][MRKeys.features]
 
