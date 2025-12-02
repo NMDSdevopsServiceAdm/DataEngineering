@@ -30,5 +30,4 @@ class TestAddListColumnValidationCheckFlags(unittest.TestCase):
         df_result = job.add_list_column_validation_check_flags(
             df_test, ["my_list", "another_list"]
         )
-        print(df_result)
         pl_testing.assert_frame_equal(df_result, df_expected)

@@ -107,9 +107,6 @@ def main(
                 CQCLClean.current_cssr,
                 CQCLClean.current_region,
                 CQCLClean.current_rural_urban_ind_11,
-                # CQCLClean.services_offered,
-                # CQCLClean.regulated_activities_offered,
-                # CQCLClean.specialisms_offered,
             ]
         )
         # index columns
@@ -123,7 +120,6 @@ def main(
         # Complex column validation for completeness
         .col_vals_in_set(CQCLVal.services_offered_is_not_null, [1])
         .col_vals_in_set(CQCLVal.regulated_activities_offered_is_not_null, [1])
-        .col_vals_in_set(CQCLVal.specialisms_offered_is_not_null, [1])
         # Complex column validation for empty list and null within list
         .col_vals_in_set(CQCLVal.services_offered_has_no_empty_or_null, [1])
         .col_vals_in_set(CQCLVal.regulated_activities_offered_has_no_empty_or_null, [1])
@@ -288,22 +284,6 @@ def main(
             ),
             brief=f"{CQCLClean.current_rural_urban_ind_11} needs to be null, or one of {CatValues.current_rui_column_values.categorical_values}",
         )
-        # .specially(
-        #     vl.list_has_no_empty_or_nulls(CQCLClean.services_offered),
-        #     brief="Services offered list must be non-empty and contain no nulls",
-        # )
-        # .specially(
-        #     vl.list_has_no_empty_or_nulls(CQCLClean.regulated_activities_offered),
-        #     brief="Regulated activities offered list must be non-empty and contain no nulls",
-        # )
-        # .specially(
-        #     vl.list_has_no_empty_or_nulls(CQCLClean.registered_manager_names),
-        #     brief="Registered manager names list must be non-empty and contain no nulls",
-        # )
-        # .specially(
-        #     vl.list_has_no_empty_or_nulls(CQCLClean.specialisms_offered),
-        #     brief="Specialisms Offered list must be non-empty and contain no nulls",
-        # )
         # numeric column values are between (inclusive)
         .col_vals_between(Validation.location_id_length, 3, 14)
         .col_vals_between(Validation.provider_id_length, 3, 14)
