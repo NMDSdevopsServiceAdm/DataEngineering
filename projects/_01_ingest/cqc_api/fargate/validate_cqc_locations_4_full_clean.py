@@ -12,6 +12,7 @@ from projects._01_ingest.cqc_api.utils.validate_cqc_locations import (
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
+    CqcLocationCleanedNewValidationColumns as CQCLVal,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.validation_table_columns import Validation
@@ -113,8 +114,16 @@ def main(
                 Keys.import_date,
             ]
         )
+        # Complex column validation for completeness
+        .col_vals_in_set(CQCLVal.services_offered_is_not_null, [1])
+        .col_vals_in_set(CQCLVal.regulated_activities_offered_is_not_null, [1])
+        .col_vals_in_set(CQCLVal.specialisms_offered_is_not_null, [1])
+        # Complex column validation for empty list and null within list
+        .col_vals_in_set(CQCLVal.services_offered_has_no_empty_or_null, [1])
+        .col_vals_in_set(CQCLVal.regulated_activities_offered_has_no_empty_or_null, [1])
+        .col_vals_in_set(CQCLVal.registered_manager_names_has_no_empty_or_null, [1])
+        .col_vals_in_set(CQCLVal.specialisms_offered_has_no_empty_or_null, [1])
         # categorical column values match expected set
-        .col_vals_in_set("regulated_activities_offered_has_no_empty_or_null", [1])
         .col_vals_in_set(CQCLClean.type, [LocationType.social_care_identifier])
         .col_vals_in_set(CQCLClean.registration_status, [RegistrationStatus.registered])
         .col_vals_in_set(
