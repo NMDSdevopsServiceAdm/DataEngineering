@@ -59,7 +59,13 @@ def main(
     )
     expected_row_count = get_expected_row_count_for_validation_full_clean(compare_df)
     source_df = add_list_column_validation_check_flags(
-        source_df, [CQCLClean.regulated_activities_offered]
+        source_df,
+        [
+            CQCLClean.registration_status,
+            CQCLClean.regulated_activities_offered,
+            CQCLClean.services_offered,
+            CQCLClean.registered_manager_names,
+        ],
     )
 
     validation = (
