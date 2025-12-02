@@ -20,6 +20,9 @@ from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_car
 from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_non_res_outliers import (
     clean_capacity_tracker_non_res_outliers,
 )
+from projects._03_independent_cqc._02_clean.utils.duplicate_latest_known_ascwds_value_into_following_two_import_dates import (
+    duplicate_latest_known_ascwds_value_into_following_two_import_dates,
+)
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -79,6 +82,10 @@ def main(
     )
 
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
+
+    locations_df = duplicate_latest_known_ascwds_value_into_following_two_import_dates(
+        locations_df
+    )
 
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
         locations_df,

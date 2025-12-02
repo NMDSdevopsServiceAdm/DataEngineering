@@ -5909,3 +5909,63 @@ class IndCQCDataUtils:
         ("loc 1", 2, 2.0, 50.0, 50.0),
         ("loc 1", 3, None, 25.0, 50.0),
     ]
+
+
+@dataclass
+class DuplicateLatestKnownAscwdsValueIntoFollowingTwoImportDates:
+    locations_when_latest_known_value_is_more_than_3_months_before_latest_import_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), 2),
+        ("1-001", date(2025, 4, 1), None),
+        ("1-001", date(2025, 5, 1), None),
+        ("1-001", date(2025, 6, 1), None),
+    ]
+    expected_locations_when_latest_known_value_is_more_than_3_months_before_latest_import_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), 2),
+        ("1-001", date(2025, 4, 1), 2),
+        ("1-001", date(2025, 5, 1), 2),
+        ("1-001", date(2025, 6, 1), None),
+    ]
+
+    locations_when_latest_known_value_is_1_month_before_latest_import_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), 2),
+        ("1-001", date(2025, 4, 1), None),
+    ]
+    expected_locations_when_latest_known_value_is_1_month_before_latest_import_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), 2),
+        ("1-001", date(2025, 4, 1), 2),
+    ]
+
+    locations_when_latest_known_value_is_at_the_latest_import_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), None),
+        ("1-001", date(2025, 4, 1), 2),
+    ]
+    expected_locations_when_latest_known_value_is_at_the_latest_import_rows = (
+        locations_when_latest_known_value_is_at_the_latest_import_rows
+    )
+
+    locations_when_latest_known_value_is_more_than_3_months_before_latest_import_and_dates_are_out_of_order_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), 2),
+        ("1-001", date(2025, 6, 1), None),
+        ("1-001", date(2025, 5, 1), None),
+        ("1-001", date(2025, 4, 1), None),
+    ]
+    expected_locations_when_latest_known_value_is_more_than_3_months_before_latest_import_and_dates_are_out_of_order_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), 2),
+        ("1-001", date(2025, 4, 1), 2),
+        ("1-001", date(2025, 5, 1), 2),
+        ("1-001", date(2025, 6, 1), None),
+    ]

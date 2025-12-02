@@ -55,6 +55,9 @@ All notable changes to this project will be documented in this file.
 
 - Added model registry.
 
+- Added a function into ind cqc 02 cleaning job to copy the last known ASC-WDS filled posts value into the
+  following two import dates. So extrapolation is delayed.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
