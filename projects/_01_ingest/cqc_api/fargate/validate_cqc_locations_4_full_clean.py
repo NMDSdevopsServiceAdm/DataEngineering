@@ -52,7 +52,7 @@ def main(
     ).with_columns(
         str_length_cols([CQCLClean.location_id, CQCLClean.provider_id]),
     )
-    # TODO: write a genric function which created bool columns based on the complex column validation created. Only validate if the flag is true
+
     compare_df = utils.read_parquet(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=compare_columns_to_import,
