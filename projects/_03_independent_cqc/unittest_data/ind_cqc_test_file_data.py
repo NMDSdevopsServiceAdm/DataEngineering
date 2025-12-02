@@ -5912,8 +5912,8 @@ class IndCQCDataUtils:
 
 
 @dataclass
-class AscwdsDuplicateLastSubmission:
-    duplicate_latest_known_value_into_following_two_rows_when_last_known_value_is_before_latest_import_rows = [
+class DuplicateLatestKnownValueIntoFollowingTwoRows:
+    locations_when_latest_known_value_is_more_than_3_months_before_latest_import_rows = [
         ("1-001", date(2025, 1, 1), 1),
         ("1-001", date(2025, 2, 1), None),
         ("1-001", date(2025, 3, 1), 2),
@@ -5921,7 +5921,7 @@ class AscwdsDuplicateLastSubmission:
         ("1-001", date(2025, 5, 1), None),
         ("1-001", date(2025, 6, 1), None),
     ]
-    expected_duplicate_latest_known_value_into_following_two_rows_when_last_known_value_is_before_latest_import_rows = [
+    expected_locations_when_latest_known_value_is_more_than_3_months_before_latest_import_rows = [
         ("1-001", date(2025, 1, 1), 1),
         ("1-001", date(2025, 2, 1), None),
         ("1-001", date(2025, 3, 1), 2),
@@ -5930,23 +5930,42 @@ class AscwdsDuplicateLastSubmission:
         ("1-001", date(2025, 6, 1), None),
     ]
 
-    duplicate_latest_known_value_into_following_two_rows_when_last_known_value_is_near_latest_import_rows = [
+    locations_when_latest_known_value_is_1_month_before_latest_import_rows = [
         ("1-001", date(2025, 1, 1), 1),
         ("1-001", date(2025, 2, 1), None),
         ("1-001", date(2025, 3, 1), 2),
         ("1-001", date(2025, 4, 1), None),
-        ("1-002", date(2025, 1, 1), 1),
-        ("1-002", date(2025, 2, 1), None),
-        ("1-002", date(2025, 3, 1), None),
-        ("1-002", date(2025, 4, 1), 2),
     ]
-    expected_duplicate_latest_known_value_into_following_two_rows_when_last_known_value_is_near_latest_import_rows = [
+    expected_locations_when_latest_known_value_is_1_month_before_latest_import_rows = [
         ("1-001", date(2025, 1, 1), 1),
         ("1-001", date(2025, 2, 1), None),
         ("1-001", date(2025, 3, 1), 2),
         ("1-001", date(2025, 4, 1), 2),
-        ("1-002", date(2025, 1, 1), 1),
-        ("1-002", date(2025, 2, 1), None),
-        ("1-002", date(2025, 3, 1), None),
-        ("1-002", date(2025, 4, 1), 2),
+    ]
+
+    locations_when_latest_known_value_is_at_the_latest_import_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), None),
+        ("1-001", date(2025, 4, 1), 2),
+    ]
+    expected_locations_when_latest_known_value_is_at_the_latest_import_rows = (
+        locations_when_latest_known_value_is_at_the_latest_import_rows
+    )
+
+    locations_when_latest_known_value_is_more_than_3_months_before_latest_import_and_dates_are_out_of_order_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), 2),
+        ("1-001", date(2025, 6, 1), None),
+        ("1-001", date(2025, 5, 1), None),
+        ("1-001", date(2025, 4, 1), None),
+    ]
+    expected_locations_when_latest_known_value_is_more_than_3_months_before_latest_import_and_dates_are_out_of_order_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), 2),
+        ("1-001", date(2025, 4, 1), 2),
+        ("1-001", date(2025, 5, 1), 2),
+        ("1-001", date(2025, 6, 1), None),
     ]
