@@ -119,23 +119,24 @@ def main(
             ]
         )
         # Complex column validation for completeness
-        .col_vals_in_set(CQCLVal.services_offered_is_not_null, NumericTrueFalse.true)
+        .col_vals_in_set(CQCLVal.services_offered_is_not_null, [NumericTrueFalse.true])
         .col_vals_in_set(
-            CQCLVal.regulated_activities_offered_is_not_null, NumericTrueFalse.true
+            CQCLVal.regulated_activities_offered_is_not_null, [NumericTrueFalse.true]
         )
         # Complex column validation for empty list and null within list
         .col_vals_in_set(
-            CQCLVal.services_offered_has_no_empty_or_null, NumericTrueFalse.true
+            CQCLVal.services_offered_has_no_empty_or_null, [NumericTrueFalse.true]
         )
         .col_vals_in_set(
             CQCLVal.regulated_activities_offered_has_no_empty_or_null,
-            NumericTrueFalse.true,
+            [NumericTrueFalse.true],
         )
         .col_vals_in_set(
-            CQCLVal.registered_manager_names_has_no_empty_or_null, NumericTrueFalse.true
+            CQCLVal.registered_manager_names_has_no_empty_or_null,
+            [NumericTrueFalse.true],
         )
         .col_vals_in_set(
-            CQCLVal.specialisms_offered_has_no_empty_or_null, NumericTrueFalse.true
+            CQCLVal.specialisms_offered_has_no_empty_or_null, [NumericTrueFalse.true]
         )
         # categorical column values match expected set
         .col_vals_in_set(CQCLClean.type, [LocationType.social_care_identifier])
