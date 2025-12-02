@@ -112,6 +112,30 @@ class FeaturesEngineeringUtilsSchemas:
         + [(IndCQC.current_rural_urban_indicator_2011_for_non_res_model, pl.String())]
     )
 
+    select_and_filter_features_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.DataType()),
+            ("import_date", pl.String()),
+            ("other_col", pl.String()),
+            ("feature_1", pl.Int64()),
+            ("feature_2", pl.Int64()),
+            ("feature_3", pl.Int64()),
+            ("dependent", pl.Int64()),
+        ]
+    )
+    expected_select_and_filter_features_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.DataType()),
+            ("dependent", pl.Int64()),
+            ("feature_1", pl.Int64()),
+            ("feature_2", pl.Int64()),
+            ("feature_3", pl.Int64()),
+            ("import_date", pl.String()),
+        ]
+    )
+
 
 @dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsSchemas:
