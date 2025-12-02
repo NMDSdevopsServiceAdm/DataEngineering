@@ -142,6 +142,11 @@ def select_and_filter_features_data(
     """
     Selects columns from a Polars LazyFrame and filters to non-null feature columns.
 
+    This function:
+        - Checks if all columns we want to select exist in the DataFrame.
+        - If it does, it selects those columns. If not, it raises an error.
+        - Filters the DataFrame to keep only rows where all feature columns are non-null.
+
     Args:
         lf (pl.LazyFrame): Input Polars LazyFrame.
         features_list (list[str]): List of feature column names.
@@ -165,16 +170,12 @@ def select_and_filter_features_data(
         + partition_keys
     )
 
-    # Check all columns exist in the DataFrame
     missing_cols = [
         col for col in select_cols if col not in lf.collect_schema().names()
     ]
     if missing_cols:
         raise ValueError(f"Missing columns in LazyFrame: {missing_cols}")
 
-    # Filter rows where all features are non-null
-    lf_filtered = lf.filter(
+    return lf.select(select_cols).filter(
         pl.all_horizontal([pl.col(feature).is_not_null() for feature in features_list])
     )
-
-    return lf_filtered.select(select_cols)
