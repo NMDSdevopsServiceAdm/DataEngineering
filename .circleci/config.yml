@@ -316,8 +316,8 @@ jobs:
               start=$SECONDS
               while [[ $NB_OBJECTS -gt 0 ]]
               do
-                aws s3api delete-objects --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --delete "$(aws s3api list-object-versions --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --max-items 500 --query='{Objects: Versions[0:500].{Key:Key,VersionId:VersionId}}')" --query 'length(Deleted[*] || `[]` )' > /dev/null
-                NB_OBJECTS=$((NB_OBJECTS  > 500 ? NB_OBJECTS - 500 : 0))
+                aws s3api delete-objects --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --delete "$(aws s3api list-object-versions --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --max-items 100 --query='{Objects: Versions[0:100].{Key:Key,VersionId:VersionId}}')" --query 'length(Deleted[*] || `[]` )' > /dev/null
+                NB_OBJECTS=$((NB_OBJECTS  > 100 ? NB_OBJECTS - 100 : 0))
                 echo "      Removed batch of Objects... Remaining : $NB_OBJECTS ($(( SECONDS - start ))s)"
               done
             fi
