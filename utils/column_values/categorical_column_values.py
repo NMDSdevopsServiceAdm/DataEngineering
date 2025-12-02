@@ -593,3 +593,11 @@ class SpecialistGeneralistOther(ColumnValues):
     specialist: str = "specialist"
     generalist: str = "generalist"
     other: str = "other"
+
+
+@dataclass
+class NumericTrueFalse(ColumnValues):
+    """The numeric values of the nboolean True and False"""
+
+    true: int = 1
+    false: int = 2
