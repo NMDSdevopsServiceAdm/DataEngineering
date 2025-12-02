@@ -2,15 +2,15 @@ import unittest
 
 import projects._03_independent_cqc._02_clean.utils.duplicate_latest_known_ascwds_value_into_following_two_import_dates as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
-    DuplicateLatestKnownValueIntoFollowingTwoRows as Data,
+    DuplicateLatestKnownAscwdsValueIntoFollowingTwoImportDates as Data,
 )
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
-    DuplicateLatestKnownValueIntoFollowingTwoRows as Schemas,
+    DuplicateLatestKnownAscwdsValueIntoFollowingTwoImportDates as Schemas,
 )
 from utils import utils
 
 
-class DuplicateLatestKnownValueIntoFollowingTwoImportDates(unittest.TestCase):
+class DuplicateLatestKnownAscwdsValueIntoFollowingTwoImportDates(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
 

@@ -3187,7 +3187,7 @@ class IndCQCDataUtils:
 
 
 @dataclass
-class DuplicateLatestKnownValueIntoFollowingTwoRows:
+class DuplicateLatestKnownAscwdsValueIntoFollowingTwoImportDates:
     locations_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
