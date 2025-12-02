@@ -1,5 +1,6 @@
 import polars as pl
 
+from polars_utils import raw_data_adjustments
 from polars_utils.cleaning_utils import column_to_date
 from projects._01_ingest.cqc_api.fargate.utils import cleaning_utils as cUtils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -35,6 +36,7 @@ def get_expected_row_count_for_validation_full_clean(df: pl.DataFrame) -> int:
     )
     df = df.filter(
         pl.col(CQCLClean.type) == LocationType.social_care_identifier,
+        raw_data_adjustments.is_valid_location(),
         pl.col(CQCLClean.registration_status) == RegistrationStatus.registered,
         pl.col(CQCLClean.provider_id).is_not_null(),
         pl.col(CQCLClean.regulated_activities_offered).is_not_null(),
@@ -43,3 +45,49 @@ def get_expected_row_count_for_validation_full_clean(df: pl.DataFrame) -> int:
     row_count = df.height
 
     return row_count
+
+
+def add_list_column_validation_check_flags(
+    df: pl.DataFrame, columns: list[str]
+) -> pl.DataFrame:
+    """
+    Adds a new boolean column 'column_validation_passed' indicating whether each list
+    in the specified list-type column passes validation based on the following rules:
+    - The list value may be null (null values are considered valid) if is
+    - Non-null lists must not be empty
+    - Non-null lists must not contain any None/null elements
+
+    Additionally, this function adds a second boolean column
+    'column_completeness_passed' that indicates whether the original column
+    contains no null values (completeness check).
+
+    After creating these validation columns, the original list column is dropped.
+
+    Args:
+        df (pl.DataFrame): Input Dataframe with complex columns
+        columns (list[str]): The list of list-type columns to validate
+
+    Returns:
+        pl.DataFrame: DataFrame with a new bool validation passed column
+    """
+    expressions = []
+
+    for col in columns:
+        validation_expr = (
+            (
+                pl.col(col).is_null()
+                | ((pl.col(col).list.len() > 0) & (~pl.col(col).list.contains(None)))
+            )
+            .cast(pl.Int64)
+            .alias(f"{col}_has_no_empty_or_null")
+        )
+
+        completeness_expr = (
+            pl.col(col).is_not_null().cast(pl.Int64).alias(f"{col}_is_not_null")
+        )
+
+        expressions.extend([validation_expr, completeness_expr])
+
+    df_with_flags = df.with_columns(expressions)
+
+    return df_with_flags.drop(columns)

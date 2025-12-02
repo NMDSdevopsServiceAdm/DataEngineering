@@ -390,6 +390,7 @@ class NullGroupedProviderColumns:
     provider_pir_sum: str = "provider_pir_sum"
 
 
+@dataclass
 class ModelRegistryKeys:
     auto_retrain: str = "auto_retrain"
     dependent: str = "dependent"
