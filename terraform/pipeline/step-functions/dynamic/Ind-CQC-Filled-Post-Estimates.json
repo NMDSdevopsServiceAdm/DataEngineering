@@ -167,7 +167,7 @@
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_03_independent_cqc_model-container",
+                              "Name": "_03_independent_cqc-container",
                               "Command": [
                                 "model_01_features_care_home.py",
                                 "--bucket_name", "${dataset_bucket_name}",
