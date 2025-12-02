@@ -22,7 +22,16 @@ partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(bucket_name: str, model_name: str) -> None:
-    """Creates a features dataset specific to the model.
+    """
+    Creates a features dataset specific to the model.
+
+    The steps in this function are:
+        1. Validate required model and model definitions exist
+        2. Create paths and model information from model registry
+        3. Load source dataset
+        4. Apply feature engineering steps
+        5. Select relevant columns and non-null feature values
+        6. Saves the features dataset to parquet
 
     Args:
         bucket_name (str): the bucket (name only) in which to source and save the datasets to
@@ -30,24 +39,20 @@ def main(bucket_name: str, model_name: str) -> None:
     """
     print(f"Creating {model_name} features dataset...")
 
-    # Validate required model and model definitions exist
     vUtils.validate_model_definition(
         model_name,
         required_keys=[MRKeys.dependent, MRKeys.features],
         model_registry=model_registry,
     )
 
-    # Create model information from model registry
     source = pUtils.generate_ind_cqc_path(bucket_name)
     destination = pUtils.generate_features_path(bucket_name, model_name)
     dependent_col = model_registry[model_name][MRKeys.dependent]
     feature_cols = model_registry[model_name][MRKeys.features]
 
-    # Code to produce and save features for care home model
     lf = utils.scan_parquet(source).filter(
         pl.col(IndCQC.care_home) == CareHome.care_home
     )
-
     lf = fUtils.add_date_index_column(lf)
 
     lf = fUtils.add_array_column_count(
@@ -76,21 +81,18 @@ def main(bucket_name: str, model_name: str) -> None:
         ServicesLabels.care_home_labels_dict,
         is_array_col=True,
     )
-
     lf = fUtils.expand_encode_and_extract_features(
         lf,
         IndCQC.specialisms_offered,
         SpecialismsLabels.labels_dict,
         is_array_col=True,
     )
-
     lf = fUtils.expand_encode_and_extract_features(
         lf,
         IndCQC.current_rural_urban_indicator_2011,
         RuralUrbanLabels.care_home_labels_dict,
         is_array_col=False,
     )
-
     lf = fUtils.expand_encode_and_extract_features(
         lf,
         IndCQC.current_region,
@@ -98,7 +100,6 @@ def main(bucket_name: str, model_name: str) -> None:
         is_array_col=False,
     )
 
-    # Select and save non-null feature columns
     features_lf = fUtils.select_and_filter_features_data(
         lf, feature_cols, dependent_col, partition_keys
     )
