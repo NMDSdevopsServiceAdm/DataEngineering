@@ -55,6 +55,8 @@ All notable changes to this project will be documented in this file.
 
 - Added model registry.
 
+- Added function to validate model definitions used in tasks are stored in the model registry.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
