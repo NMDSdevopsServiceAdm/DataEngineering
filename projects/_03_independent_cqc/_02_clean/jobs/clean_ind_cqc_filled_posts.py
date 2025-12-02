@@ -80,6 +80,13 @@ def main(
 
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
 
+    locations_df = locations_df.withColumn(
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        F.when(F.col(IndCQC.location_id) == "1-113873482", F.lit(None)).otherwise(
+            F.col(IndCQC.ascwds_filled_posts_dedup_clean)
+        ),
+    )
+
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
         locations_df,
         IndCQC.ascwds_filled_posts_dedup_clean,
