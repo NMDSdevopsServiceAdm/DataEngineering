@@ -51,7 +51,7 @@ def main(
         compare_path (str): path to a dataset to compare against for expected size
     """
     source_df = utils.read_parquet(
-        f"s3://{bucket_name}/{source_path}", exclude_complex_types=True
+        f"s3://{bucket_name}/{source_path}", exclude_complex_types=False
     ).with_columns(
         str_length_cols([CQCLClean.location_id, CQCLClean.provider_id]),
     )
