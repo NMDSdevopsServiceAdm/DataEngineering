@@ -172,7 +172,7 @@ class IndCqcColumns:
         ONSClean.current_rural_urban_ind_11 + "_for_non_res_model"
     )
     current_sub_icb: str = ONSClean.current_sub_icb
-    days_provider_has_repeated_value: str = "days_provider_has_repeated_value"
+    days_value_has_been_repeated: str = "days_value_has_been_repeated"
     difference_between_estimate_and_cqc_registered_managers: str = (
         "difference_between_estimate_and_cqc_registered_managers"
     )
@@ -302,7 +302,9 @@ class IndCqcColumns:
     prediction: str = "prediction"
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
-    previous_submission_import_date: str = "previous_submission_import_date"
+    date_when_repeated_value_was_first_submitted: str = (
+        "date_when_repeated_value_was_first_submitted"
+    )
     previous_submission_time: str = "previous_submission_time"
     previous_value: str = "previous_value"
     previous_value_unix_time: str = "previous_value_unix_time"

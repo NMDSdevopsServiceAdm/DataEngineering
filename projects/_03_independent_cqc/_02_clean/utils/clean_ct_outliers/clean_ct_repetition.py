@@ -14,59 +14,56 @@ from utils.column_values.categorical_column_values import (
     CTNonResFilteringRule,
 )
 
-POSTS_TO_DEFINE_LARGE_PROVIDER = 50
-REPETITION_LIMIT_ALL_PROVIDERS = 365
-REPETITION_LIMIT_LARGE_PROVIDER = 185
+DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS = {
+    0: 185,
+    10: 90,
+    50: 60,
+}
 
 
-def null_ct_values_after_consecutive_repetition(
+def clean_ct_values_after_consecutive_repetition(
     df: DataFrame,
     column_to_clean: str,
     cleaned_column_name: str,
     care_home: bool,
+    partitioning_column: str,
 ) -> DataFrame:
     """
-    Nulls Capacity Tracker values at locations within a provider when their provider total value repeats for too long.
+    Nulls Capacity Tracker values after they have consecutively repeated for too long.
 
-    When a provider has the same total value for more than a repetition limit, then all their location values are nulled after
-    the limit period, until the provider has a new total value.
-    The repetition limit is 12 months, unless the provider as a whole is larger than 50 posts then the limit is 6 months.
-    The provider size is determined by posts in their NHS Capacity Tracker submissions.
+    When a value is repeated for more than a repetition limit, then the value is nulled after
+    the limit period until a different value has been submitted.
+    The repetition limit is based on the mean days that values stayed the same per non-residential location in
+    Capacity Tracker data between December 2020 and November 2025.
 
     Args:
         df (DataFrame): A dataframe with consecutive import dates.
         column_to_clean (str): A column with repeated values.
         cleaned_column_name (str): A column with cleaned values.
         care_home (bool): True when cleaning care home values, False when cleaning non-residential values.
+        partitioning_column (str): The column to partition by when deduplicating column_to_clean.
 
     Returns:
         DataFrame: The input with DataFrame with an additional column.
     """
-    provider_values_col = f"{column_to_clean}_provider_sum"
-    provider_values_col_dedup = f"{column_to_clean}_provider_sum_deduplicated"
-
-    df = aggregate_values_to_provider_level(df, column_to_clean)
-
     df = create_column_with_repeated_values_removed(
-        df, provider_values_col, provider_values_col_dedup, IndCQC.provider_id
+        df, column_to_clean, f"{column_to_clean}_deduplicated", partitioning_column
     )
 
-    df = calculate_days_a_provider_has_been_repeating_values(
-        df, provider_values_col_dedup
+    df = calculate_days_a_value_has_been_repeated(
+        df, f"{column_to_clean}_deduplicated", IndCQC.location_id
     )
 
-    df = clean_capacity_tracker_posts_repetition(
-        df, column_to_clean, cleaned_column_name
-    )
+    df = clean_value_repetition(df, column_to_clean, cleaned_column_name)
 
     if care_home:
         filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
         populated_rule = CTCareHomeFilteringRule.populated
-        new_rule_name = CTCareHomeFilteringRule.provider_repeats_total_posts
+        new_rule_name = CTCareHomeFilteringRule.location_repeats_total_posts
     else:
         filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
         populated_rule = CTNonResFilteringRule.populated
-        new_rule_name = CTNonResFilteringRule.provider_repeats_total_posts
+        new_rule_name = CTNonResFilteringRule.location_repeats_total_posts
 
     df = update_filtering_rule(
         df,
@@ -78,50 +75,31 @@ def null_ct_values_after_consecutive_repetition(
     )
 
     df = df.drop(
-        provider_values_col,
-        provider_values_col_dedup,
-        IndCQC.days_provider_has_repeated_value,
-        IndCQC.provider_size_in_capacity_tracker_group,
+        f"{column_to_clean}_deduplicated",
+        IndCQC.days_value_has_been_repeated,
     )
 
     return df
 
 
-def aggregate_values_to_provider_level(df: DataFrame, col_to_sum: str) -> DataFrame:
-    """
-    Adds a new column with the provider level sum of a given column.
-    The new column will be named col_to_sum suffixed with "_provider_sum".
-
-    Args:
-        df (DataFrame): A dataframe with providerid and the column_to_sum.
-        col_to_sum (str): A column of values to sum.
-
-    Returns:
-        DataFrame: The input DataFrame with a new aggregated column.
-    """
-    w = Window.partitionBy([IndCQC.provider_id, IndCQC.cqc_location_import_date])
-    df = df.withColumn(
-        f"{col_to_sum}_provider_sum",
-        F.sum(col_to_sum).over(w),
-    )
-
-    return df
-
-
-def calculate_days_a_provider_has_been_repeating_values(
-    df: DataFrame, provider_level_values_deduplicated: str
+def calculate_days_a_value_has_been_repeated(
+    df: DataFrame,
+    deduplicated_values_column: str,
+    partitioning_column: str,
 ) -> DataFrame:
     """
-    Adds a column with the number of days between import date and the date a repeated value began.
+    Adds a column with the number of days between import date on the row and the import date of the last known value
+    when import date is in ascending order.
 
     Args:
         df (DataFrame): A dataframe with import date and a deduplicated value column.
-        provider_level_values_deduplicated (str): A column with repeated values removed.
+        deduplicated_values_column (str): A column with repeated values removed.
+        partitioning_column (str): The column to partition by when getting import date when values were first submitted.
 
     Returns:
         DataFrame: The input DataFrame with a new column days_since_previous_submission.
     """
-    window_spec = Window.partitionBy(IndCQC.provider_id).orderBy(
+    window_spec = Window.partitionBy(partitioning_column).orderBy(
         IndCQC.cqc_location_import_date
     )
     window_spec_backwards = window_spec.rowsBetween(
@@ -130,36 +108,32 @@ def calculate_days_a_provider_has_been_repeating_values(
     df = utils.get_selected_value(
         df,
         window_spec_backwards,
-        provider_level_values_deduplicated,
+        deduplicated_values_column,
         IndCQC.cqc_location_import_date,
-        IndCQC.previous_submission_import_date,
+        IndCQC.date_when_repeated_value_was_first_submitted,
         "last",
     )
 
     df = df.withColumn(
-        IndCQC.days_provider_has_repeated_value,
+        IndCQC.days_value_has_been_repeated,
         F.date_diff(
-            IndCQC.cqc_location_import_date, IndCQC.previous_submission_import_date
+            IndCQC.cqc_location_import_date,
+            IndCQC.date_when_repeated_value_was_first_submitted,
         ),
     )
 
-    return df.drop(IndCQC.previous_submission_import_date)
+    return df.drop(IndCQC.date_when_repeated_value_was_first_submitted)
 
 
-def clean_capacity_tracker_posts_repetition(
+def clean_value_repetition(
     df: DataFrame,
     column_to_clean: str,
     cleaned_column_name: str,
 ) -> DataFrame:
     """
-    Copies values from column_to_clean to cleaned_column_name when the following condition is true.
+    Nulls values in column_to_clean when days_value_has_been_repeated is above the limit.
 
-    Condition:
-        when provider
-
-    Nulls values in column_to_clean when days_since_previous_submission is above the limit for the providers size.
-
-    If the location is at a large provider then the repetition limit is less than locations at small providers.
+    The limits are defined in a dictionary with keys = minimum posts and values = days limit.
 
     Args:
         df (DataFrame): A dataframe with consecutive import dates.
@@ -169,28 +143,28 @@ def clean_capacity_tracker_posts_repetition(
     Returns:
         DataFrame: The input with DataFrame with an additional column.
     """
+    # Minimum posts for each repetition limit. Up to 9 posts = 185 days, 10 to 49 = 90 days, 50+ = 60 days.
+    sorted_dict = sorted(DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS.items())
+
+    # Add a column with the repetition limit based on size from dict_of_minimum_posts_and_max_repetition_days.
+    column_expression = None
+    for key, value in sorted_dict:
+        condition = F.col(column_to_clean) > key
+        column_expression = (
+            value
+            if column_expression is None
+            else F.when(condition, value).otherwise(column_expression)
+        )
+    repetition_limit_based_on_posts = "repetition_limit_based_on_posts"
+    df = df.withColumn(repetition_limit_based_on_posts, column_expression)
+
     df = df.withColumn(
         cleaned_column_name,
         F.when(
-            (
-                (
-                    F.col(IndCQC.provider_size_in_capacity_tracker_group)
-                    >= POSTS_TO_DEFINE_LARGE_PROVIDER
-                )
-                & (
-                    F.col(IndCQC.days_provider_has_repeated_value)
-                    <= REPETITION_LIMIT_LARGE_PROVIDER
-                )
-            )
-            | (
-                (F.col(IndCQC.provider_size_in_capacity_tracker_group).isNull())
-                & (
-                    F.col(IndCQC.days_provider_has_repeated_value)
-                    < POSTS_TO_DEFINE_LARGE_PROVIDER
-                )
-            ),
+            F.col(IndCQC.days_value_has_been_repeated)
+            < F.col(repetition_limit_based_on_posts),
             F.col(column_to_clean),
         ).otherwise(None),
     )
 
-    return df
+    return df.drop(repetition_limit_based_on_posts)

@@ -18,6 +18,7 @@ from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     CareHome,
     CTCareHomeFilteringRule,
+    CTNonResFilteringRule,
     Dormancy,
     EstimateFilledPostsSource,
     JobGroupLabels,
@@ -3601,6 +3602,27 @@ class CleanFilteringUtilsData:
     ]
     # fmt: on
 
+    aggregate_values_to_provider_level_rows = [
+        ("1-001", "1-0001", 1, date(2025, 1, 1)),
+        ("1-002", "1-0001", 1, date(2025, 1, 1)),
+        ("1-003", "1-0002", 1, date(2025, 1, 1)),
+        ("1-004", "1-0002", None, date(2025, 1, 1)),
+        ("1-005", "1-0003", None, date(2025, 1, 1)),
+        ("1-006", "1-0003", None, date(2025, 1, 1)),
+        ("1-001", "1-0001", 2, date(2025, 2, 1)),
+        ("1-002", "1-0001", 2, date(2025, 2, 1)),
+    ]
+    expected_aggregate_values_to_provider_level_rows = [
+        ("1-001", "1-0001", 1, date(2025, 1, 1), 2),
+        ("1-002", "1-0001", 1, date(2025, 1, 1), 2),
+        ("1-003", "1-0002", 1, date(2025, 1, 1), 1),
+        ("1-004", "1-0002", None, date(2025, 1, 1), 1),
+        ("1-005", "1-0003", None, date(2025, 1, 1), None),
+        ("1-006", "1-0003", None, date(2025, 1, 1), None),
+        ("1-001", "1-0001", 2, date(2025, 2, 1), 4),
+        ("1-002", "1-0001", 2, date(2025, 2, 1), 4),
+    ]
+
 
 @dataclass
 class CleanAscwdsFilledPostOutliersData:
@@ -5912,140 +5934,53 @@ class IndCQCDataUtils:
 
 @dataclass
 class CleanCtRepetition:
-
     # fmt: off
-    null_ct_values_after_consec_rep_with_provider_repetition_outside_limit_and_providers_are_small_rows = [
-        ("1-001", "1-0001", 1, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-002", "1-0001", 2, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-001", "1-0001", 1, CTCareHomeFilteringRule.populated, date(2026, 1, 1)),
-        ("1-002", "1-0001", 2, CTCareHomeFilteringRule.populated, date(2026, 1, 1)),
-        ("1-001", "1-0001", 1, CTCareHomeFilteringRule.populated, date(2026, 2, 1)),
-        ("1-002", "1-0001", 2, CTCareHomeFilteringRule.populated, date(2026, 2, 1)),
-        ("1-003", "1-0002", 1, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-004", "1-0002", 3, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-003", "1-0002", None, CTCareHomeFilteringRule.missing_data, date(2026, 1, 1)),
-        ("1-004", "1-0002", 4, CTCareHomeFilteringRule.populated, date(2026, 1, 1)),
-        ("1-003", "1-0002", 2, CTCareHomeFilteringRule.populated, date(2026, 2, 1)),
-        ("1-004", "1-0002", 2, CTCareHomeFilteringRule.populated, date(2026, 2, 1)),
+    clean_ct_values_after_consecutive_repetition_rows = [
+        ("1-001", 1, CTNonResFilteringRule.populated, date(2025, 1, 1)),
+        ("1-001", 2, CTNonResFilteringRule.populated, date(2025, 2, 1)),
+        ("1-001", 2, CTNonResFilteringRule.populated, date(2025, 9, 1)),
+        ("1-001", None, CTNonResFilteringRule.missing_data, date(2025, 10, 1)),
+        ("1-001", 3, CTNonResFilteringRule.populated, date(2025, 11, 1)),
     ]
-    expected_null_ct_values_after_consec_rep_with_provider_repetition_outside_limit_and_providers_are_small_rows = [
-        ("1-001", "1-0001", 1, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-002", "1-0001", 2, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-001", "1-0001", 1, CTCareHomeFilteringRule.populated, date(2026, 1, 1)),
-        ("1-002", "1-0001", 2, CTCareHomeFilteringRule.populated, date(2026, 1, 1)),
-        ("1-001", "1-0001", None, CTCareHomeFilteringRule.provider_repeats_total_posts, date(2026, 2, 1)),
-        ("1-002", "1-0001", None, CTCareHomeFilteringRule.provider_repeats_total_posts, date(2026, 2, 1)),
-        ("1-003", "1-0002", 1, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-004", "1-0002", 3, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-003", "1-0002", None, CTCareHomeFilteringRule.missing_data, date(2026, 1, 1)),
-        ("1-004", "1-0002", 4, CTCareHomeFilteringRule.populated, date(2026, 1, 1)),
-        ("1-003", "1-0002", None, CTCareHomeFilteringRule.provider_repeats_total_posts, date(2026, 2, 1)),
-        ("1-004", "1-0002", None, CTCareHomeFilteringRule.provider_repeats_total_posts, date(2026, 2, 1)),
+    expected_clean_ct_values_after_consecutive_repetition_rows = [
+        ("1-001", 1, CTNonResFilteringRule.populated, date(2025, 1, 1), 1),
+        ("1-001", 2, CTNonResFilteringRule.populated, date(2025, 2, 1), 2),
+        ("1-001", 2, CTNonResFilteringRule.location_repeats_total_posts, date(2025, 9, 1), None), # Only this row has been cleaned.
+        ("1-001", None, CTNonResFilteringRule.missing_data, date(2025, 10, 1), None),
+        ("1-001", 3, CTNonResFilteringRule.populated, date(2025, 11, 1), 3),
     ]
-
-    null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_small_rows = [
-        ("1-001", "1-0001", 1, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-002", "1-0001", 2, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-001", "1-0001", 3, CTCareHomeFilteringRule.populated, date(2026, 2, 1)),
-        ("1-002", "1-0001", 4, CTCareHomeFilteringRule.populated, date(2026, 2, 1)),
-    ]
-    expected_null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_small_rows = (
-        null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_small_rows
-        )
-
-    null_ct_values_after_consec_rep_with_provider_repetition_outside_limit_and_providers_are_large_rows = [
-        ("1-001", "1-0001", 50, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-002", "1-0001", 1, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-001", "1-0001", 50, CTCareHomeFilteringRule.populated, date(2025, 7, 1)),
-        ("1-002", "1-0001", 1, CTCareHomeFilteringRule.populated, date(2025, 7, 1)),
-        ("1-001", "1-0001", 50, CTCareHomeFilteringRule.populated, date(2025, 8, 1)),
-        ("1-002", "1-0001", 1, CTCareHomeFilteringRule.populated, date(2025, 8, 1)),
-        ("1-003", "1-0002", 50, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-004", "1-0002", 3, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-003", "1-0002", None, CTCareHomeFilteringRule.missing_data, date(2025, 7, 1)),
-        ("1-004", "1-0002", 53, CTCareHomeFilteringRule.populated, date(2025, 7, 1)),
-        ("1-003", "1-0002", 51, CTCareHomeFilteringRule.populated, date(2025, 8, 1)),
-        ("1-004", "1-0002", 2, CTCareHomeFilteringRule.populated, date(2025, 8, 1)),
-    ]
-    expected_null_ct_values_after_consec_rep_with_provider_repetition_outside_limit_and_providers_are_large_rows = [
-        ("1-001", "1-0001", 50, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-002", "1-0001", 1, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-001", "1-0001", 50, CTCareHomeFilteringRule.populated, date(2025, 7, 1)),
-        ("1-002", "1-0001", 1, CTCareHomeFilteringRule.populated, date(2025, 7, 1)),
-        ("1-001", "1-0001", None, CTCareHomeFilteringRule.provider_repeats_total_posts, date(2025, 8, 1)),
-        ("1-002", "1-0001", None, CTCareHomeFilteringRule.provider_repeats_total_posts, date(2025, 8, 1)),
-        ("1-003", "1-0002", 50, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-004", "1-0002", 3, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-003", "1-0002", None, CTCareHomeFilteringRule.missing_data, date(2025, 7, 1)),
-        ("1-004", "1-0002", 53, CTCareHomeFilteringRule.populated, date(2025, 7, 1)),
-        ("1-003", "1-0002", None, CTCareHomeFilteringRule.provider_repeats_total_posts, date(2025, 8, 1)),
-        ("1-004", "1-0002", None, CTCareHomeFilteringRule.provider_repeats_total_posts, date(2025, 8, 1)),
-    ]
-
-    null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_large_rows = [
-        ("1-001", "1-0001", 50, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-002", "1-0001", 1, CTCareHomeFilteringRule.populated, date(2025, 1, 1)),
-        ("1-001", "1-0001", 50, CTCareHomeFilteringRule.populated, date(2026, 2, 1)),
-        ("1-002", "1-0001", 2, CTCareHomeFilteringRule.populated, date(2026, 2, 1)),
-    ]
-    expected_null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_large_rows = (
-        null_ct_values_after_consec_rep_without_provider_repetition_outside_limit_and_providers_are_large_rows
-    )
     # fmt: on
 
-    aggregate_values_to_provider_level_rows = [
-        ("1-001", "1-0001", 1, date(2025, 1, 1)),
-        ("1-002", "1-0001", 1, date(2025, 1, 1)),
-        ("1-003", "1-0002", 1, date(2025, 1, 1)),
-        ("1-004", "1-0002", None, date(2025, 1, 1)),
-        ("1-005", "1-0003", None, date(2025, 1, 1)),
-        ("1-006", "1-0003", None, date(2025, 1, 1)),
-        ("1-001", "1-0001", 2, date(2025, 2, 1)),
-        ("1-002", "1-0001", 2, date(2025, 2, 1)),
+    calculate_days_a_value_has_been_repeated_rows = [
+        ("1-001", 1, date(2025, 1, 1)),
+        ("1-001", 2, date(2025, 2, 1)),
+        ("1-001", 3, date(2025, 3, 1)),
+        ("1-001", None, date(2025, 4, 1)),
+        ("1-001", None, date(2025, 5, 1)),
+        ("1-001", 4, date(2025, 6, 1)),
     ]
-    expected_aggregate_values_to_provider_level_rows = [
-        ("1-001", "1-0001", 1, date(2025, 1, 1), 2),
-        ("1-002", "1-0001", 1, date(2025, 1, 1), 2),
-        ("1-003", "1-0002", 1, date(2025, 1, 1), 1),
-        ("1-004", "1-0002", None, date(2025, 1, 1), 1),
-        ("1-005", "1-0003", None, date(2025, 1, 1), None),
-        ("1-006", "1-0003", None, date(2025, 1, 1), None),
-        ("1-001", "1-0001", 2, date(2025, 2, 1), 4),
-        ("1-002", "1-0001", 2, date(2025, 2, 1), 4),
-    ]
-
-    calculate_days_a_provider_has_been_repeating_values_rows = [
-        ("1-0001", 1, date(2025, 1, 1)),
-        ("1-0001", None, date(2025, 2, 1)),
-        ("1-0001", None, date(2025, 3, 1)),
-        ("1-0002", 1, date(2025, 1, 1)),
-        ("1-0002", 2, date(2025, 2, 1)),
-        ("1-0002", 3, date(2025, 3, 1)),
-        ("1-0003", 1, date(2025, 1, 1)),
-        ("1-0003", None, date(2025, 2, 1)),
-        ("1-0003", 3, date(2025, 3, 1)),
-    ]
-    expected_calculate_days_a_provider_has_been_repeating_values_rows = [
-        ("1-0001", 1, date(2025, 1, 1), 0),
-        ("1-0001", None, date(2025, 2, 1), 31),
-        ("1-0001", None, date(2025, 3, 1), 59),
-        ("1-0002", 1, date(2025, 1, 1), 0),
-        ("1-0002", 2, date(2025, 2, 1), 0),
-        ("1-0002", 3, date(2025, 3, 1), 0),
-        ("1-0003", 1, date(2025, 1, 1), 0),
-        ("1-0003", None, date(2025, 2, 1), 31),
-        ("1-0003", 3, date(2025, 3, 1), 0),
+    expected_calculate_days_a_value_has_been_repeated_rows = [
+        ("1-001", 1, date(2025, 1, 1), 0),
+        ("1-001", 2, date(2025, 2, 1), 0),
+        ("1-001", 3, date(2025, 3, 1), 0),
+        ("1-001", None, date(2025, 4, 1), 31),
+        ("1-001", None, date(2025, 5, 1), 61),
+        ("1-001", 4, date(2025, 6, 1), 0),
     ]
 
     clean_capacity_tracker_posts_repetition_rows = [
-        ("1-0001", 1, "large provider", 185),
-        ("1-0002", 1, "large provider", 186),
-        ("1-0003", 1, None, 365),
-        ("1-0004", 1, None, 366),
+        ("1-001", 1, 184),
+        ("1-002", 9, 185),
+        ("1-003", 10, 90),
+        ("1-004", 49, 91),
+        ("1-005", 50, 60),
+        ("1-006", 51, 61),
     ]
     expected_clean_capacity_tracker_posts_repetition_rows = [
-        ("1-0001", 1, "large provider", 185),
-        ("1-0002", None, "large provider", 186),
-        ("1-0003", 1, None, 365),
-        ("1-0004", None, None, 366),
+        ("1-001", 1, 184, 1),
+        ("1-002", 9, 185, None),
+        ("1-003", 10, 90, 10),
+        ("1-004", 49, 91, None),
+        ("1-005", 50, 60, 50),
+        ("1-006", 51, 61, None),
     ]
