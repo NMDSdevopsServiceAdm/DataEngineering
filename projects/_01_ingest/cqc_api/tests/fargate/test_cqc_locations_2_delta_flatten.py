@@ -29,7 +29,9 @@ class CqcLocationsDeltaFlattenTests(unittest.TestCase):
     ):
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
-        scan_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
+        scan_parquet_mock.assert_called_once_with(
+            self.TEST_SOURCE, selected_columns=ANY
+        )
         self.assertEqual(column_to_date_mock.call_count, 2)
         flatten_struct_fields_mock.assert_called_once()
         extract_registered_manager_names_mock.assert_called_once()

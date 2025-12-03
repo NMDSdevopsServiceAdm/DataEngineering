@@ -7,15 +7,16 @@ from projects._03_independent_cqc._04_model.utils.value_labels import (
     SpecialismsLabels,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 
 model_registry = {
     "care_home": {
-        "version": "7.0.0",
-        "auto_retrain": True,
-        "model_type": ModelTypes.lasso,
-        "model_params": {"alpha": 0.001},
-        "dependent": IndCQC.imputed_filled_posts_per_bed_ratio_model,
-        "features": [
+        MRKeys.version: "7.0.0",
+        MRKeys.auto_retrain: True,
+        MRKeys.model_type: ModelTypes.lasso,
+        MRKeys.model_params: {"alpha": 0.001},
+        MRKeys.dependent: IndCQC.imputed_filled_posts_per_bed_ratio_model,
+        MRKeys.features: [
             IndCQC.activity_count_capped,
             IndCQC.cqc_location_import_date_indexed,
             IndCQC.number_of_beds,
@@ -28,12 +29,12 @@ model_registry = {
         ],
     },
     "non_residential_without_dormancy": {
-        "version": "5.0.0",
-        "auto_retrain": True,
-        "model_type": ModelTypes.lasso,
-        "model_params": {"alpha": 0.001},
-        "dependent": IndCQC.imputed_filled_post_model,
-        "features": [
+        MRKeys.version: "5.0.0",
+        MRKeys.auto_retrain: True,
+        MRKeys.model_type: ModelTypes.lasso,
+        MRKeys.model_params: {"alpha": 0.001},
+        MRKeys.dependent: IndCQC.imputed_filled_post_model,
+        MRKeys.features: [
             IndCQC.activity_count_capped,
             IndCQC.cqc_location_import_date_indexed,
             IndCQC.posts_rolling_average_model,
@@ -47,12 +48,12 @@ model_registry = {
         ],
     },
     "non_residential_with_dormancy": {
-        "version": "6.0.0",
-        "auto_retrain": True,
-        "model_type": ModelTypes.lasso,
-        "model_params": {"alpha": 0.001},
-        "dependent": IndCQC.imputed_filled_post_model,
-        "features": [
+        MRKeys.version: "6.0.0",
+        MRKeys.auto_retrain: True,
+        MRKeys.model_type: ModelTypes.lasso,
+        MRKeys.model_params: {"alpha": 0.001},
+        MRKeys.dependent: IndCQC.imputed_filled_post_model,
+        MRKeys.features: [
             IndCQC.activity_count_capped,
             IndCQC.cqc_location_import_date_indexed,
             IndCQC.cqc_location_import_date_indexed_squared,
@@ -68,11 +69,11 @@ model_registry = {
         ],
     },
     "non_res_pir": {
-        "version": "3.0.0",
-        "auto_retrain": True,
-        "model_type": ModelTypes.linear_regression,
-        "model_params": {"fit_intercept": False},
-        "dependent": IndCQC.ascwds_filled_posts_dedup_clean,
-        "features": [IndCQC.pir_people_directly_employed_dedup],
+        MRKeys.version: "3.0.0",
+        MRKeys.auto_retrain: True,
+        MRKeys.model_type: ModelTypes.linear_regression,
+        MRKeys.model_params: {"fit_intercept": False},
+        MRKeys.dependent: IndCQC.ascwds_filled_posts_dedup_clean,
+        MRKeys.features: [IndCQC.pir_people_directly_employed_dedup],
     },
 }
