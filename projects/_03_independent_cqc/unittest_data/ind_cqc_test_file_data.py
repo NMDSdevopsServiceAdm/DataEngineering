@@ -5969,3 +5969,37 @@ class DuplicateLatestKnownAscwdsValueIntoFollowingTwoImportDates:
         ("1-001", date(2025, 5, 1), 2),
         ("1-001", date(2025, 6, 1), None),
     ]
+
+    input_one_month_window_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),  # +31 days
+        ("1-001", date(2025, 3, 1), 1),  # +59 days
+        ("1-001", date(2025, 4, 1), None),
+        ("1-001", date(2025, 5, 1), None),
+    ]
+
+    # Only Feb 1 should be filled (difference from Jan 1 = 31 days → borderline,
+    # so if 30 days strict, only fill if ≤ 30). Let's assume monthly ≈ 30 days.
+    expected_one_month_window_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), 1),
+        ("1-001", date(2025, 4, 1), 1),
+        ("1-001", date(2025, 5, 1), None),
+    ]
+
+    input_ninety_day_window_rows = [
+        ("1-001", date(2025, 1, 1), 10),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), None),
+        ("1-001", date(2025, 4, 1), None),
+        ("1-001", date(2025, 5, 1), None),
+    ]
+
+    expected_ninety_day_window_rows = [
+        ("1-001", date(2025, 1, 1), 10),
+        ("1-001", date(2025, 2, 1), 10),
+        ("1-001", date(2025, 3, 1), 10),
+        ("1-001", date(2025, 4, 1), 10),
+        ("1-001", date(2025, 5, 1), None),  # outside 90-day window
+    ]

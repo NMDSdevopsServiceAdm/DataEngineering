@@ -20,8 +20,8 @@ from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_car
 from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_non_res_outliers import (
     clean_capacity_tracker_non_res_outliers,
 )
-from projects._03_independent_cqc._02_clean.utils.duplicate_latest_known_ascwds_value_into_following_two_import_dates import (
-    duplicate_latest_known_ascwds_value_into_following_two_import_dates,
+from projects._03_independent_cqc._02_clean.utils.forward_fill_latest_recorded_value import (
+    repeat_last_known_value,
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -83,8 +83,8 @@ def main(
 
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
 
-    locations_df = duplicate_latest_known_ascwds_value_into_following_two_import_dates(
-        locations_df
+    locations_df = repeat_last_known_value(
+        locations_df, IndCQC.ascwds_filled_posts_dedup_clean, 61
     )
 
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
