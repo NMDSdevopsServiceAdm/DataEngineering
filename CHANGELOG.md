@@ -193,7 +193,7 @@ All notable changes to this project will be documented in this file.
   - Get all data from the API and assign it to a dataframe without a schema (column types are inferred).
   - Override specific column types to match historic delta downloads.
   - Store all CQC API delta data in dataset_delta_locations_api / dataset_delta_providers_api.
-  - Import only specific columns in full_clean job.
+  - Import only specific columns in delta flatten job.
 
 - Fixed validation failures for cleaned CQC locations caused by complex columns in the DataFrame, which prevented PointBlank from generating output reports.
   - Updated the validation script to replicate the newly added filter from the cleaning process, ensuring row count validations now pass.
