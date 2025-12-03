@@ -15,7 +15,6 @@ from utils.column_values.categorical_column_values import (
 )
 
 POSTS_TO_DEFINE_LARGE_PROVIDER = 50
-LARGE_PROVIDER = "large provider"
 REPETITION_LIMIT_ALL_PROVIDERS = 365
 REPETITION_LIMIT_LARGE_PROVIDER = 185
 
@@ -55,7 +54,7 @@ def null_ct_values_after_consecutive_repetition(
     df = calculate_days_a_provider_has_been_repeating_values(
         df, provider_values_col_dedup
     )
-    df = identify_large_providers(df, provider_values_col)
+
     df = clean_capacity_tracker_posts_repetition(
         df, column_to_clean, cleaned_column_name
     )
@@ -147,31 +146,6 @@ def calculate_days_a_provider_has_been_repeating_values(
     return df.drop(IndCQC.previous_submission_import_date)
 
 
-def identify_large_providers(df: DataFrame, provider_level_values: str) -> DataFrame:
-    """
-    Adds a column to flag large providers.
-
-    Analysis of Capacity Tracker data showed a providers total posts changed more frequently when
-    they had 50+ posts. Around 80% of providers had up to posts.
-
-    Args:
-        df (DataFrame): A dataframe with import date and a deduplicated value column.
-        provider_level_values (str): The column to sum to determine size.
-
-    Returns:
-        DataFrame: The input with DataFrame with an additional column.
-    """
-    df = df.withColumn(
-        IndCQC.provider_size_in_capacity_tracker_group,
-        F.when(
-            F.col(provider_level_values) > POSTS_TO_DEFINE_LARGE_PROVIDER,
-            F.lit(LARGE_PROVIDER),
-        ).otherwise(None),
-    )
-
-    return df
-
-
 def clean_capacity_tracker_posts_repetition(
     df: DataFrame,
     column_to_clean: str,
@@ -201,7 +175,7 @@ def clean_capacity_tracker_posts_repetition(
             (
                 (
                     F.col(IndCQC.provider_size_in_capacity_tracker_group)
-                    == LARGE_PROVIDER
+                    >= POSTS_TO_DEFINE_LARGE_PROVIDER
                 )
                 & (
                     F.col(IndCQC.days_provider_has_repeated_value)
@@ -212,7 +186,7 @@ def clean_capacity_tracker_posts_repetition(
                 (F.col(IndCQC.provider_size_in_capacity_tracker_group).isNull())
                 & (
                     F.col(IndCQC.days_provider_has_repeated_value)
-                    <= REPETITION_LIMIT_ALL_PROVIDERS
+                    < POSTS_TO_DEFINE_LARGE_PROVIDER
                 )
             ),
             F.col(column_to_clean),

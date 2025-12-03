@@ -3238,25 +3238,6 @@ class CleanCtRepetition:
         ]
     )
 
-    identify_large_providers_schema = StructType(
-        [
-            StructField(IndCQC.provider_id, StringType(), True),
-            StructField(
-                IndCQC.ct_care_home_total_employed_cleaned_provider_sum,
-                StringType(),
-                True,
-            ),
-        ]
-    )
-    expected_identify_large_providers_schema = StructType(
-        [
-            *identify_large_providers_schema,
-            StructField(
-                IndCQC.provider_size_in_capacity_tracker_group, StringType(), True
-            ),
-        ]
-    )
-
     clean_capacity_tracker_posts_repetition_schema = StructType(
         [
             StructField(IndCQC.provider_id, StringType()),

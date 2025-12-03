@@ -6037,19 +6037,6 @@ class CleanCtRepetition:
         ("1-0003", 3, date(2025, 3, 1), 0),
     ]
 
-    identify_large_providers_rows = [
-        ("1-0001", 49),
-        ("1-0002", 50),
-        ("1-0003", 51),
-        ("1-0004", None),
-    ]
-    expected_identify_large_providers_rows = [
-        ("1-0001", 49, None),
-        ("1-0002", 50, None),
-        ("1-0003", 51, "large provider"),
-        ("1-0004", None, None),
-    ]
-
     clean_capacity_tracker_posts_repetition_rows = [
         ("1-0001", 1, "large provider", 185),
         ("1-0002", 1, "large provider", 186),

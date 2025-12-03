@@ -194,28 +194,6 @@ class CalculateDaysAProviderHasBeenRepeatingValues(CleanCtRepetitionTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class IdentifyLargeProviders(CleanCtRepetitionTests):
-    def setUp(self):
-        super().setUp()
-
-    def test_identify_large_providers_returns_expected_values(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.identify_large_providers_rows,
-            Schemas.identify_large_providers_schema,
-        )
-        returned_df = job.identify_large_providers(
-            test_df, IndCQC.ct_care_home_total_employed_cleaned_provider_sum
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_identify_large_providers_rows,
-            Schemas.expected_identify_large_providers_schema,
-        )
-
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-
 class CleanCapacityTrackerPostsRepetition(CleanCtRepetitionTests):
     def setUp(self):
         super().setUp()
