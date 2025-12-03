@@ -1,7 +1,8 @@
 from enum import Enum
-from typing import Dict, Any, Union
+from typing import Any
+
 import polars as pl
-from sklearn.linear_model import LinearRegression, Lasso, Ridge
+from sklearn.linear_model import Lasso, LinearRegression, Ridge
 
 
 class ModelType(Enum):
@@ -159,8 +160,8 @@ class Model:
         """
         num_features = len(self.feature_columns)
         feature_df = input_df.select(self.feature_columns)
-        target_values = feature_df.to_numpy().reshape(-1, num_features)
-        predictions = self.model.predict(target_values)
+        feature_values = feature_df.to_numpy().reshape(-1, num_features)
+        predictions = self.model.predict(feature_values)
         return pl.from_numpy(predictions, schema=self.target_columns, orient="row")
 
     def set_version(self, version: str) -> None:

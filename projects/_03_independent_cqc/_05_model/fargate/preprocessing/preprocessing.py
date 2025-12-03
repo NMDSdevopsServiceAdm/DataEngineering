@@ -5,6 +5,7 @@ from collections.abc import Callable
 import boto3
 import polars as pl
 from botocore.exceptions import ClientError
+from polars.exceptions import ColumnNotFoundError, PolarsError
 
 from polars_utils import utils
 from projects._03_independent_cqc._05_model.model_registry import model_definitions
@@ -80,6 +81,63 @@ def validate_model_definition(model_id: str, model_definitions: dict) -> None:
         raise ValueError(
             f"{model_id} processed_location not included in model_definitions"
         )
+
+
+def preprocess_remove_nulls(
+    source: str, destination: str, columns: list[str], lazy: bool = False
+) -> None:
+    """
+    Removes rows containing null values in named columns.
+
+    Args:
+        source (str): the source location in S3.
+        destination(str): the destination location in S3.
+        columns (list[str]): the names of the columns to remove null values from.
+        lazy (bool, optional): whether to read the incoming data lazily or not (default is False)
+
+    Raises:
+        ColumnNotFoundError: if any column specified does not exist
+        PolarsError: if there is an error reading or processing the data
+        FileNotFoundError: if the source is not found
+        Exception: on any exception occurring within the preprocessor
+    """
+    if source[-7:] != "parquet" and source[-1] != "/":
+        source = source + "/"
+    print(f"Reading data from {source} - the reading method is LAZY {lazy}")
+    try:
+        data = pl.scan_parquet(source) if lazy else pl.read_parquet(source)
+        result_df = None
+        uri = f"{destination}/processed.parquet"
+        if len(columns) == 0:
+            result_df = data
+        else:
+            conditions = [pl.col(c).is_not_null() for c in columns]
+            condition = True
+            for c in conditions:
+                condition = condition & c
+            result_df = data.filter(condition)
+
+        print(
+            f"Processing succeeded. Writing to {uri} - the writing method is LAZY {lazy}"
+        )
+        if lazy:
+            result_df.sink_parquet(uri)
+        else:
+            result_df.write_parquet(uri)
+
+        print("Finished writing to %s", uri)
+    except ColumnNotFoundError as e:
+        print(
+            f"ERROR: One or more of the specified columns {columns} are not present in {source}."
+        )
+        print(f"ERROR: {e}")
+        raise
+    except (Exception, FileNotFoundError, PolarsError) as e:
+        print(
+            f"ERROR: Polars was not able to read or process the data in {source}, or send to {destination}"
+        )
+        print(f"ERROR: Polars error: {e}")
+        raise
 
 
 def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) -> None:

@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Function to clean Capacity Tracker care home data by nulling when posts to beds ratio is outside thresholds.
 
 - Model retraining process using Polars and scikit-learn in Fargate
+- Care home model preprocessing, retraining and prediction
 
 - Tagging added by default to all Terraform elements
 
