@@ -35,7 +35,6 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCtRepetitionTests):
 
     @patch(f"{PATCH_PATH}.update_filtering_rule")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_posts_repetition")
-    @patch(f"{PATCH_PATH}.identify_large_providers")
     @patch(f"{PATCH_PATH}.calculate_days_a_provider_has_been_repeating_values")
     @patch(f"{PATCH_PATH}.create_column_with_repeated_values_removed")
     @patch(f"{PATCH_PATH}.aggregate_values_to_provider_level")
@@ -44,7 +43,6 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCtRepetitionTests):
         aggregate_values_to_provider_level_mock: Mock,
         create_column_with_repeated_values_removed_mock: Mock,
         calculate_days_a_provider_has_been_repeating_values_mock: Mock,
-        identify_large_providers_mock: Mock,
         clean_capacity_tracker_posts_repetition_mock: Mock,
         update_filtering_rule_mock: Mock,
     ):
@@ -64,7 +62,6 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCtRepetitionTests):
         aggregate_values_to_provider_level_mock.assert_called_once()
         create_column_with_repeated_values_removed_mock.assert_called_once()
         calculate_days_a_provider_has_been_repeating_values_mock.assert_called_once()
-        identify_large_providers_mock.assert_called_once()
         clean_capacity_tracker_posts_repetition_mock.assert_called_once()
         update_filtering_rule_mock.assert_called_once()
 
