@@ -75,7 +75,7 @@ module "_03_independent_cqc" {
 module "_03_independent_cqc_model" {
   source        = "../modules/fargate-task"
   task_name     = "_03_independent_cqc_model"
-  ecr_repo_name = "fargate/_03_independent_cqc_model"
+  ecr_repo_name = "fargate/03_independent_cqc_model"
   cluster_arn   = aws_ecs_cluster.model_cluster.arn
   tag_name      = terraform.workspace
   cpu_size      = 8192
