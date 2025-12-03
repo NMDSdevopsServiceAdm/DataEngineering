@@ -81,9 +81,6 @@ module "_03_independent_cqc_model" {
   cpu_size      = 8192
   ram_size      = 32768
   environment = [
-    { "name" : "AWS_REGION", "value" : "eu-west-2" },
-    { "name" : "ENVIRONMENT", "value" : terraform.workspace == "default" ? "prod" : "dev" },
-    { "name" : "S3_SOURCE_BUCKET", "value" : module.datasets_bucket.bucket_name },
-    { "name" : "RESOURCES_BUCKET", "value" : module.pipeline_resources.bucket_name }
+    { "name" : "AWS_REGION", "value" : "eu-west-2" }
   ]
 }
