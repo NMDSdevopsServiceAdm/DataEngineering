@@ -2,7 +2,7 @@
   "Comment": "A state machine for retraining Independent CQC models and generating predictions",
   "StartAt": "Model Retraining",
   "States": {
-    "Silver to Gold Transformation Layer": {
+    "Model Retraining": {
       "Type": "Parallel",
       "Branches": [
         {
