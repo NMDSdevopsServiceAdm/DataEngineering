@@ -116,7 +116,7 @@ class FeaturesEngineeringUtilsSchemas:
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.DataType()),
-            ("import_date", pl.String()),
+            ("import_date", pl.Int64()),
             ("other_col", pl.String()),
             ("feature_1", pl.Int64()),
             ("feature_2", pl.Int64()),
