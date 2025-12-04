@@ -142,6 +142,8 @@ def clean_value_repetition(
     Nulls values in column_to_clean when days_value_has_been_repeated is above the limit.
 
     The limits are defined in a dictionary with keys = minimum posts and values = days limit.
+    Analysis of Capacity Tracker data showed non-residential and care home locations had different distributions
+    of days they repeated values based on their size. Therefore, each type has its own limits.
 
     Args:
         df (DataFrame): A dataframe with consecutive import dates.
