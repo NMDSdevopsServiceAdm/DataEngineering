@@ -52,7 +52,7 @@ def model_primary_service_rate_of_change_trendline(
     df = cUtils.create_banded_bed_count_column(
         df,
         IndCqc.number_of_beds_banded_for_rate_of_change,
-        [0, 1, 25, float("Inf")],
+        [0, 1, 15, 25, float("Inf")],
     )
 
     df = model_primary_service_rate_of_change(
@@ -79,10 +79,10 @@ def model_primary_service_rate_of_change_trendline(
         "left",
     )
 
-    df = df.drop(
-        IndCqc.number_of_beds_banded_for_rate_of_change,
-        IndCqc.single_period_rate_of_change,
-    )
+    # df = df.drop(
+    #     IndCqc.number_of_beds_banded_for_rate_of_change,
+    #     IndCqc.single_period_rate_of_change,
+    # )
 
     return df
 
