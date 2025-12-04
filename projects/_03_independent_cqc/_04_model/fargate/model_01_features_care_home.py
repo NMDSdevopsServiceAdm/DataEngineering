@@ -101,7 +101,7 @@ def main(bucket_name: str, model_name: str) -> None:
     )
 
     features_lf = fUtils.select_and_filter_features_data(
-        lf, feature_cols, dependent_col
+        lf, feature_cols, dependent_col, partition_keys
     )
 
     utils.sink_to_parquet(
