@@ -45,9 +45,7 @@ class MainTests(CleanIndFilledPostsTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_care_home_outliers")
-    @patch(
-        f"{PATCH_PATH}.repeat_last_known_value"
-    )
+    @patch(f"{PATCH_PATH}.repeat_last_known_value")
     @patch(f"{PATCH_PATH}.clean_ascwds_filled_post_outliers")
     @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
     @patch(f"{PATCH_PATH}.cUtils.calculate_filled_posts_per_bed_ratio")
