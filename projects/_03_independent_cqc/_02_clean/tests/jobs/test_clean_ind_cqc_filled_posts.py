@@ -46,7 +46,7 @@ class MainTests(CleanIndFilledPostsTests):
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_care_home_outliers")
     @patch(
-        f"{PATCH_PATH}.duplicate_latest_known_ascwds_value_into_following_two_import_dates"
+        f"{PATCH_PATH}.repeat_last_known_value"
     )
     @patch(f"{PATCH_PATH}.clean_ascwds_filled_post_outliers")
     @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
@@ -74,7 +74,7 @@ class MainTests(CleanIndFilledPostsTests):
         calculate_filled_posts_per_bed_ratio_mock: Mock,
         create_banded_bed_count_column_mock: Mock,
         clean_ascwds_filled_post_outliers_mock: Mock,
-        duplicate_latest_known_ascwds_value_into_following_two_import_dates_mock: Mock,
+        repeat_last_known_value_mock: Mock,
         clean_capacity_tracker_care_home_outliers_mock: Mock,
         clean_capacity_tracker_non_res_outliers_mock: Mock,
         write_to_parquet_mock: Mock,
@@ -96,7 +96,7 @@ class MainTests(CleanIndFilledPostsTests):
         self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
         self.assertEqual(calculate_filled_posts_per_bed_ratio_mock.call_count, 3)
         create_banded_bed_count_column_mock.assert_called_once()
-        duplicate_latest_known_ascwds_value_into_following_two_import_dates_mock.assert_called_once()
+        repeat_last_known_value_mock.assert_called_once()
         clean_ascwds_filled_post_outliers_mock.assert_called_once()
         clean_capacity_tracker_care_home_outliers_mock.assert_called_once()
         clean_capacity_tracker_non_res_outliers_mock.assert_called_once()
