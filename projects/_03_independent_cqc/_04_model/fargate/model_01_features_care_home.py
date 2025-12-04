@@ -74,8 +74,7 @@ def main(bucket_name: str, model_name: str) -> None:
         max_value=3,
         new_col_name=IndCQC.activity_count_capped,
     )
-    print("before encoding:)")
-    print(lf.collect_schema().names())
+
     lf = fUtils.expand_encode_and_extract_features(
         lf,
         IndCQC.services_offered,
@@ -100,11 +99,6 @@ def main(bucket_name: str, model_name: str) -> None:
         RegionLabels.labels_dict,
         is_array_col=False,
     )
-    print("after encoding:)")
-    print(lf.collect_schema().names())
-    print("")
-    print("feature cols:")
-    print(feature_cols)
 
     features_lf = fUtils.select_and_filter_features_data(
         lf, feature_cols, dependent_col, partition_keys
