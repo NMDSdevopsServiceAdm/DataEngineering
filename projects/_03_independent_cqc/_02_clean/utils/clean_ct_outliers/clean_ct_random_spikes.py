@@ -44,7 +44,7 @@ def clean_random_spikes(
             and helper columns removed.
     """
     df_median = compute_group_median(df, group_by_col, col_to_clean)
-    df_deviation = compute_absolute_deviation(df_median, col_to_clean)
+    df_deviation = compute_absolute_deviation(df_median, col_to_clean, "median_val")
     df_mad = compute_mad(df_deviation, group_by_col)
     df_thresholds = compute_outlier_cutoff(df_mad, group_by_col, proportion_to_filter)
 
@@ -101,19 +101,24 @@ def compute_group_median(df: DataFrame, group_col: str, col_to_clean: str) -> Da
     return df.join(median_df, group_col, "left")
 
 
-def compute_absolute_deviation(df: DataFrame, col_to_clean: str) -> DataFrame:
+def compute_absolute_deviation(
+    df: DataFrame, col_to_clean: str, median_col_name: str
+) -> DataFrame:
     """
     Computes the absolute deviation of each value from the group median.
 
     Args:
         df (DataFrame): DataFrame containing a 'median_val' column.
         col_to_clean (str): Column for which to compute absolute deviation.
+        median_col_name (str): Column name where group median is stored.
 
     Returns:
         DataFrame: DataFrame with a new column 'abs_diff' representing the absolute
         deviation of each value from the median.
     """
-    return df.withColumn("abs_diff", F.abs(F.col(col_to_clean) - F.col("median_val")))
+    return df.withColumn(
+        "abs_diff", F.abs(F.col(col_to_clean) - F.col(median_col_name))
+    )
 
 
 def compute_mad(df: DataFrame, group_by_col: str) -> DataFrame:

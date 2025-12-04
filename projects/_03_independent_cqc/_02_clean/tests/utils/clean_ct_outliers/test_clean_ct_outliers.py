@@ -135,7 +135,7 @@ class TestComputeAbsDeviation(TestCleanCtOutliers):
         )
 
         returned_df = job.compute_absolute_deviation(
-            df, IndCQC.ct_care_home_total_employed_cleaned
+            df, IndCQC.ct_care_home_total_employed_cleaned, "median_val"
         )
 
         expected_df = self.spark.createDataFrame(
