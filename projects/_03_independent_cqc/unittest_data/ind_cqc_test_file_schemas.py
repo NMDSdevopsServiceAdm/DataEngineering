@@ -3243,16 +3243,36 @@ class CleanCtRepetition:
         ]
     )
 
-    clean_capacity_tracker_posts_repetition_schema = StructType(
+    clean_capacity_tracker_posts_repetition_non_res_locations_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType()),
             StructField(IndCQC.ct_non_res_care_workers_employed, IntegerType()),
             StructField(IndCQC.days_value_has_been_repeated, IntegerType()),
         ]
     )
-    expected_clean_capacity_tracker_posts_repetition_schema = StructType(
+    expected_clean_capacity_tracker_posts_repetition_non_res_locations_schema = (
+        StructType(
+            [
+                *clean_capacity_tracker_posts_repetition_non_res_locations_schema,
+                StructField(
+                    IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType()
+                ),
+            ]
+        )
+    )
+
+    clean_capacity_tracker_posts_repetition_care_home_locations_schema = StructType(
         [
-            *clean_capacity_tracker_posts_repetition_schema,
-            StructField(IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType()),
+            StructField(IndCQC.location_id, StringType()),
+            StructField(IndCQC.ct_care_home_total_employed, IntegerType()),
+            StructField(IndCQC.days_value_has_been_repeated, IntegerType()),
         ]
+    )
+    expected_clean_capacity_tracker_posts_repetition_care_home_locations_schema = (
+        StructType(
+            [
+                *clean_capacity_tracker_posts_repetition_care_home_locations_schema,
+                StructField(IndCQC.ct_care_home_total_employed_cleaned, IntegerType()),
+            ]
+        )
     )

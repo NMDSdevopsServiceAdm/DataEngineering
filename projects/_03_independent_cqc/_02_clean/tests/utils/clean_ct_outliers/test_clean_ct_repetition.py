@@ -121,30 +121,58 @@ class CleanValueRepetition(CleanCTRepetitionTests):
     def setUp(self):
         super().setUp()
 
-        self.test_df = self.spark.createDataFrame(
-            Data.clean_capacity_tracker_posts_repetition_rows,
-            Schemas.clean_capacity_tracker_posts_repetition_schema,
+        self.test_df_non_res_locations = self.spark.createDataFrame(
+            Data.clean_capacity_tracker_posts_repetition_non_res_locations_rows,
+            Schemas.clean_capacity_tracker_posts_repetition_non_res_locations_schema,
         )
-        self.returned_df = job.clean_value_repetition(
-            self.test_df,
+        self.test_df_care_home_locations = self.spark.createDataFrame(
+            Data.clean_capacity_tracker_posts_repetition_care_home_locations_rows,
+            Schemas.clean_capacity_tracker_posts_repetition_care_home_locations_schema,
+        )
+        self.returned_df_non_res_locations = job.clean_value_repetition(
+            self.test_df_non_res_locations,
             IndCQC.ct_non_res_care_workers_employed,
             IndCQC.ct_non_res_care_workers_employed_cleaned,
+            False,
         )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_clean_capacity_tracker_posts_repetition_rows,
-            Schemas.expected_clean_capacity_tracker_posts_repetition_schema,
+        self.returned_df_care_home_locations = job.clean_value_repetition(
+            self.test_df_care_home_locations,
+            IndCQC.ct_care_home_total_employed,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            True,
+        )
+        self.expected_df_non_res_locations = self.spark.createDataFrame(
+            Data.expected_clean_capacity_tracker_posts_repetition_non_res_locations_rows,
+            Schemas.expected_clean_capacity_tracker_posts_repetition_non_res_locations_schema,
+        )
+        self.expected_df_care_home_locations = self.spark.createDataFrame(
+            Data.expected_clean_capacity_tracker_posts_repetition_care_home_locations_rows,
+            Schemas.expected_clean_capacity_tracker_posts_repetition_care_home_locations_schema,
         )
 
     def test_clean_value_repetition_adds_1_column(
         self,
     ):
         new_cols = [
-            col for col in self.returned_df.columns if col not in self.test_df.columns
+            col
+            for col in self.returned_df_non_res_locations.columns
+            if col not in self.test_df_non_res_locations.columns
         ]
         self.assertEqual(len(new_cols), 1)
         self.assertEqual(new_cols[0], IndCQC.ct_non_res_care_workers_employed_cleaned)
 
-    def test_clean_value_repetition_returns_expected_values(
+    def test_clean_value_repetition_nulls_values_when_repetition_days_above_limit_at_non_res_locations(
         self,
     ):
-        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+        self.assertEqual(
+            self.returned_df_non_res_locations.collect(),
+            self.expected_df_non_res_locations.collect(),
+        )
+
+    def test_clean_value_repetition_nulls_values_when_repetition_days_above_limit_at_care_home_locations(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_df_care_home_locations.collect(),
+            self.expected_df_care_home_locations.collect(),
+        )

@@ -14,10 +14,17 @@ from utils.column_values.categorical_column_values import (
     CTNonResFilteringRule,
 )
 
-DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS = {
-    0: 185,
-    10: 90,
-    50: 60,
+DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_NON_RES = {
+    0: 578,
+    10: 335,
+    50: 213,
+    250: 243,
+}
+DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_CARE_HOMES = {
+    0: 1004,
+    10: 487,
+    50: 274,
+    250: 213,
 }
 
 
@@ -129,6 +136,7 @@ def clean_value_repetition(
     df: DataFrame,
     column_to_clean: str,
     cleaned_column_name: str,
+    care_home: bool,
 ) -> DataFrame:
     """
     Nulls values in column_to_clean when days_value_has_been_repeated is above the limit.
@@ -139,17 +147,23 @@ def clean_value_repetition(
         df (DataFrame): A dataframe with consecutive import dates.
         column_to_clean (str): The column with repeated values.
         cleaned_column_name (str): A column with cleaned values.
+        care_home (bool): True when cleaning care home values, False when cleaning non-residential values.
 
     Returns:
         DataFrame: The input with DataFrame with an additional column.
     """
-    # Minimum posts for each repetition limit. Up to 9 posts = 185 days, 10 to 49 = 90 days, 50+ = 60 days.
-    sorted_dict = sorted(DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS.items())
+    if care_home:
+        sorted_dict = sorted(
+            DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_CARE_HOMES.items()
+        )
+    else:
+        sorted_dict = sorted(
+            DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_NON_RES.items()
+        )
 
-    # Add a column with the repetition limit based on size from dict_of_minimum_posts_and_max_repetition_days.
     column_expression = None
     for key, value in sorted_dict:
-        condition = F.col(column_to_clean) > key
+        condition = F.col(column_to_clean) >= key
         column_expression = (
             value
             if column_expression is None
@@ -162,7 +176,7 @@ def clean_value_repetition(
         cleaned_column_name,
         F.when(
             F.col(IndCQC.days_value_has_been_repeated)
-            < F.col(repetition_limit_based_on_posts),
+            <= F.col(repetition_limit_based_on_posts),
             F.col(column_to_clean),
         ).otherwise(None),
     )
