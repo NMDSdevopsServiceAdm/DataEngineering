@@ -115,8 +115,8 @@ def main(bucket_name: str, model_name: str) -> None:
 if __name__ == "__main__":
 
     args = utils.get_args(
-        ("--bucket_name (str): The bucket in which to source and save the datasets to"),
-        ("--model_name (str): The name of the model to create features for"),
+        ("--bucket_name (str)", "The bucket to source and save the datasets to"),
+        ("--model_name (str)", "The name of the model to create features for"),
     )
 
     main(bucket_name=args.bucket_name, model_name=args.model_name)
