@@ -5938,16 +5938,16 @@ class CleanCtRepetition:
     clean_ct_values_after_consecutive_repetition_rows = [
         ("1-001", 1, CTNonResFilteringRule.populated, date(2025, 1, 1)),
         ("1-001", 2, CTNonResFilteringRule.populated, date(2025, 2, 1)),
-        ("1-001", 2, CTNonResFilteringRule.populated, date(2025, 9, 1)),
-        ("1-001", None, CTNonResFilteringRule.missing_data, date(2025, 10, 1)),
-        ("1-001", 3, CTNonResFilteringRule.populated, date(2025, 11, 1)),
+        ("1-001", 2, CTNonResFilteringRule.populated, date(2025, 10, 3)), # 244 days after previous import date.
+        ("1-001", None, CTNonResFilteringRule.missing_data, date(2025, 11, 1)), # Missing raw data.
+        ("1-001", 3, CTNonResFilteringRule.populated, date(2025, 12, 1)),
     ]
     expected_clean_ct_values_after_consecutive_repetition_rows = [
         ("1-001", 1, CTNonResFilteringRule.populated, date(2025, 1, 1), 1),
         ("1-001", 2, CTNonResFilteringRule.populated, date(2025, 2, 1), 2),
-        ("1-001", 2, CTNonResFilteringRule.location_repeats_total_posts, date(2025, 9, 1), None), # Only this row has been cleaned.
-        ("1-001", None, CTNonResFilteringRule.missing_data, date(2025, 10, 1), None),
-        ("1-001", 3, CTNonResFilteringRule.populated, date(2025, 11, 1), 3),
+        ("1-001", 2, CTNonResFilteringRule.location_repeats_total_posts, date(2025, 10, 3), None), # Only this row has been cleaned.
+        ("1-001", None, CTNonResFilteringRule.missing_data, date(2025, 11, 1), None),
+        ("1-001", 3, CTNonResFilteringRule.populated, date(2025, 12, 1), 3),
     ]
     # fmt: on
 
@@ -5969,43 +5969,39 @@ class CleanCtRepetition:
     ]
 
     clean_capacity_tracker_posts_repetition_non_res_locations_rows = [
-        ("1-001", 1, 578),
-        ("1-002", 9, 579),
-        ("1-003", 10, 335),
-        ("1-004", 49, 336),
-        ("1-005", 50, 213),
-        ("1-006", 51, 214),
-        ("1-007", 250, 243),
-        ("1-008", 251, 244),
+        ("1-001", 1, 243),
+        ("1-002", 9, 244),
+        ("1-003", 10, 122),
+        ("1-004", 49, 123),
+        ("1-005", 50, 61),
+        ("1-006", 51, 62),
     ]
     expected_clean_capacity_tracker_posts_repetition_non_res_locations_rows = [
-        ("1-001", 1, 578, 1),
-        ("1-002", 9, 579, None),
-        ("1-003", 10, 335, 10),
-        ("1-004", 49, 336, None),
-        ("1-005", 50, 213, 50),
-        ("1-006", 51, 214, None),
-        ("1-007", 250, 243, 250),
-        ("1-008", 251, 244, None),
+        ("1-001", 1, 243, 1),
+        ("1-002", 9, 244, None),
+        ("1-003", 10, 122, 10),
+        ("1-004", 49, 123, None),
+        ("1-005", 50, 61, 50),
+        ("1-006", 51, 62, None),
     ]
 
     clean_capacity_tracker_posts_repetition_care_home_locations_rows = [
-        ("1-001", 1, 1004),
-        ("1-002", 9, 1005),
-        ("1-003", 10, 487),
-        ("1-004", 49, 488),
-        ("1-005", 50, 274),
-        ("1-006", 51, 275),
-        ("1-007", 250, 213),
-        ("1-008", 251, 214),
+        ("1-001", 1, 395),
+        ("1-002", 9, 396),
+        ("1-003", 10, 152),
+        ("1-004", 49, 153),
+        ("1-005", 50, 122),
+        ("1-006", 51, 123),
+        ("1-007", 250, 61),
+        ("1-008", 251, 62),
     ]
     expected_clean_capacity_tracker_posts_repetition_care_home_locations_rows = [
-        ("1-001", 1, 1004, 1),
-        ("1-002", 9, 1005, None),
-        ("1-003", 10, 487, 10),
-        ("1-004", 49, 488, None),
-        ("1-005", 50, 274, 50),
-        ("1-006", 51, 275, None),
-        ("1-007", 250, 213, 250),
-        ("1-008", 251, 214, None),
+        ("1-001", 1, 395, 1),
+        ("1-002", 9, 396, None),
+        ("1-003", 10, 152, 10),
+        ("1-004", 49, 153, None),
+        ("1-005", 50, 122, 50),
+        ("1-006", 51, 123, None),
+        ("1-007", 250, 61, 250),
+        ("1-008", 251, 62, None),
     ]

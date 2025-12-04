@@ -72,6 +72,30 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
+    def test_dict_of_minimum_posts_and_max_repetition_days_values_are_correct(
+        self,
+    ):
+        expected_dict_non_residential_locations = {
+            0: 243,
+            10: 122,
+            50: 61,
+        }
+        expected_dict_care_home_locations = {
+            0: 395,
+            10: 152,
+            50: 122,
+            250: 61,
+        }
+
+        self.assertEqual(
+            job.DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_NON_RES,
+            expected_dict_non_residential_locations,
+        )
+        self.assertEqual(
+            job.DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_CARE_HOMES,
+            expected_dict_care_home_locations,
+        )
+
 
 class CalculateDaysAValueHasBeenRepeated(CleanCTRepetitionTests):
     def setUp(self):
@@ -87,19 +111,6 @@ class CalculateDaysAValueHasBeenRepeated(CleanCTRepetitionTests):
         self.expected_df = self.spark.createDataFrame(
             Data.expected_calculate_days_a_value_has_been_repeated_rows,
             Schemas.expected_calculate_days_a_value_has_been_repeated_schema,
-        )
-
-    def test_dict_of_minimum_posts_and_max_repetition_days_values_are_correct(
-        self,
-    ):
-        expected_dict = {
-            0: 185,
-            10: 90,
-            50: 60,
-        }
-
-        self.assertEqual(
-            job.DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS, expected_dict
         )
 
     def test_calculate_days_a_value_has_been_repeated_adds_1_column(

@@ -15,16 +15,15 @@ from utils.column_values.categorical_column_values import (
 )
 
 DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_NON_RES = {
-    0: 578,
-    10: 335,
-    50: 213,
-    250: 243,
+    0: 243,
+    10: 122,
+    50: 61,
 }
 DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_CARE_HOMES = {
-    0: 1004,
-    10: 487,
-    50: 274,
-    250: 213,
+    0: 395,
+    10: 152,
+    50: 122,
+    250: 61,
 }
 
 
@@ -61,7 +60,7 @@ def clean_ct_values_after_consecutive_repetition(
         df, f"{column_to_clean}_deduplicated", IndCQC.location_id
     )
 
-    df = clean_value_repetition(df, column_to_clean, cleaned_column_name)
+    df = clean_value_repetition(df, column_to_clean, cleaned_column_name, care_home)
 
     if care_home:
         filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
