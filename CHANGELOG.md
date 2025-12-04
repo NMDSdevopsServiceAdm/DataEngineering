@@ -40,8 +40,13 @@ All notable changes to this project will be documented in this file.
 
 - Created a new folder and file structure to contain the model re-training process files.
 
+- Added placeholder tasks for model retraining step function in the Ind CQC pipeline which will point to the
+  separate model retraining step function.
+
 - Added ind_cqc_06_estimated_filled_posts dataset to circleci config datasets sync'd into branch.
   Gave the dataset name the prefix "main_".
+
+- Created model versioning functions to get the last number and save model metadata.
 
 - Created the S3 paths for the modelling process to call on for loading and saving data.
 
@@ -49,12 +54,11 @@ All notable changes to this project will be documented in this file.
 
 - Created a function to handle to various Capacity Tracker non-residential cleaning steps.
 
-- Generalised the functions to create and update a filtering column
+- Added model registry.
 
-- Created a function to handle to various Capacity Tracker non-residential cleaning steps.
+- Added function to validate model definitions used in tasks are stored in the model registry.
 
-- Added NHS Capacity Tracker filter to remove repeated submissions based on provider total post being the same
-  for too long.
+- Added NHS Capacity Tracker filter to remove repeated submissions at location level after a set length of time.
 
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
@@ -190,7 +194,11 @@ All notable changes to this project will be documented in this file.
   - Get all data from the API and assign it to a dataframe without a schema (column types are inferred).
   - Override specific column types to match historic delta downloads.
   - Store all CQC API delta data in dataset_delta_locations_api / dataset_delta_providers_api.
-  - Import only specific columns in full_clean job.
+  - Import only specific columns in delta flatten job.
+
+- Fixed validation failures for cleaned CQC locations caused by complex columns in the DataFrame, which prevented PointBlank from generating output reports.
+  - Updated the validation script to replicate the newly added filter from the cleaning process, ensuring row count validations now pass.
+  - Introduced a new function that creates boolean flag columns for complex-type columns and removes the original complex columns from the source DataFrame. These flag columns are now used in PointBlank validations to check for True values.
 
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.

@@ -131,3 +131,51 @@ def group_rural_urban_sparse_categories(lf: pl.LazyFrame) -> pl.LazyFrame:
         .otherwise(pl.col(IndCQC.current_rural_urban_indicator_2011))
         .alias(IndCQC.current_rural_urban_indicator_2011_for_non_res_model)
     )
+
+
+def select_and_filter_features_data(
+    lf: pl.LazyFrame,
+    features_list: list[str],
+    dependent_col: str,
+    partition_keys: list[str],
+) -> pl.DataFrame:
+    """
+    Selects columns from a Polars LazyFrame and filters to non-null feature columns.
+
+    This function:
+        - Checks if all columns we want to select exist in the DataFrame.
+        - If it does, it selects those columns. If not, it raises an error.
+        - Filters the DataFrame to keep only rows where all feature columns are non-null.
+
+    Args:
+        lf (pl.LazyFrame): Input Polars LazyFrame.
+        features_list (list[str]): List of feature column names.
+        dependent_col (str): The name of the dependent column.
+        partition_keys (list[str]): List of column names used for partitioning.
+
+    Returns:
+        pl.DataFrame: Polars DataFrame containing only selected columns and rows
+                      where all feature columns are non-null.
+
+    Raises:
+        ValueError: If any required columns are missing from the DataFrame.
+    """
+    select_cols = (
+        [
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+            dependent_col,
+        ]
+        + features_list
+        + partition_keys
+    )
+
+    missing_cols = [
+        col for col in select_cols if col not in lf.collect_schema().names()
+    ]
+    if missing_cols:
+        raise ValueError(f"Missing columns in LazyFrame: {missing_cols}")
+
+    return lf.select(select_cols).filter(
+        pl.all_horizontal([pl.col(feature).is_not_null() for feature in features_list])
+    )

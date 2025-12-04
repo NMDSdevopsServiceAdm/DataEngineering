@@ -407,3 +407,13 @@ class NullGroupedProviderColumns:
     potential_grouped_provider: str = "potential_grouped_provider"
     provider_pir_count: str = "provider_pir_count"
     provider_pir_sum: str = "provider_pir_sum"
+
+
+@dataclass
+class ModelRegistryKeys:
+    auto_retrain: str = "auto_retrain"
+    dependent: str = "dependent"
+    features: str = "features"
+    model_params: str = "model_params"
+    model_type: str = "model_type"
+    version: str = "version"

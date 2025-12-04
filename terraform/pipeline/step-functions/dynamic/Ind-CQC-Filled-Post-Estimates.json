@@ -148,6 +148,15 @@
                   }
                 },
                 {
+                  "StartAt": "Model Retraining step function placeholder",
+                  "States": {
+                    "Model Retraining step function placeholder": {
+                      "Type": "Pass",
+                      "End": true
+                    }
+                  }
+                },
+                {
                   "StartAt": "Validate imputed data",
                   "States": {
                     "Validate imputed data": {
