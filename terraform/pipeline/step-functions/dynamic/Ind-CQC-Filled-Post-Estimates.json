@@ -146,6 +146,34 @@
                       "End": true
                     }
                   }
+                },
+                {
+                  "StartAt": "Model Retraining step function placeholder",
+                  "States": {
+                    "Model Retraining step function placeholder": {
+                      "Type": "Pass",
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate imputed data",
+                  "States": {
+                    "Validate imputed data": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${validate_imputed_ind_cqc_ascwds_and_pir_data_job_name}",
+                        "Arguments": {
+                          "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
+                          "--imputed_ind_cqc_ascwds_and_pir_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
+                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_03_imputed_ascwds_and_pir/"
+                        }
+                      },
+                      "ResultPath": null,
+                      "End": true
+                    }
+                  }
                 }
               ]
             },
