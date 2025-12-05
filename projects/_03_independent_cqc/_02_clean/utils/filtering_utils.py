@@ -1,5 +1,7 @@
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
+
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 def add_filtering_rule_column(
@@ -84,5 +86,26 @@ def update_filtering_rule(
                 F.lit(new_rule_name),
             ).otherwise(F.col(filter_rule_col_name)),
         )
+
+    return df
+
+
+def aggregate_values_to_provider_level(df: DataFrame, col_to_sum: str) -> DataFrame:
+    """
+    Adds a new column with the provider level sum of a given column.
+    The new column will be named col_to_sum suffixed with "_provider_sum".
+
+    Args:
+        df (DataFrame): A dataframe with providerid and the column_to_sum.
+        col_to_sum (str): A column of values to sum.
+
+    Returns:
+        DataFrame: The input DataFrame with a new aggregated column.
+    """
+    w = Window.partitionBy([IndCQC.provider_id, IndCQC.cqc_location_import_date])
+    df = df.withColumn(
+        f"{col_to_sum}_provider_sum",
+        F.sum(col_to_sum).over(w),
+    )
 
     return df

@@ -58,6 +58,8 @@ All notable changes to this project will be documented in this file.
 
 - Added function to validate model definitions used in tasks are stored in the model registry.
 
+- Added NHS Capacity Tracker filter to remove repeated submissions at location level after a set length of time.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
