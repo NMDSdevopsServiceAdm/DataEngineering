@@ -3239,7 +3239,7 @@ class CleanCtRepetition:
     expected_calculate_days_a_value_has_been_repeated_schema = StructType(
         [
             *calculate_days_a_value_has_been_repeated_schema,
-            StructField(IndCQC.days_value_has_been_repeated, IntegerType(), True),
+            StructField("days_value_has_been_repeated", IntegerType(), True),
         ]
     )
 
@@ -3247,7 +3247,7 @@ class CleanCtRepetition:
         [
             StructField(IndCQC.location_id, StringType()),
             StructField(IndCQC.ct_non_res_care_workers_employed, IntegerType()),
-            StructField(IndCQC.days_value_has_been_repeated, IntegerType()),
+            StructField("days_value_has_been_repeated", IntegerType()),
         ]
     )
     expected_clean_capacity_tracker_posts_repetition_non_res_locations_schema = (
@@ -3265,7 +3265,7 @@ class CleanCtRepetition:
         [
             StructField(IndCQC.location_id, StringType()),
             StructField(IndCQC.ct_care_home_total_employed, IntegerType()),
-            StructField(IndCQC.days_value_has_been_repeated, IntegerType()),
+            StructField("days_value_has_been_repeated", IntegerType()),
         ]
     )
     expected_clean_capacity_tracker_posts_repetition_care_home_locations_schema = (

@@ -120,7 +120,7 @@ class CalculateDaysAValueHasBeenRepeated(CleanCTRepetitionTests):
             col for col in self.returned_df.columns if col not in self.test_df.columns
         ]
         self.assertEqual(len(new_cols), 1)
-        self.assertEqual(new_cols[0], IndCQC.days_value_has_been_repeated)
+        self.assertEqual(new_cols[0], "days_value_has_been_repeated")
 
     def test_calculate_days_a_value_has_been_repeated_returns_expected_values(
         self,

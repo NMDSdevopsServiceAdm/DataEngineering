@@ -15,13 +15,13 @@ from utils.column_values.categorical_column_values import (
 )
 
 DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_NON_RES = {
-    0: 250,
-    10: 125,
-    50: 65,
+    0: 250,  # using 250 as proxy for 8 months.
+    10: 125,  # using 125 as proxy for 4 months.
+    50: 65,  # using 65 as proxy for 2 months.
 }
 DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_CARE_HOMES = {
-    0: 370,
-    10: 155,
+    0: 370,  # using 370 as proxy for 12 months.
+    10: 155,  # using 155 as proxy for 5 months.
     50: 125,
     250: 65,
 }
@@ -39,8 +39,8 @@ def clean_ct_values_after_consecutive_repetition(
 
     When a value is repeated for more than a repetition limit, then the value is nulled after
     the limit period until a different value has been submitted.
-    The repetition limit is based on the mean days that values stayed the same per non-residential location in
-    Capacity Tracker data between December 2020 and November 2025.
+    The repetition limit is based on the 75th percentile of the mean days that values stayed the same
+    per location in Capacity Tracker data between December 2020 and November 2025.
 
     Args:
         df (DataFrame): A dataframe with consecutive import dates.
@@ -102,11 +102,6 @@ def clean_ct_values_after_consecutive_repetition(
         new_rule_name,
     )
 
-    # df = df.drop(
-    #     f"{column_to_clean}_deduplicated",
-    #     IndCQC.days_value_has_been_repeated,
-    # )
-
     return df
 
 
@@ -127,30 +122,29 @@ def calculate_days_a_value_has_been_repeated(
     Returns:
         DataFrame: The input DataFrame with a new column days_since_previous_submission.
     """
-    window_spec = Window.partitionBy(partitioning_column).orderBy(
-        IndCQC.cqc_location_import_date
-    )
-    window_spec_backwards = window_spec.rowsBetween(
-        Window.unboundedPreceding, Window.currentRow
+    window_spec_backwards = (
+        Window.partitionBy(partitioning_column)
+        .orderBy(IndCQC.cqc_location_import_date)
+        .rowsBetween(Window.unboundedPreceding, Window.currentRow)
     )
     df = utils.get_selected_value(
         df,
         window_spec_backwards,
         deduplicated_values_column,
         IndCQC.cqc_location_import_date,
-        IndCQC.date_when_repeated_value_was_first_submitted,
+        "date_when_repeated_value_was_first_submitted",
         "last",
     )
 
     df = df.withColumn(
-        IndCQC.days_value_has_been_repeated,
+        "days_value_has_been_repeated",
         F.date_diff(
             IndCQC.cqc_location_import_date,
-            IndCQC.date_when_repeated_value_was_first_submitted,
+            "date_when_repeated_value_was_first_submitted",
         ),
     )
 
-    return df  # .drop(IndCQC.date_when_repeated_value_was_first_submitted)
+    return df
 
 
 def clean_value_repetition(
@@ -198,10 +192,10 @@ def clean_value_repetition(
     df = df.withColumn(
         cleaned_column_name,
         F.when(
-            F.col(IndCQC.days_value_has_been_repeated)
+            F.col("days_value_has_been_repeated")
             <= F.col(repetition_limit_based_on_posts),
             F.col(column_to_clean),
         ).otherwise(None),
     )
 
-    return df  # .drop(repetition_limit_based_on_posts)
+    return df
