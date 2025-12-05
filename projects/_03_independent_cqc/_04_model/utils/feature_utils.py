@@ -176,9 +176,13 @@ def select_and_filter_features_data(
     ]
     if missing_cols:
         raise ValueError(f"Missing columns in LazyFrame: {missing_cols}")
+    print("Schema before selecting and filtering:")
+    print(lf.describe())
 
     lf = lf.select(select_cols).filter(
         pl.all_horizontal([pl.col(feature).is_not_null() for feature in features_list])
     )
+    print("Schema after selecting and filtering:")
+    print(lf.describe())
 
     return lf.with_columns([pl.col(c).cast(pl.Utf8) for c in partition_keys])

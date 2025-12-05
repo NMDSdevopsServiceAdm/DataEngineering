@@ -108,8 +108,8 @@ def main(bucket_name: str, model_name: str) -> None:
     features_lf = features_lf.cast({pl.Int32: pl.UInt32})
     features_lf = features_lf.cast({pl.Int8: pl.UInt8})
 
-    print(features_lf.explain())
-    print(features_lf.explain(format="tree"))
+    print("Schema before sinking:")
+    print(lf.describe())
 
     utils.sink_to_parquet(
         features_lf,
