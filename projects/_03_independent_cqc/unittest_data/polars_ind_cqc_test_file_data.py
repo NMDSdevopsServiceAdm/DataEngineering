@@ -233,7 +233,7 @@ class FeaturesEngineeringUtilsData:
         ("1-003", date(2025, 1, 3), 20250103, "Y", 30, None, 0, 200),
     ]
     expected_select_and_filter_features_rows = [
-        ("1-001", date(2025, 1, 1), 100, 10, 5, 1, "20250101"),
+        ("1-001", date(2025, 1, 1), 100, 10, 5, 1, 20250101),
     ]
 
 

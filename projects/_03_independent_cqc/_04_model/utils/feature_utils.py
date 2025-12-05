@@ -146,7 +146,7 @@ def select_and_filter_features_data(
         - Checks if all columns we want to select exist in the LazyFrame.
         - If it does, it selects those columns. If not, it raises an error.
         - Filters the LazyFrame to keep only rows where all feature columns are non-null.
-        - Casts partition columns to string type (required for sinking to parquet).
+        - Casts integer columns from UInt32 to Int32 (required for sinking to parquet).
 
     Args:
         lf (pl.LazyFrame): Input Polars LazyFrame.
@@ -176,13 +176,15 @@ def select_and_filter_features_data(
     ]
     if missing_cols:
         raise ValueError(f"Missing columns in LazyFrame: {missing_cols}")
-    print("Schema before selecting and filtering:")
-    print(lf.describe())
 
-    lf = lf.select(select_cols).filter(
-        pl.all_horizontal([pl.col(feature).is_not_null() for feature in features_list])
+    lf = (
+        lf.select(select_cols)
+        .filter(
+            pl.all_horizontal(
+                [pl.col(feature).is_not_null() for feature in features_list]
+            )
+        )
+        .cast({pl.UInt32: pl.Int32})
     )
-    print("Schema after selecting and filtering:")
-    print(lf.describe())
 
-    return lf.with_columns([pl.col(c).cast(pl.Utf8) for c in partition_keys])
+    return lf

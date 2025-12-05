@@ -128,11 +128,11 @@ class FeaturesEngineeringUtilsSchemas:
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.DataType()),
-            ("dependent", pl.UInt32()),
-            ("feature_1", pl.UInt32()),
-            ("feature_2", pl.UInt32()),
-            ("feature_3", pl.UInt32()),
-            ("import_date", pl.String()),
+            ("dependent", pl.Int32()),
+            ("feature_1", pl.Int32()),
+            ("feature_2", pl.Int32()),
+            ("feature_3", pl.Int32()),
+            ("import_date", pl.Int64()),
         ]
     )
 
