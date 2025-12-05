@@ -31,6 +31,7 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
         )
 
     @patch(f"{PATCH_PATH}.update_filtering_rule")
+    @patch(f"{PATCH_PATH}.join_cleaned_ct_values_into_original_df")
     @patch(f"{PATCH_PATH}.clean_value_repetition")
     @patch(f"{PATCH_PATH}.calculate_days_a_value_has_been_repeated")
     @patch(f"{PATCH_PATH}.create_column_with_repeated_values_removed")
@@ -39,6 +40,7 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
         create_column_with_repeated_values_removed_mock: Mock,
         calculate_days_a_value_has_been_repeated: Mock,
         clean_value_repetition: Mock,
+        join_cleaned_ct_values_into_original_df_mock: Mock,
         update_filtering_rule_mock: Mock,
     ):
 
@@ -46,13 +48,14 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
             self.test_df,
             IndCQC.ct_non_res_care_workers_employed,
             IndCQC.ct_non_res_care_workers_employed_cleaned,
-            True,
+            False,
             IndCQC.location_id,
         )
 
         create_column_with_repeated_values_removed_mock.assert_called_once()
         calculate_days_a_value_has_been_repeated.assert_called_once()
         clean_value_repetition.assert_called_once()
+        join_cleaned_ct_values_into_original_df_mock.assert_called_once()
         update_filtering_rule_mock.assert_called_once()
 
     def test_clean_ct_values_after_consecutive_repetition_returns_expected_values(
@@ -170,7 +173,7 @@ class CleanValueRepetition(CleanCTRepetitionTests):
             if col not in self.test_df_non_res_locations.columns
         ]
         self.assertEqual(len(new_cols), 1)
-        self.assertEqual(new_cols[0], IndCQC.ct_non_res_care_workers_employed_cleaned)
+        self.assertEqual(new_cols[0], "repeated_values_nulled")
 
     def test_clean_value_repetition_nulls_values_when_repetition_days_above_limit_at_non_res_locations(
         self,
@@ -187,3 +190,41 @@ class CleanValueRepetition(CleanCTRepetitionTests):
             self.returned_df_care_home_locations.collect(),
             self.expected_df_care_home_locations.collect(),
         )
+
+
+class JoinCleanedCTValuesIntoOriginalDf(CleanCTRepetitionTests):
+    def setUp(self):
+        super().setUp()
+
+        self.test_orginal_df = self.spark.createDataFrame(
+            Data.original_rows,
+            Schemas.original_schema,
+        )
+        self.test_populated_only_df = self.spark.createDataFrame(
+            Data.populated_only_rows,
+            Schemas.populated_only_schema,
+        )
+        self.returned_df = job.join_cleaned_ct_values_into_original_df(
+            self.test_orginal_df,
+            self.test_populated_only_df,
+            IndCQC.ct_care_home_total_employed_cleaned,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_populated_only_joined_with_original_rows,
+            Schemas.original_schema,
+        )
+
+    def test_join_cleaned_ct_values_into_original_df_replaces_cleaned_values_column(
+        self,
+    ):
+        self.assertEqual(self.test_orginal_df.columns, self.expected_df.columns)
+
+    def test_join_cleaned_ct_values_into_original_df_replaces_values_in_the_cleaned_values_column(
+        self,
+    ):
+        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+
+    def test_join_cleaned_ct_values_into_original_df_does_not_add_any_rows_to_original_df(
+        self,
+    ):
+        self.assertEqual(self.test_orginal_df.count(), self.expected_df.count())

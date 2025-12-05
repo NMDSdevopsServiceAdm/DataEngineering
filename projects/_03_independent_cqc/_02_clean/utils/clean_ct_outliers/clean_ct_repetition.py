@@ -75,26 +75,15 @@ def clean_ct_values_after_consecutive_repetition(
     )
 
     df_populated_only = clean_value_repetition(
-        df_populated_only, column_to_clean, cleaned_column_name, care_home
+        df_populated_only, column_to_clean, care_home
     )
 
-    cols_to_select_before_join = [
-        IndCQC.location_id,
-        IndCQC.cqc_location_import_date,
-        cleaned_column_name,
-    ]
-    df_populated_only = df_populated_only.select(cols_to_select_before_join)
-
-    df = df.drop(cleaned_column_name)
-
-    df = df.join(
-        df_populated_only,
-        on=[IndCQC.location_id, IndCQC.cqc_location_import_date],
-        how="left",
+    df_cleaned = join_cleaned_ct_values_into_original_df(
+        df, df_populated_only, cleaned_column_name
     )
 
-    df = update_filtering_rule(
-        df,
+    df_cleaned = update_filtering_rule(
+        df_cleaned,
         filter_rule_column_name,
         column_to_clean,
         cleaned_column_name,
@@ -102,7 +91,7 @@ def clean_ct_values_after_consecutive_repetition(
         new_rule_name,
     )
 
-    return df
+    return df_cleaned
 
 
 def calculate_days_a_value_has_been_repeated(
@@ -144,17 +133,17 @@ def calculate_days_a_value_has_been_repeated(
         ),
     )
 
-    return df
+    return df.drop("date_when_repeated_value_was_first_submitted")
 
 
 def clean_value_repetition(
     df: DataFrame,
     column_to_clean: str,
-    cleaned_column_name: str,
     care_home: bool,
 ) -> DataFrame:
     """
-    Nulls values in column_to_clean when days_value_has_been_repeated is above the limit.
+    Adds a new column repeated_values_nulled in which values from column_to_clean are nulled
+    when days_value_has_been_repeated is above the limit.
 
     The limits are defined in a dictionary with keys = minimum posts and values = days limit.
     Analysis of Capacity Tracker data showed non-residential and care home locations had different distributions
@@ -163,7 +152,6 @@ def clean_value_repetition(
     Args:
         df (DataFrame): A dataframe with consecutive import dates.
         column_to_clean (str): The column with repeated values.
-        cleaned_column_name (str): A column with cleaned values.
         care_home (bool): True when cleaning care home values, False when cleaning non-residential values.
 
     Returns:
@@ -190,7 +178,7 @@ def clean_value_repetition(
     df = df.withColumn(repetition_limit_based_on_posts, column_expression)
 
     df = df.withColumn(
-        cleaned_column_name,
+        "repeated_values_nulled",
         F.when(
             F.col("days_value_has_been_repeated")
             <= F.col(repetition_limit_based_on_posts),
@@ -198,4 +186,40 @@ def clean_value_repetition(
         ).otherwise(None),
     )
 
-    return df
+    return df.drop("repetition_limit_based_on_posts")
+
+
+def join_cleaned_ct_values_into_original_df(
+    original_df: DataFrame, populated_only_df: DataFrame, cleaned_column_name: str
+) -> DataFrame:
+    """
+    Joins the original DataFrame with the populated only DataFrame.
+
+    The repeated_values_nulled column is added to the original DataFrame, then this column replaces the cleaned column from the orginal DataFrame.
+
+    Args:
+        original_df (DataFrame): The DataFrame as it was before and repeated values cleaning steps.
+        populated_only_df (DataFrame): A DataFrame with a new cleaned values column.
+        cleaned_column_name (str): The name of cleaned values column.
+
+    Returns:
+        DataFrame: The original DataFrame with the cleaned values column replaced by the version in populated only DataFrame.
+    """
+    cols_to_select_before_join = [
+        IndCQC.location_id,
+        IndCQC.cqc_location_import_date,
+        "repeated_values_nulled",
+    ]
+    populated_only_df = populated_only_df.select(cols_to_select_before_join)
+
+    cleaned_df = original_df.join(
+        populated_only_df,
+        on=[IndCQC.location_id, IndCQC.cqc_location_import_date],
+        how="left",
+    )
+
+    cleaned_df = cleaned_df.withColumn(
+        cleaned_column_name, F.col("repeated_values_nulled")
+    )
+
+    return cleaned_df.drop("repeated_values_nulled")
