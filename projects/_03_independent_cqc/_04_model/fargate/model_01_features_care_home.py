@@ -104,17 +104,12 @@ def main(bucket_name: str, model_name: str) -> None:
         lf, feature_cols, dependent_col, partition_keys
     )
 
-    print("20130301 schema:")
-    print(features_lf.filter(pl.col(Keys.import_date) == "20130301").collect_schema())
-    print("20130401 schema:")
-    print(features_lf.filter(pl.col(Keys.import_date) == "20130401").collect_schema())
-
-    # utils.sink_to_parquet(
-    #     features_lf,
-    #     destination,
-    #     partition_cols=partition_keys,
-    #     append=False,
-    # )
+    utils.sink_to_parquet(
+        features_lf,
+        destination,
+        partition_cols=partition_keys,
+        append=False,
+    )
 
 
 if __name__ == "__main__":

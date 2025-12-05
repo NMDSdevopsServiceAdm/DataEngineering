@@ -66,7 +66,7 @@ class FeaturesEngineeringUtilsSchemas:
     )
     expected_cap_integer_at_max_value_schema = pl.Schema(
         list(cap_integer_at_max_value_schema.items())
-        + [(IndCQC.service_count_capped, pl.Int32())]
+        + [(IndCQC.service_count_capped, pl.UInt32())]
     )
 
     col_with_categories: str = "categories"

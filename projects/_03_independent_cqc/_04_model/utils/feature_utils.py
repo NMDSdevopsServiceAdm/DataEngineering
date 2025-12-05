@@ -71,6 +71,7 @@ def cap_integer_at_max_value(
         pl.when(pl.col(col_name).is_not_null())
         .then(pl.min_horizontal(pl.col(col_name), pl.lit(max_value)))
         .otherwise(None)
+        .cast(pl.UInt32)
         .alias(new_col_name)
     )
 
