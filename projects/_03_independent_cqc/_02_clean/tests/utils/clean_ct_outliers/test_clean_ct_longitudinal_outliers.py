@@ -1,6 +1,6 @@
 import unittest
 
-import projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_random_spikes as job
+import projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_longitudinal_outliers as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     OutlierCleaningData as Data,
 )
@@ -28,7 +28,7 @@ class TestRemoveCTValueOutliers(TestCleanCtOutliers):
             Schemas.input_schema,
         )
 
-        returned_df = job.clean_random_spikes(
+        returned_df = job.clean_longitudinal_outliers(
             test_df,
             IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
@@ -55,7 +55,7 @@ class TestRemoveCTValueOutliers(TestCleanCtOutliers):
             Schemas.input_schema,
         )
 
-        returned_df = job.clean_random_spikes(
+        returned_df = job.clean_longitudinal_outliers(
             test_df,
             IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
@@ -82,7 +82,7 @@ class TestRemoveCTValueOutliers(TestCleanCtOutliers):
             Schemas.input_schema,
         )
 
-        returned_df = job.clean_random_spikes(
+        returned_df = job.clean_longitudinal_outliers(
             test_df,
             IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,

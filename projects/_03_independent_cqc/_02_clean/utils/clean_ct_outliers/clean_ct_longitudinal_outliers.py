@@ -11,7 +11,7 @@ from utils.column_values.categorical_column_values import (
 )
 
 
-def clean_random_spikes(
+def clean_longitudinal_outliers(
     df: DataFrame,
     group_by_col: str,
     col_to_clean: str,
