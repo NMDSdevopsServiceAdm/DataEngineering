@@ -118,20 +118,20 @@ class FeaturesEngineeringUtilsSchemas:
             (IndCQC.cqc_location_import_date, pl.DataType()),
             ("import_date", pl.Int64()),
             ("other_col", pl.String()),
-            ("feature_1", pl.Int64()),
-            ("feature_2", pl.Int64()),
-            ("feature_3", pl.Int64()),
-            ("dependent", pl.Int64()),
+            ("feature_1", pl.UInt32()),
+            ("feature_2", pl.UInt32()),
+            ("feature_3", pl.UInt32()),
+            ("dependent", pl.UInt32()),
         ]
     )
     expected_select_and_filter_features_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.DataType()),
-            ("dependent", pl.Int64()),
-            ("feature_1", pl.Int64()),
-            ("feature_2", pl.Int64()),
-            ("feature_3", pl.Int64()),
+            ("dependent", pl.UInt32()),
+            ("feature_1", pl.UInt32()),
+            ("feature_2", pl.UInt32()),
+            ("feature_3", pl.UInt32()),
             ("import_date", pl.String()),
         ]
     )

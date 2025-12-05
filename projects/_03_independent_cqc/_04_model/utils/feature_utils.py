@@ -23,7 +23,7 @@ def add_array_column_count(
         pl.LazyFrame: A LazyFrame with an extra column with the count of items in the specified array.
     """
     return lf.with_columns(
-        pl.col(col_to_check).list.len().fill_null(0).alias(new_col_name)
+        pl.col(col_to_check).list.len().fill_null(0).cast(pl.UInt32).alias(new_col_name)
     )
 
 
@@ -46,6 +46,7 @@ def add_date_index_column(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.col(IndCQC.cqc_location_import_date)
         .rank(method="dense")
         .over(IndCQC.care_home)
+        .cast(pl.UInt32)
         .alias(IndCQC.cqc_location_import_date_indexed)
     )
 
