@@ -23,7 +23,7 @@ def add_array_column_count(
         pl.LazyFrame: A LazyFrame with an extra column with the count of items in the specified array.
     """
     return lf.with_columns(
-        pl.col(col_to_check).list.len().fill_null(0).cast(pl.UInt32).alias(new_col_name)
+        pl.col(col_to_check).list.len().fill_null(0).alias(new_col_name)
     )
 
 
