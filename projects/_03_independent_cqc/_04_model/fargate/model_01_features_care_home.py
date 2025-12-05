@@ -104,6 +104,8 @@ def main(bucket_name: str, model_name: str) -> None:
         lf, feature_cols, dependent_col, partition_keys
     )
 
+    print(features_lf.collect_schema())
+
     utils.sink_to_parquet(
         features_lf,
         destination,
