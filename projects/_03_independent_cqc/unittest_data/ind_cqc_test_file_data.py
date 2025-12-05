@@ -5909,3 +5909,115 @@ class IndCQCDataUtils:
         ("loc 1", 2, 2.0, 50.0, 50.0),
         ("loc 1", 3, None, 25.0, 50.0),
     ]
+
+
+@dataclass
+class OutlierCleaningData:
+
+    no_outliers_input_rows = [
+        ("1-001", 10, CTCareHomeFilteringRule.populated),
+        ("1-001", 11, CTCareHomeFilteringRule.populated),
+        ("1-001", 12, CTCareHomeFilteringRule.populated),
+        ("1-001", 13, CTCareHomeFilteringRule.populated),
+        ("1-002", 50, CTCareHomeFilteringRule.populated),
+        ("1-002", 50, CTCareHomeFilteringRule.populated),
+        ("1-002", 51, CTCareHomeFilteringRule.populated),
+        ("1-002", 51, CTCareHomeFilteringRule.populated),
+    ]
+
+    no_outliers_expected_rows = [
+        ("1-001", 10),
+        ("1-001", 11),
+        ("1-001", 12),
+        ("1-001", 13),
+        ("1-002", 50),
+        ("1-002", 50),
+        ("1-002", 51),
+        ("1-002", 51),
+    ]
+
+    clean_random_spikes_input_rows = [
+        ("1-001", 10, CTCareHomeFilteringRule.populated),
+        ("1-001", 11, CTCareHomeFilteringRule.populated),
+        ("1-001", 12, CTCareHomeFilteringRule.populated),
+        ("1-001", 200, CTCareHomeFilteringRule.populated),
+        ("1-002", 50, CTCareHomeFilteringRule.populated),
+        ("1-002", 51, CTCareHomeFilteringRule.populated),
+        ("1-002", 400, CTCareHomeFilteringRule.populated),
+    ]
+
+    expected_clean_random_spikes_remove_whole_rows = [
+        ("1-001", 10),
+        ("1-001", 11),
+        ("1-001", 12),
+        ("1-002", 50),
+        ("1-002", 51),
+    ]
+
+    expected_clean_random_spikes_remove_value_only_rows = [
+        ("1-001", 10),
+        ("1-001", 11),
+        ("1-001", 12),
+        ("1-001", None),
+        ("1-002", 50),
+        ("1-002", 51),
+        ("1-002", None),
+    ]
+
+    compute_group_median_rows = [
+        ("1-001", 10, CTCareHomeFilteringRule.populated),
+        ("1-001", 20, CTCareHomeFilteringRule.populated),
+        ("1-001", 30, CTCareHomeFilteringRule.populated),
+    ]
+
+    expected_compute_group_median_rows = [
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 20.0),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 20.0),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 20.0),
+    ]
+
+    compute_abs_deviation_rows = expected_compute_group_median_rows
+
+    expected_abs_deviation_rows = [
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 20, 10),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 20, 0),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 20, 10),
+    ]
+
+    compute_mad_rows = expected_abs_deviation_rows
+
+    expected_mad_rows = [
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 20, 10, 10),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 20, 0, 10),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 20, 10, 10),
+    ]
+
+    compute_outlier_cutoff_rows = expected_mad_rows
+
+    expected_outlier_cutoff_rows = [
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 20, 10, 10, 10),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 20, 0, 10, 10),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 20, 10, 10, 10),
+    ]
+
+    flag_outliers_rows = expected_outlier_cutoff_rows
+
+    expected_flag_outliers_rows = [
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 20, 10, 10, 10, False),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 20, 0, 10, 10, False),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 20, 10, 10, 10, False),
+    ]
+
+    apply_outlier_cleaning_input_rows = [
+        ("1-001", 100, True),
+        ("1-001", 50, False),
+    ]
+
+    apply_outlier_cleaning_expected_rows = [
+        ("1-001", None, True),
+        ("1-001", 50, False),
+    ]
+
+    apply_outlier_cleaning_remove_row_expected_rows = [
+        ("1-001", 50, False),
+    ]

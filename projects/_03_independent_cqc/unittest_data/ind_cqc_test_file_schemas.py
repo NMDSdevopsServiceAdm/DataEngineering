@@ -3184,3 +3184,111 @@ class IndCQCDataUtils:
             StructField("new_column", FloatType(), True),
         ]
     )
+
+
+@dataclass
+class OutlierCleaningSchemas:
+
+    input_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+            StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
+        ]
+    )
+
+    median_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+            StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
+            StructField("median_val", DoubleType(), True),
+        ]
+    )
+
+    abs_dev_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+            StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
+            StructField("median_val", IntegerType(), True),
+            StructField("abs_diff", IntegerType(), True),
+        ]
+    )
+
+    mad_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+            StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
+            StructField("median_val", IntegerType(), True),
+            StructField("abs_diff", IntegerType(), True),
+            StructField("mad", IntegerType(), True),
+        ]
+    )
+
+    cutoff_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+            StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
+            StructField("median_val", IntegerType(), True),
+            StructField("abs_diff", IntegerType(), True),
+            StructField("mad", IntegerType(), True),
+            StructField("abs_diff_cutoff", IntegerType(), True),
+        ]
+    )
+
+    expected_outlier_flags_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+            StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
+            StructField("median_val", IntegerType(), True),
+            StructField("abs_diff", IntegerType(), True),
+            StructField("mad", IntegerType(), True),
+            StructField("abs_diff_cutoff", IntegerType(), True),
+            StructField("outlier_flag", BooleanType(), True),
+        ]
+    )
+
+    cleaned_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+        ]
+    )
+
+    final_cleaned_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+            StructField("outlier_flag", BooleanType(), True),
+        ]
+    )
+
+    apply_outlier_cleaning_input_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+            StructField("outlier_flag", BooleanType(), True),
+        ]
+    )

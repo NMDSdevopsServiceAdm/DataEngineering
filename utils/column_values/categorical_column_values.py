@@ -574,12 +574,14 @@ class CTCareHomeFilteringRule(ColumnValues):
     populated: str = "populated"
     missing_data: str = "missing_data"
     beds_ratio_outlier: str = "beds_ratio_outlier"
+    random_spikes_total_posts: str = "random_spikes_total_posts"
 
 
 @dataclass
 class CTNonResFilteringRule(ColumnValues):
     populated: str = "populated"
     missing_data: str = "missing_data"
+    random_spikes_total_posts: str = "random_spikes_total_posts"
 
 
 @dataclass
