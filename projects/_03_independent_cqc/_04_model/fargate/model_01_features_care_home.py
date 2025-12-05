@@ -104,9 +104,7 @@ def main(bucket_name: str, model_name: str) -> None:
         lf, feature_cols, dependent_col, partition_keys
     )
 
-    features_lf = features_lf.cast({pl.Int64: pl.UInt32})
-    features_lf = features_lf.cast({pl.Int32: pl.UInt32})
-    features_lf = features_lf.cast({pl.Int8: pl.UInt8})
+    features_lf = features_lf.cast({pl.UInt32: pl.Int64})
 
     print("Schema before sinking:")
     print(lf.describe())
