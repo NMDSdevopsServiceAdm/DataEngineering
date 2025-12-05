@@ -138,14 +138,14 @@ def select_and_filter_features_data(
     features_list: list[str],
     dependent_col: str,
     partition_keys: list[str],
-) -> pl.DataFrame:
+) -> pl.LazyFrame:
     """
     Selects columns from a Polars LazyFrame and filters to non-null feature columns.
 
     This function:
-        - Checks if all columns we want to select exist in the DataFrame.
+        - Checks if all columns we want to select exist in the LazyFrame.
         - If it does, it selects those columns. If not, it raises an error.
-        - Filters the DataFrame to keep only rows where all feature columns are non-null.
+        - Filters the LazyFrame to keep only rows where all feature columns are non-null.
         - Casts partition columns to string type (required for sinking to parquet).
 
     Args:
@@ -155,11 +155,11 @@ def select_and_filter_features_data(
         partition_keys (list[str]): List of column names used for partitioning.
 
     Returns:
-        pl.DataFrame: Polars DataFrame containing only selected columns and rows
+        pl.LazyFrame: Polars LazyFrame containing only selected columns and rows
                       where all feature columns are non-null.
 
     Raises:
-        ValueError: If any required columns are missing from the DataFrame.
+        ValueError: If any required columns are missing from the LazyFrame.
     """
     select_cols = (
         [
