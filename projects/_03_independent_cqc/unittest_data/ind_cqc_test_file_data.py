@@ -5936,18 +5936,20 @@ class IndCQCDataUtils:
 class CleanCtRepetition:
     # fmt: off
     clean_ct_values_after_consecutive_repetition_rows = [
-        ("1-001", 1, CTNonResFilteringRule.populated, date(2025, 1, 1)),
-        ("1-001", 2, CTNonResFilteringRule.populated, date(2025, 2, 1)),
-        ("1-001", 2, CTNonResFilteringRule.populated, date(2025, 10, 3)), # 244 days after previous import date.
-        ("1-001", None, CTNonResFilteringRule.missing_data, date(2025, 11, 1)), # Missing raw data.
-        ("1-001", 3, CTNonResFilteringRule.populated, date(2025, 12, 1)),
+        ("1-001", date(2025, 1, 1), 1, CTNonResFilteringRule.populated),
+        ("1-001", date(2025, 2, 1), 2, CTNonResFilteringRule.populated),
+        ("1-001", date(2025, 3, 1), 2, CTNonResFilteringRule.populated), # Repeated value within repetition limit.
+        ("1-001", date(2025, 4, 1), None, CTNonResFilteringRule.missing_data), # Missing raw data. Could be missing from not being submitted or removed by us for being a spike.
+        ("1-001", date(2025, 11, 7), 2, CTNonResFilteringRule.populated), # 251 days after repeated value's first import date.
+        ("1-001", date(2025, 12, 1), 3, CTNonResFilteringRule.populated),
     ]
     expected_clean_ct_values_after_consecutive_repetition_rows = [
-        ("1-001", 1, CTNonResFilteringRule.populated, date(2025, 1, 1), 1),
-        ("1-001", 2, CTNonResFilteringRule.populated, date(2025, 2, 1), 2),
-        ("1-001", 2, CTNonResFilteringRule.location_repeats_total_posts, date(2025, 10, 3), None), # Only this row has been cleaned.
-        ("1-001", None, CTNonResFilteringRule.missing_data, date(2025, 11, 1), None),
-        ("1-001", 3, CTNonResFilteringRule.populated, date(2025, 12, 1), 3),
+        ("1-001", date(2025, 1, 1), 1, CTNonResFilteringRule.populated, 1),
+        ("1-001", date(2025, 2, 1), 2, CTNonResFilteringRule.populated, 2),
+        ("1-001", date(2025, 3, 1), 2, CTNonResFilteringRule.populated, 2),
+        ("1-001", date(2025, 4, 1), None, CTNonResFilteringRule.missing_data, None),
+        ("1-001", date(2025, 11, 7), 2, CTNonResFilteringRule.location_repeats_total_posts, None), # Only this row has been cleaned.
+        ("1-001", date(2025, 12, 1), 3, CTNonResFilteringRule.populated, 3),
     ]
     # fmt: on
 
@@ -5969,39 +5971,39 @@ class CleanCtRepetition:
     ]
 
     clean_capacity_tracker_posts_repetition_non_res_locations_rows = [
-        ("1-001", 1, 243),
-        ("1-002", 9, 244),
-        ("1-003", 10, 122),
-        ("1-004", 49, 123),
-        ("1-005", 50, 61),
-        ("1-006", 51, 62),
+        ("1-001", 1, 250),
+        ("1-002", 9, 251),
+        ("1-003", 10, 125),
+        ("1-004", 49, 126),
+        ("1-005", 50, 65),
+        ("1-006", 51, 66),
     ]
     expected_clean_capacity_tracker_posts_repetition_non_res_locations_rows = [
-        ("1-001", 1, 243, 1),
-        ("1-002", 9, 244, None),
-        ("1-003", 10, 122, 10),
-        ("1-004", 49, 123, None),
-        ("1-005", 50, 61, 50),
-        ("1-006", 51, 62, None),
+        ("1-001", 1, 250, 1),
+        ("1-002", 9, 251, None),
+        ("1-003", 10, 125, 10),
+        ("1-004", 49, 126, None),
+        ("1-005", 50, 65, 50),
+        ("1-006", 51, 66, None),
     ]
 
     clean_capacity_tracker_posts_repetition_care_home_locations_rows = [
-        ("1-001", 1, 395),
-        ("1-002", 9, 396),
-        ("1-003", 10, 152),
-        ("1-004", 49, 153),
-        ("1-005", 50, 122),
-        ("1-006", 51, 123),
-        ("1-007", 250, 61),
-        ("1-008", 251, 62),
+        ("1-001", 1, 370),
+        ("1-002", 9, 371),
+        ("1-003", 10, 155),
+        ("1-004", 49, 156),
+        ("1-005", 50, 125),
+        ("1-006", 51, 126),
+        ("1-007", 250, 65),
+        ("1-008", 251, 66),
     ]
     expected_clean_capacity_tracker_posts_repetition_care_home_locations_rows = [
-        ("1-001", 1, 395, 1),
-        ("1-002", 9, 396, None),
-        ("1-003", 10, 152, 10),
-        ("1-004", 49, 153, None),
-        ("1-005", 50, 122, 50),
-        ("1-006", 51, 123, None),
-        ("1-007", 250, 61, 250),
-        ("1-008", 251, 62, None),
+        ("1-001", 1, 370, 1),
+        ("1-002", 9, 371, None),
+        ("1-003", 10, 155, 10),
+        ("1-004", 49, 156, None),
+        ("1-005", 50, 125, 50),
+        ("1-006", 51, 126, None),
+        ("1-007", 250, 65, 250),
+        ("1-008", 251, 66, None),
     ]

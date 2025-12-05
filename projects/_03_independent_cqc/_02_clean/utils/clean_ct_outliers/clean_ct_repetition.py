@@ -15,15 +15,15 @@ from utils.column_values.categorical_column_values import (
 )
 
 DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_NON_RES = {
-    0: 243,
-    10: 122,
-    50: 61,
+    0: 250,
+    10: 125,
+    50: 65,
 }
 DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_CARE_HOMES = {
-    0: 395,
-    10: 152,
-    50: 122,
-    250: 61,
+    0: 370,
+    10: 155,
+    50: 125,
+    250: 65,
 }
 
 
@@ -52,16 +52,6 @@ def clean_ct_values_after_consecutive_repetition(
     Returns:
         DataFrame: The input with DataFrame with an additional column.
     """
-    df = create_column_with_repeated_values_removed(
-        df, column_to_clean, f"{column_to_clean}_deduplicated", partitioning_column
-    )
-
-    df = calculate_days_a_value_has_been_repeated(
-        df, f"{column_to_clean}_deduplicated", IndCQC.location_id
-    )
-
-    df = clean_value_repetition(df, column_to_clean, cleaned_column_name, care_home)
-
     if care_home:
         filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
         populated_rule = CTCareHomeFilteringRule.populated
@@ -70,6 +60,38 @@ def clean_ct_values_after_consecutive_repetition(
         filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
         populated_rule = CTNonResFilteringRule.populated
         new_rule_name = CTNonResFilteringRule.location_repeats_total_posts
+
+    df_populated_only = df.filter(F.col(filter_rule_column_name) == populated_rule)
+
+    df_populated_only = create_column_with_repeated_values_removed(
+        df_populated_only,
+        column_to_clean,
+        f"{column_to_clean}_deduplicated",
+        partitioning_column,
+    )
+
+    df_populated_only = calculate_days_a_value_has_been_repeated(
+        df_populated_only, f"{column_to_clean}_deduplicated", IndCQC.location_id
+    )
+
+    df_populated_only = clean_value_repetition(
+        df_populated_only, column_to_clean, cleaned_column_name, care_home
+    )
+
+    cols_to_select_before_join = [
+        IndCQC.location_id,
+        IndCQC.cqc_location_import_date,
+        cleaned_column_name,
+    ]
+    df_populated_only = df_populated_only.select(cols_to_select_before_join)
+
+    df = df.drop(cleaned_column_name)
+
+    df = df.join(
+        df_populated_only,
+        on=[IndCQC.location_id, IndCQC.cqc_location_import_date],
+        how="left",
+    )
 
     df = update_filtering_rule(
         df,
@@ -80,10 +102,10 @@ def clean_ct_values_after_consecutive_repetition(
         new_rule_name,
     )
 
-    df = df.drop(
-        f"{column_to_clean}_deduplicated",
-        IndCQC.days_value_has_been_repeated,
-    )
+    # df = df.drop(
+    #     f"{column_to_clean}_deduplicated",
+    #     IndCQC.days_value_has_been_repeated,
+    # )
 
     return df
 
@@ -128,7 +150,7 @@ def calculate_days_a_value_has_been_repeated(
         ),
     )
 
-    return df.drop(IndCQC.date_when_repeated_value_was_first_submitted)
+    return df  # .drop(IndCQC.date_when_repeated_value_was_first_submitted)
 
 
 def clean_value_repetition(
@@ -182,4 +204,4 @@ def clean_value_repetition(
         ).otherwise(None),
     )
 
-    return df.drop(repetition_limit_based_on_posts)
+    return df  # .drop(repetition_limit_based_on_posts)

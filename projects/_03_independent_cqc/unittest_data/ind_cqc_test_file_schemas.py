@@ -3211,9 +3211,9 @@ class CleanCtRepetition:
     clean_ct_values_after_consecutive_repetition_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.ct_non_res_care_workers_employed, IntegerType(), True),
             StructField(IndCQC.ct_non_res_filtering_rule, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
         ]
     )
     expected_clean_ct_values_after_consecutive_repetition_schema = StructType(

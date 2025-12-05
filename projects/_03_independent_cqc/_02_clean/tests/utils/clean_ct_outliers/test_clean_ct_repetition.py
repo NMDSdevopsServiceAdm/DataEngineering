@@ -76,15 +76,15 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
         self,
     ):
         expected_dict_non_residential_locations = {
-            0: 243,
-            10: 122,
-            50: 61,
+            0: 250,
+            10: 125,
+            50: 65,
         }
         expected_dict_care_home_locations = {
-            0: 395,
-            10: 152,
-            50: 122,
-            250: 61,
+            0: 370,
+            10: 155,
+            50: 125,
+            250: 65,
         }
 
         self.assertEqual(
