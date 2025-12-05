@@ -104,16 +104,12 @@ def main(bucket_name: str, model_name: str) -> None:
         lf, feature_cols, dependent_col, partition_keys
     )
 
-    print(features_lf.collect_schema())
-    print(features_lf.head().collect())
-    print(features_lf.dtypes)
-
     features_lf = features_lf.cast({pl.Int64: pl.UInt32})
     features_lf = features_lf.cast({pl.Int32: pl.UInt32})
     features_lf = features_lf.cast({pl.Int8: pl.UInt8})
-    print(features_lf.collect_schema())
-    print(features_lf.head().collect())
-    print(features_lf.dtypes)
+
+    print(features_lf.explain())
+    print(features_lf.show_graph())
 
     utils.sink_to_parquet(
         features_lf,
