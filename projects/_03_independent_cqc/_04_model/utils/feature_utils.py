@@ -46,7 +46,6 @@ def add_date_index_column(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.col(IndCQC.cqc_location_import_date)
         .rank(method="dense")
         .over(IndCQC.care_home)
-        .cast(pl.UInt32)
         .alias(IndCQC.cqc_location_import_date_indexed)
     )
 
@@ -72,7 +71,6 @@ def cap_integer_at_max_value(
         pl.when(pl.col(col_name).is_not_null())
         .then(pl.min_horizontal(pl.col(col_name), pl.lit(max_value)))
         .otherwise(None)
-        .cast(pl.UInt32)
         .alias(new_col_name)
     )
 
