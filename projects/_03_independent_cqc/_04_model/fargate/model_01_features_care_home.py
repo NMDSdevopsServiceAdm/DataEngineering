@@ -109,7 +109,7 @@ def main(bucket_name: str, model_name: str) -> None:
     features_lf = features_lf.cast({pl.Int8: pl.UInt8})
 
     print(features_lf.explain())
-    print(features_lf.show_graph())
+    print(features_lf.explain(format="tree"))
 
     utils.sink_to_parquet(
         features_lf,
