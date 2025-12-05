@@ -146,13 +146,11 @@ class CleanValueRepetition(CleanCTRepetitionTests):
         self.returned_df_non_res_locations = job.clean_value_repetition(
             self.test_df_non_res_locations,
             IndCQC.ct_non_res_care_workers_employed,
-            IndCQC.ct_non_res_care_workers_employed_cleaned,
             False,
         )
         self.returned_df_care_home_locations = job.clean_value_repetition(
             self.test_df_care_home_locations,
             IndCQC.ct_care_home_total_employed,
-            IndCQC.ct_care_home_total_employed_cleaned,
             True,
         )
         self.expected_df_non_res_locations = self.spark.createDataFrame(
