@@ -134,6 +134,20 @@ resource "aws_iam_policy" "retrieve_cqc_api_primary_key_secret" {
   policy = templatefile("policy-documents/retrieve-specific-secret.json", { secret_arn = data.aws_secretsmanager_secret.cqc_api_primary_key.arn })
 }
 
+resource "aws_iam_group_policy" "madetech_group_deny_all_prod" {
+  count = local.workspace_prefix == "main" ? 1 : 0
+
+  group  = "madetech"
+  policy = file("policy-documents/restrict-prod-access.json")
+}
+
+resource "aws_iam_group_policy" "analysts_group_deny_all_prod" {
+  count = local.workspace_prefix == "main" ? 1 : 0
+
+  group  = "analysts"
+  policy = file("policy-documents/restrict-prod-access.json")
+}
+
 resource "aws_iam_group" "can_assume_admin_role" {
   count = local.workspace_prefix == "main" ? 1 : 0
   name  = "CanAssumeAdminRole"
