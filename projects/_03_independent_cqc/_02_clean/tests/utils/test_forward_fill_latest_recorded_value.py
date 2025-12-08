@@ -9,88 +9,6 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
 )
 from utils import utils
 
-
-class DuplicateLatestKnownAscwdsValueIntoFollowingTwoImportDates(unittest.TestCase):
-    def setUp(self) -> None:
-        self.spark = utils.get_spark()
-
-    def test_latest_known_value_is_copied_into_only_following_two_import_dates_when_latest_known_value_is_more_than_3_months_before_latest_import(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.locations_when_latest_known_value_is_more_than_3_months_before_latest_import_rows,
-            Schemas.locations_schema,
-        )
-        returned_df = (
-            job.duplicate_latest_known_ascwds_value_into_following_two_import_dates(
-                test_df
-            )
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_locations_when_latest_known_value_is_more_than_3_months_before_latest_import_rows,
-            Schemas.locations_schema,
-        )
-
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-    def test_latest_known_value_is_copied_into_following_import_date_when_last_known_value_is_1_month_before_latest_import(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.locations_when_latest_known_value_is_1_month_before_latest_import_rows,
-            Schemas.locations_schema,
-        )
-        returned_df = (
-            job.duplicate_latest_known_ascwds_value_into_following_two_import_dates(
-                test_df
-            )
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_locations_when_latest_known_value_is_1_month_before_latest_import_rows,
-            Schemas.locations_schema,
-        )
-
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-    def test_input_data_is_returned_without_change_when_latest_known_value_is_at_the_latest_import(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.locations_when_latest_known_value_is_at_the_latest_import_rows,
-            Schemas.locations_schema,
-        )
-        returned_df = (
-            job.duplicate_latest_known_ascwds_value_into_following_two_import_dates(
-                test_df
-            )
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_locations_when_latest_known_value_is_at_the_latest_import_rows,
-            Schemas.locations_schema,
-        )
-
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-    def test_latest_known_value_is_copied_into_only_following_two_import_dates_when_latest_known_value_is_more_than_3_months_before_latest_import_and_dates_are_out_of_order(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.locations_when_latest_known_value_is_more_than_3_months_before_latest_import_and_dates_are_out_of_order_rows,
-            Schemas.locations_schema,
-        )
-        returned_df = (
-            job.duplicate_latest_known_ascwds_value_into_following_two_import_dates(
-                test_df
-            )
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_locations_when_latest_known_value_is_more_than_3_months_before_latest_import_and_dates_are_out_of_order_rows,
-            Schemas.locations_schema,
-        )
-
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-
 class TestRepeatLastKnownValue(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
@@ -144,9 +62,6 @@ class TestRepeatLastKnownValue(unittest.TestCase):
         )
 
     def test_only_one_month_of_forward_fill(self):
-        """
-        With days_to_repeat ≈ 30, only one monthly import_date should be filled.
-        """
         days_to_repeat = 31
         test_df = self.spark.createDataFrame(
             Data.input_one_month_window_rows,
@@ -163,9 +78,6 @@ class TestRepeatLastKnownValue(unittest.TestCase):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_ninety_days_of_forward_fill(self):
-        """
-        With days_to_repeat = 90, three consecutive monthly rows should be filled.
-        """
         days_to_repeat = 90
         test_df = self.spark.createDataFrame(
             Data.input_ninety_day_window_rows,
