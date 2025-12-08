@@ -63,7 +63,7 @@ class ForwardFillLatestKnownValueTests(unittest.TestCase):
             Data.expected_locations_when_latest_known_value_is_more_than_3_months_before_latest_import_and_dates_are_out_of_order_rows,
         )
 
-    def test_forward_fill_latest_known_value_when_thirty_one_of_forward_fill(self):
+    def test_forward_fill_latest_known_value_when_days_to_repeat_is_thirty_one(self):
         days_to_repeat = 31
         test_df = self.spark.createDataFrame(
             Data.input_one_month_window_rows,
@@ -78,7 +78,7 @@ class ForwardFillLatestKnownValueTests(unittest.TestCase):
         )
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_forward_fill_latest_known_value_when_ninety_days_of_forward_fill(self):
+    def test_forward_fill_latest_known_value_when_days_to_repeat_is_ninety(self):
         days_to_repeat = 90
         test_df = self.spark.createDataFrame(
             Data.input_ninety_day_window_rows,

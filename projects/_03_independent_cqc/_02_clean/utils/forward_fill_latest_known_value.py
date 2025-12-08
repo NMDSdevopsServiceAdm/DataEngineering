@@ -51,9 +51,9 @@ def forward_fill_latest_known_value(
         )
     )
 
-    df2 = df.join(last_known, on=IndCQC.location_id, how="left")
+    df_joined = df.join(last_known, on=IndCQC.location_id, how="left")
 
-    df2 = df2.withColumn(
+    df_joined = df_joined.withColumn(
         col_to_repeat,
         F.when(
             (F.col(col_to_repeat).isNull())
@@ -68,8 +68,8 @@ def forward_fill_latest_known_value(
         ).otherwise(F.col(col_to_repeat)),
     )
 
-    df2 = df2.drop(last_known_date, last_known_value).orderBy(
+    df_joined = df_joined.drop(last_known_date, last_known_value).orderBy(
         IndCQC.location_id, IndCQC.cqc_location_import_date
     )
 
-    return df2
+    return df_joined
