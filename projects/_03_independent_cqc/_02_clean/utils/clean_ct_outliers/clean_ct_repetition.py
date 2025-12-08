@@ -14,6 +14,7 @@ from utils.column_values.categorical_column_values import (
     CTNonResFilteringRule,
 )
 
+# These dicts are required in clean_value_repetition function.
 DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_NON_RES = {
     0: 250,  # using 250 as proxy for 8 months.
     10: 125,  # using 125 as proxy for 4 months.
