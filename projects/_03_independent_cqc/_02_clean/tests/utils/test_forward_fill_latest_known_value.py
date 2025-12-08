@@ -1,11 +1,11 @@
 import unittest
 
-import projects._03_independent_cqc._02_clean.utils.forward_fill_latest_recorded_value as job
+import projects._03_independent_cqc._02_clean.utils.forward_fill_latest_known_value as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
-    DuplicateLatestKnownAscwdsValueIntoFollowingTwoImportDates as Data,
+    ForwardFillLatestKnownValue as Data,
 )
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
-    DuplicateLatestKnownAscwdsValueIntoFollowingTwoImportDates as Schemas,
+    ForwardFillLatestKnownValue as Schemas,
 )
 from utils import utils
 
@@ -18,7 +18,7 @@ class TestRepeatLastKnownValue(unittest.TestCase):
     def run_test(self, input_rows, expected_rows):
         test_df = self.spark.createDataFrame(input_rows, Schemas.locations_schema)
 
-        returned_df = job.repeat_last_known_value(
+        returned_df = job.forward_fill_latest_known_value(
             df=test_df,
             col_to_repeat="ascwds_filled_posts_deduplicated_clean",
             days_to_repeat=self.days_to_repeat,
@@ -72,7 +72,7 @@ class TestRepeatLastKnownValue(unittest.TestCase):
             Data.expected_one_month_window_rows,
             Schemas.locations_schema,
         )
-        returned_df = job.repeat_last_known_value(
+        returned_df = job.forward_fill_latest_known_value(
             test_df, "ascwds_filled_posts_deduplicated_clean", days_to_repeat
         )
         print(returned_df.collect())
@@ -88,7 +88,7 @@ class TestRepeatLastKnownValue(unittest.TestCase):
             Data.expected_ninety_day_window_rows,
             Schemas.locations_schema,
         )
-        returned_df = job.repeat_last_known_value(
+        returned_df = job.forward_fill_latest_known_value(
             test_df, "ascwds_filled_posts_deduplicated_clean", days_to_repeat
         )
         print(returned_df.collect())

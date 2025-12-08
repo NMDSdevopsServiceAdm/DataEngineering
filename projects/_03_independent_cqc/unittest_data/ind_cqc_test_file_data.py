@@ -5912,7 +5912,7 @@ class IndCQCDataUtils:
 
 
 @dataclass
-class DuplicateLatestKnownAscwdsValueIntoFollowingTwoImportDates:
+class ForwardFillLatestKnownValue:
     locations_when_latest_known_value_is_more_than_3_months_before_latest_import_rows = [
         ("1-001", date(2025, 1, 1), 1),
         ("1-001", date(2025, 2, 1), None),

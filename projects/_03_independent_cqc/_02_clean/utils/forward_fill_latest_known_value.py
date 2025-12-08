@@ -4,20 +4,19 @@ from pyspark.sql import functions as F
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-def repeat_last_known_value(
+def forward_fill_latest_known_value(
     df: DataFrame,
     col_to_repeat: str,
     days_to_repeat: int,
 ) -> DataFrame:
     """
-    Propagates the most recent known value of a specified column forward for a configurable
-    number of days after the last non-null submission for each location.
+    Copies the latest known value of col_to_repeat forward for the given days_to_repeat through cqc_location_import_date
+    per locationid.
 
-    A generalised function which allows any column to be forward-filled by making the propagation window configurable.
+    A generalised function which allows a given column to be forward-filled by making the propagation window configurable.
     This avoids hardcoding logic and makes the function suitable for reuse with other datasets (e.g., PIR data) and
-    with varying time windows as requirements change. This function follows following steps:
-        1. Identify the latest non-null value for `col_to_repeat` per location, including the date it
-        was observed.
+    with varying time windows as requirements change. This function has the following steps:
+        1. Identify the latest non-null value for `col_to_repeat` per location and that values import date.
         2. Join this information back onto the main dataset.
         3. Forward-fill the column for rows where:
             - the column value is null,
@@ -26,9 +25,8 @@ def repeat_last_known_value(
         4. Drop intermediate helper columns.
 
     Args:
-        df (DataFrame): Input dataset containing `location_id`, `cqc_location_import_date`,
-                        and the column to be forward-filled.
-        col_to_repeat (str): Name of the column whose last known value should be propagated forward.
+        df (DataFrame): Input DataFrame containing `location_id`, `cqc_location_import_date` and col_to_repeat.
+        col_to_repeat (str): Name of the column whose last known value will be propagated forward.
         days_to_repeat (int): Maximum number of days after the last known submission for which the
                             value should be forward-filled.
 
