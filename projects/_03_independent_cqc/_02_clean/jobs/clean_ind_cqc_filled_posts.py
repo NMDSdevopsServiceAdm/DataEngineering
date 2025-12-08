@@ -84,7 +84,7 @@ def main(
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
 
     locations_df = forward_fill_latest_known_value(
-        locations_df, IndCQC.ascwds_filled_posts_dedup_clean, 61
+        locations_df, IndCQC.ascwds_filled_posts_dedup_clean, 65
     )
 
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
