@@ -56,23 +56,16 @@ class TestRemoveCTValueOutliers(TestCleanCtOutliers):
         )
 
         returned_df = job.clean_longitudinal_outliers(
-            test_df,
-            IndCQC.location_id,
-            IndCQC.ct_care_home_total_employed_cleaned,
-            IndCQC.ct_care_home_total_employed_cleaned,
-            0.10,
-            True,
-            True,
-        ).select(
-            IndCQC.location_id,
-            IndCQC.ct_care_home_total_employed_cleaned,
+            df=test_df,
+            group_by_col=IndCQC.location_id,
+            col_to_clean=IndCQC.ct_care_home_total_employed_cleaned,
+            cleaned_column_name=IndCQC.ct_care_home_total_employed_cleaned,
+            proportion_to_filter=0.10,
+            remove_whole_record=False,
+            care_home=True,
         )
-        expected_df = self.spark.createDataFrame(
-            Data.no_outliers_expected_rows,
-            Schemas.cleaned_schema,
-        )
-
-        self.assertEqual(returned_df.collect(), expected_df.collect())
+        print("returned df is: ", returned_df.collect())
+        self.assertEqual(returned_df.collect(), test_df.collect())
 
     def test_clean_random_spikes_remove_value_only(
         self,
@@ -242,7 +235,7 @@ class TestApplyCleaning(TestCleanCtOutliers):
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.apply_outlier_cleaning_remove_row_expected_rows,
+            Data.expected_apply_outlier_cleaning_when_removing_outlier_rows,
             Schemas.final_cleaned_schema,
         )
 

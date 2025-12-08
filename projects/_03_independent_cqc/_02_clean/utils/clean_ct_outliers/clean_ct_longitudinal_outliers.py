@@ -71,13 +71,13 @@ def clean_longitudinal_outliers(
         populated_rule,
         new_rule_name,
     )
-    cleaned_df = cleaned_df.drop(
-        "median_val",
-        "abs_diff",
-        "mad",
-        "abs_diff_cutoff",
-        "outlier_flag",
-    )
+    # cleaned_df = cleaned_df.drop(
+    #     "median_val",
+    #     "abs_diff",
+    #     "mad",
+    #     "abs_diff_cutoff",
+    #     "outlier_flag",
+    # )
     return cleaned_df
 
 
@@ -201,9 +201,16 @@ def apply_outlier_cleaning(
     Returns:
         DataFrame: DataFrame with outliers cleaned either by row removal or null replacement.
     """
+    locations_with_100 = df.groupBy("locationId").agg(
+        F.max(F.col(col_to_clean) >= 100).alias("has_100")
+    )
+
+    df = df.join(locations_with_100, on="locationId", how="left")
     df = df.withColumn(
         cleaned_column_name,
-        F.when(F.col("outlier_flag"), None).otherwise(F.col(col_to_clean)),
+        F.when(F.col("outlier_flag") & F.col("has_100"), None).otherwise(
+            F.col(col_to_clean)
+        ),
     )
     if remove_whole_record:
         return df.filter(~F.col("outlier_flag"))
