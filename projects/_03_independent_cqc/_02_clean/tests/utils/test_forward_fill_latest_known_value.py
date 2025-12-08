@@ -11,7 +11,7 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class TestRepeatLastKnownValue(unittest.TestCase):
+class ForwardFillLatestKnownValueTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.days_to_repeat = 61
@@ -31,7 +31,7 @@ class TestRepeatLastKnownValue(unittest.TestCase):
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_latest_known_value_more_than_3_months_before_latest_import(
+    def test_forward_fill_latest_known_value_when_latest_known_value_more_than_3_months_before_latest_import(
         self,
     ):
         self.run_test(
@@ -39,7 +39,7 @@ class TestRepeatLastKnownValue(unittest.TestCase):
             Data.expected_locations_when_latest_known_value_is_more_than_3_months_before_latest_import_rows,
         )
 
-    def test_latest_known_value_is_1_month_before_latest_import(
+    def test_forward_fill_latest_known_value_when_latest_known_value_is_1_month_before_latest_import(
         self,
     ):
         self.run_test(
@@ -47,7 +47,7 @@ class TestRepeatLastKnownValue(unittest.TestCase):
             Data.expected_locations_when_latest_known_value_is_1_month_before_latest_import_rows,
         )
 
-    def test_latest_known_value_at_latest_import(
+    def test_forward_fill_latest_known_value_when_latest_known_value_at_latest_import(
         self,
     ):
         self.run_test(
@@ -55,7 +55,7 @@ class TestRepeatLastKnownValue(unittest.TestCase):
             Data.expected_locations_when_latest_known_value_is_at_the_latest_import_rows,
         )
 
-    def test_dates_are_out_of_order(
+    def test_forward_fill_latest_known_value_when_dates_are_out_of_order(
         self,
     ):
         self.run_test(
@@ -63,7 +63,7 @@ class TestRepeatLastKnownValue(unittest.TestCase):
             Data.expected_locations_when_latest_known_value_is_more_than_3_months_before_latest_import_and_dates_are_out_of_order_rows,
         )
 
-    def test_only_one_month_of_forward_fill(self):
+    def test_forward_fill_latest_known_value_when_thirty_one_of_forward_fill(self):
         days_to_repeat = 31
         test_df = self.spark.createDataFrame(
             Data.input_one_month_window_rows,
@@ -78,7 +78,7 @@ class TestRepeatLastKnownValue(unittest.TestCase):
         )
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_ninety_days_of_forward_fill(self):
+    def test_forward_fill_latest_known_value_when_ninety_days_of_forward_fill(self):
         days_to_repeat = 90
         test_df = self.spark.createDataFrame(
             Data.input_ninety_day_window_rows,
