@@ -20,9 +20,6 @@ from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_car
 from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_non_res_outliers import (
     clean_capacity_tracker_non_res_outliers,
 )
-from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_longitudinal_outliers import (
-    clean_longitudinal_outliers,
-)
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -97,16 +94,6 @@ def main(
 
     locations_df = clean_capacity_tracker_care_home_outliers(locations_df)
     locations_df = clean_capacity_tracker_non_res_outliers(locations_df)
-
-    locations_df = clean_longitudinal_outliers(
-        df=locations_df,
-        group_by_col=IndCQC.location_id,
-        col_to_clean=IndCQC.ct_care_home_total_employed_cleaned,
-        cleaned_column_name=IndCQC.ct_care_home_total_employed_cleaned,
-        proportion_to_filter=0.05,
-        remove_whole_record=False,
-        care_home=True,
-    )
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 

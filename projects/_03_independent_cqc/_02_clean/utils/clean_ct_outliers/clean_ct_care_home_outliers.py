@@ -1,6 +1,9 @@
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
+from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_longitudinal_outliers import (
+    clean_longitudinal_outliers,
+)
 from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.null_posts_per_bed_ratio_outliers import (
     null_posts_per_bed_outliers,
 )
@@ -39,5 +42,15 @@ def clean_capacity_tracker_care_home_outliers(df: DataFrame) -> DataFrame:
     )
 
     df = null_posts_per_bed_outliers(df)
+
+    locations_df = clean_longitudinal_outliers(
+        df=locations_df,
+        group_by_col=IndCQC.location_id,
+        col_to_clean=IndCQC.ct_care_home_total_employed_cleaned,
+        cleaned_column_name=IndCQC.ct_care_home_total_employed_cleaned,
+        proportion_to_filter=0.05,
+        remove_whole_record=False,
+        care_home=True,
+    )
 
     return df
