@@ -6010,21 +6010,25 @@ class CleanCtRepetition:
         ("1-008", 251, 66, None),
     ]
 
+    # fmt: off
     original_rows = [
-        ("1-001", date(2025, 1, 1), 5),
-        ("1-002", date(2025, 1, 1), 6),
-        ("1-002", date(2025, 2, 1), 7),
-        ("1-004", date(2025, 4, 1), 8),
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2026, 1, 7), 1),  # Repeated value after 371 days.
+        ("1-001", date(2026, 2, 1), 2),  # New value submitted.
+        ("1-002", date(2026, 2, 1), 1),  # Different location with a value.
+        ("1-003", date(2026, 2, 1), None),  # Different location with a null.
     ]
     populated_only_rows = [
-        ("1-001", date(2025, 1, 1), 1, "string"),
-        ("1-002", date(2025, 1, 1), 2, "string"),
-        ("1-002", date(2025, 2, 1), 3, "string"),
-        ("1-003", date(2025, 3, 1), 4, "string"),
+        ("1-001", date(2025, 1, 1), 1, "something_else"),
+        ("1-001", date(2026, 1, 7), None, "something_else"),
+        ("1-001", date(2026, 2, 1), 2, "something_else"),
+        ("1-002", date(2026, 2, 1), 1, "something_else"),
     ]
     expected_populated_only_joined_with_original_rows = [
         ("1-001", date(2025, 1, 1), 1),
-        ("1-002", date(2025, 1, 1), 2),
-        ("1-002", date(2025, 2, 1), 3),
-        ("1-004", date(2025, 4, 1), 8),
+        ("1-001", date(2026, 1, 7), None),  # Repeated value after 371 days has been nulled.
+        ("1-001", date(2026, 2, 1), 2),  # New value submitted has been kept.
+        ("1-002", date(2026, 2, 1), 1),  # Different location with a value has been kept.
+        ("1-003", date(2026, 2, 1), None),  # Different location with a null is still null.
     ]
+    # fmt: on
