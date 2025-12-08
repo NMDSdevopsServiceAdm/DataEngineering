@@ -75,7 +75,6 @@ class TestRepeatLastKnownValue(unittest.TestCase):
         returned_df = job.forward_fill_latest_known_value(
             test_df, "ascwds_filled_posts_deduplicated_clean", days_to_repeat
         )
-        print(returned_df.collect())
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_ninety_days_of_forward_fill(self):
@@ -91,6 +90,4 @@ class TestRepeatLastKnownValue(unittest.TestCase):
         returned_df = job.forward_fill_latest_known_value(
             test_df, "ascwds_filled_posts_deduplicated_clean", days_to_repeat
         )
-        print(returned_df.collect())
-
         self.assertEqual(returned_df.collect(), expected_df.collect())
