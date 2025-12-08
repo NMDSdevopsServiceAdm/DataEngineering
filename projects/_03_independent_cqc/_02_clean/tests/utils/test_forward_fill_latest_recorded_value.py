@@ -9,6 +9,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
 )
 from utils import utils
 
+
 class TestRepeatLastKnownValue(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
