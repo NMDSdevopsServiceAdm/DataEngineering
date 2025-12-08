@@ -8,6 +8,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     ForwardFillLatestKnownValue as Schemas,
 )
 from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class TestRepeatLastKnownValue(unittest.TestCase):
@@ -20,7 +21,7 @@ class TestRepeatLastKnownValue(unittest.TestCase):
 
         returned_df = job.forward_fill_latest_known_value(
             df=test_df,
-            col_to_repeat="ascwds_filled_posts_deduplicated_clean",
+            col_to_repeat=IndCQC.ascwds_filled_posts_dedup_clean,
             days_to_repeat=self.days_to_repeat,
         )
 
@@ -73,7 +74,7 @@ class TestRepeatLastKnownValue(unittest.TestCase):
             Schemas.locations_schema,
         )
         returned_df = job.forward_fill_latest_known_value(
-            test_df, "ascwds_filled_posts_deduplicated_clean", days_to_repeat
+            test_df, IndCQC.ascwds_filled_posts_dedup_clean, days_to_repeat
         )
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
@@ -88,6 +89,6 @@ class TestRepeatLastKnownValue(unittest.TestCase):
             Schemas.locations_schema,
         )
         returned_df = job.forward_fill_latest_known_value(
-            test_df, "ascwds_filled_posts_deduplicated_clean", days_to_repeat
+            test_df, IndCQC.ascwds_filled_posts_dedup_clean, days_to_repeat
         )
         self.assertEqual(returned_df.collect(), expected_df.collect())
