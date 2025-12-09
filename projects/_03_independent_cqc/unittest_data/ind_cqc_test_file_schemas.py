@@ -3212,7 +3212,6 @@ class CleanCtRepetition:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.ct_non_res_care_workers_employed, IntegerType(), True),
             StructField(
                 IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType(), True
             ),
