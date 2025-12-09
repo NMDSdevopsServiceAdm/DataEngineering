@@ -33,43 +33,88 @@ def forward_fill_latest_known_value(
     Returns:
         DataFrame: The input DataFrame with null values in `col_to_repeat` replaced where appropriate.
     """
-    last_known_date = "last_known_date"
-    last_known_value = "last_known_value"
-    last_known = (
-        df.filter(F.col(col_to_repeat).isNotNull())
-        .select(
-            IndCQC.location_id,
-            F.col(IndCQC.cqc_location_import_date).alias(last_known_date),
-            F.col(col_to_repeat).alias(last_known_value),
-        )
-        .groupBy(IndCQC.location_id)
-        .agg(F.max(F.struct(last_known_date, last_known_value)).alias("struct_col"))
-        .select(
-            IndCQC.location_id,
-            F.col(f"struct_col.{last_known_date}"),
-            F.col(f"struct_col.{last_known_value}"),
-        )
+    df_with_last_known = return_last_known_value(df, col_to_repeat)
+
+    df_with_last_known = df.join(df_with_last_known, on=IndCQC.location_id, how="left")
+
+    df_with_forward_fill = forward_fill(
+        df_with_last_known, col_to_repeat, days_to_repeat
     )
 
-    df_joined = df.join(last_known, on=IndCQC.location_id, how="left")
+    return df_with_forward_fill
 
-    df_joined = df_joined.withColumn(
+
+def return_last_known_value(
+    df: DataFrame,
+    col_to_repeat: str,
+) -> DataFrame:
+    """
+    This function gets the last known non-null value for col_to_repeat and the date for this value
+
+    Args:
+        df (DataFrame): Input DataFrame with column to repeat.
+        col_to_repeat (str): Column for which we need the last known non-null value.
+
+    Returns:
+        DataFrame: A DataFrame with last known non-null value and the date when it has the last non-null value.
+    """
+    last_known_date = "last_known_date"
+    last_known_value = "last_known_value"
+    df_with_last_known = (
+        df.filter(F.col(col_to_repeat).isNotNull())
+        .groupBy(IndCQC.location_id)
+        .agg(
+            F.max(
+                F.struct(
+                    F.col(IndCQC.cqc_location_import_date).alias(last_known_date),
+                    F.col(col_to_repeat).alias(last_known_value),
+                )
+            ).alias("latest")
+        )
+        .select(
+            IndCQC.location_id,
+            F.col(f"latest.{last_known_date}").alias(last_known_date),
+            F.col(f"latest.{last_known_value}").alias(last_known_value),
+        )
+    )
+    return df_with_last_known
+
+
+def forward_fill(
+    df_with_last_known: DataFrame,
+    col_to_repeat: str,
+    days_to_repeat: int,
+    last_known_date_col: str = "last_known_date",
+    last_known_value_col: str = "last_known_value",
+) -> DataFrame:
+    """
+    This function forward fills the column to repeat with the last known value for the number of days we want it
+    to repeat. It checks if the import date and last known date is les than days_to_repeat, if it is it fills
+    those with last known value calculated in previous function.
+
+    Args:
+        df_with_last_known (DataFrame): Input DataFrame with last know value and date.
+        col_to_repeat (str): Column name which needs forward filling.
+        days_to_repeat (int): Number of days a value needs to be repeated.
+        last_known_date_col (str): Last Known Date column name defaulted to last_known_date.
+        last_known_value_col (str): Last Known Value column defaulted to last_known_value
+
+    Returns:
+        DataFrame: Dataframe with forward filled column.
+    """
+    df_with_forward_fill = df_with_last_known.withColumn(
         col_to_repeat,
         F.when(
             (F.col(col_to_repeat).isNull())
-            & (F.col(IndCQC.cqc_location_import_date) > F.col(last_known_date))
+            & (F.col(IndCQC.cqc_location_import_date) > F.col(last_known_date_col))
             & (
                 F.datediff(
-                    F.col(IndCQC.cqc_location_import_date), F.col(last_known_date)
+                    F.col(IndCQC.cqc_location_import_date), F.col(last_known_date_col)
                 )
                 <= days_to_repeat
             ),
-            F.col(last_known_value),
+            F.col(last_known_value_col),
         ).otherwise(F.col(col_to_repeat)),
     )
 
-    df_joined = df_joined.drop(last_known_date, last_known_value).orderBy(
-        IndCQC.location_id, IndCQC.cqc_location_import_date
-    )
-
-    return df_joined
+    return df_with_forward_fill.drop(last_known_date_col, last_known_value_col)

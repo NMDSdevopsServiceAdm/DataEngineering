@@ -8,87 +8,94 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     ForwardFillLatestKnownValue as Schemas,
 )
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class ForwardFillLatestKnownValueTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
-        self.days_to_repeat = 61
 
-    def run_test(self, input_rows, expected_rows):
-        test_df = self.spark.createDataFrame(input_rows, Schemas.locations_schema)
-
-        returned_df = job.forward_fill_latest_known_value(
-            df=test_df,
-            col_to_repeat=IndCQC.ascwds_filled_posts_dedup_clean,
-            days_to_repeat=self.days_to_repeat,
+    def test_last_known_returns_latest_non_null_value_per_location(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            data=Data.last_known_latest_per_location_rows,
+            schema=Schemas.Input_return_last_known_value_locations_schema,
         )
-
         expected_df = self.spark.createDataFrame(
-            expected_rows, Schemas.locations_schema
+            data=Data.expected_last_known_latest_per_location_rows,
+            schema=Schemas.expected_return_last_known_value_locations_schema,
         )
-
+        returned_df = job.return_last_known_value(test_df, "col_to_repeat")
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_forward_fill_latest_known_value_when_latest_known_value_more_than_3_months_before_latest_import(
+    def test_last_known_ignores_null_values_when_identifying_last_known(
         self,
     ):
-        self.run_test(
-            Data.locations_when_latest_known_value_is_more_than_3_months_before_latest_import_rows,
-            Data.expected_locations_when_latest_known_value_is_more_than_3_months_before_latest_import_rows,
-        )
-
-    def test_forward_fill_latest_known_value_when_latest_known_value_is_1_month_before_latest_import(
-        self,
-    ):
-        self.run_test(
-            Data.locations_when_latest_known_value_is_1_month_before_latest_import_rows,
-            Data.expected_locations_when_latest_known_value_is_1_month_before_latest_import_rows,
-        )
-
-    def test_forward_fill_latest_known_value_when_latest_known_value_at_latest_import(
-        self,
-    ):
-        self.run_test(
-            Data.locations_when_latest_known_value_is_at_the_latest_import_rows,
-            Data.expected_locations_when_latest_known_value_is_at_the_latest_import_rows,
-        )
-
-    def test_forward_fill_latest_known_value_when_dates_are_out_of_order(
-        self,
-    ):
-        self.run_test(
-            Data.locations_when_latest_known_value_is_more_than_3_months_before_latest_import_and_dates_are_out_of_order_rows,
-            Data.expected_locations_when_latest_known_value_is_more_than_3_months_before_latest_import_and_dates_are_out_of_order_rows,
-        )
-
-    def test_forward_fill_latest_known_value_when_days_to_repeat_is_thirty_one(self):
-        days_to_repeat = 31
         test_df = self.spark.createDataFrame(
-            Data.input_one_month_window_rows,
-            Schemas.locations_schema,
+            data=Data.last_known_ignores_null_rows,
+            schema=Schemas.Input_return_last_known_value_locations_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_one_month_window_rows,
-            Schemas.locations_schema,
+            data=Data.expected_last_known_ignores_null_rows,
+            schema=Schemas.expected_return_last_known_value_locations_schema,
         )
-        returned_df = job.forward_fill_latest_known_value(
-            test_df, IndCQC.ascwds_filled_posts_dedup_clean, days_to_repeat
-        )
+        returned_df = job.return_last_known_value(test_df, "col_to_repeat")
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_forward_fill_latest_known_value_when_days_to_repeat_is_ninety(self):
-        days_to_repeat = 90
+    def test_forward_fill_populates_null_values_within_days_to_repeat_range(
+        self,
+    ):
         test_df = self.spark.createDataFrame(
-            Data.input_ninety_day_window_rows,
-            Schemas.locations_schema,
+            data=Data.forward_fill_within_days_rows,
+            schema=Schemas.input_forward_fill_locations_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_ninety_day_window_rows,
-            Schemas.locations_schema,
+            data=Data.expected_forward_fill_within_days_rows,
+            schema=Schemas.expected_forward_fill_locations_schema,
+        )
+        returned_df = job.forward_fill(test_df, "col_to_repeat", days_to_repeat=2)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_forward_fill_does_not_populate_null_values_beyond_days_to_repeat_range(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            data=Data.forward_fill_beyond_days_rows,
+            schema=Schemas.input_forward_fill_locations_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            data=Data.expected_forward_fill_beyond_days_rows,
+            schema=Schemas.expected_forward_fill_locations_schema,
+        )
+        returned_df = job.forward_fill(test_df, "col_to_repeat", days_to_repeat=2)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_forward_fill_does_not_populate_null_values_before_last_known_value(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            data=Data.forward_fill_before_last_known_rows,
+            schema=Schemas.input_forward_fill_locations_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            data=Data.expected_forward_fill_before_last_known_rows,
+            schema=Schemas.expected_forward_fill_locations_schema,
+        )
+        returned_df = job.forward_fill(test_df, "col_to_repeat", days_to_repeat=2)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_forward_fill_latest_known_value(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            data=Data.forward_fill_latest_known_value_rows,
+            schema=Schemas.forward_fill_latest_known_value_locations_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            data=Data.expected_forward_fill_latest_known_value_rows,
+            schema=Schemas.forward_fill_latest_known_value_locations_schema,
         )
         returned_df = job.forward_fill_latest_known_value(
-            test_df, IndCQC.ascwds_filled_posts_dedup_clean, days_to_repeat
+            test_df, "col_to_repeat", days_to_repeat=2
         )
         self.assertEqual(returned_df.collect(), expected_df.collect())
