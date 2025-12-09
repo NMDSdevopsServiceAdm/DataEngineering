@@ -45,11 +45,11 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
     ):
 
         job.clean_ct_values_after_consecutive_repetition(
-            self.test_df,
-            IndCQC.ct_non_res_care_workers_employed,
-            IndCQC.ct_non_res_care_workers_employed_cleaned,
-            False,
-            IndCQC.location_id,
+            df=self.test_df,
+            column_to_clean=IndCQC.ct_non_res_care_workers_employed,
+            cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
+            care_home=False,
+            partitioning_column=IndCQC.location_id,
         )
 
         create_column_with_repeated_values_removed_mock.assert_called_once()
@@ -62,11 +62,11 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
         self,
     ):
         returned_df = job.clean_ct_values_after_consecutive_repetition(
-            self.test_df,
-            IndCQC.ct_non_res_care_workers_employed,
-            IndCQC.ct_non_res_care_workers_employed_cleaned,
-            False,
-            IndCQC.location_id,
+            df=self.test_df,
+            column_to_clean=IndCQC.ct_non_res_care_workers_employed,
+            cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
+            care_home=False,
+            partitioning_column=IndCQC.location_id,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_clean_ct_values_after_consecutive_repetition_rows,
@@ -109,7 +109,9 @@ class CalculateDaysAValueHasBeenRepeated(CleanCTRepetitionTests):
             Schemas.calculate_days_a_value_has_been_repeated_schema,
         )
         self.returned_df = job.calculate_days_a_value_has_been_repeated(
-            self.test_df, "values_deduplicated", IndCQC.location_id
+            df=self.test_df,
+            deduplicated_values_column="values_deduplicated",
+            partitioning_column=IndCQC.location_id,
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_calculate_days_a_value_has_been_repeated_rows,
@@ -144,14 +146,14 @@ class CleanValueRepetition(CleanCTRepetitionTests):
             Schemas.clean_capacity_tracker_posts_repetition_care_home_locations_schema,
         )
         self.returned_df_non_res_locations = job.clean_value_repetition(
-            self.test_df_non_res_locations,
-            IndCQC.ct_non_res_care_workers_employed,
-            False,
+            df=self.test_df_non_res_locations,
+            column_to_clean=IndCQC.ct_non_res_care_workers_employed,
+            care_home=False,
         )
         self.returned_df_care_home_locations = job.clean_value_repetition(
-            self.test_df_care_home_locations,
-            IndCQC.ct_care_home_total_employed,
-            True,
+            df=self.test_df_care_home_locations,
+            column_to_clean=IndCQC.ct_care_home_total_employed,
+            care_home=True,
         )
         self.expected_df_non_res_locations = self.spark.createDataFrame(
             Data.expected_clean_capacity_tracker_posts_repetition_non_res_locations_rows,
@@ -203,9 +205,9 @@ class JoinCleanedCTValuesIntoOriginalDf(CleanCTRepetitionTests):
             Schemas.populated_only_schema,
         )
         self.returned_df = job.join_cleaned_ct_values_into_original_df(
-            self.test_orginal_df,
-            self.test_populated_only_df,
-            IndCQC.ct_care_home_total_employed_cleaned,
+            original_df=self.test_orginal_df,
+            populated_only_df=self.test_populated_only_df,
+            cleaned_column_name=IndCQC.ct_care_home_total_employed_cleaned,
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_populated_only_joined_with_original_rows,
