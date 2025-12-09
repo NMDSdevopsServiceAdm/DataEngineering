@@ -191,9 +191,15 @@ def get_updated_objects(
             try:
                 # return each object within a generator
                 print(f"Getting data for: {id}")
+
                 object = get_object(id, object_type, cqc_api_primary_key)
-                if id == "1-7523028553":
-                    print(object)
+
+                print(
+                    f"Length of reg activ nomi indiv: {len(object['regulatedActivities']['nominatedIndividual'])}"
+                )
+                print(f"Length of inspec categ: {len(object['inspectionCategories'])}")
+                print(f"Length of inspec areas: {len(object['inspectionAreas'])}")
+
                 print(f"Succeeded in getting object for {id}")
                 yield object
             except NoProviderOrLocationException as err:
