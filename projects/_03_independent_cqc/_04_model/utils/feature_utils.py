@@ -133,6 +133,22 @@ def group_rural_urban_sparse_categories(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
+def add_squared_column(lf: pl.LazyFrame, col_to_square: str) -> pl.LazyFrame:
+    """
+    Squares the values in a specified column and adds as a new column.
+
+    Args:
+        lf (pl.LazyFrame): Input Polars LazyFrame.
+        col_to_square (str): The name of the column to be squared.
+
+    Returns:
+        pl.LazyFrame: A LazyFrame with an extra column with the squared values.
+    """
+    return lf.with_columns(
+        pl.col(col_to_square).pow(2).alias(f"{col_to_square}_squared")
+    )
+
+
 def select_and_filter_features_data(
     lf: pl.LazyFrame,
     features_list: list[str],
