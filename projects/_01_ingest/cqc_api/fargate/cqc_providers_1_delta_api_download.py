@@ -91,6 +91,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         print("Creating dataframe and writing to Parquet")
         df: pl.DataFrame = pl.DataFrame(generator)
         df_schema = df.collect_schema()
+        print(df_schema)
         df = df.with_columns(
             [
                 pl.col(k).cast(v)
