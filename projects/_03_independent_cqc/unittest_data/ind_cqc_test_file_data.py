@@ -5972,6 +5972,7 @@ class CleanCtRepetition:
         ("1-001", 4, date(2025, 7, 1), 0),
     ]
 
+    # fmt: off
     test_repetition_limit_dict = {
         0: 250,
         10: 125,
@@ -5979,22 +5980,21 @@ class CleanCtRepetition:
     }
     clean_value_repetition_rows = [
         ("1-001", 1, 250),
-        ("1-002", 9, 251),
-        ("1-003", 10, 125),
-        ("1-004", 49, 126),
-        ("1-005", 50, 65),
-        ("1-006", 51, 66),
+        ("1-001", 9, 251),
+        ("1-002", 10, 125),
+        ("1-002", 49, 126),
+        ("1-003", 50, 65),
+        ("1-003", 51, 66),
     ]
     expected_clean_value_repetition_rows = [
-        ("1-001", 1, 250, 1),
-        ("1-002", 9, 251, None),
-        ("1-003", 10, 125, 10),
-        ("1-004", 49, 126, None),
-        ("1-005", 50, 65, 50),
-        ("1-006", 51, 66, None),
+        ("1-001", 1, 250, 1), # micro location, witin limit, value kept
+        ("1-001", 9, 251, None), # micro location, outside limit, value nulled
+        ("1-002", 10, 125, 10), # small location, witin limit, value kept
+        ("1-002", 49, 126, None), # small location, outside limit, value nulled
+        ("1-003", 50, 65, 50), # medium location, witin limit, value kept
+        ("1-003", 51, 66, None), # medium location, outside limit, value nulled
     ]
 
-    # fmt: off
     original_rows = [
         ("1-001", date(2025, 1, 1), 1),
         ("1-001", date(2026, 1, 7), 1),  # Repeated value after 371 days.
