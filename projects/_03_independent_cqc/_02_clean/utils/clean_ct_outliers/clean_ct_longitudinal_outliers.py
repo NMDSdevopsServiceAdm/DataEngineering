@@ -163,6 +163,7 @@ def compute_outlier_cutoff(
         df (DataFrame): DataFrame containing an 'abs_diff' column.
         group_by_col (str): Column to group by when computing cutoff thresholds.
         proportion_to_filter (float): Proportion of extreme values to consider as outliers.
+        col_to_clean (str): Column to use to get outlier cutoff.
 
     Returns:
         DataFrame: Original DataFrame joined with a new column 'abs_diff_cutoff'
