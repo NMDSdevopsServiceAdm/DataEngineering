@@ -192,6 +192,8 @@ def get_updated_objects(
                 # return each object within a generator
                 print(f"Getting data for: {id}")
                 object = get_object(id, object_type, cqc_api_primary_key)
+                if id == "1-7523028553":
+                    print(object)
                 print(f"Succeeded in getting object for {id}")
                 yield object
             except NoProviderOrLocationException as err:
