@@ -194,7 +194,8 @@ def flag_outliers(df: DataFrame, col_to_clean: str) -> DataFrame:
         an outlier.
     """
     return df.withColumn(
-        f"{col_to_clean}_outlier_flag", F.col("abs_diff") > F.col("abs_diff_cutoff")
+        f"{col_to_clean}_outlier_flag",
+        F.col(f"{col_to_clean}_abs_diff") > F.col(f"{col_to_clean}_abs_diff_cutoff"),
     )
 
 
@@ -225,10 +226,11 @@ def apply_outlier_cleaning(
     df = df.withColumn(
         cleaned_column_name,
         F.when(
-            F.col("outlier_flag") & F.col(f"{col_to_clean}_has_100"), None
+            F.col(f"{col_to_clean}_outlier_flag") & F.col(f"{col_to_clean}_has_100"),
+            None,
         ).otherwise(F.col(col_to_clean)),
     )
     if remove_whole_record:
-        return df.filter(~F.col("outlier_flag"))
+        return df.filter(~F.col(f"{col_to_clean}_outlier_flag"))
     else:
         return df
