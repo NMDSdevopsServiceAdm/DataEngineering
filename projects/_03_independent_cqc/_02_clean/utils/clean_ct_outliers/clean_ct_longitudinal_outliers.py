@@ -45,10 +45,12 @@ def clean_longitudinal_outliers(
     """
     df_median = compute_group_median(df, group_by_col, col_to_clean)
     df_deviation = compute_absolute_deviation(df_median, col_to_clean, "median_val")
-    df_mad = compute_mad(df_deviation, group_by_col)
-    df_thresholds = compute_outlier_cutoff(df_mad, group_by_col, proportion_to_filter)
+    df_mad = compute_mad(df_deviation, group_by_col, col_to_clean)
+    df_thresholds = compute_outlier_cutoff(
+        df_mad, group_by_col, proportion_to_filter, col_to_clean
+    )
 
-    df_flags = flag_outliers(df_thresholds)
+    df_flags = flag_outliers(df_thresholds, col_to_clean)
 
     cleaned_df = apply_outlier_cleaning(
         df_flags, col_to_clean, cleaned_column_name, remove_whole_record
@@ -71,14 +73,14 @@ def clean_longitudinal_outliers(
         populated_rule,
         new_rule_name,
     )
-    cleaned_df = cleaned_df.drop(
-        "median_val",
-        "abs_diff",
-        "mad",
-        "abs_diff_cutoff",
-        "outlier_flag",
-        "has_100",
-    )
+    # cleaned_df = cleaned_df.drop(
+    #     "median_val",
+    #     "abs_diff",
+    #     "mad",
+    #     "abs_diff_cutoff",
+    #     "outlier_flag",
+    #     "has_100",
+    # )
     return cleaned_df
 
 
@@ -96,7 +98,9 @@ def compute_group_median(df: DataFrame, group_col: str, col_to_clean: str) -> Da
         the group-wise median.
     """
     median_df = df.groupBy(group_col).agg(
-        F.expr(f"percentile({col_to_clean}, array(0.5))")[0].alias("median_val")
+        F.expr(f"percentile({col_to_clean}, array(0.5))")[0].alias(
+            f"{col_to_clean}_median_val"
+        )
     )
 
     return df.join(median_df, group_col, "left")
@@ -118,24 +122,28 @@ def compute_absolute_deviation(
         deviation of each value from the median.
     """
     return df.withColumn(
-        "abs_diff", F.abs(F.col(col_to_clean) - F.col(median_col_name))
+        f"{col_to_clean}_abs_diff",
+        F.abs(F.col(col_to_clean) - F.col(f"{col_to_clean}_{median_col_name}")),
     )
 
 
-def compute_mad(df: DataFrame, group_by_col: str) -> DataFrame:
+def compute_mad(df: DataFrame, group_by_col: str, col_to_clean: str) -> DataFrame:
     """
     Computes the median absolute deviation (MAD) of a column within each group.
 
     Args:
         df (DataFrame): DataFrame containing an 'abs_diff' column.
         group_by_col (str): Column to group by when computing MAD.
+        col_to_clean (str): Column for which MAD is calculated
 
     Returns:
         DataFrame: Original DataFrame joined with a new column 'mad' containing the
         group-wise median absolute deviation.
     """
     mad_df = df.groupBy(group_by_col).agg(
-        F.expr("percentile(abs_diff, array(0.5))")[0].alias("mad")
+        F.expr(f"percentile({col_to_clean}_abs_diff, array(0.5))")[0].alias(
+            f"{col_to_clean}_mad"
+        )
     )
 
     return df.join(mad_df, group_by_col, "left")
@@ -145,6 +153,7 @@ def compute_outlier_cutoff(
     df: DataFrame,
     group_by_col: str,
     proportion_to_filter: float,
+    col_to_clean: str,
 ) -> DataFrame:
     """
     Computes the threshold value beyond which a data point is considered an outlier
@@ -162,25 +171,30 @@ def compute_outlier_cutoff(
     percentile = 1 - proportion_to_filter
 
     cutoff_df = df.groupBy(group_by_col).agg(
-        F.expr(f"percentile(abs_diff, array({percentile}))")[0].alias("abs_diff_cutoff")
+        F.expr(f"percentile({col_to_clean}_abs_diff, array({percentile}))")[0].alias(
+            f"{col_to_clean}_abs_diff_cutoff"
+        )
     )
 
     return df.join(cutoff_df, group_by_col, "left")
 
 
-def flag_outliers(df: DataFrame) -> DataFrame:
+def flag_outliers(df: DataFrame, col_to_clean: str) -> DataFrame:
     """
     Flags outlier records based on whether the absolute deviation exceeds the
     group-specific cutoff.
 
     Args:
         df (DataFrame): DataFrame containing 'abs_diff' and 'abs_diff_cutoff' columns.
+        col_to_clean (str): Column for which outliers are to be flagged.
 
     Returns:
         DataFrame: DataFrame with a new boolean column 'outlier_flag' where True indicates
         an outlier.
     """
-    return df.withColumn("outlier_flag", F.col("abs_diff") > F.col("abs_diff_cutoff"))
+    return df.withColumn(
+        f"{col_to_clean}_outlier_flag", F.col("abs_diff") > F.col("abs_diff_cutoff")
+    )
 
 
 def apply_outlier_cleaning(
@@ -203,15 +217,15 @@ def apply_outlier_cleaning(
         DataFrame: DataFrame with outliers cleaned either by row removal or null replacement.
     """
     locations_with_100 = df.groupBy("locationId").agg(
-        F.max(F.col(col_to_clean) >= 100).alias("has_100")
+        F.max(F.col(col_to_clean) >= 100).alias(f"{col_to_clean}_has_100")
     )
 
     df = df.join(locations_with_100, on="locationId", how="left")
     df = df.withColumn(
         cleaned_column_name,
-        F.when(F.col("outlier_flag") & F.col("has_100"), None).otherwise(
-            F.col(col_to_clean)
-        ),
+        F.when(
+            F.col("outlier_flag") & F.col(f"{col_to_clean}_has_100"), None
+        ).otherwise(F.col(col_to_clean)),
     )
     if remove_whole_record:
         return df.filter(~F.col("outlier_flag"))
