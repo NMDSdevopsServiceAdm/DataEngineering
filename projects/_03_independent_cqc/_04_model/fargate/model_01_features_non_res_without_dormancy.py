@@ -28,6 +28,9 @@ def main(bucket_name: str, model_name: str) -> None:
     """
     Creates a features dataset specific to the model.
 
+    Only non-residential locations up to the end of 2024 are included as this model is replaced
+    by a `with_dormancy` model going forwards.
+
     The steps in this function are:
         1. Create paths for source and destination files
         2. Validate required model and model definitions exist, then assign them to variables
