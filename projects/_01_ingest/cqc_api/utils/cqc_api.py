@@ -195,10 +195,12 @@ def get_updated_objects(
                 object = get_object(id, object_type, cqc_api_primary_key)
 
                 print(
-                    f"Length of reg activ nomi indiv: {len(object['regulatedActivities']['nominatedIndividual'])}"
+                    f"Length of reg activ nomi indiv: {len(object[0]['regulatedActivities']['nominatedIndividual'])}"
                 )
-                print(f"Length of inspec categ: {len(object['inspectionCategories'])}")
-                print(f"Length of inspec areas: {len(object['inspectionAreas'])}")
+                print(
+                    f"Length of inspec categ: {len(object[0]['inspectionCategories'])}"
+                )
+                print(f"Length of inspec areas: {len(object[0]['inspectionAreas'])}")
 
                 print(f"Succeeded in getting object for {id}")
                 yield object
