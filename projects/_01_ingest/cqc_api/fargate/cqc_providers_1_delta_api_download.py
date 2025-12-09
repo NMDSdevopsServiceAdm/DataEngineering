@@ -7,6 +7,7 @@ from datetime import date
 from datetime import datetime as dt
 from typing import Generator
 
+import boto3
 import polars as pl
 
 from polars_utils import utils
@@ -86,6 +87,13 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             cqc_api_primary_key=cqc_api_primary_key_value,
             start_timestamp=f"{start_dt.isoformat(timespec='seconds')}Z",
             end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
+        )
+
+        s3_client = boto3.client("s3")
+        s3_client.put_object(
+            Body=json.dumps(generator),
+            Bucket="sfc-1265-fix-cqc-api-datasets",
+            Key="temp_folder/summary.json",
         )
 
         print("Creating dataframe and writing to Parquet")
