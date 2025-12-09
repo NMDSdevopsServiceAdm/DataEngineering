@@ -1,4 +1,4 @@
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 
 from projects._03_independent_cqc._02_clean.utils.filtering_utils import (
@@ -220,14 +220,12 @@ def apply_outlier_cleaning(
     Returns:
         DataFrame: DataFrame with outliers cleaned either by row removal or null replacement.
     """
-    locations_with_100 = df.groupBy(group_by_col).agg(
-        F.max(F.col(col_to_clean)).alias(f"{col_to_clean}_max")
-    )
-    locations_with_100 = locations_with_100.withColumn(
-        f"{col_to_clean}_has_100", F.col(f"{col_to_clean}_max") >= 100
+    w = Window.partitionBy(group_by_col)
+
+    df = df.withColumn(
+        f"{col_to_clean}_has_100", F.max(F.col(col_to_clean)).over(w) >= 100
     )
 
-    df = df.join(locations_with_100, on=group_by_col, how="left")
     df = df.withColumn(
         cleaned_column_name,
         F.when(
