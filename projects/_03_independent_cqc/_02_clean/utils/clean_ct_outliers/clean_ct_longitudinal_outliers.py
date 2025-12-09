@@ -53,7 +53,7 @@ def clean_longitudinal_outliers(
     df_flags = flag_outliers(df_thresholds, col_to_clean)
 
     cleaned_df = apply_outlier_cleaning(
-        df_flags, col_to_clean, cleaned_column_name, remove_whole_record
+        df_flags, group_by_col, col_to_clean, cleaned_column_name, remove_whole_record
     )
 
     if care_home:
@@ -201,6 +201,7 @@ def flag_outliers(df: DataFrame, col_to_clean: str) -> DataFrame:
 
 def apply_outlier_cleaning(
     df: DataFrame,
+    group_by_col: str,
     col_to_clean: str,
     cleaned_column_name: str,
     remove_whole_record: bool,
@@ -218,11 +219,14 @@ def apply_outlier_cleaning(
     Returns:
         DataFrame: DataFrame with outliers cleaned either by row removal or null replacement.
     """
-    locations_with_100 = df.groupBy("locationId").agg(
-        F.max(F.col(col_to_clean) >= 100).alias(f"{col_to_clean}_has_100")
+    locations_with_100 = df.groupBy(group_by_col).agg(
+        F.max(F.col(col_to_clean)).alias(f"{col_to_clean}_max")
+    )
+    locations_with_100 = locations_with_100.withColumn(
+        f"{col_to_clean}_has_100", F.col(f"{col_to_clean}_max") >= 100
     )
 
-    df = df.join(locations_with_100, on="locationId", how="left")
+    df = df.join(locations_with_100, on=group_by_col, how="left")
     df = df.withColumn(
         cleaned_column_name,
         F.when(
