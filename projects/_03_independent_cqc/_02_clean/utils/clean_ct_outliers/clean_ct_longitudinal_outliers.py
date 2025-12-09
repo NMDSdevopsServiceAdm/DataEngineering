@@ -211,6 +211,7 @@ def apply_outlier_cleaning(
 
     Args:
         df (DataFrame): DataFrame containing 'outlier_flag'.
+        group_by_col (str): Column to be used for grouping.
         col_to_clean (str): Column to clean.
         cleaned_column_name (str): Name of the new column to store cleaned values.
         remove_whole_record (bool): If True, removes entire rows flagged as outliers;
