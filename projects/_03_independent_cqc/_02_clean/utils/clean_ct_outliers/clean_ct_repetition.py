@@ -23,8 +23,8 @@ DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_NON_RES = {
 DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_CARE_HOMES = {
     0: 370,  # using 370 as proxy for 12 months.
     10: 155,  # using 155 as proxy for 5 months.
-    50: 125,
-    250: 65,
+    50: 125,  # using 125 as proxy for 4 months.
+    250: 65,  # using 65 as proxy for 2 months.
 }
 
 
