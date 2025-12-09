@@ -190,7 +190,10 @@ def get_updated_objects(
         for id in changes_by_page["changes"]:
             try:
                 # return each object within a generator
-                yield get_object(id, object_type, cqc_api_primary_key)
+                print(f"Getting data for: {id}")
+                object = get_object(id, object_type, cqc_api_primary_key)
+                print(f"Succeeded in getting object for {id}")
+                yield object
             except NoProviderOrLocationException as err:
                 # CQC API changes URL returns unfetchable providerIds
                 print(err)
