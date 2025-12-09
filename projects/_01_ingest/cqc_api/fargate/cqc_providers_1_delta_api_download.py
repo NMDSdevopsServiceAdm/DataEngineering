@@ -89,9 +89,11 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
         )
 
+        data = list(generator)
+
         s3_client = boto3.client("s3")
         s3_client.put_object(
-            Body=json.dumps(generator),
+            Body=json.dumps(data),
             Bucket="sfc-1265-fix-cqc-api-datasets",
             Key="temp_folder/summary.json",
         )
