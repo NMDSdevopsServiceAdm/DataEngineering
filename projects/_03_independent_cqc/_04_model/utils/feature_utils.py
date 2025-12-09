@@ -138,14 +138,15 @@ def select_and_filter_features_data(
     features_list: list[str],
     dependent_col: str,
     partition_keys: list[str],
-) -> pl.DataFrame:
+) -> pl.LazyFrame:
     """
     Selects columns from a Polars LazyFrame and filters to non-null feature columns.
 
     This function:
-        - Checks if all columns we want to select exist in the DataFrame.
+        - Checks if all columns we want to select exist in the LazyFrame.
         - If it does, it selects those columns. If not, it raises an error.
-        - Filters the DataFrame to keep only rows where all feature columns are non-null.
+        - Filters the LazyFrame to keep only rows where all feature columns are non-null.
+        - Casts integer columns from UInt32 to Int32 (required for sinking to parquet).
 
     Args:
         lf (pl.LazyFrame): Input Polars LazyFrame.
@@ -154,11 +155,11 @@ def select_and_filter_features_data(
         partition_keys (list[str]): List of column names used for partitioning.
 
     Returns:
-        pl.DataFrame: Polars DataFrame containing only selected columns and rows
+        pl.LazyFrame: Polars LazyFrame containing only selected columns and rows
                       where all feature columns are non-null.
 
     Raises:
-        ValueError: If any required columns are missing from the DataFrame.
+        ValueError: If any required columns are missing from the LazyFrame.
     """
     select_cols = (
         [
@@ -176,6 +177,14 @@ def select_and_filter_features_data(
     if missing_cols:
         raise ValueError(f"Missing columns in LazyFrame: {missing_cols}")
 
-    return lf.select(select_cols).filter(
-        pl.all_horizontal([pl.col(feature).is_not_null() for feature in features_list])
+    lf = (
+        lf.select(select_cols)
+        .filter(
+            pl.all_horizontal(
+                [pl.col(feature).is_not_null() for feature in features_list]
+            )
+        )
+        .cast({pl.UInt32: pl.Int32})
     )
+
+    return lf
