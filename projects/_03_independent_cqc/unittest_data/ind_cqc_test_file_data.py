@@ -5972,7 +5972,12 @@ class CleanCtRepetition:
         ("1-001", 4, date(2025, 6, 1), 0),
     ]
 
-    clean_capacity_tracker_posts_repetition_non_res_locations_rows = [
+    test_repetition_limit_dict = {
+        0: 250,
+        10: 125,
+        50: 65,
+    }
+    clean_value_repetition_rows = [
         ("1-001", 1, 250),
         ("1-002", 9, 251),
         ("1-003", 10, 125),
@@ -5980,34 +5985,13 @@ class CleanCtRepetition:
         ("1-005", 50, 65),
         ("1-006", 51, 66),
     ]
-    expected_clean_capacity_tracker_posts_repetition_non_res_locations_rows = [
+    expected_clean_value_repetition_rows = [
         ("1-001", 1, 250, 1),
         ("1-002", 9, 251, None),
         ("1-003", 10, 125, 10),
         ("1-004", 49, 126, None),
         ("1-005", 50, 65, 50),
         ("1-006", 51, 66, None),
-    ]
-
-    clean_capacity_tracker_posts_repetition_care_home_locations_rows = [
-        ("1-001", 1, 370),
-        ("1-002", 9, 371),
-        ("1-003", 10, 155),
-        ("1-004", 49, 156),
-        ("1-005", 50, 125),
-        ("1-006", 51, 126),
-        ("1-007", 250, 65),
-        ("1-008", 251, 66),
-    ]
-    expected_clean_capacity_tracker_posts_repetition_care_home_locations_rows = [
-        ("1-001", 1, 370, 1),
-        ("1-002", 9, 371, None),
-        ("1-003", 10, 155, 10),
-        ("1-004", 49, 156, None),
-        ("1-005", 50, 125, 50),
-        ("1-006", 51, 126, None),
-        ("1-007", 250, 65, 250),
-        ("1-008", 251, 66, None),
     ]
 
     # fmt: off

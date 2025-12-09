@@ -54,10 +54,16 @@ def clean_ct_values_after_consecutive_repetition(
         DataFrame: The input with DataFrame with an additional column.
     """
     if care_home:
+        repetition_limit_dict = (
+            DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_CARE_HOMES
+        )
         filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
         populated_rule = CTCareHomeFilteringRule.populated
         new_rule_name = CTCareHomeFilteringRule.location_repeats_total_posts
     else:
+        repetition_limit_dict = (
+            DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_NON_RES
+        )
         filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
         populated_rule = CTNonResFilteringRule.populated
         new_rule_name = CTNonResFilteringRule.location_repeats_total_posts
@@ -76,7 +82,7 @@ def clean_ct_values_after_consecutive_repetition(
     )
 
     df_populated_only = clean_value_repetition(
-        df_populated_only, column_to_clean, care_home
+        df_populated_only, column_to_clean, repetition_limit_dict
     )
 
     df_cleaned = join_cleaned_ct_values_into_original_df(
@@ -140,7 +146,7 @@ def calculate_days_a_value_has_been_repeated(
 def clean_value_repetition(
     df: DataFrame,
     column_to_clean: str,
-    care_home: bool,
+    repetition_limit_dict: dict[int, int],
 ) -> DataFrame:
     """
     Adds a new column repeated_values_nulled in which values from column_to_clean are nulled
@@ -153,27 +159,19 @@ def clean_value_repetition(
     Args:
         df (DataFrame): A dataframe with consecutive import dates.
         column_to_clean (str): The column with repeated values.
-        care_home (bool): True when cleaning care home values, False when cleaning non-residential values.
+        repetition_limit_dict (dict[int, int]): A dict of keys = min posts and values = max days a posts value can be repeated.
 
     Returns:
         DataFrame: The input with DataFrame with an additional column.
     """
-    if care_home:
-        sorted_dict = sorted(
-            DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_CARE_HOMES.items()
-        )
-    else:
-        sorted_dict = sorted(
-            DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_NON_RES.items()
-        )
-
+    repetition_limits_sorted_by_key = sorted(repetition_limit_dict.items())
     column_expression = None
-    for key, value in sorted_dict:
-        condition = F.col(column_to_clean) >= key
+    for min_posts, rep_limit in repetition_limits_sorted_by_key:
+        condition = F.col(column_to_clean) >= min_posts
         column_expression = (
-            value
+            rep_limit
             if column_expression is None
-            else F.when(condition, value).otherwise(column_expression)
+            else F.when(condition, rep_limit).otherwise(column_expression)
         )
     repetition_limit_based_on_posts = "repetition_limit_based_on_posts"
     df = df.withColumn(repetition_limit_based_on_posts, column_expression)

@@ -3241,36 +3241,18 @@ class CleanCtRepetition:
         ]
     )
 
-    clean_capacity_tracker_posts_repetition_non_res_locations_schema = StructType(
+    clean_value_repetition_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.ct_non_res_care_workers_employed, IntegerType(), True),
             StructField("days_value_has_been_repeated", IntegerType(), True),
         ]
     )
-    expected_clean_capacity_tracker_posts_repetition_non_res_locations_schema = (
-        StructType(
-            [
-                *clean_capacity_tracker_posts_repetition_non_res_locations_schema,
-                StructField("repeated_values_nulled", IntegerType(), True),
-            ]
-        )
-    )
-
-    clean_capacity_tracker_posts_repetition_care_home_locations_schema = StructType(
+    expected_clean_value_repetition_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ct_care_home_total_employed, IntegerType(), True),
-            StructField("days_value_has_been_repeated", IntegerType(), True),
+            *clean_value_repetition_schema,
+            StructField("repeated_values_nulled", IntegerType(), True),
         ]
-    )
-    expected_clean_capacity_tracker_posts_repetition_care_home_locations_schema = (
-        StructType(
-            [
-                *clean_capacity_tracker_posts_repetition_care_home_locations_schema,
-                StructField("repeated_values_nulled", IntegerType(), True),
-            ]
-        )
     )
 
     original_schema = StructType(
