@@ -71,13 +71,14 @@ def clean_longitudinal_outliers(
         populated_rule,
         new_rule_name,
     )
-    # cleaned_df = cleaned_df.drop(
-    #     "median_val",
-    #     "abs_diff",
-    #     "mad",
-    #     "abs_diff_cutoff",
-    #     "outlier_flag",
-    # )
+    cleaned_df = cleaned_df.drop(
+        "median_val",
+        "abs_diff",
+        "mad",
+        "abs_diff_cutoff",
+        "outlier_flag",
+        "has_100",
+    )
     return cleaned_df
 
 
