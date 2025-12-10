@@ -26,18 +26,18 @@ class TestDeltaDownloadCQCLocations(unittest.TestCase):
         shutil.rmtree(self.temp_dir)
 
     @patch(f"{PATCH_PATH}.get_secret")
-    @patch(f"{PATCH_PATH}.cqc.normalised_generator")
+    @patch(f"{PATCH_PATH}.cqc.primed_generator")
     @patch(f"{PATCH_PATH}.cqc.get_updated_objects")
     @patch(f"{PATCH_PATH}.SECRET_ID", new="cqc-secret-name")
     @patch(f"{PATCH_PATH}.AWS_REGION", new="us-east-1")
-    def test_main_gets_secret(self, mock_objects, mock_norm_gen, mock_get_secret):
+    def test_main_gets_secret(self, mock_objects, mock_primed_gen, mock_get_secret):
         mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
         mock_objects.return_value = [
             {"locationId": 1},
             {"locationId": 2},
             {"locationId": 3},
         ]
-        mock_norm_gen.return_value = mock_objects.return_value
+        mock_primed_gen.return_value = mock_objects.return_value
         start = "2025-07-20T15:40:23Z"
         end = "2025-07-25T14:23:40Z"
         main(self.temp_dir + "/", start, end)
@@ -46,12 +46,12 @@ class TestDeltaDownloadCQCLocations(unittest.TestCase):
         )
 
     @patch(f"{PATCH_PATH}.get_secret")
-    @patch(f"{PATCH_PATH}.cqc.normalised_generator")
+    @patch(f"{PATCH_PATH}.cqc.primed_generator")
     @patch(f"{PATCH_PATH}.cqc.get_updated_objects")
     @patch(f"{PATCH_PATH}.SECRET_ID", new="cqc-secret-name")
     @patch(f"{PATCH_PATH}.AWS_REGION", new="us-east-1")
     def test_main_traps_timestamp_error(
-        self, mock_objects, mock_norm_gen, mock_get_secret
+        self, mock_objects, mock_primed_gen, mock_get_secret
     ):
         mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
         mock_objects.return_value = {}
@@ -63,12 +63,12 @@ class TestDeltaDownloadCQCLocations(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.uuid")
     @patch(f"{PATCH_PATH}.get_secret")
-    @patch(f"{PATCH_PATH}.cqc.normalised_generator")
+    @patch(f"{PATCH_PATH}.cqc.primed_generator")
     @patch(f"{PATCH_PATH}.cqc.get_updated_objects")
     @patch(f"{PATCH_PATH}.SECRET_ID", new="cqc-secret-name")
     @patch(f"{PATCH_PATH}.AWS_REGION", new="us-east-1")
     def test_main_writes_parquet(
-        self, mock_objects, mock_norm_gen, mock_get_secret, mock_uuid
+        self, mock_objects, mock_primed_gen, mock_get_secret, mock_uuid
     ):
         mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
         mock_objects.return_value = [
@@ -76,7 +76,7 @@ class TestDeltaDownloadCQCLocations(unittest.TestCase):
             {"locationId": 2},
             {"locationId": 3},
         ]
-        mock_norm_gen.return_value = mock_objects.return_value
+        mock_primed_gen.return_value = mock_objects.return_value
         file_name = "abc"
         mock_uuid.uuid4.return_value = file_name
         dest = f"{self.temp_dir}/{file_name}.parquet"
@@ -92,12 +92,12 @@ class TestDeltaDownloadCQCLocations(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.uuid")
     @patch(f"{PATCH_PATH}.get_secret")
-    @patch(f"{PATCH_PATH}.cqc.normalised_generator")
+    @patch(f"{PATCH_PATH}.cqc.primed_generator")
     @patch(f"{PATCH_PATH}.cqc.get_updated_objects")
     @patch(f"{PATCH_PATH}.SECRET_ID", new="cqc-secret-name")
     @patch(f"{PATCH_PATH}.AWS_REGION", new="us-east-1")
     def test_main_copes_with_malformed_destination(
-        self, mock_objects, mock_norm_gen, mock_get_secret, mock_uuid
+        self, mock_objects, mock_primed_gen, mock_get_secret, mock_uuid
     ):
         mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
         mock_objects.return_value = [
@@ -105,7 +105,7 @@ class TestDeltaDownloadCQCLocations(unittest.TestCase):
             {"locationId": 2},
             {"locationId": 3},
         ]
-        mock_norm_gen.return_value = mock_objects.return_value
+        mock_primed_gen.return_value = mock_objects.return_value
         file_name = "abc"
         mock_uuid.uuid4.return_value = file_name
 
@@ -171,18 +171,18 @@ class TestDeltaDownloadCQCLocations(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.uuid")
     @patch(f"{PATCH_PATH}.get_secret")
-    @patch(f"{PATCH_PATH}.cqc.normalised_generator")
+    @patch(f"{PATCH_PATH}.cqc.primed_generator")
     @patch(f"{PATCH_PATH}.cqc.get_updated_objects")
     @patch(f"{PATCH_PATH}.SECRET_ID", new="cqc-secret-name")
     @patch(f"{PATCH_PATH}.AWS_REGION", new="us-east-1")
     def test_main_casts_type(
-        self, mock_objects, mock_norm_gen, mock_get_secret, mock_uuid
+        self, mock_objects, mock_primed_gen, mock_get_secret, mock_uuid
     ):
         mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
         mock_objects.return_value = [
             {"locationId": "1", "onspdLatitude": 10.0},
         ]
-        mock_norm_gen.return_value = mock_objects.return_value
+        mock_primed_gen.return_value = mock_objects.return_value
         file_name = "abc"
         mock_uuid.uuid4.return_value = file_name
         dest = f"{self.temp_dir}/{file_name}.parquet"

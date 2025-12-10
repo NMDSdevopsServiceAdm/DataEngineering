@@ -349,64 +349,93 @@ class GetChangesWithinTimeframeTests(CqcApiTests):
 
 
 class NormaliseStructsTests(CqcApiTests):
-    def test_normalise_structs_adds_missing_fields(self):
+    def test_adds_missing_struct_fields(self):
         schema = {
             "address": pl.Struct(
-                [pl.Field("line1", pl.Utf8), pl.Field("postcode", pl.Utf8)]
+                [
+                    pl.Field("line1", pl.Utf8),
+                    pl.Field("postcode", pl.Utf8),
+                ]
             )
         }
-        missing_field_record = {"address": {"line1": "123 Main St"}}
+
+        record = {"address": {"line1": "123 Main St"}}
         expected = {"address": {"line1": "123 Main St", "postcode": None}}
 
-        returned = cqc.normalise_structs(missing_field_record, schema)
-
+        returned = cqc.normalise_structs(record, schema)
         self.assertEqual(returned, expected)
 
-    def test_normalise_structs_creates_struct_when_missing(self):
+    def test_creates_struct_when_missing(self):
         schema = {
             "address": pl.Struct(
-                [pl.Field("line1", pl.Utf8), pl.Field("postcode", pl.Utf8)]
+                [
+                    pl.Field("line1", pl.Utf8),
+                    pl.Field("postcode", pl.Utf8),
+                ]
             )
         }
-        missing_record = {}
+
+        record = {}
         expected = {"address": {"line1": None, "postcode": None}}
 
-        returned = cqc.normalise_structs(missing_record, schema)
-
+        returned = cqc.normalise_structs(record, schema)
         self.assertEqual(returned, expected)
 
-    def test_normalise_structs_handles_empty_struct(self):
+    def test_strips_extra_fields_not_in_schema(self):
         schema = {
             "address": pl.Struct(
-                [pl.Field("line1", pl.Utf8), pl.Field("postcode", pl.Utf8)]
+                [
+                    pl.Field("line1", pl.Utf8),
+                    pl.Field("postcode", pl.Utf8),
+                ]
             )
         }
-        empty_struct_record = {"address": {}}
-        expected = {"address": {"line1": None, "postcode": None}}
 
-        returned = cqc.normalise_structs(empty_struct_record, schema)
+        record = {
+            "address": {
+                "line1": "123 Main St",
+                "postcode": "AB1 2CD",
+                "extra": "IGNORE",
+            }
+        }
 
+        expected = {"address": {"line1": "123 Main St", "postcode": "AB1 2CD"}}
+
+        returned = cqc.normalise_structs(record, schema)
         self.assertEqual(returned, expected)
 
+    def test_normalise_structs_does_not_change_original(self):
+        schema = {
+            "address": pl.Struct(
+                [
+                    pl.Field("line1", pl.Utf8),
+                    pl.Field("postcode", pl.Utf8),
+                ]
+            )
+        }
 
-class NormalisedGeneratorTests(CqcApiTests):
+        record = {"address": {"line1": "123 Main St"}}
+        original_copy = dict(record)
+
+        _ = cqc.normalise_structs(record, schema)
+        self.assertEqual(record, original_copy)
+
+
+class PrimedGeneratorTests(CqcApiTests):
     def test_normalised_generator_yields_correct_records(self):
         schema = {
-            "address": pl.Struct(
-                [pl.Field("line1", pl.Utf8), pl.Field("postcode", pl.Utf8)]
-            )
+            "a": pl.Struct([pl.Field("x", pl.Utf8)]),
+            "b": pl.Utf8,
         }
-        api_rows = iter([{"address": {"line1": "123 Main St"}}, {}])
 
-        returned_gen = cqc.normalised_generator(api_rows, schema)
+        def fake_api_gen():
+            yield {"a": {"x": "value"}, "b": "data"}
 
-        returned_gen_list = list(returned_gen)
-        expected_gen_list = [
-            {"address": {"line1": "123 Main St", "postcode": None}},
-            {"address": {"line1": None, "postcode": None}},
-        ]
+        gen = cqc.primed_generator(fake_api_gen(), schema)
+        first = next(gen)
 
-        self.assertEqual(returned_gen_list, expected_gen_list)
+        expected_first = {"a": {"x": None}, "b": None}
+        self.assertEqual(first, expected_first)
 
 
 if __name__ == "__main__":

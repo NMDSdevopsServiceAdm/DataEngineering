@@ -247,58 +247,67 @@ def get_changes_within_timeframe(
 
 def normalise_structs(record: dict, schema: dict) -> dict:
     """
-    Normalises struct-type columns in a single record to ensure consistent shape.
+    Normalises all struct-type columns in a record so they strictly match the
+    provided Polars schema.
 
-    This function iterates over all columns in the provided schema. For columns
-    that are of type `pl.Struct`, it ensures that every expected field exists
-    in the record and removes any unexpected fields.
-
-    The steps are:
-    - Missing struct fields are filled with `None`.
-    - Extra fields not defined in the schema are removed.
-    - If the column is missing entirely or is not a dictionary, a new struct
-      with all fields set to `None` is created.
+    For any column defined as `pl.Struct` in the schema:
+      - Only fields defined in the schema are retained.
+      - Missing fields are added with value None.
+      - If the column is missing or the value is not a dict, a new struct with
+        all schema fields set to None is created.
 
     Args:
-        record (dict): A single dictionary representing a row from the API.
-        schema (dict): A dictionary mapping column names to Polars data types.
+        record (dict): A single API record represented as a dictionary.
+        schema (dict): A mapping of column names to Polars data types.
 
     Returns:
-        dict: The original record with all struct columns normalised according to
-            the schema.
+        dict: A new record where all struct-type columns match the schema
+        exactly, with no extra or missing fields.
     """
+    fixed = dict(record)
+
     for col, dtype in schema.items():
         if isinstance(dtype, pl.Struct):
-            fields = [f.name for f in dtype.fields]
-            if col not in record or not isinstance(record[col], dict):
-                record[col] = {f: None for f in fields}
-            else:
-                # Debugging from here
-                extra_fields = set(record[col].keys()) - set(fields)
-                print(f"DEBUG: Column '{col}' has extra fields: {extra_fields}")
-                # to here
-                record[col] = {f: record[col].get(f, None) for f in fields}
-    return record
+            schema_fields = [field.name for field in dtype.fields]
+
+            # Missing struct or wrong type → create blank struct
+            if col not in fixed or not isinstance(fixed[col], dict):
+                fixed[col] = {name: None for name in schema_fields}
+                continue
+
+            # Keep only schema-defined fields, fill missing ones
+            fixed[col] = {name: fixed[col].get(name, None) for name in schema_fields}
+
+    return fixed
 
 
-def normalised_generator(
+def primed_generator(
     api_generator: Generator[dict, None, None], schema: dict
 ) -> Generator[dict, None, None]:
     """
-    Wraps an API generator and applies struct normalisation to every record.
+    Yields one fully-normalised, schema-perfect empty row first so that
+    Polars infers the schema correctly. Then yields all normalised API rows.
 
-    This generator function takes another generator (yielding dictionaries),
-    normalises all struct-type columns in each record using `normalise_structs`,
-    and yields the fixed records one by one. This ensures all struct columns
-    have consistent shapes before being converted into a Polars DataFrame.
+    This guarantees Polars never infers incorrect struct widths (e.g. struct[6]
+    vs struct[3]) caused by inconsistent API responses.
 
     Args:
-        api_generator (Generator[dict, None, None]): A generator yielding
-            dictionaries representing API rows.
-        schema (dict): A dictionary mapping column names to Polars data types.
+        api_generator (Generator[dict, None, None]): A generator yielding raw
+            API rows as dictionaries.
+        schema (dict): Polars schema mapping column names to data types.
 
     Yields:
-        dict: Each record from the API generator with structs normalised.
+        dict: A priming row followed by fully-normalised API rows.
     """
-    for raw_row in api_generator:
-        yield normalise_structs(raw_row, schema)
+    empty_row = {}
+
+    for col, dtype in schema.items():
+        if isinstance(dtype, pl.Struct):
+            empty_row[col] = {field.name: None for field in dtype.fields}
+        else:
+            empty_row[col] = None
+
+    yield empty_row
+
+    for row in api_generator:
+        yield normalise_structs(row, schema)

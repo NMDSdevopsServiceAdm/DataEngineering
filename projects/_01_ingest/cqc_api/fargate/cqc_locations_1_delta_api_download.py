@@ -83,7 +83,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
         )
 
-        generator = cqc.normalised_generator(api_generator, POLARS_LOCATION_SCHEMA)
+        generator = cqc.primed_generator(api_generator, POLARS_LOCATION_SCHEMA)
 
         print("Creating dataframe and writing to Parquet")
         df: pl.DataFrame = pl.DataFrame(generator)
