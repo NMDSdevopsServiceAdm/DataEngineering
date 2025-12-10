@@ -59,14 +59,12 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         Exception: For any other unspecified errors that occur during API
             calls, secret retrieval, or data processing.
     """
-    print("Starting Execution")
     try:
         destination = destination if destination[-1] == "/" else f"{destination}/"
 
         start_dt = dt.fromisoformat(start_timestamp.replace("Z", ""))
         end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))
 
-        print("Validating start and end timestamps")
         if start_dt > end_dt:
             raise InvalidTimestampArgumentError(
                 "Start timestamp is after end timestamp"
@@ -77,7 +75,6 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         cqc_api_primary_key_value: str = json.loads(secret)["Ocp-Apim-Subscription-Key"]
 
         print("Collecting providers with changes from API")
-
         api_generator: Generator[dict, None, None] = cqc.get_updated_objects(
             object_type=CQC_OBJECT_TYPE,
             organisation_type=CQC_ORG_TYPE,
@@ -99,8 +96,10 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             ]
         )
         df_unique: pl.DataFrame = df.unique(subset=[ColNames.provider_id])
+
         utils.write_to_parquet(df_unique, destination)
         return None
+
     except InvalidTimestampArgumentError:
         print(f"ERROR: Start timestamp is after end timestamp: Args: {sys.argv}")
         raise
