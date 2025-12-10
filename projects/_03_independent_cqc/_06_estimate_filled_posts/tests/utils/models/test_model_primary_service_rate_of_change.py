@@ -1,6 +1,5 @@
 import unittest
 import warnings
-from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
@@ -212,30 +211,18 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRateOfChangeTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    @patch(f"{PATCH_PATH}.get_selected_value")
-    def test_functions_called_in_add_previous_value_column_function(
-        self,
-        get_selected_value: Mock,
-    ):
-        job.add_previous_value_column(self.test_df)
-
-        self.assertEqual(get_selected_value.call_count, 1)
-
     def test_returned_column_names_match_expected(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-    def test_returned_previous_interpolated_values_match_expected(
-        self,
-    ):
+    def test_returned_previous_interpolated_values_match_expected(self):
         for i in range(len(self.returned_data)):
-            self.assertAlmostEqual(
+            self.assertEqual(
                 self.returned_data[i][
                     job.TempCol.previous_column_with_values_interpolated
                 ],
                 self.expected_data[i][
                     job.TempCol.previous_column_with_values_interpolated
                 ],
-                2,
                 f"Returned row {i} does not match expected",
             )
 
