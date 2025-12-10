@@ -26,16 +26,18 @@ class TestDeltaDownloadCQCProviders(unittest.TestCase):
         shutil.rmtree(self.temp_dir)
 
     @patch(f"{PATCH_PATH}.get_secret")
+    @patch(f"{PATCH_PATH}.cqc.normalised_generator")
     @patch(f"{PATCH_PATH}.cqc.get_updated_objects")
     @patch(f"{PATCH_PATH}.SECRET_ID", new="cqc-secret-name")
     @patch(f"{PATCH_PATH}.AWS_REGION", new="us-east-1")
-    def test_main_gets_secret(self, mock_objects, mock_get_secret):
+    def test_main_gets_secret(self, mock_objects, mock_norm_gen, mock_get_secret):
         mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
         mock_objects.return_value = [
             {"providerId": 1},
             {"providerId": 2},
             {"providerId": 3},
         ]
+        mock_norm_gen.return_value = mock_objects.return_value
         start = "2025-07-20T15:40:23Z"
         end = "2025-07-25T14:23:40Z"
         main(self.temp_dir + "/", start, end)
