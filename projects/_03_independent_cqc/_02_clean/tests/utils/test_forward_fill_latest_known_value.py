@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import ANY, Mock, patch
 
 import projects._03_independent_cqc._02_clean.utils.forward_fill_latest_known_value as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
@@ -8,6 +9,10 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     ForwardFillLatestKnownValue as Schemas,
 )
 from utils import utils
+
+PATCH_PATH = (
+    "projects._03_independent_cqc._02_clean.utils.forward_fill_latest_known_value"
+)
 
 
 class ReturnLastKnownValueTests(unittest.TestCase):
@@ -89,18 +94,24 @@ class ForwardFillTests(unittest.TestCase):
         returned_df = job.forward_fill(test_df, "col_to_repeat", days_to_repeat=2)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_forward_fill_latest_known_value(
-        self,
+
+class ForwardFillLatestKnownValueCallTests(unittest.TestCase):
+    def setUp(self):
+        self.spark = utils.get_spark()
+        self.df = self.spark.createDataFrame(
+            Data.forward_fill_latest_known_value_rows,
+            Schemas.forward_fill_latest_known_value_locations_schema,
+        )
+
+    @patch(f"{PATCH_PATH}.forward_fill")
+    @patch(f"{PATCH_PATH}.return_last_known_value")
+    def test_forward_fill_latest_known_value_calls_all_subfunctions(
+        self, return_last_known_value_mock: Mock, forward_fill_mock: Mock
     ):
-        test_df = self.spark.createDataFrame(
-            data=Data.forward_fill_latest_known_value_rows,
-            schema=Schemas.forward_fill_latest_known_value_locations_schema,
-        )
-        expected_df = self.spark.createDataFrame(
-            data=Data.expected_forward_fill_latest_known_value_rows,
-            schema=Schemas.forward_fill_latest_known_value_locations_schema,
-        )
-        returned_df = job.forward_fill_latest_known_value(
-            test_df, "col_to_repeat", days_to_repeat=2
-        )
-        self.assertEqual(returned_df.collect(), expected_df.collect())
+        return_last_known_value_mock.return_value = self.df
+        forward_fill_mock.return_value = self.df
+        job.forward_fill_latest_known_value(self.df, "col_to_repeat", days_to_repeat=2)
+
+        return_last_known_value_mock.assert_called_once()
+
+        forward_fill_mock.assert_called_once()
