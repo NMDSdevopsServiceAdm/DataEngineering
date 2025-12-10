@@ -3,6 +3,7 @@ from http.client import HTTPMessage
 from typing import Generator
 from unittest.mock import Mock, call, patch
 
+import polars as pl
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -348,11 +349,51 @@ class GetChangesWithinTimeframeTests(CqcApiTests):
 
 
 class NormaliseStructsTests(CqcApiTests):
-    pass
+    def test_normalise_structs_adds_missing_fields(self):
+        schema = {
+            "address": pl.Struct(
+                [pl.Field("line1", pl.Utf8), pl.Field("postcode", pl.Utf8)]
+            )
+        }
+        missing_field_record = {"address": {"line1": "123 Main St"}}
+        expected = {"address": {"line1": "123 Main St", "postcode": None}}
+
+        returned = cqc.normalise_structs(missing_field_record, schema)
+
+        self.assertEqual(returned, expected)
+
+    def test_normalise_structs_creates_struct_when_missing(self):
+        schema = {
+            "address": pl.Struct(
+                [pl.Field("line1", pl.Utf8), pl.Field("postcode", pl.Utf8)]
+            )
+        }
+        missing_record = {}
+        expected = {"address": {"line1": None, "postcode": None}}
+
+        returned = cqc.normalise_structs(missing_record, schema)
+
+        self.assertEqual(returned, expected)
 
 
 class NormalisedGeneratorTests(CqcApiTests):
-    pass
+    def test_normalised_generator_yields_correct_records(self):
+        schema = {
+            "address": pl.Struct(
+                [pl.Field("line1", pl.Utf8), pl.Field("postcode", pl.Utf8)]
+            )
+        }
+        api_rows = iter([{"address": {"line1": "123 Main St"}}, {}])
+
+        returned_gen = cqc.normalised_generator(api_rows, schema)
+
+        returned_gen_list = list(returned_gen)
+        expected_gen_list = [
+            {"address": {"line1": "123 Main St", "postcode": None}},
+            {"address": {"line1": None, "postcode": None}},
+        ]
+
+        self.assertEqual(returned_gen_list, expected_gen_list)
 
 
 if __name__ == "__main__":
