@@ -347,5 +347,13 @@ class GetChangesWithinTimeframeTests(CqcApiTests):
         self.assertEqual(result, {"changes": ["1", "2", "3"]})
 
 
+class NormaliseStructsTests(CqcApiTests):
+    pass
+
+
+class NormalisedGeneratorTests(CqcApiTests):
+    pass
+
+
 if __name__ == "__main__":
     unittest.main()
