@@ -267,10 +267,10 @@ def normalise_structs(record: dict, schema: dict) -> dict:
         if isinstance(dtype, pl.Struct):
             fields = dtype.fields
             if col not in record or not isinstance(record[col], dict):
-                record[col] = {f: None for f in fields}
+                record[col] = {f.name: None for f in fields}
             else:
                 for f in fields:
-                    record[col].setdefault(f, None)
+                    record[col].setdefault(f.name, None)
     return record
 
 
