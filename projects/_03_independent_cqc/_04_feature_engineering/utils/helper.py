@@ -190,6 +190,7 @@ def filter_without_dormancy_features_to_pre_2025(df: DataFrame) -> DataFrame:
     return df.filter(F.col(IndCQC.cqc_location_import_date) <= date(2025, 1, 1))
 
 
+# converted to polars -> projects._03_independent_cqc._04_feature_engineering.fargate.utils.feature_utils.py
 def add_squared_column(df: DataFrame, col_to_square: str) -> DataFrame:
     """
     Squares the values in a specified column and returns a new DataFrame with the squared values.

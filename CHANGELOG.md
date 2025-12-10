@@ -40,7 +40,8 @@ All notable changes to this project will be documented in this file.
 
 - Created a new folder and file structure to contain the model re-training process files.
 
-- Added placeholder tasks for model retraining in the Ind CQC pipeline.
+- Added placeholder tasks for model retraining step function in the Ind CQC pipeline which will point to the
+  separate model retraining step function.
 
 - Added ind_cqc_06_estimated_filled_posts dataset to circleci config datasets sync'd into branch.
   Gave the dataset name the prefix "main_".
@@ -56,6 +57,8 @@ All notable changes to this project will be documented in this file.
 - Added model registry.
 
 - Added function to validate model definitions used in tasks are stored in the model registry.
+
+- Created Polars jobs to prepare care home and non residential features.
 
 - A new function to remove random spikes from CT data. The function flags the outliers based on median absolute deviation (MAD) and removes the outlier record entirely or the ourlier value. 
 
@@ -198,6 +201,8 @@ All notable changes to this project will be documented in this file.
 - Fixed validation failures for cleaned CQC locations caused by complex columns in the DataFrame, which prevented PointBlank from generating output reports.
   - Updated the validation script to replicate the newly added filter from the cleaning process, ensuring row count validations now pass.
   - Introduced a new function that creates boolean flag columns for complex-type columns and removes the original complex columns from the source DataFrame. These flag columns are now used in PointBlank validations to check for True values.
+
+- Fixed add_previous_value_column to return the value/null from the previous import_date, not the last known value from any point in time.
 
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
