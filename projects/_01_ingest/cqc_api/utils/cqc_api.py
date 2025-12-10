@@ -251,9 +251,13 @@ def normalise_structs(record: dict, schema: dict) -> dict:
 
     This function iterates over all columns in the provided schema. For columns
     that are of type `pl.Struct`, it ensures that every expected field exists
-    in the record. Missing struct fields are filled with `None`. If the column
-    is missing entirely or is not a dictionary, a new struct with all fields
-    set to `None` is created.
+    in the record and removes any unexpected fields.
+
+    The steps are:
+    - Missing struct fields are filled with `None`.
+    - Extra fields not defined in the schema are removed.
+    - If the column is missing entirely or is not a dictionary, a new struct
+      with all fields set to `None` is created.
 
     Args:
         record (dict): A single dictionary representing a row from the API.
@@ -265,12 +269,11 @@ def normalise_structs(record: dict, schema: dict) -> dict:
     """
     for col, dtype in schema.items():
         if isinstance(dtype, pl.Struct):
-            fields = dtype.fields
+            fields = [f.name for f in dtype.fields]
             if col not in record or not isinstance(record[col], dict):
-                record[col] = {f.name: None for f in fields}
+                record[col] = {f: None for f in fields}
             else:
-                for f in fields:
-                    record[col].setdefault(f.name, None)
+                record[col] = {f: record[col].get(f, None) for f in fields}
     return record
 
 

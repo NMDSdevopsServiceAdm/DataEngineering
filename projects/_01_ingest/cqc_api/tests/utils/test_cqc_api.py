@@ -375,6 +375,19 @@ class NormaliseStructsTests(CqcApiTests):
 
         self.assertEqual(returned, expected)
 
+    def test_normalise_structs_handles_empty_struct(self):
+        schema = {
+            "address": pl.Struct(
+                [pl.Field("line1", pl.Utf8), pl.Field("postcode", pl.Utf8)]
+            )
+        }
+        empty_struct_record = {"address": {}}
+        expected = {"address": {"line1": None, "postcode": None}}
+
+        returned = cqc.normalise_structs(empty_struct_record, schema)
+
+        self.assertEqual(returned, expected)
+
 
 class NormalisedGeneratorTests(CqcApiTests):
     def test_normalised_generator_yields_correct_records(self):
