@@ -58,7 +58,7 @@ All notable changes to this project will be documented in this file.
 
 - Added function to validate model definitions used in tasks are stored in the model registry.
 
-- Created Polars job to create care home features.
+- Created Polars jobs to prepare care home and non residential features.
 
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
