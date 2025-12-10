@@ -145,11 +145,11 @@ def compute_mad(df: DataFrame, group_by_col: str, col_to_clean: str) -> DataFram
             f"{col_to_clean}_mad"
         )
     )
-    mad_df = mad_df.withColumn(
+    df = df.join(mad_df, group_by_col, "left")
+    return df.withColumn(
         f"{col_to_clean}_mad_abs_diff",
         F.abs(F.col(col_to_clean) - F.col(f"{col_to_clean}_mad")),
     )
-    return df.join(mad_df, group_by_col, "left")
 
 
 def compute_outlier_cutoff(
