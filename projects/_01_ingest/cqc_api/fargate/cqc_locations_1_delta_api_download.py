@@ -95,7 +95,9 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
                 if k in df_schema.keys()
             ]
         )
-        df_unique: pl.DataFrame = df.unique(subset=[ColNames.location_id])
+        df_unique: pl.DataFrame = df.unique(subset=[ColNames.location_id]).filter(
+            pl.col(ColNames.location_id).is_not_null()
+        )
 
         utils.write_to_parquet(df_unique, destination)
         return None
