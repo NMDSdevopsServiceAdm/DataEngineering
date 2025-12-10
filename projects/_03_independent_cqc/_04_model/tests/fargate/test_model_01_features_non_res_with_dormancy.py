@@ -20,6 +20,7 @@ class ModelFeaturesNonResWithoutDormancyTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.fUtils.select_and_filter_features_data")
     @patch(f"{PATCH_PATH}.fUtils.expand_encode_and_extract_features")
+    @patch(f"{PATCH_PATH}.fUtils.group_rural_urban_sparse_categories")
     @patch(f"{PATCH_PATH}.fUtils.cap_integer_at_max_value")
     @patch(f"{PATCH_PATH}.fUtils.add_array_column_count")
     @patch(f"{PATCH_PATH}.fUtils.add_squared_column")
@@ -40,6 +41,7 @@ class ModelFeaturesNonResWithoutDormancyTests(unittest.TestCase):
         add_squared_column_mock: Mock,
         add_array_column_count_mock: Mock,
         cap_integer_at_max_value_mock: Mock,
+        group_rural_urban_sparse_categories_mock: Mock,
         expand_encode_and_extract_features_mock: Mock,
         select_and_filter_features_data_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -54,6 +56,7 @@ class ModelFeaturesNonResWithoutDormancyTests(unittest.TestCase):
         add_squared_column_mock.assert_called_once()
         self.assertEqual(add_array_column_count_mock.call_count, 2)
         self.assertEqual(cap_integer_at_max_value_mock.call_count, 2)
+        group_rural_urban_sparse_categories_mock.assert_called_once()
         self.assertEqual(expand_encode_and_extract_features_mock.call_count, 5)
         select_and_filter_features_data_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(

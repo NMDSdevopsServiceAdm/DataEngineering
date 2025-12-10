@@ -82,6 +82,8 @@ def main(bucket_name: str, model_name: str) -> None:
         new_col_name=IndCQC.activity_count_capped,
     )
 
+    lf = fUtils.group_rural_urban_sparse_categories(lf)
+
     lf = fUtils.expand_encode_and_extract_features(
         lf,
         IndCQC.services_offered,
@@ -96,7 +98,7 @@ def main(bucket_name: str, model_name: str) -> None:
     )
     lf = fUtils.expand_encode_and_extract_features(
         lf,
-        IndCQC.current_rural_urban_indicator_2011,
+        IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
         RuralUrbanLabels.non_res_labels_dict,
         is_array_col=False,
     )
