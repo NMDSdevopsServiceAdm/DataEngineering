@@ -98,6 +98,8 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
                         print(
                             f"Row {i} column '{col}' has extra fields: {extra_fields}"
                         )
+                        print(f"Actual fields: {actual_fields}")
+                        print(f"Expected fields: {expected_fields}")
 
         generator = cqc.normalised_generator(api_generator, POLARS_PROVIDER_SCHEMA)
 
