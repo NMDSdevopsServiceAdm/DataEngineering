@@ -273,6 +273,10 @@ def normalise_structs(record: dict, schema: dict) -> dict:
             if col not in record or not isinstance(record[col], dict):
                 record[col] = {f: None for f in fields}
             else:
+                # Debugging from here
+                extra_fields = set(record[col].keys()) - set(fields)
+                print(f"DEBUG: Column '{col}' has extra fields: {extra_fields}")
+                # to here
                 record[col] = {f: record[col].get(f, None) for f in fields}
     return record
 
