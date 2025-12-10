@@ -83,24 +83,6 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
         )
 
-        # Debugging
-        for i, record in enumerate(api_generator):
-            for col, dtype in POLARS_PROVIDER_SCHEMA.items():
-                if isinstance(dtype, pl.Struct):
-                    expected_fields = {f.name for f in dtype.fields}
-                    actual_fields = (
-                        set(record.get(col, {}).keys())
-                        if isinstance(record.get(col), dict)
-                        else set()
-                    )
-                    extra_fields = actual_fields - expected_fields
-                    if extra_fields:
-                        print(
-                            f"Row {i} column '{col}' has extra fields: {extra_fields}"
-                        )
-                        print(f"Actual fields: {actual_fields}")
-                        print(f"Expected fields: {expected_fields}")
-
         generator = cqc.normalised_generator(api_generator, POLARS_PROVIDER_SCHEMA)
 
         print("Creating dataframe and writing to Parquet")
