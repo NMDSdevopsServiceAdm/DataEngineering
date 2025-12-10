@@ -83,6 +83,21 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
         )
 
+        # Debugging
+        for i, record in enumerate(api_generator):
+            for col, dtype in POLARS_PROVIDER_SCHEMA.items():
+                if isinstance(dtype, pl.Struct):
+                    expected_fields = [f.name for f in dtype.fields]
+                    actual = record.get(col, {})
+                    if not isinstance(actual, dict):
+                        actual_fields = []
+                    else:
+                        actual_fields = list(actual.keys())
+                    if set(actual_fields) != set(expected_fields):
+                        print(f"Row {i} column '{col}' mismatch:")
+                        print(f"  Expected fields: {expected_fields}")
+                        print(f"  Actual fields  : {actual_fields}")
+
         generator = cqc.normalised_generator(api_generator, POLARS_PROVIDER_SCHEMA)
 
         print("Creating dataframe and writing to Parquet")
