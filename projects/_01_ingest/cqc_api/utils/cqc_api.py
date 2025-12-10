@@ -1,5 +1,6 @@
 from typing import Generator, Iterable, List
 
+import polars as pl
 import requests
 from ratelimit import limits, sleep_and_retry
 from requests.adapters import HTTPAdapter
@@ -242,3 +243,55 @@ def get_changes_within_timeframe(
         },
     )
     return response
+
+
+def normalise_structs(record: dict, schema: dict) -> dict:
+    """
+    Normalises struct-type columns in a single record to ensure consistent shape.
+
+    This function iterates over all columns in the provided schema. For columns
+    that are of type `pl.Struct`, it ensures that every expected field exists
+    in the record. Missing struct fields are filled with `None`. If the column
+    is missing entirely or is not a dictionary, a new struct with all fields
+    set to `None` is created.
+
+    Args:
+        record (dict): A single dictionary representing a row from the API.
+        schema (dict): A dictionary mapping column names to Polars data types.
+
+    Returns:
+        dict: The original record with all struct columns normalised according to
+            the schema.
+    """
+    for col, dtype in schema.items():
+        if isinstance(dtype, pl.Struct):
+            fields = dtype.fields
+            if col not in record or not isinstance(record[col], dict):
+                record[col] = {f: None for f in fields}
+            else:
+                for f in fields:
+                    record[col].setdefault(f, None)
+    return record
+
+
+def normalised_generator(
+    api_generator: Generator[dict, None, None], schema: dict
+) -> Generator[dict, None, None]:
+    """
+    Wraps an API generator and applies struct normalisation to every record.
+
+    This generator function takes another generator (yielding dictionaries),
+    normalises all struct-type columns in each record using `normalise_structs`,
+    and yields the fixed records one by one. This ensures all struct columns
+    have consistent shapes before being converted into a Polars DataFrame.
+
+    Args:
+        api_generator (Generator[dict, None, None]): A generator yielding
+            dictionaries representing API rows.
+        schema (dict): A dictionary mapping column names to Polars data types.
+
+    Yields:
+        dict: Each record from the API generator with structs normalised.
+    """
+    for raw_row in api_generator:
+        yield normalise_structs(raw_row, schema)
