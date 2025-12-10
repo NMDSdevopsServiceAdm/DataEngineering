@@ -78,13 +78,15 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
 
         print("Collecting providers with changes from API")
 
-        generator: Generator[dict, None, None] = cqc.get_updated_objects(
+        api_generator: Generator[dict, None, None] = cqc.get_updated_objects(
             object_type=CQC_OBJECT_TYPE,
             organisation_type=CQC_ORG_TYPE,
             cqc_api_primary_key=cqc_api_primary_key_value,
             start_timestamp=f"{start_dt.isoformat(timespec='seconds')}Z",
             end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
         )
+
+        generator = cqc.normalised_generator(api_generator, POLARS_PROVIDER_SCHEMA)
 
         print("Creating dataframe and writing to Parquet")
         df: pl.DataFrame = pl.DataFrame(generator)
