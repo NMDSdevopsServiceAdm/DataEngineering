@@ -68,6 +68,7 @@ def clean_ct_values_after_consecutive_repetition(
         populated_rule = CTNonResFilteringRule.populated
         new_rule_name = CTNonResFilteringRule.location_repeats_total_posts
 
+    # Must filter to populated only so that values can be deduplicated.
     df_populated_only = df.filter(F.col(filter_rule_column_name) == populated_rule)
 
     df_populated_only = create_column_with_repeated_values_removed(
@@ -195,6 +196,7 @@ def join_cleaned_ct_values_into_original_df(
     Joins the original DataFrame with the populated only DataFrame.
 
     The repeated_values_nulled column is added to the original DataFrame, then this column replaces the cleaned column from the orginal DataFrame.
+    Warning: Any values in the column_to_clean where their filering rule is not "populated" will also be nulled by this function.
 
     Args:
         original_df (DataFrame): The DataFrame as it was before and repeated values cleaning steps.

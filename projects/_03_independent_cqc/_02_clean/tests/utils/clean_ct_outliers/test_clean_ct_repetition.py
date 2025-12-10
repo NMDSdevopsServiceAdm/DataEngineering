@@ -46,7 +46,7 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
 
         job.clean_ct_values_after_consecutive_repetition(
             df=self.test_df,
-            column_to_clean=IndCQC.ct_non_res_care_workers_employed,
+            column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
             cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
             care_home=False,
             partitioning_column=IndCQC.location_id,
@@ -63,7 +63,7 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
     ):
         returned_df = job.clean_ct_values_after_consecutive_repetition(
             df=self.test_df,
-            column_to_clean=IndCQC.ct_non_res_care_workers_employed,
+            column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
             cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
             care_home=False,
             partitioning_column=IndCQC.location_id,
