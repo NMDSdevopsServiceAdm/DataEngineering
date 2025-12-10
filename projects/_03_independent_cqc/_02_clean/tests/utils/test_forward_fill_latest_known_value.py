@@ -10,7 +10,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
 from utils import utils
 
 
-class ForwardFillLatestKnownValueTests(unittest.TestCase):
+class ReturnLastKnownValueTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
 
@@ -42,6 +42,9 @@ class ForwardFillLatestKnownValueTests(unittest.TestCase):
         returned_df = job.return_last_known_value(test_df, "col_to_repeat")
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
+class ForwardFillTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.spark = utils.get_spark()
     def test_forward_fill_populates_null_values_within_days_to_repeat_range(
         self,
     ):
