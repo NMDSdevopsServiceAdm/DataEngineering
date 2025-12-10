@@ -64,7 +64,6 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
             [
                 call(
                     self.TEST_CQC_SOURCE,
-                    selected_columns=job.cqc_location_cols_to_import,
                 ),
                 call(self.TEST_ONS_SOURCE, selected_columns=ANY),
             ]

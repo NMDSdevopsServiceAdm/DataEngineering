@@ -227,6 +227,28 @@ class FeaturesEngineeringUtilsData:
         ("1-005", "Sparse with a capital S", "Sparse setting"),
     ]
 
+    add_squared_column_rows = [
+        ("1-001", None),
+        ("1-002", 0),
+        ("1-003", 2),
+        ("1-004", 4),
+    ]
+    expected_add_squared_column_rows = [
+        ("1-001", None, None),
+        ("1-002", 0, 0),
+        ("1-003", 2, 4),
+        ("1-004", 4, 16),
+    ]
+
+    select_and_filter_features_rows = [
+        ("1-001", date(2025, 1, 1), "20250101", "Y", 10, 5, 1, 100.0),
+        ("1-002", date(2025, 1, 2), "20250102", "N", None, 10, 1, 150.0),
+        ("1-003", date(2025, 1, 3), "20250103", "Y", 30, None, 0, 200.0),
+    ]
+    expected_select_and_filter_features_rows = [
+        ("1-001", date(2025, 1, 1), 100.0, 10, 5, 1, "20250101"),
+    ]
+
 
 @dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsData:

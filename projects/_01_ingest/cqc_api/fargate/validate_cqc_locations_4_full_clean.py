@@ -7,15 +7,20 @@ from polars_utils.expressions import str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from projects._01_ingest.cqc_api.utils.validate_cqc_locations import (
+    add_list_column_validation_check_flags,
     get_expected_row_count_for_validation_full_clean,
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedNewValidationColumns as CQCLVal,
+)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.validation_table_columns import Validation
 from utils.column_values.categorical_column_values import (
     LocationType,
+    NumericTrueFalse,
     RegistrationStatus,
 )
 from utils.column_values.categorical_columns_by_dataset import (
@@ -56,6 +61,15 @@ def main(
         selected_columns=compare_columns_to_import,
     )
     expected_row_count = get_expected_row_count_for_validation_full_clean(compare_df)
+    source_df = add_list_column_validation_check_flags(
+        source_df,
+        [
+            CQCLClean.specialisms_offered,
+            CQCLClean.regulated_activities_offered,
+            CQCLClean.services_offered,
+            CQCLClean.registered_manager_names,
+        ],
+    )
 
     validation = (
         pb.Validate(
@@ -96,9 +110,6 @@ def main(
                 CQCLClean.current_cssr,
                 CQCLClean.current_region,
                 CQCLClean.current_rural_urban_ind_11,
-                CQCLClean.services_offered,
-                CQCLClean.regulated_activities_offered,
-                CQCLClean.specialisms_offered,
             ]
         )
         # index columns
@@ -108,6 +119,26 @@ def main(
                 CQCLClean.cqc_location_import_date,
                 Keys.import_date,
             ]
+        )
+        # Complex column validation for completeness
+        .col_vals_in_set(CQCLVal.services_offered_is_not_null, [NumericTrueFalse.true])
+        .col_vals_in_set(
+            CQCLVal.regulated_activities_offered_is_not_null, [NumericTrueFalse.true]
+        )
+        # Complex column validation for empty list and null within list
+        .col_vals_in_set(
+            CQCLVal.services_offered_has_no_empty_or_null, [NumericTrueFalse.true]
+        )
+        .col_vals_in_set(
+            CQCLVal.regulated_activities_offered_has_no_empty_or_null,
+            [NumericTrueFalse.true],
+        )
+        .col_vals_in_set(
+            CQCLVal.registered_manager_names_has_no_empty_or_null,
+            [NumericTrueFalse.true],
+        )
+        .col_vals_in_set(
+            CQCLVal.specialisms_offered_has_no_empty_or_null, [NumericTrueFalse.true]
         )
         # categorical column values match expected set
         .col_vals_in_set(CQCLClean.type, [LocationType.social_care_identifier])
@@ -267,22 +298,6 @@ def main(
                 CatValues.current_rui_column_values.count_of_categorical_values,
             ),
             brief=f"{CQCLClean.current_rural_urban_ind_11} needs to be null, or one of {CatValues.current_rui_column_values.categorical_values}",
-        )
-        .specially(
-            vl.list_has_no_empty_or_nulls(CQCLClean.services_offered),
-            brief="Services offered list must be non-empty and contain no nulls",
-        )
-        .specially(
-            vl.list_has_no_empty_or_nulls(CQCLClean.regulated_activities_offered),
-            brief="Regulated activities offered list must be non-empty and contain no nulls",
-        )
-        .specially(
-            vl.list_has_no_empty_or_nulls(CQCLClean.registered_manager_names),
-            brief="Registered manager names list must be non-empty and contain no nulls",
-        )
-        .specially(
-            vl.list_has_no_empty_or_nulls(CQCLClean.specialisms_offered),
-            brief="Specialisms Offered list must be non-empty and contain no nulls",
         )
         # numeric column values are between (inclusive)
         .col_vals_between(Validation.location_id_length, 3, 14)
