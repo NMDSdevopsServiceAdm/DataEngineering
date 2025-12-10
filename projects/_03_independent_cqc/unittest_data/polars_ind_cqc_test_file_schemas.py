@@ -112,6 +112,17 @@ class FeaturesEngineeringUtilsSchemas:
         + [(IndCQC.current_rural_urban_indicator_2011_for_non_res_model, pl.String())]
     )
 
+    add_squared_column_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date_indexed, pl.UInt32()),
+        ]
+    )
+    expected_add_squared_column_schema = pl.Schema(
+        list(add_squared_column_schema.items())
+        + [(IndCQC.cqc_location_import_date_indexed_squared, pl.UInt32())]
+    )
+
     select_and_filter_features_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
