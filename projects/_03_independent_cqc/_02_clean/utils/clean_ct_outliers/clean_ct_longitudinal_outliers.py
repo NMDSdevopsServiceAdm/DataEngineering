@@ -145,7 +145,10 @@ def compute_mad(df: DataFrame, group_by_col: str, col_to_clean: str) -> DataFram
             f"{col_to_clean}_mad"
         )
     )
-
+    mad_df = mad_df.withColumn(
+        f"{col_to_clean}_mad_abs_diff",
+        F.abs(F.col(col_to_clean) - F.col(f"{col_to_clean}_mad")),
+    )
     return df.join(mad_df, group_by_col, "left")
 
 
@@ -220,16 +223,17 @@ def apply_outlier_cleaning(
     Returns:
         DataFrame: DataFrame with outliers cleaned either by row removal or null replacement.
     """
+    p95 = df.select(F.percentile_approx(col_to_clean, 0.95).alias("p95")).first()["p95"]
     w = Window.partitionBy(group_by_col)
 
     df = df.withColumn(
-        f"{col_to_clean}_has_100", F.max(F.col(col_to_clean)).over(w) >= 100
+        f"{col_to_clean}_has_95th", F.max(F.col(col_to_clean)).over(w) > p95
     )
 
     df = df.withColumn(
         cleaned_column_name,
         F.when(
-            F.col(f"{col_to_clean}_outlier_flag") & F.col(f"{col_to_clean}_has_100"),
+            F.col(f"{col_to_clean}_outlier_flag") & F.col(f"{col_to_clean}_has_95th"),
             None,
         ).otherwise(F.col(col_to_clean)),
     )
