@@ -58,6 +58,8 @@ All notable changes to this project will be documented in this file.
 
 - Added function to validate model definitions used in tasks are stored in the model registry.
 
+- Created Polars job to create care home features.
+
 - Added NHS Capacity Tracker filter to remove repeated submissions at location level after a set length of time.
 
 ### Changed
@@ -199,6 +201,8 @@ All notable changes to this project will be documented in this file.
 - Fixed validation failures for cleaned CQC locations caused by complex columns in the DataFrame, which prevented PointBlank from generating output reports.
   - Updated the validation script to replicate the newly added filter from the cleaning process, ensuring row count validations now pass.
   - Introduced a new function that creates boolean flag columns for complex-type columns and removes the original complex columns from the source DataFrame. These flag columns are now used in PointBlank validations to check for True values.
+
+- Fixed add_previous_value_column to return the value/null from the previous import_date, not the last known value from any point in time.
 
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.

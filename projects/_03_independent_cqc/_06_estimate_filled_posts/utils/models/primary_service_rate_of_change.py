@@ -7,7 +7,6 @@ from pyspark.sql import functions as F
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.interpolation import (
     model_interpolation,
 )
-from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 from projects.utils.utils.utils import calculate_windowed_column
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -147,18 +146,11 @@ def add_previous_value_column(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: The DataFrame with the previously interpolated value added.
     """
-    location_window = (
-        Window.partitionBy(IndCqc.location_id)
-        .orderBy(IndCqc.unix_time)
-        .rowsBetween(Window.unboundedPreceding, -1)
-    )
-    df = get_selected_value(
-        df,
-        location_window,
-        TempCol.column_with_values_interpolated,
-        TempCol.column_with_values_interpolated,
+    w = Window.partitionBy(IndCqc.location_id).orderBy(IndCqc.unix_time)
+
+    df = df.withColumn(
         TempCol.previous_column_with_values_interpolated,
-        "last",
+        F.lag(F.col(TempCol.column_with_values_interpolated)).over(w),
     )
     return df
 
