@@ -87,16 +87,17 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         for i, record in enumerate(api_generator):
             for col, dtype in POLARS_PROVIDER_SCHEMA.items():
                 if isinstance(dtype, pl.Struct):
-                    expected_fields = [f.name for f in dtype.fields]
-                    actual = record.get(col, {})
-                    if not isinstance(actual, dict):
-                        actual_fields = []
-                    else:
-                        actual_fields = list(actual.keys())
-                    if set(actual_fields) != set(expected_fields):
-                        print(f"Row {i} column '{col}' mismatch:")
-                        print(f"  Expected fields: {expected_fields}")
-                        print(f"  Actual fields  : {actual_fields}")
+                    expected_fields = {f.name for f in dtype.fields}
+                    actual_fields = (
+                        set(record.get(col, {}).keys())
+                        if isinstance(record.get(col), dict)
+                        else set()
+                    )
+                    extra_fields = actual_fields - expected_fields
+                    if extra_fields:
+                        print(
+                            f"Row {i} column '{col}' has extra fields: {extra_fields}"
+                        )
 
         generator = cqc.normalised_generator(api_generator, POLARS_PROVIDER_SCHEMA)
 
