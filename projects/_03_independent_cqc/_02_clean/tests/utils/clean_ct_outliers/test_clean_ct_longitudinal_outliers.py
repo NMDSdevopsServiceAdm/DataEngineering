@@ -20,7 +20,7 @@ class TestCleanCtLongitudinalOutliers(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
-        test_df = self.spark.createDataFrame(
+        self.test_df = self.spark.createDataFrame(
             Data.clean_random_spikes_input_rows, Schemas.input_schema
         )
 
@@ -41,7 +41,15 @@ class TestCleanCtLongitudinalOutliers(unittest.TestCase):
         compute_absolute_deviation_mock: Mock,
         compute_group_median_mock: Mock,
     ):
-        job.clean_longitudinal_outliers(self.test_df)
+        job.clean_longitudinal_outliers(
+            self.test_df,
+            IndCQC.location_id,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            0.10,
+            True,
+            True,
+        )
 
         compute_group_median_mock.assert_called_once()
         compute_absolute_deviation_mock.assert_called_once()
@@ -72,13 +80,10 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
             0.10,
             True,
             True,
-        ).select(
-            IndCQC.location_id,
-            IndCQC.ct_care_home_total_employed_cleaned,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_clean_random_spikes_remove_whole_rows,
-            Schemas.cleaned_schema,
+            Schemas.input_schema,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
@@ -100,7 +105,6 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
             remove_whole_record=False,
             care_home=True,
         )
-        print("returned df is: ", returned_df.collect())
         self.assertEqual(returned_df.collect(), test_df.collect())
 
     def test_clean_longitudinal_outliers_nulls_outlier_values_when_remove_whole_record_is_false(
@@ -119,15 +123,14 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
             0.10,
             False,
             True,
-        ).select(
-            IndCQC.location_id,
-            IndCQC.ct_care_home_total_employed_cleaned,
         )
 
         expected_df = self.spark.createDataFrame(
             Data.expected_clean_random_spikes_remove_value_only_rows,
-            Schemas.cleaned_schema,
+            Schemas.input_schema,
         )
+        returned_df.show()
+        expected_df.show()
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 

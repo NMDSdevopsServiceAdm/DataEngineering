@@ -5938,21 +5938,21 @@ class OutlierCleaningData:
     ]
 
     expected_clean_random_spikes_remove_whole_rows = [
-        ("1-001", 10),
-        ("1-001", 11),
-        ("1-001", 12),
-        ("1-002", 400),
-        ("1-002", 400),
+        ("1-001", 10, CTCareHomeFilteringRule.populated),
+        ("1-001", 11, CTCareHomeFilteringRule.populated),
+        ("1-001", 12, CTCareHomeFilteringRule.populated),
+        ("1-002", 400, CTCareHomeFilteringRule.populated),
+        ("1-002", 400, CTCareHomeFilteringRule.populated),
     ]
 
     expected_clean_random_spikes_remove_value_only_rows = [
-        ("1-001", 10),
-        ("1-001", 11),
-        ("1-001", 12),
-        ("1-001", None),
-        ("1-002", 400),
-        ("1-002", None),
-        ("1-002", 400),
+        ("1-001", 10, CTCareHomeFilteringRule.populated),
+        ("1-001", 11, CTCareHomeFilteringRule.populated),
+        ("1-001", 12, CTCareHomeFilteringRule.populated),
+        ("1-001", None, CTCareHomeFilteringRule.populated),
+        ("1-002", 400, CTCareHomeFilteringRule.populated),
+        ("1-002", None, CTCareHomeFilteringRule.populated),
+        ("1-002", 400, CTCareHomeFilteringRule.populated),
     ]
 
     compute_group_median_rows = [

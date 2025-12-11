@@ -3264,15 +3264,6 @@ class OutlierCleaningSchemas:
         ]
     )
 
-    cleaned_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(
-                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
-            ),
-        ]
-    )
-
     final_cleaned_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
