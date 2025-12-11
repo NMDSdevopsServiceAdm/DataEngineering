@@ -2,6 +2,8 @@ import os
 import sys
 from typing import Optional
 
+from dataclasses import dataclass
+
 os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame, Window
@@ -30,6 +32,11 @@ from utils.column_values.categorical_column_values import CareHome, Dormancy
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 average_number_of_beds: str = "avg_beds"
+
+
+@dataclass
+class NumericalValues:
+    number_of_days_to_forward_fill = 65  # Note: using 65 as a proxy for 2 months
 
 
 def main(
@@ -84,7 +91,9 @@ def main(
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
 
     locations_df = forward_fill_latest_known_value(
-        locations_df, IndCQC.ascwds_filled_posts_dedup_clean, 65
+        locations_df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        NumericalValues.number_of_days_to_forward_fill,
     )
 
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
