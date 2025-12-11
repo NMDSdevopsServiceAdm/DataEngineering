@@ -3184,3 +3184,44 @@ class IndCQCDataUtils:
             StructField("new_column", FloatType(), True),
         ]
     )
+
+
+@dataclass
+class ForwardFillLatestKnownValue:
+    Input_return_last_known_value_locations_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField("col_to_repeat", IntegerType(), True),
+        ]
+    )
+    expected_return_last_known_value_locations_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField("last_known_date", DateType(), True),
+            StructField("last_known_value", IntegerType(), True),
+        ]
+    )
+    input_forward_fill_locations_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField("col_to_repeat", IntegerType(), True),
+            StructField("last_known_date", DateType(), True),
+            StructField("last_known_value", IntegerType(), True),
+        ]
+    )
+    expected_forward_fill_locations_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField("col_to_repeat", IntegerType(), True),
+        ]
+    )
+    forward_fill_latest_known_value_locations_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField("col_to_repeat", IntegerType(), True),
+        ]
+    )
