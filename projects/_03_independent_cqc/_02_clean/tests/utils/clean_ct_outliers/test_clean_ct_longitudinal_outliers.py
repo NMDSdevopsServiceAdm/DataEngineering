@@ -20,7 +20,7 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_clean_random_spikes_remove_whole_record(
+    def test_clean_longitudinal_outliers_removes_outlier_rows_when_remove_whole_record_is_true(
         self,
     ):
         test_df = self.spark.createDataFrame(
@@ -47,7 +47,7 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_clean_random_spikes_keeps_all_records_when_no_outliers(
+    def test_clean_longitudinal_outliers_returns_input_df_when_there_are_no_outliers(
         self,
     ):
         test_df = self.spark.createDataFrame(
@@ -67,7 +67,7 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
         print("returned df is: ", returned_df.collect())
         self.assertEqual(returned_df.collect(), test_df.collect())
 
-    def test_clean_random_spikes_remove_value_only(
+    def test_clean_longitudinal_outliers_nulls_outlier_values_when_remove_whole_record_is_false(
         self,
     ):
         test_df = self.spark.createDataFrame(
@@ -97,7 +97,7 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
 
 
 class TestComputeMedian(TestCleanCtLongitudinalOutliers):
-    def test_compute_group_median(
+    def test_compute_group_median_returns_expected_values(
         self,
     ):
         df = self.spark.createDataFrame(
@@ -140,7 +140,7 @@ class TestComputeAbsDeviation(TestCleanCtLongitudinalOutliers):
 
 
 class TestComputeMad(TestCleanCtLongitudinalOutliers):
-    def test_compute_mad(
+    def test_compute_mad_returns_expected_values(
         self,
     ):
         df = self.spark.createDataFrame(
@@ -159,7 +159,7 @@ class TestComputeMad(TestCleanCtLongitudinalOutliers):
 
 
 class TestComputeOutlierCutoff(TestCleanCtLongitudinalOutliers):
-    def test_compute_outlier_cutoff(
+    def test_compute_outlier_cutoff_returns_expected_values(
         self,
     ):
         df = self.spark.createDataFrame(
@@ -178,7 +178,7 @@ class TestComputeOutlierCutoff(TestCleanCtLongitudinalOutliers):
 
 
 class TestFlagOutliers(TestCleanCtLongitudinalOutliers):
-    def test_flag_outliers(
+    def test_flag_outliers_returns_expected_values(
         self,
     ):
         df = self.spark.createDataFrame(
@@ -197,7 +197,7 @@ class TestFlagOutliers(TestCleanCtLongitudinalOutliers):
 
 
 class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
-    def test_apply_outlier_cleaning_remove_value_only(
+    def test_apply_outlier_cleaning_nulls_outlier_values_when_remove_whole_record_is_false(
         self,
     ):
         df = self.spark.createDataFrame(
@@ -219,7 +219,7 @@ class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_apply_outlier_cleaning_remove_whole_record(
+    def test_apply_outlier_cleaning_removes_outlier_rows_when_remove_whole_record_is_true(
         self,
     ):
         df = self.spark.createDataFrame(
