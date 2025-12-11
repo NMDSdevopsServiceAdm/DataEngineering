@@ -404,6 +404,24 @@ class NormaliseStructsTests(CqcApiTests):
         returned = cqc.normalise_structs(record, schema)
         self.assertEqual(returned, expected)
 
+    def test_normalise_structs_keeps_column_not_in_schema(self):
+        schema = {
+            "address": pl.Struct(
+                [
+                    pl.Field("line1", pl.Utf8),
+                    pl.Field("postcode", pl.Utf8),
+                ]
+            )
+        }
+
+        record = {
+            "name": "Care Home",
+            "address": {"line1": "123 Main St", "postcode": "AB1 2CD"},
+        }
+
+        returned = cqc.normalise_structs(record, schema)
+        self.assertEqual(returned, record)
+
     def test_normalise_structs_does_not_change_original(self):
         schema = {
             "address": pl.Struct(
@@ -419,6 +437,23 @@ class NormaliseStructsTests(CqcApiTests):
 
         _ = cqc.normalise_structs(record, schema)
         self.assertEqual(record, original_copy)
+
+    def test_normalise_structs_does_not_change_original_data_type_to_match_schema(self):
+        schema = {
+            "struct_col": pl.Struct(
+                [
+                    pl.Field("number", pl.Int32),
+                    pl.Field("string_date", pl.Utf8),
+                ]
+            ),
+        }
+
+        record = {
+            "struct_col": {"number": "123", "string_date": "2025-01-01"},
+        }
+
+        returned = cqc.normalise_structs(record, schema)
+        self.assertEqual(returned, record)
 
 
 class PrimedGeneratorTests(CqcApiTests):
