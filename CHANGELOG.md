@@ -60,6 +60,8 @@ All notable changes to this project will be documented in this file.
 
 - Created Polars jobs to prepare care home and non residential features.
 
+- Added NHS Capacity Tracker filter to remove repeated submissions at location level after a set length of time.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw

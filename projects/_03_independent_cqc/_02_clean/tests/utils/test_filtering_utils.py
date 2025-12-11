@@ -113,3 +113,26 @@ class UpdateFilteringRuleTests(CleanFilteringUtilsTests):
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
+
+
+class AggregateValuesToProviderLevel(CleanFilteringUtilsTests):
+    def setUp(self):
+        super().setUp()
+
+    def test_aggregate_values_to_provider_level_returns_expected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.aggregate_values_to_provider_level_rows,
+            Schemas.aggregate_values_to_provider_level_schema,
+        )
+        returned_df = job.aggregate_values_to_provider_level(
+            test_df, IndCQC.ct_care_home_total_employed_cleaned
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_aggregate_values_to_provider_level_rows,
+            Schemas.expected_aggregate_values_to_provider_level_schema,
+        )
+
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.sort(IndCQC.location_id).collect()
+
+        self.assertEqual(returned_data, expected_data)

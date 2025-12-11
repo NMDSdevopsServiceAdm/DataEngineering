@@ -18,6 +18,7 @@ from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     CareHome,
     CTCareHomeFilteringRule,
+    CTNonResFilteringRule,
     Dormancy,
     EstimateFilledPostsSource,
     JobGroupLabels,
@@ -3393,25 +3394,24 @@ class CleanIndCQCData:
     )
 
     repeated_value_rows = [
-        ("1", 1, date(2023, 2, 1)),
-        ("1", 2, date(2023, 3, 1)),
-        ("1", 2, date(2023, 4, 1)),
-        ("1", 3, date(2023, 8, 1)),
-        ("2", 3, date(2023, 2, 1)),
-        ("2", 9, date(2023, 4, 1)),
-        ("2", 3, date(2024, 1, 1)),
-        ("2", 3, date(2024, 2, 1)),
+        ("1", "1-0001", 1, date(2023, 2, 1)),
+        ("1", "1-0001", 2, date(2023, 3, 1)),
+        ("1", "1-0001", 2, date(2023, 4, 1)),
+        ("1", "1-0001", 3, date(2023, 8, 1)),
+        ("2", "1-0002", 3, date(2023, 2, 1)),
+        ("2", "1-0002", 9, date(2023, 4, 1)),
+        ("2", "1-0002", 3, date(2024, 1, 1)),
+        ("2", "1-0002", 3, date(2024, 2, 1)),
     ]
-
     expected_without_repeated_values_rows = [
-        ("1", 1, date(2023, 2, 1), 1),
-        ("1", 2, date(2023, 3, 1), 2),
-        ("1", 2, date(2023, 4, 1), None),
-        ("1", 3, date(2023, 8, 1), 3),
-        ("2", 3, date(2023, 2, 1), 3),
-        ("2", 9, date(2023, 4, 1), 9),
-        ("2", 3, date(2024, 1, 1), 3),
-        ("2", 3, date(2024, 2, 1), None),
+        ("1", "1-0001", 1, date(2023, 2, 1), 1),
+        ("1", "1-0001", 2, date(2023, 3, 1), 2),
+        ("1", "1-0001", 2, date(2023, 4, 1), None),
+        ("1", "1-0001", 3, date(2023, 8, 1), 3),
+        ("2", "1-0002", 3, date(2023, 2, 1), 3),
+        ("2", "1-0002", 9, date(2023, 4, 1), 9),
+        ("2", "1-0002", 3, date(2024, 1, 1), 3),
+        ("2", "1-0002", 3, date(2024, 2, 1), None),
     ]
 
 
@@ -3601,6 +3601,27 @@ class CleanFilteringUtilsData:
         ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
     ]
     # fmt: on
+
+    aggregate_values_to_provider_level_rows = [
+        ("1-001", "1-0001", 1, date(2025, 1, 1)),
+        ("1-002", "1-0001", 1, date(2025, 1, 1)),
+        ("1-003", "1-0002", 1, date(2025, 1, 1)),
+        ("1-004", "1-0002", None, date(2025, 1, 1)),
+        ("1-005", "1-0003", None, date(2025, 1, 1)),
+        ("1-006", "1-0003", None, date(2025, 1, 1)),
+        ("1-001", "1-0001", 2, date(2025, 2, 1)),
+        ("1-002", "1-0001", 2, date(2025, 2, 1)),
+    ]
+    expected_aggregate_values_to_provider_level_rows = [
+        ("1-001", "1-0001", 1, date(2025, 1, 1), 2),
+        ("1-002", "1-0001", 1, date(2025, 1, 1), 2),
+        ("1-003", "1-0002", 1, date(2025, 1, 1), 1),
+        ("1-004", "1-0002", None, date(2025, 1, 1), 1),
+        ("1-005", "1-0003", None, date(2025, 1, 1), None),
+        ("1-006", "1-0003", None, date(2025, 1, 1), None),
+        ("1-001", "1-0001", 2, date(2025, 2, 1), 4),
+        ("1-002", "1-0001", 2, date(2025, 2, 1), 4),
+    ]
 
 
 @dataclass
@@ -5911,3 +5932,118 @@ class IndCQCDataUtils:
         ("loc 1", 2, 2.0, 50.0, 50.0),
         ("loc 1", 3, None, 25.0, 50.0),
     ]
+
+
+@dataclass
+class CleanCtRepetition:
+    expected_dict_non_residential_locations = {
+        0: 250,
+        10: 125,
+        50: 65,
+    }
+    expected_dict_care_home_locations = {
+        0: 370,
+        10: 155,
+        50: 125,
+        250: 65,
+    }
+
+    # fmt: off
+    clean_ct_values_after_consecutive_repetition_rows = [
+        ("1-001", date(2025, 1, 1), 1, CTNonResFilteringRule.populated),
+        ("1-001", date(2025, 2, 1), 2, CTNonResFilteringRule.populated),
+        ("1-001", date(2025, 3, 1), 2, CTNonResFilteringRule.populated), # Repeated value within repetition limit.
+        ("1-001", date(2025, 4, 1), None, CTNonResFilteringRule.missing_data), # Missing raw data. Could be missing from not being submitted or removed by us for being a spike.
+        ("1-001", date(2025, 11, 7), 2, CTNonResFilteringRule.populated), # 251 days after repeated value's first import date.
+        ("1-001", date(2025, 12, 1), 3, CTNonResFilteringRule.populated),
+        ("1-001", date(2026, 1, 1), 4, "some_other_rule"),
+    ]
+    expected_clean_ct_values_after_consecutive_repetition_rows = [
+        ("1-001", date(2025, 1, 1), 1, CTNonResFilteringRule.populated),
+        ("1-001", date(2025, 2, 1), 2, CTNonResFilteringRule.populated),
+        ("1-001", date(2025, 3, 1), 2, CTNonResFilteringRule.populated),
+        ("1-001", date(2025, 4, 1), None, CTNonResFilteringRule.missing_data),
+        ("1-001", date(2025, 11, 7), None, CTNonResFilteringRule.location_repeats_total_posts), # This row had it's repeated value nulled.
+        ("1-001", date(2025, 12, 1), 3, CTNonResFilteringRule.populated),
+        ("1-001", date(2026, 1, 1), None, "some_other_rule"), # This row had it's value nulled because the filtering rule is not "populated".
+    ]
+    # fmt: on
+
+    calculate_days_a_value_has_been_repeated_rows = [
+        ("1-001", 1, date(2025, 1, 1)),
+        ("1-001", 2, date(2025, 2, 1)),
+        ("1-001", 3, date(2025, 3, 1)),
+        ("1-001", None, date(2025, 4, 1)),
+        ("1-001", None, date(2025, 5, 1)),
+        ("1-001", 4, date(2025, 6, 1)),
+    ]
+    expected_calculate_days_a_value_has_been_repeated_rows = [
+        ("1-001", 1, date(2025, 1, 1), 0),
+        ("1-001", 2, date(2025, 2, 1), 0),
+        ("1-001", 3, date(2025, 3, 1), 0),
+        ("1-001", None, date(2025, 4, 1), 31),
+        ("1-001", None, date(2025, 5, 1), 61),
+        ("1-001", 4, date(2025, 6, 1), 0),
+    ]
+
+    # fmt: off
+    test_repetition_limit_dict = {
+        0: 250,
+        10: 125,
+        50: 65,
+        250: 35,
+    }
+    clean_value_repetition_when_location_is_micro_rows = [
+        ("1-001", 1, 250),
+        ("1-001", 9, 251),
+    ]
+    expected_clean_value_repetition_when_location_is_micro_rows = [
+        ("1-001", 1, 250, 1),
+        ("1-001", 9, 251, None),
+    ]
+    clean_value_repetition_when_location_is_small_rows = [
+        ("1-002", 10, 125),
+        ("1-002", 49, 126),
+    ]
+    expected_clean_value_repetition_when_location_is_small_rows = [
+        ("1-002", 10, 125, 10),
+        ("1-002", 49, 126, None),
+    ]
+    clean_value_repetition_when_location_is_medium_rows = [
+        ("1-003", 50, 65),
+        ("1-003", 51, 66),
+    ]
+    expected_clean_value_repetition_when_location_is_medium_rows = [
+        ("1-003", 50, 65, 50),
+        ("1-003", 51, 66, None),
+    ]
+    clean_value_repetition_when_location_is_large_rows = [
+        ("1-003", 250, 35),
+        ("1-003", 251, 36),
+    ]
+    expected_clean_value_repetition_when_location_is_large_rows = [
+        ("1-003", 250, 35, 250),
+        ("1-003", 251, 36, None),
+    ]
+
+    original_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2026, 1, 7), 1),  # Repeated value after 371 days.
+        ("1-001", date(2026, 2, 1), 2),  # New value submitted.
+        ("1-002", date(2026, 2, 1), 1),  # Different location with a value.
+        ("1-003", date(2026, 2, 1), None),  # Different location with a null.
+    ]
+    populated_only_rows = [
+        ("1-001", date(2025, 1, 1), 1, "something_else"),
+        ("1-001", date(2026, 1, 7), None, "something_else"),
+        ("1-001", date(2026, 2, 1), 2, "something_else"),
+        ("1-002", date(2026, 2, 1), 1, "something_else"),
+    ]
+    expected_populated_only_joined_with_original_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2026, 1, 7), None),  # Repeated value after 371 days has been nulled.
+        ("1-001", date(2026, 2, 1), 2),  # New value submitted has been kept.
+        ("1-002", date(2026, 2, 1), 1),  # Different location with a value has been kept.
+        ("1-003", date(2026, 2, 1), None),  # Different location with a null is still null.
+    ]
+    # fmt: on
