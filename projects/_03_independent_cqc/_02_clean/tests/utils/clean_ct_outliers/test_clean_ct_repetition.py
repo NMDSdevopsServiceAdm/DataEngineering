@@ -78,25 +78,13 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
     def test_dict_of_minimum_posts_and_max_repetition_days_values_are_correct(
         self,
     ):
-        expected_dict_non_residential_locations = {
-            0: 250,
-            10: 125,
-            50: 65,
-        }
-        expected_dict_care_home_locations = {
-            0: 370,
-            10: 155,
-            50: 125,
-            250: 65,
-        }
-
         self.assertEqual(
             job.DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_NON_RES,
-            expected_dict_non_residential_locations,
+            Data.expected_dict_non_residential_locations,
         )
         self.assertEqual(
             job.DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_CARE_HOMES,
-            expected_dict_care_home_locations,
+            Data.expected_dict_care_home_locations,
         )
 
 
@@ -138,17 +126,58 @@ class CleanValueRepetition(CleanCTRepetitionTests):
         super().setUp()
 
         test_repetition_limit_dict = Data.test_repetition_limit_dict
-        self.test_df = self.spark.createDataFrame(
-            Data.clean_value_repetition_rows,
+        self.test_micro_locations_df = self.spark.createDataFrame(
+            Data.clean_value_repetition_when_location_is_micro_rows,
             Schemas.clean_value_repetition_schema,
         )
-        self.returned_df = job.clean_value_repetition(
-            df=self.test_df,
+        self.test_small_locations_df = self.spark.createDataFrame(
+            Data.clean_value_repetition_when_location_is_small_rows,
+            Schemas.clean_value_repetition_schema,
+        )
+        self.test_medium_locations_df = self.spark.createDataFrame(
+            Data.clean_value_repetition_when_location_is_medium_rows,
+            Schemas.clean_value_repetition_schema,
+        )
+        self.test_large_locations_df = self.spark.createDataFrame(
+            Data.clean_value_repetition_when_location_is_large_rows,
+            Schemas.clean_value_repetition_schema,
+        )
+
+        self.returned_micro_locations_df = job.clean_value_repetition(
+            df=self.test_micro_locations_df,
             column_to_clean=IndCQC.ct_non_res_care_workers_employed,
             repetition_limit_dict=test_repetition_limit_dict,
         )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_clean_value_repetition_rows,
+        self.returned_small_locations_df = job.clean_value_repetition(
+            df=self.test_small_locations_df,
+            column_to_clean=IndCQC.ct_non_res_care_workers_employed,
+            repetition_limit_dict=test_repetition_limit_dict,
+        )
+        self.returned_medium_locations_df = job.clean_value_repetition(
+            df=self.test_medium_locations_df,
+            column_to_clean=IndCQC.ct_non_res_care_workers_employed,
+            repetition_limit_dict=test_repetition_limit_dict,
+        )
+        self.returned_large_locations_df = job.clean_value_repetition(
+            df=self.test_large_locations_df,
+            column_to_clean=IndCQC.ct_non_res_care_workers_employed,
+            repetition_limit_dict=test_repetition_limit_dict,
+        )
+
+        self.expected_micro_locations_df = self.spark.createDataFrame(
+            Data.expected_clean_value_repetition_when_location_is_micro_rows,
+            Schemas.expected_clean_value_repetition_schema,
+        )
+        self.expected_small_locations_df = self.spark.createDataFrame(
+            Data.expected_clean_value_repetition_when_location_is_small_rows,
+            Schemas.expected_clean_value_repetition_schema,
+        )
+        self.expected_medium_locations_df = self.spark.createDataFrame(
+            Data.expected_clean_value_repetition_when_location_is_medium_rows,
+            Schemas.expected_clean_value_repetition_schema,
+        )
+        self.expected_large_locations_df = self.spark.createDataFrame(
+            Data.expected_clean_value_repetition_when_location_is_large_rows,
             Schemas.expected_clean_value_repetition_schema,
         )
 
@@ -156,17 +185,43 @@ class CleanValueRepetition(CleanCTRepetitionTests):
         self,
     ):
         new_cols = [
-            col for col in self.returned_df.columns if col not in self.test_df.columns
+            col
+            for col in self.returned_micro_locations_df.columns
+            if col not in self.test_micro_locations_df.columns
         ]
         self.assertEqual(len(new_cols), 1)
         self.assertEqual(new_cols[0], "repeated_values_nulled")
 
-    def test_clean_value_repetition_nulls_values_when_repetition_days_above_limit(
+    def test_clean_value_repetition_nulls_values_when_repetition_days_above_limit_at_micro_locations(
         self,
     ):
         self.assertEqual(
-            self.returned_df.collect(),
-            self.expected_df.collect(),
+            self.returned_micro_locations_df.collect(),
+            self.expected_micro_locations_df.collect(),
+        )
+
+    def test_clean_value_repetition_nulls_values_when_repetition_days_above_limit_at_small_locations(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_small_locations_df.collect(),
+            self.expected_small_locations_df.collect(),
+        )
+
+    def test_clean_value_repetition_nulls_values_when_repetition_days_above_limit_at_medium_locations(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_medium_locations_df.collect(),
+            self.expected_medium_locations_df.collect(),
+        )
+
+    def test_clean_value_repetition_nulls_values_when_repetition_days_above_limit_at_large_locations(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_large_locations_df.collect(),
+            self.expected_large_locations_df.collect(),
         )
 
 

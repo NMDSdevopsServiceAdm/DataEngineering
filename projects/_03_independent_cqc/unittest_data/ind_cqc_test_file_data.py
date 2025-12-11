@@ -5936,6 +5936,18 @@ class IndCQCDataUtils:
 
 @dataclass
 class CleanCtRepetition:
+    expected_dict_non_residential_locations = {
+        0: 250,
+        10: 125,
+        50: 65,
+    }
+    expected_dict_care_home_locations = {
+        0: 370,
+        10: 155,
+        50: 125,
+        250: 65,
+    }
+
     # fmt: off
     clean_ct_values_after_consecutive_repetition_rows = [
         ("1-001", date(2025, 1, 1), 1, CTNonResFilteringRule.populated),
@@ -5979,22 +5991,39 @@ class CleanCtRepetition:
         0: 250,
         10: 125,
         50: 65,
+        250: 35,
     }
-    clean_value_repetition_rows = [
+    clean_value_repetition_when_location_is_micro_rows = [
         ("1-001", 1, 250),
         ("1-001", 9, 251),
+    ]
+    expected_clean_value_repetition_when_location_is_micro_rows = [
+        ("1-001", 1, 250, 1),
+        ("1-001", 9, 251, None),
+    ]
+    clean_value_repetition_when_location_is_small_rows = [
         ("1-002", 10, 125),
         ("1-002", 49, 126),
+    ]
+    expected_clean_value_repetition_when_location_is_small_rows = [
+        ("1-002", 10, 125, 10),
+        ("1-002", 49, 126, None),
+    ]
+    clean_value_repetition_when_location_is_medium_rows = [
         ("1-003", 50, 65),
         ("1-003", 51, 66),
     ]
-    expected_clean_value_repetition_rows = [
-        ("1-001", 1, 250, 1), # micro location, witin limit, value kept
-        ("1-001", 9, 251, None), # micro location, outside limit, value nulled
-        ("1-002", 10, 125, 10), # small location, witin limit, value kept
-        ("1-002", 49, 126, None), # small location, outside limit, value nulled
-        ("1-003", 50, 65, 50), # medium location, witin limit, value kept
-        ("1-003", 51, 66, None), # medium location, outside limit, value nulled
+    expected_clean_value_repetition_when_location_is_medium_rows = [
+        ("1-003", 50, 65, 50),
+        ("1-003", 51, 66, None),
+    ]
+    clean_value_repetition_when_location_is_large_rows = [
+        ("1-003", 250, 35),
+        ("1-003", 251, 36),
+    ]
+    expected_clean_value_repetition_when_location_is_large_rows = [
+        ("1-003", 250, 35, 250),
+        ("1-003", 251, 36, None),
     ]
 
     original_rows = [

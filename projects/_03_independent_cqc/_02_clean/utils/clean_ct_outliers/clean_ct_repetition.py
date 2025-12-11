@@ -72,31 +72,37 @@ def clean_ct_values_after_consecutive_repetition(
     df_populated_only = df.filter(F.col(filter_rule_column_name) == populated_rule)
 
     df_populated_only = create_column_with_repeated_values_removed(
-        df_populated_only,
-        column_to_clean,
-        f"{column_to_clean}_deduplicated",
-        partitioning_column,
+        df=df_populated_only,
+        column_to_clean=column_to_clean,
+        new_column_name=f"{column_to_clean}_deduplicated",
+        column_to_partition_by=partitioning_column,
     )
 
     df_populated_only = calculate_days_a_value_has_been_repeated(
-        df_populated_only, f"{column_to_clean}_deduplicated", IndCQC.location_id
+        df=df_populated_only,
+        deduplicated_values_column=f"{column_to_clean}_deduplicated",
+        partitioning_column=IndCQC.location_id,
     )
 
     df_populated_only = clean_value_repetition(
-        df_populated_only, column_to_clean, repetition_limit_dict
+        df=df_populated_only,
+        column_to_clean=column_to_clean,
+        repetition_limit_dict=repetition_limit_dict,
     )
 
     df_cleaned = join_cleaned_ct_values_into_original_df(
-        df, df_populated_only, cleaned_column_name
+        original_df=df,
+        populated_only_df=df_populated_only,
+        cleaned_column_name=cleaned_column_name,
     )
 
     df_cleaned = update_filtering_rule(
-        df_cleaned,
-        filter_rule_column_name,
-        column_to_clean,
-        cleaned_column_name,
-        populated_rule,
-        new_rule_name,
+        df=df_cleaned,
+        filter_rule_col_name=filter_rule_column_name,
+        raw_col_name=column_to_clean,
+        clean_col_name=cleaned_column_name,
+        populated_rule=populated_rule,
+        winsorized_rule=new_rule_name,
     )
 
     return df_cleaned
@@ -124,12 +130,16 @@ def calculate_days_a_value_has_been_repeated(
         .orderBy(IndCQC.cqc_location_import_date)
         .rowsBetween(Window.unboundedPreceding, Window.currentRow)
     )
+
+    date_when_repeated_value_was_first_submitted = (
+        "date_when_repeated_value_was_first_submitted"
+    )
     df = utils.get_selected_value(
         df,
         window_spec_backwards,
         deduplicated_values_column,
         IndCQC.cqc_location_import_date,
-        "date_when_repeated_value_was_first_submitted",
+        date_when_repeated_value_was_first_submitted,
         "last",
     )
 
@@ -137,11 +147,11 @@ def calculate_days_a_value_has_been_repeated(
         "days_value_has_been_repeated",
         F.date_diff(
             IndCQC.cqc_location_import_date,
-            "date_when_repeated_value_was_first_submitted",
+            date_when_repeated_value_was_first_submitted,
         ),
     )
 
-    return df.drop("date_when_repeated_value_was_first_submitted")
+    return df.drop(date_when_repeated_value_was_first_submitted)
 
 
 def clean_value_repetition(
