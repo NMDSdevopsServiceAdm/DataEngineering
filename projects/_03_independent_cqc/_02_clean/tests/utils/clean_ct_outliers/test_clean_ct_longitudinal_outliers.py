@@ -11,12 +11,12 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class TestCleanCtOutliers(unittest.TestCase):
+class TestCleanCtLongitudinalOutliers(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
 
-class TestRemoveCTValueOutliers(TestCleanCtOutliers):
+class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
     def setUp(self) -> None:
         super().setUp()
 
@@ -96,7 +96,7 @@ class TestRemoveCTValueOutliers(TestCleanCtOutliers):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class TestComputeMedian(TestCleanCtOutliers):
+class TestComputeMedian(TestCleanCtLongitudinalOutliers):
     def test_compute_group_median(
         self,
     ):
@@ -118,7 +118,7 @@ class TestComputeMedian(TestCleanCtOutliers):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class TestComputeAbsDeviation(TestCleanCtOutliers):
+class TestComputeAbsDeviation(TestCleanCtLongitudinalOutliers):
     def test_compute_absolute_deviation(
         self,
     ):
@@ -139,7 +139,7 @@ class TestComputeAbsDeviation(TestCleanCtOutliers):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class TestComputeMad(TestCleanCtOutliers):
+class TestComputeMad(TestCleanCtLongitudinalOutliers):
     def test_compute_mad(
         self,
     ):
@@ -158,7 +158,7 @@ class TestComputeMad(TestCleanCtOutliers):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class TestComputeOutlierCutoff(TestCleanCtOutliers):
+class TestComputeOutlierCutoff(TestCleanCtLongitudinalOutliers):
     def test_compute_outlier_cutoff(
         self,
     ):
@@ -177,7 +177,7 @@ class TestComputeOutlierCutoff(TestCleanCtOutliers):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class TestFlagOutliers(TestCleanCtOutliers):
+class TestFlagOutliers(TestCleanCtLongitudinalOutliers):
     def test_flag_outliers(
         self,
     ):
@@ -196,7 +196,7 @@ class TestFlagOutliers(TestCleanCtOutliers):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class TestApplyCleaning(TestCleanCtOutliers):
+class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
     def test_apply_outlier_cleaning_remove_value_only(
         self,
     ):
