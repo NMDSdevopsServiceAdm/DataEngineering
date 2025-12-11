@@ -60,6 +60,8 @@ All notable changes to this project will be documented in this file.
 
 - Created Polars jobs to prepare care home and non residential features.
 
+- A new function to remove random spikes from CT data. The function flags the outliers based on median absolute deviation (MAD) and removes the outlier record entirely or the ourlier value. 
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
