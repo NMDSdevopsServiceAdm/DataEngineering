@@ -3206,7 +3206,11 @@ class OutlierCleaningSchemas:
                 IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
             StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
-            StructField("median_val", DoubleType(), True),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_median_val",
+                DoubleType(),
+                True,
+            ),
         ]
     )
 
@@ -3217,8 +3221,16 @@ class OutlierCleaningSchemas:
                 IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
             StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
-            StructField("median_val", IntegerType(), True),
-            StructField("abs_diff", IntegerType(), True),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_median_val",
+                IntegerType(),
+                True,
+            ),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_abs_diff",
+                IntegerType(),
+                True,
+            ),
         ]
     )
 
@@ -3229,9 +3241,24 @@ class OutlierCleaningSchemas:
                 IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
             StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
-            StructField("median_val", IntegerType(), True),
-            StructField("abs_diff", IntegerType(), True),
-            StructField("mad", IntegerType(), True),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_median_val",
+                IntegerType(),
+                True,
+            ),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_abs_diff",
+                IntegerType(),
+                True,
+            ),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_mad", IntegerType(), True
+            ),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_mad_abs_diff",
+                IntegerType(),
+                True,
+            ),
         ]
     )
 
@@ -3242,10 +3269,29 @@ class OutlierCleaningSchemas:
                 IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
             StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
-            StructField("median_val", IntegerType(), True),
-            StructField("abs_diff", IntegerType(), True),
-            StructField("mad", IntegerType(), True),
-            StructField("abs_diff_cutoff", IntegerType(), True),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_median_val",
+                IntegerType(),
+                True,
+            ),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_abs_diff",
+                IntegerType(),
+                True,
+            ),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_mad", IntegerType(), True
+            ),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_mad_abs_diff",
+                IntegerType(),
+                True,
+            ),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_abs_diff_cutoff",
+                IntegerType(),
+                True,
+            ),
         ]
     )
 
@@ -3256,11 +3302,34 @@ class OutlierCleaningSchemas:
                 IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
             StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
-            StructField("median_val", IntegerType(), True),
-            StructField("abs_diff", IntegerType(), True),
-            StructField("mad", IntegerType(), True),
-            StructField("abs_diff_cutoff", IntegerType(), True),
-            StructField("outlier_flag", BooleanType(), True),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_median_val",
+                IntegerType(),
+                True,
+            ),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_abs_diff",
+                IntegerType(),
+                True,
+            ),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_mad", IntegerType(), True
+            ),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_mad_abs_diff",
+                IntegerType(),
+                True,
+            ),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_abs_diff_cutoff",
+                IntegerType(),
+                True,
+            ),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_outlier_flag",
+                BooleanType(),
+                True,
+            ),
         ]
     )
 
@@ -3270,7 +3339,16 @@ class OutlierCleaningSchemas:
             StructField(
                 IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
-            StructField("outlier_flag", BooleanType(), True),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_outlier_flag",
+                BooleanType(),
+                True,
+            ),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_has_95th",
+                BooleanType(),
+                True,
+            ),
         ]
     )
 
@@ -3280,6 +3358,10 @@ class OutlierCleaningSchemas:
             StructField(
                 IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
-            StructField("outlier_flag", BooleanType(), True),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_outlier_flag",
+                BooleanType(),
+                True,
+            ),
         ]
     )

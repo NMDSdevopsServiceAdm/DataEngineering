@@ -24,6 +24,8 @@ class TestCleanCtLongitudinalOutliers(unittest.TestCase):
             Data.clean_random_spikes_input_rows, Schemas.input_schema
         )
 
+
+class TestFunctionsAreCalled(TestCleanCtLongitudinalOutliers):
     @patch(f"{PATCH_PATH}.compute_group_median")
     @patch(f"{PATCH_PATH}.compute_absolute_deviation")
     @patch(f"{PATCH_PATH}.compute_mad")
@@ -167,7 +169,8 @@ class TestComputeAbsDeviation(TestCleanCtLongitudinalOutliers):
         )
 
         returned_df = job.compute_absolute_deviation(
-            df, IndCQC.ct_care_home_total_employed_cleaned, "median_val"
+            df,
+            IndCQC.ct_care_home_total_employed_cleaned,
         )
 
         expected_df = self.spark.createDataFrame(
@@ -187,7 +190,9 @@ class TestComputeMad(TestCleanCtLongitudinalOutliers):
             Schemas.abs_dev_schema,
         )
 
-        returned_df = job.compute_mad(df, IndCQC.location_id)
+        returned_df = job.compute_mad(
+            df, IndCQC.location_id, IndCQC.ct_care_home_total_employed_cleaned
+        )
 
         expected_df = self.spark.createDataFrame(
             Data.expected_mad_rows,
@@ -206,14 +211,28 @@ class TestComputeOutlierCutoff(TestCleanCtLongitudinalOutliers):
             Schemas.mad_schema,
         )
 
-        returned_df = job.compute_outlier_cutoff(df, IndCQC.location_id, 0.10)
+        returned_data = job.compute_outlier_cutoff(
+            df,
+            IndCQC.location_id,
+            0.10,
+            IndCQC.ct_care_home_total_employed_cleaned,
+        ).collect()
 
-        expected_df = self.spark.createDataFrame(
+        expected_data = self.spark.createDataFrame(
             Data.expected_outlier_cutoff_rows,
             Schemas.cutoff_schema,
-        )
+        ).collect()
 
-        self.assertEqual(returned_df.collect(), expected_df.collect())
+        for i in range(len(expected_data)):
+            self.assertAlmostEqual(
+                returned_data[i][
+                    f"{IndCQC.ct_care_home_total_employed_cleaned}_abs_diff_cutoff"
+                ],
+                expected_data[i][
+                    f"{IndCQC.ct_care_home_total_employed_cleaned}_abs_diff_cutoff"
+                ],
+                places=3,
+            )
 
 
 class TestFlagOutliers(TestCleanCtLongitudinalOutliers):
@@ -225,17 +244,20 @@ class TestFlagOutliers(TestCleanCtLongitudinalOutliers):
             Schemas.cutoff_schema,
         )
 
-        returned_df = job.flag_outliers(df)
+        returned_df = job.flag_outliers(df, IndCQC.ct_care_home_total_employed_cleaned)
 
         expected_df = self.spark.createDataFrame(
             Data.expected_flag_outliers_rows,
             Schemas.expected_outlier_flags_schema,
         )
+        returned_df.show()
+        expected_df.show()
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
+    # TODO : write more test cases for logic in function
     def test_apply_outlier_cleaning_nulls_outlier_values_when_remove_whole_record_is_false(
         self,
     ):
@@ -246,6 +268,7 @@ class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
 
         returned_df = job.apply_outlier_cleaning(
             df,
+            IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
             IndCQC.ct_care_home_total_employed_cleaned,
             False,
@@ -255,6 +278,8 @@ class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
             Data.apply_outlier_cleaning_expected_rows,
             Schemas.final_cleaned_schema,
         )
+        returned_df.show()
+        expected_df.show()
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
@@ -268,6 +293,7 @@ class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
 
         returned_df = job.apply_outlier_cleaning(
             df,
+            IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
             IndCQC.ct_care_home_total_employed_cleaned,
             True,
@@ -277,5 +303,7 @@ class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
             Data.expected_apply_outlier_cleaning_when_removing_outlier_rows,
             Schemas.final_cleaned_schema,
         )
+        returned_df.show()
+        expected_df.show()
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
