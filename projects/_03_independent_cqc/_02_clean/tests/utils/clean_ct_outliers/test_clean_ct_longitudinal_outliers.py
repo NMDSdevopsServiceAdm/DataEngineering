@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_longitudinal_outliers as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
@@ -10,10 +11,45 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
+PATCH_PATH: str = (
+    "projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_longitudinal_outliers"
+)
+
 
 class TestCleanCtLongitudinalOutliers(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
+
+        test_df = self.spark.createDataFrame(
+            Data.clean_random_spikes_input_rows, Schemas.input_schema
+        )
+
+    @patch(f"{PATCH_PATH}.compute_group_median")
+    @patch(f"{PATCH_PATH}.compute_absolute_deviation")
+    @patch(f"{PATCH_PATH}.compute_mad")
+    @patch(f"{PATCH_PATH}.compute_outlier_cutoff")
+    @patch(f"{PATCH_PATH}.flag_outliers")
+    @patch(f"{PATCH_PATH}.apply_outlier_cleaning")
+    @patch(f"{PATCH_PATH}.update_filtering_rule")
+    def test_functions_are_called(
+        self,
+        update_filtering_rule_mock: Mock,
+        apply_outlier_cleaning_mock: Mock,
+        flag_outliers_mock: Mock,
+        compute_outlier_cutoff_mock: Mock,
+        compute_mad_mock: Mock,
+        compute_absolute_deviation_mock: Mock,
+        compute_group_median_mock: Mock,
+    ):
+        job.clean_longitudinal_outliers(self.test_df)
+
+        compute_group_median_mock.assert_called_once()
+        compute_absolute_deviation_mock.assert_called_once()
+        compute_mad_mock.assert_called_once()
+        compute_outlier_cutoff_mock.assert_called_once()
+        flag_outliers_mock.assert_called_once()
+        apply_outlier_cleaning_mock.assert_called_once()
+        update_filtering_rule_mock.assert_called_once()
 
 
 class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
