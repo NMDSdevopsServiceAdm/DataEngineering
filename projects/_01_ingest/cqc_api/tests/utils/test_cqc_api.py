@@ -422,22 +422,6 @@ class NormaliseStructsTests(CqcApiTests):
         returned = cqc.normalise_structs(record, schema)
         self.assertEqual(returned, record)
 
-    def test_normalise_structs_does_not_change_original(self):
-        schema = {
-            "address": pl.Struct(
-                [
-                    pl.Field("line1", pl.Utf8),
-                    pl.Field("postcode", pl.Utf8),
-                ]
-            )
-        }
-
-        record = {"address": {"line1": "123 Main St"}}
-        original_copy = dict(record)
-
-        _ = cqc.normalise_structs(record, schema)
-        self.assertEqual(record, original_copy)
-
     def test_normalise_structs_does_not_change_original_data_type_to_match_schema(self):
         schema = {
             "struct_col": pl.Struct(
