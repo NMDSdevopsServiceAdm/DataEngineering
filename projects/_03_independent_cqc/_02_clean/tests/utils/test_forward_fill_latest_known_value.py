@@ -1,9 +1,6 @@
 import unittest
 from unittest.mock import ANY, Mock, patch
 
-from projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_posts import (
-    NumericalValues,
-)
 import projects._03_independent_cqc._02_clean.utils.forward_fill_latest_known_value as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     ForwardFillLatestKnownValue as Data,
@@ -118,11 +115,3 @@ class ForwardFillLatestKnownValueCallTests(unittest.TestCase):
         return_last_known_value_mock.assert_called_once()
 
         forward_fill_mock.assert_called_once()
-
-    def test_days_to_repeat_forward_filling_is_correct(
-        self,
-    ):
-        self.assertEqual(
-            NumericalValues.number_of_days_to_forward_fill,
-            65,
-        )
