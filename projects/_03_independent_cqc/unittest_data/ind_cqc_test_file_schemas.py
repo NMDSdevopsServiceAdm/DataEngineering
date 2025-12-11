@@ -3188,7 +3188,7 @@ class IndCQCDataUtils:
 
 @dataclass
 class ForwardFillLatestKnownValue:
-    Input_return_last_known_value_locations_schema = StructType(
+    input_return_last_known_value_locations_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
