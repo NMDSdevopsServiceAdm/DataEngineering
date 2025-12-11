@@ -149,6 +149,16 @@ class FeaturesEngineeringUtilsSchemas:
 
 
 @dataclass
+class ModelTrainingUtilsSchemas:
+    split_train_test_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts, pl.Float32()),
+        ]
+    )
+
+
+@dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsSchemas:
     estimates_df_before_join_schema = pl.Schema(
         [
