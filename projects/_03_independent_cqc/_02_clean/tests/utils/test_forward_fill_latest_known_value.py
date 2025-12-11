@@ -38,7 +38,7 @@ class ReturnLastKnownValueTests(unittest.TestCase):
     ):
         test_df = self.spark.createDataFrame(
             data=Data.last_known_ignores_null_rows,
-            schema=Schemas.Input_return_last_known_value_locations_schema,
+            schema=Schemas.input_return_last_known_value_locations_schema,
         )
         expected_df = self.spark.createDataFrame(
             data=Data.expected_last_known_ignores_null_rows,
