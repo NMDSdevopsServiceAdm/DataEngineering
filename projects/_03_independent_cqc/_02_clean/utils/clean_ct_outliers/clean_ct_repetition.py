@@ -102,7 +102,7 @@ def clean_ct_values_after_consecutive_repetition(
         raw_col_name=column_to_clean,
         clean_col_name=cleaned_column_name,
         populated_rule=populated_rule,
-        winsorized_rule=new_rule_name,
+        new_rule_name=new_rule_name,
     )
 
     return df_cleaned
