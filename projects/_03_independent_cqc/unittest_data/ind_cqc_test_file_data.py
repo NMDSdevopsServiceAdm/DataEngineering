@@ -5995,6 +5995,51 @@ class OutlierCleaningData:
         ("1-001", 30, CTCareHomeFilteringRule.populated, 25, 5, 10, 20, 57),
         ("1-001", 100, CTCareHomeFilteringRule.populated, 25, 75, 10, 90, 57),
     ]
+    compute_large_location_cutoff_rows = [
+        ("1-001", 5),  # location 1 range 5-95
+        ("1-001", 15),
+        ("1-001", 25),
+        ("1-001", 35),
+        ("1-001", 45),
+        ("1-001", 55),
+        ("1-001", 65),
+        ("1-001", 75),
+        ("1-001", 85),
+        ("1-001", 95),
+        ("1-002", 10),  # location 2 range 10-100
+        ("1-002", 20),
+        ("1-002", 30),
+        ("1-002", 40),
+        ("1-002", 50),
+        ("1-002", 60),
+        ("1-002", 70),
+        ("1-002", 80),
+        ("1-002", 90),
+        ("1-002", 100),
+    ]
+    expected_compute_large_location_cutoff = 95.0
+    expected_flag_large_location_rows = [
+        ("1-001", 5, False),  # location 1 range 5-95
+        ("1-001", 15, False),
+        ("1-001", 25, False),
+        ("1-001", 35, False),
+        ("1-001", 45, False),
+        ("1-001", 55, False),
+        ("1-001", 65, False),
+        ("1-001", 75, False),
+        ("1-001", 85, False),
+        ("1-001", 95, False),
+        ("1-002", 10, True),  # location 2 range 10-100
+        ("1-002", 20, True),
+        ("1-002", 30, True),
+        ("1-002", 40, True),
+        ("1-002", 50, True),
+        ("1-002", 60, True),
+        ("1-002", 70, True),
+        ("1-002", 80, True),
+        ("1-002", 90, True),
+        ("1-002", 100, True),
+    ]
 
     flag_outliers_rows = expected_outlier_cutoff_rows
 

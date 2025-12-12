@@ -235,6 +235,27 @@ class TestComputeOutlierCutoff(TestCleanCtLongitudinalOutliers):
             )
 
 
+class TestComputeLargeLocaitonCutoff(TestCleanCtLongitudinalOutliers):
+    def test_compute_large_location_cutoff_returns_expected_values(
+        self,
+    ):
+        df = self.spark.createDataFrame(
+            Data.compute_large_location_cutoff_rows,
+            Schemas.compute_large_location_cutoff_schema,
+        )
+        df.show()
+
+        returned_float = job.compute_large_location_cutoff(
+            df,
+            0.95,  # 95th percentile
+            IndCQC.ct_care_home_total_employed_cleaned,
+        )
+
+        expected_float = Data.expected_compute_large_location_cutoff
+
+        self.assertEqual(returned_float, expected_float)
+
+
 class TestFlagOutliers(TestCleanCtLongitudinalOutliers):
     def test_flag_outliers_returns_expected_values(
         self,
@@ -265,6 +286,7 @@ class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
             Data.apply_outlier_cleaning_input_rows,
             Schemas.apply_outlier_cleaning_input_schema,
         )
+        df.show()
 
         returned_df = job.apply_outlier_cleaning(
             df,

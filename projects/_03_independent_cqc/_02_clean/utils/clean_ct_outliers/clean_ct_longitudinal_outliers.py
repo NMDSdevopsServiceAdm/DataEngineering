@@ -201,6 +201,54 @@ def flag_outliers(df: DataFrame, col_to_clean: str) -> DataFrame:
     )
 
 
+def compute_large_location_cutoff(
+    df: DataFrame,
+    large_location_threshold_percentile: float,
+    col_to_clean: str,
+) -> float:
+    """
+    Computes the threshold at which a location is catageorised as a large location compared to other locaitons.
+
+    Args:
+        df (DataFrame): DataFrame containing the column to clean.
+        large_location_threshold_percentile (float): Percentile above which locations are considered large.
+        col_to_clean (str): Column to use to calculate large location cutoff.
+
+    Returns:
+        float: The number of posts above which a location is considered large.
+    """
+    large_location_threshold_abs = df.select(
+        F.percentile_approx(col_to_clean, large_location_threshold_percentile).alias(
+            "large_location_threshold_abs"
+        )
+    ).first()["large_location_threshold_abs"]
+    return large_location_threshold_abs
+
+
+def flag_large_locations(
+    df: DataFrame, group_by_col: str, col_to_clean: str, large_location_cutoff: float
+) -> DataFrame:
+    """
+    Flags locations that have ever exceed the large location cutoff in their history
+
+    Args:
+        df (DataFrame): DataFrame containing column to clean.
+        group_by_col (str): Column to be used for grouping.
+        col_to_clean (str): Column for which large locations are to be flagged.
+        large_location_cutoff(float): The number of posts above which a location is considered large.
+
+    Returns:
+        DataFrame: DataFrame with a new boolean column 'large_location_flag' where True indicates
+        a location has been large at some point in its history.
+    """
+    w = Window.partitionBy(group_by_col)
+    df = df.withColumn(
+        f"{col_to_clean}_large_location_flag",
+        F.max(F.col(col_to_clean)).over(w) > large_location_cutoff,
+    )
+    return df
+
+
 def apply_outlier_cleaning(
     df: DataFrame,
     group_by_col: str,
@@ -222,21 +270,23 @@ def apply_outlier_cleaning(
     Returns:
         DataFrame: DataFrame with outliers cleaned either by row removal or null replacement.
     """
-    p95 = df.select(F.percentile_approx(col_to_clean, 0.95).alias("p95")).first()["p95"]
-    w = Window.partitionBy(group_by_col)
-
-    df = df.withColumn(
-        f"{col_to_clean}_has_95th", F.max(F.col(col_to_clean)).over(w) > p95
-    )  # currently untested
-
     df = df.withColumn(
         cleaned_column_name,
         F.when(
-            F.col(f"{col_to_clean}_outlier_flag") & F.col(f"{col_to_clean}_has_95th"),
+            F.col(f"{col_to_clean}_outlier_flag")
+            & F.col(f"{col_to_clean}_large_location_flag"),
             None,
         ).otherwise(F.col(col_to_clean)),
     )
-    if remove_whole_record:
-        return df.filter(~F.col(f"{col_to_clean}_outlier_flag"))
-    else:
-        return df
+    return df
+
+    # small locations allowed big jumps
+    # check if locaiton has ever hadmore than 100 employees - flag these
+    # instea of 100 sa magic number - calculate 95th percentile of all locations and see if a value higher than that in a particulat locaitont o mark it as big - care homes ends up about 99, non-res about 135
+    # test abs diff outliers flag only, outliers + 95th percentile, outliers plus 99th percentile
+    # currently calculates cutoff based on abs diff,  - mad over filters
+    # test case: loc id 1-3797583069, 1-10145657596
+    # SELECT distinct locationid FROM "1225-filter-ct-data1-data-engineering-database"."dataset_ind_cqc_02_cleaned_data" where ct_non_res_filtering_rule like '%random_spikes%' limit 10;
+    # Columns to use ct_non_res_filtering_rule, ct_care_home_filtering_rule
+    # should we use 90th or 95th percitile for mean abs diff cutoff
+    # 95th percentil of all locations was good cutoff

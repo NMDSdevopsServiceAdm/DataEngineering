@@ -3332,6 +3332,27 @@ class OutlierCleaningSchemas:
             ),
         ]
     )
+    compute_large_location_cutoff_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+        ]
+    )
+    expected_compute_large_location_cutoff_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+            StructField(
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_large_location_cutoff",
+                BooleanType(),
+                True,
+            ),
+        ]
+    )
 
     final_cleaned_schema = StructType(
         [
