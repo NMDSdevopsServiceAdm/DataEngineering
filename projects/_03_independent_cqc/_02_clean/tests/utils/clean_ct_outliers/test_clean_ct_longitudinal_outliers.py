@@ -235,7 +235,7 @@ class TestComputeOutlierCutoff(TestCleanCtLongitudinalOutliers):
             )
 
 
-class TestComputeLargeLocaitonCutoff(TestCleanCtLongitudinalOutliers):
+class TestComputeLargeLocationCutoff(TestCleanCtLongitudinalOutliers):
     def test_compute_large_location_cutoff_returns_expected_values(
         self,
     ):
