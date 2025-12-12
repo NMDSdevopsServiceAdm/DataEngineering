@@ -1,5 +1,6 @@
 import random
 
+import numpy as np
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -33,3 +34,25 @@ def split_train_test(
     test_df = df.filter(~pl.col(identifier_col).is_in(train_ids))
 
     return train_df, test_df
+
+
+def convert_dataframe_to_numpy(
+    df: pl.DataFrame, feature_columns: list[str], dependent_column: str
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Converts Polars DataFrame to NumPy arrays for features and target.
+
+    `ravel()` is required when converting a single column dataframe to an array.
+
+    Args:
+        df (pl.DataFrame): Input DataFrame.
+        feature_columns (list[str]): List of feature column names.
+        dependent_column (str): Name of dependent column name.
+
+    Returns:
+        tuple[np.ndarray, np.ndarray]: A tuple containing the features array and target array.
+    """
+    X = df.select(feature_columns).to_numpy()
+    y = df.select(dependent_column).to_numpy().ravel()
+
+    return X, y
