@@ -94,7 +94,7 @@ class MainTests(CleanIndFilledPostsTests):
         self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
         self.assertEqual(calculate_filled_posts_per_bed_ratio_mock.call_count, 3)
         create_banded_bed_count_column_mock.assert_called_once()
-        forward_fill_latest_known_value_mock.assert_called_once()
+        self.assertEqual(forward_fill_latest_known_value_mock.call_count, 2)
         clean_ascwds_filled_post_outliers_mock.assert_called_once()
         clean_capacity_tracker_care_home_outliers_mock.assert_called_once()
         clean_capacity_tracker_non_res_outliers_mock.assert_called_once()

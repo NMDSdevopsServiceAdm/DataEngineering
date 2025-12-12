@@ -96,6 +96,12 @@ def main(
         NumericalValues.number_of_days_to_forward_fill,
     )
 
+    locations_df = forward_fill_latest_known_value(
+        locations_df,
+        IndCQC.pir_people_directly_employed_dedup,
+        NumericalValues.number_of_days_to_forward_fill,
+    )
+
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
         locations_df,
         IndCQC.ascwds_filled_posts_dedup_clean,
