@@ -75,6 +75,7 @@ def clean_longitudinal_outliers(
         new_rule_name,
     )
 
+    """
     cleaned_df = cleaned_df.drop(
         f"{col_to_clean}_median_val",
         f"{col_to_clean}_mad",
@@ -84,6 +85,7 @@ def clean_longitudinal_outliers(
         f"{col_to_clean}_outlier_flag",
         f"{col_to_clean}_large_location_flag",
     )
+    """
 
     return cleaned_df
 
