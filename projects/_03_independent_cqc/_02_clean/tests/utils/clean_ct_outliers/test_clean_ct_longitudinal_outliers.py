@@ -66,30 +66,6 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_clean_longitudinal_outliers_removes_outlier_rows_when_remove_whole_record_is_true(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.clean_random_spikes_input_rows,
-            Schemas.input_schema,
-        )
-
-        returned_df = job.clean_longitudinal_outliers(
-            test_df,
-            IndCQC.location_id,
-            IndCQC.ct_care_home_total_employed_cleaned,
-            IndCQC.ct_care_home_total_employed_cleaned,
-            0.10,
-            True,
-            True,
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_clean_random_spikes_remove_whole_rows,
-            Schemas.input_schema,
-        )
-
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
     def test_clean_longitudinal_outliers_returns_input_df_when_there_are_no_outliers(
         self,
     ):
@@ -104,9 +80,10 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
             col_to_clean=IndCQC.ct_care_home_total_employed_cleaned,
             cleaned_column_name=IndCQC.ct_care_home_total_employed_cleaned,
             proportion_to_filter=0.10,
-            remove_whole_record=False,
             care_home=True,
         )
+        returned_df.show()
+        test_df.show()
         self.assertEqual(returned_df.collect(), test_df.collect())
 
     def test_clean_longitudinal_outliers_nulls_outlier_values_when_remove_whole_record_is_false(
@@ -116,6 +93,7 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
             Data.clean_random_spikes_input_rows,
             Schemas.input_schema,
         )
+        test_df.show()
 
         returned_df = job.clean_longitudinal_outliers(
             test_df,
@@ -123,7 +101,6 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
             IndCQC.ct_care_home_total_employed_cleaned,
             IndCQC.ct_care_home_total_employed_cleaned,
             0.10,
-            False,
             True,
         )
 
@@ -256,6 +233,30 @@ class TestComputeLargeLocationCutoff(TestCleanCtLongitudinalOutliers):
         self.assertEqual(returned_float, expected_float)
 
 
+class TestFlagLargeLocations(TestCleanCtLongitudinalOutliers):
+    def test_flag_large_locations_returns_expected_values(
+        self,
+    ):
+        df = self.spark.createDataFrame(
+            Data.compute_large_location_cutoff_rows,
+            Schemas.compute_large_location_cutoff_schema,
+        )
+
+        returned_df = job.flag_large_locations(
+            df,
+            IndCQC.location_id,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            Data.expected_compute_large_location_cutoff,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_flag_large_locations_rows,
+            Schemas.expected_flag_large_locations_schema,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
 class TestFlagOutliers(TestCleanCtLongitudinalOutliers):
     def test_flag_outliers_returns_expected_values(
         self,
@@ -284,46 +285,19 @@ class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
     ):
         df = self.spark.createDataFrame(
             Data.apply_outlier_cleaning_input_rows,
-            Schemas.apply_outlier_cleaning_input_schema,
+            Schemas.apply_outlier_cleaning_schema,
         )
         df.show()
 
         returned_df = job.apply_outlier_cleaning(
             df,
-            IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
             IndCQC.ct_care_home_total_employed_cleaned,
-            False,
         )
 
         expected_df = self.spark.createDataFrame(
             Data.apply_outlier_cleaning_expected_rows,
-            Schemas.final_cleaned_schema,
-        )
-        returned_df.show()
-        expected_df.show()
-
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-    def test_apply_outlier_cleaning_removes_outlier_rows_when_remove_whole_record_is_true(
-        self,
-    ):
-        df = self.spark.createDataFrame(
-            Data.apply_outlier_cleaning_input_rows,
-            Schemas.apply_outlier_cleaning_input_schema,
-        )
-
-        returned_df = job.apply_outlier_cleaning(
-            df,
-            IndCQC.location_id,
-            IndCQC.ct_care_home_total_employed_cleaned,
-            IndCQC.ct_care_home_total_employed_cleaned,
-            True,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_apply_outlier_cleaning_when_removing_outlier_rows,
-            Schemas.final_cleaned_schema,
+            Schemas.apply_outlier_cleaning_schema,
         )
         returned_df.show()
         expected_df.show()

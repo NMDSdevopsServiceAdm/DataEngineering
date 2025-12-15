@@ -17,7 +17,6 @@ def clean_longitudinal_outliers(
     col_to_clean: str,
     cleaned_column_name: str,
     proportion_to_filter: float,
-    remove_whole_record: bool,
     care_home: bool,
 ) -> DataFrame:
     """
@@ -34,8 +33,6 @@ def clean_longitudinal_outliers(
         col_to_clean (str): Column name containing numerical values to clean.
         cleaned_column_name (str): Name of the new column to store cleaned values.
         proportion_to_filter (float): Proportion of extreme values to consider as outliers.
-        remove_whole_record (bool): If True, removes entire rows flagged as outliers;
-            if False, only replaces outlier values with null in the cleaned column.
         care_home (bool): If True, applies care home-specific filtering rules;
             otherwise, applies non-residential filtering rules.
 
@@ -49,12 +46,16 @@ def clean_longitudinal_outliers(
     df_thresholds = compute_outlier_cutoff(
         df_mad, group_by_col, proportion_to_filter, col_to_clean
     )
-
-    df_flags = flag_outliers(df_thresholds, col_to_clean)
-
-    cleaned_df = apply_outlier_cleaning(
-        df_flags, group_by_col, col_to_clean, cleaned_column_name, remove_whole_record
+    large_location_cutoff = compute_large_location_cutoff(
+        df_thresholds, 0.95, col_to_clean
     )
+    print(large_location_cutoff)
+    df_flags = flag_outliers(df_thresholds, col_to_clean)
+    df_flags = flag_large_locations(
+        df_flags, group_by_col, col_to_clean, large_location_cutoff
+    )
+
+    cleaned_df = apply_outlier_cleaning(df_flags, col_to_clean, cleaned_column_name)
 
     if care_home:
         filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
@@ -73,16 +74,17 @@ def clean_longitudinal_outliers(
         populated_rule,
         new_rule_name,
     )
+
     cleaned_df = cleaned_df.drop(
         f"{col_to_clean}_median_val",
         f"{col_to_clean}_mad",
         f"{col_to_clean}_mad_abs_diff",
-        f"{col_to_clean}_abs_diff",
-        f"{col_to_clean}_abs_diff_cutoff",
-        f"{col_to_clean}_outlier_flag",
-        f"{col_to_clean}_has_100",
-        f"{col_to_clean}_has_95th",
+        # f"{col_to_clean}_abs_diff",
+        # f"{col_to_clean}_abs_diff_cutoff",
+        # f"{col_to_clean}_outlier_flag",
+        # f"{col_to_clean}_large_location_flag",
     )
+
     return cleaned_df
 
 
@@ -251,24 +253,19 @@ def flag_large_locations(
 
 def apply_outlier_cleaning(
     df: DataFrame,
-    group_by_col: str,
     col_to_clean: str,
     cleaned_column_name: str,
-    remove_whole_record: bool,
 ) -> DataFrame:
     """
     Cleans outlier values in a numerical column based on an 'outlier_flag' column.
 
     Args:
-        df (DataFrame): DataFrame containing 'outlier_flag'.
-        group_by_col (str): Column to be used for grouping.
+        df (DataFrame): DataFrame containing 'outlier_flag' and 'large_location_flag'.
         col_to_clean (str): Column to clean.
         cleaned_column_name (str): Name of the new column to store cleaned values.
-        remove_whole_record (bool): If True, removes entire rows flagged as outliers;
-            otherwise, replaces outlier values with null in the cleaned column.
 
     Returns:
-        DataFrame: DataFrame with outliers cleaned either by row removal or null replacement.
+        DataFrame: DataFrame with outliers cleaned by null replacement.
     """
     df = df.withColumn(
         cleaned_column_name,

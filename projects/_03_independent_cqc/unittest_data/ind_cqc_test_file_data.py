@@ -5928,31 +5928,29 @@ class OutlierCleaningData:
     ]
 
     clean_random_spikes_input_rows = [
+        ("1-001", 5, CTCareHomeFilteringRule.populated),
         ("1-001", 10, CTCareHomeFilteringRule.populated),
-        ("1-001", 11, CTCareHomeFilteringRule.populated),
-        ("1-001", 12, CTCareHomeFilteringRule.populated),
-        ("1-001", 200, CTCareHomeFilteringRule.populated),
-        ("1-002", 400, CTCareHomeFilteringRule.populated),
-        ("1-002", 51, CTCareHomeFilteringRule.populated),
-        ("1-002", 400, CTCareHomeFilteringRule.populated),
-    ]
-
-    expected_clean_random_spikes_remove_whole_rows = [
-        ("1-001", 10, CTCareHomeFilteringRule.populated),
-        ("1-001", 11, CTCareHomeFilteringRule.populated),
-        ("1-001", 12, CTCareHomeFilteringRule.populated),
-        ("1-002", 400, CTCareHomeFilteringRule.populated),
-        ("1-002", 400, CTCareHomeFilteringRule.populated),
+        ("1-001", 15, CTCareHomeFilteringRule.populated),
+        ("1-001", 80, CTCareHomeFilteringRule.populated),
+        ("1-002", 95, CTCareHomeFilteringRule.populated),
+        ("1-002", 20, CTCareHomeFilteringRule.populated),
+        ("1-002", 90, CTCareHomeFilteringRule.populated),
+        ("1-003", 40, CTCareHomeFilteringRule.populated),
+        ("1-003", 45, CTCareHomeFilteringRule.populated),
+        ("1-003", 50, CTCareHomeFilteringRule.populated),
     ]
 
     expected_clean_random_spikes_remove_value_only_rows = [
+        ("1-001", 5, CTCareHomeFilteringRule.populated),  # small location with jump
         ("1-001", 10, CTCareHomeFilteringRule.populated),
-        ("1-001", 11, CTCareHomeFilteringRule.populated),
-        ("1-001", 12, CTCareHomeFilteringRule.populated),
-        ("1-001", None, CTCareHomeFilteringRule.populated),
-        ("1-002", 400, CTCareHomeFilteringRule.populated),
+        ("1-001", 15, CTCareHomeFilteringRule.populated),
+        ("1-001", 80, CTCareHomeFilteringRule.populated),
+        ("1-002", 95, CTCareHomeFilteringRule.populated),  # large location with dip
         ("1-002", None, CTCareHomeFilteringRule.populated),
-        ("1-002", 400, CTCareHomeFilteringRule.populated),
+        ("1-002", 90, CTCareHomeFilteringRule.populated),
+        ("1-003", 40, CTCareHomeFilteringRule.populated),  # location with little change
+        ("1-003", 45, CTCareHomeFilteringRule.populated),
+        ("1-003", 50, CTCareHomeFilteringRule.populated),
     ]
 
     compute_group_median_rows = [
@@ -6018,7 +6016,7 @@ class OutlierCleaningData:
         ("1-002", 100),
     ]
     expected_compute_large_location_cutoff = 95.0
-    expected_flag_large_location_rows = [
+    expected_flag_large_locations_rows = [
         ("1-001", 5, False),  # location 1 range 5-95
         ("1-001", 15, False),
         ("1-001", 25, False),
@@ -6051,15 +6049,15 @@ class OutlierCleaningData:
     ]
 
     apply_outlier_cleaning_input_rows = [
-        ("1-001", 100, True),
-        ("1-001", 50, False),
+        ("1-001", 100, True, True),  # Outlier and large location
+        ("1-001", 75, False, True),  # Not outlier and large location
+        ("1-001", 50, True, False),  # Outlier and not large location
+        ("1-001", 25, False, False),  # Not outlier and not large location
     ]
 
-    apply_outlier_cleaning_expected_rows = [
-        ("1-001", None, True, False),
-        ("1-001", 50, False, False),
-    ]
-
-    expected_apply_outlier_cleaning_when_removing_outlier_rows = [
-        ("1-001", 50, False, False),
+    apply_outlier_cleaning_expected_rows = apply_outlier_cleaning_input_rows = [
+        ("1-001", None, True, True),  # Outlier and large location
+        ("1-001", 75, False, True),  # Not outlier and large location
+        ("1-001", 50, True, False),  # Outlier and not large location
+        ("1-001", 25, False, False),  # Not outlier and not large location
     ]
