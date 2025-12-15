@@ -5928,16 +5928,30 @@ class OutlierCleaningData:
     ]
 
     clean_random_spikes_input_rows = [
-        ("1-001", 5, CTCareHomeFilteringRule.populated),
+        ("1-001", 5, CTCareHomeFilteringRule.populated),  # small location with jump
         ("1-001", 10, CTCareHomeFilteringRule.populated),
         ("1-001", 15, CTCareHomeFilteringRule.populated),
         ("1-001", 80, CTCareHomeFilteringRule.populated),
-        ("1-002", 95, CTCareHomeFilteringRule.populated),
+        ("1-002", 95, CTCareHomeFilteringRule.populated),  # large location with dip
         ("1-002", 20, CTCareHomeFilteringRule.populated),
         ("1-002", 90, CTCareHomeFilteringRule.populated),
-        ("1-003", 40, CTCareHomeFilteringRule.populated),
+        ("1-003", 40, CTCareHomeFilteringRule.populated),  # location with little change
         ("1-003", 45, CTCareHomeFilteringRule.populated),
         ("1-003", 50, CTCareHomeFilteringRule.populated),
+        (
+            "1-004",
+            5,
+            CTCareHomeFilteringRule.populated,
+        ),  # Extra location to pad out number of rows for calculations
+        ("1-004", 10, CTCareHomeFilteringRule.populated),
+        ("1-004", 15, CTCareHomeFilteringRule.populated),
+        ("1-004", 80, CTCareHomeFilteringRule.populated),
+        ("1-004", 94, CTCareHomeFilteringRule.populated),
+        ("1-004", 20, CTCareHomeFilteringRule.populated),
+        ("1-004", 90, CTCareHomeFilteringRule.populated),
+        ("1-004", 40, CTCareHomeFilteringRule.populated),
+        ("1-004", 45, CTCareHomeFilteringRule.populated),
+        ("1-004", 50, CTCareHomeFilteringRule.populated),
     ]
 
     expected_clean_random_spikes_remove_value_only_rows = [
@@ -5946,11 +5960,25 @@ class OutlierCleaningData:
         ("1-001", 15, CTCareHomeFilteringRule.populated),
         ("1-001", 80, CTCareHomeFilteringRule.populated),
         ("1-002", 95, CTCareHomeFilteringRule.populated),  # large location with dip
-        ("1-002", None, CTCareHomeFilteringRule.populated),
+        ("1-002", None, CTCareHomeFilteringRule.random_spikes_total_posts),
         ("1-002", 90, CTCareHomeFilteringRule.populated),
         ("1-003", 40, CTCareHomeFilteringRule.populated),  # location with little change
         ("1-003", 45, CTCareHomeFilteringRule.populated),
         ("1-003", 50, CTCareHomeFilteringRule.populated),
+        (
+            "1-004",
+            5,
+            CTCareHomeFilteringRule.populated,
+        ),  # Extra location to pad out number of rows for calculations
+        ("1-004", 10, CTCareHomeFilteringRule.populated),
+        ("1-004", 15, CTCareHomeFilteringRule.populated),
+        ("1-004", 80, CTCareHomeFilteringRule.populated),
+        ("1-004", 94, CTCareHomeFilteringRule.populated),
+        ("1-004", 20, CTCareHomeFilteringRule.populated),
+        ("1-004", 90, CTCareHomeFilteringRule.populated),
+        ("1-004", 40, CTCareHomeFilteringRule.populated),
+        ("1-004", 45, CTCareHomeFilteringRule.populated),
+        ("1-004", 50, CTCareHomeFilteringRule.populated),
     ]
 
     compute_group_median_rows = [

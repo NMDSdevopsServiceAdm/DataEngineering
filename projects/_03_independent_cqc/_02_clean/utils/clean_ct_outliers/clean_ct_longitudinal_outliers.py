@@ -54,7 +54,7 @@ def clean_longitudinal_outliers(
     df_flags = flag_large_locations(
         df_flags, group_by_col, col_to_clean, large_location_cutoff
     )
-
+    print(df_flags.columns)
     cleaned_df = apply_outlier_cleaning(df_flags, col_to_clean, cleaned_column_name)
 
     if care_home:
@@ -79,10 +79,10 @@ def clean_longitudinal_outliers(
         f"{col_to_clean}_median_val",
         f"{col_to_clean}_mad",
         f"{col_to_clean}_mad_abs_diff",
-        # f"{col_to_clean}_abs_diff",
-        # f"{col_to_clean}_abs_diff_cutoff",
-        # f"{col_to_clean}_outlier_flag",
-        # f"{col_to_clean}_large_location_flag",
+        f"{col_to_clean}_abs_diff",
+        f"{col_to_clean}_abs_diff_cutoff",
+        f"{col_to_clean}_outlier_flag",
+        f"{col_to_clean}_large_location_flag",
     )
 
     return cleaned_df
