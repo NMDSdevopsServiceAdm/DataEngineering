@@ -1176,6 +1176,7 @@ class CleanIndCQCData:
     repeated_value_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.provider_id, StringType(), True),
             StructField("integer_column", IntegerType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
         ]
@@ -1183,9 +1184,7 @@ class CleanIndCQCData:
 
     expected_without_repeated_values_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField("integer_column", IntegerType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            *repeated_value_schema,
             StructField("integer_column_deduplicated", IntegerType(), True),
         ]
     )
@@ -1287,6 +1286,27 @@ class CleanFilteringUtilsSchemas:
             StructField(
                 IndCQC.ascwds_filtering_rule,
                 StringType(),
+                True,
+            ),
+        ]
+    )
+
+    aggregate_values_to_provider_level_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.provider_id, StringType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    expected_aggregate_values_to_provider_level_schema = StructType(
+        [
+            *aggregate_values_to_provider_level_schema,
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned_provider_sum,
+                IntegerType(),
                 True,
             ),
         ]
@@ -3182,6 +3202,73 @@ class IndCQCDataUtils:
         [
             *get_selected_value_schema,
             StructField("new_column", FloatType(), True),
+        ]
+    )
+
+
+@dataclass
+class CleanCtRepetition:
+    clean_ct_values_after_consecutive_repetition_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(
+                IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType(), True
+            ),
+            StructField(IndCQC.ct_non_res_filtering_rule, StringType(), True),
+        ]
+    )
+    expected_clean_ct_values_after_consecutive_repetition_schema = (
+        clean_ct_values_after_consecutive_repetition_schema
+    )
+
+    calculate_days_a_value_has_been_repeated_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                "values_deduplicated",
+                IntegerType(),
+                True,
+            ),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    expected_calculate_days_a_value_has_been_repeated_schema = StructType(
+        [
+            *calculate_days_a_value_has_been_repeated_schema,
+            StructField("days_value_has_been_repeated", IntegerType(), True),
+        ]
+    )
+
+    clean_value_repetition_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ct_non_res_care_workers_employed, IntegerType(), True),
+            StructField("days_value_has_been_repeated", IntegerType(), True),
+        ]
+    )
+    expected_clean_value_repetition_schema = StructType(
+        [
+            *clean_value_repetition_schema,
+            StructField("repeated_values_nulled", IntegerType(), True),
+        ]
+    )
+
+    original_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
+        ]
+    )
+    populated_only_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField("repeated_values_nulled", IntegerType(), True),
+            StructField("another_column", StringType(), True),
         ]
     )
 
