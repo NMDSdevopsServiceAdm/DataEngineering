@@ -6047,3 +6047,87 @@ class CleanCtRepetition:
         ("1-003", date(2026, 2, 1), None),  # Different location with a null is still null.
     ]
     # fmt: on
+
+
+@dataclass
+class ForwardFillLatestKnownValue:
+    last_known_latest_per_location_rows = [
+        ("loc-1", date(2025, 1, 1), 10),
+        ("loc-1", date(2025, 1, 2), 20),
+        ("loc-1", date(2025, 1, 3), 15),
+        ("loc-2", date(2025, 1, 1), 5),
+        ("loc-2", date(2025, 1, 3), 15),
+        ("loc-2", date(2025, 1, 4), 12),
+    ]
+
+    expected_last_known_latest_per_location_rows = [
+        ("loc-1", date(2025, 1, 3), 15),
+        ("loc-2", date(2025, 1, 4), 12),
+    ]
+
+    last_known_ignores_null_rows = [
+        ("loc-1", date(2025, 1, 1), 10),
+        ("loc-1", date(2025, 1, 2), None),
+        ("loc-1", date(2025, 1, 3), None),
+        ("loc-2", date(2025, 1, 1), None),
+        ("loc-2", date(2025, 1, 3), 15),
+    ]
+
+    expected_last_known_ignores_null_rows = [
+        ("loc-1", date(2025, 1, 1), 10),
+        ("loc-2", date(2025, 1, 3), 15),
+    ]
+
+    forward_fill_within_days_rows = [
+        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100),
+        ("loc-1", date(2025, 1, 2), None, date(2025, 1, 1), 100),
+        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 1), 100),
+        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 100),
+    ]
+
+    expected_forward_fill_within_days_rows = [
+        ("loc-1", date(2025, 1, 1), 100),
+        ("loc-1", date(2025, 1, 2), 100),
+        ("loc-1", date(2025, 1, 3), 100),
+        ("loc-1", date(2025, 1, 4), None),
+    ]
+
+    forward_fill_beyond_days_rows = [
+        ("loc-1", date(2025, 1, 1), 50, date(2025, 1, 1), 50),
+        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 50),
+    ]
+
+    expected_forward_fill_beyond_days_rows = [
+        ("loc-1", date(2025, 1, 1), 50),
+        ("loc-1", date(2025, 1, 4), None),
+    ]
+
+    forward_fill_before_last_known_rows = [
+        ("loc-1", date(2025, 1, 1), None, date(2025, 1, 2), 20),
+        ("loc-1", date(2025, 1, 2), 20, date(2025, 1, 2), 20),
+        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 2), 20),
+        ("loc-2", date(2025, 1, 1), None, date(2025, 1, 3), 50),
+        ("loc-2", date(2025, 1, 2), None, date(2025, 1, 3), 50),
+        ("loc-2", date(2025, 1, 3), 50, date(2025, 1, 3), 50),
+    ]
+
+    expected_forward_fill_before_last_known_rows = [
+        ("loc-1", date(2025, 1, 1), None),
+        ("loc-1", date(2025, 1, 2), 20),
+        ("loc-1", date(2025, 1, 3), 20),
+        ("loc-2", date(2025, 1, 1), None),
+        ("loc-2", date(2025, 1, 2), None),
+        ("loc-2", date(2025, 1, 3), 50),
+    ]
+
+    forward_fill_latest_known_value_rows = [
+        ("loc-1", date(2025, 1, 1), 10),
+        ("loc-1", date(2025, 1, 2), None),
+        ("loc-1", date(2025, 1, 4), 11),
+        ("loc-1", date(2025, 1, 5), None),
+        ("loc-2", date(2025, 1, 1), 20),
+        ("loc-2", date(2025, 1, 2), 20),
+        ("loc-2", date(2025, 1, 3), 22),
+        ("loc-2", date(2025, 1, 5), None),
+        ("loc-2", date(2025, 1, 6), None),
+    ]

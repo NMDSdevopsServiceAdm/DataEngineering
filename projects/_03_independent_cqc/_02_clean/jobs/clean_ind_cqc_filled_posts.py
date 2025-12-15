@@ -2,6 +2,8 @@ import os
 import sys
 from typing import Optional
 
+from dataclasses import dataclass
+
 os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame, Window
@@ -20,6 +22,9 @@ from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_car
 from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_non_res_outliers import (
     clean_capacity_tracker_non_res_outliers,
 )
+from projects._03_independent_cqc._02_clean.utils.forward_fill_latest_known_value import (
+    forward_fill_latest_known_value,
+)
 from projects._03_independent_cqc._02_clean.utils.utils import (
     create_column_with_repeated_values_removed,
 )
@@ -30,6 +35,11 @@ from utils.column_values.categorical_column_values import CareHome, Dormancy
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 average_number_of_beds: str = "avg_beds"
+
+
+@dataclass
+class NumericalValues:
+    number_of_days_to_forward_fill = 65  # Note: using 65 as a proxy for 2 months
 
 
 def main(
@@ -82,6 +92,12 @@ def main(
     )
 
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
+
+    locations_df = forward_fill_latest_known_value(
+        locations_df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        NumericalValues.number_of_days_to_forward_fill,
+    )
 
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
         locations_df,
