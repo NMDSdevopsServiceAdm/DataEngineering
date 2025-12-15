@@ -49,7 +49,7 @@ def clean_capacity_tracker_care_home_outliers(df: DataFrame) -> DataFrame:
         col_to_clean=IndCQC.ct_care_home_total_employed_cleaned,
         cleaned_column_name=IndCQC.ct_care_home_total_employed_cleaned,
         proportion_to_filter=0.05,
-        remove_whole_record=False,
+        # remove_whole_record=False,
         care_home=True,
     )
 

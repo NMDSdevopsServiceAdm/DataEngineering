@@ -46,7 +46,7 @@ def clean_capacity_tracker_non_res_outliers(df: DataFrame) -> DataFrame:
         col_to_clean=IndCQC.ct_non_res_care_workers_employed,
         cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
         proportion_to_filter=0.05,
-        remove_whole_record=False,
+        # remove_whole_record=False,
         care_home=False,
     )
 
