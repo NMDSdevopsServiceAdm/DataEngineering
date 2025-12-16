@@ -25,7 +25,7 @@ def clean_capacity_tracker_care_home_outliers(df: DataFrame) -> DataFrame:
         df (DataFrame): A dataframe containing `ct_care_home_total_employed`.
 
     Returns:
-        DataFrame: A dataframe containing `ct_care_home_total_employed` and `ct_care_home_total_employed_cleaned`.
+        DataFrame: A dataframe containing the updated columns `ct_care_home_total_employed` and `ct_care_home_total_employed_cleaned`.
     """
     print("Cleaning Capacity Tracker care home data...")
 
