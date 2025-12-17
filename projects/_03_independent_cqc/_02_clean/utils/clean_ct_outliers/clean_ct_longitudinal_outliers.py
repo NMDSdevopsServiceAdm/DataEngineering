@@ -49,12 +49,12 @@ def clean_longitudinal_outliers(
     large_location_cutoff = compute_large_location_cutoff(
         df_thresholds, 0.95, col_to_clean
     )
-    print(large_location_cutoff)
+    print("large_location_cutoff: ", large_location_cutoff)
     df_flags = flag_outliers(df_thresholds, col_to_clean)
     df_flags = flag_large_locations(
         df_flags, group_by_col, col_to_clean, large_location_cutoff
     )
-    print(df_flags.columns)
+    print("df flages after outlier flags are set:", df_flags.columns)
     cleaned_df = apply_outlier_cleaning(df_flags, col_to_clean, cleaned_column_name)
 
     if care_home:
@@ -219,7 +219,7 @@ def compute_large_location_cutoff(
     Returns:
         float: The number of posts above which a location is considered large.
     """
-    large_location_threshold_abs = df.select(
+    large_location_threshold_abs = df.agg(
         F.percentile_approx(col_to_clean, large_location_threshold_percentile).alias(
             "large_location_threshold_abs"
         )
