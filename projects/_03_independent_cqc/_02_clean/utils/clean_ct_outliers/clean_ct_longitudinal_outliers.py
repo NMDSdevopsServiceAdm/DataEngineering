@@ -47,7 +47,7 @@ def clean_longitudinal_outliers(
         df_mad, group_by_col, proportion_to_filter, col_to_clean
     )
     large_location_cutoff = compute_large_location_cutoff(
-        df_thresholds, 0.95, col_to_clean
+        df_thresholds, proportion_to_filter, col_to_clean
     )
     df_flags = flag_outliers(df_thresholds, col_to_clean)
     df_flags = flag_large_locations(
