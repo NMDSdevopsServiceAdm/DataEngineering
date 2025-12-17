@@ -45,6 +45,7 @@ class MainTests(CleanIndFilledPostsTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_care_home_outliers")
+    @patch(f"{PATCH_PATH}.forward_fill_latest_known_value")
     @patch(f"{PATCH_PATH}.clean_ascwds_filled_post_outliers")
     @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
     @patch(f"{PATCH_PATH}.cUtils.calculate_filled_posts_per_bed_ratio")
@@ -71,6 +72,7 @@ class MainTests(CleanIndFilledPostsTests):
         calculate_filled_posts_per_bed_ratio_mock: Mock,
         create_banded_bed_count_column_mock: Mock,
         clean_ascwds_filled_post_outliers_mock: Mock,
+        forward_fill_latest_known_value_mock: Mock,
         clean_capacity_tracker_care_home_outliers_mock: Mock,
         clean_capacity_tracker_non_res_outliers_mock: Mock,
         write_to_parquet_mock: Mock,
@@ -92,6 +94,7 @@ class MainTests(CleanIndFilledPostsTests):
         self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
         self.assertEqual(calculate_filled_posts_per_bed_ratio_mock.call_count, 3)
         create_banded_bed_count_column_mock.assert_called_once()
+        forward_fill_latest_known_value_mock.assert_called_once()
         clean_ascwds_filled_post_outliers_mock.assert_called_once()
         clean_capacity_tracker_care_home_outliers_mock.assert_called_once()
         clean_capacity_tracker_non_res_outliers_mock.assert_called_once()
@@ -236,6 +239,12 @@ class MainTests(CleanIndFilledPostsTests):
 
         df = df.collect()
         self.assertEqual(df[0][IndCQC.number_of_beds], 1)
+
+    def test_days_to_repeat_forward_filling_is_correct(self):
+        self.assertEqual(
+            job.NumericalValues.number_of_days_to_forward_fill,
+            65,
+        )
 
 
 class CalculateTimeRegisteredForTests(CleanIndFilledPostsTests):
@@ -481,80 +490,6 @@ class RemoveDualRegistrationCqcCareHomes(CleanIndFilledPostsTests):
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
-
-
-class AddColumnWithRepeatedValuesRemovedTests(CleanIndFilledPostsTests):
-    def setUp(self):
-        super().setUp()
-        self.test_purge_outdated_df = self.spark.createDataFrame(
-            Data.repeated_value_rows, Schemas.repeated_value_schema
-        )
-        self.expected_df_without_repeated_values_df = self.spark.createDataFrame(
-            Data.expected_without_repeated_values_rows,
-            Schemas.expected_without_repeated_values_schema,
-        )
-        self.returned_df = job.create_column_with_repeated_values_removed(
-            self.test_purge_outdated_df,
-            column_to_clean="integer_column",
-        )
-        self.OUTPUT_COLUMN = "integer_column_deduplicated"
-
-        self.returned_data = self.returned_df.sort(
-            IndCQC.location_id, IndCQC.cqc_location_import_date
-        ).collect()
-        self.expected_data = self.expected_df_without_repeated_values_df.sort(
-            IndCQC.location_id, IndCQC.cqc_location_import_date
-        ).collect()
-
-    def test_first_submitted_value_is_included_in_new_column(self):
-        self.assertEqual(
-            self.returned_data[0][self.OUTPUT_COLUMN],
-            self.expected_data[0][self.OUTPUT_COLUMN],
-        )
-        self.assertEqual(
-            self.returned_data[4][self.OUTPUT_COLUMN],
-            self.expected_data[4][self.OUTPUT_COLUMN],
-        )
-
-    def test_submitted_value_is_included_if_it_wasnt_repeated(self):
-        self.assertEqual(
-            self.returned_data[1][self.OUTPUT_COLUMN],
-            self.expected_data[1][self.OUTPUT_COLUMN],
-        )
-        self.assertEqual(
-            self.returned_data[5][self.OUTPUT_COLUMN],
-            self.expected_data[5][self.OUTPUT_COLUMN],
-        )
-
-    def test_repeated_value_entered_as_null_value(self):
-        self.assertEqual(
-            self.returned_data[2][self.OUTPUT_COLUMN],
-            self.expected_data[2][self.OUTPUT_COLUMN],
-        )
-        self.assertEqual(
-            self.returned_data[7][self.OUTPUT_COLUMN],
-            self.expected_data[7][self.OUTPUT_COLUMN],
-        )
-
-    def test_value_which_has_appeared_before_but_isnt_a_repeat_is_included(self):
-        self.assertEqual(
-            self.returned_data[6][self.OUTPUT_COLUMN],
-            self.expected_data[6][self.OUTPUT_COLUMN],
-        )
-
-    def test_returned_df_matches_expected_df(self):
-        self.assertEqual(
-            self.returned_data,
-            self.expected_data,
-        )
-
-    def test_returned_df_has_one_additional_column(self):
-        self.assertEqual(
-            len(self.returned_df.columns), len(self.test_purge_outdated_df.columns) + 1
-        )
-
-    def test_returned_df_has_same_number_of_rows(self):
-        self.assertEqual(self.returned_df.count(), self.test_purge_outdated_df.count())
 
 
 if __name__ == "__main__":

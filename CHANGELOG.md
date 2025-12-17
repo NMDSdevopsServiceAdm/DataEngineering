@@ -62,6 +62,13 @@ All notable changes to this project will be documented in this file.
 
 - A new function to remove random spikes from CT data. The function flags the outliers based on median absolute deviation (MAD) and removes the outlier record entirely or the ourlier value. 
 
+- Added NHS Capacity Tracker filter to remove repeated submissions at location level after a set length of time.
+
+- Added a function into ind cqc 02 cleaning job to copy the last known ASC-WDS filled posts value into the
+  following two import dates. So extrapolation is delayed.
+
+- A new function to remove longitudinal spikes from CT data. The function flags the outliers based on absolute difference in median values and removes the ourlier value. 
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw

@@ -5,14 +5,13 @@ import os
 import sys
 from datetime import date
 from datetime import datetime as dt
+from typing import Generator
 
 import polars as pl
 
 from polars_utils import utils
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
-from schemas.cqc_locations_schema_overrides_polars import (
-    POLARS_LOCATION_SCHEMA_OVERRIDES,
-)
+from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.aws_secrets_manager_utilities import get_secret
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as ColNames,
@@ -76,7 +75,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         cqc_api_primary_key_value: str = json.loads(secret)["Ocp-Apim-Subscription-Key"]
 
         print("Collecting locations with changes from API")
-        generator = cqc.get_updated_objects(
+        api_generator: Generator[dict, None, None] = cqc.get_updated_objects(
             object_type=CQC_OBJECT_TYPE,
             organisation_type=CQC_ORG_TYPE,
             cqc_api_primary_key=cqc_api_primary_key_value,
@@ -84,17 +83,21 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
         )
 
+        generator = cqc.primed_generator(api_generator, POLARS_LOCATION_SCHEMA)
+
         print("Creating dataframe and writing to Parquet")
-        df: pl.DataFrame = pl.DataFrame(generator)
+        df: pl.DataFrame = pl.DataFrame(generator, infer_schema_length=500)
         df_schema = df.collect_schema()
         df = df.with_columns(
             [
                 pl.col(k).cast(v)
-                for k, v in POLARS_LOCATION_SCHEMA_OVERRIDES.items()
+                for k, v in POLARS_LOCATION_SCHEMA.items()
                 if k in df_schema.keys()
             ]
         )
-        df_unique: pl.DataFrame = df.unique(subset=[ColNames.location_id])
+        df_unique: pl.DataFrame = df.unique(subset=[ColNames.location_id]).filter(
+            pl.col(ColNames.location_id).is_not_null()
+        )
 
         utils.write_to_parquet(df_unique, destination)
         return None
