@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import date
 
+import numpy as np
+
 from utils.column_values.categorical_column_values import CareHome, MainJobRoleLabels
 
 
@@ -252,16 +254,14 @@ class FeaturesEngineeringUtilsData:
 
 @dataclass
 class ModelTrainingUtilsData:
-    split_train_test_rows = [
-        ("1-001", 10.0),
-        ("1-001", 11.0),
-        ("1-002", 20.0),
-        ("1-002", 21.0),
-        ("1-003", 30.0),
-        ("1-003", 31.0),
-        ("1-004", 40.0),
-        ("1-004", 41.0),
+    convert_dataframe_to_numpy_basic_rows = [
+        ("1-001", 1, 10, 5.0),
+        ("1-002", 2, 20, 6.0),
+        ("1-003", 3, 30, 7.0),
     ]
+    expected_numpy_multiple_feature_cols_X = np.array([[1, 10], [2, 20], [3, 30]])
+    expected_numpy_single_feature_col_X = np.array([[1], [2], [3]])
+    expected_numpy_col_y = np.array([5, 6, 7])
 
 
 @dataclass
