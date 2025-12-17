@@ -251,6 +251,20 @@ class FeaturesEngineeringUtilsData:
 
 
 @dataclass
+class ModelTrainingUtilsData:
+    split_train_test_rows = [
+        ("1-001", 10.0),
+        ("1-001", 11.0),
+        ("1-002", 20.0),
+        ("1-002", 21.0),
+        ("1-003", 30.0),
+        ("1-003", 31.0),
+        ("1-004", 40.0),
+        ("1-004", 41.0),
+    ]
+
+
+@dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsData:
     estimates_df_before_join_rows = [
         (
