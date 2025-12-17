@@ -20,7 +20,7 @@ def clean_longitudinal_outliers(
     care_home: bool,
 ) -> DataFrame:
     """
-    Cleans random spikes (outliers) from a numerical column in a DataFrame.
+    Cleans longitudinal spikes (outliers) from a numerical column in a DataFrame.
 
     The function computes the group-wise median and median absolute deviation (MAD),
     flags outliers based on the specified proportion to filter, and either replaces
@@ -60,11 +60,11 @@ def clean_longitudinal_outliers(
     if care_home:
         filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
         populated_rule = CTCareHomeFilteringRule.populated
-        new_rule_name = CTCareHomeFilteringRule.random_spikes_total_posts
+        new_rule_name = CTCareHomeFilteringRule.longitudinal_spikes_total_posts
     else:
         filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
         populated_rule = CTNonResFilteringRule.populated
-        new_rule_name = CTNonResFilteringRule.random_spikes_total_posts
+        new_rule_name = CTNonResFilteringRule.longitudinal_spikes_total_posts
 
     cleaned_df = update_filtering_rule(
         cleaned_df,
