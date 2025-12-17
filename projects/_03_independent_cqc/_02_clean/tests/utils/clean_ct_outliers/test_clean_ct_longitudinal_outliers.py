@@ -21,7 +21,7 @@ class TestCleanCtLongitudinalOutliers(unittest.TestCase):
         self.spark = utils.get_spark()
 
         self.test_df = self.spark.createDataFrame(
-            Data.clean_longitudinal_spikes_input_rows, Schemas.input_schema
+            Data.clean_longitudinal_outliers_input_rows, Schemas.input_schema
         )
 
 
@@ -95,7 +95,7 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.clean_longitudinal_spikes_input_rows,
+            Data.clean_longitudinal_outliers_input_rows,
             Schemas.input_schema,
         )
         test_df.show()
@@ -110,7 +110,7 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_clean_longitudinal_spikes_remove_value_only_rows,
+            Data.expected_clean_longitudinal_outliers_remove_value_only_rows,
             Schemas.input_schema,
         )
         returned_df.show()
