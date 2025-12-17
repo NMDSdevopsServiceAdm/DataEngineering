@@ -63,6 +63,8 @@ All notable changes to this project will be documented in this file.
 - Added a function into ind cqc 02 cleaning job to copy the last known ASC-WDS filled posts value into the
   following two import dates. So extrapolation is delayed.
 
+- Called the forward_fill_latest_known_value function on pir_people_directly_employed_dedup column to replicate the forward fill process for PIR Data.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
