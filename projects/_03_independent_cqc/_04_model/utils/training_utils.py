@@ -22,7 +22,9 @@ def split_train_test(
     """
     identifier_col = IndCQC.location_id
 
-    unique_ids = df.select(identifier_col).unique().to_series().to_list()
+    unique_ids = (
+        df.select(identifier_col).unique().sort(identifier_col).to_series().to_list()
+    )
 
     rng = random.Random(seed)
     rng.shuffle(unique_ids)
