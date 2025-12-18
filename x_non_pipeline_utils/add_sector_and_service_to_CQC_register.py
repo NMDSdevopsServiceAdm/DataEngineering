@@ -73,7 +73,7 @@ def add_service_data(data):
 
 def save_cqc_file(df):
     save_location = Path(
-        f"{CqcConfig.directory / CqcConfig.file_name}{CqcConfig.dest_suffix}"
+        f"{CqcConfig.directory / YEAR_AND_FILE_NAME}{CqcConfig.dest_suffix}"
     )
     print(f"saving file: {save_location}")
     df.to_excel(save_location, sheet_name=CqcConfig.new_sheet_name, index=False)
