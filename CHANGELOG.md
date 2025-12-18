@@ -27,7 +27,7 @@ All notable changes to this project will be documented in this file.
 - Added placeholder tasks for model retraining step function in the Ind CQC pipeline which will point to the
   separate model retraining step function.
 
-- Copy the `ind_cqc_06_estimated_filled_posts` dataset from main into branch prefixed with `main_` to help with comparing dev outputs to main.
+- During deployment with CircleCI, copy the `ind_cqc_06_estimated_filled_posts` dataset from main into branch prefixed with `main_` to help with comparing dev outputs to main.
 
 - Created model versioning functions to get the last number and save model metadata.
 
