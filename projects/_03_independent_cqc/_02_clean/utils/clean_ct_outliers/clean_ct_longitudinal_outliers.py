@@ -99,13 +99,20 @@ def compute_group_median(df: DataFrame, group_col: str, col_to_clean: str) -> Da
         DataFrame: Original DataFrame joined with a new column 'median_val' containing
         the group-wise median.
     """
-    median_df = df.groupBy(group_col).agg(
-        F.expr(f"percentile({col_to_clean}, array(0.5))")[0].alias(
-            f"{col_to_clean}_median_val"
-        )
-    )
+    # median_df = df.groupBy(group_col).agg(
+    #     F.expr(f"percentile({col_to_clean}, array(0.5))")[0].alias(
+    #         f"{col_to_clean}_median_val"
+    #     )
+    # )
 
-    return df.join(median_df, group_col, "left")
+    # return df.join(median_df, group_col, "left")
+
+    w = Window.partitionBy(group_col)
+    df = df.withColumn(
+        f"{col_to_clean}_median_val",
+        F.percentile_approx(col_to_clean, 0.5).over(w),
+    )
+    return df
 
 
 def compute_absolute_deviation(df: DataFrame, col_to_clean: str) -> DataFrame:
@@ -139,12 +146,18 @@ def compute_mad(df: DataFrame, group_by_col: str, col_to_clean: str) -> DataFram
         DataFrame: Original DataFrame joined with a new column 'mad' containing the
         group-wise median absolute deviation.
     """
-    mad_df = df.groupBy(group_by_col).agg(
-        F.expr(f"percentile({col_to_clean}_abs_diff, array(0.5))")[0].alias(
-            f"{col_to_clean}_mad"
-        )
+    # mad_df = df.groupBy(group_by_col).agg(
+    #     F.expr(f"percentile({col_to_clean}_abs_diff, array(0.5))")[0].alias(
+    #         f"{col_to_clean}_mad"
+    #     )
+    # )
+    # df = df.join(mad_df, group_by_col, "left")
+    w = Window.partitionBy(group_by_col)
+
+    df = df.withColumn(
+        f"{col_to_clean}_mad",
+        F.percentile_approx(f"{col_to_clean}_abs_diff", 0.5).over(w),
     )
-    df = df.join(mad_df, group_by_col, "left")
     return df.withColumn(
         f"{col_to_clean}_mad_abs_diff",
         F.abs(F.col(col_to_clean) - F.col(f"{col_to_clean}_mad")),
@@ -172,14 +185,19 @@ def compute_outlier_cutoff(
         containing the outlier threshold for each group.
     """
     percentile = 1 - proportion_to_filter
+    w = Window.partitionBy(group_by_col)
 
-    cutoff_df = df.groupBy(group_by_col).agg(
-        F.expr(f"percentile({col_to_clean}_abs_diff, array({percentile}))")[0].alias(
-            f"{col_to_clean}_abs_diff_cutoff"
-        )
+    # cutoff_df = df.groupBy(group_by_col).agg(
+    #     F.expr(f"percentile({col_to_clean}_abs_diff, array({percentile}))")[0].alias(
+    #         f"{col_to_clean}_abs_diff_cutoff"
+    #     )
+    # )
+    # return df.join(cutoff_df, group_by_col, "left")
+    df = df.withColumn(
+        f"{col_to_clean}_abs_diff_cutoff",
+        F.percentile_approx(f"{col_to_clean}_abs_diff", percentile).over(w),
     )
-
-    return df.join(cutoff_df, group_by_col, "left")
+    return df
 
 
 def flag_outliers(df: DataFrame, col_to_clean: str) -> DataFrame:
