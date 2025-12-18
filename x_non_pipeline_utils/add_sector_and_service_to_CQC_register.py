@@ -5,9 +5,11 @@ from cqc_metadata import ColumnNames as Columns
 from cqc_metadata import ColumnValues as Values
 from cqc_metadata import CqcCategories, CqcConfig
 
+YEAR_AND_FILE_NAME = Path("2025/12. CQC 051225 (from CQC website)")
+
 
 def main():
-    file = Path(f"{CqcConfig.directory / CqcConfig.file_name}{CqcConfig.source_suffix}")
+    file = Path(f"{CqcConfig.directory / YEAR_AND_FILE_NAME}{CqcConfig.source_suffix}")
     data = open_cqc_file(file, CqcConfig.sheet_name)
     data = remove_non_social_care_data(data)
     data = add_sector_data(data)

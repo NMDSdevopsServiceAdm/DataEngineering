@@ -47,7 +47,6 @@ class CqcConfig:
     directory = Path(
         "F:/03. Data sources/07. External data sets/CQC Registered Providers lists/"
     )
-    file_name = Path("2025/12. CQC 051225 (from CQC website)")
     source_suffix = ".xlsx"
     dest_suffix = " inc sector and service.xlsx"
     sheet_name = "HSCA_Active_Locations"
