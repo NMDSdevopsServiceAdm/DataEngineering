@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+-
+
+### Changed
+-
+
+### Fixed
+-
+
+## [v2025.11.0] - 18/12/2025
+
+### Added
 - Added provider name into the merged dataframe within the CQC Coverage job.
 
 - New function added to merge the old CQC ratings and the new assessment ratings.
