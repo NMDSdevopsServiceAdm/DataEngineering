@@ -73,15 +73,15 @@ def clean_longitudinal_outliers(
         new_rule_name,
     )
 
-    # cleaned_df = cleaned_df.drop(
-    #     f"{col_to_clean}_median_val",
-    #     f"{col_to_clean}_mad",
-    #     f"{col_to_clean}_mad_abs_diff",
-    #     f"{col_to_clean}_abs_diff",
-    #     f"{col_to_clean}_abs_diff_cutoff",
-    #     f"{col_to_clean}_outlier_flag",
-    #     f"{col_to_clean}_large_location_flag",
-    # )
+    cleaned_df = cleaned_df.drop(
+        f"{col_to_clean}_median_val",
+        f"{col_to_clean}_mad",
+        f"{col_to_clean}_mad_abs_diff",
+        f"{col_to_clean}_abs_diff",
+        f"{col_to_clean}_abs_diff_cutoff",
+        f"{col_to_clean}_outlier_flag",
+        f"{col_to_clean}_large_location_flag",
+    )
 
     return cleaned_df
 
@@ -99,13 +99,6 @@ def compute_group_median(df: DataFrame, group_col: str, col_to_clean: str) -> Da
         DataFrame: Original DataFrame joined with a new column 'median_val' containing
         the group-wise median.
     """
-    # median_df = df.groupBy(group_col).agg(
-    #     F.expr(f"percentile({col_to_clean}, array(0.5))")[0].alias(
-    #         f"{col_to_clean}_median_val"
-    #     )
-    # )
-
-    # return df.join(median_df, group_col, "left")
 
     w = Window.partitionBy(group_col)
     df = df.withColumn(
@@ -146,12 +139,6 @@ def compute_mad(df: DataFrame, group_by_col: str, col_to_clean: str) -> DataFram
         DataFrame: Original DataFrame joined with a new column 'mad' containing the
         group-wise median absolute deviation.
     """
-    # mad_df = df.groupBy(group_by_col).agg(
-    #     F.expr(f"percentile({col_to_clean}_abs_diff, array(0.5))")[0].alias(
-    #         f"{col_to_clean}_mad"
-    #     )
-    # )
-    # df = df.join(mad_df, group_by_col, "left")
     w = Window.partitionBy(group_by_col)
 
     df = df.withColumn(
@@ -187,12 +174,6 @@ def compute_outlier_cutoff(
     percentile = 1 - proportion_to_filter
     w = Window.partitionBy(group_by_col)
 
-    # cutoff_df = df.groupBy(group_by_col).agg(
-    #     F.expr(f"percentile({col_to_clean}_abs_diff, array({percentile}))")[0].alias(
-    #         f"{col_to_clean}_abs_diff_cutoff"
-    #     )
-    # )
-    # return df.join(cutoff_df, group_by_col, "left")
     df = df.withColumn(
         f"{col_to_clean}_abs_diff_cutoff",
         F.percentile_approx(f"{col_to_clean}_abs_diff", percentile).over(w),
@@ -292,14 +273,3 @@ def apply_outlier_cleaning(
         ).otherwise(F.col(col_to_clean)),
     )
     return df
-
-    # small locations allowed big jumps
-    # check if locaiton has ever hadmore than 100 employees - flag these
-    # instea of 100 sa magic number - calculate 95th percentile of all locations and see if a value higher than that in a particulat locaitont o mark it as big - care homes ends up about 99, non-res about 135
-    # test abs diff outliers flag only, outliers + 95th percentile, outliers plus 99th percentile
-    # currently calculates cutoff based on abs diff,  - mad over filters
-    # test case: loc id 1-3797583069, 1-10145657596
-    # SELECT distinct locationid FROM "1225-filter-ct-data1-data-engineering-database"."dataset_ind_cqc_02_cleaned_data" where ct_non_res_filtering_rule like '%random_spikes%' limit 10;
-    # Columns to use ct_non_res_filtering_rule, ct_care_home_filtering_rule
-    # should we use 90th or 95th percitile for mean abs diff cutoff
-    # 95th percentil of all locations was good cutoff
