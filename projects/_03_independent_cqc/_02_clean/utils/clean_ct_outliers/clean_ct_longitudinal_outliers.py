@@ -42,17 +42,10 @@ def clean_longitudinal_outliers(
     """
     df_median = compute_group_median(df, group_by_col, col_to_clean)
     df_deviation = compute_absolute_deviation(df_median, col_to_clean)
-    df_mad = compute_mad(df_deviation, group_by_col, col_to_clean)
     df_thresholds = compute_outlier_cutoff(
-        df_mad, group_by_col, proportion_to_filter, col_to_clean
-    )
-    large_location_cutoff = compute_large_location_cutoff(
-        df_thresholds, 0.95, col_to_clean
+        df_deviation, group_by_col, proportion_to_filter, col_to_clean
     )
     df_flags = flag_outliers(df_thresholds, col_to_clean)
-    df_flags = flag_large_locations(
-        df_flags, group_by_col, col_to_clean, large_location_cutoff
-    )
     cleaned_df = apply_outlier_cleaning(df_flags, col_to_clean, cleaned_column_name)
 
     if care_home:
@@ -143,7 +136,7 @@ def compute_mad(df: DataFrame, group_by_col: str, col_to_clean: str) -> DataFram
 
     df = df.withColumn(
         f"{col_to_clean}_mad",
-        F.percentile_approx(f"{col_to_clean}_abs_diff", 0.5).over(w),
+        F.percentile(f"{col_to_clean}_abs_diff", 0.5).over(w),
     )
     return df.withColumn(
         f"{col_to_clean}_mad_abs_diff",
@@ -176,7 +169,7 @@ def compute_outlier_cutoff(
 
     df = df.withColumn(
         f"{col_to_clean}_abs_diff_cutoff",
-        F.percentile_approx(f"{col_to_clean}_abs_diff", percentile).over(w),
+        F.percentile(f"{col_to_clean}_abs_diff", percentile).over(w),
     )
     return df
 
@@ -267,8 +260,7 @@ def apply_outlier_cleaning(
     df = df.withColumn(
         cleaned_column_name,
         F.when(
-            F.col(f"{col_to_clean}_outlier_flag")
-            & F.col(f"{col_to_clean}_large_location_flag"),
+            F.col(f"{col_to_clean}_outlier_flag"),
             None,
         ).otherwise(F.col(col_to_clean)),
     )
