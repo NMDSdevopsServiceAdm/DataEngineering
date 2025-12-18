@@ -2,6 +2,15 @@ from dataclasses import dataclass
 
 import polars as pl
 
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
+    CqcPIRCleanedColumns as CQCPIRClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
@@ -186,8 +195,49 @@ class MergeIndCQCSchemas:
 
 @dataclass
 class MergeUtilsSchemas:
-    test = pl.Schema(
+    clean_cqc_location_for_merge_schema = pl.Schema(
         [
-            (IndCQC.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_sector, pl.String()),
+            (CQCLClean.care_home, pl.String()),
+            (CQCLClean.number_of_beds, pl.Int64()),
+        ]
+    )
+
+    data_to_merge_without_care_home_col_schema = pl.Schema(
+        [
+            (AWPClean.ascwds_workplace_import_date, pl.Date()),
+            (AWPClean.location_id, pl.String()),
+            (AWPClean.establishment_id, pl.String()),
+            (AWPClean.total_staff, pl.Int64()),
+        ]
+    )
+    expected_merged_without_care_home_col_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (AWPClean.ascwds_workplace_import_date, pl.Date()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.cqc_sector, pl.String()),
+            (CQCLClean.care_home, pl.String()),
+            (CQCLClean.number_of_beds, pl.Int64()),
+            (AWPClean.establishment_id, pl.String()),
+            (AWPClean.total_staff, pl.Int64()),
+        ]
+    )
+
+    data_to_merge_with_care_home_col_schema = pl.Schema(
+        [
+            (CQCPIRClean.location_id, pl.String(), False),
+            (CQCPIRClean.care_home, pl.String()),
+            (CQCPIRClean.cqc_pir_import_date, pl.Date()),
+            (CQCPIRClean.pir_people_directly_employed_cleaned, pl.Int64()),
+        ]
+    )
+    expected_merged_with_care_home_col_schema = pl.Schema(
+        [
+            *clean_cqc_location_for_merge_schema,
+            (CQCPIRClean.pir_people_directly_employed_cleaned, pl.Int64()),
+            (CQCPIRClean.cqc_pir_import_date, pl.Date()),
         ]
     )
