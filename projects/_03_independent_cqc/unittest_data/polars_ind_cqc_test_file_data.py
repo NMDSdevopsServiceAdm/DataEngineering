@@ -302,3 +302,29 @@ class EstimateIndCqcFilledPostsByJobRoleUtilsData:
         ),
         (10, 5, None, 20),
     ]
+
+
+@dataclass
+class MergeIndCQCData:
+    test = [
+        (
+            "1-001",
+            "1-001",
+        ),
+        (
+            date(2025, 1, 1),
+            date(2025, 1, 2),
+        ),
+    ]
+
+
+@dataclass
+class MergeUtilsData:
+    test = [
+        (
+            "1-001",
+            "1-001",
+            "1-001",
+            "1-002",
+        ),
+    ]

@@ -172,3 +172,22 @@ class EstimateIndCqcFilledPostsByJobRoleUtilsSchemas:
             (IndCQC.ascwds_job_role_counts, pl.Int64()),
         ]
     )
+
+
+@dataclass
+class MergeIndCQCSchemas:
+    test = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+
+@dataclass
+class MergeUtilsSchemas:
+    test = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+        ]
+    )
