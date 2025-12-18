@@ -47,7 +47,7 @@ def clean_longitudinal_outliers(
         df_mad, group_by_col, proportion_to_filter, col_to_clean
     )
     large_location_cutoff = compute_large_location_cutoff(
-        df_thresholds, proportion_to_filter, col_to_clean
+        df_thresholds, 0.95, col_to_clean
     )
     df_flags = flag_outliers(df_thresholds, col_to_clean)
     df_flags = flag_large_locations(
@@ -73,15 +73,15 @@ def clean_longitudinal_outliers(
         new_rule_name,
     )
 
-    cleaned_df = cleaned_df.drop(
-        f"{col_to_clean}_median_val",
-        f"{col_to_clean}_mad",
-        f"{col_to_clean}_mad_abs_diff",
-        f"{col_to_clean}_abs_diff",
-        f"{col_to_clean}_abs_diff_cutoff",
-        f"{col_to_clean}_outlier_flag",
-        f"{col_to_clean}_large_location_flag",
-    )
+    # cleaned_df = cleaned_df.drop(
+    #     f"{col_to_clean}_median_val",
+    #     f"{col_to_clean}_mad",
+    #     f"{col_to_clean}_mad_abs_diff",
+    #     f"{col_to_clean}_abs_diff",
+    #     f"{col_to_clean}_abs_diff_cutoff",
+    #     f"{col_to_clean}_outlier_flag",
+    #     f"{col_to_clean}_large_location_flag",
+    # )
 
     return cleaned_df
 

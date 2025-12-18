@@ -49,14 +49,14 @@ def clean_capacity_tracker_care_home_outliers(df: DataFrame) -> DataFrame:
 
     df = null_posts_per_bed_outliers(df)
 
-    df = clean_longitudinal_outliers(
-        df=df,
-        group_by_col=IndCQC.location_id,
-        col_to_clean=IndCQC.ct_care_home_total_employed_cleaned,
-        cleaned_column_name=IndCQC.ct_care_home_total_employed_cleaned,
-        proportion_to_filter=0.025,
-        care_home=True,
-    )
+    # df = clean_longitudinal_outliers(
+    #     df=df,
+    #     group_by_col=IndCQC.location_id,
+    #     col_to_clean=IndCQC.ct_care_home_total_employed_cleaned,
+    #     cleaned_column_name=IndCQC.ct_care_home_total_employed_cleaned,
+    #     proportion_to_filter=0.005,
+    #     care_home=True,
+    # )
 
     df = clean_ct_values_after_consecutive_repetition(
         df=df,
