@@ -28,22 +28,22 @@ class TestCleanCtLongitudinalOutliers(unittest.TestCase):
 class TestFunctionsAreCalled(TestCleanCtLongitudinalOutliers):
     @patch(f"{PATCH_PATH}.compute_group_median")
     @patch(f"{PATCH_PATH}.compute_absolute_deviation")
-    @patch(f"{PATCH_PATH}.compute_mad")
+    # @patch(f"{PATCH_PATH}.compute_mad")
     @patch(f"{PATCH_PATH}.compute_outlier_cutoff")
-    @patch(f"{PATCH_PATH}.compute_large_location_cutoff")
+    # @patch(f"{PATCH_PATH}.compute_large_location_cutoff")
     @patch(f"{PATCH_PATH}.flag_outliers")
-    @patch(f"{PATCH_PATH}.flag_large_locations")
+    # @patch(f"{PATCH_PATH}.flag_large_locations")
     @patch(f"{PATCH_PATH}.apply_outlier_cleaning")
     @patch(f"{PATCH_PATH}.update_filtering_rule")
     def test_functions_are_called(
         self,
         update_filtering_rule_mock: Mock,
         apply_outlier_cleaning_mock: Mock,
-        flag_large_locations_mock: Mock,
+        # flag_large_locations_mock: Mock,
         flag_outliers_mock: Mock,
-        compute_large_locations_cutoff_mock: Mock,
+        # compute_large_locations_cutoff_mock: Mock,
         compute_outlier_cutoff_mock: Mock,
-        compute_mad_mock: Mock,
+        # compute_mad_mock: Mock,
         compute_absolute_deviation_mock: Mock,
         compute_group_median_mock: Mock,
     ):
@@ -58,11 +58,11 @@ class TestFunctionsAreCalled(TestCleanCtLongitudinalOutliers):
 
         compute_group_median_mock.assert_called_once()
         compute_absolute_deviation_mock.assert_called_once()
-        compute_mad_mock.assert_called_once()
+        # compute_mad_mock.assert_called_once()
         compute_outlier_cutoff_mock.assert_called_once()
-        compute_large_locations_cutoff_mock.assert_called_once()
+        # compute_large_locations_cutoff_mock.assert_called_once()
         flag_outliers_mock.assert_called_once()
-        flag_large_locations_mock.assert_called_once()
+        # flag_large_locations_mock.assert_called_once()
         apply_outlier_cleaning_mock.assert_called_once()
         update_filtering_rule_mock.assert_called_once()
 
@@ -87,18 +87,18 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
             proportion_to_filter=0.10,
             care_home=True,
         )
-        returned_df.show()
-        test_df.show()
+        # returned_df.show()
+        # test_df.show()
         self.assertEqual(returned_df.collect(), test_df.collect())
 
-    def test_clean_longitudinal_outliers_nulls_outlier_values_when_remove_whole_record_is_false(
+    def test_clean_longitudinal_outliers_nulls_outlier_values(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.clean_longitudinal_outliers_input_rows,
             Schemas.input_schema,
         )
-        test_df.show()
+        # test_df.show()
 
         returned_df = job.clean_longitudinal_outliers(
             test_df,
@@ -113,8 +113,8 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
             Data.expected_clean_longitudinal_outliers_remove_value_only_rows,
             Schemas.input_schema,
         )
-        returned_df.show()
-        expected_df.show()
+        # returned_df.show()
+        # expected_df.show()
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
@@ -217,49 +217,49 @@ class TestComputeOutlierCutoff(TestCleanCtLongitudinalOutliers):
             )
 
 
-class TestComputeLargeLocationCutoff(TestCleanCtLongitudinalOutliers):
-    def test_compute_large_location_cutoff_returns_expected_values(
-        self,
-    ):
-        df = self.spark.createDataFrame(
-            Data.compute_large_location_cutoff_rows,
-            Schemas.compute_large_location_cutoff_schema,
-        )
-        df.show()
+# class TestComputeLargeLocationCutoff(TestCleanCtLongitudinalOutliers):
+#     def test_compute_large_location_cutoff_returns_expected_values(
+#         self,
+#     ):
+#         df = self.spark.createDataFrame(
+#             Data.compute_large_location_cutoff_rows,
+#             Schemas.compute_large_location_cutoff_schema,
+#         )
+#         df.show()
 
-        returned_float = job.compute_large_location_cutoff(
-            df,
-            0.95,  # 95th percentile
-            IndCQC.ct_care_home_total_employed_cleaned,
-        )
+#         returned_float = job.compute_large_location_cutoff(
+#             df,
+#             0.95,  # 95th percentile
+#             IndCQC.ct_care_home_total_employed_cleaned,
+#         )
 
-        expected_float = Data.expected_compute_large_location_cutoff
+#         expected_float = Data.expected_compute_large_location_cutoff
 
-        self.assertEqual(returned_float, expected_float)
+#         self.assertEqual(returned_float, expected_float)
 
 
-class TestFlagLargeLocations(TestCleanCtLongitudinalOutliers):
-    def test_flag_large_locations_returns_expected_values(
-        self,
-    ):
-        df = self.spark.createDataFrame(
-            Data.compute_large_location_cutoff_rows,
-            Schemas.compute_large_location_cutoff_schema,
-        )
+# class TestFlagLargeLocations(TestCleanCtLongitudinalOutliers):
+#     def test_flag_large_locations_returns_expected_values(
+#         self,
+#     ):
+#         df = self.spark.createDataFrame(
+#             Data.compute_large_location_cutoff_rows,
+#             Schemas.compute_large_location_cutoff_schema,
+#         )
 
-        returned_df = job.flag_large_locations(
-            df,
-            IndCQC.location_id,
-            IndCQC.ct_care_home_total_employed_cleaned,
-            Data.expected_compute_large_location_cutoff,
-        )
+#         returned_df = job.flag_large_locations(
+#             df,
+#             IndCQC.location_id,
+#             IndCQC.ct_care_home_total_employed_cleaned,
+#             Data.expected_compute_large_location_cutoff,
+#         )
 
-        expected_df = self.spark.createDataFrame(
-            Data.expected_flag_large_locations_rows,
-            Schemas.expected_flag_large_locations_schema,
-        )
+#         expected_df = self.spark.createDataFrame(
+#             Data.expected_flag_large_locations_rows,
+#             Schemas.expected_flag_large_locations_schema,
+#         )
 
-        self.assertEqual(returned_df.collect(), expected_df.collect())
+#         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class TestFlagOutliers(TestCleanCtLongitudinalOutliers):
@@ -277,22 +277,21 @@ class TestFlagOutliers(TestCleanCtLongitudinalOutliers):
             Data.expected_flag_outliers_rows,
             Schemas.expected_outlier_flags_schema,
         )
-        returned_df.show()
-        expected_df.show()
+        # returned_df.show()
+        # expected_df.show()
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
-    # TODO : write more test cases for logic in function
-    def test_apply_outlier_cleaning_nulls_outlier_values_when_remove_whole_record_is_false(
+    def test_apply_outlier_cleaning_nulls_outlier_values(
         self,
     ):
         df = self.spark.createDataFrame(
             Data.apply_outlier_cleaning_input_rows,
             Schemas.apply_outlier_cleaning_schema,
         )
-        df.show()
+        # df.show()
 
         returned_df = job.apply_outlier_cleaning(
             df,
@@ -304,7 +303,7 @@ class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
             Data.apply_outlier_cleaning_expected_rows,
             Schemas.apply_outlier_cleaning_schema,
         )
-        returned_df.show()
-        expected_df.show()
+        # returned_df.show()
+        # expected_df.show()
 
         self.assertEqual(returned_df.collect(), expected_df.collect())

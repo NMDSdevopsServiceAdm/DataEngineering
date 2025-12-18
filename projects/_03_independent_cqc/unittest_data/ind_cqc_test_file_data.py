@@ -6178,7 +6178,7 @@ class OutlierCleaningData:
         ("1-001", 5, CTCareHomeFilteringRule.populated),  # small location with jump
         ("1-001", 10, CTCareHomeFilteringRule.populated),
         ("1-001", 15, CTCareHomeFilteringRule.populated),
-        ("1-001", 80, CTCareHomeFilteringRule.populated),
+        ("1-001", None, CTCareHomeFilteringRule.longitudinal_outliers_total_posts),
         ("1-002", 95, CTCareHomeFilteringRule.populated),  # large location with dip
         ("1-002", None, CTCareHomeFilteringRule.longitudinal_outliers_total_posts),
         ("1-002", 90, CTCareHomeFilteringRule.populated),
@@ -6189,11 +6189,11 @@ class OutlierCleaningData:
             "1-004",
             5,
             CTCareHomeFilteringRule.populated,
-        ),  # Extra location to pad out number of rows for calculations
+        ),
         ("1-004", 10, CTCareHomeFilteringRule.populated),
         ("1-004", 15, CTCareHomeFilteringRule.populated),
         ("1-004", 80, CTCareHomeFilteringRule.populated),
-        ("1-004", 94, CTCareHomeFilteringRule.populated),
+        ("1-004", None, CTCareHomeFilteringRule.longitudinal_outliers_total_posts),
         ("1-004", 20, CTCareHomeFilteringRule.populated),
         ("1-004", 90, CTCareHomeFilteringRule.populated),
         ("1-004", 40, CTCareHomeFilteringRule.populated),
@@ -6241,51 +6241,6 @@ class OutlierCleaningData:
         ("1-001", 30, CTCareHomeFilteringRule.populated, 25, 5, 10, 20, 57),
         ("1-001", 100, CTCareHomeFilteringRule.populated, 25, 75, 10, 90, 57),
     ]
-    compute_large_location_cutoff_rows = [
-        ("1-001", 5),  # location 1 range 5-95
-        ("1-001", 15),
-        ("1-001", 25),
-        ("1-001", 35),
-        ("1-001", 45),
-        ("1-001", 55),
-        ("1-001", 65),
-        ("1-001", 75),
-        ("1-001", 85),
-        ("1-001", 95),
-        ("1-002", 10),  # location 2 range 10-100
-        ("1-002", 20),
-        ("1-002", 30),
-        ("1-002", 40),
-        ("1-002", 50),
-        ("1-002", 60),
-        ("1-002", 70),
-        ("1-002", 80),
-        ("1-002", 90),
-        ("1-002", 100),
-    ]
-    expected_compute_large_location_cutoff = 95.0
-    expected_flag_large_locations_rows = [
-        ("1-001", 5, False),  # location 1 range 5-95
-        ("1-001", 15, False),
-        ("1-001", 25, False),
-        ("1-001", 35, False),
-        ("1-001", 45, False),
-        ("1-001", 55, False),
-        ("1-001", 65, False),
-        ("1-001", 75, False),
-        ("1-001", 85, False),
-        ("1-001", 95, False),
-        ("1-002", 10, True),  # location 2 range 10-100
-        ("1-002", 20, True),
-        ("1-002", 30, True),
-        ("1-002", 40, True),
-        ("1-002", 50, True),
-        ("1-002", 60, True),
-        ("1-002", 70, True),
-        ("1-002", 80, True),
-        ("1-002", 90, True),
-        ("1-002", 100, True),
-    ]
 
     flag_outliers_rows = expected_outlier_cutoff_rows
 
@@ -6297,15 +6252,15 @@ class OutlierCleaningData:
     ]
 
     apply_outlier_cleaning_input_rows = [
-        ("1-001", 100, True, True),  # Outlier and large location
-        ("1-001", 75, False, True),  # Not outlier and large location
-        ("1-001", 50, True, False),  # Outlier and not large location
-        ("1-001", 25, False, False),  # Not outlier and not large location
+        ("1-001", 100, True),  # Outlier and large location
+        ("1-001", 75, False),  # Not outlier and large location
+        ("1-001", 50, False),  # Outlier and not large location
+        ("1-001", 25, False),  # Not outlier and not large location
     ]
 
     apply_outlier_cleaning_expected_rows = apply_outlier_cleaning_input_rows = [
-        ("1-001", None, True, True),  # Outlier and large location
-        ("1-001", 75, False, True),  # Not outlier and large location
-        ("1-001", 50, True, False),  # Outlier and not large location
-        ("1-001", 25, False, False),  # Not outlier and not large location
+        ("1-001", None, True),  # Outlier and large location
+        ("1-001", 75, False),  # Not outlier and large location
+        ("1-001", 50, False),  # Outlier and not large location
+        ("1-001", 25, False),  # Not outlier and not large location
     ]

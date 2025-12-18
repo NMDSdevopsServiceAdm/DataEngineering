@@ -96,7 +96,7 @@ def compute_group_median(df: DataFrame, group_col: str, col_to_clean: str) -> Da
     w = Window.partitionBy(group_col)
     df = df.withColumn(
         f"{col_to_clean}_median_val",
-        F.percentile_approx(col_to_clean, 0.5).over(w),
+        F.percentile(col_to_clean, 0.5).over(w),
     )
     return df
 

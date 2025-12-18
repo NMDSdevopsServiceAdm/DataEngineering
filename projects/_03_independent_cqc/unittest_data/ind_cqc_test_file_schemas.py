@@ -3512,10 +3512,5 @@ class OutlierCleaningSchemas:
                 BooleanType(),
                 True,
             ),
-            StructField(
-                f"{IndCQC.ct_care_home_total_employed_cleaned}_large_location_flag",
-                BooleanType(),
-                True,
-            ),
         ]
     )
