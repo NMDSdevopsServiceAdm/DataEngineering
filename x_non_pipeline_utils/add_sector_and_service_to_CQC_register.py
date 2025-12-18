@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pandas as pd
 from cqc_metadata import ColumnNames as Columns
 from cqc_metadata import ColumnValues as Values
@@ -5,7 +7,7 @@ from cqc_metadata import CqcCategories, CqcConfig
 
 
 def main():
-    file = CqcConfig.directory / CqcConfig.old_file_name
+    file = Path(f"{CqcConfig.directory / CqcConfig.file_name}{CqcConfig.source_suffix}")
     data = open_CQC_File(file, CqcConfig.sheet_name)
     data = remove_non_social_care_data(data)
     data = add_sector_data(data)
@@ -16,13 +18,12 @@ def main():
 
 def open_CQC_File(File_name, sheet_name):
     print("opening file")
-    CQCdata = pd.read_excel(
-        File_name, sheet_name=sheet_name, skiprows=CqcConfig.blank_rows
-    )
+    CQCdata = pd.read_excel(File_name, sheet_name=sheet_name)
     return CQCdata
 
 
 def remove_non_social_care_data(data):
+    print("removing non social care data")
     data = data[data[Columns.location_type] == Values.social_care_org].reset_index(
         drop=True
     )
@@ -70,7 +71,9 @@ def add_service_data(data):
 
 def save_CQC_file(df):
     print("saving file")
-    save_location = CqcConfig.directory / CqcConfig.new_file_name
+    save_location = Path(
+        f"{CqcConfig.directory / CqcConfig.file_name}{CqcConfig.dest_suffix}"
+    )
     df.to_excel(save_location, sheet_name=CqcConfig.new_sheet_name, index=False)
 
 
