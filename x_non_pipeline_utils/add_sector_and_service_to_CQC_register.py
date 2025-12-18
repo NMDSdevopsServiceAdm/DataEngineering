@@ -8,17 +8,17 @@ from cqc_metadata import CqcCategories, CqcConfig
 
 def main():
     file = Path(f"{CqcConfig.directory / CqcConfig.file_name}{CqcConfig.source_suffix}")
-    data = open_CQC_File(file, CqcConfig.sheet_name)
+    data = open_cqc_file(file, CqcConfig.sheet_name)
     data = remove_non_social_care_data(data)
     data = add_sector_data(data)
     data = add_service_data(data)
-    data = save_CQC_file(data)
+    data = save_cqc_file(data)
     print("complete")
 
 
-def open_CQC_File(File_name, sheet_name):
-    print("opening file")
-    CQCdata = pd.read_excel(File_name, sheet_name=sheet_name)
+def open_cqc_file(file_name, sheet_name):
+    print(f"opening file: {file_name}")
+    CQCdata = pd.read_excel(file_name, sheet_name=sheet_name)
     return CQCdata
 
 
@@ -69,11 +69,11 @@ def add_service_data(data):
     return data
 
 
-def save_CQC_file(df):
-    print("saving file")
+def save_cqc_file(df):
     save_location = Path(
         f"{CqcConfig.directory / CqcConfig.file_name}{CqcConfig.dest_suffix}"
     )
+    print(f"saving file: {save_location}")
     df.to_excel(save_location, sheet_name=CqcConfig.new_sheet_name, index=False)
 
 
