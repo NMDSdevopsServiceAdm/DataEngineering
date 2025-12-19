@@ -59,3 +59,10 @@ def main(bucket_name: str, model_name: str) -> None:
     )
 
     train_df, test_df = tUtils.split_train_test(df, frac=0.8)
+
+    X_train, y_train = tUtils.convert_dataframe_to_numpy(
+        train_df, feature_cols, dependent_col
+    )
+    X_test, y_test = tUtils.convert_dataframe_to_numpy(
+        test_df, feature_cols, dependent_col
+    )
