@@ -3,6 +3,7 @@ from http.client import HTTPMessage
 from typing import Generator
 from unittest.mock import Mock, call, patch
 
+import polars as pl
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -345,6 +346,115 @@ class GetChangesWithinTimeframeTests(CqcApiTests):
             },
         )
         self.assertEqual(result, {"changes": ["1", "2", "3"]})
+
+
+class NormaliseStructsTests(CqcApiTests):
+    def test_adds_missing_struct_fields(self):
+        schema = {
+            "address": pl.Struct(
+                [
+                    pl.Field("line1", pl.Utf8),
+                    pl.Field("postcode", pl.Utf8),
+                ]
+            )
+        }
+
+        record = {"address": {"line1": "123 Main St"}}
+        expected = {"address": {"line1": "123 Main St", "postcode": None}}
+
+        returned = cqc.normalise_structs(record, schema)
+        self.assertEqual(returned, expected)
+
+    def test_creates_struct_when_missing(self):
+        schema = {
+            "address": pl.Struct(
+                [
+                    pl.Field("line1", pl.Utf8),
+                    pl.Field("postcode", pl.Utf8),
+                ]
+            )
+        }
+
+        record = {}
+        expected = {"address": {"line1": None, "postcode": None}}
+
+        returned = cqc.normalise_structs(record, schema)
+        self.assertEqual(returned, expected)
+
+    def test_strips_extra_fields_not_in_schema(self):
+        schema = {
+            "address": pl.Struct(
+                [
+                    pl.Field("line1", pl.Utf8),
+                    pl.Field("postcode", pl.Utf8),
+                ]
+            )
+        }
+
+        record = {
+            "address": {
+                "line1": "123 Main St",
+                "postcode": "AB1 2CD",
+                "extra": "IGNORE",
+            }
+        }
+
+        expected = {"address": {"line1": "123 Main St", "postcode": "AB1 2CD"}}
+
+        returned = cqc.normalise_structs(record, schema)
+        self.assertEqual(returned, expected)
+
+    def test_normalise_structs_keeps_column_not_in_schema(self):
+        schema = {
+            "address": pl.Struct(
+                [
+                    pl.Field("line1", pl.Utf8),
+                    pl.Field("postcode", pl.Utf8),
+                ]
+            )
+        }
+
+        record = {
+            "name": "Care Home",
+            "address": {"line1": "123 Main St", "postcode": "AB1 2CD"},
+        }
+
+        returned = cqc.normalise_structs(record, schema)
+        self.assertEqual(returned, record)
+
+    def test_normalise_structs_does_not_change_original_data_type_to_match_schema(self):
+        schema = {
+            "struct_col": pl.Struct(
+                [
+                    pl.Field("number", pl.Int32),
+                    pl.Field("string_date", pl.Utf8),
+                ]
+            ),
+        }
+
+        record = {
+            "struct_col": {"number": "123", "string_date": "2025-01-01"},
+        }
+
+        returned = cqc.normalise_structs(record, schema)
+        self.assertEqual(returned, record)
+
+
+class PrimedGeneratorTests(CqcApiTests):
+    def test_normalised_generator_yields_correct_records(self):
+        schema = {
+            "a": pl.Struct([pl.Field("x", pl.Utf8)]),
+            "b": pl.Utf8,
+        }
+
+        def fake_api_gen():
+            yield {"a": {"x": "value"}, "b": "data"}
+
+        gen = cqc.primed_generator(fake_api_gen(), schema)
+        first = next(gen)
+
+        expected_first = {"a": {"x": None}, "b": None}
+        self.assertEqual(first, expected_first)
 
 
 if __name__ == "__main__":
