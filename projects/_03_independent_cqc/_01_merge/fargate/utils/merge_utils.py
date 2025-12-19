@@ -6,8 +6,6 @@ from polars_utils.cleaning_utils import add_aligned_date_column
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
 def join_data_into_cqc_lf(
@@ -25,14 +23,14 @@ def join_data_into_cqc_lf(
     to None (not required for matching).
 
     Args:
-        cqc_df (DataFrame): The CQC location DataFrame.
-        join_df (DataFrame): The DataFrame to join in.
-        join_location_id_col (str): The name of the location ID column in the DataFrame to join in.
-        join_import_date_col (str): The name of the import date column in the DataFrame to join in.
+        cqc_df (LazyFrame): The CQC location LazyFrame.
+        join_df (LazyFrame): The LazyFrame to join in.
+        join_location_id_col (str): The name of the location ID column in the LazyFrame to join in.
+        join_import_date_col (str): The name of the import date column in the LazyFrame to join in.
         join_care_home_col (Optional[str]): The name of the care home column if required for the join.
 
     Returns:
-        DataFrame: Original CQC locations DataFrame with the second DataFrame joined in.
+        LazyFrame: Original CQC locations LazyFrame with the second LazyFrame joined in.
     """
     cqc_df_with_join_import_date = add_aligned_date_column(
         cqc_df,
