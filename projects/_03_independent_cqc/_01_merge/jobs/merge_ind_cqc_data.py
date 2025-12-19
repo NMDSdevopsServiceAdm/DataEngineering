@@ -239,7 +239,7 @@ if __name__ == "__main__":
         destination,
     ) = utils.collect_arguments(
         (
-            "--cleaned_cqc_location_source",
+            "--cleaned_ct_care_home_source",
             "Source s3 directory for parquet CQC locations cleaned dataset",
         ),
         (
