@@ -124,7 +124,6 @@ def main(
 
     cleaned_cqc_pir_lf = utils.scan_parquet(
         cleaned_cqc_pir_source,
-        cleaned_cqc_pir_source,
         selected_columns=cleaned_cqc_pir_columns_to_import,
     )
     print("Cleaned CQC PIR LazyFrame read in")
