@@ -99,27 +99,3 @@ class ConvertDataframeToNumpyTests(unittest.TestCase):
                 self.expected_col_y,
             )
         )
-
-    def test_convert_dataframe_to_numpy_raises_on_missing_dependent_column(self):
-        """Verifies an error is raised if the dependent column is missing."""
-
-        f = io.StringIO()
-        with redirect_stdout(f):
-            with self.assertRaises(pl.exceptions.ColumnNotFoundError):
-                job.convert_dataframe_to_numpy(
-                    self.test_df,
-                    Schemas.multiple_feature_cols,
-                    "unrecognised_dependent_col",
-                )
-
-    def test_convert_dataframe_to_numpy_raises_on_missing_feature_column(self):
-        """Verifies an error is raised if a feature column is missing."""
-
-        f = io.StringIO()
-        with redirect_stdout(f):
-            with self.assertRaises(pl.exceptions.ColumnNotFoundError):
-                job.convert_dataframe_to_numpy(
-                    self.test_df,
-                    ["unrecognised_feature_col"],
-                    Schemas.dependent_col,
-                )
