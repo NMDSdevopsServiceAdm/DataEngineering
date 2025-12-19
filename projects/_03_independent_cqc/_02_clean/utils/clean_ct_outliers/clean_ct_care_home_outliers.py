@@ -29,7 +29,7 @@ def clean_capacity_tracker_care_home_outliers(df: DataFrame) -> DataFrame:
         df (DataFrame): A dataframe containing `ct_care_home_total_employed`.
 
     Returns:
-        DataFrame: A dataframe containing columns `ct_care_home_total_employed` and `ct_care_home_total_employed_cleaned`.
+        DataFrame: A dataframe containing `ct_care_home_total_employed` and `ct_care_home_total_employed_cleaned`.
     """
     print("Cleaning Capacity Tracker care home data...")
 
@@ -48,15 +48,6 @@ def clean_capacity_tracker_care_home_outliers(df: DataFrame) -> DataFrame:
     df = aggregate_values_to_provider_level(df, IndCQC.ct_care_home_total_employed)
 
     df = null_posts_per_bed_outliers(df)
-
-    # df = clean_longitudinal_outliers(
-    #     df=df,
-    #     group_by_col=IndCQC.location_id,
-    #     col_to_clean=IndCQC.ct_care_home_total_employed_cleaned,
-    #     cleaned_column_name=IndCQC.ct_care_home_total_employed_cleaned,
-    #     proportion_to_filter=0.005,
-    #     care_home=True,
-    # )
 
     df = clean_ct_values_after_consecutive_repetition(
         df=df,
