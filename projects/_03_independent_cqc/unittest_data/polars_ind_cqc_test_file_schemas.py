@@ -2,6 +2,12 @@ from dataclasses import dataclass
 
 import polars as pl
 
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
+)
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerNonResCleanColumns as CTNRClean,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -185,10 +191,59 @@ class EstimateIndCqcFilledPostsByJobRoleUtilsSchemas:
 
 @dataclass
 class MergeIndCQCSchemas:
-    test = pl.Schema(
+    cqc_location_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.care_home, pl.String()),
+            (CQCLClean.cqc_sector, pl.String()),
+        ]
+    )
+    cqc_pir_schema = pl.Schema(
+        [
+            (CQCPIRClean.location_id, pl.String()),
+            (CQCPIRClean.cqc_pir_import_date, pl.Date()),
+            (CQCPIRClean.care_home, pl.String()),
+            ("pir_col", pl.String()),
+        ]
+    )
+    ascwds_workplace_schema = pl.Schema(
+        [
+            (AWPClean.location_id, pl.String()),
+            (AWPClean.ascwds_workplace_import_date, pl.Date()),
+            ("ascwds_col", pl.String()),
+        ]
+    )
+    ct_non_res_schema = pl.Schema(
+        [
+            (CTNRClean.cqc_id, pl.String()),
+            (CTNRClean.ct_non_res_import_date, pl.Date()),
+            (CQCPIRClean.care_home, pl.String()),
+            ("ct_non_res_col", pl.String()),
+        ]
+    )
+    ct_care_home_schema = pl.Schema(
+        [
+            (CTCHClean.cqc_id, pl.String()),
+            (CTCHClean.ct_care_home_import_date, pl.Date()),
+            (CQCPIRClean.care_home, pl.String()),
+            ("ct_care_home_col", pl.String()),
+        ]
+    )
+    expected_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.cqc_sector, pl.String()),
+            (IndCQC.cqc_pir_import_date, pl.Date()),
+            ("pir_col", pl.String()),
+            (IndCQC.ascwds_workplace_import_date, pl.Date()),
+            ("ascwds_col", pl.String()),
+            (IndCQC.ct_non_res_import_date, pl.Date()),
+            ("ct_non_res_col", pl.String()),
+            (IndCQC.ct_care_home_import_date, pl.Date()),
+            ("ct_care_home_col", pl.String()),
         ]
     )
 

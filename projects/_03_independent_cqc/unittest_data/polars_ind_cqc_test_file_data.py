@@ -310,14 +310,117 @@ class EstimateIndCqcFilledPostsByJobRoleUtilsData:
 
 @dataclass
 class MergeIndCQCData:
-    test = [
+    cqc_location_data = [
         (
             "1-001",
-            "1-001",
+            "1-002",
+            "1-003",
         ),
         (
-            date(2025, 1, 1),
-            date(2025, 1, 2),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+        ),
+        (
+            "Y",
+            "Y",
+            "N",
+        ),
+        (
+            Sector.independent,
+            Sector.local_authority,
+            Sector.independent,
+        ),
+    ]
+    cqc_pir_data = [
+        ("1-001", "1-003"),
+        (
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+        ),
+        ("Y", "N"),
+        (
+            "pir_value",
+            "pir_value",
+        ),
+    ]
+    ascwds_workplace_data = [
+        ("1-001", "1-003"),
+        (
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+        ),
+        (
+            "ascwds_value",
+            "ascwds_value",
+        ),
+    ]
+    ct_non_res_data = [
+        ("1-001", "1-003"),
+        (
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+        ),
+        ("Y", "N"),
+        (
+            "ct_non_res_value",
+            "ct_non_res_value",
+        ),
+    ]
+    ct_care_home_data = [
+        ("1-001", "1-003"),
+        (
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+        ),
+        ("Y", "N"),
+        (
+            "ct_care_home_value",
+            "ct_care_home_value",
+        ),
+    ]
+    expected_data = [
+        ("1-001", "1-003"),
+        (
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+        ),
+        ("Y", "N"),
+        (
+            Sector.independent,
+            Sector.independent,
+        ),
+        (
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+        ),
+        (
+            "pir_value",
+            "pir_value",
+        ),
+        (
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+        ),
+        (
+            "ascwds_value",
+            "ascwds_value",
+        ),
+        (
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+        ),
+        (
+            "ct_non_res_value",
+            "ct_non_res_value",
+        ),
+        (
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+        ),
+        (
+            "ct_care_home_value",
+            "ct_care_home_value",
         ),
     ]
 
