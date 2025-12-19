@@ -103,6 +103,7 @@ cleaned_ct_care_home_columns_to_import = [
 ]
 
 
+# converted to polars -> ~DataEngineering\projects\_03_independent_cqc\_01_merge\fargate\merge_ind_cqc_data.py
 def main(
     cleaned_cqc_location_source: str,
     cleaned_cqc_pir_source: str,
@@ -180,6 +181,7 @@ def main(
     )
 
 
+# converted to polars -> ~DataEngineering\projects\_03_independent_cqc\_01_merge\fargate\utils\merge_utils.py
 def join_data_into_cqc_df(
     cqc_df: DataFrame,
     join_df: DataFrame,
