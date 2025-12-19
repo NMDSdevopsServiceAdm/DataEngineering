@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 -
 
 ### Changed
--
+- Migrated the original `PySpark` Independent CQC estimates pipeline step `_01_merge` to be run in `Polars` for notable increases in efficiency.
 
 ### Fixed
 -
