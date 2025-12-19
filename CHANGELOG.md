@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+-
+
+### Changed
+-
+
+### Fixed
+-
+
+## [v2025.11.0] - 18/12/2025
+
+### Added
 - Added provider name into the merged dataframe within the CQC Coverage job.
 
 - New function added to merge the old CQC ratings and the new assessment ratings.
@@ -18,81 +29,47 @@ All notable changes to this project will be documented in this file.
 
 - Function to clean Capacity Tracker care home data by nulling when posts to beds ratio is outside thresholds.
 
-- Model retraining process using Polars and scikit-learn in Fargate
-
 - Tagging added by default to all Terraform elements
 
-- Plan of action for new CQC Ingestion process.
-
-- Added validation script for flatten CQC location process and test script for this validation.
-
-- Added Postcode Matching call within cqc_location_4_full_clean job.
-
-- Added validation script for locations_3_full_flattened process and test script for this validation.
-
-- Added validation script for locations_4_full_clean process and test script for this validation.
-
-- Added validation script for locations_4_full_latest_snapshot dataset and test script for this validation.
-
 - Added current_msoa21 column to the IND CQC pipeline.
-
-- Added validation script for providers_3_full_flattened process and test script for this validation.
 
 - Created a new folder and file structure to contain the model re-training process files.
 
 - Added placeholder tasks for model retraining step function in the Ind CQC pipeline which will point to the
   separate model retraining step function.
 
-- Added ind_cqc_06_estimated_filled_posts dataset to circleci config datasets sync'd into branch.
-  Gave the dataset name the prefix "main_".
+- During deployment with CircleCI, copy the `ind_cqc_06_estimated_filled_posts` dataset from main into branch prefixed with `main_` to help with comparing dev outputs to main.
 
 - Created model versioning functions to get the last number and save model metadata.
 
 - Created the S3 paths for the modelling process to call on for loading and saving data.
 
-- Generalised the functions to create and update a filtering column
+- Generalised the `update_filtering_rule` function to run against different datasets.
 
 - Created a function to handle to various Capacity Tracker non-residential cleaning steps.
 
-- Added model registry.
+- Added ML model registry.
 
 - Added function to validate model definitions used in tasks are stored in the model registry.
 
 - Created Polars jobs to prepare care home and non residential features.
 
-- Added a function into ind cqc 02 cleaning job to copy the last known ASC-WDS filled posts value into the
-  following two import dates. So extrapolation is delayed.
+- Added NHS Capacity Tracker filter to remove repeated submissions at location level after a set length of time.
+
+- Added a function to extrapolate/repeat the last known ASC-WDS filled posts value into the following two import dates.
 
 - Called the forward_fill_latest_known_value function on pir_people_directly_employed_dedup column to replicate the forward fill process for PIR Data.
 
 ### Changed
-- Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
-  - locations_raw
+- Used `isort` extension to consistently format imports throughout codebase and going forwards.
 
-- Updated glue script and step function parameters for flatten_cqc_ratings job with CQC_delta datasets.
+- Included the newer CQC `assessments` column to get the latest ratings information from CQC and incorporated into existing jobs.
 
-- Updated reconciliation job parameters in glue script to be consistent with SFC-Internal step function.
-
-- Updated CQC Locations Cleaning to work with delta data
-
-- Created dimensions for imputed values in CQC Location Cleaning, and separated this from the main fact table
-  - The dimensions are rejoined to the fact table in the downstream steps where they are needed
-
-- Removed unused columns from CQC Providers data
-
-- Formatted imports throughout codebase
-
-- Added CQC assessments into both the ratings for data requests and benchmarks datasets.
-
-- Removed the original Step Functions now the replacement ones are fully operational.
-
-- Removed usage of the raw location schema with hardcoded column names and updated all dependent jobs to reference the standardised polars schema with column name references.
-
-- Added a third argument calculate_filled_posts_per_bed_ratio so it can be used for either ASC-WDS posts or Capacity Tracker posts.
+- Added an argument to generalise `calculate_filled_posts_per_bed_ratio` to run against any column.
 
 - Removed the deduplication of Capacity Tracker data and used the cleaned Capacity Tracker care home data for imputation.
 
-- Moved the calculation for estimating all Capacity Tracker non-residential filled posts from the diagnostics job to the estimates job.
+- Moved the calculations for estimating all Capacity Tracker (care home and non-residential) filled posts from the diagnostics job to the estimate filled posts job.
 
 - Updated the glue script job parameters for SFC-Internal jobs to match SFC-Internal step function.
 
@@ -100,11 +77,7 @@ All notable changes to this project will be documented in this file.
 
 - Explicitly set `required_providers` in `pipeline/main.tf`, in order to version-lock the Terraform AWS provider to the minor version specified.
 
-- Moved the filtering of `Social Care Org`, `Registered` and `Independent` sector CQC locations into the [IND CQC Merge](projects/_03_independent_cqc/_01_merge/jobs/merge_ind_cqc_data.py) job.
-
-- Copies the full prod data into branch for testing purposes as opposed to the small subset currently used.
-
-- Only check postcodes match for locations who provide social care and are registered at that point in time.
+- Copy full production data into the branches for testing purposes as opposed to a small subset of data.
 
 - Removed validation check for a maximum of 500 beds in the CQC clean locations validation script.
 
@@ -114,103 +87,69 @@ All notable changes to this project will be documented in this file.
 
 - Changed CQC location clean validation script expected row count to exclude raw data adjustment locations.
 
-- Created a job to flatten CQC location data to remove some unwanted data and simplify complex struct columns.
+- Created a job to flatten CQC location data to extract only the required information from complex struct columns.
 
-- Created a job to build a full snapshot for each CQC location import data from a delta dataset.
-
-- Used `convert_delta_to_full` function to build full locations and providers data in step functions.
-
-- Created a job to clean the full CQC location data to remove some unwanted data, join in ONS postcode data and split registered and deregistered locations.
+- Created a function `convert_delta_to_full` to build a full snapshot for each CQC import date from a delta dataset and called for both locations and providers datasets.
 
 - Moved the preparation of worker job role data into its own polars task in the ind CQC estimates pipeline.
 
-- Decided not to convert the pyspark utils impute_historic_relationships and get_relationships_where_type_is_predecessor.
-  Instead I have:
-  Added relationships to flatten_struct_fields to extract types into new column relationships_types.
-  Added relationships_types to impute_missing_values to back/forward fill gaps.
-
 - Converted cleaning util add_related_location_flag from pyspark to polars. Called the util in cqc_locations_4_full_clean.py script.
 
-- Reverted merge_ind_cqc_data job to state on 15th September, before using dimension datasets.
-
-- Converted clean_and_impute_registration_date function from pyspark to polars.
-
-- Added call for premade polars util extract_registered_manager_names to cqc_locations_2_flatten, which will create
-  registered_manager_names column. Also added registered_manager_names column to impute_missing_values in cqc_locations_4_full_clean.
-
-- Changed the behaivour of impute_missing_values in locations_4_clean_utils.
-  Empty lists were being copied in the forward/backward fill, since it looks for non-null values.
-  I've added another loop to go through the schema, if a columns datatype is a list, then replace empty lists in that
+- Changed the behaivour of `impute_missing_values` in locations_4_clean_utils.
+  - Empty lists were being copied in the forward/backward fill, since it looks for non-null values.
+  - Added a loop to go through the schema and if the columns datatype is a list, then replace empty lists in that
   column with null.
-  Then the imputation happens as before, but only populated lists are used for filling.
-
-- Converted cleaning util classify_specialisms from pyspark to polars.
-
-- Converted function remove_specialist_colleges from pyspark to polars.
-
-- Changed how columns are selected in postcode matcher to keep polars in lazy mode.
 
 - Changed the behaviour of extract_registered_manager_names so it discards names when given or family name is null.
 
-- Amended column names and formats to match the new data at the end of CQC locations clean.
-
-- Updated all the references of delta cqc data to point to new version 3.1.0.
-
-- Updated SfC Merge coverage job and S3 paths following removal of dimensions.
+- Updated all the references of delta cqc data to point to new version 3.1.1.
 
 - Moved creation of cqc_locations_import_date from flatten to clean job so it populates all time periods correctly.
 
-- Saved the latest full snapshot of CQC locations.
-
-- Updated the SfC reconciliation process based on the new datasets.
-
 - Refactored the Transform CQC pipeline to be more efficient.
 
-- Added parallel CQC providers jobs alongside locations.
-
-- Removed all CQC jobs, utils and tests no longer being used
-
-- Removed logging from step functions.
+- Removed all previous `CQC` jobs, utils and tests no longer being used as they are now replaced by a `CQC_delta` version.
 
 - Removed lambdas no longer being used (`check_dataset_equality` and `create_dataset_snapshot`)
 
 - Updated input parameter for the flatten CQC ratings job. Ratings columns are now retrieved from the raw data and joined with the latest locations snapshot, which is the new input source for the job.
 
-- Converted function allocate_primary_service_type_second_level from pyspark to polars and called it in cqc_locations_4_full_clean.
+- Converted all our references of `CQC_delta` back to `CQC` now the transition period is complete.
 
-- Change the order of function calls in cqc_locations_4_full_clean so filtering to registered locations only happens after imputation.
-
-- Refactored validate_providers_api_raw to use PointBlank, and added the new validation script `validate_cqc_providers_1_delta_api_download.py` with its corresponding validation test.
-
-- Changed references of domain=CQC_delta to domain=CQC. The bulk download pipeline is no longer used, the delta pipeline has taken it's place.
-
-- Changed the remove_duplicate_cqc_care_homes function as followed:
-  - changed function name to remove_dual_registration_cqc_care_homes.
-  - updated doc string with information from CQC.
+- Changed the `remove_duplicate_cqc_care_homes` function as followed:
+  - changed function name to `remove_dual_registration_cqc_care_homes`.
+  - updated docstring with information explaining dual registrations from CQC.
   - changed how ASC-WDS data is copied across dual registrations to coalesce the orginal value and the max over a window.
-  - added location_id as a fallback column to distinguish identical locations consistantly.
+  - added `location_id` as a fallback column to distinguish identical locations consistantly by selecting the first on numerically (to replicate CQC's approach).
 
-- In cqc_locations_4_full_clean job, I moved the filtering to social care only locations to after the latest full snapshot is saved. So the latest full snapshot is now all cqc locations.
-  Then in the internal flatten ratings job, I added the filtering to social care only back in.
-  The merge coverage job doesn't use the latest full snapshot, it uses full_cleaned_registered, so no changes to this job.
-  The reconciliation job now uses all cqc locations. It does not filter to social care only.
+- `cqc_locations_4_full_clean` now exports two files:
+  - one for use in the CQC Independent Sector pipeline which applies filtering such as `Registered`, `Independent`, `Social Care Org` only.
+  - a second file which contains the entiritely of the most recent CQC snapshot, containing all locations who have any been registered with CQC. This dataset is used in the various jobs in the `sfc_internal` pipeline.
 
-- Changed the locations and providers delta API download process as follows:
-  - Get all data from the API and assign it to a dataframe without a schema (column types are inferred).
-  - Override specific column types to match historic delta downloads.
-  - Store all CQC API delta data in dataset_delta_locations_api / dataset_delta_providers_api.
-  - Import only specific columns in delta flatten job.
+- Updated the SfC Internal jobs based on the new dataset saved above.
 
-- Fixed validation failures for cleaned CQC locations caused by complex columns in the DataFrame, which prevented PointBlank from generating output reports.
+- Changed the CQC API delta download process as follows:
+  - Get all column data from the API (previously only returned columns in our schema).
+  - Create a 'primed generator' using our known schema to Polars can infer known column types from that.
+  - Normalise struct columns so struct changes are able to join into our existing data.
+  - Cast all columns contained in our existing schema to match existing types.
+  - Store all raw CQC API delta data in `dataset_delta_locations_api` / `dataset_delta_providers_api`.
+  - Import only required columns in downstream jobs.
+
+- Fixed validation failures for CQC ingestion jobs caused by complex columns in the DataFrame, which prevented PointBlank from generating output reports.
   - Updated the validation script to replicate the newly added filter from the cleaning process, ensuring row count validations now pass.
   - Introduced a new function that creates boolean flag columns for complex-type columns and removes the original complex columns from the source DataFrame. These flag columns are now used in PointBlank validations to check for True values.
 
-- Fixed add_previous_value_column to return the value/null from the previous import_date, not the last known value from any point in time.
 
 ### Improved
+- Migrated the original `PySpark` CQC API ingestion process to be run in `Polars` for notable increases in efficiency.
+
+- Migrated the original `PyDeequ` CQC API ingestion validation scripts to use PointBlank (compatible with >= Python 3.11).
+
 - Moved postcode corrections dictionary into a csv file in s3.
 
-- Improved the validation for CQC 4 full clean dataset by adding overall row count validation and null check validations for complex columns.
+- Fixed `add_previous_value_column` in the rate of change trendline model to return the value/null from the previous import_date only, not the last known value from any point in time.
+
 
 
 ## [v2025.08.0] - 09/09/2025

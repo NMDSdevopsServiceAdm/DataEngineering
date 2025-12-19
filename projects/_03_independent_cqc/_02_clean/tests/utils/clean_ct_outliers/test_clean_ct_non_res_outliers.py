@@ -25,11 +25,17 @@ class CleanCapacityTrackerNonResOutliersTests(unittest.TestCase):
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
+    @patch(f"{PATCH_PATH}.clean_ct_values_after_consecutive_repetition")
+    @patch(f"{PATCH_PATH}.aggregate_values_to_provider_level")
     @patch(f"{PATCH_PATH}.add_filtering_rule_column")
     def test_functions_are_called(
         self,
         add_filtering_rule_column_mock: Mock,
+        aggregate_values_to_provider_level: Mock,
+        clean_ct_values_after_consecutive_repetition_mock: Mock,
     ):
         job.clean_capacity_tracker_non_res_outliers(self.ind_cqc_df)
 
         add_filtering_rule_column_mock.assert_called_once()
+        aggregate_values_to_provider_level.assert_called_once()
+        clean_ct_values_after_consecutive_repetition_mock.assert_called_once()
