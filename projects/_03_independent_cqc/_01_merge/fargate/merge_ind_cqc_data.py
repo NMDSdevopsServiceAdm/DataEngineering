@@ -104,6 +104,18 @@ def main(
     cleaned_ct_care_home_source: str,
     destination: str,
 ) -> None:
+    """
+    Merges ASCWDS, PIR, and capacity tracker data into the CQC locations data
+    for independant sector locations only.
+
+    Args:
+        cleaned_cqc_location_source (str): s3 path to the cleaned cqc location data
+        cleaned_cqc_pir_source (str): s3 path to the cleaned cqc pir data
+        cleaned_ascwds_workplace_source (str): s3 path to the cleaned ascwds workplace data
+        cleaned_ct_non_res_source (str): s3 path to the cleaned capacity tracker non-residential data
+        cleaned_ct_care_home_source (str): s3 path to the cleaned capacity tracker care home data
+        destination (str): s3 path to save the output data
+    """
     cleaned_cqc_location_lf = utils.scan_parquet(
         cleaned_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,
