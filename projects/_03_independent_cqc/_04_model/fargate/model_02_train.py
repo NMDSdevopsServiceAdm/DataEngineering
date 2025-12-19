@@ -66,3 +66,12 @@ def main(bucket_name: str, model_name: str) -> None:
     X_test, y_test = tUtils.convert_dataframe_to_numpy(
         test_df, feature_cols, dependent_col
     )
+
+    # Make a model based on the specified type (remember to scale if lasso)
+
+    # model.fit(X_train, y_train)
+
+    # predictions = model.predict(X_test)
+    # calculate and store metrics
+
+    # Save the model with an incremented run number
