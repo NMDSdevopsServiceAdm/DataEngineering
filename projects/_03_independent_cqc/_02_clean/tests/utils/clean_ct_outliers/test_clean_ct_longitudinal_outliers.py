@@ -148,34 +148,13 @@ class TestComputeAbsDeviation(TestCleanCtLongitudinalOutliers):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class TestComputeMad(TestCleanCtLongitudinalOutliers):
-    def test_compute_mad_returns_expected_values(
-        self,
-    ):
-        df = self.spark.createDataFrame(
-            Data.compute_mad_rows,
-            Schemas.abs_dev_schema,
-        )
-
-        returned_df = job.compute_mad(
-            df, IndCQC.location_id, IndCQC.ct_care_home_total_employed_cleaned
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_mad_rows,
-            Schemas.mad_schema,
-        )
-
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-
 class TestComputeOutlierCutoff(TestCleanCtLongitudinalOutliers):
     def test_compute_outlier_cutoff_returns_expected_values(
         self,
     ):
         df = self.spark.createDataFrame(
             Data.compute_outlier_cutoff_rows,
-            Schemas.mad_schema,
+            Schemas.abs_dev_schema,
         )
 
         returned_data = job.compute_outlier_cutoff(
@@ -193,58 +172,13 @@ class TestComputeOutlierCutoff(TestCleanCtLongitudinalOutliers):
         for i in range(len(expected_data)):
             self.assertAlmostEqual(
                 returned_data[i][
-                    f"{IndCQC.ct_care_home_total_employed_cleaned}_abs_diff_cutoff"
+                    f"{IndCQC.ct_care_home_total_employed_cleaned}_overall_abs_diff_cutoff"
                 ],
                 expected_data[i][
-                    f"{IndCQC.ct_care_home_total_employed_cleaned}_abs_diff_cutoff"
+                    f"{IndCQC.ct_care_home_total_employed_cleaned}_overall_abs_diff_cutoff"
                 ],
                 places=3,
             )
-
-
-# class TestComputeLargeLocationCutoff(TestCleanCtLongitudinalOutliers):
-#     def test_compute_large_location_cutoff_returns_expected_values(
-#         self,
-#     ):
-#         df = self.spark.createDataFrame(
-#             Data.compute_large_location_cutoff_rows,
-#             Schemas.compute_large_location_cutoff_schema,
-#         )
-#         df.show()
-
-#         returned_float = job.compute_large_location_cutoff(
-#             df,
-#             0.95,  # 95th percentile
-#             IndCQC.ct_care_home_total_employed_cleaned,
-#         )
-
-#         expected_float = Data.expected_compute_large_location_cutoff
-
-#         self.assertEqual(returned_float, expected_float)
-
-
-# class TestFlagLargeLocations(TestCleanCtLongitudinalOutliers):
-#     def test_flag_large_locations_returns_expected_values(
-#         self,
-#     ):
-#         df = self.spark.createDataFrame(
-#             Data.compute_large_location_cutoff_rows,
-#             Schemas.compute_large_location_cutoff_schema,
-#         )
-
-#         returned_df = job.flag_large_locations(
-#             df,
-#             IndCQC.location_id,
-#             IndCQC.ct_care_home_total_employed_cleaned,
-#             Data.expected_compute_large_location_cutoff,
-#         )
-
-#         expected_df = self.spark.createDataFrame(
-#             Data.expected_flag_large_locations_rows,
-#             Schemas.expected_flag_large_locations_schema,
-#         )
-
-#         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class TestFlagOutliers(TestCleanCtLongitudinalOutliers):
@@ -262,8 +196,6 @@ class TestFlagOutliers(TestCleanCtLongitudinalOutliers):
             Data.expected_flag_outliers_rows,
             Schemas.expected_outlier_flags_schema,
         )
-        # returned_df.show()
-        # expected_df.show()
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
@@ -276,7 +208,6 @@ class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
             Data.apply_outlier_cleaning_input_rows,
             Schemas.apply_outlier_cleaning_schema,
         )
-        # df.show()
 
         returned_df = job.apply_outlier_cleaning(
             df,
@@ -288,7 +219,5 @@ class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
             Data.apply_outlier_cleaning_expected_rows,
             Schemas.apply_outlier_cleaning_schema,
         )
-        # returned_df.show()
-        # expected_df.show()
 
         self.assertEqual(returned_df.collect(), expected_df.collect())

@@ -3362,34 +3362,6 @@ class OutlierCleaningSchemas:
         ]
     )
 
-    mad_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(
-                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
-            ),
-            StructField(IndCQC.ct_care_home_filtering_rule, StringType(), True),
-            StructField(
-                f"{IndCQC.ct_care_home_total_employed_cleaned}_median_val",
-                IntegerType(),
-                True,
-            ),
-            StructField(
-                f"{IndCQC.ct_care_home_total_employed_cleaned}_abs_diff",
-                IntegerType(),
-                True,
-            ),
-            StructField(
-                f"{IndCQC.ct_care_home_total_employed_cleaned}_mad", IntegerType(), True
-            ),
-            StructField(
-                f"{IndCQC.ct_care_home_total_employed_cleaned}_mad_abs_diff",
-                IntegerType(),
-                True,
-            ),
-        ]
-    )
-
     cutoff_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -3408,10 +3380,7 @@ class OutlierCleaningSchemas:
                 True,
             ),
             StructField(
-                f"{IndCQC.ct_care_home_total_employed_cleaned}_mad", IntegerType(), True
-            ),
-            StructField(
-                f"{IndCQC.ct_care_home_total_employed_cleaned}_mad_abs_diff",
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_overall_abs_diff_cutoff",
                 IntegerType(),
                 True,
             ),
@@ -3441,10 +3410,7 @@ class OutlierCleaningSchemas:
                 True,
             ),
             StructField(
-                f"{IndCQC.ct_care_home_total_employed_cleaned}_mad", IntegerType(), True
-            ),
-            StructField(
-                f"{IndCQC.ct_care_home_total_employed_cleaned}_mad_abs_diff",
+                f"{IndCQC.ct_care_home_total_employed_cleaned}_overall_abs_diff_cutoff",
                 IntegerType(),
                 True,
             ),

@@ -6224,31 +6224,22 @@ class OutlierCleaningData:
         ("1-001", 100, CTCareHomeFilteringRule.populated, 25, 75),
     ]
 
-    compute_mad_rows = expected_abs_deviation_rows
-
-    expected_mad_rows = [
-        ("1-001", 10, CTCareHomeFilteringRule.populated, 25, 15, 10, 0),
-        ("1-001", 20, CTCareHomeFilteringRule.populated, 25, 5, 10, 10),
-        ("1-001", 30, CTCareHomeFilteringRule.populated, 25, 5, 10, 20),
-        ("1-001", 100, CTCareHomeFilteringRule.populated, 25, 75, 10, 90),
-    ]
-
-    compute_outlier_cutoff_rows = expected_mad_rows
+    compute_outlier_cutoff_rows = expected_abs_deviation_rows
 
     expected_outlier_cutoff_rows = [
-        ("1-001", 10, CTCareHomeFilteringRule.populated, 25, 15, 10, 0, 57),
-        ("1-001", 20, CTCareHomeFilteringRule.populated, 25, 5, 10, 10, 57),
-        ("1-001", 30, CTCareHomeFilteringRule.populated, 25, 5, 10, 20, 57),
-        ("1-001", 100, CTCareHomeFilteringRule.populated, 25, 75, 10, 90, 57),
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 25, 15, 57, 57),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 25, 5, 57, 57),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 25, 5, 57, 57),
+        ("1-001", 100, CTCareHomeFilteringRule.populated, 25, 75, 57, 57),
     ]
 
     flag_outliers_rows = expected_outlier_cutoff_rows
 
     expected_flag_outliers_rows = [
-        ("1-001", 10, CTCareHomeFilteringRule.populated, 25, 15, 10, 0, 57, False),
-        ("1-001", 20, CTCareHomeFilteringRule.populated, 25, 5, 10, 10, 57, False),
-        ("1-001", 30, CTCareHomeFilteringRule.populated, 25, 5, 10, 20, 57, False),
-        ("1-001", 100, CTCareHomeFilteringRule.populated, 25, 75, 10, 90, 57, True),
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 25, 15, 57, 57, False),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 25, 5, 57, 57, False),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 25, 5, 57, 57, False),
+        ("1-001", 100, CTCareHomeFilteringRule.populated, 25, 75, 57, 57, True),
     ]
 
     apply_outlier_cleaning_input_rows = [
