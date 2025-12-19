@@ -254,6 +254,17 @@ class FeaturesEngineeringUtilsData:
 
 @dataclass
 class ModelTrainingUtilsData:
+    split_train_test_rows = [
+        ("1-001", 10.0),
+        ("1-001", 11.0),
+        ("1-002", 20.0),
+        ("1-002", 21.0),
+        ("1-003", 30.0),
+        ("1-003", 31.0),
+        ("1-004", 40.0),
+        ("1-004", 41.0),
+    ]
+
     convert_dataframe_to_numpy_basic_rows = [
         ("1-001", 1, 10, 5.0),
         ("1-002", 2, 20, 6.0),
