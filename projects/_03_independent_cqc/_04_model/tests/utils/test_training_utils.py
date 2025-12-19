@@ -16,7 +16,7 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class SplitTestTrainTests(unittest.TestCase):
+class SplitTrainTestTests(unittest.TestCase):
     pass
 
 
