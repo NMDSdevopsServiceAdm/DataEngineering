@@ -13,7 +13,7 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class SplitTestTrainTests(unittest.TestCase):
+class SplitTrainTestTests(unittest.TestCase):
     def setUp(self):
         self.seed = 99
         self.fraction = 0.5
@@ -28,7 +28,7 @@ class SplitTestTrainTests(unittest.TestCase):
         pl_testing.assert_frame_equal(train1, train2)
         pl_testing.assert_frame_equal(test1, test2)
 
-    def test_locations_do_not_appear_in_both_test_and_train(self):
+    def test_locations_do_not_appear_in_both_train_and_test(self):
         train_df, test_df = job.split_train_test(self.test_df, self.fraction, self.seed)
 
         train_groups = set(train_df[IndCQC.location_id].unique().to_list())
@@ -36,7 +36,7 @@ class SplitTestTrainTests(unittest.TestCase):
 
         self.assertTrue(train_groups.isdisjoint(test_groups))
 
-    def test_all_original_rows_are_included_in_train_or_train(self):
+    def test_all_original_rows_are_included_in_train_or_test(self):
         train_df, test_df = job.split_train_test(self.test_df, self.fraction, self.seed)
 
         combined_df = pl.concat([train_df, test_df])
