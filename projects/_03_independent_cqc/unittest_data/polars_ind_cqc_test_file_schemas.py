@@ -157,6 +157,18 @@ class ModelTrainingUtilsSchemas:
         ]
     )
 
+    multiple_feature_cols = ["feature_1", "feature_2"]
+    single_feature_col = ["feature_1"]
+    dependent_col = "dependent"
+    convert_dataframe_to_numpy_basic_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            ("feature_1", pl.Int32()),
+            ("feature_2", pl.Int32()),
+            ("dependent", pl.Float64()),
+        ]
+    )
+
 
 @dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsSchemas:
