@@ -186,7 +186,7 @@ def main(
     print("Cleaned capacity tracker care home LazyFrame joined in")
 
     utils.sink_to_parquet(
-        cleaned_cqc_location_lf,
+        independent_cqc_lf,
         destination,
         partition_cols=cqc_partition_keys,
         append=False,
