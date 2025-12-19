@@ -203,7 +203,7 @@ if __name__ == "__main__":
             "S3 URI to read cleaned CQC location data from",
         ),
         (
-            "--cleaned_cqc_pir_sourc",
+            "--cleaned_cqc_pir_source",
             "S3 URI to read cleaned CQC PIR data from",
         ),
         (
