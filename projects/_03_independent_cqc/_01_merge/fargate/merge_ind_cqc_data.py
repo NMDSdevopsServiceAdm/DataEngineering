@@ -117,7 +117,7 @@ def main(
     )
     print("Cleaned CQC PIR LazyFrame read in")
 
-    cleaned_ascwds_workplacen_lf = utils.scan_parquet(
+    cleaned_ascwds_workplace_lf = utils.scan_parquet(
         cleaned_ascwds_workplace_source,
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
     )
@@ -134,7 +134,7 @@ def main(
     )
     print("Cleaned capacity tracker care home LazyFrame read in")
 
-    # need to test this?
+    # need to test this? currently untested
     independent_cqc_lf = cleaned_cqc_location_lf.filter(
         CQCLClean.cqc_sector == Sector.independent
     )
@@ -146,13 +146,15 @@ def main(
         CQCPIRClean.cqc_pir_import_date,
         CQCPIRClean.care_home,
     )
+    print("Cleaned CQC PIR LazyFrame joined in")
 
     independent_cqc_lf = join_data_into_cqc_lf(
         independent_cqc_lf,
-        cleaned_ascwds_workplacen_lf,
+        cleaned_ascwds_workplace_lf,
         AWPClean.location_id,
         AWPClean.ascwds_workplace_import_date,
     )
+    print("Cleaned ASCWDS workplace LazyFrame joined in")
 
     independent_cqc_lf = join_data_into_cqc_lf(
         independent_cqc_lf,
@@ -161,6 +163,7 @@ def main(
         CTNRClean.ct_non_res_import_date,
         CTNRClean.care_home,
     )
+    print("Cleaned capacity tracker non-residential LazyFrame joined in")
 
     independent_cqc_lf = join_data_into_cqc_lf(
         independent_cqc_lf,
@@ -169,6 +172,7 @@ def main(
         CTCHClean.ct_care_home_import_date,
         CTCHClean.care_home,
     )
+    print("Cleaned capacity tracker care home LazyFrame joined in")
 
     utils.sink_to_parquet(
         cleaned_cqc_location_lf,
