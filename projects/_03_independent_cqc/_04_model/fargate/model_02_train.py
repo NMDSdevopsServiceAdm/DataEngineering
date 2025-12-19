@@ -16,12 +16,14 @@ def main(bucket_name: str, model_name: str) -> None:
     Loads a features dataset then trains, tests and saves a specified model.
 
     The steps in this function are:
-        1.
-        2.
-        3.
-        4.
-        5.
-        6.
+        1. Create paths for model specific features dataset
+        2. Validate model and model definitions exist, then assign them to variables
+        3. Load the features dataset
+        4. Split the dataset into train and test sets
+        5. Convert the train and test sets to NumPy arrays
+        6. Train the model
+        7. Test the model
+        8. Save the trained model with an updated run number
 
     Note: the modelling process requires DataFrames instead of LazyFrames.
 
@@ -35,9 +37,20 @@ def main(bucket_name: str, model_name: str) -> None:
 
     vUtils.validate_model_definition(
         model_name,
-        required_keys=[MRKeys.dependent, MRKeys.features],
+        required_keys=[
+            MRKeys.version,
+            MRKeys.auto_retrain,
+            MRKeys.model_type,
+            MRKeys.model_params,
+            MRKeys.dependent,
+            MRKeys.features,
+        ],
         model_registry=model_registry,
     )
+    model_version = model_registry[model_name][MRKeys.version]
+    auto_retrain_model = model_registry[model_name][MRKeys.auto_retrain]
+    model_type = model_registry[model_name][MRKeys.model_type]
+    model_params = model_registry[model_name][MRKeys.model_params]
     dependent_col = model_registry[model_name][MRKeys.dependent]
     feature_cols = model_registry[model_name][MRKeys.features]
 
