@@ -171,6 +171,13 @@ def compute_outlier_cutoff(
         f"{col_to_clean}_abs_diff_cutoff",
         F.percentile(f"{col_to_clean}_abs_diff", percentile).over(w),
     )
+    overall_abs_diff_cutoff = df.agg(
+        F.percentile(col_to_clean, percentile).alias("overall_abs_diff_cutoff")
+    ).first()["overall_abs_diff_cutoff"]
+    df = df.withColumn(
+        f"{col_to_clean}overall_abs_diff_cutoff",
+        F.lit(overall_abs_diff_cutoff),
+    )
     return df
 
 
@@ -189,7 +196,7 @@ def flag_outliers(df: DataFrame, col_to_clean: str) -> DataFrame:
     """
     return df.withColumn(
         f"{col_to_clean}_outlier_flag",
-        F.col(f"{col_to_clean}_abs_diff") > F.col(f"{col_to_clean}_abs_diff_cutoff"),
+        F.col(f"{col_to_clean}_abs_diff") > F.col(f"{col_to_clean}_overall_abs_diff_cutoff"),
     )
 
 
