@@ -6193,7 +6193,7 @@ class OutlierCleaningData:
         ("1-004", 10, CTCareHomeFilteringRule.populated),
         ("1-004", 15, CTCareHomeFilteringRule.populated),
         ("1-004", 80, CTCareHomeFilteringRule.populated),
-        ("1-004", None, CTCareHomeFilteringRule.longitudinal_outliers_total_posts),
+        ("1-004", 94, CTCareHomeFilteringRule.populated),
         ("1-004", 20, CTCareHomeFilteringRule.populated),
         ("1-004", 90, CTCareHomeFilteringRule.populated),
         ("1-004", 40, CTCareHomeFilteringRule.populated),

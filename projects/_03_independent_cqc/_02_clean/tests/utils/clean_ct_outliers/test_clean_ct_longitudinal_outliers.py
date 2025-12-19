@@ -28,22 +28,16 @@ class TestCleanCtLongitudinalOutliers(unittest.TestCase):
 class TestFunctionsAreCalled(TestCleanCtLongitudinalOutliers):
     @patch(f"{PATCH_PATH}.compute_group_median")
     @patch(f"{PATCH_PATH}.compute_absolute_deviation")
-    # @patch(f"{PATCH_PATH}.compute_mad")
     @patch(f"{PATCH_PATH}.compute_outlier_cutoff")
-    # @patch(f"{PATCH_PATH}.compute_large_location_cutoff")
     @patch(f"{PATCH_PATH}.flag_outliers")
-    # @patch(f"{PATCH_PATH}.flag_large_locations")
     @patch(f"{PATCH_PATH}.apply_outlier_cleaning")
     @patch(f"{PATCH_PATH}.update_filtering_rule")
     def test_functions_are_called(
         self,
         update_filtering_rule_mock: Mock,
         apply_outlier_cleaning_mock: Mock,
-        # flag_large_locations_mock: Mock,
         flag_outliers_mock: Mock,
-        # compute_large_locations_cutoff_mock: Mock,
         compute_outlier_cutoff_mock: Mock,
-        # compute_mad_mock: Mock,
         compute_absolute_deviation_mock: Mock,
         compute_group_median_mock: Mock,
     ):
@@ -58,11 +52,8 @@ class TestFunctionsAreCalled(TestCleanCtLongitudinalOutliers):
 
         compute_group_median_mock.assert_called_once()
         compute_absolute_deviation_mock.assert_called_once()
-        # compute_mad_mock.assert_called_once()
         compute_outlier_cutoff_mock.assert_called_once()
-        # compute_large_locations_cutoff_mock.assert_called_once()
         flag_outliers_mock.assert_called_once()
-        # flag_large_locations_mock.assert_called_once()
         apply_outlier_cleaning_mock.assert_called_once()
         update_filtering_rule_mock.assert_called_once()
 
@@ -87,8 +78,6 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
             proportion_to_filter=0.10,
             care_home=True,
         )
-        # returned_df.show()
-        # test_df.show()
         self.assertEqual(returned_df.collect(), test_df.collect())
 
     def test_clean_longitudinal_outliers_nulls_outlier_values(
@@ -98,7 +87,6 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
             Data.clean_longitudinal_outliers_input_rows,
             Schemas.input_schema,
         )
-        # test_df.show()
 
         returned_df = job.clean_longitudinal_outliers(
             test_df,
@@ -108,13 +96,10 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
             0.10,
             True,
         )
-
         expected_df = self.spark.createDataFrame(
             Data.expected_clean_longitudinal_outliers_remove_value_only_rows,
             Schemas.input_schema,
         )
-        # returned_df.show()
-        # expected_df.show()
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 

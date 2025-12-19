@@ -68,12 +68,10 @@ def clean_longitudinal_outliers(
 
     # cleaned_df = cleaned_df.drop(
     #     f"{col_to_clean}_median_val",
-    #     f"{col_to_clean}_mad",
-    #     f"{col_to_clean}_mad_abs_diff",
     #     f"{col_to_clean}_abs_diff",
     #     f"{col_to_clean}_abs_diff_cutoff",
+    #     f"{col_to_clean}_overall_abs_diff_cutoff",
     #     f"{col_to_clean}_outlier_flag",
-    #     f"{col_to_clean}_large_location_flag",
     # )
 
     return cleaned_df
@@ -119,31 +117,6 @@ def compute_absolute_deviation(df: DataFrame, col_to_clean: str) -> DataFrame:
     )
 
 
-def compute_mad(df: DataFrame, group_by_col: str, col_to_clean: str) -> DataFrame:
-    """
-    Computes the median absolute deviation (MAD) of a column within each group.
-
-    Args:
-        df (DataFrame): DataFrame containing an 'abs_diff' column.
-        group_by_col (str): Column to group by when computing MAD.
-        col_to_clean (str): Column for which MAD is calculated
-
-    Returns:
-        DataFrame: Original DataFrame joined with a new column 'mad' containing the
-        group-wise median absolute deviation.
-    """
-    w = Window.partitionBy(group_by_col)
-
-    df = df.withColumn(
-        f"{col_to_clean}_mad",
-        F.percentile(f"{col_to_clean}_abs_diff", 0.5).over(w),
-    )
-    return df.withColumn(
-        f"{col_to_clean}_mad_abs_diff",
-        F.abs(F.col(col_to_clean) - F.col(f"{col_to_clean}_mad")),
-    )
-
-
 def compute_outlier_cutoff(
     df: DataFrame,
     group_by_col: str,
@@ -172,7 +145,9 @@ def compute_outlier_cutoff(
         F.percentile(f"{col_to_clean}_abs_diff", percentile).over(w),
     )
     overall_abs_diff_cutoff = df.agg(
-        F.percentile(col_to_clean, percentile).alias("overall_abs_diff_cutoff")
+        F.percentile(f"{col_to_clean}_abs_diff", percentile).alias(
+            "overall_abs_diff_cutoff"
+        )
     ).first()["overall_abs_diff_cutoff"]
     df = df.withColumn(
         f"{col_to_clean}_overall_abs_diff_cutoff",
@@ -199,54 +174,6 @@ def flag_outliers(df: DataFrame, col_to_clean: str) -> DataFrame:
         F.col(f"{col_to_clean}_abs_diff")
         > F.col(f"{col_to_clean}_overall_abs_diff_cutoff"),
     )
-
-
-def compute_large_location_cutoff(
-    df: DataFrame,
-    large_location_threshold_percentile: float,
-    col_to_clean: str,
-) -> float:
-    """
-    Computes the threshold at which a location is catageorised as a large location compared to other locaitons.
-
-    Args:
-        df (DataFrame): DataFrame containing the column to clean.
-        large_location_threshold_percentile (float): Percentile above which locations are considered large.
-        col_to_clean (str): Column to use to calculate large location cutoff.
-
-    Returns:
-        float: The number of posts above which a location is considered large.
-    """
-    large_location_threshold_abs = df.agg(
-        F.percentile_approx(col_to_clean, large_location_threshold_percentile).alias(
-            "large_location_threshold_abs"
-        )
-    ).first()["large_location_threshold_abs"]
-    return large_location_threshold_abs
-
-
-def flag_large_locations(
-    df: DataFrame, group_by_col: str, col_to_clean: str, large_location_cutoff: float
-) -> DataFrame:
-    """
-    Flags locations that have ever exceed the large location cutoff in their history
-
-    Args:
-        df (DataFrame): DataFrame containing column to clean.
-        group_by_col (str): Column to be used for grouping.
-        col_to_clean (str): Column for which large locations are to be flagged.
-        large_location_cutoff(float): The number of posts above which a location is considered large.
-
-    Returns:
-        DataFrame: DataFrame with a new boolean column 'large_location_flag' where True indicates
-        a location has been large at some point in its history.
-    """
-    w = Window.partitionBy(group_by_col)
-    df = df.withColumn(
-        f"{col_to_clean}_large_location_flag",
-        F.max(F.col(col_to_clean)).over(w) > large_location_cutoff,
-    )
-    return df
 
 
 def apply_outlier_cleaning(
