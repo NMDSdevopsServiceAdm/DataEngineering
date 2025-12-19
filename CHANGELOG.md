@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
--
+- Called the forward_fill_latest_known_value function on pir_people_directly_employed_dedup column to replicate the forward fill process for PIR Data.
 
 ### Changed
 -
@@ -57,8 +57,6 @@ All notable changes to this project will be documented in this file.
 - Added NHS Capacity Tracker filter to remove repeated submissions at location level after a set length of time.
 
 - Added a function to extrapolate/repeat the last known ASC-WDS filled posts value into the following two import dates.
-
-- Called the forward_fill_latest_known_value function on pir_people_directly_employed_dedup column to replicate the forward fill process for PIR Data.
 
 ### Changed
 - Used `isort` extension to consistently format imports throughout codebase and going forwards.
