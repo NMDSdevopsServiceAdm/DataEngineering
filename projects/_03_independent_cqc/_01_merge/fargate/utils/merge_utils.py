@@ -23,14 +23,14 @@ def join_data_into_cqc_lf(
     to None (not required for matching).
 
     Args:
-        cqc_df (LazyFrame): The CQC location LazyFrame.
-        join_df (LazyFrame): The LazyFrame to join in.
+        cqc_df (pl.LazyFrame): The CQC location LazyFrame.
+        join_df (pl.LazyFrame): The LazyFrame to join in.
         join_location_id_col (str): The name of the location ID column in the LazyFrame to join in.
         join_import_date_col (str): The name of the import date column in the LazyFrame to join in.
         join_care_home_col (Optional[str]): The name of the care home column if required for the join.
 
     Returns:
-        LazyFrame: Original CQC locations LazyFrame with the second LazyFrame joined in.
+        pl.LazyFrame: Original CQC locations LazyFrame with the second LazyFrame joined in.
     """
     cqc_df_with_join_import_date = add_aligned_date_column(
         cqc_df,
