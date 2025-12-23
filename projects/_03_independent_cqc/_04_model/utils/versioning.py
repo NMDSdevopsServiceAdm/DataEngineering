@@ -1,7 +1,11 @@
+import io
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 import boto3
+import joblib
+
+from projects._03_independent_cqc._05_model.utils.model import Model
 
 
 def get_run_number(s3_root: str) -> int:
@@ -40,18 +44,26 @@ def get_run_number(s3_root: str) -> int:
     return max(runs) if runs else 0
 
 
-def save_metadata(s3_root: str, run_number: int, metadata: dict) -> None:
+def save_model_and_metadata(
+    s3_root: str, run_number: int, model: Model, metadata: dict
+) -> None:
     """
-    Saves a JSON metadata file for a specific model run in S3.
+    Saves a model and a JSON metadata file for a specific model run in S3.
 
     This function writes a `metadata.json` file under:
         s3_root/<run_number>/metadata.json
 
     A timestamp field is automatically added to the metadata before saving.
 
+    Structure:
+        s3_root/<run_number>/
+            ├── model.pkl
+            └── metadata.json
+
     Args:
         s3_root (str): S3 directory prefix for a model's run outputs (e.g. "s3://pipeline-resources/models/model_A/")
         run_number (int): The run/version number to save metadata under.
+        model (Model): The trained model object to be saved.
         metadata (dict): Metadata describing the model run.
 
     Return:
@@ -60,15 +72,29 @@ def save_metadata(s3_root: str, run_number: int, metadata: dict) -> None:
     s3 = boto3.client("s3")
     bucket = s3_root.replace("s3://", "").split("/")[0]
     prefix = "/".join(s3_root.replace("s3://", "").split("/")[1:])
+    run_prefix = f"{prefix}{run_number}/"
 
-    key = f"{prefix}{run_number}/metadata.json"
+    # Save the model
+    model_buffer = io.BytesIO()
+    joblib.dump(model, model_buffer)
+    model_buffer.seek(0)
 
-    metadata["timestamp"] = datetime.now().isoformat()
-    body = json.dumps(metadata, indent=2)
+    s3.upload_fileobj(
+        model_buffer,
+        bucket,
+        f"{run_prefix}model.pkl",
+    )
+
+    # Save the metadata
+    metadata_to_save = {
+        **metadata,
+        "run_number": run_number,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
 
     s3.put_object(
         Bucket=bucket,
-        Key=key,
-        Body=body.encode("utf-8"),
+        Key=f"{run_prefix}metadata.json",
+        Body=json.dumps(metadata_to_save, indent=2).encode("utf-8"),
         ContentType="application/json",
     )
