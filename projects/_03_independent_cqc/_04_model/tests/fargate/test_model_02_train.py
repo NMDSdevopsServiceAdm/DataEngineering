@@ -27,6 +27,7 @@ class ModelTrainTests(unittest.TestCase):
     mock_X = Mock(name="X_data")
     mock_y = Mock(name="y_data")
 
+    @patch(f"{PATCH_PATH}.mUtils.build_model")
     @patch(f"{PATCH_PATH}.tUtils.convert_dataframe_to_numpy")
     @patch(f"{PATCH_PATH}.tUtils.split_train_test")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_feature_data)
@@ -41,6 +42,7 @@ class ModelTrainTests(unittest.TestCase):
         scan_parquet_mock: Mock,
         split_train_test_mock: Mock,
         convert_dataframe_to_numpy_mock: Mock,
+        build_model_mock: Mock,
     ):
         split_train_test_mock.side_effect = [
             (self.mock_train_data, self.mock_test_data)
@@ -57,3 +59,4 @@ class ModelTrainTests(unittest.TestCase):
         scan_parquet_mock.assert_called_once()
         split_train_test_mock.assert_called_once()
         self.assertEqual(convert_dataframe_to_numpy_mock.call_count, 2)
+        build_model_mock.assert_called_once()

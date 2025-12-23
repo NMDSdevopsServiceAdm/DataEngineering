@@ -1,5 +1,6 @@
 import polars as pl
 
+import projects._03_independent_cqc._04_model.utils.build_model as mUtils
 import projects._03_independent_cqc._04_model.utils.paths as pUtils
 import projects._03_independent_cqc._04_model.utils.training_utils as tUtils
 import projects._03_independent_cqc._04_model.utils.validate_model_definitions as vUtils
@@ -66,11 +67,11 @@ def main(bucket_name: str, model_name: str) -> None:
         test_df, feature_cols, dependent_col
     )
 
-    # Make a model based on the specified type (remember to scale if lasso)
+    model = mUtils.build_model(model_type, model_params)
 
-    # model.fit(X_train, y_train)
+    model.fit(X_train, y_train)
 
-    # predictions = model.predict(X_test)
+    predictions = model.predict(X_test)
     # calculate and store metrics
 
     # Save the model with an incremented run number
