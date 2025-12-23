@@ -57,6 +57,10 @@ def main(data_bucket_name: str, resources_bucket_name: str, model_name: str) -> 
     dependent_col = model_registry[model_name][MRKeys.dependent]
     feature_cols = model_registry[model_name][MRKeys.features]
 
+    if not auto_retrain_model:
+        print(f"Auto-retraining is disabled for model {model_name}. Skipping training.")
+        return
+
     df = (
         utils.scan_parquet(features_source)
         .filter(pl.col(dependent_col).is_not_null())
@@ -91,7 +95,6 @@ def main(data_bucket_name: str, resources_bucket_name: str, model_name: str) -> 
         "metrics": {"r2": r2_metric, "rmse": rmse_metric},
     }
 
-    # Save the model with an incremented run number
     model_path = pUtils.generate_model_path(
         resources_bucket_name, model_name, model_version
     )
