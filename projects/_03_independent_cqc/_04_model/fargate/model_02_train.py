@@ -1,14 +1,16 @@
 import polars as pl
-from sklearn.metrics import r2_score, root_mean_squared_error
 
-import projects._03_independent_cqc._04_model.utils.build_model as mUtils
-import projects._03_independent_cqc._04_model.utils.paths as pUtils
-import projects._03_independent_cqc._04_model.utils.training_utils as tUtils
-import projects._03_independent_cqc._04_model.utils.validate_model_definitions as dUtils
-import projects._03_independent_cqc._04_model.utils.versioning as vUtils
 from polars_utils import utils
 from projects._03_independent_cqc._04_model.registry.model_registry import (
     model_registry,
+)
+from projects._03_independent_cqc._04_model.utils import paths
+from projects._03_independent_cqc._04_model.utils import training_utils as tUtils
+from projects._03_independent_cqc._04_model.utils import versioning as vUtils
+from projects._03_independent_cqc._04_model.utils.build_model import build_model
+from projects._03_independent_cqc._04_model.utils.metrics import calculate_metrics
+from projects._03_independent_cqc._04_model.utils.validate_model_definitions import (
+    validate_model_definition,
 )
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 
@@ -35,9 +37,9 @@ def main(bucket_name: str, model_name: str) -> None:
     """
     print(f"Training {model_name} model...")
 
-    features_source = pUtils.generate_features_path(bucket_name, model_name)
+    features_source = paths.generate_features_path(bucket_name, model_name)
 
-    dUtils.validate_model_definition(
+    validate_model_definition(
         model_name,
         required_keys=[
             MRKeys.version,
@@ -78,14 +80,13 @@ def main(bucket_name: str, model_name: str) -> None:
         test_df, feature_cols, dependent_col
     )
 
-    model = mUtils.build_model(model_type, model_params)
+    model = build_model(model_type, model_params)
 
     model.fit(X_train, y_train)
 
     predictions = model.predict(X_test)
 
-    r2_metric = float(r2_score(y_test, predictions))
-    rmse_metric = float(root_mean_squared_error(y_test, predictions))
+    metrics = calculate_metrics(y_test, predictions)
 
     metadata = {
         "name": model_name,
@@ -94,10 +95,10 @@ def main(bucket_name: str, model_name: str) -> None:
         "version": model_version,
         "features": feature_cols,
         "dependent": dependent_col,
-        "metrics": {"r2": r2_metric, "rmse": rmse_metric},
+        "metrics": metrics,
     }
 
-    model_path = pUtils.generate_model_path(bucket_name, model_name, model_version)
+    model_path = paths.generate_model_path(bucket_name, model_name, model_version)
     new_run_number = vUtils.get_run_number(model_path) + 1
     vUtils.save_model_and_metadata(model_path, new_run_number, model, metadata)
 
