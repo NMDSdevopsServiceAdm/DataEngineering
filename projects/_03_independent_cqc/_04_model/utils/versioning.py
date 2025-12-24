@@ -4,8 +4,7 @@ from datetime import datetime, timezone
 
 import boto3
 import joblib
-
-from projects._03_independent_cqc._05_model.utils.model import Model
+from sklearn.base import BaseEstimator
 
 
 def get_run_number(s3_root: str) -> int:
@@ -45,7 +44,7 @@ def get_run_number(s3_root: str) -> int:
 
 
 def save_model_and_metadata(
-    s3_root: str, run_number: int, model: Model, metadata: dict
+    s3_root: str, run_number: int, model: BaseEstimator, metadata: dict
 ) -> None:
     """
     Saves a model and a JSON metadata file for a specific model run in S3.
@@ -63,7 +62,7 @@ def save_model_and_metadata(
     Args:
         s3_root (str): S3 directory prefix for a model's run outputs (e.g. "s3://pipeline-resources/models/model_A/")
         run_number (int): The run/version number to save metadata under.
-        model (Model): The trained model object to be saved.
+        model (BaseEstimator): The trained model object to be saved.
         metadata (dict): Metadata describing the model run.
 
     Return:
