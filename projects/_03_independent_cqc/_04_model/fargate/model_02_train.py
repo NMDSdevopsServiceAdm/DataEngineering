@@ -102,3 +102,18 @@ def main(data_bucket_name: str, resources_bucket_name: str, model_name: str) -> 
     vUtils.save_model_and_metadata(model_path, new_run_number, model, metadata)
 
     print(f"Model trained and saved with run number {new_run_number}.")
+
+
+if __name__ == "__main__":
+
+    args = utils.get_args(
+        ("--data_bucket_name", "The bucket to source the features dataset from"),
+        ("--resources_bucket_name", "The bucket to source and save model files to"),
+        ("--model_name", "The name of the model to create features for"),
+    )
+
+    main(
+        data_bucket_name=args.data_bucket_name,
+        resources_bucket_name=args.resources_bucket_name,
+        model_name=args.model_name,
+    )
