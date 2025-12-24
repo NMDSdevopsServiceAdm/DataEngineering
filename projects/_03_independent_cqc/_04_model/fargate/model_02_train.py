@@ -29,7 +29,8 @@ def main(bucket_name: str, model_name: str) -> None:
         7. Test the model
         8. Save the trained model with an updated run number
 
-    Note: the modelling process requires DataFrames instead of LazyFrames.
+    Note: the modelling process requires eager Polars DataFrames because scikit-learn
+    operates on in-memory NumPy arrays.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the features dataset from
