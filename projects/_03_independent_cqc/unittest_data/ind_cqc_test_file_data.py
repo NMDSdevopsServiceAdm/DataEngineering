@@ -6131,3 +6131,127 @@ class ForwardFillLatestKnownValue:
         ("loc-2", date(2025, 1, 5), None),
         ("loc-2", date(2025, 1, 6), None),
     ]
+
+
+@dataclass
+class OutlierCleaningData:
+
+    no_outliers_input_rows = [
+        ("1-001", 10, CTCareHomeFilteringRule.populated),
+        ("1-001", 11, CTCareHomeFilteringRule.populated),
+        ("1-001", 12, CTCareHomeFilteringRule.populated),
+        ("1-001", 13, CTCareHomeFilteringRule.populated),
+        ("1-002", 50, CTCareHomeFilteringRule.populated),
+        ("1-002", 50, CTCareHomeFilteringRule.populated),
+        ("1-002", 51, CTCareHomeFilteringRule.populated),
+        ("1-002", 51, CTCareHomeFilteringRule.populated),
+    ]
+
+    clean_longitudinal_outliers_input_rows = [
+        ("1-001", 5, CTCareHomeFilteringRule.populated),  # small location with jump
+        ("1-001", 10, CTCareHomeFilteringRule.populated),
+        ("1-001", 15, CTCareHomeFilteringRule.populated),
+        ("1-001", 80, CTCareHomeFilteringRule.populated),
+        ("1-002", 95, CTCareHomeFilteringRule.populated),  # large location with dip
+        ("1-002", 20, CTCareHomeFilteringRule.populated),
+        ("1-002", 90, CTCareHomeFilteringRule.populated),
+        ("1-003", 40, CTCareHomeFilteringRule.populated),  # location with little change
+        ("1-003", 45, CTCareHomeFilteringRule.populated),
+        ("1-003", 50, CTCareHomeFilteringRule.populated),
+        (
+            "1-004",
+            5,
+            CTCareHomeFilteringRule.populated,
+        ),  # Extra location to pad out number of rows for calculations
+        ("1-004", 10, CTCareHomeFilteringRule.populated),
+        ("1-004", 15, CTCareHomeFilteringRule.populated),
+        ("1-004", 80, CTCareHomeFilteringRule.populated),
+        ("1-004", 94, CTCareHomeFilteringRule.populated),
+        ("1-004", 20, CTCareHomeFilteringRule.populated),
+        ("1-004", 90, CTCareHomeFilteringRule.populated),
+        ("1-004", 40, CTCareHomeFilteringRule.populated),
+        ("1-004", 45, CTCareHomeFilteringRule.populated),
+        ("1-004", 50, CTCareHomeFilteringRule.populated),
+    ]
+
+    expected_clean_longitudinal_outliers_remove_value_only_rows = [
+        ("1-001", 5, CTCareHomeFilteringRule.populated),  # small location with jump
+        ("1-001", 10, CTCareHomeFilteringRule.populated),
+        ("1-001", 15, CTCareHomeFilteringRule.populated),
+        ("1-001", None, CTCareHomeFilteringRule.longitudinal_outliers_total_posts),
+        ("1-002", 95, CTCareHomeFilteringRule.populated),  # large location with dip
+        ("1-002", None, CTCareHomeFilteringRule.longitudinal_outliers_total_posts),
+        ("1-002", 90, CTCareHomeFilteringRule.populated),
+        ("1-003", 40, CTCareHomeFilteringRule.populated),  # location with little change
+        ("1-003", 45, CTCareHomeFilteringRule.populated),
+        ("1-003", 50, CTCareHomeFilteringRule.populated),
+        (
+            "1-004",
+            5,
+            CTCareHomeFilteringRule.populated,
+        ),
+        ("1-004", 10, CTCareHomeFilteringRule.populated),
+        ("1-004", 15, CTCareHomeFilteringRule.populated),
+        ("1-004", 80, CTCareHomeFilteringRule.populated),
+        ("1-004", 94, CTCareHomeFilteringRule.populated),
+        ("1-004", 20, CTCareHomeFilteringRule.populated),
+        ("1-004", 90, CTCareHomeFilteringRule.populated),
+        ("1-004", 40, CTCareHomeFilteringRule.populated),
+        ("1-004", 45, CTCareHomeFilteringRule.populated),
+        ("1-004", 50, CTCareHomeFilteringRule.populated),
+    ]
+
+    compute_group_median_rows = [
+        ("1-001", 10, CTCareHomeFilteringRule.populated),
+        ("1-001", 20, CTCareHomeFilteringRule.populated),
+        ("1-001", 30, CTCareHomeFilteringRule.populated),
+        ("1-001", 100, CTCareHomeFilteringRule.populated),
+    ]
+
+    expected_compute_group_median_rows = [
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 25.0),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 25.0),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 25.0),
+        ("1-001", 100, CTCareHomeFilteringRule.populated, 25.0),
+    ]
+
+    compute_abs_deviation_rows = expected_compute_group_median_rows
+
+    expected_abs_deviation_rows = [
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 25, 15),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 25, 5),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 25, 5),
+        ("1-001", 100, CTCareHomeFilteringRule.populated, 25, 75),
+    ]
+
+    compute_outlier_cutoff_rows = expected_abs_deviation_rows
+
+    expected_outlier_cutoff_rows = [
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 25, 15, 57, 57),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 25, 5, 57, 57),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 25, 5, 57, 57),
+        ("1-001", 100, CTCareHomeFilteringRule.populated, 25, 75, 57, 57),
+    ]
+
+    flag_outliers_rows = expected_outlier_cutoff_rows
+
+    expected_flag_outliers_rows = [
+        ("1-001", 10, CTCareHomeFilteringRule.populated, 25, 15, 57, 57, False),
+        ("1-001", 20, CTCareHomeFilteringRule.populated, 25, 5, 57, 57, False),
+        ("1-001", 30, CTCareHomeFilteringRule.populated, 25, 5, 57, 57, False),
+        ("1-001", 100, CTCareHomeFilteringRule.populated, 25, 75, 57, 57, True),
+    ]
+
+    apply_outlier_cleaning_input_rows = [
+        ("1-001", 100, True),  # Outlier and large location
+        ("1-001", 75, False),  # Not outlier and large location
+        ("1-001", 50, False),  # Outlier and not large location
+        ("1-001", 25, False),  # Not outlier and not large location
+    ]
+
+    apply_outlier_cleaning_expected_rows = apply_outlier_cleaning_input_rows = [
+        ("1-001", None, True),  # Outlier and large location
+        ("1-001", 75, False),  # Not outlier and large location
+        ("1-001", 50, False),  # Outlier and not large location
+        ("1-001", 25, False),  # Not outlier and not large location
+    ]

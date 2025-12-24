@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Called the forward_fill_latest_known_value function on pir_people_directly_employed_dedup column to replicate the forward fill process for PIR Data.
 
+- A new function to remove longitudinal outliers from CT data. The function flags the outliers based on absolute difference in median values and removes the ourlier value. 
+
 ### Changed
 -
 
