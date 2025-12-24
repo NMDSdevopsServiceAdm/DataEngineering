@@ -93,8 +93,8 @@ def main(bucket_name: str, model_name: str) -> None:
         "type": model_type,
         "parameters": model_params,
         "version": model_version,
-        "features": feature_cols,
-        "dependent": dependent_col,
+        "feature_columns": feature_cols,
+        "dependent_column": dependent_col,
         "metrics": metrics,
     }
 
