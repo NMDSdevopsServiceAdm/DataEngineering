@@ -2,9 +2,11 @@ from sklearn.linear_model import Lasso, LinearRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
+from projects._03_independent_cqc._04_model.utils.value_labels import ModelTypes
+
 
 def build_model(
-    model_type: str, model_params: dict = {}
+    model_type: str, model_params: dict | None = None
 ) -> LinearRegression | Pipeline:
     """
     Returns a scikit-learn model or pipeline based on model_type.
@@ -14,7 +16,7 @@ def build_model(
 
     Args:
         model_type (str): The type of model to build. Supported types are "linear" and "lasso".
-        model_params (dict): A dictionary of parameters to pass to the model constructor.
+        model_params (dict | None): Optional. A dictionary of parameters to pass to the model constructor.
 
     Returns:
         LinearRegression | Pipeline: The constructed scikit-learn model or pipeline.
@@ -22,12 +24,15 @@ def build_model(
     Raises:
         ValueError: If an unsupported model_type is provided.
     """
-    if model_type == "linear":
+    if model_params is None:
+        model_params = {}
+
+    if model_type == ModelTypes.linear_regression:
         return LinearRegression(**model_params)
 
-    elif model_type == "lasso":
+    elif model_type == ModelTypes.lasso:
         return Pipeline(
-            [("scaler", StandardScaler()), ("lasso", Lasso(**model_params))]
+            [("scaler", StandardScaler()), (ModelTypes.lasso, Lasso(**model_params))]
         )
 
     else:
