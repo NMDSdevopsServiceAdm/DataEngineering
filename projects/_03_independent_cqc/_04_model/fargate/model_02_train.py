@@ -49,12 +49,15 @@ def main(bucket_name: str, model_name: str) -> None:
         ],
         model_registry=model_registry,
     )
-    model_version = model_registry[model_name][MRKeys.version]
-    auto_retrain_model = model_registry[model_name][MRKeys.auto_retrain]
-    model_type = model_registry[model_name][MRKeys.model_type]
-    model_params = model_registry[model_name][MRKeys.model_params]
-    dependent_col = model_registry[model_name][MRKeys.dependent]
-    feature_cols = model_registry[model_name][MRKeys.features]
+
+    model_def = model_registry[model_name]
+
+    model_version = model_def[MRKeys.version]
+    auto_retrain_model = model_def[MRKeys.auto_retrain]
+    model_type = model_def[MRKeys.model_type]
+    model_params = model_def[MRKeys.model_params]
+    dependent_col = model_def[MRKeys.dependent]
+    feature_cols = model_def[MRKeys.features]
 
     if not auto_retrain_model:
         print(f"Auto-retraining is disabled for model {model_name}. Skipping training.")
