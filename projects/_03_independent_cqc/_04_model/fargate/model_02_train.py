@@ -108,4 +108,4 @@ if __name__ == "__main__":
         ("--model_name", "The name of the model to create features for"),
     )
 
-    main(data_bucket_name=args.data_bucket_name, model_name=args.model_name)
+    main(bucket_name=args.bucket_name, model_name=args.model_name)
