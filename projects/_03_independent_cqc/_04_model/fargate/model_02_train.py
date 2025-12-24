@@ -13,7 +13,7 @@ from projects._03_independent_cqc._04_model.registry.model_registry import (
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 
 
-def main(data_bucket_name: str, resources_bucket_name: str, model_name: str) -> None:
+def main(bucket_name: str, model_name: str) -> None:
     """
     Loads a features dataset then trains, tests and saves a specified model.
 
@@ -30,13 +30,12 @@ def main(data_bucket_name: str, resources_bucket_name: str, model_name: str) -> 
     Note: the modelling process requires DataFrames instead of LazyFrames.
 
     Args:
-        data_bucket_name (str): the bucket (name only) in which to source the features dataset from
-        resources_bucket_name (str): the bucket (name only) in which to source and save model files to
+        bucket_name (str): the bucket (name only) in which to source the features dataset from
         model_name (str): the name of the model to train
     """
     print(f"Training {model_name} model...")
 
-    features_source = pUtils.generate_features_path(data_bucket_name, model_name)
+    features_source = pUtils.generate_features_path(bucket_name, model_name)
 
     dUtils.validate_model_definition(
         model_name,
@@ -95,9 +94,7 @@ def main(data_bucket_name: str, resources_bucket_name: str, model_name: str) -> 
         "metrics": {"r2": r2_metric, "rmse": rmse_metric},
     }
 
-    model_path = pUtils.generate_model_path(
-        resources_bucket_name, model_name, model_version
-    )
+    model_path = pUtils.generate_model_path(bucket_name, model_name, model_version)
     new_run_number = vUtils.get_run_number(model_path) + 1
     vUtils.save_model_and_metadata(model_path, new_run_number, model, metadata)
 
@@ -107,13 +104,8 @@ def main(data_bucket_name: str, resources_bucket_name: str, model_name: str) -> 
 if __name__ == "__main__":
 
     args = utils.get_args(
-        ("--data_bucket_name", "The bucket to source the features dataset from"),
-        ("--resources_bucket_name", "The bucket to source and save model files to"),
+        ("--bucket_name", "The bucket to source and save the datasets to"),
         ("--model_name", "The name of the model to create features for"),
     )
 
-    main(
-        data_bucket_name=args.data_bucket_name,
-        resources_bucket_name=args.resources_bucket_name,
-        model_name=args.model_name,
-    )
+    main(data_bucket_name=args.data_bucket_name, model_name=args.model_name)
