@@ -27,7 +27,7 @@ def main(bucket_name: str, model_name: str) -> None:
         5. Convert the train and test sets to NumPy arrays
         6. Train the model
         7. Test the model
-        8. Save the trained model with an updated run number
+        8. Save the trained model and model metadata with an updated run number
 
     Note: the modelling process requires eager Polars DataFrames because scikit-learn
     operates on in-memory NumPy arrays.
@@ -103,7 +103,7 @@ def main(bucket_name: str, model_name: str) -> None:
     new_run_number = vUtils.get_run_number(model_path) + 1
     vUtils.save_model_and_metadata(model_path, new_run_number, model, metadata)
 
-    print(f"Model trained and saved with run number {new_run_number}.")
+    print(f"{model_name} model trained and saved with run number {new_run_number}.")
 
 
 if __name__ == "__main__":
