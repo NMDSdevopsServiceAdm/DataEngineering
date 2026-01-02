@@ -4,7 +4,6 @@ import unittest
 
 import boto3
 import joblib
-from mock import Mock
 from moto import mock_aws
 
 from projects._03_independent_cqc._04_model.utils import versioning as job

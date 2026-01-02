@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._04_model.fargate.model_02_train as job
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
