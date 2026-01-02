@@ -37,7 +37,7 @@
               },
               "Next": "Train model and validate features - care home"
             },
-            "Parallel": {
+            "Train model and validate features - care home": {
               "Type": "Parallel",
               "Branches": [
                 {
@@ -124,7 +124,7 @@
               },
               "Next": "Train model and validate features - non-residential without dormancy"
             },
-            "Parallel": {
+            "Train model and validate features - non-residential without dormancy": {
               "Type": "Parallel",
               "Branches": [
                 {
@@ -211,7 +211,7 @@
               },
               "Next": "Train model and validate features - non-residential with dormancy"
             },
-            "Parallel": {
+            "Train model and validate features - non-residential with dormancy": {
               "Type": "Parallel",
               "Branches": [
                 {
