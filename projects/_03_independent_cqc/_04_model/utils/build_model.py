@@ -15,7 +15,7 @@ def build_model(
     ensure that all features contribute equally to the regularisation process.
 
     Args:
-        model_type (str): The type of model to build. Supported types are "linear" and "lasso".
+        model_type (str): The type of model to build. Supported types are "linear_regression" and "lasso".
         model_params (dict | None): Optional. A dictionary of parameters to pass to the model constructor.
 
     Returns:
