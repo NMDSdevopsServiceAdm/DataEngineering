@@ -45,12 +45,11 @@ class CqcCategories:
 @dataclass
 class CqcConfig:
     directory = Path(
-        "F:/ASC-WDS Copy Files/Research & Analysis Team Folders/Analysis Team/b. Data Sources/02. Data sets and databases/CQC Registered Providers lists/"
+        "F:/03. Data sources/07. External data sets/CQC Registered Providers lists/"
     )
-    old_file_name = Path("2024/01. CQC 050124.xlsx")
-    new_file_name = Path("2024/01. CQC 050124 inc sector and service.xlsx")
+    source_suffix = ".xlsx"
+    dest_suffix = " inc sector and service.xlsx"
     sheet_name = "HSCA_Active_Locations"
-    blank_rows = 6  # CQC data file starts on row 7
     columns_to_export = ["Location ID", "Sector", "Main Service"]
     new_sheet_name = "CQC sector service"
 

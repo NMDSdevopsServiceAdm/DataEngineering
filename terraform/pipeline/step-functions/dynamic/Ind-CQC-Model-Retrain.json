@@ -35,14 +35,59 @@
                   ]
                 }
               },
-              "Next": "Train model - care home"
+              "Next": "Train model and validate features - care home"
             },
-            "Train model - care home": {
-              "Type": "Pass",
-              "Next": "Predict - care home"
-            },
-            "Predict - care home": {
-              "Type": "Pass",
+            "Train model and validate features - care home": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Train model - care home",
+                  "States": {
+                    "Train model - care home": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::ecs:runTask.sync",
+                    "Parameters": {
+                      "Cluster": "${model_cluster_arn}",
+                      "TaskDefinition": "${independent_cqc_model_task_arn}",
+                      "LaunchType": "FARGATE",
+                      "NetworkConfiguration": {
+                        "AwsvpcConfiguration": {
+                          "Subnets": ${public_subnet_ids},
+                          "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                          "AssignPublicIp": "ENABLED"
+                        }
+                      },
+                      "Overrides": {
+                        "ContainerOverrides": [
+                          {
+                            "Name": "_03_independent_cqc_model-container",
+                            "Command": [
+                              "model_02_train.py",
+                              "--bucket_name", "${dataset_bucket_name}",
+                              "--model_name", "care_home"
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "Next": "Predict - care home"
+                  },
+                  "Predict - care home": {
+                    "Type": "Pass",
+                    "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate features - care home",
+                  "States": {
+                    "Validate features - care home": {
+                      "Type": "Pass",
+                      "End": true
+                    }
+                  }
+                }
+              ],
               "End": true
             }
           }
@@ -77,14 +122,59 @@
                   ]
                 }
               },
-              "Next": "Train model - non-residential without dormancy"
+              "Next": "Train model and validate features - non-residential without dormancy"
             },
-            "Train model - non-residential without dormancy": {
-              "Type": "Pass",
-              "Next": "Predict - non-residential without dormancy"
-            },
-            "Predict - non-residential without dormancy": {
-              "Type": "Pass",
+            "Train model and validate features - non-residential without dormancy": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Train model - non-residential without dormancy",
+                  "States": {
+                    "Train model - non-residential without dormancy": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::ecs:runTask.sync",
+                    "Parameters": {
+                      "Cluster": "${model_cluster_arn}",
+                      "TaskDefinition": "${independent_cqc_model_task_arn}",
+                      "LaunchType": "FARGATE",
+                      "NetworkConfiguration": {
+                        "AwsvpcConfiguration": {
+                          "Subnets": ${public_subnet_ids},
+                          "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                          "AssignPublicIp": "ENABLED"
+                        }
+                      },
+                      "Overrides": {
+                        "ContainerOverrides": [
+                          {
+                            "Name": "_03_independent_cqc_model-container",
+                            "Command": [
+                              "model_02_train.py",
+                              "--bucket_name", "${dataset_bucket_name}",
+                              "--model_name", "non_residential_without_dormancy"
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "Next": "Predict - non-residential without dormancy"
+                  },
+                  "Predict - non-residential without dormancy": {
+                    "Type": "Pass",
+                    "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate features - non-residential without dormancy",
+                  "States": {
+                    "Validate features - non-residential without dormancy": {
+                      "Type": "Pass",
+                      "End": true
+                    }
+                  }
+                }
+              ],
               "End": true
             }
           }
@@ -119,14 +209,59 @@
                   ]
                 }
               },
-              "Next": "Train model - non-residential with dormancy"
+              "Next": "Train model and validate features - non-residential with dormancy"
             },
-            "Train model - non-residential with dormancy": {
-              "Type": "Pass",
-              "Next": "Predict - non-residential with dormancy"
-            },
-            "Predict - non-residential with dormancy": {
-              "Type": "Pass",
+            "Train model and validate features - non-residential with dormancy": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Train model - non-residential with dormancy",
+                  "States": {
+                    "Train model - non-residential with dormancy": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::ecs:runTask.sync",
+                    "Parameters": {
+                      "Cluster": "${model_cluster_arn}",
+                      "TaskDefinition": "${independent_cqc_model_task_arn}",
+                      "LaunchType": "FARGATE",
+                      "NetworkConfiguration": {
+                        "AwsvpcConfiguration": {
+                          "Subnets": ${public_subnet_ids},
+                          "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                          "AssignPublicIp": "ENABLED"
+                        }
+                      },
+                      "Overrides": {
+                        "ContainerOverrides": [
+                          {
+                            "Name": "_03_independent_cqc_model-container",
+                            "Command": [
+                              "model_02_train.py",
+                              "--bucket_name", "${dataset_bucket_name}",
+                              "--model_name", "non_residential_with_dormancy"
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "Next": "Predict - non-residential with dormancy"
+                  },
+                  "Predict - non-residential with dormancy": {
+                    "Type": "Pass",
+                    "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate features - non-residential with dormancy",
+                  "States": {
+                    "Validate features - non-residential with dormancy": {
+                      "Type": "Pass",
+                      "End": true
+                    }
+                  }
+                }
+              ],
               "End": true
             }
           }
