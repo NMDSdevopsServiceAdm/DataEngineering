@@ -6222,33 +6222,33 @@ class OutlierCleaningData:
     ]
 
     compute_abs_deviation_rows = [
-        ("1-001", 10, CTNonResFilteringRule.populated, 25.0),
-        ("1-001", 20, CTNonResFilteringRule.populated, 25.0),
-        ("1-001", 30, CTNonResFilteringRule.populated, 25.0),
-        ("1-001", 100, CTNonResFilteringRule.populated, 25.0),
-        ("1-002", 100, CTNonResFilteringRule.populated, 100.0),
-        ("1-002", None, CTNonResFilteringRule.populated, 100.0),
-        ("1-003", None, CTNonResFilteringRule.populated, None),
+        ("1-001", 10, 25.0),
+        ("1-001", 20, 25.0),
+        ("1-001", 30, 25.0),
+        ("1-001", 100, 25.0),
+        ("1-002", 100, 100.0),
+        ("1-002", None, 100.0),
+        ("1-003", None, None),
     ]
 
     expected_abs_deviation_rows = [
-        ("1-001", 10, CTNonResFilteringRule.populated, 25, 15),
-        ("1-001", 20, CTNonResFilteringRule.populated, 25, 5),
-        ("1-001", 30, CTNonResFilteringRule.populated, 25, 5),
-        ("1-001", 100, CTNonResFilteringRule.populated, 25, 75),
-        ("1-002", 100, CTNonResFilteringRule.populated, 100, 0),
-        ("1-002", None, CTNonResFilteringRule.populated, 100, None),
-        ("1-003", None, CTNonResFilteringRule.populated, None, None),
+        ("1-001", 10, 25, 15),
+        ("1-001", 20, 25, 5),
+        ("1-001", 30, 25, 5),
+        ("1-001", 100, 25, 75),
+        ("1-002", 100, 100, 0),
+        ("1-002", None, 100, None),
+        ("1-003", None, None, None),
     ]
 
     compute_outlier_cutoff_rows = [
-        ("1-001", 10, CTNonResFilteringRule.populated, 25, 15),
-        ("1-001", 20, CTNonResFilteringRule.populated, 25, 5),
-        ("1-001", 30, CTNonResFilteringRule.populated, 25, 5),
-        ("1-001", 100, CTNonResFilteringRule.populated, 25, 75),
-        ("1-002", 100, CTNonResFilteringRule.populated, 100, 0),
-        ("1-002", None, CTNonResFilteringRule.populated, 100, None),
-        ("1-003", None, CTNonResFilteringRule.populated, None, None),
+        ("1-001", 10, 15),
+        ("1-001", 20, 5),
+        ("1-001", 30, 5),
+        ("1-001", 100, 75),
+        ("1-002", 100, 0),
+        ("1-002", None, None),
+        ("1-003", None, None),
     ]
 
     expected_outlier_cutoff_rows = [
@@ -6271,7 +6271,7 @@ class OutlierCleaningData:
         ("1-003", None, None, 51),
     ]
 
-    apply_outlier_cleaning_expected_rows = [
+    expected_apply_outlier_cleaning_input_rows = [
         ("1-001", 10, 15, 51),
         ("1-001", 20, 5, 51),
         ("1-001", 30, 5, 51),

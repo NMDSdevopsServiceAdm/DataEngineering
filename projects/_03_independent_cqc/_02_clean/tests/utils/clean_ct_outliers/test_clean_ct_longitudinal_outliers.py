@@ -129,7 +129,7 @@ class TestComputeAbsDeviation(TestCleanCtLongitudinalOutliers):
     ):
         df = self.spark.createDataFrame(
             Data.compute_abs_deviation_rows,
-            Schemas.median_schema,
+            Schemas.abs_dev_input_schema,
         )
 
         returned_df = job.compute_absolute_deviation(
@@ -151,12 +151,11 @@ class TestComputeOutlierCutoff(TestCleanCtLongitudinalOutliers):
     ):
         df = self.spark.createDataFrame(
             Data.compute_outlier_cutoff_rows,
-            Schemas.abs_dev_schema,
+            Schemas.compute_outlier_cutoff_input_schema,
         )
 
         returned_data = job.compute_outlier_cutoff(
             df,
-            IndCQC.location_id,
             0.10,
             IndCQC.ct_non_res_care_workers_employed_cleaned,
         ).collect()
@@ -194,7 +193,7 @@ class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.apply_outlier_cleaning_expected_rows,
+            Data.expected_apply_outlier_cleaning_input_rows,
             Schemas.apply_outlier_cleaning_schema,
         )
 

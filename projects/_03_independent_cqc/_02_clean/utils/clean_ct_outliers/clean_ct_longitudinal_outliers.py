@@ -43,7 +43,7 @@ def clean_longitudinal_outliers(
     df_median = compute_group_median(df, group_by_col, col_to_clean)
     df_deviation = compute_absolute_deviation(df_median, col_to_clean)
     df_thresholds = compute_outlier_cutoff(
-        df_deviation, group_by_col, proportion_to_filter, col_to_clean
+        df_deviation, proportion_to_filter, col_to_clean
     )
     cleaned_df = apply_outlier_cleaning(
         df_thresholds, col_to_clean, cleaned_column_name
@@ -119,7 +119,6 @@ def compute_absolute_deviation(df: DataFrame, col_to_clean: str) -> DataFrame:
 
 def compute_outlier_cutoff(
     df: DataFrame,
-    group_by_col: str,
     proportion_to_filter: float,
     col_to_clean: str,
 ) -> DataFrame:
@@ -149,26 +148,6 @@ def compute_outlier_cutoff(
         F.lit(overall_abs_diff_cutoff),
     )
     return df
-
-
-def flag_outliers(df: DataFrame, col_to_clean: str) -> DataFrame:
-    """
-    Flags outlier records based on whether the absolute deviation exceeds the
-    group-specific cutoff.
-
-    Args:
-        df (DataFrame): DataFrame containing 'abs_diff' and 'abs_diff_cutoff' columns.
-        col_to_clean (str): Column for which outliers are to be flagged.
-
-    Returns:
-        DataFrame: DataFrame with a new boolean column 'outlier_flag' where True indicates
-        an outlier.
-    """
-    return df.withColumn(
-        f"{col_to_clean}_outlier_flag",
-        F.col(f"{col_to_clean}_abs_diff")
-        > F.col(f"{col_to_clean}_overall_abs_diff_cutoff"),
-    )
 
 
 def apply_outlier_cleaning(
