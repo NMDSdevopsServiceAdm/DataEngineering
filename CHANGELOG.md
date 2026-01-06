@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+
+### Added
+
+
+### Changed
+
+
+### Fixed
+
+
+## [v2025.12.0] - 06/01/2026
+
 ### Added
 - Called the forward_fill_latest_known_value function on pir_people_directly_employed_dedup column to replicate the forward fill process for PIR Data.
 
