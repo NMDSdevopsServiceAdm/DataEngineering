@@ -45,17 +45,18 @@ def clean_longitudinal_outliers(
     df_thresholds = compute_outlier_cutoff(
         df_deviation, group_by_col, proportion_to_filter, col_to_clean
     )
-    df_flags = flag_outliers(df_thresholds, col_to_clean)
-    cleaned_df = apply_outlier_cleaning(df_flags, col_to_clean, cleaned_column_name)
+    cleaned_df = apply_outlier_cleaning(
+        df_thresholds, col_to_clean, cleaned_column_name
+    )
 
     if care_home:
         filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
         populated_rule = CTCareHomeFilteringRule.populated
-        new_rule_name = CTCareHomeFilteringRule.longitudinal_outliers_total_posts
+        new_rule_name = None
     else:
         filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
         populated_rule = CTNonResFilteringRule.populated
-        new_rule_name = CTNonResFilteringRule.longitudinal_outliers_total_posts
+        new_rule_name = CTNonResFilteringRule.longitudinal_outliers
 
     cleaned_df = update_filtering_rule(
         cleaned_df,
@@ -69,7 +70,6 @@ def clean_longitudinal_outliers(
     cleaned_df = cleaned_df.drop(
         f"{col_to_clean}_median_val",
         f"{col_to_clean}_abs_diff",
-        f"{col_to_clean}_abs_diff_cutoff",
         f"{col_to_clean}_overall_abs_diff_cutoff",
         f"{col_to_clean}_outlier_flag",
     )
@@ -138,12 +138,7 @@ def compute_outlier_cutoff(
         containing the outlier threshold for each group.
     """
     percentile = 1 - proportion_to_filter
-    w = Window.partitionBy(group_by_col)
 
-    df = df.withColumn(
-        f"{col_to_clean}_abs_diff_cutoff",
-        F.percentile(f"{col_to_clean}_abs_diff", percentile).over(w),
-    )
     overall_abs_diff_cutoff = df.agg(
         F.percentile(f"{col_to_clean}_abs_diff", percentile).alias(
             "overall_abs_diff_cutoff"
@@ -195,7 +190,8 @@ def apply_outlier_cleaning(
     df = df.withColumn(
         cleaned_column_name,
         F.when(
-            F.col(f"{col_to_clean}_outlier_flag"),
+            F.col(f"{col_to_clean}_abs_diff")
+            > F.col(f"{col_to_clean}_overall_abs_diff_cutoff"),
             None,
         ).otherwise(F.col(col_to_clean)),
     )

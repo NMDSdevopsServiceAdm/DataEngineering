@@ -1,9 +1,6 @@
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
-from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_longitudinal_outliers import (
-    clean_longitudinal_outliers,
-)
 from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_repetition import (
     clean_ct_values_after_consecutive_repetition,
 )

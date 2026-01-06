@@ -29,14 +29,12 @@ class TestFunctionsAreCalled(TestCleanCtLongitudinalOutliers):
     @patch(f"{PATCH_PATH}.compute_group_median")
     @patch(f"{PATCH_PATH}.compute_absolute_deviation")
     @patch(f"{PATCH_PATH}.compute_outlier_cutoff")
-    @patch(f"{PATCH_PATH}.flag_outliers")
     @patch(f"{PATCH_PATH}.apply_outlier_cleaning")
     @patch(f"{PATCH_PATH}.update_filtering_rule")
     def test_functions_are_called(
         self,
         update_filtering_rule_mock: Mock,
         apply_outlier_cleaning_mock: Mock,
-        flag_outliers_mock: Mock,
         compute_outlier_cutoff_mock: Mock,
         compute_absolute_deviation_mock: Mock,
         compute_group_median_mock: Mock,
@@ -53,7 +51,6 @@ class TestFunctionsAreCalled(TestCleanCtLongitudinalOutliers):
         compute_group_median_mock.assert_called_once()
         compute_absolute_deviation_mock.assert_called_once()
         compute_outlier_cutoff_mock.assert_called_once()
-        flag_outliers_mock.assert_called_once()
         apply_outlier_cleaning_mock.assert_called_once()
         update_filtering_rule_mock.assert_called_once()
 
@@ -73,10 +70,10 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
         returned_df = job.clean_longitudinal_outliers(
             df=test_df,
             group_by_col=IndCQC.location_id,
-            col_to_clean=IndCQC.ct_care_home_total_employed_cleaned,
-            cleaned_column_name=IndCQC.ct_care_home_total_employed_cleaned,
+            col_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
+            cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
             proportion_to_filter=0.10,
-            care_home=True,
+            care_home=False,
         )
         self.assertEqual(returned_df.collect(), test_df.collect())
 
@@ -91,10 +88,10 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
         returned_df = job.clean_longitudinal_outliers(
             test_df,
             IndCQC.location_id,
-            IndCQC.ct_care_home_total_employed_cleaned,
-            IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_non_res_care_workers_employed_cleaned,
+            IndCQC.ct_non_res_care_workers_employed_cleaned,
             0.10,
-            True,
+            False,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_clean_longitudinal_outliers_remove_value_only_rows,
@@ -116,7 +113,7 @@ class TestComputeMedian(TestCleanCtLongitudinalOutliers):
         returned_df = job.compute_group_median(
             df,
             IndCQC.location_id,
-            IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_non_res_care_workers_employed_cleaned,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_compute_group_median_rows,
@@ -137,7 +134,7 @@ class TestComputeAbsDeviation(TestCleanCtLongitudinalOutliers):
 
         returned_df = job.compute_absolute_deviation(
             df,
-            IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_non_res_care_workers_employed_cleaned,
         )
 
         expected_df = self.spark.createDataFrame(
@@ -161,7 +158,7 @@ class TestComputeOutlierCutoff(TestCleanCtLongitudinalOutliers):
             df,
             IndCQC.location_id,
             0.10,
-            IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_non_res_care_workers_employed_cleaned,
         ).collect()
 
         expected_data = self.spark.createDataFrame(
@@ -172,32 +169,13 @@ class TestComputeOutlierCutoff(TestCleanCtLongitudinalOutliers):
         for i in range(len(expected_data)):
             self.assertAlmostEqual(
                 returned_data[i][
-                    f"{IndCQC.ct_care_home_total_employed_cleaned}_overall_abs_diff_cutoff"
+                    f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_overall_abs_diff_cutoff"
                 ],
                 expected_data[i][
-                    f"{IndCQC.ct_care_home_total_employed_cleaned}_overall_abs_diff_cutoff"
+                    f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_overall_abs_diff_cutoff"
                 ],
                 places=3,
             )
-
-
-class TestFlagOutliers(TestCleanCtLongitudinalOutliers):
-    def test_flag_outliers_returns_expected_values(
-        self,
-    ):
-        df = self.spark.createDataFrame(
-            Data.flag_outliers_rows,
-            Schemas.cutoff_schema,
-        )
-
-        returned_df = job.flag_outliers(df, IndCQC.ct_care_home_total_employed_cleaned)
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_flag_outliers_rows,
-            Schemas.expected_outlier_flags_schema,
-        )
-
-        self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
@@ -211,8 +189,8 @@ class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
 
         returned_df = job.apply_outlier_cleaning(
             df,
-            IndCQC.ct_care_home_total_employed_cleaned,
-            IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_non_res_care_workers_employed_cleaned,
+            IndCQC.ct_non_res_care_workers_employed_cleaned,
         )
 
         expected_df = self.spark.createDataFrame(
