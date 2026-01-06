@@ -193,9 +193,8 @@ def get_updated_objects(
                 # return each object within a generator
                 yield get_object(id, object_type, cqc_api_primary_key)
             except NoProviderOrLocationException as err:
-                # CQC API changes URL returns unfetchable providerIds
-                print(err)
-                print(f"Unable to fetch data for providerId: {id}")
+                # CQC API changes URL returns unfetchable IDs
+                print(f"{err}: {id}")
 
         if changes_by_page["page"] == total_pages:
             print("Completed final page of changes.")
