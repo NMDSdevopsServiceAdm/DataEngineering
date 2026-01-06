@@ -8,11 +8,14 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Called the forward_fill_latest_known_value function on pir_people_directly_employed_dedup column to replicate the forward fill process for PIR Data.
 
+- Polars job [model_02_train](projects/_03_independent_cqc/_04_model/fargate/model_02_train.py) to train, test and save a specified model.
+
 ### Changed
 -
 
 ### Fixed
 -
+
 
 ## [v2025.11.0] - 18/12/2025
 

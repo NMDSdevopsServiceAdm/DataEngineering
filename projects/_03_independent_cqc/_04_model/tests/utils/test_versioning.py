@@ -64,6 +64,7 @@ class SaveModelAndMetadataTests(unittest.TestCase):
         )
 
         metadata = {"metric": 0.99}
+
         job.save_model_and_metadata(
             self.s3_root, run_number=5, model=self.test_model, metadata=metadata
         )
