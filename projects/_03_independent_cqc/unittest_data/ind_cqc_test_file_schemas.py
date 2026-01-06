@@ -3316,6 +3316,11 @@ class ForwardFillLatestKnownValue:
 
 @dataclass
 class OutlierCleaningSchemas:
+    median_val = f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_median_val"
+    abs_diff = f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_abs_diff"
+    overall_abs_diff_cutoff = (
+        f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_overall_abs_diff_cutoff"
+    )
 
     input_schema = StructType(
         [
@@ -3335,7 +3340,7 @@ class OutlierCleaningSchemas:
             ),
             StructField(IndCQC.ct_non_res_filtering_rule, StringType(), True),
             StructField(
-                f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_median_val",
+                median_val,
                 DoubleType(),
                 True,
             ),
@@ -3349,7 +3354,7 @@ class OutlierCleaningSchemas:
                 IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType(), True
             ),
             StructField(
-                f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_median_val",
+                median_val,
                 DoubleType(),
                 True,
             ),
@@ -3363,12 +3368,12 @@ class OutlierCleaningSchemas:
                 IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType(), True
             ),
             StructField(
-                f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_median_val",
+                median_val,
                 IntegerType(),
                 True,
             ),
             StructField(
-                f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_abs_diff",
+                abs_diff,
                 IntegerType(),
                 True,
             ),
@@ -3382,7 +3387,7 @@ class OutlierCleaningSchemas:
                 IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType(), True
             ),
             StructField(
-                f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_abs_diff",
+                abs_diff,
                 IntegerType(),
                 True,
             ),
@@ -3397,17 +3402,17 @@ class OutlierCleaningSchemas:
             ),
             StructField(IndCQC.ct_non_res_filtering_rule, StringType(), True),
             StructField(
-                f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_median_val",
+                median_val,
                 IntegerType(),
                 True,
             ),
             StructField(
-                f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_abs_diff",
+                abs_diff,
                 IntegerType(),
                 True,
             ),
             StructField(
-                f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_overall_abs_diff_cutoff",
+                overall_abs_diff_cutoff,
                 IntegerType(),
                 True,
             ),
@@ -3421,12 +3426,12 @@ class OutlierCleaningSchemas:
                 IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType(), True
             ),
             StructField(
-                f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_abs_diff",
+                abs_diff,
                 IntegerType(),
                 True,
             ),
             StructField(
-                f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_overall_abs_diff_cutoff",
+                overall_abs_diff_cutoff,
                 IntegerType(),
                 True,
             ),
