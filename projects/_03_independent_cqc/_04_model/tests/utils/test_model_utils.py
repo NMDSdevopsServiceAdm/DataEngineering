@@ -1,12 +1,21 @@
 import unittest
 
 import numpy as np
+import polars as pl
+import polars.testing as pl_testing
 from sklearn.discriminant_analysis import StandardScaler
 from sklearn.linear_model import Lasso, LinearRegression
 from sklearn.pipeline import Pipeline
 
 from projects._03_independent_cqc._04_model.utils import model_utils as job
 from projects._03_independent_cqc._04_model.utils.value_labels import ModelTypes
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    ModelUtilsData as Data,
+)
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
+    ModelUtilsSchemas as Schemas,
+)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class BuildModelTests(unittest.TestCase):
@@ -95,3 +104,65 @@ class MetricsTests(unittest.TestCase):
 
         self.assertIsInstance(metrics["r2"], float)
         self.assertIsInstance(metrics["rmse"], float)
+
+
+class CreatePredictionsDataFrameTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.features_df = pl.DataFrame(
+            Data.features_rows, Schemas.features_schema, orient="row"
+        )
+
+        self.predictions = Data.predictions
+
+        self.model_name = "model_A"
+        self.model_version = "1.2.0"
+        self.run_number = 7
+
+        self.expected_run_id = "model_A_v1.2.0_r7"
+
+    def test_returns_expected_predictions_dataframe(self):
+        returned_df = job.create_predictions_dataframe(
+            self.features_df,
+            self.predictions,
+            self.model_name,
+            self.model_version,
+            self.run_number,
+        )
+
+        expected_df = pl.DataFrame(
+            Data.expected_predictions_dataframe_rows,
+            Schemas.expected_predictions_dataframe_schema,
+            orient="row",
+        )
+
+        pl_testing.assert_frame_equal(returned_df, expected_df)
+
+    def test_raises_value_error_when_predictions_length_mismatch(self):
+        with self.assertRaises(ValueError) as context:
+            job.create_predictions_dataframe(
+                self.features_df,
+                Data.mismatch_predictions,
+                self.model_name,
+                self.model_version,
+                self.run_number,
+            )
+
+        self.assertIn("Predictions length", str(context.exception))
+        self.assertIn("does not match DataFrame row count", str(context.exception))
+
+    def test_run_id_column_is_correct_string(self):
+        returned_df = job.create_predictions_dataframe(
+            self.features_df,
+            self.predictions,
+            self.model_name,
+            self.model_version,
+            self.run_number,
+        )
+
+        self.assertEqual(returned_df[f"{self.model_name}_run_id"].dtype, pl.Utf8)
+        self.assertTrue(
+            all(
+                run_id == self.expected_run_id
+                for run_id in returned_df[f"{self.model_name}_run_id"]
+            )
+        )
