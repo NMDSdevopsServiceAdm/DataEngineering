@@ -127,14 +127,12 @@ def write_to_parquet(
     if append:
         fname = f"{uuid.uuid4()}.parquet"
         if isinstance(output_path, str):
-            output_path = output_path.rstrip("/") + "/" + fname
+            output_path += fname
         else:
             output_path = output_path / fname
 
     if not partition_cols:
-        df.rechunk().write_parquet(
-            output_path, use_pyarrow=True, pyarrow_options={"compression": "snappy"}
-        )
+        df.write_parquet(output_path)
         print("Parquet written to {}".format(output_path))
     else:
         df.rechunk().write_parquet(
