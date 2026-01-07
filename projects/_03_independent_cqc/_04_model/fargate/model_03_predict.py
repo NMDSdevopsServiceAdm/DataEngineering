@@ -1,5 +1,3 @@
-import polars as pl
-
 from polars_utils import utils
 from projects._03_independent_cqc._04_model.registry.model_registry import (
     model_registry,
