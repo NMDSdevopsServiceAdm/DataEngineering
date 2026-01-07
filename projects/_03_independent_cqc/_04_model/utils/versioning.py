@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 import boto3
 import joblib
 from sklearn.base import BaseEstimator
+from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import Pipeline
 
 
 def get_run_number(s3_root: str) -> int:
@@ -97,3 +99,32 @@ def save_model_and_metadata(
         Body=json.dumps(metadata_to_save, indent=2).encode("utf-8"),
         ContentType="application/json",
     )
+
+
+def load_latest_model(s3_root: str, run_number: int) -> LinearRegression | Pipeline:
+    """
+    Loads the most recent trained model (highest run number) from S3.
+
+    Structure:
+        s3_root/<run_number>/
+            ├── model.pkl
+            └── metadata.json
+
+    Args:
+        s3_root (str): S3 directory prefix for a saved model (e.g. "s3://pipeline-resources/models/model_A/")
+        run_number (int): The run number to load the model from.
+
+    Returns:
+        LinearRegression | Pipeline: The constructed scikit-learn model or pipeline.
+    """
+    s3 = boto3.client("s3")
+    bucket = s3_root.replace("s3://", "").split("/")[0]
+    prefix = "/".join(s3_root.replace("s3://", "").split("/")[1:])
+
+    model_key = f"{prefix}{run_number}/model.pkl"
+
+    buffer = io.BytesIO()
+    s3.download_fileobj(bucket, model_key, buffer)
+    buffer.seek(0)
+
+    return joblib.load(buffer)
