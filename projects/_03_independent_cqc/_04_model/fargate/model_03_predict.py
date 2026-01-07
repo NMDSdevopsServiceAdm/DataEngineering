@@ -65,24 +65,13 @@ def main(bucket_name: str, model_name: str) -> None:
 
     predictions = model.predict(X)
 
-    print("df")
-    print(df.head(10))
-
-    print("predictions")
-    print(predictions[:10])
-
     predictions_df = mUtils.create_predictions_dataframe(
         df, predictions, model_name, model_version, run_number
     )
 
-    print("predictions_df")
-    print(predictions_df.head(10))
-
     predictions_path = paths.generate_predictions_path(bucket_name, model_name)
 
     utils.write_to_parquet(predictions_df, predictions_path, append=False)
-
-    print(f"Predictions saved to {predictions_path}")
 
 
 if __name__ == "__main__":
