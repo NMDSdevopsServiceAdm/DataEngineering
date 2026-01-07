@@ -1,8 +1,12 @@
+import numpy as np
+import polars as pl
 from sklearn.linear_model import Lasso, LinearRegression
+from sklearn.metrics import r2_score, root_mean_squared_error
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 from projects._03_independent_cqc._04_model.utils.value_labels import ModelTypes
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 def build_model(
@@ -37,3 +41,20 @@ def build_model(
 
     else:
         raise ValueError(f"Unknown model type: {model_type}")
+
+
+def calculate_metrics(y_known: np.ndarray, y_predicted: np.ndarray) -> dict:
+    """
+    Calculate R2 and RMSE metrics for model evaluation.
+
+    Args:
+        y_known (np.ndarray): Known target values.
+        y_predicted (np.ndarray): Predicted target values from the model.
+
+    Returns:
+        dict: A dictionary containing R2 and RMSE metrics.
+    """
+    r2_metric = float(r2_score(y_known, y_predicted))
+    rmse_metric = float(root_mean_squared_error(y_known, y_predicted))
+
+    return {"r2": r2_metric, "rmse": rmse_metric}
