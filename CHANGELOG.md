@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Fixed
-
+- Analysts found a new test account in ASC-WDS so I've added their orgid to the list of test_accounts in projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py
 
 ## [v2025.12.0] - 06/01/2026
 
