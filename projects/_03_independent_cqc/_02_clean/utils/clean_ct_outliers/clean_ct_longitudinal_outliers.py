@@ -24,14 +24,14 @@ def clean_longitudinal_outliers(
     """
     Cleans longitudinal outliers from a numerical column in a DataFrame.
 
-    The function computes the group-wise median and median absolute deviation (MAD),
-    flags outliers based on the specified proportion to filter, and either replaces
-    outlier values with null or removes entire records. Additionally, updates filtering
+    The function computes the group-wise median and absolute difference,
+    flags outliers based on the specified proportion to filter, and replaces
+    outlier values with null. Additionally, updates filtering
     rules for care home or non-residential data.
 
     Args:
         df (DataFrame): Input DataFrame containing the data to clean.
-        group_by_col (str): Column name to group by when computing medians and MADs.
+        group_by_col (str): Column name to group by when computing medians and Absolute difference.
         col_to_clean (str): Column name containing numerical values to clean.
         cleaned_column_name (str): Name of the new column to store cleaned values.
         proportion_to_filter (float): Proportion of extreme values to consider as outliers.
