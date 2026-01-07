@@ -22,12 +22,6 @@ All notable changes to this project will be documented in this file.
 
 - Polars job [model_02_train](projects/_03_independent_cqc/_04_model/fargate/model_02_train.py) to train, test and save a specified model.
 
-### Changed
--
-
-### Fixed
--
-
 
 ## [v2025.11.0] - 18/12/2025
 
