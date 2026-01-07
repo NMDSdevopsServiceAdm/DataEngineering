@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Added
+- Polars job [model_03_predict](projects/_03_independent_cqc/_04_model/fargate/model_03_predict.py) to load a specified model then generate and save predictions.
 
 
 ### Changed
