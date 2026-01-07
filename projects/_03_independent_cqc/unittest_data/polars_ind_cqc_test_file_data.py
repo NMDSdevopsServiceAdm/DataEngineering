@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 
 import numpy as np
+import polars as pl
 
 from utils.column_values.categorical_column_values import CareHome, MainJobRoleLabels
 
@@ -273,6 +274,24 @@ class ModelTrainingUtilsData:
     expected_numpy_multiple_feature_cols_X = np.array([[1, 10], [2, 20], [3, 30]])
     expected_numpy_single_feature_col_X = np.array([[1], [2], [3]])
     expected_numpy_col_y = np.array([5, 6, 7])
+
+
+@dataclass
+class ModelUtilsData:
+    features_rows = [
+        ("1-001", date(2025, 1, 1), 1, 4),
+        ("1-002", date(2025, 1, 1), 2, 5),
+        ("1-003", date(2025, 1, 1), 3, 6),
+    ]
+
+    predictions = pl.Series([10.5, 11.0, 12.3])
+    mismatch_predictions = pl.Series([10.5, 11.0])
+
+    expected_predictions_dataframe_rows = [
+        ("1-001", date(2025, 1, 1), 10.5, "model_A_v1.2.0_r7"),
+        ("1-002", date(2025, 1, 1), 11.0, "model_A_v1.2.0_r7"),
+        ("1-003", date(2025, 1, 1), 12.3, "model_A_v1.2.0_r7"),
+    ]
 
 
 @dataclass
