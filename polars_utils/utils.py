@@ -113,7 +113,7 @@ def write_to_parquet(
         df (pl.DataFrame): The Polars DataFrame to write.
         output_path (str | Path): The file path where the Parquet file(s) will be written.
             This must be a directory if append is set to True.
-        append (bool): Whether to append to existing files or overwrite them. Defaults to False.
+        append (bool): Whether to append to existing files or overwrite them. Defaults to True.
         partition_cols (list[str] | None): List of columns to partition by (optional - mutually exclusive with append).
 
     Return:
@@ -127,12 +127,14 @@ def write_to_parquet(
     if append:
         fname = f"{uuid.uuid4()}.parquet"
         if isinstance(output_path, str):
-            output_path += fname
+            output_path = output_path.rstrip("/") + "/" + fname
         else:
             output_path = output_path / fname
 
     if not partition_cols:
-        df.write_parquet(output_path)
+        df.rechunk().write_parquet(
+            output_path, use_pyarrow=True, pyarrow_options={"compression": "snappy"}
+        )
         print("Parquet written to {}".format(output_path))
     else:
         df.rechunk().write_parquet(
