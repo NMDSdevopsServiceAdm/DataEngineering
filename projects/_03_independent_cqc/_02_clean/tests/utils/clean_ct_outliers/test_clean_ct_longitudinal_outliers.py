@@ -27,7 +27,7 @@ class TestCleanCtLongitudinalOutliers(unittest.TestCase):
 
 class TestFunctionsAreCalled(TestCleanCtLongitudinalOutliers):
     @patch(f"{PATCH_PATH}.compute_group_median")
-    @patch(f"{PATCH_PATH}.compute_absolute_deviation")
+    @patch(f"{PATCH_PATH}.calculate_new_column")
     @patch(f"{PATCH_PATH}.compute_outlier_cutoff")
     @patch(f"{PATCH_PATH}.apply_outlier_cleaning")
     @patch(f"{PATCH_PATH}.update_filtering_rule")
@@ -35,7 +35,7 @@ class TestFunctionsAreCalled(TestCleanCtLongitudinalOutliers):
         self,
         update_filtering_rule_mock: Mock,
         apply_outlier_cleaning_mock: Mock,
-        compute_outlier_cutoff_mock: Mock,
+        calculate_new_column_mock: Mock,
         compute_absolute_deviation_mock: Mock,
         compute_group_median_mock: Mock,
     ):
@@ -50,7 +50,7 @@ class TestFunctionsAreCalled(TestCleanCtLongitudinalOutliers):
 
         compute_group_median_mock.assert_called_once()
         compute_absolute_deviation_mock.assert_called_once()
-        compute_outlier_cutoff_mock.assert_called_once()
+        calculate_new_column_mock.assert_called_once()
         apply_outlier_cleaning_mock.assert_called_once()
         update_filtering_rule_mock.assert_called_once()
 
@@ -118,28 +118,6 @@ class TestComputeMedian(TestCleanCtLongitudinalOutliers):
         expected_df = self.spark.createDataFrame(
             Data.expected_compute_group_median_rows,
             Schemas.median_schema,
-        )
-
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-
-class TestComputeAbsDeviation(TestCleanCtLongitudinalOutliers):
-    def test_compute_absolute_deviation(
-        self,
-    ):
-        df = self.spark.createDataFrame(
-            Data.compute_abs_deviation_rows,
-            Schemas.abs_dev_input_schema,
-        )
-
-        returned_df = job.compute_absolute_deviation(
-            df,
-            IndCQC.ct_non_res_care_workers_employed_cleaned,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_abs_deviation_rows,
-            Schemas.abs_dev_schema,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())

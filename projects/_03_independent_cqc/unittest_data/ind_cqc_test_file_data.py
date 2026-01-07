@@ -6221,26 +6221,6 @@ class OutlierCleaningData:
         ("1-003", None, CTNonResFilteringRule.populated, None),
     ]
 
-    compute_abs_deviation_rows = [
-        ("1-001", 10, 25.0),
-        ("1-001", 20, 25.0),
-        ("1-001", 30, 25.0),
-        ("1-001", 100, 25.0),
-        ("1-002", 100, 100.0),
-        ("1-002", None, 100.0),
-        ("1-003", None, None),
-    ]
-
-    expected_abs_deviation_rows = [
-        ("1-001", 10, 25, 15),
-        ("1-001", 20, 25, 5),
-        ("1-001", 30, 25, 5),
-        ("1-001", 100, 25, 75),
-        ("1-002", 100, 100, 0),
-        ("1-002", None, 100, None),
-        ("1-003", None, None, None),
-    ]
-
     compute_outlier_cutoff_rows = [
         ("1-001", 10, 15),
         ("1-001", 20, 5),

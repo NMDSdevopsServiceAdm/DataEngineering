@@ -3347,39 +3347,6 @@ class OutlierCleaningSchemas:
         ]
     )
 
-    abs_dev_input_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(
-                IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType(), True
-            ),
-            StructField(
-                median_val,
-                DoubleType(),
-                True,
-            ),
-        ]
-    )
-
-    abs_dev_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(
-                IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType(), True
-            ),
-            StructField(
-                median_val,
-                IntegerType(),
-                True,
-            ),
-            StructField(
-                abs_diff,
-                IntegerType(),
-                True,
-            ),
-        ]
-    )
-
     compute_outlier_cutoff_input_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

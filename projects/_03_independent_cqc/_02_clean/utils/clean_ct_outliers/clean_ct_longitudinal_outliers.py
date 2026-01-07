@@ -4,6 +4,8 @@ from pyspark.sql import functions as F
 from projects._03_independent_cqc._02_clean.utils.filtering_utils import (
     update_filtering_rule,
 )
+from projects.utils.utils.utils import calculate_new_column
+
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     CTCareHomeFilteringRule,
@@ -41,7 +43,13 @@ def clean_longitudinal_outliers(
             and helper columns removed.
     """
     df_median = compute_group_median(df, group_by_col, col_to_clean)
-    df_deviation = compute_absolute_deviation(df_median, col_to_clean)
+    df_deviation = calculate_new_column(
+        df_median,
+        f"{col_to_clean}_abs_diff",
+        col_to_clean,
+        "absolute difference",
+        f"{col_to_clean}_median_val",
+    )
     df_thresholds = compute_outlier_cutoff(
         df_deviation, proportion_to_filter, col_to_clean
     )
@@ -71,7 +79,6 @@ def clean_longitudinal_outliers(
         f"{col_to_clean}_median_val",
         f"{col_to_clean}_abs_diff",
         f"{col_to_clean}_overall_abs_diff_cutoff",
-        f"{col_to_clean}_outlier_flag",
     )
 
     return cleaned_df
@@ -132,7 +139,7 @@ def compute_outlier_cutoff(
         col_to_clean (str): Column to use to get outlier cutoff.
 
     Returns:
-        DataFrame: Original DataFrame joined with a new column 'abs_diff_cutoff'
+        DataFrame: Original DataFrame joined with a new column 'overall_abs_diff_cutoff'
         containing the outlier threshold for each group.
     """
     percentile = 1 - proportion_to_filter
@@ -155,10 +162,11 @@ def apply_outlier_cleaning(
     cleaned_column_name: str,
 ) -> DataFrame:
     """
-    Cleans outlier values in a numerical column based on an 'outlier_flag' column.
+    Removes outlier values from a numeric column by setting them to null when the
+    abs_diff exceeds the overall_abs_diff_cutoff for any record.
 
     Args:
-        df (DataFrame): DataFrame containing 'outlier_flag' and 'large_location_flag'.
+        df (DataFrame): DataFrame containing 'abs_diff' and 'overall_abs_diff_cutoff'.
         col_to_clean (str): Column to clean.
         cleaned_column_name (str): Name of the new column to store cleaned values.
 
