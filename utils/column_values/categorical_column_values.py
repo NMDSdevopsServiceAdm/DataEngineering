@@ -582,6 +582,7 @@ class CTNonResFilteringRule(ColumnValues):
     populated: str = "populated"
     missing_data: str = "missing_data"
     location_repeats_total_posts: str = "location_repeats_total_posts"
+    longitudinal_outliers: str = "longitudinal_outliers"
 
 
 @dataclass

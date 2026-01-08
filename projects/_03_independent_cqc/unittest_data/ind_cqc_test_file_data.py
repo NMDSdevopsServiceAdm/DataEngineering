@@ -6131,3 +6131,132 @@ class ForwardFillLatestKnownValue:
         ("loc-2", date(2025, 1, 5), None),
         ("loc-2", date(2025, 1, 6), None),
     ]
+
+
+@dataclass
+class OutlierCleaningData:
+
+    no_outliers_input_rows = [
+        ("1-001", 10, CTNonResFilteringRule.populated),
+        ("1-001", 11, CTNonResFilteringRule.populated),
+        ("1-001", 12, CTNonResFilteringRule.populated),
+        ("1-001", 13, CTNonResFilteringRule.populated),
+        ("1-002", 50, CTNonResFilteringRule.populated),
+        ("1-002", 50, CTNonResFilteringRule.populated),
+        ("1-002", 51, CTNonResFilteringRule.populated),
+        ("1-002", 51, CTNonResFilteringRule.populated),
+    ]
+
+    clean_longitudinal_outliers_input_rows = [
+        ("1-001", 5, CTNonResFilteringRule.populated),
+        ("1-001", 10, CTNonResFilteringRule.populated),
+        ("1-001", 15, CTNonResFilteringRule.populated),
+        ("1-001", 80, CTNonResFilteringRule.populated),
+        ("1-002", 95, CTNonResFilteringRule.populated),
+        ("1-002", 20, CTNonResFilteringRule.populated),
+        ("1-002", 90, CTNonResFilteringRule.populated),
+        ("1-003", 40, CTNonResFilteringRule.populated),
+        ("1-003", 45, CTNonResFilteringRule.populated),
+        ("1-003", 50, CTNonResFilteringRule.populated),
+        (
+            "1-004",
+            5,
+            CTNonResFilteringRule.populated,
+        ),
+        ("1-004", 10, CTNonResFilteringRule.populated),
+        ("1-004", 15, CTNonResFilteringRule.populated),
+        ("1-004", 80, CTNonResFilteringRule.populated),
+        ("1-004", 94, CTNonResFilteringRule.populated),
+        ("1-004", 20, CTNonResFilteringRule.populated),
+        ("1-004", 90, CTNonResFilteringRule.populated),
+        ("1-004", 40, CTNonResFilteringRule.populated),
+        ("1-004", 45, CTNonResFilteringRule.populated),
+        ("1-004", 50, CTNonResFilteringRule.populated),
+    ]
+
+    expected_clean_longitudinal_outliers_remove_value_only_rows = [
+        ("1-001", 5, CTNonResFilteringRule.populated),
+        ("1-001", 10, CTNonResFilteringRule.populated),
+        ("1-001", 15, CTNonResFilteringRule.populated),
+        ("1-001", None, CTNonResFilteringRule.longitudinal_outliers),
+        ("1-002", 95, CTNonResFilteringRule.populated),
+        ("1-002", None, CTNonResFilteringRule.longitudinal_outliers),
+        ("1-002", 90, CTNonResFilteringRule.populated),
+        ("1-003", 40, CTNonResFilteringRule.populated),
+        ("1-003", 45, CTNonResFilteringRule.populated),
+        ("1-003", 50, CTNonResFilteringRule.populated),
+        (
+            "1-004",
+            5,
+            CTNonResFilteringRule.populated,
+        ),
+        ("1-004", 10, CTNonResFilteringRule.populated),
+        ("1-004", 15, CTNonResFilteringRule.populated),
+        ("1-004", 80, CTNonResFilteringRule.populated),
+        ("1-004", 94, CTNonResFilteringRule.populated),
+        ("1-004", 20, CTNonResFilteringRule.populated),
+        ("1-004", 90, CTNonResFilteringRule.populated),
+        ("1-004", 40, CTNonResFilteringRule.populated),
+        ("1-004", 45, CTNonResFilteringRule.populated),
+        ("1-004", 50, CTNonResFilteringRule.populated),
+    ]
+
+    compute_group_median_rows = [
+        ("1-001", 10, CTNonResFilteringRule.populated),
+        ("1-001", 20, CTNonResFilteringRule.populated),
+        ("1-001", 30, CTNonResFilteringRule.populated),
+        ("1-001", 100, CTNonResFilteringRule.populated),
+        ("1-002", 100, CTNonResFilteringRule.populated),
+        ("1-002", None, CTNonResFilteringRule.populated),
+        ("1-003", None, CTNonResFilteringRule.populated),
+    ]
+
+    expected_compute_group_median_rows = [
+        ("1-001", 10, CTNonResFilteringRule.populated, 25.0),
+        ("1-001", 20, CTNonResFilteringRule.populated, 25.0),
+        ("1-001", 30, CTNonResFilteringRule.populated, 25.0),
+        ("1-001", 100, CTNonResFilteringRule.populated, 25.0),
+        ("1-002", 100, CTNonResFilteringRule.populated, 100.0),
+        ("1-002", None, CTNonResFilteringRule.populated, 100.0),
+        ("1-003", None, CTNonResFilteringRule.populated, None),
+    ]
+
+    compute_outlier_cutoff_rows = [
+        ("1-001", 10, 15),
+        ("1-001", 20, 5),
+        ("1-001", 30, 5),
+        ("1-001", 100, 75),
+        ("1-002", 100, 0),
+        ("1-002", None, None),
+        ("1-003", None, None),
+    ]
+
+    expected_outlier_cutoff_rows = [
+        ("1-001", 10, CTNonResFilteringRule.populated, 25, 15, 51),
+        ("1-001", 20, CTNonResFilteringRule.populated, 25, 5, 51),
+        ("1-001", 30, CTNonResFilteringRule.populated, 25, 5, 51),
+        ("1-001", 100, CTNonResFilteringRule.populated, 25, 75, 51),
+        ("1-002", 100, CTNonResFilteringRule.populated, 100, 0, 51),
+        ("1-002", None, CTNonResFilteringRule.populated, 100, None, 51),
+        ("1-003", None, CTNonResFilteringRule.populated, None, None, 51),
+    ]
+
+    apply_outlier_cleaning_input_rows = [
+        ("1-001", 10, 15, 51),
+        ("1-001", 20, 5, 51),
+        ("1-001", 30, 5, 51),
+        ("1-001", 100, 75, 51),
+        ("1-002", 100, 0, 51),
+        ("1-002", None, None, 51),
+        ("1-003", None, None, 51),
+    ]
+
+    expected_apply_outlier_cleaning_input_rows = [
+        ("1-001", 10, 15, 51),
+        ("1-001", 20, 5, 51),
+        ("1-001", 30, 5, 51),
+        ("1-001", None, 75, 51),
+        ("1-002", 100, 0, 51),
+        ("1-002", None, None, 51),
+        ("1-003", None, None, 51),
+    ]
