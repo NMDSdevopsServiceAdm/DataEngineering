@@ -118,6 +118,7 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
         self.model_version = "1.2.0"
         self.run_number = 7
 
+        self.run_id_col_name = f"{self.model_name}_predictions_run_id"
         self.expected_run_id = "model_A_v1.2.0_r7"
 
     def test_returns_expected_predictions_dataframe(self):
@@ -159,10 +160,10 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
             self.run_number,
         )
 
-        self.assertEqual(returned_df[f"{self.model_name}_run_id"].dtype, pl.Utf8)
+        self.assertEqual(returned_df[self.run_id_col_name].dtype, pl.Utf8)
         self.assertTrue(
             all(
                 run_id == self.expected_run_id
-                for run_id in returned_df[f"{self.model_name}_run_id"]
+                for run_id in returned_df[self.run_id_col_name]
             )
         )
