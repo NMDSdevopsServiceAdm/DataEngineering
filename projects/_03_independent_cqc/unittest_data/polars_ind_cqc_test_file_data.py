@@ -666,7 +666,7 @@ class MergeUtilsData:
             4,
         ),
     ]
-    # fmt: off
+
     expected_merged_with_care_home_col_rows = [
         (
             date(2024, 1, 1),
@@ -746,4 +746,3 @@ class MergeUtilsData:
             date(2024, 2, 1),
         ),
     ]
-    # fmt: on
