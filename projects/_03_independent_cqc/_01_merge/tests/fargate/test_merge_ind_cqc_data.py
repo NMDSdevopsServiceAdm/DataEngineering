@@ -11,7 +11,11 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     MergeIndCQCSchemas as Schemas,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_values.categorical_column_values import Sector
 
 PATCH_PATH = "projects._03_independent_cqc._01_merge.fargate.merge_ind_cqc_data"
 
@@ -29,10 +33,12 @@ class IndCQCMergeTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.join_data_into_cqc_lf")
+    @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_data)
     def test_main_runs_successfully(
         self,
         scan_parquet_mock: Mock,
+        select_rows_with_value_mock: Mock,
         join_data_into_cqc_lf_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -47,6 +53,9 @@ class IndCQCMergeTests(unittest.TestCase):
         )
 
         self.assertEqual(scan_parquet_mock.call_count, 5)
+        select_rows_with_value_mock.assert_called_once_with(
+            lf=ANY, column=CQCLClean.cqc_sector, value_to_keep=Sector.independent
+        )
         self.assertEqual(join_data_into_cqc_lf_mock.call_count, 4)
         sink_to_parquet_mock.assert_called_once_with(
             ANY,

@@ -147,9 +147,10 @@ def main(
     )
     print("Cleaned capacity tracker care home LazyFrame read in")
 
-    # need to test this? currently untested
-    independent_cqc_lf = cleaned_cqc_location_lf.filter(
-        pl.col(CQCLClean.cqc_sector) == Sector.independent
+    independent_cqc_lf = utils.select_rows_with_value(
+        lf=cleaned_cqc_location_lf,
+        column=CQCLClean.cqc_sector,
+        value_to_keep=Sector.independent,
     )
 
     independent_cqc_lf = join_data_into_cqc_lf(
