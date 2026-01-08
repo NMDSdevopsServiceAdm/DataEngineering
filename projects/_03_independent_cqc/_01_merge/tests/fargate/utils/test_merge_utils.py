@@ -71,7 +71,3 @@ class MergeUtilsTests(unittest.TestCase):
         ).select(returned_lf.collect_schema().names())
 
         pl_testing.assert_frame_equal(returned_lf, expected_merged_lf)
-
-
-if __name__ == "__main__":
-    unittest.main(warnings="ignore")
