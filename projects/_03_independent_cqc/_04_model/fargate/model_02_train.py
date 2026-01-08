@@ -4,11 +4,10 @@ from polars_utils import utils
 from projects._03_independent_cqc._04_model.registry.model_registry import (
     model_registry,
 )
+from projects._03_independent_cqc._04_model.utils import model_utils as mUtils
 from projects._03_independent_cqc._04_model.utils import paths
 from projects._03_independent_cqc._04_model.utils import training_utils as tUtils
 from projects._03_independent_cqc._04_model.utils import versioning as vUtils
-from projects._03_independent_cqc._04_model.utils.build_model import build_model
-from projects._03_independent_cqc._04_model.utils.metrics import calculate_metrics
 from projects._03_independent_cqc._04_model.utils.validate_model_definitions import (
     validate_model_definition,
 )
@@ -81,13 +80,13 @@ def main(bucket_name: str, model_name: str) -> None:
         test_df, feature_cols, dependent_col
     )
 
-    model = build_model(model_type, model_params)
+    model = mUtils.build_model(model_type, model_params)
 
     model.fit(X_train, y_train)
 
     predictions = model.predict(X_test)
 
-    metrics = calculate_metrics(y_test, predictions)
+    metrics = mUtils.calculate_metrics(y_test, predictions)
 
     metadata = {
         "name": model_name,

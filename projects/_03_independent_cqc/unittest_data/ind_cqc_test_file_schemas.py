@@ -3255,3 +3255,95 @@ class ForwardFillLatestKnownValue:
             StructField("col_to_repeat", IntegerType(), True),
         ]
     )
+
+
+@dataclass
+class OutlierCleaningSchemas:
+    median_val = f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_median_val"
+    abs_diff = f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_abs_diff"
+    overall_abs_diff_cutoff = (
+        f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_overall_abs_diff_cutoff"
+    )
+
+    input_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType(), True
+            ),
+            StructField(IndCQC.ct_non_res_filtering_rule, StringType(), True),
+        ]
+    )
+
+    median_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType(), True
+            ),
+            StructField(IndCQC.ct_non_res_filtering_rule, StringType(), True),
+            StructField(
+                median_val,
+                DoubleType(),
+                True,
+            ),
+        ]
+    )
+
+    compute_outlier_cutoff_input_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType(), True
+            ),
+            StructField(
+                abs_diff,
+                IntegerType(),
+                True,
+            ),
+        ]
+    )
+
+    cutoff_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType(), True
+            ),
+            StructField(IndCQC.ct_non_res_filtering_rule, StringType(), True),
+            StructField(
+                median_val,
+                IntegerType(),
+                True,
+            ),
+            StructField(
+                abs_diff,
+                IntegerType(),
+                True,
+            ),
+            StructField(
+                overall_abs_diff_cutoff,
+                IntegerType(),
+                True,
+            ),
+        ]
+    )
+
+    apply_outlier_cleaning_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType(), True
+            ),
+            StructField(
+                abs_diff,
+                IntegerType(),
+                True,
+            ),
+            StructField(
+                overall_abs_diff_cutoff,
+                IntegerType(),
+                True,
+            ),
+        ]
+    )
