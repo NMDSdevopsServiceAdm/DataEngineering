@@ -65,20 +65,27 @@ class IndCQCMergeTests(unittest.TestCase):
         test_cqc_location_lf = pl.LazyFrame(
             data=Data.cqc_location_data,
             schema=Schemas.cqc_location_schema,
+            orient="row",
         )
         test_cqc_pir_lf = pl.LazyFrame(
-            data=Data.cqc_pir_data, schema=Schemas.cqc_pir_schema
+            data=Data.cqc_pir_data,
+            schema=Schemas.cqc_pir_schema,
+            orient="row",
         )
         test_ascwds_workplace_lf = pl.LazyFrame(
             data=Data.ascwds_workplace_data,
             schema=Schemas.ascwds_workplace_schema,
+            orient="row",
         )
         test_ct_non_res_lf = pl.LazyFrame(
-            data=Data.ct_non_res_data, schema=Schemas.ct_non_res_schema
+            data=Data.ct_non_res_data,
+            schema=Schemas.ct_non_res_schema,
+            orient="row",
         )
         test_ct_care_home_lf = pl.LazyFrame(
             data=Data.ct_care_home_data,
             schema=Schemas.ct_care_home_schema,
+            orient="row",
         )
         scan_parquet_mock.side_effect = [
             test_cqc_location_lf,

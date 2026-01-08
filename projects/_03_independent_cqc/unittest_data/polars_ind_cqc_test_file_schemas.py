@@ -274,8 +274,8 @@ class MergeIndCQCSchemas:
 class MergeUtilsSchemas:
     clean_cqc_location_for_merge_schema = pl.Schema(
         [
-            (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.cqc_sector, pl.String()),
             (CQCLClean.care_home, pl.String()),
             (CQCLClean.number_of_beds, pl.Int64()),
@@ -284,21 +284,17 @@ class MergeUtilsSchemas:
 
     data_to_merge_without_care_home_col_schema = pl.Schema(
         [
-            (AWPClean.ascwds_workplace_import_date, pl.Date()),
             (AWPClean.location_id, pl.String()),
+            (AWPClean.ascwds_workplace_import_date, pl.Date()),
             (AWPClean.establishment_id, pl.String()),
             (AWPClean.total_staff, pl.Int64()),
         ]
     )
 
     expected_merged_without_care_home_col_schema = pl.Schema(
-        [
-            (CQCLClean.location_id, pl.String()),
+        list(clean_cqc_location_for_merge_schema.items())
+        + [
             (AWPClean.ascwds_workplace_import_date, pl.Date()),
-            (CQCLClean.cqc_location_import_date, pl.Date()),
-            (CQCLClean.cqc_sector, pl.String()),
-            (CQCLClean.care_home, pl.String()),
-            (CQCLClean.number_of_beds, pl.Int64()),
             (AWPClean.establishment_id, pl.String()),
             (AWPClean.total_staff, pl.Int64()),
         ]
@@ -316,7 +312,7 @@ class MergeUtilsSchemas:
     expected_merged_with_care_home_col_schema = pl.Schema(
         list(clean_cqc_location_for_merge_schema.items())
         + [
-            (CQCPIRClean.pir_people_directly_employed_cleaned, pl.Int64()),
             (CQCPIRClean.cqc_pir_import_date, pl.Date()),
+            (CQCPIRClean.pir_people_directly_employed_cleaned, pl.Int64()),
         ]
     )

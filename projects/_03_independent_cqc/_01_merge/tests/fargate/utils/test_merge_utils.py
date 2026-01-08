@@ -26,15 +26,18 @@ class MergeUtilsTests(unittest.TestCase):
         self.test_clean_cqc_location_lf = pl.LazyFrame(
             data=Data.clean_cqc_location_for_merge_rows,
             schema=Schemas.clean_cqc_location_for_merge_schema,
+            orient="row",
         )
 
         self.test_data_with_care_home_col = pl.LazyFrame(
             data=Data.data_to_merge_with_care_home_col_rows,
             schema=Schemas.data_to_merge_with_care_home_col_schema,
+            orient="row",
         )
         self.test_data_without_care_home_col = pl.LazyFrame(
             data=Data.data_to_merge_without_care_home_col_rows,
             schema=Schemas.data_to_merge_without_care_home_col_schema,
+            orient="row",
         )
 
     def test_join_data_into_cqc_lf_returns_expected_data_when_care_home_column_not_required(
@@ -50,7 +53,8 @@ class MergeUtilsTests(unittest.TestCase):
         expected_merged_lf = pl.LazyFrame(
             data=Data.expected_merged_without_care_home_col_rows,
             schema=Schemas.expected_merged_without_care_home_col_schema,
-        ).select(returned_lf.collect_schema().names())
+            orient="row",
+        )
 
         pl_testing.assert_frame_equal(returned_lf, expected_merged_lf)
 
@@ -68,6 +72,7 @@ class MergeUtilsTests(unittest.TestCase):
         expected_merged_lf = pl.LazyFrame(
             data=Data.expected_merged_with_care_home_col_rows,
             schema=Schemas.expected_merged_with_care_home_col_schema,
-        ).select(returned_lf.collect_schema().names())
+            orient="row",
+        )
 
         pl_testing.assert_frame_equal(returned_lf, expected_merged_lf)
