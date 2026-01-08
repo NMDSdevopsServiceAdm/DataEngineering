@@ -1,5 +1,3 @@
-# Pushing to sync new datasets.
-
 import polars as pl
 
 from polars_utils import utils
