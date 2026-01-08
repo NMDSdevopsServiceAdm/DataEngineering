@@ -627,3 +627,37 @@ class TestFilterToMaximumValueInColumn(TestUtils):
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class SelectRowsWithValueTests(unittest.TestCase):
+    def setUp(self) -> None:
+
+        lf = pl.LazyFrame(
+            {"id": ["id_1", "id_2"], "value_to_filter_on": ["keep", "remove"]}
+        )
+        self.returned_lf = utils.select_rows_with_value(
+            lf, "value_to_filter_on", "keep"
+        )
+        self.expected_lf = pl.LazyFrame(
+            {"id": ["id_1"], "value_to_filter_on": ["keep"]}
+        )
+
+    def test_select_rows_with_value_returns_expected_lf(self):
+        pl_testing.assert_frame_equal(self.returned_lf, self.expected_lf)
+
+
+class SelectRowsWithNonNullValueTests(unittest.TestCase):
+    def setUp(self) -> None:
+
+        lf = pl.LazyFrame(
+            {"id": ["id_1", "id_2", "id_3"], "column_with_nulls": [None, 12.34, -1.0]}
+        )
+        self.returned_lf = utils.select_rows_with_non_null_value(
+            lf, "column_with_nulls"
+        )
+        self.expected_lf = pl.LazyFrame(
+            {"id": ["id_2", "id_3"], "column_with_nulls": [12.34, -1.0]}
+        )
+
+    def test_select_rows_with_non_null_value_returns_expected_lf(self):
+        pl_testing.assert_frame_equal(self.returned_lf, self.expected_lf)
