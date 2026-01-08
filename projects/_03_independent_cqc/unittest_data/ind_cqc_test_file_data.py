@@ -10,9 +10,6 @@ from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
 from utils.column_values.categorical_column_values import (
     RUI,
     AscwdsFilteringRule,
@@ -33,64 +30,6 @@ from utils.column_values.categorical_column_values import (
 from utils.column_values.categorical_columns_by_dataset import (
     DiagnosticOnKnownFilledPostsCategoricalValues as CatValues,
 )
-
-
-@dataclass
-class MergeIndCQCData:
-    clean_cqc_location_for_merge_rows = [
-        (date(2024, 1, 1), "1-001", Sector.independent, "Y", 10),
-        (date(2024, 1, 1), "1-002", Sector.independent, "N", None),
-        (date(2024, 1, 1), "1-003", Sector.independent, "N", None),
-        (date(2024, 2, 1), "1-001", Sector.independent, "Y", 10),
-        (date(2024, 2, 1), "1-002", Sector.independent, "N", None),
-        (date(2024, 2, 1), "1-003", Sector.independent, "N", None),
-        (date(2024, 3, 1), "1-001", Sector.independent, "Y", 10),
-        (date(2024, 3, 1), "1-002", Sector.independent, "N", None),
-        (date(2024, 3, 1), "1-003", Sector.independent, "N", None),
-    ]
-
-    data_to_merge_without_care_home_col_rows = [
-        (date(2024, 1, 1), "1-001", "1", 1),
-        (date(2024, 1, 1), "1-003", "3", 2),
-        (date(2024, 1, 5), "1-001", "1", 3),
-        (date(2024, 1, 9), "1-001", "1", 4),
-        (date(2024, 1, 9), "1-003", "3", 5),
-        (date(2024, 3, 1), "1-003", "4", 6),
-    ]
-    # fmt: off
-    expected_merged_without_care_home_col_rows = [
-        ("1-001", date(2024, 1, 1), date(2024, 1, 1), Sector.independent, "Y", 10, "1", 1),
-        ("1-002", date(2024, 1, 1), date(2024, 1, 1), Sector.independent, "N", None, None, None),
-        ("1-003", date(2024, 1, 1), date(2024, 1, 1), Sector.independent, "N", None, "3", 2),
-        ("1-001", date(2024, 1, 9), date(2024, 2, 1), Sector.independent, "Y", 10, "1", 4),
-        ("1-002", date(2024, 1, 9), date(2024, 2, 1), Sector.independent, "N", None, None, None),
-        ("1-003", date(2024, 1, 9), date(2024, 2, 1), Sector.independent, "N", None, "3", 5),
-        ("1-001", date(2024, 3, 1), date(2024, 3, 1), Sector.independent, "Y", 10, None, None),
-        ("1-002", date(2024, 3, 1), date(2024, 3, 1), Sector.independent, "N", None, None, None),
-        ("1-003", date(2024, 3, 1), date(2024, 3, 1), Sector.independent, "N", None, "4", 6),
-    ]
-    # fmt: on
-
-    data_to_merge_with_care_home_col_rows = [
-        ("1-001", "Y", date(2024, 1, 1), 10),
-        ("1-002", "N", date(2024, 1, 1), 20),
-        ("1-003", "Y", date(2024, 1, 1), 30),
-        ("1-001", "Y", date(2024, 2, 1), 1),
-        ("1-002", "N", date(2024, 2, 1), 4),
-    ]
-    # fmt: off
-    expected_merged_with_care_home_col_rows = [
-        (date(2024, 1, 1), "1-001", Sector.independent, "Y", 10, 10, date(2024, 1, 1)),
-        (date(2024, 1, 1), "1-002", Sector.independent, "N", None, 20, date(2024, 1, 1)),
-        (date(2024, 1, 1), "1-003", Sector.independent, "N", None, None, date(2024, 1, 1)),
-        (date(2024, 2, 1), "1-001", Sector.independent, "Y", 10, 1, date(2024, 2, 1)),
-        (date(2024, 2, 1), "1-002", Sector.independent, "N", None, 4, date(2024, 2, 1)),
-        (date(2024, 2, 1), "1-003", Sector.independent, "N", None, None, date(2024, 2, 1)),
-        (date(2024, 3, 1), "1-001", Sector.independent, "Y", 10, 1, date(2024, 2, 1)),
-        (date(2024, 3, 1), "1-002", Sector.independent, "N", None, 4, date(2024, 2, 1)),
-        (date(2024, 3, 1), "1-003", Sector.independent, "N", None, None, date(2024, 2, 1)),
-    ]
-    # fmt: on
 
 
 @dataclass

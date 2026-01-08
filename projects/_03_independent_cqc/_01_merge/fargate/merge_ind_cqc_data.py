@@ -1,14 +1,9 @@
-import os
-import sys
+import polars as pl
 
-os.environ["SPARK_VERSION"] = "3.5"
-
-from typing import Optional
-
-from pyspark.sql import DataFrame
-
-import utils.cleaning_utils as cUtils
-from utils import utils
+from polars_utils import utils
+from projects._03_independent_cqc._01_merge.fargate.utils.merge_utils import (
+    join_data_into_cqc_lf,
+)
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
 )
@@ -30,7 +25,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import Sector
 
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
@@ -110,166 +105,134 @@ def main(
     cleaned_ct_non_res_source: str,
     cleaned_ct_care_home_source: str,
     destination: str,
-):
-    spark = utils.get_spark()
-    spark.sql("set spark.sql.broadcastTimeout = 2000")
+) -> None:
+    """
+    Merges ASCWDS, PIR, and capacity tracker data into the CQC locations data
+    for independant sector locations only.
 
-    cqc_location_df = utils.read_from_parquet(
+    Args:
+        cleaned_cqc_location_source (str): s3 path to the cleaned cqc location data
+        cleaned_cqc_pir_source (str): s3 path to the cleaned cqc pir data
+        cleaned_ascwds_workplace_source (str): s3 path to the cleaned ascwds workplace data
+        cleaned_ct_non_res_source (str): s3 path to the cleaned capacity tracker non-residential data
+        cleaned_ct_care_home_source (str): s3 path to the cleaned capacity tracker care home data
+        destination (str): s3 path to save the output data
+    """
+    cleaned_cqc_location_lf = utils.scan_parquet(
         cleaned_cqc_location_source,
-        # selected_columns=cleaned_cqc_locations_columns_to_import,
+        selected_columns=cleaned_cqc_locations_columns_to_import,
     )
+    print("Cleaned CQC location LazyFrame read in")
 
-    ascwds_workplace_df = utils.read_from_parquet(
+    cleaned_cqc_pir_lf = utils.scan_parquet(
+        cleaned_cqc_pir_source,
+        selected_columns=cleaned_cqc_pir_columns_to_import,
+    )
+    print("Cleaned CQC PIR LazyFrame read in")
+
+    cleaned_ascwds_workplace_lf = utils.scan_parquet(
         cleaned_ascwds_workplace_source,
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
     )
+    print("Cleaned ASCWDS workplace LazyFrame read in")
 
-    cqc_pir_df = utils.read_from_parquet(
-        cleaned_cqc_pir_source, selected_columns=cleaned_cqc_pir_columns_to_import
-    )
-
-    ct_non_res_df = utils.read_from_parquet(
+    cleaned_ct_non_res_lf = utils.scan_parquet(
         cleaned_ct_non_res_source, selected_columns=cleaned_ct_non_res_columns_to_import
     )
+    print("Cleaned capacity tracker non-residential LazyFrame read in")
 
-    ct_care_home_df = utils.read_from_parquet(
+    cleaned_ct_care_home_lf = utils.scan_parquet(
         cleaned_ct_care_home_source,
         selected_columns=cleaned_ct_care_home_columns_to_import,
     )
+    print("Cleaned capacity tracker care home LazyFrame read in")
 
-    ind_cqc_location_df = utils.select_rows_with_value(
-        cqc_location_df, CQCLClean.cqc_sector, Sector.independent
+    independent_cqc_lf = utils.select_rows_with_value(
+        lf=cleaned_cqc_location_lf,
+        column=CQCLClean.cqc_sector,
+        value_to_keep=Sector.independent,
     )
 
-    ind_cqc_location_df = join_data_into_cqc_df(
-        ind_cqc_location_df,
-        cqc_pir_df,
+    independent_cqc_lf = join_data_into_cqc_lf(
+        independent_cqc_lf,
+        cleaned_cqc_pir_lf,
         CQCPIRClean.location_id,
         CQCPIRClean.cqc_pir_import_date,
         CQCPIRClean.care_home,
     )
+    print("Cleaned CQC PIR LazyFrame joined in")
 
-    ind_cqc_location_df = join_data_into_cqc_df(
-        ind_cqc_location_df,
-        ascwds_workplace_df,
+    independent_cqc_lf = join_data_into_cqc_lf(
+        independent_cqc_lf,
+        cleaned_ascwds_workplace_lf,
         AWPClean.location_id,
         AWPClean.ascwds_workplace_import_date,
     )
+    print("Cleaned ASCWDS workplace LazyFrame joined in")
 
-    ind_cqc_location_df = join_data_into_cqc_df(
-        ind_cqc_location_df,
-        ct_non_res_df,
+    independent_cqc_lf = join_data_into_cqc_lf(
+        independent_cqc_lf,
+        cleaned_ct_non_res_lf,
         CTNRClean.cqc_id,
         CTNRClean.ct_non_res_import_date,
         CTNRClean.care_home,
     )
+    print("Cleaned capacity tracker non-residential LazyFrame joined in")
 
-    ind_cqc_location_df = join_data_into_cqc_df(
-        ind_cqc_location_df,
-        ct_care_home_df,
+    independent_cqc_lf = join_data_into_cqc_lf(
+        independent_cqc_lf,
+        cleaned_ct_care_home_lf,
         CTCHClean.cqc_id,
         CTCHClean.ct_care_home_import_date,
         CTCHClean.care_home,
     )
+    print("Cleaned capacity tracker care home LazyFrame joined in")
 
-    utils.write_to_parquet(
-        ind_cqc_location_df,
+    utils.sink_to_parquet(
+        independent_cqc_lf,
         destination,
-        mode="overwrite",
-        partitionKeys=PartitionKeys,
+        partition_cols=cqc_partition_keys,
+        append=False,
     )
-
-
-def join_data_into_cqc_df(
-    cqc_df: DataFrame,
-    join_df: DataFrame,
-    join_location_id_col: str,
-    join_import_date_col: str,
-    join_care_home_col: Optional[str] = None,
-) -> DataFrame:
-    """
-    Function to join a data file into the CQC locations data set.
-
-    Some data needs to be matched on the care home column as well as location ID and import date, so
-    there is an option to specify that. Other data doesn't require that match, so this option defaults
-    to None (not required for matching).
-
-    Args:
-        cqc_df (DataFrame): The CQC location DataFrame.
-        join_df (DataFrame): The DataFrame to join in.
-        join_location_id_col (str): The name of the location ID column in the DataFrame to join in.
-        join_import_date_col (str): The name of the import date column in the DataFrame to join in.
-        join_care_home_col (Optional[str]): The name of the care home column if required for the join.
-
-    Returns:
-        DataFrame: Original CQC locations DataFrame with the second DataFrame joined in.
-    """
-    cqc_df_with_join_import_date = cUtils.add_aligned_date_column(
-        cqc_df,
-        join_df,
-        CQCLClean.cqc_location_import_date,
-        join_import_date_col,
-    )
-
-    join_df = join_df.withColumnRenamed(join_location_id_col, CQCLClean.location_id)
-
-    cols_to_join_on = [join_import_date_col, CQCLClean.location_id]
-    if join_care_home_col:
-        cols_to_join_on = cols_to_join_on + [join_care_home_col]
-
-    cqc_df_with_join_data = cqc_df_with_join_import_date.join(
-        join_df,
-        cols_to_join_on,
-        "left",
-    )
-
-    return cqc_df_with_join_data
 
 
 if __name__ == "__main__":
-    print("Spark job 'merge_ind_cqc_data' starting...")
-    print(f"Job parameters: {sys.argv}")
+    print("Running Merge Independent CQC job")
 
-    (
-        cleaned_cqc_location_source,
-        cleaned_cqc_pir_source,
-        cleaned_ascwds_workplace_source,
-        cleaned_ct_non_res_source,
-        cleaned_ct_care_home_source,
-        destination,
-    ) = utils.collect_arguments(
+    args = utils.get_args(
         (
             "--cleaned_cqc_location_source",
-            "Source s3 directory for parquet CQC locations cleaned dataset",
+            "S3 URI to read cleaned CQC location data from",
         ),
         (
             "--cleaned_cqc_pir_source",
-            "Source s3 directory for parquet CQC pir cleaned dataset",
+            "S3 URI to read cleaned CQC PIR data from",
         ),
         (
             "--cleaned_ascwds_workplace_source",
-            "Source s3 directory for parquet ASCWDS workplace cleaned dataset",
+            "S3 URI to read cleaned ASCWDS workplace data from",
         ),
         (
             "--cleaned_ct_non_res_source",
-            "Source s3 directory for parquet capacity tracker non residential cleaned dataset",
+            "S3 URI to read cleaned capacity tracker non-residential data from",
         ),
         (
             "--cleaned_ct_care_home_source",
-            "Source s3 directory for parquet capacity tracker care home cleaned dataset",
+            "S3 URI to read cleaned capacity tracker care home data from",
         ),
         (
             "--destination",
-            "Destination s3 directory for parquet",
+            "S3 URI to save merged data to",
         ),
     )
+
     main(
-        cleaned_cqc_location_source,
-        cleaned_cqc_pir_source,
-        cleaned_ascwds_workplace_source,
-        cleaned_ct_non_res_source,
-        cleaned_ct_care_home_source,
-        destination,
+        cleaned_cqc_location_source=args.cleaned_cqc_location_source,
+        cleaned_cqc_pir_source=args.cleaned_cqc_pir_source,
+        cleaned_ascwds_workplace_source=args.cleaned_ascwds_workplace_source,
+        cleaned_ct_non_res_source=args.cleaned_ct_non_res_source,
+        cleaned_ct_care_home_source=args.cleaned_ct_care_home_source,
+        destination=args.destination,
     )
 
-    print("Spark job 'merge_ind_cqc_data' complete")
+    print("Finished Merge Independent CQC job")
