@@ -13,19 +13,13 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "Cluster": "arn:aws:ecs:eu-west-2:856699698263:cluster/1277-pl-01-merge-cluster",
-                "TaskDefinition": "arn:aws:ecs:eu-west-2:856699698263:task-definition/1277-pl-01-merge-_03_independent_cqc-task:1",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
-                    "Subnets": [
-                      "subnet-0ec849a778438d382",
-                      "subnet-025798c18c6ca7073",
-                      "subnet-0e10939a615617030"
-                    ],
-                    "SecurityGroups": [
-                      "sg-02eae63be8b229c83"
-                    ],
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
                     "AssignPublicIp": "ENABLED"
                   }
                 },
