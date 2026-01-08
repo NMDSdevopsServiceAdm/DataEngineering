@@ -185,8 +185,8 @@ class ModelUtilsSchemas:
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.DataType()),
-            ("model_A", pl.Float64()),
-            ("model_A_run_id", pl.String()),
+            ("model_A_predictions", pl.Float64()),
+            ("model_A_predictions_run_id", pl.String()),
         ]
     )
 

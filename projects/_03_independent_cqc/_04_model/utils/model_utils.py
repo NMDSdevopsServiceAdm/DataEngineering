@@ -88,9 +88,11 @@ def create_predictions_dataframe(
             f"Predictions length ({len(predictions)}) does not match DataFrame row count ({df.height})"
         )
 
+    model_col_name = f"{model_name}_predictions"
+    model_run_id_col_name = f"{model_col_name}_run_id"
     run_id = f"{model_name}_v{model_version}_r{run_number}"
 
     return df.select(IndCQC.location_id, IndCQC.cqc_location_import_date).with_columns(
-        pl.Series(name=model_name, values=predictions),
-        pl.lit(run_id).alias(f"{model_name}_run_id"),
+        pl.Series(name=model_col_name, values=predictions),
+        pl.lit(run_id).alias(model_run_id_col_name),
     )
