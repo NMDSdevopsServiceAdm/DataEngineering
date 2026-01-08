@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Added
+- Converted util functions select_rows_with_value and select_rows_with_non_null_value from spark to polars.
 
 
 ### Changed
