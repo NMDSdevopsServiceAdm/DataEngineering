@@ -9,6 +9,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 - A new function to remove longitudinal outliers from CT data. The function flags the outliers based on absolute difference in median values and removes the ourlier value.
 
+- Converted util functions select_rows_with_value and select_rows_with_non_null_value from spark to polars.
+
+
 - Polars job [model_03_predict](projects/_03_independent_cqc/_04_model/fargate/model_03_predict.py) to load a specified model then generate and save predictions.
 
 ### Changed

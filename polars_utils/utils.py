@@ -413,3 +413,34 @@ def filter_to_maximum_value_in_column(
     lf = lf.with_columns(pl.col(column_to_filter).max().alias(max_value))
     lf = lf.filter(pl.col(column_to_filter) == pl.col(max_value))
     return lf.drop(max_value)
+
+
+def select_rows_with_value(
+    lf: pl.LazyFrame, column: str, value_to_keep: str
+) -> pl.LazyFrame:
+    """
+    Select rows from a LazyFrame where the specified column matches the given value.
+
+    Args:
+        lf (pl.LazyFrame): The input LazyFrame.
+        column (str): The name of the column to filter on.
+        value_to_keep (str): The value to keep in the specified column.
+
+    Returns:
+        pl.LazyFrame: A LazyFrame containing only the rows where the specified column matches the given value.
+    """
+    return lf.filter(pl.col(column) == value_to_keep)
+
+
+def select_rows_with_non_null_value(lf: pl.LazyFrame, column: str) -> pl.LazyFrame:
+    """
+    Select rows from a LazyFrame where the specified column has non-null values.
+
+    Args:
+        lf (pl.LazyFrame): The input LazyFrame.
+        column (str): The name of the column to filter on.
+
+    Returns:
+        pl.LazyFrame: A LazyFrame containing only the rows where the specified column has non-null values.
+    """
+    return lf.filter(pl.col(column).is_not_null())
