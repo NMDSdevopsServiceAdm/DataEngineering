@@ -64,7 +64,7 @@ def main(bucket_name: str, model_name: str) -> None:
     model_path = paths.generate_model_path(bucket_name, model_name, model_version)
     run_number = vUtils.get_run_number(model_path)
 
-    model = vUtils.load_latest_model(model_path, run_number)
+    model = vUtils.load_model(model_path, run_number)
 
     predictions = model.predict(X)
 

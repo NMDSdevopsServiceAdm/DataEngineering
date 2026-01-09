@@ -135,7 +135,7 @@ class SaveModelAndMetadataTests(unittest.TestCase):
         )
 
 
-class LoadLatestModelTests(unittest.TestCase):
+class LoadModelTests(unittest.TestCase):
     def setUp(self) -> None:
         self.s3_root = "s3://pipeline-resources/models/model_A/"
         self.run_number = 7
@@ -159,7 +159,7 @@ class LoadLatestModelTests(unittest.TestCase):
             Body=buffer.read(),
         )
 
-        loaded_model = job.load_latest_model(
+        loaded_model = job.load_model(
             s3_root=self.s3_root,
             run_number=self.run_number,
         )
