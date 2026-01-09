@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from datetime import date
 
 import numpy as np
-import polars as pl
 
 from utils.column_values.categorical_column_values import CareHome, MainJobRoleLabels
 
