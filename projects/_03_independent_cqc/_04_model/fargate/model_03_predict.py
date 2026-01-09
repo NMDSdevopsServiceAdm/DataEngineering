@@ -53,8 +53,11 @@ def main(bucket_name: str, model_name: str) -> None:
     model_version = model_def[MRKeys.version]
     dependent_col = model_def[MRKeys.dependent]
     feature_cols = model_def[MRKeys.features]
+    index_col = "index"
 
     df = utils.scan_parquet(features_source).collect()
+
+    df = df.with_row_index(index_col)
 
     X, _ = tUtils.convert_dataframe_to_numpy(df, feature_cols, dependent_col)
 
@@ -66,7 +69,7 @@ def main(bucket_name: str, model_name: str) -> None:
     predictions = model.predict(X)
 
     predictions_df = mUtils.create_predictions_dataframe(
-        df, predictions, model_name, model_version, run_number
+        df, predictions, index_col, model_name, model_version, run_number
     )
 
     predictions_path = paths.generate_predictions_path(bucket_name, model_name)

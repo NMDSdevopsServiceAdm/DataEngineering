@@ -279,13 +279,13 @@ class ModelTrainingUtilsData:
 @dataclass
 class ModelUtilsData:
     features_rows = [
-        ("1-001", date(2025, 1, 1), 1, 4),
-        ("1-002", date(2025, 1, 1), 2, 5),
-        ("1-003", date(2025, 1, 1), 3, 6),
+        ("1-001", date(2025, 1, 1), 1, 4, 0),
+        ("1-002", date(2025, 1, 1), 2, 5, 1),
+        ("1-003", date(2025, 1, 1), 3, 6, 2),
     ]
 
-    predictions = pl.Series([10.5, 11.0, 12.3])
-    mismatch_predictions = pl.Series([10.5, 11.0])
+    predictions = np.array([10.5, 11.0, 12.3])
+    mismatch_predictions = np.array([10.5, 11.0])
 
     expected_predictions_dataframe_rows = [
         ("1-001", date(2025, 1, 1), 10.5, "model_A_v1.2.0_r7"),
