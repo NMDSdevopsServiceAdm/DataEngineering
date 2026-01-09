@@ -15,7 +15,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     ModelUtilsSchemas as Schemas,
 )
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class BuildModelTests(unittest.TestCase):
@@ -114,6 +113,7 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
 
         self.predictions = Data.predictions
 
+        self.index_col = "index"
         self.model_name = "model_A"
         self.model_version = "1.2.0"
         self.run_number = 7
@@ -125,6 +125,7 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
         returned_df = job.create_predictions_dataframe(
             self.features_df,
             self.predictions,
+            self.index_col,
             self.model_name,
             self.model_version,
             self.run_number,
@@ -143,6 +144,7 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
             job.create_predictions_dataframe(
                 self.features_df,
                 Data.mismatch_predictions,
+                self.index_col,
                 self.model_name,
                 self.model_version,
                 self.run_number,
@@ -155,6 +157,7 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
         returned_df = job.create_predictions_dataframe(
             self.features_df,
             self.predictions,
+            self.index_col,
             self.model_name,
             self.model_version,
             self.run_number,

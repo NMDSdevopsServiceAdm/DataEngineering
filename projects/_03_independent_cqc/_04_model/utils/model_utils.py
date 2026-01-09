@@ -62,23 +62,29 @@ def calculate_metrics(y_known: np.ndarray, y_predicted: np.ndarray) -> dict:
 
 def create_predictions_dataframe(
     df: pl.DataFrame,
-    predictions: pl.Series,
+    predictions: np.ndarray,
+    index_col: str,
     model_name: str,
     model_version: str,
     run_number: int,
 ) -> pl.DataFrame:
     """
-    Creates a predictions DataFrame by adding prediction values to the input DataFrame including metadata.
+    Add model predictions and metadata to a Polars DataFrame.
+
+    This function links predictions to rows by a unique index column to avoid
+    misalignment. It also tags each prediction with a model version and run ID.
 
     Args:
         df (pl.DataFrame): Input Polars DataFrame.
-        predictions (pl.Series): List of prediction values (must match df row count).
+        predictions (np.ndarray): Array of prediction values (must match df row count).
+        index_col (str): Name of the unique index column for joining predictions.
         model_name (str): The name of the model (used as the new column name).
-        model_version (str): The version of the model.
-        run_number (int): The run number of the model.
+        model_version (str): Model version string.
+        run_number (int): Model run number.
 
     Returns:
-        pl.DataFrame: DataFrame with predictions column added and relevant columns selected.
+        pl.DataFrame: DataFrame containing `location_id`, `cqc_location_import_date`,
+                      predictions column and predictions run ID column.
 
     Raises:
         ValueError: If the length of predictions does not match the number of rows in df.
@@ -88,11 +94,20 @@ def create_predictions_dataframe(
             f"Predictions length ({len(predictions)}) does not match DataFrame row count ({df.height})"
         )
 
-    model_col_name = f"{model_name}_predictions"
-    model_run_id_col_name = f"{model_col_name}_run_id"
-    run_id = f"{model_name}_v{model_version}_r{run_number}"
+    predictions_col = f"{model_name}_predictions"
+    run_id_col = f"{predictions_col}_run_id"
+    run_id_value = f"{model_name}_v{model_version}_r{run_number}"
 
-    return df.select(IndCQC.location_id, IndCQC.cqc_location_import_date).with_columns(
-        pl.Series(name=model_col_name, values=predictions),
-        pl.lit(run_id).alias(model_run_id_col_name),
+    predictions_df = df.select(index_col).with_columns(
+        pl.Series(predictions_col, predictions),
+        pl.lit(run_id_value).alias(run_id_col),
+    )
+
+    df_with_predictions = df.join(predictions_df, on=index_col, how="left")
+
+    return df_with_predictions.select(
+        IndCQC.location_id,
+        IndCQC.cqc_location_import_date,
+        predictions_col,
+        run_id_col,
     )
