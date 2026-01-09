@@ -101,9 +101,9 @@ def save_model_and_metadata(
     )
 
 
-def load_latest_model(s3_root: str, run_number: int) -> LinearRegression | Pipeline:
+def load_model(s3_root: str, run_number: int) -> LinearRegression | Pipeline:
     """
-    Loads the most recent trained model (highest run number) from S3.
+    Loads a specified model from S3 based on the given run number.
 
     Structure:
         s3_root/<run_number>/
