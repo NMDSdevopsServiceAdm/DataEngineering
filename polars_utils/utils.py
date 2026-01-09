@@ -113,7 +113,7 @@ def write_to_parquet(
         df (pl.DataFrame): The Polars DataFrame to write.
         output_path (str | Path): The file path where the Parquet file(s) will be written.
             This must be a directory if append is set to True.
-        append (bool): Whether to append to existing files or overwrite them. Defaults to False.
+        append (bool): Whether to append to existing files or overwrite them. Defaults to True.
         partition_cols (list[str] | None): List of columns to partition by (optional - mutually exclusive with append).
 
     Return:

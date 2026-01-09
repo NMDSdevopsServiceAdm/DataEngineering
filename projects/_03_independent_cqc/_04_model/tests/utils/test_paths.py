@@ -31,5 +31,5 @@ class GenerateFeaturesPathTests(unittest.TestCase):
 class GeneratePredictionsPathTests(unittest.TestCase):
     def test_returns_expected_path(self):
         returned_path = job.generate_predictions_path(DATASETS_BUCKET, MODEL)
-        expected_path = "s3://sfc-test-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_predictions_model_a/"
+        expected_path = "s3://sfc-test-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_predictions_model_a/predictions.parquet"
         self.assertEqual(returned_path, expected_path)
