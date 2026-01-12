@@ -5,11 +5,6 @@
 #####################################################################################################
 
 # Get the latest image digests for this branch
-data "aws_ecr_image" "model_preprocess" {
-  repository_name = "fargate/preprocessing"
-  image_tag       = terraform.workspace
-}
-
 data "aws_vpc" "default" {
   default = true
 }
