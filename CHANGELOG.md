@@ -11,11 +11,13 @@ All notable changes to this project will be documented in this file.
 
 - Converted util functions select_rows_with_value and select_rows_with_non_null_value from spark to polars.
 
+- Polars job [model_03_predict](projects/_03_independent_cqc/_04_model/fargate/model_03_predict.py) to load a specified model then generate and save predictions.
+
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 
 ### Fixed
-- Analysts found a new test account in ASC-WDS so I've added their orgid to the list of test_accounts in projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py
+- Analysts found a new test account in ASC-WDS so I've added their orgid to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)
 
 
 ## [v2025.12.0] - 06/01/2026

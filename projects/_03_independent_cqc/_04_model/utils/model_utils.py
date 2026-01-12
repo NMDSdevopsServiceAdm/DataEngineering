@@ -63,7 +63,6 @@ def calculate_metrics(y_known: np.ndarray, y_predicted: np.ndarray) -> dict:
 def create_predictions_dataframe(
     df: pl.DataFrame,
     predictions: np.ndarray,
-    index_col: str,
     model_name: str,
     model_version: str,
     run_number: int,
@@ -77,7 +76,6 @@ def create_predictions_dataframe(
     Args:
         df (pl.DataFrame): Input Polars DataFrame.
         predictions (np.ndarray): Array of prediction values (must match df row count).
-        index_col (str): Name of the unique index column for joining predictions.
         model_name (str): The name of the model (used as the new column name).
         model_version (str): Model version string.
         run_number (int): Model run number.
@@ -98,16 +96,11 @@ def create_predictions_dataframe(
     run_id_col = f"{predictions_col}_run_id"
     run_id_value = f"{model_name}_v{model_version}_r{run_number}"
 
-    predictions_df = df.select(index_col).with_columns(
+    key_cols = [IndCQC.location_id, IndCQC.cqc_location_import_date]
+
+    predictions_df = df.select(key_cols).with_columns(
         pl.Series(predictions_col, predictions),
         pl.lit(run_id_value).alias(run_id_col),
     )
 
-    df_with_predictions = df.join(predictions_df, on=index_col, how="left")
-
-    return df_with_predictions.select(
-        IndCQC.location_id,
-        IndCQC.cqc_location_import_date,
-        predictions_col,
-        run_id_col,
-    )
+    return predictions_df
