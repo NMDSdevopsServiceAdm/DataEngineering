@@ -9,6 +9,7 @@ from projects._03_independent_cqc._04_model.utils import versioning as vUtils
 from projects._03_independent_cqc._04_model.utils.validate_model_definitions import (
     validate_model_definition,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 
 
@@ -53,11 +54,8 @@ def main(bucket_name: str, model_name: str) -> None:
     model_version = model_def[MRKeys.version]
     dependent_col = model_def[MRKeys.dependent]
     feature_cols = model_def[MRKeys.features]
-    index_col = "index"
 
     df = utils.scan_parquet(features_source).collect()
-
-    df = df.with_row_index(index_col)
 
     X, _ = tUtils.convert_dataframe_to_numpy(df, feature_cols, dependent_col)
 
@@ -69,7 +67,7 @@ def main(bucket_name: str, model_name: str) -> None:
     predictions = model.predict(X)
 
     predictions_df = mUtils.create_predictions_dataframe(
-        df, predictions, index_col, model_name, model_version, run_number
+        df, predictions, model_name, model_version, run_number
     )
 
     predictions_path = paths.generate_predictions_path(bucket_name, model_name)

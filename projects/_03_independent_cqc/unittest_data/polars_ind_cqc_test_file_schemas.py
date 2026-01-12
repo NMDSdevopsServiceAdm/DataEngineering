@@ -178,7 +178,6 @@ class ModelUtilsSchemas:
             (IndCQC.cqc_location_import_date, pl.DataType()),
             ("feature_1", pl.Int32()),
             ("feature_2", pl.Int32()),
-            ("index", pl.UInt32()),
         ]
     )
 

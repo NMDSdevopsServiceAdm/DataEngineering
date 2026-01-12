@@ -278,9 +278,9 @@ class ModelTrainingUtilsData:
 @dataclass
 class ModelUtilsData:
     features_rows = [
-        ("1-001", date(2025, 1, 1), 1, 4, 0),
-        ("1-002", date(2025, 1, 1), 2, 5, 1),
-        ("1-003", date(2025, 1, 1), 3, 6, 2),
+        ("1-001", date(2025, 1, 1), 1, 4),
+        ("1-002", date(2025, 1, 1), 2, 5),
+        ("1-003", date(2025, 1, 1), 3, 6),
     ]
 
     predictions = np.array([10.5, 11.0, 12.3])

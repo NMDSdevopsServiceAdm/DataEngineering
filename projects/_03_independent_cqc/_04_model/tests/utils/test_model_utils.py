@@ -113,7 +113,6 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
 
         self.predictions = Data.predictions
 
-        self.index_col = "index"
         self.model_name = "model_A"
         self.model_version = "1.2.0"
         self.run_number = 7
@@ -125,7 +124,6 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
         returned_df = job.create_predictions_dataframe(
             self.features_df,
             self.predictions,
-            self.index_col,
             self.model_name,
             self.model_version,
             self.run_number,
@@ -144,7 +142,6 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
             job.create_predictions_dataframe(
                 self.features_df,
                 Data.mismatch_predictions,
-                self.index_col,
                 self.model_name,
                 self.model_version,
                 self.run_number,
@@ -157,7 +154,6 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
         returned_df = job.create_predictions_dataframe(
             self.features_df,
             self.predictions,
-            self.index_col,
             self.model_name,
             self.model_version,
             self.run_number,
