@@ -153,15 +153,11 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     cqc_api_task_arn               = module.cqc-api.task_arn
     independent_cqc_task_arn       = module._03_independent_cqc.task_arn
     independent_cqc_model_task_arn = module._03_independent_cqc_model.task_arn
-    preprocess_task_arn            = module.model_preprocess.task_arn
-    retrain_task_arn               = module.model_retrain.task_arn
 
     # ecs task security groups
     cqc_api_security_group_id               = module.cqc-api.security_group_id
     independent_cqc_security_group_id       = module._03_independent_cqc.security_group_id
     independent_cqc_model_security_group_id = module._03_independent_cqc_model.security_group_id
-    preprocess_security_group_id            = module.model_preprocess.security_group_id
-    retrain_security_group_id               = module.model_preprocess.security_group_id
 
     # models
     preprocessor_name = "preprocess_non_res_pir"
@@ -317,8 +313,6 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module.cqc-api.task_arn,
           module._03_independent_cqc.task_arn,
           module._03_independent_cqc_model.task_arn,
-          module.model_preprocess.task_arn,
-          module.model_retrain.task_arn,
           aws_ecs_cluster.polars_cluster.arn
         ]
       },
@@ -328,10 +322,6 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         Resource = [
           module.cqc-api.task_exc_role_arn,
           module.cqc-api.task_role_arn,
-          module.model_retrain.task_exc_role_arn,
-          module.model_retrain.task_role_arn,
-          module.model_preprocess.task_exc_role_arn,
-          module.model_preprocess.task_role_arn,
           module._03_independent_cqc.task_exc_role_arn,
           module._03_independent_cqc.task_role_arn,
           module._03_independent_cqc_model.task_exc_role_arn,
