@@ -84,7 +84,7 @@ def create_predictions_dataframe(
 
     Returns:
         pl.DataFrame: DataFrame containing `location_id`, `cqc_location_import_date`,
-                      predictions column, and predictions run ID column.
+                      predictions column and predictions run ID column.
 
     Raises:
         ValueError: If the length of predictions does not match the number of rows in df.
