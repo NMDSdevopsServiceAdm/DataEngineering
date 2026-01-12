@@ -2,14 +2,17 @@ from polars_utils import utils
 from projects._03_independent_cqc._04_model.registry.model_registry import (
     model_registry,
 )
-from projects._03_independent_cqc._04_model.utils import model_utils as mUtils
 from projects._03_independent_cqc._04_model.utils import paths
-from projects._03_independent_cqc._04_model.utils import training_utils as tUtils
 from projects._03_independent_cqc._04_model.utils import versioning as vUtils
+from projects._03_independent_cqc._04_model.utils.model_utils import (
+    create_predictions_dataframe,
+)
+from projects._03_independent_cqc._04_model.utils.training_utils import (
+    convert_dataframe_to_numpy,
+)
 from projects._03_independent_cqc._04_model.utils.validate_model_definitions import (
     validate_model_definition,
 )
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 
 
@@ -42,7 +45,6 @@ def main(bucket_name: str, model_name: str) -> None:
         model_name,
         required_keys=[
             MRKeys.version,
-            MRKeys.auto_retrain,
             MRKeys.dependent,
             MRKeys.features,
         ],
@@ -57,7 +59,7 @@ def main(bucket_name: str, model_name: str) -> None:
 
     df = utils.scan_parquet(features_source).collect()
 
-    X, _ = tUtils.convert_dataframe_to_numpy(df, feature_cols, dependent_col)
+    X, _ = convert_dataframe_to_numpy(df, feature_cols, dependent_col)
 
     model_path = paths.generate_model_path(bucket_name, model_name, model_version)
     run_number = vUtils.get_run_number(model_path)
@@ -66,7 +68,7 @@ def main(bucket_name: str, model_name: str) -> None:
 
     predictions = model.predict(X)
 
-    predictions_df = mUtils.create_predictions_dataframe(
+    predictions_df = create_predictions_dataframe(
         df, predictions, model_name, model_version, run_number
     )
 

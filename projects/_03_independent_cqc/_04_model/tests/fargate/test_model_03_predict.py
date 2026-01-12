@@ -24,11 +24,11 @@ class ModelPredictTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.paths.generate_predictions_path")
-    @patch(f"{PATCH_PATH}.mUtils.create_predictions_dataframe")
+    @patch(f"{PATCH_PATH}.create_predictions_dataframe")
     @patch(f"{PATCH_PATH}.vUtils.load_model")
     @patch(f"{PATCH_PATH}.vUtils.get_run_number", return_value=3)
     @patch(f"{PATCH_PATH}.paths.generate_model_path")
-    @patch(f"{PATCH_PATH}.tUtils.convert_dataframe_to_numpy")
+    @patch(f"{PATCH_PATH}.convert_dataframe_to_numpy")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_feature_data)
     @patch(f"{PATCH_PATH}.validate_model_definition")
     @patch(f"{PATCH_PATH}.paths.generate_features_path")
