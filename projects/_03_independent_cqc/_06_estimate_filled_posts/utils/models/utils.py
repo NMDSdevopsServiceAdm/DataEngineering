@@ -1,6 +1,8 @@
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
+from projects._03_independent_cqc._04_model.utils.paths import generate_predictions_path
+from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
 
@@ -58,9 +60,9 @@ def merge_model_predictions(
     Returns:
         DataFrame: The input DataFrame with the model predictions merged in.
     """
-    # generate model predictions path
+    predictions_path = generate_predictions_path(data_bucket, model_name)
 
-    # load model predictions from the specified data bucket
+    predictions_df = utils.read_from_parquet(predictions_path)
 
     # convert predicted ratios to filled posts (care home specific)
 
