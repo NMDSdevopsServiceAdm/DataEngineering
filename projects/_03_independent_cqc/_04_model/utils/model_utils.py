@@ -60,7 +60,7 @@ def calculate_metrics(y_known: np.ndarray, y_predicted: np.ndarray) -> dict:
     return {"r2": r2_metric, "rmse": rmse_metric}
 
 
-def create_predictions_dataframe(
+def add_predictions_into_df(
     df: pl.DataFrame,
     predictions: np.ndarray,
     model_version: str,

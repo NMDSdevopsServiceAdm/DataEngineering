@@ -24,7 +24,7 @@ class ModelPredictTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.paths.generate_predictions_path")
-    @patch(f"{PATCH_PATH}.create_predictions_dataframe")
+    @patch(f"{PATCH_PATH}.add_predictions_into_df")
     @patch(f"{PATCH_PATH}.vUtils.load_model")
     @patch(f"{PATCH_PATH}.vUtils.get_run_number", return_value=3)
     @patch(f"{PATCH_PATH}.paths.generate_model_path")
@@ -42,7 +42,7 @@ class ModelPredictTests(unittest.TestCase):
         generate_model_path_mock: Mock,
         get_run_number_mock: Mock,
         load_model_mock: Mock,
-        create_predictions_dataframe_mock: Mock,
+        add_predictions_into_df_mock: Mock,
         generate_predictions_path_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
@@ -57,6 +57,6 @@ class ModelPredictTests(unittest.TestCase):
         generate_model_path_mock.assert_called_once()
         get_run_number_mock.assert_called_once()
         load_model_mock.assert_called_once()
-        create_predictions_dataframe_mock.assert_called_once()
+        add_predictions_into_df_mock.assert_called_once()
         generate_predictions_path_mock.assert_called_once()
         write_to_parquet_mock.assert_called_once()

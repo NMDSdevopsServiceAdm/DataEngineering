@@ -106,7 +106,7 @@ class MetricsTests(unittest.TestCase):
         self.assertIsInstance(metrics["rmse"], float)
 
 
-class CreatePredictionsDataFrameTests(unittest.TestCase):
+class AddPredictionsIntoDataFrameTests(unittest.TestCase):
     def setUp(self) -> None:
         self.features_df = pl.DataFrame(
             Data.features_rows, Schemas.features_schema, orient="row"
@@ -120,7 +120,7 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
         self.expected_run_id = "v1.2.0_r7"
 
     def test_returns_expected_predictions_dataframe(self):
-        returned_df = job.create_predictions_dataframe(
+        returned_df = job.add_predictions_into_df(
             self.features_df,
             self.predictions,
             self.model_version,
@@ -137,7 +137,7 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
 
     def test_raises_value_error_when_predictions_length_mismatch(self):
         with self.assertRaises(ValueError) as context:
-            job.create_predictions_dataframe(
+            job.add_predictions_into_df(
                 self.features_df,
                 Data.mismatch_predictions,
                 self.model_version,
@@ -148,7 +148,7 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
         self.assertIn("does not match DataFrame row count", str(context.exception))
 
     def test_run_id_column_is_correct_string(self):
-        returned_df = job.create_predictions_dataframe(
+        returned_df = job.add_predictions_into_df(
             self.features_df,
             self.predictions,
             self.model_version,
