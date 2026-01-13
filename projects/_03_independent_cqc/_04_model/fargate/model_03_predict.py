@@ -37,7 +37,7 @@ def main(bucket_name: str, model_name: str) -> None:
         bucket_name (str): the bucket (name only) in which to source the features dataset from
         model_name (str): the name of the saved model to load
     """
-    print(f"Running predictions for {model_name} model...")
+    print(f"Running predictions for {model_name}...")
 
     features_source = paths.generate_features_path(bucket_name, model_name)
 

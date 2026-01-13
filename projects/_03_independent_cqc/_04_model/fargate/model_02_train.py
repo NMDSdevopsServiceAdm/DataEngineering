@@ -35,7 +35,7 @@ def main(bucket_name: str, model_name: str) -> None:
         bucket_name (str): the bucket (name only) in which to source the features dataset from
         model_name (str): the name of the model to train
     """
-    print(f"Training {model_name} model...")
+    print(f"Training {model_name}...")
 
     features_source = paths.generate_features_path(bucket_name, model_name)
 
@@ -62,7 +62,7 @@ def main(bucket_name: str, model_name: str) -> None:
     feature_cols = model_def[MRKeys.features]
 
     if not auto_retrain_model:
-        print(f"Auto-retraining is disabled for model {model_name}. Skipping training.")
+        print(f"Auto-retraining is disabled for {model_name}. Skipping training.")
         return
 
     df = (
@@ -102,7 +102,7 @@ def main(bucket_name: str, model_name: str) -> None:
     new_run_number = vUtils.get_run_number(model_path) + 1
     vUtils.save_model_and_metadata(model_path, new_run_number, model, metadata)
 
-    print(f"{model_name} model trained and saved with run number {new_run_number}.")
+    print(f"{model_name} trained and saved with run number {new_run_number}.")
 
 
 if __name__ == "__main__":
