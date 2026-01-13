@@ -238,9 +238,6 @@ class IndCqcColumns:
     max_residual: str = "max_residual"
     min_filled_posts_per_bed_ratio: str = "min_filled_posts_per_bed_ratio"
     min_residual: str = "min_residual"
-    model_name: str = "model_name"
-    model_run_timestamp: str = "model_run_timestamp"
-    model_version: str = "model_version"
     name: str = CQCLClean.name
     next_submission_time: str = "next_submission_time"
     next_value: str = "next_value"
@@ -330,6 +327,7 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
+    rmse: str = "rmse"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered

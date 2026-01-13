@@ -109,7 +109,6 @@ def main(
     non_res_without_dormancy_features_source: str,
     non_res_without_dormancy_model_source: str,
     estimated_ind_cqc_destination: str,
-    ml_model_metrics_destination: str,
 ) -> DataFrame:
     print("Estimating independent CQC filled posts...")
 
@@ -132,20 +131,17 @@ def main(
         estimate_filled_posts_df,
         care_home_features_df,
         care_home_model_source,
-        ml_model_metrics_destination,
     )
 
     estimate_filled_posts_df = model_non_res_with_dormancy(
         estimate_filled_posts_df,
         non_res_with_dormancy_features_df,
         non_res_with_dormancy_model_source,
-        ml_model_metrics_destination,
     )
     estimate_filled_posts_df = model_non_res_without_dormancy(
         estimate_filled_posts_df,
         non_res_without_dormancy_features_df,
         non_res_without_dormancy_model_source,
-        ml_model_metrics_destination,
     )
 
     estimate_filled_posts_df = combine_non_res_with_and_without_dormancy_models(
@@ -220,7 +216,6 @@ if __name__ == "__main__":
         non_res_without_dormancy_features_source,
         non_res_without_dormancy_model_source,
         estimated_ind_cqc_destination,
-        ml_model_metrics_destination,
     ) = utils.collect_arguments(
         (
             "--imputed_ind_cqc_data_source",
@@ -254,10 +249,6 @@ if __name__ == "__main__":
             "--estimated_ind_cqc_destination",
             "Destination s3 directory for outputting estimates for filled posts",
         ),
-        (
-            "--ml_model_metrics_destination",
-            "Destination s3 directory for outputting metrics from the ML models",
-        ),
     )
 
     main(
@@ -269,5 +260,4 @@ if __name__ == "__main__":
         non_res_without_dormancy_features_source,
         non_res_without_dormancy_model_source,
         estimated_ind_cqc_destination,
-        ml_model_metrics_destination,
     )
