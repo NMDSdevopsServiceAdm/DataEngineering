@@ -5,7 +5,7 @@ from projects._03_independent_cqc._04_model.registry.model_registry import (
 from projects._03_independent_cqc._04_model.utils import paths
 from projects._03_independent_cqc._04_model.utils import versioning as vUtils
 from projects._03_independent_cqc._04_model.utils.model_utils import (
-    create_predictions_dataframe,
+    add_predictions_into_df,
 )
 from projects._03_independent_cqc._04_model.utils.training_utils import (
     convert_dataframe_to_numpy,
@@ -68,9 +68,7 @@ def main(bucket_name: str, model_name: str) -> None:
 
     predictions = model.predict(X)
 
-    predictions_df = create_predictions_dataframe(
-        df, predictions, model_name, model_version, run_number
-    )
+    predictions_df = add_predictions_into_df(df, predictions, model_version, run_number)
 
     predictions_path = paths.generate_predictions_path(bucket_name, model_name)
 
