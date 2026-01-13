@@ -16,6 +16,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 
+- Removed model metrics from [estimate_ind_cqc_filled_posts](projects/_03_independent_cqc/_06_estimate_filled_posts/jobs/estimate_ind_cqc_filled_posts.py) job. The replacement models create models as part of the model training/testing process.
+
 - Moved the `convert_care_home_ratios_to_posts` function to the impute [utils](projects/_03_independent_cqc/_03_impute/utils/utils.py) file to align with the jobs it's called in.
 
 ### Fixed

@@ -5428,29 +5428,6 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
 
 
 @dataclass
-class MLModelMetrics:
-    ind_cqc_with_predictions_rows = [
-        ("1-00001", "care home", 50.0, "Y", "South West", 67, date(2022, 3, 9), 56.89),
-        ("1-00002", "non-res", 10.0, "N", "North East", 0, date(2022, 3, 9), 12.34),
-    ]
-
-    r2_metric_rows = [
-        ("1-00001", 50.0, 56.89),
-        ("1-00002", 10.0, 12.34),
-    ]
-
-    predictions_rows = [
-        ("1-00001", 50.0, 56.89),
-        ("1-00002", None, 46.80),
-        ("1-00003", 10.0, 12.34),
-    ]
-    expected_predictions_with_dependent_rows = [
-        ("1-00001", 50.0, 56.89),
-        ("1-00003", 10.0, 12.34),
-    ]
-
-
-@dataclass
 class EstimateFilledPostsModelsUtils:
     cleaned_cqc_rows = ModelCareHomes.care_homes_cleaned_ind_cqc_rows
 
