@@ -5436,6 +5436,15 @@ class EstimateFilledPostsModelsUtils:
         ("1-001", None, None),
     ]
 
+    prepare_predictions_for_join_rows = [
+        (date(2025, 1, 1), "1-001", CareHome.care_home, 20.0, "v1.0.0_r2"),
+        (date(2025, 1, 1), "1-002", CareHome.care_home, 10.0, "v1.0.0_r2"),
+    ]
+    expected_prepare_predictions_for_join_rows = [
+        ("1-001", date(2025, 1, 1), 20.0, "v1.0.0_r2"),
+        ("1-002", date(2025, 1, 1), 10.0, "v1.0.0_r2"),
+    ]
+
     convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_rows = [
         ("1-001", CareHome.care_home, 5, 1.6, 20.0),
         ("1-002", CareHome.care_home, 5, None, 10.0),

@@ -214,6 +214,32 @@ class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
+class PreparePredictionsForJoinTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.model_name = IndCqc.care_home_model
+
+        self.test_df = self.spark.createDataFrame(
+            Data.prepare_predictions_for_join_rows,
+            Schemas.prepare_predictions_for_join_schema,
+        )
+        self.returned_df = job.prepare_predictions_for_join(
+            self.test_df, self.model_name
+        )
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_prepare_predictions_for_join_rows,
+            Schemas.expected_prepare_predictions_for_join_schema,
+        )
+
+    def test_function_renames_and_selects_columns_correctly(self):
+        self.assertSetEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_function_preserves_row_count(self):
+        self.assertEqual(self.returned_df.count(), self.test_df.count())
+
+
 class ConvertCareHomeRatiosToFilledPostsAndMergeWithFilledPostValuesTests(
     EstimateFilledPostsModelsUtilsTests
 ):
