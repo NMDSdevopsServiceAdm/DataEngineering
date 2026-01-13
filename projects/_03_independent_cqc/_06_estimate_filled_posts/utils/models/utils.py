@@ -3,6 +3,7 @@ from pyspark.sql import functions as F
 
 from projects._03_independent_cqc._04_model.utils.paths import generate_predictions_path
 from utils import utils
+from utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
 
@@ -39,7 +40,7 @@ def insert_predictions_into_pipeline(
 
 
 def merge_model_predictions(
-    df: DataFrame, data_bucket: str, model_name: str
+    ind_cqc_df: DataFrame, data_bucket: str, model_name: str
 ) -> DataFrame:
     """
     Loads model predictions, applies transformations and joins into the input dataframe.
@@ -48,12 +49,11 @@ def merge_model_predictions(
     - load model predictions from the specified data bucket
     - convert predicted ratios to filled posts (care home specific)
     - set minimum values for predictions
-    - apply a rolling average to smooth predictions
     - join the model predictions into the input dataframe
     - return the updated dataframe.
 
     Args:
-        df (DataFrame): The input DataFrame.
+        ind_cqc_df (DataFrame): The input DataFrame.
         data_bucket (str): The data bucket containing the model predictions.
         model_name (str): The name of the model.
 
@@ -64,16 +64,20 @@ def merge_model_predictions(
 
     predictions_df = utils.read_from_parquet(predictions_path)
 
-    # convert predicted ratios to filled posts (care home specific)
+    if model_name == IndCqc.care_home_model:
+        predictions_df = calculate_filled_posts_from_beds_and_ratio(
+            predictions_df, IndCqc.prediction, IndCqc.prediction
+        )
 
-    # set minimum values for predictions
+    predictions_df = set_min_value(predictions_df, IndCqc.prediction, 1.0)
 
-    # apply a rolling average to smooth predictions
+    predictions_df = prepare_predictions_for_join(predictions_df, model_name)
 
-    # join the model predictions into the input dataframe
+    ind_cqc_with_predictions_df = ind_cqc_df.join(
+        predictions_df, [IndCqc.location_id, IndCqc.cqc_location_import_date], "left"
+    )
 
-    # return the updated dataframe.
-    return df
+    return ind_cqc_with_predictions_df
 
 
 def set_min_value(df: DataFrame, col_name: str, min_value: float = 1.0) -> DataFrame:
@@ -94,6 +98,35 @@ def set_min_value(df: DataFrame, col_name: str, min_value: float = 1.0) -> DataF
             F.col(col_name).isNotNull(),
             F.greatest(F.col(col_name), F.lit(min_value)),
         ).otherwise(F.lit(None)),
+    )
+
+
+def prepare_predictions_for_join(
+    predictions_df: DataFrame, model_name: str
+) -> DataFrame:
+    """
+    Prepares the predictions dataframe for joining by selecting required columns and renaming them.
+
+    Selects location ID and import date for joining on plus the predicted values and run ID.
+    The generic prediction columns are renamed to be model-specific so it is clear which model they relate to after the join.
+
+    Args:
+        predictions_df (DataFrame): The input DataFrame containing model predictions.
+        model_name (str): The name of the model to use for renaming columns.
+
+    Returns:
+        DataFrame: The prepared DataFrame ready for joining.
+    """
+    return predictions_df.select(
+        IndCqc.location_id,
+        IndCqc.cqc_location_import_date,
+        IndCqc.prediction,
+        IndCqc.prediction_run_id,
+    ).withColumnsRenamed(
+        {
+            IndCqc.prediction: model_name,
+            IndCqc.prediction_run_id: f"{model_name}_run_id",
+        }
     )
 
 
