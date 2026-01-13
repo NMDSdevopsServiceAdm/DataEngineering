@@ -1,6 +1,7 @@
 import unittest
 import warnings
 from datetime import date
+from unittest.mock import Mock, patch
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
     utils as job,
@@ -64,6 +65,35 @@ class InsertPredictionsIntoPipelineTest(EstimateFilledPostsModelsUtilsTests):
         ).collect()[0]
 
         self.assertIsNone(expected_df[IndCqc.estimate_filled_posts])
+
+
+class MergeModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_bucket = "test_bucket"
+        self.test_model = "test_model"
+
+        self.mock_ind_cqc_df = Mock(name="ind_cqc_df")
+        self.mock_predictions_df = Mock(name="predictions_df")
+
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.generate_predictions_path")
+    def test_merge_model_predictions_calls_all_necessary_functions(
+        self, generate_predictions_path_mock: Mock, read_from_parquet_mock: Mock
+    ):
+        read_from_parquet_mock.return_value = self.mock_predictions_df
+
+        job.merge_model_predictions(
+            self.mock_ind_cqc_df, self.test_bucket, self.test_model
+        )
+
+        generate_predictions_path_mock.assert_called_once_with(
+            self.test_bucket, self.test_model
+        )
+        read_from_parquet_mock.assert_called_once_with(
+            generate_predictions_path_mock.return_value
+        )
 
 
 class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
