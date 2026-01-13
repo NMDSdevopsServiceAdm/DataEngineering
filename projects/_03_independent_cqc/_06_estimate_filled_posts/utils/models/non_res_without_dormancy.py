@@ -18,7 +18,7 @@ def model_non_res_without_dormancy(
 
     This function loads and runs the non residential without dormancy
     predictions model on non residential without dormancy features data.
-    It then saves the model metrics and adds the predictions into the main dataset.
+    It then adds the predictions into the main dataset.
 
     Predictions are capped at a minimum of one.
 

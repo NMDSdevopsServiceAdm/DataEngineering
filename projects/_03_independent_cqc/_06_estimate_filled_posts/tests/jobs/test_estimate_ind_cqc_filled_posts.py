@@ -26,7 +26,6 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         "tests/test_models/non_residential_without_dormancy_prediction/1.0.0/"
     )
     ESTIMATES_DESTINATION = "estimates destination"
-    METRICS_DESTINATION = "metrics destination"
     partition_keys = [
         Keys.year,
         Keys.month,
@@ -79,7 +78,6 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             self.NON_RES_WITHOUT_DORMANCY_FEATURES,
             self.NON_RES_WITHOUT_DORMANCY_MODEL,
             self.ESTIMATES_DESTINATION,
-            self.METRICS_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 4)
