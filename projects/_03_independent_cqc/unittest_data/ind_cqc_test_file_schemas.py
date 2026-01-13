@@ -1982,6 +1982,24 @@ class EstimateFilledPostsModelsUtils:
         ]
     )
 
+    prepare_predictions_for_join_schema = StructType(
+        [
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.prediction, FloatType(), True),
+            StructField(IndCQC.prediction_run_id, StringType(), False),
+        ]
+    )
+    expected_prepare_predictions_for_join_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home_model, FloatType(), True),
+            StructField(f"{IndCQC.care_home_model}_run_id", StringType(), False),
+        ]
+    )
+
     convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
