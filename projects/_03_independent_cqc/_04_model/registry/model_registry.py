@@ -10,7 +10,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 
 model_registry = {
-    "care_home": {
+    IndCQC.care_home_model: {
         MRKeys.version: "7.0.0",
         MRKeys.auto_retrain: True,
         MRKeys.model_type: ModelTypes.lasso,
@@ -30,7 +30,7 @@ model_registry = {
             ]
         ),
     },
-    "non_residential_without_dormancy": {
+    IndCQC.non_res_without_dormancy_model: {
         MRKeys.version: "5.0.0",
         MRKeys.auto_retrain: True,
         MRKeys.model_type: ModelTypes.lasso,
@@ -51,7 +51,7 @@ model_registry = {
             ]
         ),
     },
-    "non_residential_with_dormancy": {
+    IndCQC.non_res_with_dormancy_model: {
         MRKeys.version: "6.0.0",
         MRKeys.auto_retrain: True,
         MRKeys.model_type: ModelTypes.lasso,
