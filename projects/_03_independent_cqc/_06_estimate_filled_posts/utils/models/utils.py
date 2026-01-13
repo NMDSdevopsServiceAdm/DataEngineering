@@ -36,6 +36,44 @@ def insert_predictions_into_pipeline(
     return locations_with_predictions
 
 
+def merge_model_predictions(
+    df: DataFrame, data_bucket: str, model_name: str
+) -> DataFrame:
+    """
+    Loads model predictions, applies transformations and joins into the input dataframe.
+
+    This function calls utility functions to:
+    - load model predictions from the specified data bucket
+    - convert predicted ratios to filled posts (care home specific)
+    - set minimum values for predictions
+    - apply a rolling average to smooth predictions
+    - join the model predictions into the input dataframe
+    - return the updated dataframe.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        data_bucket (str): The data bucket containing the model predictions.
+        model_name (str): The name of the model.
+
+    Returns:
+        DataFrame: The input DataFrame with the model predictions merged in.
+    """
+    # generate model predictions path
+
+    # load model predictions from the specified data bucket
+
+    # convert predicted ratios to filled posts (care home specific)
+
+    # set minimum values for predictions
+
+    # apply a rolling average to smooth predictions
+
+    # join the model predictions into the input dataframe
+
+    # return the updated dataframe.
+    return df
+
+
 def set_min_value(df: DataFrame, col_name: str, min_value: float = 1.0) -> DataFrame:
     """
     The function takes the greatest value between the existing value and the specified min_value which defaults to 1.0.
