@@ -234,7 +234,7 @@ class PreparePredictionsForJoinTests(EstimateFilledPostsModelsUtilsTests):
         )
 
     def test_function_renames_and_selects_columns_correctly(self):
-        self.assertSetEqual(self.returned_df.columns, self.expected_df.columns)
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
     def test_function_preserves_row_count(self):
         self.assertEqual(self.returned_df.count(), self.test_df.count())
