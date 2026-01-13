@@ -1,9 +1,6 @@
 from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame
 
-from projects._03_independent_cqc._06_estimate_filled_posts.utils.ml_model_metrics import (
-    save_model_metrics,
-)
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
     insert_predictions_into_pipeline,
     set_min_value,
@@ -16,7 +13,6 @@ def model_care_homes(
     locations_df: DataFrame,
     features_df: DataFrame,
     model_source: str,
-    metrics_destination: str,
 ) -> DataFrame:
     trained_model = LinearRegressionModel.load(model_source)
 
@@ -27,13 +23,6 @@ def model_care_homes(
     )
     filled_post_predictions_df = set_min_value(
         filled_post_predictions_df, IndCqc.prediction, 1.0
-    )
-
-    save_model_metrics(
-        filled_post_predictions_df,
-        IndCqc.ascwds_filled_posts_dedup_clean,
-        model_source,
-        metrics_destination,
     )
 
     locations_df = insert_predictions_into_pipeline(

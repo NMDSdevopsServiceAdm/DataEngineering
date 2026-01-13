@@ -16,6 +16,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 
+- Removed model metrics from [estimate_ind_cqc_filled_posts](projects/_03_independent_cqc/_06_estimate_filled_posts/jobs/estimate_ind_cqc_filled_posts.py) job. The replacement models create models as part of the model training/testing process.
+
 ### Fixed
 - Analysts found a new test account in ASC-WDS so I've added their orgid to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)
 
