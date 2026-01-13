@@ -63,26 +63,20 @@ def calculate_metrics(y_known: np.ndarray, y_predicted: np.ndarray) -> dict:
 def create_predictions_dataframe(
     df: pl.DataFrame,
     predictions: np.ndarray,
-    model_name: str,
     model_version: str,
     run_number: int,
 ) -> pl.DataFrame:
     """
-    Add model predictions and metadata to a Polars DataFrame.
-
-    This function links predictions to rows by a unique index column to avoid
-    misalignment. It also tags each prediction with a model version and run ID.
+    Add model predictions and model identifier to a Polars DataFrame.
 
     Args:
         df (pl.DataFrame): Input Polars DataFrame.
         predictions (np.ndarray): Array of prediction values (must match df row count).
-        model_name (str): The name of the model (used as the new column name).
         model_version (str): Model version string.
         run_number (int): Model run number.
 
     Returns:
-        pl.DataFrame: DataFrame containing `location_id`, `cqc_location_import_date`,
-                      predictions column and predictions run ID column.
+        pl.DataFrame: DataFrame containing predictions column and predictions run ID column.
 
     Raises:
         ValueError: If the length of predictions does not match the number of rows in df.
@@ -92,15 +86,9 @@ def create_predictions_dataframe(
             f"Predictions length ({len(predictions)}) does not match DataFrame row count ({df.height})"
         )
 
-    predictions_col = f"{model_name}_predictions"
-    run_id_col = f"{predictions_col}_run_id"
-    run_id_value = f"{model_name}_v{model_version}_r{run_number}"
+    run_id_value = f"v{model_version}_r{run_number}"
 
-    key_cols = [IndCQC.location_id, IndCQC.cqc_location_import_date]
-
-    predictions_df = df.select(key_cols).with_columns(
-        pl.Series(predictions_col, predictions),
-        pl.lit(run_id_value).alias(run_id_col),
+    return df.with_columns(
+        pl.Series(IndCQC.prediction, predictions),
+        pl.lit(run_id_value).alias(IndCQC.prediction_run_id),
     )
-
-    return predictions_df

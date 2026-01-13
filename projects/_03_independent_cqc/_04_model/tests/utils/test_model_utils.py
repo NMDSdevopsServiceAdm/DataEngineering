@@ -15,6 +15,7 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     ModelUtilsSchemas as Schemas,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class BuildModelTests(unittest.TestCase):
@@ -113,18 +114,15 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
 
         self.predictions = Data.predictions
 
-        self.model_name = "model_A"
         self.model_version = "1.2.0"
         self.run_number = 7
 
-        self.run_id_col_name = f"{self.model_name}_predictions_run_id"
-        self.expected_run_id = "model_A_v1.2.0_r7"
+        self.expected_run_id = "v1.2.0_r7"
 
     def test_returns_expected_predictions_dataframe(self):
         returned_df = job.create_predictions_dataframe(
             self.features_df,
             self.predictions,
-            self.model_name,
             self.model_version,
             self.run_number,
         )
@@ -142,7 +140,6 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
             job.create_predictions_dataframe(
                 self.features_df,
                 Data.mismatch_predictions,
-                self.model_name,
                 self.model_version,
                 self.run_number,
             )
@@ -154,15 +151,14 @@ class CreatePredictionsDataFrameTests(unittest.TestCase):
         returned_df = job.create_predictions_dataframe(
             self.features_df,
             self.predictions,
-            self.model_name,
             self.model_version,
             self.run_number,
         )
 
-        self.assertEqual(returned_df[self.run_id_col_name].dtype, pl.Utf8)
+        self.assertEqual(returned_df[IndCQC.prediction_run_id].dtype, pl.Utf8)
         self.assertTrue(
             all(
                 run_id == self.expected_run_id
-                for run_id in returned_df[self.run_id_col_name]
+                for run_id in returned_df[IndCQC.prediction_run_id]
             )
         )

@@ -287,9 +287,9 @@ class ModelUtilsData:
     mismatch_predictions = np.array([10.5, 11.0])
 
     expected_predictions_dataframe_rows = [
-        ("1-001", date(2025, 1, 1), 10.5, "model_A_v1.2.0_r7"),
-        ("1-002", date(2025, 1, 1), 11.0, "model_A_v1.2.0_r7"),
-        ("1-003", date(2025, 1, 1), 12.3, "model_A_v1.2.0_r7"),
+        ("1-001", date(2025, 1, 1), 1, 4, 10.5, "v1.2.0_r7"),
+        ("1-002", date(2025, 1, 1), 2, 5, 11.0, "v1.2.0_r7"),
+        ("1-003", date(2025, 1, 1), 3, 6, 12.3, "v1.2.0_r7"),
     ]
 
 
