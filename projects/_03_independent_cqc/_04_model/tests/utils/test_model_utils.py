@@ -71,8 +71,8 @@ class MetricsTests(unittest.TestCase):
 
         metrics = job.calculate_metrics(y_known, y_predicted)
 
-        self.assertEqual(metrics["r2"], 1.0)
-        self.assertEqual(metrics["rmse"], 0.0)
+        self.assertEqual(metrics[IndCQC.r2], 1.0)
+        self.assertEqual(metrics[IndCQC.rmse], 0.0)
 
     def test_calculate_metrics_known_values(self):
         y_known = np.array([0.0, 1.0, 2.0])
@@ -81,10 +81,10 @@ class MetricsTests(unittest.TestCase):
         metrics = job.calculate_metrics(y_known, y_predicted)
 
         # R2 should be less than 1 for imperfect predictions
-        self.assertLess(metrics["r2"], 1.0)
+        self.assertLess(metrics[IndCQC.r2], 1.0)
 
         # RMSE should be positive
-        self.assertGreater(metrics["rmse"], 0.0)
+        self.assertGreater(metrics[IndCQC.rmse], 0.0)
 
     def test_calculate_metrics_output_schema(self):
         y_known = np.array([1, 2, 3])
@@ -92,9 +92,9 @@ class MetricsTests(unittest.TestCase):
 
         metrics = job.calculate_metrics(y_known, y_predicted)
 
-        self.assertEqual(set(metrics.keys()), {"r2", "rmse"})
-        self.assertIsInstance(metrics["r2"], float)
-        self.assertIsInstance(metrics["rmse"], float)
+        self.assertEqual(set(metrics.keys()), {IndCQC.r2, IndCQC.rmse})
+        self.assertIsInstance(metrics[IndCQC.r2], float)
+        self.assertIsInstance(metrics[IndCQC.rmse], float)
 
     def test_calculate_metrics_integer_inputs(self):
         y_known = np.array([1, 2, 3])
@@ -102,8 +102,8 @@ class MetricsTests(unittest.TestCase):
 
         metrics = job.calculate_metrics(y_known, y_predicted)
 
-        self.assertIsInstance(metrics["r2"], float)
-        self.assertIsInstance(metrics["rmse"], float)
+        self.assertIsInstance(metrics[IndCQC.r2], float)
+        self.assertIsInstance(metrics[IndCQC.rmse], float)
 
 
 class AddPredictionsIntoDataFrameTests(unittest.TestCase):
