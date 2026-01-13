@@ -277,6 +277,18 @@ class ModelAndMergePirData:
 
 @dataclass
 class ImputeUtilsSchema:
+    convert_care_home_ratios_to_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(
+                IndCQC.banded_bed_ratio_rolling_average_model, DoubleType(), True
+            ),
+            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
+        ]
+    )
+
     combine_care_home_and_non_res_values_into_single_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -1979,18 +1991,6 @@ class EstimateFilledPostsModelsUtils:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, FloatType(), True),
             StructField(IndCQC.prediction, FloatType(), True),
-        ]
-    )
-
-    convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(
-                IndCQC.banded_bed_ratio_rolling_average_model, DoubleType(), True
-            ),
-            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
         ]
     )
 
