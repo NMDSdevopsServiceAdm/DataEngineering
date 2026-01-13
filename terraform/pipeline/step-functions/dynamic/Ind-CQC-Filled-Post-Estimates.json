@@ -190,6 +190,7 @@
                       "Parameters": {
                         "JobName": "${estimate_ind_cqc_filled_posts_job_name}",
                         "Arguments": {
+                          "--bucket_name": "${dataset_bucket_name}",
                           "--imputed_ind_cqc_data_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
                           "--care_home_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_care_home/",
                           "--care_home_model_source": "${pipeline_resources_bucket_uri}/models/care_home_filled_posts_prediction/6.3.0/",

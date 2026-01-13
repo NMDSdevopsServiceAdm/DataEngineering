@@ -101,6 +101,7 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(
+    bucket_name: str,
     imputed_ind_cqc_data_source: str,
     care_home_features_source: str,
     care_home_model_source: str,
@@ -208,6 +209,7 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     (
+        bucket_name,
         imputed_ind_cqc_data_source,
         care_home_features_source,
         care_home_model_source,
@@ -217,6 +219,10 @@ if __name__ == "__main__":
         non_res_without_dormancy_model_source,
         estimated_ind_cqc_destination,
     ) = utils.collect_arguments(
+        (
+            "--bucket_name",
+            "The s3 bucket name to source and save the datasets to",
+        ),
         (
             "--imputed_ind_cqc_data_source",
             "Source s3 directory for imputed ASCWDS and PIR dataset",
@@ -252,6 +258,7 @@ if __name__ == "__main__":
     )
 
     main(
+        bucket_name,
         imputed_ind_cqc_data_source,
         care_home_features_source,
         care_home_model_source,

@@ -731,6 +731,7 @@ module "estimate_ind_cqc_filled_posts_job" {
   datasets_bucket   = module.datasets_bucket
 
   job_parameters = {
+    "--bucket_name"                              = "${module.datasets_bucket.bucket_name}"
     "--imputed_ind_cqc_data_source"              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_imputed_ascwds_and_pir/"
     "--care_home_features_source"                = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_care_home/"
     "--care_home_model_source"                   = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/6.3.0/"

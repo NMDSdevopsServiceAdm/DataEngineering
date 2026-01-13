@@ -12,6 +12,7 @@ PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.jobs.estima
 
 
 class EstimateIndCQCFilledPostsTests(unittest.TestCase):
+    TEST_BUCKET_NAME = "test-bucket"
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
     CARE_HOMES_FEATURES = "care home features"
     CARE_HOME_MODEL = (
@@ -70,6 +71,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         ]
 
         job.main(
+            self.TEST_BUCKET_NAME,
             self.CLEANED_IND_CQC_TEST_DATA,
             self.CARE_HOMES_FEATURES,
             self.CARE_HOME_MODEL,
