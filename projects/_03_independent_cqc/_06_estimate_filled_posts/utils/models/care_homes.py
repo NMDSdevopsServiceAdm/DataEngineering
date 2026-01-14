@@ -2,7 +2,7 @@ from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
-    insert_predictions_into_pipeline,
+    prepare_predictions_and_join_into_df,
     set_min_value,
 )
 from utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
@@ -25,8 +25,11 @@ def model_care_homes(
         filled_post_predictions_df, IndCqc.prediction, 1.0
     )
 
-    locations_df = insert_predictions_into_pipeline(
-        locations_df, filled_post_predictions_df, IndCqc.care_home_model
+    locations_df = prepare_predictions_and_join_into_df(
+        locations_df,
+        filled_post_predictions_df,
+        IndCqc.care_home_model,
+        include_run_id=False,
     )
 
     return locations_df
