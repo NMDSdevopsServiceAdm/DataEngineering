@@ -49,7 +49,9 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             self.ESTIMATES_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 4)
+        read_from_parquet_patch.assert_called_once_with(
+            self.SOURCE_TEST_DATA, job.ind_cqc_columns
+        )
         self.assertEqual(join_model_predictions_patch.call_count, 3)
         self.assertEqual(
             combine_non_res_with_and_without_dormancy_models_patch.call_count, 1
