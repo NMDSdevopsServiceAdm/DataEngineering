@@ -39,7 +39,7 @@ def insert_predictions_into_pipeline(
     return locations_with_predictions
 
 
-def merge_model_predictions(
+def join_model_predictions(
     ind_cqc_df: DataFrame, data_bucket: str, model_name: str
 ) -> DataFrame:
     """

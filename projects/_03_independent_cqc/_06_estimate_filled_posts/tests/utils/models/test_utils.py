@@ -67,7 +67,7 @@ class InsertPredictionsIntoPipelineTest(EstimateFilledPostsModelsUtilsTests):
         self.assertIsNone(expected_df[IndCqc.estimate_filled_posts])
 
 
-class MergeModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
+class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -93,7 +93,7 @@ class MergeModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
 
         test_model = IndCqc.care_home_model
 
-        job.merge_model_predictions(self.mock_ind_cqc_df, self.test_bucket, test_model)
+        job.join_model_predictions(self.mock_ind_cqc_df, self.test_bucket, test_model)
 
         generate_predictions_path_mock.assert_called_once_with(
             self.test_bucket, test_model
@@ -127,7 +127,7 @@ class MergeModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
 
         test_model = "non_care_home_model"
 
-        job.merge_model_predictions(self.mock_ind_cqc_df, self.test_bucket, test_model)
+        job.join_model_predictions(self.mock_ind_cqc_df, self.test_bucket, test_model)
 
         generate_predictions_path_mock.assert_called_once_with(
             self.test_bucket, test_model
