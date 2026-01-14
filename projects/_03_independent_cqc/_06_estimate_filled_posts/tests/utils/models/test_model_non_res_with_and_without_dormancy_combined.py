@@ -9,9 +9,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     ModelNonResWithAndWithoutDormancyCombinedSchemas as Schemas,
 )
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
 )
@@ -34,12 +32,12 @@ class MainTests(ModelNonResWithAndWithoutDormancyCombinedTests):
 
     @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
-    @patch(f"{PATCH_PATH}.insert_predictions_into_pipeline")
+    @patch(f"{PATCH_PATH}.prepare_predictions_and_join_into_df")
     @patch(f"{PATCH_PATH}.get_selected_value")
     def test_models_runs(
         self,
         get_selected_value_mock: Mock,
-        insert_predictions_into_pipeline_mock: Mock,
+        prepare_predictions_and_join_into_df_mock: Mock,
         select_rows_with_value_mock: Mock,
         set_min_value_mock: Mock,
     ):
@@ -48,7 +46,7 @@ class MainTests(ModelNonResWithAndWithoutDormancyCombinedTests):
         )
 
         get_selected_value_mock.assert_called_once()
-        insert_predictions_into_pipeline_mock.assert_called_once()
+        prepare_predictions_and_join_into_df_mock.assert_called_once()
         select_rows_with_value_mock.assert_called_once()
         set_min_value_mock.assert_called_once()
 

@@ -5252,63 +5252,6 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
 
 @dataclass
 class EstimateFilledPostsModelsUtils:
-    cleaned_cqc_rows = [
-        (
-            "1-000000001",
-            "Care home with nursing",
-            None,
-            None,
-            "Y",
-            "South West",
-            67,
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000002",
-            "Care home without nursing",
-            None,
-            None,
-            "N",
-            "Merseyside",
-            12,
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000003",
-            "Care home with nursing",
-            None,
-            None,
-            None,
-            "Merseyside",
-            34,
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000004",
-            "non-residential",
-            10.0,
-            "already_populated",
-            "N",
-            None,
-            0,
-            date(2022, 3, 29),
-        ),
-        ("1-000000001", "non-residential", None, None, "N", None, 0, date(2022, 2, 20)),
-    ]
-
-    predictions_rows = [
-        (
-            "1-000000001",
-            "Care home with nursing",
-            50.0,
-            "Y",
-            "South West",
-            67,
-            date(2022, 3, 29),
-            56.89,
-        ),
-    ]
-
     join_model_ind_cqc_rows = [
         ("1-001", date(2025, 1, 1), CareHome.not_care_home, None),
         ("1-002", date(2025, 1, 1), CareHome.not_care_home, None),
@@ -5363,13 +5306,23 @@ class EstimateFilledPostsModelsUtils:
         ("1-001", None, None),
     ]
 
-    prepare_predictions_for_join_rows = [
-        (date(2025, 1, 1), "1-001", CareHome.care_home, 20.0, "v1.0.0_r2"),
-        (date(2025, 1, 1), "1-002", CareHome.care_home, 10.0, "v1.0.0_r2"),
+    prepare_and_join_ind_cqc_rows = [
+        ("1-001", Region.london, 67, date(2022, 2, 20)),
+        ("1-001", Region.london, 67, date(2022, 3, 29)),
+        ("1-002", Region.north_east, 12, date(2022, 3, 29)),
     ]
-    expected_prepare_predictions_for_join_rows = [
-        ("1-001", date(2025, 1, 1), 20.0, "v1.0.0_r2"),
-        ("1-002", date(2025, 1, 1), 10.0, "v1.0.0_r2"),
+    prepare_and_join_prediction_rows = [
+        ("1-001", 67, date(2022, 3, 29), 10.0, "v1.0.0_r2"),
+    ]
+    expected_prepare_and_join_without_run_id_rows = [
+        ("1-001", Region.london, 67, date(2022, 2, 20), None),
+        ("1-001", Region.london, 67, date(2022, 3, 29), 10.0),
+        ("1-002", Region.north_east, 12, date(2022, 3, 29), None),
+    ]
+    expected_prepare_and_join_with_run_id_rows = [
+        ("1-001", Region.london, 67, date(2022, 2, 20), None, None),
+        ("1-001", Region.london, 67, date(2022, 3, 29), 10.0, "v1.0.0_r2"),
+        ("1-002", Region.north_east, 12, date(2022, 3, 29), None, None),
     ]
 
 

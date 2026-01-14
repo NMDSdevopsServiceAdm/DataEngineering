@@ -2,7 +2,7 @@ from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
-    insert_predictions_into_pipeline,
+    prepare_predictions_and_join_into_df,
     set_min_value,
 )
 from projects._03_independent_cqc.utils.utils.utils import get_selected_value
@@ -51,10 +51,11 @@ def combine_non_res_with_and_without_dormancy_models(
 
     combined_models_df = set_min_value(combined_models_df, IndCqc.prediction, 1.0)
 
-    locations_with_predictions_df = insert_predictions_into_pipeline(
+    locations_with_predictions_df = prepare_predictions_and_join_into_df(
         locations_df,
         combined_models_df,
         IndCqc.non_res_combined_model,
+        include_run_id=False,
     )
 
     return locations_with_predictions_df
