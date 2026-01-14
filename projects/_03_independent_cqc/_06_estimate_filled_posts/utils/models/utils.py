@@ -5,7 +5,6 @@ from projects._03_independent_cqc._04_model.utils.paths import generate_predicti
 from utils import utils
 from utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from utils.column_values.categorical_column_values import CareHome
 
 
 def insert_predictions_into_pipeline(
