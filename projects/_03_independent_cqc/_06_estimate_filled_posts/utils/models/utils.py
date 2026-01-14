@@ -39,7 +39,7 @@ def insert_predictions_into_pipeline(
 
 
 def join_model_predictions(
-    ind_cqc_df: DataFrame, data_bucket: str, model_name: str
+    ind_cqc_df: DataFrame, bucket_name: str, model_name: str
 ) -> DataFrame:
     """
     Loads model predictions, applies transformations and joins into the input dataframe.
@@ -53,13 +53,13 @@ def join_model_predictions(
 
     Args:
         ind_cqc_df (DataFrame): The input DataFrame.
-        data_bucket (str): The data bucket containing the model predictions.
+        bucket_name (str): the bucket (name only) in which to source the model predictions dataset from.
         model_name (str): The name of the model.
 
     Returns:
         DataFrame: The input DataFrame with the model predictions merged in.
     """
-    predictions_path = generate_predictions_path(data_bucket, model_name)
+    predictions_path = generate_predictions_path(bucket_name, model_name)
 
     predictions_df = utils.read_from_parquet(predictions_path)
 
