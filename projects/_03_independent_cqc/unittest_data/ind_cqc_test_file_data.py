@@ -4466,69 +4466,6 @@ class ModelFeatures:
 
 
 @dataclass
-class ModelCareHomes:
-    care_homes_cleaned_ind_cqc_rows = [
-        (
-            "1-000000001",
-            "Care home with nursing",
-            None,
-            None,
-            "Y",
-            "South West",
-            67,
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000002",
-            "Care home without nursing",
-            None,
-            None,
-            "N",
-            "Merseyside",
-            12,
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000003",
-            "Care home with nursing",
-            None,
-            None,
-            None,
-            "Merseyside",
-            34,
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000004",
-            "non-residential",
-            10.0,
-            "already_populated",
-            "N",
-            None,
-            0,
-            date(2022, 3, 29),
-        ),
-        ("1-000000001", "non-residential", None, None, "N", None, 0, date(2022, 2, 20)),
-    ]
-    care_homes_features_rows = [
-        (
-            "1-000000001",
-            date(2022, 3, 29),
-            10,
-            62.0,
-            Vectors.sparse(39, {0: 1.0, 1: 1.2, 2: 1.0, 3: 50.0}),
-        ),
-        (
-            "1-000000003",
-            date(2022, 3, 29),
-            15,
-            45.0,
-            None,
-        ),
-    ]
-
-
-@dataclass
 class ModelPrimaryServiceRateOfChange:
     # fmt: off
     primary_service_rate_of_change_rows = [
@@ -5136,120 +5073,6 @@ class ModelInterpolation:
 
 
 @dataclass
-class ModelNonResWithDormancy:
-    non_res_with_dormancy_cleaned_ind_cqc_rows = [
-        (
-            "1-000000001",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            "Y",
-            "South West",
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000002",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            "N",
-            "Merseyside",
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000003",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            None,
-            "Merseyside",
-            date(2022, 3, 29),
-        ),
-    ]
-    non_res_with_dormancy_features_rows = [
-        (
-            "1-000000001",
-            date(2022, 3, 29),
-            10.0,
-            Vectors.sparse(
-                32,
-                {
-                    0: 1.0,
-                    1: 1.0,
-                    4: 17.5,
-                    10: 1.0,
-                    18: 1.0,
-                    31: 35.0,
-                },
-            ),
-        ),
-        (
-            "1-000000003",
-            date(2022, 3, 29),
-            20.0,
-            None,
-        ),
-    ]
-
-
-@dataclass
-class ModelNonResWithoutDormancy:
-    non_res_without_dormancy_cleaned_ind_cqc_rows = [
-        (
-            "1-000000001",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            "Y",
-            "South West",
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000002",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            "N",
-            "Merseyside",
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000003",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            None,
-            "Merseyside",
-            date(2022, 3, 29),
-        ),
-    ]
-    non_res_without_dormancy_features_rows = [
-        (
-            "1-000000001",
-            date(2022, 3, 29),
-            10.0,
-            Vectors.sparse(
-                31,
-                {
-                    0: 1.0,
-                    1: 1.0,
-                    3: 17.5,
-                    9: 1.0,
-                    17: 1.0,
-                    30: 35.0,
-                },
-            ),
-        ),
-        (
-            "1-000000003",
-            date(2022, 3, 29),
-            20.0,
-            None,
-        ),
-    ]
-
-
-@dataclass
 class ModelNonResWithAndWithoutDormancyCombinedRows:
     estimated_posts_rows = [
         ("1-001", date(2021, 1, 1), CareHome.not_care_home, "Y", 1, 1.0, None),
@@ -5429,7 +5252,49 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
 
 @dataclass
 class EstimateFilledPostsModelsUtils:
-    cleaned_cqc_rows = ModelCareHomes.care_homes_cleaned_ind_cqc_rows
+    cleaned_cqc_rows = [
+        (
+            "1-000000001",
+            "Care home with nursing",
+            None,
+            None,
+            "Y",
+            "South West",
+            67,
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000002",
+            "Care home without nursing",
+            None,
+            None,
+            "N",
+            "Merseyside",
+            12,
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000003",
+            "Care home with nursing",
+            None,
+            None,
+            None,
+            "Merseyside",
+            34,
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000004",
+            "non-residential",
+            10.0,
+            "already_populated",
+            "N",
+            None,
+            0,
+            date(2022, 3, 29),
+        ),
+        ("1-000000001", "non-residential", None, None, "N", None, 0, date(2022, 2, 20)),
+    ]
 
     predictions_rows = [
         (
