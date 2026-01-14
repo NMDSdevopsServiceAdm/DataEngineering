@@ -5,7 +5,6 @@ from projects._03_independent_cqc._04_model.utils.paths import generate_predicti
 from utils import utils
 from utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from utils.column_values.categorical_column_values import CareHome
 
 
 def insert_predictions_into_pipeline(
@@ -128,31 +127,3 @@ def prepare_predictions_for_join(
             IndCqc.prediction_run_id: f"{model_name}_run_id",
         }
     )
-
-
-def convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values(
-    df: DataFrame,
-    ratio_column: str,
-    posts_column: str,
-) -> DataFrame:
-    """
-    Multiplies the filled posts per bed ratio values by the number of beds at each care home location to create a filled posts figure.
-
-    If the location is not a care home, the original filled posts figure is kept.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-        ratio_column (str): The name of the filled posts per bed ratio column (for care homes only).
-        posts_column (str): The name of the filled posts column.
-
-    Returns:
-        DataFrame: The input DataFrame with the new column containing a single column with the relevant combined column.
-    """
-    df = df.withColumn(
-        posts_column,
-        F.when(
-            F.col(IndCqc.care_home) == CareHome.care_home,
-            F.col(ratio_column) * F.col(IndCqc.number_of_beds),
-        ).otherwise(F.col(posts_column)),
-    )
-    return df

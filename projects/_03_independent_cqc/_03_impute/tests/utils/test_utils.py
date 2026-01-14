@@ -19,6 +19,39 @@ class TestImputeUtils(unittest.TestCase):
         self.spark = utils.get_spark()
 
 
+class ConvertCareHomeRatiosToPostsTests(TestImputeUtils):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.convert_care_home_ratios_to_posts_rows,
+            Schemas.convert_care_home_ratios_to_posts_schema,
+        )
+        self.returned_df = job.convert_care_home_ratios_to_posts(
+            self.test_df,
+            IndCQC.banded_bed_ratio_rolling_average_model,
+            IndCQC.posts_rolling_average_model,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_convert_care_home_ratios_to_posts_rows,
+            Schemas.convert_care_home_ratios_to_posts_schema,
+        )
+
+    def test_returned_columns_match_original_data_columns(self):
+        self.assertEqual(self.returned_df.columns, self.test_df.columns)
+
+    def test_returned_column_values_match_expected_when_not_care_home(self):
+        returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        expected_data = self.expected_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i],
+                expected_data[i],
+                f"Returned row {i} does not match expected",
+            )
+
+
 class CombineCareHomeAndNonResValuesIntoSingleColumnTests(TestImputeUtils):
     def setUp(self) -> None:
         super().setUp()
