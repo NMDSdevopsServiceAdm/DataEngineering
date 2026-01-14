@@ -15,7 +15,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res
     combine_non_res_with_and_without_dormancy_models,
 )
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
-    merge_model_predictions,
+    join_model_predictions,
 )
 from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
 from utils import utils
@@ -102,17 +102,17 @@ def main(bucket_name: str, source: str, destination: str) -> DataFrame:
 
     estimate_filled_posts_df = utils.read_from_parquet(source, ind_cqc_columns)
 
-    estimate_filled_posts_df = merge_model_predictions(
+    estimate_filled_posts_df = join_model_predictions(
         estimate_filled_posts_df,
         bucket_name,
         IndCQC.care_home_model,
     )
-    estimate_filled_posts_df = merge_model_predictions(
+    estimate_filled_posts_df = join_model_predictions(
         estimate_filled_posts_df,
         bucket_name,
         IndCQC.non_res_with_dormancy_model,
     )
-    estimate_filled_posts_df = merge_model_predictions(
+    estimate_filled_posts_df = join_model_predictions(
         estimate_filled_posts_df,
         bucket_name,
         IndCQC.non_res_without_dormancy_model,

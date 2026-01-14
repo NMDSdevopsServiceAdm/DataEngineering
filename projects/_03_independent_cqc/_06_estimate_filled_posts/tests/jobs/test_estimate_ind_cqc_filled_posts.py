@@ -32,12 +32,12 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.merge_columns_in_order")
     @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
     @patch(f"{PATCH_PATH}.combine_non_res_with_and_without_dormancy_models")
-    @patch(f"{PATCH_PATH}.merge_model_predictions")
+    @patch(f"{PATCH_PATH}.join_model_predictions")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
-        merge_model_predictions_patch: Mock,
+        join_model_predictions_patch: Mock,
         combine_non_res_with_and_without_dormancy_models_patch: Mock,
         model_imputation_with_extrapolation_and_interpolation: Mock,
         merge_columns_in_order_mock: Mock,
@@ -53,7 +53,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 4)
-        self.assertEqual(merge_model_predictions_patch.call_count, 3)
+        self.assertEqual(join_model_predictions_patch.call_count, 3)
         self.assertEqual(
             combine_non_res_with_and_without_dormancy_models_patch.call_count, 1
         )
