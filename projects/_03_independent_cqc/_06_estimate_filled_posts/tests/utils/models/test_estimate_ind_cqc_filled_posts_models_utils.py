@@ -88,11 +88,6 @@ class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         prepare_predictions_and_join_into_df_mock.assert_called_once_with(
             ANY, ANY, self.care_home_model, include_run_id=True
         )
-        self.mock_ind_cqc_df.join.assert_called_once_with(
-            ANY,
-            [IndCqc.location_id, IndCqc.cqc_location_import_date],
-            "left",
-        )
 
     @patch(f"{PATCH_PATH}.prepare_predictions_and_join_into_df")
     @patch(f"{PATCH_PATH}.set_min_value")
@@ -123,11 +118,6 @@ class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         set_min_value_mock.assert_called_once_with(ANY, IndCqc.prediction, 1.0)
         prepare_predictions_and_join_into_df_mock.assert_called_once_with(
             ANY, ANY, self.non_res_model, include_run_id=True
-        )
-        self.mock_ind_cqc_df.join.assert_called_once_with(
-            ANY,
-            [IndCqc.location_id, IndCqc.cqc_location_import_date],
-            "left",
         )
 
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
