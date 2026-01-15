@@ -41,67 +41,10 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.ind_cqc_pipeline_columns import (
     PrimaryServiceRateOfChangeColumns as RoC_TempCol,
 )
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     MainJobRoleLabels,
 )
-
-
-@dataclass
-class MergeIndCQCData:
-    clean_cqc_location_for_merge_schema = StructType(
-        [
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.cqc_sector, StringType(), True),
-            StructField(CQCLClean.care_home, StringType(), True),
-            StructField(CQCLClean.number_of_beds, IntegerType(), True),
-        ]
-    )
-
-    data_to_merge_without_care_home_col_schema = StructType(
-        [
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-            StructField(AWPClean.location_id, StringType(), True),
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField(AWPClean.total_staff, IntegerType(), True),
-        ]
-    )
-    expected_merged_without_care_home_col_schema = StructType(
-        [
-            StructField(CQCLClean.location_id, StringType(), True),
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCLClean.cqc_sector, StringType(), True),
-            StructField(CQCLClean.care_home, StringType(), True),
-            StructField(CQCLClean.number_of_beds, IntegerType(), True),
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField(AWPClean.total_staff, IntegerType(), True),
-        ]
-    )
-
-    data_to_merge_with_care_home_col_schema = StructType(
-        [
-            StructField(CQCPIRClean.location_id, StringType(), False),
-            StructField(CQCPIRClean.care_home, StringType(), True),
-            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-            StructField(
-                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
-            ),
-        ]
-    )
-    expected_merged_with_care_home_col_schema = StructType(
-        [
-            *clean_cqc_location_for_merge_schema,
-            StructField(
-                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
-            ),
-            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-        ]
-    )
 
 
 @dataclass

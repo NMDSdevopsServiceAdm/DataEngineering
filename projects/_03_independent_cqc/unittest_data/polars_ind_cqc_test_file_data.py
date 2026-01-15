@@ -3,7 +3,11 @@ from datetime import date
 
 import numpy as np
 
-from utils.column_values.categorical_column_values import CareHome, MainJobRoleLabels
+from utils.column_values.categorical_column_values import (
+    CareHome,
+    MainJobRoleLabels,
+    Sector,
+)
 
 
 @dataclass
@@ -345,3 +349,96 @@ class EstimateIndCqcFilledPostsByJobRoleUtilsData:
         ),
         (10, 5, None, 20),
     ]
+
+
+@dataclass
+class MergeIndCQCData:
+    cqc_location_data = [
+        ("1-001", date(2024, 1, 1), "Y", Sector.independent),
+        ("1-002", date(2024, 1, 1), "Y", Sector.local_authority),
+        ("1-003", date(2024, 1, 1), "N", Sector.independent),
+    ]
+    cqc_pir_data = [
+        ("1-001", date(2024, 1, 1), "Y", "pir_value"),
+        ("1-003", date(2024, 1, 1), "N", "pir_value"),
+    ]
+    ascwds_workplace_data = [
+        ("1-001", date(2024, 1, 1), "ascwds_value"),
+        ("1-003", date(2024, 1, 1), "ascwds_value"),
+    ]
+    ct_non_res_data = [
+        ("1-001", date(2024, 1, 1), "Y", "ct_non_res_value"),
+        ("1-003", date(2024, 1, 1), "N", "ct_non_res_value"),
+    ]
+    ct_care_home_data = [
+        ("1-001", date(2024, 1, 1), "Y", "ct_care_home_value"),
+        ("1-003", date(2024, 1, 1), "N", "ct_care_home_value"),
+    ]
+    # fmt: off
+    expected_data = [
+        ("1-001", date(2024, 1, 1), "Y", Sector.independent, date(2024, 1, 1), "pir_value", date(2024, 1, 1), "ascwds_value", date(2024, 1, 1), "ct_non_res_value", date(2024, 1, 1), "ct_care_home_value"),
+        ("1-003", date(2024, 1, 1), "N", Sector.independent, date(2024, 1, 1), "pir_value", date(2024, 1, 1), "ascwds_value", date(2024, 1, 1), "ct_non_res_value", date(2024, 1, 1), "ct_care_home_value"),
+    ]
+    # fmt: on
+
+
+@dataclass
+class MergeUtilsData:
+    # fmt: off
+    clean_cqc_location_for_merge_rows = [
+        ("1-001", date(2024, 1, 1), Sector.independent, "Y", 10),
+        ("1-002", date(2024, 1, 1), Sector.independent, "N", None),
+        ("1-003", date(2024, 1, 1), Sector.independent, "N", None),
+        ("1-001", date(2024, 2, 1), Sector.independent, "Y", 10),
+        ("1-002", date(2024, 2, 1), Sector.independent, "N", None),
+        ("1-003", date(2024, 2, 1), Sector.independent, "N", None),
+        ("1-001", date(2024, 3, 1), Sector.independent, "Y", 10),
+        ("1-002", date(2024, 3, 1), Sector.independent, "N", None),
+        ("1-003", date(2024, 3, 1), Sector.independent, "N", None),
+    ]
+    # fmt: on
+
+    data_to_merge_without_care_home_col_rows = [
+        ("1-001", date(2024, 1, 1), "1", 1),
+        ("1-003", date(2024, 1, 1), "3", 2),
+        ("1-001", date(2024, 1, 5), "1", 3),
+        ("1-001", date(2024, 1, 9), "1", 4),
+        ("1-003", date(2024, 1, 9), "3", 5),
+        ("1-003", date(2024, 3, 1), "4", 6),
+    ]
+
+    # fmt: off
+    expected_merged_without_care_home_col_rows = [
+        ("1-001", date(2024, 1, 1), Sector.independent, "Y", 10, date(2024, 1, 1), "1", 1),
+        ("1-002", date(2024, 1, 1), Sector.independent, "N", None, date(2024, 1, 1), None, None),
+        ("1-003", date(2024, 1, 1), Sector.independent, "N", None, date(2024, 1, 1), "3", 2),
+        ("1-001", date(2024, 2, 1), Sector.independent, "Y", 10, date(2024, 1, 9), "1", 4),
+        ("1-002", date(2024, 2, 1), Sector.independent, "N", None, date(2024, 1, 9), None, None),
+        ("1-003", date(2024, 2, 1), Sector.independent, "N", None, date(2024, 1, 9), "3", 5),
+        ("1-001", date(2024, 3, 1), Sector.independent, "Y", 10, date(2024, 3, 1), None, None),
+        ("1-002", date(2024, 3, 1), Sector.independent, "N", None, date(2024, 3, 1), None, None),
+        ("1-003", date(2024, 3, 1), Sector.independent, "N", None, date(2024, 3, 1), "4", 6),
+    ]
+    # fmt: on
+
+    data_to_merge_with_care_home_col_rows = [
+        ("1-001", "Y", date(2024, 1, 1), 10),
+        ("1-002", "N", date(2024, 1, 1), 20),
+        ("1-003", "Y", date(2024, 1, 1), 30),
+        ("1-001", "Y", date(2024, 2, 1), 1),
+        ("1-002", "N", date(2024, 2, 1), 4),
+    ]
+
+    # fmt: off
+    expected_merged_with_care_home_col_rows = [
+        ("1-001", date(2024, 1, 1), Sector.independent, "Y", 10, date(2024, 1, 1), 10),
+        ("1-002", date(2024, 1, 1), Sector.independent, "N", None, date(2024, 1, 1), 20),
+        ("1-003", date(2024, 1, 1), Sector.independent, "N", None, date(2024, 1, 1), None),
+        ("1-001", date(2024, 2, 1), Sector.independent, "Y", 10, date(2024, 2, 1), 1),
+        ("1-002", date(2024, 2, 1), Sector.independent, "N", None, date(2024, 2, 1), 4),
+        ("1-003", date(2024, 2, 1), Sector.independent, "N", None, date(2024, 2, 1), None),
+        ("1-001", date(2024, 3, 1), Sector.independent, "Y", 10, date(2024, 2, 1), 1),
+        ("1-002", date(2024, 3, 1), Sector.independent, "N", None, date(2024, 2, 1), 4),
+        ("1-003", date(2024, 3, 1), Sector.independent, "N", None, date(2024, 2, 1), None),
+    ]
+    # fmt: on

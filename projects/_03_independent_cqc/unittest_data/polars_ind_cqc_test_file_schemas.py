@@ -2,6 +2,21 @@ from dataclasses import dataclass
 
 import polars as pl
 
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
+)
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerNonResCleanColumns as CTNRClean,
+)
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
+    CqcPIRCleanedColumns as CQCPIRClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
@@ -212,5 +227,112 @@ class EstimateIndCqcFilledPostsByJobRoleUtilsSchemas:
         + [
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.ascwds_job_role_counts, pl.Int64()),
+        ]
+    )
+
+
+@dataclass
+class MergeIndCQCSchemas:
+    cqc_location_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.care_home, pl.String()),
+            (CQCLClean.cqc_sector, pl.String()),
+        ]
+    )
+    cqc_pir_schema = pl.Schema(
+        [
+            (CQCPIRClean.location_id, pl.String()),
+            (CQCPIRClean.cqc_pir_import_date, pl.Date()),
+            (CQCPIRClean.care_home, pl.String()),
+            ("pir_col", pl.String()),
+        ]
+    )
+    ascwds_workplace_schema = pl.Schema(
+        [
+            (AWPClean.location_id, pl.String()),
+            (AWPClean.ascwds_workplace_import_date, pl.Date()),
+            ("ascwds_col", pl.String()),
+        ]
+    )
+    ct_non_res_schema = pl.Schema(
+        [
+            (CTNRClean.cqc_id, pl.String()),
+            (CTNRClean.ct_non_res_import_date, pl.Date()),
+            (CQCPIRClean.care_home, pl.String()),
+            ("ct_non_res_col", pl.String()),
+        ]
+    )
+    ct_care_home_schema = pl.Schema(
+        [
+            (CTCHClean.cqc_id, pl.String()),
+            (CTCHClean.ct_care_home_import_date, pl.Date()),
+            (CQCPIRClean.care_home, pl.String()),
+            ("ct_care_home_col", pl.String()),
+        ]
+    )
+    expected_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.cqc_sector, pl.String()),
+            (IndCQC.cqc_pir_import_date, pl.Date()),
+            ("pir_col", pl.String()),
+            (IndCQC.ascwds_workplace_import_date, pl.Date()),
+            ("ascwds_col", pl.String()),
+            (IndCQC.ct_non_res_import_date, pl.Date()),
+            ("ct_non_res_col", pl.String()),
+            (IndCQC.ct_care_home_import_date, pl.Date()),
+            ("ct_care_home_col", pl.String()),
+        ]
+    )
+
+
+@dataclass
+class MergeUtilsSchemas:
+    clean_cqc_location_for_merge_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.cqc_sector, pl.String()),
+            (CQCLClean.care_home, pl.String()),
+            (CQCLClean.number_of_beds, pl.Int64()),
+        ]
+    )
+
+    data_to_merge_without_care_home_col_schema = pl.Schema(
+        [
+            (AWPClean.location_id, pl.String()),
+            (AWPClean.ascwds_workplace_import_date, pl.Date()),
+            (AWPClean.establishment_id, pl.String()),
+            (AWPClean.total_staff, pl.Int64()),
+        ]
+    )
+
+    expected_merged_without_care_home_col_schema = pl.Schema(
+        list(clean_cqc_location_for_merge_schema.items())
+        + [
+            (AWPClean.ascwds_workplace_import_date, pl.Date()),
+            (AWPClean.establishment_id, pl.String()),
+            (AWPClean.total_staff, pl.Int64()),
+        ]
+    )
+
+    data_to_merge_with_care_home_col_schema = pl.Schema(
+        [
+            (CQCPIRClean.location_id, pl.String()),
+            (CQCPIRClean.care_home, pl.String()),
+            (CQCPIRClean.cqc_pir_import_date, pl.Date()),
+            (CQCPIRClean.pir_people_directly_employed_cleaned, pl.Int64()),
+        ]
+    )
+
+    expected_merged_with_care_home_col_schema = pl.Schema(
+        list(clean_cqc_location_for_merge_schema.items())
+        + [
+            (CQCPIRClean.cqc_pir_import_date, pl.Date()),
+            (CQCPIRClean.pir_people_directly_employed_cleaned, pl.Int64()),
         ]
     )
