@@ -142,9 +142,9 @@
                       "Type": "Parallel",
                       "Branches": [
                         {
-                          "StartAt": "Build features - care home",
+                          "StartAt": "Features - care home (CH)",
                           "States": {
-                            "Build features - care home": {
+                            "Features - care home (CH)": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -171,15 +171,15 @@
                                   ]
                                 }
                               },
-                              "Next": "Train model and validate features - care home"
+                              "Next": "Train CH model and predict"
                             },
-                            "Train model and validate features - care home": {
+                            "Train CH model and predict": {
                               "Type": "Parallel",
                               "Branches": [
                                 {
-                                  "StartAt": "Train model - care home",
+                                  "StartAt": "Train CH model",
                                   "States": {
-                                    "Train model - care home": {
+                                    "Train CH model": {
                                     "Type": "Task",
                                     "Resource": "arn:aws:states:::ecs:runTask.sync",
                                     "Parameters": {
@@ -206,9 +206,9 @@
                                         ]
                                       }
                                     },
-                                    "Next": "Predict - care home"
+                                    "Next": "Predict CH"
                                   },
-                                  "Predict - care home": {
+                                  "Predict CH": {
                                     "Type": "Task",
                                     "Resource": "arn:aws:states:::ecs:runTask.sync",
                                     "Parameters": {
@@ -240,9 +240,9 @@
                                   }
                                 },
                                 {
-                                  "StartAt": "Validate features - care home",
+                                  "StartAt": "Validate CH features",
                                   "States": {
-                                    "Validate features - care home": {
+                                    "Validate CH features": {
                                       "Type": "Pass",
                                       "End": true
                                     }
@@ -254,9 +254,9 @@
                           }
                         },
                         {
-                          "StartAt": "Build features - non-residential without dormancy",
+                          "StartAt": "Features - non-res without dormancy (NRwoD)",
                           "States": {
-                            "Build features - non-residential without dormancy": {
+                            "Features - non-res without dormancy (NRwoD)": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -283,15 +283,15 @@
                                   ]
                                 }
                               },
-                              "Next": "Train model and validate features - non-residential without dormancy"
+                              "Next": "Train NRwoD model and predict"
                             },
-                            "Train model and validate features - non-residential without dormancy": {
+                            "Train NRwoD model and predict": {
                               "Type": "Parallel",
                               "Branches": [
                                 {
-                                  "StartAt": "Train model - non-residential without dormancy",
+                                  "StartAt": "Train NRwoD model",
                                   "States": {
-                                    "Train model - non-residential without dormancy": {
+                                    "Train NRwoD model": {
                                     "Type": "Task",
                                     "Resource": "arn:aws:states:::ecs:runTask.sync",
                                     "Parameters": {
@@ -318,9 +318,9 @@
                                         ]
                                       }
                                     },
-                                    "Next": "Predict - non-residential without dormancy"
+                                    "Next": "Predict - NRwoD"
                                   },
-                                  "Predict - non-residential without dormancy": {
+                                  "Predict - NRwoD": {
                                     "Type": "Task",
                                     "Resource": "arn:aws:states:::ecs:runTask.sync",
                                     "Parameters": {
@@ -352,9 +352,9 @@
                                   }
                                 },
                                 {
-                                  "StartAt": "Validate features - non-residential without dormancy",
+                                  "StartAt": "Validate NRwoD features",
                                   "States": {
-                                    "Validate features - non-residential without dormancy": {
+                                    "Validate NRwoD features": {
                                       "Type": "Pass",
                                       "End": true
                                     }
@@ -366,9 +366,9 @@
                           }
                         },
                         {
-                          "StartAt": "Build features - non-residential with dormancy",
+                          "StartAt": "Features - non-res with dormancy (NRwD)",
                           "States": {
-                            "Build features - non-residential with dormancy": {
+                            "Features - non-res with dormancy (NRwD)": {
                               "Type": "Task",
                               "Resource": "arn:aws:states:::ecs:runTask.sync",
                               "Parameters": {
@@ -395,15 +395,15 @@
                                   ]
                                 }
                               },
-                              "Next": "Train model and validate features - non-residential with dormancy"
+                              "Next": "Train NRwD model and predict"
                             },
-                            "Train model and validate features - non-residential with dormancy": {
+                            "Train NRwD model and predict": {
                               "Type": "Parallel",
                               "Branches": [
                                 {
-                                  "StartAt": "Train model - non-residential with dormancy",
+                                  "StartAt": "Train NRwD model",
                                   "States": {
-                                    "Train model - non-residential with dormancy": {
+                                    "Train NRwD model": {
                                     "Type": "Task",
                                     "Resource": "arn:aws:states:::ecs:runTask.sync",
                                     "Parameters": {
@@ -430,9 +430,9 @@
                                         ]
                                       }
                                     },
-                                    "Next": "Predict - non-residential with dormancy"
+                                    "Next": "Predict NRwD"
                                   },
-                                  "Predict - non-residential with dormancy": {
+                                  "Predict NRwD": {
                                     "Type": "Task",
                                     "Resource": "arn:aws:states:::ecs:runTask.sync",
                                     "Parameters": {
@@ -464,9 +464,9 @@
                                   }
                                 },
                                 {
-                                  "StartAt": "Validate features - non-residential with dormancy",
+                                  "StartAt": "Validate NRwD features",
                                   "States": {
-                                    "Validate features - non-residential with dormancy": {
+                                    "Validate NRwD features": {
                                       "Type": "Pass",
                                       "End": true
                                     }
