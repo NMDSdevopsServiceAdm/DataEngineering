@@ -68,7 +68,7 @@
             },
             "Impute and validate cleaned data": {
               "Type": "Parallel",
-              "Next": "Feature engineering and validate imputed data",
+              "Next": "Model retraining and validate imputed data",
               "Branches": [
                 {
                   "StartAt": "Impute IND CQC data",
@@ -108,45 +108,10 @@
                 }
               ]
             },
-            "Feature engineering and validate imputed data": {
+            "Model retraining and validate imputed data": {
               "Type": "Parallel",
               "Next": "Estimate filled posts",
               "Branches": [
-                {
-                  "StartAt": "Care home model features",
-                  "States": {
-                    "Care home model features": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${prepare_features_care_home_ind_cqc_job_name}",
-                        "Arguments": {
-                          "--ind_cqc_filled_posts_cleaned_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
-                          "--care_home_ind_cqc_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_care_home/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
-                  "StartAt": "Non residential model features",
-                  "States": {
-                    "Non residential model features": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${prepare_features_non_res_ascwds_ind_cqc_job_name}",
-                        "Arguments": {
-                          "--ind_cqc_filled_posts_cleaned_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
-                          "--with_dormancy_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_ascwds_with_dormancy/",
-                          "--without_dormancy_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_ascwds_without_dormancy/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
                 {
                   "StartAt": "Model Retraining step function placeholder",
                   "States": {

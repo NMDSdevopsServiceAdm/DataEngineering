@@ -92,8 +92,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     validate_cleaned_ind_cqc_data_job_name                            = module.validate_cleaned_ind_cqc_data_job.job_name
     impute_ind_cqc_ascwds_and_pir_job_name                            = module.impute_ind_cqc_ascwds_and_pir_job.job_name
     validate_imputed_ind_cqc_ascwds_and_pir_data_job_name             = module.validate_imputed_ind_cqc_ascwds_and_pir_data_job.job_name
-    prepare_features_care_home_ind_cqc_job_name                       = module.prepare_features_care_home_ind_cqc_job.job_name
-    prepare_features_non_res_ascwds_ind_cqc_job_name                  = module.prepare_features_non_res_ascwds_ind_cqc_job.job_name
     estimate_ind_cqc_filled_posts_job_name                            = module.estimate_ind_cqc_filled_posts_job.job_name
     validate_estimated_ind_cqc_filled_posts_data_job_name             = module.validate_estimated_ind_cqc_filled_posts_data_job.job_name
     estimate_ind_cqc_filled_posts_by_job_role_job_name                = module.estimate_ind_cqc_filled_posts_by_job_role_job.job_name
