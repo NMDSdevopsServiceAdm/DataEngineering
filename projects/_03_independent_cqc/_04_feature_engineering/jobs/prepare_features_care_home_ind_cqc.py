@@ -10,8 +10,6 @@ from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
     add_array_column_count,
     add_date_index_column,
     cap_integer_at_max_value,
-    expand_encode_and_extract_features,
-    vectorise_dataframe,
 )
 from projects._03_independent_cqc._04_feature_engineering.utils.value_labels import (
     RegionLabels,
@@ -60,64 +58,6 @@ def main(
         IndCQC.activity_count,
         max_value=3,
         new_col_name=IndCQC.activity_count_capped,
-    )
-
-    features_df, service_list = expand_encode_and_extract_features(
-        features_df,
-        IndCQC.services_offered,
-        ServicesLabels.care_home_labels_dict,
-        is_array_col=True,
-    )
-
-    features_df, specialisms_list = expand_encode_and_extract_features(
-        features_df,
-        IndCQC.specialisms_offered,
-        SpecialismsLabels.labels_dict,
-        is_array_col=True,
-    )
-
-    features_df, rui_indicators_list = expand_encode_and_extract_features(
-        features_df,
-        IndCQC.current_rural_urban_indicator_2011,
-        RuralUrbanLabels.care_home_labels_dict,
-        is_array_col=False,
-    )
-
-    features_df, region_list = expand_encode_and_extract_features(
-        features_df,
-        IndCQC.current_region,
-        RegionLabels.labels_dict,
-        is_array_col=False,
-    )
-
-    feature_list: List[str] = sorted(
-        [
-            IndCQC.activity_count_capped,
-            IndCQC.cqc_location_import_date_indexed,
-            IndCQC.number_of_beds,
-            IndCQC.banded_bed_ratio_rolling_average_model,
-            IndCQC.service_count_capped,
-        ]
-        + region_list
-        + rui_indicators_list
-        + service_list
-        + specialisms_list
-    )
-
-    vectorised_features_df = vectorise_dataframe(features_df, feature_list)
-
-    print(f"Number of features: {len(feature_list)}")
-    print(f"Length of feature df: {vectorised_features_df.count()}")
-
-    print(
-        f"Exporting vectorised_features_df as parquet to {care_home_ind_cqc_features_destination}"
-    )
-
-    utils.write_to_parquet(
-        vectorised_features_df,
-        care_home_ind_cqc_features_destination,
-        mode="overwrite",
-        partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
 
 

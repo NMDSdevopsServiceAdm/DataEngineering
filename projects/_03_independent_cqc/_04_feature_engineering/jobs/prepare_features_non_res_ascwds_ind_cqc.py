@@ -9,10 +9,8 @@ from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
     add_date_index_column,
     add_squared_column,
     cap_integer_at_max_value,
-    expand_encode_and_extract_features,
     filter_without_dormancy_features_to_pre_2025,
     group_rural_urban_sparse_categories,
-    vectorise_dataframe,
 )
 from projects._03_independent_cqc._04_feature_engineering.utils.value_labels import (
     RegionLabels,
@@ -60,41 +58,7 @@ def main(
         new_col_name=IndCQC.activity_count_capped,
     )
 
-    features_df, service_list = expand_encode_and_extract_features(
-        features_df,
-        IndCQC.services_offered,
-        ServicesLabels.non_res_labels_dict,
-        is_array_col=True,
-    )
-
-    features_df, specialisms_list = expand_encode_and_extract_features(
-        features_df,
-        IndCQC.specialisms_offered,
-        SpecialismsLabels.labels_dict,
-        is_array_col=True,
-    )
-
     features_df = group_rural_urban_sparse_categories(features_df)
-    features_df, rui_indicators_list = expand_encode_and_extract_features(
-        features_df,
-        IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
-        RuralUrbanLabels.non_res_labels_dict,
-        is_array_col=False,
-    )
-
-    features_df, region_list = expand_encode_and_extract_features(
-        features_df,
-        IndCQC.current_region,
-        RegionLabels.labels_dict,
-        is_array_col=False,
-    )
-
-    features_df, related_location = expand_encode_and_extract_features(
-        features_df,
-        IndCQC.related_location,
-        RelatedLocationLabels.labels_dict,
-        is_array_col=False,
-    )
 
     # Without dormancy features
 
@@ -109,31 +73,6 @@ def main(
         IndCQC.time_registered,
         max_value=48,
         new_col_name=IndCQC.time_registered_capped_at_four_years,
-    )
-
-    without_dormancy_feature_list: List[str] = sorted(
-        [
-            IndCQC.activity_count_capped,
-            IndCQC.cqc_location_import_date_indexed,
-            IndCQC.posts_rolling_average_model,
-            IndCQC.service_count_capped,
-            IndCQC.time_registered_capped_at_four_years,
-        ]
-        + related_location
-        + service_list
-        + specialisms_list
-        + region_list
-        + rui_indicators_list
-    )
-
-    vectorised_features_without_dormancy_df = vectorise_dataframe(
-        without_dormancy_features_df,
-        without_dormancy_feature_list,
-    )
-
-    print(f"number of features without dormancy: {len(without_dormancy_feature_list)}")
-    print(
-        f"length of features without dormancy df: {vectorised_features_without_dormancy_df.count()}"
     )
 
     # With dormancy features
@@ -154,50 +93,12 @@ def main(
         999, subset=[IndCQC.time_since_dormant]
     )
 
-    with_dormancy_feature_list: List[str] = sorted(
-        [
-            IndCQC.activity_count_capped,
-            IndCQC.cqc_location_import_date_indexed,
-            IndCQC.cqc_location_import_date_indexed_squared,
-            IndCQC.posts_rolling_average_model,
-            IndCQC.service_count_capped,
-            IndCQC.time_registered,
-            IndCQC.time_since_dormant,
-        ]
-        + related_location
-        + service_list
-        + specialisms_list
-        + region_list
-        + rui_indicators_list
-    )
-
-    vectorised_features_with_dormancy_df = vectorise_dataframe(
-        with_dormancy_features_df, with_dormancy_feature_list
-    )
-
-    print(f"number of features with dormancy: {len(with_dormancy_feature_list)}")
-    print(
-        f"length of features with dormancy df: {vectorised_features_with_dormancy_df.count()}"
-    )
-
     print(
         f"Exporting vectorised_features_without_dormancy_df as parquet to {without_dormancy_features_destination}"
-    )
-    utils.write_to_parquet(
-        vectorised_features_without_dormancy_df,
-        without_dormancy_features_destination,
-        mode="overwrite",
-        partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
 
     print(
         f"Exporting vectorised_features_with_dormancy_df as parquet to {with_dormancy_features_destination}"
-    )
-    utils.write_to_parquet(
-        vectorised_features_with_dormancy_df,
-        with_dormancy_features_destination,
-        mode="overwrite",
-        partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
 
 

@@ -35,8 +35,6 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.vectorise_dataframe")
-    @patch(f"{PATCH_PATH}.expand_encode_and_extract_features")
     @patch(f"{PATCH_PATH}.cap_integer_at_max_value")
     @patch(f"{PATCH_PATH}.add_date_index_column")
     @patch(f"{PATCH_PATH}.add_array_column_count")
@@ -51,15 +49,9 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         add_array_column_count_mock: Mock,
         add_date_index_column_mock: Mock,
         cap_integer_at_max_value_mock: Mock,
-        expand_encode_and_extract_features_mock: Mock,
-        vectorise_dataframe_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_df
-        expand_encode_and_extract_features_mock.return_value = (
-            self.test_df,
-            ["some_feature"],
-        )
 
         job.main(
             self.IND_FILLED_POSTS_CLEANED_DIR,
@@ -71,8 +63,6 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         self.assertEqual(add_array_column_count_mock.call_count, 2)
         self.assertEqual(add_date_index_column_mock.call_count, 1)
         self.assertEqual(cap_integer_at_max_value_mock.call_count, 2)
-        self.assertEqual(expand_encode_and_extract_features_mock.call_count, 4)
-        self.assertEqual(vectorise_dataframe_mock.call_count, 1)
 
         write_to_parquet_mock.assert_called_once_with(
             ANY,

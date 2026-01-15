@@ -36,11 +36,9 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.add_squared_column")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_non_null_value")
-    @patch(f"{PATCH_PATH}.vectorise_dataframe")
     @patch(f"{PATCH_PATH}.add_date_index_column")
     @patch(f"{PATCH_PATH}.filter_without_dormancy_features_to_pre_2025")
     @patch(f"{PATCH_PATH}.group_rural_urban_sparse_categories")
-    @patch(f"{PATCH_PATH}.expand_encode_and_extract_features")
     @patch(f"{PATCH_PATH}.cap_integer_at_max_value")
     @patch(f"{PATCH_PATH}.add_array_column_count")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
@@ -51,20 +49,14 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         select_rows_with_value_mock: Mock,
         add_array_column_count_mock: Mock,
         cap_integer_at_max_value_mock: Mock,
-        expand_encode_and_extract_features_mock: Mock,
         group_rural_urban_sparse_categories_mock: Mock,
         filter_without_dormancy_features_to_pre_2025_mock: Mock,
         add_date_index_column_mock: Mock,
-        vectorise_dataframe_mock: Mock,
         select_rows_with_non_null_value_mock: Mock,
         add_squared_column_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_df
-        expand_encode_and_extract_features_mock.return_value = (
-            self.test_df,
-            ["some_feature"],
-        )
 
         job.main(
             self.CLEANED_IND_CQC_TEST_DATA,
@@ -90,11 +82,9 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         select_rows_with_value_mock.assert_called_once()
         self.assertEqual(add_array_column_count_mock.call_count, 2)
         self.assertEqual(cap_integer_at_max_value_mock.call_count, 3)
-        self.assertEqual(expand_encode_and_extract_features_mock.call_count, 5)
         group_rural_urban_sparse_categories_mock.assert_called_once()
         filter_without_dormancy_features_to_pre_2025_mock.assert_called_once()
         self.assertEqual(add_date_index_column_mock.call_count, 2)
-        self.assertEqual(vectorise_dataframe_mock.call_count, 2)
         select_rows_with_non_null_value_mock.assert_called_once()
         add_squared_column_mock.assert_called_once()
         write_to_parquet_mock.assert_has_calls(write_to_parquet_calls)

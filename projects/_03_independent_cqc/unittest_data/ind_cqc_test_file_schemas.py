@@ -1834,36 +1834,6 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcSchema:
 
 @dataclass
 class ModelFeatures:
-    expand_encode_and_extract_features_when_not_array_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField("categories", StringType(), True),
-        ]
-    )
-    expected_expand_encode_and_extract_features_when_not_array_schema = StructType(
-        [
-            *expand_encode_and_extract_features_when_not_array_schema,
-            StructField("has_A", IntegerType(), True),
-            StructField("has_B", IntegerType(), True),
-            StructField("has_C", IntegerType(), True),
-        ]
-    )
-
-    expand_encode_and_extract_features_when_is_array_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField("categories", ArrayType(StringType()), True),
-        ]
-    )
-    expected_expand_encode_and_extract_features_when_is_array_schema = StructType(
-        [
-            *expand_encode_and_extract_features_when_is_array_schema,
-            StructField("has_A", IntegerType(), True),
-            StructField("has_B", IntegerType(), True),
-            StructField("has_C", IntegerType(), True),
-        ]
-    )
-
     cap_integer_at_max_value_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
