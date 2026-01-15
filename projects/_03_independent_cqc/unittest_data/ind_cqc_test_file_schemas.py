@@ -1701,67 +1701,6 @@ class ValidateCleanedIndCqcData:
 
 
 @dataclass
-class CareHomeFeaturesSchema:
-    clean_merged_data_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.services_offered, ArrayType(StringType()), True),
-            StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
-            StructField(
-                IndCQC.regulated_activities_offered, ArrayType(StringType()), True
-            ),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(
-                IndCQC.banded_bed_ratio_rolling_average_model, DoubleType(), True
-            ),
-            StructField(
-                IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
-            ),
-            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class NonResAscwdsFeaturesSchema(object):
-    basic_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.imputed_registration_date, DateType(), False),
-            StructField(IndCQC.time_registered, IntegerType(), False),
-            StructField(IndCQC.time_since_dormant, IntegerType(), True),
-            StructField(IndCQC.current_region, StringType(), False),
-            StructField(IndCQC.dormancy, StringType(), True),
-            StructField(IndCQC.services_offered, ArrayType(StringType()), True),
-            StructField(
-                IndCQC.regulated_activities_offered, ArrayType(StringType()), True
-            ),
-            StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
-            StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
-            StructField(IndCQC.imputed_filled_post_model, DoubleType(), True),
-            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), False),
-            StructField(IndCQC.related_location, StringType(), True),
-            StructField(Keys.year, StringType(), False),
-            StructField(Keys.month, StringType(), False),
-            StructField(Keys.day, StringType(), False),
-            StructField(Keys.import_date, StringType(), False),
-        ]
-    )
-
-
-@dataclass
 class ValidateCareHomeIndCqcFeaturesData:
     cleaned_ind_cqc_schema = StructType(
         [
