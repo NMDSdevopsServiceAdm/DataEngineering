@@ -2,7 +2,7 @@ from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
-    insert_predictions_into_pipeline,
+    join_model_predictions,
     set_min_value,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
@@ -37,10 +37,11 @@ def model_non_res_with_dormancy(
 
     predictions_df = set_min_value(predictions_df, IndCqc.prediction, 1.0)
 
-    locations_df = insert_predictions_into_pipeline(
+    locations_df = join_model_predictions(
         locations_df,
         predictions_df,
         IndCqc.non_res_with_dormancy_model,
+        include_run_id=False,
     )
 
     return locations_df

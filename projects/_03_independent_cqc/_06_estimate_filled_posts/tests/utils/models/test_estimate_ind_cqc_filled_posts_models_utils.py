@@ -25,49 +25,7 @@ class EstimateFilledPostsModelsUtilsTests(unittest.TestCase):
         self.spark = utils.get_spark()
 
 
-class InsertPredictionsIntoPipelineTest(EstimateFilledPostsModelsUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.cleaned_cqc_ind_df = self.spark.createDataFrame(
-            Data.cleaned_cqc_rows, Schemas.cleaned_cqc_schema
-        )
-        self.predictions_df = self.spark.createDataFrame(
-            Data.predictions_rows, Schemas.predictions_schema
-        )
-        self.returned_df = job.insert_predictions_into_pipeline(
-            self.cleaned_cqc_ind_df,
-            self.predictions_df,
-            IndCqc.care_home_model,
-        )
-
-        warnings.filterwarnings("ignore", category=ResourceWarning)
-
-    def test_insert_predictions_into_pipeline_adds_extra_column(self):
-        self.assertTrue(IndCqc.care_home_model in self.returned_df.columns)
-
-    def test_insert_predictions_into_pipeline_does_so_when_join_matches(self):
-        df = self.returned_df
-
-        expected_df = df.where(
-            (df[IndCqc.location_id] == "1-000000001")
-            & (df[IndCqc.cqc_location_import_date] == date(2022, 3, 29))
-        ).collect()[0]
-
-        self.assertAlmostEqual(expected_df[IndCqc.care_home_model], 56.89, places=2)
-
-    def test_insert_predictions_into_pipeline_returns_null_if_no_match(self):
-        df = self.returned_df
-
-        expected_df = df.where(
-            (df[IndCqc.location_id] == "1-000000001")
-            & (df[IndCqc.cqc_location_import_date] == date(2022, 2, 20))
-        ).collect()[0]
-
-        self.assertIsNone(expected_df[IndCqc.estimate_filled_posts])
-
-
-class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
+class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -77,30 +35,30 @@ class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         self.mock_predictions_df = Mock(name="predictions_df")
 
         self.ind_cqc_df = self.spark.createDataFrame(
-            Data.join_model_ind_cqc_rows, Schemas.join_model_ind_cqc_schema
+            Data.enrich_model_ind_cqc_rows, Schemas.enrich_model_ind_cqc_schema
         )
 
         self.care_home_model = Schemas.test_care_home_model_name
         self.care_home_pred_df = self.spark.createDataFrame(
-            Data.join_model_predictions_care_home_rows,
-            Schemas.join_model_predictions_care_home_schema,
+            Data.enrich_model_predictions_care_home_rows,
+            Schemas.enrich_model_predictions_care_home_schema,
         )
-        self.expected_joined_care_home_df = self.spark.createDataFrame(
-            Data.expected_join_model_ind_cqc_care_home_rows,
-            Schemas.expected_join_model_ind_cqc_care_home_schema,
+        self.expected_enriched_care_home_df = self.spark.createDataFrame(
+            Data.expected_enrich_model_ind_cqc_care_home_rows,
+            Schemas.expected_enrich_model_ind_cqc_care_home_schema,
         )
 
         self.non_res_model = Schemas.test_non_res_model_name
         self.non_res_pred_df = self.spark.createDataFrame(
-            Data.join_model_predictions_non_res_rows,
-            Schemas.join_model_predictions_non_res_schema,
+            Data.enrich_model_predictions_non_res_rows,
+            Schemas.enrich_model_predictions_non_res_schema,
         )
-        self.expected_joined_non_res_df = self.spark.createDataFrame(
-            Data.expected_join_model_ind_cqc_non_res_rows,
-            Schemas.expected_join_model_ind_cqc_non_res_schema,
+        self.expected_enriched_non_res_df = self.spark.createDataFrame(
+            Data.expected_enrich_model_ind_cqc_non_res_rows,
+            Schemas.expected_enrich_model_ind_cqc_non_res_schema,
         )
 
-    @patch(f"{PATCH_PATH}.prepare_predictions_for_join")
+    @patch(f"{PATCH_PATH}.join_model_predictions")
     @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.calculate_filled_posts_from_beds_and_ratio")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
@@ -111,11 +69,11 @@ class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         read_from_parquet_mock: Mock,
         calculate_filled_posts_mock: Mock,
         set_min_value_mock: Mock,
-        prepare_predictions_for_join_mock: Mock,
+        join_model_predictions_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.mock_predictions_df
 
-        job.join_model_predictions(
+        job.enrich_with_model_predictions(
             self.mock_ind_cqc_df, self.test_bucket, self.care_home_model
         )
 
@@ -127,16 +85,11 @@ class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         )
         calculate_filled_posts_mock.assert_called_once()
         set_min_value_mock.assert_called_once_with(ANY, IndCqc.prediction, 1.0)
-        prepare_predictions_for_join_mock.assert_called_once_with(
-            ANY, self.care_home_model
-        )
-        self.mock_ind_cqc_df.join.assert_called_once_with(
-            ANY,
-            [IndCqc.location_id, IndCqc.cqc_location_import_date],
-            "left",
+        join_model_predictions_mock.assert_called_once_with(
+            ANY, ANY, self.care_home_model, include_run_id=True
         )
 
-    @patch(f"{PATCH_PATH}.prepare_predictions_for_join")
+    @patch(f"{PATCH_PATH}.join_model_predictions")
     @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.calculate_filled_posts_from_beds_and_ratio")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
@@ -147,11 +100,11 @@ class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         read_from_parquet_mock: Mock,
         calculate_filled_posts_mock: Mock,
         set_min_value_mock: Mock,
-        prepare_predictions_for_join_mock: Mock,
+        join_model_predictions_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.mock_predictions_df
 
-        job.join_model_predictions(
+        job.enrich_with_model_predictions(
             self.mock_ind_cqc_df, self.test_bucket, self.non_res_model
         )
 
@@ -163,13 +116,8 @@ class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         )
         calculate_filled_posts_mock.assert_not_called()
         set_min_value_mock.assert_called_once_with(ANY, IndCqc.prediction, 1.0)
-        prepare_predictions_for_join_mock.assert_called_once_with(
-            ANY, self.non_res_model
-        )
-        self.mock_ind_cqc_df.join.assert_called_once_with(
-            ANY,
-            [IndCqc.location_id, IndCqc.cqc_location_import_date],
-            "left",
+        join_model_predictions_mock.assert_called_once_with(
+            ANY, ANY, self.non_res_model, include_run_id=True
         )
 
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
@@ -181,14 +129,16 @@ class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
     ):
         read_from_parquet_mock.return_value = self.care_home_pred_df
 
-        returned_df = job.join_model_predictions(
+        returned_df = job.enrich_with_model_predictions(
             self.ind_cqc_df, self.test_bucket, self.care_home_model
         )
 
-        self.assertEqual(returned_df.columns, self.expected_joined_care_home_df.columns)
+        self.assertEqual(
+            returned_df.columns, self.expected_enriched_care_home_df.columns
+        )
         self.assertEqual(
             returned_df.sort(IndCqc.location_id).collect(),
-            self.expected_joined_care_home_df.collect(),
+            self.expected_enriched_care_home_df.collect(),
         )
 
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
@@ -200,14 +150,14 @@ class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
     ):
         read_from_parquet_mock.return_value = self.non_res_pred_df
 
-        returned_df = job.join_model_predictions(
+        returned_df = job.enrich_with_model_predictions(
             self.ind_cqc_df, self.test_bucket, self.non_res_model
         )
 
-        self.assertEqual(returned_df.columns, self.expected_joined_non_res_df.columns)
+        self.assertEqual(returned_df.columns, self.expected_enriched_non_res_df.columns)
         self.assertEqual(
             returned_df.sort(IndCqc.location_id).collect(),
-            self.expected_joined_non_res_df.collect(),
+            self.expected_enriched_non_res_df.collect(),
         )
 
 
@@ -280,27 +230,72 @@ class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class PreparePredictionsForJoinTests(EstimateFilledPostsModelsUtilsTests):
+class JoinModelPredictionsTests(EstimateFilledPostsModelsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.model_name = IndCqc.care_home_model
+        self.model_name = Schemas.join_test_model
 
-        self.test_df = self.spark.createDataFrame(
-            Data.prepare_predictions_for_join_rows,
-            Schemas.prepare_predictions_for_join_schema,
+        ind_cqc_df = self.spark.createDataFrame(
+            Data.join_ind_cqc_rows,
+            Schemas.join_ind_cqc_schema,
         )
-        self.returned_df = job.prepare_predictions_for_join(
-            self.test_df, self.model_name
-        )
-
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_prepare_predictions_for_join_rows,
-            Schemas.expected_prepare_predictions_for_join_schema,
+        predictions_df = self.spark.createDataFrame(
+            Data.join_prediction_rows,
+            Schemas.join_prediction_schema,
         )
 
-    def test_function_renames_and_selects_columns_correctly(self):
-        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+        self.returned_without_run_id_df = job.join_model_predictions(
+            ind_cqc_df, predictions_df, self.model_name, include_run_id=False
+        )
+        self.expected_without_run_id_df = self.spark.createDataFrame(
+            Data.expected_join_without_run_id_rows,
+            Schemas.expected_join_without_run_id_schema,
+        )
 
-    def test_function_preserves_row_count(self):
-        self.assertEqual(self.returned_df.count(), self.test_df.count())
+        self.returned_with_run_id_df = job.join_model_predictions(
+            ind_cqc_df, predictions_df, self.model_name, include_run_id=True
+        )
+        self.expected_with_run_id_df = self.spark.createDataFrame(
+            Data.expected_join_with_run_id_rows,
+            Schemas.expected_join_with_run_id_schema,
+        )
+
+    def test_returns_expected_columns_when_include_run_id_is_false(self):
+        self.assertEqual(
+            sorted(self.returned_without_run_id_df.columns),
+            sorted(self.expected_without_run_id_df.columns),
+        )
+
+    def test_returns_expected_values_when_include_run_id_is_false(self):
+        returned_data = self.returned_without_run_id_df.sort(
+            IndCqc.location_id, IndCqc.cqc_location_import_date
+        ).collect()
+        expected_data = self.expected_without_run_id_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertAlmostEqual(
+                returned_data[i][self.model_name], expected_data[i][self.model_name]
+            )
+
+    def test_returns_expected_columns_when_include_run_id_is_true(self):
+        self.assertEqual(
+            sorted(self.returned_with_run_id_df.columns),
+            sorted(self.expected_with_run_id_df.columns),
+        )
+
+    def test_returns_expected_values_when_include_run_id_is_true(self):
+        returned_data = self.returned_with_run_id_df.sort(
+            IndCqc.location_id, IndCqc.cqc_location_import_date
+        ).collect()
+        expected_data = self.expected_with_run_id_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertAlmostEqual(
+                returned_data[i][self.model_name],
+                expected_data[i][self.model_name],
+            )
+            self.assertEqual(
+                returned_data[i][f"{self.model_name}_run_id"],
+                expected_data[i][f"{self.model_name}_run_id"],
+            )

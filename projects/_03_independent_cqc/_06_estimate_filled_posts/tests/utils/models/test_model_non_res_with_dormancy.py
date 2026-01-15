@@ -36,12 +36,12 @@ class TestModelNonResWithDormancy(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    @patch(f"{PATCH_PATH}.insert_predictions_into_pipeline")
+    @patch(f"{PATCH_PATH}.join_model_predictions")
     @patch(f"{PATCH_PATH}.set_min_value")
     def test_model_non_res_with_dormancy_runs(
         self,
         set_min_value_mock: Mock,
-        insert_predictions_into_pipeline_mock: Mock,
+        join_model_predictions_mock: Mock,
     ):
         job.model_non_res_with_dormancy(
             self.non_res_with_dormancy_cleaned_ind_cqc_df,
@@ -50,7 +50,7 @@ class TestModelNonResWithDormancy(unittest.TestCase):
         )
 
         set_min_value_mock.assert_called_once()
-        insert_predictions_into_pipeline_mock.assert_called_once()
+        join_model_predictions_mock.assert_called_once()
 
     def test_model_non_res_with_dormancy_returns_expected_data(self):
         df = job.model_non_res_with_dormancy(

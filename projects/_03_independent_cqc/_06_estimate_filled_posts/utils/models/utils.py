@@ -7,38 +7,7 @@ from utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
-def insert_predictions_into_pipeline(
-    locations_df: DataFrame,
-    predictions_df: DataFrame,
-    model_column_name: str,
-) -> DataFrame:
-    """
-    Inserts model predictions into locations dataframe.
-
-    This function renames the model prediction column and performs a left join
-    to merge it into the locations dataframe based on matching 'location_id'
-    and 'cqc_location_import_date' values.
-
-    Args:
-        locations_df (DataFrame): A dataframe containing independent CQC data.
-        predictions_df (DataFrame): A dataframe containing model predictions.
-        model_column_name (str): The name of the column containing the model predictions.
-
-    Returns:
-        DataFrame: A dataframe with model predictions added.
-    """
-    predictions_df = predictions_df.select(
-        IndCqc.location_id, IndCqc.cqc_location_import_date, IndCqc.prediction
-    ).withColumnRenamed(IndCqc.prediction, model_column_name)
-
-    locations_with_predictions = locations_df.join(
-        predictions_df, [IndCqc.location_id, IndCqc.cqc_location_import_date], "left"
-    )
-
-    return locations_with_predictions
-
-
-def join_model_predictions(
+def enrich_with_model_predictions(
     ind_cqc_df: DataFrame, bucket_name: str, model_name: str
 ) -> DataFrame:
     """
@@ -70,10 +39,8 @@ def join_model_predictions(
 
     predictions_df = set_min_value(predictions_df, IndCqc.prediction, 1.0)
 
-    predictions_df = prepare_predictions_for_join(predictions_df, model_name)
-
-    ind_cqc_with_predictions_df = ind_cqc_df.join(
-        predictions_df, [IndCqc.location_id, IndCqc.cqc_location_import_date], "left"
+    ind_cqc_with_predictions_df = join_model_predictions(
+        ind_cqc_df, predictions_df, model_name, include_run_id=True
     )
 
     return ind_cqc_with_predictions_df
@@ -100,30 +67,48 @@ def set_min_value(df: DataFrame, col_name: str, min_value: float = 1.0) -> DataF
     )
 
 
-def prepare_predictions_for_join(
-    predictions_df: DataFrame, model_name: str
+def join_model_predictions(
+    df: DataFrame,
+    predictions_df: DataFrame,
+    model_name: str,
+    include_run_id: bool = True,
 ) -> DataFrame:
     """
-    Prepares the predictions dataframe for joining by selecting required columns and renaming them.
+    Prepares the predictions dataframe then joins them into the input dataframe on location ID and import date.
 
-    Selects location ID and import date for joining on plus the predicted values and run ID.
+    Selects location ID and import date for joining on plus the predicted values and run ID, if required.
     The generic prediction columns are renamed to be model-specific so it is clear which model they relate to after the join.
+    The prepared predictions dataframe is then left-joined into the input dataframe.
 
     Args:
+        df (DataFrame): The input DataFrame to join predictions into.
         predictions_df (DataFrame): The input DataFrame containing model predictions.
         model_name (str): The name of the model to use for renaming columns.
+        include_run_id (bool): Whether to include the prediction run ID column.
 
     Returns:
-        DataFrame: The prepared DataFrame ready for joining.
+        DataFrame: The input DataFrame with the model predictions joined in.
     """
-    return predictions_df.select(
+    cols = [
         IndCqc.location_id,
         IndCqc.cqc_location_import_date,
         IndCqc.prediction,
-        IndCqc.prediction_run_id,
-    ).withColumnsRenamed(
-        {
-            IndCqc.prediction: model_name,
-            IndCqc.prediction_run_id: f"{model_name}_run_id",
-        }
+    ]
+
+    rename_map = {
+        IndCqc.prediction: model_name,
+    }
+
+    if include_run_id:
+        cols.append(IndCqc.prediction_run_id)
+        rename_map[IndCqc.prediction_run_id] = f"{model_name}_run_id"
+
+    prepared_predictions_df = predictions_df.select(*cols).withColumnsRenamed(
+        rename_map
+    )
+
+    return df.join(
+        prepared_predictions_df,
+        [IndCqc.location_id, IndCqc.cqc_location_import_date],
+        "left",
     )

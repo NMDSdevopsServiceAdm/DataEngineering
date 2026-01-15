@@ -1914,22 +1914,7 @@ class ModelCareHomes:
 
 @dataclass
 class EstimateFilledPostsModelsUtils:
-    cleaned_cqc_schema = ModelCareHomes.care_homes_cleaned_ind_cqc_schema
-
-    predictions_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.prediction, FloatType(), True),
-        ]
-    )
-
-    join_model_ind_cqc_schema = StructType(
+    enrich_model_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
@@ -1939,7 +1924,7 @@ class EstimateFilledPostsModelsUtils:
     )
 
     test_non_res_model_name: str = "non_res_model"
-    join_model_predictions_non_res_schema = StructType(
+    enrich_model_predictions_non_res_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
@@ -1948,16 +1933,16 @@ class EstimateFilledPostsModelsUtils:
             StructField(IndCQC.prediction_run_id, StringType(), True),
         ]
     )
-    expected_join_model_ind_cqc_non_res_schema = StructType(
+    expected_enrich_model_ind_cqc_non_res_schema = StructType(
         [
-            *join_model_ind_cqc_schema,
+            *enrich_model_ind_cqc_schema,
             StructField(test_non_res_model_name, FloatType(), True),
             StructField(f"{test_non_res_model_name}_run_id", StringType(), True),
         ]
     )
 
     test_care_home_model_name: str = IndCQC.care_home_model
-    join_model_predictions_care_home_schema = StructType(
+    enrich_model_predictions_care_home_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
@@ -1966,9 +1951,9 @@ class EstimateFilledPostsModelsUtils:
             StructField(IndCQC.prediction_run_id, StringType(), True),
         ]
     )
-    expected_join_model_ind_cqc_care_home_schema = StructType(
+    expected_enrich_model_ind_cqc_care_home_schema = StructType(
         [
-            *join_model_ind_cqc_schema,
+            *enrich_model_ind_cqc_schema,
             StructField(test_care_home_model_name, FloatType(), True),
             StructField(f"{test_care_home_model_name}_run_id", StringType(), True),
         ]
@@ -1982,21 +1967,35 @@ class EstimateFilledPostsModelsUtils:
         ]
     )
 
-    prepare_predictions_for_join_schema = StructType(
+    join_test_model: str = IndCQC.care_home_model
+    join_ind_cqc_schema = StructType(
         [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.prediction, FloatType(), True),
-            StructField(IndCQC.prediction_run_id, StringType(), False),
         ]
     )
-    expected_prepare_predictions_for_join_schema = StructType(
+    join_prediction_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.care_home_model, FloatType(), True),
-            StructField(f"{IndCQC.care_home_model}_run_id", StringType(), False),
+            StructField(IndCQC.prediction, FloatType(), True),
+            StructField(IndCQC.prediction_run_id, StringType(), True),
+        ]
+    )
+    expected_join_without_run_id_schema = StructType(
+        [
+            *join_ind_cqc_schema,
+            StructField(join_test_model, FloatType(), True),
+        ]
+    )
+    expected_join_with_run_id_schema = StructType(
+        [
+            *join_ind_cqc_schema,
+            StructField(join_test_model, FloatType(), True),
+            StructField(f"{join_test_model}_run_id", StringType(), True),
         ]
     )
 
