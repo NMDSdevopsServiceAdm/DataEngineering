@@ -110,7 +110,7 @@
             },
             "Feature engineering and validate imputed data": {
               "Type": "Parallel",
-              "Next": "Estimate filled posts and validate feature engineering data",
+              "Next": "Estimate filled posts",
               "Branches": [
                 {
                   "StartAt": "Care home model features",
@@ -177,83 +177,18 @@
                 }
               ]
             },
-            "Estimate filled posts and validate feature engineering data": {
-              "Type": "Parallel",
-              "Next": "Estimate filled posts by job role and validate estimated filled posts",
-              "Branches": [
-                {
-                  "StartAt": "Estimate filled posts",
-                  "States": {
-                    "Estimate filled posts": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${estimate_ind_cqc_filled_posts_job_name}",
-                        "Arguments": {
-                          "--bucket_name": "${dataset_bucket_name}",
-                          "--source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
-                          "--destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
-                  "StartAt": "Validate care home features",
-                  "States": {
-                      "Validate care home features": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${validate_features_care_home_ind_cqc_data_job_name}",
-                        "Arguments": {
-                          "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
-                          "--care_home_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_care_home/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_04_features_care_home/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
-                  "StartAt": "Validate non-res with dormancy features",
-                  "States": {
-                      "Validate non-res with dormancy features": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${validate_features_non_res_ascwds_with_dormancy_ind_cqc_data_job_name}",
-                        "Arguments": {
-                          "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
-                          "--non_res_ascwds_with_dormancy_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_ascwds_with_dormancy/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_04_features_non_res_ascwds_with_dormancy/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
-                  "StartAt": "Validate non-res without dormancy features",
-                  "States": {
-                      "Validate non-res without dormancy features": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${validate_features_non_res_ascwds_without_dormancy_ind_cqc_data_job_name}",
-                        "Arguments": {
-                          "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
-                          "--non_res_ascwds_without_dormancy_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_ascwds_without_dormancy/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_04_features_non_res_ascwds_without_dormancy/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
+            "Estimate filled posts": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${estimate_ind_cqc_filled_posts_job_name}",
+                "Arguments": {
+                  "--bucket_name": "${dataset_bucket_name}",
+                  "--source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
+                  "--destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/"
                 }
-              ]
+              },
+              "Next": "Estimate filled posts by job role and validate estimated filled posts"
             },
             "Estimate filled posts by job role and validate estimated filled posts": {
               "Type": "Parallel",
