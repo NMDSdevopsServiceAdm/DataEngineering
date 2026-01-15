@@ -5,7 +5,6 @@ os.environ["SPARK_VERSION"] = "3.5"
 from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
     add_squared_column,
     filter_without_dormancy_features_to_pre_2025,
-    group_rural_urban_sparse_categories,
 )
 from projects._03_independent_cqc._04_feature_engineering.utils.value_labels import (
     RegionLabels,
@@ -32,8 +31,6 @@ def main(
     filtered_df = utils.select_rows_with_value(
         locations_df, IndCQC.care_home, CareHome.not_care_home
     )
-
-    features_df = group_rural_urban_sparse_categories(features_df)
 
     # Without dormancy features
 

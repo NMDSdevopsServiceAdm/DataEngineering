@@ -4329,21 +4329,6 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
 
 @dataclass
 class ModelFeatures:
-    group_rural_urban_sparse_categories_rows = [
-        ("1-001", "Rural"),
-        ("1-002", "Rural sparse"),
-        ("1-003", "Another with sparse in it"),
-        ("1-004", "Urban"),
-        ("1-005", "Sparse with a capital S"),
-    ]
-    expected_group_rural_urban_sparse_categories_rows = [
-        ("1-001", "Rural", "Rural"),
-        ("1-002", "Rural sparse", "Sparse setting"),
-        ("1-003", "Another with sparse in it", "Sparse setting"),
-        ("1-004", "Urban", "Urban"),
-        ("1-005", "Sparse with a capital S", "Sparse setting"),
-    ]
-
     filter_without_dormancy_features_to_pre_2025_rows = [
         ("1-001", date(2024, 12, 31)),
         ("1-002", date(2025, 1, 1)),
