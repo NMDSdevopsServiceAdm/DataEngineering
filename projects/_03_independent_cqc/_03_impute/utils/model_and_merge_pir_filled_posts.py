@@ -9,7 +9,7 @@ from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
     vectorise_dataframe,
 )
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
-    prepare_predictions_and_join_into_df,
+    join_model_predictions,
 )
 from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 from utils import utils
@@ -51,7 +51,7 @@ def model_pir_filled_posts(
 
     predictions = lr_trained_model.transform(vectorised_features_df)
 
-    df = prepare_predictions_and_join_into_df(
+    df = join_model_predictions(
         df,
         predictions,
         IndCQC.pir_filled_posts_model,

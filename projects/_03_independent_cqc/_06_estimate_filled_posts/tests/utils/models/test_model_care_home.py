@@ -33,14 +33,14 @@ class TestModelCareHome(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    @patch(f"{PATCH_PATH}.prepare_predictions_and_join_into_df")
+    @patch(f"{PATCH_PATH}.join_model_predictions")
     @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.calculate_filled_posts_from_beds_and_ratio")
     def test_model_care_homes_runs(
         self,
         calculate_filled_posts_from_beds_and_ratio_mock: Mock,
         set_min_value_mock: Mock,
-        prepare_predictions_and_join_into_df_mock: Mock,
+        join_model_predictions_mock: Mock,
     ):
         job.model_care_homes(
             self.care_homes_cleaned_ind_cqc_df,
@@ -50,7 +50,7 @@ class TestModelCareHome(unittest.TestCase):
 
         calculate_filled_posts_from_beds_and_ratio_mock.assert_called_once()
         set_min_value_mock.assert_called_once()
-        prepare_predictions_and_join_into_df_mock.assert_called_once()
+        join_model_predictions_mock.assert_called_once()
 
     def test_model_care_homes_returns_expected_data(self):
         df = job.model_care_homes(

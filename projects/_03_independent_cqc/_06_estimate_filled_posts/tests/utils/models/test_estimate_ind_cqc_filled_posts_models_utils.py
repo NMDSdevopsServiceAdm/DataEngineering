@@ -58,7 +58,7 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
             Schemas.expected_enrich_model_ind_cqc_non_res_schema,
         )
 
-    @patch(f"{PATCH_PATH}.prepare_predictions_and_join_into_df")
+    @patch(f"{PATCH_PATH}.join_model_predictions")
     @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.calculate_filled_posts_from_beds_and_ratio")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
@@ -69,7 +69,7 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         read_from_parquet_mock: Mock,
         calculate_filled_posts_mock: Mock,
         set_min_value_mock: Mock,
-        prepare_predictions_and_join_into_df_mock: Mock,
+        join_model_predictions_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.mock_predictions_df
 
@@ -85,11 +85,11 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         )
         calculate_filled_posts_mock.assert_called_once()
         set_min_value_mock.assert_called_once_with(ANY, IndCqc.prediction, 1.0)
-        prepare_predictions_and_join_into_df_mock.assert_called_once_with(
+        join_model_predictions_mock.assert_called_once_with(
             ANY, ANY, self.care_home_model, include_run_id=True
         )
 
-    @patch(f"{PATCH_PATH}.prepare_predictions_and_join_into_df")
+    @patch(f"{PATCH_PATH}.join_model_predictions")
     @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.calculate_filled_posts_from_beds_and_ratio")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
@@ -100,7 +100,7 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         read_from_parquet_mock: Mock,
         calculate_filled_posts_mock: Mock,
         set_min_value_mock: Mock,
-        prepare_predictions_and_join_into_df_mock: Mock,
+        join_model_predictions_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.mock_predictions_df
 
@@ -116,7 +116,7 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         )
         calculate_filled_posts_mock.assert_not_called()
         set_min_value_mock.assert_called_once_with(ANY, IndCqc.prediction, 1.0)
-        prepare_predictions_and_join_into_df_mock.assert_called_once_with(
+        join_model_predictions_mock.assert_called_once_with(
             ANY, ANY, self.non_res_model, include_run_id=True
         )
 
@@ -230,35 +230,35 @@ class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class PreparePredictionsAndJoinIntoDfTests(EstimateFilledPostsModelsUtilsTests):
+class JoinModelPredictionsTests(EstimateFilledPostsModelsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.model_name = Schemas.prepare_and_join_test_model
+        self.model_name = Schemas.join_test_model
 
         ind_cqc_df = self.spark.createDataFrame(
-            Data.prepare_and_join_ind_cqc_rows,
-            Schemas.prepare_and_join_ind_cqc_schema,
+            Data.join_ind_cqc_rows,
+            Schemas.join_ind_cqc_schema,
         )
         predictions_df = self.spark.createDataFrame(
-            Data.prepare_and_join_prediction_rows,
-            Schemas.prepare_and_join_prediction_schema,
+            Data.join_prediction_rows,
+            Schemas.join_prediction_schema,
         )
 
-        self.returned_without_run_id_df = job.prepare_predictions_and_join_into_df(
+        self.returned_without_run_id_df = job.join_model_predictions(
             ind_cqc_df, predictions_df, self.model_name, include_run_id=False
         )
         self.expected_without_run_id_df = self.spark.createDataFrame(
-            Data.expected_prepare_and_join_without_run_id_rows,
-            Schemas.expected_prepare_and_join_without_run_id_schema,
+            Data.expected_join_without_run_id_rows,
+            Schemas.expected_join_without_run_id_schema,
         )
 
-        self.returned_with_run_id_df = job.prepare_predictions_and_join_into_df(
+        self.returned_with_run_id_df = job.join_model_predictions(
             ind_cqc_df, predictions_df, self.model_name, include_run_id=True
         )
         self.expected_with_run_id_df = self.spark.createDataFrame(
-            Data.expected_prepare_and_join_with_run_id_rows,
-            Schemas.expected_prepare_and_join_with_run_id_schema,
+            Data.expected_join_with_run_id_rows,
+            Schemas.expected_join_with_run_id_schema,
         )
 
     def test_returns_expected_columns_when_include_run_id_is_false(self):

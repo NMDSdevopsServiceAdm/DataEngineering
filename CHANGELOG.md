@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file.
 
 - Moved the `convert_care_home_ratios_to_posts` function to the impute [utils](projects/_03_independent_cqc/_03_impute/utils/utils.py) file to align with the jobs it's called in.
 
-- Refactored two similar functions (`insert_predictions_into_pipeline` and `prepare_predictions_for_join`) into one (`prepare_predictions_and_join_into_df`).
+- Refactored two similar functions (`insert_predictions_into_pipeline` and `prepare_predictions_for_join`) into one (`join_model_predictions`).
 
 ### Fixed
 - Analysts found a new test account in ASC-WDS so I've added their orgid to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)

@@ -2024,8 +2024,8 @@ class EstimateFilledPostsModelsUtils:
         ]
     )
 
-    prepare_and_join_test_model: str = IndCQC.care_home_model
-    prepare_and_join_ind_cqc_schema = StructType(
+    join_test_model: str = IndCQC.care_home_model
+    join_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.current_region, StringType(), True),
@@ -2033,7 +2033,7 @@ class EstimateFilledPostsModelsUtils:
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
         ]
     )
-    prepare_and_join_prediction_schema = StructType(
+    join_prediction_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
@@ -2042,17 +2042,17 @@ class EstimateFilledPostsModelsUtils:
             StructField(IndCQC.prediction_run_id, StringType(), True),
         ]
     )
-    expected_prepare_and_join_without_run_id_schema = StructType(
+    expected_join_without_run_id_schema = StructType(
         [
-            *prepare_and_join_ind_cqc_schema,
-            StructField(prepare_and_join_test_model, FloatType(), True),
+            *join_ind_cqc_schema,
+            StructField(join_test_model, FloatType(), True),
         ]
     )
-    expected_prepare_and_join_with_run_id_schema = StructType(
+    expected_join_with_run_id_schema = StructType(
         [
-            *prepare_and_join_ind_cqc_schema,
-            StructField(prepare_and_join_test_model, FloatType(), True),
-            StructField(f"{prepare_and_join_test_model}_run_id", StringType(), True),
+            *join_ind_cqc_schema,
+            StructField(join_test_model, FloatType(), True),
+            StructField(f"{join_test_model}_run_id", StringType(), True),
         ]
     )
 

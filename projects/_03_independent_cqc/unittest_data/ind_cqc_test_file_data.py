@@ -5483,20 +5483,20 @@ class EstimateFilledPostsModelsUtils:
         ("1-001", None, None),
     ]
 
-    prepare_and_join_ind_cqc_rows = [
+    join_ind_cqc_rows = [
         ("1-001", Region.london, 67, date(2022, 2, 20)),
         ("1-001", Region.london, 67, date(2022, 3, 29)),
         ("1-002", Region.north_east, 12, date(2022, 3, 29)),
     ]
-    prepare_and_join_prediction_rows = [
+    join_prediction_rows = [
         ("1-001", 67, date(2022, 3, 29), 10.0, "v1.0.0_r2"),
     ]
-    expected_prepare_and_join_without_run_id_rows = [
+    expected_join_without_run_id_rows = [
         ("1-001", Region.london, 67, date(2022, 2, 20), None),
         ("1-001", Region.london, 67, date(2022, 3, 29), 10.0),
         ("1-002", Region.north_east, 12, date(2022, 3, 29), None),
     ]
-    expected_prepare_and_join_with_run_id_rows = [
+    expected_join_with_run_id_rows = [
         ("1-001", Region.london, 67, date(2022, 2, 20), None, None),
         ("1-001", Region.london, 67, date(2022, 3, 29), 10.0, "v1.0.0_r2"),
         ("1-002", Region.north_east, 12, date(2022, 3, 29), None, None),
