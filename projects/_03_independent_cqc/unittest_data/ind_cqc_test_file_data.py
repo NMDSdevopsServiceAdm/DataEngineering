@@ -4329,16 +4329,6 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
 
 @dataclass
 class ModelFeatures:
-    filter_without_dormancy_features_to_pre_2025_rows = [
-        ("1-001", date(2024, 12, 31)),
-        ("1-002", date(2025, 1, 1)),
-        ("1-003", date(2025, 1, 2)),
-    ]
-    expected_filter_without_dormancy_features_to_pre_2025_rows = [
-        ("1-001", date(2024, 12, 31)),
-        ("1-002", date(2025, 1, 1)),
-    ]
-
     add_squared_column_rows = [
         ("1-001", None),
         ("1-002", 0.0),

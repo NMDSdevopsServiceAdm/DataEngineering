@@ -36,14 +36,12 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.add_squared_column")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_non_null_value")
-    @patch(f"{PATCH_PATH}.filter_without_dormancy_features_to_pre_2025")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
         select_rows_with_value_mock: Mock,
-        filter_without_dormancy_features_to_pre_2025_mock: Mock,
         select_rows_with_non_null_value_mock: Mock,
         add_squared_column_mock: Mock,
         write_to_parquet_mock: Mock,
@@ -72,7 +70,6 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         ]
 
         select_rows_with_value_mock.assert_called_once()
-        filter_without_dormancy_features_to_pre_2025_mock.assert_called_once()
         select_rows_with_non_null_value_mock.assert_called_once()
         add_squared_column_mock.assert_called_once()
         write_to_parquet_mock.assert_has_calls(write_to_parquet_calls)
