@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 - Polars job [model_03_predict](projects/_03_independent_cqc/_04_model/fargate/model_03_predict.py) to load a specified model then generate and save predictions.
 
-- Created a utils function `join_model_predictions` to read, transform and join model predictions into the Independent CQC DataFrame.
+- Created a utils function `enrich_with_model_predictions` to read, transform and join model predictions into the Independent CQC DataFrame.
 
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
@@ -24,10 +24,12 @@ All notable changes to this project will be documented in this file.
 
 - Migrated the original `PySpark` Independent CQC estimates pipeline step `_01_merge` to be run in `Polars` for notable increases in efficiency.
 
+- Refactored two similar functions (`insert_predictions_into_pipeline` and `prepare_predictions_for_join`) into one (`join_model_predictions`).
+
 - Removed the original PySpark modelling code for care homes and non-residential with/without dormancy.
 
 ### Fixed
-- Analysts found a new test account in ASC-WDS so I've added their orgid to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)
+- Added a new test account in ASC-WDS to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)
 
 
 ## [v2025.12.0] - 06/01/2026
