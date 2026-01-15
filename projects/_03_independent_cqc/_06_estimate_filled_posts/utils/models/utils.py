@@ -7,7 +7,7 @@ from utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
-def join_model_predictions(
+def enrich_with_model_predictions(
     ind_cqc_df: DataFrame, bucket_name: str, model_name: str
 ) -> DataFrame:
     """

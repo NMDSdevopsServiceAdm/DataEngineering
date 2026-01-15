@@ -1971,7 +1971,7 @@ class ModelCareHomes:
 
 @dataclass
 class EstimateFilledPostsModelsUtils:
-    join_model_ind_cqc_schema = StructType(
+    enrich_model_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
@@ -1981,7 +1981,7 @@ class EstimateFilledPostsModelsUtils:
     )
 
     test_non_res_model_name: str = "non_res_model"
-    join_model_predictions_non_res_schema = StructType(
+    enrich_model_predictions_non_res_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
@@ -1990,16 +1990,16 @@ class EstimateFilledPostsModelsUtils:
             StructField(IndCQC.prediction_run_id, StringType(), True),
         ]
     )
-    expected_join_model_ind_cqc_non_res_schema = StructType(
+    expected_enrich_model_ind_cqc_non_res_schema = StructType(
         [
-            *join_model_ind_cqc_schema,
+            *enrich_model_ind_cqc_schema,
             StructField(test_non_res_model_name, FloatType(), True),
             StructField(f"{test_non_res_model_name}_run_id", StringType(), True),
         ]
     )
 
     test_care_home_model_name: str = IndCQC.care_home_model
-    join_model_predictions_care_home_schema = StructType(
+    enrich_model_predictions_care_home_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
@@ -2008,9 +2008,9 @@ class EstimateFilledPostsModelsUtils:
             StructField(IndCQC.prediction_run_id, StringType(), True),
         ]
     )
-    expected_join_model_ind_cqc_care_home_schema = StructType(
+    expected_enrich_model_ind_cqc_care_home_schema = StructType(
         [
-            *join_model_ind_cqc_schema,
+            *enrich_model_ind_cqc_schema,
             StructField(test_care_home_model_name, FloatType(), True),
             StructField(f"{test_care_home_model_name}_run_id", StringType(), True),
         ]

@@ -25,7 +25,7 @@ class EstimateFilledPostsModelsUtilsTests(unittest.TestCase):
         self.spark = utils.get_spark()
 
 
-class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
+class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -35,27 +35,27 @@ class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         self.mock_predictions_df = Mock(name="predictions_df")
 
         self.ind_cqc_df = self.spark.createDataFrame(
-            Data.join_model_ind_cqc_rows, Schemas.join_model_ind_cqc_schema
+            Data.enrich_model_ind_cqc_rows, Schemas.enrich_model_ind_cqc_schema
         )
 
         self.care_home_model = Schemas.test_care_home_model_name
         self.care_home_pred_df = self.spark.createDataFrame(
-            Data.join_model_predictions_care_home_rows,
-            Schemas.join_model_predictions_care_home_schema,
+            Data.enrich_model_predictions_care_home_rows,
+            Schemas.enrich_model_predictions_care_home_schema,
         )
-        self.expected_joined_care_home_df = self.spark.createDataFrame(
-            Data.expected_join_model_ind_cqc_care_home_rows,
-            Schemas.expected_join_model_ind_cqc_care_home_schema,
+        self.expected_enriched_care_home_df = self.spark.createDataFrame(
+            Data.expected_enrich_model_ind_cqc_care_home_rows,
+            Schemas.expected_enrich_model_ind_cqc_care_home_schema,
         )
 
         self.non_res_model = Schemas.test_non_res_model_name
         self.non_res_pred_df = self.spark.createDataFrame(
-            Data.join_model_predictions_non_res_rows,
-            Schemas.join_model_predictions_non_res_schema,
+            Data.enrich_model_predictions_non_res_rows,
+            Schemas.enrich_model_predictions_non_res_schema,
         )
-        self.expected_joined_non_res_df = self.spark.createDataFrame(
-            Data.expected_join_model_ind_cqc_non_res_rows,
-            Schemas.expected_join_model_ind_cqc_non_res_schema,
+        self.expected_enriched_non_res_df = self.spark.createDataFrame(
+            Data.expected_enrich_model_ind_cqc_non_res_rows,
+            Schemas.expected_enrich_model_ind_cqc_non_res_schema,
         )
 
     @patch(f"{PATCH_PATH}.prepare_predictions_and_join_into_df")
@@ -73,7 +73,7 @@ class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
     ):
         read_from_parquet_mock.return_value = self.mock_predictions_df
 
-        job.join_model_predictions(
+        job.enrich_with_model_predictions(
             self.mock_ind_cqc_df, self.test_bucket, self.care_home_model
         )
 
@@ -104,7 +104,7 @@ class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
     ):
         read_from_parquet_mock.return_value = self.mock_predictions_df
 
-        job.join_model_predictions(
+        job.enrich_with_model_predictions(
             self.mock_ind_cqc_df, self.test_bucket, self.non_res_model
         )
 
@@ -129,14 +129,16 @@ class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
     ):
         read_from_parquet_mock.return_value = self.care_home_pred_df
 
-        returned_df = job.join_model_predictions(
+        returned_df = job.enrich_with_model_predictions(
             self.ind_cqc_df, self.test_bucket, self.care_home_model
         )
 
-        self.assertEqual(returned_df.columns, self.expected_joined_care_home_df.columns)
+        self.assertEqual(
+            returned_df.columns, self.expected_enriched_care_home_df.columns
+        )
         self.assertEqual(
             returned_df.sort(IndCqc.location_id).collect(),
-            self.expected_joined_care_home_df.collect(),
+            self.expected_enriched_care_home_df.collect(),
         )
 
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
@@ -148,14 +150,14 @@ class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
     ):
         read_from_parquet_mock.return_value = self.non_res_pred_df
 
-        returned_df = job.join_model_predictions(
+        returned_df = job.enrich_with_model_predictions(
             self.ind_cqc_df, self.test_bucket, self.non_res_model
         )
 
-        self.assertEqual(returned_df.columns, self.expected_joined_non_res_df.columns)
+        self.assertEqual(returned_df.columns, self.expected_enriched_non_res_df.columns)
         self.assertEqual(
             returned_df.sort(IndCqc.location_id).collect(),
-            self.expected_joined_non_res_df.collect(),
+            self.expected_enriched_non_res_df.collect(),
         )
 
 
