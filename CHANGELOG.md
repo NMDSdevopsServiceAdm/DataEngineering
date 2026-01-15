@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 
 - Moved the `convert_care_home_ratios_to_posts` function to the impute [utils](projects/_03_independent_cqc/_03_impute/utils/utils.py) file to align with the jobs it's called in.
 
+- Migrated the original `PySpark` Independent CQC estimates pipeline step `_01_merge` to be run in `Polars` for notable increases in efficiency.
+
 - Removed the original PySpark modelling code for care homes and non-residential with/without dormancy.
 
 ### Fixed

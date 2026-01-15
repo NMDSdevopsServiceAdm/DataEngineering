@@ -2,6 +2,16 @@ provider "aws" {
   access_key = var.aws_access_key
   secret_key = var.aws_secret_key
   region     = var.region
+  alias      = "prod"
+  profile    = "prod"
+}
+
+provider "aws" {
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
+  region     = var.region
+  alias      = "non-prod"
+  profile    = "non-prod"
 }
 
 terraform {
