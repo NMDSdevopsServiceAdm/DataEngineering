@@ -7,7 +7,7 @@ from utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
-def join_model_predictions(
+def enrich_with_model_predictions(
     ind_cqc_df: DataFrame, bucket_name: str, model_name: str
 ) -> DataFrame:
     """
@@ -39,7 +39,7 @@ def join_model_predictions(
 
     predictions_df = set_min_value(predictions_df, IndCqc.prediction, 1.0)
 
-    ind_cqc_with_predictions_df = prepare_predictions_and_join_into_df(
+    ind_cqc_with_predictions_df = join_model_predictions(
         ind_cqc_df, predictions_df, model_name, include_run_id=True
     )
 
@@ -67,7 +67,7 @@ def set_min_value(df: DataFrame, col_name: str, min_value: float = 1.0) -> DataF
     )
 
 
-def prepare_predictions_and_join_into_df(
+def join_model_predictions(
     df: DataFrame,
     predictions_df: DataFrame,
     model_name: str,
