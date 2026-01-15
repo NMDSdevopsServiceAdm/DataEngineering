@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
 
 - Polars job [model_03_predict](projects/_03_independent_cqc/_04_model/fargate/model_03_predict.py) to load a specified model then generate and save predictions.
 
+- Created a utils function `join_model_predictions` to read, transform and join model predictions into the Independent CQC DataFrame.
+
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 
