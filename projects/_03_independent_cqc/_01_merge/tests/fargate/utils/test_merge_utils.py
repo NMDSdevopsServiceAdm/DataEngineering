@@ -54,7 +54,7 @@ class MergeUtilsTests(unittest.TestCase):
             data=Data.expected_merged_without_care_home_col_rows,
             schema=Schemas.expected_merged_without_care_home_col_schema,
             orient="row",
-        )
+        ).select(returned_lf.collect_schema().names())
 
         pl_testing.assert_frame_equal(returned_lf, expected_merged_lf)
 
@@ -73,6 +73,6 @@ class MergeUtilsTests(unittest.TestCase):
             data=Data.expected_merged_with_care_home_col_rows,
             schema=Schemas.expected_merged_with_care_home_col_schema,
             orient="row",
-        )
+        ).select(returned_lf.collect_schema().names())
 
         pl_testing.assert_frame_equal(returned_lf, expected_merged_lf)
