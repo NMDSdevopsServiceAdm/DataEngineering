@@ -4342,34 +4342,6 @@ class ModelFeatures:
         ("1-0004", None, None),
     ]
 
-    add_array_column_count_with_one_element_rows = [
-        ("1-001", ["name"]),
-    ]
-    expected_add_array_column_count_with_one_element_rows = [
-        ("1-001", ["name"], 1),
-    ]
-
-    add_array_column_count_with_multiple_elements_rows = [
-        ("1-001", ["name_1", "name_2", "name_3"]),
-    ]
-    expected_add_array_column_count_with_multiple_elements_rows = [
-        ("1-001", ["name_1", "name_2", "name_3"], 3),
-    ]
-
-    add_array_column_count_with_empty_array_rows = [
-        ("1-001", []),
-    ]
-    expected_add_array_column_count_with_empty_array_rows = [
-        ("1-001", [], 0),
-    ]
-
-    add_array_column_count_with_null_value_rows = [
-        ("1-001", None),
-    ]
-    expected_add_array_column_count_with_null_value_rows = [
-        ("1-001", None, 0),
-    ]
-
     add_date_index_column_rows = [
         ("1-0001", CareHome.not_care_home, date(2024, 10, 1)),
         ("1-0002", CareHome.not_care_home, date(2024, 12, 1)),

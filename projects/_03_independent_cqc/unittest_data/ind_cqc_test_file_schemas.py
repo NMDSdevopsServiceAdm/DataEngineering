@@ -1847,19 +1847,6 @@ class ModelFeatures:
         ]
     )
 
-    add_array_column_count_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.services_offered, ArrayType(StringType(), True)),
-        ]
-    )
-    expected_add_array_column_count_schema = StructType(
-        [
-            *add_array_column_count_schema,
-            StructField(IndCQC.service_count, IntegerType(), True),
-        ]
-    )
-
     add_date_index_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),

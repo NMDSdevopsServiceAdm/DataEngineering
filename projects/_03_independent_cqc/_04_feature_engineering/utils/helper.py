@@ -7,29 +7,6 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 # converted to polars -> projects._03_independent_cqc._04_feature_engineering.fargate.utils.feature_utils.py
-def add_array_column_count(
-    df: DataFrame, new_col_name: str, col_to_check: str
-) -> DataFrame:
-    """
-    Add a new column with the count of items in an array column.
-
-    This function adds a new column to the given data frame which contains the count of items in the specified array column.
-    If the array column is empty, the count will return 0 (by default, size returns -1 if the array is null).
-
-    Args:
-        df(DataFrame): A dataframe with an array column.
-        new_col_name(str): A name for the new column with the count of items.
-        col_to_check(str): The name of the array column.
-
-    Returns:
-        DataFrame: A dataframe with an extra column with the count of items in the specified array.
-    """
-    return df.withColumn(
-        new_col_name, F.greatest(F.size(F.col(col_to_check)), F.lit(0))
-    )
-
-
-# converted to polars -> projects._03_independent_cqc._04_feature_engineering.fargate.utils.feature_utils.py
 def cap_integer_at_max_value(
     df: DataFrame, col_name: str, max_value: int, new_col_name: str
 ) -> DataFrame:

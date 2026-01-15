@@ -7,7 +7,6 @@ os.environ["SPARK_VERSION"] = "3.5"
 from pyspark.sql import DataFrame
 
 from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
-    add_array_column_count,
     add_date_index_column,
     cap_integer_at_max_value,
 )
@@ -40,9 +39,6 @@ def main(
 
     features_df = add_date_index_column(filtered_df)
 
-    features_df = add_array_column_count(
-        features_df, IndCQC.service_count, IndCQC.services_offered
-    )
     features_df = cap_integer_at_max_value(
         features_df,
         IndCQC.service_count,
@@ -50,9 +46,6 @@ def main(
         new_col_name=IndCQC.service_count_capped,
     )
 
-    features_df = add_array_column_count(
-        features_df, IndCQC.activity_count, IndCQC.regulated_activities_offered
-    )
     features_df = cap_integer_at_max_value(
         features_df,
         IndCQC.activity_count,
