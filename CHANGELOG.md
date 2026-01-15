@@ -11,12 +11,22 @@ All notable changes to this project will be documented in this file.
 
 - Converted util functions select_rows_with_value and select_rows_with_non_null_value from spark to polars.
 
+- Polars job [model_03_predict](projects/_03_independent_cqc/_04_model/fargate/model_03_predict.py) to load a specified model then generate and save predictions.
+
+- Created a utils function `join_model_predictions` to read, transform and join model predictions into the Independent CQC DataFrame.
 
 ### Changed
+- Remove interim/demo model preprocessing/retraining code.
+
+- Removed model metrics from [estimate_ind_cqc_filled_posts](projects/_03_independent_cqc/_06_estimate_filled_posts/jobs/estimate_ind_cqc_filled_posts.py) job. The replacement models create models as part of the model training/testing process.
+
+- Moved the `convert_care_home_ratios_to_posts` function to the impute [utils](projects/_03_independent_cqc/_03_impute/utils/utils.py) file to align with the jobs it's called in.
+
 - Migrated the original `PySpark` Independent CQC estimates pipeline step `_01_merge` to be run in `Polars` for notable increases in efficiency.
 
 ### Fixed
-- Analysts found a new test account in ASC-WDS so I've added their orgid to the list of test_accounts in projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py
+- Analysts found a new test account in ASC-WDS so I've added their orgid to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)
+
 
 ## [v2025.12.0] - 06/01/2026
 

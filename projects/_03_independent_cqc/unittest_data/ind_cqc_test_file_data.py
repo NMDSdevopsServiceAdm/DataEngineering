@@ -248,6 +248,35 @@ class ModelAndMergePirData:
 
 @dataclass
 class ImputeUtilsData:
+    convert_care_home_ratios_to_posts_rows = [
+        ("1-001", CareHome.care_home, 5, 1.6, 20.0),
+        ("1-002", CareHome.care_home, 5, None, 10.0),
+        ("1-003", CareHome.care_home, None, 1.6, 20.0),
+        ("1-004", CareHome.care_home, None, None, 10.0),
+        ("1-005", CareHome.care_home, 5, 1.8, None),
+        ("1-006", CareHome.care_home, 5, None, None),
+        ("1-007", CareHome.care_home, None, 1.8, None),
+        ("1-008", CareHome.care_home, None, None, None),
+        ("1-009", CareHome.not_care_home, 5, 1.6, 20.0),
+        ("1-010", CareHome.not_care_home, None, None, 10.0),
+        ("1-011", CareHome.not_care_home, 5, 1.6, None),
+        ("1-012", CareHome.not_care_home, None, None, None),
+    ]
+    expected_convert_care_home_ratios_to_posts_rows = [
+        ("1-001", CareHome.care_home, 5, 1.6, 8.0),
+        ("1-002", CareHome.care_home, 5, None, None),
+        ("1-003", CareHome.care_home, None, 1.6, None),
+        ("1-004", CareHome.care_home, None, None, None),
+        ("1-005", CareHome.care_home, 5, 1.8, 9.0),
+        ("1-006", CareHome.care_home, 5, None, None),
+        ("1-007", CareHome.care_home, None, 1.8, None),
+        ("1-008", CareHome.care_home, None, None, None),
+        ("1-009", CareHome.not_care_home, 5, 1.6, 20.0),
+        ("1-010", CareHome.not_care_home, None, None, 10.0),
+        ("1-011", CareHome.not_care_home, 5, 1.6, None),
+        ("1-012", CareHome.not_care_home, None, None, None),
+    ]
+
     combine_care_home_and_non_res_values_into_single_column_rows = [
         ("1-001", CareHome.care_home, 20.0, 1.6),
         ("1-002", CareHome.care_home, 10.0, None),
@@ -5338,29 +5367,6 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
 
 
 @dataclass
-class MLModelMetrics:
-    ind_cqc_with_predictions_rows = [
-        ("1-00001", "care home", 50.0, "Y", "South West", 67, date(2022, 3, 9), 56.89),
-        ("1-00002", "non-res", 10.0, "N", "North East", 0, date(2022, 3, 9), 12.34),
-    ]
-
-    r2_metric_rows = [
-        ("1-00001", 50.0, 56.89),
-        ("1-00002", 10.0, 12.34),
-    ]
-
-    predictions_rows = [
-        ("1-00001", 50.0, 56.89),
-        ("1-00002", None, 46.80),
-        ("1-00003", 10.0, 12.34),
-    ]
-    expected_predictions_with_dependent_rows = [
-        ("1-00001", 50.0, 56.89),
-        ("1-00003", 10.0, 12.34),
-    ]
-
-
-@dataclass
 class EstimateFilledPostsModelsUtils:
     cleaned_cqc_rows = ModelCareHomes.care_homes_cleaned_ind_cqc_rows
 
@@ -5376,6 +5382,39 @@ class EstimateFilledPostsModelsUtils:
             56.89,
         ),
     ]
+
+    join_model_ind_cqc_rows = [
+        ("1-001", date(2025, 1, 1), CareHome.not_care_home, None),
+        ("1-002", date(2025, 1, 1), CareHome.not_care_home, None),
+        ("1-003", date(2025, 1, 1), CareHome.care_home, 2),
+        ("1-004", date(2025, 1, 1), CareHome.care_home, 2),
+    ]
+
+    join_model_predictions_care_home_rows = [
+        ("1-003", date(2025, 1, 1), 2, 0.25, "v1_r1"),
+        ("1-004", date(2025, 1, 1), 2, 2.5, "v1_r1"),
+    ]
+    # fmt: off
+    expected_join_model_ind_cqc_care_home_rows = [
+        ("1-001", date(2025, 1, 1), CareHome.not_care_home, None, None, None), # no prediction expected
+        ("1-002", date(2025, 1, 1), CareHome.not_care_home, None, None, None), # no prediction expected
+        ("1-003", date(2025, 1, 1), CareHome.care_home, 2, 1.0, "v1_r1"), # minimum of 1.0 applied
+        ("1-004", date(2025, 1, 1), CareHome.care_home, 2, 5.0, "v1_r1"), # prediction (converted to posts) joined in
+    ]
+    # fmt: on
+
+    join_model_predictions_non_res_rows = [
+        ("1-001", date(2025, 1, 1), 2, 0.25, "v1_r1"),
+        ("1-002", date(2025, 1, 1), 2, 2.5, "v1_r1"),
+    ]
+    # fmt: off
+    expected_join_model_ind_cqc_non_res_rows = [
+        ("1-001", date(2025, 1, 1), CareHome.not_care_home, None, 1.0, "v1_r1"), # minimum of 1.0 applied
+        ("1-002", date(2025, 1, 1), CareHome.not_care_home, None, 2.5, "v1_r1"), # prediction joined in
+        ("1-003", date(2025, 1, 1), CareHome.care_home, 2, None, None), # no prediction expected
+        ("1-004", date(2025, 1, 1), CareHome.care_home, 2, None, None), # no prediction expected
+    ]
+    # fmt: on
 
     set_min_value_when_below_minimum_rows = [
         ("1-001", 0.5, -7.5),
@@ -5398,33 +5437,13 @@ class EstimateFilledPostsModelsUtils:
         ("1-001", None, None),
     ]
 
-    convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_rows = [
-        ("1-001", CareHome.care_home, 5, 1.6, 20.0),
-        ("1-002", CareHome.care_home, 5, None, 10.0),
-        ("1-003", CareHome.care_home, None, 1.6, 20.0),
-        ("1-004", CareHome.care_home, None, None, 10.0),
-        ("1-005", CareHome.care_home, 5, 1.8, None),
-        ("1-006", CareHome.care_home, 5, None, None),
-        ("1-007", CareHome.care_home, None, 1.8, None),
-        ("1-008", CareHome.care_home, None, None, None),
-        ("1-009", CareHome.not_care_home, 5, 1.6, 20.0),
-        ("1-010", CareHome.not_care_home, None, None, 10.0),
-        ("1-011", CareHome.not_care_home, 5, 1.6, None),
-        ("1-012", CareHome.not_care_home, None, None, None),
+    prepare_predictions_for_join_rows = [
+        (date(2025, 1, 1), "1-001", CareHome.care_home, 20.0, "v1.0.0_r2"),
+        (date(2025, 1, 1), "1-002", CareHome.care_home, 10.0, "v1.0.0_r2"),
     ]
-    expected_convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_rows = [
-        ("1-001", CareHome.care_home, 5, 1.6, 8.0),
-        ("1-002", CareHome.care_home, 5, None, None),
-        ("1-003", CareHome.care_home, None, 1.6, None),
-        ("1-004", CareHome.care_home, None, None, None),
-        ("1-005", CareHome.care_home, 5, 1.8, 9.0),
-        ("1-006", CareHome.care_home, 5, None, None),
-        ("1-007", CareHome.care_home, None, 1.8, None),
-        ("1-008", CareHome.care_home, None, None, None),
-        ("1-009", CareHome.not_care_home, 5, 1.6, 20.0),
-        ("1-010", CareHome.not_care_home, None, None, 10.0),
-        ("1-011", CareHome.not_care_home, 5, 1.6, None),
-        ("1-012", CareHome.not_care_home, None, None, None),
+    expected_prepare_predictions_for_join_rows = [
+        ("1-001", date(2025, 1, 1), 20.0, "v1.0.0_r2"),
+        ("1-002", date(2025, 1, 1), 10.0, "v1.0.0_r2"),
     ]
 
 

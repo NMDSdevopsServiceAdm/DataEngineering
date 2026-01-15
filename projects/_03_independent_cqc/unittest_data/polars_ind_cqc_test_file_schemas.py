@@ -186,6 +186,26 @@ class ModelTrainingUtilsSchemas:
 
 
 @dataclass
+class ModelUtilsSchemas:
+    features_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.DataType()),
+            ("feature_1", pl.Int32()),
+            ("feature_2", pl.Int32()),
+        ]
+    )
+
+    expected_predictions_dataframe_schema = pl.Schema(
+        list(features_schema.items())
+        + [
+            (IndCQC.prediction, pl.Float64()),
+            (IndCQC.prediction_run_id, pl.String()),
+        ]
+    )
+
+
+@dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsSchemas:
     estimates_df_before_join_schema = pl.Schema(
         [

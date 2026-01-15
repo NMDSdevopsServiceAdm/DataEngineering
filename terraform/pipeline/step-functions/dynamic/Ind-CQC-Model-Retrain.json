@@ -29,7 +29,7 @@
                       "Command": [
                         "model_01_features_care_home.py",
                         "--bucket_name", "${dataset_bucket_name}",
-                        "--model_name", "care_home"
+                        "--model_name", "care_home_model"
                       ]
                     }
                   ]
@@ -64,7 +64,7 @@
                             "Command": [
                               "model_02_train.py",
                               "--bucket_name", "${dataset_bucket_name}",
-                              "--model_name", "care_home"
+                              "--model_name", "care_home_model"
                             ]
                           }
                         ]
@@ -73,7 +73,32 @@
                     "Next": "Predict - care home"
                   },
                   "Predict - care home": {
-                    "Type": "Pass",
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::ecs:runTask.sync",
+                    "Parameters": {
+                      "Cluster": "${model_cluster_arn}",
+                      "TaskDefinition": "${independent_cqc_model_task_arn}",
+                      "LaunchType": "FARGATE",
+                      "NetworkConfiguration": {
+                        "AwsvpcConfiguration": {
+                          "Subnets": ${public_subnet_ids},
+                          "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                          "AssignPublicIp": "ENABLED"
+                        }
+                      },
+                      "Overrides": {
+                        "ContainerOverrides": [
+                          {
+                            "Name": "_03_independent_cqc_model-container",
+                            "Command": [
+                              "model_03_predict.py",
+                              "--bucket_name", "${dataset_bucket_name}",
+                              "--model_name", "care_home_model"
+                            ]
+                          }
+                        ]
+                      }
+                    },
                     "End": true
                     }
                   }
@@ -116,7 +141,7 @@
                       "Command": [
                         "model_01_features_non_res_without_dormancy.py",
                         "--bucket_name", "${dataset_bucket_name}",
-                        "--model_name", "non_residential_without_dormancy"
+                        "--model_name", "non_res_without_dormancy_model"
                       ]
                     }
                   ]
@@ -151,7 +176,7 @@
                             "Command": [
                               "model_02_train.py",
                               "--bucket_name", "${dataset_bucket_name}",
-                              "--model_name", "non_residential_without_dormancy"
+                              "--model_name", "non_res_without_dormancy_model"
                             ]
                           }
                         ]
@@ -160,7 +185,32 @@
                     "Next": "Predict - non-residential without dormancy"
                   },
                   "Predict - non-residential without dormancy": {
-                    "Type": "Pass",
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::ecs:runTask.sync",
+                    "Parameters": {
+                      "Cluster": "${model_cluster_arn}",
+                      "TaskDefinition": "${independent_cqc_model_task_arn}",
+                      "LaunchType": "FARGATE",
+                      "NetworkConfiguration": {
+                        "AwsvpcConfiguration": {
+                          "Subnets": ${public_subnet_ids},
+                          "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                          "AssignPublicIp": "ENABLED"
+                        }
+                      },
+                      "Overrides": {
+                        "ContainerOverrides": [
+                          {
+                            "Name": "_03_independent_cqc_model-container",
+                            "Command": [
+                              "model_03_predict.py",
+                              "--bucket_name", "${dataset_bucket_name}",
+                              "--model_name", "non_res_without_dormancy_model"
+                            ]
+                          }
+                        ]
+                      }
+                    },
                     "End": true
                     }
                   }
@@ -203,7 +253,7 @@
                       "Command": [
                         "model_01_features_non_res_with_dormancy.py",
                         "--bucket_name", "${dataset_bucket_name}",
-                        "--model_name", "non_residential_with_dormancy"
+                        "--model_name", "non_res_with_dormancy_model"
                       ]
                     }
                   ]
@@ -238,7 +288,7 @@
                             "Command": [
                               "model_02_train.py",
                               "--bucket_name", "${dataset_bucket_name}",
-                              "--model_name", "non_residential_with_dormancy"
+                              "--model_name", "non_res_with_dormancy_model"
                             ]
                           }
                         ]
@@ -247,7 +297,32 @@
                     "Next": "Predict - non-residential with dormancy"
                   },
                   "Predict - non-residential with dormancy": {
-                    "Type": "Pass",
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::ecs:runTask.sync",
+                    "Parameters": {
+                      "Cluster": "${model_cluster_arn}",
+                      "TaskDefinition": "${independent_cqc_model_task_arn}",
+                      "LaunchType": "FARGATE",
+                      "NetworkConfiguration": {
+                        "AwsvpcConfiguration": {
+                          "Subnets": ${public_subnet_ids},
+                          "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                          "AssignPublicIp": "ENABLED"
+                        }
+                      },
+                      "Overrides": {
+                        "ContainerOverrides": [
+                          {
+                            "Name": "_03_independent_cqc_model-container",
+                            "Command": [
+                              "model_03_predict.py",
+                              "--bucket_name", "${dataset_bucket_name}",
+                              "--model_name", "non_res_with_dormancy_model"
+                            ]
+                          }
+                        ]
+                      }
+                    },
                     "End": true
                     }
                   }

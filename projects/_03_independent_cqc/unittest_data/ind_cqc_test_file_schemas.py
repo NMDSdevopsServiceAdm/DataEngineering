@@ -220,6 +220,18 @@ class ModelAndMergePirData:
 
 @dataclass
 class ImputeUtilsSchema:
+    convert_care_home_ratios_to_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(
+                IndCQC.banded_bed_ratio_rolling_average_model, DoubleType(), True
+            ),
+            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
+        ]
+    )
+
     combine_care_home_and_non_res_values_into_single_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -1917,6 +1929,51 @@ class EstimateFilledPostsModelsUtils:
         ]
     )
 
+    join_model_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+        ]
+    )
+
+    test_non_res_model_name: str = "non_res_model"
+    join_model_predictions_non_res_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.service_count, IntegerType(), True),
+            StructField(IndCQC.prediction, FloatType(), True),
+            StructField(IndCQC.prediction_run_id, StringType(), True),
+        ]
+    )
+    expected_join_model_ind_cqc_non_res_schema = StructType(
+        [
+            *join_model_ind_cqc_schema,
+            StructField(test_non_res_model_name, FloatType(), True),
+            StructField(f"{test_non_res_model_name}_run_id", StringType(), True),
+        ]
+    )
+
+    test_care_home_model_name: str = IndCQC.care_home_model
+    join_model_predictions_care_home_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.prediction, FloatType(), True),
+            StructField(IndCQC.prediction_run_id, StringType(), True),
+        ]
+    )
+    expected_join_model_ind_cqc_care_home_schema = StructType(
+        [
+            *join_model_ind_cqc_schema,
+            StructField(test_care_home_model_name, FloatType(), True),
+            StructField(f"{test_care_home_model_name}_run_id", StringType(), True),
+        ]
+    )
+
     set_min_value_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -1925,15 +1982,21 @@ class EstimateFilledPostsModelsUtils:
         ]
     )
 
-    convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_schema = StructType(
+    prepare_predictions_for_join_schema = StructType(
         [
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(
-                IndCQC.banded_bed_ratio_rolling_average_model, DoubleType(), True
-            ),
-            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.prediction, FloatType(), True),
+            StructField(IndCQC.prediction_run_id, StringType(), False),
+        ]
+    )
+    expected_prepare_predictions_for_join_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home_model, FloatType(), True),
+            StructField(f"{IndCQC.care_home_model}_run_id", StringType(), False),
         ]
     )
 
@@ -2736,32 +2799,6 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             StructField(IndCQC.prediction, FloatType(), True),
         ]
     )
-
-
-@dataclass
-class MLModelMetrics:
-    ind_cqc_with_predictions_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.prediction, FloatType(), True),
-        ]
-    )
-
-    predictions_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
-            StructField(IndCQC.prediction, FloatType(), True),
-        ]
-    )
-
-    r2_metric_schema = predictions_schema
 
 
 @dataclass

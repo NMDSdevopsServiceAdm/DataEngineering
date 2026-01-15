@@ -133,3 +133,35 @@ class SaveModelAndMetadataTests(unittest.TestCase):
                 "models/model_A/42/metadata.json",
             },
         )
+
+
+class LoadModelTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.s3_root = "s3://pipeline-resources/models/model_A/"
+        self.run_number = 7
+        self.test_model = {"coef": [1.0, 2.0, 3.0]}
+
+    @mock_aws
+    def test_loads_model_for_given_run_number(self):
+        s3 = boto3.client("s3", region_name="eu-west-2")
+        s3.create_bucket(
+            Bucket="pipeline-resources",
+            CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
+        )
+
+        buffer = io.BytesIO()
+        joblib.dump(self.test_model, buffer)
+        buffer.seek(0)
+
+        s3.put_object(
+            Bucket="pipeline-resources",
+            Key="models/model_A/7/model.pkl",
+            Body=buffer.read(),
+        )
+
+        loaded_model = job.load_model(
+            s3_root=self.s3_root,
+            run_number=self.run_number,
+        )
+
+        self.assertEqual(loaded_model, self.test_model)

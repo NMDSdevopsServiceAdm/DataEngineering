@@ -280,6 +280,24 @@ class ModelTrainingUtilsData:
 
 
 @dataclass
+class ModelUtilsData:
+    features_rows = [
+        ("1-001", date(2025, 1, 1), 1, 4),
+        ("1-002", date(2025, 1, 1), 2, 5),
+        ("1-003", date(2025, 1, 1), 3, 6),
+    ]
+
+    predictions = np.array([10.5, 11.0, 12.3])
+    mismatch_predictions = np.array([10.5, 11.0])
+
+    expected_predictions_dataframe_rows = [
+        ("1-001", date(2025, 1, 1), 1, 4, 10.5, "v1.2.0_r7"),
+        ("1-002", date(2025, 1, 1), 2, 5, 11.0, "v1.2.0_r7"),
+        ("1-003", date(2025, 1, 1), 3, 6, 12.3, "v1.2.0_r7"),
+    ]
+
+
+@dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsData:
     estimates_df_before_join_rows = [
         (

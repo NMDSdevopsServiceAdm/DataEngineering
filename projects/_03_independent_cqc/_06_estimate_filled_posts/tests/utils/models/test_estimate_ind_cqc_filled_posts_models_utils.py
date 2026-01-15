@@ -1,6 +1,7 @@
 import unittest
 import warnings
 from datetime import date
+from unittest.mock import ANY, Mock, patch
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
     utils as job,
@@ -64,6 +65,150 @@ class InsertPredictionsIntoPipelineTest(EstimateFilledPostsModelsUtilsTests):
         ).collect()[0]
 
         self.assertIsNone(expected_df[IndCqc.estimate_filled_posts])
+
+
+class JoinModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_bucket = "test_bucket"
+
+        self.mock_ind_cqc_df = Mock(name="ind_cqc_df")
+        self.mock_predictions_df = Mock(name="predictions_df")
+
+        self.ind_cqc_df = self.spark.createDataFrame(
+            Data.join_model_ind_cqc_rows, Schemas.join_model_ind_cqc_schema
+        )
+
+        self.care_home_model = Schemas.test_care_home_model_name
+        self.care_home_pred_df = self.spark.createDataFrame(
+            Data.join_model_predictions_care_home_rows,
+            Schemas.join_model_predictions_care_home_schema,
+        )
+        self.expected_joined_care_home_df = self.spark.createDataFrame(
+            Data.expected_join_model_ind_cqc_care_home_rows,
+            Schemas.expected_join_model_ind_cqc_care_home_schema,
+        )
+
+        self.non_res_model = Schemas.test_non_res_model_name
+        self.non_res_pred_df = self.spark.createDataFrame(
+            Data.join_model_predictions_non_res_rows,
+            Schemas.join_model_predictions_non_res_schema,
+        )
+        self.expected_joined_non_res_df = self.spark.createDataFrame(
+            Data.expected_join_model_ind_cqc_non_res_rows,
+            Schemas.expected_join_model_ind_cqc_non_res_schema,
+        )
+
+    @patch(f"{PATCH_PATH}.prepare_predictions_for_join")
+    @patch(f"{PATCH_PATH}.set_min_value")
+    @patch(f"{PATCH_PATH}.calculate_filled_posts_from_beds_and_ratio")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.generate_predictions_path")
+    def test_function_calls_all_necessary_functions_when_care_home_model(
+        self,
+        generate_predictions_path_mock: Mock,
+        read_from_parquet_mock: Mock,
+        calculate_filled_posts_mock: Mock,
+        set_min_value_mock: Mock,
+        prepare_predictions_for_join_mock: Mock,
+    ):
+        read_from_parquet_mock.return_value = self.mock_predictions_df
+
+        job.join_model_predictions(
+            self.mock_ind_cqc_df, self.test_bucket, self.care_home_model
+        )
+
+        generate_predictions_path_mock.assert_called_once_with(
+            self.test_bucket, self.care_home_model
+        )
+        read_from_parquet_mock.assert_called_once_with(
+            generate_predictions_path_mock.return_value
+        )
+        calculate_filled_posts_mock.assert_called_once()
+        set_min_value_mock.assert_called_once_with(ANY, IndCqc.prediction, 1.0)
+        prepare_predictions_for_join_mock.assert_called_once_with(
+            ANY, self.care_home_model
+        )
+        self.mock_ind_cqc_df.join.assert_called_once_with(
+            ANY,
+            [IndCqc.location_id, IndCqc.cqc_location_import_date],
+            "left",
+        )
+
+    @patch(f"{PATCH_PATH}.prepare_predictions_for_join")
+    @patch(f"{PATCH_PATH}.set_min_value")
+    @patch(f"{PATCH_PATH}.calculate_filled_posts_from_beds_and_ratio")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.generate_predictions_path")
+    def test_function_does_not_call_ratio_conversion_for_non_care_home_model(
+        self,
+        generate_predictions_path_mock: Mock,
+        read_from_parquet_mock: Mock,
+        calculate_filled_posts_mock: Mock,
+        set_min_value_mock: Mock,
+        prepare_predictions_for_join_mock: Mock,
+    ):
+        read_from_parquet_mock.return_value = self.mock_predictions_df
+
+        job.join_model_predictions(
+            self.mock_ind_cqc_df, self.test_bucket, self.non_res_model
+        )
+
+        generate_predictions_path_mock.assert_called_once_with(
+            self.test_bucket, self.non_res_model
+        )
+        read_from_parquet_mock.assert_called_once_with(
+            generate_predictions_path_mock.return_value
+        )
+        calculate_filled_posts_mock.assert_not_called()
+        set_min_value_mock.assert_called_once_with(ANY, IndCqc.prediction, 1.0)
+        prepare_predictions_for_join_mock.assert_called_once_with(
+            ANY, self.non_res_model
+        )
+        self.mock_ind_cqc_df.join.assert_called_once_with(
+            ANY,
+            [IndCqc.location_id, IndCqc.cqc_location_import_date],
+            "left",
+        )
+
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.generate_predictions_path")
+    def test_function_returns_expected_data_for_care_home_model(
+        self,
+        generate_predictions_path_mock: Mock,
+        read_from_parquet_mock: Mock,
+    ):
+        read_from_parquet_mock.return_value = self.care_home_pred_df
+
+        returned_df = job.join_model_predictions(
+            self.ind_cqc_df, self.test_bucket, self.care_home_model
+        )
+
+        self.assertEqual(returned_df.columns, self.expected_joined_care_home_df.columns)
+        self.assertEqual(
+            returned_df.sort(IndCqc.location_id).collect(),
+            self.expected_joined_care_home_df.collect(),
+        )
+
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.generate_predictions_path")
+    def test_function_returns_expected_data_for_non_care_home_model(
+        self,
+        generate_predictions_path_mock: Mock,
+        read_from_parquet_mock: Mock,
+    ):
+        read_from_parquet_mock.return_value = self.non_res_pred_df
+
+        returned_df = job.join_model_predictions(
+            self.ind_cqc_df, self.test_bucket, self.non_res_model
+        )
+
+        self.assertEqual(returned_df.columns, self.expected_joined_non_res_df.columns)
+        self.assertEqual(
+            returned_df.sort(IndCqc.location_id).collect(),
+            self.expected_joined_non_res_df.collect(),
+        )
 
 
 class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
@@ -135,36 +280,27 @@ class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class ConvertCareHomeRatiosToFilledPostsAndMergeWithFilledPostValuesTests(
-    EstimateFilledPostsModelsUtilsTests
-):
+class PreparePredictionsForJoinTests(EstimateFilledPostsModelsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
+        self.model_name = IndCqc.care_home_model
+
         self.test_df = self.spark.createDataFrame(
-            Data.convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_rows,
-            Schemas.convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_schema,
+            Data.prepare_predictions_for_join_rows,
+            Schemas.prepare_predictions_for_join_schema,
         )
-        self.returned_df = job.convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values(
-            self.test_df,
-            IndCqc.banded_bed_ratio_rolling_average_model,
-            IndCqc.posts_rolling_average_model,
+        self.returned_df = job.prepare_predictions_for_join(
+            self.test_df, self.model_name
         )
+
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_rows,
-            Schemas.convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_schema,
+            Data.expected_prepare_predictions_for_join_rows,
+            Schemas.expected_prepare_predictions_for_join_schema,
         )
 
-    def test_returned_columns_match_original_data_columns(self):
-        self.assertEqual(self.returned_df.columns, self.test_df.columns)
+    def test_function_renames_and_selects_columns_correctly(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-    def test_returned_column_values_match_expected_when_not_care_home(self):
-        returned_data = self.returned_df.sort(IndCqc.location_id).collect()
-        expected_data = self.expected_df.collect()
-
-        for i in range(len(returned_data)):
-            self.assertEqual(
-                returned_data[i],
-                expected_data[i],
-                f"Returned row {i} does not match expected",
-            )
+    def test_function_preserves_row_count(self):
+        self.assertEqual(self.returned_df.count(), self.test_df.count())
