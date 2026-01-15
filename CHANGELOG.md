@@ -22,10 +22,12 @@ All notable changes to this project will be documented in this file.
 
 - Moved the `convert_care_home_ratios_to_posts` function to the impute [utils](projects/_03_independent_cqc/_03_impute/utils/utils.py) file to align with the jobs it's called in.
 
+- Migrated the original `PySpark` Independent CQC estimates pipeline step `_01_merge` to be run in `Polars` for notable increases in efficiency.
+
 - Refactored two similar functions (`insert_predictions_into_pipeline` and `prepare_predictions_for_join`) into one (`join_model_predictions`).
 
 ### Fixed
-- Analysts found a new test account in ASC-WDS so I've added their orgid to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)
+- Added a new test account in ASC-WDS to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)
 
 
 ## [v2025.12.0] - 06/01/2026
