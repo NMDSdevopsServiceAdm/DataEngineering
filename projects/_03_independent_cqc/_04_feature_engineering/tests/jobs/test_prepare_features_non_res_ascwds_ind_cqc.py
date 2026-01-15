@@ -39,14 +39,12 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.add_date_index_column")
     @patch(f"{PATCH_PATH}.filter_without_dormancy_features_to_pre_2025")
     @patch(f"{PATCH_PATH}.group_rural_urban_sparse_categories")
-    @patch(f"{PATCH_PATH}.cap_integer_at_max_value")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
         select_rows_with_value_mock: Mock,
-        cap_integer_at_max_value_mock: Mock,
         group_rural_urban_sparse_categories_mock: Mock,
         filter_without_dormancy_features_to_pre_2025_mock: Mock,
         add_date_index_column_mock: Mock,
@@ -78,7 +76,6 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         ]
 
         select_rows_with_value_mock.assert_called_once()
-        self.assertEqual(cap_integer_at_max_value_mock.call_count, 3)
         group_rural_urban_sparse_categories_mock.assert_called_once()
         filter_without_dormancy_features_to_pre_2025_mock.assert_called_once()
         self.assertEqual(add_date_index_column_mock.call_count, 2)

@@ -8,7 +8,6 @@ from pyspark.sql import DataFrame
 
 from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
     add_date_index_column,
-    cap_integer_at_max_value,
 )
 from projects._03_independent_cqc._04_feature_engineering.utils.value_labels import (
     RegionLabels,
@@ -38,43 +37,3 @@ def main(
     )
 
     features_df = add_date_index_column(filtered_df)
-
-    features_df = cap_integer_at_max_value(
-        features_df,
-        IndCQC.service_count,
-        max_value=4,
-        new_col_name=IndCQC.service_count_capped,
-    )
-
-    features_df = cap_integer_at_max_value(
-        features_df,
-        IndCQC.activity_count,
-        max_value=3,
-        new_col_name=IndCQC.activity_count_capped,
-    )
-
-
-if __name__ == "__main__":
-    print("Spark job 'prepare_features_care_home_ind_cqc' starting...")
-    print(f"Job parameters: {sys.argv}")
-
-    (
-        ind_cqc_filled_posts_cleaned_source,
-        care_home_ind_cqc_features_destination,
-    ) = utils.collect_arguments(
-        (
-            "--ind_cqc_filled_posts_cleaned_source",
-            "Source s3 directory for ind_cqc_filled_posts_cleaned dataset",
-        ),
-        (
-            "--care_home_ind_cqc_features_destination",
-            "A destination directory for outputting care_home_features_ind_cqc_filled_posts",
-        ),
-    )
-
-    main(
-        ind_cqc_filled_posts_cleaned_source,
-        care_home_ind_cqc_features_destination,
-    )
-
-    print("Spark job 'prepare_features_care_home_ind_cqc' complete")

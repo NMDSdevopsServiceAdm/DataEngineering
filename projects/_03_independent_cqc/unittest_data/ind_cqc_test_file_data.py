@@ -4329,19 +4329,6 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
 
 @dataclass
 class ModelFeatures:
-    cap_integer_at_max_value_rows = [
-        ("1-0001", 1),
-        ("1-0002", 2),
-        ("1-0003", 3),
-        ("1-0004", None),
-    ]
-    expected_cap_integer_at_max_value_rows = [
-        ("1-0001", 1, 1),
-        ("1-0002", 2, 2),
-        ("1-0003", 3, 2),
-        ("1-0004", None, None),
-    ]
-
     add_date_index_column_rows = [
         ("1-0001", CareHome.not_care_home, date(2024, 10, 1)),
         ("1-0002", CareHome.not_care_home, date(2024, 12, 1)),

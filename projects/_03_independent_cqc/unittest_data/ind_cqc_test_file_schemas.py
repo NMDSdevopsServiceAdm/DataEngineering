@@ -1834,19 +1834,6 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcSchema:
 
 @dataclass
 class ModelFeatures:
-    cap_integer_at_max_value_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.service_count, IntegerType(), True),
-        ]
-    )
-    expected_cap_integer_at_max_value_schema = StructType(
-        [
-            *cap_integer_at_max_value_schema,
-            StructField(IndCQC.service_count_capped, IntegerType(), True),
-        ]
-    )
-
     add_date_index_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),

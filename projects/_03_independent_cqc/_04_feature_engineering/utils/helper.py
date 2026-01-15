@@ -7,32 +7,6 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 # converted to polars -> projects._03_independent_cqc._04_feature_engineering.fargate.utils.feature_utils.py
-def cap_integer_at_max_value(
-    df: DataFrame, col_name: str, max_value: int, new_col_name: str
-) -> DataFrame:
-    """
-    Caps the values in a specified column at a given maximum value and stores the result in a new column.
-    Null values remain as null.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-        col_name (str): The name of the column to be capped.
-        max_value (int): The maximum value allowed for the column.
-        new_col_name (str): The name of the new column to store the capped values.
-
-    Returns:
-        DataFrame: A new DataFrame with the capped values stored in the new column, preserving null values.
-    """
-    df = df.withColumn(
-        new_col_name,
-        F.when(
-            F.col(col_name).isNotNull(), F.least(F.col(col_name), F.lit(max_value))
-        ).otherwise(None),
-    )
-    return df
-
-
-# converted to polars -> projects._03_independent_cqc._04_feature_engineering.fargate.utils.feature_utils.py
 def add_date_index_column(df: DataFrame) -> DataFrame:
     """
     Creates an index column in the DataFrame based on the cqc_location_import_date column, partitioned by care_home.

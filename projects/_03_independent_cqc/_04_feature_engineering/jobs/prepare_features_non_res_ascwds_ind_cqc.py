@@ -7,7 +7,6 @@ os.environ["SPARK_VERSION"] = "3.5"
 from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
     add_date_index_column,
     add_squared_column,
-    cap_integer_at_max_value,
     filter_without_dormancy_features_to_pre_2025,
     group_rural_urban_sparse_categories,
 )
@@ -37,20 +36,6 @@ def main(
         locations_df, IndCQC.care_home, CareHome.not_care_home
     )
 
-    features_df = cap_integer_at_max_value(
-        features_df,
-        IndCQC.service_count,
-        max_value=4,
-        new_col_name=IndCQC.service_count_capped,
-    )
-
-    features_df = cap_integer_at_max_value(
-        features_df,
-        IndCQC.activity_count,
-        max_value=3,
-        new_col_name=IndCQC.activity_count_capped,
-    )
-
     features_df = group_rural_urban_sparse_categories(features_df)
 
     # Without dormancy features
@@ -60,13 +45,6 @@ def main(
     )
 
     without_dormancy_features_df = add_date_index_column(without_dormancy_features_df)
-
-    without_dormancy_features_df = cap_integer_at_max_value(
-        without_dormancy_features_df,
-        IndCQC.time_registered,
-        max_value=48,
-        new_col_name=IndCQC.time_registered_capped_at_four_years,
-    )
 
     # With dormancy features
 
@@ -85,43 +63,3 @@ def main(
     with_dormancy_features_df = with_dormancy_features_df.fillna(
         999, subset=[IndCQC.time_since_dormant]
     )
-
-    print(
-        f"Exporting vectorised_features_without_dormancy_df as parquet to {without_dormancy_features_destination}"
-    )
-
-    print(
-        f"Exporting vectorised_features_with_dormancy_df as parquet to {with_dormancy_features_destination}"
-    )
-
-
-if __name__ == "__main__":
-    print("Spark job 'prepare_features_non_res_ascwds_ind_cqc' starting...")
-    print(f"Job parameters: {sys.argv}")
-
-    (
-        ind_cqc_filled_posts_cleaned_source,
-        with_dormancy_features_destination,
-        without_dormancy_features_destination,
-    ) = utils.collect_arguments(
-        (
-            "--ind_cqc_filled_posts_cleaned_source",
-            "Source s3 directory for ind_cqc_filled_posts_cleaned dataset",
-        ),
-        (
-            "--with_dormancy_features_destination",
-            "A destination directory for outputting non-res ASCWDS with dormancy model features dataset",
-        ),
-        (
-            "--without_dormancy_features_destination",
-            "A destination directory for outputting non-res ASCWDS without dormancy model features dataset",
-        ),
-    )
-
-    main(
-        ind_cqc_filled_posts_cleaned_source,
-        with_dormancy_features_destination,
-        without_dormancy_features_destination,
-    )
-
-    print("Spark job 'prepare_features_non_res_ascwds_ind_cqc' complete")
