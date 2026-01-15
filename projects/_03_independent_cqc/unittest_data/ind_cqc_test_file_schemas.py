@@ -183,6 +183,22 @@ class ModelAndMergePirData:
         ]
     )
 
+    vectorise_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField("col_1", FloatType(), True),
+            StructField("col_2", IntegerType(), True),
+            StructField("col_3", IntegerType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    expected_vectorised_feature_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.features, VectorUDT(), True),
+        ]
+    )
+
     blend_pir_and_ascwds_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -1818,22 +1834,6 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcSchema:
 
 @dataclass
 class ModelFeatures:
-    vectorise_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField("col_1", FloatType(), True),
-            StructField("col_2", IntegerType(), True),
-            StructField("col_3", IntegerType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-    expected_vectorised_feature_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.features, VectorUDT(), True),
-        ]
-    )
-
     expand_encode_and_extract_features_when_not_array_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
