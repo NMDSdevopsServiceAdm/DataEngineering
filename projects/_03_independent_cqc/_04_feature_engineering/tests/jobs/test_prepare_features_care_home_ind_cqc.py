@@ -35,7 +35,6 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.add_date_index_column")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_non_null_value")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
@@ -44,7 +43,6 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         read_from_parquet_mock: Mock,
         select_rows_with_value_mock: Mock,
         select_rows_with_non_null_value_mock: Mock,
-        add_date_index_column_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_df
@@ -56,7 +54,6 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
 
         self.assertEqual(select_rows_with_value_mock.call_count, 1)
         self.assertEqual(select_rows_with_non_null_value_mock.call_count, 1)
-        self.assertEqual(add_date_index_column_mock.call_count, 1)
 
         write_to_parquet_mock.assert_called_once_with(
             ANY,

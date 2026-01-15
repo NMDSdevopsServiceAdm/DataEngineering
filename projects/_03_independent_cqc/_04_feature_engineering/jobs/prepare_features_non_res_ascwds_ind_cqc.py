@@ -1,11 +1,8 @@
 import os
-import sys
-from typing import List
 
 os.environ["SPARK_VERSION"] = "3.5"
 
 from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
-    add_date_index_column,
     add_squared_column,
     filter_without_dormancy_features_to_pre_2025,
     group_rural_urban_sparse_categories,
@@ -44,22 +41,11 @@ def main(
         features_df
     )
 
-    without_dormancy_features_df = add_date_index_column(without_dormancy_features_df)
-
     # With dormancy features
 
     with_dormancy_features_df = utils.select_rows_with_non_null_value(
         features_df, IndCQC.dormancy
     )
-
-    with_dormancy_features_df = add_date_index_column(with_dormancy_features_df)
     with_dormancy_features_df = add_squared_column(
         with_dormancy_features_df, IndCQC.cqc_location_import_date_indexed
-    )
-
-    """ Features cannot be null, and in order to help the model learn that locations which are not dormant
-    are larger than those which are, we have entered a large value (999) for locations who have either never
-    been dormant, or before they first become dormant."""
-    with_dormancy_features_df = with_dormancy_features_df.fillna(
-        999, subset=[IndCQC.time_since_dormant]
     )

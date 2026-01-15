@@ -1,14 +1,9 @@
 import os
-import sys
-from typing import List
 
 os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
 
-from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
-    add_date_index_column,
-)
 from projects._03_independent_cqc._04_feature_engineering.utils.value_labels import (
     RegionLabels,
     RuralUrbanLabels,
@@ -35,5 +30,3 @@ def main(
     filtered_df = utils.select_rows_with_non_null_value(
         filtered_df, IndCQC.number_of_beds
     )
-
-    features_df = add_date_index_column(filtered_df)
