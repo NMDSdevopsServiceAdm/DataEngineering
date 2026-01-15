@@ -4328,22 +4328,6 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
 
 
 @dataclass
-class ModelFeatures:
-    add_squared_column_rows = [
-        ("1-001", None),
-        ("1-002", 0.0),
-        ("1-003", 2.0),
-        ("1-004", 4.0),
-    ]
-    expected_add_squared_column_rows = [
-        ("1-001", None, None),
-        ("1-002", 0.0, 0.0),
-        ("1-003", 2.0, 4.0),
-        ("1-004", 4.0, 16.0),
-    ]
-
-
-@dataclass
 class ModelPrimaryServiceRateOfChange:
     # fmt: off
     primary_service_rate_of_change_rows = [

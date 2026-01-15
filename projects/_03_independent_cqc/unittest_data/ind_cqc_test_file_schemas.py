@@ -1833,24 +1833,6 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcSchema:
 
 
 @dataclass
-class ModelFeatures:
-    add_squared_column_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date_indexed, DoubleType(), True),
-        ]
-    )
-    expected_add_squared_column_schema = StructType(
-        [
-            *add_squared_column_schema,
-            StructField(
-                IndCQC.cqc_location_import_date_indexed_squared, DoubleType(), True
-            ),
-        ]
-    )
-
-
-@dataclass
 class EstimateFilledPostsModelsUtils:
     enrich_model_ind_cqc_schema = StructType(
         [
