@@ -66,6 +66,35 @@ class ModelPirFilledPostsTests(ModelAndMergePirTests):
             )
 
 
+class VectoriseDataframeTests(ModelAndMergePirTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_vectorise_dataframe(self):
+        list_for_vectorisation = ["col_1", "col_2", "col_3"]
+
+        df = self.spark.createDataFrame(
+            Data.vectorise_input_rows, Schemas.vectorise_schema
+        )
+
+        output_df = job.vectorise_dataframe(
+            df=df, list_for_vectorisation=list_for_vectorisation
+        )
+        output_data = (
+            output_df.sort(IndCQC.location_id).select(IndCQC.features).collect()
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_vectorised_feature_rows,
+            Schemas.expected_vectorised_feature_schema,
+        )
+        expected_data = (
+            expected_df.sort(IndCQC.location_id).select(IndCQC.features).collect()
+        )
+
+        self.assertEqual(output_data, expected_data)
+
+
 class MergeAscwdsAndPirFilledPostSubmissionsTests(ModelAndMergePirTests):
     def setUp(self):
         super().setUp()

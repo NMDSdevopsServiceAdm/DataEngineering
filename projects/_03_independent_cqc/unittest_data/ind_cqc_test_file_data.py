@@ -84,6 +84,15 @@ class ModelAndMergePirData:
         ("loc 4", date(2024, 1, 1), CareHome.care_home, None, None),
     ]
 
+    vectorise_input_rows = [
+        ("1-0001", 12.0, 0, 1, date(2024, 1, 1)),
+        ("1-0002", 50.0, 1, 1, date(2024, 1, 1)),
+    ]
+    expected_vectorised_feature_rows = [
+        ("1-0001", Vectors.dense([12.0, 0.0, 1.0])),
+        ("1-0002", Vectors.dense([50.0, 1.0, 1.0])),
+    ]
+
     blend_pir_and_ascwds_rows = [
         ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10.0, 20.0),
     ]
