@@ -105,9 +105,7 @@ def main(
     reduced_coverage_destination: str,
 ):
     spark = utils.get_spark()
-    spark.sql(
-        "set spark.sql.broadcastTimeout = 2000"
-    )  # TODO: Test if this is needed still
+    spark.sql("set spark.sql.broadcastTimeout = 2000")
 
     cqc_location_df = utils.read_from_parquet(
         cleaned_cqc_location_source,
