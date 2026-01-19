@@ -1,13 +1,12 @@
 from dataclasses import dataclass
+from typing import List
 
+from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 from pyspark.sql.types import IntegerType
 
-from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
-    vectorise_dataframe,
-)
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
     join_model_predictions,
 )
@@ -58,6 +57,28 @@ def model_pir_filled_posts(
         include_run_id=False,
     )
     return df
+
+
+def vectorise_dataframe(df: DataFrame, list_for_vectorisation: List[str]) -> DataFrame:
+    """
+    Combines specified columns into a single feature vector for the modelling process.
+
+    This function uses `VectorAssembler` to merge multiple input columns into a single vector column.
+    Invalid values are skipped to prevent transformation errors.
+
+    Args:
+        df (DataFrame): Input DataFrame containing columns to be vectorised.
+        list_for_vectorisation (List[str]): List of column names to be combined into the feature vector.
+
+    Returns:
+        DataFrame: A DataFrame with an additional 'features' column.
+    """
+    loc_df = VectorAssembler(
+        inputCols=list_for_vectorisation,
+        outputCol=IndCQC.features,
+        handleInvalid="skip",
+    ).transform(df)
+    return loc_df
 
 
 def merge_ascwds_and_pir_filled_post_submissions(df: DataFrame) -> DataFrame:
