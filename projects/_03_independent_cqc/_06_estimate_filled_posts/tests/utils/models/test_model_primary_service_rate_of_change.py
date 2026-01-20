@@ -126,39 +126,6 @@ class CleanColumnWithValuesTests(ModelPrimaryServiceRateOfChangeTests):
         self.assertEqual(returned_data, expected_data)
 
 
-class CalculateCareHomeStatusCountTests(ModelPrimaryServiceRateOfChangeTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        test_df = self.spark.createDataFrame(
-            Data.calculate_care_home_status_count_rows,
-            Schemas.calculate_care_home_status_count_schema,
-        )
-        self.returned_df = job.calculate_care_home_status_count(test_df)
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_care_home_status_count_rows,
-            Schemas.expected_calculate_care_home_status_count_schema,
-        )
-        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
-        self.expected_data = self.expected_df.collect()
-
-    def test_calculate_care_home_status_count_returns_expected_columns(self):
-        self.assertEqual(
-            sorted(self.returned_df.columns),
-            sorted(self.expected_df.columns),
-        )
-
-    def test_returned_care_home_status_count_values_match_expected(
-        self,
-    ):
-        for i in range(len(self.returned_data)):
-            self.assertEqual(
-                self.returned_data[i][job.TempCol.care_home_status_count],
-                self.expected_data[i][job.TempCol.care_home_status_count],
-                f"Returned row {i} does not match expected",
-            )
-
-
 class InterpolateColumnWithValuesTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()

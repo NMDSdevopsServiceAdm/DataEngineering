@@ -3391,6 +3391,19 @@ class CleanIndCQCData:
         ("2", "1-0002", 3, date(2024, 2, 1), None),
     ]
 
+    calculate_care_home_status_count_rows = [
+        ("1-001", CareHome.care_home),
+        ("1-001", CareHome.care_home),
+        ("1-002", CareHome.care_home),
+        ("1-002", CareHome.not_care_home),
+    ]
+    expected_calculate_care_home_status_count_rows = [
+        ("1-001", CareHome.care_home, 1),
+        ("1-001", CareHome.care_home, 1),
+        ("1-002", CareHome.care_home, 2),
+        ("1-002", CareHome.not_care_home, 2),
+    ]
+
 
 @dataclass
 class CalculateAscwdsFilledPostsUtilsData:
@@ -4540,19 +4553,6 @@ class ModelPrimaryServiceRateOfChange:
         ("1-001", 1000000001, CareHome.care_home, None, 2, 2),
         ("1-001", 1000000002, CareHome.care_home, None, 2, 2),
         ("1-001", 1000000003, CareHome.not_care_home, None, 2, 1),
-    ]
-
-    calculate_care_home_status_count_rows = [
-        ("1-001", CareHome.care_home),
-        ("1-001", CareHome.care_home),
-        ("1-002", CareHome.care_home),
-        ("1-002", CareHome.not_care_home),
-    ]
-    expected_calculate_care_home_status_count_rows = [
-        ("1-001", CareHome.care_home, 1),
-        ("1-001", CareHome.care_home, 1),
-        ("1-002", CareHome.care_home, 2),
-        ("1-002", CareHome.not_care_home, 2),
     ]
 
     calculate_submission_count_same_care_home_status_rows = [
