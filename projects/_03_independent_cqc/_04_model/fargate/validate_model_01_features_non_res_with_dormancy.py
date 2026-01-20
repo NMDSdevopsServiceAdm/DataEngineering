@@ -46,7 +46,7 @@ def main(
         IndCQC.posts_rolling_average_model,
         IndCQC.services_offered,
         IndCQC.specialisms_offered,
-        IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
+        IndCQC.current_rural_urban_indicator_2011,
         IndCQC.current_region,
         IndCQC.related_location,
         IndCQC.time_registered,
