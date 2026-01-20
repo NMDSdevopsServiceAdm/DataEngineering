@@ -206,6 +206,18 @@ class ModelUtilsSchemas:
 
 
 @dataclass
+class ValidateModelsSchemas:
+    get_expected_row_count_comapre_df_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.DataType()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.dormancy, pl.String()),
+        ]
+    )
+
+
+@dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsSchemas:
     estimates_df_before_join_schema = pl.Schema(
         [

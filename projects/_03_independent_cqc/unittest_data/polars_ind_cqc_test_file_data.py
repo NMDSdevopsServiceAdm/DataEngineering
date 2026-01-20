@@ -298,6 +298,19 @@ class ModelUtilsData:
 
 
 @dataclass
+class ValidateModelsData:
+    get_expected_row_count_comapre_df_rows = [
+        ("1-001", date(2025, 1, 1), "Y", "Y"),
+        ("1-002", date(2025, 1, 1), "Y", "N"),
+        ("1-003", date(2025, 1, 1), "Y", None),
+        ("1-004", date(2025, 1, 1), "N", "Y"),
+        ("1-005", date(2025, 1, 1), "N", "N"),
+        ("1-006", date(2025, 1, 1), "N", None),
+    ]
+    expected_get_expected_row_count_rows = 2
+
+
+@dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsData:
     estimates_df_before_join_rows = [
         (
