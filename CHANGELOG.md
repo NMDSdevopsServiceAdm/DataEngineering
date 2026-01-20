@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
 
 - Refactored two similar functions (`insert_predictions_into_pipeline` and `prepare_predictions_for_join`) into one (`join_model_predictions`).
 
+- Replaced the PySpark care home and non-residential with/without dormancy models with the new sklearn models in the Independent CQC step function.
+
 ### Fixed
 - Added a new test account in ASC-WDS to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)
 
