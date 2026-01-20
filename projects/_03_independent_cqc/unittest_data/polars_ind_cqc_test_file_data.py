@@ -3,6 +3,8 @@ from datetime import date
 
 import numpy as np
 
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 from utils.column_values.categorical_column_values import (
     CareHome,
     MainJobRoleLabels,
@@ -300,26 +302,43 @@ class ModelUtilsData:
 @dataclass
 class ValidateModelsData:
     get_expected_row_count_comapre_df_rows = [
-        ("1-001", date(2025, 1, 1), "Y", "Y"),
-        ("1-002", date(2025, 1, 1), "Y", "N"),
-        ("1-003", date(2025, 1, 1), "Y", None),
-        ("1-004", date(2025, 1, 1), "N", "Y"),
-        ("1-005", date(2025, 1, 1), "N", "N"),
-        ("1-006", date(2025, 1, 1), "N", None),
+        ("1-001", date(2025, 1, 1), "Y", "Y", "feature", "feature"),
+        ("1-002", date(2025, 1, 1), "Y", "N", "feature", "feature"),
+        ("1-003", date(2025, 1, 1), "Y", None, "feature", "feature"),
+        ("1-004", date(2025, 1, 1), "N", "Y", "feature", "feature"),
+        ("1-005", date(2025, 1, 1), "N", "N", "feature", "feature"),
+        ("1-006", date(2025, 1, 1), "N", None, "feature", "feature"),
+        ("1-007", date(2025, 1, 1), "Y", "Y", "feature", None),
+        ("1-008", date(2025, 1, 1), "Y", "Y", None, "feature"),
+        ("1-009", date(2025, 1, 1), "Y", "Y", None, None),
     ]
+    features_list = ["feature 1", "feature 2"]
     expected_get_expected_row_count_rows = 2
 
 
 @dataclass
 class ValidateModel01FeaturesNonResWithDormancyData:
     validation_rows = [
-        ("1-001", date(2025, 1, 1), "Y", "Y", "20250101"),
-        ("1-002", date(2025, 1, 1), "Y", "N", "20250101"),
-        ("1-003", date(2025, 1, 1), "Y", None, "20250101"),
-        ("1-004", date(2025, 1, 1), "N", "Y", "20250101"),
-        ("1-005", date(2025, 1, 1), "N", "N", "20250101"),
-        ("1-006", date(2025, 1, 1), "N", None, "20250101"),
+        ("1-001", date(2025, 1, 1), "Y", "Y", "20250101", "feature", "feature"),
+        ("1-002", date(2025, 1, 1), "Y", "N", "20250101", "feature", "feature"),
+        ("1-003", date(2025, 1, 1), "Y", None, "20250101", "feature", "feature"),
+        ("1-004", date(2025, 1, 1), "N", "Y", "20250101", "feature", "feature"),
+        ("1-005", date(2025, 1, 1), "N", "N", "20250101", "feature", "feature"),
+        ("1-006", date(2025, 1, 1), "N", None, "20250101", "feature", "feature"),
+        ("1-007", date(2025, 1, 1), "Y", "Y", "20250101", "feature", None),
+        ("1-008", date(2025, 1, 1), "Y", "Y", "20250101", None, "feature"),
+        ("1-009", date(2025, 1, 1), "Y", "Y", "20250101", None, None),
     ]
+    model_registry = {
+        IndCQC.non_res_with_dormancy_model: {
+            MRKeys.features: sorted(
+                [
+                    "feature 1",
+                    "feature 2",
+                ]
+            ),
+        },
+    }
 
 
 @dataclass

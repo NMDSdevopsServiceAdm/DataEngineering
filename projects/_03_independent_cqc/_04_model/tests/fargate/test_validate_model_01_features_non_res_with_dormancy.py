@@ -19,13 +19,23 @@ PATCH_PATH = "projects._03_independent_cqc._04_model.fargate.validate_model_01_f
 class ValidateModelFeaturesNonResWithDormancy(unittest.TestCase):
     def setUp(self) -> None:
         self.validate_df = pl.DataFrame(
-            data=Data.validation_rows, schema=Schemas.validation_schema, strict=False
+            data=Data.validation_rows,
+            schema=Schemas.validation_schema,
+            strict=False,
+            orient="row",
         )
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.model_registry")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_validation_runs(self, mock_read_parquet: Mock, mock_write_reports: Mock):
+    def test_validation_runs(
+        self,
+        mock_read_parquet: Mock,
+        mock_model_registry: Mock,
+        mock_write_reports: Mock,
+    ):
         mock_read_parquet.side_effect = [self.validate_df, self.validate_df]
+        mock_model_registry.return_value = Data.model_registry
 
         job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
 

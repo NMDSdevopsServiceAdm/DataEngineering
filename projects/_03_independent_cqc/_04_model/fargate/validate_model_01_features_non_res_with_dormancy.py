@@ -6,10 +6,14 @@ from polars_utils import utils
 from polars_utils.expressions import str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from projects._03_independent_cqc._04_model.registry.model_registry import (
+    model_registry,
+)
 from projects._03_independent_cqc._04_model.utils.validate_models import (
     get_expected_row_count_for_validation_model_01_features_non_res_with_dormancy,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.validation_table_columns import Validation
 
@@ -43,9 +47,10 @@ def main(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=compare_columns_to_import,
     )
+    feature_cols = model_registry["non_res_with_dormancy_model"][MRKeys.features]
     expected_row_count = (
         get_expected_row_count_for_validation_model_01_features_non_res_with_dormancy(
-            compare_df
+            compare_df, feature_cols
         )
     )
     not_null_cols = source_df.columns.remove(IndCQC.imputed_filled_post_model)

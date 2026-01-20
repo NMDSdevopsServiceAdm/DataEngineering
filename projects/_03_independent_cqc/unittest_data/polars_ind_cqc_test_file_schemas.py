@@ -213,6 +213,8 @@ class ValidateModelsSchemas:
             (IndCQC.cqc_location_import_date, pl.DataType()),
             (IndCQC.care_home, pl.String()),
             (IndCQC.dormancy, pl.String()),
+            ("feature 1", pl.String()),
+            ("feature 2", pl.String()),
         ]
     )
 
@@ -226,6 +228,8 @@ class ValidateModel01FeaturesNonResWithDormancySchemas:
             (IndCQC.care_home, pl.String()),
             (IndCQC.dormancy, pl.String()),
             (Keys.import_date, pl.String()),
+            ("feature 1", pl.String()),
+            ("feature 2", pl.String()),
         ]
     )
 
