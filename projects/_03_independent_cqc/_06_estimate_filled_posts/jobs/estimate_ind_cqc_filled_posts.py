@@ -50,6 +50,7 @@ ind_cqc_columns = [
     IndCQC.time_registered,
     IndCQC.time_since_dormant,
     IndCQC.registered_manager_names,
+    IndCQC.care_home_status_count,
     IndCQC.ct_non_res_import_date,
     IndCQC.ct_non_res_care_workers_employed,
     IndCQC.ct_non_res_filtering_rule,
