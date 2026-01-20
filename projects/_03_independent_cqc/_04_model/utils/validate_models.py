@@ -22,7 +22,17 @@ def get_expected_row_count_for_validation_model_01_features_non_res_with_dormanc
     df = df.filter(
         pl.col(IndCQC.care_home) == CareHome.care_home,
         pl.col(IndCQC.dormancy).is_not_null(),
-        pl.all_horizontal([pl.col(feature).is_not_null() for feature in features_list]),
+        pl.col(IndCQC.regulated_activities_offered).is_not_null(),
+        pl.col(IndCQC.cqc_location_import_date).is_not_null(),
+        pl.col(IndCQC.posts_rolling_average_model).is_not_null(),
+        pl.col(IndCQC.services_offered).is_not_null(),
+        pl.col(IndCQC.specialisms_offered).is_not_null(),
+        pl.col(IndCQC.current_rural_urban_indicator_2011).is_not_null(),
+        pl.col(IndCQC.current_region).is_not_null(),
+        pl.col(IndCQC.related_location).is_not_null(),
+        pl.col(IndCQC.time_registered).is_not_null(),
+        pl.col(IndCQC.time_since_dormant).is_not_null(),
+        # pl.all_horizontal([pl.col(feature).is_not_null() for feature in features_list]),
     )
     row_count = df.height
 
