@@ -230,6 +230,7 @@ class ValidateModel01FeaturesNonResWithDormancySchemas:
             (Keys.import_date, pl.String()),
             ("feature 1", pl.String()),
             ("feature 2", pl.String()),
+            (IndCQC.imputed_filled_post_model, pl.Float32),
         ]
     )
 

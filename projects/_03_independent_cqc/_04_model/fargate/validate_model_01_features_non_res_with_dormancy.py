@@ -17,13 +17,6 @@ from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRK
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.validation_table_columns import Validation
 
-compare_columns_to_import = [
-    Keys.import_date,
-    IndCQC.location_id,
-    IndCQC.care_home,
-    IndCQC.dormancy,
-]
-
 
 def main(
     bucket_name: str, source_path: str, reports_path: str, compare_path: str
@@ -45,7 +38,6 @@ def main(
 
     compare_df = utils.read_parquet(
         f"s3://{bucket_name}/{compare_path}",
-        selected_columns=compare_columns_to_import,
     )
     feature_cols = model_registry["non_res_with_dormancy_model"][MRKeys.features]
     expected_row_count = (
@@ -53,7 +45,8 @@ def main(
             compare_df, feature_cols
         )
     )
-    not_null_cols = source_df.columns.remove(IndCQC.imputed_filled_post_model)
+    not_null_cols = source_df.columns
+    not_null_cols.remove(IndCQC.imputed_filled_post_model)
 
     validation = (
         pb.Validate(

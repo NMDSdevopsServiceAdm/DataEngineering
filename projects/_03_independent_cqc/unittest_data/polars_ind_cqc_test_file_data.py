@@ -319,26 +319,17 @@ class ValidateModelsData:
 @dataclass
 class ValidateModel01FeaturesNonResWithDormancyData:
     validation_rows = [
-        ("1-001", date(2025, 1, 1), "Y", "Y", "20250101", "feature", "feature"),
-        ("1-002", date(2025, 1, 1), "Y", "N", "20250101", "feature", "feature"),
-        ("1-003", date(2025, 1, 1), "Y", None, "20250101", "feature", "feature"),
-        ("1-004", date(2025, 1, 1), "N", "Y", "20250101", "feature", "feature"),
-        ("1-005", date(2025, 1, 1), "N", "N", "20250101", "feature", "feature"),
-        ("1-006", date(2025, 1, 1), "N", None, "20250101", "feature", "feature"),
-        ("1-007", date(2025, 1, 1), "Y", "Y", "20250101", "feature", None),
-        ("1-008", date(2025, 1, 1), "Y", "Y", "20250101", None, "feature"),
-        ("1-009", date(2025, 1, 1), "Y", "Y", "20250101", None, None),
+        ("1-001", date(2025, 1, 1), "Y", "Y", "20250101", "feature", "feature", None),
+        ("1-002", date(2025, 1, 1), "Y", "N", "20250101", "feature", "feature", None),
+        ("1-003", date(2025, 1, 1), "Y", None, "20250101", "feature", "feature", None),
+        ("1-004", date(2025, 1, 1), "N", "Y", "20250101", "feature", "feature", None),
+        ("1-005", date(2025, 1, 1), "N", "N", "20250101", "feature", "feature", None),
+        ("1-006", date(2025, 1, 1), "N", None, "20250101", "feature", "feature", None),
+        ("1-007", date(2025, 1, 1), "Y", "Y", "20250101", "feature", None, None),
+        ("1-008", date(2025, 1, 1), "Y", "Y", "20250101", None, "feature", None),
+        ("1-009", date(2025, 1, 1), "Y", "Y", "20250101", None, None, None),
     ]
-    model_registry = {
-        IndCQC.non_res_with_dormancy_model: {
-            MRKeys.features: sorted(
-                [
-                    "feature 1",
-                    "feature 2",
-                ]
-            ),
-        },
-    }
+    expected_get_expected_row_count_rows = 2
 
 
 @dataclass

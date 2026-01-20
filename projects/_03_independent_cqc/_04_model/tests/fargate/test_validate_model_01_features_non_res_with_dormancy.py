@@ -26,33 +26,47 @@ class ValidateModelFeaturesNonResWithDormancy(unittest.TestCase):
         )
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
-    @patch(f"{PATCH_PATH}.model_registry")
+    @patch(
+        f"{PATCH_PATH}.get_expected_row_count_for_validation_model_01_features_non_res_with_dormancy"
+    )
     @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_validation_runs(
         self,
         mock_read_parquet: Mock,
-        mock_model_registry: Mock,
+        mock_get_expected_row_count: Mock,
         mock_write_reports: Mock,
     ):
         mock_read_parquet.side_effect = [self.validate_df, self.validate_df]
-        mock_model_registry.return_value = Data.model_registry
+        mock_get_expected_row_count.return_value = (
+            Data.expected_get_expected_row_count_rows
+        )
 
         job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
 
         mock_read_parquet.assert_has_calls(
             [
                 call("s3://bucket/my/dataset/", exclude_complex_types=False),
-                call("s3://bucket/other/dataset/", selected_columns=ANY),
+                call("s3://bucket/other/dataset/"),
             ]
         )
+        mock_get_expected_row_count.assert_called_once()
         mock_write_reports.assert_called_once()
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(
+        f"{PATCH_PATH}.get_expected_row_count_for_validation_model_01_features_non_res_with_dormancy"
+    )
     @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_validation_report_includes_expected_validations(
-        self, mock_read_parquet: Mock, mock_write_reports: Mock
+        self,
+        mock_read_parquet: Mock,
+        mock_get_expected_row_count: Mock,
+        mock_write_reports: Mock,
     ):
-        mock_read_parquet.return_value = self.validate_df
+        mock_read_parquet.side_effect = [self.validate_df, self.validate_df]
+        mock_get_expected_row_count.return_value = (
+            Data.expected_get_expected_row_count_rows
+        )
 
         job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
 
