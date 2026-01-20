@@ -2087,13 +2087,13 @@ class ModelPrimaryServiceRateOfChange:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.care_home_status_count, IntegerType(), True),
             StructField(RoC_TempCol.column_with_values, DoubleType(), True),
         ]
     )
     expected_clean_column_with_values_schema = StructType(
         [
             *clean_column_with_values_schema,
-            StructField(IndCQC.care_home_status_count, IntegerType(), True),
             StructField(RoC_TempCol.submission_count, IntegerType(), True),
         ]
     )
