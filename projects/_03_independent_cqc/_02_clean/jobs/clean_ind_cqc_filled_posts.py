@@ -369,7 +369,7 @@ def calculate_care_home_status_count(df: DataFrame) -> DataFrame:
     w = Window.partitionBy(IndCQC.location_id)
 
     df = df.withColumn(
-        TempCol.care_home_status_count,
+        IndCQC.care_home_status_count,
         F.size((F.collect_set(IndCQC.care_home).over(w))),
     )
     return df

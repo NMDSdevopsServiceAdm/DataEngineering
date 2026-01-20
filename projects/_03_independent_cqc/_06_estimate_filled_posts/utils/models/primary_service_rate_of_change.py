@@ -81,7 +81,7 @@ def clean_column_with_values(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         TempCol.column_with_values,
         F.when(
-            (F.col(TempCol.care_home_status_count) == one_care_home_status)
+            (F.col(IndCqc.care_home_status_count) == one_care_home_status)
             & (F.col(TempCol.submission_count) >= two_submissions),
             F.col(TempCol.column_with_values),
         ).otherwise(F.lit(None)),
