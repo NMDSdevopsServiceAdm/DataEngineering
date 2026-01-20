@@ -5,7 +5,7 @@ from utils.column_values.categorical_column_values import CareHome
 
 
 def get_expected_row_count_for_validation_model_01_features_non_res_with_dormancy(
-    df: pl.DataFrame, features_list: list[str]
+    df: pl.DataFrame,
 ) -> int:
     """
     Returns the expected row count for validation of the model_01_features_non_res_with_dormancy dataset.
@@ -35,5 +35,5 @@ def get_expected_row_count_for_validation_model_01_features_non_res_with_dormanc
         # pl.all_horizontal([pl.col(feature).is_not_null() for feature in features_list]),
     )
     row_count = df.height
-
+    print(f"expected row count is {row_count}")
     return row_count
