@@ -39,10 +39,22 @@ def main(
     compare_df = utils.read_parquet(
         f"s3://{bucket_name}/{compare_path}",
     )
-    feature_cols = model_registry["non_res_with_dormancy_model"][MRKeys.features]
+    # feature_cols = model_registry["non_res_with_dormancy_model"][MRKeys.features]
+    feature_relevant_cols = [
+        IndCQC.regulated_activities_offered,
+        IndCQC.cqc_location_import_date,
+        IndCQC.posts_rolling_average_model,
+        IndCQC.services_offered,
+        IndCQC.specialisms_offered,
+        IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
+        IndCQC.current_region,
+        IndCQC.related_location,
+        IndCQC.time_registered,
+        IndCQC.time_since_dormant,
+    ]
     expected_row_count = (
         get_expected_row_count_for_validation_model_01_features_non_res_with_dormancy(
-            compare_df, feature_cols
+            compare_df, feature_relevant_cols
         )
     )
     not_null_cols = source_df.columns
