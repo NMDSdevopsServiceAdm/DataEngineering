@@ -215,6 +215,7 @@ class ValidateModelsSchemas:
             (IndCQC.dormancy, pl.String()),
             ("feature 1", pl.String()),
             ("feature 2", pl.String()),
+            (IndCQC.time_since_dormant, pl.Int32),
         ]
     )
 

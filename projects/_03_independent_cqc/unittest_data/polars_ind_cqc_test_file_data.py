@@ -302,15 +302,15 @@ class ModelUtilsData:
 @dataclass
 class ValidateModelsData:
     get_expected_row_count_comapre_df_rows = [
-        ("1-001", date(2025, 1, 1), "Y", "Y", "feature", "feature"),
-        ("1-002", date(2025, 1, 1), "Y", "N", "feature", "feature"),
-        ("1-003", date(2025, 1, 1), "Y", None, "feature", "feature"),
-        ("1-004", date(2025, 1, 1), "N", "Y", "feature", "feature"),
-        ("1-005", date(2025, 1, 1), "N", "N", "feature", "feature"),
-        ("1-006", date(2025, 1, 1), "N", None, "feature", "feature"),
-        ("1-007", date(2025, 1, 1), "Y", "Y", "feature", None),
-        ("1-008", date(2025, 1, 1), "Y", "Y", None, "feature"),
-        ("1-009", date(2025, 1, 1), "Y", "Y", None, None),
+        ("1-001", date(2025, 1, 1), "Y", "Y", "feature", "feature", 10),
+        ("1-002", date(2025, 1, 1), "Y", "N", "feature", "feature", None),
+        ("1-003", date(2025, 1, 1), "Y", None, "feature", "feature", None),
+        ("1-004", date(2025, 1, 1), "N", "Y", "feature", "feature", 9),
+        ("1-005", date(2025, 1, 1), "N", "N", "feature", "feature", None),
+        ("1-006", date(2025, 1, 1), "N", None, "feature", "feature", None),
+        ("1-007", date(2025, 1, 1), "Y", "Y", "feature", None, 8),
+        ("1-008", date(2025, 1, 1), "Y", "Y", None, "feature", 7),
+        ("1-009", date(2025, 1, 1), "Y", "Y", None, None, 6),
     ]
     features_list = ["feature 1", "feature 2"]
     expected_get_expected_row_count_rows = 2

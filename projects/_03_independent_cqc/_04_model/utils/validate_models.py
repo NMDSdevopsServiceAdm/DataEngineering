@@ -18,6 +18,7 @@ def get_expected_row_count_for_validation_model_01_features_non_res_with_dormanc
     Returns:
         int: The expected row count after performing minimum set of feature creation steps.
     """
+    df = df.with_columns(pl.col(IndCQC.time_since_dormant).fill_null(999))
     df = df.filter(
         pl.col(IndCQC.care_home) == CareHome.care_home,
         pl.col(IndCQC.dormancy).is_not_null(),
