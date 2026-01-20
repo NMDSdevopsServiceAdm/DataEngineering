@@ -222,7 +222,6 @@ class ValidateModel01FeaturesNonResWithDormancySchemas:
     validation_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
-            (IndCQC.provider_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.DataType()),
             (IndCQC.care_home, pl.String()),
             (IndCQC.dormancy, pl.String()),

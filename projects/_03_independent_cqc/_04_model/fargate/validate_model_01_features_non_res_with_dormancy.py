@@ -36,7 +36,7 @@ def main(
     source_df = utils.read_parquet(
         f"s3://{bucket_name}/{source_path}", exclude_complex_types=False
     ).with_columns(
-        str_length_cols([IndCQC.location_id, IndCQC.provider_id]),
+        str_length_cols([IndCQC.location_id]),
     )
 
     compare_df = utils.read_parquet(
@@ -74,9 +74,7 @@ def main(
             ]
         )
         # numeric column values are between (inclusive)
-        .col_vals_between(Validation.location_id_length, 3, 14)
-        .col_vals_between(Validation.provider_id_length, 3, 14)
-        .interrogate()
+        .col_vals_between(Validation.location_id_length, 3, 14).interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
 
