@@ -20,7 +20,7 @@ def get_expected_row_count_for_validation_model_01_features_non_res_with_dormanc
     """
     df = df.with_columns(pl.col(IndCQC.time_since_dormant).fill_null(999))
     df = df.filter(
-        pl.col(IndCQC.care_home) == CareHome.care_home,
+        pl.col(IndCQC.care_home) == CareHome.not_care_home,
         pl.col(IndCQC.dormancy).is_not_null(),
         pl.col(IndCQC.regulated_activities_offered).is_not_null(),
         pl.col(IndCQC.cqc_location_import_date).is_not_null(),
