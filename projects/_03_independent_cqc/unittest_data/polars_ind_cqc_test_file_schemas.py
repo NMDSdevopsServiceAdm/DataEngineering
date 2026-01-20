@@ -218,6 +218,20 @@ class ValidateModelsSchemas:
 
 
 @dataclass
+class ValidateModel01FeaturesNonResWithDormancySchemas:
+    validation_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.provider_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.DataType()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.dormancy, pl.String()),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+
+
+@dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsSchemas:
     estimates_df_before_join_schema = pl.Schema(
         [

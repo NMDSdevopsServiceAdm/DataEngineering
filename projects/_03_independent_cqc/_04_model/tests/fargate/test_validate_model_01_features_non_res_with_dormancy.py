@@ -5,21 +5,21 @@ from unittest.mock import ANY, Mock, call, patch
 
 import polars as pl
 
-import projects._01_ingest.cqc_api.fargate.validate_cqc_locations_4_full_clean as job
-from projects._01_ingest.unittest_data.polars_ingest_test_file_data import (
-    ValidateCqcLocations4FullCleanTest as Data,
+import projects._03_independent_cqc._04_model.fargate.validate_model_01_features_non_res_with_dormancy as job
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    ValidateModel01FeaturesNonResWithDormancyData as Data,
 )
-from projects._01_ingest.unittest_data.polars_ingest_test_file_schema import (
-    ValidateCqcLocations4FullCleanTest as Schemas,
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
+    ValidateModel01FeaturesNonResWithDormancySchemas as Schemas,
 )
 
-PATCH_PATH = "projects._01_ingest.cqc_api.fargate.validate_cqc_locations_4_full_clean"
+PATCH_PATH = "projects._03_independent_cqc._04_model.fargate.validate_model_01_features_non_res_with_dormancy"
 
 
-class ValidateLocationsFlattenTests(unittest.TestCase):
+class ValidateModelFeaturesNonResWithDormancy(unittest.TestCase):
     def setUp(self) -> None:
         self.validate_df = pl.DataFrame(
-            data=Data.validation_rows, schema=Schemas.validation_schema
+            data=Data.validation_rows, schema=Schemas.validation_schema, strict=False
         )
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
@@ -57,10 +57,7 @@ class ValidateLocationsFlattenTests(unittest.TestCase):
             "row_count_match",
             "col_vals_not_null",
             "rows_distinct",
-            "col_vals_in_set",
-            "specially",
             "col_vals_between",
-            "col_vals_ge",
         }
 
         for assertion in expected_assertions:

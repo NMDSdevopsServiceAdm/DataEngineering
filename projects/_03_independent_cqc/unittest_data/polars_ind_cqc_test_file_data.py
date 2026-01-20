@@ -311,6 +311,18 @@ class ValidateModelsData:
 
 
 @dataclass
+class ValidateModel01FeaturesNonResWithDormancyData:
+    validation_rows = [
+        ("1-001", "prov01", date(2025, 1, 1), "Y", "Y", "20250101"),
+        ("1-002", "prov01", date(2025, 1, 1), "Y", "N", "20250101"),
+        ("1-003", "prov01", date(2025, 1, 1), "Y", None, "20250101"),
+        ("1-004", "prov01", date(2025, 1, 1), "N", "Y", "20250101"),
+        ("1-005", "prov01", date(2025, 1, 1), "N", "N", "20250101"),
+        ("1-006", "prov01", date(2025, 1, 1), "N", None, "20250101"),
+    ]
+
+
+@dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsData:
     estimates_df_before_join_rows = [
         (
