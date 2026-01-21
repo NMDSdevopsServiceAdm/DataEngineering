@@ -2195,6 +2195,7 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.combined_ratio_and_filled_posts, DoubleType(), True),
+            StructField(IndCQC.care_home_status_count, IntegerType(), True),
         ]
     )
     expected_primary_service_rate_of_change_trendline_schema = StructType(
