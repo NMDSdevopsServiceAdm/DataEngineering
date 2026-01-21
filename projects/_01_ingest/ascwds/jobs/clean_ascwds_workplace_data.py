@@ -28,6 +28,59 @@ DATE_COLUMN_IDENTIFIER = "date"
 COLUMNS_TO_BOUND = [AWPClean.total_staff, AWPClean.worker_records]
 MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
 
+cols_required_for_workplace_cleaned_df = [
+    AWPClean.organisation_id,
+    AWPClean.ascwds_workplace_import_date,
+    AWPClean.period,
+    AWPClean.establishment_id,
+    AWPClean.establishment_id_from_nmds,
+    AWPClean.parent_id,
+    AWPClean.nmds_id,
+    AWPClean.establishment_created_date,
+    AWPClean.establishment_updated_date,
+    AWPClean.master_update_date,
+    AWPClean.last_logged_in_date,
+    AWPClean.is_bulk_uploader,
+    AWPClean.is_parent,
+    AWPClean.parent_permission,
+    AWPClean.registration_type,
+    AWPClean.provider_id,
+    AWPClean.location_id,
+    AWPClean.establishment_type,
+    AWPClean.establishment_name,
+    AWPClean.address,
+    AWPClean.postcode,
+    AWPClean.region_id,
+    AWPClean.total_staff,
+    AWPClean.worker_records,
+    AWPClean.total_starters,
+    AWPClean.total_leavers,
+    AWPClean.total_vacancies,
+    AWPClean.main_service_id,
+    # AWPClean.jr28flag,
+    # AWPClean.jr28perm,
+    # AWPClean.jr28temp,
+    # AWPClean.jr28pool,
+    # AWPClean.jr28agcy,
+    # AWPClean.jr28oth,
+    # AWPClean.jr28emp,
+    # AWPClean.jr28work,
+    # AWPClean.jr28strt,
+    # AWPClean.jr28stop,
+    # AWPClean.jr28vacy,
+    AWPClean.version,
+    AWPClean.master_update_date_org,
+    AWPClean.data_last_amended_date,
+    AWPClean.workplace_last_active_date,
+    AWPClean.purge_date,
+    AWPClean.total_staff_bounded,
+    AWPClean.worker_records_bounded,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+    Keys.import_date,
+]
+
 cols_required_for_reconciliation_df = [
     AWPClean.ascwds_workplace_import_date,
     AWPClean.establishment_id,
@@ -126,6 +179,10 @@ def main(
         workplace_for_reconciliation_destination,
         mode="overwrite",
         partitionKeys=partition_keys,
+    )
+
+    ascwds_workplace_df = select_columns_required_for_workplace_cleaned_df(
+        ascwds_workplace_df
     )
 
     print(
@@ -289,6 +346,10 @@ def keep_workplaces_active_on_or_after_purge_date(
 
 def select_columns_required_for_reconciliation_df(df: DataFrame) -> DataFrame:
     return df.select(cols_required_for_reconciliation_df)
+
+
+def select_columns_required_for_workplace_cleaned_df(df: DataFrame) -> DataFrame:
+    return df.select(cols_required_for_workplace_cleaned_df)
 
 
 if __name__ == "__main__":
