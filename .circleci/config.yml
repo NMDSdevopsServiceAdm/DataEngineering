@@ -295,46 +295,7 @@ jobs:
       - run:
           name: terraform destroy
           command: |
-            BRANCH_LIST = (
-            "1004-lock-down-production-infr"
-            "1004-move-circleci-dev-workflow-to-new-account"
-            "1004-waroudn-b-trunc"
-            "1004-workaround-branch-truncation-issue"
-            "1020-sf-loop"
-            "1031-fix-dup-locs"
-            "1031-fix-dup-locsv2"
-            "1038-grant-cross-accoutn-acces"
-            "1060-snapdate-bug"
-            "1070-error-test"
-            "1070-multi-run-dim-creation"
-            "1070-overwrite-dim"
-            "1075-missing-pc"
-            "1077-pcd-review"
-            "1079-update-ref"
-            "1085-dupe-partitions"
-            "1109-prep-wrkr-data"
-            "1125-add-rel-loc"
-            "1130-sfcinternal-ref"
-            "1133-valid-loc-4"
-            "1153-impt-hist-rela"
-            "1172-prim-serv-sec"
-            "1184-ingest-all-cqc"
-            "1191-adass-monthly"
-            "1223-retrain-nr-dorm"
-            "1239-model-sf"
-            "1240-run-number"
-            "1243-destroy-v4"
-            "1243-destroy-v6"
-            "1243-destroy-v7"
-            "1243-detroy-v5"
-            "1256-delay-extrap-v2"
-            "1277-main-copy"
-            "1277-pl-01-merge"
-            "circleci-terraform-destroy"
-            "mh-test-ide"
-            "rm-pir-nov25"
-            "1313-rm-workspaces"
-            )
+            BRANCH_LIST = ("1004-lock-down-production-infr" "1004-move-circleci-dev-workflow-to-new-account" "1004-waroudn-b-trunc" "1004-workaround-branch-truncation-issue")
 
             for BRANCH in "${BRANCH_LIST[@]}"; do
 
@@ -382,46 +343,7 @@ jobs:
       - run:
           name: delete workspace
           command: |
-            BRANCH_LIST = (
-            "1004-lock-down-production-infr"
-            "1004-move-circleci-dev-workflow-to-new-account"
-            "1004-waroudn-b-trunc"
-            "1004-workaround-branch-truncation-issue"
-            "1020-sf-loop"
-            "1031-fix-dup-locs"
-            "1031-fix-dup-locsv2"
-            "1038-grant-cross-accoutn-acces"
-            "1060-snapdate-bug"
-            "1070-error-test"
-            "1070-multi-run-dim-creation"
-            "1070-overwrite-dim"
-            "1075-missing-pc"
-            "1077-pcd-review"
-            "1079-update-ref"
-            "1085-dupe-partitions"
-            "1109-prep-wrkr-data"
-            "1125-add-rel-loc"
-            "1130-sfcinternal-ref"
-            "1133-valid-loc-4"
-            "1153-impt-hist-rela"
-            "1172-prim-serv-sec"
-            "1184-ingest-all-cqc"
-            "1191-adass-monthly"
-            "1223-retrain-nr-dorm"
-            "1239-model-sf"
-            "1240-run-number"
-            "1243-destroy-v4"
-            "1243-destroy-v6"
-            "1243-destroy-v7"
-            "1243-detroy-v5"
-            "1256-delay-extrap-v2"
-            "1277-main-copy"
-            "1277-pl-01-merge"
-            "circleci-terraform-destroy"
-            "mh-test-ide"
-            "rm-pir-nov25"
-            "1313-rm-workspaces"
-            )
+            BRANCH_LIST = ("1004-lock-down-production-infr" "1004-move-circleci-dev-workflow-to-new-account" "1004-waroudn-b-trunc" "1004-workaround-branch-truncation-issue")
 
             for BRANCH in "${BRANCH_LIST[@]}"; do
 
