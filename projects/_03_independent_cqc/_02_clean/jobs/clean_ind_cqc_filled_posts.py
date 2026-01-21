@@ -1,7 +1,5 @@
 import os
 import sys
-from typing import Optional
-
 from dataclasses import dataclass
 
 os.environ["SPARK_VERSION"] = "3.5"
@@ -119,6 +117,8 @@ def main(
 
     locations_df = clean_capacity_tracker_care_home_outliers(locations_df)
     locations_df = clean_capacity_tracker_non_res_outliers(locations_df)
+
+    locations_df = calculate_care_home_status_count(locations_df)
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 
@@ -352,6 +352,25 @@ def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
         IndCQC.last_dormant_date,
     )
 
+    return df
+
+
+def calculate_care_home_status_count(df: DataFrame) -> DataFrame:
+    """
+    Calculate how many care home statuses each location has had.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+
+    Returns:
+        DataFrame: The input DataFrame with care home status count.
+    """
+    w = Window.partitionBy(IndCQC.location_id)
+
+    df = df.withColumn(
+        IndCQC.care_home_status_count,
+        F.size((F.collect_set(IndCQC.care_home).over(w))),
+    )
     return df
 
 
