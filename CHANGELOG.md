@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
 
 - Refactored two similar functions (`insert_predictions_into_pipeline` and `prepare_predictions_for_join`) into one (`join_model_predictions`).
 
+- Moved calculate_care_home_status_count function from estimate filled posts utils to clean_ind_cqc_filled_posts job.
+
 - Replaced the PySpark care home and non-residential with/without dormancy models with the new sklearn models in the Independent CQC step function.
 
 ### Fixed

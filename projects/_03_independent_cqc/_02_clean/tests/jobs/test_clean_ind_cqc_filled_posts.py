@@ -43,6 +43,7 @@ class MainTests(CleanIndFilledPostsTests):
         super().setUp()
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.calculate_care_home_status_count")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_care_home_outliers")
     @patch(f"{PATCH_PATH}.forward_fill_latest_known_value")
@@ -75,6 +76,7 @@ class MainTests(CleanIndFilledPostsTests):
         forward_fill_latest_known_value_mock: Mock,
         clean_capacity_tracker_care_home_outliers_mock: Mock,
         clean_capacity_tracker_non_res_outliers_mock: Mock,
+        calculate_care_home_status_count_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.merge_ind_cqc_test_df
@@ -98,6 +100,7 @@ class MainTests(CleanIndFilledPostsTests):
         clean_ascwds_filled_post_outliers_mock.assert_called_once()
         clean_capacity_tracker_care_home_outliers_mock.assert_called_once()
         clean_capacity_tracker_non_res_outliers_mock.assert_called_once()
+        calculate_care_home_status_count_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_once_with(
             ANY,
@@ -488,6 +491,39 @@ class RemoveDualRegistrationCqcCareHomes(CleanIndFilledPostsTests):
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
+
+
+class CalculateCareHomeStatusCountTests(CleanIndFilledPostsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.calculate_care_home_status_count_rows,
+            Schemas.calculate_care_home_status_count_schema,
+        )
+        self.returned_df = job.calculate_care_home_status_count(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_care_home_status_count_rows,
+            Schemas.expected_calculate_care_home_status_count_schema,
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_calculate_care_home_status_count_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns),
+            sorted(self.expected_df.columns),
+        )
+
+    def test_returned_care_home_status_count_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][job.IndCQC.care_home_status_count],
+                self.expected_data[i][job.IndCQC.care_home_status_count],
+                f"Returned row {i} does not match expected",
+            )
 
 
 if __name__ == "__main__":

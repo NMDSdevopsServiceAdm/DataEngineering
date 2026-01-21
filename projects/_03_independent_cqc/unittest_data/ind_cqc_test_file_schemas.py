@@ -1160,6 +1160,19 @@ class CleanIndCQCData:
         ]
     )
 
+    calculate_care_home_status_count_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+        ]
+    )
+    expected_calculate_care_home_status_count_schema = StructType(
+        [
+            *calculate_care_home_status_count_schema,
+            StructField(IndCQC.care_home_status_count, IntegerType(), True),
+        ]
+    )
+
 
 @dataclass
 class CalculateAscwdsFilledPostsUtilsSchemas:
@@ -2059,6 +2072,7 @@ class ModelPrimaryServiceRateOfChange:
                 IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
             ),
             StructField(IndCQC.combined_ratio_and_filled_posts, DoubleType(), True),
+            StructField(IndCQC.care_home_status_count, IntegerType(), True),
         ]
     )
     expected_primary_service_rate_of_change_schema = StructType(
@@ -2073,27 +2087,14 @@ class ModelPrimaryServiceRateOfChange:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.care_home_status_count, IntegerType(), True),
             StructField(RoC_TempCol.column_with_values, DoubleType(), True),
         ]
     )
     expected_clean_column_with_values_schema = StructType(
         [
             *clean_column_with_values_schema,
-            StructField(RoC_TempCol.care_home_status_count, IntegerType(), True),
             StructField(RoC_TempCol.submission_count, IntegerType(), True),
-        ]
-    )
-
-    calculate_care_home_status_count_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
-        ]
-    )
-    expected_calculate_care_home_status_count_schema = StructType(
-        [
-            *calculate_care_home_status_count_schema,
-            StructField(RoC_TempCol.care_home_status_count, IntegerType(), True),
         ]
     )
 
@@ -2194,6 +2195,7 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.combined_ratio_and_filled_posts, DoubleType(), True),
+            StructField(IndCQC.care_home_status_count, IntegerType(), True),
         ]
     )
     expected_primary_service_rate_of_change_trendline_schema = StructType(

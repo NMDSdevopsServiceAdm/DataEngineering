@@ -360,7 +360,6 @@ class IndCqcColumns:
 class PrimaryServiceRateOfChangeColumns:
     """The names of the temporary columns created during the rate of change process."""
 
-    care_home_status_count: str = "care_home_status_count"
     column_with_values: str = "column_with_values"
     column_with_values_interpolated: str = "column_with_values_interpolated"
     previous_column_with_values_interpolated: str = (
