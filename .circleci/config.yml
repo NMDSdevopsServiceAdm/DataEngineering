@@ -333,6 +333,7 @@ jobs:
             "circleci-terraform-destroy"
             "mh-test-ide"
             "rm-pir-nov25"
+            "1313-rm-workspaces"
             )
 
             for BRANCH in "${BRANCH_LIST[@]}"; do
