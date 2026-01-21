@@ -1,7 +1,6 @@
 import os
 import sys
 from dataclasses import dataclass
-from typing import Optional
 
 os.environ["SPARK_VERSION"] = "3.5"
 
