@@ -295,7 +295,7 @@ jobs:
       - run:
           name: terraform destroy
           command: |
-            BRANCH_LIST = ("1004-lock-down-production-infr" "1004-move-circleci-dev-workflow-to-new-account" "1004-waroudn-b-trunc" "1004-workaround-branch-truncation-issue")
+            BRANCH_LIST=("1004-lock-down-production-infr" "1004-move-circleci-dev-workflow-to-new-account" "1004-waroudn-b-trunc" "1004-workaround-branch-truncation-issue")
 
             for BRANCH in "${BRANCH_LIST[@]}"; do
 
@@ -343,7 +343,7 @@ jobs:
       - run:
           name: delete workspace
           command: |
-            BRANCH_LIST = ("1004-lock-down-production-infr" "1004-move-circleci-dev-workflow-to-new-account" "1004-waroudn-b-trunc" "1004-workaround-branch-truncation-issue")
+            BRANCH_LIST=("1004-lock-down-production-infr" "1004-move-circleci-dev-workflow-to-new-account" "1004-waroudn-b-trunc" "1004-workaround-branch-truncation-issue")
 
             for BRANCH in "${BRANCH_LIST[@]}"; do
 
