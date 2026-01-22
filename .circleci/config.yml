@@ -146,11 +146,11 @@ jobs:
             export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
             export AWS_ACCESS_KEY_ID=${<< parameters.access_key >>}
             export AWS_SECRET_ACCESS_KEY=${<< parameters.secret_key >>}
-            export TF_WORKSPACE=${SANITISED_CIRCLE_BRANCH}
             cd terraform/pipeline
             export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID_<< parameters.aws_account >>}
             terraform init -input=false -backend-config=../<< parameters.aws_account >>.s3.tfbackend
-            terraform plan -lock=false -out tfapply
+            terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
+            terraform plan -out tfapply
       - store_artifacts:
           path: terraform/pipeline/tfapply
       - persist_to_workspace:
