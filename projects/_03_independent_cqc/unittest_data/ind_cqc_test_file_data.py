@@ -4163,35 +4163,6 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
 
 
 @dataclass
-class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
-    # fmt: off
-    cleaned_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
-        ("1-001", date(2024, 1, 9), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
-        ("1-002", date(2024, 1, 9), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
-    ]
-    # fmt: on
-
-    non_res_ascwds_ind_cqc_features_rows = [
-        ("1-001", date(2024, 1, 1)),
-        ("1-002", date(2024, 1, 1)),
-        ("1-001", date(2024, 1, 9)),
-        ("1-002", date(2024, 1, 9)),
-    ]
-
-    # fmt: off
-    calculate_expected_size_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, ["Name"], None), # filtered - null specialism
-        ("1-003", date(2024, 1, 1), CareHome.not_care_home, None, ["Specialism Name"]), # filtered - null service
-        ("1-004", date(2024, 1, 1), CareHome.care_home, ["Name"], ["Specialism Name"]), # filtered - care home
-        ("1-005", date(2025, 1, 2), CareHome.not_care_home, ["Name"], ["Specialism Name"]), # filtered - date after 1/1/2025
-    ]
-    # fmt: on
-
-
-@dataclass
 class ModelFeatures:
     vectorise_input_rows = [
         ("1-0001", 12.0, 0, 1, date(2024, 1, 1)),
@@ -4312,16 +4283,6 @@ class ModelFeatures:
         ("1-003", "Another with sparse in it", "Sparse setting"),
         ("1-004", "Urban", "Urban"),
         ("1-005", "Sparse with a capital S", "Sparse setting"),
-    ]
-
-    filter_without_dormancy_features_to_pre_2025_rows = [
-        ("1-001", date(2024, 12, 31)),
-        ("1-002", date(2025, 1, 1)),
-        ("1-003", date(2025, 1, 2)),
-    ]
-    expected_filter_without_dormancy_features_to_pre_2025_rows = [
-        ("1-001", date(2024, 12, 31)),
-        ("1-002", date(2025, 1, 1)),
     ]
 
     add_squared_column_rows = [
@@ -4977,63 +4938,6 @@ class ModelNonResWithDormancy:
                     10: 1.0,
                     18: 1.0,
                     31: 35.0,
-                },
-            ),
-        ),
-        (
-            "1-000000003",
-            date(2022, 3, 29),
-            20.0,
-            None,
-        ),
-    ]
-
-
-@dataclass
-class ModelNonResWithoutDormancy:
-    non_res_without_dormancy_cleaned_ind_cqc_rows = [
-        (
-            "1-000000001",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            "Y",
-            "South West",
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000002",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            "N",
-            "Merseyside",
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000003",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            None,
-            "Merseyside",
-            date(2022, 3, 29),
-        ),
-    ]
-    non_res_without_dormancy_features_rows = [
-        (
-            "1-000000001",
-            date(2022, 3, 29),
-            10.0,
-            Vectors.sparse(
-                31,
-                {
-                    0: 1.0,
-                    1: 1.0,
-                    3: 17.5,
-                    9: 1.0,
-                    17: 1.0,
-                    30: 35.0,
                 },
             ),
         ),
