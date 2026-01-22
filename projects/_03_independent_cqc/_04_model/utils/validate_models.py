@@ -41,5 +41,7 @@ def get_expected_row_count_for_model_features(df: pl.DataFrame, model: str) -> i
                 ]
             ),
         )
+    else:
+        raise ValueError(f"{model} is not a recognised model in the pipeline.")
     row_count = df.height
     return row_count
