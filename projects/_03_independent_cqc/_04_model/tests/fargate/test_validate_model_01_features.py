@@ -5,15 +5,15 @@ from unittest.mock import ANY, Mock, call, patch
 
 import polars as pl
 
-import projects._03_independent_cqc._04_model.fargate.validate_model_01_features_non_res_with_dormancy as job
+import projects._03_independent_cqc._04_model.fargate.validate_model_01_features as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
-    ValidateModel01FeaturesNonResWithDormancyData as Data,
+    ValidateModel01FeaturesData as Data,
 )
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
-    ValidateModel01FeaturesNonResWithDormancySchemas as Schemas,
+    ValidateModel01FeaturesSchemas as Schemas,
 )
 
-PATCH_PATH = "projects._03_independent_cqc._04_model.fargate.validate_model_01_features_non_res_with_dormancy"
+PATCH_PATH = "projects._03_independent_cqc._04_model.fargate.validate_model_01_features"
 
 
 class ValidateModelFeaturesNonResWithDormancy(unittest.TestCase):

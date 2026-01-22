@@ -227,7 +227,7 @@ class ValidateModelsSchemas:
 
 
 @dataclass
-class ValidateModel01FeaturesNonResWithDormancySchemas:
+class ValidateModel01FeaturesSchemas:
     validation_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
