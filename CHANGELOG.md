@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
 
 - Created a utils function `enrich_with_model_predictions` to read, transform and join model predictions into the Independent CQC DataFrame.
 
+- Polars job [validate_model_01_features](projects/_03_independent_cqc/_04_model/fargate/validate_model_01_features.py) to validate features data. Associated unit tests also added.
+
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 
@@ -27,6 +29,8 @@ All notable changes to this project will be documented in this file.
 - Refactored two similar functions (`insert_predictions_into_pipeline` and `prepare_predictions_for_join`) into one (`join_model_predictions`).
 
 - Moved calculate_care_home_status_count function from estimate filled posts utils to clean_ind_cqc_filled_posts job.
+
+- Replaced the static PySpark modelling code for care homes and non-residential without dormancy with the auto-retraining sklearn equivalent.
 
 - In the clean ASC-WDS workplace job, a new function was added to select only the required columns before saving the cleaned ASC-WDS workplace data.
 

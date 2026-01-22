@@ -12,18 +12,11 @@ PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.jobs.estima
 
 
 class EstimateIndCQCFilledPostsTests(unittest.TestCase):
+    TEST_BUCKET_NAME = "test-bucket"
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
-    CARE_HOMES_FEATURES = "care home features"
-    CARE_HOME_MODEL = (
-        "pipeline-resources/models/care_home_filled_posts_prediction/0.0.1/"
-    )
     NON_RES_WITH_DORMANCY_FEATURES = "non res with dormancy features"
     NON_RES_WITH_DORMANCY_MODEL = (
         "tests/test_models/non_residential_with_dormancy_prediction/1.0.0/"
-    )
-    NON_RES_WITHOUT_DORMANCY_FEATURES = "non res without dormancy features"
-    NON_RES_WITHOUT_DORMANCY_MODEL = (
-        "tests/test_models/non_residential_without_dormancy_prediction/1.0.0/"
     )
     ESTIMATES_DESTINATION = "estimates destination"
     partition_keys = [
@@ -46,16 +39,14 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.merge_columns_in_order")
     @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
     @patch(f"{PATCH_PATH}.combine_non_res_with_and_without_dormancy_models")
-    @patch(f"{PATCH_PATH}.model_non_res_without_dormancy")
     @patch(f"{PATCH_PATH}.model_non_res_with_dormancy")
-    @patch(f"{PATCH_PATH}.model_care_homes")
+    @patch(f"{PATCH_PATH}.enrich_with_model_predictions")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
-        model_care_homes_patch: Mock,
+        enrich_with_model_predictions_patch: Mock,
         model_non_res_with_dormancy_patch: Mock,
-        model_non_res_without_dormancy_patch: Mock,
         combine_non_res_with_and_without_dormancy_models_patch: Mock,
         model_imputation_with_extrapolation_and_interpolation: Mock,
         merge_columns_in_order_mock: Mock,
@@ -64,26 +55,20 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     ):
         read_from_parquet_patch.side_effect = [
             self.test_cleaned_ind_cqc_df,
-            self.CARE_HOMES_FEATURES,
             self.NON_RES_WITH_DORMANCY_FEATURES,
-            self.NON_RES_WITHOUT_DORMANCY_FEATURES,
         ]
 
         job.main(
+            self.TEST_BUCKET_NAME,
             self.CLEANED_IND_CQC_TEST_DATA,
-            self.CARE_HOMES_FEATURES,
-            self.CARE_HOME_MODEL,
             self.NON_RES_WITH_DORMANCY_FEATURES,
             self.NON_RES_WITH_DORMANCY_MODEL,
-            self.NON_RES_WITHOUT_DORMANCY_FEATURES,
-            self.NON_RES_WITHOUT_DORMANCY_MODEL,
             self.ESTIMATES_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 4)
-        self.assertEqual(model_care_homes_patch.call_count, 1)
+        self.assertEqual(read_from_parquet_patch.call_count, 2)
+        self.assertEqual(enrich_with_model_predictions_patch.call_count, 2)
         self.assertEqual(model_non_res_with_dormancy_patch.call_count, 1)
-        self.assertEqual(model_non_res_without_dormancy_patch.call_count, 1)
         self.assertEqual(
             combine_non_res_with_and_without_dormancy_models_patch.call_count, 1
         )

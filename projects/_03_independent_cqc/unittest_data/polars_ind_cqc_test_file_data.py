@@ -247,12 +247,12 @@ class FeaturesEngineeringUtilsData:
     ]
 
     select_and_filter_features_rows = [
-        ("1-001", date(2025, 1, 1), "20250101", "Y", 10, 5, 1, 100.0),
-        ("1-002", date(2025, 1, 2), "20250102", "N", None, 10, 1, 150.0),
-        ("1-003", date(2025, 1, 3), "20250103", "Y", 30, None, 0, 200.0),
+        ("1-001", date(2025, 1, 1), "20250101", "Y", 10, 5, 1, 100.0, 1),
+        ("1-002", date(2025, 1, 2), "20250102", "N", None, 10, 1, 150.0, 1),
+        ("1-003", date(2025, 1, 3), "20250103", "Y", 30, None, 0, 200.0, 1),
     ]
     expected_select_and_filter_features_rows = [
-        ("1-001", date(2025, 1, 1), 100.0, 10, 5, 1, "20250101"),
+        ("1-001", date(2025, 1, 1), 1, 100.0, 10, 5, 1, "20250101"),
     ]
 
 
@@ -295,6 +295,81 @@ class ModelUtilsData:
         ("1-002", date(2025, 1, 1), 2, 5, 11.0, "v1.2.0_r7"),
         ("1-003", date(2025, 1, 1), 3, 6, 12.3, "v1.2.0_r7"),
     ]
+
+
+@dataclass
+class ValidateModelsData:
+    non_res_with_dormancy_rows = [
+        (
+            "1-001",
+            date(2025, 1, 1),
+            "N",
+            None,
+            ["activity 1"],
+            12.0,
+            ["service 1"],
+            ["specialism 1"],
+            "rui",
+            "region",
+            "Y",
+            10,
+            None,
+        ),
+        (
+            "1-002",
+            date(2025, 1, 1),
+            "Y",
+            "Y",
+            ["activity 1"],
+            12.0,
+            ["service 1"],
+            ["specialism 1"],
+            "rui",
+            "region",
+            "Y",
+            10,
+            5,
+        ),
+        (
+            "1-003",
+            date(2025, 1, 1),
+            "N",
+            "Y",
+            ["activity 1"],
+            12.0,
+            None,
+            ["specialism 1"],
+            "rui",
+            "region",
+            "Y",
+            10,
+            5,
+        ),
+        (
+            "1-004",
+            date(2025, 1, 1),
+            "N",
+            "Y",
+            ["activity 1"],
+            12.0,
+            ["service 1"],
+            ["specialism 1"],
+            "rui",
+            "region",
+            "Y",
+            10,
+            5,
+        ),
+    ]
+    expected_get_expected_row_count_rows = 1
+
+
+@dataclass
+class ValidateModel01FeaturesData:
+    validation_rows = [
+        ("1-001", date(2025, 1, 1), "Y", "Y", "20250101", "feature", "feature", None),
+    ]
+    expected_get_expected_row_count_rows = 2
 
 
 @dataclass
