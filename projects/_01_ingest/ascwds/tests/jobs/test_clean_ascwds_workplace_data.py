@@ -75,7 +75,9 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
             self.TEST_RECONCILIATION_DESTINATION,
         )
 
-        read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
+        read_from_parquet_mock.assert_called_once_with(
+            self.TEST_SOURCE, selected_columns=job.ascwds_workplace_columns_to_import
+        )
         remove_duplicate_workplaces_in_raw_workplace_data.assert_called_once()
         format_date_fields_mock.assert_called_once()
         column_to_date_mock.assert_called_once()

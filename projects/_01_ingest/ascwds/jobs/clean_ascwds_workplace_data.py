@@ -30,7 +30,6 @@ MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
 
 ascwds_workplace_columns_to_import = [
     AWPClean.organisation_id,
-    AWPClean.ascwds_workplace_import_date,
     AWPClean.period,
     AWPClean.establishment_id,
     AWPClean.establishment_id_from_nmds,
@@ -58,12 +57,6 @@ ascwds_workplace_columns_to_import = [
     AWPClean.total_vacancies,
     AWPClean.main_service_id,
     AWPClean.version,
-    AWPClean.master_update_date_org,
-    AWPClean.data_last_amended_date,
-    AWPClean.workplace_last_active_date,
-    AWPClean.purge_date,
-    AWPClean.total_staff_bounded,
-    AWPClean.worker_records_bounded,
     Keys.year,
     Keys.month,
     Keys.day,
