@@ -80,6 +80,7 @@ class ValidateModelFeaturesNonResWithDormancy(unittest.TestCase):
         expected_assertions = {
             "row_count_match",
             "col_vals_not_null",
+            "col_exists",
             "rows_distinct",
             "col_vals_between",
         }

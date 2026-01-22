@@ -60,6 +60,8 @@ def main(
         )
         # complete columns
         .col_vals_not_null(not_null_cols)
+        # incomplete column exists
+        .col_exists(IndCQC.imputed_filled_post_model)
         # index columns
         .rows_distinct(
             [
