@@ -1710,27 +1710,6 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcSchema:
 
 
 @dataclass
-class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcSchema:
-    cleaned_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.services_offered, ArrayType(StringType(), True)),
-            StructField(IndCQC.specialisms_offered, ArrayType(StringType(), True)),
-        ]
-    )
-    non_res_ascwds_ind_cqc_features_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    calculate_expected_size_schema = cleaned_ind_cqc_schema
-
-
-@dataclass
 class ModelFeatures:
     vectorise_schema = StructType(
         [
@@ -1832,13 +1811,6 @@ class ModelFeatures:
                 StringType(),
                 True,
             ),
-        ]
-    )
-
-    filter_without_dormancy_features_to_pre_2025_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
         ]
     )
 
@@ -2434,29 +2406,6 @@ class ModelNonResWithDormancy:
         ]
     )
     non_res_with_dormancy_features_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.features, VectorUDT(), True),
-        ]
-    )
-
-
-@dataclass
-class ModelNonResWithoutDormancy:
-    non_res_without_dormancy_cleaned_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-    non_res_without_dormancy_features_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),

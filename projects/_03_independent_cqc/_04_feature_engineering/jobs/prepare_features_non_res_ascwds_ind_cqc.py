@@ -10,7 +10,6 @@ from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
     add_squared_column,
     cap_integer_at_max_value,
     expand_encode_and_extract_features,
-    filter_without_dormancy_features_to_pre_2025,
     group_rural_urban_sparse_categories,
     vectorise_dataframe,
 )
@@ -30,7 +29,6 @@ from utils.column_values.categorical_column_values import CareHome
 def main(
     ind_cqc_filled_posts_cleaned_source: str,
     with_dormancy_features_destination: str,
-    without_dormancy_features_destination: str,
 ):
     print("Creating non res ascwds inc dormancy features dataset...")
 
@@ -96,48 +94,6 @@ def main(
         is_array_col=False,
     )
 
-    # Without dormancy features
-
-    without_dormancy_features_df = filter_without_dormancy_features_to_pre_2025(
-        features_df
-    )
-
-    without_dormancy_features_df = add_date_index_column(without_dormancy_features_df)
-
-    without_dormancy_features_df = cap_integer_at_max_value(
-        without_dormancy_features_df,
-        IndCQC.time_registered,
-        max_value=48,
-        new_col_name=IndCQC.time_registered_capped_at_four_years,
-    )
-
-    without_dormancy_feature_list: List[str] = sorted(
-        [
-            IndCQC.activity_count_capped,
-            IndCQC.cqc_location_import_date_indexed,
-            IndCQC.posts_rolling_average_model,
-            IndCQC.service_count_capped,
-            IndCQC.time_registered_capped_at_four_years,
-        ]
-        + related_location
-        + service_list
-        + specialisms_list
-        + region_list
-        + rui_indicators_list
-    )
-
-    vectorised_features_without_dormancy_df = vectorise_dataframe(
-        without_dormancy_features_df,
-        without_dormancy_feature_list,
-    )
-
-    print(f"number of features without dormancy: {len(without_dormancy_feature_list)}")
-    print(
-        f"length of features without dormancy df: {vectorised_features_without_dormancy_df.count()}"
-    )
-
-    # With dormancy features
-
     with_dormancy_features_df = utils.select_rows_with_non_null_value(
         features_df, IndCQC.dormancy
     )
@@ -181,16 +137,6 @@ def main(
     )
 
     print(
-        f"Exporting vectorised_features_without_dormancy_df as parquet to {without_dormancy_features_destination}"
-    )
-    utils.write_to_parquet(
-        vectorised_features_without_dormancy_df,
-        without_dormancy_features_destination,
-        mode="overwrite",
-        partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
-    )
-
-    print(
         f"Exporting vectorised_features_with_dormancy_df as parquet to {with_dormancy_features_destination}"
     )
     utils.write_to_parquet(
@@ -208,7 +154,6 @@ if __name__ == "__main__":
     (
         ind_cqc_filled_posts_cleaned_source,
         with_dormancy_features_destination,
-        without_dormancy_features_destination,
     ) = utils.collect_arguments(
         (
             "--ind_cqc_filled_posts_cleaned_source",
@@ -218,16 +163,11 @@ if __name__ == "__main__":
             "--with_dormancy_features_destination",
             "A destination directory for outputting non-res ASCWDS with dormancy model features dataset",
         ),
-        (
-            "--without_dormancy_features_destination",
-            "A destination directory for outputting non-res ASCWDS without dormancy model features dataset",
-        ),
     )
 
     main(
         ind_cqc_filled_posts_cleaned_source,
         with_dormancy_features_destination,
-        without_dormancy_features_destination,
     )
 
     print("Spark job 'prepare_features_non_res_ascwds_ind_cqc' complete")

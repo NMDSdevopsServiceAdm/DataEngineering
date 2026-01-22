@@ -17,9 +17,6 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_dormancy import (
     model_non_res_with_dormancy,
 )
-from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_without_dormancy import (
-    model_non_res_without_dormancy,
-)
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
     enrich_with_model_predictions,
 )
@@ -106,8 +103,6 @@ def main(
     imputed_ind_cqc_data_source: str,
     non_res_with_dormancy_features_source: str,
     non_res_with_dormancy_model_source: str,
-    non_res_without_dormancy_features_source: str,
-    non_res_without_dormancy_model_source: str,
     estimated_ind_cqc_destination: str,
 ) -> DataFrame:
     print("Estimating independent CQC filled posts...")
@@ -122,9 +117,6 @@ def main(
     non_res_with_dormancy_features_df = utils.read_from_parquet(
         non_res_with_dormancy_features_source
     )
-    non_res_without_dormancy_features_df = utils.read_from_parquet(
-        non_res_without_dormancy_features_source
-    )
 
     estimate_filled_posts_df = enrich_with_model_predictions(
         estimate_filled_posts_df,
@@ -137,10 +129,10 @@ def main(
         non_res_with_dormancy_features_df,
         non_res_with_dormancy_model_source,
     )
-    estimate_filled_posts_df = model_non_res_without_dormancy(
+    estimate_filled_posts_df = enrich_with_model_predictions(
         estimate_filled_posts_df,
-        non_res_without_dormancy_features_df,
-        non_res_without_dormancy_model_source,
+        bucket_name,
+        IndCQC.non_res_without_dormancy_model,
     )
 
     estimate_filled_posts_df = combine_non_res_with_and_without_dormancy_models(
@@ -211,8 +203,6 @@ if __name__ == "__main__":
         imputed_ind_cqc_data_source,
         non_res_with_dormancy_features_source,
         non_res_with_dormancy_model_source,
-        non_res_without_dormancy_features_source,
-        non_res_without_dormancy_model_source,
         estimated_ind_cqc_destination,
     ) = utils.collect_arguments(
         ("--bucket_name", "The s3 bucket name to source and save the datasets to"),
@@ -229,14 +219,6 @@ if __name__ == "__main__":
             "Source s3 directory for the non res with dormancy ML model",
         ),
         (
-            "--non_res_without_dormancy_features_source",
-            "Source s3 directory for non res without dormancy features dataset",
-        ),
-        (
-            "--non_res_without_dormancy_model_source",
-            "Source s3 directory for the non res without dormancy ML model",
-        ),
-        (
             "--estimated_ind_cqc_destination",
             "Destination s3 directory for outputting estimates for filled posts",
         ),
@@ -247,7 +229,5 @@ if __name__ == "__main__":
         imputed_ind_cqc_data_source,
         non_res_with_dormancy_features_source,
         non_res_with_dormancy_model_source,
-        non_res_without_dormancy_features_source,
-        non_res_without_dormancy_model_source,
         estimated_ind_cqc_destination,
     )
