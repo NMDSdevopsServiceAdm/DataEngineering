@@ -123,27 +123,6 @@ jobs:
           name: Check terraform formatting
           command: terraform fmt -check -recursive -diff
 
-  terraform-unlock:
-    parameters:
-      aws_account:
-        type: enum
-        description: The short name of the AWS account, used to reference the relevant `tfbackend` file, and auth credentials
-        enum: ["prod", "non_prod"]
-      access_key:
-        type: env_var_name
-      secret_key:
-        type: env_var_name
-    docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
-    steps:
-      - checkout
-      - run:
-          name: Terraform Init
-          command: terraform init
-      - run:
-          name: Force Unlock State
-          command: terraform force-unlock f722cf22-d7c4-de47-a5eb-15cac221b7aa
-
   terraform-plan:
     parameters:
       aws_account:
@@ -429,13 +408,6 @@ workflows:
           filters:
             branches:
               ignore: main
-      - terraform-unlock:
-          access_key: AWS_ACCESS_KEY_ID_non_prod
-          secret_key: AWS_SECRET_ACCESS_KEY_non_prod
-          aws_account: "non_prod"
-          requires:
-            - lint-terraform
-            - task-containerisation
       - terraform-plan:
           access_key: AWS_ACCESS_KEY_ID_non_prod
           secret_key: AWS_SECRET_ACCESS_KEY_non_prod
@@ -443,7 +415,6 @@ workflows:
           requires:
             - lint-terraform
             - task-containerisation
-            - terraform-unlock
       - terraform-apply:
           access_key: AWS_ACCESS_KEY_ID_non_prod
           secret_key: AWS_SECRET_ACCESS_KEY_non_prod
