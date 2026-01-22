@@ -149,7 +149,7 @@ jobs:
             cd terraform/pipeline
             export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID_<< parameters.aws_account >>}
             terraform init -input=false -backend-config=../<< parameters.aws_account >>.s3.tfbackend
-            terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
+            terraform workspace select -lock=false ${SANITISED_CIRCLE_BRANCH} || terraform workspace new -lock=false ${SANITISED_CIRCLE_BRANCH}
             terraform plan -lock=false -out tfapply
       - store_artifacts:
           path: terraform/pipeline/tfapply
