@@ -50,8 +50,6 @@ class MainTests(ModelNonResWithAndWithoutDormancyCombinedTests):
         select_rows_with_value_mock.assert_called_once()
         set_min_value_mock.assert_called_once()
 
-    # TODO flesh out main tests to usual standard (expected columns/rows/anything else?)
-
 
 class GroupTimeRegisteredToSixMonthBandsTests(
     ModelNonResWithAndWithoutDormancyCombinedTests

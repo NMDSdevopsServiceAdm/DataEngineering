@@ -151,7 +151,6 @@ def expected_size(df: pl.DataFrame) -> int:
         # nullify empty lists to avoid index out of bounds error
         pl.when(gac_services.list.len() > 0).then(gac_services),
     ).filter(
-        # TODO: remove regulated_activities
         has_value(df, CQCL.regulated_activities, CQCL.location_id),
         has_value(df, CQCL.provider_id, CQCL.location_id),
         has_value(df, CQCL.registration_status, CQCL.location_id),

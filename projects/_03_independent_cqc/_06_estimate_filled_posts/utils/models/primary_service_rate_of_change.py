@@ -75,36 +75,16 @@ def clean_column_with_values(df: DataFrame) -> DataFrame:
     two_submissions: int = 2
     w_spec = Window.partitionBy(IndCqc.location_id, IndCqc.care_home)
 
-    df = calculate_care_home_status_count(df)
     df = calculate_windowed_column(
         df, w_spec, TempCol.submission_count, TempCol.column_with_values, "count"
     )
     df = df.withColumn(
         TempCol.column_with_values,
         F.when(
-            (F.col(TempCol.care_home_status_count) == one_care_home_status)
+            (F.col(IndCqc.care_home_status_count) == one_care_home_status)
             & (F.col(TempCol.submission_count) >= two_submissions),
             F.col(TempCol.column_with_values),
         ).otherwise(F.lit(None)),
-    )
-    return df
-
-
-def calculate_care_home_status_count(df: DataFrame) -> DataFrame:
-    """
-    Calculate how many care home statuses each location has had.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-
-    Returns:
-        DataFrame: The input DataFrame with care home status count.
-    """
-    w = Window.partitionBy(IndCqc.location_id)
-
-    df = df.withColumn(
-        TempCol.care_home_status_count,
-        F.size((F.collect_set(IndCqc.care_home).over(w))),
     )
     return df
 
