@@ -25,7 +25,6 @@ PATCH_PATH: str = (
 class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     CLEANED_IND_CQC_TEST_DATA = "some/source"
     WITH_DORMANCY_DESTINATION = "with_dormancy/destination"
-    WITHOUT_DORMANCY_DESTINATION = "without_dormancy/destination"
 
     def setUp(self):
         self.spark = utils.get_spark()
@@ -69,23 +68,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         job.main(
             self.CLEANED_IND_CQC_TEST_DATA,
             self.WITH_DORMANCY_DESTINATION,
-            self.WITHOUT_DORMANCY_DESTINATION,
         )
-
-        write_to_parquet_calls = [
-            call(
-                ANY,
-                self.WITHOUT_DORMANCY_DESTINATION,
-                mode="overwrite",
-                partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
-            ),
-            call(
-                ANY,
-                self.WITH_DORMANCY_DESTINATION,
-                mode="overwrite",
-                partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
-            ),
-        ]
 
         select_rows_with_value_mock.assert_called_once()
         self.assertEqual(add_array_column_count_mock.call_count, 2)
@@ -97,7 +80,12 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(vectorise_dataframe_mock.call_count, 2)
         select_rows_with_non_null_value_mock.assert_called_once()
         add_squared_column_mock.assert_called_once()
-        write_to_parquet_mock.assert_has_calls(write_to_parquet_calls)
+        write_to_parquet_mock.assert_called_once_with(
+            ANY,
+            self.WITH_DORMANCY_DESTINATION,
+            mode="overwrite",
+            partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
+        )
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
@@ -109,7 +97,6 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         job.main(
             self.CLEANED_IND_CQC_TEST_DATA,
             self.WITH_DORMANCY_DESTINATION,
-            self.WITHOUT_DORMANCY_DESTINATION,
         )
         result: DataFrame = write_to_parquet_mock.call_args_list[1][0][0]
 
@@ -133,7 +120,6 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         job.main(
             self.CLEANED_IND_CQC_TEST_DATA,
             self.WITH_DORMANCY_DESTINATION,
-            self.WITHOUT_DORMANCY_DESTINATION,
         )
         result: DataFrame = write_to_parquet_mock.call_args_list[0][0][0]
 
@@ -155,7 +141,6 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         job.main(
             self.CLEANED_IND_CQC_TEST_DATA,
             self.WITH_DORMANCY_DESTINATION,
-            self.WITHOUT_DORMANCY_DESTINATION,
         )
         with_dormancy_df: DataFrame = write_to_parquet_mock.call_args_list[1][0][0]
         without_dormancy_df: DataFrame = write_to_parquet_mock.call_args_list[0][0][0]
