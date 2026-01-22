@@ -148,12 +148,14 @@ class FeaturesEngineeringUtilsSchemas:
             ("feature_2", pl.UInt32()),
             ("feature_3", pl.UInt32()),
             ("dependent", pl.Float64()),
+            (IndCQC.care_home_status_count, pl.Int32()),
         ]
     )
     expected_select_and_filter_features_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.DataType()),
+            (IndCQC.care_home_status_count, pl.Int32()),
             ("dependent", pl.Float64()),
             ("feature_1", pl.Int32()),
             ("feature_2", pl.Int32()),
@@ -201,6 +203,43 @@ class ModelUtilsSchemas:
         + [
             (IndCQC.prediction, pl.Float64()),
             (IndCQC.prediction_run_id, pl.String()),
+        ]
+    )
+
+
+@dataclass
+class ValidateModelsSchemas:
+    non_res_with_dormancy_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.DataType()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.dormancy, pl.String()),
+            (IndCQC.regulated_activities_offered, pl.List(pl.String())),
+            (IndCQC.posts_rolling_average_model, pl.Float32()),
+            (IndCQC.services_offered, pl.List(pl.String())),
+            (IndCQC.specialisms_offered, pl.List(pl.String())),
+            (IndCQC.current_rural_urban_indicator_2011, pl.String()),
+            (IndCQC.current_region, pl.String()),
+            (IndCQC.related_location, pl.String()),
+            (IndCQC.time_registered, pl.Int32()),
+            (IndCQC.time_since_dormant, pl.Int32),
+        ]
+    )
+
+
+@dataclass
+class ValidateModel01FeaturesSchemas:
+    validation_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.DataType()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.dormancy, pl.String()),
+            (Keys.import_date, pl.String()),
+            ("feature 1", pl.String()),
+            ("feature 2", pl.String()),
+            (IndCQC.imputed_filled_post_model, pl.Float32),
         ]
     )
 
