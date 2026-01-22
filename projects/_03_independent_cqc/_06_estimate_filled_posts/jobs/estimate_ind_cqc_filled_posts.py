@@ -31,6 +31,7 @@ ind_cqc_columns = [
     IndCQC.primary_service_type,
     IndCQC.primary_service_type_second_level,
     IndCQC.care_home,
+    IndCQC.care_home_status_count,
     IndCQC.number_of_beds,
     IndCQC.number_of_beds_banded,
     IndCQC.regulated_activities_offered,

@@ -181,6 +181,7 @@ def select_and_filter_features_data(
         [
             IndCQC.location_id,
             IndCQC.cqc_location_import_date,
+            IndCQC.care_home_status_count,
             dependent_col,
         ]
         + features_list

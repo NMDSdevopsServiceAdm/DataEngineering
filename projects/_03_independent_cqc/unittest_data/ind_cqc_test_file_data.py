@@ -3391,6 +3391,19 @@ class CleanIndCQCData:
         ("2", "1-0002", 3, date(2024, 2, 1), None),
     ]
 
+    calculate_care_home_status_count_rows = [
+        ("1-001", CareHome.care_home),
+        ("1-001", CareHome.care_home),
+        ("1-002", CareHome.care_home),
+        ("1-002", CareHome.not_care_home),
+    ]
+    expected_calculate_care_home_status_count_rows = [
+        ("1-001", CareHome.care_home, 1),
+        ("1-001", CareHome.care_home, 1),
+        ("1-002", CareHome.care_home, 2),
+        ("1-002", CareHome.not_care_home, 2),
+    ]
+
 
 @dataclass
 class CalculateAscwdsFilledPostsUtilsData:
@@ -4109,79 +4122,66 @@ class ValidateCleanedIndCqcData:
 class ModelPrimaryServiceRateOfChange:
     # fmt: off
     primary_service_rate_of_change_rows = [
-        ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 3.0),
-        ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 1.0, 2.8),
-        ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 1.0, 3.4),
-        ("1-001", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 1.0, 3.2),
-        ("1-002", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 2.0),
-        ("1-002", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 1.0, None),
-        ("1-002", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 1.0, None),
-        ("1-002", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 1.0, 3.2),
-        ("1-003", CareHome.not_care_home, 1704067200, PrimaryServiceType.non_residential, None, 0.0, 40.0),
-        ("1-003", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 50.0),
-        ("1-004", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 60.0),
-        ("1-005", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 4.0),
-        ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 50.0),
+        ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 3.0, 1),
+        ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 1.0, 2.8, 1),
+        ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 1.0, 3.4, 1),
+        ("1-001", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 1.0, 3.2, 1),
+        ("1-002", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 2.0, 1),
+        ("1-002", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 1.0, None, 1),
+        ("1-002", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 1.0, None, 1),
+        ("1-002", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 1.0, 3.2, 1),
+        ("1-003", CareHome.not_care_home, 1704067200, PrimaryServiceType.non_residential, None, 0.0, 40.0, 1),
+        ("1-003", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 50.0, 1),
+        ("1-004", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 60.0, 1),
+        ("1-005", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 4.0, 2),
+        ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 50.0, 2),
     ]
     expected_primary_service_rate_of_change_rows = [
-        ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 3.0, 1.0),
-        ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 1.0, 2.8, 1.03999),
-        ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 1.0, 3.4, 1.1176),
-        ("1-001", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 1.0, 3.2, 1.0854),
-        ("1-002", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 2.0, 1.0),
-        ("1-002", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 1.0, None, 1.03999),
-        ("1-002", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 1.0, None, 1.1176),
-        ("1-002", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 1.0, 3.2, 1.0854),
-        ("1-003", CareHome.not_care_home, 1704067200, PrimaryServiceType.non_residential, None, 0.0, 40.0, 1.0),
-        ("1-003", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 50.0, 1.25),
-        ("1-004", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 60.0, 1.25),
-        ("1-005", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 4.0, 1.0),
-        ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 50.0, 1.25),
+        ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 3.0, 1, 1.0),
+        ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 1.0, 2.8, 1, 1.03999),
+        ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 1.0, 3.4, 1, 1.1176),
+        ("1-001", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 1.0, 3.2, 1, 1.0854),
+        ("1-002", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 2.0, 1, 1.0),
+        ("1-002", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 1.0, None, 1, 1.03999),
+        ("1-002", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 1.0, None, 1, 1.1176),
+        ("1-002", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 1.0, 3.2, 1, 1.0854),
+        ("1-003", CareHome.not_care_home, 1704067200, PrimaryServiceType.non_residential, None, 0.0, 40.0, 1, 1.0),
+        ("1-003", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 50.0, 1, 1.25),
+        ("1-004", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 60.0, 1, 1.25),
+        ("1-005", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 4.0, 2, 1.0),
+        ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 50.0, 2, 1.25),
     ]
     # fmt: on
 
     clean_column_with_values_rows = [
-        ("1-001", 1000000001, CareHome.care_home, 10.0),
-        ("1-001", 1000000002, CareHome.care_home, None),
-        ("1-001", 1000000003, CareHome.care_home, 10.0),
+        ("1-001", 1000000001, CareHome.care_home, 1, 10.0),
+        ("1-001", 1000000002, CareHome.care_home, 1, None),
+        ("1-001", 1000000003, CareHome.care_home, 1, 10.0),
     ]
     expected_clean_column_with_values_rows = [
-        ("1-001", 1000000001, CareHome.care_home, 10.0, 1, 2),
-        ("1-001", 1000000002, CareHome.care_home, None, 1, 2),
-        ("1-001", 1000000003, CareHome.care_home, 10.0, 1, 2),
+        ("1-001", 1000000001, CareHome.care_home, 1, 10.0, 2),
+        ("1-001", 1000000002, CareHome.care_home, 1, None, 2),
+        ("1-001", 1000000003, CareHome.care_home, 1, 10.0, 2),
     ]
 
     clean_column_with_values_one_submission_rows = [
-        ("1-001", 1000000001, CareHome.care_home, 10.0),
-        ("1-001", 1000000002, CareHome.care_home, None),
+        ("1-001", 1000000001, CareHome.care_home, 1, 10.0),
+        ("1-001", 1000000002, CareHome.care_home, 1, None),
     ]
     expected_clean_column_with_values_one_submission_rows = [
-        ("1-001", 1000000001, CareHome.care_home, None, 1, 1),
-        ("1-001", 1000000002, CareHome.care_home, None, 1, 1),
+        ("1-001", 1000000001, CareHome.care_home, 1, None, 1),
+        ("1-001", 1000000002, CareHome.care_home, 1, None, 1),
     ]
 
     clean_column_with_values_both_statuses_rows = [
-        ("1-001", 1000000001, CareHome.care_home, 10.0),
-        ("1-001", 1000000002, CareHome.care_home, 10.0),
-        ("1-001", 1000000003, CareHome.not_care_home, 10.0),
+        ("1-001", 1000000001, CareHome.care_home, 2, 10.0),
+        ("1-001", 1000000002, CareHome.care_home, 2, 10.0),
+        ("1-001", 1000000003, CareHome.not_care_home, 2, 10.0),
     ]
     expected_clean_column_with_values_both_statuses_rows = [
-        ("1-001", 1000000001, CareHome.care_home, None, 2, 2),
-        ("1-001", 1000000002, CareHome.care_home, None, 2, 2),
-        ("1-001", 1000000003, CareHome.not_care_home, None, 2, 1),
-    ]
-
-    calculate_care_home_status_count_rows = [
-        ("1-001", CareHome.care_home),
-        ("1-001", CareHome.care_home),
-        ("1-002", CareHome.care_home),
-        ("1-002", CareHome.not_care_home),
-    ]
-    expected_calculate_care_home_status_count_rows = [
-        ("1-001", CareHome.care_home, 1),
-        ("1-001", CareHome.care_home, 1),
-        ("1-002", CareHome.care_home, 2),
-        ("1-002", CareHome.not_care_home, 2),
+        ("1-001", 1000000001, CareHome.care_home, 2, None, 2),
+        ("1-001", 1000000002, CareHome.care_home, 2, None, 2),
+        ("1-001", 1000000003, CareHome.not_care_home, 2, None, 1),
     ]
 
     calculate_submission_count_same_care_home_status_rows = [
@@ -4291,34 +4291,34 @@ class ModelPrimaryServiceRateOfChange:
 class ModelPrimaryServiceRateOfChangeTrendlineData:
     # fmt: off
     primary_service_rate_of_change_trendline_rows = [
-        ("1-001", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.0),
-        ("1-001", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.8),
-        ("1-001", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.4),
-        ("1-001", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2),
-        ("1-002", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.0),
-        ("1-002", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None),
-        ("1-002", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None),
-        ("1-002", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2),
-        ("1-003", 1704067200, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 40.0),
-        ("1-003", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0),
-        ("1-004", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 60.0),
-        ("1-005", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 4.0),
-        ("1-005", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0),
+        ("1-001", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.0, 1),
+        ("1-001", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.8, 1),
+        ("1-001", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.4, 1),
+        ("1-001", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2, 1),
+        ("1-002", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.0, 1),
+        ("1-002", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None, 1),
+        ("1-002", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None, 1),
+        ("1-002", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2, 1),
+        ("1-003", 1704067200, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 40.0, 1),
+        ("1-003", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0, 1),
+        ("1-004", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 60.0, 1),
+        ("1-005", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 4.0, 1),
+        ("1-005", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0, 2),
     ]
     expected_primary_service_rate_of_change_trendline_rows = [
-        ("1-001", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.0, 1.0),
-        ("1-001", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.8, 1.03999),
-        ("1-001", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.4, 1.16235),
-        ("1-001", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2, 1.26158),
-        ("1-002", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.0, 1.0),
-        ("1-002", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None, 1.03999),
-        ("1-002", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None, 1.16235),
-        ("1-002", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2, 1.26158),
-        ("1-003", 1704067200, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 40.0, 1.0),
-        ("1-003", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0, 1.25),
-        ("1-004", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 60.0, 1.25),
-        ("1-005", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 4.0, 1.0),
-        ("1-005", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0, 1.25),
+        ("1-001", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.0, 1, 1.0),
+        ("1-001", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.8, 1, 1.03999),
+        ("1-001", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.4, 1, 1.16235),
+        ("1-001", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2, 1, 1.26158),
+        ("1-002", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.0, 1, 1.0),
+        ("1-002", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None, 1, 1.03999),
+        ("1-002", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None, 1, 1.16235),
+        ("1-002", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2, 1, 1.26158),
+        ("1-003", 1704067200, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 40.0, 1, 1.0),
+        ("1-003", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0, 1, 1.25),
+        ("1-004", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 60.0, 1, 1.25),
+        ("1-005", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 4.0, 1, 1.0),
+        ("1-005", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0, 2, 1.25),
     ]
     # fmt: on
 
