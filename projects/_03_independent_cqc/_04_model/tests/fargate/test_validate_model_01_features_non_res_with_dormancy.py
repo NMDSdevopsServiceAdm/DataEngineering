@@ -26,9 +26,7 @@ class ValidateModelFeaturesNonResWithDormancy(unittest.TestCase):
         )
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
-    @patch(
-        f"{PATCH_PATH}.get_expected_row_count_for_validation_model_01_features_non_res_with_dormancy"
-    )
+    @patch(f"{PATCH_PATH}.get_expected_row_count_for_model_features")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_validation_runs(
         self,
@@ -41,7 +39,7 @@ class ValidateModelFeaturesNonResWithDormancy(unittest.TestCase):
             Data.expected_get_expected_row_count_rows
         )
 
-        job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
+        job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/", "model")
 
         mock_read_parquet.assert_has_calls(
             [
@@ -53,9 +51,7 @@ class ValidateModelFeaturesNonResWithDormancy(unittest.TestCase):
         mock_write_reports.assert_called_once()
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
-    @patch(
-        f"{PATCH_PATH}.get_expected_row_count_for_validation_model_01_features_non_res_with_dormancy"
-    )
+    @patch(f"{PATCH_PATH}.get_expected_row_count_for_model_features")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_validation_report_includes_expected_validations(
         self,
@@ -68,7 +64,7 @@ class ValidateModelFeaturesNonResWithDormancy(unittest.TestCase):
             Data.expected_get_expected_row_count_rows
         )
 
-        job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
+        job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/", "model")
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())

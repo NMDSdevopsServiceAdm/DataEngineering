@@ -353,7 +353,8 @@
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_with_dormancy_model/",
                                 "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_04_features_non_res_with_dormancy_model/",
-                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
+                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
+                                "--model", "non_res_with_dormancy_model"
                               ]
                             }
                           ]

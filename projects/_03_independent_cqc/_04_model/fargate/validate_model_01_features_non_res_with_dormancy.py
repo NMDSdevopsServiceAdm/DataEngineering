@@ -7,7 +7,7 @@ from polars_utils.expressions import str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from projects._03_independent_cqc._04_model.utils.validate_models import (
-    get_expected_row_count_for_validation_model_01_features_non_res_with_dormancy,
+    get_expected_row_count_for_model_features,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
@@ -16,7 +16,11 @@ from utils.column_names.validation_table_columns import Validation
 
 
 def main(
-    bucket_name: str, source_path: str, reports_path: str, compare_path: str
+    bucket_name: str,
+    source_path: str,
+    reports_path: str,
+    compare_path: str,
+    model: str,
 ) -> None:
     """Validates a dataset according to a set of provided rules and produces a summary report as well as failure outputs.
 
@@ -26,6 +30,7 @@ def main(
         source_path (str): the source dataset path to be validated
         reports_path (str): the output path to write reports to
         compare_path (str): path to a dataset to compare against for expected size
+        model (str): the model for which the data have been prepared
     """
     source_df = utils.read_parquet(
         f"s3://{bucket_name}/{source_path}", exclude_complex_types=False
@@ -37,11 +42,7 @@ def main(
         f"s3://{bucket_name}/{compare_path}",
     )
 
-    expected_row_count = (
-        get_expected_row_count_for_validation_model_01_features_non_res_with_dormancy(
-            compare_df
-        )
-    )
+    expected_row_count = get_expected_row_count_for_model_features(compare_df, model)
     not_null_cols = source_df.columns
     not_null_cols.remove(IndCQC.imputed_filled_post_model)
 
@@ -87,8 +88,18 @@ if __name__ == "__main__":
             "--compare_path",
             "The filepath to a dataset to compare against for expected size",
         ),
+        (
+            "--model",
+            "The model for which the data have been prepared",
+        ),
     )
     print(f"Starting validation for {args.source_path}")
 
-    main(args.bucket_name, args.source_path, args.reports_path, args.compare_path)
+    main(
+        args.bucket_name,
+        args.source_path,
+        args.reports_path,
+        args.compare_path,
+        args.model,
+    )
     print(f"Validation of {args.source_path} complete")
