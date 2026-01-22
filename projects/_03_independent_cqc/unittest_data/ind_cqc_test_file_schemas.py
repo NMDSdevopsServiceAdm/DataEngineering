@@ -1657,36 +1657,6 @@ class ValidateCleanedIndCqcData:
 
 
 @dataclass
-class CareHomeFeaturesSchema:
-    clean_merged_data_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.services_offered, ArrayType(StringType()), True),
-            StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
-            StructField(
-                IndCQC.regulated_activities_offered, ArrayType(StringType()), True
-            ),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(
-                IndCQC.banded_bed_ratio_rolling_average_model, DoubleType(), True
-            ),
-            StructField(
-                IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
-            ),
-            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class NonResAscwdsFeaturesSchema(object):
     basic_schema = StructType(
         [
@@ -1715,34 +1685,6 @@ class NonResAscwdsFeaturesSchema(object):
             StructField(Keys.import_date, StringType(), False),
         ]
     )
-
-
-@dataclass
-class ValidateCareHomeIndCqcFeaturesData:
-    cleaned_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.specialisms_offered, ArrayType(StringType(), True)),
-        ]
-    )
-    care_home_ind_cqc_features_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(
-                IndCQC.pir_people_directly_employed_cleaned, IntegerType(), True
-            ),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.features, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-        ]
-    )
-
-    calculate_expected_size_schema = cleaned_ind_cqc_schema
 
 
 @dataclass
@@ -1912,31 +1854,6 @@ class ModelFeatures:
             StructField(
                 IndCQC.cqc_location_import_date_indexed_squared, DoubleType(), True
             ),
-        ]
-    )
-
-
-@dataclass
-class ModelCareHomes:
-    care_homes_cleaned_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-    care_homes_features_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.features, VectorUDT(), True),
         ]
     )
 
