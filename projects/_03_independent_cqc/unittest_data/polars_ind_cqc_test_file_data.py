@@ -3,8 +3,6 @@ from datetime import date
 
 import numpy as np
 
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 from utils.column_values.categorical_column_values import (
     CareHome,
     MainJobRoleLabels,
