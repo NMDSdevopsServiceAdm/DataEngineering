@@ -29,6 +29,9 @@ def get_expected_row_count_for_model_features(df: pl.DataFrame, model: str) -> i
 
     Returns:
         int: The expected row count after performing minimum set of feature creation steps.
+
+    Raises:
+        ValueError: Raises a value error if the model provided is not known to the function.
     """
     if model == "non_res_with_dormancy_model":
         df = df.with_columns(pl.col(IndCQC.time_since_dormant).fill_null(999))
