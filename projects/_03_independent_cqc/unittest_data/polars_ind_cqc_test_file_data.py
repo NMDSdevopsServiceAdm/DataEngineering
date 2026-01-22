@@ -298,6 +298,81 @@ class ModelUtilsData:
 
 
 @dataclass
+class ValidateModelsData:
+    non_res_with_dormancy_rows = [
+        (
+            "1-001",
+            date(2025, 1, 1),
+            "N",
+            None,
+            ["activity 1"],
+            12.0,
+            ["service 1"],
+            ["specialism 1"],
+            "rui",
+            "region",
+            "Y",
+            10,
+            None,
+        ),
+        (
+            "1-002",
+            date(2025, 1, 1),
+            "Y",
+            "Y",
+            ["activity 1"],
+            12.0,
+            ["service 1"],
+            ["specialism 1"],
+            "rui",
+            "region",
+            "Y",
+            10,
+            5,
+        ),
+        (
+            "1-003",
+            date(2025, 1, 1),
+            "N",
+            "Y",
+            ["activity 1"],
+            12.0,
+            None,
+            ["specialism 1"],
+            "rui",
+            "region",
+            "Y",
+            10,
+            5,
+        ),
+        (
+            "1-004",
+            date(2025, 1, 1),
+            "N",
+            "Y",
+            ["activity 1"],
+            12.0,
+            ["service 1"],
+            ["specialism 1"],
+            "rui",
+            "region",
+            "Y",
+            10,
+            5,
+        ),
+    ]
+    expected_get_expected_row_count_rows = 1
+
+
+@dataclass
+class ValidateModel01FeaturesData:
+    validation_rows = [
+        ("1-001", date(2025, 1, 1), "Y", "Y", "20250101", "feature", "feature", None),
+    ]
+    expected_get_expected_row_count_rows = 2
+
+
+@dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsData:
     estimates_df_before_join_rows = [
         (
