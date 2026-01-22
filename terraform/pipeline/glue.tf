@@ -526,22 +526,6 @@ module "validate_imputed_ind_cqc_ascwds_and_pir_data_job" {
   }
 }
 
-module "validate_features_care_home_ind_cqc_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_03_independent_cqc/_04_feature_engineering/jobs"
-  script_name     = "validate_features_care_home_ind_cqc_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--cleaned_ind_cqc_source"            = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
-    "--care_home_ind_cqc_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_care_home/"
-    "--report_destination"                = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_features_care_home/"
-  }
-}
-
 module "validate_features_non_res_ascwds_with_dormancy_ind_cqc_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_03_independent_cqc/_04_feature_engineering/jobs"
@@ -669,20 +653,6 @@ module "validate_postcode_directory_raw_data_job" {
   }
 }
 
-module "prepare_features_care_home_ind_cqc_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_03_independent_cqc/_04_feature_engineering/jobs"
-  script_name     = "prepare_features_care_home_ind_cqc.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-
-  job_parameters = {
-    "--ind_cqc_filled_posts_cleaned_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_imputed_ascwds_and_pir/"
-    "--care_home_ind_cqc_features_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_care_home/"
-  }
-}
-
 module "impute_ind_cqc_ascwds_and_pir_job" {
   source            = "../modules/glue-job"
   script_dir        = "projects/_03_independent_cqc/_03_impute/jobs"
@@ -711,9 +681,8 @@ module "estimate_ind_cqc_filled_posts_job" {
   datasets_bucket   = module.datasets_bucket
 
   job_parameters = {
+    "--bucket_name"                              = "${module.datasets_bucket.bucket_name}"
     "--imputed_ind_cqc_data_source"              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_imputed_ascwds_and_pir/"
-    "--care_home_features_source"                = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_care_home/"
-    "--care_home_model_source"                   = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/6.3.0/"
     "--non_res_with_dormancy_features_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_with_dormancy/"
     "--non_res_with_dormancy_model_source"       = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_dormancy_prediction/5.1.0/"
     "--non_res_without_dormancy_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_without_dormancy/"

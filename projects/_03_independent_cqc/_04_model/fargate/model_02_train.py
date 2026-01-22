@@ -11,6 +11,7 @@ from projects._03_independent_cqc._04_model.utils import versioning as vUtils
 from projects._03_independent_cqc._04_model.utils.validate_model_definitions import (
     validate_model_definition,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 
 
@@ -67,7 +68,10 @@ def main(bucket_name: str, model_name: str) -> None:
 
     df = (
         utils.scan_parquet(features_source)
-        .filter(pl.col(dependent_col).is_not_null())
+        .filter(
+            pl.col(dependent_col).is_not_null()
+            & (pl.col(IndCQC.care_home_status_count) == 1)
+        )
         .collect()
     )
 

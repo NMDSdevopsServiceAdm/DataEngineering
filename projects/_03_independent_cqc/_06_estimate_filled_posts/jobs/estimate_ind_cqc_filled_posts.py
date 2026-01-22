@@ -5,9 +5,6 @@ os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
 
-from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.care_homes import (
-    model_care_homes,
-)
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.estimate_non_res_ct_filled_posts import (
     estimate_non_res_capacity_tracker_filled_posts,
 )
@@ -22,6 +19,9 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res
 )
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_without_dormancy import (
     model_non_res_without_dormancy,
+)
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
+    enrich_with_model_predictions,
 )
 from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
 from utils import utils
@@ -102,9 +102,8 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(
+    bucket_name: str,
     imputed_ind_cqc_data_source: str,
-    care_home_features_source: str,
-    care_home_model_source: str,
     non_res_with_dormancy_features_source: str,
     non_res_with_dormancy_model_source: str,
     non_res_without_dormancy_features_source: str,
@@ -120,7 +119,6 @@ def main(
         imputed_ind_cqc_data_source,
         ind_cqc_columns,
     )
-    care_home_features_df = utils.read_from_parquet(care_home_features_source)
     non_res_with_dormancy_features_df = utils.read_from_parquet(
         non_res_with_dormancy_features_source
     )
@@ -128,10 +126,10 @@ def main(
         non_res_without_dormancy_features_source
     )
 
-    estimate_filled_posts_df = model_care_homes(
+    estimate_filled_posts_df = enrich_with_model_predictions(
         estimate_filled_posts_df,
-        care_home_features_df,
-        care_home_model_source,
+        bucket_name,
+        IndCQC.care_home_model,
     )
 
     estimate_filled_posts_df = model_non_res_with_dormancy(
@@ -209,26 +207,18 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     (
+        bucket_name,
         imputed_ind_cqc_data_source,
-        care_home_features_source,
-        care_home_model_source,
         non_res_with_dormancy_features_source,
         non_res_with_dormancy_model_source,
         non_res_without_dormancy_features_source,
         non_res_without_dormancy_model_source,
         estimated_ind_cqc_destination,
     ) = utils.collect_arguments(
+        ("--bucket_name", "The s3 bucket name to source and save the datasets to"),
         (
             "--imputed_ind_cqc_data_source",
             "Source s3 directory for imputed ASCWDS and PIR dataset",
-        ),
-        (
-            "--care_home_features_source",
-            "Source s3 directory for care home features dataset",
-        ),
-        (
-            "--care_home_model_source",
-            "Source s3 directory for the care home ML model",
         ),
         (
             "--non_res_with_dormancy_features_source",
@@ -253,9 +243,8 @@ if __name__ == "__main__":
     )
 
     main(
+        bucket_name,
         imputed_ind_cqc_data_source,
-        care_home_features_source,
-        care_home_model_source,
         non_res_with_dormancy_features_source,
         non_res_with_dormancy_model_source,
         non_res_without_dormancy_features_source,
