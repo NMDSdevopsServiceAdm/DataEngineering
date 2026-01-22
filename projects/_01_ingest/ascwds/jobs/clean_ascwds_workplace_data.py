@@ -38,7 +38,7 @@ ascwds_workplace_columns_to_import = [
     AWPClean.establishment_created_date,
     AWPClean.establishment_updated_date,
     AWPClean.master_update_date,
-    AWPClean.last_logged_in_date,
+    AWPClean.last_logged_in,
     AWPClean.is_bulk_uploader,
     AWPClean.is_parent,
     AWPClean.parent_permission,
