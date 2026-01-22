@@ -57,17 +57,6 @@ cols_required_for_workplace_cleaned_df = [
     AWPClean.total_leavers,
     AWPClean.total_vacancies,
     AWPClean.main_service_id,
-    # AWPClean.jr28flag,
-    # AWPClean.jr28perm,
-    # AWPClean.jr28temp,
-    # AWPClean.jr28pool,
-    # AWPClean.jr28agcy,
-    # AWPClean.jr28oth,
-    # AWPClean.jr28emp,
-    # AWPClean.jr28work,
-    # AWPClean.jr28strt,
-    # AWPClean.jr28stop,
-    # AWPClean.jr28vacy,
     AWPClean.version,
     AWPClean.master_update_date_org,
     AWPClean.data_last_amended_date,
@@ -349,6 +338,17 @@ def select_columns_required_for_reconciliation_df(df: DataFrame) -> DataFrame:
 
 
 def select_columns_required_for_workplace_cleaned_df(df: DataFrame) -> DataFrame:
+    
+    """
+    This function Selects only the columns defined in the `cols_required_for_workplace_cleaned_df` list
+    from the cleaned ASC-WDS workplace DataFrame.
+
+    Args:
+        df (DataFrame): The ascwds_workplace_df
+
+    Returns:
+        DataFrame: A DataFrame containing only the required columns
+    """
     return df.select(cols_required_for_workplace_cleaned_df)
 
 
