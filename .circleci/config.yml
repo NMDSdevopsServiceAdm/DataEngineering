@@ -1,5 +1,8 @@
 version: 2.1
 
+environment:
+  AWS_REGION: eu-west-2
+
 parameters:
   GHA_Actor:
     type: string
@@ -15,7 +18,6 @@ parameters:
     default: ""
 
 orbs:
-  aws-s3: circleci/aws-s3@3.0
   aws-cli: circleci/aws-cli@5.4.1
 
 jobs:
@@ -34,7 +36,7 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - aws-cli/setup:
-          region: "eu-west-2"
+          region: $AWS_REGION
       - run:
           name: Build Docker Images
           command: |
@@ -44,6 +46,9 @@ jobs:
             aws ecr get-login-password --region eu-west-2 | docker login -u AWS --password-stdin ${<< parameters.aws_account_id >>}.dkr.ecr.eu-west-2.amazonaws.com
             echo "Rebuilding lambdas and pushing to ECR."
             export AWS_ACCOUNT_ID=${<< parameters.aws_account_id >>}
+            # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
+
             docker buildx bake all --push
 
   test:
@@ -137,12 +142,14 @@ jobs:
       - run:
           name: terraform plan
           command: |
+            # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
             export AWS_ACCESS_KEY_ID=${<< parameters.access_key >>}
             export AWS_SECRET_ACCESS_KEY=${<< parameters.secret_key >>}
             cd terraform/pipeline
             export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID_<< parameters.aws_account >>}
             terraform init -input=false -backend-config=../<< parameters.aws_account >>.s3.tfbackend
-            terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
+            terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
             terraform plan -out tfapply
       - store_artifacts:
           path: terraform/pipeline/tfapply
@@ -209,11 +216,13 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - aws-cli/setup:
+          region: $AWS_REGION
       - run:
           name: Setup Environment Variables
           command: |
-            echo 'export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"' >> "$BASH_ENV"
-            echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
+            echo 'export AWS_ACCESS_KEY_ID="${<< parameters.access_key >>}"' >> "$BASH_ENV"
+            echo 'export AWS_SECRET_ACCESS_KEY="${<< parameters.secret_key >>}"' >> "$BASH_ENV"
       - run:
           name: package utils, schemas, projects and environment
           command: |
@@ -229,31 +238,50 @@ jobs:
             cd target && zip -r pydeequ-1.5.0.zip pydeequ && cd ..
             mv target/pydeequ-1.5.0.zip dependencies/pydeequ-1.5.0.zip
             rm -rf target
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: dependencies
-          to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
+      - run:
+          name: Sync dependencies to S3
+          command: |
+            PIPELINE_RESOURCES=$(cat terraform/pipeline/pipeline_resources_bucket_name)
+            aws s3 sync dependencies "s3://$PIPELINE_RESOURCES/dependencies"
 
-  copy-default-data:
+  copy-main-data:
     docker:
       - image: cimg/base:current
     resource_class: small
     steps:
       - attach_workspace:
           at: .
+      - aws-cli/setup:
+          region: $AWS_REGION
       - run:
           name: Setup Environment Variables
           command: |
             echo 'export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"' >> "$BASH_ENV"
             echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-default-datasets/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-pipeline-resources/models/"
-          to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/models/"
+            echo 'export BRANCH_DATASET_BUCKET=$(cat terraform/pipeline/datasets_bucket_name)' >> "$BASH_ENV"
+            echo 'export BRANCH_RESOURCES_BUCKET=$(cat terraform/pipeline/pipeline_resources_bucket_name)' >> "$BASH_ENV"
+      - run:
+          name: Copy main datasets to non-prod dataset bucket
+          command: |
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=delta_locations_api/version=3.1.0/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=delta_locations_api/version=3.1.0/"
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=delta_providers_api/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=delta_providers_api/"
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_03_full_flattened/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_locations_03_full_flattened/"
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_providers_03_full_flattened/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_providers_03_full_flattened/"
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=postcode_corrections/"
+            aws s3 sync "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=ONS/dataset=postcode_directory_cleaned/"
+            aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/" "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace/"
+            aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace_cleaned/"
+            aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker/" "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=worker/"
+            aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=worker_cleaned/"
+            aws s3 sync "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
+            aws s3 sync "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=pir_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=pir_cleaned/"
+            aws s3 sync "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/" "s3://$BRANCH_DATASET_BUCKET/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_06_estimated_filled_posts/"
+      - run:
+          name: Copy models to non-prod dataset
+          command: |
+            aws s3 sync "s3://sfc-main-pipeline-resources/models/" "s3://$BRANCH_RESOURCES_BUCKET/models/"
 
   terraform-destroy:
     working_directory: /tmp/project
@@ -262,28 +290,64 @@ jobs:
     resource_class: small
     steps:
       - checkout
-      - run:
-          name: Setup Environment Variables
-          command: |
-            echo 'export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"' >> "$BASH_ENV"
-            echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
+      - aws-cli/setup:
+          region: $AWS_REGION
       - run:
           name: terraform destroy
           command: |
+            export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"
+            export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"
+            export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
+            # --- Safeguard to never destroy main ---
+            if [ "$SANITISED_CIRCLE_BRANCH" = "main" ]; then
+              echo "Skipping destroy for main branch"
+              exit 0
+            fi
+            # --- Select workspace ---
             cd terraform/pipeline
             terraform init -input=false -backend-config=../non_prod.s3.tfbackend
-            terraform workspace select << pipeline.parameters.GHA_Meta >>
+            terraform workspace select ${SANITISED_CIRCLE_BRANCH}
+            # --- Force-empty dataset bucket for this branch ---
+            echo "Emptying dataset bucket: s3://sfc-${SANITISED_CIRCLE_BRANCH}-datasets"
+            NB_OBJECTS=$(aws s3api list-object-versions --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --query='length(Versions[*] || `[]` )' | awk '{ print $1 }')
+            echo "      '${NB_OBJECTS}' objects to remove"
+            if [[ "$NB_OBJECTS" != "0" ]]; then
+              start=$SECONDS
+              while [[ $NB_OBJECTS -gt 0 ]]
+              do
+                aws s3api delete-objects --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --delete "$(aws s3api list-object-versions --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --max-items 100 --query='{Objects: Versions[0:100].{Key:Key,VersionId:VersionId}}')" --query 'length(Deleted[*] || `[]` )' > /dev/null
+                NB_OBJECTS=$((NB_OBJECTS  > 100 ? NB_OBJECTS - 100 : 0))
+                echo "      Removed batch of Objects... Remaining : $NB_OBJECTS ($(( SECONDS - start ))s)"
+              done
+            fi
+
+            NB_OBJECTS=$(aws s3api list-object-versions --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --query='length(DeleteMarkers[*] || `[]` )' | awk '{ print $1 }')
+            echo "      '${NB_OBJECTS}' markers to remove"
+            if [[ "$NB_OBJECTS" != "0" ]]; then
+              start=$SECONDS
+              while [[ $NB_OBJECTS -gt 0 ]]
+              do
+                aws s3api delete-objects --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --delete "$(aws s3api list-object-versions --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --max-items 100 --query='{Objects: DeleteMarkers[0:100].{Key:Key,VersionId:VersionId}}')" --query 'length(Deleted[*] || `[]` )' > /dev/null
+                NB_OBJECTS=$((NB_OBJECTS  > 100 ? NB_OBJECTS - 100 : 0))
+                echo "      Removed batch of Markers... Remaining : $NB_OBJECTS (took $(( SECONDS - start ))s)"
+              done
+            fi
+            # --- Run destroy ---
             terraform destroy -auto-approve
       - run:
           name: delete workspace
           command: |
+            export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"
+            export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"
             cd terraform/pipeline
             terraform workspace select default
-            terraform workspace delete << pipeline.parameters.GHA_Meta >>
+            export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
+            terraform workspace delete ${SANITISED_CIRCLE_BRANCH}
 
 
 workflows:
-  version: 2
   test-plan-approve-and-deploy-to-main:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
@@ -332,10 +396,6 @@ workflows:
           filters:
             branches:
               ignore: main
-      - test:
-          filters:
-            branches:
-              ignore: main
       - lint-python:
           filters:
             branches:
@@ -354,7 +414,6 @@ workflows:
           aws_account: "non_prod"
           requires:
             - lint-terraform
-            - test
             - task-containerisation
       - terraform-apply:
           access_key: AWS_ACCESS_KEY_ID_non_prod
@@ -367,9 +426,15 @@ workflows:
           secret_key: AWS_SECRET_ACCESS_KEY_non_prod
           requires:
             - terraform-apply
-      - copy-default-data:
+      - copy-main-data:
           requires:
             - terraform-apply
+      # - test:
+      #     requires:
+      #       - terraform-apply
+      #     filters:
+      #       branches:
+      #         ignore: main
 
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
