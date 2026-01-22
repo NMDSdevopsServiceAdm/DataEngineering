@@ -338,7 +338,6 @@ def select_columns_required_for_reconciliation_df(df: DataFrame) -> DataFrame:
 
 
 def select_columns_required_for_workplace_cleaned_df(df: DataFrame) -> DataFrame:
-    
     """
     This function Selects only the columns defined in the `cols_required_for_workplace_cleaned_df` list
     from the cleaned ASC-WDS workplace DataFrame.
