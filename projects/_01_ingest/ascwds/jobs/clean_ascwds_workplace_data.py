@@ -28,7 +28,7 @@ DATE_COLUMN_IDENTIFIER = "date"
 COLUMNS_TO_BOUND = [AWPClean.total_staff, AWPClean.worker_records]
 MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
 
-cols_required_for_workplace_cleaned_df = [
+ascwds_workplace_columns_to_import = [
     AWPClean.organisation_id,
     AWPClean.ascwds_workplace_import_date,
     AWPClean.period,
@@ -102,7 +102,9 @@ def main(
     cleaned_ascwds_workplace_destination: str,
     workplace_for_reconciliation_destination: str,
 ):
-    ascwds_workplace_df = utils.read_from_parquet(ascwds_workplace_source)
+    ascwds_workplace_df = utils.read_from_parquet(
+        ascwds_workplace_source, selected_columns=ascwds_workplace_columns_to_import
+    )
 
     ascwds_workplace_df = filter_test_accounts(ascwds_workplace_df)
     ascwds_workplace_df = remove_duplicate_workplaces_in_raw_workplace_data(
@@ -168,10 +170,6 @@ def main(
         workplace_for_reconciliation_destination,
         mode="overwrite",
         partitionKeys=partition_keys,
-    )
-
-    ascwds_workplace_df = select_columns_required_for_workplace_cleaned_df(
-        ascwds_workplace_df
     )
 
     print(
@@ -335,20 +333,6 @@ def keep_workplaces_active_on_or_after_purge_date(
 
 def select_columns_required_for_reconciliation_df(df: DataFrame) -> DataFrame:
     return df.select(cols_required_for_reconciliation_df)
-
-
-def select_columns_required_for_workplace_cleaned_df(df: DataFrame) -> DataFrame:
-    """
-    This function Selects only the columns defined in the `cols_required_for_workplace_cleaned_df` list
-    from the cleaned ASC-WDS workplace DataFrame.
-
-    Args:
-        df (DataFrame): The ascwds_workplace_df
-
-    Returns:
-        DataFrame: A DataFrame containing only the required columns
-    """
-    return df.select(cols_required_for_workplace_cleaned_df)
 
 
 if __name__ == "__main__":
