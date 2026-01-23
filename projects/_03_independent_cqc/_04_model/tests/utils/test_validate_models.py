@@ -14,8 +14,8 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
 class TestGetExpectedRowCount(unittest.TestCase):
     def setUp(self):
         self.df_test = pl.DataFrame(
-            Data.non_res_with_dormancy_rows,
-            Schemas.non_res_with_dormancy_schema,
+            Data.validate_model_feature_rows,
+            Schemas.validate_model_feature_schema,
             orient="row",
         )
 

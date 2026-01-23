@@ -209,7 +209,7 @@ class ModelUtilsSchemas:
 
 @dataclass
 class ValidateModelsSchemas:
-    non_res_with_dormancy_schema = pl.Schema(
+    validate_model_feature_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.DataType()),
