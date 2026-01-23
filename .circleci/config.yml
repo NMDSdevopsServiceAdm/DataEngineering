@@ -135,7 +135,7 @@ jobs:
         type: env_var_name
     working_directory: /tmp/project
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
+      - image: hashicorp/terraform:1.13.1
     resource_class: small
     steps:
       - checkout
@@ -171,7 +171,7 @@ jobs:
       secret_key:
         type: env_var_name
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
+      - image: hashicorp/terraform:1.13.1
     resource_class: small
     steps:
       - checkout
