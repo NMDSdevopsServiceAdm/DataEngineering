@@ -243,8 +243,35 @@
                                   "StartAt": "Validate CH features",
                                   "States": {
                                     "Validate CH features": {
-                                      "Type": "Pass",
-                                      "End": true
+                                      "Type": "Task",
+                                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                                      "Parameters": {
+                                        "Cluster": "${model_cluster_arn}",
+                                        "TaskDefinition": "${independent_cqc_model_task_arn}",
+                                        "LaunchType": "FARGATE",
+                                        "NetworkConfiguration": {
+                                          "AwsvpcConfiguration": {
+                                            "Subnets": ${public_subnet_ids},
+                                            "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                                            "AssignPublicIp": "ENABLED"
+                                          }
+                                        },
+                                        "Overrides": {
+                                          "ContainerOverrides": [
+                                            {
+                                              "Name": "_03_independent_cqc_model-container",
+                                              "Command": [
+                                                "validate_model_01_features.py",
+                                                "--bucket_name", "${dataset_bucket_name}",
+                                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_care_home_model/",
+                                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_04_features_care_home_model/",
+                                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
+                                                "--model", "care_home_model"
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      },
                                     }
                                   }
                                 }
