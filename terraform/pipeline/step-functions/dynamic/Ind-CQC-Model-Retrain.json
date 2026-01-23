@@ -6,6 +6,257 @@
       "Type": "Parallel",
       "Branches": [
         {
+          "StartAt": "Build features - care home",
+          "States": {
+            "Build features - care home": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${model_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_model_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc_model-container",
+                      "Command": [
+                        "model_01_features_care_home.py",
+                        "--bucket_name", "${dataset_bucket_name}",
+                        "--model_name", "care_home_model"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "Next": "Train model and validate features - care home"
+            },
+            "Train model and validate features - care home": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Train model - care home",
+                  "States": {
+                    "Train model - care home": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::ecs:runTask.sync",
+                    "Parameters": {
+                      "Cluster": "${model_cluster_arn}",
+                      "TaskDefinition": "${independent_cqc_model_task_arn}",
+                      "LaunchType": "FARGATE",
+                      "NetworkConfiguration": {
+                        "AwsvpcConfiguration": {
+                          "Subnets": ${public_subnet_ids},
+                          "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                          "AssignPublicIp": "ENABLED"
+                        }
+                      },
+                      "Overrides": {
+                        "ContainerOverrides": [
+                          {
+                            "Name": "_03_independent_cqc_model-container",
+                            "Command": [
+                              "model_02_train.py",
+                              "--bucket_name", "${dataset_bucket_name}",
+                              "--model_name", "care_home_model"
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "Next": "Predict - care home"
+                  },
+                  "Predict - care home": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::ecs:runTask.sync",
+                    "Parameters": {
+                      "Cluster": "${model_cluster_arn}",
+                      "TaskDefinition": "${independent_cqc_model_task_arn}",
+                      "LaunchType": "FARGATE",
+                      "NetworkConfiguration": {
+                        "AwsvpcConfiguration": {
+                          "Subnets": ${public_subnet_ids},
+                          "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                          "AssignPublicIp": "ENABLED"
+                        }
+                      },
+                      "Overrides": {
+                        "ContainerOverrides": [
+                          {
+                            "Name": "_03_independent_cqc_model-container",
+                            "Command": [
+                              "model_03_predict.py",
+                              "--bucket_name", "${dataset_bucket_name}",
+                              "--model_name", "care_home_model"
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate features - care home",
+                  "States": {
+                    "Validate features - care home": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${model_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_model_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc_model-container",
+                              "Command": [
+                                "validate_model_01_features.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_care_home_model/",
+                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_04_features_care_home_model/",
+                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
+                                "--model", "care_home_model"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                    }
+                  }
+                }
+              ],
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Build features - non-residential without dormancy",
+          "States": {
+            "Build features - non-residential without dormancy": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${model_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_model_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc_model-container",
+                      "Command": [
+                        "model_01_features_non_res_without_dormancy.py",
+                        "--bucket_name", "${dataset_bucket_name}",
+                        "--model_name", "non_res_without_dormancy_model"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "Next": "Train model and validate features - non-residential without dormancy"
+            },
+            "Train model and validate features - non-residential without dormancy": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Train model - non-residential without dormancy",
+                  "States": {
+                    "Train model - non-residential without dormancy": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::ecs:runTask.sync",
+                    "Parameters": {
+                      "Cluster": "${model_cluster_arn}",
+                      "TaskDefinition": "${independent_cqc_model_task_arn}",
+                      "LaunchType": "FARGATE",
+                      "NetworkConfiguration": {
+                        "AwsvpcConfiguration": {
+                          "Subnets": ${public_subnet_ids},
+                          "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                          "AssignPublicIp": "ENABLED"
+                        }
+                      },
+                      "Overrides": {
+                        "ContainerOverrides": [
+                          {
+                            "Name": "_03_independent_cqc_model-container",
+                            "Command": [
+                              "model_02_train.py",
+                              "--bucket_name", "${dataset_bucket_name}",
+                              "--model_name", "non_res_without_dormancy_model"
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "Next": "Predict - non-residential without dormancy"
+                  },
+                  "Predict - non-residential without dormancy": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::ecs:runTask.sync",
+                    "Parameters": {
+                      "Cluster": "${model_cluster_arn}",
+                      "TaskDefinition": "${independent_cqc_model_task_arn}",
+                      "LaunchType": "FARGATE",
+                      "NetworkConfiguration": {
+                        "AwsvpcConfiguration": {
+                          "Subnets": ${public_subnet_ids},
+                          "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                          "AssignPublicIp": "ENABLED"
+                        }
+                      },
+                      "Overrides": {
+                        "ContainerOverrides": [
+                          {
+                            "Name": "_03_independent_cqc_model-container",
+                            "Command": [
+                              "model_03_predict.py",
+                              "--bucket_name", "${dataset_bucket_name}",
+                              "--model_name", "non_res_without_dormancy_model"
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate features - non-residential without dormancy",
+                  "States": {
+                    "Validate features - non-residential without dormancy": {
+                      "Type": "Pass",
+                      "End": true
+                    }
+                  }
+                }
+              ],
+              "End": true
+            }
+          }
+        },
+        {
           "StartAt": "Build features - non-residential with dormancy",
           "States": {
             "Build features - non-residential with dormancy": {
@@ -139,112 +390,12 @@
                       "End": true
                     }
                   }
-                },
-                {
-                  "StartAt": "Train CH model",
-                  "States": {
-                    "Train CH model": {
-                    "Type": "Task",
-                    "Resource": "arn:aws:states:::ecs:runTask.sync",
-                    "Parameters": {
-                      "Cluster": "${model_cluster_arn}",
-                      "TaskDefinition": "${independent_cqc_model_task_arn}",
-                      "LaunchType": "FARGATE",
-                      "NetworkConfiguration": {
-                        "AwsvpcConfiguration": {
-                          "Subnets": ${public_subnet_ids},
-                          "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
-                          "AssignPublicIp": "ENABLED"
-                        }
-                      },
-                      "Overrides": {
-                        "ContainerOverrides": [
-                          {
-                            "Name": "_03_independent_cqc_model-container",
-                            "Command": [
-                              "model_02_train.py",
-                              "--bucket_name", "${dataset_bucket_name}",
-                              "--model_name", "care_home_model"
-                            ]
-                          }
-                        ]
-                      }
-                    },
-                    "Next": "Predict CH"
-                  },
-                  "Predict CH": {
-                    "Type": "Task",
-                    "Resource": "arn:aws:states:::ecs:runTask.sync",
-                    "Parameters": {
-                      "Cluster": "${model_cluster_arn}",
-                      "TaskDefinition": "${independent_cqc_model_task_arn}",
-                      "LaunchType": "FARGATE",
-                      "NetworkConfiguration": {
-                        "AwsvpcConfiguration": {
-                          "Subnets": ${public_subnet_ids},
-                          "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
-                          "AssignPublicIp": "ENABLED"
-                        }
-                      },
-                      "Overrides": {
-                        "ContainerOverrides": [
-                          {
-                            "Name": "_03_independent_cqc_model-container",
-                            "Command": [
-                              "model_03_predict.py",
-                              "--bucket_name", "${dataset_bucket_name}",
-                              "--model_name", "care_home_model"
-                            ]
-                          }
-                        ]
-                      }
-                    },
-                    "End": true
-                    }
-                  }
-                },
-                {
-                  "StartAt": "Validate CH features",
-                  "States": {
-                    "Validate CH features": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask.sync",
-                      "Parameters": {
-                        "Cluster": "${model_cluster_arn}",
-                        "TaskDefinition": "${independent_cqc_model_task_arn}",
-                        "LaunchType": "FARGATE",
-                        "NetworkConfiguration": {
-                          "AwsvpcConfiguration": {
-                            "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
-                            "AssignPublicIp": "ENABLED"
-                          }
-                        },
-                        "Overrides": {
-                          "ContainerOverrides": [
-                            {
-                              "Name": "_03_independent_cqc_model-container",
-                              "Command": [
-                                "validate_model_01_features.py",
-                                "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_care_home_model/",
-                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_04_features_care_home_model/",
-                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
-                                "--model", "care_home_model"
-                              ]
-                            }
-                          ]
-                        }
-                      },
-                      "End": true
-                    }
-                  }
                 }
               ],
               "End": true
             }
           }
-        },
+        }
       ],
       "End": true
     }
