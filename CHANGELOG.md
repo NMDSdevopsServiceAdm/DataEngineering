@@ -32,6 +32,8 @@ All notable changes to this project will be documented in this file.
 
 - Replaced the static PySpark modelling code for care homes and non-residential without dormancy with the auto-retraining sklearn equivalent.
 
+- In the clean ASC-WDS workplace job, a new function was added to select only the required columns before saving the cleaned ASC-WDS workplace data.
+
 - Updated polars job [validate_model_01_features] to validate care_home_model features. Associated unit tests also updated.
 
 ### Fixed
