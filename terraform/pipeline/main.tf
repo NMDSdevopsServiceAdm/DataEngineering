@@ -11,9 +11,10 @@ terraform {
 }
 
 provider "aws" {
-  access_key = var.aws_access_key
-  secret_key = var.aws_secret_key
+  #access_key = var.aws_access_key
+  #secret_key = var.aws_secret_key
   region     = var.region
+  #profile    = "non-prod"
 
   default_tags {
     tags = {
@@ -23,6 +24,10 @@ provider "aws" {
       Repository  = "https://github.com/NMDSdevopsServiceAdm/DataEngineering"
     }
   }
+
+  #assume_role {
+  #  role_arn = "arn:aws:iam::856699698263:role/CrossAccountAccessRole"
+  #}
 }
 
 terraform {
@@ -30,7 +35,7 @@ terraform {
     # Bucket defined in ../*.s3.tfbackend
     key            = "statefiles/workspace=default/terraform.tfstate"
     region         = "eu-west-2"
-    dynamodb_table = "terraform-locks"
+    use_lockfile   = true
     encrypt        = true
   }
 }
