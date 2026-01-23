@@ -14,6 +14,9 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputat
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_and_without_dormancy_combined import (
     combine_non_res_with_and_without_dormancy_models,
 )
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_dormancy import (
+    model_non_res_with_dormancy,
+)
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
     enrich_with_model_predictions,
 )
@@ -95,13 +98,24 @@ ind_cqc_columns = [
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
-def main(bucket_name: str, source: str, destination: str) -> DataFrame:
+# def main(bucket_name: str, source: str, destination: str) -> DataFrame:
+def main(
+    bucket_name: str,
+    imputed_ind_cqc_data_source: str,
+    non_res_with_dormancy_features_source: str,
+    non_res_with_dormancy_model_source: str,
+    estimated_ind_cqc_destination: str,
+) -> DataFrame:
     print("Estimating independent CQC filled posts...")
 
     spark = utils.get_spark()
     spark.sql("set spark.sql.broadcastTimeout = 2000")
 
     estimate_filled_posts_df = utils.read_from_parquet(source, ind_cqc_columns)
+
+    non_res_with_dormancy_features_df = utils.read_from_parquet(
+        non_res_with_dormancy_features_source
+    )
 
     estimate_filled_posts_df = enrich_with_model_predictions(
         estimate_filled_posts_df,
@@ -117,6 +131,12 @@ def main(bucket_name: str, source: str, destination: str) -> DataFrame:
         estimate_filled_posts_df,
         bucket_name,
         IndCQC.non_res_without_dormancy_model,
+    )
+
+    estimate_filled_posts_df = model_non_res_with_dormancy(
+        estimate_filled_posts_df,
+        non_res_with_dormancy_features_df,
+        non_res_with_dormancy_model_source,
     )
 
     estimate_filled_posts_df = combine_non_res_with_and_without_dormancy_models(
@@ -182,10 +202,44 @@ if __name__ == "__main__":
     print("Spark job 'estimate_ind_cqc_filled_posts' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    (bucket_name, source, destination) = utils.collect_arguments(
+    #     (bucket_name, source, destination) = utils.collect_arguments(
+    #         ("--bucket_name", "The s3 bucket name to source and save the datasets to"),
+    #         ("--source", "S3 directory for reading input dataset"),
+    #         ("--destination", "S3 directory for storing filled post estimates"),
+    #     )
+
+    #     main(bucket_name, source, destination)
+
+    (
+        bucket_name,
+        source,
+        non_res_with_dormancy_features_source,
+        non_res_with_dormancy_model_source,
+        destination,
+    ) = utils.collect_arguments(
         ("--bucket_name", "The s3 bucket name to source and save the datasets to"),
-        ("--source", "S3 directory for reading input dataset"),
-        ("--destination", "S3 directory for storing filled post estimates"),
+        (
+            "--source",
+            "Source s3 directory for imputed ASCWDS and PIR dataset",
+        ),
+        (
+            "--non_res_with_dormancy_features_source",
+            "Source s3 directory for non res with dormancy features dataset",
+        ),
+        (
+            "--non_res_with_dormancy_model_source",
+            "Source s3 directory for the non res with dormancy ML model",
+        ),
+        (
+            "--destination",
+            "Destination s3 directory for outputting estimates for filled posts",
+        ),
     )
 
-    main(bucket_name, source, destination)
+    main(
+        bucket_name,
+        source,
+        non_res_with_dormancy_features_source,
+        non_res_with_dormancy_model_source,
+        destination,
+    )
