@@ -17,6 +17,17 @@ non_res_with_dormancy_cols_for_features = [
     IndCQC.time_since_dormant,
 ]
 
+care_home_cols_for_features = [
+    IndCQC.care_home,
+    IndCQC.regulated_activities_offered,
+    IndCQC.cqc_location_import_date,
+    IndCQC.posts_rolling_average_model,
+    IndCQC.services_offered,
+    IndCQC.specialisms_offered,
+    IndCQC.current_rural_urban_indicator_2011,
+    IndCQC.current_region,
+]
+
 
 def get_expected_row_count_for_model_features(df: pl.DataFrame, model: str) -> int:
     """
@@ -41,6 +52,16 @@ def get_expected_row_count_for_model_features(df: pl.DataFrame, model: str) -> i
                 [
                     pl.col(col_for_features).is_not_null()
                     for col_for_features in non_res_with_dormancy_cols_for_features
+                ]
+            ),
+        )
+    elif model == "care_home_model":
+        df = df.filter(
+            pl.col(IndCQC.care_home) == CareHome.care_home,
+            pl.all_horizontal(
+                [
+                    pl.col(col_for_features).is_not_null()
+                    for col_for_features in care_home_cols_for_features
                 ]
             ),
         )

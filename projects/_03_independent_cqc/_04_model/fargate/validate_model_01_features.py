@@ -43,7 +43,12 @@ def main(
 
     expected_row_count = get_expected_row_count_for_model_features(compare_df, model)
     not_null_cols = source_df.columns
-    not_null_cols.remove(IndCQC.imputed_filled_post_model)
+    if model == "care_home_model":
+        not_null_cols.remove(IndCQC.imputed_filled_posts_per_bed_ratio_model)
+        dependent_column = IndCQC.imputed_filled_posts_per_bed_ratio_model
+    else:
+        not_null_cols.remove(IndCQC.imputed_filled_post_model)
+        dependent_column = IndCQC.imputed_filled_post_model
 
     validation = (
         pb.Validate(
@@ -61,7 +66,7 @@ def main(
         # complete columns
         .col_vals_not_null(not_null_cols)
         # incomplete column exists
-        .col_exists(IndCQC.imputed_filled_post_model)
+        .col_exists(dependent_column)
         # index columns
         .rows_distinct(
             [

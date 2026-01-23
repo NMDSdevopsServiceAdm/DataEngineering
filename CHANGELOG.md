@@ -16,6 +16,8 @@ All notable changes to this project will be documented in this file.
 - Created a utils function `enrich_with_model_predictions` to read, transform and join model predictions into the Independent CQC DataFrame.
 
 - Polars job [validate_model_01_features](projects/_03_independent_cqc/_04_model/fargate/validate_model_01_features.py) to validate features data. Associated unit tests also added.
+  - Updated polars job to validate non_res_with_dormancy_model features and updated associated unit tests.
+  - Updated polars job to validate care_home_model features and updated associated unit tests.
 
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
