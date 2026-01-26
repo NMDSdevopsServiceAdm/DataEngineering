@@ -21,17 +21,16 @@ non_res_with_dormancy_cols_for_features = [
 ]
 
 non_res_without_dormancy_cols_for_features = [
-    IndCQC.posts_rolling_average_model,
     IndCQC.care_home_status_count,
-    IndCQC.cqc_location_import_date,
-    IndCQC.time_registered,
-    IndCQC.services_offered,
     IndCQC.regulated_activities_offered,
-    IndCQC.current_rural_urban_indicator_2011,
+    IndCQC.cqc_location_import_date,
+    IndCQC.posts_rolling_average_model,
     IndCQC.services_offered,
     IndCQC.specialisms_offered,
+    IndCQC.current_rural_urban_indicator_2011,
     IndCQC.current_region,
     IndCQC.related_location,
+    IndCQC.time_registered,
 ]
 
 care_home_cols_for_features = [
