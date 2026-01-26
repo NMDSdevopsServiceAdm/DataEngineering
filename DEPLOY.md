@@ -22,12 +22,16 @@ $Env:AWS_PROFILE="non-prod"
 ```
 terraform init -backend-config=../non_prod_local.s3.tfbackend
 ```
-6. Run `terraform plan` to evaluate the planned changes
+6. Select workspace
+```
+terraform workspace select <branch name>
+```
+7. Run `terraform plan` to evaluate the planned changes
 ```
 terraform plan
 ```
-7. Check the planned changes to make sure they are correct!
-8. Then run `terraform apply` to deploy the changes. Confirm with `yes` when prompted
+8. Check the planned changes to make sure they are correct!
+9. Then run `terraform apply` to deploy the changes. Confirm with `yes` when prompted
 ```
 terraform apply
 ```
