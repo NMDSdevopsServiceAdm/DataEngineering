@@ -101,10 +101,10 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 # def main(bucket_name: str, source: str, destination: str) -> DataFrame:
 def main(
     bucket_name: str,
-    imputed_ind_cqc_data_source: str,
+    source: str,
     non_res_with_dormancy_features_source: str,
     non_res_with_dormancy_model_source: str,
-    estimated_ind_cqc_destination: str,
+    destination: str,
 ) -> DataFrame:
     print("Estimating independent CQC filled posts...")
 
