@@ -14,7 +14,7 @@ provider "aws" {
   access_key = var.aws_access_key # Needed for CircleCI
   secret_key = var.aws_secret_key # Needed for CircleCI
   region     = var.region
-  # profile    = "non-prod" # Needed for local use
+  profile    = "" # Needed for local use
 
   default_tags {
     tags = {
