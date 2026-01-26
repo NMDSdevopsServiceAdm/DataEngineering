@@ -36,6 +36,8 @@ All notable changes to this project will be documented in this file.
 
 - In the clean ASC-WDS workplace job, a new function was added to select only the required columns before saving the cleaned ASC-WDS workplace data.
 
+- Removed filters from run_postcode_matching function. Data is already filtered before passed to this function.
+
 ### Fixed
 - Added a new test account in ASC-WDS to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)
 
