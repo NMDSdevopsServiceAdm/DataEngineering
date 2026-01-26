@@ -215,7 +215,6 @@ class ValidateModelsSchemas:
             (IndCQC.cqc_location_import_date, pl.DataType()),
             (IndCQC.care_home, pl.String()),
             (IndCQC.dormancy, pl.String()),
-            (IndCQC.care_home_status_count, pl.Int32()),
             (IndCQC.regulated_activities_offered, pl.List(pl.String())),
             (IndCQC.posts_rolling_average_model, pl.Float32()),
             (IndCQC.services_offered, pl.List(pl.String())),
