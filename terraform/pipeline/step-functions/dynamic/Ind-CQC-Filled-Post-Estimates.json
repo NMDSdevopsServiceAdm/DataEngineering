@@ -137,7 +137,6 @@
               "Branches": [
                 {
                   "StartAt": "Model Retraining",
-                  "StartAt": "Model Retraining",
                   "States": {
                     "Model Retraining": {
                       "Type": "Parallel",
