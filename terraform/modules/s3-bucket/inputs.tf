@@ -6,7 +6,7 @@ variable "bucket_name" {
 variable "empty_bucket_on_destroy" {
   description = "Should the bucket be emptied before destroying?"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "enable_versioning" {
