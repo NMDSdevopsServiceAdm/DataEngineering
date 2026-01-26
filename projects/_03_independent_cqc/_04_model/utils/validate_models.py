@@ -6,6 +6,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CareHome
 
 non_res_with_dormancy_cols_for_features = [
+    IndCQC.care_home_status_count,
     IndCQC.dormancy,
     IndCQC.regulated_activities_offered,
     IndCQC.cqc_location_import_date,
@@ -34,6 +35,7 @@ non_res_without_dormancy_cols_for_features = [
 ]
 
 care_home_cols_for_features = [
+    IndCQC.care_home_status_count,
     IndCQC.care_home,
     IndCQC.regulated_activities_offered,
     IndCQC.cqc_location_import_date,
