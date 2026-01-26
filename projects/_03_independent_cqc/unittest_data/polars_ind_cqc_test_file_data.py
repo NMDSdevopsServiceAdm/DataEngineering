@@ -299,7 +299,7 @@ class ModelUtilsData:
 
 @dataclass
 class ValidateModelsData:
-    non_res_with_dormancy_rows = [
+    validate_model_feature_rows = [
         (
             "1-001",
             date(2025, 1, 1),
