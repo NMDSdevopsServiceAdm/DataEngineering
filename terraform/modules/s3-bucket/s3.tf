@@ -16,11 +16,6 @@ resource "aws_s3_bucket_versioning" "s3_bucket_versioning" {
   }
 }
 
-variable "enable_versioning" {
-  type    = bool
-  default = true
-}
-
 resource "aws_s3_bucket_server_side_encryption_configuration" "s3_bucket_encryption" {
   bucket = aws_s3_bucket.s3_bucket.id
 
