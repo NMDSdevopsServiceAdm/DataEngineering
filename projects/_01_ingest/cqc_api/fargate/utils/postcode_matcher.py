@@ -12,10 +12,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from utils.column_values.categorical_column_values import (
-    LocationType,
-    RegistrationStatus,
-)
 
 
 def run_postcode_matching(
