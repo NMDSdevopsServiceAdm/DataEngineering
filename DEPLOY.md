@@ -22,7 +22,6 @@ $Env:AWS_PROFILE="non-prod"
 ```
 terraform init -backend-config=../non_prod_local.s3.tfbackend
 ```
-```
 6. Run `terraform plan` to evaluate the planned changes
 ```
 terraform plan
