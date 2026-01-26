@@ -333,14 +333,14 @@ Python
 #### Prod (i.e. existing) aws account
 1. Open cmd
 
-2. Type `aws configure --profile <prod profile name>`, where `<prod profile name>` is whatever name you want to use to refer to prod
+2. Type `aws configure --profile prod`, where `prod` is whatever name you want to use to refer to prod
 
 3. Add your aws access key and secret access key
 4. Region: eu-west-2
 5. Default output format: json
 6. In prod account AWS console, click on your name in the top right, and navigate to `Security Credentials` in the drop down. On the Security Credentials page, scroll down to Multi-factor Authentication. Copy the value of the `Identifier` field (it should look like `arn:aws:iam::344210435447:mfa/*********`i).
-7. Paste `mfa_serial=<mfa arn>` (where `mfa_arn` is the arn obtained in step 6) into your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom (under `[<prod profile name>]`)
-8. Run `aws sts get-caller-identity --profile <prod profile name>` and verify that the response looks like:
+7. Paste `mfa_serial=<mfa arn>` (where `mfa_arn` is the arn obtained in step 6) into your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom (under `[prod]`)
+8. Run `aws sts get-caller-identity --profile prod` and verify that the response looks like:
 ```
 {
     "UserId": *****
@@ -349,7 +349,7 @@ Python
 }
 ```
 
-Any command that you run via AWS CLI will need the `--profile <prod profile name>` argument in order to run against this environment.
+Any command that you run via AWS CLI will need the `--profile prod` argument in order to run against this environment.
 
 If you've previously set up your AWS CLI to point to this environment, it is recommended to remove the credentials from the default profile by deleting the `aws_access_key_id` and `aws_secret_access_key` lines from the `[default]` profile in [`%USERPROFILE%\.aws\credentials`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html). This will ensure you always have to explicitly specify the AWS account you want to run the command against by using the associated `--profile`
 
@@ -357,19 +357,19 @@ If you've previously set up your AWS CLI to point to this environment, it is rec
 #### Non-prod (i.e. new) aws account
 1. Open cmd
 
-2. Type `aws configure --profile <non-prod profile name>`, where `<non-prod profile name>` is whatever name you want to use to refer to non-prod
+2. Type `aws configure --profile non-prod`, where `non-prod` is whatever name you want to use to refer to non-prod
 
 3. Add the same aws access key and secret access key as you used above (you can find these in [`%USERPROFILE%\.aws\credentials`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) if you don't have them to hand
 4. Region: eu-west-2
 5. Default output format: json
 6. In *prod* account AWS console, click on your name in the top right, and navigate to `Security Credentials` in the drop down. On the Security Credentials page, scroll down to Multi-factor Authentication. Copy the value of the `Identifier` field (it should look like `arn:aws:iam::344210435447:mfa/*********`i).
-7. Paste the following into your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom (under `[<non-prod profile name>]`) (where `mfa_arn` is the arn obtained in step 6):
+7. Paste the following into your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom (under `[non-prod]`) (where `mfa_arn` is the arn obtained in step 6):
 ```
      mfa_serial=<mfa arn>
-     source_profile=<prod profile name>
+     source_profile=prod
      role_arn=arn:aws:iam::856699698263:role/CrossAccountAccessRole
 ```
-8. Run `aws sts get-caller-identity --profile <non-prod profile name>` and verify that the response looks like:
+8. Run `aws sts get-caller-identity --profile non-prod` and verify that the response looks like:
 ```
 {
     "UserId": *****
@@ -378,23 +378,52 @@ If you've previously set up your AWS CLI to point to this environment, it is rec
 }
 ```
 
-Any command that you run via AWS CLI will need the `--profile <non-prod profile name>` argument in order to run against this environment.
+Any command that you run via AWS CLI will need the `--profile non-prod` argument in order to run against this environment.
 
 
-### Set up your AWS crendentials as terraform variables
-1. In the terminal, type `cp terraform/pipeline/terraform.tfvars.example terraform/pipeline/terraform.tfvars` and Enter
-
-2. In the explorer section, go to `terraform > pipeline > terraform.tfvars` and enter your aws access key and secret access key.
-
-3. If you do not have these to hand you can generate new ones by following these steps
+### Set up your AWS crendentials for terraform command line access
+1. In "C:\Users\<username>\.aws\credentials", paste the following code and add your prod profile name, aws access key and secret access key.
+```
+[prod]
+aws_access_key_id = xxx
+aws_secret_access_key = xxx
+```
+2. If you do not have these to hand you can generate new ones by following these steps:
 `https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html`
 
-4. Ensure you're in the Terraform directory `cd terraform/pipeline`
+3. In "C:\Users\<username>\.aws\config", paste the following code and add your profile names and mfa serial key.
+```
+# This is the user we use to obtain temporary credentials from AWS STS
+[profile prod]
+region = eu-west-2
+mfa_serial = xxx
 
-5. Run `terraform plan` to evaluate the planned changes
+# A role (in this case in a different AWS account) which requires MFA
+[profile non-prod]
+region = eu-west-2
+source_profile = prod-mfa
+role_arn = arn:aws:iam::856699698263:role/CrossAccountAccessRole
+```
+4. Set an environment variable for HOME:
+```
+$Env:HOME = 'C:\Users\MHolloway' 
+```
+5. Provide your MFA token:
+```
+aws-mfa --mfa-profile prod --token xxxxxx
+```
+6. Test you've logged in successfully. Both commands should return a user ID, account and ARN.
+```
+aws sts get-caller-identity --profile prod-mfa 
+aws sts get-caller-identity --profile non-prod 
+```
+7. Ensure you're in the Terraform directory `cd terraform/pipeline`
 
-6. Check the planned changes to make sure they are correct!
-
-7. Run `terraform apply` to deploy the changes. Confirm with `yes` when prompted
-
-8. Enter `C:\Users\_your_name_\DataEngineering` to change back to data engineering directory
+8. Set an environment variable for AWS_PROFILE:
+```
+$Env:AWS_PROFILE="non-prod"
+```
+9. Initialise terraform:
+```
+terraform init -backend-config=../non_prod_local.s3.tfbackend
+```
