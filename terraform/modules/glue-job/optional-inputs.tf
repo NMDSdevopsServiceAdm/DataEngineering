@@ -9,18 +9,6 @@ variable "extra_conf" {
   default     = ""
 }
 
-variable "trigger" {
-  description = "Should a trigger be added to this job?"
-  type        = bool
-  default     = false
-}
-
-variable "trigger_schedule" {
-  description = "Cron schedule for triggering job. Example: 'cron(00 07 * * ? *)'"
-  type        = string
-  default     = ""
-}
-
 variable "glue_version" {
   description = "Version of glue to use for the job. Defaults to 5.0"
   type        = string
