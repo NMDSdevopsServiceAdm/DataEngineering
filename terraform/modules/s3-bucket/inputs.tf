@@ -8,3 +8,8 @@ variable "empty_bucket_on_destroy" {
   type        = bool
   default     = false
 }
+
+variable "enable_versioning" {
+  type    = bool
+  default = true
+}

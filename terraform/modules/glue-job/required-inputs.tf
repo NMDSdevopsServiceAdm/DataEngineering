@@ -15,6 +15,7 @@ variable "glue_role" {
     arn  = string
   })
 }
+
 variable "resource_bucket" {
   description = "The bucket used for the glue jobs temporary directory & scripts"
   type = object({
