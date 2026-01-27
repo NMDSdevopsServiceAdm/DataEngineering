@@ -36,6 +36,8 @@ All notable changes to this project will be documented in this file.
 
 - In the clean ASC-WDS workplace job, a new function was added to select only the required columns before saving the cleaned ASC-WDS workplace data.
 
+- Added unit tests for combine_non_res_with_and_without_dormancy_models function to check expected columns and row count.
+
 ### Fixed
 - Added a new test account in ASC-WDS to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)
 
