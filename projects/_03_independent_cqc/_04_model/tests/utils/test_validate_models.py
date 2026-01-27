@@ -36,6 +36,15 @@ class TestGetExpectedRowCount(unittest.TestCase):
         )
         self.assertEqual(expected_row_count, returned_row_count)
 
+    def test_get_expected_row_count_for_non_res_without_dormancy_model(
+        self,
+    ):
+        expected_row_count = Data.expected_get_expected_row_count_rows
+        returned_row_count = job.get_expected_row_count_for_model_features(
+            self.df_test, "non_res_without_dormancy_model"
+        )
+        self.assertEqual(expected_row_count, returned_row_count)
+
     def test_get_expected_row_count_for_care_home_model(
         self,
     ):
