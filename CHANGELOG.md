@@ -19,6 +19,8 @@ All notable changes to this project will be documented in this file.
   - Updated polars job to validate non_res_with_dormancy_model features and updated associated unit tests.
   - Updated polars job to validate care_home_model features and updated associated unit tests.
 
+- Added validation rule for primary_service_second_level column which checks its values against the care_home column.
+
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 
