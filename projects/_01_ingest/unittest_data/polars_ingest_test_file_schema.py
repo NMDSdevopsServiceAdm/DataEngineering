@@ -283,8 +283,6 @@ class PostcodeMatcherTest:
             (CQCL.name, pl.String()),
             (CQCL.postal_address_line1, pl.String()),
             (CQCL.postal_code, pl.String()),
-            (CQCLClean.registration_status, pl.String()),
-            (CQCLClean.type, pl.String()),
         ]
     )
     postcodes_schema = pl.Schema(
