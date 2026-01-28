@@ -26,12 +26,12 @@ class CustomValidationRules:
 
     primary_service_type_second_level_care_home_with_nursing = {
         CustomTypeArguments.column_condition: f"(array_contains({IndCQC.services_offered}, '{Services.care_home_service_with_nursing}') AND NOT array_contains({IndCQC.services_offered}, '{Services.shared_lives}') AND {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.care_home_with_nursing}')",
-        CustomTypeArguments.constraint_name: "primary_service_type_second_level_shared_lives",
+        CustomTypeArguments.constraint_name: "primary_service_type_second_level_care_home_with_nursing",
         CustomTypeArguments.hint: "The data in cqc gac service description list and primary_service_type_second_level should be related.",
     }
 
     primary_service_type_second_level_care_home_without_nursing = {
         CustomTypeArguments.column_condition: f"(array_contains({IndCQC.services_offered}, '{Services.care_home_service_without_nursing}') AND NOT array_contains({IndCQC.services_offered}, '{Services.shared_lives}') AND NOT array_contains({IndCQC.services_offered}, '{Services.care_home_service_with_nursing}') AND {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.care_home_only}')",
-        CustomTypeArguments.constraint_name: "primary_service_type_second_level_shared_lives",
+        CustomTypeArguments.constraint_name: "primary_service_type_second_level_care_home_without_nursing",
         CustomTypeArguments.hint: "The data in cqc gac service description list and primary_service_type_second_level should be related.",
     }
