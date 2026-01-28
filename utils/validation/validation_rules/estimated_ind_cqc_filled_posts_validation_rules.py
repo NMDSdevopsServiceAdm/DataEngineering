@@ -79,5 +79,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.estimate_filled_posts_source: CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
         },
         RuleName.custom_type: CustomValidationRules.care_home_and_primary_service_type,
-        RuleName.custom_type: CustomValidationRules.care_home_and_primary_service_type_second_level,
+        RuleName.custom_type: CustomValidationRules.primary_service_type_second_level_shared_lives,
+        RuleName.custom_type: CustomValidationRules.primary_service_type_second_level_care_home_with_nursing,
+        RuleName.custom_type: CustomValidationRules.primary_service_type_second_level_care_home_without_nursing,
     }
