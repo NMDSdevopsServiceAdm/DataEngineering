@@ -3,6 +3,9 @@ from typing import Tuple
 from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
+    set_min_value,
+)
 from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
@@ -164,8 +167,24 @@ def extrapolation_forwards(
     )
 
     df = df.withColumn(
-        IndCqc.extrapolation_forwards,
+        "extrapolation_forwards_ratio",
         F.col(IndCqc.previous_non_null_value) * capped_ratio,
+    )
+    df = df.withColumn(
+        "extrapolation_forwards_nominal",
+        F.col(IndCqc.previous_non_null_value)
+        + F.col(model_to_extrapolate_from)
+        - F.col(IndCqc.previous_model_value),
+    )
+    df = set_min_value(df, "extrapolation_forwards_nominal", 1.0)
+
+    df = df.withColumn(
+        IndCqc.extrapolation_forwards,
+        (
+            F.col("extrapolation_forwards_ratio")
+            + F.col("extrapolation_forwards_nominal")
+        )
+        / 2,
     )
 
     df = df.drop(IndCqc.previous_non_null_value, IndCqc.previous_model_value)
@@ -228,11 +247,30 @@ def extrapolation_backwards(
     )
 
     df = df.withColumn(
-        IndCqc.extrapolation_backwards,
+        "extrapolation_backwards_ratio",
         F.when(
             F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
             F.col(IndCqc.first_non_null_value) * capped_ratio,
         ),
+    )
+    df = df.withColumn(
+        "extrapolation_backwards_nominal",
+        F.when(
+            F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
+            F.col(IndCqc.first_non_null_value)
+            + F.col(model_to_extrapolate_from)
+            - F.col(IndCqc.first_model_value),
+        ),
+    )
+    df = set_min_value(df, "extrapolation_backwards_nominal", 1.0)
+
+    df = df.withColumn(
+        IndCqc.extrapolation_backwards,
+        (
+            F.col("extrapolation_backwards_ratio")
+            + F.col("extrapolation_backwards_nominal")
+        )
+        / 2,
     )
     df = df.drop(IndCqc.first_non_null_value, IndCqc.first_model_value)
 
