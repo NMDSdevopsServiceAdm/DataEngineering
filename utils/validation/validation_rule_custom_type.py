@@ -18,8 +18,8 @@ class CustomValidationRules:
         CustomTypeArguments.hint: "The data in carehome and primary_service_type should be related.",
     }
 
-    cqc_gac_services_and_primary_service_type_second_level = {
+    care_home_and_primary_service_type_second_level = {
         CustomTypeArguments.column_condition: f"({IndCQC.care_home} = '{CareHome.not_care_home}' AND ({IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.non_residential}' OR {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.other_non_residential}' OR {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.other_residential}' OR {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.shared_lives}')) OR ({IndCQC.care_home} = '{CareHome.care_home}' AND ({IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.care_home_with_nursing}' OR {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.care_home_only}' OR {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.shared_lives}'))",
-        CustomTypeArguments.constraint_name: "cqc_gac_services_and_primary_service_type_second_level",
+        CustomTypeArguments.constraint_name: "care_home_and_primary_service_type_second_level",
         CustomTypeArguments.hint: "The data in cqc gac service description list and primary_service_type_second_level should be related.",
     }
