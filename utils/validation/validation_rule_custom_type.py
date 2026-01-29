@@ -18,8 +18,78 @@ class CustomValidationRules:
         CustomTypeArguments.hint: "The data in carehome and primary_service_type should be related.",
     }
 
-    cqc_gac_services_and_primary_service_type_second_level = {
-        CustomTypeArguments.column_condition: f"(contains({IndCQC.services_offered}, {Services.shared_lives}) AND {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.shared_lives}') OR (contains({IndCQC.services_offered}, {Services.care_home_service_with_nursing}) AND {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.care_home_with_nursing}') OR (contains({IndCQC.services_offered}, {Services.care_home_service_without_nursing}) AND {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.care_home_only}') OR (contains({IndCQC.services_offered}, {Services.domiciliary_care_service}) AND {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.non_residential}') OR (contains({IndCQC.services_offered}, {Services.community_health_care_services_nurses_agency_only}) AND {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.non_residential}') OR (contains({IndCQC.services_offered}, {Services.supported_living_service}) AND {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.non_residential}') OR (contains({IndCQC.services_offered}, {Services.extra_care_housing_services}) AND {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.non_residential}') OR (contains({IndCQC.services_offered}, {Services.residential_substance_misuse_treatment_and_rehabilitation_service}) AND {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.other_residential}') OR (contains({IndCQC.services_offered}, {Services.hospice_services}) AND {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.other_residential}') OR (contains({IndCQC.services_offered}, {Services.acute_services_with_overnight_beds}) AND {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.other_residential}')",
-        CustomTypeArguments.constraint_name: "cqc_gac_services_and_primary_service_type_second_level",
-        CustomTypeArguments.hint: "The data in cqc gac service description list and primary_service_type_second_level should be related.",
+    primary_service_type_second_level_shared_lives = {
+        CustomTypeArguments.column_condition: f"""
+        (
+            NOT {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.shared_lives}'
+            OR (
+                {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.shared_lives}'
+                AND array_contains(
+                    {IndCQC.services_offered},
+                    '{Services.shared_lives}'
+                )
+            )
+        )
+        """,
+        CustomTypeArguments.constraint_name: "primary_service_type_second_level_shared_lives",
+        CustomTypeArguments.hint: (
+            "If primary_service_type_second_level is 'Shared Lives', "
+            "then services_offered must contain 'Shared Lives'."
+        ),
+    }
+
+    primary_service_type_second_level_care_home_with_nursing = {
+        CustomTypeArguments.column_condition: f"""
+        (
+            NOT {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.care_home_with_nursing}'
+            OR (
+                {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.care_home_with_nursing}'
+                AND array_contains(
+                    {IndCQC.services_offered},
+                    '{Services.care_home_service_with_nursing}'
+                )
+                AND NOT array_contains(
+                    {IndCQC.services_offered},
+                    '{Services.shared_lives}'
+                )
+            )
+        )
+        """,
+        CustomTypeArguments.constraint_name: "primary_service_type_second_level_care_home_with_nursing",
+        CustomTypeArguments.hint: (
+            "If primary_service_type_second_level is 'Care home with nursing', "
+            "then services_offered must contain 'Care home service with nursing' "
+            "and must not contain 'Shared Lives'."
+        ),
+    }
+
+    primary_service_type_second_level_care_home_without_nursing = {
+        CustomTypeArguments.column_condition: f"""
+        (
+            NOT {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.care_home_only}'
+            OR (
+                {IndCQC.primary_service_type_second_level} = '{PrimaryServiceTypeSecondLevel.care_home_only}'
+                AND array_contains(
+                    {IndCQC.services_offered},
+                    '{Services.care_home_service_without_nursing}'
+                )
+                AND NOT (
+                    array_contains(
+                        {IndCQC.services_offered},
+                        '{Services.shared_lives}'
+                    )
+                    OR array_contains(
+                        {IndCQC.services_offered},
+                        '{Services.care_home_service_with_nursing}'
+                    )
+                )
+            )
+        )
+        """,
+        CustomTypeArguments.constraint_name: "primary_service_type_second_level_care_home_without_nursing",
+        CustomTypeArguments.hint: (
+            "If primary_service_type_second_level is 'Care home without nursing', "
+            "then services_offered must contain 'Care home service without nursing' "
+            "and must not contain 'Shared Lives' or 'Care home with nursing'."
+        ),
     }
