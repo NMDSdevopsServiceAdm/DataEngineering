@@ -3,13 +3,8 @@ from typing import Tuple
 from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 
-from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
-    set_min_value,
-)
 from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-
-MAX_RATE_OF_CHANGE: int = 4.0
 
 
 def model_extrapolation(
@@ -41,14 +36,12 @@ def model_extrapolation(
         column_with_null_values,
         model_to_extrapolate_from,
         window_spec_lagged,
-        MAX_RATE_OF_CHANGE,
     )
     df = extrapolation_backwards(
         df,
         column_with_null_values,
         model_to_extrapolate_from,
         window_spec_all_rows,
-        MAX_RATE_OF_CHANGE,
     )
     df = combine_extrapolation(df)
     df = df.drop(IndCqc.first_submission_time, IndCqc.final_submission_time)
@@ -118,29 +111,23 @@ def extrapolation_forwards(
     column_with_null_values: str,
     model_to_extrapolate_from: str,
     window_spec: Window,
-    max_rate_of_change: int = MAX_RATE_OF_CHANGE,
 ) -> DataFrame:
     """
     Calculates the forward extrapolation and adds it as a new column 'extrapolation_forwards'.
 
     This function fills null values occurring after the last known value by extrapolating forwards
-    using the rate of change of a modelled value. The extrapolation is based on the ratio between
-    the modelled value at a given timestamp and the modelled value at the last known non-null timestamp.
-
-    To prevent extreme extrapolations due to model noise, the rate of change is capped at the high and low end.
+    using the difference between the modelled value at the time of the last known non-null value
+    and the modelled value at that point in time.
 
     Args:
         df (DataFrame): A dataframe with a column to extrapolate forwards.
         column_with_null_values (str): The name of the column with null values in.
         model_to_extrapolate_from (str): The model used for extrapolation.
         window_spec (Window): The window specification to use for the calculation.
-        max_rate_of_change (int): Defines the maximum rate of change permitted (where 4.0 is equivalent to 400%)
 
     Returns:
         DataFrame: A dataframe with a new column containing forward extrapolated values.
     """
-    min_rate_of_change = 1 / max_rate_of_change
-
     df = get_selected_value(
         df,
         window_spec,
@@ -158,35 +145,6 @@ def extrapolation_forwards(
         "last",
     )
 
-    capped_ratio = F.greatest(
-        F.lit(min_rate_of_change),
-        F.least(
-            F.col(model_to_extrapolate_from) / F.col(IndCqc.previous_model_value),
-            F.lit(max_rate_of_change),
-        ),
-    )
-
-    df = df.withColumn(
-        "extrapolation_forwards_ratio",
-        F.col(IndCqc.previous_non_null_value) * capped_ratio,
-    )
-    df = df.withColumn(
-        "extrapolation_forwards_nominal",
-        F.col(IndCqc.previous_non_null_value)
-        + F.col(model_to_extrapolate_from)
-        - F.col(IndCqc.previous_model_value),
-    )
-    df = set_min_value(df, "extrapolation_forwards_nominal", 1.0)
-
-    df = df.withColumn(
-        IndCqc.extrapolation_forwards,
-        (
-            F.col("extrapolation_forwards_ratio")
-            + F.col("extrapolation_forwards_nominal")
-        )
-        / 2,
-    )
-
     df = df.drop(IndCqc.previous_non_null_value, IndCqc.previous_model_value)
 
     return df
@@ -197,29 +155,23 @@ def extrapolation_backwards(
     column_with_null_values: str,
     model_to_extrapolate_from: str,
     window_spec: Window,
-    max_rate_of_change: int = MAX_RATE_OF_CHANGE,
 ) -> DataFrame:
     """
     Calculates the backward extrapolation and adds it as a new column 'extrapolation_backwards'.
 
     This function fills null values occurring before the first known value by extrapolating backwards
-    using the rate of change of a modelled value. The extrapolation is based on the ratio between
-    the modelled value at a given timestamp and the modelled value at the first known non-null timestamp.
-
-    To prevent extreme extrapolations due to model noise, the rate of change is capped at the high and low end.
+    using the difference between the modelled value at the time of the first known non-null value and
+    the modelled value at that point in time.
 
     Args:
         df (DataFrame): The input DataFrame.
         column_with_null_values (str): The name of the column with null values in.
         model_to_extrapolate_from (str): The name of the column representing the model to extrapolate from.
         window_spec (Window): The window specification to use for the calculation.
-        max_rate_of_change (int): Defines the maximum rate of change permitted (where 4.0 is equivalent to 400%)
 
     Returns:
         DataFrame: The DataFrame with the added 'extrapolation_backwards' column.
     """
-    min_rate_of_change = 1 / max_rate_of_change
-
     df = get_selected_value(
         df,
         window_spec,
@@ -238,23 +190,8 @@ def extrapolation_backwards(
         "first",
     )
 
-    capped_ratio = F.greatest(
-        F.lit(min_rate_of_change),
-        F.least(
-            F.col(model_to_extrapolate_from) / F.col(IndCqc.first_model_value),
-            F.lit(max_rate_of_change),
-        ),
-    )
-
     df = df.withColumn(
-        "extrapolation_backwards_ratio",
-        F.when(
-            F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
-            F.col(IndCqc.first_non_null_value) * capped_ratio,
-        ),
-    )
-    df = df.withColumn(
-        "extrapolation_backwards_nominal",
+        IndCqc.extrapolation_backwards,
         F.when(
             F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
             F.col(IndCqc.first_non_null_value)
@@ -262,16 +199,7 @@ def extrapolation_backwards(
             - F.col(IndCqc.first_model_value),
         ),
     )
-    df = set_min_value(df, "extrapolation_backwards_nominal", 1.0)
 
-    df = df.withColumn(
-        IndCqc.extrapolation_backwards,
-        (
-            F.col("extrapolation_backwards_ratio")
-            + F.col("extrapolation_backwards_nominal")
-        )
-        / 2,
-    )
     df = df.drop(IndCqc.first_non_null_value, IndCqc.first_model_value)
 
     return df
