@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 
 - Added three validation rules for primary_service_second_level column to check expected values.
 
+- Python package [aws-mfa-v2] (https://pypi.org/project/aws-mfa-v2/) to allow for terraform to handle MFA authentication in a cross role account when used locally.
+
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 
@@ -45,6 +47,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Added a new test account in ASC-WDS to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)
+
 
 
 ## [v2025.12.0] - 06/01/2026
