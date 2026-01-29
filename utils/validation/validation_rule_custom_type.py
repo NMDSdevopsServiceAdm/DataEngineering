@@ -32,7 +32,10 @@ class CustomValidationRules:
         )
         """,
         CustomTypeArguments.constraint_name: "primary_service_type_second_level_shared_lives",
-        CustomTypeArguments.hint: "When services_offered contains 'Shared Lives' then primary_service_type_second_level must equal 'Shared Lives'",
+        CustomTypeArguments.hint: (
+            "If primary_service_type_second_level is 'Shared Lives', "
+            "then services_offered must contain 'Shared Lives'."
+        ),
     }
 
     primary_service_type_second_level_care_home_with_nursing = {
@@ -53,7 +56,11 @@ class CustomValidationRules:
         )
         """,
         CustomTypeArguments.constraint_name: "primary_service_type_second_level_care_home_with_nursing",
-        CustomTypeArguments.hint: "When services_offered contains 'Care home service with nursing', but not 'Shared Lives' then primary_service_type_second_level must equal 'Care home service with nursing'",
+        CustomTypeArguments.hint: (
+            "If primary_service_type_second_level is 'Care home with nursing', "
+            "then services_offered must contain 'Care home service with nursing' "
+            "and must not contain 'Shared Lives'."
+        ),
     }
 
     primary_service_type_second_level_care_home_without_nursing = {
@@ -80,5 +87,9 @@ class CustomValidationRules:
         )
         """,
         CustomTypeArguments.constraint_name: "primary_service_type_second_level_care_home_without_nursing",
-        CustomTypeArguments.hint: "When services_offered contains 'Care home service without nursing', but not 'Shared Lives' or 'Care home service with nursing' then primary_service_type_second_level must equal 'Care home service without nursing'",
+        CustomTypeArguments.hint: (
+            "If primary_service_type_second_level is 'Care home without nursing', "
+            "then services_offered must contain 'Care home service without nursing' "
+            "and must not contain 'Shared Lives' or 'Care home with nursing'."
+        ),
     }
