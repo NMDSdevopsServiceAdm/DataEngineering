@@ -40,7 +40,7 @@ def model_non_res_with_dormancy(
     locations_df = join_model_predictions(
         locations_df,
         predictions_df,
-        IndCqc.non_res_with_dormancy_model,
+        "non_res_with_dormancy_model_EMR_rerun",
         include_run_id=False,
     )
 

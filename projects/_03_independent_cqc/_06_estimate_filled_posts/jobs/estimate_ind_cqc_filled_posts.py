@@ -30,24 +30,37 @@ ind_cqc_columns = [
     IndCQC.location_id,
     IndCQC.name,
     IndCQC.provider_id,
-    IndCQC.regulated_activities_offered,
     IndCQC.services_offered,
+    IndCQC.primary_service_type,
+    IndCQC.primary_service_type_second_level,
+    IndCQC.care_home,
+    IndCQC.care_home_status_count,
+    IndCQC.number_of_beds,
+    IndCQC.number_of_beds_banded,
+    IndCQC.regulated_activities_offered,
     IndCQC.specialisms_offered,
     IndCQC.specialism_dementia,
     IndCQC.specialism_learning_disabilities,
     IndCQC.specialism_mental_health,
-    IndCQC.primary_service_type,
-    IndCQC.primary_service_type_second_level,
-    IndCQC.care_home,
-    IndCQC.dormancy,
-    IndCQC.number_of_beds,
-    IndCQC.number_of_beds_banded,
     IndCQC.imputed_registration_date,
-    IndCQC.related_location,
     IndCQC.time_registered,
+    IndCQC.related_location,
+    IndCQC.dormancy,
     IndCQC.time_since_dormant,
     IndCQC.registered_manager_names,
-    IndCQC.care_home_status_count,
+    IndCQC.current_ons_import_date,
+    IndCQC.current_cssr,
+    IndCQC.current_region,
+    IndCQC.current_icb,
+    IndCQC.current_rural_urban_indicator_2011,
+    IndCQC.current_lsoa21,
+    IndCQC.current_msoa21,
+    IndCQC.contemporary_cssr,
+    IndCQC.contemporary_region,
+    IndCQC.contemporary_ccg,
+    IndCQC.contemporary_sub_icb,
+    IndCQC.contemporary_icb,
+    IndCQC.contemporary_icb_region,
     IndCQC.ct_non_res_import_date,
     IndCQC.ct_non_res_care_workers_employed,
     IndCQC.ct_non_res_filtering_rule,
@@ -58,9 +71,6 @@ ind_cqc_columns = [
     IndCQC.ct_care_home_filtering_rule,
     IndCQC.ct_care_home_total_employed_cleaned,
     IndCQC.ct_care_home_total_employed_imputed,
-    IndCQC.cqc_pir_import_date,
-    IndCQC.pir_people_directly_employed_dedup,
-    IndCQC.pir_filled_posts_model,
     IndCQC.ascwds_workplace_import_date,
     IndCQC.establishment_id,
     IndCQC.organisation_id,
@@ -70,24 +80,14 @@ ind_cqc_columns = [
     IndCQC.ascwds_filled_posts_source,
     IndCQC.ascwds_filled_posts_dedup,
     IndCQC.ascwds_filled_posts_dedup_clean,
+    IndCQC.cqc_pir_import_date,
+    IndCQC.pir_people_directly_employed_dedup,
+    IndCQC.pir_filled_posts_model,
     IndCQC.ascwds_pir_merged,
     IndCQC.ascwds_filtering_rule,
-    IndCQC.current_ons_import_date,
-    IndCQC.current_cssr,
-    IndCQC.current_region,
-    IndCQC.current_icb,
-    IndCQC.current_rural_urban_indicator_2011,
-    IndCQC.current_lsoa21,
-    IndCQC.current_msoa21,
-    IndCQC.contemporary_cssr,
-    IndCQC.contemporary_region,
-    IndCQC.contemporary_sub_icb,
-    IndCQC.contemporary_icb,
-    IndCQC.contemporary_icb_region,
-    IndCQC.contemporary_ccg,
-    IndCQC.posts_rolling_average_model,
     IndCQC.imputed_filled_post_model,
     IndCQC.imputed_filled_posts_per_bed_ratio_model,
+    IndCQC.posts_rolling_average_model,
     IndCQC.unix_time,
     Keys.year,
     Keys.month,
@@ -98,22 +98,21 @@ ind_cqc_columns = [
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
+# def main(bucket_name: str, source: str, destination: str) -> DataFrame:
 def main(
     bucket_name: str,
-    imputed_ind_cqc_data_source: str,
+    source: str,
     non_res_with_dormancy_features_source: str,
     non_res_with_dormancy_model_source: str,
-    estimated_ind_cqc_destination: str,
+    destination: str,
 ) -> DataFrame:
     print("Estimating independent CQC filled posts...")
 
     spark = utils.get_spark()
     spark.sql("set spark.sql.broadcastTimeout = 2000")
 
-    estimate_filled_posts_df = utils.read_from_parquet(
-        imputed_ind_cqc_data_source,
-        ind_cqc_columns,
-    )
+    estimate_filled_posts_df = utils.read_from_parquet(source, ind_cqc_columns)
+
     non_res_with_dormancy_features_df = utils.read_from_parquet(
         non_res_with_dormancy_features_source
     )
@@ -123,16 +122,21 @@ def main(
         bucket_name,
         IndCQC.care_home_model,
     )
-
-    estimate_filled_posts_df = model_non_res_with_dormancy(
+    estimate_filled_posts_df = enrich_with_model_predictions(
         estimate_filled_posts_df,
-        non_res_with_dormancy_features_df,
-        non_res_with_dormancy_model_source,
+        bucket_name,
+        IndCQC.non_res_with_dormancy_model,
     )
     estimate_filled_posts_df = enrich_with_model_predictions(
         estimate_filled_posts_df,
         bucket_name,
         IndCQC.non_res_without_dormancy_model,
+    )
+
+    estimate_filled_posts_df = model_non_res_with_dormancy(
+        estimate_filled_posts_df,
+        non_res_with_dormancy_features_df,
+        non_res_with_dormancy_model_source,
     )
 
     estimate_filled_posts_df = combine_non_res_with_and_without_dormancy_models(
@@ -182,11 +186,11 @@ def main(
         estimate_filled_posts_df
     )
 
-    print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
+    print(f"Exporting as parquet to {destination}")
 
     utils.write_to_parquet(
         estimate_filled_posts_df,
-        estimated_ind_cqc_destination,
+        destination,
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
@@ -198,16 +202,24 @@ if __name__ == "__main__":
     print("Spark job 'estimate_ind_cqc_filled_posts' starting...")
     print(f"Job parameters: {sys.argv}")
 
+    #     (bucket_name, source, destination) = utils.collect_arguments(
+    #         ("--bucket_name", "The s3 bucket name to source and save the datasets to"),
+    #         ("--source", "S3 directory for reading input dataset"),
+    #         ("--destination", "S3 directory for storing filled post estimates"),
+    #     )
+
+    #     main(bucket_name, source, destination)
+
     (
         bucket_name,
-        imputed_ind_cqc_data_source,
+        source,
         non_res_with_dormancy_features_source,
         non_res_with_dormancy_model_source,
-        estimated_ind_cqc_destination,
+        destination,
     ) = utils.collect_arguments(
         ("--bucket_name", "The s3 bucket name to source and save the datasets to"),
         (
-            "--imputed_ind_cqc_data_source",
+            "--source",
             "Source s3 directory for imputed ASCWDS and PIR dataset",
         ),
         (
@@ -219,15 +231,15 @@ if __name__ == "__main__":
             "Source s3 directory for the non res with dormancy ML model",
         ),
         (
-            "--estimated_ind_cqc_destination",
+            "--destination",
             "Destination s3 directory for outputting estimates for filled posts",
         ),
     )
 
     main(
         bucket_name,
-        imputed_ind_cqc_data_source,
+        source,
         non_res_with_dormancy_features_source,
         non_res_with_dormancy_model_source,
-        estimated_ind_cqc_destination,
+        destination,
     )
