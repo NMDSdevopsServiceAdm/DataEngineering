@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Polars job [validate_model_01_features](projects/_03_independent_cqc/_04_model/fargate/validate_model_01_features.py) to validate features data. Associated unit tests also added.
   - Updated polars job to validate non_res_with_dormancy_model features and updated associated unit tests.
   - Updated polars job to validate care_home_model features and updated associated unit tests.
+  - Updated polars job to validate non_res_without_dormancy_model features and updated associated unit tests.
 
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
@@ -35,6 +36,8 @@ All notable changes to this project will be documented in this file.
 - Replaced the static PySpark modelling code for care homes and non-residential without dormancy with the auto-retraining sklearn equivalent.
 
 - In the clean ASC-WDS workplace job, a new function was added to select only the required columns before saving the cleaned ASC-WDS workplace data.
+
+- Removed filters from run_postcode_matching function. Data is already filtered before passed to this function.
 
 - Added unit tests for combine_non_res_with_and_without_dormancy_models function to check expected columns and row count.
 
