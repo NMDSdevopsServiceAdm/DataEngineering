@@ -6,7 +6,7 @@ Amazon Web Services Command Line Interface is a prerequisite of Terraform. [See 
 
 1. Set an environment variable for HOME:
 ```
-$Env:HOME = 'C:\Users\MHolloway' 
+$Env:HOME = 'C:\Users\<username>' 
 ```
 2. Provide your MFA token:
 ```
@@ -20,7 +20,7 @@ $Env:AWS_PROFILE="non-prod"
 ```
 5. Initialise terraform:
 ```
-terraform init -backend-config=../non_prod_local.s3.tfbackend
+terraform init -backend-config="../non_prod_local.s3.tfbackend"
 ```
 6. Select workspace
 ```
@@ -36,14 +36,14 @@ terraform plan
 terraform apply
 ```
 
-In the very rare case you need to do a manual production deployment from your own machine, you'll need to rerun `terraform init`, using `../prod_local.s3.tfbackend` as the value for `-backend-config`. You will need elevated permissions to do this. It is then essential that once you have performed this deployment, you rerun `terraform init -backend-config=../non_prod.s3.tfbackend`, otherwise any summary action may be accidentally applied to the production environment if the `allowed_account_ids` entry is accidentally deleted.
+In the very rare case you need to do a manual production deployment from your own machine, you'll need to rerun `terraform init`, using `../prod_local.s3.tfbackend` as the value for `-backend-config`. You will need elevated permissions to do this. It is then essential that once you have performed this deployment, you rerun `terraform init -backend-config="../non_prod.s3.tfbackend"`, otherwise any summary action may be accidentally applied to the production environment if the `allowed_account_ids` entry is accidentally deleted.
 
 ## Destroying Terraform
 To remove Terraform generated infrastructure first ensure you are in the correct directory working on the correct workspace.
 
 ```
 cd terraform/pipeline
-terraform init -backend-config=../non_prod_local.s3.tfbackend
+terraform init -backend-config="../non_prod_local.s3.tfbackend"
 terraform workspace list
 ```
 
