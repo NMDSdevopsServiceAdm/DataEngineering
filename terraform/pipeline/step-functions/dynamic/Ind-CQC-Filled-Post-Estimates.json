@@ -567,23 +567,6 @@
                   }
                 },
                 {
-                  "StartAt": "Non residential model features",
-                  "States": {
-                    "Non residential model features": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${prepare_features_non_res_ascwds_ind_cqc_job_name}",
-                        "Arguments": {
-                          "--ind_cqc_filled_posts_cleaned_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
-                          "--with_dormancy_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_ascwds_with_dormancy/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
                   "StartAt": "Validate imputed data",
                   "States": {
                     "Validate imputed data": {
