@@ -1,0 +1,3 @@
+bucket              = "sfc-non-prod-terraform-state"
+allowed_account_ids = ["856699698263"] # DO NOT REMOVE THIS
+profile             = "non-prod"

@@ -360,6 +360,21 @@ class ValidateModelsData:
             10,
             5,
         ),
+        (
+            "1-005",
+            date(2024, 1, 1),
+            "N",
+            None,
+            ["activity 1"],
+            12.0,
+            ["service 1"],
+            ["specialism 1"],
+            "rui",
+            "region",
+            "Y",
+            10,
+            None,
+        ),
     ]
     expected_get_expected_row_count_rows = 1
 
