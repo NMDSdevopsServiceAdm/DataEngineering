@@ -145,6 +145,13 @@ def extrapolation_forwards(
         "last",
     )
 
+    df = df.withColumn(
+        IndCqc.extrapolation_forwards,
+        F.col(IndCqc.previous_non_null_value)
+        + F.col(model_to_extrapolate_from)
+        - F.col(IndCqc.previous_model_value),
+    )
+
     df = df.drop(IndCqc.previous_non_null_value, IndCqc.previous_model_value)
 
     return df
