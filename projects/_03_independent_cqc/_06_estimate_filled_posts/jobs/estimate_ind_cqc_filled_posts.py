@@ -193,6 +193,11 @@ def main(
 
     print("Completed estimate independent CQC filled posts")
 
+
+if __name__ == "__main__":
+    print("Spark job 'estimate_ind_cqc_filled_posts' starting...")
+    print(f"Job parameters: {sys.argv}")
+
     (
         bucket_name,
         imputed_ind_cqc_data_source,
