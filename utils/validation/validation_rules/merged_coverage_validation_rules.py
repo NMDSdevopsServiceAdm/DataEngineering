@@ -2,6 +2,9 @@ from dataclasses import dataclass
 
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    AscwdsWorkplaceColumns as AscWdsColumns,
+)
 from utils.column_values.categorical_columns_by_dataset import (
     MergedCoverageCategoricalValues as CatValues,
 )
@@ -15,6 +18,20 @@ class MergedCoverageValidationRules:
         RuleName.index_columns: [
             IndCqcColumns.location_id,
             IndCqcColumns.cqc_location_import_date,
+        ],
+        "hasColumns": [
+            AscWdsColumns.master_update_date,
+            IndCqcColumns.name,
+            AscWdsColumns.nmds_id,
+            "overall_rating",
+            IndCqcColumns.postcode,
+            IndCqcColumns.provider_name,
+            "parents_or_singles_and_subs",
+            "la_monthly_coverage" "coverage_monthly_change",
+            "locations_monthly_change",
+            "new_registrations_monthly",
+            "new_registrations_ytd",
+            "last_logged_in_date",
         ],
         RuleName.complete_columns: [
             IndCqcColumns.location_id,
