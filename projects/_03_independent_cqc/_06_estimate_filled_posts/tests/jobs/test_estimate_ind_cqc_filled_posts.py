@@ -63,7 +63,9 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             model_imputation_with_extrapolation_and_interpolation.call_count, 3
         )
         merge_columns_in_order_mock.assert_called_once()
-        set_min_value_mock.assert_called_once_with(ANY, IndCQC.prediction, 1.0)
+        set_min_value_mock.assert_called_once_with(
+            ANY, IndCQC.estimate_filled_posts, 1.0
+        )
         estimate_non_res_capacity_tracker_filled_posts_mock.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
             ANY,
