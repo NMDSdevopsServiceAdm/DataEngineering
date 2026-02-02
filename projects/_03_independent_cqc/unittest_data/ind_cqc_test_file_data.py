@@ -5138,25 +5138,25 @@ class EstimateFilledPostsModelsUtils:
     ]
 
     enrich_model_predictions_care_home_rows = [
-        ("1-003", date(2025, 1, 1), 2, 0.25, "v1_r1"),
+        ("1-003", date(2025, 1, 1), 2, -0.5, "v1_r1"),
         ("1-004", date(2025, 1, 1), 2, 2.5, "v1_r1"),
     ]
     # fmt: off
     expected_enrich_model_ind_cqc_care_home_rows = [
         ("1-001", date(2025, 1, 1), CareHome.not_care_home, None, None, None), # no prediction expected
         ("1-002", date(2025, 1, 1), CareHome.not_care_home, None, None, None), # no prediction expected
-        ("1-003", date(2025, 1, 1), CareHome.care_home, 2, 1.0, "v1_r1"), # minimum of 1.0 applied
+        ("1-003", date(2025, 1, 1), CareHome.care_home, 2, -1.0, "v1_r1"), # prediction (converted to posts) joined in (maintains negative)
         ("1-004", date(2025, 1, 1), CareHome.care_home, 2, 5.0, "v1_r1"), # prediction (converted to posts) joined in
     ]
     # fmt: on
 
     enrich_model_predictions_non_res_rows = [
-        ("1-001", date(2025, 1, 1), 2, 0.25, "v1_r1"),
+        ("1-001", date(2025, 1, 1), 2, -5.0, "v1_r1"),
         ("1-002", date(2025, 1, 1), 2, 2.5, "v1_r1"),
     ]
     # fmt: off
     expected_enrich_model_ind_cqc_non_res_rows = [
-        ("1-001", date(2025, 1, 1), CareHome.not_care_home, None, 1.0, "v1_r1"), # minimum of 1.0 applied
+        ("1-001", date(2025, 1, 1), CareHome.not_care_home, None, -5.0, "v1_r1"), # prediction joined in (maintains negative)
         ("1-002", date(2025, 1, 1), CareHome.not_care_home, None, 2.5, "v1_r1"), # prediction joined in
         ("1-003", date(2025, 1, 1), CareHome.care_home, 2, None, None), # no prediction expected
         ("1-004", date(2025, 1, 1), CareHome.care_home, 2, None, None), # no prediction expected
