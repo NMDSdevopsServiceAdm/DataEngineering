@@ -243,6 +243,33 @@ class FilterCleanedValuesSchema:
 
 
 @dataclass
+class EstimateIndCQCFilledPostsSchemas:
+    cleaned_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.contemporary_region, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.services_offered, ArrayType(StringType()), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts, FloatType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.current_lsoa21, StringType(), True),
+            StructField(IndCQC.current_msoa21, StringType(), True),
+            StructField(
+                IndCQC.contemporary_rural_urban_indicator_2011, StringType(), True
+            ),
+            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class ValidationUtils:
     validation_schema = StructType(
         [
