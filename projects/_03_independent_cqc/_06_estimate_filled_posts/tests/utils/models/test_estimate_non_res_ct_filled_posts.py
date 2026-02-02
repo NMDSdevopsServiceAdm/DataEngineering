@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import ANY, Mock, patch
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
     estimate_non_res_ct_filled_posts as job,
@@ -31,6 +31,7 @@ class MainTests(EstimateNonResCTFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.merge_columns_in_order")
     @patch(f"{PATCH_PATH}.convert_to_all_posts_using_ratio")
     @patch(f"{PATCH_PATH}.calculate_care_worker_ratio")
@@ -39,12 +40,16 @@ class MainTests(EstimateNonResCTFilledPostsTests):
         calculate_care_worker_ratio_mock: Mock,
         convert_to_all_posts_using_ratio_mock: Mock,
         merge_columns_in_order_mock: Mock,
+        set_min_value_mock: Mock,
     ):
         job.estimate_non_res_capacity_tracker_filled_posts(self.estimates_df)
 
         calculate_care_worker_ratio_mock.assert_called_once()
         convert_to_all_posts_using_ratio_mock.assert_called_once()
         merge_columns_in_order_mock.assert_called_once()
+        set_min_value_mock.assert_called_once_with(
+            ANY, IndCqc.ct_non_res_filled_post_estimate, 1.0
+        )
 
 
 class CalculateCareWorkerRatioTests(EstimateNonResCTFilledPostsTests):

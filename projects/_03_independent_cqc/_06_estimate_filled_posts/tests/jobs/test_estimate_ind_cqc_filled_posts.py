@@ -3,6 +3,7 @@ from unittest.mock import ANY, Mock, patch
 
 import projects._03_independent_cqc._06_estimate_filled_posts.jobs.estimate_ind_cqc_filled_posts as job
 from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.jobs.estimate_ind_cqc_filled_posts"
@@ -62,7 +63,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             model_imputation_with_extrapolation_and_interpolation.call_count, 3
         )
         merge_columns_in_order_mock.assert_called_once()
-        set_min_value_mock.assert_called_once_with(ANY, IndCqc.prediction, 1.0)
+        set_min_value_mock.assert_called_once_with(ANY, IndCQC.prediction, 1.0)
         estimate_non_res_capacity_tracker_filled_posts_mock.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
             ANY,

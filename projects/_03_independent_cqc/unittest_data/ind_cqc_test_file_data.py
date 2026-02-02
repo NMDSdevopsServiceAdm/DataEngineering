@@ -5504,21 +5504,21 @@ class DiagnosticsUtilsData:
 @dataclass
 class IndCQCDataUtils:
     input_rows_for_adding_estimate_filled_posts_and_source = [
-        ("1-000001", 10.0, None, 80.0),
-        ("1-000002", None, 30.0, 50.0),
-        ("1-000003", 20.0, 70.0, 60.0),
-        ("1-000004", None, None, 40.0),
-        ("1-000005", None, 0.5, 40.0),
-        ("1-000006", -1.0, 10.0, 30.0),
+        ("1-001", -1.0, 10.0, 30.0),
+        ("1-002", 10.0, None, 80.0),
+        ("1-003", None, 30.0, 50.0),
+        ("1-004", None, 0.5, 40.0),
+        ("1-005", None, None, 40.0),
+        ("1-006", None, None, None),
     ]
 
     expected_rows_with_estimate_filled_posts_and_source = [
-        ("1-000001", 10.0, None, 80.0, 10.0, "model_name_1"),
-        ("1-000002", None, 30.0, 50.0, 30.0, "model_name_2"),
-        ("1-000003", 20.0, 70.0, 60.0, 20.0, "model_name_1"),
-        ("1-000004", None, None, 40.0, 40.0, "model_name_3"),
-        ("1-000005", None, 0.5, 40.0, 40.0, "model_name_3"),
-        ("1-000006", -1.0, 10.0, 30.0, 10.0, "model_name_2"),
+        ("1-001", -1.0, 10.0, 30.0, -1.0, "model_name_1"),
+        ("1-002", 10.0, None, 80.0, 10.0, "model_name_1"),
+        ("1-003", None, 30.0, 50.0, 30.0, "model_name_2"),
+        ("1-004", None, 0.5, 40.0, 0.5, "model_name_2"),
+        ("1-005", None, None, 40.0, 40.0, "model_name_3"),
+        ("1-006", None, None, None, None, None),
     ]
 
     merge_columns_in_order_when_df_has_columns_of_multiple_datatypes = [
@@ -5542,51 +5542,12 @@ class IndCQCDataUtils:
     ]
 
     # fmt: off
-    merge_map_columns_in_order_when_only_ascwds_known = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-         None)
-    ]
-    # fmt: on
-
-    # fmt: off
-    expected_merge_map_columns_in_order_when_only_ascwds_known = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-         None,
-         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-         IndCQC.ascwds_job_role_ratios)
-    ]
-    # fmt: on
-
-    # fmt: off
-    merge_map_columns_in_order_when_only_primary_service_known = [
-        ("1-001",
-         None,
-         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4})
-    ]
-    # fmt: on
-
-    # fmt: off
-    expected_merge_map_columns_in_order_when_only_primary_service_known = [
-        ("1-001",
-         None,
-         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
-         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
-         IndCQC.ascwds_job_role_rolling_ratio)
-    ]
-    # fmt: on
-
-    # fmt: off
-    merge_map_columns_in_order_when_both_map_columns_populated = [
+    merge_map_columns_in_order = [
         ("1-001",
          {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
          {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4})
     ]
-    # fmt: on
-
-    # fmt: off
-    expected_merge_map_columns_in_order_when_both_map_columns_populated = [
+    expected_merge_map_columns_in_order = [
         ("1-001",
          {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
          {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
@@ -5599,7 +5560,6 @@ class IndCQCDataUtils:
     expected_merge_map_columns_in_order_when_both_null = [
         ("1-001", None, None, None, None)
     ]
-    # fmt: on
 
     # fmt: off
     merge_map_columns_in_order_when_both_map_columns_populated_at_multiple_locations = [
