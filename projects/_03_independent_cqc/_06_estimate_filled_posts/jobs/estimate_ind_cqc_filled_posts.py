@@ -19,6 +19,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res
 )
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
     enrich_with_model_predictions,
+    set_min_value,
 )
 from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
 from utils import utils
@@ -176,6 +177,10 @@ def main(
         ],
         IndCQC.estimate_filled_posts,
         IndCQC.estimate_filled_posts_source,
+    )
+
+    estimate_filled_posts_df = set_min_value(
+        estimate_filled_posts_df, IndCQC.estimate_filled_posts, 1.0
     )
 
     estimate_filled_posts_df = estimate_non_res_capacity_tracker_filled_posts(
