@@ -26,6 +26,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.estimate_non_res_capacity_tracker_filled_posts")
+    @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.merge_columns_in_order")
     @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
     @patch(f"{PATCH_PATH}.combine_non_res_with_and_without_dormancy_models")
@@ -38,6 +39,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         combine_non_res_with_and_without_dormancy_models_patch: Mock,
         model_imputation_with_extrapolation_and_interpolation: Mock,
         merge_columns_in_order_mock: Mock,
+        set_min_value_mock: Mock,
         estimate_non_res_capacity_tracker_filled_posts_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
@@ -60,6 +62,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             model_imputation_with_extrapolation_and_interpolation.call_count, 3
         )
         merge_columns_in_order_mock.assert_called_once()
+        set_min_value_mock.assert_called_once_with(ANY, IndCqc.prediction, 1.0)
         estimate_non_res_capacity_tracker_filled_posts_mock.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
             ANY,

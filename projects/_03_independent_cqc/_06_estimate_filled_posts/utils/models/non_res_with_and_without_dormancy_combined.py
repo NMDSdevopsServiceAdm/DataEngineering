@@ -3,7 +3,6 @@ from pyspark.sql import functions as F
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
     join_model_predictions,
-    set_min_value,
 )
 from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 from utils import utils
@@ -48,8 +47,6 @@ def combine_non_res_with_and_without_dormancy_models(
     combined_models_df = calculate_and_apply_residuals(combined_models_df)
 
     combined_models_df = combine_model_predictions(combined_models_df)
-
-    combined_models_df = set_min_value(combined_models_df, IndCqc.prediction, 1.0)
 
     locations_with_predictions_df = join_model_predictions(
         locations_df,

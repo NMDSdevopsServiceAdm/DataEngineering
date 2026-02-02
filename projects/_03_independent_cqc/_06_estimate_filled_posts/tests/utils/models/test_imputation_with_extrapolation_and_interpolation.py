@@ -43,7 +43,6 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
             care_home=False,
         )
 
-    @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.model_interpolation")
     @patch(f"{PATCH_PATH}.model_extrapolation")
     @patch(f"{PATCH_PATH}.split_dataset_for_imputation")
@@ -54,7 +53,6 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
         split_dataset_mock: Mock,
         model_extrapolation_mock: Mock,
         model_interpolation_mock: Mock,
-        set_min_value_mock: Mock,
     ):
         split_dataset_mock.side_effect = [
             (Mock(name="imputed_df"), Mock(name="non_imputed_df"))
@@ -72,7 +70,6 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
         split_dataset_mock.assert_called_once()
         model_extrapolation_mock.assert_called_once()
         model_interpolation_mock.assert_called_once()
-        set_min_value_mock.assert_called_once()
 
     def test_model_imputation_with_extrapolation_and_interpolation_returns_same_number_of_rows(
         self,
