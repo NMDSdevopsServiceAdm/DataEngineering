@@ -1,6 +1,4 @@
 import unittest
-import warnings
-from datetime import date
 from unittest.mock import ANY, Mock, patch
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
