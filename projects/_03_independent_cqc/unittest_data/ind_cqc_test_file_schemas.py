@@ -2986,7 +2986,7 @@ class DiagnosticsUtilsSchemas:
 
 @dataclass
 class IndCQCDataUtils:
-    input_schema_for_adding_estimate_filled_posts_and_source = StructType(
+    merge_columns_in_order_when_double_type_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField("model_name_1", DoubleType(), True),
@@ -2994,38 +2994,15 @@ class IndCQCDataUtils:
             StructField("model_name_3", DoubleType(), True),
         ]
     )
-
-    expected_schema_with_estimate_filled_posts_and_source = StructType(
+    expected_merge_columns_in_order_when_double_type_schema = StructType(
         [
-            *input_schema_for_adding_estimate_filled_posts_and_source,
+            *merge_columns_in_order_when_double_type_schema,
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
             StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
         ]
     )
 
-    merge_columns_in_order_when_df_has_columns_of_multiple_datatypes_schema = (
-        StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.care_home_model, DoubleType(), True),
-                StructField(
-                    IndCQC.ascwds_job_role_ratios, MapType(StringType(), DoubleType())
-                ),
-            ]
-        )
-    )
-
-    merge_columns_in_order_when_columns_are_datatype_string_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
-            StructField(
-                IndCQC.ascwds_job_role_ratios_merged_source, StringType(), True
-            ),
-        ]
-    )
-
-    merge_columns_in_order_using_map_columns_schema = StructType(
+    merge_columns_in_order_when_map_type_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(
@@ -3038,10 +3015,9 @@ class IndCQCDataUtils:
             ),
         ]
     )
-
-    expected_merge_columns_in_order_using_map_columns_schema = StructType(
+    expected_merge_columns_in_order_when_map_type_schema = StructType(
         [
-            *merge_columns_in_order_using_map_columns_schema,
+            *merge_columns_in_order_when_map_type_schema,
             StructField(
                 IndCQC.ascwds_job_role_ratios_merged,
                 MapType(StringType(), DoubleType()),

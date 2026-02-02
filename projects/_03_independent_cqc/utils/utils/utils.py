@@ -27,9 +27,6 @@ def merge_columns_in_order(
 
     This function creates a new column using the values from other columns given in a list.
     Values are taken from the given list of columns in the order of the list.
-    The given list of columns must all be of the same datatype which can be float or map.
-    Float values will only be taken if they are greater than or equal to 1.0.
-    Map elements will only be taken if they are not null.
     This function also adds a new column for the source, which is the column name that values were taken from.
 
     Args:
@@ -40,62 +37,18 @@ def merge_columns_in_order(
 
     Returns:
         DataFrame: A dataframe with a column for the merged job role ratios.
-
-    Raises:
-        ValueError: If the given list of columns are not all 'double' or all 'map' datatypes.
     """
-    column_types = list(
-        set(
-            [
-                df.schema[column].dataType
-                for column in ordered_list_of_columns_to_be_merged
-            ]
-        )
+    df = df.withColumn(
+        merged_column_name,
+        F.coalesce(*[F.col(column) for column in ordered_list_of_columns_to_be_merged]),
     )
-    if len(column_types) > 1:
-        raise ValueError(
-            f"The columns to merge must all have the same datatype. Found {column_types}."
-        )
 
-    if isinstance(column_types[0], DoubleType):
-        df = df.withColumn(
-            merged_column_name,
-            F.coalesce(
-                *[
-                    F.when((F.col(column) >= 1.0), F.col(column))
-                    for column in ordered_list_of_columns_to_be_merged
-                ]
-            ),
-        )
-
-        source_column = F.when(
-            F.col(ordered_list_of_columns_to_be_merged[0]) >= 1.0,
-            ordered_list_of_columns_to_be_merged[0],
-        )
-        for column_name in ordered_list_of_columns_to_be_merged[1:]:
-            source_column = source_column.when(F.col(column_name) >= 1.0, column_name)
-
-    elif isinstance(column_types[0], MapType):
-        df = df.withColumn(
-            merged_column_name,
-            F.coalesce(
-                *[F.col(column) for column in ordered_list_of_columns_to_be_merged]
-            ),
-        )
-
-        source_column = F.when(
-            F.col(ordered_list_of_columns_to_be_merged[0]).isNotNull(),
-            ordered_list_of_columns_to_be_merged[0],
-        )
-        for column_name in ordered_list_of_columns_to_be_merged[1:]:
-            source_column = source_column.when(
-                F.col(column_name).isNotNull(), column_name
-            )
-
-    else:
-        raise ValueError(
-            f"Columns to merge must be either 'double' or 'map' type. Found {column_types}."
-        )
+    source_column = F.when(
+        F.col(ordered_list_of_columns_to_be_merged[0]).isNotNull(),
+        ordered_list_of_columns_to_be_merged[0],
+    )
+    for column_name in ordered_list_of_columns_to_be_merged[1:]:
+        source_column = source_column.when(F.col(column_name).isNotNull(), column_name)
 
     df = df.withColumn(merged_column_source_name, source_column)
 
