@@ -263,7 +263,6 @@ jobs:
       - run:
           name: Copy main datasets to non-prod dataset bucket
           command: |
-            aws s3 sync "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/" "s3://$BRANCH_DATASET_BUCKET/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/"
             aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=delta_locations_api/version=3.1.0/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=delta_locations_api/version=3.1.0/"
             aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=delta_providers_api/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=delta_providers_api/"
             aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_03_full_flattened/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_locations_03_full_flattened/"
