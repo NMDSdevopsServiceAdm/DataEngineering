@@ -62,7 +62,7 @@ def model_imputation_with_extrapolation_and_interpolation(
     imputed_df = model_imputation(
         imputed_df, column_with_null_values, imputed_column_name
     )
-    imputed_df = set_min_value(imputed_df, imputed_column_name, 1.0)
+    # imputed_df = set_min_value(imputed_df, imputed_column_name, 1.0)
 
     combined_df = imputed_df.unionByName(non_imputed_df, allowMissingColumns=True)
 
