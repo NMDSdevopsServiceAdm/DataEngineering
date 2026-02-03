@@ -28,6 +28,7 @@ estimate_filled_posts_columns: list = [
     IndCQC.imputed_posts_care_home_model,
     IndCQC.imputed_posts_non_res_combined_model,
     IndCQC.estimate_filled_posts,
+    IndCQC.extrapolation_forwards,
     Keys.year,
     Keys.month,
     Keys.day,
