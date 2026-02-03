@@ -68,8 +68,6 @@
                   ]
                 }
               },
-              "End": true
-              },
               "Next": "Reconciliation"
             },
             "Reconciliation": {
