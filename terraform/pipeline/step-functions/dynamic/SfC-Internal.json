@@ -50,7 +50,7 @@
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${model_cluster_arn}",
-                        "TaskDefinition": "${sfc_internal_pipeline_state_machine_arn}",
+                        "TaskDefinition": "${independent_cqc_model_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
