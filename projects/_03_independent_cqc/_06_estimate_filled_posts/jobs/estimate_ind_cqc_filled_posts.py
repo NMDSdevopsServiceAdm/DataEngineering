@@ -130,6 +130,7 @@ def main(bucket_name: str, source: str, destination: str) -> DataFrame:
         IndCQC.care_home_model,
         IndCQC.imputed_posts_care_home_model,
         care_home=True,
+        extrapolation_method="nominal",
     )
 
     estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
@@ -138,6 +139,7 @@ def main(bucket_name: str, source: str, destination: str) -> DataFrame:
         IndCQC.non_res_combined_model,
         IndCQC.imputed_posts_non_res_combined_model,
         care_home=False,
+        extrapolation_method="nominal",
     )
 
     estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
@@ -146,6 +148,7 @@ def main(bucket_name: str, source: str, destination: str) -> DataFrame:
         IndCQC.non_res_combined_model,
         IndCQC.imputed_pir_filled_posts_model,
         care_home=False,
+        extrapolation_method="nominal",
     )
 
     estimate_filled_posts_df = merge_columns_in_order(
