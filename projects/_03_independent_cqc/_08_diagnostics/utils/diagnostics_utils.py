@@ -77,7 +77,10 @@ def create_list_of_models() -> list:
     list_of_models = (
         CatValues.estimate_filled_posts_source_column_values.categorical_values
     )
-    list_of_models = list_of_models + [IndCQC.estimate_filled_posts]
+    list_of_models = list_of_models + [
+        IndCQC.estimate_filled_posts,
+        IndCQC.extrapolation_forwards,
+    ]
     return list_of_models
 
 
