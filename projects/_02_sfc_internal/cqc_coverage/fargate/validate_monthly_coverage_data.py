@@ -4,7 +4,7 @@ import pointblank as pb
 import polars as pl
 
 from polars_utils import utils
-from polars_utils.expressions import has_value, str_length_cols
+from polars_utils.expressions import str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.coverage_columns import CoverageColumns
