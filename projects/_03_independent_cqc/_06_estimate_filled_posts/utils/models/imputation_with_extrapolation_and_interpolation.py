@@ -62,13 +62,13 @@ def model_imputation_with_extrapolation_and_interpolation(
 
     combined_df = imputed_df.unionByName(non_imputed_df, allowMissingColumns=True)
 
-    combined_df = combined_df.drop(
-        IndCqc.extrapolation_backwards,
-        IndCqc.extrapolation_forwards,
-        IndCqc.extrapolation_model,
-        IndCqc.interpolation_model,
-        IndCqc.has_non_null_value,
-    )
+    # combined_df = combined_df.drop(
+    #     IndCqc.extrapolation_backwards,
+    #     IndCqc.extrapolation_forwards,
+    #     IndCqc.extrapolation_model,
+    #     IndCqc.interpolation_model,
+    #     IndCqc.has_non_null_value,
+    # )
 
     return combined_df
 
