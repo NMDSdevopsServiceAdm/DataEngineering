@@ -213,10 +213,10 @@ def reduce_dataset_to_earliest_file_per_month(df: pl.DataFrame) -> pl.DataFrame:
     This function identifies the date of the first import date in each month and then filters the dataset to those import dates only.
 
     Args:
-        df (DataFrame): A dataframe containing the partition keys year, month and day.
+        df (pl.DataFrame): A dataframe containing the partition keys year, month and day.
 
     Returns:
-        DataFrame: A dataframe with only the first import date of each month.
+        pl.DataFrame: A dataframe with only the first import date of each month.
     """
     earliest_day_in_month = "first_day_in_month"
     df = (
