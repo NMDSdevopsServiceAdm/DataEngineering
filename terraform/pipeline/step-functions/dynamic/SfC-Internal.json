@@ -45,7 +45,7 @@
                 {
                   "StartAt": "Validate Monthly Coverage",
                   "States": {
-                    "Validate Monthly Coverage (ECS)": {
+                    "Validate Monthly Coverage": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
