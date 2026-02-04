@@ -41,7 +41,7 @@ def main(
     compare_df = utils.read_parquet(f"s3://{bucket_name}/{compare_path}")
     reduced_coverage_df = utils.filter_to_maximum_value_in_column(
         compare_df, IndCqcColumns.cqc_location_import_date
-    ).collect()
+    )
     expected_row_count = calculate_expected_size_of_merged_coverage_dataset(
         reduced_coverage_df
     )
