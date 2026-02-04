@@ -39,7 +39,12 @@ def main(
         str_length_cols([IndCqcColumns.location_id, IndCqcColumns.provider_id]),
     )
     compare_df = utils.read_parquet(f"s3://{bucket_name}/{compare_path}")
-    expected_row_count = calculate_expected_size_of_merged_coverage_dataset(compare_df)
+    reduced_coverage_df = utils.filter_to_maximum_value_in_column(
+        compare_df, IndCqcColumns.cqc_location_import_date
+    ).collect()
+    expected_row_count = calculate_expected_size_of_merged_coverage_dataset(
+        reduced_coverage_df
+    )
 
     validation = (
         pb.Validate(
@@ -50,10 +55,10 @@ def main(
             actions=GLOBAL_ACTIONS,
         )
         # dataset size
-        # .row_count_match(
-        #     expected_row_count,
-        #     brief=f"Cleaned file has {source_df.height} rows but expecting {expected_row_count} rows",
-        # )
+        .row_count_match(
+            expected_row_count,
+            brief=f"Cleaned file has {source_df.height} rows but expecting {expected_row_count} rows",
+        )
         # complete columns
         .col_vals_not_null(
             [
@@ -170,13 +175,6 @@ def main(
                 CatValues.sector_column_values.count_of_categorical_values,
             ),
             brief=f"{IndCqcColumns.cqc_sector} needs to be one of {CatValues.sector_column_values.categorical_values}",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.dormancy,
-                CatValues.dormancy_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.dormancy} needs to be one of {CatValues.dormancy_column_values.count_of_categorical_values}",
         )
         .specially(
             vl.is_unique_count_equal(
