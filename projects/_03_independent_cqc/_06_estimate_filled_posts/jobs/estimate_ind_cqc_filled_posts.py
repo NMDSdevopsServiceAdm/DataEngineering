@@ -147,6 +147,10 @@ def main(
         care_home=True,
     )
 
+    estimate_filled_posts_df = estimate_filled_posts_df.withColumnsRenamed(
+        {IndCQC.extrapolation_forwards: "extrapolation_forwards_care_home_model"}
+    )
+
     estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_filled_posts_df,
         IndCQC.ascwds_pir_merged,
@@ -155,12 +159,20 @@ def main(
         care_home=False,
     )
 
+    estimate_filled_posts_df = estimate_filled_posts_df.withColumnsRenamed(
+        {IndCQC.extrapolation_forwards: "extrapolation_forwards_non_res_combined_model"}
+    )
+
     estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_filled_posts_df,
         IndCQC.pir_filled_posts_model,
         IndCQC.non_res_combined_model,
         IndCQC.imputed_pir_filled_posts_model,
         care_home=False,
+    )
+
+    estimate_filled_posts_df = estimate_filled_posts_df.withColumnsRenamed(
+        {IndCQC.extrapolation_forwards: "extrapolation_forwards_non_res_combined_model"}
     )
 
     estimate_filled_posts_df = merge_columns_in_order(
