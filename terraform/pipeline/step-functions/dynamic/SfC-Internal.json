@@ -75,8 +75,7 @@
                             }
                           ]
                         }
-                      },
-                      "End": true
+                      }
                     }
                   }
                 },
@@ -93,8 +92,7 @@
                           "--merged_coverage_data_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/",
                           "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_sfc_merged_coverage_data/"
                         }
-                      },
-                      "End": true
+                      }
                     }
                   }
                 }
