@@ -11,6 +11,7 @@ def model_extrapolation(
     df: DataFrame,
     column_with_null_values: str,
     model_to_extrapolate_from: str,
+    extrapolation_method: str,
 ) -> DataFrame:
     """
     Perform extrapolation on a column with null values using specified models.
@@ -18,10 +19,16 @@ def model_extrapolation(
     This function calculates the first and final submission dates, performs forward and backward extrapolation,
     and combines the extrapolated results into a new column.
 
+    Values before the first known submission in 'column_with_null_values' and after the last known submission are
+    extrapolated, either by nominal or ratio method as specified in 'extrapolation_method'.
+    The ratio method is based on multiplying the known value by the rate of change of the '<model_column_name>'.
+    The nominal method is based on adding/subtracting the nominal change of the '<model_column_name>' to the known value.
+
     Args:
         df (DataFrame): The input DataFrame containing the data.
         column_with_null_values (str): The name of the column that contains null values to be extrapolated.
         model_to_extrapolate_from (str): The model used for extrapolation.
+        extrapolation_method (str): The choice of method. Must be either 'nominal' or 'ratio'.
 
     Returns:
         DataFrame: The DataFrame with the extrapolated values in the 'extrapolation_model' column.
@@ -36,12 +43,14 @@ def model_extrapolation(
         column_with_null_values,
         model_to_extrapolate_from,
         window_spec_lagged,
+        extrapolation_method,
     )
     df = extrapolation_backwards(
         df,
         column_with_null_values,
         model_to_extrapolate_from,
         window_spec_all_rows,
+        extrapolation_method,
     )
     df = combine_extrapolation(df)
     df = df.drop(IndCqc.first_submission_time, IndCqc.final_submission_time)
@@ -111,22 +120,30 @@ def extrapolation_forwards(
     column_with_null_values: str,
     model_to_extrapolate_from: str,
     window_spec: Window,
+    extrapolation_method: str,
 ) -> DataFrame:
     """
     Calculates the forward extrapolation and adds it as a new column 'extrapolation_forwards'.
 
-    This function fills null values occurring after the last known value by extrapolating forwards
-    using the difference between the modelled value at the time of the last known non-null value
-    and the modelled value at that point in time.
+    This function fills null values occurring after the last known value by extrapolating forwards.
+
+    The ratio method is based on multiplying the rate of change from the modelled value at the time
+    of the last known non-null value and the modelled value after that point in time.
+
+    The nominal method is based on adding/subtracting the difference between those two modelled values.
 
     Args:
         df (DataFrame): A dataframe with a column to extrapolate forwards.
         column_with_null_values (str): The name of the column with null values in.
         model_to_extrapolate_from (str): The model used for extrapolation.
         window_spec (Window): The window specification to use for the calculation.
+        extrapolation_method (str): The choice of method. Must be either 'nominal' or 'ratio'.
 
     Returns:
         DataFrame: A dataframe with a new column containing forward extrapolated values.
+
+    Raises:
+        ValueError: If chosen extrapolation_method does not match 'nominal' or 'ratio'.
     """
     df = get_selected_value(
         df,
@@ -145,12 +162,24 @@ def extrapolation_forwards(
         "last",
     )
 
-    df = df.withColumn(
-        IndCqc.extrapolation_forwards,
-        F.col(IndCqc.previous_non_null_value)
-        + F.col(model_to_extrapolate_from)
-        - F.col(IndCqc.previous_model_value),
-    )
+    if extrapolation_method == "ratio":
+        df = df.withColumn(
+            IndCqc.extrapolation_forwards,
+            F.col(IndCqc.previous_non_null_value)
+            * F.col(model_to_extrapolate_from)
+            / F.col(IndCqc.previous_model_value),
+        )
+
+    elif extrapolation_method == "nominal":
+        df = df.withColumn(
+            IndCqc.extrapolation_forwards,
+            F.col(IndCqc.previous_non_null_value)
+            + F.col(model_to_extrapolate_from)
+            - F.col(IndCqc.previous_model_value),
+        )
+
+    else:
+        raise ValueError("Error: method must be either 'ratio' or 'nominal'.")
 
     df = df.drop(IndCqc.previous_non_null_value, IndCqc.previous_model_value)
 
@@ -162,22 +191,30 @@ def extrapolation_backwards(
     column_with_null_values: str,
     model_to_extrapolate_from: str,
     window_spec: Window,
+    extrapolation_method: str,
 ) -> DataFrame:
     """
     Calculates the backward extrapolation and adds it as a new column 'extrapolation_backwards'.
 
-    This function fills null values occurring before the first known value by extrapolating backwards
-    using the difference between the modelled value at the time of the first known non-null value and
-    the modelled value at that point in time.
+    This function fills null values occurring before the first known value by extrapolating backwards.
+
+    The ratio method is based on multiplying the rate of change from the modelled value before the
+    first known non-null value and the modelled value at the first known non-null timestamp.
+
+    The nominal method is based on adding/subtracting the difference between those two modelled values.
 
     Args:
         df (DataFrame): The input DataFrame.
         column_with_null_values (str): The name of the column with null values in.
         model_to_extrapolate_from (str): The name of the column representing the model to extrapolate from.
         window_spec (Window): The window specification to use for the calculation.
+        extrapolation_method (str): The choice of method. Must be either 'nominal' or 'ratio'.
 
     Returns:
         DataFrame: The DataFrame with the added 'extrapolation_backwards' column.
+
+    Raises:
+        ValueError: If chosen extrapolation_method does not match 'nominal' or 'ratio'.
     """
     df = get_selected_value(
         df,
@@ -197,15 +234,30 @@ def extrapolation_backwards(
         "first",
     )
 
-    df = df.withColumn(
-        IndCqc.extrapolation_backwards,
-        F.when(
-            F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
-            F.col(IndCqc.first_non_null_value)
-            + F.col(model_to_extrapolate_from)
-            - F.col(IndCqc.first_model_value),
-        ),
-    )
+    if extrapolation_method == "ratio":
+        df = df.withColumn(
+            IndCqc.extrapolation_backwards,
+            F.when(
+                F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
+                F.col(IndCqc.first_non_null_value)
+                * F.col(model_to_extrapolate_from)
+                / F.col(IndCqc.first_model_value),
+            ),
+        )
+
+    elif extrapolation_method == "nominal":
+        df = df.withColumn(
+            IndCqc.extrapolation_backwards,
+            F.when(
+                F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
+                F.col(IndCqc.first_non_null_value)
+                + F.col(model_to_extrapolate_from)
+                - F.col(IndCqc.first_model_value),
+            ),
+        )
+
+    else:
+        raise ValueError("Error: method must be either 'ratio' or 'nominal'.")
 
     df = df.drop(IndCqc.first_non_null_value, IndCqc.first_model_value)
 

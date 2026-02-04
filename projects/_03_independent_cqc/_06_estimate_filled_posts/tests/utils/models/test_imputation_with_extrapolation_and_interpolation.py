@@ -41,6 +41,7 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
             Data.model_column_name,
             Data.imputation_model_column_name,
             care_home=False,
+            extrapolation_method="nominal",
         )
 
     @patch(f"{PATCH_PATH}.set_min_value")
@@ -66,6 +67,7 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
             Data.model_column_name,
             Data.imputation_model_column_name,
             care_home=False,
+            extrapolation_method="nominal",
         )
 
         non_null_locs_mock.assert_called_once()
