@@ -79,7 +79,9 @@ def create_list_of_models() -> list:
     )
     list_of_models = list_of_models + [
         IndCQC.estimate_filled_posts,
-        IndCQC.extrapolation_forwards,
+        "extrapolation_forwards_care_home_model",
+        "extrapolation_forwards_non_res_combined_model",
+        "extrapolation_forwards_pir_non_res_combined_model",
     ]
     return list_of_models
 

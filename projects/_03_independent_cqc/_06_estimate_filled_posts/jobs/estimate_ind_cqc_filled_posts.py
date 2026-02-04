@@ -172,7 +172,9 @@ def main(
     )
 
     estimate_filled_posts_df = estimate_filled_posts_df.withColumnsRenamed(
-        {IndCQC.extrapolation_forwards: "extrapolation_forwards_non_res_combined_model"}
+        {
+            IndCQC.extrapolation_forwards: "extrapolation_forwards_pir_non_res_combined_model"
+        }
     )
 
     estimate_filled_posts_df = merge_columns_in_order(
