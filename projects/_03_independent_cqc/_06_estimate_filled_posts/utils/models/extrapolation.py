@@ -171,7 +171,7 @@ def extrapolation_forwards(
             / F.col(IndCqc.previous_model_value),
         )
 
-    if extrapolation_method == "nominal":
+    elif extrapolation_method == "nominal":
         df = df.withColumn(
             IndCqc.extrapolation_forwards,
             F.col(IndCqc.previous_non_null_value)
@@ -180,7 +180,7 @@ def extrapolation_forwards(
         )
 
     else:
-        raise ValueError("Error: method must be either 'straight' or 'trend'")
+        raise ValueError("Error: method must be either 'ratio' or 'nominal'")
 
     df = df.drop(IndCqc.previous_non_null_value, IndCqc.previous_model_value)
 
@@ -246,7 +246,7 @@ def extrapolation_backwards(
             ),
         )
 
-    if extrapolation_method == "nominal":
+    elif extrapolation_method == "nominal":
         df = df.withColumn(
             IndCqc.extrapolation_backwards,
             F.when(
@@ -258,7 +258,7 @@ def extrapolation_backwards(
         )
 
     else:
-        raise ValueError("Error: method must be either 'straight' or 'trend'")
+        raise ValueError("Error: method must be either 'ratio' or 'nominal'")
 
     df = df.drop(IndCqc.first_non_null_value, IndCqc.first_model_value)
 

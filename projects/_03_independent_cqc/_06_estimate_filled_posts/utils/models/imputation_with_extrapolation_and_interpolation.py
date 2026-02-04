@@ -52,15 +52,7 @@ def model_imputation_with_extrapolation_and_interpolation(
 
     Returns:
         DataFrame: The DataFrame with the added column for imputed values.
-
-    Raises:
-        ValueError: If chosen extrapolation_method does not match 'nominal' or 'ratio'.
     """
-    if extrapolation_method not in ["nominal", "ratio"]:
-        raise ValueError(
-            "Error: extrapolation_method must be either 'nominal' or 'ratio'."
-        )
-
     df = identify_locations_with_a_non_null_submission(df, column_with_null_values)
 
     imputed_df, non_imputed_df = split_dataset_for_imputation(df, care_home)
