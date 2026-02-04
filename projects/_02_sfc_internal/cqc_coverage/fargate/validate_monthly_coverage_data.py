@@ -7,18 +7,18 @@ from polars_utils import utils
 from polars_utils.expressions import str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from utils.column_names.coverage_columns import CoverageColumns
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AscWdsColumns,
 )
-from utils.column_names.reconciliation_columns import ReconciliationColumns
-from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.column_names.validation_table_columns import Validation
 from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CatValues,
 )
+from utils.column_names.coverage_columns import CoverageColumns
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.reconciliation_columns import ReconciliationColumns
+from utils.column_names.validation_table_columns import Validation
 
 
 def main(
@@ -191,6 +191,16 @@ def main(
 def calculate_expected_size_of_merged_coverage_dataset(
     df: pl.DataFrame,
 ) -> int:
+    """
+    Get unique rows based on import_date, name, postcode and care_home columnsand then calls the reduce function to get
+    monthly dataset count.
+
+    Args:
+        df (pl.DataFrame): Input dataframe
+
+    Returns:
+        int: Expected sze of the DataFrame
+    """
     df = df.unique(
         subset=[
             IndCqcColumns.cqc_location_import_date,

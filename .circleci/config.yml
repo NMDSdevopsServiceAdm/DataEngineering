@@ -268,7 +268,6 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_03_full_flattened/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_locations_03_full_flattened/"
             aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_providers_03_full_flattened/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_providers_03_full_flattened/"
             aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
-            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_04_latest_snapshot/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_locations_04_latest_snapshot/"
             aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=postcode_corrections/"
             aws s3 sync "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=ONS/dataset=postcode_directory_cleaned/"
             aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/" "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace/"
