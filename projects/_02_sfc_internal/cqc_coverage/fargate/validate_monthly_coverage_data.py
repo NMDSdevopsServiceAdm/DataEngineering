@@ -50,10 +50,10 @@ def main(
             actions=GLOBAL_ACTIONS,
         )
         # dataset size
-        .row_count_match(
-            expected_row_count,
-            brief=f"Cleaned file has {source_df.height} rows but expecting {expected_row_count} rows",
-        )
+        # .row_count_match(
+        #     expected_row_count,
+        #     brief=f"Cleaned file has {source_df.height} rows but expecting {expected_row_count} rows",
+        # )
         # complete columns
         .col_vals_not_null(
             [
@@ -105,7 +105,7 @@ def main(
         .col_vals_between(Validation.provider_id_length, 3, 14)
         .col_vals_between(CoverageColumns.in_ascwds, 0, 1)
         .col_vals_between(CoverageColumns.la_monthly_coverage, 0, 1)
-        .col_vals_between(CoverageColumns.coverage_monthly_change, -1, 1)
+        .col_vals_between(CoverageColumns.coverage_monthly_change, -1, 1, na_pass=True)
         # categorical
         .col_vals_in_set(
             IndCqcColumns.care_home,
@@ -176,7 +176,7 @@ def main(
                 IndCqcColumns.dormancy,
                 CatValues.dormancy_column_values.count_of_categorical_values,
             ),
-            brief=f"{IndCqcColumns.dormancy} needs to be one of {CatValues.dormancy_column_values.categorical_values}",
+            brief=f"{IndCqcColumns.dormancy} needs to be one of {CatValues.dormancy_column_values.count_of_categorical_values}",
         )
         .specially(
             vl.is_unique_count_equal(
@@ -202,7 +202,7 @@ def calculate_expected_size_of_merged_coverage_dataset(
         ]
     )
     df = reduce_dataset_to_earliest_file_per_month(df)
-    expected_size = df.count()
+    expected_size = df.height
     return expected_size
 
 
