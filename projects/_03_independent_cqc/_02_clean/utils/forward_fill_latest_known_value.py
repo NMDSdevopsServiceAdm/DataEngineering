@@ -18,8 +18,8 @@ class TempCols:
 
 # Dictionary defining the minimum size of location and corresponding days to forward fill.
 SIZE_BASED_FORWARD_FILL_DAYS = {
-    -float("inf"): 190,  # small location, using 190 as proxy for 6 month repetition.
-    10: 95,  # medium location, using 95 as proxy for 3 month repetition.
+    -float("inf"): 125,  # small location, using 125 as proxy for 4 month repetition.
+    10: 65,  # medium location, using 65 as proxy for 2 month repetition.
     50: 35,  # large location, using 35 as proxy for 1 month repetition.
 }
 
