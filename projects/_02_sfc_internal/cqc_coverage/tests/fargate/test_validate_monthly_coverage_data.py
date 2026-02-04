@@ -20,7 +20,7 @@ PATCH_PATH = (
 class ValidateMonthlyCoverageDataTests(unittest.TestCase):
     def setUp(self) -> None:
         self.source_df = pl.DataFrame(
-            Data.merged_coverage_rows, 
+            Data.merged_coverage_rows,
             Schemas.merged_coverage_schema,
             strict=False,
             orient="row",
