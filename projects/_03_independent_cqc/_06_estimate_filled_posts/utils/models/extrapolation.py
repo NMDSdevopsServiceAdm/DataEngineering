@@ -180,7 +180,7 @@ def extrapolation_forwards(
         )
 
     else:
-        raise ValueError("Error: method must be either 'ratio' or 'nominal'")
+        raise ValueError("Error: method must be either 'ratio' or 'nominal'.")
 
     df = df.drop(IndCqc.previous_non_null_value, IndCqc.previous_model_value)
 
@@ -258,7 +258,7 @@ def extrapolation_backwards(
         )
 
     else:
-        raise ValueError("Error: method must be either 'ratio' or 'nominal'")
+        raise ValueError("Error: method must be either 'ratio' or 'nominal'.")
 
     df = df.drop(IndCqc.first_non_null_value, IndCqc.first_model_value)
 
