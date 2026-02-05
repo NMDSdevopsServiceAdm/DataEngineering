@@ -40,47 +40,36 @@
               "Next": "Validate Merge Coverage Data"
             },
             "Validate Merge Coverage Data": {
-              "Type": "Parallel",
-              "Branches": [
-                {
-                  "StartAt": "Validate Monthly Coverage",
-                  "States": {
-                    "Validate Monthly Coverage": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask.sync",
-                      "Parameters": {
-                        "Cluster": "${model_cluster_arn}",
-                        "TaskDefinition": "${sfc_internal_task_arn}",
-                        "LaunchType": "FARGATE",
-                        "NetworkConfiguration": {
-                          "AwsvpcConfiguration": {
-                            "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": [
-                              "${sfc_internal_security_group_id}"
-                            ],
-                            "AssignPublicIp": "ENABLED"
-                          }
-                        },
-                        "Overrides": {
-                          "ContainerOverrides": [
-                            {
-                              "Name": "_02_sfc_internal-container",
-                              "Command": [
-                                "validate_merge_coverage_data.py",
-                                "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=SfC/dataset=sfc_merged_coverage_data/",
-                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_02_sfc_internal_merge_coverage_data/",
-                                "--compare_path", "domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
-                              ]
-                            }
-                          ]
-                        }
-                      },
-                      "End": true
-                    }
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${model_cluster_arn}",
+                "TaskDefinition": "${sfc_internal_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": [
+                      "${sfc_internal_security_group_id}"
+                    ],
+                    "AssignPublicIp": "ENABLED"
                   }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_02_sfc_internal-container",
+                      "Command": [
+                        "validate_merge_coverage_data.py",
+                        "--bucket_name", "${dataset_bucket_name}",
+                        "--source_path", "domain=SfC/dataset=sfc_merged_coverage_data/",
+                        "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_02_sfc_internal_merge_coverage_data/",
+                        "--compare_path", "domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
+                      ]
+                    }
+                  ]
                 }
-              ],
+              },
               "Next": "Reconciliation"
             },
             "Reconciliation": {
