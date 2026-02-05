@@ -5,6 +5,7 @@ from dataclasses import dataclass
 os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
 
 import utils.cleaning_utils as cUtils
 from projects._03_independent_cqc._03_impute.utils.model_and_merge_pir_filled_posts import (
@@ -71,6 +72,10 @@ def main(
     df = model_pir_filled_posts(df, linear_regression_model_source)
 
     df = merge_ascwds_and_pir_filled_post_submissions(df)
+
+    df.select(IndCQC.cqc_location_import_date, IndCQC.ascwds_pir_merged).filter(
+        (F.col(IndCQC.location_id) == "1-4134627298") & (F.col("year") == "2025")
+    ).sort(IndCQC.cqc_location_import_date).show()
 
     df = model_imputation_with_extrapolation_and_interpolation(
         df,

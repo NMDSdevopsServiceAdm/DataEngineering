@@ -113,6 +113,14 @@ def main(
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 
+    locations_df.select(
+        IndCQC.cqc_location_import_date, IndCQC.ascwds_filled_posts_dedup_clean
+    ).filter(
+        (F.col(IndCQC.location_id) == "1-4134627298") & (F.col("year") == "2025")
+    ).sort(
+        IndCQC.cqc_location_import_date
+    ).show()
+
     utils.write_to_parquet(
         locations_df,
         cleaned_ind_cqc_destination,
