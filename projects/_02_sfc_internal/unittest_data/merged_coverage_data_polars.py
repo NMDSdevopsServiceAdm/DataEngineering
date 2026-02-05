@@ -4,7 +4,7 @@ from datetime import date
 
 
 @dataclass
-class ValidateMonthlyCoverageData:
+class ValidateMergeCoverageData:
 
     cqc_locations_rows = [
         (
@@ -183,3 +183,5 @@ class ValidateMonthlyCoverageData:
             "01",
         ),
     ]
+
+    expected_row_count = 1

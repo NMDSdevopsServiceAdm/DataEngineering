@@ -16,7 +16,7 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.reconciliation_columns import ReconciliationColumns
 
 
-class ValidateMonthlyCoverageData:
+class ValidateMergeCoverageData:
     cqc_locations_schema = {
         CQCLClean.cqc_location_import_date: pl.Date,
         CQCLClean.location_id: pl.String,

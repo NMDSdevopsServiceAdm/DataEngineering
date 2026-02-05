@@ -39,12 +39,7 @@ def main(
         str_length_cols([IndCqcColumns.location_id, IndCqcColumns.provider_id]),
     )
     compare_df = utils.read_parquet(f"s3://{bucket_name}/{compare_path}")
-    reduced_coverage_df = utils.filter_to_maximum_value_in_column(
-        compare_df, IndCqcColumns.cqc_location_import_date
-    )
-    expected_row_count = calculate_expected_size_of_merged_coverage_dataset(
-        reduced_coverage_df
-    )
+    expected_row_count = calculate_expected_size_of_merged_coverage_dataset(compare_df)
 
     validation = (
         pb.Validate(
@@ -57,7 +52,7 @@ def main(
         # dataset size
         .row_count_match(
             expected_row_count,
-            brief=f"Cleaned file has {source_df.height} rows but expecting {expected_row_count} rows",
+            brief=f"Merged coverage file has {source_df.height} rows but expecting {expected_row_count} rows",
         )
         # complete columns
         .col_vals_not_null(
@@ -209,23 +204,6 @@ def calculate_expected_size_of_merged_coverage_dataset(
             IndCqcColumns.care_home,
         ]
     )
-    df = reduce_dataset_to_earliest_file_per_month(df)
-    expected_size = df.height
-    return expected_size
-
-
-def reduce_dataset_to_earliest_file_per_month(df: pl.DataFrame) -> pl.DataFrame:
-    """
-    Reduce the dataset to the first file of every month.
-
-    This function identifies the date of the first import date in each month and then filters the dataset to those import dates only.
-
-    Args:
-        df (pl.DataFrame): A dataframe containing the partition keys year, month and day.
-
-    Returns:
-        pl.DataFrame: A dataframe with only the first import date of each month.
-    """
     earliest_day_in_month = "first_day_in_month"
     df = (
         df.with_columns(
@@ -237,7 +215,8 @@ def reduce_dataset_to_earliest_file_per_month(df: pl.DataFrame) -> pl.DataFrame:
         .filter(pl.col(earliest_day_in_month) == pl.col(Keys.day))
         .drop(earliest_day_in_month)
     )
-    return df
+    expected_size = df.height
+    return expected_size
 
 
 if __name__ == "__main__":
