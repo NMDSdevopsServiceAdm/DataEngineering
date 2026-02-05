@@ -66,32 +66,14 @@
                             {
                               "Name": "_02_sfc_internal-container",
                               "Command": [
-                                "validate_monthly_coverage_data.py",
+                                "validate_merge_coverage_data.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=SfC/dataset=sfc_monthly_coverage_data/",
-                                "--reports_path", "domain=data_validation_reports/dataset=data_quality_report_sfc_monthly_coverage_data/",
+                                "--source_path", "domain=SfC/dataset=sfc_merged_coverage_data/",
+                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_02_sfc_internal_merge_coverage_data/",
                                 "--compare_path", "domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
                               ]
                             }
                           ]
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
-                  "StartAt": "Validate Merge Coverage",
-                  "States": {
-                    "Validate Merge Coverage": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${validate_merge_coverage_data_job_name}",
-                        "Arguments": {
-                          "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/",
-                          "--merged_coverage_data_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_sfc_merged_coverage_data/"
                         }
                       },
                       "End": true
