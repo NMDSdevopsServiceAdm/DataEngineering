@@ -48,11 +48,10 @@ def forward_fill_latest_known_value(
     Returns:
         DataFrame: Input DataFrame with nulls in `col_to_forward_fill` forward-filled according to the size-based length of time.
     """
-    df = add_size_based_forward_fill_days(
-        df, col_to_forward_fill, SIZE_BASED_FORWARD_FILL_DAYS
-    )
-
     last_known_df = return_last_known_value(df, col_to_forward_fill)
+    last_known_df = add_size_based_forward_fill_days(
+        last_known_df, TempCols.last_known_value, SIZE_BASED_FORWARD_FILL_DAYS
+    )
 
     df = df.join(last_known_df, on=IndCQC.location_id, how="left")
 

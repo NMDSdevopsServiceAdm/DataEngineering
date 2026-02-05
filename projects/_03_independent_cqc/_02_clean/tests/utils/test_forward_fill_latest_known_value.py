@@ -20,20 +20,20 @@ class ForwardFillLatestKnownValueCallTests(unittest.TestCase):
         self.spark = utils.get_spark()
 
     @patch(f"{PATCH_PATH}.forward_fill")
-    @patch(f"{PATCH_PATH}.return_last_known_value")
     @patch(f"{PATCH_PATH}.add_size_based_forward_fill_days")
+    @patch(f"{PATCH_PATH}.return_last_known_value")
     def test_forward_fill_latest_known_value_calls_all_subfunctions(
         self,
-        add_size_based_forward_fill_days_mock: Mock,
         return_last_known_value_mock: Mock,
+        add_size_based_forward_fill_days_mock: Mock,
         forward_fill_mock: Mock,
     ):
         input_df = Mock(name="input_df")
-        return_last_known_value_mock.return_value = Mock(name="last_known_df")
+        add_size_based_forward_fill_days_mock.return_value = Mock(name="last_known_df")
         job.forward_fill_latest_known_value(input_df, Schemas.col_to_forward_fill)
 
-        add_size_based_forward_fill_days_mock.assert_called_once()
         return_last_known_value_mock.assert_called_once()
+        add_size_based_forward_fill_days_mock.assert_called_once()
         forward_fill_mock.assert_called_once()
 
     def test_dict_of_size_based_forward_fill_days_values_are_correct(self):
