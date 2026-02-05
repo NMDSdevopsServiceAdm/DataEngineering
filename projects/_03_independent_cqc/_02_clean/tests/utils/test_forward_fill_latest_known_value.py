@@ -36,6 +36,12 @@ class ForwardFillLatestKnownValueCallTests(unittest.TestCase):
         return_last_known_value_mock.assert_called_once()
         forward_fill_mock.assert_called_once()
 
+    def test_dict_of_size_based_forward_fill_days_values_are_correct(self):
+        self.assertEqual(
+            job.SIZE_BASED_FORWARD_FILL_DAYS,
+            Data.expected_size_based_forward_fill_days_dict,
+        )
+
 
 class AddSizeBasedForwardFillDaysTests(unittest.TestCase):
     def setUp(self) -> None:
