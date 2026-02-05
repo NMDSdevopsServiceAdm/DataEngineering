@@ -13,13 +13,13 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "Cluster": "${model_cluster_arn}",
-                "TaskDefinition": "${independent_cqc_model_task_arn}",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
                     "Subnets": ${public_subnet_ids},
-                    "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
                     "AssignPublicIp": "ENABLED"
                   }
                 },
@@ -58,7 +58,7 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "1311-fix-dest-t2-clean_ind_cqc_filled_posts_job",
+                        "JobName": "${clean_ind_cqc_filled_posts_job_name}",
                         "Arguments": {
                           "--merged_ind_cqc_source": "s3://sfc-1311-fix-dest-t2-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/",
                           "--cleaned_ind_cqc_destination": "s3://sfc-1311-fix-dest-t2-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
