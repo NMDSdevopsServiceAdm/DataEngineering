@@ -175,6 +175,7 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
             self.column_with_null_values,
             self.model_to_extrapolate_from,
             self.window_spec_lagged,
+            extrapolation_method="nominal",
         )
 
         self.assertEqual(get_selected_value_mock.call_count, 2)
