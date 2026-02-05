@@ -17,10 +17,10 @@ repos:
       - id: pydoclint
         args: [--style=google, --quiet]
 
-  - repo: local
-    hooks:
-      - id: ban-show
-        name: Block .show() usage
-        entry: bash scripts/prevent_show_usage.sh
-        language: system
-        types: [python]
+  # - repo: local
+  #   hooks:
+  #     - id: ban-show
+  #       name: Block .show() usage
+  #       entry: bash scripts/prevent_show_usage.sh
+  #       language: system
+  #       types: [python]

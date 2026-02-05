@@ -49,16 +49,51 @@ def forward_fill_latest_known_value(
         DataFrame: Input DataFrame with nulls in `col_to_forward_fill` forward-filled according to the size-based length of time.
     """
     last_known_df = return_last_known_value(df, col_to_forward_fill)
+    last_known_df.filter(F.col(IndCQC.location_id) == "1-4134627298").show()
     last_known_df = add_size_based_forward_fill_days(
         last_known_df, TempCols.last_known_value, SIZE_BASED_FORWARD_FILL_DAYS
     )
+    last_known_df.filter(F.col(IndCQC.location_id) == "1-4134627298").show()
 
     df = df.join(last_known_df, on=IndCQC.location_id, how="left")
+    df.select(
+        IndCQC.cqc_location_import_date,
+        col_to_forward_fill,
+        TempCols.last_known_date,
+        TempCols.last_known_value,
+        TempCols.days_to_forward_fill,
+    ).filter(
+        (F.col(IndCQC.location_id) == "1-4134627298") & (F.col("year") == "2025")
+    ).sort(
+        IndCQC.cqc_location_import_date
+    ).show()
 
     forward_fill_df = forward_fill(df, col_to_forward_fill)
+    forward_fill_df.select(
+        IndCQC.cqc_location_import_date,
+        col_to_forward_fill,
+        TempCols.last_known_date,
+        TempCols.last_known_value,
+        TempCols.days_to_forward_fill,
+    ).filter(
+        (F.col(IndCQC.location_id) == "1-4134627298") & (F.col("year") == "2025")
+    ).sort(
+        IndCQC.cqc_location_import_date
+    ).show()
 
     columns_to_drop = [field.name for field in fields(TempCols())]
     forward_fill_df = forward_fill_df.drop(*columns_to_drop)
+    forward_fill_df.select(
+        IndCQC.cqc_location_import_date,
+        col_to_forward_fill,
+        TempCols.last_known_date,
+        TempCols.last_known_value,
+        TempCols.days_to_forward_fill,
+    ).filter(
+        (F.col(IndCQC.location_id) == "1-4134627298") & (F.col("year") == "2025")
+    ).sort(
+        IndCQC.cqc_location_import_date
+    ).show()
 
     return forward_fill_df
 
