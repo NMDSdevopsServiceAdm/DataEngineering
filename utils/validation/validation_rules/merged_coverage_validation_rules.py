@@ -2,9 +2,6 @@ from dataclasses import dataclass
 
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
-from utils.column_names.raw_data_files.ascwds_workplace_columns import (
-    AscwdsWorkplaceColumns as AscWdsColumns,
-)
 from utils.column_values.categorical_columns_by_dataset import (
     MergedCoverageCategoricalValues as CatValues,
 )
@@ -29,7 +26,6 @@ class MergedCoverageValidationRules:
             IndCqcColumns.imputed_registration_date,
             IndCqcColumns.primary_service_type,
             IndCqcColumns.current_ons_import_date,
-            IndCqcColumns.postcode,
             IndCqcColumns.current_cssr,
             IndCqcColumns.current_region,
             IndCqcColumns.current_rural_urban_indicator_2011,
