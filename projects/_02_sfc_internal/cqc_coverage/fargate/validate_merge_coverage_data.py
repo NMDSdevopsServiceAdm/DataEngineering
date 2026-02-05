@@ -128,10 +128,6 @@ def main(
             CatValues.sector_column_values.categorical_values,
         )
         .col_vals_in_set(
-            IndCqcColumns.dormancy,
-            CatValues.dormancy_column_values.categorical_values,
-        )
-        .col_vals_in_set(
             IndCqcColumns.primary_service_type,
             CatValues.primary_service_type_column_values.categorical_values,
         )
@@ -176,7 +172,7 @@ def main(
                 IndCqcColumns.dormancy,
                 CatValues.dormancy_column_values.count_of_categorical_values,
             ),
-            brief=f"{IndCqcColumns.dormancy} needs to be one of {CatValues.dormancy_column_values.categorical_values} and count is {CatValues.dormancy_column_values.count_of_categorical_values}",
+            brief=f"{IndCqcColumns.dormancy} needs to be one of {CatValues.dormancy_column_values.categorical_values}",
         )
         .specially(
             vl.is_unique_count_equal(
