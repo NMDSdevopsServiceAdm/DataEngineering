@@ -299,10 +299,10 @@ resource "aws_iam_policy" "scheduler" {
   })
 }
 
-resource "aws_scheduler_schedule" "delta_download_cqc_api_schedule" {
-  name        = "${local.workspace_prefix}-CqcApiSchedule-Delta"
+resource "aws_scheduler_schedule" "cqc_and_ascwds_orchestrator_schedule" {
+  name        = "${local.workspace_prefix}-CqcAndAscwdsOrchestrator"
   state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
-  description = "Regular scheduling of the CQC API delta download pipeline on the first, eighth, fifteenth and twenty third of each month."
+  description = "Regular scheduling of the CQC and ASCWDS Orchestrator pipeline on the first, eighth, fifteenth and twenty third of each month."
 
   flexible_time_window {
     mode = "OFF"
