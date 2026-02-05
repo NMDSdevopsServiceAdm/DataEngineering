@@ -393,7 +393,7 @@ aws_secret_access_key = xxx
 
 3. In "C:\Users\<username>\.aws\config", paste the following code and add your profile names and mfa serial key.
 ```
-# This is the user we use to obtain temporary credentials from AWS STS
+# This is the user we use to obtain temporary credentials from AWS STS (Amazon Web Services Security Token Service)
 [profile prod]
 region = eu-west-2
 mfa_serial = xxx
@@ -406,7 +406,7 @@ role_arn = arn:aws:iam::856699698263:role/CrossAccountAccessRole
 ```
 4. Set an environment variable for HOME:
 ```
-$Env:HOME = 'C:\Users\MHolloway' 
+$Env:HOME = 'C:\Users\<username>' 
 ```
 5. Provide your MFA token:
 ```
@@ -425,5 +425,5 @@ $Env:AWS_PROFILE="non-prod"
 ```
 9. Initialise terraform:
 ```
-terraform init -backend-config=../non_prod_local.s3.tfbackend
+terraform init -backend-config="../non_prod_local.s3.tfbackend"
 ```

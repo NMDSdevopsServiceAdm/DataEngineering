@@ -1305,24 +1305,6 @@ class PostcodeMatcherTest:
             "4 road name",
         ),
         ("AA1 1aa", "AA1 1aa", "AA1 ZAA", "AA1 2AA", "AA1 3AA", "TF7 3QH", "AA1 4ZZ"),
-        (
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-        ),
-        (
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-        ),
     ]
     locations_with_unmatched_postcode_rows = [
         ("1-001", "1-001", "1-005"),
@@ -1330,16 +1312,6 @@ class PostcodeMatcherTest:
         ("name 1", "name 1", "name 5"),
         ("1 road name", "1 road name", "5 road name"),
         ("AA1 1aa", "AA1 1aa", "AA2 5XX"),
-        (
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-        ),
-        (
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-        ),
     ]
     postcodes_rows = [
         (
