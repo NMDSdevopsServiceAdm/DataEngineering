@@ -128,6 +128,10 @@ def main(
             CatValues.sector_column_values.categorical_values,
         )
         .col_vals_in_set(
+            IndCqcColumns.dormancy,
+            [*CatValues.dormancy_column_values.categorical_values, None],
+        )
+        .col_vals_in_set(
             IndCqcColumns.primary_service_type,
             CatValues.primary_service_type_column_values.categorical_values,
         )
