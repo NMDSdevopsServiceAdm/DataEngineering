@@ -20,7 +20,7 @@ class TempCols:
 SIZE_BASED_FORWARD_FILL_DAYS = {
     -float("inf"): 190,  # small location, using 190 as proxy for 6 month repetition.
     10: 125,  # medium location, using 125 as proxy for 4 month repetition.
-    50: 35,  # large location, using 35 as proxy for 1 month repetition.
+    50: 65,  # large location, using 35 as proxy for 2 month repetition.
 }
 
 
