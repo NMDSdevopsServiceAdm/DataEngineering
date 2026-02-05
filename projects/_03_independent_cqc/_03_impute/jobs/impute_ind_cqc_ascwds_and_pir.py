@@ -73,10 +73,6 @@ def main(
 
     df = merge_ascwds_and_pir_filled_post_submissions(df)
 
-    df.select(IndCQC.cqc_location_import_date, IndCQC.ascwds_pir_merged).filter(
-        (F.col(IndCQC.location_id) == "1-4134627298") & (F.col("year") == "2025")
-    ).sort(IndCQC.cqc_location_import_date).show()
-
     df = model_imputation_with_extrapolation_and_interpolation(
         df,
         IndCQC.ascwds_pir_merged,
