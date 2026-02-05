@@ -5752,9 +5752,9 @@ class CleanCtRepetition:
 @dataclass
 class ForwardFillLatestKnownValue:
     expected_size_based_forward_fill_days_dict = {
-        -float("inf"): 190,
+        -float("inf"): 250,
         10: 125,
-        50: 35,
+        50: 65,
     }
 
     TEST_SIZE_BASED_FORWARD_FILL_DAYS = {
