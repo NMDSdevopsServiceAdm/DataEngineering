@@ -176,7 +176,7 @@ def main(
                 IndCqcColumns.dormancy,
                 CatValues.dormancy_column_values.count_of_categorical_values,
             ),
-            brief=f"{IndCqcColumns.dormancy} needs to be one of {CatValues.dormancy_column_values.categorical_values}",
+            brief=f"{IndCqcColumns.dormancy} needs to be one of {CatValues.dormancy_column_values.categorical_values} and count is {CatValues.dormancy_column_values.count_of_categorical_values}",
         )
         .specially(
             vl.is_unique_count_equal(
