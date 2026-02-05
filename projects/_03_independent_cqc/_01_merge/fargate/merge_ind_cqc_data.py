@@ -1,3 +1,5 @@
+from datetime import date
+
 import polars as pl
 
 from polars_utils import utils
@@ -121,7 +123,7 @@ def main(
     cleaned_cqc_location_lf = utils.scan_parquet(
         cleaned_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,
-    )
+    ).filter(pl.col(CQCLClean.cqc_location_import_date) <= date(2024, 7, 1))
     print("Cleaned CQC location LazyFrame read in")
 
     cleaned_cqc_pir_lf = utils.scan_parquet(
