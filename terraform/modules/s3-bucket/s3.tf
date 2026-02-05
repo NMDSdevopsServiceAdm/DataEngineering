@@ -12,7 +12,7 @@ resource "aws_s3_bucket_acl" "s3_bucket_acl" {
 resource "aws_s3_bucket_versioning" "s3_bucket_versioning" {
   bucket = aws_s3_bucket.s3_bucket.id
   versioning_configuration {
-    status = var.enable_versioning ? "Enabled" : "Suspended"
+    status = local.is_main_environment ? "Enabled" : "Disabled"
   }
 }
 
@@ -34,21 +34,4 @@ resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_ownership" {
 }
 
 
-resource "aws_s3_bucket_lifecycle_configuration" "s3_bucket_abandoned_delete_markers" {
-  # Terraform can't remove delete markers which don't have a non-current version with the same version id.
-  # This expires these markers (effectively deleting any delete markers that don't have a non-current version).
-  # Must have bucket versioning enabled first
-  depends_on = [aws_s3_bucket_versioning.s3_bucket_versioning]
 
-  bucket = aws_s3_bucket.s3_bucket.id
-
-  rule {
-    id = "abandoned_delete_markers"
-
-    expiration {
-      expired_object_delete_marker = true
-    }
-
-    status = "Enabled"
-  }
-}
