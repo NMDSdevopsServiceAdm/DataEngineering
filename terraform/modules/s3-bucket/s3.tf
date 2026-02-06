@@ -1,3 +1,8 @@
+locals {
+  workspace_prefix    = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 30)
+  is_main_environment = local.workspace_prefix == "main"
+}
+
 resource "aws_s3_bucket" "s3_bucket" {
   bucket        = "sfc-${var.bucket_name}"
   force_destroy = var.empty_bucket_on_destroy

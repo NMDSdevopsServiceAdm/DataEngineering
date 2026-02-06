@@ -1,3 +1,11 @@
+locals {
+  # Maps StepFunction files in step-functions/dynamic using filenames as keys
+  step_functions = tomap({
+    for fn in fileset("step-functions/dynamic", "*.json") :
+    substr(fn, 0, length(fn) - 5) => "step-functions/dynamic/${fn}"
+  })
+}
+
 # Created explicitly as required by dynamic step functions
 resource "aws_sfn_state_machine" "run_crawler" {
   name       = "${local.workspace_prefix}-Run-Crawler"

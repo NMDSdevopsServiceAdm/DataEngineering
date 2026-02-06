@@ -1,3 +1,9 @@
+locals {
+  workspace_prefix = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 30)
+  name             = "${local.workspace_prefix}-${replace(var.script_name, ".py", "")}"
+  job_name         = "${local.name}_job"
+}
+
 resource "aws_glue_job" "glue_job" {
   name              = local.job_name
   role_arn          = var.glue_role.arn
