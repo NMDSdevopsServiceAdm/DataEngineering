@@ -1,2 +1,4 @@
 polars==1.32.3
 boto3==1.40.21
+pointblank==0.13.1
+css_inline==0.17.0
