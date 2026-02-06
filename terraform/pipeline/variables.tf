@@ -15,6 +15,7 @@ variable "aws_secret_key" {
 
 variable "region" {
   default = "eu-west-2"
+  description = "AWS region for data processing"
 }
 
 variable "glue_database_name" {
