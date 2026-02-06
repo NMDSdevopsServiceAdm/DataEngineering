@@ -4894,63 +4894,6 @@ class ModelInterpolation:
 
 
 @dataclass
-class ModelNonResWithDormancy:
-    non_res_with_dormancy_cleaned_ind_cqc_rows = [
-        (
-            "1-000000001",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            "Y",
-            "South West",
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000002",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            "N",
-            "Merseyside",
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000003",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            None,
-            "Merseyside",
-            date(2022, 3, 29),
-        ),
-    ]
-    non_res_with_dormancy_features_rows = [
-        (
-            "1-000000001",
-            date(2022, 3, 29),
-            10.0,
-            Vectors.sparse(
-                32,
-                {
-                    0: 1.0,
-                    1: 1.0,
-                    4: 17.5,
-                    10: 1.0,
-                    18: 1.0,
-                    31: 35.0,
-                },
-            ),
-        ),
-        (
-            "1-000000003",
-            date(2022, 3, 29),
-            20.0,
-            None,
-        ),
-    ]
-
-
-@dataclass
 class ModelNonResWithAndWithoutDormancyCombinedRows:
     estimated_posts_rows = [
         ("1-001", date(2021, 1, 1), CareHome.not_care_home, "Y", 1, 1.0, None),
