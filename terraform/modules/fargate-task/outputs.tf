@@ -17,3 +17,8 @@ output "task_role_arn" {
   description = "ARN of the ECS task IAM role"
   value       = aws_iam_role.ecs_task_role.arn
 }
+
+output "subnet_ids" {
+  description = "Public subnet IDs for the ECS task"
+  value = data.aws_subnets.public.ids
+}
