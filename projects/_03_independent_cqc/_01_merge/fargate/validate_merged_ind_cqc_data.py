@@ -13,7 +13,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.validation_table_columns import Validation
 from utils.column_values.categorical_columns_by_dataset import (
-    LocationsApiCleanedCategoricalValues as CatValues,
+    MergedIndCQCCategoricalValues as CatValues,
 )
 from utils.column_values.categorical_column_values import Sector
 
@@ -92,10 +92,12 @@ def main(
         )
         # between (inclusive)
         .col_vals_between(Validation.location_id_length, 3, 14)
-        .col_vals_between(IndCqcColumns.number_of_beds, 0, 500)
-        .col_vals_between(IndCqcColumns.pir_people_directly_employed_cleaned, 1, 1500)
-        .col_vals_between(IndCqcColumns.total_staff_bounded, 1, 3000)
-        .col_vals_between(IndCqcColumns.worker_records_bounded, 1, 3000)
+        .col_vals_between(IndCqcColumns.number_of_beds, 0, 500, na_pass=True)
+        .col_vals_between(
+            IndCqcColumns.pir_people_directly_employed_cleaned, 1, 1500, na_pass=True
+        )
+        .col_vals_between(IndCqcColumns.total_staff_bounded, 1, 3000, na_pass=True)
+        .col_vals_between(IndCqcColumns.worker_records_bounded, 1, 3000, na_pass=True)
         # categorical
         .col_vals_in_set(
             IndCqcColumns.care_home,
