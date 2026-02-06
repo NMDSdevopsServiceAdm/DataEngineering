@@ -19,8 +19,6 @@ variable "secret_name" {
   type        = string
   default     = "cqc_api_primary_key"
   description = "The name of secret stored in AWS for retrieval"
-  sensitive = true
-  ephemeral = true
 }
 
 variable "cluster_arn" {
