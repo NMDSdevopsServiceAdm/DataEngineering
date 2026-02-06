@@ -23,8 +23,8 @@ variable "glue_database_name" {
   default     = "data-engineering-database"
 }
 
-variable "secret_name" {
-  type    = string
-  default = "cqc_api_primary_key"
-}
+# variable "secret_name" {
+#   type    = string
+#   default = "cqc_api_primary_key"
+# }
 

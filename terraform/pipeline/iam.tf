@@ -117,22 +117,22 @@ resource "aws_iam_policy" "query_all_in_athena" {
   policy = templatefile("policy-documents/query-all-in-athena.json", { account_id = data.aws_caller_identity.current.account_id })
 }
 
-resource "aws_iam_role_policy_attachment" "glue_job_cqc_api_primary_key_secrets_attachment" {
-  policy_arn = aws_iam_policy.retrieve_cqc_api_primary_key_secret.arn
-  role       = aws_iam_role.sfc_glue_service_iam_role.name
-}
+# resource "aws_iam_role_policy_attachment" "glue_job_cqc_api_primary_key_secrets_attachment" {
+#   policy_arn = aws_iam_policy.retrieve_cqc_api_primary_key_secret.arn
+#   role       = aws_iam_role.sfc_glue_service_iam_role.name
+# }
 
-data "aws_secretsmanager_secret" "cqc_api_primary_key" {
-  name = var.secret_name
-}
+# data "aws_secretsmanager_secret" "cqc_api_primary_key" {
+#   name = var.secret_name
+# }
 
-resource "aws_iam_policy" "retrieve_cqc_api_primary_key_secret" {
-  name        = "${terraform.workspace}-retrieve-cqc-api-primary-key-secret"
-  path        = "/"
-  description = "Retrieves a secret specific to the Bulk download jobs"
+# resource "aws_iam_policy" "retrieve_cqc_api_primary_key_secret" {
+#   name        = "${terraform.workspace}-retrieve-cqc-api-primary-key-secret"
+#   path        = "/"
+#   description = "Retrieves a secret specific to the Bulk download jobs"
 
-  policy = templatefile("policy-documents/retrieve-specific-secret.json", { secret_arn = data.aws_secretsmanager_secret.cqc_api_primary_key.arn })
-}
+#   policy = templatefile("policy-documents/retrieve-specific-secret.json", { secret_arn = data.aws_secretsmanager_secret.cqc_api_primary_key.arn })
+# }
 
 resource "aws_iam_group" "can_assume_admin_role" {
   count = local.workspace_prefix == "main" ? 1 : 0
