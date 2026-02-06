@@ -5766,6 +5766,34 @@ class CleanCtRepetition:
 
 @dataclass
 class ForwardFillLatestKnownValue:
+    expected_size_based_forward_fill_days_dict = {
+        -float("inf"): 250,
+        10: 125,
+        50: 65,
+    }
+
+    TEST_SIZE_BASED_FORWARD_FILL_DAYS = {
+        -float("inf"): 1,
+        2: 2,
+        4: 3,
+    }
+    size_based_forward_fill_days_rows = [
+        ("loc-1", -1),
+        ("loc-2", 1),
+        ("loc-3", 2),
+        ("loc-4", 3),
+        ("loc-5", 4),
+        ("loc-6", None),
+    ]
+    expected_size_based_forward_fill_days_rows = [
+        ("loc-1", -1, 1),
+        ("loc-2", 1, 1),
+        ("loc-3", 2, 2),
+        ("loc-4", 3, 2),
+        ("loc-5", 4, 3),
+        ("loc-6", None, None),
+    ]
+
     last_known_latest_per_location_rows = [
         ("loc-1", date(2025, 1, 1), 10),
         ("loc-1", date(2025, 1, 2), 20),
@@ -5774,7 +5802,6 @@ class ForwardFillLatestKnownValue:
         ("loc-2", date(2025, 1, 3), 15),
         ("loc-2", date(2025, 1, 4), 12),
     ]
-
     expected_last_known_latest_per_location_rows = [
         ("loc-1", date(2025, 1, 3), 15),
         ("loc-2", date(2025, 1, 4), 12),
@@ -5787,64 +5814,36 @@ class ForwardFillLatestKnownValue:
         ("loc-2", date(2025, 1, 1), None),
         ("loc-2", date(2025, 1, 3), 15),
     ]
-
     expected_last_known_ignores_null_rows = [
         ("loc-1", date(2025, 1, 1), 10),
         ("loc-2", date(2025, 1, 3), 15),
     ]
 
     forward_fill_within_days_rows = [
-        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100),
-        ("loc-1", date(2025, 1, 2), None, date(2025, 1, 1), 100),
-        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 1), 100),
-        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 100),
+        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 2), None, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 1), 100, 2),
     ]
-
     expected_forward_fill_within_days_rows = [
-        ("loc-1", date(2025, 1, 1), 100),
-        ("loc-1", date(2025, 1, 2), 100),
-        ("loc-1", date(2025, 1, 3), 100),
-        ("loc-1", date(2025, 1, 4), None),
+        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 2), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 3), 100, date(2025, 1, 1), 100, 2),
     ]
 
     forward_fill_beyond_days_rows = [
-        ("loc-1", date(2025, 1, 1), 50, date(2025, 1, 1), 50),
-        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 50),
+        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 100, 2),
     ]
-
     expected_forward_fill_beyond_days_rows = [
-        ("loc-1", date(2025, 1, 1), 50),
-        ("loc-1", date(2025, 1, 4), None),
+        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 100, 2),
     ]
 
     forward_fill_before_last_known_rows = [
-        ("loc-1", date(2025, 1, 1), None, date(2025, 1, 2), 20),
-        ("loc-1", date(2025, 1, 2), 20, date(2025, 1, 2), 20),
-        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 2), 20),
-        ("loc-2", date(2025, 1, 1), None, date(2025, 1, 3), 50),
-        ("loc-2", date(2025, 1, 2), None, date(2025, 1, 3), 50),
-        ("loc-2", date(2025, 1, 3), 50, date(2025, 1, 3), 50),
-    ]
-
-    expected_forward_fill_before_last_known_rows = [
-        ("loc-1", date(2025, 1, 1), None),
-        ("loc-1", date(2025, 1, 2), 20),
-        ("loc-1", date(2025, 1, 3), 20),
-        ("loc-2", date(2025, 1, 1), None),
-        ("loc-2", date(2025, 1, 2), None),
-        ("loc-2", date(2025, 1, 3), 50),
-    ]
-
-    forward_fill_latest_known_value_rows = [
-        ("loc-1", date(2025, 1, 1), 10),
-        ("loc-1", date(2025, 1, 2), None),
-        ("loc-1", date(2025, 1, 4), 11),
-        ("loc-1", date(2025, 1, 5), None),
-        ("loc-2", date(2025, 1, 1), 20),
-        ("loc-2", date(2025, 1, 2), 20),
-        ("loc-2", date(2025, 1, 3), 22),
-        ("loc-2", date(2025, 1, 5), None),
-        ("loc-2", date(2025, 1, 6), None),
+        ("loc-1", date(2025, 1, 1), None, date(2025, 1, 4), 20, 2),
+        ("loc-1", date(2025, 1, 2), 20, date(2025, 1, 4), 20, 2),
+        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 4), 20, 2),
+        ("loc-1", date(2025, 1, 4), 30, date(2025, 1, 4), 20, 2),
     ]
 
 
