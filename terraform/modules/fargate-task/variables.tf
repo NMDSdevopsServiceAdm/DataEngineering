@@ -1,24 +1,24 @@
 variable "task_name" {
-  description = "Name for the ECS Fargate, used in resource naming and tags."
   type        = string
+  description = "Name for the ECS Fargate, used in resource naming and tags."
 }
 
 variable "region" {
-  default     = "eu-west-2"
   type        = string
   description = "AWS region for data processing"
+  default     = "eu-west-2"
 }
 
 variable "ecr_repo_name" {
   type        = string
-  default     = "fargate/cqc"
   description = "Directory for the ECR repository in AWS"
+  default     = "fargate/cqc"
 }
 
 variable "secret_name" {
   type        = string
-  default     = "cqc_api_primary_key"
   description = "The name of secret stored in AWS for retrieval"
+  default     = "cqc_api_primary_key"
 }
 
 variable "cluster_arn" {
@@ -33,14 +33,14 @@ variable "tag_name" {
 
 variable "cpu_size" {
   type        = number
-  default     = 8192
   description = "CPU size for ECS cluster"
+  default     = 8192
 }
 
 variable "ram_size" {
   type        = number
-  default     = 61440
   description = "RAM size for ECS cluster"
+  default     = 61440
 }
 
 variable "environment" {
