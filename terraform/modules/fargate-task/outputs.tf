@@ -20,5 +20,5 @@ output "task_role_arn" {
 
 output "subnet_ids" {
   description = "Public subnet IDs for the ECS task"
-  value = data.aws_subnets.public.ids
+  value       = data.aws_subnets.public.ids
 }
