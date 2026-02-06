@@ -4119,50 +4119,6 @@ class ValidateCleanedIndCqcData:
 
 
 @dataclass
-class NonResAscwdsFeaturesData(object):
-    # fmt: off
-    rows = [
-        ("1-00001", date(2022, 2, 1), date(2019, 1, 1), 35, 1, Region.south_east, Dormancy.dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 17.5, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.has_related_location, '2022', '02', '01', '20220201'),
-        ("1-00002", date(2022, 2, 1), date(2019, 2, 1), 36, 10, Region.south_east, Dormancy.not_dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, 67.0, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00003", date(2022, 2, 1), date(2019, 2, 1), 36, 1, Region.south_west, Dormancy.dormant, [Services.urgent_care_services, Services.supported_living_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00004", date(2022, 2, 1), date(2019, 2, 1), 36, None, Region.north_east, None, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00005", date(2022, 2, 1), date(2019, 2, 1), 36, 10, Region.north_east, Dormancy.not_dormant, [Services.specialist_college_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia, Specialisms.mental_health], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00006", date(2022, 2, 1), date(2019, 2, 1), 36, 10, Region.north_east, Dormancy.not_dormant, [Services.specialist_college_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], None, PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00007", date(2022, 2, 1), date(2019, 2, 1), 36, 1, Region.north_west, Dormancy.dormant, [Services.supported_living_service, Services.care_home_service_with_nursing], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.care_home_with_nursing, None, 20.0, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-    ]
-    # fmt: on
-
-
-@dataclass
-class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
-    # fmt: off
-    cleaned_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.not_dormant, ["Name"], ["Specialism Name"]),
-        ("1-001", date(2024, 1, 9), CareHome.not_care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]),
-        ("1-002", date(2024, 1, 9), CareHome.not_care_home, Dormancy.not_dormant, ["Name"], ["Specialism Name"]),
-    ]
-    # fmt: on
-
-    non_res_ascwds_ind_cqc_features_rows = [
-        ("1-001", date(2024, 1, 1)),
-        ("1-002", date(2024, 1, 1)),
-        ("1-001", date(2024, 1, 9)),
-        ("1-002", date(2024, 1, 9)),
-    ]
-
-    # fmt: off
-    calculate_expected_size_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], None), # filtered - null specialism
-        ("1-003", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, None, ["Specialism Name"]), # filtered - null service
-        ("1-005", date(2024, 1, 1), CareHome.not_care_home, None, ["Name"], ["Specialism Name"]), # filtered - null dormancy
-        ("1-004", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]), # filtered - care home
-    ]
-    # fmt: on
-
-
-@dataclass
 class ModelFeatures:
     vectorise_input_rows = [
         ("1-0001", 12.0, 0, 1, date(2024, 1, 1)),
