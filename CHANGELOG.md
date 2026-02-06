@@ -24,6 +24,8 @@ All notable changes to this project will be documented in this file.
 
 - Python package [aws-mfa-v2] (https://pypi.org/project/aws-mfa-v2/) to allow for terraform to handle MFA authentication in a cross role account when used locally.
 
+- Converted the validate_merged_ind_cqc_data job script from PyDeequ to Pointblank
+
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 
