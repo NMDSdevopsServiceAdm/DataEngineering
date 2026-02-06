@@ -115,7 +115,7 @@ jobs:
 
   lint-terraform:
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.5
     resource_class: small
     steps:
       - checkout
