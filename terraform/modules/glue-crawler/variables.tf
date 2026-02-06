@@ -22,7 +22,7 @@ variable "data_path" {
 
 variable "workspace_glue_database_name" {
   type        = string
-  description = "The name of the current workspace glue database"  
+  description = "The name of the current workspace glue database"
   default     = null
 }
 
