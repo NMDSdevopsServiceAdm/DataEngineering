@@ -32,7 +32,7 @@ All notable changes to this project will be documented in this file.
 
 - Moved calculate_care_home_status_count function from estimate filled posts utils to clean_ind_cqc_filled_posts job.
 
-- Replaced the static PySpark modelling code for care homes and non-residential without dormancy with the auto-retraining sklearn equivalent.
+- Replaced the static PySpark modelling code for care homes and non-residential with and without dormancy with the auto-retraining sklearn equivalent.
 
 - In the clean ASC-WDS workplace job, a new function was added to select only the required columns before saving the cleaned ASC-WDS workplace data.
 
