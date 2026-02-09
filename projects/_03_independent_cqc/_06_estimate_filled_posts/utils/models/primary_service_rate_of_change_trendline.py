@@ -81,7 +81,7 @@ def model_primary_service_rate_of_change_trendline(
 
     df = df.drop(
         IndCqc.number_of_beds_banded_for_rate_of_change,
-        IndCqc.single_period_rate_of_change,
+        # IndCqc.single_period_rate_of_change,
     )
 
     return df
