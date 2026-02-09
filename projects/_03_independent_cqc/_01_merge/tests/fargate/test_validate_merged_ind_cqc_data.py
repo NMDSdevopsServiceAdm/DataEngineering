@@ -25,7 +25,7 @@ cleaned_cqc_locations_columns_to_import = [
 ]
 
 
-class ValidateMergeCoverageDataTests(unittest.TestCase):
+class ValidateMergeIndCqcDataTests(unittest.TestCase):
     def setUp(self) -> None:
         self.source_df = pl.DataFrame(
             Data.merged_ind_cqc_data_rows,
