@@ -1,6 +1,4 @@
 import unittest
-import warnings
-from datetime import date
 from unittest.mock import ANY, Mock, patch
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
@@ -59,7 +57,6 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         )
 
     @patch(f"{PATCH_PATH}.join_model_predictions")
-    @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.calculate_filled_posts_from_beds_and_ratio")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.generate_predictions_path")
@@ -68,7 +65,6 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         generate_predictions_path_mock: Mock,
         read_from_parquet_mock: Mock,
         calculate_filled_posts_mock: Mock,
-        set_min_value_mock: Mock,
         join_model_predictions_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.mock_predictions_df
@@ -84,13 +80,11 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
             generate_predictions_path_mock.return_value
         )
         calculate_filled_posts_mock.assert_called_once()
-        set_min_value_mock.assert_called_once_with(ANY, IndCqc.prediction, 1.0)
         join_model_predictions_mock.assert_called_once_with(
             ANY, ANY, self.care_home_model, include_run_id=True
         )
 
     @patch(f"{PATCH_PATH}.join_model_predictions")
-    @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.calculate_filled_posts_from_beds_and_ratio")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.generate_predictions_path")
@@ -99,7 +93,6 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         generate_predictions_path_mock: Mock,
         read_from_parquet_mock: Mock,
         calculate_filled_posts_mock: Mock,
-        set_min_value_mock: Mock,
         join_model_predictions_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.mock_predictions_df
@@ -115,7 +108,6 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
             generate_predictions_path_mock.return_value
         )
         calculate_filled_posts_mock.assert_not_called()
-        set_min_value_mock.assert_called_once_with(ANY, IndCqc.prediction, 1.0)
         join_model_predictions_mock.assert_called_once_with(
             ANY, ANY, self.non_res_model, include_run_id=True
         )

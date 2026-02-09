@@ -33,7 +33,6 @@ class MainTests(ModelNonResWithAndWithoutDormancyCombinedTests):
             self.input_df
         )
 
-    @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
     @patch(f"{PATCH_PATH}.join_model_predictions")
     @patch(f"{PATCH_PATH}.get_selected_value")
@@ -42,14 +41,12 @@ class MainTests(ModelNonResWithAndWithoutDormancyCombinedTests):
         get_selected_value_mock: Mock,
         join_model_predictions_mock: Mock,
         select_rows_with_value_mock: Mock,
-        set_min_value_mock: Mock,
     ):
         job.combine_non_res_with_and_without_dormancy_models(self.input_df)
 
         get_selected_value_mock.assert_called_once()
         join_model_predictions_mock.assert_called_once()
         select_rows_with_value_mock.assert_called_once()
-        set_min_value_mock.assert_called_once()
 
     def test_non_res_combined_model_column_is_added(self):
 
