@@ -1,0 +1,157 @@
+{
+  "Comment": "A state machine indicating the transformation steps from Silver -> Gold data layers for the Independent CQC filled posts pipeline",
+  "StartAt": "Silver to Gold Transformation Layer",
+  "States": {
+    "Silver to Gold Transformation Layer": {
+      "Type": "Parallel",
+      "Next": "Run validation crawler when success",
+      "Branches": [
+        {
+          "StartAt": "Clean and validate merged data",
+          "States": {
+            "Clean and validate merged data": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Glue StartJobRun",
+                  "States": {
+                    "Glue StartJobRun": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun",
+                      "Parameters": {
+                        "JobName": "myJobName"
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "ECS RunTask",
+                  "States": {
+                    "ECS RunTask": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask",
+                      "Parameters": {
+                        "LaunchType": "FARGATE",
+                        "Cluster": "arn:aws:ecs:REGION:ACCOUNT_ID:cluster/MyECSCluster",
+                        "TaskDefinition": "arn:aws:ecs:REGION:ACCOUNT_ID:task-definition/MyTaskDefinition:1"
+                      },
+                      "End": true
+                    }
+                  }
+                }
+              ],
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Prepare ASCWDS Job Role Counts",
+          "States": {
+            "Prepare ASCWDS Job Role Counts": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "arn:aws:ecs:eu-west-2:856699698263:cluster/1356-jr-pipeline-cluster",
+                "TaskDefinition": "arn:aws:ecs:eu-west-2:856699698263:task-definition/1356-jr-pipeline-_03_independent_cqc-task:1",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": [
+                      "subnet-0ec849a778438d382",
+                      "subnet-025798c18c6ca7073",
+                      "subnet-0e10939a615617030"
+                    ],
+                    "SecurityGroups": [
+                      "sg-05633862db88c32b5"
+                    ],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "prepare_job_role_counts.py",
+                        "--cleaned_ascwds_worker_source",
+                        "s3://sfc-1356-jr-pipeline-datasets/domain=ASCWDS/dataset=worker_cleaned/",
+                        "--prepared_ascwds_job_role_counts_destination",
+                        "s3://sfc-1356-jr-pipeline-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_ascwds_prepared_job_role_counts/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Comment": "A state that fully encapsulates taking data from the Silver layer and performing ETL operations to move it to the Gold layer",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Publish error notification",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    "Run validation crawler when success": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "1356-jr-pipeline-data_engineering_data_validation_reports"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Run Independent CQC crawler when success"
+    },
+    "Run Independent CQC crawler when success": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "1356-jr-pipeline-data_engineering_ind_cqc_filled_posts"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Success"
+    },
+    "Publish error notification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:eu-west-2:856699698263:function:1356-jr-pipeline-job-failure-notification:$LATEST",
+        "Payload": {
+          "Error.$": "$.error.Cause",
+          "ExecutionId.$": "$$.Execution.Id",
+          "StateMachineName.$": "$$.StateMachine.Name",
+          "StateMachineId.$": "$$.StateMachine.Id",
+          "ExecutionStartTime.$": "$$.Execution.StartTime",
+          "CallbackToken.$": "$$.Task.Token"
+        }
+      },
+      "Next": "Run validation crawler when failed"
+    },
+    "Run validation crawler when failed": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "1356-jr-pipeline-data_engineering_data_validation_reports"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Run Independent CQC crawler when failed"
+    },
+    "Run Independent CQC crawler when failed": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "1356-jr-pipeline-data_engineering_ind_cqc_filled_posts"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Fail"
+    },
+    "Fail": {
+      "Type": "Fail"
+    },
+    "Success": {
+      "Type": "Succeed"
+    }
+  }
+}
