@@ -5,6 +5,9 @@ os.environ["SPARK_VERSION"] = "3.5"
 
 from dataclasses import dataclass
 
+# TODO: Can tidy up these imports with some intermediate aliasing i.e.
+# import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role as cqc_jr
+# from cqc_jr.utils import utils as JRutils
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils import (
     utils as JRutils,
 )
@@ -78,6 +81,8 @@ def main(
     cleaned_ascwds_worker_source: str,
     estimated_ind_cqc_filled_posts_by_job_role_destination: str,
 ):
+    # TODO: Remove repeated type definitions in args section. Repeating them here
+    # results in more maintenance. Should just go off the typed definitions.
     """
     Creates estimates of filled posts split by main job role.
 
@@ -109,12 +114,27 @@ def main(
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df.cache()
+    # NOTE: Are these counts to trigger execution? Or for monitoring?
     estimated_ind_cqc_filled_posts_by_job_role_df.count()
 
     estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds(
         estimated_ind_cqc_filled_posts_by_job_role_df
     )
 
+    # TODO: Could simplify a lot by using piping here rather than redefining the
+    # variable name each time.
+    # transformed_df = (
+    #   estimated_ind_cqc_filled_posts_by_job_role_df
+    #   .transform(
+    #       JRutils.transform_job_role_count_map_to_ratios_map,
+    #       IndCQC.ascwds_job_role_counts,
+    #        IndCQC.ascwds_job_role_ratios,
+    #   )
+    #   .transform(
+    #       JRutils.calculate_job_group_sum_from_job_role_map_column,
+    #       ...
+    #   )
+    # )
     estimated_ind_cqc_filled_posts_by_job_role_df = (
         JRutils.transform_job_role_count_map_to_ratios_map(
             estimated_ind_cqc_filled_posts_by_job_role_df,
