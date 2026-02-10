@@ -32,11 +32,7 @@ resource "aws_iam_policy" "start_state_machines" {
         Effect = "Allow"
         Action = ["states:StartExecution"]
         Resource = [
-          aws_sfn_state_machine.sf_pipelines["Ingest-ASCWDS"].arn,
-          aws_sfn_state_machine.sf_pipelines["Ingest-CQC-PIR"].arn,
-          aws_sfn_state_machine.sf_pipelines["Ingest-Capacity-Tracker-Care-Home"].arn,
-          aws_sfn_state_machine.sf_pipelines["Ingest-Capacity-Tracker-Non-Res"].arn,
-          aws_sfn_state_machine.sf_pipelines["Ingest-ONSPD"].arn
+          aws_sfn_state_machine.sf_pipelines[var.pipeline_name].arn,
         ]
       }
     ]
