@@ -7,6 +7,7 @@ from utils.column_values.categorical_column_values import (
     CareHome,
     MainJobRoleLabels,
     Sector,
+    PrimaryServiceType,
 )
 
 
@@ -530,5 +531,61 @@ class MergeUtilsData:
         ("1-001", date(2024, 3, 1), Sector.independent, "Y", 10, date(2024, 2, 1), 1),
         ("1-002", date(2024, 3, 1), Sector.independent, "N", None, date(2024, 2, 1), 4),
         ("1-003", date(2024, 3, 1), Sector.independent, "N", None, date(2024, 2, 1), None),
+    ]
+    # fmt: on
+
+
+@dataclass
+class ValidateMergeIndCQCData:
+    # fmt: off
+    merged_ind_cqc_data_rows = [
+        (
+            "1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1),
+            "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1),
+            "Y", 5, ["service"], PrimaryServiceType.care_home_only,
+            date(2024, 1, 1), "cssr", "region",
+            date(2024, 1, 1), "cssr", "region",
+            "RUI", "lsoa", "msoa", 5,
+            "estab_1", "org_1", 5, 5,"Y"
+         ),
+
+        (
+            "1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1),
+            "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1),
+            "Y", 5, ["service"], PrimaryServiceType.care_home_only,
+            date(2024, 1, 1), "cssr", "region",
+            date(2024, 1, 1), "cssr", "region",
+            "RUI", "lsoa", "msoa", 5,
+            "estab_1", "org_1", 5, 5,"N"
+         ),
+
+        (
+            "1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1),
+            "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1),
+            "Y", 5, ["service"], PrimaryServiceType.care_home_only,
+            date(2024, 1, 1), "cssr", "region",
+            date(2024, 1, 1), "cssr", "region",
+            "RUI", "lsoa", "msoa", 5,
+            "estab_1", "org_1", 5, 5,"Y"
+         ),
+
+        (
+            "1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1),
+            "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1),
+            "Y", 5, ["service"], PrimaryServiceType.care_home_only,
+            date(2024, 1, 1), "cssr", "region",
+            date(2024, 1, 1), "cssr", "region",
+            "RUI", "lsoa", "msoa", 5,
+            "estab_1", "org_1", 5, 5,"N"
+         ),
+    ]
+    # fmt: on
+
+    # fmt: off
+    cqc_locations_cleaned_data_rows = [
+        (date(2024, 1, 1), "1-001", Sector.independent, "Y", 10),
+        (date(2024, 1, 1), "1-002", Sector.independent, "N", None),
+        (date(2024, 2, 1), "1-001", Sector.independent, "Y", 10),
+        (date(2024, 2, 1), "1-002", Sector.independent, "N", None),
     ]
     # fmt: on
