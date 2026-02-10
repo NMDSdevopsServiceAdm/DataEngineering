@@ -208,15 +208,12 @@ def deduplicate_care_homes(
     """
     lf = lf.sort(duplicate_columns + distinguishing_columns)
 
-    care_home_deduped = (
-        lf.filter(pl.col(IndCQC.care_home) == CareHome.care_home)
-          .unique(subset=duplicate_columns, keep="first")
-    )
+    care_home_deduped = lf.filter(
+        pl.col(IndCQC.care_home) == CareHome.care_home
+    ).unique(subset=duplicate_columns, keep="first")
 
-    not_care_home = lf.filter(
-        pl.col(IndCQC.care_home) == CareHome.not_care_home
-    )
-    
+    not_care_home = lf.filter(pl.col(IndCQC.care_home) == CareHome.not_care_home)
+
     return pl.concat([care_home_deduped, not_care_home])
 
 
