@@ -1,4 +1,5 @@
 import polars as pl
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
 def add_aligned_date_column(
@@ -71,3 +72,29 @@ def column_to_date(
         .str.to_date(string_format)
         .alias(target_col)
     )
+
+
+def reduce_dataset_to_earliest_file_per_month(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Reduce the dataset to the first file of every month.
+
+    This function identifies the date of the first import date in each month and then filters the dataset to those import dates only.
+
+    Args:
+        lf (pl.LazyFrame): A polars LazyFrame containing the partition keys year, month and day.
+
+    Returns:
+        pl.LazyFrame: A polars LazyFrame with only the first import date of each month.
+    """
+    first_day_in_month = "first_day_in_month"
+    lf = (
+        lf.with_columns(
+            pl.col(Keys.day)
+            .min()
+            .over([Keys.year, Keys.month])
+            .alias(first_day_in_month)
+        )
+        .filter(pl.col(Keys.day) == pl.col(first_day_in_month))
+        .drop(first_day_in_month)
+    )
+    return lf

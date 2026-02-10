@@ -421,3 +421,48 @@ class ValidateMergeIndCQCSchemas:
             (CQCLClean.number_of_beds, pl.Int64()),
         ]
     )
+
+
+@dataclass
+class CleanIndCQCData:
+    calculate_time_registered_for_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.imputed_registration_date, pl.Date()),
+        ]
+    )
+
+    expected_calculate_time_registered_for_schema = pl.Schema(
+        list(calculate_time_registered_for_schema.items())
+        + [
+            (IndCQC.time_registered, pl.UInt32()),
+        ]
+    )
+
+    calculate_time_since_dormant_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.dormancy, pl.String()),
+        ]
+    )
+    expected_calculate_time_since_dormant_schema = pl.Schema(
+        list(calculate_time_since_dormant_schema.items())
+        + [
+            (IndCQC.time_since_dormant, pl.Int64()),
+        ]
+    )
+
+    remove_cqc_dual_registrations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.name, pl.String()),
+            (IndCQC.postcode, pl.String()),
+            (IndCQC.care_home, pl.String()),
+            (AWPClean.total_staff_bounded, pl.Int64()),
+            (AWPClean.worker_records_bounded, pl.Int64()),
+            (IndCQC.imputed_registration_date, pl.Date()),
+        ]
+    )

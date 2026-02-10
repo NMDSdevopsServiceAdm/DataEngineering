@@ -207,3 +207,21 @@ class ColumnToDateTests(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
         self.assertEqual(returned_lf.collect_schema(), expected_lf.collect_schema())
+
+
+class ReduceDatasetToEarliestFilePerMonthTests(unittest.TestCase):
+
+    def test_reduce_dataset_to_earliest_file_per_month_returns_correct_rows(self):
+        test_df = pl.LazyFrame(
+            Data.reduce_dataset_to_earliest_file_per_month_rows,
+            Schemas.reduce_dataset_to_earliest_file_per_month_schema,
+        )
+        returned_df = job.reduce_dataset_to_earliest_file_per_month(test_df)
+        expected_df = pl.LazyFrame(
+            Data.expected_reduce_dataset_to_earliest_file_per_month_rows,
+            Schemas.reduce_dataset_to_earliest_file_per_month_schema,
+        )
+        pl_testing.assert_frame_equal(
+            returned_df.sort(CQCLClean.location_id).collect(),
+            expected_df.collect(),
+        )

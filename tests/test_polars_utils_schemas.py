@@ -8,6 +8,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
 @dataclass
@@ -37,6 +38,16 @@ class CleaningUtilsSchemas:
     expected_col_to_date_schema = pl.Schema([("date_col", pl.Date())])
     expected_col_to_date_with_new_col_schema = pl.Schema(
         [("date_col", pl.String()), ("new_date_col", pl.Date())]
+    )
+
+    reduce_dataset_to_earliest_file_per_month_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.import_date, pl.String()),
+            (Keys.year, pl.String()),
+            (Keys.month, pl.String()),
+            (Keys.day, pl.String()),
+        ]
     )
 
 
