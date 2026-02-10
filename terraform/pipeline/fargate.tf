@@ -7,15 +7,6 @@ resource "aws_ecs_cluster" "polars_cluster" {
   }
 }
 
-resource "aws_ecs_cluster" "model_cluster" {
-  name = "${local.workspace_prefix}-model-cluster"
-
-  setting {
-    name  = "containerInsights"
-    value = "enabled"
-  }
-}
-
 module "cqc-api" {
   source        = "../modules/fargate-task"
   task_name     = "cqc-api"
@@ -43,7 +34,7 @@ module "_03_independent_cqc_model" {
   source        = "../modules/fargate-task"
   task_name     = "_03_independent_cqc_model"
   ecr_repo_name = "fargate/03_independent_cqc_model"
-  cluster_arn   = aws_ecs_cluster.model_cluster.arn
+  cluster_arn   = aws_ecs_cluster.polars_cluster.arn
   tag_name      = terraform.workspace
   cpu_size      = 8192
   ram_size      = 32768
