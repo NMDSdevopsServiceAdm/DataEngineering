@@ -1,3 +1,12 @@
+resource "aws_ecs_cluster" "polars_cluster" {
+  name = "${local.workspace_prefix}-cluster"
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+}
+
 resource "aws_ecs_task_definition" "ecs_task" {
   family                   = "${local.workspace_prefix}-${var.task_name}-task"
   requires_compatibilities = ["FARGATE"]

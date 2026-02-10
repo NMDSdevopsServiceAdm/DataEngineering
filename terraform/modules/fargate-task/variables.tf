@@ -21,11 +21,6 @@ variable "secret_name" {
   default     = "cqc_api_primary_key"
 }
 
-variable "cluster_arn" {
-  type        = string
-  description = "The ARN of the ECS cluster"
-}
-
 variable "tag_name" {
   type        = string
   description = "Tag for ECR Repository"
