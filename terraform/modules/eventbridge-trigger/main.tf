@@ -17,7 +17,7 @@ resource "aws_cloudwatch_event_rule" "csv_added" {
         name = ["sfc-data-engineering-raw"]
     },
       object = {
-        key = [ {"prefix": "domain=${var.domain_name}/dataset=${dataset_name}" }  ]
+        key = [ {"prefix": "domain=${var.domain_name}/dataset=${var.dataset_name}" }  ]
     }
   }})
 }
