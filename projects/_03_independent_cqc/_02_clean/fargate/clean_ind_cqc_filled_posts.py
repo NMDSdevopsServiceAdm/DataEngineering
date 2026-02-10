@@ -58,6 +58,9 @@ def main(
 
     locations_df = remove_dual_registration_cqc_care_homes(locations_df)
 
+    locations_df = replace_zero_beds_with_null(locations_df)
+    locations_df = populate_missing_care_home_number_of_beds(locations_df)
+
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
     utils.sink_to_parquet(
         locations_df,
@@ -284,3 +287,51 @@ if __name__ == "__main__":
     )
 
     print("Finished Clean IND CQC Filled Posts job")
+
+
+def replace_zero_beds_with_null(lf: pl.LazyFrame) -> pl.LazyFrame:
+    return lf.with_columns(
+        pl.when(pl.col(IndCQC.number_of_beds) == 0)
+        .then(None)
+        .otherwise(pl.col(IndCQC.number_of_beds))
+        .alias(IndCQC.number_of_beds)
+    )
+
+
+def populate_missing_care_home_number_of_beds(
+    lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    care_home_lf = filter_to_care_homes_with_known_beds(lf)
+    avg_beds_per_loc_lf = average_beds_per_location(care_home_lf)
+    lf = lf.join(avg_beds_per_loc_lf, IndCQC.location_id, "left")
+    lf = replace_null_beds_with_average(lf)
+    return lf
+
+
+def filter_to_care_homes_with_known_beds(
+    lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    return lf.filter(pl.col(IndCQC.care_home) == CareHome.care_home).filter(
+        pl.col(IndCQC.number_of_beds).is_not_null()
+    )
+
+
+def average_beds_per_location(lf: pl.LazyFrame) -> pl.LazyFrame:
+    return (
+        lf.group_by(IndCQC.location_id)
+        .agg(pl.col(IndCQC.number_of_beds).mean().alias(average_number_of_beds))
+        .with_columns(pl.col(average_number_of_beds).cast(pl.Int64))
+        .select(
+            IndCQC.location_id,
+            average_number_of_beds,
+        )
+    )
+
+
+def replace_null_beds_with_average(lf: pl.LazyFrame) -> pl.LazyFrame:
+    return lf.with_columns(
+        pl.coalesce(
+            pl.col(IndCQC.number_of_beds),
+            pl.col(average_number_of_beds),
+        ).alias(IndCQC.number_of_beds)
+    ).drop(average_number_of_beds)

@@ -1,3 +1,4 @@
+from datetime import date
 import unittest
 from unittest.mock import ANY, Mock, patch
 
@@ -31,8 +32,269 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         Keys.import_date,
     ]
 
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    # @patch(f"{PATCH_PATH}.calculate_care_home_status_count")
+    # @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
+    # @patch(f"{PATCH_PATH}.clean_capacity_tracker_care_home_outliers")
+    # @patch(f"{PATCH_PATH}.forward_fill_latest_known_value")
+    # @patch(f"{PATCH_PATH}.clean_ascwds_filled_post_outliers")
+    # @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
+    # @patch(f"{PATCH_PATH}.cUtils.calculate_filled_posts_per_bed_ratio")
+    # @patch(f"{PATCH_PATH}.create_column_with_repeated_values_removed")
+    # @patch(f"{PATCH_PATH}.calculate_ascwds_filled_posts")
+    @patch(f"{PATCH_PATH}.populate_missing_care_home_number_of_beds")
+    @patch(f"{PATCH_PATH}.replace_zero_beds_with_null")
+    @patch(f"{PATCH_PATH}.remove_dual_registration_cqc_care_homes")
+    @patch(f"{PATCH_PATH}.calculate_time_registered_for")
+    @patch(f"{PATCH_PATH}.calculate_time_since_dormant")
+    @patch(f"{PATCH_PATH}.cUtils.reduce_dataset_to_earliest_file_per_month")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_main_runs_successfully(
+        self,
+        scan_parquet_mock: Mock,
+        reduce_dataset_to_earliest_file_per_month_mock: Mock,
+        calculate_time_since_dormant_mock: Mock,
+        calculate_time_registered_for_mock: Mock,
+        remove_dual_registration_cqc_care_homes_mock: Mock,
+        replace_zero_beds_with_null_mock: Mock,
+        populate_missing_care_home_number_of_beds_mock: Mock,
+        # calculate_ascwds_filled_posts_mock: Mock,
+        # create_column_with_repeated_values_removed_mock: Mock,
+        # calculate_filled_posts_per_bed_ratio_mock: Mock,
+        # create_banded_bed_count_column_mock: Mock,
+        # clean_ascwds_filled_post_outliers_mock: Mock,
+        # forward_fill_latest_known_value_mock: Mock,
+        # clean_capacity_tracker_care_home_outliers_mock: Mock,
+        # clean_capacity_tracker_non_res_outliers_mock: Mock,
+        # calculate_care_home_status_count_mock: Mock,
+        sink_to_parquet_mock: Mock,
+    ):
 
-class CalculateTimeRegisteredForTests(CleanIndFilledPostsTests):
+        job.main(
+            self.MERGE_IND_CQC_SOURCE,
+            self.CLEANED_IND_CQC_DESTINATION,
+        )
+        scan_parquet_mock.assert_called_once()
+        reduce_dataset_to_earliest_file_per_month_mock.assert_called_once()
+        calculate_time_registered_for_mock.assert_called_once()
+        calculate_time_since_dormant_mock.assert_called_once()
+        remove_dual_registration_cqc_care_homes_mock.assert_called_once()
+        replace_zero_beds_with_null_mock.assert_called_once()
+        populate_missing_care_home_number_of_beds_mock.assert_called_once()
+        sink_to_parquet_mock.assert_called_once()
+
+    def test_replace_zero_beds_with_null(self):
+        schema = pl.Schema(
+            [
+                (IndCQC.location_id, pl.String()),
+                (IndCQC.number_of_beds, pl.Int64()),
+            ]
+        )
+
+        input_lf = pl.LazyFrame(
+            [
+                ("1-000000001", None),
+                ("1-000000002", 0),
+                ("1-000000003", 1),
+            ],
+            schema=schema,
+        )
+
+        result = job.replace_zero_beds_with_null(input_lf).collect()
+
+        expected = pl.DataFrame(
+            [
+                ("1-000000001", None),
+                ("1-000000002", None),
+                ("1-000000003", 1),
+            ],
+            schema=schema,
+        )
+
+        pl_testing.assert_frame_equal(
+            result.sort(IndCQC.location_id),
+            expected.sort(IndCQC.location_id),
+        )
+
+    def test_populate_missing_care_home_number_of_beds(self):
+        schema = pl.Schema(
+            [
+                (IndCQC.location_id, pl.String()),
+                (IndCQC.cqc_location_import_date, pl.Date()),
+                (IndCQC.care_home, pl.String()),
+                (IndCQC.number_of_beds, pl.Int64()),
+            ]
+        )
+
+        input_lf = pl.LazyFrame(
+            [
+                ("1-000000001", date(2023, 1, 1), "Y", None),
+                ("1-000000002", date(2023, 1, 1), "N", None),
+                ("1-000000003", date(2023, 1, 1), "Y", 1),
+                ("1-000000003", date(2023, 2, 1), "Y", None),
+                ("1-000000003", date(2023, 3, 1), "Y", 1),
+                ("1-000000004", date(2023, 1, 1), "Y", 1),
+                ("1-000000004", date(2023, 2, 1), "Y", 3),
+            ],
+            schema=schema,
+        )
+
+        result = (
+            job.populate_missing_care_home_number_of_beds(input_lf)
+            .sort(IndCQC.location_id, IndCQC.cqc_location_import_date)
+            .collect()
+        )
+
+        expected = pl.DataFrame(
+            [
+                ("1-000000001", date(2023, 1, 1), "Y", None),
+                ("1-000000002", date(2023, 1, 1), "N", None),
+                ("1-000000003", date(2023, 1, 1), "Y", 1),
+                ("1-000000003", date(2023, 2, 1), "Y", 1),
+                ("1-000000003", date(2023, 3, 1), "Y", 1),
+                ("1-000000004", date(2023, 1, 1), "Y", 1),
+                ("1-000000004", date(2023, 2, 1), "Y", 3),
+            ],
+            schema=schema,
+        )
+
+        pl_testing.assert_frame_equal(result, expected)
+
+    def test_filter_to_care_homes_with_known_beds(self):
+        schema = pl.Schema(
+            [
+                (IndCQC.location_id, pl.String()),
+                (IndCQC.care_home, pl.String()),
+                (IndCQC.number_of_beds, pl.Int64()),
+            ]
+        )
+
+        input_lf = pl.LazyFrame(
+            [
+                ("1-000000001", "Y", None),
+                ("1-000000002", "N", None),
+                ("1-000000003", "Y", 1),
+                ("1-000000004", "N", 1),
+            ],
+            schema=schema,
+        )
+
+        result = job.filter_to_care_homes_with_known_beds(input_lf).collect()
+
+        expected = pl.DataFrame(
+            [
+                ("1-000000003", "Y", 1),
+            ],
+            schema=schema,
+        )
+
+        pl_testing.assert_frame_equal(result, expected)
+
+    def test_average_beds_per_location(self):
+        schema = pl.Schema(
+            [
+                (IndCQC.location_id, pl.String()),
+                (IndCQC.number_of_beds, pl.Int64()),
+            ]
+        )
+
+        input_lf = pl.LazyFrame(
+            [
+                ("1-000000001", 1),
+                ("1-000000002", 2),
+                ("1-000000002", 3),
+                ("1-000000003", 2),
+                ("1-000000003", 3),
+                ("1-000000003", 4),
+            ],
+            schema=schema,
+        )
+
+        result = (
+            job.average_beds_per_location(input_lf).sort(IndCQC.location_id).collect()
+        )
+
+        expected = pl.DataFrame(
+            [
+                ("1-000000001", 1),
+                ("1-000000002", 2),
+                ("1-000000003", 3),
+            ],
+            schema=[
+                (IndCQC.location_id, pl.String()),
+                (job.average_number_of_beds, pl.Int64()),
+            ],
+        )
+
+        pl_testing.assert_frame_equal(result, expected)
+
+    def test_replace_null_beds_with_average(self):
+        schema = pl.Schema(
+            [
+                (IndCQC.location_id, pl.Utf8),
+                (IndCQC.number_of_beds, pl.Int64),
+                (job.average_number_of_beds, pl.Int64),
+            ]
+        )
+
+        input_rows = [
+            ("1-000000001", None, None),
+            ("1-000000002", None, 1),
+            ("1-000000003", 2, 2),
+        ]
+
+        input_lf = pl.LazyFrame(input_rows, schema=schema, orient="row")
+
+        result = job.replace_null_beds_with_average(input_lf).collect()
+
+        expected_rows = [
+            ("1-000000001", None),
+            ("1-000000002", 1),
+            ("1-000000003", 2),
+        ]
+
+        expected = pl.DataFrame(
+            expected_rows,
+            schema=[
+                (IndCQC.location_id, pl.Utf8),
+                (IndCQC.number_of_beds, pl.Int64),
+            ],
+        )
+
+        pl_testing.assert_frame_equal(result, expected)
+
+    def test_replace_null_beds_with_average_doesnt_change_known_beds(self):
+        schema = pl.Schema(
+            [
+                (IndCQC.location_id, pl.String()),
+                (IndCQC.number_of_beds, pl.Int64()),
+                (job.average_number_of_beds, pl.Int64()),
+            ]
+        )
+
+        input_lf = pl.LazyFrame(
+            [
+                ("1-000000001", 1, 2),
+            ],
+            schema=schema,
+        )
+
+        result = job.replace_null_beds_with_average(input_lf).collect()
+
+        expected = pl.DataFrame(
+            [
+                ("1-000000001", 1),
+            ],
+            schema=[
+                (IndCQC.location_id, pl.String()),
+                (IndCQC.number_of_beds, pl.Int64()),
+            ],
+        )
+
+        pl_testing.assert_frame_equal(result, expected)
+
+
+class CalculateTimeRegisteredForTests(unittest.TestCase):
     def test_calculate_time_registered_returns_one_when_dates_are_on_the_same_day(
         self,
     ):
@@ -114,7 +376,7 @@ class CalculateTimeRegisteredForTests(CleanIndFilledPostsTests):
         pl_testing.assert_frame_equal(returned_data, expected_data)
 
 
-class CalculateTimeSinceDormantTests(CleanIndFilledPostsTests):
+class CalculateTimeSinceDormantTests(unittest.TestCase):
     def setUp(self):
         self.test_lf = pl.LazyFrame(
             Data.calculate_time_since_dormant_rows,
@@ -145,7 +407,7 @@ class CalculateTimeSinceDormantTests(CleanIndFilledPostsTests):
         pl_testing.assert_frame_equal(returned_data, expected_data)
 
 
-class RemoveDualRegistrationCqcCareHomes(CleanIndFilledPostsTests):
+class RemoveDualRegistrationCqcCareHomes(unittest.TestCase):
 
     def test_remove_dual_registration_cqc_care_homes_returns_expected_values_when_carehome_and_asc_data_populated(
         self,
