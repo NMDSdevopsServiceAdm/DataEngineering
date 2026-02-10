@@ -80,6 +80,7 @@ def main(
         # incomplete column exists
         .col_exists(
             [
+                AscWdsColumns.ascwds_workplace_import_date,
                 AscWdsColumns.master_update_date,
                 AscWdsColumns.nmds_id,
                 IndCqcColumns.dormancy,
@@ -98,8 +99,8 @@ def main(
             ],
         )
         # greater than or equal to
-        .col_vals_ge(CoverageColumns.new_registrations_monthly, 0, na_pass=True)
-        .col_vals_ge(CoverageColumns.new_registrations_ytd, 0, na_pass=True)
+        .col_vals_ge(CoverageColumns.new_registrations_monthly, 0)
+        .col_vals_ge(CoverageColumns.new_registrations_ytd, 0)
         # between (inclusive)
         .col_vals_between(Validation.location_id_length, 3, 14)
         .col_vals_between(Validation.provider_id_length, 3, 14)
@@ -194,7 +195,7 @@ def calculate_expected_size_of_merged_coverage_dataset(
     df: pl.DataFrame,
 ) -> int:
     """
-    Get unique rows based on import_date, name, postcode and care_home columnsand then calls the reduce function to get
+    Get unique rows based on import_date, name, postcode and care_home columns and then calls the reduce function to get
     monthly dataset count.
 
     Args:
@@ -212,10 +213,12 @@ def calculate_expected_size_of_merged_coverage_dataset(
         ]
     )
     earliest_day_in_month = "first_day_in_month"
+
     df = (
         df.with_columns(
             pl.col(Keys.day)
-            .min()
+            .sort_by(Keys.day)
+            .first()
             .over([Keys.year, Keys.month])
             .alias(earliest_day_in_month)
         )

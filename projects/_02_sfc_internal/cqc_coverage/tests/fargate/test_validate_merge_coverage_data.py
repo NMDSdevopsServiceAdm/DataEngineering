@@ -1,3 +1,4 @@
+from datetime import date
 import json
 import unittest
 from unittest.mock import Mock, call, patch
@@ -11,6 +12,9 @@ from projects._02_sfc_internal.unittest_data.merged_coverage_data_polars import 
 from projects._02_sfc_internal.unittest_data.merged_coverage_schema_polars import (
     ValidateMergeCoverageData as Schemas,
 )
+
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = (
     "projects._02_sfc_internal.cqc_coverage.fargate.validate_merge_coverage_data"
@@ -42,9 +46,7 @@ class ValidateMergeCoverageDataTests(unittest.TestCase):
         mock_write_reports: Mock,
     ):
         mock_read_parquet.side_effect = [self.source_df, self.compare_df]
-        mock_calculate_expected_size_of_merged_coverage_dataset.return_value = (
-            Data.expected_row_count
-        )
+        mock_calculate_expected_size_of_merged_coverage_dataset.return_value = 4
         job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
 
         mock_read_parquet.assert_has_calls(
@@ -66,9 +68,7 @@ class ValidateMergeCoverageDataTests(unittest.TestCase):
         mock_write_reports: Mock,
     ):
         mock_read_parquet.side_effect = [self.source_df, self.compare_df]
-        mock_calculate_expected_size_of_merged_coverage_dataset.return_value = (
-            Data.expected_row_count
-        )
+        mock_calculate_expected_size_of_merged_coverage_dataset.return_value = 4
 
         job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
 
@@ -96,6 +96,32 @@ class ValidateMergeCoverageDataTests(unittest.TestCase):
                 assertion_types_present,
                 f"{assertion} not found in validation report",
             )
+
+    def test_calculate_expected_size_of_merged_coverage_dataset(self):
+        schema = pl.Schema(
+            [
+                (IndCqcColumns.cqc_location_import_date, pl.Date()),
+                (IndCqcColumns.name, pl.String()),
+                (IndCqcColumns.postcode, pl.String()),
+                (IndCqcColumns.care_home, pl.String()),
+                (Keys.year, pl.Int32()),
+                (Keys.month, pl.Int32()),
+                (Keys.day, pl.Int32()),
+            ]
+        )
+
+        input_df = pl.DataFrame(
+            [
+                (date(2023, 1, 1), "Home A", "AA1", "Y", 2023, 1, 1),
+                (date(2023, 1, 2), "Home A", "AA1", "Y", 2023, 1, 2),
+                (date(2023, 2, 1), "Home B", "BB1", "N", 2023, 2, 1),
+            ],
+            schema=schema,
+        )
+
+        result = job.calculate_expected_size_of_merged_coverage_dataset(input_df)
+
+        self.assertEqual(result, 2)
 
 
 if __name__ == "__main__":

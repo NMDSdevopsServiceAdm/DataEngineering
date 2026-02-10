@@ -10,7 +10,7 @@ from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns,
-    PartitionKeys as Keys,
+    PartitionKeys as Key,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.reconciliation_columns import ReconciliationColumns
