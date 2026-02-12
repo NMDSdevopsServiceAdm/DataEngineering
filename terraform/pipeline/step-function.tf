@@ -152,8 +152,6 @@ module "sf_pipelines" {
 }
 
 
-resource "aws_cloudwatch_log_group" "state_machines" {
-  name_prefix = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
-}
+
 
 
