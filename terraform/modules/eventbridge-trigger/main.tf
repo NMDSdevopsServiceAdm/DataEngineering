@@ -32,7 +32,7 @@ resource "aws_iam_policy" "start_state_machines" {
         Effect = "Allow"
         Action = ["states:StartExecution"]
         Resource = [
-          aws_sfn_state_machine.sf_pipelines[var.pipeline_name].arn,
+          var.state_machine_arn,
         ]
       }
     ]
@@ -64,7 +64,7 @@ resource "aws_iam_role_policy_attachment" "start_state_machines" {
 resource "aws_cloudwatch_event_target" "trigger_ingest_state_machine" {
   rule      = aws_cloudwatch_event_rule.csv_added.name
   target_id = "${local.workspace_prefix}-StartIngest${local.pascal_case_dataset_name}StateMachine"
-  arn       = aws_sfn_state_machine.sf_pipelines[var.pipeline_name].arn
+  arn       = var.state_machine_arn
   role_arn  = aws_iam_role.start_state_machines.arn
 
   input_transformer {
@@ -75,7 +75,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_state_machine" {
     
     input_template = jsonencode({
         jobs = {
-            var.glue_job_name = {
+            "var.glue_job_name" = {
                 source = "s3://<bucket_name>/<key>"
             }
         }

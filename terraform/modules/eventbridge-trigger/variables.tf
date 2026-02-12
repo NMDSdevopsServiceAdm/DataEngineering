@@ -8,9 +8,14 @@ variable "domain_name" {
     description = "Domain name of the dataset"
 }
 
-variable "pipeline_name" {
+variable "state_machine_arn" {
     type = string
-    description = "Name of the ingest pipeline for the dataset"
+    description = "The arn of the state machine to schedule"
+}
+
+variable "state_machine_name" {
+    type = string
+    description = "The name of the state machine to schedule"
 }
 
 variable "glue_job_name" {
