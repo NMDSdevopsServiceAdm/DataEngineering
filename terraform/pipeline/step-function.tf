@@ -6,10 +6,6 @@ locals {
   })
 }
 
-data "aws_ecs_cluster" "polars_cluster" {
-  cluster_name = "polars_cluster"
-}
-
 # Created explicitly as required by dynamic step functions
 module "run_crawler" {
   source              = "../modules/step-function"
@@ -133,7 +129,7 @@ module "sf_pipelines" {
     last_locations_run_param_name = aws_ssm_parameter.locations_last_run.name
 
     # ecs
-    polars_cluster_arn = data.aws_ecs_cluster.polars_cluster.arn
+    polars_cluster_arn = "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:cluster/${local.workspace_prefix}-cluster"
 
     cqc_api_public_subnet_ids               = jsonencode(module.cqc-api.subnet_ids)
     independent_cqc_public_subnet_ids       = jsonencode(module._03_independent_cqc.subnet_ids)

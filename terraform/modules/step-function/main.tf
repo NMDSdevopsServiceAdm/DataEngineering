@@ -16,10 +16,10 @@ resource "aws_sfn_state_machine" "step_function" {
   definition = var.definition
 
   depends_on = [
-    module.datasets_bucket,
-    aws_sfn_state_machine.sf_pipelines,
+    #module.datasets_bucket,
+    #aws_sfn_state_machine.sf_pipelines,
     aws_iam_policy.step_function_iam_policy,
-    aws_sfn_state_machine.workforce_intelligence_state_machine,
+    #aws_sfn_state_machine.workforce_intelligence_state_machine,
   ]
 }
 

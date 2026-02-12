@@ -1,7 +1,3 @@
-data "aws_sfn_state_machine" "sf_pipelines" {
-  name = "sf_pipelines"
-}
-
 module "cqc_and_ascwds_orchestrator_scheduler" {
   source               = "../modules/eventbridge-scheduler"
   state_machine_name   = "cqc_and_ascwds_orchestrator"
@@ -15,7 +11,7 @@ module "ascwds_workplace_csv_added" {
   domain_name        = "ASCWDS"
   dataset_name       = "workplace"
   state_machine_name = "Ingest-ASCWDS"
-  state_machine_arn  = data.aws_sfn_state_machine.sf_pipelines.arn
+  state_machine_arn  = module.sf_pipelines["Ingest-ASCWDS"].pipeline_arn
   glue_job_name      = "ingest_ascwds_dataset"
 }
 
@@ -24,7 +20,7 @@ module "ascwds_worker_csv_added" {
   domain_name        = "ASCWDS"
   dataset_name       = "worker"
   state_machine_name = "Ingest-ASCWDS"
-  state_machine_arn  = data.aws_sfn_state_machine.sf_pipelines.arn
+  state_machine_arn  = module.sf_pipelines["Ingest-ASCWDS"].pipeline_arn
   glue_job_name      = "ingest_ascwds_dataset"
 }
 
@@ -33,7 +29,7 @@ module "cqc_pir_csv_added" {
   domain_name        = "CQC"
   dataset_name       = "pir"
   state_machine_name = "Ingest-CQC-PIR"
-  state_machine_arn  = data.aws_sfn_state_machine.sf_pipelines.arn
+  state_machine_arn  = module.sf_pipelines["Ingest-CQC-PIR"].pipeline_arn
   glue_job_name      = "ingest_cqc_pir_data"
 }
 
@@ -42,7 +38,7 @@ module "ons_pd_csv_added" {
   domain_name        = "ONS"
   dataset_name       = "postcode_directory"
   state_machine_name = "Ingest-ONSPD"
-  state_machine_arn  = data.aws_sfn_state_machine.sf_pipelines.arn
+  state_machine_arn  = module.sf_pipelines["Ingest-ONSPD"].pipeline_arn
   glue_job_name      = "ingest_ons_data"
 }
 
@@ -51,7 +47,7 @@ module "ct_care_home_csv_added" {
   domain_name        = "capacity_tracker"
   dataset_name       = "capacity_tracker_care_home"
   state_machine_name = "Ingest-Capacity-Tracker-Care-Home"
-  state_machine_arn  = data.aws_sfn_state_machine.sf_pipelines.arn
+  state_machine_arn  = module.sf_pipelines["Ingest-Capacity-Tracker-Care-Home"].pipeline_arn
   glue_job_name      = "ingest_capacity_tracker_data"
 }
 
@@ -60,7 +56,7 @@ module "ct_non-res_csv_added" {
   domain_name        = "capacity_tracker"
   dataset_name       = "capacity_tracker_non_res"
   state_machine_name = "Ingest-Capacity-Tracker-Non-Res"
-  state_machine_arn  = data.aws_sfn_state_machine.sf_pipelines.arn
+  state_machine_arn  = module.sf_pipelines["Ingest-Capacity-Tracker-Non-Res"].pipeline_arn
   glue_job_name      = "ingest_capacity_tracker_data"
 }
 

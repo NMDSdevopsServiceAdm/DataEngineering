@@ -1,28 +1,28 @@
-data "aws_s3_bucket" "datasets_bucket" {
-  bucket = var.dataset_bucket_name
-}
+# data "aws_s3_bucket" "datasets_bucket" {
+#   bucket = var.dataset_bucket_name
+# }
 
 data "aws_caller_identity" "current" {}
 
-data "aws_sns_topic" "pipeline_failures" {
-  name = "pipeline_failures"
-}
+# data "aws_sns_topic" "pipeline_failures" {
+#   name = "pipeline_failures"
+# }
 
-data "aws_lambda_function" "error_notification_lambda" {
-  function_name = "error_notification_lambda"
-}
+# data "aws_lambda_function" "error_notification_lambda" {
+#   function_name = "error_notification_lambda"
+# }
 
-data "aws_ssm_parameter" "providers_last_run" {
-  name = "providers_last_run"
-}
+# data "aws_ssm_parameter" "providers_last_run" {
+#   name = "providers_last_run"
+# }
 
-data "aws_ssm_parameter" "locations_last_run" {
-  name = "locations_last_run"
-}
+# data "aws_ssm_parameter" "locations_last_run" {
+#   name = "locations_last_run"
+# }
 
-data "aws_ecs_cluster" "polars_cluster" {
-  cluster_name = "polars_cluster"
-}
+# data "aws_ecs_cluster" "polars_cluster" {
+#   cluster_name = "polars_cluster"
+# }
 
 resource "aws_iam_role" "step_function_iam_role" {
   name               = "${local.workspace_prefix}-AWSStepFunction-role"
@@ -109,7 +109,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         "Action" : [
           "SNS:Publish"
         ],
-        "Resource" : "${data.aws_sns_topic.pipeline_failures.arn}"
+        "Resource" : "arn:aws:sns:eu-west-2:${data.aws_caller_identity.current.account_id}:${local.workspace_prefix}-pipeline-failures"
       },
       {
         "Effect" : "Allow",
@@ -117,7 +117,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "lambda:InvokeFunction"
         ],
         "Resource" : [
-          "${data.aws_lambda_function.error_notification_lambda.arn}*"
+          "arn:aws:lambda:eu-west-2:${data.aws_caller_identity.current.account_id}:function:error_notification_lambda"
         ]
       },
       {
@@ -128,8 +128,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "s3:ListBucket"
         ],
         "Resource" : [
-          "${data.aws_s3_bucket.datasets_bucket}/*",
-          data.aws_s3_bucket.datasets_bucket
+          "arn:aws:s3:::${local.workspace_prefix}-datasets",
+          "arn:aws:s3:::${local.workspace_prefix}-datasets/*"
         ]
       },
       {
@@ -139,8 +139,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "ssm:GetParameter",
         ],
         "Resource" : [
-          data.aws_ssm_parameter.providers_last_run.arn,
-          data.aws_ssm_parameter.locations_last_run.arn
+          "arn:aws:ssm:eu-west-2:${data.aws_caller_identity.current.account_id}:parameter/${local.workspace_prefix}/cqc-locations-last-run",
+          "arn:aws:ssm:eu-west-2:${data.aws_caller_identity.current.account_id}:parameter/${local.workspace_prefix}/cqc-providers-last-run"
         ]
       },
       {
@@ -148,18 +148,27 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         "Action" : [
           "ecs:RunTask"
         ],
-        "Resource" : "*",
-        "Condition" : {
-          "ArnEquals" : { "ecs:cluster" : data.aws_ecs_cluster.polars_cluster.arn }
-        }
+        "Resource" : [
+          "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:task-definition/${local.workspace_prefix}-cqc-api-task:*",
+          "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:task-definition/${local.workspace_prefix}-_03_independent_cqc-task:*",
+          "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:task-definition/${local.workspace_prefix}-_03_independent_cqc_model-task:*",
+          "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:cluster/${local.workspace_prefix}-cluster"
+        ]
       },
       {
-        "Effect" : "Allow",
-        "Action" : "iam:PassRole",
-        "Resource" : "*",
-        "Condition" : {
-          "ArnEquals" : { "ecs:cluster" : data.aws_ecs_cluster.polars_cluster.arn }
-          "StringLike" : {
+        Effect = "Allow",
+        Action = "iam:PassRole",
+        Resource = [
+          # module.cqc-api.task_exc_role_arn,
+          # module.cqc-api.task_role_arn,
+          # module._03_independent_cqc.task_exc_role_arn,
+          # module._03_independent_cqc.task_role_arn,
+          # module._03_independent_cqc_model.task_exc_role_arn,
+          # module._03_independent_cqc_model.task_role_arn
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/*"
+        ],
+        Condition = {
+          StringLike = {
             "iam:PassedToService" = [
               "ecs-tasks.amazonaws.com",
               "events.amazonaws.com"
