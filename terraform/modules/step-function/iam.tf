@@ -25,13 +25,13 @@ data "aws_caller_identity" "current" {}
 # }
 
 resource "aws_iam_role" "step_function_iam_role" {
-  name               = "${local.workspace_prefix}-AWSStepFunction-role"
+  name               = "${local.workspace_prefix}-${var.pipeline_name}-role"
   assume_role_policy = data.aws_iam_policy_document.step_function_iam_policy.json
 }
 
 
 resource "aws_iam_policy" "step_function_iam_policy" {
-  name        = "${local.workspace_prefix}-step_function_iam_policy"
+  name        = "${local.workspace_prefix}-${var.pipeline_name}_iam_policy"
   path        = "/"
   description = "IAM Policy for step functions"
 

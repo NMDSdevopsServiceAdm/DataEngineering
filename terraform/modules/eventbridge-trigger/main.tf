@@ -1,6 +1,7 @@
 locals {
   workspace_prefix         = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 20)
   pascal_case_dataset_name = replace(title(replace(var.dataset_name, "_", " ")), " ", "")
+  shortened_start_state_machines_name = substr("start-${var.state_machine_name}-${var.dataset_name}", 0, 50)
 }
 
 resource "aws_cloudwatch_event_rule" "csv_added" {
@@ -24,7 +25,7 @@ resource "aws_cloudwatch_event_rule" "csv_added" {
 
 
 resource "aws_iam_policy" "start_state_machines" {
-  name = "${local.workspace_prefix}-start-state-machines"
+  name = "${local.workspace_prefix}-${local.shortened_start_state_machines_name}"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -40,7 +41,7 @@ resource "aws_iam_policy" "start_state_machines" {
 }
 
 resource "aws_iam_role" "start_state_machines" {
-  name = "${local.workspace_prefix}-start-state-machines"
+  name = "${local.workspace_prefix}-${local.shortened_start_state_machines_name}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
