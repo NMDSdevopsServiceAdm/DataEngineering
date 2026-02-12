@@ -17,6 +17,12 @@ repos:
       - id: pydoclint
         args: [--style=google, --quiet]
 
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: "v1.105.0"
+    hooks:
+      - id: terraform_fmt
+      - id: terraform_tflint
+
   - repo: local
     hooks:
       - id: ban-show
