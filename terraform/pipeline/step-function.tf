@@ -145,15 +145,15 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     public_subnet_ids = jsonencode(data.aws_subnets.public.ids)
 
     # ecs tasks
-    cqc_api_task_arn               = module.cqc-api.task_arn
-    independent_cqc_task_arn       = module._03_independent_cqc.task_arn
-    independent_cqc_model_task_arn = module._03_independent_cqc_model.task_arn
+    cqc_api_task_arn                     = module.cqc-api.task_arn
+    independent_cqc_task_arn             = module._03_independent_cqc.task_arn
+    independent_cqc_model_task_arn       = module._03_independent_cqc_model.task_arn
     independent_cqc_by_job_role_task_arn = module._03_independent_cqc_by_job_role.task_arn
 
     # ecs task security groups
-    cqc_api_security_group_id               = module.cqc-api.security_group_id
-    independent_cqc_security_group_id       = module._03_independent_cqc.security_group_id
-    independent_cqc_model_security_group_id = module._03_independent_cqc_model.security_group_id
+    cqc_api_security_group_id                     = module.cqc-api.security_group_id
+    independent_cqc_security_group_id             = module._03_independent_cqc.security_group_id
+    independent_cqc_model_security_group_id       = module._03_independent_cqc_model.security_group_id
     independent_cqc_by_job_role_security_group_id = module._03_independent_cqc_by_job_role.security_group_id
 
     # models
