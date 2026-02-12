@@ -4,9 +4,10 @@ import polars as pl
 from polars_utils import utils
 import polars_utils.cleaning_utils as cUtils
 
-# from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
-#     calculate_ascwds_filled_posts,
-# )
+from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
+    calculate_ascwds_filled_posts,
+)
+
 # from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers import (
 #     clean_ascwds_filled_post_outliers,
 # )
@@ -60,6 +61,14 @@ def main(
 
     locations_df = replace_zero_beds_with_null(locations_df)
     locations_df = populate_missing_care_home_number_of_beds(locations_df)
+
+    locations_df = calculate_ascwds_filled_posts(
+        locations_df,
+        IndCQC.total_staff_bounded,
+        IndCQC.worker_records_bounded,
+        IndCQC.ascwds_filled_posts,
+        IndCQC.ascwds_filled_posts_source,
+    )
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
     utils.sink_to_parquet(
