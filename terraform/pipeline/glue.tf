@@ -713,42 +713,36 @@ module "validate_cleaned_capacity_tracker_non_res_data_job" {
 module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ASCWDS"
-  glue_role                    = aws_iam_role.sfc_glue_crawler_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "ind_cqc_filled_posts_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ind_cqc_filled_posts"
-  glue_role                    = aws_iam_role.sfc_glue_crawler_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "data_validation_reports_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "data_validation_reports"
-  glue_role                    = aws_iam_role.sfc_glue_crawler_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "cqc_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "CQC"
-  glue_role                    = aws_iam_role.sfc_glue_crawler_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "sfc_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "SfC"
-  glue_role                    = aws_iam_role.sfc_glue_crawler_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "ons_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ONS"
-  glue_role                    = aws_iam_role.sfc_glue_crawler_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
   exclusions                   = ["dataset=postcode-directory-field-lookups/**"]
 }
@@ -756,13 +750,11 @@ module "ons_crawler" {
 module "dpr_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "DPR"
-  glue_role                    = aws_iam_role.sfc_glue_crawler_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "capacity_tracker_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "capacity_tracker"
-  glue_role                    = aws_iam_role.sfc_glue_crawler_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }

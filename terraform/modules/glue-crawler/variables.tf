@@ -6,14 +6,6 @@ variable "dataset_for_crawler" {
   default     = null
 }
 
-variable "glue_role" {
-  type = object({
-    name = string
-    arn  = string
-  })
-  description = "Glue Role that the crawler will use to execute."
-}
-
 variable "data_path" {
   type        = string
   description = "The root path for a given domains data"
