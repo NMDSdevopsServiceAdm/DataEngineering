@@ -1,6 +1,6 @@
 import polars as pl
 
-from projects._03_independent_cqc._02_clean.jobs.fargate.utils.ascwds_filled_posts_calculator.utils import (
+from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.utils import (
     absolute_difference_between_total_staff_and_worker_records_below_cut_off,
     add_source_description_to_source_column,
     ascwds_filled_posts_is_null,

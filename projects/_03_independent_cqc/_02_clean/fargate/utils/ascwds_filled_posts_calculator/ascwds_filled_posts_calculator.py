@@ -1,9 +1,9 @@
 import polars as pl
 
-from projects._03_independent_cqc._02_clean.jobs.fargate.utils.ascwds_filled_posts_calculator.difference_within_range import (
+from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.difference_within_range import (
     calculate_ascwds_filled_posts_difference_within_range,
 )
-from projects._03_independent_cqc._02_clean.jobs.fargate.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records import (
+from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records import (
     calculate_ascwds_filled_posts_totalstaff_equal_wkrrecs,
 )
 
