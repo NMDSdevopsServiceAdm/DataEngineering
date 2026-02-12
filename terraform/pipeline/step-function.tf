@@ -325,7 +325,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module._03_independent_cqc_model.task_exc_role_arn,
           module._03_independent_cqc_model.task_role_arn,
           module._03_independent_cqc_by_job_role.task_exc_role_arn,
-          module._03_independent_cqc_by_job_role.task_role_arn,
+          module._03_independent_cqc_by_job_role.task_role_arn
         ],
         Condition = {
           StringLike = {
