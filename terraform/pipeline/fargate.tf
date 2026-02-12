@@ -51,14 +51,3 @@ module "_03_independent_cqc_model" {
     { "name" : "AWS_REGION", "value" : "eu-west-2" }
   ]
 }
-
-module "_03_independent_cqc_by_job_role" {
-  source        = "../modules/fargate-task"
-  task_name     = "_03_independent_cqc_by_job_role"
-  ecr_repo_name = "fargate/_03_independent_cqc_by_job_role"
-  cluster_arn   = aws_ecs_cluster.polars_cluster.arn
-  environment = [
-    { "name" : "AWS_REGION", "value" : "eu-west-2" }
-  ]
-  tag_name = terraform.workspace
-}

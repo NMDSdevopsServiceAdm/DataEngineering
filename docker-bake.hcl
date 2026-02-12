@@ -41,11 +41,3 @@ target "_03_independent_cqc_model" {
   platforms = ["linux/amd64"]
   no-cache = true
 }
-
-target "_03_independent_cqc_by_job_role" {
-  context = "."
-  dockerfile = "./projects/_03_independent_cqc/_04_model/fargate/Dockerfile"
-  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/03_independent_cqc_by_job_role:${SANITISED_CIRCLE_BRANCH}"]
-  platforms = ["linux/amd64"]
-  no-cache = true
-}
