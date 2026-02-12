@@ -1,6 +1,6 @@
 locals {
-  workspace_prefix         = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 20)
-  pascal_case_dataset_name = replace(title(replace(var.dataset_name, "_", " ")), " ", "")
+  workspace_prefix                    = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 20)
+  pascal_case_dataset_name            = replace(title(replace(var.dataset_name, "_", " ")), " ", "")
   shortened_start_state_machines_name = substr("start-${var.state_machine_name}-${var.dataset_name}", 0, 50)
 }
 
