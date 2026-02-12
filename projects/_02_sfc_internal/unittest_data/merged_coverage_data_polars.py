@@ -184,4 +184,9 @@ class ValidateMergeCoverageData:
         ),
     ]
 
+    calculate_expected_size_rows = [
+        ("loc 1", date(2024, 1, 1), "name", "AB1 2CD", "Y", "2024", "01", "01"),
+        ("loc 1", date(2024, 1, 8), "name", "AB1 2CD", "Y", "2024", "01", "08"),
+        ("loc 2", date(2024, 1, 1), "name", "AB1 2CD", "Y", "2024", "01", "01"),
+    ]
     expected_row_count = 1

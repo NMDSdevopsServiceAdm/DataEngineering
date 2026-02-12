@@ -10,7 +10,7 @@ from projects._02_sfc_internal.unittest_data.merged_coverage_data_polars import 
     ValidateMergeCoverageData as Data,
 )
 from projects._02_sfc_internal.unittest_data.merged_coverage_schema_polars import (
-    ValidateMergeCoverageData as Schemas,
+    ValidateMergeCoverageSchemas as Schemas,
 )
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
@@ -100,6 +100,7 @@ class ValidateMergeCoverageDataTests(unittest.TestCase):
     def test_calculate_expected_size_of_merged_coverage_dataset(self):
         schema = pl.Schema(
             [
+                (IndCqcColumns.location_id, pl.String()),
                 (IndCqcColumns.cqc_location_import_date, pl.Date()),
                 (IndCqcColumns.name, pl.String()),
                 (IndCqcColumns.postcode, pl.String()),
@@ -111,17 +112,13 @@ class ValidateMergeCoverageDataTests(unittest.TestCase):
         )
 
         input_df = pl.DataFrame(
-            [
-                (date(2023, 1, 1), "Home A", "AA1", "Y", 2023, 1, 1),
-                (date(2023, 1, 2), "Home A", "AA1", "Y", 2023, 1, 2),
-                (date(2023, 2, 1), "Home B", "BB1", "N", 2023, 2, 1),
-            ],
+            data=Data.calculate_expected_size_rows,
             schema=schema,
         )
 
         result = job.calculate_expected_size_of_merged_coverage_dataset(input_df)
 
-        self.assertEqual(result, 2)
+        self.assertEqual(result, Data.expected_row_count)
 
 
 if __name__ == "__main__":
