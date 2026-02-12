@@ -7,70 +7,65 @@
       "Next": "Run validation crawler when success",
       "Branches": [
         {
-          "StartAt": "Clean and validate merged data",
+          "StartAt": "Run estimates by job role",
           "States": {
-            "Clean and validate merged data": {
+            "Run estimates by job role": {
               "Type": "Parallel",
               "Branches": [
                 {
-                  "StartAt": "Glue StartJobRun",
+                  "StartAt": "Estimate filled posts by job role (pyspark)",
                   "States": {
-                    "Merge CQC, ASC-WDS and CT data": {
+                    "Estimate filled posts by job role (pyspark)": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${estimate_ind_cqc_filled_posts_by_job_role_job}",
+                        "Arguments": {
+                          "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
+                          "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+                          "--estimated_ind_cqc_filled_posts_by_job_role_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_estimated_filled_posts_by_job_role/"
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Estimate filled posts by job role (polars)",
+                  "States": {
+                    "Estimate filled posts by job role (polars)": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
-                        "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "Cluster": "${model_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_model_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_03_independent_cqc-container",
+                              "Name": "_03_independent_cqc_estimate_filled_posts_by_job_role-container",
                               "Command": [
-                                "merge_ind_cqc_data.py",
-                                "--cleaned_cqc_location_source",
-                                "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/",
-                                "--cleaned_cqc_pir_source",
-                                "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/",
-                                "--cleaned_ascwds_workplace_source",
-                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                                "--cleaned_ct_non_res_source",
-                                "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/",
-                                "--cleaned_ct_care_home_source",
-                                "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/",
-                                "--destination",
-                                "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/"
+                                "estimate_ind_cqc_filled_posts_by_job_role.py",
+                                "--estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
+                                "--ascwds_job_role_counts_source", "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+                                "--estimates_by_job_role_destination","${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_estimated_filled_posts_by_job_role/"
                               ]
                             }
                           ]
                         }
-                      }
-                    }
-                  },
-                {
-                  "StartAt": "ECS RunTask",
-                  "States": {
-                    "ECS RunTask": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask",
-                      "Parameters": {
-                        "LaunchType": "FARGATE",
-                        "Cluster": "arn:aws:ecs:REGION:ACCOUNT_ID:cluster/MyECSCluster",
-                        "TaskDefinition": "arn:aws:ecs:REGION:ACCOUNT_ID:task-definition/MyTaskDefinition:1"
                       },
                       "End": true
                     }
                   }
                 }
-              ],
-              "End": true
+              ]
             }
           }
         },
