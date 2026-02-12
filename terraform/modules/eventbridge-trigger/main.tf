@@ -1,5 +1,5 @@
 locals {
-  workspace_prefix = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 20)
+  workspace_prefix         = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 20)
   pascal_case_dataset_name = replace(title(replace(var.dataset_name, "_", " ")), " ", "")
 }
 
@@ -10,16 +10,16 @@ resource "aws_cloudwatch_event_rule" "csv_added" {
 
   event_pattern = jsonencode(
     {
-    source = ["aws.s3"]
-    detail-type = ["Object Created"]
-    detail = {
-      bucket = {
-        name = ["sfc-data-engineering-raw"]
-    },
-      object = {
-        key = [ {"prefix": "domain=${var.domain_name}/dataset=${var.dataset_name}" }  ]
-    }
-  }})
+      source      = ["aws.s3"]
+      detail-type = ["Object Created"]
+      detail = {
+        bucket = {
+          name = ["sfc-data-engineering-raw"]
+        },
+        object = {
+          key = [{ "prefix" : "domain=${var.domain_name}/dataset=${var.dataset_name}" }]
+        }
+  } })
 }
 
 
@@ -54,7 +54,7 @@ resource "aws_iam_role" "start_state_machines" {
     ]
   })
 }
-  
+
 
 resource "aws_iam_role_policy_attachment" "start_state_machines" {
   role       = aws_iam_role.start_state_machines.name
@@ -72,13 +72,13 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_state_machine" {
       bucket_name = "$.detail.bucket.name",
       key         = "$.detail.object.key",
     }
-    
+
     input_template = jsonencode({
-        jobs = {
-            "var.glue_job_name" = {
-                source = "s3://<bucket_name>/<key>"
-            }
+      jobs = {
+        "var.glue_job_name" = {
+          source = "s3://<bucket_name>/<key>"
         }
+      }
     })
   }
 }

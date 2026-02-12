@@ -1,5 +1,5 @@
 locals {
-  workspace_prefix = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 20)
+  workspace_prefix               = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 20)
   pascal_case_state_machine_name = replace(title(replace(var.state_machine_name, "_", " ")), " ", "")
 }
 

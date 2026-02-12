@@ -122,17 +122,17 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         "Action" : [
           "ecs:RunTask"
         ],
-        "Resource": "*",
-            "Condition": {
-                "ArnEquals": {"ecs:cluster": data.aws_ecs_cluster.polars_cluster.arn}
-            }
+        "Resource" : "*",
+        "Condition" : {
+          "ArnEquals" : { "ecs:cluster" : data.aws_ecs_cluster.polars_cluster.arn }
+        }
       },
       {
         "Effect" : "Allow",
         "Action" : "iam:PassRole",
-        "Resource": "*",
-        "Condition": {
-          "ArnEquals": {"ecs:cluster": data.aws_ecs_cluster.polars_cluster.arn}
+        "Resource" : "*",
+        "Condition" : {
+          "ArnEquals" : { "ecs:cluster" : data.aws_ecs_cluster.polars_cluster.arn }
           "StringLike" : {
             "iam:PassedToService" = [
               "ecs-tasks.amazonaws.com",
