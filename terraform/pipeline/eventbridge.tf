@@ -1,3 +1,7 @@
+data "aws_sfn_state_machine" "sf_pipelines" {
+  name = "sf_pipelines"
+}
+
 module "cqc_and_ascwds_orchestrator_scheduler" {
   source               = "../modules/eventbridge-scheduler"
   state_machine_name   = "cqc_and_ascwds_orchestrator"
@@ -60,6 +64,3 @@ module "ct_non-res_csv_added" {
   glue_job_name      = "ingest_capacity_tracker_data"
 }
 
-data "aws_sfn_state_machine" "sf_pipelines" {
-  name = "sf_pipelines"
-}

@@ -6,6 +6,10 @@ locals {
   })
 }
 
+data "aws_ecs_cluster" "polars_cluster" {
+  cluster_name = "polars_cluster"
+}
+
 # Created explicitly as required by dynamic step functions
 module "run_crawler" {
   source              = "../modules/step-function"
@@ -157,6 +161,3 @@ resource "aws_cloudwatch_log_group" "state_machines" {
 }
 
 
-data "aws_ecs_cluster" "polars_cluster" {
-  cluster_name = "polars_cluster"
-}
