@@ -1,5 +1,5 @@
 locals {
-  shortened_glue_job_name = substr("${local.job_name}", 0, 50)
+  shortened_glue_job_name = substr("${local.job_name}", 0, 55)
 }
 
 data "aws_iam_policy_document" "glue_service_assume_role_policy" {
