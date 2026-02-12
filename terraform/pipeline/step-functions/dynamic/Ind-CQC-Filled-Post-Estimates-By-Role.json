@@ -1,71 +1,41 @@
 {
-  "Comment": "A state machine indicating the transformation steps from Silver -> Gold data layers for the Independent CQC filled posts pipeline",
-  "StartAt": "Silver to Gold Transformation Layer",
+  "Comment": "A state machine for a parallel run of estimates by job role comparing pyspark to polars",
+  "StartAt": "Estimates by job role comparison",
   "States": {
-    "Silver to Gold Transformation Layer": {
+    "Estimates by job role comparison": {
       "Type": "Parallel",
       "Next": "Run validation crawler when success",
       "Branches": [
         {
-          "StartAt": "Run estimates by job role",
+          "StartAt": "Estimate filled posts by job role (pyspark)",
           "States": {
-            "Run estimates by job role": {
-              "Type": "Parallel",
-              "Branches": [
-                {
-                  "StartAt": "Estimate filled posts by job role (pyspark)",
-                  "States": {
-                    "Estimate filled posts by job role (pyspark)": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${estimate_ind_cqc_filled_posts_by_job_role_job}",
-                        "Arguments": {
-                          "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
-                          "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                          "--estimated_ind_cqc_filled_posts_by_job_role_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_estimated_filled_posts_by_job_role_pyspark/"
-                        }
-                      },
-                      "End": true
-                    }
+            "Estimate filled posts by job role (pyspark)": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${estimate_ind_cqc_filled_posts_by_job_role_job}",
+                "Arguments": {
+                  "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
+                  "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+                  "--estimated_ind_cqc_filled_posts_by_job_role_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_estimated_filled_posts_by_job_role_pyspark/"
+                }
+              },
+              "Next": "Validate estimated filled posts by job role (pyspark)"
+            },
+            "States": {
+                "Validate estimated filled posts by job role (pyspark)": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${validate_estimated_ind_cqc_filled_posts_by_job_role_data_job_name}",
+                  "Arguments": {
+                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
+                    "--estimated_ind_cqc_filled_posts_by_job_role_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_estimate_filled_posts_by_job_role/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_07_estimate_filled_posts_by_job_role/"
                   }
                 },
-                {
-                  "StartAt": "Estimate filled posts by job role (polars)",
-                  "States": {
-                    "Estimate filled posts by job role (polars)": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask.sync",
-                      "Parameters": {
-                        "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${independent_cqc_task_arn}",
-                        "LaunchType": "FARGATE",
-                        "NetworkConfiguration": {
-                          "AwsvpcConfiguration": {
-                            "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
-                            "AssignPublicIp": "ENABLED"
-                          }
-                        },
-                        "Overrides": {
-                          "ContainerOverrides": [
-                            {
-                              "Name": "_03_independent_cqc-container",
-                              "Command": [
-                                "estimate_ind_cqc_filled_posts_by_job_role.py",
-                                "--estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
-                                "--ascwds_job_role_counts_source", "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                                "--estimates_by_job_role_destination","${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_estimated_filled_posts_by_job_role_polars/"
-                              ]
-                            }
-                          ]
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                }
-              ]
+                "End": true
+              }
             }
           }
         },
@@ -76,19 +46,13 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "Cluster": "arn:aws:ecs:eu-west-2:856699698263:cluster/1356-jr-pipeline-cluster",
-                "TaskDefinition": "arn:aws:ecs:eu-west-2:856699698263:task-definition/1356-jr-pipeline-_03_independent_cqc-task:1",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
-                    "Subnets": [
-                      "subnet-0ec849a778438d382",
-                      "subnet-025798c18c6ca7073",
-                      "subnet-0e10939a615617030"
-                    ],
-                    "SecurityGroups": [
-                      "sg-05633862db88c32b5"
-                    ],
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
                     "AssignPublicIp": "ENABLED"
                   }
                 },
@@ -98,10 +62,38 @@
                       "Name": "_03_independent_cqc-container",
                       "Command": [
                         "prepare_job_role_counts.py",
-                        "--cleaned_ascwds_worker_source",
-                        "s3://sfc-1356-jr-pipeline-datasets/domain=ASCWDS/dataset=worker_cleaned/",
-                        "--prepared_ascwds_job_role_counts_destination",
-                        "s3://sfc-1356-jr-pipeline-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_ascwds_prepared_job_role_counts/"
+                        "--cleaned_ascwds_worker_source", "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+                        "--prepared_ascwds_job_role_counts_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_ascwds_prepared_job_role_counts/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "Next": "Estimates by job role (polars)"
+            },
+            "Estimate filled posts by job role (polars)": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "estimate_ind_cqc_filled_posts_by_job_role.py",
+                        "--estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
+                        "--ascwds_job_role_counts_source", "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+                        "--estimates_by_job_role_destination","${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_estimated_filled_posts_by_job_role_polars/"
                       ]
                     }
                   ]
@@ -126,7 +118,7 @@
     "Run validation crawler when success": {
       "Type": "Task",
       "Parameters": {
-        "Name": "1356-jr-pipeline-data_engineering_data_validation_reports"
+        "Name": "${data_validation_reports_crawler_name}"
       },
       "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
       "Next": "Run Independent CQC crawler when success"
@@ -134,7 +126,7 @@
     "Run Independent CQC crawler when success": {
       "Type": "Task",
       "Parameters": {
-        "Name": "1356-jr-pipeline-data_engineering_ind_cqc_filled_posts"
+        "Name": "${ind_cqc_filled_posts_crawler_name}"
       },
       "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
       "Next": "Success"
@@ -143,7 +135,7 @@
       "Type": "Task",
       "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
       "Parameters": {
-        "FunctionName": "arn:aws:lambda:eu-west-2:856699698263:function:1356-jr-pipeline-job-failure-notification:$LATEST",
+        "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
         "Payload": {
           "Error.$": "$.error.Cause",
           "ExecutionId.$": "$$.Execution.Id",
@@ -158,7 +150,7 @@
     "Run validation crawler when failed": {
       "Type": "Task",
       "Parameters": {
-        "Name": "1356-jr-pipeline-data_engineering_data_validation_reports"
+        "Name": "${data_validation_reports_crawler_name}"
       },
       "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
       "Next": "Run Independent CQC crawler when failed"
@@ -166,7 +158,7 @@
     "Run Independent CQC crawler when failed": {
       "Type": "Task",
       "Parameters": {
-        "Name": "1356-jr-pipeline-data_engineering_ind_cqc_filled_posts"
+        "Name": "${ind_cqc_filled_posts_crawler_name}"
       },
       "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
       "Next": "Fail"
