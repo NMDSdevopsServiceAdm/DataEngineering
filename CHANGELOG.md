@@ -36,6 +36,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted the validate_merged_ind_cqc_data job script from PyDeequ to Pointblank
 
+- Converted the validate_merge_coverage_data job script from PyDeequ to Pointblank.
+
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 
