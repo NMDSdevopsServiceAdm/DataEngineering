@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+
+### Changed
+
+
+### Fixed
+
+
+## [v2026.01.0] - 12/02/2026
 
 ### Added
 - A new function to remove longitudinal outliers from CT data. The function flags the outliers based on absolute difference in median values and removes the ourlier value.
