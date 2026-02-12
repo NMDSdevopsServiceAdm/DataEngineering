@@ -37,20 +37,20 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
-                        "Cluster": "${model_cluster_arn}",
-                        "TaskDefinition": "${independent_cqc_model_task_arn}",
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "_03_independent_cqc_estimate_filled_posts_by_job_role-container",
+                              "Name": "_03_independent_cqc-container",
                               "Command": [
                                 "estimate_ind_cqc_filled_posts_by_job_role.py",
                                 "--estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
