@@ -6,7 +6,7 @@ locals {
 
 resource "aws_glue_job" "glue_job" {
   name              = local.job_name
-  role_arn          = var.glue_role.arn
+  role_arn          = aws_iam_role.sfc_glue_service_iam_role.arn
   glue_version      = var.glue_version
   worker_type       = var.worker_type
   number_of_workers = var.number_of_workers
@@ -29,4 +29,12 @@ resource "aws_glue_job" "glue_job" {
       "--enable-auto-scaling"              = var.worker_type == "Standard" ? "false" : "true"
       "--conf"                             = "spark.sql.sources.partitionColumnTypeInference.enabled=false${var.extra_conf}"
   })
+}
+
+resource "aws_s3_object" "job_script" {
+  bucket = var.resource_bucket.bucket_name
+  key    = "scripts/${var.script_name}"
+  source = "../../${var.script_dir}/${var.script_name}"
+
+  etag = filemd5("../../${var.script_dir}/${var.script_name}")
 }
