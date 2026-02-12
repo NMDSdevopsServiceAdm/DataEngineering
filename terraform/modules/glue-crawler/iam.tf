@@ -9,12 +9,12 @@ data "aws_iam_policy_document" "glue_crawler_assume_role_policy" {
   }
 }
 resource "aws_iam_role" "sfc_glue_crawler_iam_role" {
-  name               = "${local.workspace_prefix}-glue_crawler_iam_role"
+  name               = "${local.workspace_prefix}-${var.dataset_for_crawler}_crawler_iam_role"
   assume_role_policy = data.aws_iam_policy_document.glue_crawler_assume_role_policy.json
 }
 
 resource "aws_iam_policy" "glue_crawler_logging_policy" {
-  name        = "${local.workspace_prefix}-logging_policy"
+  name        = "${local.workspace_prefix}-${var.dataset_for_crawler}_logging_policy"
   path        = "/"
   description = "Iam logging policy crawlers on ${local.workspace_prefix} environment"
 
