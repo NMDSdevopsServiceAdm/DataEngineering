@@ -3349,6 +3349,7 @@ class CleanIndCQCData:
         remove_cqc_dual_registrations_when_non_res_rows
     )
 
+    # converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data.AddColumnWithRepeatedValuesRemovedData.repeated_value_rows
     repeated_value_rows = [
         ("1", "1-0001", 1, date(2023, 2, 1)),
         ("1", "1-0001", 2, date(2023, 3, 1)),
@@ -3359,6 +3360,8 @@ class CleanIndCQCData:
         ("2", "1-0002", 3, date(2024, 1, 1)),
         ("2", "1-0002", 3, date(2024, 2, 1)),
     ]
+
+    # converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data.AddColumnWithRepeatedValuesRemovedData.expected_without_repeated_values_rows
     expected_without_repeated_values_rows = [
         ("1", "1-0001", 1, date(2023, 2, 1), 1),
         ("1", "1-0001", 2, date(2023, 3, 1), 2),

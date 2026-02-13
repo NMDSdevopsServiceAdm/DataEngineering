@@ -661,6 +661,7 @@ class CleanFilteringUtilsData:
         ("1-002", "1-0001", 2, date(2025, 2, 1), 4),
     ]
 
+
 @dataclass
 class AddColumnWithRepeatedValuesRemovedData:
     repeated_value_rows = [

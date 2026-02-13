@@ -1098,6 +1098,7 @@ class CleanIndCQCData:
         ]
     )
 
+    # converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.AddColumnWithRepeatedValuesRemovedSchemas.repeated_value_schema
     repeated_value_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -1107,6 +1108,7 @@ class CleanIndCQCData:
         ]
     )
 
+    # converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.AddColumnWithRepeatedValuesRemovedSchemas.expected_without_repeated_values_schema
     expected_without_repeated_values_schema = StructType(
         [
             *repeated_value_schema,

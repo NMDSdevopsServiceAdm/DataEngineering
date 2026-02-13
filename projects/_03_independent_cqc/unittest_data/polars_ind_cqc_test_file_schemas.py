@@ -461,6 +461,7 @@ class CleanFilteringUtilsSchemas:
         ]
     )
 
+
 @dataclass
 class AddColumnWithRepeatedValuesRemovedSchemas:
     repeated_value_schema = pl.Schema(

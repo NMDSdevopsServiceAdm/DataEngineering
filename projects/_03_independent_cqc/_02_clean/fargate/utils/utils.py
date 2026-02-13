@@ -30,21 +30,14 @@ def create_column_with_repeated_values_removed(
     if new_column_name is None:
         new_column_name = f"{column_to_clean}_deduplicated"
 
-    partition_cols = [column_to_partition_by]
     order_col = IndCQC.cqc_location_import_date
 
-    previous_value = (
-        pl.col(column_to_clean)
-        .shift(1)
-        .over(partition_cols)
-        .sort_by(order_col)
-    )
+    lf = lf.sort([column_to_partition_by, order_col])
+
+    previous_value = pl.col(column_to_clean).shift(1).over(column_to_partition_by)
 
     return lf.with_columns(
-        pl.when(
-            previous_value.is_null()
-            | (pl.col(column_to_clean) != previous_value)
-        )
+        pl.when(previous_value.is_null() | (pl.col(column_to_clean) != previous_value))
         .then(pl.col(column_to_clean))
         .otherwise(None)
         .alias(new_column_name)
