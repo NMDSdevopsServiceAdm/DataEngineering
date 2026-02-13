@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted the validate_merged_ind_cqc_data job script from PyDeequ to Pointblank
 
+- Converted ascwds_filled_posts_calculator utils folder to polars within Clean Ind CQC Job.
+
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 
