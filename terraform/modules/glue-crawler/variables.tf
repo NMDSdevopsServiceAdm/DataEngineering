@@ -18,6 +18,23 @@ variable "workspace_glue_database_name" {
   default     = null
 }
 
+
+variable "resource_bucket" {
+  type = object({
+    bucket_name = string
+    bucket_uri  = string
+  })
+  description = "The bucket used for the glue jobs temporary directory & scripts"
+}
+
+variable "datasets_bucket" {
+  type = object({
+    bucket_name = string
+    bucket_uri  = string
+  })
+  description = "The bucket used for the glue jobs input and output datasets"
+}
+
 # Optional
 variable "schedule" {
   type        = string

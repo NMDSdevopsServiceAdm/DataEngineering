@@ -696,36 +696,48 @@ module "validate_cleaned_capacity_tracker_non_res_data_job" {
 module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ASCWDS"
+  resource_bucket              = module.pipeline_resources
+  datasets_bucket              = module.datasets_bucket
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "ind_cqc_filled_posts_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ind_cqc_filled_posts"
+  resource_bucket              = module.pipeline_resources
+  datasets_bucket              = module.datasets_bucket
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "data_validation_reports_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "data_validation_reports"
+  resource_bucket              = module.pipeline_resources
+  datasets_bucket              = module.datasets_bucket
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "cqc_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "CQC"
+  resource_bucket              = module.pipeline_resources
+  datasets_bucket              = module.datasets_bucket
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "sfc_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "SfC"
+  resource_bucket              = module.pipeline_resources
+  datasets_bucket              = module.datasets_bucket
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "ons_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ONS"
+  resource_bucket              = module.pipeline_resources
+  datasets_bucket              = module.datasets_bucket
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
   exclusions                   = ["dataset=postcode-directory-field-lookups/**"]
 }
@@ -733,11 +745,15 @@ module "ons_crawler" {
 module "dpr_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "DPR"
+  resource_bucket              = module.pipeline_resources
+  datasets_bucket              = module.datasets_bucket
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "capacity_tracker_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "capacity_tracker"
+  resource_bucket              = module.pipeline_resources
+  datasets_bucket              = module.datasets_bucket
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
