@@ -23,7 +23,7 @@
               "Next": "Validate estimated filled posts by job role (pyspark)"
             },
             "States": {
-                "Validate estimated filled posts by job role (pyspark)": {
+              "Validate estimated filled posts by job role (pyspark)": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
@@ -69,7 +69,7 @@
                   ]
                 }
               },
-              "Next": "Estimates by job role (polars)"
+              "Next": "Estimate filled posts by job role (polars)"
             },
             "Estimate filled posts by job role (polars)": {
               "Type": "Task",
