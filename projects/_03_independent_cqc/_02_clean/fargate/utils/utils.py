@@ -21,7 +21,7 @@ def create_column_with_repeated_values_removed(
     Args:
         lf (pl.LazyFrame): The polars LazyFrame to use
         column_to_clean (str): The name of the column to convert
-        new_column_name (Optional [str] = Null): If not provided, "_deduplicated" will be appended onto the original column name
+        new_column_name (Optional [str]): If not provided, "_deduplicated" will be appended onto the original column name
         column_to_partition_by (str): A column to partition by when deduplicating. Defaults to 'locationid'.
 
     Returns:
