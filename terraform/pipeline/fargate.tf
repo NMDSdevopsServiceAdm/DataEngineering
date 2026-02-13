@@ -9,6 +9,17 @@ module "cqc-api" {
   ]
 }
 
+module "_02_sfc_internal" {
+  source        = "../modules/fargate-task"
+  task_name     = "_02_sfc_internal"
+  ecr_repo_name = "fargate/02_sfc_internal"
+  cluster_arn   = aws_ecs_cluster.polars_cluster.arn
+  environment = [
+    { "name" : "AWS_REGION", "value" : "eu-west-2" }
+  ]
+  tag_name = terraform.workspace
+}
+
 module "_03_independent_cqc" {
   source        = "../modules/fargate-task"
   task_name     = "_03_independent_cqc"

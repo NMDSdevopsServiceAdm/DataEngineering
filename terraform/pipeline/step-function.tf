@@ -75,7 +75,6 @@ module "sf_pipelines" {
     clean_ascwds_worker_job_name                                         = module.clean_ascwds_worker_job.job_name
     validate_ascwds_workplace_cleaned_data_job_name                      = module.validate_ascwds_workplace_cleaned_data_job.job_name
     validate_ascwds_worker_cleaned_data_job_name                         = module.validate_ascwds_worker_cleaned_data_job.job_name
-    validate_merged_ind_cqc_data_job_name                                = module.validate_merged_ind_cqc_data_job.job_name
     clean_ind_cqc_filled_posts_job_name                                  = module.clean_ind_cqc_filled_posts_job.job_name
     validate_cleaned_ind_cqc_data_job_name                               = module.validate_cleaned_ind_cqc_data_job.job_name
     impute_ind_cqc_ascwds_and_pir_job_name                               = module.impute_ind_cqc_ascwds_and_pir_job.job_name
@@ -137,11 +136,13 @@ module "sf_pipelines" {
 
     # ecs tasks
     cqc_api_task_arn               = module.cqc-api.task_arn
+    sfc_internal_task_arn          = module._02_sfc_internal.task_arn
     independent_cqc_task_arn       = module._03_independent_cqc.task_arn
     independent_cqc_model_task_arn = module._03_independent_cqc_model.task_arn
 
     # ecs task security groups
     cqc_api_security_group_id               = module.cqc-api.security_group_id
+    sfc_internal_security_group_id          = module._02_sfc_internal.security_group_id
     independent_cqc_security_group_id       = module._03_independent_cqc.security_group_id
     independent_cqc_model_security_group_id = module._03_independent_cqc_model.security_group_id
 

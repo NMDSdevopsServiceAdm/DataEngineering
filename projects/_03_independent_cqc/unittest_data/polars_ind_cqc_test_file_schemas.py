@@ -375,3 +375,49 @@ class MergeUtilsSchemas:
             (CQCPIRClean.pir_people_directly_employed_cleaned, pl.Int64()),
         ]
     )
+
+
+@dataclass
+class ValidateMergeIndCQCSchemas:
+    merged_ind_cqc_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.ascwds_workplace_import_date, pl.Date()),
+            (IndCQC.cqc_pir_import_date, pl.Date()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.name, pl.String()),
+            (IndCQC.provider_id, pl.String()),
+            (IndCQC.cqc_sector, pl.String()),
+            (IndCQC.imputed_registration_date, pl.Date()),
+            (IndCQC.dormancy, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.services_offered, pl.List(pl.String())),
+            (IndCQC.primary_service_type, pl.String()),
+            (IndCQC.contemporary_ons_import_date, pl.Date()),
+            (IndCQC.contemporary_cssr, pl.String()),
+            (IndCQC.contemporary_region, pl.String()),
+            (IndCQC.current_ons_import_date, pl.Date()),
+            (IndCQC.current_cssr, pl.String()),
+            (IndCQC.current_region, pl.String()),
+            (IndCQC.current_rural_urban_indicator_2011, pl.String()),
+            (IndCQC.current_lsoa21, pl.String()),
+            (IndCQC.current_msoa21, pl.String()),
+            (IndCQC.pir_people_directly_employed_cleaned, pl.Int64()),
+            (IndCQC.establishment_id, pl.String()),
+            (IndCQC.organisation_id, pl.String()),
+            (IndCQC.total_staff_bounded, pl.Int64()),
+            (IndCQC.worker_records_bounded, pl.Int64()),
+            (IndCQC.related_location, pl.String()),
+        ]
+    )
+
+    cqc_locations_cleaned_schema = pl.Schema(
+        [
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_sector, pl.String()),
+            (CQCLClean.care_home, pl.String()),
+            (CQCLClean.number_of_beds, pl.Int64()),
+        ]
+    )

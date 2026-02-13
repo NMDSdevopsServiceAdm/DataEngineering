@@ -33,27 +33,6 @@ from utils.column_values.categorical_columns_by_dataset import (
 
 
 @dataclass
-class ValidateMergedIndCqcData:
-    # fmt: off
-    cqc_locations_rows = [
-        (date(2024, 1, 1), "1-001", "Independent", "Y", 10),
-        (date(2024, 1, 1), "1-002", "Independent", "N", None),
-        (date(2024, 2, 1), "1-001", "Independent", "Y", 10),
-        (date(2024, 2, 1), "1-002", "Independent", "N", None),
-    ]
-    # fmt: on
-
-    # fmt: off
-    merged_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5),
-        ("1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5),
-        ("1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5),
-        ("1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5),
-    ]
-    # fmt: on
-
-
-@dataclass
 class ImputeIndCqcAscwdsAndPirData:
     cleaned_ind_cqc_rows = [
         (
