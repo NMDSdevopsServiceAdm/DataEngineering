@@ -1,7 +1,8 @@
 data "aws_caller_identity" "current" {}
 
-resource "aws_sns_topic" "pipeline_failures" {
-  name = "${local.workspace_prefix}-pipeline-failures"
+module "pipeline_failures" {
+  source      = "../modules/sns"
+  topic_name = "pipeline-failures"
 }
 
 module "providers_last_run" {
@@ -18,5 +19,5 @@ module "error_notification_lambda" {
   source          = "../modules/lambda-notification"
   lambda_name     = "error_notifications"
   resource_bucket = module.pipeline_resources.bucket_name
-  sns_topic_arn   = aws_sns_topic.pipeline_failures.arn
+  sns_topic_arn   = module.pipeline_failures.topic_arn
 }
