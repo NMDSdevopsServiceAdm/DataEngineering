@@ -92,7 +92,7 @@
                       "Command": [
                         "estimate_ind_cqc_filled_posts_by_job_role.py",
                         "--estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
-                        "--ascwds_job_role_counts_source", "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+                        "--ascwds_job_role_counts_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_ascwds_prepared_job_role_counts/",
                         "--estimates_by_job_role_destination","${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_estimated_filled_posts_by_job_role_polars/"
                       ]
                     }
