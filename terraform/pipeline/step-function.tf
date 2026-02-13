@@ -25,7 +25,7 @@ module "workforce_intelligence_state_machine" {
     dataset_bucket_name                     = module.datasets_bucket.bucket_name
     dataset_bucket_arn                      = module.datasets_bucket.bucket_arn
     data_validation_reports_crawler_name    = module.data_validation_reports_crawler.crawler_name
-    pipeline_failure_lambda_function_arn    = aws_lambda_function.error_notification_lambda.arn
+    pipeline_failure_lambda_function_arn    = module.error_notification_lambda.lambda_arn
     transform_ascwds_state_machine_arn      = module.sf_pipelines["Transform-ASCWDS-Data"].pipeline_arn
     transform_cqc_data_state_machine_arn    = module.sf_pipelines["Transform-CQC-Data"].pipeline_arn
     ind_cqc_pipeline_state_machine_arn      = module.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].pipeline_arn
@@ -62,7 +62,7 @@ module "sf_pipelines" {
     dataset_bucket_arn            = module.datasets_bucket.bucket_arn
 
     # lambdas
-    pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
+    pipeline_failure_lambda_function_arn = module.error_notification_lambda.lambda_arn
 
     # step-functions - cannot include any from this for_each as circular dependency
     # if needed, create explicitly outside of this resource
