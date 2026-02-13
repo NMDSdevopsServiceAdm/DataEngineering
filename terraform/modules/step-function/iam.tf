@@ -92,7 +92,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "lambda:InvokeFunction"
         ],
         "Resource" : [
-          "arn:aws:lambda:eu-west-2:${data.aws_caller_identity.current.account_id}:function:error_notification_lambda"
+          "arn:aws:lambda:eu-west-2:${data.aws_caller_identity.current.account_id}:function:${local.workspace_prefix}-notification-lambda"
         ]
       },
       {

@@ -96,7 +96,7 @@ resource "aws_lambda_function" "lambda_notification" {
   handler          = "${var.lambda_name}.main"
   runtime          = "python3.11"
   timeout          = 15
-  function_name    = "${local.workspace_prefix}-job-failure-notification"
+  function_name    = "${local.workspace_prefix}-notification-lambda"
   s3_bucket        = var.resource_bucket
   s3_key           = aws_s3_object.lambda_notification.key
   source_code_hash = data.archive_file.lambda_notification.output_base64sha256
