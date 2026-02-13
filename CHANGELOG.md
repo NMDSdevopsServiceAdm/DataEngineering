@@ -44,6 +44,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted ascwds_filled_posts_calculator utils folder to polars within Clean Ind CQC Job.
 
+- Added a new utils file for all the inline function within clean_ind_cqc_filled_posts.py and converted them to Polars.
+
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 
