@@ -1,17 +1,14 @@
 from typing import Optional
-
-from pyspark.sql import DataFrame, Window
-from pyspark.sql import functions as F
-
+import polars as pl
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 def create_column_with_repeated_values_removed(
-    df: DataFrame,
+    lf: pl.LazyFrame,
     column_to_clean: str,
     new_column_name: Optional[str] = None,
     column_to_partition_by: str = IndCQC.location_id,
-) -> DataFrame:
+) -> pl.LazyFrame:
     """
     Some data we have (such as ASCWDS) repeats data until it is changed. This function creates a new column which converts repeated
     values to nulls, so we only see newly submitted values once. This also happens as a result of joining the same datafile multiple
@@ -22,36 +19,33 @@ def create_column_with_repeated_values_removed(
     Otherwise null the value in the new column as it is a previously submitted value which has been repeated.
 
     Args:
-        df (DataFrame): The dataframe to use
+        lf (LazyFrame): The polars LazyFrame to use
         column_to_clean (str): The name of the column to convert
         new_column_name (Optional [str]): If not provided, "_deduplicated" will be appended onto the original column name
         column_to_partition_by (str): A column to partition by when deduplicating. Defaults to 'locationid'.
 
     Returns:
-        DataFrame: A DataFrame with an addional column with repeated values changed to nulls.
+        pl.LazyFrame: A polars LazyFrame with an addional column with repeated values changed to nulls.
     """
-    PREVIOUS_VALUE: str = "previous_value"
-
     if new_column_name is None:
-        new_column_name = column_to_clean + "_deduplicated"
+        new_column_name = f"{column_to_clean}_deduplicated"
 
-    w = Window.partitionBy(column_to_partition_by).orderBy(
-        IndCQC.cqc_location_import_date
+    partition_cols = [column_to_partition_by]
+    order_col = IndCQC.cqc_location_import_date
+
+    previous_value = (
+        pl.col(column_to_clean)
+        .shift(1)
+        .over(partition_cols)
+        .sort_by(order_col)
     )
 
-    df_with_previously_submitted_value = df.withColumn(
-        PREVIOUS_VALUE, F.lag(column_to_clean).over(w)
+    return lf.with_columns(
+        pl.when(
+            previous_value.is_null()
+            | (pl.col(column_to_clean) != previous_value)
+        )
+        .then(pl.col(column_to_clean))
+        .otherwise(None)
+        .alias(new_column_name)
     )
-
-    df_without_repeated_values = df_with_previously_submitted_value.withColumn(
-        new_column_name,
-        F.when(
-            (F.col(PREVIOUS_VALUE).isNull())
-            | (F.col(column_to_clean) != F.col(PREVIOUS_VALUE)),
-            F.col(column_to_clean),
-        ).otherwise(None),
-    )
-
-    df_without_repeated_values = df_without_repeated_values.drop(PREVIOUS_VALUE)
-
-    return df_without_repeated_values

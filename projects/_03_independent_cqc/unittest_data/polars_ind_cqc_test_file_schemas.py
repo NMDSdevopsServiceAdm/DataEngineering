@@ -460,3 +460,21 @@ class CleanFilteringUtilsSchemas:
             (IndCQC.ct_care_home_total_employed_cleaned_provider_sum, pl.Int64()),
         ]
     )
+
+@dataclass
+class AddColumnWithRepeatedValuesRemovedSchemas:
+    repeated_value_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.provider_id, pl.String()),
+            ("integer_column", pl.Int64()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    expected_without_repeated_values_schema = pl.Schema(
+        list(repeated_value_schema.items())
+        + [
+            ("integer_column_deduplicated", pl.Int64()),
+        ]
+    )
