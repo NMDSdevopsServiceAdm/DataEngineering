@@ -25,9 +25,3 @@ variable "glue_database_name" {
   default     = "data-engineering-database"
 }
 
-# variable "secret_name" {
-#   type    = string
-#   description = "The name of the AWS secret to retreive"
-#   default = "cqc_api_primary_key"
-# }
-

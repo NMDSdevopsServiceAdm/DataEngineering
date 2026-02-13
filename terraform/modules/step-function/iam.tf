@@ -1,34 +1,9 @@
-# data "aws_s3_bucket" "datasets_bucket" {
-#   bucket = var.dataset_bucket_name
-# }
-
 data "aws_caller_identity" "current" {}
-
-# data "aws_sns_topic" "pipeline_failures" {
-#   name = "pipeline_failures"
-# }
-
-# data "aws_lambda_function" "error_notification_lambda" {
-#   function_name = "error_notification_lambda"
-# }
-
-# data "aws_ssm_parameter" "providers_last_run" {
-#   name = "providers_last_run"
-# }
-
-# data "aws_ssm_parameter" "locations_last_run" {
-#   name = "locations_last_run"
-# }
-
-# data "aws_ecs_cluster" "polars_cluster" {
-#   cluster_name = "polars_cluster"
-# }
 
 resource "aws_iam_role" "step_function_iam_role" {
   name               = "${local.workspace_prefix}-${var.pipeline_name}-role"
   assume_role_policy = data.aws_iam_policy_document.step_function_iam_policy.json
 }
-
 
 resource "aws_iam_policy" "step_function_iam_policy" {
   name        = "${local.workspace_prefix}-${var.pipeline_name}_iam_policy"
@@ -159,12 +134,6 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         Effect = "Allow",
         Action = "iam:PassRole",
         Resource = [
-          # module.cqc-api.task_exc_role_arn,
-          # module.cqc-api.task_role_arn,
-          # module._03_independent_cqc.task_exc_role_arn,
-          # module._03_independent_cqc.task_role_arn,
-          # module._03_independent_cqc_model.task_exc_role_arn,
-          # module._03_independent_cqc_model.task_role_arn
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/*"
         ],
         Condition = {

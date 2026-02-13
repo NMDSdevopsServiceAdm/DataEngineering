@@ -9,14 +9,6 @@ variable "script_name" {
   description = "Name of the python script to run"
 }
 
-# variable "glue_role" {
-#   type = object({
-#     name = string
-#     arn  = string
-#   })
-#   description = "Glue Role that the job will use to execute."
-# }
-
 variable "resource_bucket" {
   type = object({
     bucket_name = string
