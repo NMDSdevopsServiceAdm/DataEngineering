@@ -1,191 +1,137 @@
 import polars as pl
 import polars.testing as pl_testing
 import unittest
-import warnings
 
-from pyspark.sql import functions as F
-from pyspark.sql.types import (
-    DoubleType,
-    IntegerType,
-    StringType,
-    StructField,
-    StructType,
-)
-
-import projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.utils as job
-from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+import projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.utils as job
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     CalculateAscwdsFilledPostsUtilsData as Data,
 )
-from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     CalculateAscwdsFilledPostsUtilsSchemas as Schemas,
 )
-from utils import utils
+
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class TestAscwdsFilledPostsCalculatorUtils(unittest.TestCase):
-    common_checks_rows = [("1-000000001", 9, 2, None), ("1-000000002", 2, 2, 2.0)]
-    common_checks_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
-            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
-            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-        ]
-    )
-
     def setUp(self):
-        self.spark = utils.get_spark()
-        self.df = self.spark.createDataFrame(
-            data=self.common_checks_rows, schema=self.common_checks_schema
+
+        self.lf = pl.LazyFrame(
+            data=Data.common_checks_rows, schema=Schemas.common_checks_schema
         )
 
-        warnings.filterwarnings("ignore", category=ResourceWarning)
+    def assert_result(self, lf: pl.LazyFrame, expr: pl.Expr, expected_values):
+        result_col = "result"
+
+        result = (
+            lf.with_columns(expr.alias(result_col)).sort(IndCQC.location_id).collect()
+        )
+
+        expected = result.drop(result_col).with_columns(
+            pl.Series(name=result_col, values=expected_values)
+        )
+
+        pl_testing.assert_frame_equal(result, expected)
 
     def test_ascwds_filled_posts_is_null(self):
-        result = self.df.withColumn(
-            "result",
-            F.when((job.ascwds_filled_posts_is_null()), True).otherwise(False),
+        self.assert_result(
+            self.lf,
+            job.ascwds_filled_posts_is_null(),
+            [True, False],
         )
-
-        result_df = result.sort(IndCQC.location_id).collect()
-        self.assertEqual(result_df[0]["result"], True)
-        self.assertEqual(result_df[1]["result"], False)
 
     def test_selected_column_is_not_null(self):
-        result = self.df.withColumn(
-            "result",
-            F.when(
-                (job.selected_column_is_not_null(IndCQC.ascwds_filled_posts)), True
-            ).otherwise(False),
+        self.assert_result(
+            self.lf,
+            job.selected_column_is_not_null(IndCQC.ascwds_filled_posts),
+            [False, True],
         )
-
-        result_df = result.sort(IndCQC.location_id).collect()
-        self.assertEqual(result_df[0]["result"], False)
-        self.assertEqual(result_df[1]["result"], True)
 
     def test_selected_column_is_at_least_the_min_permitted_value(self):
-        result = self.df.withColumn(
-            "result",
-            F.when(
-                (
-                    job.selected_column_is_at_least_the_min_permitted_value(
-                        IndCQC.total_staff_bounded
-                    )
-                ),
-                True,
-            ).otherwise(False),
+        self.assert_result(
+            self.lf,
+            job.selected_column_is_at_least_the_min_permitted_value(
+                IndCQC.total_staff_bounded
+            ),
+            [True, False],
         )
-
-        result_df = result.sort(IndCQC.location_id).collect()
-        self.assertEqual(result_df[0]["result"], True)
-        self.assertEqual(result_df[1]["result"], False)
 
     def test_absolute_difference_between_total_staff_and_worker_records_below_cut_off(
         self,
     ):
-        result = self.df.withColumn(
-            "result",
-            F.when(
-                (
-                    job.absolute_difference_between_total_staff_and_worker_records_below_cut_off()
-                ),
-                True,
-            ).otherwise(False),
+        self.assert_result(
+            self.lf,
+            job.absolute_difference_between_total_staff_and_worker_records_below_cut_off(),
+            [False, True],
         )
-
-        result_df = result.sort(IndCQC.location_id).collect()
-        self.assertEqual(result_df[0]["result"], False)
-        self.assertEqual(result_df[1]["result"], True)
 
     def test_percentage_difference_between_total_staff_and_worker_records_below_cut_off(
         self,
     ):
-        result = self.df.withColumn(
-            "result",
-            F.when(
-                (
-                    job.percentage_difference_between_total_staff_and_worker_records_below_cut_off()
-                ),
-                True,
-            ).otherwise(False),
+        self.assert_result(
+            self.lf,
+            job.percentage_difference_between_total_staff_and_worker_records_below_cut_off(),
+            [False, True],
         )
-
-        result_df = result.sort(IndCQC.location_id).collect()
-        self.assertEqual(result_df[0]["result"], False)
-        self.assertEqual(result_df[1]["result"], True)
 
     def test_two_cols_are_equal_and_at_least_minimum_permitted_value(self):
-        rows = [
-            ("1-000000001", 9, 2, None),
-            ("1-000000002", 2, 2, 2.0),
-            ("1-000000003", 8, 8, 8.0),
-        ]
-        df = self.spark.createDataFrame(data=rows, schema=self.common_checks_schema)
 
-        result = df.withColumn(
-            "result",
-            F.when(
-                (
-                    job.two_cols_are_equal_and_at_least_minimum_permitted_value(
-                        IndCQC.total_staff_bounded, IndCQC.worker_records_bounded
-                    )
-                ),
-                True,
-            ).otherwise(False),
+        lf = pl.LazyFrame(
+            data=Data.test_two_cols_are_equal_rows, schema=Schemas.common_checks_schema
         )
 
-        result_df = result.sort(IndCQC.location_id).collect()
-        self.assertEqual(result_df[0]["result"], False)
-        self.assertEqual(result_df[1]["result"], False)
-        self.assertEqual(result_df[2]["result"], True)
+        self.assert_result(
+            lf,
+            job.two_cols_are_equal_and_at_least_minimum_permitted_value(
+                IndCQC.total_staff_bounded,
+                IndCQC.worker_records_bounded,
+            ),
+            [False, False, True],
+        )
 
     def test_absolute_difference_between_two_columns(self):
-        result = self.df.withColumn(
-            "result",
+        self.assert_result(
+            self.lf,
             job.absolute_difference_between_two_columns(
-                IndCQC.total_staff_bounded, IndCQC.worker_records_bounded
+                IndCQC.total_staff_bounded,
+                IndCQC.worker_records_bounded,
             ),
+            [7, 0],
         )
-
-        result_df = result.sort(IndCQC.location_id).collect()
-        self.assertEqual(result_df[0]["result"], 7)
-        self.assertEqual(result_df[1]["result"], 0)
 
     def test_average_of_two_columns(self):
-        result = self.df.withColumn(
-            "result",
+        self.assert_result(
+            self.lf,
             job.average_of_two_columns(
-                IndCQC.total_staff_bounded, IndCQC.worker_records_bounded
+                IndCQC.total_staff_bounded,
+                IndCQC.worker_records_bounded,
             ),
+            [5.5, 2.0],
         )
 
-        result_df = result.sort(IndCQC.location_id).collect()
-        self.assertEqual(result_df[0]["result"], 5.5)
-        self.assertEqual(result_df[1]["result"], 2.0)
 
-
-class TestSourceDescriptionAdded(TestAscwdsFilledPostsCalculatorUtils):
-    def setUp(self) -> None:
-        super().setUp()
-
+class TestSourceDescriptionAdded(unittest.TestCase):
     def test_add_source_description_added_to_source_column_when_required(self):
-        input_df = self.spark.createDataFrame(
-            Data.source_missing_rows, Schemas.estimated_source_description_schema
+        input_lf = pl.LazyFrame(
+            Data.source_missing_rows,
+            Schemas.estimated_source_description_schema,
+            orient="row",
         )
 
-        returned_df = job.add_source_description_to_source_column(
-            input_df,
+        returned_lf = job.add_source_description_to_source_column(
+            input_lf,
             IndCQC.estimate_filled_posts,
             IndCQC.estimate_filled_posts_source,
             "model_name",
         )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_source_added_rows, Schemas.estimated_source_description_schema
+        expected_lf = pl.LazyFrame(
+            Data.expected_source_added_rows,
+            Schemas.estimated_source_description_schema,
+            orient="row",
         )
 
-        returned_data = returned_df.sort(IndCQC.location_id).collect()
-        expected_data = expected_df.sort(IndCQC.location_id).collect()
+        returned_data = returned_lf.sort(IndCQC.location_id).collect()
+        expected_data = expected_lf.sort(IndCQC.location_id).collect()
 
-        self.assertEqual(returned_df.count(), expected_df.count())
-        self.assertEqual(expected_data, returned_data)
+        self.assertEqual(expected_data.height, expected_data.height)
+        pl_testing.assert_frame_equal(expected_data, returned_data)

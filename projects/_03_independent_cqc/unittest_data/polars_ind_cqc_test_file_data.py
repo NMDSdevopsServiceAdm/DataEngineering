@@ -649,7 +649,7 @@ class CalculateAscwdsFilledPostsData:
 @dataclass
 class CalculateAscwdsFilledPostsDifferenceInRangeData:
     # fmt: off
-    calculate_ascwds_filled_posts_rows = [
+    test_difference_within_range_rows = [
         # Both 0: Return None
         ("1-000001", 0, None, None, None,),
         # Both 500: Return 500
@@ -668,29 +668,6 @@ class CalculateAscwdsFilledPostsDifferenceInRangeData:
         ("1-000008", 500, 475, None, None,),
         # Already populated, shouldn't change it
         ("1-000009", 10, 10, 8.0, "already populated"),
-    ]
-    # fmt: on
-
-    # fmt: off
-    expected_ascwds_filled_posts_rows = [
-        # Both 0: Return None
-        ("1-000001", 0, None, None, None,),
-        # Both 500: Return 500
-        ("1-000002", 500, 500, 500.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,),
-        # Only know total_staff: Return None
-        ("1-000003", 10, None, None, None,),
-        # worker_record_count below min permitted: return None
-        ("1-000004", 23, 1, None, None,),
-        # Only know worker_records: Return None
-        ("1-000005", None, 100, None, None,),
-        # None of the rules apply: Return None
-        ("1-000006", 900, 600, None, None,),
-        # Absolute difference is within absolute bounds: Return Average
-        ("1-000007", 12, 11, 11.5, ascwds_filled_posts_difference_within_range_source_description,),
-        # Absolute difference is within percentage bounds: Return Average
-        ("1-000008", 500, 475, 487.5, ascwds_filled_posts_difference_within_range_source_description,),
-        # Already populated, shouldn't change it
-        ("1-000009", 10, 10, 10.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description),
     ]
     # fmt: on
 
@@ -731,4 +708,29 @@ class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsData:
         ("1-000007", 12, 11, None, None),
         ("1-000008", 500, 475, None, None),
         ("1-000009", 10, 10, 8.0, "already populated"),
+    ]
+
+
+@dataclass
+class CalculateAscwdsFilledPostsUtilsData:
+    common_checks_rows = [
+        ("1-000000001", 9, 2, None),
+        ("1-000000002", 2, 2, 2.0),
+    ]
+    source_missing_rows = [
+        ("1-000001", 8.0, None),
+        ("1-000002", None, None),
+        ("1-000003", 4.0, "already_populated"),
+    ]
+
+    expected_source_added_rows = [
+        ("1-000001", 8.0, "model_name"),
+        ("1-000002", None, None),
+        ("1-000003", 4.0, "already_populated"),
+    ]
+
+    test_two_cols_are_equal_rows = [
+        ("1-000000001", 9, 2, None),
+        ("1-000000002", 2, 2, 2.0),
+        ("1-000000003", 8, 8, 8.0),
     ]

@@ -14,8 +14,8 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 class TestAscwdsFilledPostsAbsoluteDiffInRange(unittest.TestCase):
     def setUp(self):
         self.ascwds_total_staff_and_worker_record_lf = pl.LazyFrame(
-            Data.calculate_ascwds_filled_posts_rows,
-            Schemas.calculate_ascwds_filled_posts_schema,
+            Data.test_difference_within_range_rows,
+            Schemas.test_difference_within_range_schema,
             orient="row",
         )
         self.returned_lf = job.calculate_ascwds_filled_posts_difference_within_range(
