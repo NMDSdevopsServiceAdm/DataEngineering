@@ -1,7 +1,11 @@
+locals {
+  workspace_prefix = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 30)
+}
+
 resource "aws_glue_crawler" "crawler" {
   database_name = var.workspace_glue_database_name
   name          = "${local.workspace_prefix}-data_engineering_${var.dataset_for_crawler}${var.name_postfix}"
-  role          = var.glue_role.arn
+  role          = aws_iam_role.sfc_glue_crawler_iam_role.arn
   schedule      = var.schedule
 
   recrawl_policy {

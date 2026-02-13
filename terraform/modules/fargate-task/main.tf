@@ -1,3 +1,12 @@
+resource "aws_ecs_cluster" "polars_cluster" {
+  name = "${local.workspace_prefix}-cluster"
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+}
+
 resource "aws_ecs_task_definition" "ecs_task" {
   family                   = "${local.workspace_prefix}-${var.task_name}-task"
   requires_compatibilities = ["FARGATE"]
@@ -32,4 +41,37 @@ resource "aws_ecs_task_definition" "ecs_task" {
     }
   ])
 
+}
+
+resource "aws_cloudwatch_log_group" "ecs_task_log_group" {
+  name              = "/ecs/${local.workspace_prefix}-${var.task_name}-task-logs"
+  retention_in_days = 7
+}
+
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnets" "public" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+  filter {
+    name   = "map-public-ip-on-launch"
+    values = ["true"]
+  }
+}
+
+resource "aws_security_group" "ecs_task_sg" {
+  name_prefix = "${var.task_name}-ecs-sg-"
+  description = "Security group for ECS tasks"
+  vpc_id      = data.aws_vpc.default.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"] # Allow all outbound traffic (needed for CloudWatch/ECR)
+  }
 }

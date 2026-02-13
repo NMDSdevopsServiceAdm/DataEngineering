@@ -43,12 +43,12 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "Cluster": "${model_cluster_arn}",
+                "Cluster": "${polars_cluster_arn}",
                 "TaskDefinition": "${sfc_internal_task_arn}",
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
-                    "Subnets": ${public_subnet_ids},
+                    "Subnets": ${sfc_internal_public_subnet_ids },
                     "SecurityGroups": [
                       "${sfc_internal_security_group_id}"
                     ],

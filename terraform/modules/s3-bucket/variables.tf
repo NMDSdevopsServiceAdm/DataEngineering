@@ -1,10 +1,10 @@
 variable "bucket_name" {
-  description = "Name of the S3 bucket"
   type        = string
+  description = "Name of the S3 bucket"
 }
 
 variable "empty_bucket_on_destroy" {
-  description = "Should the bucket be emptied before destroying?"
   type        = bool
+  description = "Should the bucket be emptied before destroying?"
   default     = false
 }
