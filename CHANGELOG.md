@@ -38,6 +38,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted the validate_merge_coverage_data job script from PyDeequ to Pointblank.
 
+- Added a new utils file for all the inline function within clean_ind_cqc_filled_posts.py and converted them to Polars.
+
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 
