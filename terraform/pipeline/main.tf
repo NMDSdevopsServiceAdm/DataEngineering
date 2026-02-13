@@ -1,7 +1,7 @@
 data "aws_caller_identity" "current" {}
 
 module "pipeline_failures" {
-  source      = "../modules/sns"
+  source     = "../modules/sns"
   topic_name = "pipeline-failures"
 }
 
