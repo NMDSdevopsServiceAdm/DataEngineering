@@ -16,7 +16,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class CleanIndFilledPostsUtilsTests(unittest.TestCase):
+class ReplaceZeroBedsWithNullTests(unittest.TestCase):
     def test_replace_zero_beds_with_null(self):
         input_lf = pl.LazyFrame(
             data=Data.replace_zero_beds_with_null_rows,
@@ -35,6 +35,8 @@ class CleanIndFilledPostsUtilsTests(unittest.TestCase):
             expected.sort(IndCQC.location_id),
         )
 
+
+class PopulateMissingCareHomeNumberOfBedsTests(unittest.TestCase):
     def test_populate_missing_care_home_number_of_beds(self):
         input_lf = pl.LazyFrame(
             data=Data.populate_missing_care_home_number_of_beds_rows,
@@ -56,6 +58,8 @@ class CleanIndFilledPostsUtilsTests(unittest.TestCase):
 
         pl_testing.assert_frame_equal(result, expected)
 
+
+class FilterToCareHomeWithKnownBedsTests(unittest.TestCase):
     def test_filter_to_care_homes_with_known_beds(self):
         input_lf = pl.LazyFrame(
             data=Data.filter_to_care_homes_with_known_beds_rows,
@@ -73,6 +77,8 @@ class CleanIndFilledPostsUtilsTests(unittest.TestCase):
 
         pl_testing.assert_frame_equal(result, expected)
 
+
+class AverageBedsPerLocationTests(unittest.TestCase):
     def test_average_beds_per_location(self):
         input_lf = pl.LazyFrame(
             data=Data.average_beds_per_location_rows,
@@ -92,6 +98,8 @@ class CleanIndFilledPostsUtilsTests(unittest.TestCase):
 
         pl_testing.assert_frame_equal(result, expected)
 
+
+class ReplaceNullBedsWithAverageTests(unittest.TestCase):
     def test_replace_null_beds_with_average(self):
 
         input_lf = pl.LazyFrame(
