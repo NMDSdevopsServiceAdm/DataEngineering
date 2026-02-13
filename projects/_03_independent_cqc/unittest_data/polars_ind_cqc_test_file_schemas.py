@@ -421,3 +421,42 @@ class ValidateMergeIndCQCSchemas:
             (CQCLClean.number_of_beds, pl.Int64()),
         ]
     )
+
+
+@dataclass
+class CleanFilteringUtilsSchemas:
+    add_filtering_column_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+        ]
+    )
+    expected_add_filtering_column_schema = pl.Schema(
+        list(add_filtering_column_schema.items())
+        + [
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+        ]
+    )
+    update_filtering_rule_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+        ]
+    )
+
+    aggregate_values_to_provider_level_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.provider_id, pl.String()),
+            (IndCQC.ct_care_home_total_employed_cleaned, pl.Int64()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+    expected_aggregate_values_to_provider_level_schema = pl.Schema(
+        list(aggregate_values_to_provider_level_schema.items())
+        + [
+            (IndCQC.ct_care_home_total_employed_cleaned_provider_sum, pl.Int64()),
+        ]
+    )
