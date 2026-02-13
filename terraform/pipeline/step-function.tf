@@ -131,6 +131,7 @@ module "sf_pipelines" {
     polars_cluster_arn = "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:cluster/${local.workspace_prefix}-cluster"
 
     cqc_api_public_subnet_ids               = jsonencode(module.cqc-api.subnet_ids)
+    sfc_internal_public_subnet_ids               = jsonencode(module._02_sfc_internal.subnet_ids)
     independent_cqc_public_subnet_ids       = jsonencode(module._03_independent_cqc.subnet_ids)
     independent_cqc_model_public_subnet_ids = jsonencode(module._03_independent_cqc_model.subnet_ids)
 

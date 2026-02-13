@@ -13,7 +13,6 @@ module "_02_sfc_internal" {
   source        = "../modules/fargate-task"
   task_name     = "_02_sfc_internal"
   ecr_repo_name = "fargate/02_sfc_internal"
-  cluster_arn   = aws_ecs_cluster.polars_cluster.arn
   environment = [
     { "name" : "AWS_REGION", "value" : "eu-west-2" }
   ]
