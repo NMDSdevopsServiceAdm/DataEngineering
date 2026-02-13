@@ -9,7 +9,7 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas as Schemas,
 )
-from utils import utils
+
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
@@ -44,5 +44,4 @@ class TestAscwdsFilledPostsWorkerRecordsEqualsTotalStaff(unittest.TestCase):
             .sort(IndCQC.location_id)
         )
 
-        # Compare actual vs expected
         pl_testing.assert_frame_equal(result_df, expected_df)
