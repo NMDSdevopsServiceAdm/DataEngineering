@@ -124,9 +124,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "ecs:RunTask"
         ],
         "Resource" : [
-          "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:task-definition/${local.workspace_prefix}-cqc-api-task:*",
-          "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:task-definition/${local.workspace_prefix}-_03_independent_cqc-task:*",
-          "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:task-definition/${local.workspace_prefix}-_03_independent_cqc_model-task:*",
+          "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:task-definition/${local.workspace_prefix}-*-task:*",
           "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:cluster/${local.workspace_prefix}-cluster"
         ]
       },
