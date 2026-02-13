@@ -125,8 +125,8 @@ module "sf_pipelines" {
     ct_crawler_name                      = module.capacity_tracker_crawler.crawler_name
 
     # parameter store
-    last_providers_run_param_name = aws_ssm_parameter.providers_last_run.name
-    last_locations_run_param_name = aws_ssm_parameter.locations_last_run.name
+    last_providers_run_param_name = module.providers_last_run.parameter_name
+    last_locations_run_param_name = module.locations_last_run.parameter_name
 
     # ecs
     polars_cluster_arn = "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:cluster/${local.workspace_prefix}-cluster"

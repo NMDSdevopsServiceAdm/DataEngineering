@@ -4,22 +4,14 @@ resource "aws_sns_topic" "pipeline_failures" {
   name = "${local.workspace_prefix}-pipeline-failures"
 }
 
-resource "aws_ssm_parameter" "providers_last_run" {
-  name  = "/${local.workspace_prefix}/cqc-providers-last-run"
-  type  = "String"
-  value = timeadd(timestamp(), "-24h")
-  lifecycle {
-    ignore_changes = [value, ]
-  }
+module "providers_last_run" {
+  source      = "../modules/parameter-store"
+  cqc_dataset = "providers"
 }
 
-resource "aws_ssm_parameter" "locations_last_run" {
-  name  = "/${local.workspace_prefix}/cqc-locations-last-run"
-  type  = "String"
-  value = timeadd(timestamp(), "-24h")
-  lifecycle {
-    ignore_changes = [value, ]
-  }
+module "locations_last_run" {
+  source      = "../modules/parameter-store"
+  cqc_dataset = "locations"
 }
 
 module "error_notification_lambda" {
