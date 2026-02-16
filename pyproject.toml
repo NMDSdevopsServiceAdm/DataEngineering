@@ -1,3 +1,2 @@
 [tool.pydoclint]
 style = 'google'
-arg-type-hints-in-docstring = false

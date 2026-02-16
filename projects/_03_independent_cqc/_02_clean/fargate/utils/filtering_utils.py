@@ -17,14 +17,15 @@ def add_filtering_rule_column(
     is "populated" or "missing data".
 
     Args:
-        lf: A LazyFrame containing the `col_to_filter`
+        lf (pl.LazyFrame): A LazyFrame containing the `col_to_filter`
             before any filters have been applied to the column.
-        filter_rule_col_name: The name of the new filtering rule column.
-        col_to_filter: The name of the column to check for nulls.
-        populated_rule: The value to assign when data is present.
-        missing_rule: The value to assign when data is null.
+        filter_rule_col_name (str): The name of the new filtering rule column.
+        col_to_filter (str): The name of the column to check for nulls.
+        populated_rule (str): The value to assign when data is present.
+        missing_rule (str): The value to assign when data is null.
 
-    Returns: A LazyFrame with an additional column indicating
+    Returns:
+        pl.LazyFrame: A LazyFrame with an additional column indicating
         whether data is present or missing.
     """
     lf = lf.with_columns(
