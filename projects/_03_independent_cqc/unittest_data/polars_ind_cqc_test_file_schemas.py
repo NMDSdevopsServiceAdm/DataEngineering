@@ -17,6 +17,10 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import ArchiveColumns
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ArchivePartitionKeys as ArchiveKeys,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
@@ -419,5 +423,31 @@ class ValidateMergeIndCQCSchemas:
             (CQCLClean.cqc_sector, pl.String()),
             (CQCLClean.care_home, pl.String()),
             (CQCLClean.number_of_beds, pl.Int64()),
+        ]
+    )
+
+
+@dataclass
+class ArchiveFilledPostsEstimates:
+    test_lf_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    add_column_with_the_date_of_most_recent_annual_estimates_schema = test_lf_schema
+    expected_add_column_with_the_date_of_most_recent_annual_estimates_schema = list(
+        test_lf_schema.items()
+    ) + [ArchiveColumns.most_recent_annual_estimate_date]
+
+    create_archive_date_partition_columns_schema = test_lf_schema
+    expected_create_archive_date_partitions_schema = pl.Schema(
+        list(test_lf_schema.items())
+        + [
+            (ArchiveKeys.archive_day, pl.String()),
+            (ArchiveKeys.archive_month, pl.String()),
+            (ArchiveKeys.archive_year, pl.String()),
+            (ArchiveKeys.archive_timestamp, pl.String()),
         ]
     )

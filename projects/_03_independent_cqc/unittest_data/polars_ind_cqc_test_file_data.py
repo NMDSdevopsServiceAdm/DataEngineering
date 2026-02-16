@@ -6,8 +6,8 @@ import numpy as np
 from utils.column_values.categorical_column_values import (
     CareHome,
     MainJobRoleLabels,
-    Sector,
     PrimaryServiceType,
+    Sector,
 )
 
 
@@ -589,3 +589,49 @@ class ValidateMergeIndCQCData:
         (date(2024, 2, 1), "1-002", Sector.independent, "N", None),
     ]
     # fmt: on
+
+
+@dataclass
+class ArchiveFilledPostsEstimates:
+    select_import_dates_to_archive_rows = [
+        ("loc 1", date(2023, 3, 1)),
+        ("loc 1", date(2023, 4, 1)),
+        ("loc 1", date(2024, 3, 1)),
+        ("loc 1", date(2024, 4, 1)),
+        ("loc 1", date(2024, 5, 1)),
+        ("loc 1", date(2024, 6, 1)),
+        ("loc 1", date(2024, 6, 8)),
+    ]
+    expected_select_import_dates_to_archive_rows = [
+        ("loc 1", date(2023, 4, 1)),
+        ("loc 1", date(2024, 4, 1)),
+        ("loc 1", date(2024, 5, 1)),
+        ("loc 1", date(2024, 6, 1)),
+        ("loc 1", date(2024, 6, 8)),
+    ]
+
+    add_column_with_the_date_of_most_recent_annual_estimates_rows = [
+        ("loc 1", date(2024, 11, 1)),
+        ("loc 1", date(2024, 12, 1)),
+        ("loc 1", date(2025, 1, 1)),
+        ("loc 1", date(2025, 2, 1)),
+    ]
+    expected_add_column_with_the_date_of_most_recent_annual_estimates_rows = [
+        ("loc 1", date(2024, 11, 1), date(2024, 4, 1)),
+        ("loc 1", date(2024, 12, 1), date(2024, 4, 1)),
+        ("loc 1", date(2025, 1, 1), date(2024, 4, 1)),
+        ("loc 1", date(2025, 2, 1), date(2024, 4, 1)),
+    ]
+
+    create_archive_date_partition_columns_rows = [
+        ("loc 1", date(2024, 12, 31)),
+        ("loc 1", date(2025, 1, 1)),
+    ]
+    expected_create_archive_date_partition_columns_when_timestamp_day_and_month_are_single_digits_rows = [
+        ("loc 1", date(2024, 12, 31), "01", "01", "2025", "2025-01-01 00:00"),
+        ("loc 1", date(2025, 1, 1), "01", "01", "2025", "2025-01-01 00:00"),
+    ]
+    expected_create_archive_date_partition_columns_when_timestamp_day_and_month_are_double_digits_rows = [
+        ("loc 1", date(2024, 12, 31), "31", "12", "2024", "2024-12-31 00:00"),
+        ("loc 1", date(2025, 1, 1), "31", "12", "2024", "2024-12-31 00:00"),
+    ]

@@ -1,19 +1,17 @@
-from datetime import date
+from datetime import datetime
 
 import polars as pl
 
+from utils.column_names.ind_cqc_pipeline_columns import ArchiveColumns
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ArchivePartitionKeys as ArchiveKeys,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-
-
-class TempColumns:
-    max_import_date_month = "max_import_date_month"
-    max_import_date_year = "max_import_date_year"
-    most_recent_annual_estimate_date = "most_recent_annual_estimate_date"
 
 
 def select_import_dates_to_archive(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Filters dataframe to only include the most recent monthly estimates, plus historical annual estimates.
+    Filters LazyFrame to only include the most recent monthly estimates, plus historical annual estimates.
 
     Args:
         lf (pl.LazyFrame): A LazyFrame to archive.
@@ -22,11 +20,11 @@ def select_import_dates_to_archive(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: A LazyFrame with the most recent monthly estimates, plus historical annual estimates.
     """
 
-    lf = add_a_column_with_the_date_of_most_recent_annual_estimates(lf)
+    lf = add_column_with_the_date_of_most_recent_annual_estimates(lf)
 
     import_date_col = pl.col(IndCQC.cqc_location_import_date)
     most_recent_annual_estimate_date_col = pl.col(
-        TempColumns.most_recent_annual_estimate_date
+        ArchiveColumns.most_recent_annual_estimate_date
     )
     lf = lf.filter(
         (import_date_col >= most_recent_annual_estimate_date_col)
@@ -39,10 +37,10 @@ def select_import_dates_to_archive(lf: pl.LazyFrame) -> pl.LazyFrame:
         )
     )
 
-    return lf
+    return lf.drop(ArchiveColumns.most_recent_annual_estimate_date)
 
 
-def add_a_column_with_the_date_of_most_recent_annual_estimates(
+def add_column_with_the_date_of_most_recent_annual_estimates(
     lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
     """
@@ -57,18 +55,51 @@ def add_a_column_with_the_date_of_most_recent_annual_estimates(
     """
     expr_max_import_date = pl.col(IndCQC.cqc_location_import_date).max()
     lf = lf.with_columns(
-        expr_max_import_date.dt.month().alias(TempColumns.max_import_date_month),
-        expr_max_import_date.dt.year().alias(TempColumns.max_import_date_year),
+        expr_max_import_date.dt.month().alias(ArchiveColumns.max_import_date_month),
+        expr_max_import_date.dt.year().alias(ArchiveColumns.max_import_date_year),
     )
 
     march = 3
     april = 4
     first_of_month = 1
     lf = lf.with_columns(
-        pl.when(pl.col(TempColumns.max_import_date_month) <= march)
-        .then(date(pl.col(TempColumns.max_import_date_year) - 1, april, first_of_month))
-        .otherwise(date(TempColumns.max_import_date_year, april, first_of_month))
-        .alias(TempColumns.most_recent_annual_estimate_date)
+        pl.when(pl.col(ArchiveColumns.max_import_date_month) <= march)
+        .then(
+            pl.date(
+                pl.col(ArchiveColumns.max_import_date_year) - 1, april, first_of_month
+            )
+        )
+        .otherwise(pl.date(ArchiveColumns.max_import_date_year, april, first_of_month))
+        .alias(ArchiveColumns.most_recent_annual_estimate_date)
+    )
+
+    return lf.drop(
+        [ArchiveColumns.max_import_date_month, ArchiveColumns.max_import_date_year]
+    )
+
+
+def create_archive_date_partition_columns(
+    lf: pl.LazyFrame, date_time: datetime
+) -> pl.LazyFrame:
+    """
+    Adds columns for archive day, month, year and timestamp using the given datetime.
+
+    Args:
+        lf(pl.LazyFrame): A LazyFrame with a data column.
+        date_time(datetime): A date time to be used to construct the archive partition columns.
+
+    Returns:
+        pl.LazyFrame: A LazyFrame with archive day, month, and year columns added.
+    """
+    day = date_time.strftime("%d")
+    month = date_time.strftime("%m")
+    year = str(date_time.year)
+    timestamp = str(date_time)[:16]
+    lf = lf.with_columns(
+        (pl.lit(day).alias(ArchiveKeys.archive_day)),
+        (pl.lit(month).alias(ArchiveKeys.archive_month)),
+        (pl.lit(year).alias(ArchiveKeys.archive_year)),
+        (pl.lit(timestamp).alias(ArchiveKeys.archive_timestamp)),
     )
 
     return lf
