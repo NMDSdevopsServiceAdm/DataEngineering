@@ -479,3 +479,44 @@ class AddColumnWithRepeatedValuesRemovedSchemas:
             ("integer_column_deduplicated", pl.Int64()),
         ]
     )
+
+
+@dataclass
+class ForwardFillLatestKnownValue:
+    input_return_last_known_value_locations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            ("col_to_repeat", pl.Int64()),
+        ]
+    )
+    expected_return_last_known_value_locations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            ("last_known_date", pl.Date()),
+            ("last_known_value", pl.Int64()),
+        ]
+    )
+    input_forward_fill_locations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            ("col_to_repeat", pl.Int64()),
+            ("last_known_date", pl.Date()),
+            ("last_known_value", pl.Int64()),
+        ]
+    )
+    expected_forward_fill_locations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            ("col_to_repeat", pl.Int64()),
+        ]
+    )
+    forward_fill_latest_known_value_locations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            ("col_to_repeat", pl.Int64()),
+        ]
+    )

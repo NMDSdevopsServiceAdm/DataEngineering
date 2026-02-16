@@ -5747,6 +5747,7 @@ class CleanCtRepetition:
     # fmt: on
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.ForwardFillLatestKnownValue
 @dataclass
 class ForwardFillLatestKnownValue:
     last_known_latest_per_location_rows = [
