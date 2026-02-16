@@ -1,7 +1,7 @@
 locals {
-  glue_job_s3_iam_role_name         = substr("${local.job_name}_iam_role", 0, 63)
-  glue_job_s3_policy_name           = substr("${local.job_name}_bucket_access_policy", 0, 63)
-  glue_jobs_read_raw_s3_policy_name = substr("${local.job_name}_read_raw_s3_bucket_access_policy", 0, 63)
+  s3_iam_role_name        = substr("role_${local.job_name}", 0, 63)
+  s3_policy_name          = substr("pol_${local.job_name}", 0, 63)
+  read_raw_s3_policy_name = substr("s3pol_${local.job_name}", 0, 63)
 }
 
 data "aws_iam_policy_document" "glue_service_assume_role_policy" {
@@ -16,7 +16,7 @@ data "aws_iam_policy_document" "glue_service_assume_role_policy" {
 }
 
 resource "aws_iam_role" "sfc_glue_service_iam_role" {
-  name               = local.glue_job_s3_iam_role_name
+  name               = local.s3_iam_role_name
   assume_role_policy = data.aws_iam_policy_document.glue_service_assume_role_policy.json
 }
 
@@ -26,7 +26,7 @@ resource "aws_iam_role_policy_attachment" "AWSGlueServiceRole_policy_attachment"
 }
 
 resource "aws_iam_policy" "glue_job_s3_data_engineering_policy" {
-  name        = local.glue_job_s3_policy_name
+  name        = local.s3_policy_name
   path        = "/"
   description = "Iam policy for branch buckets on workspace: ${local.workspace_prefix}"
 
@@ -57,7 +57,7 @@ resource "aws_iam_role_policy_attachment" "glue_job_s3_policy_attachment" {
 }
 
 resource "aws_iam_policy" "glue_jobs_read_raw_s3_data_policy" {
-  name        = local.glue_jobs_read_raw_s3_policy_name
+  name        = local.read_raw_s3_policy_name
   path        = "/"
   description = "Iam policy for workspace: ${local.workspace_prefix} to read the raw and main data"
 
