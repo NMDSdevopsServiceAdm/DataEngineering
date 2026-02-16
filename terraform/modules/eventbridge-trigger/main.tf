@@ -1,8 +1,7 @@
 locals {
   workspace_prefix          = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 20)
   pascal_case_dataset_name  = replace(title(replace(var.dataset_name, "_", " ")), " ", "")
-  base_name                 = "${local.workspace_prefix}-start-${var.state_machine_name}-${var.dataset_name}"
-  start_state_machines_name = "${substr(local.base_name, 0, 58)}-${substr(md5(local.base_name), 0, 4)}" # IAM role names have a max length of 64 characters, so we use a hash to ensure uniqueness while keeping the name within limits
+  start_state_machines_name = substr("${local.workspace_prefix}-start-${var.state_machine_name}-${var.dataset_name}", 0, 63)
 }
 
 resource "aws_cloudwatch_event_rule" "csv_added" {
