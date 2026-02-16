@@ -1,16 +1,7 @@
 import unittest
 from unittest.mock import ANY, Mock, patch
 
-import polars as pl
-import polars.testing as pl_testing
-
 import projects._03_independent_cqc._09_archive_estimates.fargate.archive_filled_posts_estimates as job
-from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
-    ArchiveFilledPostsEstimates as Data,
-)
-from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
-    ArchiveFilledPostsEstimates as Schemas,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
 )
