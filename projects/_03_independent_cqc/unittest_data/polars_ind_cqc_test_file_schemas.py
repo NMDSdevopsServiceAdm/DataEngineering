@@ -429,21 +429,23 @@ class ValidateMergeIndCQCSchemas:
 
 @dataclass
 class ArchiveFilledPostsEstimates:
-    test_lf_schema = pl.Schema(
+    estimate_filled_posts_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.Date()),
         ]
     )
 
-    add_column_with_the_date_of_most_recent_annual_estimates_schema = test_lf_schema
-    expected_add_column_with_the_date_of_most_recent_annual_estimates_schema = list(
-        test_lf_schema.items()
+    add_column_with_the_date_of_most_recent_annual_estimates_schema = (
+        estimate_filled_posts_schema
+    )
+    expected_add_column_with_the_date_of_most_recent_annual_estimates_schema = (
+        list(estimate_filled_posts_schema.items())
     ) + [ArchiveColumns.most_recent_annual_estimate_date]
 
-    create_archive_date_partition_columns_schema = test_lf_schema
+    create_archive_date_partition_columns_schema = estimate_filled_posts_schema
     expected_create_archive_date_partitions_schema = pl.Schema(
-        list(test_lf_schema.items())
+        list(estimate_filled_posts_schema.items())
         + [
             (ArchiveKeys.archive_day, pl.String()),
             (ArchiveKeys.archive_month, pl.String()),

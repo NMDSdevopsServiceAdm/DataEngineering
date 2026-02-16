@@ -593,6 +593,8 @@ class ValidateMergeIndCQCData:
 
 @dataclass
 class ArchiveFilledPostsEstimates:
+    estimate_filled_posts_rows = [("loc 1", date(2024, 1, 1))]
+
     select_import_dates_to_archive_rows = [
         ("loc 1", date(2023, 3, 1)),
         ("loc 1", date(2023, 4, 1)),

@@ -25,9 +25,9 @@ PATCH_PATH: str = (
 
 class SelectImportDatesToArchiveTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.input_lf = pl.LazyFrame(
+        self.estimate_filled_posts_lf = pl.LazyFrame(
             data=Data.select_import_dates_to_archive_rows,
-            schema=Schemas.test_lf_schema,
+            schema=Schemas.estimate_filled_posts_schema,
             orient="row",
         )
 
@@ -36,17 +36,17 @@ class SelectImportDatesToArchiveTests(unittest.TestCase):
         self, add_column_with_the_date_of_most_recent_annual_estimates_mock: Mock
     ):
         job.select_import_dates_to_archive(
-            self.input_lf,
+            self.estimate_filled_posts_lf,
         )
         add_column_with_the_date_of_most_recent_annual_estimates_mock.assert_called_once()
 
     def test_keeps_earliest_monthly_estimates_from_current_publication_year_and_april_only_from_previous_publication_years(
         self,
     ):
-        returned_lf = job.select_import_dates_to_archive(self.input_lf)
+        returned_lf = job.select_import_dates_to_archive(self.estimate_filled_posts_lf)
         expected_lf = pl.LazyFrame(
             data=Data.expected_select_import_dates_to_archive_rows,
-            schema=Schemas.test_lf_schema,
+            schema=Schemas.estimate_filled_posts_schema,
             orient="row",
         )
 
