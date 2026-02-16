@@ -1,9 +1,9 @@
 locals {
   job_name_hash = substr(md5(local.job_name), 0, 4)
 
-  glue_job_s3_iam_role_name         = "${substr("role_${job_name_hash}_${local.job_name}", 0, 63)}"
-  glue_job_s3_policy_name           = "${substr("policy_${job_name_hash}_${local.job_name}", 0, 63)}"
-  glue_jobs_read_raw_s3_policy_name = "${substr("policy-raw_${job_name_hash}_${local.job_name}", 0, 63)}"
+  glue_job_s3_iam_role_name         = substr("role_${local.job_name_hash}_${local.job_name}", 0, 63)
+  glue_job_s3_policy_name           = substr("policy_${local.job_name_hash}_${local.job_name}", 0, 63)
+  glue_jobs_read_raw_s3_policy_name = substr("policy-raw_${local.job_name_hash}_${local.job_name}", 0, 63)
 }
 
 data "aws_iam_policy_document" "glue_service_assume_role_policy" {
