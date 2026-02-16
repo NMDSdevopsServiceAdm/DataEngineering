@@ -9,11 +9,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
-- Refactored terraform code to improve clarity:
-  - Set the terraform version consistently across our code
-  - Update git ignore file to terraform recommendations
-  - Remove unused backend config
-  - Abstract resources into modules for ease of reference
+
 
 ### Fixed
 

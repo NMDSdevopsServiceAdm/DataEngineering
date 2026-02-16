@@ -18,7 +18,7 @@
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
-                    "Subnets": ${cqc_api_public_subnet_ids},
+                    "Subnets": ${public_subnet_ids},
                     "SecurityGroups": ["${cqc_api_security_group_id}"],
                     "AssignPublicIp": "ENABLED"
                   }
@@ -53,7 +53,7 @@
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
-                            "Subnets": ${cqc_api_public_subnet_ids},
+                            "Subnets": ${public_subnet_ids},
                             "SecurityGroups": ["${cqc_api_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
@@ -87,7 +87,7 @@
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
-                            "Subnets": ${cqc_api_public_subnet_ids},
+                            "Subnets": ${public_subnet_ids},
                             "SecurityGroups": [
                               "${cqc_api_security_group_id}"
                             ],
@@ -131,7 +131,7 @@
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
-                            "Subnets": ${cqc_api_public_subnet_ids},
+                            "Subnets": ${public_subnet_ids},
                             "SecurityGroups": ["${cqc_api_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
@@ -165,7 +165,7 @@
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
-                            "Subnets": ${cqc_api_public_subnet_ids},
+                            "Subnets": ${public_subnet_ids},
                             "SecurityGroups": [
                               "${cqc_api_security_group_id}"
                             ],
@@ -202,7 +202,7 @@
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
-                    "Subnets": ${cqc_api_public_subnet_ids},
+                    "Subnets": ${public_subnet_ids},
                     "SecurityGroups": [
                       "${cqc_api_security_group_id}"
                     ],
@@ -240,7 +240,7 @@
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
-                    "Subnets": ${cqc_api_public_subnet_ids},
+                    "Subnets": ${public_subnet_ids},
                     "SecurityGroups": ["${cqc_api_security_group_id}"],
                     "AssignPublicIp": "ENABLED"
                   }
@@ -275,7 +275,7 @@
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
-                            "Subnets": ${cqc_api_public_subnet_ids},
+                            "Subnets": ${public_subnet_ids},
                             "SecurityGroups": ["${cqc_api_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
@@ -309,7 +309,7 @@
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
-                            "Subnets": ${cqc_api_public_subnet_ids},
+                            "Subnets": ${public_subnet_ids},
                             "SecurityGroups": [
                               "${cqc_api_security_group_id}"
                             ],
@@ -353,7 +353,7 @@
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
-                            "Subnets": ${cqc_api_public_subnet_ids},
+                            "Subnets": ${public_subnet_ids},
                             "SecurityGroups": ["${cqc_api_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
@@ -390,7 +390,7 @@
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
-                            "Subnets": ${cqc_api_public_subnet_ids},
+                            "Subnets": ${public_subnet_ids},
                             "SecurityGroups": ["${cqc_api_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
@@ -431,7 +431,7 @@
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
-                            "Subnets": ${cqc_api_public_subnet_ids},
+                            "Subnets": ${public_subnet_ids},
                             "SecurityGroups": [
                               "${cqc_api_security_group_id}"
                             ],
@@ -469,7 +469,7 @@
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
-                            "Subnets": ${cqc_api_public_subnet_ids},
+                            "Subnets": ${public_subnet_ids},
                             "SecurityGroups": [
                               "${cqc_api_security_group_id}"
                             ],

@@ -13,18 +13,11 @@ variable "aws_secret_key" {
   ephemeral   = true
 }
 
+variable "bucket" {
+  type        = string
+  description = "Reference to terraform remote state bucket from *.s3.tfbackend"
+}
+
 variable "region" {
   default = "eu-west-2"
 }
-
-variable "glue_database_name" {
-  type        = string
-  description = "The name of the glue database"
-  default     = "data-engineering-database"
-}
-
-variable "secret_name" {
-  type    = string
-  default = "cqc_api_primary_key"
-}
-

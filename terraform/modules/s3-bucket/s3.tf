@@ -1,8 +1,3 @@
-locals {
-  workspace_prefix    = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 30)
-  is_main_environment = local.workspace_prefix == "main"
-}
-
 resource "aws_s3_bucket" "s3_bucket" {
   bucket        = "sfc-${var.bucket_name}"
   force_destroy = var.empty_bucket_on_destroy
@@ -17,8 +12,13 @@ resource "aws_s3_bucket_acl" "s3_bucket_acl" {
 resource "aws_s3_bucket_versioning" "s3_bucket_versioning" {
   bucket = aws_s3_bucket.s3_bucket.id
   versioning_configuration {
-    status = local.is_main_environment ? "Enabled" : "Suspended"
+    status = var.enable_versioning ? "Enabled" : "Suspended"
   }
+}
+
+variable "enable_versioning" {
+  type    = bool
+  default = true
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "s3_bucket_encryption" {

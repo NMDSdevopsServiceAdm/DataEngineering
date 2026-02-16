@@ -1,5 +1,5 @@
+# Maps StepFunction files in step-functions/dynamic using filenames as keys
 locals {
-  # Maps StepFunction files in step-functions/dynamic using filenames as keys
   step_functions = tomap({
     for fn in fileset("step-functions/dynamic", "*.json") :
     substr(fn, 0, length(fn) - 5) => "step-functions/dynamic/${fn}"
@@ -7,66 +7,77 @@ locals {
 }
 
 # Created explicitly as required by dynamic step functions
-module "run_crawler" {
-  source              = "../modules/step-function"
-  pipeline_name       = "Run-Crawler"
-  dataset_bucket_name = module.datasets_bucket.bucket_name
-  definition          = templatefile("step-functions/Run-Crawler.json", {})
+resource "aws_sfn_state_machine" "run_crawler" {
+  name       = "${local.workspace_prefix}-Run-Crawler"
+  role_arn   = aws_iam_role.step_function_iam_role.arn
+  type       = "STANDARD"
+  definition = templatefile("step-functions/Run-Crawler.json", {})
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy
+  ]
 }
 
-
 # Created explicitly as depends on dynamic step functions
-module "workforce_intelligence_state_machine" {
-  source              = "../modules/step-function"
-  pipeline_name       = "Workforce-Intelligence-Pipeline"
-  dataset_bucket_name = module.datasets_bucket.bucket_name
+resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
+  name     = "${local.workspace_prefix}-Workforce-Intelligence-Pipeline"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
   definition = templatefile("step-functions/Workforce-Intelligence-Pipeline.json", {
     dataset_bucket_uri                      = module.datasets_bucket.bucket_uri
     dataset_bucket_name                     = module.datasets_bucket.bucket_name
-    dataset_bucket_arn                      = module.datasets_bucket.bucket_arn
     data_validation_reports_crawler_name    = module.data_validation_reports_crawler.crawler_name
-    pipeline_failure_lambda_function_arn    = module.error_notification_lambda.lambda_arn
-    transform_ascwds_state_machine_arn      = module.sf_pipelines["Transform-ASCWDS-Data"].pipeline_arn
-    transform_cqc_data_state_machine_arn    = module.sf_pipelines["Transform-CQC-Data"].pipeline_arn
-    ind_cqc_pipeline_state_machine_arn      = module.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].pipeline_arn
-    sfc_internal_pipeline_state_machine_arn = module.sf_pipelines["SfC-Internal"].pipeline_arn
+    pipeline_failure_lambda_function_arn    = aws_lambda_function.error_notification_lambda.arn
+    transform_ascwds_state_machine_arn      = aws_sfn_state_machine.sf_pipelines["Transform-ASCWDS-Data"].arn
+    transform_cqc_data_state_machine_arn    = aws_sfn_state_machine.sf_pipelines["Transform-CQC-Data"].arn
+    ind_cqc_pipeline_state_machine_arn      = aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
+    sfc_internal_pipeline_state_machine_arn = aws_sfn_state_machine.sf_pipelines["SfC-Internal"].arn
   })
 
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket,
+    aws_sfn_state_machine.sf_pipelines,
+  ]
 }
 
 # Created explicitly as depends on dynamic step functions
-module "cqc_and_ascwds_orchestrator_state_machine" {
-  source              = "../modules/step-function"
-  pipeline_name       = "CQC-And-ASCWDS-Orchestrator"
-  dataset_bucket_name = module.datasets_bucket.bucket_name
+resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
+  name     = "${local.workspace_prefix}-CQC-And-ASCWDS-Orchestrator"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
   definition = templatefile("step-functions/CQC-And-ASCWDS-Orchestrator.json", {
     dataset_bucket_uri                       = module.datasets_bucket.bucket_uri
     dataset_bucket_name                      = module.datasets_bucket.bucket_name
-    dataset_bucket_arn                       = module.datasets_bucket.bucket_arn
-    ingest_cqc_api_state_machine_arn         = module.sf_pipelines["Ingest-CQC-API-Delta"].pipeline_arn
-    workforce_intelligence_state_machine_arn = module.workforce_intelligence_state_machine.pipeline_arn
+    ingest_cqc_api_state_machine_arn         = aws_sfn_state_machine.sf_pipelines["Ingest-CQC-API-Delta"].arn
+    workforce_intelligence_state_machine_arn = aws_sfn_state_machine.workforce_intelligence_state_machine.arn
   })
 
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket,
+    aws_sfn_state_machine.sf_pipelines,
+    aws_sfn_state_machine.workforce_intelligence_state_machine
+  ]
 }
 
-module "sf_pipelines" {
-  source              = "../modules/step-function"
-  for_each            = local.step_functions
-  pipeline_name       = each.key
-  dataset_bucket_name = module.datasets_bucket.bucket_name
+resource "aws_sfn_state_machine" "sf_pipelines" {
+  for_each = local.step_functions
+  name     = "${local.workspace_prefix}-${each.key}"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
   definition = templatefile(each.value, {
     # s3
     dataset_bucket_uri            = module.datasets_bucket.bucket_uri
     dataset_bucket_name           = module.datasets_bucket.bucket_name
     pipeline_resources_bucket_uri = module.pipeline_resources.bucket_uri
-    dataset_bucket_arn            = module.datasets_bucket.bucket_arn
 
     # lambdas
-    pipeline_failure_lambda_function_arn = module.error_notification_lambda.lambda_arn
+    pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
 
     # step-functions - cannot include any from this for_each as circular dependency
     # if needed, create explicitly outside of this resource
-    run_crawler_state_machine_arn = module.run_crawler.pipeline_arn
+    run_crawler_state_machine_arn = aws_sfn_state_machine.run_crawler.arn
 
     # jobs
     validate_ascwds_workplace_raw_data_job_name                          = module.validate_ascwds_workplace_raw_data_job.job_name
@@ -124,16 +135,14 @@ module "sf_pipelines" {
     ct_crawler_name                      = module.capacity_tracker_crawler.crawler_name
 
     # parameter store
-    last_providers_run_param_name = module.providers_last_run.parameter_name
-    last_locations_run_param_name = module.locations_last_run.parameter_name
+    last_providers_run_param_name = aws_ssm_parameter.providers_last_run.name
+    last_locations_run_param_name = aws_ssm_parameter.locations_last_run.name
 
     # ecs
-    polars_cluster_arn = "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:cluster/${local.workspace_prefix}-cluster"
+    polars_cluster_arn = aws_ecs_cluster.polars_cluster.arn
+    model_cluster_arn  = aws_ecs_cluster.polars_cluster.arn
 
-    cqc_api_public_subnet_ids               = jsonencode(module.cqc-api.subnet_ids)
-    sfc_internal_public_subnet_ids          = jsonencode(module._02_sfc_internal.subnet_ids)
-    independent_cqc_public_subnet_ids       = jsonencode(module._03_independent_cqc.subnet_ids)
-    independent_cqc_model_public_subnet_ids = jsonencode(module._03_independent_cqc_model.subnet_ids)
+    public_subnet_ids = jsonencode(data.aws_subnets.public.ids)
 
     # ecs tasks
     cqc_api_task_arn               = module.cqc-api.task_arn
@@ -151,9 +160,187 @@ module "sf_pipelines" {
     preprocessor_name = "preprocess_non_res_pir"
     model_name        = "non_res_pir"
   })
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
 }
 
 
+resource "aws_cloudwatch_log_group" "state_machines" {
+  name_prefix = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
+}
 
+resource "aws_iam_role" "step_function_iam_role" {
+  name               = "${local.workspace_prefix}-AWSStepFunction-role"
+  assume_role_policy = data.aws_iam_policy_document.step_function_iam_policy.json
+}
 
+data "aws_iam_policy_document" "step_function_iam_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
 
+    principals {
+      type        = "Service"
+      identifiers = ["states.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_policy" "step_function_iam_policy" {
+  name        = "${local.workspace_prefix}-step_function_iam_policy"
+  path        = "/"
+  description = "IAM Policy for step functions"
+
+  policy = jsonencode({
+
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "xray:PutTraceSegments",
+          "xray:PutTelemetryRecords",
+          "xray:GetSamplingRules",
+          "xray:GetSamplingTargets"
+        ],
+        "Resource" : [
+          "*"
+        ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "glue:StartCrawler",
+          "glue:StartJobRun",
+          "glue:GetJobRun"
+        ],
+        "Resource" : "*"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "logs:CreateLogDelivery",
+          "logs:GetLogDelivery",
+          "logs:UpdateLogDelivery",
+          "logs:DeleteLogDelivery",
+          "logs:ListLogDeliveries",
+          "logs:PutLogEvents",
+          "logs:PutResourcePolicy",
+          "logs:DescribeResourcePolicies",
+          "logs:DescribeLogGroups"
+        ],
+        "Resource" : "*"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "states:StartExecution",
+          "states:ListExecutions"
+        ],
+        "Resource" : [
+          "arn:aws:states:eu-west-2:${data.aws_caller_identity.current.account_id}:stateMachine:*"
+        ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "states:DescribeExecution",
+          "states:StopExecution"
+        ],
+        "Resource" : [
+          "arn:aws:states:eu-west-2:${data.aws_caller_identity.current.account_id}:execution:*"
+        ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "events:PutTargets",
+          "events:PutRule",
+          "events:DescribeRule",
+        ],
+        "Resource" : "arn:aws:events:eu-west-2:${data.aws_caller_identity.current.account_id}:rule/StepFunctions*"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "SNS:Publish"
+        ],
+        "Resource" : "${aws_sns_topic.pipeline_failures.arn}"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "lambda:InvokeFunction"
+        ],
+        "Resource" : [
+          "${aws_lambda_function.error_notification_lambda.arn}*"
+        ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "s3:GetObject",
+          "s3:GetBucketLocation",
+          "s3:ListBucket"
+        ],
+        "Resource" : [
+          "${module.datasets_bucket.bucket_arn}/*",
+          module.datasets_bucket.bucket_arn
+        ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "ssm:PutParameter",
+          "ssm:GetParameter",
+        ],
+        "Resource" : [
+          aws_ssm_parameter.providers_last_run.arn,
+          aws_ssm_parameter.locations_last_run.arn
+        ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "ecs:RunTask"
+        ],
+        "Resource" : [
+          module.cqc-api.task_arn,
+          module._02_sfc_internal.task_arn,
+          module._03_independent_cqc.task_arn,
+          module._03_independent_cqc_model.task_arn,
+          aws_ecs_cluster.polars_cluster.arn
+        ]
+      },
+      {
+        Effect = "Allow",
+        Action = "iam:PassRole",
+        Resource = [
+          module.cqc-api.task_exc_role_arn,
+          module.cqc-api.task_role_arn,
+          module._02_sfc_internal.task_exc_role_arn,
+          module._02_sfc_internal.task_role_arn,
+          module._03_independent_cqc.task_exc_role_arn,
+          module._03_independent_cqc.task_role_arn,
+          module._03_independent_cqc_model.task_exc_role_arn,
+          module._03_independent_cqc_model.task_role_arn
+        ],
+        Condition = {
+          StringLike = {
+            "iam:PassedToService" = [
+              "ecs-tasks.amazonaws.com",
+              "events.amazonaws.com"
+            ]
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "AWSStepFunctionRole_data_engineering_policy_attachment" {
+  policy_arn = aws_iam_policy.step_function_iam_policy.arn
+  role       = aws_iam_role.step_function_iam_role.name
+}
