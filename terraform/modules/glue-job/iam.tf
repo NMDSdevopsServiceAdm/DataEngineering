@@ -55,7 +55,7 @@ resource "aws_iam_role_policy_attachment" "glue_job_s3_policy_attachment" {
 }
 
 resource "aws_iam_policy" "glue_jobs_read_raw_s3_data_policy" {
-  name        = "${local.workspace_prefix}-${local.job_name}_read_raw_s3_bucket_access_policy"
+  name        = "${local.workspace_prefix}-read_raw_s3_bucket_access_policy"
   path        = "/"
   description = "Iam policy for workspace: ${local.workspace_prefix} to read the raw and main data"
 
