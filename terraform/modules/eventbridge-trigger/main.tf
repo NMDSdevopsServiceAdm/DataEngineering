@@ -1,7 +1,8 @@
 locals {
-  workspace_prefix          = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 20)
-  pascal_case_dataset_name  = replace(title(replace(var.dataset_name, "_", " ")), " ", "")
-  start_state_machines_name = substr("${local.workspace_prefix}-start-${var.state_machine_name}-${var.dataset_name}", 0, 63)
+  workspace_prefix                = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 20)
+  pascal_case_dataset_name        = replace(title(replace(var.dataset_name, "_", " ")), " ", "")
+  start_state_machines_name       = substr("${local.workspace_prefix}-start-${var.state_machine_name}-${var.dataset_name}", 0, 63)
+  trigger_ingest_state_machine_id = substr("${local.workspace_prefix}-StartIngest${local.pascal_case_dataset_name}StateMachine", 0, 63)
 }
 
 resource "aws_cloudwatch_event_rule" "csv_added" {
@@ -64,7 +65,7 @@ resource "aws_iam_role_policy_attachment" "start_state_machines" {
 
 resource "aws_cloudwatch_event_target" "trigger_ingest_state_machine" {
   rule      = aws_cloudwatch_event_rule.csv_added.name
-  target_id = "${local.workspace_prefix}-StartIngest${local.pascal_case_dataset_name}StateMachine"
+  target_id = local.trigger_ingest_state_machine_id
   arn       = var.state_machine_arn
   role_arn  = aws_iam_role.start_state_machines.arn
 
