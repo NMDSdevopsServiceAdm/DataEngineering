@@ -57,7 +57,7 @@ class AddAColumnWithTheDateOfMostRecentAnnualEstimates(unittest.TestCase):
     def setUp(self) -> None:
         self.input_lf = pl.LazyFrame(
             Data.add_column_with_the_date_of_most_recent_annual_estimates_rows,
-            Schemas.add_column_with_the_date_of_most_recent_annual_estimates_schema,
+            Schemas.estimate_filled_posts_schema,
             orient="row",
         )
         self.returned_lf = job.add_column_with_the_date_of_most_recent_annual_estimates(
@@ -89,7 +89,7 @@ class CreateArchiveDatePartitionColumns(unittest.TestCase):
     def setUp(self) -> None:
         self.input_lf = pl.LazyFrame(
             Data.create_archive_date_partition_columns_rows,
-            Schemas.create_archive_date_partition_columns_schema,
+            Schemas.estimate_filled_posts_schema,
             orient="row",
         )
         self.expected_when_timestamp_day_and_month_are_single_digits_lf = pl.LazyFrame(
@@ -105,7 +105,7 @@ class CreateArchiveDatePartitionColumns(unittest.TestCase):
         self,
     ):
         returned_lf = job.create_archive_date_partition_columns(
-            self.input_lf, datetime(2025, 1, 1)
+            self.input_lf, datetime(2026, 1, 1)
         )
         expected_columns_added = [
             field.name for field in fields(ArchivePartitionKeys())
@@ -120,7 +120,7 @@ class CreateArchiveDatePartitionColumns(unittest.TestCase):
         self,
     ):
         returned_lf = job.create_archive_date_partition_columns(
-            self.input_lf, datetime(2025, 1, 1)
+            self.input_lf, datetime(2026, 1, 1)
         )
         pl_testing.assert_frame_equal(
             returned_lf, self.expected_when_timestamp_day_and_month_are_single_digits_lf
@@ -130,7 +130,7 @@ class CreateArchiveDatePartitionColumns(unittest.TestCase):
         self,
     ):
         returned_lf = job.create_archive_date_partition_columns(
-            self.input_lf, datetime(2024, 12, 31)
+            self.input_lf, datetime(2025, 12, 31)
         )
         pl_testing.assert_frame_equal(
             returned_lf, self.expected_when_timestamp_day_and_month_are_double_digits_lf

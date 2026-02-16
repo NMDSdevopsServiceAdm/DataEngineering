@@ -626,14 +626,11 @@ class ArchiveFilledPostsEstimates:
     ]
 
     create_archive_date_partition_columns_rows = [
-        ("loc 1", date(2024, 12, 31)),
         ("loc 1", date(2025, 1, 1)),
     ]
     expected_create_archive_date_partition_columns_when_timestamp_day_and_month_are_single_digits_rows = [
-        ("loc 1", date(2024, 12, 31), "01", "01", "2025", "2025-01-01 00:00"),
-        ("loc 1", date(2025, 1, 1), "01", "01", "2025", "2025-01-01 00:00"),
+        ("loc 1", date(2025, 1, 1), "01", "01", "2026", "2026-01-01 00:00"),
     ]
     expected_create_archive_date_partition_columns_when_timestamp_day_and_month_are_double_digits_rows = [
-        ("loc 1", date(2024, 12, 31), "31", "12", "2024", "2024-12-31 00:00"),
-        ("loc 1", date(2025, 1, 1), "31", "12", "2024", "2024-12-31 00:00"),
+        ("loc 1", date(2025, 1, 1), "31", "12", "2025", "2025-12-31 00:00"),
     ]

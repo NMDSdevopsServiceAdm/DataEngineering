@@ -436,14 +436,10 @@ class ArchiveFilledPostsEstimates:
         ]
     )
 
-    add_column_with_the_date_of_most_recent_annual_estimates_schema = (
-        estimate_filled_posts_schema
-    )
     expected_add_column_with_the_date_of_most_recent_annual_estimates_schema = (
         list(estimate_filled_posts_schema.items())
     ) + [ArchiveColumns.most_recent_annual_estimate_date]
 
-    create_archive_date_partition_columns_schema = estimate_filled_posts_schema
     expected_create_archive_date_partitions_schema = pl.Schema(
         list(estimate_filled_posts_schema.items())
         + [
