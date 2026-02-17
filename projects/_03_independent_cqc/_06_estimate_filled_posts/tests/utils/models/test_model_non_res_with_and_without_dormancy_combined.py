@@ -26,8 +26,11 @@ class MainTests(ModelNonResWithAndWithoutDormancyCombinedTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.estimated_posts_df = self.spark.createDataFrame(
+        self.input_df = self.spark.createDataFrame(
             Data.estimated_posts_rows, Schemas.estimated_posts_schema
+        )
+        self.returned_df = job.combine_non_res_with_and_without_dormancy_models(
+            self.input_df
         )
 
     @patch(f"{PATCH_PATH}.set_min_value")
@@ -41,14 +44,24 @@ class MainTests(ModelNonResWithAndWithoutDormancyCombinedTests):
         select_rows_with_value_mock: Mock,
         set_min_value_mock: Mock,
     ):
-        returned_df = job.combine_non_res_with_and_without_dormancy_models(
-            self.estimated_posts_df
-        )
+        job.combine_non_res_with_and_without_dormancy_models(self.input_df)
 
         get_selected_value_mock.assert_called_once()
         join_model_predictions_mock.assert_called_once()
         select_rows_with_value_mock.assert_called_once()
         set_min_value_mock.assert_called_once()
+
+    def test_non_res_combined_model_column_is_added(self):
+
+        self.assertIn(IndCqc.non_res_combined_model, self.returned_df.columns)
+
+        cols_added = set(self.returned_df.columns) - set(self.input_df.columns)
+        self.assertEqual(cols_added, {IndCqc.non_res_combined_model})
+
+    def test_row_count_unchanged(
+        self,
+    ):
+        self.assertEqual(self.input_df.count(), self.returned_df.count())
 
 
 class GroupTimeRegisteredToSixMonthBandsTests(

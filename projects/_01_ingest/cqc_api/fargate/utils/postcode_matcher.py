@@ -12,10 +12,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from utils.column_values.categorical_column_values import (
-    LocationType,
-    RegistrationStatus,
-)
 
 
 def run_postcode_matching(
@@ -26,7 +22,6 @@ def run_postcode_matching(
     """
     Runs full postcode matching logic and raises error if final validation fails.
 
-    This function filters to `Registered`, `Social Care` locations who are required to have a postcode match.
     The process of matching postcodes to the required locations consists of 5 iterations:
         - 1 - Match postcodes where there is an exact match at that point in time.
         - 2 - If not, reassign unmatched postcode with the first successfully matched postcode for that location ID (where available).
@@ -44,12 +39,6 @@ def run_postcode_matching(
     Returns:
         pl.LazyFrame: Fully matched LazyFrame.
     """
-    # Filter locations to only those which are required to have a postcode match.
-    locations_lf = locations_lf.filter(
-        (pl.col(CQCLClean.registration_status) == RegistrationStatus.registered)
-        & (pl.col(CQCLClean.type) == LocationType.social_care_identifier)
-    )
-
     # Clean postcode columns to upper case, remove spaces and add as a new column.
     locations_lf = clean_postcode_column(
         locations_lf, CQCLClean.postal_code, CQCLClean.postcode_cleaned, drop_col=False

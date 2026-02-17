@@ -28,6 +28,41 @@ DATE_COLUMN_IDENTIFIER = "date"
 COLUMNS_TO_BOUND = [AWPClean.total_staff, AWPClean.worker_records]
 MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
 
+ascwds_workplace_columns_to_import = [
+    AWPClean.organisation_id,
+    AWPClean.period,
+    AWPClean.establishment_id,
+    AWPClean.establishment_id_from_nmds,
+    AWPClean.parent_id,
+    AWPClean.nmds_id,
+    AWPClean.establishment_created_date,
+    AWPClean.establishment_updated_date,
+    AWPClean.master_update_date,
+    AWPClean.last_logged_in,
+    AWPClean.is_bulk_uploader,
+    AWPClean.is_parent,
+    AWPClean.parent_permission,
+    AWPClean.registration_type,
+    AWPClean.provider_id,
+    AWPClean.location_id,
+    AWPClean.establishment_type,
+    AWPClean.establishment_name,
+    AWPClean.address,
+    AWPClean.postcode,
+    AWPClean.region_id,
+    AWPClean.total_staff,
+    AWPClean.worker_records,
+    AWPClean.total_starters,
+    AWPClean.total_leavers,
+    AWPClean.total_vacancies,
+    AWPClean.main_service_id,
+    AWPClean.version,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+    Keys.import_date,
+]
+
 cols_required_for_reconciliation_df = [
     AWPClean.ascwds_workplace_import_date,
     AWPClean.establishment_id,
@@ -60,7 +95,9 @@ def main(
     cleaned_ascwds_workplace_destination: str,
     workplace_for_reconciliation_destination: str,
 ):
-    ascwds_workplace_df = utils.read_from_parquet(ascwds_workplace_source)
+    ascwds_workplace_df = utils.read_from_parquet(
+        ascwds_workplace_source, selected_columns=ascwds_workplace_columns_to_import
+    )
 
     ascwds_workplace_df = filter_test_accounts(ascwds_workplace_df)
     ascwds_workplace_df = remove_duplicate_workplaces_in_raw_workplace_data(

@@ -74,13 +74,31 @@
                   "States": {
                     "Validate merged data": {
                       "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
-                        "JobName": "${validate_merged_ind_cqc_data_job_name}",
-                        "Arguments": {
-                          "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/",
-                          "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_01_merged_data/"
+                        "Cluster": "${model_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "validate_merged_ind_cqc_data.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/",
+                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_01_merged_ind_cqc_data/",
+                                "--compare_path", "domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
+                              ]
+                            }
+                          ]
                         }
                       },
                       "End": true
@@ -243,7 +261,35 @@
                                   "StartAt": "Validate CH features",
                                   "States": {
                                     "Validate CH features": {
-                                      "Type": "Pass",
+                                      "Type": "Task",
+                                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                                      "Parameters": {
+                                        "Cluster": "${model_cluster_arn}",
+                                        "TaskDefinition": "${independent_cqc_model_task_arn}",
+                                        "LaunchType": "FARGATE",
+                                        "NetworkConfiguration": {
+                                          "AwsvpcConfiguration": {
+                                            "Subnets": ${public_subnet_ids},
+                                            "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                                            "AssignPublicIp": "ENABLED"
+                                          }
+                                        },
+                                        "Overrides": {
+                                          "ContainerOverrides": [
+                                            {
+                                              "Name": "_03_independent_cqc_model-container",
+                                              "Command": [
+                                                "validate_model_01_features.py",
+                                                "--bucket_name", "${dataset_bucket_name}",
+                                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_care_home_model/",
+                                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_04_features_care_home_model/",
+                                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
+                                                "--model", "care_home_model"
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      },
                                       "End": true
                                     }
                                   }
@@ -355,7 +401,35 @@
                                   "StartAt": "Validate NRwoD features",
                                   "States": {
                                     "Validate NRwoD features": {
-                                      "Type": "Pass",
+                                      "Type": "Task",
+                                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                                      "Parameters": {
+                                        "Cluster": "${model_cluster_arn}",
+                                        "TaskDefinition": "${independent_cqc_model_task_arn}",
+                                        "LaunchType": "FARGATE",
+                                        "NetworkConfiguration": {
+                                          "AwsvpcConfiguration": {
+                                            "Subnets": ${public_subnet_ids},
+                                            "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                                            "AssignPublicIp": "ENABLED"
+                                          }
+                                        },
+                                        "Overrides": {
+                                          "ContainerOverrides": [
+                                            {
+                                              "Name": "_03_independent_cqc_model-container",
+                                              "Command": [
+                                                "validate_model_01_features.py",
+                                                "--bucket_name", "${dataset_bucket_name}",
+                                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_without_dormancy_model/",
+                                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_04_features_non_res_without_dormancy_model/",
+                                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
+                                                "--model", "non_res_without_dormancy_model"
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      },
                                       "End": true
                                     }
                                   }
