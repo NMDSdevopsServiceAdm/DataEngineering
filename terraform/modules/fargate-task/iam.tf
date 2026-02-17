@@ -228,7 +228,7 @@ resource "aws_iam_policy" "sfn_ecs_policy" {
         ],
         Resource = [
           aws_ecs_task_definition.ecs_task.arn,
-          aws_ecs_cluster.polars_cluster.arn,
+          var.cluster_arn
         ]
       },
       {
