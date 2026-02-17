@@ -620,7 +620,7 @@ class CleanFilteringUtilsSchemas:
 
 
 @dataclass
-class AddColumnWithRepeatedValuesRemovedSchemas:
+class CleanUtilsSchemas:
     repeated_value_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),

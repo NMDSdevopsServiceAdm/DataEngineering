@@ -16,7 +16,9 @@ from utils.column_values.categorical_column_values import AscwdsFilteringRule
 
 
 class AddFilteringRuleColumnTests(unittest.TestCase):
-    def test_add_filtering_rule_column(self):
+    def test_returned_values_are_populated_or_missing_when_data_is_populated_or_missing(
+        self,
+    ):
         test_lf = pl.LazyFrame(
             data=Data.add_filtering_column_rows,
             schema=Schemas.add_filtering_column_schema,
@@ -34,9 +36,7 @@ class AddFilteringRuleColumnTests(unittest.TestCase):
             Schemas.expected_add_filtering_column_schema,
             orient="row",
         )
-        pl_testing.assert_frame_equal(
-            returned_lf.sort(IndCQC.location_id).collect(), expected_lf.collect()
-        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class UpdateFilteringRuleTests(unittest.TestCase):
@@ -59,9 +59,7 @@ class UpdateFilteringRuleTests(unittest.TestCase):
             schema=Schemas.update_filtering_rule_schema,
             orient="row",
         )
-        pl_testing.assert_frame_equal(
-            returned_lf.sort(IndCQC.location_id).collect(), expected_lf.collect()
-        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     def test_returns_expected_labels_when_populated_values_are_changed(self):
         test_lf = pl.LazyFrame(
@@ -107,9 +105,7 @@ class UpdateFilteringRuleTests(unittest.TestCase):
             schema=Schemas.update_filtering_rule_schema,
             orient="row",
         )
-        pl_testing.assert_frame_equal(
-            returned_lf.sort(IndCQC.location_id).collect(), expected_lf.collect()
-        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class AggregateValuesToProviderLevel(unittest.TestCase):
@@ -128,7 +124,4 @@ class AggregateValuesToProviderLevel(unittest.TestCase):
             orient="row",
         )
 
-        returned_data = returned_lf.sort(IndCQC.location_id).collect()
-        expected_data = expected_lf.sort(IndCQC.location_id).collect()
-
-        pl_testing.assert_frame_equal(returned_data, expected_data)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

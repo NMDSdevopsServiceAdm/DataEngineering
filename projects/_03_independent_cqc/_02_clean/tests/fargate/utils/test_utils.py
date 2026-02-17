@@ -3,10 +3,10 @@ import polars as pl
 import polars.testing as pl_testing
 import projects._03_independent_cqc._02_clean.fargate.utils.utils as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
-    AddColumnWithRepeatedValuesRemovedData as Data,
+    CleanUtilsData as Data,
 )
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
-    AddColumnWithRepeatedValuesRemovedSchemas as Schemas,
+    CleanUtilsSchemas as Schemas,
 )
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -66,10 +66,12 @@ class CreateColumnWithRepeatedValuesRemovedTests(unittest.TestCase):
     def test_returned_df_has_one_additional_column_when_partitioned_by_location_id(
         self,
     ):
-        self.assertEqual(
-            len(self.returned_lf_per_locationid.columns),
-            len(self.test_purge_outdated_lf.columns) + 1,
+        self.assertIn(self.OUTPUT_COLUMN, self.returned_lf_per_locationid.columns)
+
+        cols_added = set(self.returned_lf_per_locationid.columns) - set(
+            self.test_purge_outdated_lf.columns
         )
+        self.assertEqual(cols_added, {self.OUTPUT_COLUMN})
 
     def test_returned_df_has_same_number_of_rows(self):
         self.assertEqual(

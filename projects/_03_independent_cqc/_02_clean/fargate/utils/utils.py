@@ -14,7 +14,7 @@ def create_column_with_repeated_values_removed(
     values to nulls, so we only see newly submitted values once. This also happens as a result of joining the same datafile multiple
     times as part of the align dates field.
 
-    For each partition, this function iterates over the dataframe in date order and compares the current column value to the
+    For each partition, this function iterates over the LazyFrame in date order and compares the current column value to the
     previously submitted value. If the value differs from the previously submitted value then enter that value into the new column.
     Otherwise null the value in the new column as it is a previously submitted value which has been repeated.
 
@@ -30,11 +30,14 @@ def create_column_with_repeated_values_removed(
     if new_column_name is None:
         new_column_name = f"{column_to_clean}_deduplicated"
 
-    order_col = IndCQC.cqc_location_import_date
-
-    lf = lf.sort([column_to_partition_by, order_col])
-
-    previous_value = pl.col(column_to_clean).shift(1).over(column_to_partition_by)
+    previous_value = (
+        pl.col(column_to_clean)
+        .shift(1)
+        .over(
+            partition_by=column_to_partition_by,
+            order_by=IndCQC.cqc_location_import_date,
+        )
+    )
 
     return lf.with_columns(
         pl.when(previous_value.is_null() | (pl.col(column_to_clean) != previous_value))
