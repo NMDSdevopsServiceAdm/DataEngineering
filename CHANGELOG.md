@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Changed the forward-filling of the last known value from two months for all locations to using a length of time base on the location size.
 
 
 ### Fixed
@@ -62,8 +63,6 @@ All notable changes to this project will be documented in this file.
 - Removed filters from run_postcode_matching function. Data is already filtered before passed to this function.
 
 - Added unit tests for combine_non_res_with_and_without_dormancy_models function to check expected columns and row count.
-
-- Changed the forward-filling of the last known value from two months for all locations to using a length of time base on the location size.
 
 ### Fixed
 - Added a new test account in ASC-WDS to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)
