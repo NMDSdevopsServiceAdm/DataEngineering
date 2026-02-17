@@ -444,24 +444,6 @@ module "validate_postcode_directory_cleaned_data_job" {
   }
 }
 
-module "validate_merged_ind_cqc_data_job" {
-  source            = "../modules/glue-job"
-  script_dir        = "projects/_03_independent_cqc/_01_merge/jobs"
-  script_name       = "validate_merged_ind_cqc_data.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-  glue_version      = "5.0"
-  worker_type       = "G.1X"
-  number_of_workers = 4
-
-  job_parameters = {
-    "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
-    "--merged_ind_cqc_source"       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/"
-    "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_01_merged_data/"
-  }
-}
-
 module "validate_merge_coverage_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_02_sfc_internal/cqc_coverage/jobs"
