@@ -90,7 +90,7 @@ def main(
         archive_lf,
         archive_ind_cqc_filled_posts_destination,
         partition_cols=partition_keys,
-        append=True,
+        append=False,
     )
 
     print("Completed archive independent CQC filled posts")
