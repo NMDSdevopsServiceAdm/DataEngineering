@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+
+### Changed
+
+
+### Fixed
+
+
+## [v2026.01.0] - 12/02/2026
 
 ### Added
 - A new function to remove longitudinal outliers from CT data. The function flags the outliers based on absolute difference in median values and removes the ourlier value.
@@ -23,6 +33,14 @@ All notable changes to this project will be documented in this file.
 - Added three validation rules for primary_service_second_level column to check expected values.
 
 - Python package [aws-mfa-v2] (https://pypi.org/project/aws-mfa-v2/) to allow for terraform to handle MFA authentication in a cross role account when used locally.
+
+- Converted the validate_merged_ind_cqc_data job script from PyDeequ to Pointblank
+
+- Converted the validate_merge_coverage_data job script from PyDeequ to Pointblank.
+
+- Converted ascwds_filled_posts_calculator utils folder to polars within Clean Ind CQC Job.
+
+- Added a new utils file for all the inline function within clean_ind_cqc_filled_posts.py and converted them to Polars.
 
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.

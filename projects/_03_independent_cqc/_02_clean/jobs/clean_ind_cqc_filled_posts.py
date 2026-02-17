@@ -121,6 +121,7 @@ def main(
     )
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.remove_dual_registration_cqc_care_homes
 def remove_dual_registration_cqc_care_homes(df: DataFrame) -> DataFrame:
     """
     Removes cqc care home locations with dual registration and ensures no loss of ascwds data.
@@ -153,6 +154,7 @@ def remove_dual_registration_cqc_care_homes(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.deduplicate_care_homes
 def deduplicate_care_homes(
     df: DataFrame, duplicate_columns: list[str], distinguishing_columns: list[str]
 ) -> DataFrame:
@@ -185,6 +187,7 @@ def deduplicate_care_homes(
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.copy_ascwds_data_across_duplicate_rows
 def copy_ascwds_data_across_duplicate_rows(
     df: DataFrame, duplicate_columns: list
 ) -> DataFrame:
@@ -222,10 +225,12 @@ def copy_ascwds_data_across_duplicate_rows(
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.replace_zero_beds_with_null
 def replace_zero_beds_with_null(df: DataFrame) -> DataFrame:
     return df.replace(0, None, IndCQC.number_of_beds)
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.populate_missing_care_home_number_of_beds
 def populate_missing_care_home_number_of_beds(
     df: DataFrame,
 ) -> DataFrame:
@@ -236,6 +241,7 @@ def populate_missing_care_home_number_of_beds(
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.filter_to_care_homes_with_known_beds
 def filter_to_care_homes_with_known_beds(
     df: DataFrame,
 ) -> DataFrame:
@@ -244,6 +250,7 @@ def filter_to_care_homes_with_known_beds(
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.average_beds_per_location
 def average_beds_per_location(df: DataFrame) -> DataFrame:
     df = df.groupBy(IndCQC.location_id).agg(
         F.avg(IndCQC.number_of_beds).alias(average_number_of_beds)
@@ -255,6 +262,7 @@ def average_beds_per_location(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.replace_null_beds_with_average
 def replace_null_beds_with_average(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         IndCQC.number_of_beds,
@@ -263,6 +271,7 @@ def replace_null_beds_with_average(df: DataFrame) -> DataFrame:
     return df.drop(average_number_of_beds)
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.calculate_time_registered_for
 def calculate_time_registered_for(df: DataFrame) -> DataFrame:
     """
     Adds a new column called time_registered which is the number of months the location has been registered with CQC for (rounded up).
@@ -290,6 +299,7 @@ def calculate_time_registered_for(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.calculate_time_since_dormant
 def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
     """
     Adds a column to show the number of months since the location was last dormant.
@@ -346,6 +356,7 @@ def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.calculate_care_home_status_count
 def calculate_care_home_status_count(df: DataFrame) -> DataFrame:
     """
     Calculate how many care home statuses each location has had.

@@ -48,52 +48,6 @@ from utils.column_values.categorical_column_values import (
 
 
 @dataclass
-class ValidateMergedIndCqcData:
-    cqc_locations_schema = StructType(
-        [
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.cqc_sector, StringType(), True),
-            StructField(CQCLClean.care_home, StringType(), True),
-            StructField(CQCLClean.number_of_beds, IntegerType(), True),
-        ]
-    )
-    merged_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
-            StructField(IndCQC.cqc_pir_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.name, StringType(), True),
-            StructField(IndCQC.provider_id, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.imputed_registration_date, DateType(), True),
-            StructField(IndCQC.dormancy, StringType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.services_offered, ArrayType(StringType()), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.contemporary_ons_import_date, DateType(), True),
-            StructField(IndCQC.contemporary_cssr, StringType(), True),
-            StructField(IndCQC.contemporary_region, StringType(), True),
-            StructField(IndCQC.current_ons_import_date, DateType(), True),
-            StructField(IndCQC.current_cssr, StringType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.current_lsoa21, StringType(), True),
-            StructField(IndCQC.current_msoa21, StringType(), True),
-            StructField(
-                IndCQC.pir_people_directly_employed_cleaned, IntegerType(), True
-            ),
-            StructField(IndCQC.establishment_id, StringType(), True),
-            StructField(IndCQC.organisation_id, StringType(), True),
-            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
-            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
-        ]
-    )
-
-
-@dataclass
 class ImputeIndCqcAscwdsAndPirSchemas:
     cleaned_ind_cqc_schema = StructType(
         [
@@ -1174,6 +1128,7 @@ class CleanIndCQCData:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.CalculateAscwdsFilledPostsUtilsSchemas
 @dataclass
 class CalculateAscwdsFilledPostsUtilsSchemas:
     estimated_source_description_schema = StructType(
@@ -1185,6 +1140,7 @@ class CalculateAscwdsFilledPostsUtilsSchemas:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.CalculateAscwdsFilledPostsSchemas
 @dataclass
 class CalculateAscwdsFilledPostsSchemas:
     calculate_ascwds_filled_posts_schema = StructType(
@@ -1198,6 +1154,7 @@ class CalculateAscwdsFilledPostsSchemas:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas
 @dataclass
 class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas:
     calculate_ascwds_filled_posts_schema = StructType(
@@ -1211,6 +1168,7 @@ class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.CalculateAscwdsFilledPostsDifferenceInRangeSchemas
 @dataclass
 class CalculateAscwdsFilledPostsDifferenceInRangeSchemas:
     calculate_ascwds_filled_posts_schema = StructType(
