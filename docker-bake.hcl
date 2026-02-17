@@ -11,7 +11,7 @@ variable "SANITISED_CIRCLE_BRANCH" {
 }
 
 group "all" {
-  targets = ["delta_cqc", "_03_independent_cqc", "_03_independent_cqc_model"]
+  targets = ["delta_cqc", "_02_sfc_internal", "_03_independent_cqc", "_03_independent_cqc_model"]
 }
 
 # group "ingest" {
@@ -22,6 +22,14 @@ target "delta_cqc" {
   context = "."
   dockerfile = "./projects/_01_ingest/cqc_api/fargate/Dockerfile"
   tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/cqc:${SANITISED_CIRCLE_BRANCH}"]
+  platforms = ["linux/amd64"]
+  no-cache = true
+}
+
+target "_02_sfc_internal" {
+  context = "."
+  dockerfile = "./projects/_02_sfc_internal/cqc_coverage/fargate/Dockerfile"
+  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/02_sfc_internal:${SANITISED_CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
   no-cache = true
 }
