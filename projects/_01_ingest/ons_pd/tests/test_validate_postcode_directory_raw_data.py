@@ -18,7 +18,6 @@ class ValidatePostcodeDirectoryRawDatasetTests(SparkBaseTest):
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-
         self.test_raw_postcode_directory_df = self.spark.createDataFrame(
             Data.raw_postcode_directory_rows,
             Schemas.raw_postcode_directory_schema,

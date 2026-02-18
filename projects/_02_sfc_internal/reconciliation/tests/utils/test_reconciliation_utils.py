@@ -33,7 +33,6 @@ class ReconciliationTests(SparkBaseTest):
     TEST_PARENT_DESTINATION = "another/destination"
 
     def setUp(self) -> None:
-
         self.test_clean_ascwds_workplace_df = self.spark.createDataFrame(
             Data.input_ascwds_workplace_rows,
             Schemas.input_ascwds_workplace_schema,

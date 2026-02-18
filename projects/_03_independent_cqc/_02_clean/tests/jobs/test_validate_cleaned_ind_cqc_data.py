@@ -19,7 +19,6 @@ class ValidateCleanedIndCQCDatasetTests(SparkBaseTest):
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-
         self.test_merged_ind_cqc_df = self.spark.createDataFrame(
             Data.merged_ind_cqc_rows,
             Schemas.merged_ind_cqc_schema,

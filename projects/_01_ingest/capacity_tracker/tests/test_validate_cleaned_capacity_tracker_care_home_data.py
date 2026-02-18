@@ -21,7 +21,6 @@ class ValidateCleanedCapacityTrackerCareHomeDatasetTests(SparkBaseTest):
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-
         self.test_ct_care_home_df = self.spark.createDataFrame(
             Data.ct_care_home_rows,
             Schemas.ct_care_home_schema,

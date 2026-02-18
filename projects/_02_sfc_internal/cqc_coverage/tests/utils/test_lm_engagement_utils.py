@@ -15,7 +15,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 
 class SetupForTests(SparkBaseTest):
     def setUp(self) -> None:
-
         (
             self.w,
             self.agg_w,

@@ -15,7 +15,6 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 class NullFilledPostsUsingInvalidMissingDataCodeTests(SparkBaseTest):
     def setUp(self) -> None:
-
         self.test_df = self.spark.createDataFrame(
             Data.null_filled_posts_using_invalid_missing_data_code_rows,
             Schemas.null_filled_posts_using_invalid_missing_data_code_schema,

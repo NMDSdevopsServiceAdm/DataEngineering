@@ -35,7 +35,6 @@ class CleanASCWDSWorkplaceDatasetTests(SparkBaseTest):
     ]
 
     def setUp(self) -> None:
-
         self.test_ascwds_workplace_df = self.spark.createDataFrame(
             Data.workplace_rows, Schemas.workplace_schema
         )

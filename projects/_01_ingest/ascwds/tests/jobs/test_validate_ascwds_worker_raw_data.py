@@ -16,7 +16,6 @@ class ValidateASCWDSWorkerRawDatasetTests(SparkBaseTest):
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-
         self.test_raw_ascwds_worker_df = self.spark.createDataFrame(
             Data.raw_ascwds_worker_rows, Schemas.raw_ascwds_worker_schema
         )

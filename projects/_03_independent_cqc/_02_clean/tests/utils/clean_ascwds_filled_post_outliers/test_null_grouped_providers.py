@@ -20,7 +20,6 @@ PATCH_PATH: str = (
 
 class NullGroupedProvidersTests(SparkBaseTest):
     def setUp(self) -> None:
-
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 

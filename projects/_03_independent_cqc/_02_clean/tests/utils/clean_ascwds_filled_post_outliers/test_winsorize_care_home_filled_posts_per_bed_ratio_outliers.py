@@ -23,7 +23,6 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 class WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests(SparkBaseTest):
     def setUp(self) -> None:
-
         self.unfiltered_ind_cqc_df = self.spark.createDataFrame(
             Data.unfiltered_ind_cqc_rows,
             Schemas.ind_cqc_schema,

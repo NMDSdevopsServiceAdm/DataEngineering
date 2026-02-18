@@ -14,7 +14,6 @@ from utils.column_values.categorical_column_values import AscwdsFilteringRule
 
 class CleanFilteringUtilsTests(SparkBaseTest):
     def setUp(self) -> None:
-
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 

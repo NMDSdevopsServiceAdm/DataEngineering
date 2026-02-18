@@ -16,7 +16,6 @@ class ValidateASCWDSWorkplaceCleanedDatasetTests(SparkBaseTest):
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-
         self.test_cleaned_ascwds_workplace_df = self.spark.createDataFrame(
             Data.cleaned_ascwds_workplace_rows, Schemas.cleaned_ascwds_workplace_schema
         )

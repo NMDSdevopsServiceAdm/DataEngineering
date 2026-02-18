@@ -17,7 +17,6 @@ PATCH_PATH: str = (
 
 class TestCleanCtLongitudinalOutliers(SparkBaseTest):
     def setUp(self):
-
         self.test_df = self.spark.createDataFrame(
             Data.clean_longitudinal_outliers_input_rows, Schemas.input_schema
         )

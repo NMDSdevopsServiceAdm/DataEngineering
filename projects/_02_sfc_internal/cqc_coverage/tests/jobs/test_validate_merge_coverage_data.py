@@ -19,7 +19,6 @@ class ValidateMergedCoverageDatasetTests(SparkBaseTest):
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-
         self.test_clean_cqc_location_df = self.spark.createDataFrame(
             Data.cqc_locations_rows,
             Schemas.cqc_locations_schema,

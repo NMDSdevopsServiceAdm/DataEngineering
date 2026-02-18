@@ -20,7 +20,6 @@ class ReconciliationTests(SparkBaseTest):
     TEST_PARENT_DESTINATION = "another/destination"
 
     def setUp(self) -> None:
-
         self.test_cqc_dereg_locations_df = self.spark.createDataFrame(
             Data.input_cqc_dereg_locations_rows,
             Schemas.input_cqc_dereg_locations_schema,

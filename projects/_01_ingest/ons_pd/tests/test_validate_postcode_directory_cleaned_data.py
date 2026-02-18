@@ -19,7 +19,6 @@ class ValidatePostcodeDirectoryCleanedDatasetTests(SparkBaseTest):
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-
         self.test_raw_postcode_directory_df = self.spark.createDataFrame(
             Data.raw_postcode_directory_rows,
             Schemas.raw_postcode_directory_schema,
@@ -29,15 +28,8 @@ class ValidatePostcodeDirectoryCleanedDatasetTests(SparkBaseTest):
             Schemas.cleaned_postcode_directory_schema,
         )
 
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
 
 class MainTests(ValidatePostcodeDirectoryCleanedDatasetTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
@@ -62,9 +54,6 @@ class MainTests(ValidatePostcodeDirectoryCleanedDatasetTests):
 
 
 class CalculateExpectedSizeofDataset(ValidatePostcodeDirectoryCleanedDatasetTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
     def test_calculate_expected_size_of_cleaned_postcode_directory_dataset_returns_correct_row_count(
         self,
     ):

@@ -25,7 +25,6 @@ class CleanONSDatasetTests(SparkBaseTest):
     onsPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
-
         self.test_ons_parquet = self.spark.createDataFrame(
             Data.ons_sample_rows_full, schema=Schema.full_schema
         )

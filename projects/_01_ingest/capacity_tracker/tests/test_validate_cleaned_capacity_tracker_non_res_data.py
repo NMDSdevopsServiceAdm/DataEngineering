@@ -21,7 +21,6 @@ class ValidateCleanedCapacityTrackerNonResDatasetTests(SparkBaseTest):
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-
         self.test_ct_non_res_df = self.spark.createDataFrame(
             Data.ct_non_res_rows,
             Schemas.ct_non_res_schema,

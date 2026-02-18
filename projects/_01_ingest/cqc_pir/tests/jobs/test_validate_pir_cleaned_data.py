@@ -18,7 +18,6 @@ class ValidatePIRCleanedDatasetTests(SparkBaseTest):
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-
         self.test_cleaned_cqc_pir_df = self.spark.createDataFrame(
             Data.cleaned_cqc_pir_rows, Schemas.cleaned_cqc_pir_schema
         )

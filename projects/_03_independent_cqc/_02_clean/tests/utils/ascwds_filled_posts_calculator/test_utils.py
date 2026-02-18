@@ -35,7 +35,6 @@ class TestAscwdsFilledPostsCalculatorUtils(SparkBaseTest):
         self.df = self.spark.createDataFrame(
             data=self.common_checks_rows, schema=self.common_checks_schema
         )
-
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     def test_ascwds_filled_posts_is_null(self):

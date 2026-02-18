@@ -26,7 +26,6 @@ class FlattenCQCRatingsTests(SparkBaseTest):
     TEST_BENCHMARK_RATINGS_DESTINATION = "some/other/directory"
 
     def setUp(self) -> None:
-
         self.test_cqc_locations_df = self.spark.createDataFrame(
             Data.test_cqc_locations_rows, schema=Schema.test_cqc_locations_schema
         )
