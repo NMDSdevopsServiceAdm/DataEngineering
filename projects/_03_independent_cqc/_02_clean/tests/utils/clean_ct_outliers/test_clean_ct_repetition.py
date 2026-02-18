@@ -15,14 +15,8 @@ PATCH_PATH: str = (
 )
 
 
-class CleanCTRepetitionTests(SparkBaseTest):
-    def setUp(self): ...
-
-
-class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
+class NullCTValuesAfterConsecutiveRepetition(SparkBaseTest):
     def setUp(self):
-        super().setUp()
-
         self.test_df = self.spark.createDataFrame(
             Data.clean_ct_values_after_consecutive_repetition_rows,
             Schemas.clean_ct_values_after_consecutive_repetition_schema,
@@ -89,10 +83,8 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
         )
 
 
-class CalculateDaysAValueHasBeenRepeated(CleanCTRepetitionTests):
+class CalculateDaysAValueHasBeenRepeated(SparkBaseTest):
     def setUp(self):
-        super().setUp()
-
         self.test_df = self.spark.createDataFrame(
             Data.calculate_days_a_value_has_been_repeated_rows,
             Schemas.calculate_days_a_value_has_been_repeated_schema,
@@ -122,10 +114,8 @@ class CalculateDaysAValueHasBeenRepeated(CleanCTRepetitionTests):
         self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
 
 
-class CleanValueRepetition(CleanCTRepetitionTests):
+class CleanValueRepetition(SparkBaseTest):
     def setUp(self):
-        super().setUp()
-
         test_repetition_limit_dict = Data.test_repetition_limit_dict
         self.test_micro_locations_df = self.spark.createDataFrame(
             Data.clean_value_repetition_when_location_is_micro_rows,
@@ -226,10 +216,8 @@ class CleanValueRepetition(CleanCTRepetitionTests):
         )
 
 
-class JoinCleanedCTValuesIntoOriginalDf(CleanCTRepetitionTests):
+class JoinCleanedCTValuesIntoOriginalDf(SparkBaseTest):
     def setUp(self):
-        super().setUp()
-
         self.test_orginal_df = self.spark.createDataFrame(
             Data.original_rows,
             Schemas.original_schema,
