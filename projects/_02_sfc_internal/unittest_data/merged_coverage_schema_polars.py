@@ -1,16 +1,14 @@
 import polars as pl
 
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
-)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AscWdsColumns,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.reconciliation_columns import ReconciliationColumns
 
