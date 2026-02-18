@@ -88,4 +88,3 @@ def create_archive_date_partition_columns(
     )
 
     return lf
-    return lf
