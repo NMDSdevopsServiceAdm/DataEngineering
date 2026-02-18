@@ -53,6 +53,7 @@ def spark(worker_id):
 def pytest_xdist_auto_num_workers(config):
     """
     Logic to prevent OOM when running multiple Spark JVMs.
+
     Each Spark worker needs roughly 1.5GB of overhead.
     """
     cpus = os.cpu_count() or 1
