@@ -24,16 +24,7 @@ PATCH_PATH = (
 )
 
 
-class EstimateIndCQCFilledPostsByJobRoleUtilsTests(SparkBaseTest):
-    def setUp(self): ...
-
-
-class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
-):
-    def setUp(self) -> None:
-        super().setUp()
-
+class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(SparkBaseTest):
     def test_aggregate_ascwds_worker_job_roles_per_establishment_returns_expected_columns(
         self,
     ):
@@ -195,10 +186,7 @@ class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(
         )
 
 
-class CreateMapColumnTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
+class CreateMapColumnTests(SparkBaseTest):
     def test_create_map_column_when_all_columns_populated(self):
         test_df = self.spark.createDataFrame(
             Data.create_map_column_when_all_columns_populated_rows,
@@ -291,7 +279,7 @@ class CreateMapColumnTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         )
 
 
-class MergeDataframesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class MergeDataframesTests(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -389,9 +377,7 @@ class MergeDataframesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class TransformJobRoleCountsMapToRatiosMap(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
-):
+class TransformJobRoleCountsMapToRatiosMap(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -441,7 +427,7 @@ class TransformJobRoleCountsMapToRatiosMap(
         )
 
 
-class CreateTotalFromValuesInMapColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class CreateTotalFromValuesInMapColumn(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -499,7 +485,7 @@ class CreateTotalFromValuesInMapColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTe
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class CreateRatiosMapFromCountMapAndTotal(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class CreateRatiosMapFromCountMapAndTotal(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -605,9 +591,7 @@ class CreateRatiosMapFromCountMapAndTotal(EstimateIndCQCFilledPostsByJobRoleUtil
                 self.assertEqual(returned_ratio_dict, expected_ratio_dict)
 
 
-class CreateEstimateFilledPostsByJobRoleMapColumn(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
-):
+class CreateEstimateFilledPostsByJobRoleMapColumn(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -670,9 +654,7 @@ class CreateEstimateFilledPostsByJobRoleMapColumn(
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class RemoveAscwdsJobRoleCountWhenFilledPostsSourceNotAscwds(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
-):
+class RemoveAscwdsJobRoleCountWhenFilledPostsSourceNotAscwds(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -697,10 +679,7 @@ class RemoveAscwdsJobRoleCountWhenFilledPostsSourceNotAscwds(
         self.assertEqual(self.returned_data, expected_data)
 
 
-class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
+class CountRegisteredManagerNamesTests(SparkBaseTest):
     def test_count_registered_manager_names_when_location_has_one_registered_manager(
         self,
     ):
@@ -809,7 +788,7 @@ class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTe
         )
 
 
-class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class InterpolateJobRoleRatio(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -881,7 +860,7 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         )
 
 
-class JobRoleRatiosExtrapolationTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class JobRoleRatiosExtrapolationTests(SparkBaseTest):
     def setUp(self):
         super().setUp()
         self.input_df = self.spark.createDataFrame(
@@ -928,7 +907,7 @@ class JobRoleRatiosExtrapolationTests(EstimateIndCQCFilledPostsByJobRoleUtilsTes
         self.assertEqual(self.returned_data, self.expected_data)
 
 
-class PivotJobRoleColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class PivotJobRoleColumn(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -1018,10 +997,7 @@ class PivotJobRoleColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         )
 
 
-class ConvertMapWithAllNullValuesToNull(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
+class ConvertMapWithAllNullValuesToNull(SparkBaseTest):
     def test_convert_map_with_all_null_values_to_null_when_map_has_no_null_returns_identical_dataframe(
         self,
     ):
@@ -1091,7 +1067,7 @@ class ConvertMapWithAllNullValuesToNull(EstimateIndCQCFilledPostsByJobRoleUtilsT
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class UnpackingMappedColumnsTest(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -1162,9 +1138,7 @@ class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         self.assertEqual(returned_data, expected_data)
 
 
-class CalculateDifferenceBetweenEstimatedAndCqcRegisteredManagers(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
-):
+class CalculateDifferenceBetweenEstimatedAndCqcRegisteredManagers(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -1205,7 +1179,7 @@ class CalculateDifferenceBetweenEstimatedAndCqcRegisteredManagers(
         self.assertEqual(expected_data, returned_data)
 
 
-class CreateJobGroupCounts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class CreateJobGroupCounts(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -1267,9 +1241,7 @@ class CreateJobGroupCounts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         self.assertEqual(expected_data, returned_data)
 
 
-class ApplyQualityFiltersToAscwdsJobRoleData(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
-):
+class ApplyQualityFiltersToAscwdsJobRoleData(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -1298,7 +1270,7 @@ class ApplyQualityFiltersToAscwdsJobRoleData(
 
 
 class FilterAscwdsByJobRoleBreakdownWhenDirectCareOrManagersPlusRegulatedProfessionsGreaterOrEqualToOne(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+    SparkBaseTest
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -1339,7 +1311,7 @@ class FilterAscwdsByJobRoleBreakdownWhenDirectCareOrManagersPlusRegulatedProfess
 
 
 class FilterAscwdsJobRoleCountMapWhenJobGroupRatiosOutsidePercentileBoundaries(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+    SparkBaseTest
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -1375,9 +1347,7 @@ class FilterAscwdsJobRoleCountMapWhenJobGroupRatiosOutsidePercentileBoundaries(
         self.assertEqual(expected_data, returned_data)
 
 
-class TransformImputedJobRoleRatiosToCounts(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
-):
+class TransformImputedJobRoleRatiosToCounts(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -1433,9 +1403,7 @@ class TransformImputedJobRoleRatiosToCounts(
                 self.assertEqual(expected_dict, returned_dict)
 
 
-class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
-):
+class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -1512,7 +1480,7 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
         )
 
 
-class RecalculateTotalFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class RecalculateTotalFilledPosts(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -1551,7 +1519,7 @@ class RecalculateTotalFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         )
 
 
-class RecalculateManagerialFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class RecalculateManagerialFilledPosts(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -1579,9 +1547,7 @@ class RecalculateManagerialFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTe
         self.assertEqual(self.expected_data, self.returned_data)
 
 
-class CombineInterpolatedAndExtrapolatedJobRoleRatios(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
-):
+class CombineInterpolatedAndExtrapolatedJobRoleRatios(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -1620,9 +1586,7 @@ class CombineInterpolatedAndExtrapolatedJobRoleRatios(
         )
 
 
-class OverwriteRegisteredManagerEstimateWithCqcCount(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
-):
+class OverwriteRegisteredManagerEstimateWithCqcCount(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -1648,7 +1612,7 @@ class OverwriteRegisteredManagerEstimateWithCqcCount(
 
 
 class CalculateDifferenceBetweenEstimateFilledPostsAndEstimateFilledPostsFromAllJobRoles(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+    SparkBaseTest
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -1674,9 +1638,7 @@ class CalculateDifferenceBetweenEstimateFilledPostsAndEstimateFilledPostsFromAll
         self.assertEqual(expected_data, returned_data)
 
 
-class CreateEstimateFilledPostsJobGroupColumns(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
-):
+class CreateEstimateFilledPostsJobGroupColumns(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 
@@ -1720,9 +1682,7 @@ class CreateEstimateFilledPostsJobGroupColumns(
         self.assertEqual(returned_data, expected_data)
 
 
-class CreateJobRoleEstimatesDataValidationColumns(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
-):
+class CreateJobRoleEstimatesDataValidationColumns(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
 

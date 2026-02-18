@@ -12,14 +12,8 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CareHome
 
 
-class TestImputeUtils(SparkBaseTest):
-    def setUp(self): ...
-
-
-class ConvertCareHomeRatiosToPostsTests(TestImputeUtils):
+class ConvertCareHomeRatiosToPostsTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         self.test_df = self.spark.createDataFrame(
             Data.convert_care_home_ratios_to_posts_rows,
             Schemas.convert_care_home_ratios_to_posts_schema,
@@ -49,10 +43,8 @@ class ConvertCareHomeRatiosToPostsTests(TestImputeUtils):
             )
 
 
-class CombineCareHomeAndNonResValuesIntoSingleColumnTests(TestImputeUtils):
+class CombineCareHomeAndNonResValuesIntoSingleColumnTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         test_df = self.spark.createDataFrame(
             Data.combine_care_home_and_non_res_values_into_single_column_rows,
             Schemas.combine_care_home_and_non_res_values_into_single_column_schema,

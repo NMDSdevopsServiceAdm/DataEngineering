@@ -26,7 +26,6 @@ class SplitPAFilledPostsIntoIcbAreas(SparkBaseTest):
     TEST_DESTINATION = "some/directory"
 
     def setUp(self) -> None:
-
         self.sample_ons_contemporary_df = self.spark.createDataFrame(
             TestData.sample_ons_contemporary_rows,
             schema=TestSchema.sample_ons_contemporary_schema,

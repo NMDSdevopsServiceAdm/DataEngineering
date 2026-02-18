@@ -29,7 +29,6 @@ class ArchiveFilledPostsEstimatesTests(SparkBaseTest):
     ANNUAL_ARCHIVE_DESTINATION = "another/destination"
 
     def setUp(self):
-
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 

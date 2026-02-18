@@ -21,13 +21,8 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 PATCH_PATH: str = "projects._03_independent_cqc._08_diagnostics.utils.diagnostics_utils"
 
 
-class DiagnosticsUtilsTests(SparkBaseTest):
-    def setUp(self): ...
-
-
-class FilterToKnownValuesTests(DiagnosticsUtilsTests):
+class FilterToKnownValuesTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.test_column = IndCQC.ascwds_filled_posts_dedup_clean
         self.test_df = self.spark.createDataFrame(
             Data.filter_to_known_values_rows, Schemas.filter_to_known_values_schema
@@ -48,9 +43,8 @@ class FilterToKnownValuesTests(DiagnosticsUtilsTests):
         self.assertEqual(self.returned_df.count(), self.expected_df.count())
 
 
-class CreateListOfModelsTests(DiagnosticsUtilsTests):
+class CreateListOfModelsTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.expected_list_of_models = Data.expected_list_of_models
         self.returned_list_of_models = job.create_list_of_models()
 
@@ -60,9 +54,8 @@ class CreateListOfModelsTests(DiagnosticsUtilsTests):
         )
 
 
-class RestructureDataframeToColumnWiseTests(DiagnosticsUtilsTests):
+class RestructureDataframeToColumnWiseTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.test_df = self.spark.createDataFrame(
             Data.restructure_dataframe_rows, Schemas.restructure_dataframe_schema
         )
@@ -81,18 +74,14 @@ class RestructureDataframeToColumnWiseTests(DiagnosticsUtilsTests):
         self.assertEqual(returned_data, expected_data)
 
 
-class CreateWindowForModelAndServiceSplitsTests(DiagnosticsUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
+class CreateWindowForModelAndServiceSplitsTests(SparkBaseTest):
     def test_create_window_for_model_and_service_splits_returns_a_window(self):
         returned_win = job.create_window_for_model_and_service_splits()
         self.assertEqual(type(returned_win), WindowSpec)
 
 
-class CalculateDistributionMetricsTests(DiagnosticsUtilsTests):
+class CalculateDistributionMetricsTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.window = job.create_window_for_model_and_service_splits()
 
     def test_calculate_mean_over_window_returns_extpected_values(self):
@@ -209,10 +198,7 @@ class CalculateDistributionMetricsTests(DiagnosticsUtilsTests):
             )
 
 
-class CalculateResidualsTests(DiagnosticsUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
+class CalculateResidualsTests(SparkBaseTest):
     def test_calculate_residual_adds_column_with_correct_values(self):
         test_df = self.spark.createDataFrame(
             Data.calculate_residuals_rows,
@@ -309,9 +295,8 @@ class CalculateResidualsTests(DiagnosticsUtilsTests):
         self.assertEqual(returned_data, expected_data)
 
 
-class CalculateAggregateResidualsTests(DiagnosticsUtilsTests):
+class CalculateAggregateResidualsTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.window = job.create_window_for_model_and_service_splits()
         self.test_df = self.spark.createDataFrame(
             Data.calculate_aggregate_residuals_rows,
@@ -411,9 +396,8 @@ class CalculateAggregateResidualsTests(DiagnosticsUtilsTests):
         self.assertEqual(returned_df.count(), self.expected_df.count())
 
 
-class CreateSummaryDataframeTests(DiagnosticsUtilsTests):
+class CreateSummaryDataframeTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.test_df = self.spark.createDataFrame(
             Data.create_summary_dataframe_rows, Schemas.create_summary_dataframe_schema
         )

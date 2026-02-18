@@ -17,14 +17,8 @@ PATCH_PATH: str = (
 )
 
 
-class EstimateFilledPostsModelsUtilsTests(SparkBaseTest):
-    def setUp(self): ...
-
-
-class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
+class EnrichWithModelPredictionsTest(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         self.test_bucket = "test_bucket"
 
         self.mock_ind_cqc_df = Mock(name="ind_cqc_df")
@@ -157,9 +151,8 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         )
 
 
-class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
+class SetMinimumValueTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.test_df = self.spark.createDataFrame(
             Data.set_min_value_when_below_minimum_rows,
             Schemas.set_min_value_schema,
@@ -226,10 +219,8 @@ class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class JoinModelPredictionsTests(EstimateFilledPostsModelsUtilsTests):
+class JoinModelPredictionsTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         self.model_name = Schemas.join_test_model
 
         ind_cqc_df = self.spark.createDataFrame(

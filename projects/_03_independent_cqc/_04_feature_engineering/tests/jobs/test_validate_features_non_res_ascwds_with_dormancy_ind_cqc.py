@@ -21,7 +21,6 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcDatasetTests(SparkBaseTest):
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-
         self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(
             Data.cleaned_ind_cqc_rows,
             Schemas.cleaned_ind_cqc_schema,

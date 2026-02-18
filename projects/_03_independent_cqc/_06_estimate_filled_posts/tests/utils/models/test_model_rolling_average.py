@@ -9,14 +9,8 @@ from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
-class ModelRollingAverageTests(SparkBaseTest):
-    def setUp(self): ...
-
-
-class MainTests(ModelRollingAverageTests):
+class MainTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         number_of_days: int = 3
 
         test_df = self.spark.createDataFrame(
