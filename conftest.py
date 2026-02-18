@@ -56,6 +56,9 @@ def pytest_xdist_auto_num_workers(config):
 
     Each Spark worker needs roughly 1.5GB of overhead.
     """
+    if os.environ.get("CIRCLECI"):
+        # Most CircleCI standard executors struggle with more than 2 Spark JVMs
+        return 2
     cpus = os.cpu_count() or 1
     # Get available RAM in GB
     available_gb = psutil.virtual_memory().available / (1024**3)

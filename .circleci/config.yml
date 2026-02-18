@@ -80,7 +80,7 @@ jobs:
           name: Run unit tests and generate coverage
           command: |
             pipenv run pytest \
-              -n 4 --dist loadfile \
+              -n auto --dist loadfile \
               --cov=. \
               --cov-report=term \
               --cov-report=xml \
