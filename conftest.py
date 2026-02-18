@@ -26,6 +26,9 @@ def spark(worker_id):
         .config("spark.sql.warehouse.dir", f"/tmp/spark-warehouse/{worker_id}")
         # KEY: Randomize UI port to avoid 'Address already in use'
         .config("spark.ui.port", "0")
+        # Optimization: set shuffle partitions to 1 for speed
+        .config("spark.sql.shuffle.partitions", "1")
+        .config("spark.default.parallelism", "1")
         .config("spark.jars.packages", pydeequ.deequ_maven_coord)
         .config("spark.jars.excludes", pydeequ.f2j_maven_coord)
         .getOrCreate()
