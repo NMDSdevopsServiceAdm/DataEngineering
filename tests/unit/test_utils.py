@@ -81,7 +81,6 @@ class StubberClass:
 class UtilsTests(SparkBaseTest):
     test_csv_path = "tests/test_data/example_csv.csv"
     test_csv_custom_delim_path = "tests/test_data/example_csv_custom_delimiter.csv"
-    tmp_dir = "tmp-out"
     TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp-workplace"
     example_csv_for_schema_tests = "tests/test_data/example_csv_for_schema_tests.csv"
     example_csv_for_schema_tests_extra_column = (
@@ -113,13 +112,6 @@ class UtilsTests(SparkBaseTest):
         self.pir_cleaned_test_date_column = F.col(
             CqcPIRCleanedColumns.pir_submission_date_as_date
         )
-
-    def tearDown(self):
-        try:
-            shutil.rmtree(self.tmp_dir)
-            shutil.rmtree(self.TEST_ASCWDS_WORKPLACE_FILE)
-        except OSError:
-            pass  # Ignore dir does not exist
 
 
 class GeneralUtilsTests(UtilsTests):
@@ -592,10 +584,11 @@ class GeneralUtilsTests(UtilsTests):
 
     def test_write(self):
         df = utils.read_csv(self.test_csv_path)
-        utils.write_to_parquet(df, self.tmp_dir)
+        parquet_dir = self.get_temp_path("test_parquet")
+        utils.write_to_parquet(df, parquet_dir)
 
-        self.assertTrue(Path("tmp-out").is_dir())
-        self.assertTrue(Path("tmp-out/_SUCCESS").exists())
+        self.assertTrue(Path(parquet_dir).is_dir())
+        self.assertTrue(Path(parquet_dir).joinpath("_SUCCESS").exists())
 
     def test_format_date_fields(self):
         self.assertEqual(self.df.select("date_col").first()[0], "28/11/1993")
