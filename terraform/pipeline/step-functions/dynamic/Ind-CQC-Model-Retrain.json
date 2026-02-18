@@ -12,12 +12,12 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "Cluster": "${polars_cluster_arn}",
+                "Cluster": "${model_cluster_arn}",
                 "TaskDefinition": "${independent_cqc_model_task_arn}",
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
-                    "Subnets": ${independent_cqc_model_public_subnet_ids},
+                    "Subnets": ${public_subnet_ids},
                     "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
                     "AssignPublicIp": "ENABLED"
                   }
@@ -47,12 +47,12 @@
                     "Type": "Task",
                     "Resource": "arn:aws:states:::ecs:runTask.sync",
                     "Parameters": {
-                      "Cluster": "${polars_cluster_arn}",
+                      "Cluster": "${model_cluster_arn}",
                       "TaskDefinition": "${independent_cqc_model_task_arn}",
                       "LaunchType": "FARGATE",
                       "NetworkConfiguration": {
                         "AwsvpcConfiguration": {
-                          "Subnets": ${independent_cqc_model_public_subnet_ids},
+                          "Subnets": ${public_subnet_ids},
                           "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
                           "AssignPublicIp": "ENABLED"
                         }
@@ -76,12 +76,12 @@
                     "Type": "Task",
                     "Resource": "arn:aws:states:::ecs:runTask.sync",
                     "Parameters": {
-                      "Cluster": "${polars_cluster_arn}",
+                      "Cluster": "${model_cluster_arn}",
                       "TaskDefinition": "${independent_cqc_model_task_arn}",
                       "LaunchType": "FARGATE",
                       "NetworkConfiguration": {
                         "AwsvpcConfiguration": {
-                          "Subnets": ${independent_cqc_model_public_subnet_ids},
+                          "Subnets": ${public_subnet_ids},
                           "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
                           "AssignPublicIp": "ENABLED"
                         }
@@ -110,12 +110,12 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
-                        "Cluster": "${polars_cluster_arn}",
+                        "Cluster": "${model_cluster_arn}",
                         "TaskDefinition": "${independent_cqc_model_task_arn}",
                         "LaunchType": "FARGATE",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
-                            "Subnets": ${independent_cqc_model_public_subnet_ids},
+                            "Subnets": ${public_subnet_ids},
                             "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
