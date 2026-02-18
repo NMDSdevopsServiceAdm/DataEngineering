@@ -17,14 +17,8 @@ PATCH_PATH: str = (
 )
 
 
-class NullPeopleDirectlyEmployedTests(SparkBaseTest):
-    def setUp(self) -> None: ...
-
-
-class MainTests(NullPeopleDirectlyEmployedTests):
+class MainTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         self.test_df = self.spark.createDataFrame(
             Data.null_people_directly_employed_outliers_rows,
             Schemas.null_people_directly_employed_outliers_schema,
@@ -53,10 +47,8 @@ class MainTests(NullPeopleDirectlyEmployedTests):
         self.assertEqual(self.returned_df.count(), self.test_df.count())
 
 
-class NullLargeSingleSubmissionLocationsTests(NullPeopleDirectlyEmployedTests):
+class NullLargeSingleSubmissionLocationsTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         test_df = self.spark.createDataFrame(
             Data.null_large_single_submission_locations_rows,
             Schemas.null_large_single_submission_locations_schema,
