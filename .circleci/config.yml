@@ -75,7 +75,7 @@ jobs:
       # Pre-cache the pyqeequ dependency so xdist works better.
       - run:
             name: Pre-cache Spark JARs
-            command: pipenv run python scripts/fetch_dependencies.py
+            command: pipenv run python scripts/fetch_spark_dependencies.py
       - save_cache:
           key: v1.1-deps-{{ checksum "Pipfile.lock" }}
           paths:
