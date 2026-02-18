@@ -24,15 +24,17 @@ def select_import_dates_to_archive(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = add_latest_annual_estimate_date(lf)
 
     import_date_col = pl.col(IndCQC.cqc_location_import_date)
+    annual_estimate_date_col = pl.col(most_recent_annual_estimate_date)
+
+    import_on_or_after_annual_estimate = import_date_col >= annual_estimate_date_col
+    import_before_annual_estimate = import_date_col < annual_estimate_date_col
+    import_month_equals_annual_estimate_month = (
+        import_date_col.dt.month() == annual_estimate_date_col.dt.month()
+    )
+
     lf = lf.filter(
-        (import_date_col >= pl.col(most_recent_annual_estimate_date))
-        | (
-            (import_date_col < pl.col(most_recent_annual_estimate_date))
-            & (
-                import_date_col.dt.month()
-                == pl.col(most_recent_annual_estimate_date).dt.month()
-            )
-        )
+        import_on_or_after_annual_estimate
+        | (import_before_annual_estimate & import_month_equals_annual_estimate_month)
     )
 
     return lf.drop(most_recent_annual_estimate_date)
