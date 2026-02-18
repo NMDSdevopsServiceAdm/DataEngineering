@@ -79,7 +79,9 @@ jobs:
       - run:
           name: Run unit tests and generate coverage
           command: |
-            pipenv run pytest --cov=. \
+            pipenv run pytest \
+              -n 4 --dist loadfile \
+              --cov=. \
               --cov-report=term \
               --cov-report=xml \
               --cov-report=html
