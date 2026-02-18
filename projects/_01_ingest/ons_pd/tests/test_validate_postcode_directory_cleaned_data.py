@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.ons_pd.jobs.validate_postcode_directory_cleaned_data as job
@@ -8,18 +7,19 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ValidatePostcodeDirectoryCleanedData as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 PATCH_PATH = "projects._01_ingest.ons_pd.jobs.validate_postcode_directory_cleaned_data"
 
 
-class ValidatePostcodeDirectoryCleanedDatasetTests(unittest.TestCase):
+class ValidatePostcodeDirectoryCleanedDatasetTests(SparkBaseTest):
     TEST_RAW_POSTCODE_DIRECTORY_SOURCE = "some/directory"
     TEST_POSTCODE_DIRECTORY_CLEANED_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.test_raw_postcode_directory_df = self.spark.createDataFrame(
             Data.raw_postcode_directory_rows,
             Schemas.raw_postcode_directory_schema,

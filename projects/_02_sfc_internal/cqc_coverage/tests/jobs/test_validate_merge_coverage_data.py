@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._02_sfc_internal.cqc_coverage.jobs.validate_merge_coverage_data as job
@@ -8,18 +7,19 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     ValidateMergedCoverageData as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 PATCH_PATH = "projects._02_sfc_internal.cqc_coverage.jobs.validate_merge_coverage_data"
 
 
-class ValidateMergedCoverageDatasetTests(unittest.TestCase):
+class ValidateMergedCoverageDatasetTests(SparkBaseTest):
     TEST_CQC_LOCATION_SOURCE = "some/directory"
     TEST_MERGED_COVERAGE_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.test_clean_cqc_location_df = self.spark.createDataFrame(
             Data.cqc_locations_rows,
             Schemas.cqc_locations_schema,

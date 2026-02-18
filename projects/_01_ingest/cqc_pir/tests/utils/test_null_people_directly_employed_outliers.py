@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.cqc_pir.utils.null_people_directly_employed_outliers as job
@@ -8,6 +7,7 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     NullPeopleDirectlyEmployedSchema as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as PIRCleanCols,
@@ -18,9 +18,8 @@ PATCH_PATH: str = (
 )
 
 
-class NullPeopleDirectlyEmployedTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.spark = utils.get_spark()
+class NullPeopleDirectlyEmployedTests(SparkBaseTest):
+    def setUp(self) -> None: ...
 
 
 class MainTests(NullPeopleDirectlyEmployedTests):

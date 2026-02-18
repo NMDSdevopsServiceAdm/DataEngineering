@@ -1,4 +1,3 @@
-import unittest
 import warnings
 
 import projects._04_direct_payment_recipients.utils._01_prepare_dpr_utils.calculate_pa_ratio as job
@@ -11,13 +10,12 @@ from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_data imp
 from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_schemas import (
     CalculatePaRatioSchemas as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 
-class TestCalculatePARatio(unittest.TestCase):
+class TestCalculatePARatio(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
-
         warnings.simplefilter("ignore", ResourceWarning)
 
     def test_calculate_pa_ratio_completes(self):

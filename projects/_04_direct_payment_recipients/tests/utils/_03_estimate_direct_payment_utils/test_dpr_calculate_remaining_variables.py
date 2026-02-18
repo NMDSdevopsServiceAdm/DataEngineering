@@ -1,4 +1,3 @@
-import unittest
 import warnings
 
 from pyspark.sql.types import (
@@ -13,12 +12,12 @@ import projects._04_direct_payment_recipients.utils._03_estimate_direct_payment_
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 
-class TestCalculateRemainingVariables(unittest.TestCase):
+class TestCalculateRemainingVariables(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
         warnings.simplefilter("ignore", ResourceWarning)
 
     def test_calculate_remaining_variables_completes(self):

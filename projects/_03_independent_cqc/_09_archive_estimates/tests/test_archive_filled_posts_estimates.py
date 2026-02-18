@@ -1,4 +1,3 @@
-import unittest
 import warnings
 from datetime import datetime
 from unittest.mock import ANY, Mock, patch
@@ -12,6 +11,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ArchiveFilledPostsEstimates as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
@@ -23,13 +23,13 @@ PATCH_PATH: str = (
 )
 
 
-class ArchiveFilledPostsEstimatesTests(unittest.TestCase):
+class ArchiveFilledPostsEstimatesTests(SparkBaseTest):
     FILLED_POSTS_ESTIMATES_SOURCE = "some/data"
     MONTHLY_ARCHIVE_DESTINATION = "some/destination"
     ANNUAL_ARCHIVE_DESTINATION = "another/destination"
 
     def setUp(self):
-        self.spark = utils.get_spark()
+
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 

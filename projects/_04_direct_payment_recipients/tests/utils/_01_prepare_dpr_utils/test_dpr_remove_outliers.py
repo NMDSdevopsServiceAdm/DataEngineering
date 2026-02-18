@@ -1,4 +1,3 @@
-import unittest
 import warnings
 
 from pyspark.sql.types import (
@@ -16,13 +15,12 @@ from projects._04_direct_payment_recipients.direct_payments_column_names import 
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnValues as Values,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 
-class TestRemoveOutliers(unittest.TestCase):
+class TestRemoveOutliers(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
-
         warnings.simplefilter("ignore", ResourceWarning)
 
     def test_remove_outliers_completes(

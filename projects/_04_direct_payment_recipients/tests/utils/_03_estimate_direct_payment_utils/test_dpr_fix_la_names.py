@@ -1,5 +1,3 @@
-import unittest
-
 import projects._04_direct_payment_recipients.utils._03_estimate_direct_payment_utils.fix_la_names as job
 from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_data import (
     PAFilledPostsByIcbArea as TestData,
@@ -7,13 +5,12 @@ from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_data imp
 from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_schemas import (
     PAFilledPostsByIcbAreaSchema as TestSchema,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 
-class ChangeLaNamesToMatchOnsCleanedLaNames(unittest.TestCase):
+class ChangeLaNamesToMatchOnsCleanedLaNames(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
-
         self.sample_df = self.spark.createDataFrame(
             TestData.sample_la_name_rows, schema=TestSchema.sample_la_name_schema
         )

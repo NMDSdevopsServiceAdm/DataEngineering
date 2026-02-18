@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._02_clean.jobs.validate_cleaned_ind_cqc_data as job
@@ -8,18 +7,19 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ValidateCleanedIndCqcData as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 PATCH_PATH = "projects._03_independent_cqc._02_clean.jobs.validate_cleaned_ind_cqc_data"
 
 
-class ValidateCleanedIndCQCDatasetTests(unittest.TestCase):
+class ValidateCleanedIndCQCDatasetTests(SparkBaseTest):
     TEST_MERGED_IND_CQC_SOURCE = "some/directory"
     TEST_CLEANED_IND_CQC_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.test_merged_ind_cqc_df = self.spark.createDataFrame(
             Data.merged_ind_cqc_rows,
             Schemas.merged_ind_cqc_schema,

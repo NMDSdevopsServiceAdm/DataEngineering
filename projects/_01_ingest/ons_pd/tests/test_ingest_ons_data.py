@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.ons_pd.jobs.ingest_ons_data as job
@@ -8,19 +7,19 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     IngestONSData as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 PATCH_PATH = "projects._01_ingest.ons_pd.jobs.ingest_ons_data"
 
 
-class IngestONSDataTests(unittest.TestCase):
+class IngestONSDataTests(SparkBaseTest):
     TEST_CSV_SOURCE = "some/directory/path/file.csv"
     TEST_DIRECTORY_SOURCE = "some/directory/path"
     TEST_DESTINATION = "s3://some/"
     TEST_NEW_DESTINATION = "s3://some/directory/path"
 
     def setUp(self):
-        self.spark = utils.get_spark()
         self.test_ons_df = self.spark.createDataFrame(
             Data.sample_rows, Schemas.sample_schema
         )

@@ -1,4 +1,3 @@
-import unittest
 import warnings
 from unittest.mock import Mock, patch
 
@@ -11,6 +10,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ModelAndMergePirData as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
@@ -19,9 +19,8 @@ PATCH_PATH: str = (
 )
 
 
-class ModelAndMergePirTests(unittest.TestCase):
+class ModelAndMergePirTests(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
         self.NON_RES_PIR_MODEL = (
             "tests/test_models/non_res_pir_linear_regression_prediction/1.0.0/"
         )

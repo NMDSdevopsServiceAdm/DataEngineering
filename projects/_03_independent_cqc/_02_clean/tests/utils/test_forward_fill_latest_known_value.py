@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import ANY, Mock, patch
 
 import projects._03_independent_cqc._02_clean.utils.forward_fill_latest_known_value as job
@@ -8,6 +7,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ForwardFillLatestKnownValue as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 PATCH_PATH = (
@@ -15,9 +15,8 @@ PATCH_PATH = (
 )
 
 
-class ReturnLastKnownValueTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.spark = utils.get_spark()
+class ReturnLastKnownValueTests(SparkBaseTest):
+    def setUp(self) -> None: ...
 
     def test_last_known_returns_latest_non_null_value_per_location(
         self,
@@ -48,9 +47,8 @@ class ReturnLastKnownValueTests(unittest.TestCase):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class ForwardFillTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.spark = utils.get_spark()
+class ForwardFillTests(SparkBaseTest):
+    def setUp(self) -> None: ...
 
     def test_forward_fill_populates_null_values_within_days_to_repeat_range(
         self,
@@ -95,9 +93,8 @@ class ForwardFillTests(unittest.TestCase):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class ForwardFillLatestKnownValueCallTests(unittest.TestCase):
+class ForwardFillLatestKnownValueCallTests(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
         self.df = self.spark.createDataFrame(
             Data.forward_fill_latest_known_value_rows,
             Schemas.forward_fill_latest_known_value_locations_schema,

@@ -1,7 +1,7 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._06_estimate_filled_posts.jobs.validate_estimated_ind_cqc_filled_posts_data as job
+from tests.base_test import SparkBaseTest
 from tests.test_file_data import ValidateEstimatedIndCqcFilledPostsData as Data
 from tests.test_file_schemas import ValidateEstimatedIndCqcFilledPostsData as Schemas
 from utils import utils
@@ -9,13 +9,13 @@ from utils import utils
 PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.jobs.validate_estimated_ind_cqc_filled_posts_data"
 
 
-class ValidateEstimatedIndCqcFilledPostsDatasetTests(unittest.TestCase):
+class ValidateEstimatedIndCqcFilledPostsDatasetTests(SparkBaseTest):
     TEST_CLEANED_IND_CQC_SOURCE = "some/directory"
     TEST_ESTIMATED_IND_CQC_FILLED_POSTS_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(
             Data.cleaned_ind_cqc_rows,
             Schemas.cleaned_ind_cqc_schema,

@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
@@ -10,6 +9,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     EstimateNonResCTFilledPostsSchemas as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
@@ -18,9 +18,8 @@ PATCH_PATH: str = (
 )
 
 
-class EstimateNonResCTFilledPostsTests(unittest.TestCase):
+class EstimateNonResCTFilledPostsTests(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
         self.estimates_df = self.spark.createDataFrame(
             Data.estimates_rows,
             Schemas.estimates_schema,

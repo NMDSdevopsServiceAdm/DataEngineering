@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import ANY, Mock, patch
 
 import projects._01_ingest.cqc_pir.jobs.clean_cqc_pir_data as job
@@ -8,6 +7,7 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CleanCQCPIRSchema as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import cleaning_utils, utils
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
@@ -17,14 +17,14 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 PATCH_PATH: str = "projects._01_ingest.cqc_pir.jobs.clean_cqc_pir_data"
 
 
-class CleanCQCpirDatasetTests(unittest.TestCase):
+class CleanCQCpirDatasetTests(SparkBaseTest):
     TEST_SOURCE = "some/directory"
     TEST_DESTINATION = "some/other/directory"
     SCHEMA_LENGTH = len(Schemas.sample_schema)
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.test_cqc_pir_parquet = self.spark.createDataFrame(
             Data.sample_rows_full, schema=Schemas.sample_schema
         )

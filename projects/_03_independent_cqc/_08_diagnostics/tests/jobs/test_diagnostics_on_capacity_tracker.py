@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._08_diagnostics.jobs.diagnostics_on_capacity_tracker as job
@@ -8,6 +7,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     DiagnosticsOnCapacityTrackerSchemas as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome
@@ -17,7 +17,7 @@ PATCH_PATH: str = (
 )
 
 
-class DiagnosticsOnCapacityTrackerTests(unittest.TestCase):
+class DiagnosticsOnCapacityTrackerTests(SparkBaseTest):
     ESTIMATED_FILLED_POSTS_SOURCE = "some/directory"
     CARE_HOME_DIAGNOSTICS_DESTINATION = "some/other/directory"
     CARE_HOME_SUMMARY_DIAGNOSTICS_DESTINATION = "another/directory"
@@ -26,7 +26,6 @@ class DiagnosticsOnCapacityTrackerTests(unittest.TestCase):
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self):
-        self.spark = utils.get_spark()
         self.estimate_jobs_df = self.spark.createDataFrame(
             Data.estimate_filled_posts_rows,
             Schemas.estimate_filled_posts_schema,

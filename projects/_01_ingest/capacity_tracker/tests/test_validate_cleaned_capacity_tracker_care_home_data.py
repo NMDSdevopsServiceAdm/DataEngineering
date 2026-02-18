@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.capacity_tracker.jobs.validate_cleaned_capacity_tracker_care_home_data as job
@@ -8,6 +7,7 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ValidateCleanedCapacityTrackerCareHomeData as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 PATCH_PATH: str = (
@@ -15,13 +15,13 @@ PATCH_PATH: str = (
 )
 
 
-class ValidateCleanedCapacityTrackerCareHomeDatasetTests(unittest.TestCase):
+class ValidateCleanedCapacityTrackerCareHomeDatasetTests(SparkBaseTest):
     TEST_CT_CARE_HOME_SOURCE = "some/directory"
     TEST_CLEANED_CT_CARE_HOME_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.test_ct_care_home_df = self.spark.createDataFrame(
             Data.ct_care_home_rows,
             Schemas.ct_care_home_schema,

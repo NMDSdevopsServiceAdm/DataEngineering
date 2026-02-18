@@ -1,5 +1,3 @@
-import unittest
-
 from pyspark.sql import functions as F
 
 import projects._03_independent_cqc._03_impute.utils.utils as job
@@ -9,14 +7,14 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ImputeUtilsSchema as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CareHome
 
 
-class TestImputeUtils(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
+class TestImputeUtils(SparkBaseTest):
+    def setUp(self): ...
 
 
 class ConvertCareHomeRatiosToPostsTests(TestImputeUtils):

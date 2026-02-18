@@ -1,5 +1,4 @@
 import shutil
-import unittest
 from datetime import date, datetime
 from enum import Enum
 from io import BytesIO
@@ -19,6 +18,7 @@ from pyspark.sql.types import (
     StructType,
 )
 
+from tests.base_test import SparkBaseTest
 from tests.test_file_data import UtilsData
 from tests.test_file_schemas import UtilsSchema
 from utils import utils
@@ -78,7 +78,7 @@ class StubberClass:
         self.__stubber.activate()
 
 
-class UtilsTests(unittest.TestCase):
+class UtilsTests(SparkBaseTest):
     test_csv_path = "tests/test_data/example_csv.csv"
     test_csv_custom_delim_path = "tests/test_data/example_csv_custom_delimiter.csv"
     tmp_dir = "tmp-out"
@@ -97,7 +97,6 @@ class UtilsTests(unittest.TestCase):
     smaller_string_boost = 35
 
     def setUp(self):
-        self.spark = utils.get_spark()
         self.df = self.spark.read.csv(self.test_csv_path, header=True)
         self.df_with_extra_col = self.spark.read.csv(
             self.example_csv_for_schema_tests_extra_column, header=True

@@ -1,4 +1,3 @@
-import unittest
 import warnings
 from datetime import date
 from unittest.mock import ANY, Mock, patch
@@ -12,6 +11,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     EstimateFilledPostsModelsUtils as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
@@ -20,9 +20,8 @@ PATCH_PATH: str = (
 )
 
 
-class EstimateFilledPostsModelsUtilsTests(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
+class EstimateFilledPostsModelsUtilsTests(SparkBaseTest):
+    def setUp(self): ...
 
 
 class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):

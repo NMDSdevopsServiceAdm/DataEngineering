@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_and_without_dormancy_combined as job
@@ -8,6 +7,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ModelNonResWithAndWithoutDormancyCombinedSchemas as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -17,9 +17,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_and_without_dormancy_combined"
 
 
-class ModelNonResWithAndWithoutDormancyCombinedTests(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
+class ModelNonResWithAndWithoutDormancyCombinedTests(SparkBaseTest):
+    def setUp(self): ...
 
 
 class MainTests(ModelNonResWithAndWithoutDormancyCombinedTests):

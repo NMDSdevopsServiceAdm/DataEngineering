@@ -1,5 +1,3 @@
-import unittest
-
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.models import (
     primary_service_rolling_sum as job,
 )
@@ -9,13 +7,13 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     EstimateJobRolesPrimaryServiceRollingSumSchemas as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class EstimateJobRolesPrimaryServiceRollingSumTests(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
+class EstimateJobRolesPrimaryServiceRollingSumTests(SparkBaseTest):
+    def setUp(self): ...
 
 
 class AddRollingSumPartitionedByPrimaryServiceTyoe(

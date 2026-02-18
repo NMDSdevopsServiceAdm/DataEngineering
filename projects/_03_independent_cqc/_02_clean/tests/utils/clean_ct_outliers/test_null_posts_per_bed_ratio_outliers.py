@@ -1,5 +1,3 @@
-import unittest
-
 import projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.null_posts_per_bed_ratio_outliers as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     NullCtPostsToBedsOutliers as Data,
@@ -7,13 +5,13 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     NullCtPostsToBedsOutliers as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class TestCleanCtCareHomeOutliers(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
+class TestCleanCtCareHomeOutliers(SparkBaseTest):
+    def setUp(self): ...
 
 
 class TestNullCtPostsToBedsOutliers(TestCleanCtCareHomeOutliers):

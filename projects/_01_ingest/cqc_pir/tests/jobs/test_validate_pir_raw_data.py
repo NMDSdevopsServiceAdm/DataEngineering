@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.cqc_pir.jobs.validate_pir_raw_data as job
@@ -8,17 +7,18 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ValidatePIRRawData as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 PATCH_PATH: str = "projects._01_ingest.cqc_pir.jobs.validate_pir_raw_data"
 
 
-class ValidatePIRRawDatasetTests(unittest.TestCase):
+class ValidatePIRRawDatasetTests(SparkBaseTest):
     TEST_CQC_PIR_RAW_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.test_raw_cqc_pir_df = self.spark.createDataFrame(
             Data.raw_cqc_pir_rows, Schemas.raw_cqc_pir_schema
         )

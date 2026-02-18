@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import ANY, Mock, call, patch
 
 import projects._02_sfc_internal.cqc_ratings.jobs.flatten_cqc_ratings as job
@@ -8,6 +7,7 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     FlattenCQCRatings as Schema,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
@@ -18,7 +18,7 @@ from utils.column_values.categorical_column_values import CQCCurrentOrHistoricVa
 PATCH_PATH = "projects._02_sfc_internal.cqc_ratings.jobs.flatten_cqc_ratings"
 
 
-class FlattenCQCRatingsTests(unittest.TestCase):
+class FlattenCQCRatingsTests(SparkBaseTest):
     TEST_LOCATIONS_SNAPSHOT_SOURCE = "some/directory"
     TEST_LOCATIONS_RAW_DELTA_SOURCE = "some/directory"
     TEST_WORKPLACE_SOURCE = "some/directory"
@@ -26,7 +26,7 @@ class FlattenCQCRatingsTests(unittest.TestCase):
     TEST_BENCHMARK_RATINGS_DESTINATION = "some/other/directory"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.test_cqc_locations_df = self.spark.createDataFrame(
             Data.test_cqc_locations_rows, schema=Schema.test_cqc_locations_schema
         )

@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils import (
@@ -16,6 +15,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     EstimateIndCQCFilledPostsByJobRoleUtilsSchemas as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import JobGroupLabels
@@ -25,9 +25,8 @@ PATCH_PATH = (
 )
 
 
-class EstimateIndCQCFilledPostsByJobRoleUtilsTests(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
+class EstimateIndCQCFilledPostsByJobRoleUtilsTests(SparkBaseTest):
+    def setUp(self): ...
 
 
 class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(

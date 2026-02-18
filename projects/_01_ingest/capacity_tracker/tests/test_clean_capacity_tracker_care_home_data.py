@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import ANY, Mock, patch
 
 import projects._01_ingest.capacity_tracker.jobs.clean_capacity_tracker_care_home_data as job
@@ -8,6 +7,7 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CleanCapacityTrackerCareHomeSchema as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
@@ -19,7 +19,7 @@ PATCH_PATH: str = (
 )
 
 
-class CapacityTrackerCareHomeTests(unittest.TestCase):
+class CapacityTrackerCareHomeTests(SparkBaseTest):
     TEST_CAPACITY_TRACKER_SOURCE = "some/dir/source"
     TEST_CAPACITY_TRACKER_DESTINATION = "some/dir/destination"
     partition_keys = [
@@ -29,8 +29,7 @@ class CapacityTrackerCareHomeTests(unittest.TestCase):
         Keys.import_date,
     ]
 
-    def setUp(self) -> None:
-        self.spark = utils.get_spark()
+    def setUp(self) -> None: ...
 
 
 class MainTests(CapacityTrackerCareHomeTests):

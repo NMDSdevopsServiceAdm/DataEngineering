@@ -1,4 +1,3 @@
-import unittest
 import warnings
 
 from pyspark.sql.types import (
@@ -18,13 +17,14 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests(unittest.TestCase):
+class WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests(SparkBaseTest):
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.unfiltered_ind_cqc_df = self.spark.createDataFrame(
             Data.unfiltered_ind_cqc_rows,
             Schemas.ind_cqc_schema,

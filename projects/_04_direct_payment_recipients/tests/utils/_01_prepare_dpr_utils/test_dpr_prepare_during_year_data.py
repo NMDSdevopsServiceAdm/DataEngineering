@@ -1,4 +1,3 @@
-import unittest
 import warnings
 
 from pyspark.sql.types import (
@@ -13,13 +12,12 @@ import projects._04_direct_payment_recipients.utils._01_prepare_dpr_utils.prepar
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 
-class TestPrepareDuringYearData(unittest.TestCase):
+class TestPrepareDuringYearData(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
-
         warnings.simplefilter("ignore", ResourceWarning)
 
     def test_calculate_total_dprs_during_year_returns_correct_sum(

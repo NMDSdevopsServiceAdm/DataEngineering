@@ -1,4 +1,3 @@
-import unittest
 import warnings
 from datetime import date
 from unittest.mock import Mock, patch
@@ -10,6 +9,7 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     ReconciliationUtilsSchema as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -27,14 +27,14 @@ from utils.column_names.reconciliation_columns import (
 PATCH_PATH: str = "projects._02_sfc_internal.reconciliation.utils.reconciliation_utils"
 
 
-class ReconciliationTests(unittest.TestCase):
+class ReconciliationTests(SparkBaseTest):
     TEST_CQC_LOCATION_API_SOURCE = "some/source"
     TEST_ASCWDS_WORKPLACE_SOURCE = "another/source"
     TEST_SINGLE_SUB_DESTINATION = "some/destination"
     TEST_PARENT_DESTINATION = "another/destination"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.test_clean_ascwds_workplace_df = self.spark.createDataFrame(
             Data.input_ascwds_workplace_rows,
             Schemas.input_ascwds_workplace_schema,

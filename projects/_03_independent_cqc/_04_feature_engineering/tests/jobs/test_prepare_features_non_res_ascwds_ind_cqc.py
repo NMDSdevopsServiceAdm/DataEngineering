@@ -1,4 +1,3 @@
-import unittest
 import warnings
 from unittest.mock import ANY, Mock, call, patch
 
@@ -13,6 +12,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     NonResAscwdsFeaturesSchema as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -22,12 +22,11 @@ PATCH_PATH: str = (
 )
 
 
-class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
+class NonResLocationsFeatureEngineeringTests(SparkBaseTest):
     CLEANED_IND_CQC_TEST_DATA = "some/source"
     WITH_DORMANCY_DESTINATION = "with_dormancy/destination"
 
     def setUp(self):
-        self.spark = utils.get_spark()
         self.test_df = self.spark.createDataFrame(Data.rows, Schemas.basic_schema)
 
         warnings.simplefilter("ignore", ResourceWarning)

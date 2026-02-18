@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._03_impute.jobs.validate_imputed_ind_cqc_ascwds_and_pir_data as job
@@ -8,6 +7,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ValidateImputedIndCqcAscwdsAndPir as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 PATCH_PATH: str = (
@@ -15,13 +15,13 @@ PATCH_PATH: str = (
 )
 
 
-class ValidateImputedIndCqcAscwdsAndPirsetTests(unittest.TestCase):
+class ValidateImputedIndCqcAscwdsAndPirsetTests(SparkBaseTest):
     TEST_CLEANED_SOURCE = "some/directory"
     TEST_IMPUTED_IND_CQC_ASCWDS_AND_PIR_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(
             Data.cleaned_ind_cqc_rows,
             Schemas.cleaned_ind_cqc_schema,

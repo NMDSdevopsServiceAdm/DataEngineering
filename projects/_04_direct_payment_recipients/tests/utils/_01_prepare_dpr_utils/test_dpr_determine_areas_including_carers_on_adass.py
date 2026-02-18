@@ -1,4 +1,3 @@
-import unittest
 import warnings
 
 from pyspark.sql.types import (
@@ -19,13 +18,12 @@ from projects._04_direct_payment_recipients.direct_payments_column_names import 
 from projects._04_direct_payment_recipients.direct_payments_configuration import (
     DirectPaymentConfiguration as Config,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 
-class TestDetermineAreasIncludingCarers(unittest.TestCase):
+class TestDetermineAreasIncludingCarers(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
-
         warnings.simplefilter("ignore", ResourceWarning)
 
     def test_determine_areas_including_carers_on_adass_completes(self):

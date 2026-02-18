@@ -1,4 +1,3 @@
-import unittest
 import warnings
 from unittest.mock import Mock, patch
 
@@ -9,19 +8,20 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     ReconciliationSchema as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 PATCH_PATH: str = "projects._02_sfc_internal.reconciliation.jobs.reconciliation"
 
 
-class ReconciliationTests(unittest.TestCase):
+class ReconciliationTests(SparkBaseTest):
     TEST_CQC_DEREG_LOCATIONS_SOURCE = "some/source"
     TEST_ASCWDS_WORKPLACE_SOURCE = "another/source"
     TEST_SINGLE_SUB_DESTINATION = "some/destination"
     TEST_PARENT_DESTINATION = "another/destination"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.test_cqc_dereg_locations_df = self.spark.createDataFrame(
             Data.input_cqc_dereg_locations_rows,
             Schemas.input_cqc_dereg_locations_schema,

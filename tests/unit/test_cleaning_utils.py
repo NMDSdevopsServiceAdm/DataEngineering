@@ -1,9 +1,8 @@
-import unittest
-
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 
 import utils.cleaning_utils as job
+from tests.base_test import SparkBaseTest
 from tests.test_file_data import CleaningUtilsData as Data
 from tests.test_file_schemas import CleaningUtilsSchemas as Schemas
 from utils import utils
@@ -25,9 +24,8 @@ gender_labels: str = "gender_labels"
 nationality_labels: str = "nationality_labels"
 
 
-class TestCleaningUtilsCategorical(unittest.TestCase):
+class TestCleaningUtilsCategorical(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
         self.test_worker_df = self.spark.createDataFrame(
             Data.worker_rows, schema=Schemas.worker_schema
         )
@@ -171,9 +169,8 @@ class TestCleaningUtilsCategorical(unittest.TestCase):
         self.assertEqual(returned_data, expected_data)
 
 
-class TestCleaningUtilsScale(unittest.TestCase):
+class TestCleaningUtilsScale(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
         self.test_scale_df = self.spark.createDataFrame(
             Data.scale_data, schema=Schemas.scale_schema
         )
@@ -360,9 +357,8 @@ class TestCleaningUtilsScale(unittest.TestCase):
         self.assertEqual(returned_data, expected_data)
 
 
-class TestCleaningUtilsColumnToDate(unittest.TestCase):
+class TestCleaningUtilsColumnToDate(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
         self.sample_df = self.spark.createDataFrame(
             Data.column_to_date_data, Schemas.sample_col_to_date_schema
         )
@@ -393,9 +389,8 @@ class TestCleaningUtilsColumnToDate(unittest.TestCase):
         )
 
 
-class TestCleaningUtilsAlignDates(unittest.TestCase):
+class TestCleaningUtilsAlignDates(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
         self.primary_column = AWPClean.ascwds_workplace_import_date
         self.secondary_column = CQCLClean.cqc_location_import_date
         self.primary_df = self.spark.createDataFrame(
@@ -578,9 +573,8 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
         self.assertEqual(returned_columns, expected_columns)
 
 
-class ReduceDatasetToEarliestFilePerMonthTests(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
+class ReduceDatasetToEarliestFilePerMonthTests(SparkBaseTest):
+    def setUp(self): ...
 
     def test_reduce_dataset_to_earliest_file_per_month_returns_correct_rows(self):
         test_df = self.spark.createDataFrame(
@@ -598,9 +592,9 @@ class ReduceDatasetToEarliestFilePerMonthTests(unittest.TestCase):
         )
 
 
-class CastToIntTests(unittest.TestCase):
+class CastToIntTests(SparkBaseTest):
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.filled_posts_columns = [AWP.total_staff, AWP.worker_records]
 
     def test_cast_to_int_returns_strings_formatted_as_ints_to_ints(self):
@@ -638,9 +632,8 @@ class CastToIntTests(unittest.TestCase):
         self.assertEqual(expected_data, returned_data)
 
 
-class CalculateFilledPostsPerBedRatioTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.spark = utils.get_spark()
+class CalculateFilledPostsPerBedRatioTests(SparkBaseTest):
+    def setUp(self) -> None: ...
 
     def test_calculate_filled_posts_per_bed_ratio(self):
         test_df = self.spark.createDataFrame(
@@ -659,9 +652,8 @@ class CalculateFilledPostsPerBedRatioTests(unittest.TestCase):
         )
 
 
-class CalculateFilledPostsFromBedsAndRatioTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.spark = utils.get_spark()
+class CalculateFilledPostsFromBedsAndRatioTests(SparkBaseTest):
+    def setUp(self) -> None: ...
 
     def test_calculate_filled_posts_from_beds_and_ratio(self):
         test_df = self.spark.createDataFrame(
@@ -680,10 +672,9 @@ class CalculateFilledPostsFromBedsAndRatioTests(unittest.TestCase):
         )
 
 
-class RemoveDuplicatesBasedOnColumnOrderTests(unittest.TestCase):
+class RemoveDuplicatesBasedOnColumnOrderTests(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
-        self.spark = utils.get_spark()
 
     def test_remove_duplicate_locationids_returns_expected_rows_when_descending(self):
         test_df = self.spark.createDataFrame(
@@ -733,10 +724,9 @@ class RemoveDuplicatesBasedOnColumnOrderTests(unittest.TestCase):
         self.assertEqual(returned_data, expected_data)
 
 
-class CreateBandedBedCountColumnTests(unittest.TestCase):
+class CreateBandedBedCountColumnTests(SparkBaseTest):
     def setUp(self) -> None:
         super().setUp()
-        self.spark = utils.get_spark()
 
     def test_create_banded_bed_count_column(self):
         test_df = self.spark.createDataFrame(

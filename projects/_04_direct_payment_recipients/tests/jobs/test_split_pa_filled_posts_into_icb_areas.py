@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import ANY, Mock, patch
 
 import projects._04_direct_payment_recipients.jobs.split_pa_filled_posts_into_icb_areas as job
@@ -11,6 +10,7 @@ from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_data imp
 from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_schemas import (
     PAFilledPostsByIcbAreaSchema as TestSchema,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
@@ -21,13 +21,13 @@ PATCH_PATH: str = (
 )
 
 
-class SplitPAFilledPostsIntoIcbAreas(unittest.TestCase):
+class SplitPAFilledPostsIntoIcbAreas(SparkBaseTest):
     TEST_ONS_SOURCE = "some/directory"
     TEST_PA_SOURCE = "some/directory"
     TEST_DESTINATION = "some/directory"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.sample_ons_contemporary_df = self.spark.createDataFrame(
             TestData.sample_ons_contemporary_rows,
             schema=TestSchema.sample_ons_contemporary_schema,

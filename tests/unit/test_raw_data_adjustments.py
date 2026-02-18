@@ -1,14 +1,12 @@
-import unittest
-
 import utils.raw_data_adjustments as job
+from tests.base_test import SparkBaseTest
 from tests.test_file_data import RawDataAdjustments as Data
 from tests.test_file_schemas import RawDataAdjustments as Schemas
 from utils import utils
 
 
-class TestRawDataAdjustments(unittest.TestCase):
-    def setUp(self) -> None:
-        self.spark = utils.get_spark()
+class TestRawDataAdjustments(SparkBaseTest):
+    def setUp(self) -> None: ...
 
 
 class RemoveDuplicateWorkerTests(TestRawDataAdjustments):

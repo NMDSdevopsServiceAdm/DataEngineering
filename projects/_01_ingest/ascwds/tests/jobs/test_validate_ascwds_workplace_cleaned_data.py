@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.ascwds.jobs.validate_ascwds_workplace_cleaned_data as job
@@ -8,15 +7,16 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ValidateASCWDSWorkplaceCleanedData as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 
-class ValidateASCWDSWorkplaceCleanedDatasetTests(unittest.TestCase):
+class ValidateASCWDSWorkplaceCleanedDatasetTests(SparkBaseTest):
     TEST_ASCWDS_WORKPLACE_CLEANED_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.test_cleaned_ascwds_workplace_df = self.spark.createDataFrame(
             Data.cleaned_ascwds_workplace_rows, Schemas.cleaned_ascwds_workplace_schema
         )

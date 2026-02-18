@@ -1,4 +1,3 @@
-import unittest
 import warnings
 from unittest.mock import Mock, patch
 
@@ -9,6 +8,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     CleanCapacityTrackerCareHomeOutliersSchema as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 PATCH_PATH: str = (
@@ -16,9 +16,9 @@ PATCH_PATH: str = (
 )
 
 
-class CleanCapacityTrackerCareHomeOutliersTests(unittest.TestCase):
+class CleanCapacityTrackerCareHomeOutliersTests(SparkBaseTest):
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.ind_cqc_df = self.spark.createDataFrame(
             Data.ind_cqc_rows, Schemas.ind_cqc_schema
         )

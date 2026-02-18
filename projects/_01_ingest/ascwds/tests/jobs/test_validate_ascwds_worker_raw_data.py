@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.ascwds.jobs.validate_ascwds_worker_raw_data as job
@@ -8,15 +7,16 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ValidateASCWDSWorkerRawData as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 
 
-class ValidateASCWDSWorkerRawDatasetTests(unittest.TestCase):
+class ValidateASCWDSWorkerRawDatasetTests(SparkBaseTest):
     TEST_ASCWDS_WORKER_RAW_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.test_raw_ascwds_worker_df = self.spark.createDataFrame(
             Data.raw_ascwds_worker_rows, Schemas.raw_ascwds_worker_schema
         )

@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import ANY, Mock, patch
 
 from pyspark.sql.dataframe import DataFrame
@@ -12,6 +11,7 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ASCWDSWorkerSchemas,
     ASCWDSWorkplaceSchemas,
 )
+from tests.base_test import SparkBaseTest
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -21,7 +21,7 @@ from utils.utils import get_spark
 PATCH_PATH: str = "projects._01_ingest.ascwds.jobs.clean_ascwds_worker_data"
 
 
-class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
+class IngestASCWDSWorkerDatasetTests(SparkBaseTest):
     TEST_WORKER_SOURCE = "s3://some_bucket/some_worker_source_key"
     TEST_WORKPLACE_SOURCE = "s3://some_bucket/some_workplace_source_key"
     TEST_DESTINATION = "s3://some_bucket/some_destination_key"
