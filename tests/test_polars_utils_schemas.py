@@ -8,6 +8,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 @dataclass
@@ -54,21 +55,21 @@ class RawDataAdjustmentsSchemas:
 class CalculateWindowedColumnSchemas:
     calculate_windowed_column_schema = pl.Schema(
         [
-            (IndCQC.location_id, StringType()),
-            (IndCQC.cqc_location_import_date, DateType()),
-            (IndCQC.care_home, StringType()),
-            (IndCQC.ascwds_filled_posts, DoubleType()),
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.ascwds_filled_posts, pl.Float64()),
         ]
     )
     expected_calculate_windowed_column_schema = pl.Schema(
-        [
-            *calculate_windowed_column_schema,
-            (new_column, DoubleType()),
+        list(calculate_windowed_column_schema.items())
+        + [
+            ("new_column", pl.Float64()),
         ]
     )
     expected_calculate_windowed_column_count_schema = pl.Schema(
-        [
-            *calculate_windowed_column_schema,
-            (new_column, IntegerType()),
+        list(calculate_windowed_column_schema.items())
+        + [
+            ("new_column", pl.UInt32()),
         ]
     )

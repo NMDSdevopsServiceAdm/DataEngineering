@@ -20,12 +20,13 @@ from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
 
 from polars_utils import utils
 
-from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+from tests.test_polars_utils_data import (
     CalculateWindowedColumnData as Data,
 )
-from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
-    NullFilledPostsUsingInvalidMissingDataCodeSchema as Schemas,
+from tests.test_polars_utils_schemas import (
+    CalculateWindowedColumnSchemas as Schemas,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 SRC_PATH = "polars_utils.validation.actions"
@@ -671,45 +672,52 @@ class SelectRowsWithNonNullValueTests(unittest.TestCase):
         pl_testing.assert_frame_equal(self.returned_lf, self.expected_lf)
 
 
-class CalculateWindowedColumnTests(UtilsTests):
+class CalculateWindowedColumnTests(unittest.TestCase):
     def setUp(self) -> None:
         self.test_lf = pl.LazyFrame(
             Data.calculate_windowed_column_rows,
             Schemas.calculate_windowed_column_schema,
             orient="row",
         )
+        # self.window = Window.partitionBy(IndCQC.care_home).orderBy(
+        #     IndCQC.cqc_location_import_date
+        # )
 
-    def test_calculate_windowed_column_avg(self):
-        returned_df = utils.calculate_windowed_column(
-            self.test_df,
-            self.window,
-            Schemas.new_column,
-            IndCQC.ascwds_filled_posts,
-            "avg",
+    def test_calculate_windowed_column_with_agg_function_avg(self):
+        returned_lf = utils.calculate_windowed_column(
+            lf=self.test_lf,
+            new_col="new_column",
+            input_column=IndCQC.ascwds_filled_posts,
+            aggregation_function="avg",
+            partition_by=IndCQC.care_home,
+            order_by=IndCQC.cqc_location_import_date,
         )
-        expected_df = self.spark.createDataFrame(
+        expected_lf = pl.LazyFrame(
             Data.expected_calculate_windowed_column_avg_rows,
             Schemas.expected_calculate_windowed_column_schema,
+            orient="row",
         )
-        returned_data = returned_df.sort(IndCQC.location_id).collect()
-        expected_data = expected_df.collect()
-        self.assertEqual(returned_data, expected_data)
+        returned_data = returned_lf.sort(IndCQC.location_id).collect()
+        expected_data = expected_lf.collect()
+        pl_testing.assert_frame_equal(returned_data, expected_data)
 
     def test_calculate_windowed_column_count(self):
-        returned_df = utils.calculate_windowed_column(
-            self.test_df,
-            self.window,
-            Schemas.new_column,
-            IndCQC.ascwds_filled_posts,
-            "count",
+        returned_lf = utils.calculate_windowed_column(
+            lf=self.test_lf,
+            new_col="new_column",
+            input_column=IndCQC.ascwds_filled_posts,
+            aggregation_function="count",
+            partition_by=IndCQC.care_home,
+            order_by=IndCQC.cqc_location_import_date,
         )
-        expected_df = self.spark.createDataFrame(
+        expected_lf = pl.LazyFrame(
             Data.expected_calculate_windowed_column_count_rows,
             Schemas.expected_calculate_windowed_column_count_schema,
+            orient="row",
         )
-        returned_data = returned_df.sort(IndCQC.location_id).collect()
-        expected_data = expected_df.collect()
-        self.assertEqual(returned_data, expected_data)
+        returned_data = returned_lf.sort(IndCQC.location_id).collect()
+        expected_data = expected_lf.collect()
+        pl_testing.assert_frame_equal(returned_data, expected_data)
 
     def test_calculate_windowed_column_max(self):
         returned_df = utils.calculate_windowed_column(
