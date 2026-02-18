@@ -2,11 +2,12 @@ from datetime import datetime
 
 import polars as pl
 
-from utils.column_names.ind_cqc_pipeline_columns import ArchiveColumns
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+
+most_recent_annual_estimate_date: str = "most_recent_annual_estimate_date"
 
 
 def select_import_dates_to_archive(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -23,21 +24,18 @@ def select_import_dates_to_archive(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = add_latest_annual_estimate_date(lf)
 
     import_date_col = pl.col(IndCQC.cqc_location_import_date)
-    most_recent_annual_estimate_date_col = pl.col(
-        ArchiveColumns.most_recent_annual_estimate_date
-    )
     lf = lf.filter(
-        (import_date_col >= most_recent_annual_estimate_date_col)
+        (import_date_col >= pl.col(most_recent_annual_estimate_date))
         | (
-            (import_date_col < most_recent_annual_estimate_date_col)
+            (import_date_col < pl.col(most_recent_annual_estimate_date))
             & (
                 import_date_col.dt.month()
-                == most_recent_annual_estimate_date_col.dt.month()
+                == pl.col(most_recent_annual_estimate_date).dt.month()
             )
         )
     )
 
-    return lf.drop(ArchiveColumns.most_recent_annual_estimate_date)
+    return lf.drop(most_recent_annual_estimate_date)
 
 
 def add_latest_annual_estimate_date(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -59,7 +57,7 @@ def add_latest_annual_estimate_date(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.when(max_date.dt.month() < april)
         .then(pl.date(max_date.dt.year() - 1, april, 1))
         .otherwise(pl.date(max_date.dt.year(), april, 1))
-        .alias(ArchiveColumns.most_recent_annual_estimate_date)
+        .alias(most_recent_annual_estimate_date)
     )
 
     return lf
@@ -89,4 +87,5 @@ def create_archive_date_partition_columns(
         (pl.lit(timestamp).alias(ArchiveKeys.archive_timestamp)),
     )
 
+    return lf
     return lf

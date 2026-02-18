@@ -413,12 +413,3 @@ class ModelRegistryKeys:
     model_params: str = "model_params"
     model_type: str = "model_type"
     version: str = "version"
-
-
-@dataclass
-class ArchiveColumns:
-    """The names of the temporary columns created during the archiving process."""
-
-    max_import_date_month: str = "max_import_date_month"
-    max_import_date_year: str = "max_import_date_year"
-    most_recent_annual_estimate_date: str = "most_recent_annual_estimate_date"

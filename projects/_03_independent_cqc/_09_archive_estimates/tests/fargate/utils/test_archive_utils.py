@@ -13,10 +13,7 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     ArchiveFilledPostsEstimates as Schemas,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    ArchiveColumns,
-    ArchivePartitionKeys,
-)
+from utils.column_names.ind_cqc_pipeline_columns import ArchivePartitionKeys
 
 PATCH_PATH: str = (
     "projects._03_independent_cqc._09_archive_estimates.fargate.utils.archive_utils"
@@ -64,14 +61,14 @@ class AddLastestAnnualEstimateDate(unittest.TestCase):
 
     def test_most_recent_annual_estimate_date_column_is_added(self):
         self.assertIn(
-            ArchiveColumns.most_recent_annual_estimate_date,
+            job.most_recent_annual_estimate_date,
             self.returned_lf.collect_schema().names(),
         )
 
         cols_added = set(self.returned_lf.collect_schema().names()) - set(
             self.input_lf.collect_schema().names()
         )
-        self.assertEqual(cols_added, {ArchiveColumns.most_recent_annual_estimate_date})
+        self.assertEqual(cols_added, {job.most_recent_annual_estimate_date})
 
     def test_most_recent_annual_estimate_date_value_is_as_expected(self):
         expected_lf = pl.LazyFrame(

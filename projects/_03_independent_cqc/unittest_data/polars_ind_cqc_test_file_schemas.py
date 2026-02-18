@@ -17,7 +17,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import ArchiveColumns
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
 )
@@ -595,7 +594,7 @@ class ArchiveFilledPostsEstimates:
 
     expected_add_latest_annual_estimate_date_schema = (
         list(estimate_filled_posts_schema.items())
-    ) + [ArchiveColumns.most_recent_annual_estimate_date]
+    ) + ["most_recent_annual_estimate_date"]
 
     expected_create_archive_date_partitions_schema = pl.Schema(
         list(estimate_filled_posts_schema.items())
