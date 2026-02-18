@@ -13,7 +13,9 @@ from pyspark.sql import SparkSession
 def spark(worker_id):
     """
     Creates a unique SparkSession for each xdist worker.
+
     The 'worker_id' fixture is provided by pytest-xdist (e.g., 'gw0', 'gw1').
+    Still works fine when xdist isn't used.
     """
     # Calculate a safe cap per worker (e.g., 1GB)
     mem_limit = "1g"
