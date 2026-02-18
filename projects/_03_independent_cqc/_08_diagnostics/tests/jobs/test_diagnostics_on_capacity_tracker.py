@@ -1,3 +1,4 @@
+import unittest
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._08_diagnostics.jobs.diagnostics_on_capacity_tracker as job

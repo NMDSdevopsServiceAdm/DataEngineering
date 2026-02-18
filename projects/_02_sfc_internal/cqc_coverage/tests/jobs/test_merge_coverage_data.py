@@ -1,3 +1,4 @@
+import unittest
 from unittest.mock import ANY, Mock, patch
 
 import projects._02_sfc_internal.cqc_coverage.jobs.merge_coverage_data as job

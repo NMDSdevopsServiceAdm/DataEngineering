@@ -1,3 +1,4 @@
+import unittest
 from unittest.mock import ANY, Mock, call, patch
 
 import projects._02_sfc_internal.cqc_ratings.jobs.flatten_cqc_ratings as job
