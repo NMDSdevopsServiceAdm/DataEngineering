@@ -29,9 +29,6 @@ class ValidateMergedCoverageDatasetTests(SparkBaseTest):
 
 
 class MainTests(ValidateMergedCoverageDatasetTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
@@ -51,9 +48,6 @@ class MainTests(ValidateMergedCoverageDatasetTests):
 
 
 class CalculateExpectedSizeofDataset(ValidateMergedCoverageDatasetTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
     def test_calculate_expected_size_of_merged_coverage_dataset_returns_correct_row_count(
         self,
     ):

@@ -24,9 +24,6 @@ class ValidatePIRRawDatasetTests(SparkBaseTest):
 
 
 class MainTests(ValidatePIRRawDatasetTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(

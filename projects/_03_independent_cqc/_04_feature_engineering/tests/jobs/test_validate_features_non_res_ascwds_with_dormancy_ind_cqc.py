@@ -34,9 +34,6 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcDatasetTests(SparkBaseTest):
 
 
 class MainTests(ValidateFeaturesNonResASCWDSWithDormancyIndCqcDatasetTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
@@ -63,9 +60,6 @@ class MainTests(ValidateFeaturesNonResASCWDSWithDormancyIndCqcDatasetTests):
 class CalculateExpectedSizeofDataset(
     ValidateFeaturesNonResASCWDSWithDormancyIndCqcDatasetTests
 ):
-    def setUp(self) -> None:
-        return super().setUp()
-
     def test_calculate_expected_size_of_non_res_ascwds_with_dormancy_ind_cqc_features_dataset_returns_correct_row_count(
         self,
     ):
