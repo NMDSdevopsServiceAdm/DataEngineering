@@ -1,5 +1,7 @@
 # conftest.py
 import os
+import tempfile
+from pathlib import Path
 from typing import cast
 
 import psutil
@@ -24,8 +26,18 @@ def spark(worker_id):
     # Import in here because it needs the SPARK_VERSION env var to init.
     import pydeequ
 
+    # Get the system's default temp directory (e.g., /tmp on Linux, AppData\Local\Temp on Win)
+    base_temp = Path(tempfile.gettempdir())
+    derby_db_path = base_temp / "derby" / worker_id
+    warehouse_path = base_temp / "spark-warehouse" / worker_id
+
+    # Ensure the directories exist before Spark tries to use them
+    derby_db_path.mkdir(parents=True, exist_ok=True)
+    warehouse_path.mkdir(parents=True, exist_ok=True)
+
     # Calculate a safe cap per worker (e.g., 1GB)
     mem_limit = "1g"
+
     # Cast type here to keep pylance happy.
     builder = cast(SparkSession.Builder, SparkSession.builder)
     spark = (
@@ -34,9 +46,9 @@ def spark(worker_id):
         # KEY: Isolate the Derby metastore and Warehouse to prevent file locks
         .config(
             "spark.driver.extraJavaOptions",
-            f"-Dderby.system.home=/tmp/derby/{worker_id}",
+            f"-Dderby.system.home={derby_db_path.as_posix()}",
         )
-        .config("spark.sql.warehouse.dir", f"/tmp/spark-warehouse/{worker_id}")
+        .config("spark.sql.warehouse.dir", warehouse_path.as_uri())
         # KEY: Randomize UI port to avoid 'Address already in use'
         .config("spark.ui.port", "0")
         # Optimization: set shuffle partitions to 1 for speed
