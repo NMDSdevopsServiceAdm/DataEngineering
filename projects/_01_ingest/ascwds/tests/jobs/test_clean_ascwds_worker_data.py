@@ -17,7 +17,6 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKeys
-from utils.utils import get_spark
 
 PATCH_PATH: str = "projects._01_ingest.ascwds.jobs.clean_ascwds_worker_data"
 
@@ -34,7 +33,6 @@ class IngestASCWDSWorkerDatasetTests(SparkBaseTest):
     ]
 
     def setUp(self) -> None:
-        self.spark = get_spark()
         self.test_ascwds_worker_df = self.spark.createDataFrame(
             ASCWDSWorkerData.worker_rows, ASCWDSWorkerSchemas.worker_schema
         )

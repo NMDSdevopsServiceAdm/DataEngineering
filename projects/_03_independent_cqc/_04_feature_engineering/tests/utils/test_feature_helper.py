@@ -9,13 +9,10 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
 )
 from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.utils import get_spark
 
 
 class LocationsFeatureEngineeringTests(SparkBaseTest):
     def setUp(self):
-        self.spark = get_spark()
-
         warnings.simplefilter("ignore", ResourceWarning)
 
 
