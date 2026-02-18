@@ -8,7 +8,6 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     ModelNonResWithAndWithoutDormancyCombinedSchemas as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,

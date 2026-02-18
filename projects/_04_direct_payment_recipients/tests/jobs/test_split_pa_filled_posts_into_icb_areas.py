@@ -11,7 +11,6 @@ from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_schemas 
     PAFilledPostsByIcbAreaSchema as TestSchema,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )

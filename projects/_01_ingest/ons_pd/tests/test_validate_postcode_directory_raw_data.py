@@ -8,7 +8,6 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ValidatePostcodeDirectoryRawData as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 
 PATCH_PATH = "projects._01_ingest.ons_pd.jobs.validate_postcode_directory_raw_data"
 

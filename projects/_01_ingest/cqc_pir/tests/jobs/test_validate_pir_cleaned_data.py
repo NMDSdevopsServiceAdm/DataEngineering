@@ -8,7 +8,6 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ValidatePIRCleanedData as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 
 PATCH_PATH: str = "projects._01_ingest.cqc_pir.jobs.validate_pir_cleaned_data"
 

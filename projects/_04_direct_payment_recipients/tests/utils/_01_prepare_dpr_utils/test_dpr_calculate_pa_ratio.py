@@ -11,7 +11,6 @@ from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_schemas 
     CalculatePaRatioSchemas as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 
 
 class TestCalculatePARatio(SparkBaseTest):

@@ -14,7 +14,6 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     IngestCapacityTrackerNonResSchema as NonResSchema,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 
 PATCH_PATH = "projects._01_ingest.capacity_tracker.jobs.ingest_capacity_tracker_data"
 

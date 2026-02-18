@@ -8,7 +8,6 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     NullPeopleDirectlyEmployedSchema as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as PIRCleanCols,
 )

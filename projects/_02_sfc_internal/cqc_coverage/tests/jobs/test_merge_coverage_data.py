@@ -8,7 +8,6 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     MergeCoverageData as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )

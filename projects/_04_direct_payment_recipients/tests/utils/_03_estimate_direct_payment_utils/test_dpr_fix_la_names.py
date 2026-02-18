@@ -6,7 +6,6 @@ from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_schemas 
     PAFilledPostsByIcbAreaSchema as TestSchema,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 
 
 class ChangeLaNamesToMatchOnsCleanedLaNames(SparkBaseTest):

@@ -16,7 +16,6 @@ from projects._04_direct_payment_recipients.direct_payments_column_names import 
     DirectPaymentColumnValues as Values,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 
 
 class TestRemoveOutliers(SparkBaseTest):

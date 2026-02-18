@@ -5,7 +5,6 @@ import utils.cleaning_utils as job
 from tests.base_test import SparkBaseTest
 from tests.test_file_data import CleaningUtilsData as Data
 from tests.test_file_schemas import CleaningUtilsSchemas as Schemas
-from utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )

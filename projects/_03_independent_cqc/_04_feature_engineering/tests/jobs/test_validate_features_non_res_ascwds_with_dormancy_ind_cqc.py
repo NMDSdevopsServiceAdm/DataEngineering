@@ -8,7 +8,6 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     ValidateFeaturesNonResASCWDSWithDormancyIndCqcSchema as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 
 PATCH_PATH: str = (
     "projects._03_independent_cqc._04_feature_engineering.jobs.validate_features_non_res_ascwds_with_dormancy_ind_cqc_data"

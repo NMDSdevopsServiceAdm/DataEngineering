@@ -4,7 +4,6 @@ import projects._03_independent_cqc._06_estimate_filled_posts.jobs.validate_esti
 from tests.base_test import SparkBaseTest
 from tests.test_file_data import ValidateEstimatedIndCqcFilledPostsData as Data
 from tests.test_file_schemas import ValidateEstimatedIndCqcFilledPostsData as Schemas
-from utils import utils
 
 PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.jobs.validate_estimated_ind_cqc_filled_posts_data"
 

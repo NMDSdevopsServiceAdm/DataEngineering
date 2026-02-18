@@ -19,7 +19,6 @@ from projects._04_direct_payment_recipients.direct_payments_configuration import
     DirectPaymentConfiguration as Config,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 
 
 class TestDetermineAreasIncludingCarers(SparkBaseTest):

@@ -8,7 +8,6 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     ValidateCleanedIndCqcData as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 
 PATCH_PATH = "projects._03_independent_cqc._02_clean.jobs.validate_cleaned_ind_cqc_data"
 

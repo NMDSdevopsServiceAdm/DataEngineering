@@ -8,7 +8,6 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     IngestASCWDSData as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )

@@ -8,7 +8,6 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     FlattenCQCRatings as Schema,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,

@@ -7,7 +7,6 @@ from projects._04_direct_payment_recipients.direct_payments_column_names import 
     DirectPaymentColumnNames as DP,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 
 
 class TestCreateSummaryTable(SparkBaseTest):

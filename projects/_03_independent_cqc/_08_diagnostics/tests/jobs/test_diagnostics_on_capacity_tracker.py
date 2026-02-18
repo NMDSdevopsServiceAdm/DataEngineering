@@ -8,7 +8,6 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     DiagnosticsOnCapacityTrackerSchemas as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome
 

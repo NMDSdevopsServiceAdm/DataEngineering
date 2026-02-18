@@ -9,7 +9,6 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     CleanAscwdsFilledPostOutliersSchema as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 
 PATCH_PATH: str = (
     "projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers"

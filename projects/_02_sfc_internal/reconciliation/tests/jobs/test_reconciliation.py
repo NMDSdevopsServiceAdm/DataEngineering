@@ -9,7 +9,6 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     ReconciliationSchema as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 
 PATCH_PATH: str = "projects._02_sfc_internal.reconciliation.jobs.reconciliation"
 

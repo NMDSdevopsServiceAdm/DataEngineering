@@ -10,7 +10,6 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CleanONSData as Schema,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )

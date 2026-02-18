@@ -8,7 +8,6 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CleanCapacityTrackerCareHomeSchema as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
 )

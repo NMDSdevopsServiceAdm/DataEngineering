@@ -8,7 +8,7 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CleanCQCPIRSchema as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import cleaning_utils, utils
+from utils import cleaning_utils
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )

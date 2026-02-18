@@ -1,5 +1,5 @@
 import warnings
-from unittest.mock import ANY, Mock, call, patch
+from unittest.mock import ANY, Mock, patch
 
 from pyspark.ml.linalg import SparseVector
 from pyspark.sql import DataFrame
@@ -13,7 +13,6 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     NonResAscwdsFeaturesSchema as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 

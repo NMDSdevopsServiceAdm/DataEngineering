@@ -8,7 +8,6 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ValidateASCWDSWorkplaceCleanedData as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 
 
 class ValidateASCWDSWorkplaceCleanedDatasetTests(SparkBaseTest):
