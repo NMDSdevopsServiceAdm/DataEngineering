@@ -3,9 +3,13 @@ import os
 from typing import cast
 
 import psutil
-import pydeequ
 import pytest
 from pyspark.sql import SparkSession
+
+
+def pytest_sessionstart(session):
+    """Hook to run before the session starts - set env vars here."""
+    os.environ["SPARK_VERSION"] = "3.5"
 
 
 @pytest.fixture(scope="session")
@@ -17,6 +21,9 @@ def spark(worker_id):
     The 'worker_id' fixture is provided by pytest-xdist (e.g., 'gw0', 'gw1').
     Still works fine when xdist isn't used.
     """
+    # Import in here because it needs the SPARK_VERSION env var to init.
+    import pydeequ
+
     # Calculate a safe cap per worker (e.g., 1GB)
     mem_limit = "1g"
     # Cast type here to keep pylance happy.
