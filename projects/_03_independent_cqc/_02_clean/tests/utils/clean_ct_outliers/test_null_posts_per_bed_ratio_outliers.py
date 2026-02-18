@@ -31,9 +31,6 @@ class TestNullCtPostsToBedsOutliers(TestCleanCtCareHomeOutliers):
 
 
 class RatioCutoffValueTests(TestCleanCtCareHomeOutliers):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_ratio_cutoffs_are_correct(self):
         self.assertEqual(job.MINIMUM_RATIO_CUTOFF, 0.66)
         self.assertEqual(job.MAXIMUM_RATIO_CUTOFF, 6.0)

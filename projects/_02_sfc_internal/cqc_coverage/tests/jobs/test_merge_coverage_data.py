@@ -55,9 +55,6 @@ class SetupForTests(SparkBaseTest):
 
 
 class MainTests(SetupForTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.filter_df_to_maximum_value_in_column")
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.join_provider_name_into_merged_coverage_df")
@@ -127,9 +124,6 @@ class MainTests(SetupForTests):
 
 
 class JoinAscwdsIntoCqcLocationsTests(SetupForTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_join_ascwds_data_into_cqc_location_df(self):
         returned_df = job.join_ascwds_data_into_cqc_location_df(
             self.test_clean_cqc_location_df,

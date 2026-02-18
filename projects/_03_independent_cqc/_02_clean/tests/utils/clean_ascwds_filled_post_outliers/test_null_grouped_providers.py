@@ -24,9 +24,6 @@ class NullGroupedProvidersTests(SparkBaseTest):
 
 
 class NullGroupedProvidersConfigTests(NullGroupedProvidersTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_minimum_size_of_care_home_location_to_identify(self):
         self.assertEqual(
             job.NullGroupedProvidersConfig.MINIMUM_SIZE_OF_CARE_HOME_LOCATION_TO_IDENTIFY,
@@ -101,9 +98,6 @@ class MainTests(NullGroupedProvidersTests):
 
 
 class CalculateDataForGroupedProviderIdentificationTests(NullGroupedProvidersTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_calculate_data_for_grouped_provider_identification_returns_correct_rows_where_provider_has_one_location(
         self,
     ):
@@ -148,9 +142,6 @@ class CalculateDataForGroupedProviderIdentificationTests(NullGroupedProvidersTes
 
 
 class IdentifyPotentialGroupedProviderTests(NullGroupedProvidersTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_identify_potential_grouped_providers_returns_correct_rows(
         self,
     ):
@@ -170,9 +161,6 @@ class IdentifyPotentialGroupedProviderTests(NullGroupedProvidersTests):
 
 
 class NullCareHomeGroupedProvidersTests(NullGroupedProvidersTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_null_care_home_grouped_providers_returns_null_when_criteria_met(
         self,
     ):
@@ -213,9 +201,6 @@ class NullCareHomeGroupedProvidersTests(NullGroupedProvidersTests):
 
 
 class NullNonResidentialGroupedProvidersTests(NullGroupedProvidersTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_null_non_residential_grouped_providers_returns_null_when_criteria_met(
         self,
     ):

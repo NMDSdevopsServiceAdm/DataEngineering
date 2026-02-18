@@ -153,9 +153,6 @@ class SplitDatasetForImputationTests(
 class IdentifyLocationsWithANonNullSubmissionTests(
     ModelImputationWithExtrapolationAndInterpolationTests
 ):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_returned_dataframe_has_expected_values_when_locations_have_a_non_null_value(
         self,
     ):
@@ -221,9 +218,6 @@ class IdentifyLocationsWithANonNullSubmissionTests(
 
 
 class ModelImputationTests(ModelImputationWithExtrapolationAndInterpolationTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_imputation_model_returns_correct_values(self):
         imputation_model: str = "imputation_model"
         test_df = self.spark.createDataFrame(

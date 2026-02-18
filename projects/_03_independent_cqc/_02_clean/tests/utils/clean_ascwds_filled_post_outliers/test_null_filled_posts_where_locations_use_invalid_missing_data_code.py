@@ -47,10 +47,5 @@ class MainTests(NullFilledPostsUsingInvalidMissingDataCodeTests):
 
 
 class InvalidMissingDataCodeTests(NullFilledPostsUsingInvalidMissingDataCodeTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_missing_data_code_is_correct(
-        self,
-    ):
+    def test_missing_data_code_is_correct(self):
         self.assertEqual(job.INVALID_MISSING_DATA_CODE, 999.0)

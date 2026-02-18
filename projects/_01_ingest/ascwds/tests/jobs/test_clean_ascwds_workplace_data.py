@@ -43,9 +43,6 @@ class CleanASCWDSWorkplaceDatasetTests(SparkBaseTest):
 
 
 class MainTests(CleanASCWDSWorkplaceDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.select_columns_required_for_reconciliation_df")
     @patch(f"{PATCH_PATH}.cUtils.set_column_bounds")
@@ -122,9 +119,6 @@ class FilterTestAccountsTests(CleanASCWDSWorkplaceDatasetTests):
 
 
 class RemoveWhiteSpaceFromNmdsidTests(CleanASCWDSWorkplaceDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_remove_white_space_from_nmdsid(self):
         test_df = self.spark.createDataFrame(
             Data.remove_white_space_from_nmdsid_rows,

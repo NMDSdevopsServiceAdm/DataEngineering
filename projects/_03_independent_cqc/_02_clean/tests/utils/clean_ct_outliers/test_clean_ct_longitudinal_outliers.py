@@ -53,9 +53,6 @@ class TestFunctionsAreCalled(TestCleanCtLongitudinalOutliers):
 
 
 class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_clean_longitudinal_outliers_returns_input_df_when_there_are_no_outliers(
         self,
     ):

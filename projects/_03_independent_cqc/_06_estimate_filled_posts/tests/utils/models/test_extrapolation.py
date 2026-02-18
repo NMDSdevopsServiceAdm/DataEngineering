@@ -49,9 +49,6 @@ class MainTests(ModelExtrapolationTests):
 
 
 class DefineWindowSpecsTests(ModelExtrapolationTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_define_window_spec_return_type(self):
         returned_window_specs = job.define_window_specs()
         self.assertIsInstance(returned_window_specs, tuple)

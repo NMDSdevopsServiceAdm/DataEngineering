@@ -26,9 +26,6 @@ class EstimateNonResCTFilledPostsTests(SparkBaseTest):
 
 
 class MainTests(EstimateNonResCTFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.merge_columns_in_order")
     @patch(f"{PATCH_PATH}.convert_to_all_posts_using_ratio")
     @patch(f"{PATCH_PATH}.calculate_care_worker_ratio")
@@ -46,9 +43,6 @@ class MainTests(EstimateNonResCTFilledPostsTests):
 
 
 class CalculateCareWorkerRatioTests(EstimateNonResCTFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_calculate_care_worker_ratio_returns_correct_ratio(self):
         returned_ratio = job.calculate_care_worker_ratio(self.estimates_df)
         expected_ratio = Data.expected_care_worker_ratio
@@ -57,9 +51,6 @@ class CalculateCareWorkerRatioTests(EstimateNonResCTFilledPostsTests):
 
 
 class ConvertToAllPostsUsingRatioTest(EstimateNonResCTFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_convert_to_all_posts_using_ratio_returns_correct_values(
         self,
     ):

@@ -175,9 +175,6 @@ class AddArrayColumnCountTests(LocationsFeatureEngineeringTests):
 
 
 class VectoriseDataframeTests(LocationsFeatureEngineeringTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_vectorise_dataframe(self):
         list_for_vectorisation = ["col_1", "col_2", "col_3"]
 

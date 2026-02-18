@@ -31,9 +31,6 @@ class DiagnosticsOnKnownFilledPostsTests(SparkBaseTest):
 
 
 class MainTests(DiagnosticsOnKnownFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(

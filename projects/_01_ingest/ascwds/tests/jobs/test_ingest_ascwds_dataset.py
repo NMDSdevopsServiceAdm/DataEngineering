@@ -26,9 +26,6 @@ class IngestASCWDSDatasetTests(SparkBaseTest):
 
 
 class IngestSingleFileTest(IngestASCWDSDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.construct_destination_path")
     @patch(f"{PATCH_PATH}.handle_job")
     def test_ingest_single_file(

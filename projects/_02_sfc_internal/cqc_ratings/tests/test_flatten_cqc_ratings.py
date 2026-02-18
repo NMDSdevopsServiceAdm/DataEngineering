@@ -38,9 +38,6 @@ class FlattenCQCRatingsTests(SparkBaseTest):
 
 
 class MainTests(FlattenCQCRatingsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.create_benchmark_ratings_dataset")
     @patch(f"{PATCH_PATH}.join_establishment_ids")
@@ -276,9 +273,6 @@ class PrepareAssessmentRatings(FlattenCQCRatingsTests):
 
 
 class RaiseErrorWhenAssessmentDfContainsOverallData(FlattenCQCRatingsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_raise_error_when_assessment_df_contains_overall_data_raises_error_when_overall_is_populated(
         self,
     ):
@@ -694,9 +688,6 @@ class CreateBenchmarkRatingsDataset(FlattenCQCRatingsTests):
 
 
 class AddNumericalRatings(FlattenCQCRatingsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_add_numerical_ratings_returns_expected_results(self):
         test_df = self.spark.createDataFrame(
             Data.add_numerical_ratings_rows, Schema.add_numerical_ratings_schema

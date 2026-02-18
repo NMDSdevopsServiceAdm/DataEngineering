@@ -37,9 +37,6 @@ class SplitPAFilledPostsIntoIcbAreas(SparkBaseTest):
 
 
 class MainTests(SplitPAFilledPostsIntoIcbAreas):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock):

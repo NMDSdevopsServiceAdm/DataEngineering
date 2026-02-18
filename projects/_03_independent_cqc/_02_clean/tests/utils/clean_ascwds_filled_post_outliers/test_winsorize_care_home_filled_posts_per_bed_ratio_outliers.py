@@ -71,9 +71,6 @@ class MainTests(WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
 class SetValuesForWinsorizationTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_percentage_of_data_to_remove_as_outliers_value(self):
         self.assertEqual(
             job.SetValuesForWinsorization.PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS, 0.05
@@ -120,9 +117,6 @@ class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
 class SelectDataNotInSubsetTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_select_data_not_in_subset_df(self):
         schema = StructType(
             [
@@ -150,9 +144,6 @@ class SelectDataNotInSubsetTests(
 class CalculateAverageFilledPostsPerBandedBedCount(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_calculate_average_filled_posts_per_banded_bed_count(self):
         schema = StructType(
             [
@@ -181,9 +172,6 @@ class CalculateAverageFilledPostsPerBandedBedCount(
 class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_calculate_expected_filled_posts_based_on_number_of_beds(self):
         expected_filled_posts_schema = StructType(
             [
@@ -499,9 +487,6 @@ class CalculateMinAndMaxPermittedFilledPostPerBedRatiosTests(
 class SetMinimumPermittedRatioTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_returned_data_matches_expected_data(self):
         TEST_MIN_VALUE: float = 0.75
 

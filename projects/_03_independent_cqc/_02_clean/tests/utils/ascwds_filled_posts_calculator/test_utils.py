@@ -161,9 +161,6 @@ class TestAscwdsFilledPostsCalculatorUtils(SparkBaseTest):
 
 
 class TestSourceDescriptionAdded(TestAscwdsFilledPostsCalculatorUtils):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_add_source_description_added_to_source_column_when_required(self):
         input_df = self.spark.createDataFrame(
             Data.source_missing_rows, Schemas.estimated_source_description_schema

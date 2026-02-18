@@ -30,9 +30,6 @@ class EstimateIndCQCFilledPostsByJobRoleTests(SparkBaseTest):
 
 
 class NumericalValuesTests(EstimateIndCQCFilledPostsByJobRoleTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_number_of_days_in_window_value(self):
         self.assertEqual(job.NumericalValues.number_of_days_in_rolling_sum, 185)
 

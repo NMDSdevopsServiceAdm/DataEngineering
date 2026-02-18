@@ -115,9 +115,6 @@ class UtilsTests(SparkBaseTest):
 
 
 class GeneralUtilsTests(UtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_get_s3_objects_list_returns_all_objects(self):
         partial_response = {
             "Contents": [

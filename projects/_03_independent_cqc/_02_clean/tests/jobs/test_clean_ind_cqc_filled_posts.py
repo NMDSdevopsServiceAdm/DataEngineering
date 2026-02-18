@@ -38,9 +38,6 @@ class CleanIndFilledPostsTests(SparkBaseTest):
 
 
 class MainTests(CleanIndFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.calculate_care_home_status_count")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
@@ -250,9 +247,6 @@ class MainTests(CleanIndFilledPostsTests):
 
 
 class CalculateTimeRegisteredForTests(CleanIndFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_calculate_time_registered_returns_one_when_dates_are_on_the_same_day(
         self,
     ):

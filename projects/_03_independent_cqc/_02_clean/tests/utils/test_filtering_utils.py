@@ -18,9 +18,6 @@ class CleanFilteringUtilsTests(SparkBaseTest):
 
 
 class AddFilteringRuleColumnTests(CleanFilteringUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_add_filtering_rule_column(self):
         test_df = self.spark.createDataFrame(
             Data.add_filtering_column_rows, Schemas.add_filtering_column_schema
@@ -42,9 +39,6 @@ class AddFilteringRuleColumnTests(CleanFilteringUtilsTests):
 
 
 class UpdateFilteringRuleTests(CleanFilteringUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_returns_expected_labels_when_populated_values_are_nulled(self):
         test_df = self.spark.createDataFrame(
             Data.update_filtering_rule_populated_to_nulled_rows,

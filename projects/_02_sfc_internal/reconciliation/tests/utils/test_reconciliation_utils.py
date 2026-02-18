@@ -42,9 +42,6 @@ class ReconciliationTests(SparkBaseTest):
 
 
 class CollectDatesToUseTests(ReconciliationTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_collect_dates_to_use_return_correct_value(self):
         df = self.spark.createDataFrame(
             Data.dates_to_use_rows, Schemas.dates_to_use_schema
@@ -59,9 +56,6 @@ class CollectDatesToUseTests(ReconciliationTests):
 
 
 class PrepareLatestCleanedAscwdsWorkforceData(ReconciliationTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.get_ascwds_parent_accounts")
     @patch(f"{PATCH_PATH}.remove_ascwds_head_office_accounts_without_location_ids")
     @patch(f"{PATCH_PATH}.filter_to_cqc_registration_type_only")

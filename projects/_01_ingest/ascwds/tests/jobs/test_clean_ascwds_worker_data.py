@@ -42,9 +42,6 @@ class IngestASCWDSWorkerDatasetTests(SparkBaseTest):
 
 
 class MainTests(IngestASCWDSWorkerDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock):
@@ -69,9 +66,6 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
 
 
 class RemoveWorkersWithoutWorkplacesTests(IngestASCWDSWorkerDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_remove_invalid_worker_records_returns_df(self):
         returned_df = job.remove_workers_without_workplaces(
             self.test_ascwds_worker_df, self.test_ascwds_workplace_df
@@ -195,9 +189,6 @@ class ReplaceCareNavigatorWithCareCoordinatorTests(IngestASCWDSWorkerDatasetTest
 
 
 class ImputeNotKnownJobRolesTests(IngestASCWDSWorkerDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_impute_not_known_job_roles_returns_next_known_value_when_before_first_known_value(
         self,
     ):

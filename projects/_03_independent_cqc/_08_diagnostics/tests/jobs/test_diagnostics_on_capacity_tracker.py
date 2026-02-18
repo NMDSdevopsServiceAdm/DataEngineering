@@ -35,9 +35,6 @@ class DiagnosticsOnCapacityTrackerTests(SparkBaseTest):
 
 
 class MainTests(DiagnosticsOnCapacityTrackerTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.dUtils.create_summary_diagnostics_table")
     @patch(f"{PATCH_PATH}.run_diagnostics")
@@ -68,9 +65,6 @@ class MainTests(DiagnosticsOnCapacityTrackerTests):
 
 
 class RunDiagnostics(DiagnosticsOnCapacityTrackerTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.dUtils.calculate_aggregate_residuals")
     @patch(f"{PATCH_PATH}.dUtils.calculate_residuals")
     @patch(f"{PATCH_PATH}.dUtils.calculate_distribution_metrics")
@@ -103,9 +97,6 @@ class RunDiagnostics(DiagnosticsOnCapacityTrackerTests):
 
 
 class CheckConstantsTests(DiagnosticsOnCapacityTrackerTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_absolute_value_cutoff_is_expected_value(self):
         self.assertEqual(job.absolute_value_cutoff, 10.0)
         self.assertIsInstance(job.absolute_value_cutoff, float)

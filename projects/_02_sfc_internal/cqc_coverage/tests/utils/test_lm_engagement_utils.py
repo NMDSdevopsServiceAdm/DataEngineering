@@ -23,9 +23,6 @@ class SetupForTests(SparkBaseTest):
 
 
 class AddColumnsForLocalityManagerDashboardTests(SetupForTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_add_columns_for_locality_manager_dashboard_returns_correct_values(self):
         test_df = self.spark.createDataFrame(
             Data.add_columns_for_locality_manager_dashboard_rows,
