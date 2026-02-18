@@ -666,7 +666,7 @@ class JoinEstablishmentIds(FlattenCQCRatingsTests):
     def test_join_establishment_ids_returns_correct_values(self):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
-        self.assertEqual(returned_data, expected_data)
+        self.assertEqual(sorted(returned_data), sorted(expected_data))
 
 
 class CreateBenchmarkRatingsDataset(FlattenCQCRatingsTests):

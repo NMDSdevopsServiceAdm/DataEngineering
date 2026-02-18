@@ -71,7 +71,10 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
             Schemas.expected_clean_ct_values_after_consecutive_repetition_schema,
         )
 
-        self.assertEqual(returned_df.collect(), expected_df.collect())
+        self.assertEqual(
+            sorted(returned_df.collect()),
+            sorted(expected_df.collect()),
+        )
 
     def test_dict_of_minimum_posts_and_max_repetition_days_values_are_correct(
         self,
@@ -253,7 +256,10 @@ class JoinCleanedCTValuesIntoOriginalDf(CleanCTRepetitionTests):
     def test_join_cleaned_ct_values_into_original_df_replaces_values_in_the_cleaned_values_column(
         self,
     ):
-        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+        self.assertEqual(
+            sorted(self.returned_df.collect()),
+            sorted(self.expected_df.collect()),
+        )
 
     def test_join_cleaned_ct_values_into_original_df_does_not_add_any_rows_to_original_df(
         self,

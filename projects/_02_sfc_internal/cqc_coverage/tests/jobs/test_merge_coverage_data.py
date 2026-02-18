@@ -35,7 +35,6 @@ class SetupForTests(SparkBaseTest):
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
-
         self.test_clean_cqc_location_df = self.spark.createDataFrame(
             Data.clean_cqc_location_for_merge_rows,
             Schemas.clean_cqc_location_for_merge_schema,
@@ -280,7 +279,10 @@ class JoinProviderNameIntoMergedCovergae(SetupForTests):
         self.assertEqual(self.returned_df.count(), self.expected_df.count())
 
     def test_join_provider_name_into_merged_coverage_df_has_expected_values(self):
-        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+        self.assertEqual(
+            sorted(self.returned_df.collect()),
+            sorted(self.expected_df.collect()),
+        )
 
 
 if __name__ == "__main__":
