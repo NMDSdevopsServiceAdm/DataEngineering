@@ -51,29 +51,18 @@ def add_latest_annual_estimate_date(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: The input LazyFrame with column for most recent annual estimate date.
     """
-    expr_max_import_date = pl.col(IndCQC.cqc_location_import_date).max()
-    lf = lf.with_columns(
-        expr_max_import_date.dt.month().alias(ArchiveColumns.max_import_date_month),
-        expr_max_import_date.dt.year().alias(ArchiveColumns.max_import_date_year),
-    )
+    max_date = pl.col(IndCQC.cqc_location_import_date).max()
 
-    march = 3
     april = 4
-    first_of_month = 1
+
     lf = lf.with_columns(
-        pl.when(pl.col(ArchiveColumns.max_import_date_month) <= march)
-        .then(
-            pl.date(
-                pl.col(ArchiveColumns.max_import_date_year) - 1, april, first_of_month
-            )
-        )
-        .otherwise(pl.date(ArchiveColumns.max_import_date_year, april, first_of_month))
+        pl.when(max_date.dt.month() < april)
+        .then(pl.date(max_date.dt.year() - 1, april, 1))
+        .otherwise(pl.date(max_date.dt.year(), april, 1))
         .alias(ArchiveColumns.most_recent_annual_estimate_date)
     )
 
-    return lf.drop(
-        [ArchiveColumns.max_import_date_month, ArchiveColumns.max_import_date_year]
-    )
+    return lf
 
 
 def create_archive_date_partition_columns(

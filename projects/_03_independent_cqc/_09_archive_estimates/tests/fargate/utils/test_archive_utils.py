@@ -53,7 +53,7 @@ class SelectImportDatesToArchiveTests(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class AddAColumnWithTheDateOfMostRecentAnnualEstimates(unittest.TestCase):
+class AddLastestAnnualEstimateDate(unittest.TestCase):
     def setUp(self) -> None:
         self.input_lf = pl.LazyFrame(
             Data.add_latest_annual_estimate_date_rows,
