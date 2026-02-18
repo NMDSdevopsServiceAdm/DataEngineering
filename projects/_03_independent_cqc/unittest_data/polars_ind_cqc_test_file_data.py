@@ -10,6 +10,7 @@ from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_ca
 )
 
 from utils.column_values.categorical_column_values import (
+    AscwdsFilteringRule,
     CareHome,
     Dormancy,
     MainJobRoleLabels,
@@ -1166,3 +1167,17 @@ class CleanIndCQCData:
     expected_remove_cqc_dual_registrations_when_non_res_rows = (
         remove_cqc_dual_registrations_when_non_res_rows
     )
+
+
+@dataclass
+class NullFilledPostsUsingInvalidMissingDataCodeData:
+    null_filled_posts_using_invalid_missing_data_code_rows = [
+        ("loc 1", 20.0, 20.0, AscwdsFilteringRule.populated),
+        ("loc 2", 999.0, 999.0, AscwdsFilteringRule.populated),
+        ("loc 3", None, None, AscwdsFilteringRule.missing_data),
+    ]
+    expected_null_filled_posts_using_invalid_missing_data_code_rows = [
+        ("loc 1", 20.0, 20.0, AscwdsFilteringRule.populated),
+        ("loc 2", 999.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
+        ("loc 3", None, None, AscwdsFilteringRule.missing_data),
+    ]

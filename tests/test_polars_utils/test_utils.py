@@ -20,6 +20,14 @@ from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
 
 from polars_utils import utils
 
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    CalculateWindowedColumnData as Data,
+)
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
+    NullFilledPostsUsingInvalidMissingDataCodeSchema as Schemas,
+)
+
+
 SRC_PATH = "polars_utils.validation.actions"
 PATCH_PATH = "polars_utils.utils"
 
@@ -661,3 +669,106 @@ class SelectRowsWithNonNullValueTests(unittest.TestCase):
 
     def test_select_rows_with_non_null_value_returns_expected_lf(self):
         pl_testing.assert_frame_equal(self.returned_lf, self.expected_lf)
+
+
+class CalculateWindowedColumnTests(UtilsTests):
+    def setUp(self) -> None:
+        self.test_lf = pl.LazyFrame(
+            Data.calculate_windowed_column_rows,
+            Schemas.calculate_windowed_column_schema,
+            orient="row",
+        )
+
+    def test_calculate_windowed_column_avg(self):
+        returned_df = utils.calculate_windowed_column(
+            self.test_df,
+            self.window,
+            Schemas.new_column,
+            IndCQC.ascwds_filled_posts,
+            "avg",
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_windowed_column_avg_rows,
+            Schemas.expected_calculate_windowed_column_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_windowed_column_count(self):
+        returned_df = utils.calculate_windowed_column(
+            self.test_df,
+            self.window,
+            Schemas.new_column,
+            IndCQC.ascwds_filled_posts,
+            "count",
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_windowed_column_count_rows,
+            Schemas.expected_calculate_windowed_column_count_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_windowed_column_max(self):
+        returned_df = utils.calculate_windowed_column(
+            self.test_df,
+            self.window,
+            Schemas.new_column,
+            IndCQC.ascwds_filled_posts,
+            "max",
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_windowed_column_max_rows,
+            Schemas.expected_calculate_windowed_column_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_windowed_column_min(self):
+        returned_df = utils.calculate_windowed_column(
+            self.test_df,
+            self.window,
+            Schemas.new_column,
+            IndCQC.ascwds_filled_posts,
+            "min",
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_windowed_column_min_rows,
+            Schemas.expected_calculate_windowed_column_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_windowed_column_sum(self):
+        returned_df = utils.calculate_windowed_column(
+            self.test_df,
+            self.window,
+            Schemas.new_column,
+            IndCQC.ascwds_filled_posts,
+            "sum",
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_windowed_column_sum_rows,
+            Schemas.expected_calculate_windowed_column_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_windowed_column_raises_error_with_invalid_method(self):
+        with self.assertRaises(ValueError) as context:
+            utils.calculate_windowed_column(
+                self.test_df,
+                self.window,
+                Schemas.new_column,
+                IndCQC.ascwds_filled_posts,
+                "other",
+            )
+        self.assertTrue(
+            "Error: The aggregation function 'other' was not found. Please use 'avg', 'count', 'max', 'min' or 'sum'."
+            in str(context.exception)
+        )

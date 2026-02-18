@@ -48,3 +48,27 @@ class RawDataAdjustmentsSchemas:
             ("other_column", pl.String()),
         ]
     )
+
+
+@dataclass
+class CalculateWindowedColumnSchemas:
+    calculate_windowed_column_schema = pl.Schema(
+        [
+            (IndCQC.location_id, StringType()),
+            (IndCQC.cqc_location_import_date, DateType()),
+            (IndCQC.care_home, StringType()),
+            (IndCQC.ascwds_filled_posts, DoubleType()),
+        ]
+    )
+    expected_calculate_windowed_column_schema = pl.Schema(
+        [
+            *calculate_windowed_column_schema,
+            (new_column, DoubleType()),
+        ]
+    )
+    expected_calculate_windowed_column_count_schema = pl.Schema(
+        [
+            *calculate_windowed_column_schema,
+            (new_column, IntegerType()),
+        ]
+    )

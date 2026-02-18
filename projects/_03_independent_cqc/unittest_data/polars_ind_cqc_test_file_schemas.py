@@ -578,3 +578,15 @@ class CleanIndCQCSchema:
             (IndCQC.imputed_registration_date, pl.Date()),
         ]
     )
+
+
+@dataclass
+class NullFilledPostsUsingInvalidMissingDataCodeSchema:
+    null_filled_posts_using_invalid_missing_data_code_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+        ]
+    )

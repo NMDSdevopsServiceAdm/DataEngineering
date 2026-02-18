@@ -3,6 +3,7 @@ import re
 import uuid
 from datetime import date
 from pathlib import Path
+from typing import Optional, Union, List
 
 import boto3
 import polars as pl
@@ -444,3 +445,60 @@ def select_rows_with_non_null_value(lf: pl.LazyFrame, column: str) -> pl.LazyFra
         pl.LazyFrame: A LazyFrame containing only the rows where the specified column has non-null values.
     """
     return lf.filter(pl.col(column).is_not_null())
+
+
+def calculate_windowed_column(
+    lf: pl.LazyFrame,
+    new_col: str,
+    input_column: str,
+    aggregation_function: str,
+    partition_by: Union[str, List[str]],
+    order_by: Optional[Union[str, List[str]]] = None,
+) -> pl.LazyFrame:
+    """
+    This function adds a column containing the specified aggregation function
+    ('avg', 'count', 'max', 'min' or 'sum') over passed arguments
+    partitioning columns and optional ordering columns.
+
+    Args:
+        lf (pl.LazyFrame): The input LazyFrame.
+        new_col (str): The name of the new column to be added.
+        input_column (str): The name of the input column to be aggregated.
+        aggregation_function (str): The aggregation function to use in the
+            calculation ('avg', 'count', 'max', 'min' or 'sum').
+        partition_by (str | list[str]): Column name(s) used to define the
+            window partition.
+        order_by (str | list[str], optional): Column name(s) used to define
+            the ordering within each partition. Defaults to None.
+
+    Returns:
+        pl.LazyFrame: A LazyFrame with an additional column containing the
+            specified aggregation function computed over the defined window.
+
+    Raises:
+        ValueError: If the chosen aggregation function does not match
+            'avg', 'count', 'max', 'min' or 'sum'.
+    """
+
+    functions = {
+        "avg": pl.col(input_column).mean,
+        "count": pl.col(input_column).count,
+        "max": pl.col(input_column).max,
+        "min": pl.col(input_column).min,
+        "sum": pl.col(input_column).sum,
+    }
+
+    if aggregation_function not in functions:
+        raise ValueError(
+            f"Error: The aggregation function '{aggregation_function}' "
+            f"was not found. Please use 'avg', 'count', 'max', 'min' or 'sum'."
+        )
+
+    expr = functions[aggregation_function]()
+
+    if order_by is not None:
+        expr = expr.over(partition_by=partition_by, order_by=order_by)
+    else:
+        expr = expr.over(partition_by)
+
+    return lf.with_columns(expr.alias(new_col))
