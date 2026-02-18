@@ -80,13 +80,13 @@ def main(
         care_home=False,
     )
 
-    # df = model_imputation_with_extrapolation_and_interpolation(
-    #     df,
-    #     IndCQC.filled_posts_per_bed_ratio,
-    #     IndCQC.ascwds_rate_of_change_trendline_model,
-    #     IndCQC.imputed_filled_posts_per_bed_ratio_model,
-    #     care_home=True,
-    # )
+    df = model_imputation_with_extrapolation_and_interpolation(
+        df,
+        IndCQC.filled_posts_per_bed_ratio,
+        IndCQC.ascwds_rate_of_change_trendline_model,
+        IndCQC.imputed_filled_posts_per_bed_ratio_model,
+        care_home=True,
+    )
 
     df = model_calculate_rolling_average(
         df,
@@ -96,58 +96,58 @@ def main(
         IndCQC.posts_rolling_average_model,
     )
 
-    # df = cUtils.create_banded_bed_count_column(
-    #     df,
-    #     IndCQC.number_of_beds_banded_for_rolling_avg,
-    #     [0, 1, 10, 15, 20, 25, 50, float("Inf")],
-    # )
-    # df = model_calculate_rolling_average(
-    #     df,
-    #     IndCQC.imputed_filled_posts_per_bed_ratio_model,
-    #     NumericalValues.number_of_days_in_window,
-    #     [IndCQC.primary_service_type, IndCQC.number_of_beds_banded_for_rolling_avg],
-    #     IndCQC.banded_bed_ratio_rolling_average_model,
-    # )
-    # df = df.drop(IndCQC.number_of_beds_banded_for_rolling_avg)
+    df = cUtils.create_banded_bed_count_column(
+        df,
+        IndCQC.number_of_beds_banded_for_rolling_avg,
+        [0, 1, 10, 15, 20, 25, 50, float("Inf")],
+    )
+    df = model_calculate_rolling_average(
+        df,
+        IndCQC.imputed_filled_posts_per_bed_ratio_model,
+        NumericalValues.number_of_days_in_window,
+        [IndCQC.primary_service_type, IndCQC.number_of_beds_banded_for_rolling_avg],
+        IndCQC.banded_bed_ratio_rolling_average_model,
+    )
+    df = df.drop(IndCQC.number_of_beds_banded_for_rolling_avg)
 
-    # df = convert_care_home_ratios_to_posts(
-    #     df,
-    #     IndCQC.banded_bed_ratio_rolling_average_model,
-    #     IndCQC.posts_rolling_average_model,
-    # )
+    df = convert_care_home_ratios_to_posts(
+        df,
+        IndCQC.banded_bed_ratio_rolling_average_model,
+        IndCQC.posts_rolling_average_model,
+    )
 
-    # df = df.persist()
+    df = df.persist()
 
-    # df = combine_care_home_and_non_res_values_into_single_column(
-    #     df,
-    #     IndCQC.ct_care_home_total_employed_cleaned,
-    #     IndCQC.ct_non_res_care_workers_employed_cleaned,
-    #     IndCQC.ct_combined_care_home_and_non_res,
-    # )
+    df = combine_care_home_and_non_res_values_into_single_column(
+        df,
+        IndCQC.ct_care_home_total_employed_cleaned,
+        IndCQC.ct_non_res_care_workers_employed_cleaned,
+        IndCQC.ct_combined_care_home_and_non_res,
+    )
 
-    # df = model_primary_service_rate_of_change_trendline(
-    #     df,
-    #     IndCQC.ct_combined_care_home_and_non_res,
-    #     NumericalValues.number_of_days_in_window,
-    #     IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
-    #     NumericalValues.max_number_of_days_to_interpolate_between,
-    # )
+    df = model_primary_service_rate_of_change_trendline(
+        df,
+        IndCQC.ct_combined_care_home_and_non_res,
+        NumericalValues.number_of_days_in_window,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+        NumericalValues.max_number_of_days_to_interpolate_between,
+    )
 
-    # df = model_imputation_with_extrapolation_and_interpolation(
-    #     df,
-    #     IndCQC.ct_care_home_total_employed_cleaned,
-    #     IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
-    #     IndCQC.ct_care_home_total_employed_imputed,
-    #     care_home=True,
-    # )
+    df = model_imputation_with_extrapolation_and_interpolation(
+        df,
+        IndCQC.ct_care_home_total_employed_cleaned,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+        IndCQC.ct_care_home_total_employed_imputed,
+        care_home=True,
+    )
 
-    # df = model_imputation_with_extrapolation_and_interpolation(
-    #     df,
-    #     IndCQC.ct_non_res_care_workers_employed_cleaned,
-    #     IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
-    #     IndCQC.ct_non_res_care_workers_employed_imputed,
-    #     care_home=False,
-    # )
+    df = model_imputation_with_extrapolation_and_interpolation(
+        df,
+        IndCQC.ct_non_res_care_workers_employed_cleaned,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+        IndCQC.ct_non_res_care_workers_employed_imputed,
+        care_home=False,
+    )
 
     print(f"Exporting as parquet to {imputed_ind_cqc_ascwds_and_pir_destination}")
 

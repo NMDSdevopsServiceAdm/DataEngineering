@@ -56,7 +56,7 @@ def model_primary_service_rate_of_change(
     df = calculate_rate_of_change(df, rate_of_change_column_name)
 
     columns_to_drop = [field.name for field in fields(TempCol())]
-    # df = df.drop(*columns_to_drop)
+    df = df.drop(*columns_to_drop)
 
     return df
 
