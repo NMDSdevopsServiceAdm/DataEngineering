@@ -22,10 +22,6 @@ class ValidatePIRCleanedDatasetTests(SparkBaseTest):
             Data.cleaned_cqc_pir_rows, Schemas.cleaned_cqc_pir_schema
         )
 
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
 
 class MainTests(ValidatePIRCleanedDatasetTests):
     def setUp(self) -> None:

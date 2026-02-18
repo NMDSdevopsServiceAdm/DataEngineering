@@ -30,10 +30,6 @@ class ValidateEstimatedIndCqcFilledPostsByJobRoleDatasetTests(SparkBaseTest):
             )
         )
 
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
 
 class MainTests(ValidateEstimatedIndCqcFilledPostsByJobRoleDatasetTests):
     def setUp(self) -> None:

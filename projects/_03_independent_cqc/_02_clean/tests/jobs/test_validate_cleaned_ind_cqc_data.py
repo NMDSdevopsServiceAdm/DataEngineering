@@ -27,10 +27,6 @@ class ValidateCleanedIndCQCDatasetTests(SparkBaseTest):
             Data.cleaned_ind_cqc_rows, Schemas.cleaned_ind_cqc_schema
         )
 
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
 
 class MainTests(ValidateCleanedIndCQCDatasetTests):
     def setUp(self) -> None:

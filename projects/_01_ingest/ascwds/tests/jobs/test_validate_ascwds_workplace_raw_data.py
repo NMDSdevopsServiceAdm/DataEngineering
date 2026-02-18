@@ -20,15 +20,8 @@ class ValidateASCWDSWorkplaceRawDatasetTests(SparkBaseTest):
             Data.raw_ascwds_workplace_rows, Schemas.raw_ascwds_workplace_schema
         )
 
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
 
 class MainTests(ValidateASCWDSWorkplaceRawDatasetTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(

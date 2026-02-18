@@ -24,10 +24,6 @@ class ValidateEstimatedIndCqcFilledPostsDatasetTests(SparkBaseTest):
             Schemas.estimated_ind_cqc_filled_posts_schema,
         )
 
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
 
 class MainTests(ValidateEstimatedIndCqcFilledPostsDatasetTests):
     def setUp(self) -> None:

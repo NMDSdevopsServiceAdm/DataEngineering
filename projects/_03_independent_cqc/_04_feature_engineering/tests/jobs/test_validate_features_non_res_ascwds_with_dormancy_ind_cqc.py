@@ -32,10 +32,6 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcDatasetTests(SparkBaseTest):
             )
         )
 
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
 
 class MainTests(ValidateFeaturesNonResASCWDSWithDormancyIndCqcDatasetTests):
     def setUp(self) -> None:

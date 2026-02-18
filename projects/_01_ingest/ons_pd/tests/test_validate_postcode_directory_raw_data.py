@@ -23,10 +23,6 @@ class ValidatePostcodeDirectoryRawDatasetTests(SparkBaseTest):
             Schemas.raw_postcode_directory_schema,
         )
 
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
 
 class MainTests(ValidatePostcodeDirectoryRawDatasetTests):
     def setUp(self) -> None:

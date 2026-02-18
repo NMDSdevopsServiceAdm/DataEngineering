@@ -29,10 +29,6 @@ class ValidateCleanedCapacityTrackerNonResDatasetTests(SparkBaseTest):
             Data.cleaned_ct_non_res_rows, Schemas.cleaned_ct_non_res_schema
         )
 
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
 
 class MainTests(ValidateCleanedCapacityTrackerNonResDatasetTests):
     def setUp(self) -> None:

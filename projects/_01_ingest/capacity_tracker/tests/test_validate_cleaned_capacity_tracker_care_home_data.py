@@ -29,10 +29,6 @@ class ValidateCleanedCapacityTrackerCareHomeDatasetTests(SparkBaseTest):
             Data.cleaned_ct_care_home_rows, Schemas.cleaned_ct_care_home_schema
         )
 
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
 
 class MainTests(ValidateCleanedCapacityTrackerCareHomeDatasetTests):
     def setUp(self) -> None:

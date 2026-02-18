@@ -20,10 +20,6 @@ class ValidateASCWDSWorkplaceCleanedDatasetTests(SparkBaseTest):
             Data.cleaned_ascwds_workplace_rows, Schemas.cleaned_ascwds_workplace_schema
         )
 
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
 
 class MainTests(ValidateASCWDSWorkplaceCleanedDatasetTests):
     def setUp(self) -> None:

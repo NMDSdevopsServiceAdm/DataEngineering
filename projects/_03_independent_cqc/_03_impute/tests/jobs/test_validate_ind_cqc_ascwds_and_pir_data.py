@@ -30,10 +30,6 @@ class ValidateImputedIndCqcAscwdsAndPirsetTests(SparkBaseTest):
             Schemas.imputed_ind_cqc_ascwds_and_pir_schema,
         )
 
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
 
 class MainTests(ValidateImputedIndCqcAscwdsAndPirsetTests):
     def setUp(self) -> None:
