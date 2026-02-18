@@ -15,8 +15,6 @@ PATCH_PATH = (
 
 
 class ReturnLastKnownValueTests(SparkBaseTest):
-    def setUp(self) -> None: ...
-
     def test_last_known_returns_latest_non_null_value_per_location(
         self,
     ):
@@ -47,8 +45,6 @@ class ReturnLastKnownValueTests(SparkBaseTest):
 
 
 class ForwardFillTests(SparkBaseTest):
-    def setUp(self) -> None: ...
-
     def test_forward_fill_populates_null_values_within_days_to_repeat_range(
         self,
     ):

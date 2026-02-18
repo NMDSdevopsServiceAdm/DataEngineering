@@ -632,8 +632,6 @@ class CastToIntTests(SparkBaseTest):
 
 
 class CalculateFilledPostsPerBedRatioTests(SparkBaseTest):
-    def setUp(self) -> None: ...
-
     def test_calculate_filled_posts_per_bed_ratio(self):
         test_df = self.spark.createDataFrame(
             Data.filled_posts_per_bed_ratio_rows,
@@ -652,8 +650,6 @@ class CalculateFilledPostsPerBedRatioTests(SparkBaseTest):
 
 
 class CalculateFilledPostsFromBedsAndRatioTests(SparkBaseTest):
-    def setUp(self) -> None: ...
-
     def test_calculate_filled_posts_from_beds_and_ratio(self):
         test_df = self.spark.createDataFrame(
             Data.filled_posts_from_beds_and_ratio_rows,
@@ -672,9 +668,6 @@ class CalculateFilledPostsFromBedsAndRatioTests(SparkBaseTest):
 
 
 class RemoveDuplicatesBasedOnColumnOrderTests(SparkBaseTest):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_remove_duplicate_locationids_returns_expected_rows_when_descending(self):
         test_df = self.spark.createDataFrame(
             Data.remove_duplicate_locationids_rows,
@@ -724,9 +717,6 @@ class RemoveDuplicatesBasedOnColumnOrderTests(SparkBaseTest):
 
 
 class CreateBandedBedCountColumnTests(SparkBaseTest):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_create_banded_bed_count_column(self):
         test_df = self.spark.createDataFrame(
             Data.create_banded_bed_count_column_rows,

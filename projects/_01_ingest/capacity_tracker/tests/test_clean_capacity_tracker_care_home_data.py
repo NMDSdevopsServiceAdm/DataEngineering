@@ -29,12 +29,9 @@ class CapacityTrackerCareHomeTests(SparkBaseTest):
         Keys.import_date,
     ]
 
-    def setUp(self) -> None: ...
-
 
 class MainTests(CapacityTrackerCareHomeTests):
     def setUp(self) -> None:
-        super().setUp()
         self.test_df = self.spark.createDataFrame(
             Data.capacity_tracker_care_home_rows,
             Schemas.capacity_tracker_care_home_schema,
@@ -62,7 +59,6 @@ class MainTests(CapacityTrackerCareHomeTests):
 
 class RemoveRowsWhereAgencyAndNonAgenyValuesMatchTests(CapacityTrackerCareHomeTests):
     def setUp(self) -> None:
-        super().setUp()
         self.test_df = self.spark.createDataFrame(
             Data.remove_matching_agency_and_non_agency_rows,
             Schemas.remove_matching_agency_and_non_agency_schema,
@@ -85,7 +81,6 @@ class RemoveRowsWhereAgencyAndNonAgenyValuesMatchTests(CapacityTrackerCareHomeTe
 
 class CreateNewColumnsWithTotalsTests(CapacityTrackerCareHomeTests):
     def setUp(self) -> None:
-        super().setUp()
         self.test_df = self.spark.createDataFrame(
             Data.create_new_columns_with_totals_rows,
             Schemas.create_new_columns_with_totals_schema,

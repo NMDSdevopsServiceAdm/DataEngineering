@@ -26,12 +26,9 @@ class CapacityTrackerNonResTests(SparkBaseTest):
         Keys.import_date,
     ]
 
-    def setUp(self) -> None: ...
-
 
 class MainTests(CapacityTrackerNonResTests):
     def setUp(self) -> None:
-        super().setUp()
         self.test_df = self.spark.createDataFrame(
             Data.capacity_tracker_non_res_rows,
             Schemas.capacity_tracker_non_res_schema,

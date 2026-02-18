@@ -4,13 +4,8 @@ from tests.test_file_data import RawDataAdjustments as Data
 from tests.test_file_schemas import RawDataAdjustments as Schemas
 
 
-class TestRawDataAdjustments(SparkBaseTest):
-    def setUp(self) -> None: ...
-
-
-class RemoveDuplicateWorkerTests(TestRawDataAdjustments):
+class RemoveDuplicateWorkerTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.test_with_multiple_rows_to_remove_df = self.spark.createDataFrame(
             Data.worker_data_with_multiple_rows_to_remove, Schemas.worker_data_schema
         )
@@ -55,10 +50,8 @@ class RemoveDuplicateWorkerTests(TestRawDataAdjustments):
         self.assertEqual(self.expected_df.collect(), returned_df.collect())
 
 
-class RemoveDuplicateWorkplacesTests(TestRawDataAdjustments):
+class RemoveDuplicateWorkplacesTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         self.test_df = self.spark.createDataFrame(
             Data.workplace_data_with_duplicates_rows, Schemas.workplace_data_schema
         )
