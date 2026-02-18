@@ -33,10 +33,7 @@ class IndCQCArchiveTests(unittest.TestCase):
         sink_to_parquet_mock: Mock,
     ):
 
-        job.main(
-            self.TEST_ESTIMATES_SOURCE,
-            self.TEST_DESTINATION,
-        )
+        job.main(self.TEST_ESTIMATES_SOURCE, self.TEST_DESTINATION)
 
         scan_parquet_mock.assert_called_once()
         select_import_dates_to_archive_mock.assert_called_once()

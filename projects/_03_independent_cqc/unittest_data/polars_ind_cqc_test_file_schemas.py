@@ -593,7 +593,7 @@ class ArchiveFilledPostsEstimates:
         ]
     )
 
-    expected_add_column_with_the_date_of_most_recent_annual_estimates_schema = (
+    expected_add_latest_annual_estimate_date_schema = (
         list(estimate_filled_posts_schema.items())
     ) + [ArchiveColumns.most_recent_annual_estimate_date]
 

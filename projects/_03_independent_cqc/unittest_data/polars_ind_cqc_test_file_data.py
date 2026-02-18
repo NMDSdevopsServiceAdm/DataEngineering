@@ -1189,13 +1189,13 @@ class ArchiveFilledPostsEstimates:
         ("loc 1", date(2024, 6, 8)),
     ]
 
-    add_column_with_the_date_of_most_recent_annual_estimates_rows = [
+    add_latest_annual_estimate_date_rows = [
         ("loc 1", date(2024, 11, 1)),
         ("loc 1", date(2024, 12, 1)),
         ("loc 1", date(2025, 1, 1)),
         ("loc 1", date(2025, 2, 1)),
     ]
-    expected_add_column_with_the_date_of_most_recent_annual_estimates_rows = [
+    expected_add_latest_annual_estimate_date_rows = [
         ("loc 1", date(2024, 11, 1), date(2024, 4, 1)),
         ("loc 1", date(2024, 12, 1), date(2024, 4, 1)),
         ("loc 1", date(2025, 1, 1), date(2024, 4, 1)),

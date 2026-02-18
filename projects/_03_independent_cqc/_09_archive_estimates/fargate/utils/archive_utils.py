@@ -20,7 +20,7 @@ def select_import_dates_to_archive(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: A LazyFrame with the most recent monthly estimates, plus historical annual estimates.
     """
 
-    lf = add_column_with_the_date_of_most_recent_annual_estimates(lf)
+    lf = add_latest_annual_estimate_date(lf)
 
     import_date_col = pl.col(IndCQC.cqc_location_import_date)
     most_recent_annual_estimate_date_col = pl.col(
@@ -40,9 +40,7 @@ def select_import_dates_to_archive(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf.drop(ArchiveColumns.most_recent_annual_estimate_date)
 
 
-def add_column_with_the_date_of_most_recent_annual_estimates(
-    lf: pl.LazyFrame,
-) -> pl.LazyFrame:
+def add_latest_annual_estimate_date(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Adds a date column with the value 1st April and the year of latest annual estimates publication. For example,
     for estimates published for 2024/25 this will be 2025-04-01.
@@ -93,8 +91,8 @@ def create_archive_date_partition_columns(
     """
     day = date_time.strftime("%d")
     month = date_time.strftime("%m")
-    year = str(date_time.year)
-    timestamp = str(date_time)[:16]
+    year = date_time.strftime("%Y")
+    timestamp = date_time.strftime("%Y-%m-%d %H:%M")
     lf = lf.with_columns(
         (pl.lit(day).alias(ArchiveKeys.archive_day)),
         (pl.lit(month).alias(ArchiveKeys.archive_month)),

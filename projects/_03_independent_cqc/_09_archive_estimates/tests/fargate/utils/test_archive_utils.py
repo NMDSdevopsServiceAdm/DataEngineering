@@ -31,14 +31,14 @@ class SelectImportDatesToArchiveTests(unittest.TestCase):
             orient="row",
         )
 
-    @patch(f"{PATCH_PATH}.add_column_with_the_date_of_most_recent_annual_estimates")
+    @patch(f"{PATCH_PATH}.add_latest_annual_estimate_date")
     def test_function_has_expected_calls(
-        self, add_column_with_the_date_of_most_recent_annual_estimates_mock: Mock
+        self, add_latest_annual_estimate_date_mock: Mock
     ):
         job.select_import_dates_to_archive(
             self.estimate_filled_posts_lf,
         )
-        add_column_with_the_date_of_most_recent_annual_estimates_mock.assert_called_once()
+        add_latest_annual_estimate_date_mock.assert_called_once()
 
     def test_keeps_earliest_monthly_estimates_from_current_publication_year_and_april_only_from_previous_publication_years(
         self,
@@ -56,30 +56,27 @@ class SelectImportDatesToArchiveTests(unittest.TestCase):
 class AddAColumnWithTheDateOfMostRecentAnnualEstimates(unittest.TestCase):
     def setUp(self) -> None:
         self.input_lf = pl.LazyFrame(
-            Data.add_column_with_the_date_of_most_recent_annual_estimates_rows,
+            Data.add_latest_annual_estimate_date_rows,
             Schemas.estimate_filled_posts_schema,
             orient="row",
         )
-        self.returned_lf = job.add_column_with_the_date_of_most_recent_annual_estimates(
-            self.input_lf
-        )
+        self.returned_lf = job.add_latest_annual_estimate_date(self.input_lf)
 
-    def test_most_recent_annual_estimate_date_column_is_added(
-        self,
-    ):
+    def test_most_recent_annual_estimate_date_column_is_added(self):
         self.assertIn(
-            ArchiveColumns.most_recent_annual_estimate_date, self.returned_lf.columns
+            ArchiveColumns.most_recent_annual_estimate_date,
+            self.returned_lf.collect_schema().names(),
         )
 
-        cols_added = set(self.returned_lf.columns) - set(self.input_lf.columns)
+        cols_added = set(self.returned_lf.collect_schema().names()) - set(
+            self.input_lf.collect_schema().names()
+        )
         self.assertEqual(cols_added, {ArchiveColumns.most_recent_annual_estimate_date})
 
-    def test_most_recent_annual_estimate_date_value_is_april(
-        self,
-    ):
+    def test_most_recent_annual_estimate_date_value_is_as_expected(self):
         expected_lf = pl.LazyFrame(
-            Data.expected_add_column_with_the_date_of_most_recent_annual_estimates_rows,
-            Schemas.expected_add_column_with_the_date_of_most_recent_annual_estimates_schema,
+            Data.expected_add_latest_annual_estimate_date_rows,
+            Schemas.expected_add_latest_annual_estimate_date_schema,
         )
 
         pl_testing.assert_frame_equal(self.returned_lf, expected_lf)
@@ -101,19 +98,19 @@ class CreateArchiveDatePartitionColumns(unittest.TestCase):
             Schemas.expected_create_archive_date_partitions_schema,
         )
 
-    def test_day_month_year_and_timestamp_columns_are_added(
-        self,
-    ):
+    def test_only_archive_partition_columns_are_added(self):
         returned_lf = job.create_archive_date_partition_columns(
             self.input_lf, datetime(2026, 1, 1)
         )
         expected_columns_added = [
             field.name for field in fields(ArchivePartitionKeys())
         ]
-        for i in range(len(expected_columns_added)):
-            self.assertIn(expected_columns_added[i], returned_lf.columns)
+        for col in expected_columns_added:
+            self.assertIn(col, returned_lf.collect_schema().names())
 
-        cols_added = set(returned_lf.columns) - set(self.input_lf.columns)
+        cols_added = set(returned_lf.collect_schema().names()) - set(
+            self.input_lf.collect_schema().names()
+        )
         self.assertEqual(cols_added, set(expected_columns_added))
 
     def test_expected_day_month_year_and_timestamp_values_are_added_when_timestamp_day_and_month_are_single_digits(
@@ -131,9 +128,6 @@ class CreateArchiveDatePartitionColumns(unittest.TestCase):
     ):
         returned_lf = job.create_archive_date_partition_columns(
             self.input_lf, datetime(2025, 12, 31)
-        )
-        pl_testing.assert_frame_equal(
-            returned_lf, self.expected_when_timestamp_day_and_month_are_double_digits_lf
         )
         pl_testing.assert_frame_equal(
             returned_lf, self.expected_when_timestamp_day_and_month_are_double_digits_lf
