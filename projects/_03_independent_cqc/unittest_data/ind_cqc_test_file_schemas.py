@@ -1925,7 +1925,7 @@ class ModelPrimaryServiceRateOfChange:
         ]
     )
 
-    clean_column_with_values_schema = StructType(
+    null_ineligible_values_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
@@ -1934,9 +1934,9 @@ class ModelPrimaryServiceRateOfChange:
             StructField(RoC_TempCol.column_with_values, DoubleType(), True),
         ]
     )
-    expected_clean_column_with_values_schema = StructType(
+    expected_null_ineligible_values_schema = StructType(
         [
-            *clean_column_with_values_schema,
+            *null_ineligible_values_schema,
             StructField(RoC_TempCol.submission_count, IntegerType(), True),
         ]
     )

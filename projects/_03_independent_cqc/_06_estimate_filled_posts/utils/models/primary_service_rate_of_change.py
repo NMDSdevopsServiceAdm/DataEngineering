@@ -49,7 +49,7 @@ def model_primary_service_rate_of_change(
 
     df = df.withColumn(TempCol.column_with_values, F.col(column_with_values))
 
-    df = clean_column_with_values(df)
+    df = null_ineligible_values(df)
     df = interpolate_column_with_values(df, max_days_between_submissions)
     df = add_previous_value_column(df)
     df = add_rolling_sum_columns(df, number_of_days_for_window)
@@ -61,9 +61,11 @@ def model_primary_service_rate_of_change(
     return df
 
 
-def clean_column_with_values(df: DataFrame) -> DataFrame:
+def null_ineligible_values(df: DataFrame) -> DataFrame:
     """
-    Keep values for locations who have submitted at least twice and have only ever had one care home status.
+    Null values for locations that do not meet eligibility rules:
+        - at least two submissions
+        - consistent care home status over time
 
     Args:
         df (DataFrame): The input DataFrame.

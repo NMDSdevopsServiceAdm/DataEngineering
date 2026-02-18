@@ -4313,32 +4313,32 @@ class ModelPrimaryServiceRateOfChange:
     ]
     # fmt: on
 
-    clean_column_with_values_rows = [
+    null_ineligible_values_rows = [
         ("1-001", 1000000001, CareHome.care_home, 1, 10.0),
         ("1-001", 1000000002, CareHome.care_home, 1, None),
         ("1-001", 1000000003, CareHome.care_home, 1, 10.0),
     ]
-    expected_clean_column_with_values_rows = [
+    expected_null_ineligible_values_rows = [
         ("1-001", 1000000001, CareHome.care_home, 1, 10.0, 2),
         ("1-001", 1000000002, CareHome.care_home, 1, None, 2),
         ("1-001", 1000000003, CareHome.care_home, 1, 10.0, 2),
     ]
 
-    clean_column_with_values_one_submission_rows = [
+    null_ineligible_values_one_submission_rows = [
         ("1-001", 1000000001, CareHome.care_home, 1, 10.0),
         ("1-001", 1000000002, CareHome.care_home, 1, None),
     ]
-    expected_clean_column_with_values_one_submission_rows = [
+    expected_null_ineligible_values_one_submission_rows = [
         ("1-001", 1000000001, CareHome.care_home, 1, None, 1),
         ("1-001", 1000000002, CareHome.care_home, 1, None, 1),
     ]
 
-    clean_column_with_values_both_statuses_rows = [
+    null_ineligible_values_both_statuses_rows = [
         ("1-001", 1000000001, CareHome.care_home, 2, 10.0),
         ("1-001", 1000000002, CareHome.care_home, 2, 10.0),
         ("1-001", 1000000003, CareHome.not_care_home, 2, 10.0),
     ]
-    expected_clean_column_with_values_both_statuses_rows = [
+    expected_null_ineligible_values_both_statuses_rows = [
         ("1-001", 1000000001, CareHome.care_home, 2, None, 2),
         ("1-001", 1000000002, CareHome.care_home, 2, None, 2),
         ("1-001", 1000000003, CareHome.not_care_home, 2, None, 1),
