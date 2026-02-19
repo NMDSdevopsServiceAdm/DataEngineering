@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Replaced the static PySpark modelling code for non-residential with dormancy with the auto-retraining sklearn equivalent.
 
 
 ### Fixed
