@@ -1,5 +1,3 @@
-from datetime import date
-
 import polars as pl
 
 import projects._03_independent_cqc._04_model.utils.feature_utils as fUtils

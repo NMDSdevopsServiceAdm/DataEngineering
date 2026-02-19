@@ -1,11 +1,11 @@
 import json
 import os
-import unittest
 
 import boto3
 from botocore.stub import ANY, Stubber
 
 from lambdas.error_notifications import error_notifications
+from tests.base_test import SparkBaseTest
 
 EXAMPLE_GLUE_FAILURE_PAYLOAD = {
     "StateMachineId": "arn:aws:states:eu-west-2:1234523454:stateMachine:notifications-on-pipeline-fail-DataEngineeringPipeline",
@@ -26,7 +26,7 @@ EXAMPLE_GENERIC_FAILURE_PAYLOAD = {
 }
 
 
-class TestJobType(unittest.TestCase):
+class TestJobType(SparkBaseTest):
     def test_job_type_from_glue_error(self):
         # Given
         error = {"ErrorMessage": "some error message"}
@@ -54,7 +54,7 @@ class TestJobType(unittest.TestCase):
         self.assertIsNone(job_type)
 
 
-class ErrorNotifications(unittest.TestCase):
+class ErrorNotifications(SparkBaseTest):
     def setUp(self) -> None:
         self.sns_client = boto3.client("sns", region_name="eu-west-2")
         self.sns_stubber = Stubber(self.sns_client)

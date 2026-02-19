@@ -1,4 +1,3 @@
-from datetime import date
 import json
 import unittest
 from unittest.mock import Mock, call, patch
