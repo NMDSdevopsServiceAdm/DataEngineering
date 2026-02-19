@@ -28,7 +28,7 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
-        number_of_days: int = 3
+        number_of_days: int = 4
         self.test_df = self.spark.createDataFrame(
             Data.primary_service_rate_of_change_rows,
             Schemas.primary_service_rate_of_change_schema,
@@ -167,18 +167,22 @@ class CalculatePrimaryServiceRollingSumsTests(ModelPrimaryServiceRateOfChangeTes
     def setUp(self) -> None:
         super().setUp()
 
-        number_of_days: int = 2
+        self.number_of_days = 3
+        self.current_col = job.TempCol.current_period_interpolated
+        self.previous_col = job.TempCol.previous_period_interpolated
 
-        test_df = self.spark.createDataFrame(
+        self.test_df = self.spark.createDataFrame(
             Data.calculate_primary_service_rolling_sums_rows,
             Schemas.calculate_primary_service_rolling_sums_schema,
         )
-        self.returned_df = job.calculate_primary_service_rolling_sums(
-            test_df, number_of_days
-        )
+
         self.expected_df = self.spark.createDataFrame(
             Data.expected_calculate_primary_service_rolling_sums_rows,
             Schemas.expected_calculate_primary_service_rolling_sums_schema,
+        )
+
+        self.returned_df = job.calculate_primary_service_rolling_sums(
+            self.test_df, self.number_of_days
         )
 
         self.returned_data = self.returned_df.sort(
@@ -186,25 +190,87 @@ class CalculatePrimaryServiceRollingSumsTests(ModelPrimaryServiceRateOfChangeTes
             IndCqc.number_of_beds_banded_roc,
             IndCqc.unix_time,
         ).collect()
+
         self.expected_data = self.expected_df.collect()
 
-    def test_returned_column_names_match_expected(self):
-        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+    def test_unwanted_columns_are_dropped(self):
+        self.assertNotIn(IndCqc.location_id, self.returned_df.columns)
+        self.assertNotIn(self.current_col, self.returned_df.columns)
+        self.assertNotIn(self.previous_col, self.returned_df.columns)
 
-    def test_returned_rolling_current_sum_values_match_expected(self):
-        for i in range(len(self.returned_data)):
+    def test_returned_column_names_match_expected(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns), sorted(self.expected_df.columns)
+        )
+
+    def test_rolling_current_sum_is_correct(self):
+        for i in range(len(self.expected_data)):
             self.assertAlmostEqual(
                 self.returned_data[i][job.TempCol.rolling_current_sum],
                 self.expected_data[i][job.TempCol.rolling_current_sum],
-                2,
-                f"Returned row {i} does not match expected",
+                places=2,
+                msg=f"Returned row {i} does not match expected",
             )
 
-    def test_returned_rolling_previous_sum_values_match_expected(self):
-        for i in range(len(self.returned_data)):
+    def test_rolling_previous_sum_is_correct(self):
+        for i in range(len(self.expected_data)):
             self.assertAlmostEqual(
                 self.returned_data[i][job.TempCol.rolling_previous_sum],
                 self.expected_data[i][job.TempCol.rolling_previous_sum],
-                2,
-                f"Returned row {i} does not match expected",
+                places=2,
+                msg=f"Returned row {i} does not match expected",
             )
+
+    def _assert_rolling_sum_helper(self, input_rows, expected_rows):
+        """Helper function to test rolling sum calculations with different input and expected data."""
+        test_df = self.spark.createDataFrame(
+            input_rows, Schemas.calculate_primary_service_rolling_sums_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            expected_rows,
+            Schemas.expected_calculate_primary_service_rolling_sums_schema,
+        )
+
+        returned_df = job.calculate_primary_service_rolling_sums(
+            test_df, self.number_of_days
+        )
+
+        returned_data = returned_df.sort(
+            IndCqc.primary_service_type,
+            IndCqc.number_of_beds_banded_roc,
+            IndCqc.unix_time,
+        ).collect()
+
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_rows_with_null_current_or_previous_are_filtered_out(self):
+        self._assert_rolling_sum_helper(
+            Data.rolling_sums_filtering_rows,
+            Data.expected_rolling_sums_filtering_rows,
+        )
+
+    def test_simple_rolling_window(self):
+        self._assert_rolling_sum_helper(
+            Data.rolling_sums_simple_window_rows,
+            Data.expected_rolling_sums_simple_window_rows,
+        )
+
+    def test_rolling_window_only_includes_rows_within_specified_number_of_days(self):
+        self._assert_rolling_sum_helper(
+            Data.rolling_sums_window_includes_values_within_range_rows,
+            Data.expected_rolling_sums_window_includes_values_within_range_rows,
+        )
+
+    def test_window_partitions_correctly(self):
+        self._assert_rolling_sum_helper(
+            Data.rolling_sums_window_partitions_correctly_rows,
+            Data.expected_rolling_sums_window_partitions_correctly_rows,
+        )
+
+    def test_deduplication_implemented_correctly(self):
+        self._assert_rolling_sum_helper(
+            Data.rolling_sums_deduplication_rows,
+            Data.expected_rolling_sums_deduplication_rows,
+        )
