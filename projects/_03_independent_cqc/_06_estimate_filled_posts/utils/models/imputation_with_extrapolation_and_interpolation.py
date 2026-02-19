@@ -9,6 +9,9 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.extrapo
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.interpolation import (
     model_interpolation,
 )
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
+    set_min_value,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
 
@@ -19,6 +22,7 @@ def model_imputation_with_extrapolation_and_interpolation(
     model_column_name: str,
     imputed_column_name: str,
     care_home: bool,
+    extrapolation_method: str,
 ) -> DataFrame:
     """
     Create a new column of imputed values based on known values and null values being extrapolated and interpolated.
@@ -26,11 +30,20 @@ def model_imputation_with_extrapolation_and_interpolation(
     This function first splits the dataset into two, one which is relevant for imputation (based on the care_home status of the
     location and only for locations who have at least one non-null value) and another which includes all other rows not relevant
     to imputation.
+
     The imputation model is carried out in two steps, extrapolation and interpolation, which both populate null values based on
-    the rate of change of values in '<model_column_name>'. Values before the first known submission in 'column_with_null_values'
-    and after the last known submission are extrapolated based on the rate of change of the '<model_column_name>'. Values in
-    between the non-null values are interpolated using the rate of change of the '<model_column_name>' but the trend is adapted
-    so that the end point matches the next non-null value. A new column is added with the name provided in '<imputed_column_name>'.
+    the rate of change of values in '<model_column_name>'.
+
+    Extrapolation:
+        Values before the first known submission in 'column_with_null_values' and after the last known submission are
+        extrapolated, either by nominal or ratio method as specified in 'extrapolation_method'.
+        The ratio method is based on multiplying the known value by the rate of change of the '<model_column_name>'.
+        The nominal method is based on adding/subtracting the nominal change of the '<model_column_name>' to the known value.
+
+    Interpolation:
+        Values in between the non-null values are interpolated using the rate of change of the '<model_column_name>' but the trend
+        is adapted so that the end point matches the next non-null value. A new column is added with the name provided in
+        '<imputed_column_name>'.
 
     Args:
         df (DataFrame): The input DataFrame containing the columns to be extrapolated and interpolated.
@@ -38,6 +51,7 @@ def model_imputation_with_extrapolation_and_interpolation(
         model_column_name (str): The name of the column containing the model values used for extrapolation and interpolation.
         imputed_column_name (str): The name of the new imputated column.
         care_home (bool): True if imputation is for care homes, False if it is for non residential.
+        extrapolation_method (str): The choice of method. Must be either 'nominal' or 'ratio'.
 
     Returns:
         DataFrame: The DataFrame with the added column for imputed values.
@@ -50,6 +64,7 @@ def model_imputation_with_extrapolation_and_interpolation(
         imputed_df,
         column_with_null_values,
         model_column_name,
+        extrapolation_method,
     )
     imputed_df = model_interpolation(
         imputed_df,
@@ -59,6 +74,7 @@ def model_imputation_with_extrapolation_and_interpolation(
     imputed_df = model_imputation(
         imputed_df, column_with_null_values, imputed_column_name
     )
+    imputed_df = set_min_value(imputed_df, imputed_column_name, 1.0)
 
     combined_df = imputed_df.unionByName(non_imputed_df, allowMissingColumns=True)
 

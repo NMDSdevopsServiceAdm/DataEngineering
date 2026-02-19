@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Changed imputation to apply nominal changes instead of converting and applying a ratio.
 
 
 ### Fixed
