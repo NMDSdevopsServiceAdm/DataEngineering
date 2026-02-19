@@ -480,25 +480,87 @@ def calculate_windowed_column(
             'avg', 'count', 'max', 'min' or 'sum'.
     """
 
-    functions = {
-        "avg": pl.col(input_column).mean,
-        "count": pl.col(input_column).count,
-        "max": pl.col(input_column).max,
-        "min": pl.col(input_column).min,
-        "sum": pl.col(input_column).sum,
-    }
-
-    if aggregation_function not in functions:
+    if aggregation_function not in {"avg", "count", "max", "min", "sum"}:
         raise ValueError(
             f"Error: The aggregation function '{aggregation_function}' "
             f"was not found. Please use 'avg', 'count', 'max', 'min' or 'sum'."
         )
 
-    expr = functions[aggregation_function]()
+    col = pl.col(input_column)
 
-    if order_by is not None:
-        expr = expr.over(partition_by=partition_by, order_by=order_by)
+    # ---------------------------------------------------------
+    # CASE 1: No ordering → normal partition aggregation
+    # ---------------------------------------------------------
+    if order_by is None:
+        expr = getattr(col, aggregation_function)().over(partition_by)
+        return lf.with_columns(expr.alias(new_col))
+
+    # ---------------------------------------------------------
+    # CASE 2: Ordered window → emulate Spark RANGE behaviour
+    # ---------------------------------------------------------
+
+    partition_cols = [partition_by] if isinstance(partition_by, str) else partition_by
+    order_cols = [order_by] if isinstance(order_by, str) else order_by
+
+    group_cols = partition_cols + order_cols
+
+    # Step 1 — aggregate at partition + order level
+    if aggregation_function == "count":
+        grouped = (
+            lf.group_by(group_cols)
+            .agg(col.count().alias("group_value"))
+            .sort(order_cols)
+        )
+
+    elif aggregation_function == "sum":
+        grouped = (
+            lf.group_by(group_cols).agg(col.sum().alias("group_value")).sort(order_cols)
+        )
+
+    elif aggregation_function == "avg":
+        grouped = (
+            lf.group_by(group_cols)
+            .agg(
+                col.sum().alias("group_sum"),
+                col.count().alias("group_count"),
+            )
+            .sort(order_cols)
+        )
+
+    elif aggregation_function == "min":
+        grouped = (
+            lf.group_by(group_cols).agg(col.min().alias("group_value")).sort(order_cols)
+        )
+
+    elif aggregation_function == "max":
+        grouped = (
+            lf.group_by(group_cols).agg(col.max().alias("group_value")).sort(order_cols)
+        )
+
+    # Step 2 — cumulative inside partition
+    if aggregation_function == "avg":
+
+        grouped = grouped.with_columns(
+            pl.col("group_sum").cum_sum().over(partition_cols).alias("cum_sum"),
+            pl.col("group_count").cum_sum().over(partition_cols).alias("cum_count"),
+        )
+
+        grouped = grouped.with_columns(
+            (pl.col("cum_sum") / pl.col("cum_count")).alias(new_col)
+        )
+
+        result_cols = group_cols + [new_col]
+
     else:
-        expr = expr.over(partition_by)
+        grouped = grouped.with_columns(
+            pl.col("group_value").cum_sum().over(partition_cols).alias(new_col)
+        )
 
-    return lf.with_columns(expr.alias(new_col))
+        result_cols = group_cols + [new_col]
+
+    # Step 3 — join back to original rows
+    return lf.join(
+        grouped.select(result_cols),
+        on=group_cols,
+        how="left",
+    )

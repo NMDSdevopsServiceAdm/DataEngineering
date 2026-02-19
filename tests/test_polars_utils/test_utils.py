@@ -697,8 +697,8 @@ class CalculateWindowedColumnTests(unittest.TestCase):
             Schemas.expected_calculate_windowed_column_schema,
             orient="row",
         )
-        returned_data = returned_lf.sort(IndCQC.location_id).collect()
-        expected_data = expected_lf.collect()
+        returned_data = returned_lf.sort(IndCQC.location_id)
+        expected_data = expected_lf
         pl_testing.assert_frame_equal(returned_data, expected_data)
 
     def test_calculate_windowed_column_count(self):
@@ -715,25 +715,27 @@ class CalculateWindowedColumnTests(unittest.TestCase):
             Schemas.expected_calculate_windowed_column_count_schema,
             orient="row",
         )
-        returned_data = returned_lf.sort(IndCQC.location_id).collect()
-        expected_data = expected_lf.collect()
+        returned_data = returned_lf.sort(IndCQC.location_id)
+        expected_data = expected_lf
         pl_testing.assert_frame_equal(returned_data, expected_data)
 
     def test_calculate_windowed_column_max(self):
         returned_df = utils.calculate_windowed_column(
-            self.test_df,
-            self.window,
-            Schemas.new_column,
-            IndCQC.ascwds_filled_posts,
-            "max",
+            lf=self.test_lf,
+            new_col="new_column",
+            input_column=IndCQC.ascwds_filled_posts,
+            aggregation_function="max",
+            partition_by=IndCQC.care_home,
+            order_by=IndCQC.cqc_location_import_date,
         )
-        expected_df = self.spark.createDataFrame(
+        expected_df = pl.LazyFrame(
             Data.expected_calculate_windowed_column_max_rows,
             Schemas.expected_calculate_windowed_column_schema,
+            orient="row",
         )
-        returned_data = returned_df.sort(IndCQC.location_id).collect()
-        expected_data = expected_df.collect()
-        self.assertEqual(returned_data, expected_data)
+        returned_data = returned_df.sort(IndCQC.location_id)
+        expected_data = expected_df
+        pl_testing.assert_frame_equal(returned_data, expected_data)
 
     def test_calculate_windowed_column_min(self):
         returned_df = utils.calculate_windowed_column(
