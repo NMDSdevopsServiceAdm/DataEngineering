@@ -1,5 +1,6 @@
 import unittest
 import warnings
+from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
@@ -28,7 +29,7 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
-        number_of_days: int = 4
+        self.number_of_days: int = 4
         self.test_df = self.spark.createDataFrame(
             Data.primary_service_rate_of_change_rows,
             Schemas.primary_service_rate_of_change_schema,
@@ -36,7 +37,7 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
         self.returned_df = job.model_primary_service_rate_of_change(
             self.test_df,
             IndCqc.combined_ratio_and_filled_posts,
-            number_of_days,
+            self.number_of_days,
             IndCqc.single_period_rate_of_change,
         )
         self.expected_df = self.spark.createDataFrame(
@@ -64,6 +65,39 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
                 3,
                 f"Returned row {i} does not match expected",
             )
+
+    @patch(f"{PATCH_PATH}.calculate_new_column")
+    @patch(f"{PATCH_PATH}.calculate_primary_service_rolling_sums")
+    @patch(f"{PATCH_PATH}.add_previous_value_column")
+    @patch(f"{PATCH_PATH}.interpolate_current_values")
+    @patch(f"{PATCH_PATH}.remove_ineligible_locations")
+    @patch(f"{PATCH_PATH}.calculate_windowed_column")
+    def test_main_calls_functions(
+        self,
+        calculate_windowed_column_mock: Mock,
+        remove_ineligible_locations_mock: Mock,
+        interpolate_current_values_mock: Mock,
+        add_previous_value_column_mock: Mock,
+        calculate_primary_service_rolling_sums_mock: Mock,
+        calculate_new_column_mock: Mock,
+    ):
+        calculate_new_column_mock.return_value = Mock(
+            name="calculate_new_column_return_value"
+        )
+
+        job.model_primary_service_rate_of_change(
+            self.test_df,
+            IndCqc.combined_ratio_and_filled_posts,
+            self.number_of_days,
+            IndCqc.single_period_rate_of_change,
+        )
+
+        calculate_windowed_column_mock.assert_called_once()
+        remove_ineligible_locations_mock.assert_called_once()
+        interpolate_current_values_mock.assert_called_once()
+        add_previous_value_column_mock.assert_called_once()
+        calculate_primary_service_rolling_sums_mock.assert_called_once()
+        calculate_new_column_mock.assert_called_once()
 
 
 class RemoveIneligibleLocationsTests(ModelPrimaryServiceRateOfChangeTests):
