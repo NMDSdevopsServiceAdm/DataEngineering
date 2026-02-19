@@ -93,7 +93,7 @@ def forward_fill(
 ) -> pl.LazyFrame:
     """
     Forward fill column to repeat based on certain conditions
-    
+
     This function forward fills the column to repeat with the last known value for the number of days we want it
     to repeat. It checks if the import date and last known date is less than days_to_repeat, if it is it fills
     those with last known value calculated in previous function.
