@@ -55,7 +55,7 @@ def model_primary_service_rate_of_change_trendline(
         [0, 1, 15, 25, float("Inf")],
     )
 
-    df = model_primary_service_rate_of_change(
+    single_roc_df = model_primary_service_rate_of_change(
         df,
         column_with_values,
         number_of_days,
@@ -63,10 +63,8 @@ def model_primary_service_rate_of_change_trendline(
         max_days_between_submissions,
     )
 
-    deduped_df = deduplicate_dataframe(df)
-
     rate_of_change_trendline_df = calculate_rate_of_change_trendline(
-        deduped_df, rate_of_change_trendline_column_name
+        single_roc_df, rate_of_change_trendline_column_name
     )
 
     df = df.join(
@@ -77,44 +75,18 @@ def model_primary_service_rate_of_change_trendline(
             IndCqc.unix_time,
         ],
         "left",
-    )
-
-    df = df.drop(
+    ).drop(
         IndCqc.number_of_beds_banded_roc,
         IndCqc.single_period_rate_of_change,
     )
 
-    return df
-
-
-def deduplicate_dataframe(df: DataFrame) -> DataFrame:
-    """
-    Selects primary service type, banded beds, unix time and single period rate of change then deduplicates the DataFrame based on primary service type and unix time.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-
-    Returns:
-        DataFrame: The deduplicated DataFrame.
-    """
-    df = df.select(
-        IndCqc.primary_service_type,
-        IndCqc.number_of_beds_banded_roc,
-        IndCqc.unix_time,
-        IndCqc.single_period_rate_of_change,
-    ).dropDuplicates(
-        [
-            IndCqc.primary_service_type,
-            IndCqc.number_of_beds_banded_roc,
-            IndCqc.unix_time,
-        ]
-    )
+    df = df.na.fill({rate_of_change_trendline_column_name: 1.0})
 
     return df
 
 
 def calculate_rate_of_change_trendline(
-    df: DataFrame,
+    single_period_rate_of_change_df: DataFrame,
     rate_of_change_trendline_column_name: str,
 ) -> DataFrame:
     """
@@ -126,7 +98,7 @@ def calculate_rate_of_change_trendline(
     This approach avoids issues in pyspark with direct multiplication of many numbers.
 
     Args:
-        df (DataFrame): The input DataFrame.
+        single_period_rate_of_change_df (DataFrame): The input DataFrame containing the single period rate of change values.
         rate_of_change_trendline_column_name (str): Name of the new column to store the rate of change trendline.
 
     Returns:
@@ -136,11 +108,9 @@ def calculate_rate_of_change_trendline(
         IndCqc.primary_service_type, IndCqc.number_of_beds_banded_roc
     ).orderBy(IndCqc.unix_time)
 
-    trendline_df = df.withColumn(
+    trendline_df = single_period_rate_of_change_df.withColumn(
         rate_of_change_trendline_column_name,
         F.exp(F.sum(F.log(IndCqc.single_period_rate_of_change)).over(w)),
-    )
-
-    trendline_df = trendline_df.drop(IndCqc.single_period_rate_of_change)
+    ).drop(IndCqc.single_period_rate_of_change)
 
     return trendline_df
