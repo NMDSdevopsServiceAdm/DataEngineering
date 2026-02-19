@@ -86,12 +86,12 @@ class CreateArchiveDatePartitionColumns(unittest.TestCase):
             Schemas.estimate_filled_posts_schema,
             orient="row",
         )
-        self.expected_when_timestamp_day_and_month_are_single_digits_lf = pl.LazyFrame(
-            Data.expected_create_archive_date_partition_columns_when_timestamp_day_and_month_are_single_digits_rows,
+        self.expected_partitions_when_date_has_single_digits_lf = pl.LazyFrame(
+            Data.expected_partitions_when_date_has_single_digits_lf_rows,
             Schemas.expected_create_archive_date_partitions_schema,
         )
-        self.expected_when_timestamp_day_and_month_are_double_digits_lf = pl.LazyFrame(
-            Data.expected_create_archive_date_partition_columns_when_timestamp_day_and_month_are_double_digits_rows,
+        self.expected_partitions_when_date_has_double_digits_lf = pl.LazyFrame(
+            Data.expected_partitions_when_date_has_double_digits_lf_rows,
             Schemas.expected_create_archive_date_partitions_schema,
         )
 
@@ -110,22 +110,22 @@ class CreateArchiveDatePartitionColumns(unittest.TestCase):
         )
         self.assertEqual(cols_added, set(expected_columns_added))
 
-    def test_expected_day_month_year_and_timestamp_values_are_added_when_timestamp_day_and_month_are_single_digits(
+    def test_expected_values_returned_when_date_contains_single_digits(
         self,
     ):
         returned_lf = job.create_archive_date_partition_columns(
             self.input_lf, datetime(2026, 1, 1)
         )
         pl_testing.assert_frame_equal(
-            returned_lf, self.expected_when_timestamp_day_and_month_are_single_digits_lf
+            returned_lf, self.expected_partitions_when_date_has_single_digits_lf
         )
 
-    def test_expected_day_month_year_and_timestamp_values_are_added_when_timestamp_day_and_month_are_double_digits(
+    def test_expected_values_returned_when_date_contains_double_digits(
         self,
     ):
         returned_lf = job.create_archive_date_partition_columns(
             self.input_lf, datetime(2025, 12, 31)
         )
         pl_testing.assert_frame_equal(
-            returned_lf, self.expected_when_timestamp_day_and_month_are_double_digits_lf
+            returned_lf, self.expected_partitions_when_date_has_double_digits_lf
         )
