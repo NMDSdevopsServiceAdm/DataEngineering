@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Converted archive job from pyspark to polars.
 
+- Created polars job script for clean ind cqc filled posts. Script only reads and writes data and has comments
+  for each util call to be added to the script as it's developed.
+  Added this job to the estimates pipeline in parallel with pyspark version.
+
 ### Changed
 
 
