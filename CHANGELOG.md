@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Removed the original PySpark modelling code for care homes and non-residential with/without dormancy.
 
 
 ### Fixed
