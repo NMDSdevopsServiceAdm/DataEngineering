@@ -47,10 +47,10 @@ def model_primary_service_rate_of_change(
     """
     number_of_days_for_window: int = number_of_days - 1
 
-    df = df.withColumn(TempCol.column_with_values, F.col(column_with_values))
+    df = df.withColumn(TempCol.current_period, F.col(column_with_values))
 
     df = null_ineligible_values(df)
-    df = interpolate_column_with_values(df, max_days_between_submissions)
+    df = interpolate_current_values(df, max_days_between_submissions)
     df = add_previous_value_column(df)
     df = add_rolling_sum_columns(df, number_of_days_for_window)
     df = calculate_rate_of_change(df, rate_of_change_column_name)
@@ -78,20 +78,20 @@ def null_ineligible_values(df: DataFrame) -> DataFrame:
     w_spec = Window.partitionBy(IndCqc.location_id, IndCqc.care_home)
 
     df = calculate_windowed_column(
-        df, w_spec, TempCol.submission_count, TempCol.column_with_values, "count"
+        df, w_spec, TempCol.submission_count, TempCol.current_period, "count"
     )
     df = df.withColumn(
-        TempCol.column_with_values,
+        TempCol.current_period,
         F.when(
             (F.col(IndCqc.care_home_status_count) == one_care_home_status)
             & (F.col(TempCol.submission_count) >= two_submissions),
-            F.col(TempCol.column_with_values),
+            F.col(TempCol.current_period),
         ).otherwise(F.lit(None)),
     )
     return df
 
 
-def interpolate_column_with_values(
+def interpolate_current_values(
     df: DataFrame, max_days_between_submissions: Optional[int] = None
 ) -> DataFrame:
     """
@@ -106,14 +106,14 @@ def interpolate_column_with_values(
     """
     df = model_interpolation(
         df,
-        TempCol.column_with_values,
+        TempCol.current_period,
         "straight",
-        TempCol.column_with_values_interpolated,
+        TempCol.current_period_interpolated,
         max_days_between_submissions=max_days_between_submissions,
     )
     df = df.withColumn(
-        TempCol.column_with_values_interpolated,
-        F.coalesce(TempCol.column_with_values, TempCol.column_with_values_interpolated),
+        TempCol.current_period_interpolated,
+        F.coalesce(TempCol.current_period, TempCol.current_period_interpolated),
     )
     return df
 
@@ -131,8 +131,8 @@ def add_previous_value_column(df: DataFrame) -> DataFrame:
     w = Window.partitionBy(IndCqc.location_id).orderBy(IndCqc.unix_time)
 
     df = df.withColumn(
-        TempCol.previous_column_with_values_interpolated,
-        F.lag(F.col(TempCol.column_with_values_interpolated)).over(w),
+        TempCol.previous_period_interpolated,
+        F.lag(F.col(TempCol.current_period_interpolated)).over(w),
     )
     return df
 
@@ -151,8 +151,8 @@ def add_rolling_sum_columns(df: DataFrame, number_of_days: int) -> DataFrame:
         DataFrame: The DataFrame with the two new rolling sum columns added.
     """
     valid_rows = (
-        F.col(TempCol.column_with_values_interpolated).isNotNull()
-        & F.col(TempCol.previous_column_with_values_interpolated).isNotNull()
+        F.col(TempCol.current_period_interpolated).isNotNull()
+        & F.col(TempCol.previous_period_interpolated).isNotNull()
     )
 
     rolling_sum_window = (
@@ -165,15 +165,15 @@ def add_rolling_sum_columns(df: DataFrame, number_of_days: int) -> DataFrame:
 
     df = df.withColumn(
         TempCol.rolling_current_period_sum,
-        F.sum(F.when(valid_rows, F.col(TempCol.column_with_values_interpolated))).over(
+        F.sum(F.when(valid_rows, F.col(TempCol.current_period_interpolated))).over(
             rolling_sum_window
         ),
     )
     df = df.withColumn(
         TempCol.rolling_previous_period_sum,
-        F.sum(
-            F.when(valid_rows, F.col(TempCol.previous_column_with_values_interpolated))
-        ).over(rolling_sum_window),
+        F.sum(F.when(valid_rows, F.col(TempCol.previous_period_interpolated))).over(
+            rolling_sum_window
+        ),
     )
     return df
 

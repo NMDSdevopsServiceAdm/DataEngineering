@@ -1931,7 +1931,7 @@ class ModelPrimaryServiceRateOfChange:
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.care_home_status_count, IntegerType(), True),
-            StructField(RoC_TempCol.column_with_values, DoubleType(), True),
+            StructField(RoC_TempCol.current_period, DoubleType(), True),
         ]
     )
     expected_null_ineligible_values_schema = StructType(
@@ -1945,7 +1945,7 @@ class ModelPrimaryServiceRateOfChange:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
-            StructField(RoC_TempCol.column_with_values, DoubleType(), True),
+            StructField(RoC_TempCol.current_period, DoubleType(), True),
         ]
     )
     expected_calculate_submission_count_schema = StructType(
@@ -1955,19 +1955,17 @@ class ModelPrimaryServiceRateOfChange:
         ]
     )
 
-    interpolate_column_with_values_schema = StructType(
+    interpolate_current_values_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RoC_TempCol.column_with_values, DoubleType(), True),
+            StructField(RoC_TempCol.current_period, DoubleType(), True),
         ]
     )
-    expected_interpolate_column_with_values_schema = StructType(
+    expected_interpolate_current_values_schema = StructType(
         [
-            *interpolate_column_with_values_schema,
-            StructField(
-                RoC_TempCol.column_with_values_interpolated, DoubleType(), True
-            ),
+            *interpolate_current_values_schema,
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
         ]
     )
 
@@ -1975,17 +1973,13 @@ class ModelPrimaryServiceRateOfChange:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(
-                RoC_TempCol.column_with_values_interpolated, DoubleType(), True
-            ),
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
         ]
     )
     expected_add_previous_value_column_schema = StructType(
         [
             *add_previous_value_column_schema,
-            StructField(
-                RoC_TempCol.previous_column_with_values_interpolated, DoubleType(), True
-            ),
+            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
         ]
     )
 
@@ -1997,12 +1991,8 @@ class ModelPrimaryServiceRateOfChange:
                 IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
             ),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(
-                RoC_TempCol.column_with_values_interpolated, DoubleType(), True
-            ),
-            StructField(
-                RoC_TempCol.previous_column_with_values_interpolated, DoubleType(), True
-            ),
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
         ]
     )
     expected_add_rolling_sum_columns_schema = StructType(

@@ -360,11 +360,13 @@ class IndCqcColumns:
 class PrimaryServiceRateOfChangeColumns:
     """The names of the temporary columns created during the rate of change process."""
 
-    column_with_values: str = "column_with_values"
-    column_with_values_interpolated: str = "column_with_values_interpolated"
-    previous_column_with_values_interpolated: str = (
-        "previous_column_with_values_interpolated"
-    )
+    abs_change: str = "absolute_period_change"
+    current_period: str = "current_period"
+    current_period_cleaned: str = "current_period_cleaned"
+    current_period_interpolated: str = "current_period_interpolated"
+    perc_change: str = "percentage_period_change"
+    previous_period_cleaned: str = "previous_period_cleaned"
+    previous_period_interpolated: str = "previous_period_interpolated"
     rolling_current_period_sum: str = "rolling_current_period_sum"
     rolling_previous_period_sum: str = "rolling_previous_period_sum"
     submission_count: str = "submission_count"

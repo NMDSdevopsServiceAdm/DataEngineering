@@ -4372,13 +4372,13 @@ class ModelPrimaryServiceRateOfChange:
         ("1-001", CareHome.care_home, 10.0, 2),
     ]
 
-    interpolate_column_with_values_rows = [
+    interpolate_current_values_rows = [
         ("1-001", 1704067200, 30.0),
         ("1-001", 1704153600, None),
         ("1-001", 1704240000, 34.0),
         ("1-001", 1704326400, None),
     ]
-    expected_interpolate_column_with_values_rows = [
+    expected_interpolate_current_values_rows = [
         ("1-001", 1704067200, 30.0, 30.0),
         ("1-001", 1704153600, None, 32.0),
         ("1-001", 1704240000, 34.0, 34.0),

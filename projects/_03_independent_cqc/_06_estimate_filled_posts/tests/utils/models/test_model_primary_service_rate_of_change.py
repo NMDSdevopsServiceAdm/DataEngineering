@@ -126,35 +126,35 @@ class NullIneligibleValuesTests(ModelPrimaryServiceRateOfChangeTests):
         self.assertEqual(returned_data, expected_data)
 
 
-class InterpolateColumnWithValuesTests(ModelPrimaryServiceRateOfChangeTests):
+class InterpolateCurrentValuesTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
         test_df = self.spark.createDataFrame(
-            Data.interpolate_column_with_values_rows,
-            Schemas.interpolate_column_with_values_schema,
+            Data.interpolate_current_values_rows,
+            Schemas.interpolate_current_values_schema,
         )
-        self.returned_df = job.interpolate_column_with_values(test_df)
+        self.returned_df = job.interpolate_current_values(test_df)
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_interpolate_column_with_values_rows,
-            Schemas.expected_interpolate_column_with_values_schema,
+            Data.expected_interpolate_current_values_rows,
+            Schemas.expected_interpolate_current_values_schema,
         )
         self.returned_data = self.returned_df.sort(IndCqc.unix_time).collect()
         self.expected_data = self.expected_df.collect()
 
-    def test_interpolate_column_with_values_returns_expected_columns(self):
+    def test_interpolate_current_values_returns_expected_columns(self):
         self.assertEqual(
             sorted(self.returned_df.columns),
             sorted(self.expected_df.columns),
         )
 
-    def test_returned_column_with_values_interpolated_values_match_expected(
+    def test_returned_current_period_interpolated_values_match_expected(
         self,
     ):
         for i in range(len(self.returned_data)):
             self.assertEqual(
-                self.returned_data[i][job.TempCol.column_with_values_interpolated],
-                self.expected_data[i][job.TempCol.column_with_values_interpolated],
+                self.returned_data[i][job.TempCol.current_period_interpolated],
+                self.expected_data[i][job.TempCol.current_period_interpolated],
                 f"Returned row {i} does not match expected",
             )
 
@@ -184,12 +184,8 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRateOfChangeTests):
     def test_returned_previous_interpolated_values_match_expected(self):
         for i in range(len(self.returned_data)):
             self.assertEqual(
-                self.returned_data[i][
-                    job.TempCol.previous_column_with_values_interpolated
-                ],
-                self.expected_data[i][
-                    job.TempCol.previous_column_with_values_interpolated
-                ],
+                self.returned_data[i][job.TempCol.previous_period_interpolated],
+                self.expected_data[i][job.TempCol.previous_period_interpolated],
                 f"Returned row {i} does not match expected",
             )
 
