@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-
+- Converted archive job from pyspark to polars.
 
 ### Changed
 - Switched test runner to pytest in CI, so that a shared session fixture for a spark configuration optimised for tests

@@ -16,6 +16,9 @@ parameters:
   GHA_Meta:
     type: string
     default: ""
+  terraform_version:
+    type: string
+    default: 1.13.5
 
 orbs:
   aws-cli: circleci/aws-cli@5.4.1
@@ -124,7 +127,7 @@ jobs:
 
   lint-terraform:
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:<< pipeline.parameters.terraform_version >>
     resource_class: small
     steps:
       - checkout
@@ -144,7 +147,7 @@ jobs:
         type: env_var_name
     working_directory: /tmp/project
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:<< pipeline.parameters.terraform_version >>
     resource_class: small
     steps:
       - checkout
@@ -180,7 +183,7 @@ jobs:
       secret_key:
         type: env_var_name
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:<< pipeline.parameters.terraform_version >>
     resource_class: small
     steps:
       - checkout
@@ -297,7 +300,7 @@ jobs:
   terraform-destroy:
     working_directory: /tmp/project
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:<< pipeline.parameters.terraform_version >>
     resource_class: small
     steps:
       - checkout

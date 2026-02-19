@@ -2,19 +2,19 @@ from dataclasses import dataclass
 from datetime import date
 
 import numpy as np
+
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.difference_within_range import (
     ascwds_filled_posts_difference_within_range_source_description,
 )
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records import (
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
-
 from utils.column_values.categorical_column_values import (
     CareHome,
     Dormancy,
     MainJobRoleLabels,
-    Sector,
     PrimaryServiceType,
+    Sector,
 )
 
 
@@ -1166,3 +1166,48 @@ class CleanIndCQCData:
     expected_remove_cqc_dual_registrations_when_non_res_rows = (
         remove_cqc_dual_registrations_when_non_res_rows
     )
+
+
+@dataclass
+class ArchiveFilledPostsEstimates:
+    estimate_filled_posts_rows = [("loc 1", date(2024, 1, 1))]
+
+    select_import_dates_to_archive_rows = [
+        ("loc 1", date(2023, 3, 1)),
+        ("loc 1", date(2023, 4, 1)),
+        ("loc 1", date(2024, 3, 1)),
+        ("loc 1", date(2024, 4, 1)),
+        ("loc 1", date(2024, 5, 1)),
+        ("loc 1", date(2024, 6, 1)),
+        ("loc 1", date(2024, 6, 8)),
+    ]
+    expected_select_import_dates_to_archive_rows = [
+        ("loc 1", date(2023, 4, 1)),
+        ("loc 1", date(2024, 4, 1)),
+        ("loc 1", date(2024, 5, 1)),
+        ("loc 1", date(2024, 6, 1)),
+        ("loc 1", date(2024, 6, 8)),
+    ]
+
+    add_latest_annual_estimate_date_rows = [
+        ("loc 1", date(2024, 11, 1)),
+        ("loc 1", date(2024, 12, 1)),
+        ("loc 1", date(2025, 1, 1)),
+        ("loc 1", date(2025, 2, 1)),
+    ]
+    expected_add_latest_annual_estimate_date_rows = [
+        ("loc 1", date(2024, 11, 1), date(2024, 4, 1)),
+        ("loc 1", date(2024, 12, 1), date(2024, 4, 1)),
+        ("loc 1", date(2025, 1, 1), date(2024, 4, 1)),
+        ("loc 1", date(2025, 2, 1), date(2024, 4, 1)),
+    ]
+
+    create_archive_date_partition_columns_rows = [
+        ("loc 1", date(2025, 1, 1)),
+    ]
+    expected_partitions_when_date_has_single_digits_lf_rows = [
+        ("loc 1", date(2025, 1, 1), "01", "01", "2026", "2026-01-01 00:00"),
+    ]
+    expected_partitions_when_date_has_double_digits_lf_rows = [
+        ("loc 1", date(2025, 1, 1), "31", "12", "2025", "2025-12-31 00:00"),
+    ]
