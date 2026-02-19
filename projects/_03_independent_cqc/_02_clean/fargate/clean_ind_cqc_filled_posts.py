@@ -20,6 +20,40 @@ def main(
     locations_lf = utils.scan_parquet(merged_ind_cqc_source)
     print("Merged independent CQC location LazyFrame read in")
 
+    # reduce_dataset_to_earliest_file_per_month
+
+    # calculate_time_registered_for
+    # calculate_time_since_dormant
+
+    # remove_dual_registration_cqc_care_homes
+
+    # replace_zero_beds_with_null
+    # populate_missing_care_home_number_of_beds
+
+    # calculate_ascwds_filled_posts
+
+    # create_column_with_repeated_values_removed - ascwds_filled_posts
+    # create_column_with_repeated_values_removed - pir_people_directly_employed_cleaned
+
+    # calculate_filled_posts_per_bed_ratio - ascwds_filled_posts_dedup
+
+    # create_banded_bed_count_column
+
+    # clean_ascwds_filled_post_outliers
+
+    # forward_fill_latest_known_value - ascwds_filled_posts_dedup_clean
+
+    # forward_fill_latest_known_value - pir_people_directly_employed_dedup
+
+    # calculate_filled_posts_per_bed_ratio - ascwds_filled_posts_dedup_clean
+
+    # calculate_filled_posts_per_bed_ratio - ct_care_home_total_employed
+
+    # clean_capacity_tracker_care_home_outliers
+    # clean_capacity_tracker_non_res_outliers
+
+    # calculate_care_home_status_count
+
     utils.sink_to_parquet(
         locations_lf,
         destination,
