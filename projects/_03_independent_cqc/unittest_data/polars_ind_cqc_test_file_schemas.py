@@ -17,6 +17,9 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ArchivePartitionKeys as ArchiveKeys,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
@@ -419,5 +422,186 @@ class ValidateMergeIndCQCSchemas:
             (CQCLClean.cqc_sector, pl.String()),
             (CQCLClean.care_home, pl.String()),
             (CQCLClean.number_of_beds, pl.Int64()),
+        ]
+    )
+
+
+@dataclass
+class CalculateAscwdsFilledPostsSchemas:
+    calculate_ascwds_filled_posts_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.total_staff_bounded, pl.Int64()),
+            (IndCQC.worker_records_bounded, pl.Int64()),
+            (IndCQC.ascwds_filled_posts, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_source, pl.String()),
+        ]
+    )
+
+
+@dataclass
+class CalculateAscwdsFilledPostsDifferenceInRangeSchemas:
+    test_difference_within_range_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.total_staff_bounded, pl.Int64()),
+            (IndCQC.worker_records_bounded, pl.Int64()),
+            (IndCQC.ascwds_filled_posts, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_source, pl.String()),
+        ]
+    )
+
+
+@dataclass
+class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas:
+    calculate_ascwds_filled_posts_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.total_staff_bounded, pl.Int64()),
+            (IndCQC.worker_records_bounded, pl.Int64()),
+            (IndCQC.ascwds_filled_posts, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_source, pl.String()),
+        ]
+    )
+
+
+@dataclass
+class CalculateAscwdsFilledPostsUtilsSchemas:
+    estimated_source_description_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.estimate_filled_posts, pl.Float64()),
+            (IndCQC.estimate_filled_posts_source, pl.String()),
+        ]
+    )
+
+    common_checks_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.total_staff_bounded, pl.Int64()),
+            (IndCQC.worker_records_bounded, pl.Int64()),
+            (IndCQC.ascwds_filled_posts, pl.Float64()),
+        ]
+    )
+
+
+@dataclass
+class CleanIndCQCSchema:
+    replace_zero_beds_with_null_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+        ]
+    )
+
+    populate_missing_care_home_number_of_beds_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+        ]
+    )
+
+    filter_to_care_homes_with_known_beds_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+        ]
+    )
+
+    average_beds_per_location_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+        ]
+    )
+
+    expected_average_beds_per_location_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            ("avg_beds", pl.Int64()),
+        ]
+    )
+
+    replace_null_beds_with_average_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.Utf8),
+            (IndCQC.number_of_beds, pl.Int64),
+            ("avg_beds", pl.Int64),
+        ]
+    )
+
+    expected_replace_null_beds_with_average_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.Utf8),
+            (IndCQC.number_of_beds, pl.Int64),
+        ]
+    )
+
+    calculate_time_registered_for_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.imputed_registration_date, pl.Date()),
+        ]
+    )
+
+    expected_calculate_time_registered_for_schema = pl.Schema(
+        list(calculate_time_registered_for_schema.items())
+        + [
+            (IndCQC.time_registered, pl.UInt32()),
+        ]
+    )
+
+    calculate_time_since_dormant_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.dormancy, pl.String()),
+        ]
+    )
+    expected_calculate_time_since_dormant_schema = pl.Schema(
+        list(calculate_time_since_dormant_schema.items())
+        + [
+            (IndCQC.time_since_dormant, pl.Int64()),
+        ]
+    )
+
+    remove_cqc_dual_registrations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.name, pl.String()),
+            (IndCQC.postcode, pl.String()),
+            (IndCQC.care_home, pl.String()),
+            (AWPClean.total_staff_bounded, pl.Int64()),
+            (AWPClean.worker_records_bounded, pl.Int64()),
+            (IndCQC.imputed_registration_date, pl.Date()),
+        ]
+    )
+
+
+@dataclass
+class ArchiveFilledPostsEstimates:
+    estimate_filled_posts_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    expected_add_latest_annual_estimate_date_schema = (
+        list(estimate_filled_posts_schema.items())
+    ) + ["most_recent_annual_estimate_date"]
+
+    expected_create_archive_date_partitions_schema = pl.Schema(
+        list(estimate_filled_posts_schema.items())
+        + [
+            (ArchiveKeys.archive_day, pl.String()),
+            (ArchiveKeys.archive_month, pl.String()),
+            (ArchiveKeys.archive_year, pl.String()),
+            (ArchiveKeys.archive_timestamp, pl.String()),
         ]
     )

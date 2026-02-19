@@ -27,9 +27,6 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    ArchivePartitionKeys as ArchiveKeys,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
@@ -258,40 +255,6 @@ class ValidateImputedIndCqcAscwdsAndPir:
         ]
     )
     calculate_expected_size_schema = cleaned_ind_cqc_schema
-
-
-@dataclass
-class ArchiveFilledPostsEstimates:
-    filled_posts_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    select_import_dates_to_archive_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    create_archive_date_partitions_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    expected_create_archive_date_partitions_schema = StructType(
-        [
-            *create_archive_date_partitions_schema,
-            StructField(ArchiveKeys.archive_day, StringType(), True),
-            StructField(ArchiveKeys.archive_month, StringType(), True),
-            StructField(ArchiveKeys.archive_year, StringType(), True),
-            StructField(ArchiveKeys.archive_timestamp, StringType(), True),
-        ]
-    )
 
 
 @dataclass
@@ -1128,6 +1091,7 @@ class CleanIndCQCData:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.CalculateAscwdsFilledPostsUtilsSchemas
 @dataclass
 class CalculateAscwdsFilledPostsUtilsSchemas:
     estimated_source_description_schema = StructType(
@@ -1139,6 +1103,7 @@ class CalculateAscwdsFilledPostsUtilsSchemas:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.CalculateAscwdsFilledPostsSchemas
 @dataclass
 class CalculateAscwdsFilledPostsSchemas:
     calculate_ascwds_filled_posts_schema = StructType(
@@ -1152,6 +1117,7 @@ class CalculateAscwdsFilledPostsSchemas:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas
 @dataclass
 class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas:
     calculate_ascwds_filled_posts_schema = StructType(
@@ -1165,6 +1131,7 @@ class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.CalculateAscwdsFilledPostsDifferenceInRangeSchemas
 @dataclass
 class CalculateAscwdsFilledPostsDifferenceInRangeSchemas:
     calculate_ascwds_filled_posts_schema = StructType(

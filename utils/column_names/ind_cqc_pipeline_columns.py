@@ -31,6 +31,7 @@ class PartitionKeys:
     year: str = "year"
 
 
+@dataclass
 class ArchivePartitionKeys:
     archive_day: str = "archive_day"
     archive_month: str = "archive_month"

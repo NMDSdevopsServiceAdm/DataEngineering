@@ -314,36 +314,6 @@ class ValidateImputedIndCqcAscwdsAndPir:
 
 
 @dataclass
-class ArchiveFilledPostsEstimates:
-    filled_posts_rows = [("loc 1", date(2024, 1, 1))]
-
-    select_import_dates_to_archive_rows = [
-        ("loc 1", date(2024, 6, 8)),
-        ("loc 1", date(2024, 5, 1)),
-        ("loc 1", date(2024, 4, 1)),
-        ("loc 1", date(2024, 3, 1)),
-        ("loc 1", date(2023, 4, 1)),
-        ("loc 1", date(2023, 3, 1)),
-    ]
-    expected_select_import_dates_to_archive_rows = [
-        ("loc 1", date(2024, 6, 8)),
-        ("loc 1", date(2024, 5, 1)),
-        ("loc 1", date(2024, 4, 1)),
-        ("loc 1", date(2023, 4, 1)),
-    ]
-
-    create_archive_date_partitions_rows = [("loc 1", date(2024, 1, 2))]
-    expected_create_archive_date_partitions_rows = [
-        ("loc 1", date(2024, 1, 2), "02", "01", "2024", "2024-01-02 12:00"),
-    ]
-
-    single_digit_number = 9
-    expected_single_digit_number_as_string = "09"
-    double_digit_number = 10
-    expected_double_digit_number_as_string = "10"
-
-
-@dataclass
 class EstimateIndCQCFilledPostsByJobRoleData:
     estimated_ind_cqc_filled_posts_rows = [
         (
@@ -3384,6 +3354,7 @@ class CleanIndCQCData:
     ]
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data.CalculateAscwdsFilledPostsUtilsData
 @dataclass
 class CalculateAscwdsFilledPostsUtilsData:
     source_missing_rows = [
@@ -3399,6 +3370,7 @@ class CalculateAscwdsFilledPostsUtilsData:
     ]
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data.CalculateAscwdsFilledPostsData
 @dataclass
 class CalculateAscwdsFilledPostsData:
     # fmt: off
@@ -3448,6 +3420,7 @@ class CalculateAscwdsFilledPostsData:
     # fmt: on
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data.CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsData
 @dataclass
 class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsData:
     # fmt: off
@@ -3474,6 +3447,7 @@ class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsData:
     # fmt: on
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data.CalculateAscwdsFilledPostsDifferenceInRangeData
 @dataclass
 class CalculateAscwdsFilledPostsDifferenceInRangeData:
     # fmt: off
