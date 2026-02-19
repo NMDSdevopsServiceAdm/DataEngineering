@@ -12,6 +12,9 @@ All notable changes to this project will be documented in this file.
   for each util call to be added to the script as it's developed.
   Added this job to the estimates pipeline in parallel with pyspark version.
 
+- Created pointblank validation script for cleaned ind cqc dataset. Added script to estimates pipeline.
+  The validation is all commented out so no checks are run, but they are converted from the pydeequ version.
+
 ### Changed
 
 
