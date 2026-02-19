@@ -51,7 +51,7 @@ def model_primary_service_rate_of_change_trendline(
 
     df = cUtils.create_banded_bed_count_column(
         df,
-        IndCqc.number_of_beds_banded_for_rate_of_change,
+        IndCqc.number_of_beds_banded_roc,
         [0, 1, 15, 25, float("Inf")],
     )
 
@@ -73,14 +73,14 @@ def model_primary_service_rate_of_change_trendline(
         rate_of_change_trendline_df,
         [
             IndCqc.primary_service_type,
-            IndCqc.number_of_beds_banded_for_rate_of_change,
+            IndCqc.number_of_beds_banded_roc,
             IndCqc.unix_time,
         ],
         "left",
     )
 
     df = df.drop(
-        IndCqc.number_of_beds_banded_for_rate_of_change,
+        IndCqc.number_of_beds_banded_roc,
         IndCqc.single_period_rate_of_change,
     )
 
@@ -99,13 +99,13 @@ def deduplicate_dataframe(df: DataFrame) -> DataFrame:
     """
     df = df.select(
         IndCqc.primary_service_type,
-        IndCqc.number_of_beds_banded_for_rate_of_change,
+        IndCqc.number_of_beds_banded_roc,
         IndCqc.unix_time,
         IndCqc.single_period_rate_of_change,
     ).dropDuplicates(
         [
             IndCqc.primary_service_type,
-            IndCqc.number_of_beds_banded_for_rate_of_change,
+            IndCqc.number_of_beds_banded_roc,
             IndCqc.unix_time,
         ]
     )
@@ -133,7 +133,7 @@ def calculate_rate_of_change_trendline(
         DataFrame: The DataFrame with the rate of change trendline included.
     """
     w = Window.partitionBy(
-        IndCqc.primary_service_type, IndCqc.number_of_beds_banded_for_rate_of_change
+        IndCqc.primary_service_type, IndCqc.number_of_beds_banded_roc
     ).orderBy(IndCqc.unix_time)
 
     trendline_df = df.withColumn(

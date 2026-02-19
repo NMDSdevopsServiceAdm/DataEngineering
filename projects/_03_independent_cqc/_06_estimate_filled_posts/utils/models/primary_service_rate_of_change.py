@@ -47,23 +47,39 @@ def model_primary_service_rate_of_change(
     """
     number_of_days_for_window: int = number_of_days - 1
 
-    df = df.withColumn(TempCol.current_period, F.col(column_with_values))
+    df = df.select(
+        IndCqc.location_id,
+        IndCqc.unix_time,
+        IndCqc.care_home,
+        IndCqc.care_home_status_count,
+        IndCqc.primary_service_type,
+        IndCqc.number_of_beds_banded_roc,
+        column_with_values,
+    ).withColumnRenamed(column_with_values, TempCol.current_period)
 
-    df = null_ineligible_values(df)
+    w_spec = Window.partitionBy(IndCqc.location_id, IndCqc.care_home)
+    df = calculate_windowed_column(
+        df, w_spec, TempCol.submission_count, TempCol.current_period, "count"
+    )
+
+    df = remove_ineligible_locations(df)
     df = interpolate_current_values(df, max_days_between_submissions)
     df = add_previous_value_column(df)
     df = add_rolling_sum_columns(df, number_of_days_for_window)
     df = calculate_rate_of_change(df, rate_of_change_column_name)
 
-    columns_to_drop = [field.name for field in fields(TempCol())]
-    df = df.drop(*columns_to_drop)
+    # deduped_df = deduplicate_dataframe(df) - TODO copy across
+
+    # required?
+    # columns_to_drop = [field.name for field in fields(TempCol())]
+    # df = df.drop(*columns_to_drop)
 
     return df
 
 
-def null_ineligible_values(df: DataFrame) -> DataFrame:
+def remove_ineligible_locations(df: DataFrame) -> DataFrame:
     """
-    Null values for locations that do not meet eligibility rules:
+    Only keep rows for locations who meet eligibility rules:
         - at least two submissions
         - consistent care home status over time
 
@@ -71,22 +87,14 @@ def null_ineligible_values(df: DataFrame) -> DataFrame:
         df (DataFrame): The input DataFrame.
 
     Returns:
-        DataFrame: The input DataFrame with unwanted data nulled.
+        DataFrame: The input DataFrame with ineligible locations removed.
     """
     one_care_home_status: int = 1
     two_submissions: int = 2
-    w_spec = Window.partitionBy(IndCqc.location_id, IndCqc.care_home)
 
-    df = calculate_windowed_column(
-        df, w_spec, TempCol.submission_count, TempCol.current_period, "count"
-    )
-    df = df.withColumn(
-        TempCol.current_period,
-        F.when(
-            (F.col(IndCqc.care_home_status_count) == one_care_home_status)
-            & (F.col(TempCol.submission_count) >= two_submissions),
-            F.col(TempCol.current_period),
-        ).otherwise(F.lit(None)),
+    df = df.filter(
+        (F.col(IndCqc.care_home_status_count) == one_care_home_status)
+        & (F.col(TempCol.submission_count) >= two_submissions)
     )
     return df
 
@@ -157,7 +165,7 @@ def add_rolling_sum_columns(df: DataFrame, number_of_days: int) -> DataFrame:
 
     rolling_sum_window = (
         Window.partitionBy(
-            IndCqc.primary_service_type, IndCqc.number_of_beds_banded_for_rate_of_change
+            IndCqc.primary_service_type, IndCqc.number_of_beds_banded_roc
         )
         .orderBy(F.col(IndCqc.unix_time))
         .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)

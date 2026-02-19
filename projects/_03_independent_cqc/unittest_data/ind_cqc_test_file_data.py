@@ -4296,52 +4296,30 @@ class ModelPrimaryServiceRateOfChange:
         ("1-005", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 4.0, 2),
         ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 50.0, 2),
     ]
-    expected_primary_service_rate_of_change_rows = [
-        ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 3.0, 1, 1.0),
-        ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 1.0, 2.8, 1, 1.03999),
-        ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 1.0, 3.4, 1, 1.1176),
-        ("1-001", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 1.0, 3.2, 1, 1.0854),
-        ("1-002", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 2.0, 1, 1.0),
-        ("1-002", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 1.0, None, 1, 1.03999),
-        ("1-002", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 1.0, None, 1, 1.1176),
-        ("1-002", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 1.0, 3.2, 1, 1.0854),
-        ("1-003", CareHome.not_care_home, 1704067200, PrimaryServiceType.non_residential, None, 0.0, 40.0, 1, 1.0),
-        ("1-003", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 50.0, 1, 1.25),
-        ("1-004", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 60.0, 1, 1.25),
-        ("1-005", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 4.0, 2, 1.0),
-        ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 50.0, 2, 1.25),
-    ]
     # fmt: on
-
-    null_ineligible_values_rows = [
-        ("1-001", 1000000001, CareHome.care_home, 1, 10.0),
-        ("1-001", 1000000002, CareHome.care_home, 1, None),
-        ("1-001", 1000000003, CareHome.care_home, 1, 10.0),
+    expected_primary_service_rate_of_change_rows = [
+        (PrimaryServiceType.care_home_only, 1.0, 1704067200, 1.0),
+        (PrimaryServiceType.care_home_only, 1.0, 1704153600, 1.03999),
+        (PrimaryServiceType.care_home_only, 1.0, 1704240000, 1.1176),
+        (PrimaryServiceType.care_home_only, 1.0, 1704326400, 1.0854),
+        (PrimaryServiceType.non_residential, None, 1704067200, 1.0),
+        (PrimaryServiceType.non_residential, None, 1704153600, 1.25),
     ]
-    expected_null_ineligible_values_rows = [
+
+    eligible_location_rows = [
         ("1-001", 1000000001, CareHome.care_home, 1, 10.0, 2),
         ("1-001", 1000000002, CareHome.care_home, 1, None, 2),
         ("1-001", 1000000003, CareHome.care_home, 1, 10.0, 2),
+        ("1-001", 1000000004, CareHome.care_home, 1, None, 2),
     ]
-
-    null_ineligible_values_one_submission_rows = [
-        ("1-001", 1000000001, CareHome.care_home, 1, 10.0),
-        ("1-001", 1000000002, CareHome.care_home, 1, None),
-    ]
-    expected_null_ineligible_values_one_submission_rows = [
-        ("1-001", 1000000001, CareHome.care_home, 1, None, 1),
+    remove_ineligible_locations_with_one_submission_rows = [
+        ("1-001", 1000000001, CareHome.care_home, 1, 10.0, 1),
         ("1-001", 1000000002, CareHome.care_home, 1, None, 1),
     ]
-
-    null_ineligible_values_both_statuses_rows = [
-        ("1-001", 1000000001, CareHome.care_home, 2, 10.0),
-        ("1-001", 1000000002, CareHome.care_home, 2, 10.0),
-        ("1-001", 1000000003, CareHome.not_care_home, 2, 10.0),
-    ]
-    expected_null_ineligible_values_both_statuses_rows = [
-        ("1-001", 1000000001, CareHome.care_home, 2, None, 2),
-        ("1-001", 1000000002, CareHome.care_home, 2, None, 2),
-        ("1-001", 1000000003, CareHome.not_care_home, 2, None, 1),
+    remove_ineligible_locations_with_multiple_statuses_rows = [
+        ("1-001", 1000000001, CareHome.care_home, 2, 10.0, 2),
+        ("1-001", 1000000002, CareHome.care_home, 2, 10.0, 2),
+        ("1-001", 1000000003, CareHome.not_care_home, 2, 10.0, 1),
     ]
 
     calculate_submission_count_same_care_home_status_rows = [

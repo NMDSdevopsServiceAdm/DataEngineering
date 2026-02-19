@@ -115,7 +115,7 @@ class DeduplicateDataframeTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
 
         self.returned_data = self.returned_df.sort(
             IndCqc.primary_service_type,
-            IndCqc.number_of_beds_banded_for_rate_of_change,
+            IndCqc.number_of_beds_banded_roc,
             IndCqc.unix_time,
         ).collect()
         self.expected_data = self.expected_df.collect()
@@ -148,7 +148,7 @@ class CalculateRateOfChangeTrendlineTests(
 
         self.returned_data = self.returned_df.sort(
             IndCqc.primary_service_type,
-            IndCqc.number_of_beds_banded_for_rate_of_change,
+            IndCqc.number_of_beds_banded_roc,
             IndCqc.unix_time,
         ).collect()
         self.expected_data = self.expected_df.collect()
