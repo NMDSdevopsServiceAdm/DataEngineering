@@ -13,74 +13,112 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class CreateColumnWithRepeatedValuesRemovedTests(unittest.TestCase):
-    def setUp(self):
-        self.test_purge_outdated_lf = pl.LazyFrame(
-            data=Data.repeated_value_rows,
-            schema=Schemas.repeated_value_schema,
-            orient="row",
-        )
-        self.expected_lf_without_repeated_values = pl.LazyFrame(
-            data=Data.expected_without_repeated_values_rows,
-            schema=Schemas.expected_without_repeated_values_schema,
-            orient="row",
-        )
-        self.returned_lf_per_locationid = (
-            job.create_column_with_repeated_values_removed(
-                self.test_purge_outdated_lf,
-                column_to_clean="integer_column",
-            )
-        )
-        self.returned_lf_per_providerid = (
-            job.create_column_with_repeated_values_removed(
-                self.test_purge_outdated_lf,
-                column_to_clean="integer_column",
-                column_to_partition_by=IndCQC.provider_id,
-            )
-        )
-        self.OUTPUT_COLUMN = "integer_column_deduplicated"
-
-        self.returned_data_per_locationid = self.returned_lf_per_locationid.sort(
-            IndCQC.location_id, IndCQC.cqc_location_import_date
-        ).collect()
-        self.returned_data_per_providerid = self.returned_lf_per_providerid.sort(
-            IndCQC.location_id, IndCQC.cqc_location_import_date
-        ).collect()
-        self.expected_data = self.expected_lf_without_repeated_values.sort(
-            IndCQC.location_id, IndCQC.cqc_location_import_date
-        ).collect()
-
-    def test_create_column_with_repeated_values_removed_when_partitioned_by_location_id(
+    def test_create_column_with_repeated_values_removed_returns_correct_lf_when_values_repeat_consecutively_and_partitioned_by_locationId(
         self,
     ):
-        pl_testing.assert_series_equal(
-            self.returned_data_per_locationid.get_column(self.OUTPUT_COLUMN),
-            self.expected_data.get_column(self.OUTPUT_COLUMN),
+        test_lf_with_repeaded_values = pl.LazyFrame(
+            data=Data.locations_with_repeated_value_rows,
+            schema=Schemas.locations_with_repeated_value_schema,
+            orient="row",
         )
-
-    def test_returned_df_matches_expected_df_when_partitioned_by_location_id(self):
+        expected_lf_without_repeated_values = pl.LazyFrame(
+            data=Data.expected_locations_without_repeated_values_when_input_has_repeated_values_rows,
+            schema=Schemas.expected_locations_without_repeated_values_schema,
+            orient="row",
+        )
+        returned_lf = job.create_column_with_repeated_values_removed(
+            test_lf_with_repeaded_values,
+            column_to_clean="integer_column",
+        )
         pl_testing.assert_frame_equal(
-            self.returned_data_per_locationid,
-            self.expected_data,
+            returned_lf,
+            expected_lf_without_repeated_values,
         )
 
-    def test_returned_df_has_one_additional_column_when_partitioned_by_location_id(
+    def test_create_column_with_repeated_values_removed_returns_correct_lf_when_values_dont_repeat_consecutively_and_partitioned_by_locationId(
         self,
     ):
-        self.assertIn(self.OUTPUT_COLUMN, self.returned_lf_per_locationid.columns)
-
-        cols_added = set(self.returned_lf_per_locationid.columns) - set(
-            self.test_purge_outdated_lf.columns
+        test_lf_without_repeated_values = pl.LazyFrame(
+            data=Data.location_without_repeated_value_rows,
+            schema=Schemas.locations_with_repeated_value_schema,
+            orient="row",
         )
-        self.assertEqual(cols_added, {self.OUTPUT_COLUMN})
-
-    def test_returned_df_has_same_number_of_rows(self):
-        self.assertEqual(
-            self.returned_lf_per_locationid.collect().height,
-            self.test_purge_outdated_lf.collect().height,
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_locations_without_repeated_value_rows,
+            schema=Schemas.expected_locations_without_repeated_values_schema,
+            orient="row",
         )
-
-    def test_returned_df_matches_expected_df_when_partitioned_by_providerid(self):
+        returned_lf = job.create_column_with_repeated_values_removed(
+            test_lf_without_repeated_values,
+            column_to_clean="integer_column",
+        )
         pl_testing.assert_frame_equal(
-            self.returned_data_per_providerid,
-            self.expected_data,
+            returned_lf,
+            expected_lf,
+        )
+
+    def test_create_column_with_repeated_values_removed_returns_one_additional_column_when_partitioned_by_location_id(
+        self,
+    ):
+        OUTPUT_COLUMN = "integer_column_deduplicated"
+        test_lf_with_repeaded_values = pl.LazyFrame(
+            data=Data.locations_with_repeated_value_rows,
+            schema=Schemas.locations_with_repeated_value_schema,
+            orient="row",
+        )
+        returned_lf = job.create_column_with_repeated_values_removed(
+            test_lf_with_repeaded_values,
+            column_to_clean="integer_column",
+        )
+        self.assertIn(OUTPUT_COLUMN, returned_lf.collect_schema().names())
+
+        cols_added = set(returned_lf.collect_schema().names()) - set(
+            test_lf_with_repeaded_values.collect_schema().names()
+        )
+        self.assertEqual(cols_added, {OUTPUT_COLUMN})
+
+    def test_create_column_with_repeated_values_removed_returns_correct_lf_when_values_dont_repeat_consecutively_and_partitioned_by_providerId(
+        self,
+    ):
+        test_lf_without_repeated_values = pl.LazyFrame(
+            data=Data.providers_without_repeated_value_rows,
+            schema=Schemas.providers_with_repeated_value_schema,
+            orient="row",
+        )
+        returned_lf_per_providerid = job.create_column_with_repeated_values_removed(
+            test_lf_without_repeated_values,
+            column_to_clean="integer_column",
+            column_to_partition_by=IndCQC.provider_id,
+        )
+        expected_lf_without_repeated_values = pl.LazyFrame(
+            data=Data.expected_providers_without_repeated_value_rows,
+            schema=Schemas.expected_providers_without_repeated_values_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(
+            returned_lf_per_providerid,
+            expected_lf_without_repeated_values,
+        )
+
+    def test_create_column_with_repeated_values_removed_returns_correct_lf_when_values_repeat_consecutively_and_partitioned_by_providerId(
+        self,
+    ):
+        test_lf_without_repeated_values = pl.LazyFrame(
+            data=Data.providers_with_repeated_value_rows,
+            schema=Schemas.providers_with_repeated_value_schema,
+            orient="row",
+        )
+        returned_lf_per_providerid = job.create_column_with_repeated_values_removed(
+            test_lf_without_repeated_values,
+            column_to_clean="integer_column",
+            column_to_partition_by=IndCQC.provider_id,
+        )
+        expected_lf_without_repeated_values = pl.LazyFrame(
+            data=Data.expected_providers_without_repeated_values_when_input_has_repeated_values_rows,
+            schema=Schemas.expected_providers_without_repeated_values_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(
+            returned_lf_per_providerid,
+            expected_lf_without_repeated_values,
         )

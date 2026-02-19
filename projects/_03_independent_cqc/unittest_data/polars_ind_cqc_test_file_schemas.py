@@ -621,17 +621,30 @@ class CleanFilteringUtilsSchemas:
 
 @dataclass
 class CleanUtilsSchemas:
-    repeated_value_schema = pl.Schema(
+    locations_with_repeated_value_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
+            ("integer_column", pl.Int64()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    expected_locations_without_repeated_values_schema = pl.Schema(
+        list(locations_with_repeated_value_schema.items())
+        + [
+            ("integer_column_deduplicated", pl.Int64()),
+        ]
+    )
+    providers_with_repeated_value_schema = pl.Schema(
+        [
             (IndCQC.provider_id, pl.String()),
             ("integer_column", pl.Int64()),
             (IndCQC.cqc_location_import_date, pl.Date()),
         ]
     )
 
-    expected_without_repeated_values_schema = pl.Schema(
-        list(repeated_value_schema.items())
+    expected_providers_without_repeated_values_schema = pl.Schema(
+        list(providers_with_repeated_value_schema.items())
         + [
             ("integer_column_deduplicated", pl.Int64()),
         ]
@@ -648,8 +661,8 @@ class ForwardFillLatestKnownValue:
         ]
     )
     expected_return_last_known_value_locations_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
+        list(input_return_last_known_value_locations_schema.items())
+        + [
             ("last_known_date", pl.Date()),
             ("last_known_value", pl.Int64()),
         ]

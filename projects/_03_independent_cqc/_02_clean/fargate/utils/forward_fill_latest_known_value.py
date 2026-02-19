@@ -34,8 +34,6 @@ def forward_fill_latest_known_value(
     """
     lf_with_last_known = return_last_known_value(lf, col_to_repeat)
 
-    lf_with_last_known = lf.join(lf_with_last_known, on=IndCQC.location_id, how="left")
-
     lf_with_forward_fill = forward_fill(
         lf_with_last_known, col_to_repeat, days_to_repeat
     )
@@ -60,24 +58,30 @@ def return_last_known_value(
     last_known_date = "last_known_date"
     last_known_value = "last_known_value"
 
-    lf_with_last_known = (
-        lf.filter(pl.col(col_to_repeat).is_not_null())
-        .group_by(IndCQC.location_id)
-        .agg(
-            [
-                pl.col(IndCQC.cqc_location_import_date)
-                .sort_by(IndCQC.cqc_location_import_date)
-                .last()
-                .alias(last_known_date),
-                pl.col(col_to_repeat)
-                .sort_by(IndCQC.cqc_location_import_date)
-                .last()
-                .alias(last_known_value),
-            ]
-        )
+    lf = lf.with_columns(
+        (
+            pl.col(IndCQC.cqc_location_import_date)
+            .filter(pl.col(col_to_repeat).is_not_null())
+            .last()
+            .over(
+                partition_by=IndCQC.location_id,
+                order_by=IndCQC.cqc_location_import_date,
+            )
+            .alias(last_known_date)
+        ),
+        (
+            pl.col(col_to_repeat)
+            .filter(pl.col(col_to_repeat).is_not_null())
+            .last()
+            .over(
+                partition_by=IndCQC.location_id,
+                order_by=IndCQC.cqc_location_import_date,
+            )
+            .alias(last_known_value)
+        ),
     )
 
-    return lf_with_last_known
+    return lf
 
 
 def forward_fill(

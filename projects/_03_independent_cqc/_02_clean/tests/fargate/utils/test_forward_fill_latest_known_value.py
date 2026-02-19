@@ -13,8 +13,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
-from utils import utils
-
 PATCH_PATH = "projects._03_independent_cqc._02_clean.fargate.utils.forward_fill_latest_known_value"
 
 
@@ -33,9 +31,7 @@ class ReturnLastKnownValueTests(unittest.TestCase):
             orient="row",
         )
         returned_lf = job.return_last_known_value(test_lf, "col_to_repeat")
-        pl_testing.assert_frame_equal(
-            returned_lf.collect().sort(IndCQC.location_id), expected_lf.collect()
-        )
+        pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), expected_lf)
 
     def test_last_known_ignores_null_values_when_identifying_last_known(
         self,
@@ -51,9 +47,7 @@ class ReturnLastKnownValueTests(unittest.TestCase):
             orient="row",
         )
         returned_lf = job.return_last_known_value(test_lf, "col_to_repeat")
-        pl_testing.assert_frame_equal(
-            returned_lf.collect().sort(IndCQC.location_id), expected_lf.collect()
-        )
+        pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), expected_lf)
 
 
 class ForwardFillTests(unittest.TestCase):
@@ -71,9 +65,7 @@ class ForwardFillTests(unittest.TestCase):
             orient="row",
         )
         returned_lf = job.forward_fill(test_lf, "col_to_repeat", days_to_repeat=2)
-        pl_testing.assert_frame_equal(
-            returned_lf.collect().sort(IndCQC.location_id), expected_lf.collect()
-        )
+        pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), expected_lf)
 
     def test_forward_fill_does_not_populate_null_values_beyond_days_to_repeat_range(
         self,
@@ -89,9 +81,7 @@ class ForwardFillTests(unittest.TestCase):
             orient="row",
         )
         returned_lf = job.forward_fill(test_lf, "col_to_repeat", days_to_repeat=2)
-        pl_testing.assert_frame_equal(
-            returned_lf.collect().sort(IndCQC.location_id), expected_lf.collect()
-        )
+        pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), expected_lf)
 
     def test_forward_fill_does_not_populate_null_values_before_last_known_value(
         self,
@@ -107,9 +97,7 @@ class ForwardFillTests(unittest.TestCase):
             orient="row",
         )
         returned_lf = job.forward_fill(test_lf, "col_to_repeat", days_to_repeat=2)
-        pl_testing.assert_frame_equal(
-            returned_lf.collect().sort(IndCQC.location_id), expected_lf.collect()
-        )
+        pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), expected_lf)
 
 
 class ForwardFillLatestKnownValueCallTests(unittest.TestCase):
