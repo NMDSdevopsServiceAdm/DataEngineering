@@ -170,20 +170,22 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRateOfChangeTests):
             )
 
 
-class AddRollingSumColumnsTests(ModelPrimaryServiceRateOfChangeTests):
+class CalculatePrimaryServiceRollingSumsTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
         number_of_days: int = 2
 
         test_df = self.spark.createDataFrame(
-            Data.add_rolling_sum_columns_rows,
-            Schemas.add_rolling_sum_columns_schema,
+            Data.calculate_primary_service_rolling_sums_rows,
+            Schemas.calculate_primary_service_rolling_sums_schema,
         )
-        self.returned_df = job.add_rolling_sum_columns(test_df, number_of_days)
+        self.returned_df = job.calculate_primary_service_rolling_sums(
+            test_df, number_of_days
+        )
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_add_rolling_sum_columns_rows,
-            Schemas.expected_add_rolling_sum_columns_schema,
+            Data.expected_calculate_primary_service_rolling_sums_rows,
+            Schemas.expected_calculate_primary_service_rolling_sums_schema,
         )
 
         self.returned_data = self.returned_df.sort(
@@ -194,24 +196,24 @@ class AddRollingSumColumnsTests(ModelPrimaryServiceRateOfChangeTests):
     def test_returned_column_names_match_expected(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-    def test_returned_rolling_current_period_sum_values_match_expected(
+    def test_returned_rolling_current_sum_values_match_expected(
         self,
     ):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][job.TempCol.rolling_current_period_sum],
-                self.expected_data[i][job.TempCol.rolling_current_period_sum],
+                self.returned_data[i][job.TempCol.rolling_current_sum],
+                self.expected_data[i][job.TempCol.rolling_current_sum],
                 2,
                 f"Returned row {i} does not match expected",
             )
 
-    def test_returned_rolling_previous_period_sum_values_match_expected(
+    def test_returned_rolling_previous_sum_values_match_expected(
         self,
     ):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][job.TempCol.rolling_previous_period_sum],
-                self.expected_data[i][job.TempCol.rolling_previous_period_sum],
+                self.returned_data[i][job.TempCol.rolling_previous_sum],
+                self.expected_data[i][job.TempCol.rolling_previous_sum],
                 2,
                 f"Returned row {i} does not match expected",
             )

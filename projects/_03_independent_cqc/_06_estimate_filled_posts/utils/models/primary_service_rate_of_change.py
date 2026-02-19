@@ -65,7 +65,7 @@ def model_primary_service_rate_of_change(
     df = remove_ineligible_locations(df)
     df = interpolate_current_values(df, max_days_between_submissions)
     df = add_previous_value_column(df)
-    df = add_rolling_sum_columns(df, number_of_days_for_window)
+    df = calculate_primary_service_rolling_sums(df, number_of_days_for_window)
     df = calculate_rate_of_change(df, rate_of_change_column_name)
 
     # deduped_df = deduplicate_dataframe(df) - TODO copy across
@@ -145,11 +145,18 @@ def add_previous_value_column(df: DataFrame) -> DataFrame:
     return df
 
 
-def add_rolling_sum_columns(df: DataFrame, number_of_days: int) -> DataFrame:
+def calculate_primary_service_rolling_sums(
+    df: DataFrame, number_of_days: int
+) -> DataFrame:
     """
-    Adds rolling sum columns for the current and previous period to a DataFrame over a specified number of days.
+    Calculates the rolling sum of the current and previous period values partitioned by primary service type.
 
-    The rolling sum includes only rows where both the current and previous interpolated values are not null.
+    This function:
+        1. Defines a window partitioned by primary service type and banded number of beds, ordered by unix time, with a range between the current row and the specified number of prior days.
+        2. Filters the DataFrame to include only rows where both current and previous period interpolated values are known (non-null).
+        3. Calculates the rolling sum of the current and previous period interpolated values over the defined window.
+        4. Drops duplicate rows based on the partitioning columns and unix time to ensure one row per primary service type, number of beds band, and time period.
+        5. Drops non-aggregated columns that are no longer needed for subsequent calculations.
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -158,32 +165,29 @@ def add_rolling_sum_columns(df: DataFrame, number_of_days: int) -> DataFrame:
     Returns:
         DataFrame: The DataFrame with the two new rolling sum columns added.
     """
-    valid_rows = (
-        F.col(TempCol.current_period_interpolated).isNotNull()
-        & F.col(TempCol.previous_period_interpolated).isNotNull()
-    )
+    current_col = F.col(TempCol.current_period_interpolated)
+    previous_col = F.col(TempCol.previous_period_interpolated)
+    partition_cols = [IndCqc.primary_service_type, IndCqc.number_of_beds_banded_roc]
 
-    rolling_sum_window = (
-        Window.partitionBy(
-            IndCqc.primary_service_type, IndCqc.number_of_beds_banded_roc
-        )
+    window = (
+        Window.partitionBy(partition_cols)
         .orderBy(F.col(IndCqc.unix_time))
         .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)
     )
 
-    df = df.withColumn(
-        TempCol.rolling_current_period_sum,
-        F.sum(F.when(valid_rows, F.col(TempCol.current_period_interpolated))).over(
-            rolling_sum_window
-        ),
+    rolling_sum_df = (
+        df.filter(current_col.isNotNull() & previous_col.isNotNull())
+        .withColumns(
+            {
+                TempCol.rolling_current_sum: F.sum(current_col).over(window),
+                TempCol.rolling_previous_sum: F.sum(previous_col).over(window),
+            },
+        )
+        .dropDuplicates(partition_cols + [IndCqc.unix_time])
+        .drop(IndCqc.location_id, current_col, previous_col)
     )
-    df = df.withColumn(
-        TempCol.rolling_previous_period_sum,
-        F.sum(F.when(valid_rows, F.col(TempCol.previous_period_interpolated))).over(
-            rolling_sum_window
-        ),
-    )
-    return df
+
+    return rolling_sum_df
 
 
 def calculate_rate_of_change(
@@ -204,8 +208,7 @@ def calculate_rate_of_change(
     """
     df = df.withColumn(
         rate_of_change_column_name,
-        F.col(TempCol.rolling_current_period_sum)
-        / F.col(TempCol.rolling_previous_period_sum),
+        F.col(TempCol.rolling_current_sum) / F.col(TempCol.rolling_previous_sum),
     )
     df = df.na.fill({rate_of_change_column_name: 1.0})
     return df

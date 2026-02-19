@@ -1978,7 +1978,7 @@ class ModelPrimaryServiceRateOfChange:
         ]
     )
 
-    add_rolling_sum_columns_schema = StructType(
+    calculate_primary_service_rolling_sums_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
@@ -1988,19 +1988,19 @@ class ModelPrimaryServiceRateOfChange:
             StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
         ]
     )
-    expected_add_rolling_sum_columns_schema = StructType(
+    expected_calculate_primary_service_rolling_sums_schema = StructType(
         [
-            *add_rolling_sum_columns_schema,
-            StructField(RoC_TempCol.rolling_current_period_sum, DoubleType(), True),
-            StructField(RoC_TempCol.rolling_previous_period_sum, DoubleType(), True),
+            *calculate_primary_service_rolling_sums_schema,
+            StructField(RoC_TempCol.rolling_current_sum, DoubleType(), True),
+            StructField(RoC_TempCol.rolling_previous_sum, DoubleType(), True),
         ]
     )
 
     calculate_rate_of_change_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(RoC_TempCol.rolling_current_period_sum, DoubleType(), True),
-            StructField(RoC_TempCol.rolling_previous_period_sum, DoubleType(), True),
+            StructField(RoC_TempCol.rolling_current_sum, DoubleType(), True),
+            StructField(RoC_TempCol.rolling_previous_sum, DoubleType(), True),
         ]
     )
     expected_calculate_rate_of_change_schema = StructType(

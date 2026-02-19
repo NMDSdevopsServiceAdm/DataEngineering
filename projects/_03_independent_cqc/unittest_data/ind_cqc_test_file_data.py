@@ -4298,11 +4298,9 @@ class ModelPrimaryServiceRateOfChange:
     ]
     # fmt: on
     expected_primary_service_rate_of_change_rows = [
-        (PrimaryServiceType.care_home_only, 1.0, 1704067200, 1.0),
         (PrimaryServiceType.care_home_only, 1.0, 1704153600, 1.03999),
         (PrimaryServiceType.care_home_only, 1.0, 1704240000, 1.1176),
         (PrimaryServiceType.care_home_only, 1.0, 1704326400, 1.0854),
-        (PrimaryServiceType.non_residential, None, 1704067200, 1.0),
         (PrimaryServiceType.non_residential, None, 1704153600, 1.25),
     ]
 
@@ -4383,7 +4381,7 @@ class ModelPrimaryServiceRateOfChange:
     ]
 
     # fmt: off
-    add_rolling_sum_columns_rows = [
+    calculate_primary_service_rolling_sums_rows = [
         ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.1, None),
         ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.2, 1.1),
         ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672704000, 1.3, 1.2),
@@ -4396,32 +4394,27 @@ class ModelPrimaryServiceRateOfChange:
         ("1-004", PrimaryServiceType.non_residential, 0.0, 1672617600, 20.0, 10.0),
         ("1-004", PrimaryServiceType.non_residential, 0.0, 1672704000, 30.0, 20.0),
     ]
-    expected_add_rolling_sum_columns_rows = [
-        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.1, None, None, None),
-        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.2, 1.1, 2.5, 2.5),
-        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672704000, 1.3, 1.2, 3.8, 3.7),
-        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672790400, None, 1.3, 3.8, 3.7),
-        ("1-002", PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.4, None, None, None),
-        ("1-002", PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.3, 1.4, 2.5, 2.5),
-        ("1-003", PrimaryServiceType.care_home_only, 2.0, 1672531200, 1.5, None, None, None),
-        ("1-003", PrimaryServiceType.care_home_only, 2.0, 1672617600, 1.6, 1.5, 1.6, 1.5),
-        ("1-004", PrimaryServiceType.non_residential, 0.0, 1672531200, 10.0, None, None, None),
-        ("1-004", PrimaryServiceType.non_residential, 0.0, 1672617600, 20.0, 10.0, 20.0, 10.0),
-        ("1-004", PrimaryServiceType.non_residential, 0.0, 1672704000, 30.0, 20.0, 50.0, 30.0),
+    expected_calculate_primary_service_rolling_sums_rows = [
+        (PrimaryServiceType.care_home_only, 1.0, 1672617600, 2.5, 2.5),
+        (PrimaryServiceType.care_home_only, 1.0, 1672704000, 3.8, 3.7),
+        (PrimaryServiceType.care_home_only, 1.0, 1672617600, 2.5, 2.5),
+        (PrimaryServiceType.care_home_only, 2.0, 1672617600, 1.6, 1.5),
+        (PrimaryServiceType.non_residential, 0.0, 1672617600, 20.0, 10.0),
+        (PrimaryServiceType.non_residential, 0.0, 1672704000, 50.0, 30.0),
     ]
     # fmt: on
 
     calculate_rate_of_change_rows = [
-        ("1-001", 12.0, 10.0),
-        ("1-002", 15.0, None),
-        ("1-003", None, 20.0),
-        ("1-004", None, None),
+        (1001, 12.0, 10.0),
+        (1002, 15.0, None),
+        (1003, None, 20.0),
+        (1004, None, None),
     ]
     expected_calculate_rate_of_change_rows = [
-        ("1-001", 12.0, 10.0, 1.2),
-        ("1-002", 15.0, None, 1.0),
-        ("1-003", None, 20.0, 1.0),
-        ("1-004", None, None, 1.0),
+        (1001, 12.0, 10.0, 1.2),
+        (1002, 15.0, None, 1.0),
+        (1003, None, 20.0, 1.0),
+        (1004, None, None, 1.0),
     ]
 
 

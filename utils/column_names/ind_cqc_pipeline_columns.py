@@ -365,8 +365,8 @@ class PrimaryServiceRateOfChangeColumns:
     perc_change: str = "percentage_period_change"
     previous_period_cleaned: str = "previous_period_cleaned"
     previous_period_interpolated: str = "previous_period_interpolated"
-    rolling_current_period_sum: str = "rolling_current_period_sum"
-    rolling_previous_period_sum: str = "rolling_previous_period_sum"
+    rolling_current_sum: str = "rolling_current_sum"
+    rolling_previous_sum: str = "rolling_previous_sum"
     submission_count: str = "submission_count"
 
 
