@@ -9,7 +9,9 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
-
+- Switched test runner to pytest in CI, so that a shared session fixture for a spark configuration optimised for tests
+  can be used. Has resulted in 70% reduction in runtime for current pyspark tests in CI, and improvement on local
+  Windows machines. (#1219)
 
 ### Fixed
 
