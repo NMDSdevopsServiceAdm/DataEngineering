@@ -92,6 +92,8 @@ def forward_fill(
     last_known_value_col: str = "last_known_value",
 ) -> pl.LazyFrame:
     """
+    Forward fill column to repeat based on certain conditions
+    
     This function forward fills the column to repeat with the last known value for the number of days we want it
     to repeat. It checks if the import date and last known date is less than days_to_repeat, if it is it fills
     those with last known value calculated in previous function.
@@ -106,17 +108,19 @@ def forward_fill(
     Returns:
         pl.LazyFrame: A polars LazyFrame with forward filled column.
     """
+    forward_fill_condition = pl.col(col_to_repeat).is_null()
+    after_last_known_date_condition = pl.col(IndCQC.cqc_location_import_date) > pl.col(
+        last_known_date_col
+    )
+    within_days_to_fill_condition = (
+        pl.col(IndCQC.cqc_location_import_date) - pl.col(last_known_date_col)
+    ).dt.total_days() <= days_to_repeat
+
     lf_with_forward_fill = lf_with_last_known.with_columns(
         pl.when(
-            (pl.col(col_to_repeat).is_null())
-            & (pl.col(IndCQC.cqc_location_import_date) > pl.col(last_known_date_col))
-            & (
-                (
-                    pl.col(IndCQC.cqc_location_import_date)
-                    - pl.col(last_known_date_col)
-                ).dt.total_days()
-                <= days_to_repeat
-            )
+            forward_fill_condition
+            & after_last_known_date_condition
+            & within_days_to_fill_condition
         )
         .then(pl.col(last_known_value_col))
         .otherwise(pl.col(col_to_repeat))
