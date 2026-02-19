@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Removed minimum value requirement from `merge_columns_in_order`
 
 
 ### Fixed
