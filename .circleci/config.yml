@@ -58,6 +58,8 @@ jobs:
     docker:
       - image: cimg/python:3.11.12
     resource_class: large
+    environment:
+      SPARK_VERSION: "3.5"       # Required for pydeequ to initialize
     steps:
       - checkout
       - restore_cache:
@@ -73,20 +75,27 @@ jobs:
           command: |
             pip install pipenv
             pipenv install --dev
+      # Pre-cache the pyqeequ dependency so xdist works better.
+      - run:
+            name: Pre-cache Spark JARs
+            command: pipenv run python scripts/fetch_spark_dependencies.py
       - save_cache:
           key: v1.1-deps-{{ checksum "Pipfile.lock" }}
           paths:
+            - ~/.m2/repository
+            - ~/.ivy2/jars
             - ~/.local/share/virtualenvs
       - run:
-          name: run unit tests
+          name: Run unit tests and generate coverage
           command: |
-            pipenv run coverage run --source=. -m unittest discover -s . -p "test_*.py"
+            pipenv run pytest \
+              -n auto --dist loadfile \
+              --cov=. \
+              --cov-report=xml \
+              --cov-report=html
       - run:
-          name: Generate coverage report
-          command: |
-            pipenv run coverage report
-            pipenv run coverage xml
-            pipenv run coverage html
+            name: Output Coverage Report
+            command: pipenv run coverage report
       - store_artifacts:
           path: htmlcov
 

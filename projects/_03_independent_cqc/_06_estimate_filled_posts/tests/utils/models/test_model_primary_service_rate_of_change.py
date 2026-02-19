@@ -1,4 +1,3 @@
-import unittest
 import warnings
 from unittest.mock import Mock, patch
 
@@ -9,7 +8,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ModelPrimaryServiceRateOfChange as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 PATCH_PATH: str = (
@@ -17,10 +16,8 @@ PATCH_PATH: str = (
 )
 
 
-class ModelPrimaryServiceRateOfChangeTests(unittest.TestCase):
+class ModelPrimaryServiceRateOfChangeTests(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
-
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 

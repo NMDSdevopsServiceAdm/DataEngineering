@@ -20,6 +20,8 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 
 @dataclass
 class PAFilledPostsByIcbAreaSchema:
+    # Adding so pytest doesn't try to collect when we import "as TestSchema".
+    __test__ = False
     sample_ons_contemporary_with_duplicates_schema = StructType(
         [
             StructField(ONSClean.postcode, StringType(), True),

@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.capacity_tracker.jobs.ingest_capacity_tracker_data as job
@@ -14,19 +13,18 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     IngestCapacityTrackerNonResSchema as NonResSchema,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 
 PATCH_PATH = "projects._01_ingest.capacity_tracker.jobs.ingest_capacity_tracker_data"
 
 
-class IngestCapacityTrackerDataTests(unittest.TestCase):
+class IngestCapacityTrackerDataTests(SparkBaseTest):
     TEST_CSV_SOURCE = "some/directory/path/file.csv"
     TEST_DIRECTORY_SOURCE = "some/directory/path"
     TEST_DESTINATION = "s3://some/"
     TEST_NEW_DESTINATION = "s3://some/directory/path"
 
     def setUp(self):
-        self.spark = utils.get_spark()
         self.test_carehome_df = self.spark.createDataFrame(
             CareHomeData.sample_rows, CareHomeSchema.sample_schema
         )

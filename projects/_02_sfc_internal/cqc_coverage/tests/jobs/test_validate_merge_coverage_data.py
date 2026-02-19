@@ -8,18 +8,17 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     ValidateMergedCoverageData as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 
 PATCH_PATH = "projects._02_sfc_internal.cqc_coverage.jobs.validate_merge_coverage_data"
 
 
-class ValidateMergedCoverageDatasetTests(unittest.TestCase):
+class ValidateMergedCoverageDatasetTests(SparkBaseTest):
     TEST_CQC_LOCATION_SOURCE = "some/directory"
     TEST_MERGED_COVERAGE_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
         self.test_clean_cqc_location_df = self.spark.createDataFrame(
             Data.cqc_locations_rows,
             Schemas.cqc_locations_schema,
@@ -28,15 +27,8 @@ class ValidateMergedCoverageDatasetTests(unittest.TestCase):
             Data.merged_coverage_rows, Schemas.merged_coverage_schema
         )
 
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
 
 class MainTests(ValidateMergedCoverageDatasetTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
@@ -56,9 +48,6 @@ class MainTests(ValidateMergedCoverageDatasetTests):
 
 
 class CalculateExpectedSizeofDataset(ValidateMergedCoverageDatasetTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
     def test_calculate_expected_size_of_merged_coverage_dataset_returns_correct_row_count(
         self,
     ):

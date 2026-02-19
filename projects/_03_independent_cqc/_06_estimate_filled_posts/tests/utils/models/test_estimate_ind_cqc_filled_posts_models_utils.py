@@ -1,6 +1,3 @@
-import unittest
-import warnings
-from datetime import date
 from unittest.mock import ANY, Mock, patch
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
@@ -12,7 +9,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     EstimateFilledPostsModelsUtils as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 PATCH_PATH: str = (
@@ -20,15 +17,8 @@ PATCH_PATH: str = (
 )
 
 
-class EstimateFilledPostsModelsUtilsTests(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
-
-
-class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
+class EnrichWithModelPredictionsTest(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         self.test_bucket = "test_bucket"
 
         self.mock_ind_cqc_df = Mock(name="ind_cqc_df")
@@ -161,9 +151,8 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         )
 
 
-class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
+class SetMinimumValueTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.test_df = self.spark.createDataFrame(
             Data.set_min_value_when_below_minimum_rows,
             Schemas.set_min_value_schema,
@@ -230,10 +219,8 @@ class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class JoinModelPredictionsTests(EstimateFilledPostsModelsUtilsTests):
+class JoinModelPredictionsTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         self.model_name = Schemas.join_test_model
 
         ind_cqc_df = self.spark.createDataFrame(
