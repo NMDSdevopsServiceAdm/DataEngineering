@@ -7,7 +7,7 @@ from pyspark.sql import functions as F
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.interpolation import (
     model_interpolation,
 )
-from projects.utils.utils.utils import calculate_windowed_column
+from projects.utils.utils.utils import calculate_new_column, calculate_windowed_column
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.ind_cqc_pipeline_columns import (
     PrimaryServiceRateOfChangeColumns as TempCol,
@@ -66,15 +66,20 @@ def model_primary_service_rate_of_change(
     df = interpolate_current_values(df, max_days_between_submissions)
     df = add_previous_value_column(df)
     df = calculate_primary_service_rolling_sums(df, number_of_days_for_window)
-    df = calculate_rate_of_change(df, rate_of_change_column_name)
+    df = calculate_new_column(
+        df,
+        rate_of_change_column_name,
+        TempCol.rolling_current_sum,
+        "divided by",
+        TempCol.rolling_previous_sum,
+    )
 
-    # deduped_df = deduplicate_dataframe(df) - TODO copy across
-
-    # required?
-    # columns_to_drop = [field.name for field in fields(TempCol())]
-    # df = df.drop(*columns_to_drop)
-
-    return df
+    return df.select(
+        IndCqc.primary_service_type,
+        IndCqc.number_of_beds_banded_roc,
+        IndCqc.unix_time,
+        rate_of_change_column_name,
+    )
 
 
 def remove_ineligible_locations(df: DataFrame) -> DataFrame:
@@ -188,27 +193,3 @@ def calculate_primary_service_rolling_sums(
     )
 
     return rolling_sum_df
-
-
-def calculate_rate_of_change(
-    df: DataFrame, rate_of_change_column_name: str
-) -> DataFrame:
-    """
-    Calculates the rate of change from the 'previous' to the 'current' (at that point in time) period.
-
-    The rate of change is calculated as the ratio of the rolling current period sum to the rolling previous period sum.
-    The rate of change is always null for the first period, so it is replaced with 1 (equivalent to 'no change').
-
-    Args:
-        df (DataFrame): The input DataFrame.
-        rate_of_change_column_name (str): Name of the column to store the rate of change values.
-
-    Returns:
-        DataFrame: The DataFrame with the single period rate of change column added.
-    """
-    df = df.withColumn(
-        rate_of_change_column_name,
-        F.col(TempCol.rolling_current_sum) / F.col(TempCol.rolling_previous_sum),
-    )
-    df = df.na.fill({rate_of_change_column_name: 1.0})
-    return df

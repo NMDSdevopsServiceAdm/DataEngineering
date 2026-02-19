@@ -1990,23 +1990,11 @@ class ModelPrimaryServiceRateOfChange:
     )
     expected_calculate_primary_service_rolling_sums_schema = StructType(
         [
-            *calculate_primary_service_rolling_sums_schema,
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.number_of_beds_banded_roc, DoubleType(), True),
+            StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(RoC_TempCol.rolling_current_sum, DoubleType(), True),
             StructField(RoC_TempCol.rolling_previous_sum, DoubleType(), True),
-        ]
-    )
-
-    calculate_rate_of_change_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(RoC_TempCol.rolling_current_sum, DoubleType(), True),
-            StructField(RoC_TempCol.rolling_previous_sum, DoubleType(), True),
-        ]
-    )
-    expected_calculate_rate_of_change_schema = StructType(
-        [
-            *calculate_rate_of_change_schema,
-            StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
         ]
     )
 

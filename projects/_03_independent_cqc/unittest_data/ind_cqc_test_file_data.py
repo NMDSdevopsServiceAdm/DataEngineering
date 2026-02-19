@@ -4404,19 +4404,6 @@ class ModelPrimaryServiceRateOfChange:
     ]
     # fmt: on
 
-    calculate_rate_of_change_rows = [
-        (1001, 12.0, 10.0),
-        (1002, 15.0, None),
-        (1003, None, 20.0),
-        (1004, None, None),
-    ]
-    expected_calculate_rate_of_change_rows = [
-        (1001, 12.0, 10.0, 1.2),
-        (1002, 15.0, None, 1.0),
-        (1003, None, 20.0, 1.0),
-        (1004, None, None, 1.0),
-    ]
-
 
 @dataclass
 class ModelPrimaryServiceRateOfChangeTrendlineData:
