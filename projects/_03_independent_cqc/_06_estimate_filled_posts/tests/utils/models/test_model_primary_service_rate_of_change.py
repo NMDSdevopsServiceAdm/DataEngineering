@@ -44,12 +44,11 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
             Schemas.expected_primary_service_rate_of_change_schema,
         )
         self.returned_data = self.returned_df.sort(
-            IndCqc.location_id, IndCqc.unix_time
+            IndCqc.primary_service_type,
+            IndCqc.number_of_beds_banded_roc,
+            IndCqc.unix_time,
         ).collect()
         self.expected_data = self.expected_df.collect()
-
-    def test_row_count_unchanged_after_running_full_job(self):
-        self.assertEqual(self.test_df.count(), self.returned_df.count())
 
     def test_primary_service_rate_of_change_returns_expected_columns(self):
         self.assertEqual(
@@ -183,7 +182,9 @@ class CalculatePrimaryServiceRollingSumsTests(ModelPrimaryServiceRateOfChangeTes
         )
 
         self.returned_data = self.returned_df.sort(
-            IndCqc.primary_service_type, IndCqc.unix_time
+            IndCqc.primary_service_type,
+            IndCqc.number_of_beds_banded_roc,
+            IndCqc.unix_time,
         ).collect()
         self.expected_data = self.expected_df.collect()
 
