@@ -23,27 +23,36 @@ def model_primary_service_rate_of_change(
     max_days_between_submissions: Optional[int] = None,
 ) -> DataFrame:
     """
-    Computes the rate of change since the previous period for a specified column over a rolling window, partitioned by primary service type.
+    Computes the rate of change since the previous period for a specified column
+    over a rolling window, partitioned by primary service type.
 
-    Only data from locations with at least two submissions and a consistent care home status over time are considered.
+    Only data from locations with at least two submissions and a consistent care
+    home status over time are considered.
 
-    A rolling window is applied to smooth fluctuations in the data by combining values over a specified number of days.
-    This helps produce more stable and reliable trends by reducing the impact of short-term variations.
+    A rolling window is applied to smooth fluctuations in the data by combining
+    values over a specified number of days. This helps produce more stable and
+    reliable trends by reducing the impact of short-term variations.
 
-    Since the PySpark `rangeBetween` function is inclusive on both ends, one day is subtracted from the provided
-    `window_days` value to ensure the window includes only the current day and the specified number of prior days.
-    For example, a 3-day rolling average includes the current day plus the two preceding days.
+    Since the PySpark `rangeBetween` function is inclusive on both ends, one day
+    is subtracted from the provided `window_days` value to ensure the window
+    includes only the current day and the specified number of prior days. For
+    example, a 3-day rolling average includes the current day plus the two
+    preceding days.
 
     Args:
         df (DataFrame): Input DataFrame.
         column_with_values (str): Column name containing the values.
-        number_of_days (int): Rolling window size in days (e.g., 3 includes the current day and the previous two).
-        rate_of_change_column_name (str): Name of the column to store the rate of change values.
-        max_days_between_submissions (Optional[int]): Maximum allowed days between submissions to apply interpolation.
-                                                      If None, interpolation is applied to all rows.
+        number_of_days (int): Rolling window size in days (e.g., 3 includes the
+            current day and the previous two).
+        rate_of_change_column_name (str): Name of the column to store the rate
+            of change values.
+        max_days_between_submissions (Optional[int]): Maximum allowed days
+            between submissions to apply interpolation. If None, interpolation
+            is applied to all rows.
 
     Returns:
-        DataFrame: The input DataFrame with an additional column containing the rate of change values.
+        DataFrame: The input DataFrame with an additional column containing the
+        rate of change values.
     """
     number_of_days_for_window: int = number_of_days - 1
 
@@ -112,7 +121,9 @@ def interpolate_current_values(
 
     Args:
         df (DataFrame): The input DataFrame.
-        max_days_between_submissions (Optional[int]): Maximum allowed days between submissions to apply interpolation. If None, interpolation is applied to all rows.
+        max_days_between_submissions (Optional[int]): Maximum allowed days
+            between submissions to apply interpolation. If None, interpolation
+            is applied to all rows.
 
     Returns:
         DataFrame: The input DataFrame with interpolated values.
@@ -154,18 +165,26 @@ def calculate_primary_service_rolling_sums(
     df: DataFrame, number_of_days: int
 ) -> DataFrame:
     """
-    Calculates the rolling sum of the current and previous period values partitioned by primary service type.
+    Calculates the rolling sum of the current and previous period values
+    partitioned by primary service type.
 
     This function:
-        1. Defines a window partitioned by primary service type and banded number of beds, ordered by unix time, with a range between the current row and the specified number of prior days.
-        2. Filters the DataFrame to include only rows where both current and previous period interpolated values are known (non-null).
-        3. Calculates the rolling sum of the current and previous period interpolated values over the defined window.
-        4. Drops duplicate rows based on the partitioning columns and unix time to ensure one row per primary service type, number of beds band, and time period.
-        5. Drops non-aggregated columns that are no longer needed for subsequent calculations.
+        1. Defines a window partitioned by primary service type and banded
+           number of beds, ordered by unix time, with a range between the
+           current row and the specified number of prior days.
+        2. Filters the DataFrame to include only rows where both current and
+           previous period interpolated values are known (non-null).
+        3. Calculates the rolling sum of the current and previous period
+           interpolated values over the defined window.
+        4. Drops duplicate rows based on the partitioning columns and unix time
+           to ensure one row per primary service type, number of beds band, and
+           time period.
+        5. Drops non-aggregated columns that are no longer needed for subsequent
+           calculations.
 
     Args:
         df (DataFrame): The input DataFrame.
-        number_of_days (int): The number of days to include in the rolling time period.
+        number_of_days (int): The number of days to include in the window.
 
     Returns:
         DataFrame: The DataFrame with the two new rolling sum columns added.
