@@ -17,6 +17,9 @@ All notable changes to this project will be documented in this file.
   can be used. Has resulted in 70% reduction in runtime for current pyspark tests in CI, and improvement on local
   Windows machines. https://github.com/NMDSdevopsServiceAdm/DataEngineering/pull/1219
 
+- Refactored the rate of change to filter rows instead of nulling values to speed up processing time and make the
+  filtering process in a follow-up PR much easier to implement.
+
 ### Fixed
 
 
