@@ -680,40 +680,49 @@ class CleanUtilsSchemas:
 
 @dataclass
 class ForwardFillLatestKnownValue:
+    col_to_forward_fill: str = "col_to_forward_fill"
+    days_to_forward_fill: str = "days_to_forward_fill"
+    last_known_date: str = "last_known_date"
+    last_known_value: str = "last_known_value"
+
     input_return_last_known_value_locations_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.Date()),
-            ("col_to_repeat", pl.Int64()),
+            (col_to_forward_fill, pl.Int64()),
         ]
     )
     expected_return_last_known_value_locations_schema = pl.Schema(
-        list(input_return_last_known_value_locations_schema.items())
-        + [
-            ("last_known_date", pl.Date()),
-            ("last_known_value", pl.Int64()),
+        [
+            (IndCQC.location_id, pl.String()),
+            (last_known_date, pl.Date()),
+            (last_known_value, pl.Int64()),
         ]
     )
-    input_forward_fill_locations_schema = pl.Schema(
+    forward_fill_locations_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.Date()),
-            ("col_to_repeat", pl.Int64()),
-            ("last_known_date", pl.Date()),
-            ("last_known_value", pl.Int64()),
-        ]
-    )
-    expected_forward_fill_locations_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.cqc_location_import_date, pl.Date()),
-            ("col_to_repeat", pl.Int64()),
+            (col_to_forward_fill, pl.Int64()),
+            (last_known_date, pl.Date()),
+            (last_known_value, pl.Int64()),
+            (days_to_forward_fill, pl.Int64()),
         ]
     )
     forward_fill_latest_known_value_locations_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.Date()),
-            ("col_to_repeat", pl.Int64()),
+            (col_to_forward_fill, pl.Int64()),
         ]
+    )
+    size_based_forward_fill_days_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (col_to_forward_fill, pl.Int64()),
+        ]
+    )
+    expected_size_based_forward_fill_days_schema = pl.Schema(
+        list(size_based_forward_fill_days_schema.items())
+        + [(days_to_forward_fill, pl.Int32())]
     )
