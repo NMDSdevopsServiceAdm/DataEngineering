@@ -44,6 +44,7 @@ def forward_fill_latest_known_value(
         lf (pl.LazyFrame): Input polars LazyFrame with nulls in
             `col_to_forward_fill` forward-filled according to the size-based length
             of time.
+        col_to_forward_fill (str): Name of the column whose last known value will be propagated forward.
 
     Returns:
         pl.LazyFrame: The polars LazyFrame with null values in `col_to_repeat`
