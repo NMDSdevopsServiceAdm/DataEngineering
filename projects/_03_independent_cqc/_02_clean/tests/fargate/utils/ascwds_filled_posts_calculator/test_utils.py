@@ -1,6 +1,7 @@
+import unittest
+
 import polars as pl
 import polars.testing as pl_testing
-import unittest
 
 import projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.utils as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
@@ -9,7 +10,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     CalculateAscwdsFilledPostsUtilsSchemas as Schemas,
 )
-
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
@@ -17,7 +17,9 @@ class TestAscwdsFilledPostsCalculatorUtils(unittest.TestCase):
     def setUp(self):
 
         self.lf = pl.LazyFrame(
-            data=Data.common_checks_rows, schema=Schemas.common_checks_schema
+            data=Data.common_checks_rows,
+            schema=Schemas.common_checks_schema,
+            orient="row",
         )
 
     def assert_result(self, lf: pl.LazyFrame, expr: pl.Expr, expected_values):
@@ -77,7 +79,9 @@ class TestAscwdsFilledPostsCalculatorUtils(unittest.TestCase):
     def test_two_cols_are_equal_and_at_least_minimum_permitted_value(self):
 
         lf = pl.LazyFrame(
-            data=Data.test_two_cols_are_equal_rows, schema=Schemas.common_checks_schema
+            data=Data.test_two_cols_are_equal_rows,
+            schema=Schemas.common_checks_schema,
+            orient="row",
         )
 
         self.assert_result(

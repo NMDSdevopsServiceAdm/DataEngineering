@@ -12,16 +12,16 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ASCWDSWorkerSchemas,
     ASCWDSWorkplaceSchemas,
 )
+from tests.base_test import SparkBaseTest
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKeys
-from utils.utils import get_spark
 
 PATCH_PATH: str = "projects._01_ingest.ascwds.jobs.clean_ascwds_worker_data"
 
 
-class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
+class IngestASCWDSWorkerDatasetTests(SparkBaseTest):
     TEST_WORKER_SOURCE = "s3://some_bucket/some_worker_source_key"
     TEST_WORKPLACE_SOURCE = "s3://some_bucket/some_workplace_source_key"
     TEST_DESTINATION = "s3://some_bucket/some_destination_key"
@@ -33,7 +33,6 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
     ]
 
     def setUp(self) -> None:
-        self.spark = get_spark()
         self.test_ascwds_worker_df = self.spark.createDataFrame(
             ASCWDSWorkerData.worker_rows, ASCWDSWorkerSchemas.worker_schema
         )
@@ -43,9 +42,6 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
 
 
 class MainTests(IngestASCWDSWorkerDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock):
@@ -70,9 +66,6 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
 
 
 class RemoveWorkersWithoutWorkplacesTests(IngestASCWDSWorkerDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_remove_invalid_worker_records_returns_df(self):
         returned_df = job.remove_workers_without_workplaces(
             self.test_ascwds_worker_df, self.test_ascwds_workplace_df
@@ -196,9 +189,6 @@ class ReplaceCareNavigatorWithCareCoordinatorTests(IngestASCWDSWorkerDatasetTest
 
 
 class ImputeNotKnownJobRolesTests(IngestASCWDSWorkerDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_impute_not_known_job_roles_returns_next_known_value_when_before_first_known_value(
         self,
     ):

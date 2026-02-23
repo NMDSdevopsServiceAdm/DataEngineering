@@ -10,7 +10,7 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import CleanONSData
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CleanONSData as Schema,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
@@ -19,13 +19,12 @@ from utils.column_names.raw_data_files.ons_columns import ONSPartitionKeys as Ke
 PATCH_PATH = "projects._01_ingest.ons_pd.jobs.clean_ons_data"
 
 
-class CleanONSDatasetTests(unittest.TestCase):
+class CleanONSDatasetTests(SparkBaseTest):
     TEST_SOURCE = "some/directory"
     TEST_DESTINATION = "some/other/directory"
     onsPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
         self.test_ons_parquet = self.spark.createDataFrame(
             Data.ons_sample_rows_full, schema=Schema.full_schema
         )
@@ -37,9 +36,6 @@ class CleanONSDatasetTests(unittest.TestCase):
 
 
 class MainTests(CleanONSDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock):

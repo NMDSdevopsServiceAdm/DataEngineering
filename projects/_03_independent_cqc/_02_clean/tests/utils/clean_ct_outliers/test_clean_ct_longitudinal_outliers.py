@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_longitudinal_outliers as job
@@ -8,7 +7,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     OutlierCleaningSchemas as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH: str = (
@@ -16,10 +15,8 @@ PATCH_PATH: str = (
 )
 
 
-class TestCleanCtLongitudinalOutliers(unittest.TestCase):
+class TestCleanCtLongitudinalOutliers(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
-
         self.test_df = self.spark.createDataFrame(
             Data.clean_longitudinal_outliers_input_rows, Schemas.input_schema
         )
@@ -56,9 +53,6 @@ class TestFunctionsAreCalled(TestCleanCtLongitudinalOutliers):
 
 
 class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_clean_longitudinal_outliers_returns_input_df_when_there_are_no_outliers(
         self,
     ):

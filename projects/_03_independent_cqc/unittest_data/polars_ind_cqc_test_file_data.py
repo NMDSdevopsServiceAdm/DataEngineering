@@ -2,19 +2,20 @@ from dataclasses import dataclass
 from datetime import date
 
 import numpy as np
+
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.difference_within_range import (
     ascwds_filled_posts_difference_within_range_source_description,
 )
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records import (
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
-
 from utils.column_values.categorical_column_values import (
+    AscwdsFilteringRule,
     CareHome,
     Dormancy,
     MainJobRoleLabels,
-    Sector,
     PrimaryServiceType,
+    Sector,
 )
 
 
@@ -1166,3 +1167,312 @@ class CleanIndCQCData:
     expected_remove_cqc_dual_registrations_when_non_res_rows = (
         remove_cqc_dual_registrations_when_non_res_rows
     )
+
+
+@dataclass
+class ArchiveFilledPostsEstimates:
+    estimate_filled_posts_rows = [("loc 1", date(2024, 1, 1))]
+
+    select_import_dates_to_archive_rows = [
+        ("loc 1", date(2023, 3, 1)),
+        ("loc 1", date(2023, 4, 1)),
+        ("loc 1", date(2024, 3, 1)),
+        ("loc 1", date(2024, 4, 1)),
+        ("loc 1", date(2024, 5, 1)),
+        ("loc 1", date(2024, 6, 1)),
+        ("loc 1", date(2024, 6, 8)),
+    ]
+    expected_select_import_dates_to_archive_rows = [
+        ("loc 1", date(2023, 4, 1)),
+        ("loc 1", date(2024, 4, 1)),
+        ("loc 1", date(2024, 5, 1)),
+        ("loc 1", date(2024, 6, 1)),
+        ("loc 1", date(2024, 6, 8)),
+    ]
+
+    add_latest_annual_estimate_date_rows = [
+        ("loc 1", date(2024, 11, 1)),
+        ("loc 1", date(2024, 12, 1)),
+        ("loc 1", date(2025, 1, 1)),
+        ("loc 1", date(2025, 2, 1)),
+    ]
+    expected_add_latest_annual_estimate_date_rows = [
+        ("loc 1", date(2024, 11, 1), date(2024, 4, 1)),
+        ("loc 1", date(2024, 12, 1), date(2024, 4, 1)),
+        ("loc 1", date(2025, 1, 1), date(2024, 4, 1)),
+        ("loc 1", date(2025, 2, 1), date(2024, 4, 1)),
+    ]
+
+    create_archive_date_partition_columns_rows = [
+        ("loc 1", date(2025, 1, 1)),
+    ]
+    expected_partitions_when_date_has_single_digits_lf_rows = [
+        ("loc 1", date(2025, 1, 1), "01", "01", "2026", "2026-01-01 00:00"),
+    ]
+    expected_partitions_when_date_has_double_digits_lf_rows = [
+        ("loc 1", date(2025, 1, 1), "31", "12", "2025", "2025-12-31 00:00"),
+    ]
+
+
+@dataclass
+class CleanFilteringUtilsData:
+    add_filtering_column_rows = [
+        ("loc 1", 10.0),
+        ("loc 2", None),
+    ]
+    expected_add_filtering_column_rows = [
+        ("loc 1", 10.0, AscwdsFilteringRule.populated),
+        ("loc 2", None, AscwdsFilteringRule.missing_data),
+    ]
+
+    # fmt: off
+    update_filtering_rule_populated_to_nulled_rows = [
+        ("loc 1", 10.0, 10.0, AscwdsFilteringRule.populated),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.populated),
+        ("loc 3", 10.0, None, AscwdsFilteringRule.missing_data),
+    ]
+    expected_update_filtering_rule_populated_to_nulled_rows = [
+        ("loc 1", 10.0, 10.0, AscwdsFilteringRule.populated),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
+        ("loc 3", 10.0, None, AscwdsFilteringRule.missing_data),
+    ]
+    # fmt: on
+
+    # fmt: off
+    update_filtering_rule_populated_to_winsorized_rows = [
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.populated),
+        ("loc 2", 10.0, 11.0, AscwdsFilteringRule.populated),
+        ("loc 3", 10.0, 10.0, AscwdsFilteringRule.populated),
+    ]
+    expected_update_filtering_rule_populated_to_winsorized_rows = [
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 2", 10.0, 11.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 3", 10.0, 10.0, AscwdsFilteringRule.populated),
+    ]
+    # fmt: on
+
+    # fmt: off
+    update_filtering_rule_winsorized_to_nulled_rows = [
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+    ]
+    expected_update_filtering_rule_winsorized_to_nulled_rows = [
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
+    ]
+    # fmt: on
+
+    aggregate_values_to_provider_level_rows = [
+        ("1-001", "1-0001", 1, date(2025, 1, 1)),
+        ("1-002", "1-0001", 1, date(2025, 1, 1)),
+        ("1-003", "1-0002", 1, date(2025, 1, 1)),
+        ("1-004", "1-0002", None, date(2025, 1, 1)),
+        ("1-005", "1-0003", None, date(2025, 1, 1)),
+        ("1-006", "1-0003", None, date(2025, 1, 1)),
+        ("1-001", "1-0001", 2, date(2025, 2, 1)),
+        ("1-002", "1-0001", 2, date(2025, 2, 1)),
+    ]
+    expected_aggregate_values_to_provider_level_rows = [
+        ("1-001", "1-0001", 1, date(2025, 1, 1), 2),
+        ("1-002", "1-0001", 1, date(2025, 1, 1), 2),
+        ("1-003", "1-0002", 1, date(2025, 1, 1), 1),
+        ("1-004", "1-0002", None, date(2025, 1, 1), 1),
+        ("1-005", "1-0003", None, date(2025, 1, 1), None),
+        ("1-006", "1-0003", None, date(2025, 1, 1), None),
+        ("1-001", "1-0001", 2, date(2025, 2, 1), 4),
+        ("1-002", "1-0001", 2, date(2025, 2, 1), 4),
+    ]
+
+
+@dataclass
+class CleanUtilsData:
+    locations_with_repeated_value_rows = [
+        ("1-0001", 1, date(2023, 2, 1)),
+        ("1-0001", 2, date(2023, 3, 1)),
+        ("1-0001", 2, date(2023, 4, 1)),
+        ("1-0001", 3, date(2023, 8, 1)),
+        ("1-0002", 3, date(2023, 2, 1)),
+        ("1-0002", 9, date(2023, 4, 1)),
+        ("1-0002", 3, date(2024, 1, 1)),
+        ("1-0002", 3, date(2024, 2, 1)),
+    ]
+    expected_locations_without_repeated_value_rows = [
+        ("1-0001", 1, date(2023, 2, 1), 1),
+        ("1-0001", 2, date(2023, 3, 1), 2),
+        ("1-0001", 1, date(2023, 4, 1), 1),
+        ("1-0001", 3, date(2023, 8, 1), 3),
+        ("1-0002", 3, date(2023, 2, 1), 3),
+        ("1-0002", 9, date(2023, 4, 1), 9),
+        ("1-0002", 3, date(2024, 1, 1), 3),
+        ("1-0002", 9, date(2024, 2, 1), 9),
+    ]
+    location_without_repeated_value_rows = [
+        ("1-0001", 1, date(2023, 2, 1)),
+        ("1-0001", 2, date(2023, 3, 1)),
+        ("1-0001", 1, date(2023, 4, 1)),
+        ("1-0001", 3, date(2023, 8, 1)),
+        ("1-0002", 3, date(2023, 2, 1)),
+        ("1-0002", 9, date(2023, 4, 1)),
+        ("1-0002", 3, date(2024, 1, 1)),
+        ("1-0002", 9, date(2024, 2, 1)),
+    ]
+    expected_locations_without_repeated_values_when_input_has_repeated_values_rows = [
+        ("1-0001", 1, date(2023, 2, 1), 1),
+        ("1-0001", 2, date(2023, 3, 1), 2),
+        ("1-0001", 2, date(2023, 4, 1), None),
+        ("1-0001", 3, date(2023, 8, 1), 3),
+        ("1-0002", 3, date(2023, 2, 1), 3),
+        ("1-0002", 9, date(2023, 4, 1), 9),
+        ("1-0002", 3, date(2024, 1, 1), 3),
+        ("1-0002", 3, date(2024, 2, 1), None),
+    ]
+    providers_with_repeated_value_rows = [
+        ("1-0001", 1, date(2023, 2, 1)),
+        ("1-0001", 2, date(2023, 3, 1)),
+        ("1-0001", 2, date(2023, 4, 1)),
+        ("1-0001", 3, date(2023, 8, 1)),
+        ("1-0002", 3, date(2023, 2, 1)),
+        ("1-0002", 9, date(2023, 4, 1)),
+        ("1-0002", 3, date(2024, 1, 1)),
+        ("1-0002", 3, date(2024, 2, 1)),
+    ]
+    expected_providers_without_repeated_value_rows = [
+        ("1-0001", 1, date(2023, 2, 1), 1),
+        ("1-0001", 2, date(2023, 3, 1), 2),
+        ("1-0001", 1, date(2023, 4, 1), 1),
+        ("1-0001", 3, date(2023, 8, 1), 3),
+        ("1-0002", 3, date(2023, 2, 1), 3),
+        ("1-0002", 9, date(2023, 4, 1), 9),
+        ("1-0002", 3, date(2024, 1, 1), 3),
+        ("1-0002", 9, date(2024, 2, 1), 9),
+    ]
+    providers_without_repeated_value_rows = [
+        ("1-0001", 1, date(2023, 2, 1)),
+        ("1-0001", 2, date(2023, 3, 1)),
+        ("1-0001", 1, date(2023, 4, 1)),
+        ("1-0001", 3, date(2023, 8, 1)),
+        ("1-0002", 3, date(2023, 2, 1)),
+        ("1-0002", 9, date(2023, 4, 1)),
+        ("1-0002", 3, date(2024, 1, 1)),
+        ("1-0002", 9, date(2024, 2, 1)),
+    ]
+    expected_providers_without_repeated_values_when_input_has_repeated_values_rows = [
+        ("1-0001", 1, date(2023, 2, 1), 1),
+        ("1-0001", 2, date(2023, 3, 1), 2),
+        ("1-0001", 2, date(2023, 4, 1), None),
+        ("1-0001", 3, date(2023, 8, 1), 3),
+        ("1-0002", 3, date(2023, 2, 1), 3),
+        ("1-0002", 9, date(2023, 4, 1), 9),
+        ("1-0002", 3, date(2024, 1, 1), 3),
+        ("1-0002", 3, date(2024, 2, 1), None),
+    ]
+
+
+@dataclass
+class ForwardFillLatestKnownValue:
+    last_known_latest_per_location_rows = [
+        ("loc-1", date(2025, 1, 1), 10),
+        ("loc-1", date(2025, 1, 2), 20),
+        ("loc-1", date(2025, 1, 3), 15),
+        ("loc-2", date(2025, 1, 1), 5),
+        ("loc-2", date(2025, 1, 3), 15),
+        ("loc-2", date(2025, 1, 4), 12),
+    ]
+
+    expected_last_known_latest_per_location_rows = [
+        ("loc-1", date(2025, 1, 3), 15),
+        ("loc-2", date(2025, 1, 4), 12),
+    ]
+
+    last_known_ignores_null_rows = [
+        ("loc-1", date(2025, 1, 1), 10),
+        ("loc-1", date(2025, 1, 2), None),
+        ("loc-1", date(2025, 1, 3), None),
+        ("loc-2", date(2025, 1, 1), None),
+        ("loc-2", date(2025, 1, 3), 15),
+    ]
+
+    expected_last_known_ignores_null_rows = [
+        ("loc-1", date(2025, 1, 1), 10),
+        ("loc-2", date(2025, 1, 3), 15),
+    ]
+
+    forward_fill_within_days_rows = [
+        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 2), None, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 100, 2),
+    ]
+
+    expected_forward_fill_within_days_rows = [
+        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 2), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 3), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 100, 2),
+    ]
+
+    forward_fill_beyond_days_rows = [
+        ("loc-1", date(2025, 1, 1), 50, date(2025, 1, 1), 50, 2),
+        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 50, 2),
+    ]
+
+    expected_forward_fill_beyond_days_rows = [
+        ("loc-1", date(2025, 1, 1), 50, date(2025, 1, 1), 50, 2),
+        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 50, 2),
+    ]
+
+    forward_fill_before_last_known_rows = [
+        ("loc-1", date(2025, 1, 1), None, date(2025, 1, 2), 20, 2),
+        ("loc-1", date(2025, 1, 2), 20, date(2025, 1, 2), 20, 2),
+        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 2), 20, 2),
+        ("loc-2", date(2025, 1, 1), None, date(2025, 1, 3), 50, 2),
+        ("loc-2", date(2025, 1, 2), None, date(2025, 1, 3), 50, 2),
+        ("loc-2", date(2025, 1, 3), 50, date(2025, 1, 3), 50, 2),
+    ]
+
+    expected_forward_fill_before_last_known_rows = [
+        ("loc-1", date(2025, 1, 1), None, date(2025, 1, 2), 20, 2),
+        ("loc-1", date(2025, 1, 2), 20, date(2025, 1, 2), 20, 2),
+        ("loc-1", date(2025, 1, 3), 20, date(2025, 1, 2), 20, 2),
+        ("loc-2", date(2025, 1, 1), None, date(2025, 1, 3), 50, 2),
+        ("loc-2", date(2025, 1, 2), None, date(2025, 1, 3), 50, 2),
+        ("loc-2", date(2025, 1, 3), 50, date(2025, 1, 3), 50, 2),
+    ]
+
+    forward_fill_latest_known_value_rows = [
+        ("loc-1", date(2025, 1, 1), 10),
+        ("loc-1", date(2025, 1, 2), None),
+        ("loc-1", date(2025, 1, 4), 11),
+        ("loc-1", date(2025, 1, 5), None),
+        ("loc-2", date(2025, 1, 1), 20),
+        ("loc-2", date(2025, 1, 2), 20),
+        ("loc-2", date(2025, 1, 3), 22),
+        ("loc-2", date(2025, 1, 5), None),
+        ("loc-2", date(2025, 1, 6), None),
+    ]
+
+    expected_size_based_forward_fill_days_dict = {
+        -float("inf"): 65,
+    }
+
+    TEST_SIZE_BASED_FORWARD_FILL_DAYS = {
+        -float("inf"): 1,
+        2: 2,
+        4: 3,
+    }
+    size_based_forward_fill_days_rows = [
+        ("loc-1", -1),
+        ("loc-2", 1),
+        ("loc-3", 2),
+        ("loc-4", 3),
+        ("loc-5", 4),
+        ("loc-6", None),
+    ]
+    expected_size_based_forward_fill_days_rows = [
+        ("loc-1", -1, 1),
+        ("loc-2", 1, 1),
+        ("loc-3", 2, 2),
+        ("loc-4", 3, 2),
+        ("loc-5", 4, 3),
+        ("loc-6", None, None),
+    ]

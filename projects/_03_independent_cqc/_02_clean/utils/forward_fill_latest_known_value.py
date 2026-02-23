@@ -1,9 +1,10 @@
-from pyspark.sql import DataFrame, Window
+from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.forward_fill_latest_known_value.forward_fill_latest_known_value
 def forward_fill_latest_known_value(
     df: DataFrame,
     col_to_repeat: str,
@@ -44,6 +45,7 @@ def forward_fill_latest_known_value(
     return df_with_forward_fill
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.forward_fill_latest_known_value.return_last_known_value
 def return_last_known_value(
     df: DataFrame,
     col_to_repeat: str,
@@ -80,6 +82,7 @@ def return_last_known_value(
     return df_with_last_known
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.forward_fill_latest_known_value.forward_fill
 def forward_fill(
     df_with_last_known: DataFrame,
     col_to_repeat: str,
