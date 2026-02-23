@@ -6,6 +6,9 @@ from pyspark.sql import functions as F
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.interpolation import (
     model_interpolation,
 )
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change_cleaning import (
+    clean_non_residential_rate_of_change,
+)
 from projects.utils.utils.utils import calculate_new_column, calculate_windowed_column
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -73,6 +76,7 @@ def model_primary_service_rate_of_change(
     df = remove_ineligible_locations(df)
     df = interpolate_current_values(df, max_days_between_submissions)
     df = add_previous_value_column(df)
+    df = clean_non_residential_rate_of_change(df)
     df = calculate_primary_service_rolling_sums(df, number_of_days_for_window)
     df = calculate_new_column(
         df,
@@ -188,8 +192,8 @@ def calculate_primary_service_rolling_sums(
     Returns:
         DataFrame: The DataFrame with the two new rolling sum columns added.
     """
-    current_col = F.col(TempCol.current_period_interpolated)
-    previous_col = F.col(TempCol.previous_period_interpolated)
+    current_col = F.col(TempCol.current_period_cleaned)
+    previous_col = F.col(TempCol.previous_period_cleaned)
     partition_cols = [IndCqc.primary_service_type, IndCqc.number_of_beds_banded_roc]
 
     window = (

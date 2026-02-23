@@ -65,6 +65,7 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
 
     @patch(f"{PATCH_PATH}.calculate_new_column")
     @patch(f"{PATCH_PATH}.calculate_primary_service_rolling_sums")
+    @patch(f"{PATCH_PATH}.clean_non_residential_rate_of_change")
     @patch(f"{PATCH_PATH}.add_previous_value_column")
     @patch(f"{PATCH_PATH}.interpolate_current_values")
     @patch(f"{PATCH_PATH}.remove_ineligible_locations")
@@ -75,6 +76,7 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
         remove_ineligible_locations_mock: Mock,
         interpolate_current_values_mock: Mock,
         add_previous_value_column_mock: Mock,
+        clean_non_residential_rate_of_change_mock: Mock,
         calculate_primary_service_rolling_sums_mock: Mock,
         calculate_new_column_mock: Mock,
     ):
@@ -93,6 +95,7 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
         remove_ineligible_locations_mock.assert_called_once()
         interpolate_current_values_mock.assert_called_once()
         add_previous_value_column_mock.assert_called_once()
+        clean_non_residential_rate_of_change_mock.assert_called_once()
         calculate_primary_service_rolling_sums_mock.assert_called_once()
         calculate_new_column_mock.assert_called_once()
 
