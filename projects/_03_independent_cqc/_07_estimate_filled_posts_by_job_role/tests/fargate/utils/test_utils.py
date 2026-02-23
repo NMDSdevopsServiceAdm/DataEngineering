@@ -10,6 +10,11 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     EstimateIndCqcFilledPostsByJobRoleUtilsSchemas as Schemas,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import (
+    EstimateFilledPostsSource,
+    MainJobRoleLabels,
+)
 
 
 class JoinWorkerToEstimatesDataframeTests(unittest.TestCase):
@@ -29,3 +34,41 @@ class JoinWorkerToEstimatesDataframeTests(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
+    def setUp(self) -> None:
+        # fmt: off
+        input_rows = [
+            ("1-001", 10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, MainJobRoleLabels.care_worker, 1),
+            ("1-001", 10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, MainJobRoleLabels.registered_nurse, 2),
+            ("1-002", None, 20.0, EstimateFilledPostsSource.ascwds_pir_merged, MainJobRoleLabels.care_worker, 1),
+            ("1-003", 10.0, 10.0, EstimateFilledPostsSource.care_home_model, MainJobRoleLabels.registered_nurse, 2),
+        ]
+
+        expected_rows = [
+            ("1-001", 10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, MainJobRoleLabels.care_worker, 1),
+            ("1-001", 10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, MainJobRoleLabels.registered_nurse, 2),
+            ("1-002", None, 20.0, EstimateFilledPostsSource.ascwds_pir_merged, MainJobRoleLabels.care_worker, None),
+            ("1-003", 10.0, 10.0, EstimateFilledPostsSource.care_home_model, MainJobRoleLabels.registered_nurse, None),
+        ]
+        # fmt: on
+        test_schema = pl.Schema(
+            [
+                (IndCQC.location_id, pl.String()),
+                (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+                (IndCQC.estimate_filled_posts, pl.Float64()),
+                (IndCQC.estimate_filled_posts_source, pl.String()),
+                (IndCQC.main_job_role_clean_labelled, pl.String()),
+                (IndCQC.ascwds_job_role_counts, pl.Int64()),
+            ]
+        )
+        # This function shouldn't change the schema from input.
+        self.input_lf = pl.LazyFrame(input_rows, test_schema)
+        self.expected_lf = pl.LazyFrame(expected_rows, test_schema)
+
+        return super().setUp()
+
+    def test_nullify_job_role_count_when_source_not_ascwds(self):
+        returned_lf = job.nullify_job_role_count_when_source_not_ascwds(self.input_lf)
+        pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
