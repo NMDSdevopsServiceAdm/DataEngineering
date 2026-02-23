@@ -1,4 +1,3 @@
-from dataclasses import fields
 from typing import Optional
 
 from pyspark.sql import DataFrame, Window
