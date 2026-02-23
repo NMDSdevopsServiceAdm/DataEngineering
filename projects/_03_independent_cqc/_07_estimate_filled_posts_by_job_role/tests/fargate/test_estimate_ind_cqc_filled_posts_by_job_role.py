@@ -30,12 +30,7 @@ def mock_lf():
     """Factory to create a mock that handles Polars .pipe() behavior."""
 
     def _create_mock(name):
-        mock = MagicMock(spec=pl.LazyFrame, name=name)
-        # Configure the pipe method to actually execute the function passed to it
-        mock.pipe.side_effect = lambda func, *args, **kwargs: func(
-            mock, *args, **kwargs
-        )
-        return mock
+        return MagicMock(wraps=pl.LazyFrame(), name=name)
 
     return _create_mock
 
