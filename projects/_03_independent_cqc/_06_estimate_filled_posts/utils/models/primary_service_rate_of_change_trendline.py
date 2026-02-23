@@ -1,3 +1,4 @@
+import math
 from typing import Optional
 
 from pyspark.sql import DataFrame, Window
@@ -8,6 +9,8 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary
     model_primary_service_rate_of_change,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+
+BANDED_BED_THRESHOLDS: list = [0, 1, 15, 25, math.inf]
 
 
 def model_primary_service_rate_of_change_trendline(
@@ -52,7 +55,7 @@ def model_primary_service_rate_of_change_trendline(
     df = cUtils.create_banded_bed_count_column(
         df,
         IndCqc.number_of_beds_banded_roc,
-        [0, 1, 15, 25, float("Inf")],
+        BANDED_BED_THRESHOLDS,
     )
 
     single_roc_df = model_primary_service_rate_of_change(

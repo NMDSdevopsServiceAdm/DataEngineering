@@ -1,3 +1,4 @@
+import math
 import warnings
 from unittest.mock import Mock, patch
 
@@ -62,9 +63,19 @@ class MainTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
             IndCqc.ascwds_rate_of_change_trendline_model,
         )
 
-        create_banded_bed_count_column_mock.assert_called_once()
+        create_banded_bed_count_column_mock.assert_called_once_with(
+            self.input_df,
+            IndCqc.number_of_beds_banded_roc,
+            job.BANDED_BED_THRESHOLDS,
+        )
         model_primary_service_rate_of_change_mock.assert_called_once()
         calculate_roc_trendline_mock.assert_called_once()
+
+    def test_banded_bed_threshold_match_expected_values(self):
+        self.assertEqual(
+            job.BANDED_BED_THRESHOLDS,
+            [0, 1, 15, 25, math.inf],
+        )
 
     def test_row_count_unchanged_after_running_full_job(self):
         self.assertEqual(self.input_df.count(), self.returned_df.count())
