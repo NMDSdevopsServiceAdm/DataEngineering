@@ -10,7 +10,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     CleanFilteringUtilsSchemas as Schemas,
 )
-
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import AscwdsFilteringRule
 
@@ -78,6 +77,7 @@ class UpdateFilteringRuleTests(unittest.TestCase):
         expected_lf = pl.LazyFrame(
             data=Data.expected_update_filtering_rule_populated_to_winsorized_rows,
             schema=Schemas.update_filtering_rule_schema,
+            orient="row",
         )
         pl_testing.assert_frame_equal(
             returned_lf.sort(IndCQC.location_id).collect(), expected_lf.collect()
