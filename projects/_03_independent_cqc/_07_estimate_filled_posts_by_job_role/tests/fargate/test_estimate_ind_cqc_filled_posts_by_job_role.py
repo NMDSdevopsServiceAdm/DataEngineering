@@ -36,17 +36,16 @@ def mock_lf():
 
 
 def test_main_runs(monkeypatch, mock_lf):
-    # 1. Define the mocked lazyframes at each step
-    flow_mock = mock_lf("estimates_lf")
+    flow_mock_lf = mock_lf("estimates_lf")
 
-    # Define the return values to create the chain
-    mock_scan = MagicMock(side_effect=[flow_mock, MagicMock(name="ascwds_data")])
-    mock_join = MagicMock(return_value=flow_mock)
-    mock_nullify = MagicMock(return_value=flow_mock)
+    # Side effect will return a different value on each call
+    mock_scan = MagicMock(side_effect=[flow_mock_lf, MagicMock(name="ascwds_data")])
+    # Define return values as the flow_mock_lf
+    mock_join = MagicMock(return_value=flow_mock_lf)
+    mock_nullify = MagicMock(return_value=flow_mock_lf)
     mock_sink = MagicMock()
 
-    # Apply Monkeypatches
-    # This physically replaces the function inside the 'job' module
+    # Apply monkeypatches
     monkeypatch.setattr(job.utils, "scan_parquet", mock_scan)
     monkeypatch.setattr(job, "join_worker_to_estimates_dataframe", mock_join)
     monkeypatch.setattr(
@@ -54,10 +53,10 @@ def test_main_runs(monkeypatch, mock_lf):
     )
     monkeypatch.setattr(job.utils, "sink_to_parquet", mock_sink)
 
-    # 3. Execution
+    # Execution
     job.main(ESTIMATE_SOURCE, PREPARED_JOB_ROLE_COUNTS_SOURCE, ESTIMATES_DESTINATION)
 
-    # Verify scan_parquet was called for both inputs
+    # Verify scan_parquet was called twice
     assert mock_scan.call_count == 2
     mock_scan.assert_has_calls(
         [
@@ -70,13 +69,10 @@ def test_main_runs(monkeypatch, mock_lf):
             ),
         ]
     )
-
     mock_join.assert_called_once()
     mock_nullify.assert_called_once()
-
-    # Verify sink received the final productv
     mock_sink.assert_called_once_with(
-        lazy_df=flow_mock,
+        lazy_df=flow_mock_lf,
         output_path=ESTIMATES_DESTINATION,
         partition_cols=job.partition_keys,
         append=False,
