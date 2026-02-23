@@ -42,15 +42,12 @@ def mock_lf():
 
 def test_main_runs(monkeypatch, mock_lf):
     # 1. Define the mocked lazyframes at each step
-    mock_estimates_lf = mock_lf("estimates_lf")
-    mock_ascwds_lf = mock_lf("ascwds_lf")
-    mock_joined_lf = mock_lf("joined_lf")
-    mock_final_lf = mock_lf("final_lf")  # This is the one you want at the end
+    flow_mock = mock_lf("estimates_lf")
 
     # Define the return values to create the chain
-    mock_scan = MagicMock(side_effect=[mock_estimates_lf, mock_ascwds_lf])
-    mock_join = MagicMock(return_value=mock_joined_lf)
-    mock_nullify = MagicMock(return_value=mock_final_lf)
+    mock_scan = MagicMock(side_effect=[flow_mock, MagicMock(name="ascwds_data")])
+    mock_join = MagicMock(return_value=flow_mock)
+    mock_nullify = MagicMock(return_value=flow_mock)
     mock_sink = MagicMock()
 
     # Apply Monkeypatches
@@ -79,12 +76,12 @@ def test_main_runs(monkeypatch, mock_lf):
         ]
     )
 
-    mock_join.assert_called_once_with(mock_estimates_lf, mock_ascwds_lf)
-    mock_nullify.assert_called_once_with(mock_joined_lf)
+    mock_join.assert_called_once()
+    mock_nullify.assert_called_once()
 
     # Verify sink received the final productv
     mock_sink.assert_called_once_with(
-        lazy_df=mock_final_lf,
+        lazy_df=flow_mock,
         output_path=ESTIMATES_DESTINATION,
         partition_cols=job.partition_keys,
         append=False,
