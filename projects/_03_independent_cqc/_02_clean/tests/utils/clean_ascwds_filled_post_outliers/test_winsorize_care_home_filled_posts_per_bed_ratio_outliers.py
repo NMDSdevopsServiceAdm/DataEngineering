@@ -1,4 +1,3 @@
-import unittest
 import warnings
 
 from pyspark.sql.types import (
@@ -18,13 +17,12 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests(unittest.TestCase):
+class WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests(SparkBaseTest):
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
         self.unfiltered_ind_cqc_df = self.spark.createDataFrame(
             Data.unfiltered_ind_cqc_rows,
             Schemas.ind_cqc_schema,
@@ -73,9 +71,6 @@ class MainTests(WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
 class SetValuesForWinsorizationTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_percentage_of_data_to_remove_as_outliers_value(self):
         self.assertEqual(
             job.SetValuesForWinsorization.PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS, 0.05
@@ -122,9 +117,6 @@ class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
 class SelectDataNotInSubsetTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_select_data_not_in_subset_df(self):
         schema = StructType(
             [
@@ -152,9 +144,6 @@ class SelectDataNotInSubsetTests(
 class CalculateAverageFilledPostsPerBandedBedCount(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_calculate_average_filled_posts_per_banded_bed_count(self):
         schema = StructType(
             [
@@ -183,9 +172,6 @@ class CalculateAverageFilledPostsPerBandedBedCount(
 class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_calculate_expected_filled_posts_based_on_number_of_beds(self):
         expected_filled_posts_schema = StructType(
             [
@@ -501,9 +487,6 @@ class CalculateMinAndMaxPermittedFilledPostPerBedRatiosTests(
 class SetMinimumPermittedRatioTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_returned_data_matches_expected_data(self):
         TEST_MIN_VALUE: float = 0.75
 

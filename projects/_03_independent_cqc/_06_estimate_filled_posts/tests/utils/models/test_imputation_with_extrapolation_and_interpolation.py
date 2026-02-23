@@ -1,4 +1,3 @@
-import unittest
 import warnings
 from unittest.mock import Mock, patch
 
@@ -9,7 +8,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ModelImputationWithExtrapolationAndInterpolationSchemas as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 PATCH_PATH: str = (
@@ -17,10 +16,8 @@ PATCH_PATH: str = (
 )
 
 
-class ModelImputationWithExtrapolationAndInterpolationTests(unittest.TestCase):
+class ModelImputationWithExtrapolationAndInterpolationTests(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
-
         self.null_value_column: str = "null_values"
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -166,9 +163,6 @@ class SplitDatasetForImputationTests(
 class IdentifyLocationsWithANonNullSubmissionTests(
     ModelImputationWithExtrapolationAndInterpolationTests
 ):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_returned_dataframe_has_expected_values_when_locations_have_a_non_null_value(
         self,
     ):
@@ -234,9 +228,6 @@ class IdentifyLocationsWithANonNullSubmissionTests(
 
 
 class ModelImputationTests(ModelImputationWithExtrapolationAndInterpolationTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_imputation_model_returns_correct_values(self):
         imputation_model: str = "imputation_model"
         test_df = self.spark.createDataFrame(

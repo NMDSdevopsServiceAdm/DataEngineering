@@ -9,7 +9,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ImputeIndCqcAscwdsAndPirSchemas as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH: str = (
@@ -17,7 +17,7 @@ PATCH_PATH: str = (
 )
 
 
-class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
+class ImputeIndCqcAscwdsAndPirTests(SparkBaseTest):
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
     ESTIMATES_DESTINATION = "estimates destination"
     NON_RES_PIR_MODEL = (
@@ -31,7 +31,6 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
     ]
 
     def setUp(self):
-        self.spark = utils.get_spark()
         self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(
             Data.cleaned_ind_cqc_rows, Schemas.cleaned_ind_cqc_schema
         )
@@ -98,9 +97,6 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
 
 
 class NumericalValuesTests(ImputeIndCqcAscwdsAndPirTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_number_of_days_in_window_value(self):
         self.assertEqual(job.NumericalValues.number_of_days_in_window, 95)
 

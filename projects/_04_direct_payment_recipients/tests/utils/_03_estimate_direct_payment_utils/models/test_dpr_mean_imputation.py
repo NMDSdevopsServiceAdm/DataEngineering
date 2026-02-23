@@ -1,4 +1,3 @@
-import unittest
 import warnings
 
 from pyspark.sql.types import (
@@ -13,13 +12,11 @@ import projects._04_direct_payment_recipients.utils._03_estimate_direct_payment_
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 
 
-class TestMeanImputation(unittest.TestCase):
+class TestMeanImputation(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
-
         warnings.simplefilter("ignore", ResourceWarning)
 
     def test_model_when_no_historical_data_completes(self):
