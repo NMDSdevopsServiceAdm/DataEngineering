@@ -5,7 +5,6 @@ from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResColumns as CTNR,
 )
 from utils.column_values.categorical_column_values import (
-    LocationType,
     MainJobRoleLabels,
 )
 

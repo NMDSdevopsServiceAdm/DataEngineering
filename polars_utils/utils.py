@@ -466,9 +466,9 @@ def calculate_windowed_column(
         input_column (str): The name of the input column to be aggregated.
         aggregation_function (str): The aggregation function to use in the
             calculation ('avg', 'count', 'max', 'min' or 'sum').
-        partition_by (str | list[str]): Column name(s) used to define the
+        partition_by (Union[str | list[str]]): Column name(s) used to define the
             window partition.
-        order_by (str | list[str], optional): Column name(s) used to define
+        order_by (Union[str | list[str]], optional): Column name(s) used to define
             the ordering within each partition. Defaults to None.
 
     Returns:
@@ -558,7 +558,6 @@ def calculate_windowed_column(
 
         result_cols = group_cols + [new_col]
 
-    lf.with_columns()
     # Step 3 — join back to original rows
     return lf.join(
         grouped.select(result_cols),

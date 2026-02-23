@@ -1,5 +1,3 @@
-import unittest
-
 import projects._03_independent_cqc._02_clean.utils.utils as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     CleanIndCQCData as Data,
@@ -7,13 +5,12 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     CleanIndCQCData as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class AddColumnWithRepeatedValuesRemovedTests(unittest.TestCase):
+class AddColumnWithRepeatedValuesRemovedTests(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
         self.test_purge_outdated_df = self.spark.createDataFrame(
             Data.repeated_value_rows, Schemas.repeated_value_schema
         )

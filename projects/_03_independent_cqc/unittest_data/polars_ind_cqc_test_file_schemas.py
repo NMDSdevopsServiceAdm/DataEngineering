@@ -17,6 +17,9 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ArchivePartitionKeys as ArchiveKeys,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
@@ -576,6 +579,30 @@ class CleanIndCQCSchema:
             (AWPClean.total_staff_bounded, pl.Int64()),
             (AWPClean.worker_records_bounded, pl.Int64()),
             (IndCQC.imputed_registration_date, pl.Date()),
+        ]
+    )
+
+
+@dataclass
+class ArchiveFilledPostsEstimates:
+    estimate_filled_posts_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    expected_add_latest_annual_estimate_date_schema = (
+        list(estimate_filled_posts_schema.items())
+    ) + ["most_recent_annual_estimate_date"]
+
+    expected_create_archive_date_partitions_schema = pl.Schema(
+        list(estimate_filled_posts_schema.items())
+        + [
+            (ArchiveKeys.archive_day, pl.String()),
+            (ArchiveKeys.archive_month, pl.String()),
+            (ArchiveKeys.archive_year, pl.String()),
+            (ArchiveKeys.archive_timestamp, pl.String()),
         ]
     )
 

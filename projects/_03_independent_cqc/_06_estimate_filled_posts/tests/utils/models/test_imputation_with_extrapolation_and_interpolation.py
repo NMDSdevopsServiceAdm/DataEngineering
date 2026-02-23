@@ -1,9 +1,5 @@
-import unittest
-from unittest.mock import Mock, patch
 import warnings
-
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
@@ -12,16 +8,16 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ModelImputationWithExtrapolationAndInterpolationSchemas as Schemas,
 )
+from tests.base_test import SparkBaseTest
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 PATCH_PATH: str = (
     "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation"
 )
 
 
-class ModelImputationWithExtrapolationAndInterpolationTests(unittest.TestCase):
+class ModelImputationWithExtrapolationAndInterpolationTests(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
-
         self.null_value_column: str = "null_values"
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -157,9 +153,6 @@ class SplitDatasetForImputationTests(
 class IdentifyLocationsWithANonNullSubmissionTests(
     ModelImputationWithExtrapolationAndInterpolationTests
 ):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_returned_dataframe_has_expected_values_when_locations_have_a_non_null_value(
         self,
     ):
@@ -225,9 +218,6 @@ class IdentifyLocationsWithANonNullSubmissionTests(
 
 
 class ModelImputationTests(ModelImputationWithExtrapolationAndInterpolationTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_imputation_model_returns_correct_values(self):
         imputation_model: str = "imputation_model"
         test_df = self.spark.createDataFrame(

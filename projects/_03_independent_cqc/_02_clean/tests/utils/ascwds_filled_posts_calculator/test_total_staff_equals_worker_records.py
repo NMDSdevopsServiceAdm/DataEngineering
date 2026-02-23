@@ -1,4 +1,3 @@
-import unittest
 import warnings
 
 import projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records as job
@@ -8,13 +7,12 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class TestAscwdsFilledPostsWorkerRecordsEqualsTotalStaff(unittest.TestCase):
+class TestAscwdsFilledPostsWorkerRecordsEqualsTotalStaff(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
         self.ascwds_total_staff_and_worker_record_df = self.spark.createDataFrame(
             Data.calculate_ascwds_filled_posts_rows,
             Schemas.calculate_ascwds_filled_posts_schema,
