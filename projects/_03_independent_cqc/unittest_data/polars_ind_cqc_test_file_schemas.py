@@ -17,6 +17,9 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ArchivePartitionKeys as ArchiveKeys,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
@@ -374,4 +377,352 @@ class MergeUtilsSchemas:
             (CQCPIRClean.cqc_pir_import_date, pl.Date()),
             (CQCPIRClean.pir_people_directly_employed_cleaned, pl.Int64()),
         ]
+    )
+
+
+@dataclass
+class ValidateMergeIndCQCSchemas:
+    merged_ind_cqc_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.ascwds_workplace_import_date, pl.Date()),
+            (IndCQC.cqc_pir_import_date, pl.Date()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.name, pl.String()),
+            (IndCQC.provider_id, pl.String()),
+            (IndCQC.cqc_sector, pl.String()),
+            (IndCQC.imputed_registration_date, pl.Date()),
+            (IndCQC.dormancy, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.services_offered, pl.List(pl.String())),
+            (IndCQC.primary_service_type, pl.String()),
+            (IndCQC.contemporary_ons_import_date, pl.Date()),
+            (IndCQC.contemporary_cssr, pl.String()),
+            (IndCQC.contemporary_region, pl.String()),
+            (IndCQC.current_ons_import_date, pl.Date()),
+            (IndCQC.current_cssr, pl.String()),
+            (IndCQC.current_region, pl.String()),
+            (IndCQC.current_rural_urban_indicator_2011, pl.String()),
+            (IndCQC.current_lsoa21, pl.String()),
+            (IndCQC.current_msoa21, pl.String()),
+            (IndCQC.pir_people_directly_employed_cleaned, pl.Int64()),
+            (IndCQC.establishment_id, pl.String()),
+            (IndCQC.organisation_id, pl.String()),
+            (IndCQC.total_staff_bounded, pl.Int64()),
+            (IndCQC.worker_records_bounded, pl.Int64()),
+            (IndCQC.related_location, pl.String()),
+        ]
+    )
+
+    cqc_locations_cleaned_schema = pl.Schema(
+        [
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_sector, pl.String()),
+            (CQCLClean.care_home, pl.String()),
+            (CQCLClean.number_of_beds, pl.Int64()),
+        ]
+    )
+
+
+@dataclass
+class CalculateAscwdsFilledPostsSchemas:
+    calculate_ascwds_filled_posts_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.total_staff_bounded, pl.Int64()),
+            (IndCQC.worker_records_bounded, pl.Int64()),
+            (IndCQC.ascwds_filled_posts, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_source, pl.String()),
+        ]
+    )
+
+
+@dataclass
+class CalculateAscwdsFilledPostsDifferenceInRangeSchemas:
+    test_difference_within_range_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.total_staff_bounded, pl.Int64()),
+            (IndCQC.worker_records_bounded, pl.Int64()),
+            (IndCQC.ascwds_filled_posts, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_source, pl.String()),
+        ]
+    )
+
+
+@dataclass
+class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas:
+    calculate_ascwds_filled_posts_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.total_staff_bounded, pl.Int64()),
+            (IndCQC.worker_records_bounded, pl.Int64()),
+            (IndCQC.ascwds_filled_posts, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_source, pl.String()),
+        ]
+    )
+
+
+@dataclass
+class CalculateAscwdsFilledPostsUtilsSchemas:
+    estimated_source_description_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.estimate_filled_posts, pl.Float64()),
+            (IndCQC.estimate_filled_posts_source, pl.String()),
+        ]
+    )
+
+    common_checks_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.total_staff_bounded, pl.Int64()),
+            (IndCQC.worker_records_bounded, pl.Int64()),
+            (IndCQC.ascwds_filled_posts, pl.Float64()),
+        ]
+    )
+
+
+@dataclass
+class CleanIndCQCSchema:
+    replace_zero_beds_with_null_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+        ]
+    )
+
+    populate_missing_care_home_number_of_beds_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+        ]
+    )
+
+    filter_to_care_homes_with_known_beds_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+        ]
+    )
+
+    average_beds_per_location_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+        ]
+    )
+
+    expected_average_beds_per_location_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            ("avg_beds", pl.Int64()),
+        ]
+    )
+
+    replace_null_beds_with_average_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.Utf8),
+            (IndCQC.number_of_beds, pl.Int64),
+            ("avg_beds", pl.Int64),
+        ]
+    )
+
+    expected_replace_null_beds_with_average_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.Utf8),
+            (IndCQC.number_of_beds, pl.Int64),
+        ]
+    )
+
+    calculate_time_registered_for_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.imputed_registration_date, pl.Date()),
+        ]
+    )
+
+    expected_calculate_time_registered_for_schema = pl.Schema(
+        list(calculate_time_registered_for_schema.items())
+        + [
+            (IndCQC.time_registered, pl.UInt32()),
+        ]
+    )
+
+    calculate_time_since_dormant_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.dormancy, pl.String()),
+        ]
+    )
+    expected_calculate_time_since_dormant_schema = pl.Schema(
+        list(calculate_time_since_dormant_schema.items())
+        + [
+            (IndCQC.time_since_dormant, pl.Int64()),
+        ]
+    )
+
+    remove_cqc_dual_registrations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.name, pl.String()),
+            (IndCQC.postcode, pl.String()),
+            (IndCQC.care_home, pl.String()),
+            (AWPClean.total_staff_bounded, pl.Int64()),
+            (AWPClean.worker_records_bounded, pl.Int64()),
+            (IndCQC.imputed_registration_date, pl.Date()),
+        ]
+    )
+
+
+@dataclass
+class ArchiveFilledPostsEstimates:
+    estimate_filled_posts_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    expected_add_latest_annual_estimate_date_schema = (
+        list(estimate_filled_posts_schema.items())
+    ) + ["most_recent_annual_estimate_date"]
+
+    expected_create_archive_date_partitions_schema = pl.Schema(
+        list(estimate_filled_posts_schema.items())
+        + [
+            (ArchiveKeys.archive_day, pl.String()),
+            (ArchiveKeys.archive_month, pl.String()),
+            (ArchiveKeys.archive_year, pl.String()),
+            (ArchiveKeys.archive_timestamp, pl.String()),
+        ]
+    )
+
+
+@dataclass
+class CleanFilteringUtilsSchemas:
+    add_filtering_column_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+        ]
+    )
+    expected_add_filtering_column_schema = pl.Schema(
+        list(add_filtering_column_schema.items())
+        + [
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+        ]
+    )
+    update_filtering_rule_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+        ]
+    )
+
+    aggregate_values_to_provider_level_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.provider_id, pl.String()),
+            (IndCQC.ct_care_home_total_employed_cleaned, pl.Int64()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+    expected_aggregate_values_to_provider_level_schema = pl.Schema(
+        list(aggregate_values_to_provider_level_schema.items())
+        + [
+            (IndCQC.ct_care_home_total_employed_cleaned_provider_sum, pl.Int64()),
+        ]
+    )
+
+
+@dataclass
+class CleanUtilsSchemas:
+    locations_with_repeated_value_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            ("integer_column", pl.Int64()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    expected_locations_without_repeated_values_schema = pl.Schema(
+        list(locations_with_repeated_value_schema.items())
+        + [
+            ("integer_column_deduplicated", pl.Int64()),
+        ]
+    )
+    providers_with_repeated_value_schema = pl.Schema(
+        [
+            (IndCQC.provider_id, pl.String()),
+            ("integer_column", pl.Int64()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    expected_providers_without_repeated_values_schema = pl.Schema(
+        list(providers_with_repeated_value_schema.items())
+        + [
+            ("integer_column_deduplicated", pl.Int64()),
+        ]
+    )
+
+
+@dataclass
+class ForwardFillLatestKnownValue:
+    col_to_forward_fill: str = "col_to_forward_fill"
+    days_to_forward_fill: str = "days_to_forward_fill"
+    last_known_date: str = "last_known_date"
+    last_known_value: str = "last_known_value"
+
+    input_return_last_known_value_locations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (col_to_forward_fill, pl.Int64()),
+        ]
+    )
+    expected_return_last_known_value_locations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (last_known_date, pl.Date()),
+            (last_known_value, pl.Int64()),
+        ]
+    )
+    forward_fill_locations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (col_to_forward_fill, pl.Int64()),
+            (last_known_date, pl.Date()),
+            (last_known_value, pl.Int64()),
+            (days_to_forward_fill, pl.Int64()),
+        ]
+    )
+    forward_fill_latest_known_value_locations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (col_to_forward_fill, pl.Int64()),
+        ]
+    )
+    size_based_forward_fill_days_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (col_to_forward_fill, pl.Int64()),
+        ]
+    )
+    expected_size_based_forward_fill_days_schema = pl.Schema(
+        list(size_based_forward_fill_days_schema.items())
+        + [(days_to_forward_fill, pl.Int32())]
     )

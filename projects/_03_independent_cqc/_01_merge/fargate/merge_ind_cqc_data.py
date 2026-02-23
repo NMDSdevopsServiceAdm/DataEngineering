@@ -1,5 +1,3 @@
-import polars as pl
-
 from polars_utils import utils
 from projects._03_independent_cqc._01_merge.fargate.utils.merge_utils import (
     join_data_into_cqc_lf,

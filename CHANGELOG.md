@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Converted archive job from pyspark to polars.
+
+- Created polars job script for clean ind cqc filled posts. Script only reads and writes data and has comments
+  for each util call to be added to the script as it's developed.
+  Added this job to the estimates pipeline in parallel with pyspark version.
+
+### Changed
+- Switched test runner to pytest in CI, so that a shared session fixture for a spark configuration optimised for tests
+  can be used. Has resulted in 70% reduction in runtime for current pyspark tests in CI, and improvement on local
+  Windows machines. https://github.com/NMDSdevopsServiceAdm/DataEngineering/pull/1219
+
+- Refactored the rate of change to filter rows instead of nulling values to speed up processing time and make the
+  filtering process in a follow-up PR much easier to implement.
+
+### Fixed
+
+
+## [v2026.01.0] - 12/02/2026
 
 ### Added
 - A new function to remove longitudinal outliers from CT data. The function flags the outliers based on absolute difference in median values and removes the ourlier value.
@@ -23,6 +42,16 @@ All notable changes to this project will be documented in this file.
 - Added three validation rules for primary_service_second_level column to check expected values.
 
 - Python package [aws-mfa-v2] (https://pypi.org/project/aws-mfa-v2/) to allow for terraform to handle MFA authentication in a cross role account when used locally.
+
+- Converted the validate_merged_ind_cqc_data job script from PyDeequ to Pointblank
+
+- Converted the validate_merge_coverage_data job script from PyDeequ to Pointblank.
+
+- Converted ascwds_filled_posts_calculator utils folder to polars within Clean Ind CQC Job.
+
+- Added a new utils file for all the inline function within clean_ind_cqc_filled_posts.py and converted them to Polars.
+
+- Converted `filtering_utils.py`, `forward_fill_latest_known_value.py` and `utils.py` within clean Ind CQC job to polars.
 
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.

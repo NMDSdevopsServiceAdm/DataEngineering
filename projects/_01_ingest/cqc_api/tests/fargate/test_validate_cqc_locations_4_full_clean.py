@@ -1,6 +1,5 @@
 import json
 import unittest
-from datetime import date
 from unittest.mock import ANY, Mock, call, patch
 
 import polars as pl

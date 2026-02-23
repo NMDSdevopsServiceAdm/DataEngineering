@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import ANY, Mock, patch
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
@@ -10,7 +9,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     EstimateNonResCTFilledPostsSchemas as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 PATCH_PATH: str = (
@@ -18,9 +17,8 @@ PATCH_PATH: str = (
 )
 
 
-class EstimateNonResCTFilledPostsTests(unittest.TestCase):
+class EstimateNonResCTFilledPostsTests(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
         self.estimates_df = self.spark.createDataFrame(
             Data.estimates_rows,
             Schemas.estimates_schema,
@@ -28,9 +26,6 @@ class EstimateNonResCTFilledPostsTests(unittest.TestCase):
 
 
 class MainTests(EstimateNonResCTFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.merge_columns_in_order")
     @patch(f"{PATCH_PATH}.convert_to_all_posts_using_ratio")
@@ -53,9 +48,6 @@ class MainTests(EstimateNonResCTFilledPostsTests):
 
 
 class CalculateCareWorkerRatioTests(EstimateNonResCTFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_calculate_care_worker_ratio_returns_correct_ratio(self):
         returned_ratio = job.calculate_care_worker_ratio(self.estimates_df)
         expected_ratio = Data.expected_care_worker_ratio
@@ -64,9 +56,6 @@ class CalculateCareWorkerRatioTests(EstimateNonResCTFilledPostsTests):
 
 
 class ConvertToAllPostsUsingRatioTest(EstimateNonResCTFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_convert_to_all_posts_using_ratio_returns_correct_values(
         self,
     ):
