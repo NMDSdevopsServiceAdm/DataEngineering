@@ -558,9 +558,43 @@ def calculate_windowed_column(
 
         result_cols = group_cols + [new_col]
 
+    lf.with_columns()
     # Step 3 — join back to original rows
     return lf.join(
         grouped.select(result_cols),
         on=group_cols,
         how="left",
     )
+
+
+def calculate_windowed_column_partition_by(
+    lf: pl.LazyFrame,
+    new_col: str,
+    input_column: str,
+    aggregation_function: str,
+    partition_by: Union[str, List[str]],
+    order_by: Optional[Union[str, List[str]]] = None,
+) -> pl.LazyFrame:
+
+    functions = {
+        "avg": lambda: pl.col(input_column).mean(),
+        "count": lambda: pl.col(input_column).count(),
+        "max": lambda: pl.col(input_column).max(),
+        "min": lambda: pl.col(input_column).min(),
+        "sum": lambda: pl.col(input_column).sum(),
+    }
+
+    if aggregation_function not in functions:
+        raise ValueError(
+            f"Error: The aggregation function '{aggregation_function}' "
+            f"was not found. Please use 'avg', 'count', 'max', 'min' or 'sum'."
+        )
+
+    expr = functions[aggregation_function]()
+
+    if order_by is not None:
+        expr = expr.sort_by(order_by).rolling(order_by, period="1d")
+    else:
+        expr = expr.over(partition_by)
+
+    return lf.with_columns(expr.alias(new_col))

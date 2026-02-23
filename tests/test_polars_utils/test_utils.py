@@ -684,7 +684,7 @@ class CalculateWindowedColumnTests(unittest.TestCase):
         # )
 
     def test_calculate_windowed_column_with_agg_function_avg(self):
-        returned_lf = utils.calculate_windowed_column(
+        returned_lf = utils.calculate_windowed_column_partition_by(
             lf=self.test_lf,
             new_col="new_column",
             input_column=IndCQC.ascwds_filled_posts,
@@ -702,7 +702,7 @@ class CalculateWindowedColumnTests(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_data, expected_data)
 
     def test_calculate_windowed_column_count(self):
-        returned_lf = utils.calculate_windowed_column(
+        returned_lf = utils.calculate_windowed_column_partition_by(
             lf=self.test_lf,
             new_col="new_column",
             input_column=IndCQC.ascwds_filled_posts,
@@ -720,7 +720,7 @@ class CalculateWindowedColumnTests(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_data, expected_data)
 
     def test_calculate_windowed_column_max(self):
-        returned_df = utils.calculate_windowed_column(
+        returned_df = utils.calculate_windowed_column_partition_by(
             lf=self.test_lf,
             new_col="new_column",
             input_column=IndCQC.ascwds_filled_posts,
@@ -738,45 +738,50 @@ class CalculateWindowedColumnTests(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_data, expected_data)
 
     def test_calculate_windowed_column_min(self):
-        returned_df = utils.calculate_windowed_column(
-            self.test_df,
-            self.window,
-            Schemas.new_column,
-            IndCQC.ascwds_filled_posts,
-            "min",
+        returned_df = utils.calculate_windowed_column_partition_by(
+            lf=self.test_lf,
+            new_col="new_column",
+            input_column=IndCQC.ascwds_filled_posts,
+            aggregation_function="min",
+            partition_by=IndCQC.care_home,
+            order_by=IndCQC.cqc_location_import_date,
         )
-        expected_df = self.spark.createDataFrame(
+        expected_df = pl.LazyFrame(
             Data.expected_calculate_windowed_column_min_rows,
             Schemas.expected_calculate_windowed_column_schema,
+            orient="row",
         )
-        returned_data = returned_df.sort(IndCQC.location_id).collect()
-        expected_data = expected_df.collect()
-        self.assertEqual(returned_data, expected_data)
+        returned_data = returned_df.sort(IndCQC.location_id)
+        expected_data = expected_df
+        pl_testing.assert_frame_equal(returned_data, expected_data)
 
     def test_calculate_windowed_column_sum(self):
-        returned_df = utils.calculate_windowed_column(
-            self.test_df,
-            self.window,
-            Schemas.new_column,
-            IndCQC.ascwds_filled_posts,
-            "sum",
+        returned_df = utils.calculate_windowed_column_partition_by(
+            lf=self.test_lf,
+            new_col="new_column",
+            input_column=IndCQC.ascwds_filled_posts,
+            aggregation_function="sum",
+            partition_by=IndCQC.care_home,
+            order_by=IndCQC.cqc_location_import_date,
         )
-        expected_df = self.spark.createDataFrame(
+        expected_df = pl.LazyFrame(
             Data.expected_calculate_windowed_column_sum_rows,
             Schemas.expected_calculate_windowed_column_schema,
+            orient="row",
         )
-        returned_data = returned_df.sort(IndCQC.location_id).collect()
-        expected_data = expected_df.collect()
-        self.assertEqual(returned_data, expected_data)
+        returned_data = returned_df.sort(IndCQC.location_id)
+        expected_data = expected_df
+        pl_testing.assert_frame_equal(returned_data, expected_data)
 
     def test_calculate_windowed_column_raises_error_with_invalid_method(self):
         with self.assertRaises(ValueError) as context:
-            utils.calculate_windowed_column(
-                self.test_df,
-                self.window,
-                Schemas.new_column,
-                IndCQC.ascwds_filled_posts,
-                "other",
+            utils.calculate_windowed_column_partition_by(
+                lf=self.test_lf,
+                new_col="new_column",
+                input_column=IndCQC.ascwds_filled_posts,
+                aggregation_function="other",
+                partition_by=IndCQC.care_home,
+                order_by=IndCQC.cqc_location_import_date,
             )
         self.assertTrue(
             "Error: The aggregation function 'other' was not found. Please use 'avg', 'count', 'max', 'min' or 'sum'."
