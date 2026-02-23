@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._02_clean.utils.forward_fill_latest_known_value as job
@@ -8,17 +7,14 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ForwardFillLatestKnownValue as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 
 PATCH_PATH = (
     "projects._03_independent_cqc._02_clean.utils.forward_fill_latest_known_value"
 )
 
 
-class ForwardFillLatestKnownValueCallTests(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
-
+class ForwardFillLatestKnownValueCallTests(SparkBaseTest):
     @patch(f"{PATCH_PATH}.forward_fill")
     @patch(f"{PATCH_PATH}.add_size_based_forward_fill_days")
     @patch(f"{PATCH_PATH}.return_last_known_value")
@@ -43,10 +39,7 @@ class ForwardFillLatestKnownValueCallTests(unittest.TestCase):
         )
 
 
-class AddSizeBasedForwardFillDaysTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.spark = utils.get_spark()
-
+class AddSizeBasedForwardFillDaysTests(SparkBaseTest):
     def test_adds_days_to_forward_fill_column_based_on_location_size(self):
         test_df = self.spark.createDataFrame(
             data=Data.size_based_forward_fill_days_rows,
@@ -64,10 +57,7 @@ class AddSizeBasedForwardFillDaysTests(unittest.TestCase):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class ReturnLastKnownValueTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.spark = utils.get_spark()
-
+class ReturnLastKnownValueTests(SparkBaseTest):
     def test_last_known_returns_latest_non_null_value_per_location(self):
         test_df = self.spark.createDataFrame(
             data=Data.last_known_latest_per_location_rows,
@@ -93,10 +83,7 @@ class ReturnLastKnownValueTests(unittest.TestCase):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class ForwardFillTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.spark = utils.get_spark()
-
+class ForwardFillTests(SparkBaseTest):
     def test_populates_null_values_within_days_to_forward_fill_range(self):
         test_df = self.spark.createDataFrame(
             data=Data.forward_fill_within_days_rows,

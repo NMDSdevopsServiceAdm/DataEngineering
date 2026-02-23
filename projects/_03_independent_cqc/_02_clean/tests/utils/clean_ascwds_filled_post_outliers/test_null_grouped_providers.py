@@ -1,4 +1,3 @@
-import unittest
 import warnings
 from unittest.mock import Mock, patch
 
@@ -11,7 +10,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     NullGroupedProvidersSchema as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH: str = (
@@ -19,17 +18,12 @@ PATCH_PATH: str = (
 )
 
 
-class NullGroupedProvidersTests(unittest.TestCase):
+class NullGroupedProvidersTests(SparkBaseTest):
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
-
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
 class NullGroupedProvidersConfigTests(NullGroupedProvidersTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_minimum_size_of_care_home_location_to_identify(self):
         self.assertEqual(
             job.NullGroupedProvidersConfig.MINIMUM_SIZE_OF_CARE_HOME_LOCATION_TO_IDENTIFY,
@@ -104,9 +98,6 @@ class MainTests(NullGroupedProvidersTests):
 
 
 class CalculateDataForGroupedProviderIdentificationTests(NullGroupedProvidersTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_calculate_data_for_grouped_provider_identification_returns_correct_rows_where_provider_has_one_location(
         self,
     ):
@@ -151,9 +142,6 @@ class CalculateDataForGroupedProviderIdentificationTests(NullGroupedProvidersTes
 
 
 class IdentifyPotentialGroupedProviderTests(NullGroupedProvidersTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_identify_potential_grouped_providers_returns_correct_rows(
         self,
     ):
@@ -173,9 +161,6 @@ class IdentifyPotentialGroupedProviderTests(NullGroupedProvidersTests):
 
 
 class NullCareHomeGroupedProvidersTests(NullGroupedProvidersTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_null_care_home_grouped_providers_returns_null_when_criteria_met(
         self,
     ):
@@ -216,9 +201,6 @@ class NullCareHomeGroupedProvidersTests(NullGroupedProvidersTests):
 
 
 class NullNonResidentialGroupedProvidersTests(NullGroupedProvidersTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_null_non_residential_grouped_providers_returns_null_when_criteria_met(
         self,
     ):

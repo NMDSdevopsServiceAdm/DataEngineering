@@ -1,12 +1,7 @@
-import unittest
-from unittest.mock import ANY, Mock, patch
 import warnings
-from pyspark.sql import Window, WindowSpec
+from unittest.mock import ANY, Mock, patch
 
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+from pyspark.sql import Window, WindowSpec
 
 import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.extrapolation as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
@@ -15,17 +10,18 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ModelExtrapolation as Schemas,
 )
-
+from tests.base_test import SparkBaseTest
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCqc,
+)
 
 PATCH_PATH = (
     "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.extrapolation"
 )
 
 
-class ModelExtrapolationTests(unittest.TestCase):
+class ModelExtrapolationTests(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
-
         self.extrapolation_df = self.spark.createDataFrame(
             Data.extrapolation_rows, Schemas.extrapolation_schema
         )
@@ -53,9 +49,6 @@ class MainTests(ModelExtrapolationTests):
 
 
 class DefineWindowSpecsTests(ModelExtrapolationTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_define_window_spec_return_type(self):
         returned_window_specs = job.define_window_specs()
         self.assertIsInstance(returned_window_specs, tuple)

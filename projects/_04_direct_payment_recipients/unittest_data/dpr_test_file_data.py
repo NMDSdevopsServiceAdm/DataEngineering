@@ -4,6 +4,8 @@ from datetime import date
 
 @dataclass
 class PAFilledPostsByIcbArea:
+    # Adding so pytest doesn't try to collect when we import "as TestSchema".
+    __test__ = False
     sample_ons_contemporary_with_duplicates_rows = [
         ("AB10AA", date(2024, 1, 1), "cssr1", "icb1"),
         ("AB10AB", date(2024, 1, 1), "cssr1", "icb1"),

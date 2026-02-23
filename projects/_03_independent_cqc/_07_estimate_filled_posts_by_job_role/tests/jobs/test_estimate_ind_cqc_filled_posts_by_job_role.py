@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import ANY, Mock, call, patch
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.jobs.estimate_ind_cqc_filled_posts_by_job_role as job
@@ -8,21 +7,19 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     EstimateIndCQCFilledPostsByJobRoleSchemas as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.jobs.estimate_ind_cqc_filled_posts_by_job_role"
 
 
-class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
+class EstimateIndCQCFilledPostsByJobRoleTests(SparkBaseTest):
     ESTIMATE_SOURCE = "some/source"
     ASCWDS_WORKER_SOURCE = "some/other/source"
     OUTPUT_DIR = "some/destination"
 
     def setUp(self):
-        self.spark = utils.get_spark()
-
         self.test_estimated_ind_cqc_filled_posts_df = self.spark.createDataFrame(
             Data.estimated_ind_cqc_filled_posts_rows,
             Schemas.estimated_ind_cqc_filled_posts_schema,
@@ -33,9 +30,6 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
 
 
 class NumericalValuesTests(EstimateIndCQCFilledPostsByJobRoleTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_number_of_days_in_window_value(self):
         self.assertEqual(job.NumericalValues.number_of_days_in_rolling_sum, 185)
 
@@ -146,8 +140,8 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         overwrite_registered_manager_estimate_with_cqc_count_mock.assert_called_once()
         recalculate_total_filled_posts_mock.assert_called_once()
         calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_mock.assert_called_once()
-        create_estimate_filled_posts_job_group_columns_mock.assert_called_once(),
-        create_job_role_estimates_data_validation_columns_mock.assert_called_once(),
+        (create_estimate_filled_posts_job_group_columns_mock.assert_called_once(),)
+        (create_job_role_estimates_data_validation_columns_mock.assert_called_once(),)
         write_to_parquet_mock.assert_called_once_with(
             ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys
         )

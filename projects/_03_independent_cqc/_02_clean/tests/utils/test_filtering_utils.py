@@ -1,4 +1,3 @@
-import unittest
 import warnings
 
 from projects._03_independent_cqc._02_clean.utils import filtering_utils as job
@@ -8,22 +7,17 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     CleanFilteringUtilsSchemas as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import AscwdsFilteringRule
 
 
-class CleanFilteringUtilsTests(unittest.TestCase):
+class CleanFilteringUtilsTests(SparkBaseTest):
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
-
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
 class AddFilteringRuleColumnTests(CleanFilteringUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_add_filtering_rule_column(self):
         test_df = self.spark.createDataFrame(
             Data.add_filtering_column_rows, Schemas.add_filtering_column_schema
@@ -45,9 +39,6 @@ class AddFilteringRuleColumnTests(CleanFilteringUtilsTests):
 
 
 class UpdateFilteringRuleTests(CleanFilteringUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_returns_expected_labels_when_populated_values_are_nulled(self):
         test_df = self.spark.createDataFrame(
             Data.update_filtering_rule_populated_to_nulled_rows,

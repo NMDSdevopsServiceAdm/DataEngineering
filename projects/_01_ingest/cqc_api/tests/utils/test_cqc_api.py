@@ -35,6 +35,8 @@ class CqcApiTests(unittest.TestCase):
 
 
 class TestResponse:
+    # Adding so pytest doesn't try to collect as a Test Classß.
+    __test__ = False
     status_code: int = 500
     content: dict = {}
     text: str = ""

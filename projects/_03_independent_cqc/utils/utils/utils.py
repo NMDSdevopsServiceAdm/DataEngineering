@@ -4,17 +4,6 @@ from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 from pyspark.sql.types import DoubleType, MapType
 
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
-from utils.column_values.categorical_column_values import (
-    PrimaryServiceTypeSecondLevel as PSSL_values,
-)
-from utils.value_labels.ind_cqc_filled_posts.primary_service_type_mapping import (
-    CqcServiceToPrimaryServiceTypeSecondLevelLookup as PSSL_lookup,
-)
-
 
 def merge_columns_in_order(
     df: DataFrame,

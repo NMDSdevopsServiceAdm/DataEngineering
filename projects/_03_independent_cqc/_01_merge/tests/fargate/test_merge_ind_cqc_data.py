@@ -112,7 +112,7 @@ class IndCQCMergeTests(unittest.TestCase):
             self.TEST_DESTINATION,
         )
         expected_lf = pl.LazyFrame(
-            data=Data.expected_data, schema=Schemas.expected_schema
+            data=Data.expected_data, schema=Schemas.expected_schema, orient="row"
         )
 
         pl_testing.assert_frame_equal(sink_to_parquet_mock.call_args[0][0], expected_lf)

@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass, fields
 
 from pyspark.sql import DataFrame
@@ -18,12 +19,13 @@ class TempCols:
 
 # Dictionary defining the minimum size of location and corresponding days to forward fill.
 SIZE_BASED_FORWARD_FILL_DAYS = {
-    -float("inf"): 250,  # small location, using 250 as proxy for 8 month repetition.
+    -math.inf: 250,  # small location, using 250 as proxy for 8 month repetition.
     10: 125,  # medium location, using 125 as proxy for 4 month repetition.
     50: 65,  # large location, using 65 as proxy for 2 month repetition.
 }
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.forward_fill_latest_known_value.forward_fill_latest_known_value
 def forward_fill_latest_known_value(
     df: DataFrame, col_to_forward_fill: str
 ) -> DataFrame:
@@ -63,6 +65,7 @@ def forward_fill_latest_known_value(
     return forward_fill_df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.forward_fill_latest_known_value.add_size_based_forward_fill_days
 def add_size_based_forward_fill_days(
     df: DataFrame, location_size_col: str, size_based_forward_fill_days: dict[int, int]
 ) -> DataFrame:
@@ -89,6 +92,7 @@ def add_size_based_forward_fill_days(
     return df.withColumn(TempCols.days_to_forward_fill, expr)
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.forward_fill_latest_known_value.return_last_known_value
 def return_last_known_value(df: DataFrame, col_to_forward_fill: str) -> DataFrame:
     """
     This function gets the last known non-null value for col_to_forward_fill and the date for this value.
@@ -126,6 +130,7 @@ def return_last_known_value(df: DataFrame, col_to_forward_fill: str) -> DataFram
     return df_with_last_known
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.forward_fill_latest_known_value.forward_fill
 def forward_fill(df: DataFrame, col_to_forward_fill: str) -> DataFrame:
     """
     Populates null values in a column based on repeating the last known value for a set number of days.

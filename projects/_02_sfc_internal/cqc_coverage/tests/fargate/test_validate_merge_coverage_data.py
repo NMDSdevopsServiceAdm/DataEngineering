@@ -1,4 +1,3 @@
-from datetime import date
 import json
 import unittest
 from unittest.mock import Mock, call, patch
@@ -12,7 +11,6 @@ from projects._02_sfc_internal.unittest_data.merged_coverage_data_polars import 
 from projects._02_sfc_internal.unittest_data.merged_coverage_schema_polars import (
     ValidateMergeCoverageSchemas as Schemas,
 )
-
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
@@ -114,6 +112,7 @@ class ValidateMergeCoverageDataTests(unittest.TestCase):
         input_df = pl.DataFrame(
             data=Data.calculate_expected_size_rows,
             schema=schema,
+            orient="row",
         )
 
         result = job.calculate_expected_size_of_merged_coverage_dataset(input_df)
