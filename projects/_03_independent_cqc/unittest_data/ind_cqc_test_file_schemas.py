@@ -1061,6 +1061,7 @@ class CleanIndCQCData:
         ]
     )
 
+    # converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.AddColumnWithRepeatedValuesRemovedSchemas.repeated_value_schema
     repeated_value_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -1070,6 +1071,7 @@ class CleanIndCQCData:
         ]
     )
 
+    # converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.AddColumnWithRepeatedValuesRemovedSchemas.expected_without_repeated_values_schema
     expected_without_repeated_values_schema = StructType(
         [
             *repeated_value_schema,
@@ -1145,6 +1147,7 @@ class CalculateAscwdsFilledPostsDifferenceInRangeSchemas:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.CleanFilteringUtilsSchemas
 @dataclass
 class CleanFilteringUtilsSchemas:
     add_filtering_column_schema = StructType(
@@ -2990,6 +2993,7 @@ class CleanCtRepetition:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.ForwardFillLatestKnownValue
 @dataclass
 class ForwardFillLatestKnownValue:
     input_return_last_known_value_locations_schema = StructType(
