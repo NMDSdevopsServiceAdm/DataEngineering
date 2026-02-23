@@ -4,6 +4,7 @@ from pyspark.sql import functions as F
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils.add_filtering_rule_column
 def add_filtering_rule_column(
     df: DataFrame,
     filter_rule_col_name: str,
@@ -35,6 +36,7 @@ def add_filtering_rule_column(
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils.update_filtering_rule
 def update_filtering_rule(
     df: DataFrame,
     filter_rule_col_name: str,
@@ -90,6 +92,7 @@ def update_filtering_rule(
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils.aggregate_values_to_provider_level
 def aggregate_values_to_provider_level(df: DataFrame, col_to_sum: str) -> DataFrame:
     """
     Adds a new column with the provider level sum of a given column.
