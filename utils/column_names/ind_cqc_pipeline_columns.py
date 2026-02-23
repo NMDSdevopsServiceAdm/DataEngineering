@@ -360,10 +360,12 @@ class PrimaryServiceRateOfChangeColumns:
     """The names of the temporary columns created during the rate of change process."""
 
     abs_change: str = "absolute_period_change"
+    abs_pct: str = "absolute_period_change_percentile"
     current_period: str = "current_period"
     current_period_cleaned: str = "current_period_cleaned"
     current_period_interpolated: str = "current_period_interpolated"
     perc_change: str = "percentage_period_change"
+    perc_pct: str = "percentage_period_change_percentile"
     previous_period_cleaned: str = "previous_period_cleaned"
     previous_period_interpolated: str = "previous_period_interpolated"
     rolling_current_sum: str = "rolling_current_sum"
