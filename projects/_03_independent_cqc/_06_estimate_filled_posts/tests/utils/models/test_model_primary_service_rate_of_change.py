@@ -202,8 +202,8 @@ class CalculatePrimaryServiceRollingSumsTests(ModelPrimaryServiceRateOfChangeTes
         super().setUp()
 
         self.number_of_days = 3
-        self.current_col = job.TempCol.current_period_interpolated
-        self.previous_col = job.TempCol.previous_period_interpolated
+        self.current_col = job.TempCol.current_period_cleaned
+        self.previous_col = job.TempCol.previous_period_cleaned
 
         self.test_df = self.spark.createDataFrame(
             Data.calculate_primary_service_rolling_sums_rows,

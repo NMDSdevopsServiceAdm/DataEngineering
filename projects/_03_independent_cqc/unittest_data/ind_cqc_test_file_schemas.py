@@ -1954,8 +1954,8 @@ class ModelPrimaryServiceRateOfChange:
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.number_of_beds_banded_roc, DoubleType(), True),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
-            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_cleaned, DoubleType(), True),
+            StructField(RoC_TempCol.previous_period_cleaned, DoubleType(), True),
         ]
     )
     expected_calculate_primary_service_rolling_sums_schema = StructType(
