@@ -63,6 +63,7 @@ class MainTests(unittest.TestCase):
         )
 
         join_worker_to_estimates_dataframe_mock.assert_called_once()
+        nullify_job_role_count_when_source_not_ascwds_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
