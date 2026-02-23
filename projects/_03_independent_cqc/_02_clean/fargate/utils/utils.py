@@ -10,20 +10,16 @@ def create_column_with_repeated_values_removed(
     column_to_partition_by: str = IndCQC.location_id,
 ) -> pl.LazyFrame:
     """
-    Some data we have (such as ASCWDS) repeats data until it is changed. This
-    function creates a new column which converts repeated values to nulls, so we
-    only see newly submitted values once. This also happens as a result of
-    joining the same datafile multiple times as part of the align dates field.
+    Create a new column where consecutive repeated values are replaced with nulls
+    within each partition.
 
-    For each partition, this function iterates over the LazyFrame in date order
-    and compares the current column value to the previously submitted value. If
-    the value differs from the previously submitted value then enter that value
-    into the new column. Otherwise null the value in the new column as it is a
-    previously submitted value which has been repeated.
+    Rows are ordered by import date and each value is compared to the previous
+    value in the same partition. If it differs, it is retained in the new column.
+    If it is the same as the previous value, it is replaced with null.
 
     Args:
         lf (pl.LazyFrame): The polars LazyFrame to use
-        column_to_clean (str): The name of the column to convert
+        column_to_clean (str): The name of the column to deduplicate
         new_column_name (Optional [str]): If not provided, "_deduplicated"
             will be appended onto the original column name
         column_to_partition_by (str): A column to partition by when

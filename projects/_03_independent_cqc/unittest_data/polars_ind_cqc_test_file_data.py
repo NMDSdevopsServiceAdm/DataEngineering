@@ -1296,16 +1296,6 @@ class CleanUtilsData:
         ("1-0002", 3, date(2024, 1, 1)),
         ("1-0002", 3, date(2024, 2, 1)),
     ]
-    location_without_repeated_value_rows = [
-        ("1-0001", 1, date(2023, 2, 1)),
-        ("1-0001", 2, date(2023, 3, 1)),
-        ("1-0001", 1, date(2023, 4, 1)),
-        ("1-0001", 3, date(2023, 8, 1)),
-        ("1-0002", 3, date(2023, 2, 1)),
-        ("1-0002", 9, date(2023, 4, 1)),
-        ("1-0002", 3, date(2024, 1, 1)),
-        ("1-0002", 9, date(2024, 2, 1)),
-    ]
     expected_locations_without_repeated_value_rows = [
         ("1-0001", 1, date(2023, 2, 1), 1),
         ("1-0001", 2, date(2023, 3, 1), 2),
@@ -1315,6 +1305,16 @@ class CleanUtilsData:
         ("1-0002", 9, date(2023, 4, 1), 9),
         ("1-0002", 3, date(2024, 1, 1), 3),
         ("1-0002", 9, date(2024, 2, 1), 9),
+    ]
+    location_without_repeated_value_rows = [
+        ("1-0001", 1, date(2023, 2, 1)),
+        ("1-0001", 2, date(2023, 3, 1)),
+        ("1-0001", 1, date(2023, 4, 1)),
+        ("1-0001", 3, date(2023, 8, 1)),
+        ("1-0002", 3, date(2023, 2, 1)),
+        ("1-0002", 9, date(2023, 4, 1)),
+        ("1-0002", 3, date(2024, 1, 1)),
+        ("1-0002", 9, date(2024, 2, 1)),
     ]
     expected_locations_without_repeated_values_when_input_has_repeated_values_rows = [
         ("1-0001", 1, date(2023, 2, 1), 1),
@@ -1336,16 +1336,6 @@ class CleanUtilsData:
         ("1-0002", 3, date(2024, 1, 1)),
         ("1-0002", 3, date(2024, 2, 1)),
     ]
-    providers_without_repeated_value_rows = [
-        ("1-0001", 1, date(2023, 2, 1)),
-        ("1-0001", 2, date(2023, 3, 1)),
-        ("1-0001", 1, date(2023, 4, 1)),
-        ("1-0001", 3, date(2023, 8, 1)),
-        ("1-0002", 3, date(2023, 2, 1)),
-        ("1-0002", 9, date(2023, 4, 1)),
-        ("1-0002", 3, date(2024, 1, 1)),
-        ("1-0002", 9, date(2024, 2, 1)),
-    ]
     expected_providers_without_repeated_value_rows = [
         ("1-0001", 1, date(2023, 2, 1), 1),
         ("1-0001", 2, date(2023, 3, 1), 2),
@@ -1355,6 +1345,16 @@ class CleanUtilsData:
         ("1-0002", 9, date(2023, 4, 1), 9),
         ("1-0002", 3, date(2024, 1, 1), 3),
         ("1-0002", 9, date(2024, 2, 1), 9),
+    ]
+    providers_without_repeated_value_rows = [
+        ("1-0001", 1, date(2023, 2, 1)),
+        ("1-0001", 2, date(2023, 3, 1)),
+        ("1-0001", 1, date(2023, 4, 1)),
+        ("1-0001", 3, date(2023, 8, 1)),
+        ("1-0002", 3, date(2023, 2, 1)),
+        ("1-0002", 9, date(2023, 4, 1)),
+        ("1-0002", 3, date(2024, 1, 1)),
+        ("1-0002", 9, date(2024, 2, 1)),
     ]
     expected_providers_without_repeated_values_when_input_has_repeated_values_rows = [
         ("1-0001", 1, date(2023, 2, 1), 1),
