@@ -26,34 +26,34 @@ ESTIMATES_DESTINATION = "some/destination"
 
 
 @pytest.fixture
-def mock_df():
-    """Returns a factory for generating MagicMocks that act like DataFrames."""
-    return MagicMock(name="dataframe_mock")
+def mock_lf():
+    """Factory to create a mock that handles Polars .pipe() behavior."""
+
+    def _create_mock(name):
+        mock = MagicMock(spec=pl.LazyFrame, name=name)
+        # Configure the pipe method to actually execute the function passed to it
+        mock.pipe.side_effect = lambda func, *args, **kwargs: func(
+            mock, *args, **kwargs
+        )
+        return mock
+
+    return _create_mock
 
 
-def test_main_runs(monkeypatch, mock_df):
-    # 1. Define your "milestone" mocks
-    mock_estimates_lf = MagicMock(name="estimates_lf")
-    mock_ascwds_lf = MagicMock(name="ascwds_lf")
-    mock_joined_lf = MagicMock(name="joined_lf")
-    mock_final_lf = MagicMock(name="final_lf")  # This is the one you want at the end
+def test_main_runs(monkeypatch, mock_lf):
+    # 1. Define the mocked lazyframes at each step
+    mock_estimates_lf = mock_lf("estimates_lf")
+    mock_ascwds_lf = mock_lf("ascwds_lf")
+    mock_joined_lf = mock_lf("joined_lf")
+    mock_final_lf = mock_lf("final_lf")  # This is the one you want at the end
 
-    # 2. Configure the 'pipe' behavior
-    # This is critical: it tells the mock to actually EXECUTE the functions passed to .pipe()
-    mock_estimates_lf.pipe.side_effect = lambda func, *args, **kwargs: func(
-        mock_estimates_lf, *args, **kwargs
-    )
-    mock_joined_lf.pipe.side_effect = lambda func, *args, **kwargs: func(
-        mock_joined_lf, *args, **kwargs
-    )
-
-    # 3. Define the return values to create the chain
+    # Define the return values to create the chain
     mock_scan = MagicMock(side_effect=[mock_estimates_lf, mock_ascwds_lf])
     mock_join = MagicMock(return_value=mock_joined_lf)
     mock_nullify = MagicMock(return_value=mock_final_lf)
     mock_sink = MagicMock()
 
-    # 3. Apply Monkeypatches
+    # Apply Monkeypatches
     # This physically replaces the function inside the 'job' module
     monkeypatch.setattr(job.utils, "scan_parquet", mock_scan)
     monkeypatch.setattr(job, "join_worker_to_estimates_dataframe", mock_join)
