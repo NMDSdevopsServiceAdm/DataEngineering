@@ -1,8 +1,9 @@
 import unittest
-from unittest.mock import ANY, Mock, call, patch
+from unittest.mock import ANY, MagicMock, call
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
@@ -19,58 +20,75 @@ from utils.column_values.categorical_column_values import (
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role"
 
+ESTIMATE_SOURCE = "some/source"
+PREPARED_JOB_ROLE_COUNTS_SOURCE = "some/other/source"
+ESTIMATES_DESTINATION = "some/destination"
 
-class MainTests(unittest.TestCase):
-    ESTIMATE_SOURCE = "some/source"
-    PREPARED_JOB_ROLE_COUNTS_SOURCE = "some/other/source"
-    ESTIMATES_DESTINATION = "some/destination"
 
-    mock_estimate_data = Mock(name="estimate_data")
-    mock_prepared_job_role_counts_data = Mock(name="prepared_job_role_counts_data")
+@pytest.fixture
+def mock_df():
+    """Returns a factory for generating MagicMocks that act like DataFrames."""
+    return MagicMock(name="dataframe_mock")
 
-    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.join_worker_to_estimates_dataframe")
-    @patch(f"{PATCH_PATH}.nullify_job_role_count_when_source_not_ascwds")
-    @patch(
-        f"{PATCH_PATH}.utils.scan_parquet",
-        return_value=[mock_estimate_data, mock_prepared_job_role_counts_data],
+
+def test_main_runs(monkeypatch, mock_df):
+    # 1. Define your "milestone" mocks
+    mock_estimates_lf = MagicMock(name="estimates_lf")
+    mock_ascwds_lf = MagicMock(name="ascwds_lf")
+    mock_joined_lf = MagicMock(name="joined_lf")
+    mock_final_lf = MagicMock(name="final_lf")  # This is the one you want at the end
+
+    # 2. Configure the 'pipe' behavior
+    # This is critical: it tells the mock to actually EXECUTE the functions passed to .pipe()
+    mock_estimates_lf.pipe.side_effect = lambda func, *args, **kwargs: func(
+        mock_estimates_lf, *args, **kwargs
     )
-    def test_main_runs(
-        self,
-        scan_parquet_mock: Mock,
-        join_worker_to_estimates_dataframe_mock: Mock,
-        nullify_job_role_count_when_source_not_ascwds_mock: Mock,
-        sink_to_parquet_mock: Mock,
-    ):
-        job.main(
-            self.ESTIMATE_SOURCE,
-            self.PREPARED_JOB_ROLE_COUNTS_SOURCE,
-            self.ESTIMATES_DESTINATION,
-        )
+    mock_joined_lf.pipe.side_effect = lambda func, *args, **kwargs: func(
+        mock_joined_lf, *args, **kwargs
+    )
 
-        self.assertEqual(scan_parquet_mock.call_count, 2)
-        scan_parquet_mock.assert_has_calls(
-            [
-                call(
-                    source=self.ESTIMATE_SOURCE,
-                    selected_columns=job.estimates_columns_to_import,
-                ),
-                call(
-                    source=self.PREPARED_JOB_ROLE_COUNTS_SOURCE,
-                    selected_columns=job.ascwds_columns_to_import,
-                ),
-            ]
-        )
+    # 3. Define the return values to create the chain
+    mock_scan = MagicMock(side_effect=[mock_estimates_lf, mock_ascwds_lf])
+    mock_join = MagicMock(return_value=mock_joined_lf)
+    mock_nullify = MagicMock(return_value=mock_final_lf)
+    mock_sink = MagicMock()
 
-        join_worker_to_estimates_dataframe_mock.assert_called_once()
-        nullify_job_role_count_when_source_not_ascwds_mock.assert_called_once()
+    # 3. Apply Monkeypatches
+    # This physically replaces the function inside the 'job' module
+    monkeypatch.setattr(job.utils, "scan_parquet", mock_scan)
+    monkeypatch.setattr(job, "join_worker_to_estimates_dataframe", mock_join)
+    monkeypatch.setattr(
+        job, "nullify_job_role_count_when_source_not_ascwds", mock_nullify
+    )
+    monkeypatch.setattr(job.utils, "sink_to_parquet", mock_sink)
 
-        sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=ANY,
-            output_path=self.ESTIMATES_DESTINATION,
-            partition_cols=job.partition_keys,
-            append=False,
-        )
+    # 3. Execution
+    job.main(ESTIMATE_SOURCE, PREPARED_JOB_ROLE_COUNTS_SOURCE, ESTIMATES_DESTINATION)
+
+    # Verify scan_parquet was called for both inputs
+    assert mock_scan.call_count == 2
+    mock_scan.assert_has_calls(
+        [
+            call(
+                source=ESTIMATE_SOURCE, selected_columns=job.estimates_columns_to_import
+            ),
+            call(
+                source=PREPARED_JOB_ROLE_COUNTS_SOURCE,
+                selected_columns=job.ascwds_columns_to_import,
+            ),
+        ]
+    )
+
+    mock_join.assert_called_once_with(mock_estimates_lf, mock_ascwds_lf)
+    mock_nullify.assert_called_once_with(mock_joined_lf)
+
+    # Verify sink received the final productv
+    mock_sink.assert_called_once_with(
+        lazy_df=mock_final_lf,
+        output_path=ESTIMATES_DESTINATION,
+        partition_cols=job.partition_keys,
+        append=False,
+    )
 
 
 class JoinWorkerToEstimatesDataframeTests(unittest.TestCase):
