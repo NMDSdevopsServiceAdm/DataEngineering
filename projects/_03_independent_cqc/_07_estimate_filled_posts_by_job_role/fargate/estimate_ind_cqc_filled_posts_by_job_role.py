@@ -74,12 +74,12 @@ def main(
         selected_columns=ascwds_columns_to_import,
     )
 
-    estimated_job_role_posts_lf = join_worker_to_estimates_dataframe(
-        estimated_posts_lf, ascwds_job_role_counts_lf
-    )
-
-    estimated_job_role_posts_lf = nullify_job_role_count_when_source_not_ascwds(
-        estimated_job_role_posts_lf
+    estimated_job_role_posts_lf = (
+        estimated_posts_lf
+        # Join with ASCWDS
+        .pipe(join_worker_to_estimates_dataframe, ascwds_job_role_counts_lf)
+        # Only use ASCWDS source.
+        .pipe(nullify_job_role_count_when_source_not_ascwds)
     )
 
     utils.sink_to_parquet(
