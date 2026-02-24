@@ -72,3 +72,44 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
     def test_nullify_job_role_count_when_source_not_ascwds(self):
         returned_lf = job.nullify_job_role_count_when_source_not_ascwds(self.input_lf)
         pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
+
+
+class GetJobRolePercentShareOfTotal(unittest.TestCase):
+    def setUp(self) -> None:
+        input_rows = [
+            ("1-001", MainJobRoleLabels.care_worker, 1),
+            ("1-001", MainJobRoleLabels.registered_nurse, 2),
+            ("1-002", MainJobRoleLabels.care_worker, None),
+            ("1-002", MainJobRoleLabels.registered_nurse, None),
+            ("1-003", None, None),
+        ]
+        input_schema = pl.Schema(
+            [
+                (IndCQC.location_id, pl.String()),
+                (IndCQC.main_job_role_clean_labelled, pl.String()),
+                (IndCQC.ascwds_job_role_counts, pl.Int64()),
+            ]
+        )
+        expected_rows = [
+            ("1-001", MainJobRoleLabels.care_worker, 1, 0.333),
+            ("1-001", MainJobRoleLabels.registered_nurse, 2, 0.667),
+            ("1-002", MainJobRoleLabels.care_worker, None, None),
+            ("1-002", MainJobRoleLabels.registered_nurse, None, None),
+            ("1-003", None, None, None),
+        ]
+        expected_schema = input_schema.copy()
+        expected_schema.update({"ratios": pl.Float64()})
+
+        self.input_lf = pl.LazyFrame(input_rows, input_schema)
+        self.expected_lf = pl.LazyFrame(expected_rows, expected_schema)
+
+        return super().setUp()
+
+    def test_nullify_job_role_count_when_source_not_ascwds(self):
+        returned_lf = self.input_lf.with_columns(
+            job.get_percentage_share(
+                values=IndCQC.ascwds_job_role_counts,
+                group_over=[IndCQC.location_id],
+            ).alias("ratios"),
+        )
+        pl_testing.assert_frame_equal(returned_lf, self.expected_lf, rel_tol=1e-03)

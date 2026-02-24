@@ -1,4 +1,5 @@
 import polars as pl
+from click import group
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
@@ -66,3 +67,18 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
             ).then(IndCQC.ascwds_job_role_counts)
         )
     )
+
+
+def get_percentage_share(values: str, group_over: list[str]) -> pl.Expr:
+    """
+    For a given column, calculate the percentage share across a group.
+
+    Args:
+        values (str): The values to convert to percentage share.
+        group_over (list[str]): The column/s to group over that aggregates to the total.
+
+    Returns:
+        pl.Expr: A polars expression to define the percentage share for given values.
+    """
+
+    return pl.col(values) / pl.col(values).sum().over(group_over)

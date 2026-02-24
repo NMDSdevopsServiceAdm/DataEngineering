@@ -78,6 +78,13 @@ def main(
         estimated_job_role_posts_lf
     )
 
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        JRUtils.get_percentage_share(
+            values=IndCQC.ascwds_job_role_counts,
+            group_over=[IndCQC.location_id],
+        ).alias(IndCQC.ascwds_job_role_ratios)
+    )
+
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
         output_path=estimates_by_job_role_destination,
