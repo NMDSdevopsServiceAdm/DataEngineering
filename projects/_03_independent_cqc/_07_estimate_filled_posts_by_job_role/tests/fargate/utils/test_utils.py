@@ -82,26 +82,17 @@ class TestGetPercentageShare(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_df, expected_df)
 
     def test_over_groups(self):
-        input_df = pl.DataFrame(
-            data=[
-                ("1", 1),
-                ("1", 2),
-                ("2", 2),
-                ("2", 3),
-            ],
-            schema=["groups", "values"],
-        )
         expected_df = pl.DataFrame(
             data=[
-                ("1", 0.333),
-                ("1", 0.667),
-                ("2", 0.4),
-                ("2", 0.6),
+                ("1", 1, 0.333),
+                ("1", 2, 0.667),
+                ("2", 2, 0.4),
+                ("2", 3, 0.6),
             ],
-            schema=["groups", "ratios"],
+            schema=["groups", "values", "ratios"],
         )
-        returned_df = input_df.select(
-            "groups",
+        input_df = expected_df.select("groups", "values")
+        returned_df = input_df.with_columns(
             job.get_percentage_share("values").over("groups").alias("ratios"),
         )
         pl_testing.assert_frame_equal(returned_df, expected_df, rel_tol=1e-03)
