@@ -88,12 +88,17 @@ class GetJobRolePercentShareOfTotal(unittest.TestCase):
             IndCQC.ascwds_job_role_counts: pl.Int64,
         }
 
+        new_column = [
+            (0.333,),
+            (0.667,),
+            (None,),
+            (None,),
+            (None,),
+        ]
+        # Combine the input rows column set and the the new column set.
+        # TODO: Maybe turn this into a helper function.
         expected_rows = [
-            ("1-001", 1, 0.333),
-            ("1-001", 2, 0.667),
-            ("1-002", None, None),
-            ("1-002", None, None),
-            ("1-003", None, None, None),
+            row + new_col_value for row, new_col_value in zip(input_rows, new_column)
         ]
         expected_schema = input_schema.copy()
         expected_schema.update({"ratios": pl.Float64})
