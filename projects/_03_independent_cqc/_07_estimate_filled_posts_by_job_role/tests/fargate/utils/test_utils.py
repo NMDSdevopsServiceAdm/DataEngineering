@@ -89,11 +89,11 @@ class TestGetPercentageShare(unittest.TestCase):
                 ("2", 2, 0.4),
                 ("2", 3, 0.6),
             ],
-            schema=["groups", "values", "ratios"],
+            schema=["group", "vals", "ratios"],
         )
-        input_df = expected_df.select("groups", "values")
+        input_df = expected_df.select("group", "vals")
         returned_df = input_df.with_columns(
-            job.get_percentage_share("values").over("groups").alias("ratios"),
+            job.get_percentage_share("vals").over("group").alias("ratios"),
         )
         pl_testing.assert_frame_equal(returned_df, expected_df, rel_tol=1e-03)
 
