@@ -64,8 +64,8 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
             ]
         )
         # This function shouldn't change the schema from input.
-        self.input_lf = pl.LazyFrame(input_rows, test_schema)
-        self.expected_lf = pl.LazyFrame(expected_rows, test_schema)
+        self.input_lf = pl.LazyFrame(input_rows, test_schema, orient="row")
+        self.expected_lf = pl.LazyFrame(expected_rows, test_schema, orient="row")
 
         return super().setUp()
 
@@ -105,8 +105,8 @@ class GetJobRolePercentShareOfTotal(unittest.TestCase):
             {"ratios": pl.Float64},
         )
 
-        self.input_lf = pl.LazyFrame(input_rows, input_schema)
-        self.expected_lf = pl.LazyFrame(expected_rows, expected_schema)
+        self.input_lf = pl.LazyFrame(input_rows, input_schema, orient="row")
+        self.expected_lf = pl.LazyFrame(expected_rows, expected_schema, orient="row")
 
         return super().setUp()
 
