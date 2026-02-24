@@ -69,16 +69,6 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
     )
 
 
-def get_percentage_share(values: str, group_over: list[str]) -> pl.Expr:
-    """
-    For a given column, calculate the percentage share across a group.
-
-    Args:
-        values (str): The values to convert to percentage share.
-        group_over (list[str]): The column/s to group over that aggregates to the total.
-
-    Returns:
-        pl.Expr: A polars expression to define the percentage share for given values.
-    """
-
-    return pl.col(values) / pl.col(values).sum().over(group_over)
+def get_percentage_share(values: str) -> pl.Expr:
+    """Calculate the percentage share of a column across all values."""
+    return pl.col(values) / pl.col(values).sum()
