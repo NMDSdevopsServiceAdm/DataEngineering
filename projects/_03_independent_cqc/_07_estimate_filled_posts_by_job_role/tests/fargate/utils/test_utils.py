@@ -74,34 +74,46 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
 
 
-class GetJobRolePercentShareOfTotal(unittest.TestCase):
-    def setUp(self) -> None:
-        expected_rows = [
-            ("1-001", 1, 0.333),
-            ("1-001", 2, 0.667),
-            ("1-002", None, None),
-            ("1-002", None, None),
-            ("1-003", None, None),
-        ]
-        input_rows = [row[:-1] for row in expected_rows]
-        input_schema = {
-            IndCQC.location_id: pl.String,
-            IndCQC.ascwds_job_role_counts: pl.Int64,
-        }
-        expected_schema = input_schema.copy()
-        expected_schema.update(
-            {"ratios": pl.Float64},
+class TestGetPercentageShare(unittest.TestCase):
+    def test_over_whole_dataset(self):
+        input_df = pl.DataFrame({"vals": [1, 2, 2]})
+        expected_df = pl.DataFrame({"ratios": [0.2, 0.4, 0.4]})
+        returned_df = input_df.select(job.get_percentage_share("vals").alias("ratios"))
+        pl_testing.assert_frame_equal(returned_df, expected_df)
+
+    def test_over_groups(self):
+        input_df = pl.DataFrame(
+            data=[
+                ("1", 1),
+                ("1", 2),
+                ("2", 2),
+                ("2", 3),
+            ],
+            schema=["groups", "values"],
         )
-
-        self.input_lf = pl.LazyFrame(input_rows, input_schema, orient="row")
-        self.expected_lf = pl.LazyFrame(expected_rows, expected_schema, orient="row")
-
-        return super().setUp()
-
-    def test_get_pct_share_over_group_columns(self):
-        returned_lf = self.input_lf.with_columns(
-            job.get_percentage_share(IndCQC.ascwds_job_role_counts)
-            .over(IndCQC.location_id)
-            .alias("ratios")
+        expected_df = pl.DataFrame(
+            data=[
+                ("1", 0.333),
+                ("1", 0.667),
+                ("2", 0.4),
+                ("2", 0.6),
+            ],
+            schema=["groups", "ratios"],
         )
-        pl_testing.assert_frame_equal(returned_lf, self.expected_lf, rel_tol=1e-03)
+        returned_df = input_df.select(
+            "groups",
+            job.get_percentage_share("values").over("groups").alias("ratios"),
+        )
+        pl_testing.assert_frame_equal(returned_df, expected_df, rel_tol=1e-03)
+
+    def test_when_all_values_are_null(self):
+        input_df = pl.DataFrame({"vals": [None, None, None]})
+        expected_df = pl.DataFrame({"ratios": [None, None, None]}).cast(pl.Float64)
+        returned_df = input_df.select(job.get_percentage_share("vals").alias("ratios"))
+        pl_testing.assert_frame_equal(returned_df, expected_df)
+
+    def test_when_some_values_are_null(self):
+        input_df = pl.DataFrame({"vals": [None, 3, None, 2]})
+        expected_df = pl.DataFrame({"ratios": [None, 0.6, None, 0.4]}).cast(pl.Float64)
+        returned_df = input_df.select(job.get_percentage_share("vals").alias("ratios"))
+        pl_testing.assert_frame_equal(returned_df, expected_df)
