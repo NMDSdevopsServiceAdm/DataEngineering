@@ -101,7 +101,9 @@ class GetJobRolePercentShareOfTotal(unittest.TestCase):
             row + new_col_value for row, new_col_value in zip(input_rows, new_column)
         ]
         expected_schema = input_schema.copy()
-        expected_schema.update({"ratios": pl.Float64})
+        expected_schema.update(
+            {"ratios": pl.Float64},
+        )
 
         self.input_lf = pl.LazyFrame(input_rows, input_schema)
         self.expected_lf = pl.LazyFrame(expected_rows, expected_schema)
