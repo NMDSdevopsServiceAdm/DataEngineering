@@ -33,7 +33,7 @@ class NullFilledPostsUsingInvalidMissingDataCodeTests(unittest.TestCase):
             orient="row",
         )
 
-    def test_null_filled_posts_where_locations_use_invalid_missing_data_code_returns_correct_values(
+    def test_function_returns_expected_values(
         self,
     ):
         pl_testing.assert_frame_equal(

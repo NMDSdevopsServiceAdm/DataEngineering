@@ -93,7 +93,7 @@ class MainTests(unittest.TestCase):
 
 
 class IdentifyPotentialGroupedProviderTests(unittest.TestCase):
-    def test_identify_potential_grouped_providers_returns_correct_rows(self):
+    def test_function_returns_expected_values(self):
         test_lf = pl.LazyFrame(
             Data.identify_potential_grouped_providers_rows,
             Schemas.identify_potential_grouped_providers_schema,
@@ -109,7 +109,7 @@ class IdentifyPotentialGroupedProviderTests(unittest.TestCase):
 
 
 class NullCareHomeGroupedProvidersTests(unittest.TestCase):
-    def test_null_care_home_grouped_providers_returns_null_when_criteria_met(self):
+    def test_function_returns_null_when_criteria_met(self):
         test_lf = pl.LazyFrame(
             Data.null_care_home_grouped_providers_when_meets_criteria_rows,
             Schemas.null_care_home_grouped_providers_schema,
@@ -124,7 +124,7 @@ class NullCareHomeGroupedProvidersTests(unittest.TestCase):
         )
         pl_testing.assert_frame_equal(expected_lf, returned_lf.sort(IndCQC.location_id))
 
-    def test_null_care_home_grouped_providers_returns_original_data_when_criteria_not_met(
+    def test_function_returns_original_data_when_criteria_not_met(
         self,
     ):
         test_lf = pl.LazyFrame(
@@ -139,7 +139,7 @@ class NullCareHomeGroupedProvidersTests(unittest.TestCase):
 
 
 class NullNonResidentialGroupedProvidersTests(unittest.TestCase):
-    def test_null_non_residential_grouped_providers_returns_null_when_criteria_met(
+    def test_function_returns_null_when_criteria_met(
         self,
     ):
         test_lf = pl.LazyFrame(
@@ -159,7 +159,7 @@ class NullNonResidentialGroupedProvidersTests(unittest.TestCase):
             returned_lf.sort(IndCQC.location_id),
         )
 
-    def test_null_non_residential_grouped_providers_returns_original_data_when_criteria_not_met(
+    def test_function_returns_original_data_when_criteria_not_met(
         self,
     ):
         test_lf = pl.LazyFrame(

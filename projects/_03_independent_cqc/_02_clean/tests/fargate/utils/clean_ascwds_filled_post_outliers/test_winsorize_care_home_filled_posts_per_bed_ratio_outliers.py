@@ -29,7 +29,7 @@ class WinsorizeCHFilledPostsPerBedRatioOutliersTests(unittest.TestCase):
             )
         )
 
-    def test_returned_filtered_df_has_same_number_of_rows_as_initial_unfiltered_df(
+    def test_returned_filtered_lf_has_same_number_of_rows_as_initial_unfiltered_lf(
         self,
     ):
         self.assertEqual(
@@ -37,7 +37,7 @@ class WinsorizeCHFilledPostsPerBedRatioOutliersTests(unittest.TestCase):
             self.returned_filtered_lf.collect().height,
         )
 
-    def test_returned_filtered_df_has_same_schema_as_initial_unfiltered_df(
+    def test_returned_filtered_lf_has_same_schema_as_initial_unfiltered_lf(
         self,
     ):
         self.assertEqual(
@@ -45,7 +45,7 @@ class WinsorizeCHFilledPostsPerBedRatioOutliersTests(unittest.TestCase):
             self.returned_filtered_lf.collect_schema(),
         )
 
-    def test_returned_df_matches_expected_df(self):
+    def test_function_returns_expected_values(self):
         expected_filtered_lf = pl.LazyFrame(
             Data.expected_care_home_jobs_per_bed_ratio_filtered_rows,
             Schemas.ind_cqc_schema,
@@ -91,17 +91,17 @@ class FilterToCareHomesWithKnownBedsAndFilledPostsTests(unittest.TestCase):
             orient="row",
         )
 
-    def test_filtered_lazyframe_has_expected_number_of_rows(self):
+    def test_filtered_lf_has_expected_number_of_rows(self):
         self.assertEqual(
             self.returned_lf.collect().height, self.expected_lf.collect().height
         )
 
-    def test_filtered_lazyframe_matches_expected_dataframe(self):
+    def test_filtered_lf_matches_expected_dataframe(self):
         pl_testing.assert_frame_equal(self.returned_lf, self.expected_lf)
 
 
 class SelectDataNotInSubsetTests(unittest.TestCase):
-    def test_select_data_not_in_subset_lf(self):
+    def test_function_returns_expected_values(self):
         lf = pl.LazyFrame(
             data=Data.select_data_not_in_subset_rows,
             schema=Schemas.select_data_not_in_subset_schema,
@@ -131,7 +131,7 @@ class SelectDataNotInSubsetTests(unittest.TestCase):
 
 
 class CalculateAverageFilledPostsPerBandedBedCount(unittest.TestCase):
-    def test_calculate_average_filled_posts_per_banded_bed_count(self):
+    def test_function_returns_expected_values(self):
         test_lf = pl.LazyFrame(
             data=Data.calculate_average_filled_posts_rows,
             schema=Schemas.calculate_average_filled_posts_schema,
@@ -149,7 +149,7 @@ class CalculateAverageFilledPostsPerBandedBedCount(unittest.TestCase):
 
 
 class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(unittest.TestCase):
-    def test_calculate_expected_filled_posts_based_on_number_of_beds(self):
+    def test_function_returns_expected_values(self):
         test_base_lf = pl.LazyFrame(
             data=Data.base_filled_posts_rows,
             schema=Schemas.calculate_expected_filled_posts_base_schema,
@@ -188,7 +188,7 @@ class CalculateFilledPostStandardisedResidualsTests(unittest.TestCase):
             orient="row",
         )
 
-    def test_calculate_filled_post_standardised_residual_matches_expected_dataframe(
+    def test_function_returns_expected_values(
         self,
     ):
         pl_testing.assert_frame_equal(self.returned_lf, self.expected_lf)
@@ -213,7 +213,7 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(unittest.TestCase):
             orient="row",
         )
 
-    def test_calculate_standardised_residual_percentile_cutoffs_returns_expected_percentile_values(
+    def test_function_returns_expected_percentile_values(
         self,
     ):
         pl_testing.assert_frame_equal(self.returned_lf, self.expected_lf)
@@ -230,7 +230,9 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(unittest.TestCase):
             in str(context.exception)
         )
 
-    def test_raise_error_if_percentage_of_data_to_filter_out_greater_than_one(self):
+    def test_function_raises_error_if_percentage_of_data_to_filter_out_greater_than_one(
+        self,
+    ):
         with self.assertRaises(ValueError) as context:
             job.calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
                 self.test_lf,
@@ -342,7 +344,7 @@ class CombineDataframeTests(unittest.TestCase):
             self.care_home_lf, self.non_care_home_lf
         )
 
-    def test_combine_dataframes_keeps_all_rows_of_data(self):
+    def test_combineed_data_keeps_all_rows_of_data(self):
         self.assertEqual(
             self.returned_combined_lf.collect().height,
             (
@@ -351,7 +353,7 @@ class CombineDataframeTests(unittest.TestCase):
             ),
         )
 
-    def test_returned_combined_dataframe_matches_expected_df(self):
+    def test_function_returns_expected_values(self):
         expected_lf = pl.LazyFrame(
             Data.expected_combined_dataframes_rows,
             Schemas.expected_combined_dataframes_schema,
