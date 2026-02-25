@@ -85,6 +85,8 @@ def main(
         .over(IndCQC.location_id)
         .alias(IndCQC.ascwds_job_role_ratios)
     )
+    # Do linear interpolation, then forward fill and backward fill to get a full
+    # time series for each job role and location.
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         pl.col(IndCQC.ascwds_job_role_ratios)
         .interpolate()
@@ -95,7 +97,7 @@ def main(
             IndCQC.main_job_role_clean_labelled,
             order_by=IndCQC.unix_time,
         )
-        .alias(IndCQC.ascwds_job_role_ratios_interpolated)
+        .alias(IndCQC.imputed_ascwds_job_role_ratios)
     )
 
     utils.sink_to_parquet(
