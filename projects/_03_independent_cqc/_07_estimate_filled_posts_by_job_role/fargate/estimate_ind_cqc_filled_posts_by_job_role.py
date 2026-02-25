@@ -93,8 +93,7 @@ def main(
         .forward_fill()
         .backward_fill()
         .over(
-            IndCQC.location_id,
-            IndCQC.main_job_role_clean_labelled,
+            [IndCQC.location_id, IndCQC.main_job_role_clean_labelled],
             order_by=IndCQC.unix_time,
         )
         .alias(IndCQC.imputed_ascwds_job_role_ratios)
