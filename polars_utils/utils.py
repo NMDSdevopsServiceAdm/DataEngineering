@@ -3,7 +3,6 @@ import re
 import uuid
 from datetime import date
 from pathlib import Path
-from typing import Optional, Union, List
 
 import boto3
 import polars as pl
