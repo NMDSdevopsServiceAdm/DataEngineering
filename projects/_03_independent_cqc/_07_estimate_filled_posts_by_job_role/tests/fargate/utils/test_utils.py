@@ -112,24 +112,6 @@ class TestGetPercentageShare(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_df, expected_df)
 
 
-def get_test_dfs(
-    expected_data: list[tuple[Any]],
-) -> tuple[pl.DataFrame, pl.DataFrame]:
-    """Construct input and expected DataFrames or interpolate and extrapolate tests."""
-    # Remove the output column from the expected data to get input data.
-    input_data = [row[:-1] for row in expected_data]
-    input_schema = [
-        IndCQC.location_id,
-        IndCQC.unix_time,
-        IndCQC.main_job_role_clean_labelled,
-        IndCQC.ascwds_job_role_ratios,
-    ]
-    expected_schema = input_schema + ["output"]
-    input_df = pl.DataFrame(input_data, schema=input_schema, orient="row")
-    expected_df = pl.DataFrame(expected_data, schema=expected_schema, orient="row")
-    return input_df, expected_df
-
-
 class TestImputeFullTimeSeries:
     @pytest.mark.parametrize(
         "input, expected",
