@@ -20,17 +20,17 @@ class NullGroupedProvidersConfig:
     Configuration values for defining grouped providers
 
     Attributes:
-        MINIMUM_SIZE_OF_CARE_HOME_LOCATION_TO_IDENTIFY (float): Minimum number
+        MINIMUM_SIZE_OF_CARE_HOME_LOCATION_TO_IDENTIFY (pl.Float64): Minimum number
             of staff at a care home to allocate as a grouped provider.
-        MINIMUM_SIZE_OF_NON_RES_LOCATION_TO_IDENTIFY (float): Minimum number of
+        MINIMUM_SIZE_OF_NON_RES_LOCATION_TO_IDENTIFY (pl.Float64): Minimum number of
             staff at a non-res location to allocate as a grouped provider.
-        POSTS_PER_BED_AT_LOCATION_MULTIPLIER (int): Multiplier for the number of
+        POSTS_PER_BED_AT_LOCATION_MULTIPLIER (pl.Int64): Multiplier for the number of
             beds at the individual location.
-        POSTS_PER_BED_AT_PROVIDER_MULTIPLIER (int): Multiplier for the number of
+        POSTS_PER_BED_AT_PROVIDER_MULTIPLIER (pl.Int64): Multiplier for the number of
             beds at the whole provider.
-        POSTS_PER_PIR_LOCATION_THRESHOLD (float): Threshold for the ratio of
+        POSTS_PER_PIR_LOCATION_THRESHOLD (pl.Float64): Threshold for the ratio of
             ASCWDS filled posts to the PIR average for that location.
-        POSTS_PER_PIR_PROVIDER_THRESHOLD (float): Threshold for the ratio of
+        POSTS_PER_PIR_PROVIDER_THRESHOLD (pl.Float64): Threshold for the ratio of
             ASCWDS filled posts to the PIR total at the provider.
     """
 
@@ -94,7 +94,7 @@ def identify_potential_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
             ASCWDS data.
 
     Returns:
-        DataFrame: A polars LazyFrame with the new Boolean variable
+        pl.LazyFrame: A polars LazyFrame with the new Boolean variable
             potential_grouped_provider.
     """
     lf = lf.with_columns(

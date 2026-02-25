@@ -145,4 +145,6 @@ class CalculateAverageFilledPostsPerBandedBedCount(
             schema=Schemas.expected_calculate_average_filled_posts_schema,
             orient="row",
         )
-        pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.number_of_beds_banded), expected_lf)
+        pl_testing.assert_frame_equal(
+            returned_lf.sort(IndCQC.number_of_beds_banded), expected_lf
+        )
