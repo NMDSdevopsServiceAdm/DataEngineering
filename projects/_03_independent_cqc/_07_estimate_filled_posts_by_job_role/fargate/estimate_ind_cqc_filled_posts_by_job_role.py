@@ -1,3 +1,5 @@
+import polars as pl
+
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as JRUtils
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -82,6 +84,16 @@ def main(
         JRUtils.get_percentage_share(IndCQC.ascwds_job_role_counts)
         .over(IndCQC.location_id)
         .alias(IndCQC.ascwds_job_role_ratios)
+    )
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        pl.col(IndCQC.ascwds_job_role_ratios)
+        .interpolate()
+        .over(
+            IndCQC.location_id,
+            IndCQC.main_job_role_clean_labelled,
+            order_by=IndCQC.unix_time,
+        )
+        .alias(IndCQC.ascwds_job_role_ratios_interpolated)
     )
 
     utils.sink_to_parquet(
