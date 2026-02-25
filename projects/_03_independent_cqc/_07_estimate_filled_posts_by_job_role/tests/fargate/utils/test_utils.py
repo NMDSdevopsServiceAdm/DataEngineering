@@ -194,11 +194,8 @@ class TestExtrapolate:
             ("1-001", 1000000600, MainJobRoleLabels.registered_nurse, None, 0.3),
             ("1-002", 1000000200, MainJobRoleLabels.care_worker, 0.1, 0.1),
             ("1-002", 1000000200, MainJobRoleLabels.registered_nurse, 0.1, 0.1),
-            # This will fill forward in this case, but seeing as we are intending to
-            # do this step after interpolation this will have already have filled
-            # the in between values.
-            ("1-002", 1000000300, MainJobRoleLabels.care_worker, None, 0.1),
-            ("1-002", 1000000300, MainJobRoleLabels.registered_nurse, None, 0.1),
+            ("1-002", 1000000300, MainJobRoleLabels.care_worker, None, 0.15),
+            ("1-002", 1000000300, MainJobRoleLabels.registered_nurse, None, 0.15),
             ("1-002", 1000000400, MainJobRoleLabels.care_worker, 0.2, 0.2),
             ("1-002", 1000000400, MainJobRoleLabels.registered_nurse, 0.2, 0.2),
             ("1-003", 1000000200, MainJobRoleLabels.care_worker, None, None),
@@ -224,7 +221,7 @@ class TestExtrapolate:
         # Do test.
         returned_df = input_df.with_columns(
             pl.col(IndCQC.ascwds_job_role_ratios)
-            # .interpolate()
+            .interpolate()
             .forward_fill()
             .backward_fill()
             .over(
