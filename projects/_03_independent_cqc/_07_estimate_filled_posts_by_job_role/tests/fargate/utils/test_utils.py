@@ -130,98 +130,78 @@ def get_test_dfs(
     return input_df, expected_df
 
 
-class TestInterpolate:
-    @pytest.mark.parametrize(
-        "expected_data",
-        [
-            [
-                ("1000", 1000, MainJobRoleLabels.care_worker, 1.0, 1.0),
-                ("1000", 1000, MainJobRoleLabels.registered_nurse, 1.0, 1.0),
-                ("1000", 1000, MainJobRoleLabels.senior_care_worker, 1.0, 1.0),
-                ("1000", 1000, MainJobRoleLabels.senior_management, 1.0, 1.0),
-                ("1000", 1001, MainJobRoleLabels.care_worker, None, 2.0),
-                ("1000", 1001, MainJobRoleLabels.registered_nurse, None, 2.0),
-                ("1000", 1001, MainJobRoleLabels.senior_care_worker, None, 2.0),
-                ("1000", 1001, MainJobRoleLabels.senior_management, None, 2.0),
-                ("1000", 1002, MainJobRoleLabels.care_worker, 3.0, 3.0),
-                ("1000", 1002, MainJobRoleLabels.registered_nurse, 3.0, 3.0),
-                ("1000", 1002, MainJobRoleLabels.senior_care_worker, 3.0, 3.0),
-                ("1000", 1002, MainJobRoleLabels.senior_management, 3.0, 3.0),
-            ],
-            [
-                ("1000", 1000, MainJobRoleLabels.care_worker, None, None),
-                ("1000", 1000, MainJobRoleLabels.registered_nurse, None, None),
-                ("1000", 1001, MainJobRoleLabels.care_worker, 2.0, 2.0),
-                ("1000", 1001, MainJobRoleLabels.registered_nurse, 4.0, 4.0),
-                ("1000", 1002, MainJobRoleLabels.care_worker, None, 1.0),
-                ("1000", 1002, MainJobRoleLabels.registered_nurse, None, 3.0),
-                ("1000", 1003, MainJobRoleLabels.care_worker, 0.0, 0.0),
-                ("1000", 1003, MainJobRoleLabels.registered_nurse, 2.0, 2.0),
-                ("1000", 1004, MainJobRoleLabels.care_worker, None, None),
-                ("1000", 1004, MainJobRoleLabels.registered_nurse, None, None),
-            ],
-        ],
-        ids=["interpolate_in_between", "nones_at_start_and_end"],
-    )
-    def test_linear_interpolation(self, expected_data):
-        # Setup.
-        input_df, expected_df = get_test_dfs(expected_data)
-        # Do test.
-        returned_df = input_df.with_columns(
-            pl.col(IndCQC.ascwds_job_role_ratios)
-            .interpolate()
-            .over(
-                IndCQC.location_id,
-                IndCQC.main_job_role_clean_labelled,
-                order_by=IndCQC.unix_time,
-            )
-            .alias("output")
-        )
+class TestImputeFullTimeSeries:
+    def test_does_linear_interpolation(self):
+        input_df = pl.DataFrame({"vals": [1, None, 3]})
+        expected_df = pl.DataFrame({"vals": [1, 2, 3]}).cast(pl.Float64)
+        returned_df = input_df.select(job.impute_full_time_series("vals"))
         pl_testing.assert_frame_equal(returned_df, expected_df)
 
-
-class TestExtrapolate:
-    """Extrapolating in our case is filling forwards/backwards within groups ordered by time."""
-
-    def test_fill_forwards_and_backwards(self):
-        expected_data = [
-            ("1-001", 1000000200, MainJobRoleLabels.care_worker, None, 0.1),
-            ("1-001", 1000000200, MainJobRoleLabels.registered_nurse, None, 0.1),
-            ("1-001", 1000000300, MainJobRoleLabels.care_worker, 0.1, 0.1),
-            ("1-001", 1000000300, MainJobRoleLabels.registered_nurse, 0.1, 0.1),
-            ("1-001", 1000000400, MainJobRoleLabels.care_worker, 0.2, 0.2),
-            ("1-001", 1000000400, MainJobRoleLabels.registered_nurse, 0.2, 0.2),
-            ("1-001", 1000000500, MainJobRoleLabels.care_worker, 0.3, 0.3),
-            ("1-001", 1000000500, MainJobRoleLabels.registered_nurse, 0.3, 0.3),
-            ("1-001", 1000000600, MainJobRoleLabels.care_worker, None, 0.3),
-            ("1-001", 1000000600, MainJobRoleLabels.registered_nurse, None, 0.3),
-            ("1-002", 1000000200, MainJobRoleLabels.care_worker, 0.1, 0.1),
-            ("1-002", 1000000200, MainJobRoleLabels.registered_nurse, 0.1, 0.1),
-            ("1-002", 1000000300, MainJobRoleLabels.care_worker, None, 0.15),
-            ("1-002", 1000000300, MainJobRoleLabels.registered_nurse, None, 0.15),
-            ("1-002", 1000000400, MainJobRoleLabels.care_worker, 0.2, 0.2),
-            ("1-002", 1000000400, MainJobRoleLabels.registered_nurse, 0.2, 0.2),
-            ("1-003", 1000000200, MainJobRoleLabels.care_worker, None, None),
-            ("1-003", 1000000200, MainJobRoleLabels.registered_nurse, None, None),
-            ("1-003", 1000000300, MainJobRoleLabels.care_worker, None, None),
-            ("1-003", 1000000300, MainJobRoleLabels.registered_nurse, None, None),
-            ("1-003", 1000000400, MainJobRoleLabels.care_worker, None, None),
-            ("1-003", 1000000400, MainJobRoleLabels.registered_nurse, None, None),
-            ("1-003", 1000000500, MainJobRoleLabels.care_worker, None, None),
-            ("1-003", 1000000500, MainJobRoleLabels.registered_nurse, None, None),
-        ]
-        input_df, expected_df = get_test_dfs(expected_data)
-        # Do test.
-        returned_df = input_df.with_columns(
-            pl.col(IndCQC.ascwds_job_role_ratios)
-            .interpolate()
-            .forward_fill()
-            .backward_fill()
-            .over(
-                IndCQC.location_id,
-                IndCQC.main_job_role_clean_labelled,
-                order_by=IndCQC.unix_time,
-            )
-            .alias("output")
-        )
+    def test_backfills(self):
+        input_df = pl.DataFrame({"vals": [None, 1, 3]})
+        expected_df = pl.DataFrame({"vals": [1, 1, 3]}).cast(pl.Float64)
+        returned_df = input_df.select(job.impute_full_time_series("vals"))
         pl_testing.assert_frame_equal(returned_df, expected_df)
+
+    def test_forward_fills(self):
+        input_df = pl.DataFrame({"vals": [1, 3, None]})
+        expected_df = pl.DataFrame({"vals": [1, 3, 3]}).cast(pl.Float64)
+        returned_df = input_df.select(job.impute_full_time_series("vals"))
+        pl_testing.assert_frame_equal(returned_df, expected_df)
+
+    def test_does_all_three_together_for_full_time_series(self):
+        """Linear interpolates, then forward fills, then backfills."""
+        input_df = pl.DataFrame({"vals": [None, 1, None, 3, None]})
+        expected_df = pl.DataFrame({"vals": [1, 1, 2, 3, 3]}).cast(pl.Float64)
+        returned_df = input_df.select(job.impute_full_time_series("vals"))
+        pl_testing.assert_frame_equal(returned_df, expected_df)
+
+    def test_all_nones_returns_nones(self):
+        """Test for the all None case in a set of values."""
+        input_df = pl.DataFrame({"vals": [None, None, None, None, None]}).cast(
+            pl.Float64
+        )
+        expected_df = input_df
+        returned_df = input_df.select(job.impute_full_time_series("vals"))
+        pl_testing.assert_frame_equal(returned_df, expected_df)
+
+    def test_imputes_time_series_over_groups_with_unordered_time_col(self):
+        """Test that it works with `.over(groups)` ordering by a time column."""
+        input_df = pl.DataFrame(
+            schema=["group", "time_col", "vals"],
+            data=[
+                # Scrambled the order of time_col to test order by.
+                ("a", 4, 0.3),
+                ("a", 1, None),
+                ("a", 3, None),
+                ("a", 2, 0.1),
+                ("a", 5, None),
+                ("b", 2, None),
+                ("b", 3, 0.2),
+                ("b", 1, 0.1),
+            ],
+            orient="row",
+        )
+        expected_df = pl.DataFrame(
+            schema=["group", "time_col", "vals"],
+            data=[
+                ("a", 1, 0.1),
+                ("a", 2, 0.1),
+                ("a", 3, 0.2),
+                ("a", 4, 0.3),
+                ("a", 5, 0.3),
+                ("b", 1, 0.1),
+                ("b", 2, 0.15),
+                ("b", 3, 0.2),
+            ],
+            orient="row",
+        )
+        returned_df = input_df.with_columns(
+            # Overwriting the original column with output
+            job.impute_full_time_series("vals").over("group", order_by="time_col")
+        )
+        # `.over()` will return rows in original order, so need to sort to match expected.
+        pl_testing.assert_frame_equal(
+            returned_df.sort("group", "time_col"),
+            expected_df,
+        )

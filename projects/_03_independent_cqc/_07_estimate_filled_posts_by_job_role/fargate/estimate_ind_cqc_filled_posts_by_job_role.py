@@ -88,10 +88,7 @@ def main(
     # Do linear interpolation, then forward fill and backward fill to get a full
     # time series for each job role and location.
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        pl.col(IndCQC.ascwds_job_role_ratios)
-        .interpolate()
-        .forward_fill()
-        .backward_fill()
+        JRUtils.impute_full_time_series(IndCQC.ascwds_job_role_ratios)
         .over(
             [IndCQC.location_id, IndCQC.main_job_role_clean_labelled],
             order_by=IndCQC.unix_time,

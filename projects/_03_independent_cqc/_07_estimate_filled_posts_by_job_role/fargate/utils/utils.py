@@ -71,3 +71,8 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
 def get_percentage_share(values: str) -> pl.Expr:
     """Calculate the percentage share of a column across all values."""
     return pl.col(values) / pl.col(values).sum()
+
+
+def impute_full_time_series(values: str) -> pl.Expr:
+    """Uses linear interpolation, followed by back and forward fill to impute nulls."""
+    return pl.col(values).interpolate().forward_fill().backward_fill()
