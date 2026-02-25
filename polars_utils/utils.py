@@ -183,10 +183,10 @@ def sink_to_parquet(
                     [pl.col(c).cast(pl.Utf8).str.zfill(2) for c in pad_cols]
                 )
 
-            path = pl.PartitionByKey(
+            path = pl.PartitionBy(
                 base_path=f"{output_path}",
                 include_key=False,
-                by=partition_cols,
+                key=partition_cols,
             )
             lazy_df.sink_parquet(path=path, mkdir=True, engine="streaming")
             print(
