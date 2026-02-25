@@ -156,6 +156,7 @@ class TestInterpolate:
         expected_schema.update(
             {IndCQC.ascwds_job_role_ratios_interpolated: pl.Float64},
         )
+        # Remove the output column from the expected data to get input data.
         input_data = [row[:-1] for row in expected_data]
         input_df = pl.DataFrame(input_data, schema=input_schema, orient="row")
         expected_df = pl.DataFrame(expected_data, schema=expected_schema, orient="row")
