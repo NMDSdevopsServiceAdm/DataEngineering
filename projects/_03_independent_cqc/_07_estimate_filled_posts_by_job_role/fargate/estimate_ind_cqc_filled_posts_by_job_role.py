@@ -88,6 +88,8 @@ def main(
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         pl.col(IndCQC.ascwds_job_role_ratios)
         .interpolate()
+        .forward_fill()
+        .backward_fill()
         .over(
             IndCQC.location_id,
             IndCQC.main_job_role_clean_labelled,
