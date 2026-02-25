@@ -1764,6 +1764,21 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
         (1.0, 1.123456789),
     ]
 
+    base_filled_posts_rows = [
+        ("1", 7, 0.0),
+        ("2", 75, 1.0),
+    ]
+
+    join_filled_posts_rows = [
+        (0.0, 1.11111),
+        (1.0, 1.0101),
+    ]
+
+    expected_filled_posts_rows = [
+        ("1", 7, 0.0, 1.11111, 7.77777),
+        ("2", 75, 1.0, 1.0101, 75.7575),
+    ]
+
     calculate_standardised_residuals_rows = [
         ("1", 55.5, 64.0),
         ("2", 25.0, 16.0),
@@ -1785,11 +1800,11 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
     ]
 
     expected_standardised_residual_percentile_cutoff_with_percentiles_rows = [
-        ("1", PrimaryServiceType.care_home_with_nursing, 0.54321, -3.454, 6.933),
-        ("2", PrimaryServiceType.care_home_with_nursing, -3.2545, -3.454, 6.933),
-        ("3", PrimaryServiceType.care_home_with_nursing, -4.2542, -3.454, 6.933),
-        ("4", PrimaryServiceType.care_home_with_nursing, 2.41654, -3.454, 6.933),
-        ("5", PrimaryServiceType.care_home_with_nursing, 25.0, -3.454, 6.933),
+        ("1", PrimaryServiceType.care_home_with_nursing, 0.54321, -3.45444, 6.933232),
+        ("2", PrimaryServiceType.care_home_with_nursing, -3.2545, -3.45444, 6.933232),
+        ("3", PrimaryServiceType.care_home_with_nursing, -4.2542, -3.45444, 6.933232),
+        ("4", PrimaryServiceType.care_home_with_nursing, 2.41654, -3.45444, 6.933232),
+        ("5", PrimaryServiceType.care_home_with_nursing, 25.0, -3.45444, 6.933232),
         ("6", PrimaryServiceType.care_home_only, 1.0, 1.4, 2.6),
         ("7", PrimaryServiceType.care_home_only, 2.0, 1.4, 2.6),
         ("8", PrimaryServiceType.care_home_only, 3.0, 1.4, 2.6),

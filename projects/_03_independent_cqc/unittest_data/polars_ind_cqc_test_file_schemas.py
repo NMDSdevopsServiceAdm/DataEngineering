@@ -902,6 +902,31 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
         ]
     )
 
+    calculate_expected_filled_posts_base_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.number_of_beds_banded, pl.Float64()),
+        ]
+    )
+
+    calculate_expected_filled_posts_join_schema = pl.Schema(
+        [
+            (IndCQC.number_of_beds_banded, pl.Float64()),
+            (IndCQC.avg_filled_posts_per_bed_ratio, pl.Float64()),
+        ]
+    )
+
+    expected_filled_posts_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.number_of_beds_banded, pl.Float64()),
+            (IndCQC.avg_filled_posts_per_bed_ratio, pl.Float64()),
+            (IndCQC.expected_filled_posts, pl.Float64()),
+        ]
+    )
+
     calculate_standardised_residuals_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
