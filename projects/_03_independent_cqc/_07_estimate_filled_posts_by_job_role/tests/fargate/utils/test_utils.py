@@ -2,6 +2,7 @@ import unittest
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
@@ -110,80 +111,73 @@ class TestGetPercentageShare(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_df, expected_df)
 
 
-class TestInterpolate(unittest.TestCase):
-    def setUp(self):
-        self.input_schema = {
+class TestInterpolate:
+    @pytest.mark.parametrize(
+        "expected_data",
+        [
+            [
+                ("1000", 1000, MainJobRoleLabels.care_worker, 1.0, 1.0),
+                ("1000", 1000, MainJobRoleLabels.registered_nurse, 1.0, 1.0),
+                ("1000", 1000, MainJobRoleLabels.senior_care_worker, 1.0, 1.0),
+                ("1000", 1000, MainJobRoleLabels.senior_management, 1.0, 1.0),
+                ("1000", 1001, MainJobRoleLabels.care_worker, None, 2.0),
+                ("1000", 1001, MainJobRoleLabels.registered_nurse, None, 2.0),
+                ("1000", 1001, MainJobRoleLabels.senior_care_worker, None, 2.0),
+                ("1000", 1001, MainJobRoleLabels.senior_management, None, 2.0),
+                ("1000", 1002, MainJobRoleLabels.care_worker, 3.0, 3.0),
+                ("1000", 1002, MainJobRoleLabels.registered_nurse, 3.0, 3.0),
+                ("1000", 1002, MainJobRoleLabels.senior_care_worker, 3.0, 3.0),
+                ("1000", 1002, MainJobRoleLabels.senior_management, 3.0, 3.0),
+            ],
+            [
+                ("1000", 1000, MainJobRoleLabels.care_worker, None, None),
+                ("1000", 1000, MainJobRoleLabels.registered_nurse, None, None),
+                ("1000", 1000, MainJobRoleLabels.senior_care_worker, None, None),
+                ("1000", 1000, MainJobRoleLabels.senior_management, None, None),
+                ("1000", 1001, MainJobRoleLabels.care_worker, 2.0, 2.0),
+                ("1000", 1001, MainJobRoleLabels.registered_nurse, 4.0, 4.0),
+                ("1000", 1001, MainJobRoleLabels.senior_care_worker, 6.0, 6.0),
+                ("1000", 1001, MainJobRoleLabels.senior_management, 8.0, 8.0),
+                ("1000", 1002, MainJobRoleLabels.care_worker, None, 1.0),
+                ("1000", 1002, MainJobRoleLabels.registered_nurse, None, 3.0),
+                ("1000", 1002, MainJobRoleLabels.senior_care_worker, None, 5.0),
+                ("1000", 1002, MainJobRoleLabels.senior_management, None, 6.5),
+                ("1000", 1003, MainJobRoleLabels.care_worker, 0.0, 0.0),
+                ("1000", 1003, MainJobRoleLabels.registered_nurse, 2.0, 2.0),
+                ("1000", 1003, MainJobRoleLabels.senior_care_worker, 4.0, 4.0),
+                ("1000", 1003, MainJobRoleLabels.senior_management, 5.0, 5.0),
+                ("1000", 1004, MainJobRoleLabels.care_worker, 1.0, 1.0),
+                ("1000", 1004, MainJobRoleLabels.registered_nurse, 1.0, 1.0),
+                ("1000", 1004, MainJobRoleLabels.senior_care_worker, 1.0, 1.0),
+                ("1000", 1004, MainJobRoleLabels.senior_management, 1.0, 1.0),
+                ("1000", 1005, MainJobRoleLabels.care_worker, 5.0, 5.0),
+                ("1000", 1005, MainJobRoleLabels.registered_nurse, 4.0, 4.0),
+                ("1000", 1005, MainJobRoleLabels.senior_care_worker, 3.0, 3.0),
+                ("1000", 1005, MainJobRoleLabels.senior_management, 2.0, 2.0),
+                ("1000", 1006, MainJobRoleLabels.care_worker, None, None),
+                ("1000", 1006, MainJobRoleLabels.registered_nurse, None, None),
+                ("1000", 1006, MainJobRoleLabels.senior_care_worker, None, None),
+                ("1000", 1006, MainJobRoleLabels.senior_management, None, None),
+            ],
+        ],
+        ids=["interpolate_in_between", "nones_at_start_and_end"],
+    )
+    def test_linear_interpolation(self, expected_data):
+        # Setup.
+        input_schema = {
             IndCQC.location_id: pl.String,
             IndCQC.unix_time: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.String,
             IndCQC.ascwds_job_role_counts: pl.Int64,
         }
-        self.expected_schema = self.input_schema.copy()
-        self.expected_schema.update(
+        expected_schema = input_schema.copy()
+        expected_schema.update(
             {IndCQC.ascwds_job_role_ratios_interpolated: pl.Float64},
         )
-
-        expected_data2 = [
-            ("1000", 1000, MainJobRoleLabels.care_worker, None, None),
-            ("1000", 1000, MainJobRoleLabels.registered_nurse, None, None),
-            ("1000", 1000, MainJobRoleLabels.senior_care_worker, None, None),
-            ("1000", 1000, MainJobRoleLabels.senior_management, None, None),
-            ("1000", 1001, MainJobRoleLabels.care_worker, 2.0, 2.0),
-            ("1000", 1001, MainJobRoleLabels.registered_nurse, 4.0, 4.0),
-            ("1000", 1001, MainJobRoleLabels.senior_care_worker, 6.0, 6.0),
-            ("1000", 1001, MainJobRoleLabels.senior_management, 8.0, 8.0),
-            ("1000", 1002, MainJobRoleLabels.care_worker, None, 1.0),
-            ("1000", 1002, MainJobRoleLabels.registered_nurse, None, 3.0),
-            ("1000", 1002, MainJobRoleLabels.senior_care_worker, None, 5.0),
-            ("1000", 1002, MainJobRoleLabels.senior_management, None, 6.5),
-            ("1000", 1003, MainJobRoleLabels.care_worker, 0.0, 0.0),
-            ("1000", 1003, MainJobRoleLabels.registered_nurse, 2.0, 2.0),
-            ("1000", 1003, MainJobRoleLabels.senior_care_worker, 4.0, 4.0),
-            ("1000", 1003, MainJobRoleLabels.senior_management, 5.0, 5.0),
-            ("1000", 1004, MainJobRoleLabels.care_worker, 1.0, 1.0),
-            ("1000", 1004, MainJobRoleLabels.registered_nurse, 1.0, 1.0),
-            ("1000", 1004, MainJobRoleLabels.senior_care_worker, 1.0, 1.0),
-            ("1000", 1004, MainJobRoleLabels.senior_management, 1.0, 1.0),
-            ("1000", 1005, MainJobRoleLabels.care_worker, 5.0, 5.0),
-            ("1000", 1005, MainJobRoleLabels.registered_nurse, 4.0, 4.0),
-            ("1000", 1005, MainJobRoleLabels.senior_care_worker, 3.0, 3.0),
-            ("1000", 1005, MainJobRoleLabels.senior_management, 2.0, 2.0),
-            ("1000", 1006, MainJobRoleLabels.care_worker, None, None),
-            ("1000", 1006, MainJobRoleLabels.registered_nurse, None, None),
-            ("1000", 1006, MainJobRoleLabels.senior_care_worker, None, None),
-            ("1000", 1006, MainJobRoleLabels.senior_management, None, None),
-        ]
-        input_data2 = [row[:-1] for row in expected_data2]
-
-        return super().setUp()
-
-    def test_linear_interpolation(self):
-        expected_data = [
-            ("1000", 1000, MainJobRoleLabels.care_worker, 1.0, 1.0),
-            ("1000", 1000, MainJobRoleLabels.registered_nurse, 1.0, 1.0),
-            ("1000", 1000, MainJobRoleLabels.senior_care_worker, 1.0, 1.0),
-            ("1000", 1000, MainJobRoleLabels.senior_management, 1.0, 1.0),
-            ("1000", 1001, MainJobRoleLabels.care_worker, None, 2.0),
-            ("1000", 1001, MainJobRoleLabels.registered_nurse, None, 2.0),
-            ("1000", 1001, MainJobRoleLabels.senior_care_worker, None, 2.0),
-            ("1000", 1001, MainJobRoleLabels.senior_management, None, 2.0),
-            ("1000", 1002, MainJobRoleLabels.care_worker, 3.0, 3.0),
-            ("1000", 1002, MainJobRoleLabels.registered_nurse, 3.0, 3.0),
-            ("1000", 1002, MainJobRoleLabels.senior_care_worker, 3.0, 3.0),
-            ("1000", 1002, MainJobRoleLabels.senior_management, 3.0, 3.0),
-        ]
         input_data = [row[:-1] for row in expected_data]
-        input_df = pl.DataFrame(
-            input_data,
-            schema=self.input_schema,
-            orient="row",
-        )
-        expected_df = pl.DataFrame(
-            expected_data,
-            schema=self.expected_schema,
-            orient="row",
-        )
-
+        input_df = pl.DataFrame(input_data, schema=input_schema, orient="row")
+        expected_df = pl.DataFrame(expected_data, schema=expected_schema, orient="row")
+        # Do test.
         group_cols = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
         returned_df = input_df.with_columns(
             pl.col(IndCQC.ascwds_job_role_counts)
