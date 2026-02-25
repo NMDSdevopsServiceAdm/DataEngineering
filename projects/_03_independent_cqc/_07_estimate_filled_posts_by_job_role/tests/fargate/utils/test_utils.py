@@ -5,6 +5,9 @@ import polars.testing as pl_testing
 import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as job
+from projects._03_independent_cqc._02_clean.utils.forward_fill_latest_known_value import (
+    forward_fill,
+)
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     EstimateIndCqcFilledPostsByJobRoleUtilsData as Data,
 )
@@ -164,6 +167,66 @@ class TestInterpolate:
         returned_df = input_df.with_columns(
             pl.col(IndCQC.ascwds_job_role_counts)
             .interpolate()
+            .over(
+                IndCQC.location_id,
+                IndCQC.main_job_role_clean_labelled,
+                order_by=IndCQC.unix_time,
+            )
+            .alias(IndCQC.ascwds_job_role_ratios_interpolated)
+        )
+        pl_testing.assert_frame_equal(returned_df, expected_df)
+
+
+class TestExtrapolate:
+    """Extrapolating in our case is filling forwards/backwards within groups ordered by time."""
+
+    def test_fill_forwards_and_backwards(self):
+        expected_data = [
+            ("1-001", 1000000200, MainJobRoleLabels.care_worker, None, 0.1),
+            ("1-001", 1000000200, MainJobRoleLabels.registered_nurse, None, 0.1),
+            ("1-001", 1000000300, MainJobRoleLabels.care_worker, 0.1, 0.1),
+            ("1-001", 1000000300, MainJobRoleLabels.registered_nurse, 0.1, 0.1),
+            ("1-001", 1000000400, MainJobRoleLabels.care_worker, 0.2, 0.2),
+            ("1-001", 1000000400, MainJobRoleLabels.registered_nurse, 0.2, 0.2),
+            ("1-001", 1000000500, MainJobRoleLabels.care_worker, 0.3, 0.3),
+            ("1-001", 1000000500, MainJobRoleLabels.registered_nurse, 0.3, 0.3),
+            ("1-001", 1000000600, MainJobRoleLabels.care_worker, None, 0.3),
+            ("1-001", 1000000600, MainJobRoleLabels.registered_nurse, None, 0.3),
+            ("1-002", 1000000200, MainJobRoleLabels.care_worker, 0.1, 0.1),
+            ("1-002", 1000000200, MainJobRoleLabels.registered_nurse, 0.1, 0.1),
+            # This will fill forward in this case, but seeing as we are intending to
+            # do this step after interpolation this will have already have filled
+            # the in between values.
+            ("1-002", 1000000300, MainJobRoleLabels.care_worker, None, 0.1),
+            ("1-002", 1000000300, MainJobRoleLabels.registered_nurse, None, 0.1),
+            ("1-002", 1000000400, MainJobRoleLabels.care_worker, 0.2, 0.2),
+            ("1-002", 1000000400, MainJobRoleLabels.registered_nurse, 0.2, 0.2),
+            ("1-003", 1000000200, MainJobRoleLabels.care_worker, None, None),
+            ("1-003", 1000000200, MainJobRoleLabels.registered_nurse, None, None),
+            ("1-003", 1000000300, MainJobRoleLabels.care_worker, None, None),
+            ("1-003", 1000000300, MainJobRoleLabels.registered_nurse, None, None),
+            ("1-003", 1000000400, MainJobRoleLabels.care_worker, None, None),
+            ("1-003", 1000000400, MainJobRoleLabels.registered_nurse, None, None),
+            ("1-003", 1000000500, MainJobRoleLabels.care_worker, None, None),
+            ("1-003", 1000000500, MainJobRoleLabels.registered_nurse, None, None),
+        ]
+        # Remove the output column from the expected data to get input data.
+        input_data = [row[:-1] for row in expected_data]
+        input_schema = [
+            IndCQC.location_id,
+            IndCQC.unix_time,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.ascwds_job_role_ratios,
+        ]
+        expected_schema = input_schema + [IndCQC.ascwds_job_role_ratios_interpolated]
+        input_df = pl.DataFrame(input_data, schema=input_schema, orient="row")
+        expected_df = pl.DataFrame(expected_data, schema=expected_schema, orient="row")
+        # Do test.
+        returned_df = input_df.with_columns(
+            pl.col(IndCQC.ascwds_job_role_ratios)
+            # .interpolate()
+            .forward_fill()
+            .backward_fill()
             .over(
                 IndCQC.location_id,
                 IndCQC.main_job_role_clean_labelled,
