@@ -20,7 +20,9 @@ All notable changes to this project will be documented in this file.
 - Refactored the rate of change to filter rows instead of nulling values to speed up processing time and make the
   filtering process in a follow-up PR much easier to implement.
 
-- Removed minimum value requirement from `merge_columns_in_order`
+- Changed the forward-filling of the last known value from two months for all locations to using a length of time base on the location size.
+
+- Removed minimum value requirement from `merge_columns_in_order`.
 
 ### Fixed
 

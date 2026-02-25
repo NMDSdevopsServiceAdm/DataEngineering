@@ -2972,41 +2972,47 @@ class CleanCtRepetition:
 # converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.ForwardFillLatestKnownValue
 @dataclass
 class ForwardFillLatestKnownValue:
+    col_to_forward_fill: str = "col_to_forward_fill"
+    days_to_forward_fill: str = "days_to_forward_fill"
+    last_known_date: str = "last_known_date"
+    last_known_value: str = "last_known_value"
+
+    size_based_forward_fill_days_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(col_to_forward_fill, IntegerType(), True),
+        ]
+    )
+    expected_size_based_forward_fill_days_schema = StructType(
+        [
+            *size_based_forward_fill_days_schema,
+            StructField(days_to_forward_fill, IntegerType(), True),
+        ]
+    )
+
     input_return_last_known_value_locations_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField("col_to_repeat", IntegerType(), True),
+            StructField(col_to_forward_fill, IntegerType(), True),
         ]
     )
     expected_return_last_known_value_locations_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField("last_known_date", DateType(), True),
-            StructField("last_known_value", IntegerType(), True),
+            StructField(last_known_date, DateType(), True),
+            StructField(last_known_value, IntegerType(), True),
         ]
     )
-    input_forward_fill_locations_schema = StructType(
+
+    forward_fill_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField("col_to_repeat", IntegerType(), True),
-            StructField("last_known_date", DateType(), True),
-            StructField("last_known_value", IntegerType(), True),
-        ]
-    )
-    expected_forward_fill_locations_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField("col_to_repeat", IntegerType(), True),
-        ]
-    )
-    forward_fill_latest_known_value_locations_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField("col_to_repeat", IntegerType(), True),
+            StructField(col_to_forward_fill, IntegerType(), True),
+            StructField(last_known_date, DateType(), True),
+            StructField(last_known_value, IntegerType(), True),
+            StructField(days_to_forward_fill, IntegerType(), True),
         ]
     )
 
