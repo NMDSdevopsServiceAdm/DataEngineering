@@ -39,6 +39,20 @@ class CleaningUtilsSchemas:
     expected_col_to_date_with_new_col_schema = pl.Schema(
         [("date_col", pl.String()), ("new_date_col", pl.Date())]
     )
+    filled_posts_per_bed_ratio_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.care_home, pl.String()),
+        ]
+    )
+    expected_filled_posts_per_bed_ratio_schema = pl.Schema(
+        list(filled_posts_per_bed_ratio_schema.items())
+        + [
+            (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
+        ]
+    )
 
 
 @dataclass
@@ -47,29 +61,5 @@ class RawDataAdjustmentsSchemas:
         [
             (CQCLClean.location_id, pl.String()),
             ("other_column", pl.String()),
-        ]
-    )
-
-
-@dataclass
-class CalculateWindowedColumnSchemas:
-    calculate_windowed_column_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.cqc_location_import_date, pl.Date()),
-            (IndCQC.care_home, pl.String()),
-            (IndCQC.ascwds_filled_posts, pl.Float64()),
-        ]
-    )
-    expected_calculate_windowed_column_schema = pl.Schema(
-        list(calculate_windowed_column_schema.items())
-        + [
-            ("new_column", pl.Float64()),
-        ]
-    )
-    expected_calculate_windowed_column_count_schema = pl.Schema(
-        list(calculate_windowed_column_schema.items())
-        + [
-            ("new_column", pl.UInt32()),
         ]
     )

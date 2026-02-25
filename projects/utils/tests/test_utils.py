@@ -158,7 +158,9 @@ class CalculateWindowedColumnTests(UtilsTests):
             Data.calculate_windowed_column_rows,
             Schemas.calculate_windowed_column_schema,
         )
-        self.window = Window.partitionBy(IndCQC.care_home)
+        self.window = Window.partitionBy(IndCQC.care_home).orderBy(
+            IndCQC.cqc_location_import_date
+        )
 
     def test_calculate_windowed_column_avg(self):
         returned_df = utils.calculate_windowed_column(

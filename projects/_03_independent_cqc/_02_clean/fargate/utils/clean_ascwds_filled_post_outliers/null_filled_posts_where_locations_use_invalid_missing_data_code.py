@@ -15,17 +15,20 @@ def null_filled_posts_where_locations_use_invalid_missing_data_code(
     lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
     """
-    Null ascwds_filled_posts_dedup_clean values where locations have 999 in ascwds_filled_posts_dedup_clean.
+    Null ascwds_filled_posts_dedup_clean values where locations have 999 in
+    ascwds_filled_posts_dedup_clean.
 
-    '999' is used elsewhere in ASCWDS to represent not known. Whilst that isn't the case for the variable totalstaff,
-    upon investigation, all 999 entries do not look to be an accurate reflection of that location's staff so we are
+    '999' is used elsewhere in ASCWDS to represent not known. Whilst that isn't
+    the case for the variable totalstaff, upon investigation, all 999 entries do
+    not look to be an accurate reflection of that location's staff so we are
     removing them for data quality.
 
     Args:
         lf(pl.LazyFrame): A polars LazyFrame with ascwds_filled_posts_dedup_clean.
 
     Returns:
-        pl.LazyFrame: A polars LazyFrame with 999 ascwds_filled_posts_dedup_clean values nulled.
+        pl.LazyFrame: A polars LazyFrame with 999 ascwds_filled_posts_dedup_clean
+            values nulled.
     """
     lf = lf.with_columns(
         pl.when(

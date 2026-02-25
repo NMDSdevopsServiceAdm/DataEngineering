@@ -20,8 +20,9 @@ def clean_ascwds_filled_post_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Creates a clean version of 'ascwds_filled_posts_dedup' column.
 
-    This function first duplicates 'ascwds_filled_posts_dedup' as 'ascwds_filled_posts_dedup_clean' and then runs
-    various functions designed to clean ASCWDS filled post values.
+    This function first duplicates 'ascwds_filled_posts_dedup' as
+    'ascwds_filled_posts_dedup_clean' and then runsvarious functions designed to clean
+    ASCWDS filled post values.
 
     Args:
         lf (pl.LazyFrame): A polars LazyFrame containing 'ascwds_filled_posts_dedup'.

@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 
-from pyspark.sql import DataFrame
-from pyspark.sql import functions as F
+import polars as pl
 
-import utils.cleaning_utils as cUtils
-from projects._03_independent_cqc._02_clean.utils.filtering_utils import (
+import polars_utils.cleaning_utils as pUtils
+from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
     update_filtering_rule,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -16,19 +15,25 @@ class SetValuesForWinsorization:
     """
     Set numerical values for winsorization process.
 
-    We are identifying the top and bottom 2.5% of entries as outliers (which combine to 0.05/5% of data points to remove)
+    We are identifying the top and bottom 2.5% of entries as outliers (which
+    combine to 0.05/5% of data points to remove)
 
-    Following investigation with ASCWDS data alongside Capacity Tracker tracker data we were able to validate that
-    the majority of ratios between 0.75 and 5.0 were closely matched to each other. However, outside of these ratios
-    the quality of matches decreased significantly. However, for small care homes (lower number of beds) the ratios
-    then to be higher than 0.75 and 5.0 so we are using the standardised residual percentile cutoffs if they come
-    out higher than these minimum permitted ratios.
+    Following investigation with ASCWDS data alongside Capacity Tracker tracker
+    data we were able to validate that the majority of ratios between 0.75 and
+    5.0 were closely matched to each other. However, outside of these ratios the
+    quality of matches decreased significantly. However, for small care homes
+    (lower number of beds) the ratios then to be higher than 0.75 and 5.0 so we
+    are using the standardised residual percentile cutoffs if they come out
+    higher than these minimum permitted ratios.
 
     Attributes:
-        PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS (float): Sets the proportion of data to identify as outliers (where
-            0.05 represents 5%, which would identify the top and bottom 2.5% as outliers)
-        MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF (float): Sets the lowest minimum filled_posts_per_bed_ratio permitted
-        MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF (float): Sets the lowest maximum filled_posts_per_bed_ratio permitted
+        PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS (float): Sets the proportion of
+            data to identify as outliers (where 0.05 represents 5%, which would
+            identify the top and bottom 2.5% as outliers)
+        MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF (float): Sets the lowest minimum
+            filled_posts_per_bed_ratio permitted
+        MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF (float): Sets the lowest maximum
+            filled_posts_per_bed_ratio permitted
     """
 
     PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS: float = 0.05
@@ -37,61 +42,66 @@ class SetValuesForWinsorization:
 
 
 def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
-    input_df: DataFrame,
-) -> DataFrame:
+    input_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
     """
-    Winsorize ASCWDS filled posts by limiting the values of outliers based on their filled posts per bed ratio.
+    Winsorize ASCWDS filled posts by limiting the values of outliers based on
+    their filled posts per bed ratio.
 
-    This function is designed to identify outliers based on the ratio between filled posts and the number of beds at care
-    homes and winsorize those outliers. Winsorization is the process of replacing outliers with a less extreme value.
-    Non-care home data is not included in this particular filter so this part of the dataset will remain unchanged.
+    This function is designed to identify outliers based on the ratio between
+    filled posts and the number of beds at care homes and winsorize those
+    outliers. Winsorization is the process of replacing outliers with a less
+    extreme value. Non-care home data is not included in this particular filter
+    so this part of the dataset will remain unchanged.
 
-    Outlier detection - The number of beds at each location are banded into categorical groups and the average 'filled post per bed' ratio
-    in each band is used to determine the 'expected filled posts' for each location. The residuals (the difference
-    between actual and expected filled posts) are calculated, followed by the standardised residuals (residuals divided
-    by the squart root of the filled post figure). The values at the top and bottom end of the standarised residuals
-    are deemed to be outliers. The proportion of data to be identified as outliers is determined by the value of
+    Outlier detection - The number of beds at each location are banded into
+    categorical groups and the average 'filled post per bed' ratio in each band
+    is used to determine the 'expected filled posts' for each location. The
+    residuals (the difference between actual and expected filled posts) are
+    calculated, followed by the standardised residuals (residuals divided by the
+    squart root of the filled post figure). The values at the top and bottom end
+    of the standarised residuals are deemed to be outliers. The proportion of
+    data to be identified as outliers is determined by the value of
     PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS.
 
-    Winsorization - Filled post figures deemed outliers will be replaced by less extreme values calculated during the winsorization
-    process.
+    Winsorization - Filled post figures deemed outliers will be replaced by less
+    extreme values calculated during the winsorization process.
 
     Args:
-        input_df (DataFrame): The input dataframe containing merged ASCWDS and CQC data.
+        input_lf (pl.LazyFrame): The input polars LazyFrame containing merged
+            ASCWDS and CQC data.
 
     Returns:
-        DataFrame: A dataFrame with outlier values winsorized.
+        pl.LazyFrame: A polars LazyFrame with outlier values winsorized.
     """
-    care_homes_df = filter_df_to_care_homes_with_known_beds_and_filled_posts(input_df)
-    data_not_relevant_to_filter_df = select_data_not_in_subset_df(
-        input_df, care_homes_df
+    care_homes_lf = filter_lf_to_care_homes_with_known_beds_and_filled_posts(input_lf)
+    data_not_relevant_to_filter_lf = select_data_not_in_subset(input_lf, care_homes_lf)
+
+    avg_filled_posts_per_banded_bed_count_lf = (
+        calculate_average_filled_posts_per_banded_bed_count(care_homes_lf)
     )
 
-    expected_filled_posts_per_banded_bed_count_df = (
-        calculate_average_filled_posts_per_banded_bed_count(care_homes_df)
+    care_homes_lf = calculate_expected_filled_posts_based_on_number_of_beds(
+        care_homes_lf, avg_filled_posts_per_banded_bed_count_lf
     )
 
-    care_homes_df = calculate_expected_filled_posts_based_on_number_of_beds(
-        care_homes_df, expected_filled_posts_per_banded_bed_count_df
-    )
+    care_homes_lf = calculate_filled_post_standardised_residual(care_homes_lf)
 
-    care_homes_df = calculate_filled_post_standardised_residual(care_homes_df)
-
-    care_homes_df = calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
-        care_homes_df,
+    care_homes_lf = calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
+        care_homes_lf,
         SetValuesForWinsorization.PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS,
     )
 
-    care_homes_df = duplicate_ratios_within_standardised_residual_cutoffs(care_homes_df)
+    care_homes_lf = duplicate_ratios_within_standardised_residual_cutoffs(care_homes_lf)
 
-    care_homes_df = calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
-        care_homes_df
+    care_homes_lf = calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
+        care_homes_lf
     )
 
-    winsorized_df = winsorize_outliers(care_homes_df)
+    winsorized_lf = winsorize_outliers(care_homes_lf)
 
-    winsorized_df = update_filtering_rule(
-        winsorized_df,
+    winsorized_lf = update_filtering_rule(
+        winsorized_lf,
         IndCQC.ascwds_filtering_rule,
         IndCQC.ascwds_filled_posts_dedup,
         IndCQC.ascwds_filled_posts_dedup_clean,
@@ -99,167 +109,186 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
         AscwdsFilteringRule.winsorized_beds_ratio_outlier,
     )
 
-    output_df = combine_dataframes(winsorized_df, data_not_relevant_to_filter_df)
+    output_lf = combine_data(winsorized_lf, data_not_relevant_to_filter_lf)
 
-    return output_df
+    return output_lf
 
 
-def filter_df_to_care_homes_with_known_beds_and_filled_posts(
-    df: DataFrame,
-) -> DataFrame:
+def filter_lf_to_care_homes_with_known_beds_and_filled_posts(
+    lf: pl.LazyFrame,
+) -> pl.LazyFrame:
     """
-    Filter dataframe to care homes with known beds and filled posts.
+    Filter LazyFrame to care homes with known beds and filled posts.
 
-    This function filters to the dataset to only include care homes with one or more beds and
-    one or more filled posts.
+    This function filters the dataset to only include care homes with one or
+    more beds and one or more filled posts.
 
     Args:
-        df (DataFrame): A dataframe of cleaned CQC locations.
+        lf (pl.LazyFrame): A polars LazyFrame of cleaned CQC locations.
 
     Returns:
-        DataFrame: A dataframe filtered to care homes with known beds and known filled posts.
+        pl.LazyFrame: A LazyFrame filtered to care homes with known beds and known
+            filled posts.
     """
-    df = df.where(
-        (F.col(IndCQC.care_home) == CareHome.care_home)
-        & (
-            F.col(IndCQC.number_of_beds).isNotNull()
-            & (F.col(IndCQC.number_of_beds) > 0)
-        )
-        & (
-            F.col(IndCQC.ascwds_filled_posts_dedup_clean).isNotNull()
-            & (F.col(IndCQC.ascwds_filled_posts_dedup_clean) > 0.0)
-        )
+    lf = lf.filter(
+        (pl.col(IndCQC.care_home) == CareHome.care_home)
+        & pl.col(IndCQC.number_of_beds).is_not_null()
+        & (pl.col(IndCQC.number_of_beds) > 0)
+        & pl.col(IndCQC.ascwds_filled_posts_dedup_clean).is_not_null()
+        & (pl.col(IndCQC.ascwds_filled_posts_dedup_clean) > 0.0)
     )
 
-    return df
+    return lf
 
 
-def select_data_not_in_subset_df(
-    complete_df: DataFrame, subset_df: DataFrame
-) -> DataFrame:
+def select_data_not_in_subset(
+    complete_lf: pl.LazyFrame, subset_lf: pl.LazyFrame
+) -> pl.LazyFrame:
     """
-    Selects rows from the complete DataFrame that are not present in the subset DataFrame.
+    Selects rows from the complete LazyFrame that are not present in the subset
+    LazyFrame.
 
     Args:
-        complete_df (DataFrame): The DataFrame containing all available data.
-        subset_df (DataFrame): The DataFrame containing the subset of data to exclude.
+        complete_lf (pl.LazyFrame): The LazyFrame containing all available data.
+        subset_lf (pl.LazyFrame): The LazyFrame containing the subset of data to
+            exclude.
 
     Returns:
-        DataFrame: A new DataFrame containing only the rows from complete_df that are not in subset_df.
+        pl.LazyFrame: A new LazyFrame containing only the rows from complete_lf
+            that are not in subset_lf.
     """
-    output_df = complete_df.exceptAll(subset_df)
+    output_lf = complete_lf.join(
+        subset_lf, on=complete_lf.collect_schema().names(), how="anti"
+    )
 
-    return output_df
+    return output_lf
 
 
 def calculate_average_filled_posts_per_banded_bed_count(
-    input_df: DataFrame,
-) -> DataFrame:
+    input_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
     """
     Calculate the average filled posts per bed ratio for each banded bed count.
 
-    This function groups the input DataFrame by the number of banded beds and calculates
-    the average filled posts per bed ratio for each group.
+    This function groups the input LazyFrame by the number of banded beds and
+    calculates the average filled posts per bed ratio for each group.
 
     Args:
-        input_df (DataFrame): A DataFrame containing the columns 'number_of_beds_banded' and 'filled_posts_per_bed_ratio'.
+        input_lf (pl.LazyFrame): A LazyFrame containing the columns
+            'number_of_beds_banded' and 'filled_posts_per_bed_ratio'.
 
     Returns:
-        DataFrame: A DataFrame with the number of banded beds and the corresponding average filled posts per bed ratio.
+        pl.LazyFrame: A LazyFrame with the number of banded beds and the
+            corresponding average filled posts per bed ratio.
     """
-    output_df = input_df.groupBy(F.col(IndCQC.number_of_beds_banded)).agg(
-        F.avg(IndCQC.filled_posts_per_bed_ratio).alias(
-            IndCQC.avg_filled_posts_per_bed_ratio
-        )
+    output_lf = input_lf.group_by(IndCQC.number_of_beds_banded).agg(
+        pl.col(IndCQC.filled_posts_per_bed_ratio)
+        .mean()
+        .alias(IndCQC.avg_filled_posts_per_bed_ratio)
     )
 
-    return output_df
+    return output_lf
 
 
 def calculate_expected_filled_posts_based_on_number_of_beds(
-    df: DataFrame,
-    expected_filled_posts_per_banded_bed_count_df: DataFrame,
-) -> DataFrame:
+    lf: pl.LazyFrame,
+    join_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
     """
-    Calculates the expected number of filled posts based on the number of beds and average filled posts per bed ratio.
+    Calculates the expected number of filled posts based on the number of beds
+    and average filled posts per bed ratio.
 
-    This function joins the input DataFrame with another DataFrame containing the average
-    filled posts per bed ratio for each banded bed count. It then calculates the expected
-    number of filled posts for each row by multiplying the number of beds by the average
-    filled posts per bed ratio.
+    This function joins the input LazyFrame with another LazyFrame containing
+    the average filled posts per bed ratio for each banded bed count. It then
+    calculates the expected number of filled posts for each row by multiplying
+    the number of beds by the average filled posts per bed ratio.
 
     Args:
-        df (DataFrame): A DataFrame containing the columns 'number_of_beds' and 'number_of_beds_banded'.
-        expected_filled_posts_per_banded_bed_count_df (DataFrame): A DataFrame containing the columns
+        lf (pl.LazyFrame): A LazyFrame containing the columns 'number_of_beds'
+            and 'number_of_beds_banded'.
+        join_lf (pl.LazyFrame): A LazyFrame containing the columns
             'number_of_beds_banded' and 'avg_filled_posts_per_bed_ratio'.
 
     Returns:
-        DataFrame: A DataFrame with the additional column 'expected_filled_posts'.
+        pl.LazyFrame: A LazyFrame with the additional column
+        'expected_filled_posts'.
     """
-    df = df.join(
-        expected_filled_posts_per_banded_bed_count_df,
-        IndCQC.number_of_beds_banded,
-        "left",
+    lf = lf.join(
+        join_lf,
+        on=IndCQC.number_of_beds_banded,
+        how="left",
     )
 
-    df = df.withColumn(
-        IndCQC.expected_filled_posts,
-        F.col(IndCQC.number_of_beds) * F.col(IndCQC.avg_filled_posts_per_bed_ratio),
+    lf = lf.with_columns(
+        (
+            pl.col(IndCQC.number_of_beds)
+            * pl.col(IndCQC.avg_filled_posts_per_bed_ratio)
+        ).alias(IndCQC.expected_filled_posts)
     )
 
-    return df
+    return lf
 
 
 def calculate_filled_post_standardised_residual(
-    df: DataFrame,
-) -> DataFrame:
+    lf: pl.LazyFrame,
+) -> pl.LazyFrame:
     """
-    Calculate the standardised residual for filled posts and adds as a new column.
+    Calculate the standardised residual for filled posts and adds as a new
+    column.
 
-    This function computes the standardised residual for filled posts by subtracting the
-    expected filled posts from the actual filled posts (residuals) and then dividing by
-    the square root of the expected filled posts. The result is added as a new column.
+    This function computes the standardised residual for filled posts by
+    subtracting the expected filled posts from the actual filled posts
+    (residuals) and then dividing by the square root of the expected filled
+    posts. The result is added as a new column.
 
     Args:
-        df (DataFrame): DataFrame containing 'ascwds_filled_posts_dedup_clean' and
-                       'expected_filled_posts'.
+        lf (pl.LazyFrame): LazyFrame containing
+            'ascwds_filled_posts_dedup_clean'  and 'expected_filled_posts'.
 
     Returns:
-        DataFrame: DataFrame with the additional calculated 'standardised_residual' column.
+        pl.LazyFrame: LazyFrame with the additional calculated
+            'standardised_residual' column.
     """
-    df = df.withColumn(
-        IndCQC.standardised_residual,
+    lf = lf.with_columns(
         (
-            F.col(IndCQC.ascwds_filled_posts_dedup_clean)
-            - F.col(IndCQC.expected_filled_posts)
-        )
-        / F.sqrt(F.col(IndCQC.expected_filled_posts)),
+            (
+                pl.col(IndCQC.ascwds_filled_posts_dedup_clean)
+                - pl.col(IndCQC.expected_filled_posts)
+            )
+            / pl.col(IndCQC.expected_filled_posts).sqrt()
+        ).alias(IndCQC.standardised_residual)
     )
 
-    return df
+    return lf
 
 
 def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
-    df: DataFrame,
+    lf: pl.LazyFrame,
     percentage_of_data_to_filter_out: float,
-) -> DataFrame:
+) -> pl.LazyFrame:
     """
-    Calculates the lower and upper percentile cutoffs for standardised residuals in a DataFrame and adds them as new columns.
+    Calculates the lower and upper percentile cutoffs for standardised residuals
+    in a LazyFrame and adds them as new columns.
 
-    Calculates the lower and upper percentile cutoffs for standardised residuals in a DataFrame. The value entered for the
-    percentage_of_data_to_filter_out will be split into half so that half is applied to the lower extremes and half to the
-    upper extremes. Two columns will be added as a result, one containing the lower percentile of standardised_residual and
-    one containing the upper percentile of standardised_residual.
+    Calculates the lower and upper percentile cutoffs for standardised residuals
+    in a LazyFrame. The value entered for the percentage_of_data_to_filter_out
+    will be split into half so that half is applied to the lower extremes and
+    half to the upper extremes. Two columns will be added as a result, one
+    containing the lower percentile of standardised_residual and one containing
+    the upper percentile of standardised_residual.
 
     Args:
-        df (DataFrame): Input DataFrame.
-        percentage_of_data_to_filter_out (float): Percentage of data to filter out (eg, 0.05 will idenfity 5% of data as outliers).
+        lf (pl.LazyFrame): Input LazyFrame.
+        percentage_of_data_to_filter_out (float): Percentage of data to filter out
+            (eg, 0.05 will idenfity 5% of data as outliers).
 
     Returns:
-        DataFrame: DataFrame with additional columns for both the lower and upper percentile values for standardised residuals.
+        pl.LazyFrame: A LazyFrame with additional columns for both the lower and
+            upper percentile values for standardised residuals.
 
     Raises:
-        ValueError: If percentage of data provided is greater than 1 (equivalent to 100%).
+        ValueError: If percentage of data provided is greater than 1 (equivalent
+            to 100%).
     """
     if percentage_of_data_to_filter_out >= 1:
         raise ValueError(
@@ -269,175 +298,223 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
     lower_percentile = percentage_of_data_to_filter_out / 2
     upper_percentile = 1 - lower_percentile
 
-    percentile_df = df.groupBy(IndCQC.primary_service_type).agg(
-        F.expr(
-            f"percentile({IndCQC.standardised_residual}, array({lower_percentile}))"
-        )[0].alias(IndCQC.lower_percentile),
-        F.expr(
-            f"percentile({IndCQC.standardised_residual}, array({upper_percentile}))"
-        )[0].alias(IndCQC.upper_percentile),
+    lower_expr = (
+        pl.col(IndCQC.standardised_residual)
+        .quantile(lower_percentile, interpolation="linear")
+        .over(IndCQC.primary_service_type)
     )
 
-    df = df.join(percentile_df, IndCQC.primary_service_type, "left")
+    upper_expr = (
+        pl.col(IndCQC.standardised_residual)
+        .quantile(upper_percentile, interpolation="linear")
+        .over(IndCQC.primary_service_type)
+    )
 
-    return df
+    return lf.with_columns(
+        [
+            lower_expr.alias(IndCQC.lower_percentile),
+            upper_expr.alias(IndCQC.upper_percentile),
+        ]
+    )
 
 
-def duplicate_ratios_within_standardised_residual_cutoffs(df: DataFrame) -> DataFrame:
+def duplicate_ratios_within_standardised_residual_cutoffs(
+    lf: pl.LazyFrame,
+) -> pl.LazyFrame:
     """
-    Creates a column with the filled_posts_per_bed_ratio values when the standardised residuals are inside the percentile cutoffs.
+    Creates a column with the filled_posts_per_bed_ratio values when the
+    standardised residuals are inside the percentile cutoffs.
 
-    If the standardised_residual value is within the lower and upper percentile cutoffs then the filled_posts_per_bed_ratio value
-    is duplicated into the new filled_posts_per_bed_ratio_within_std_resids column. Otherwise a null value is entered.
+    If the standardised_residual value is within the lower and upper percentile
+    cutoffs then the filled_posts_per_bed_ratio value is duplicated into the new
+    filled_posts_per_bed_ratio_within_std_resids column. Otherwise a null value
+    is entered.
 
     Args:
-        df (DataFrame): The input dataframe containing filled_posts_per_bed_ratio, standardised residuals and percentiles.
+        lf (pl.LazyFrame): The input LazyFrame containing
+            filled_posts_per_bed_ratio, standardised residuals and percentiles.
 
     Returns:
-        DataFrame: A dataFrame with filled_posts_per_bed_ratio_within_std_resids populated.
+        pl.LazyFrame: A LazyFrame with column
+            filled_posts_per_bed_ratio_within_std_resids populated.
     """
-    df = df.withColumn(
-        IndCQC.filled_posts_per_bed_ratio_within_std_resids,
-        F.when(
-            (F.col(IndCQC.standardised_residual) >= F.col(IndCQC.lower_percentile))
-            & (F.col(IndCQC.standardised_residual) <= F.col(IndCQC.upper_percentile)),
-            F.col(IndCQC.filled_posts_per_bed_ratio),
-        ).otherwise(F.lit(None)),
+    lf = lf.with_columns(
+        pl.when(
+            (pl.col(IndCQC.standardised_residual) >= pl.col(IndCQC.lower_percentile))
+            & (pl.col(IndCQC.standardised_residual) <= pl.col(IndCQC.upper_percentile))
+        )
+        .then(pl.col(IndCQC.filled_posts_per_bed_ratio))
+        .otherwise(pl.lit(None))
+        .alias(IndCQC.filled_posts_per_bed_ratio_within_std_resids)
     )
 
-    return df
+    return lf
 
 
 def calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
-    df: DataFrame,
-) -> DataFrame:
+    lf: pl.LazyFrame,
+) -> pl.LazyFrame:
     """
-    Calculates the minimum and maximum permitted filled_posts_per_bed_ratio values and adds them as new columns.
+    Calculates the minimum and maximum permitted filled_posts_per_bed_ratio
+    values and adds them as new columns.
 
-    Outlier values in the filled_posts_per_bed_ratio_within_std_resids column have been nulled so this function
-    will identify the minumum and maximum permitted ratios. Two columns will be added as a result, one containing
-    the minimum filled_posts_per_bed_ratio and one containing the maximum filled_posts_per_bed_ratio.
+    Outlier values in the filled_posts_per_bed_ratio_within_std_resids column
+    have been nulled so this function will identify the minumum and maximum
+    permitted ratios. Two columns will be added as a result, one containing the
+    minimum filled_posts_per_bed_ratio and one containing the maximum
+    filled_posts_per_bed_ratio.
 
-    Following investigation with ASCWDS data alongside Capacity Tracker tracker data we were able to validate that
-    the majority of ratios between 0.75 and 5.0 were closely matched to each other. However, outside of these ratios
-    the quality of matches decreased significantly. However, for small care homes (lower number of beds) the ratios
-    then to be higher than 0.75 and 5.0 so we are using the standardised residual percentile cutoffs if they come
-    out higher than these minimum permitted ratios.
+    Following investigation with ASCWDS data alongside Capacity Tracker tracker
+    data we were able to validate that the majority of ratios between 0.75 and
+    5.0 were closely matched to each other. However, outside of these ratios the
+    quality of matches decreased significantly. However, for small care homes
+    (lower number of beds) the ratios then to be higher than 0.75 and 5.0 so we
+    are using the standardised residual percentile cutoffs if they come out
+    higher than these minimum permitted ratios.
 
     Args:
-        df (DataFrame): Input DataFrame.
+        lf (pl.LazyFrame): Input LazyFrame.
 
     Returns:
-        DataFrame: DataFrame with additional columns for both the min and max permitted filled_posts_per_bed_ratio.
+        pl.LazyFrame: LazyFrame with additional columns for both the min and max
+            permitted filled_posts_per_bed_ratio.
     """
-    aggregated_df = df.groupBy(IndCQC.number_of_beds_banded).agg(
-        F.min(IndCQC.filled_posts_per_bed_ratio_within_std_resids).alias(
-            IndCQC.min_filled_posts_per_bed_ratio
-        ),
-        F.max(IndCQC.filled_posts_per_bed_ratio_within_std_resids).alias(
-            IndCQC.max_filled_posts_per_bed_ratio
-        ),
+    min_expr = (
+        pl.col(IndCQC.filled_posts_per_bed_ratio_within_std_resids)
+        .min()
+        .over(IndCQC.number_of_beds_banded)
     )
 
-    aggregated_df = set_minimum_permitted_ratio(
-        aggregated_df,
-        IndCQC.min_filled_posts_per_bed_ratio,
-        SetValuesForWinsorization.MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF,
-    )
-    aggregated_df = set_minimum_permitted_ratio(
-        aggregated_df,
-        IndCQC.max_filled_posts_per_bed_ratio,
-        SetValuesForWinsorization.MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF,
+    max_expr = (
+        pl.col(IndCQC.filled_posts_per_bed_ratio_within_std_resids)
+        .max()
+        .over(IndCQC.number_of_beds_banded)
     )
 
-    df = df.join(aggregated_df, IndCQC.number_of_beds_banded, "left")
+    min_with_cutoff = (
+        pl.when(
+            min_expr < SetValuesForWinsorization.MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF
+        )
+        .then(SetValuesForWinsorization.MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF)
+        .otherwise(min_expr)
+    )
 
-    return df
+    max_with_cutoff = (
+        pl.when(
+            max_expr < SetValuesForWinsorization.MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF
+        )
+        .then(SetValuesForWinsorization.MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF)
+        .otherwise(max_expr)
+    )
+
+    return lf.with_columns(
+        [
+            min_with_cutoff.alias(IndCQC.min_filled_posts_per_bed_ratio),
+            max_with_cutoff.alias(IndCQC.max_filled_posts_per_bed_ratio),
+        ]
+    )
 
 
 def set_minimum_permitted_ratio(
-    df: DataFrame,
+    lf: pl.LazyFrame,
     column_name: str,
     minimum_permitted_ratio: float,
-) -> DataFrame:
+) -> pl.LazyFrame:
     """
-    Replaces the value in the desired column with the minimum value of the current value or minimum_permitted_ratio.
+    Replaces the value in the desired column with the minimum value of the
+    current value or minimum_permitted_ratio.
 
     Args:
-        df (DataFrame): The input DataFrame.
+        lf (pl.LazyFrame): The input LazyFrame.
         column_name (str): The name of the column to be modified.
-        minimum_permitted_ratio (float): The minimum value that any entry in the column should have.
+        minimum_permitted_ratio (float): The minimum value that any entry in the
+            column should have.
 
     Returns:
-        DataFrame: A new DataFrame with the specified column values adjusted to meet the minimum permitted ratio.
+        pl.LazyFrame: A new LazyFrame with the specified column values adjusted
+            to meet the minimum permitted ratio.
     """
-    df = df.withColumn(
-        column_name, F.greatest(F.col(column_name), F.lit(minimum_permitted_ratio))
+    lf = lf.with_columns(
+        pl.when(pl.col(column_name) < minimum_permitted_ratio)
+        .then(minimum_permitted_ratio)
+        .otherwise(pl.col(column_name))
+        .alias(column_name)
     )
 
-    return df
+    return lf
 
 
 def winsorize_outliers(
-    df: DataFrame,
-) -> DataFrame:
+    lf: pl.LazyFrame,
+) -> pl.LazyFrame:
     """
-    Replace ascwds_filled_posts_dedup_clean and filled_posts_per_bed_ratio with min or max permitted values.
+    Replace ascwds_filled_posts_dedup_clean and filled_posts_per_bed_ratio with
+    min or max permitted values.
 
-    Outliers are detected using the filled_posts_per_bed_ratio. For ratios which fall outside of the minimum or
-    maximum permitted ratios, the ascwds_filled_posts_dedup_clean is recalculated by multiplying the min/max
-    permitted ratio by the number_of_beds. The filled_posts_per_bed_ratio is then winsorized.
+    Outliers are detected using the filled_posts_per_bed_ratio. For ratios which
+    fall outside of the minimum or maximum permitted ratios, the
+    ascwds_filled_posts_dedup_clean is recalculated by multiplying the min/max
+    permitted ratio by the number_of_beds. The filled_posts_per_bed_ratio is
+    then winsorized.
 
     Args:
-        df (DataFrame): Input DataFrame.
+        lf (pl.LazyFrame): Input LazyFrame.
 
     Returns:
-        DataFrame: DataFrame with outliers winsorized.
+        pl.LazyFrame: LazyFrame with outliers winsorized.
     """
-    winsorized_df = df.withColumn(
-        IndCQC.ascwds_filled_posts_dedup_clean,
-        F.when(
-            F.col(IndCQC.filled_posts_per_bed_ratio)
-            < F.col(IndCQC.min_filled_posts_per_bed_ratio),
-            F.col(IndCQC.min_filled_posts_per_bed_ratio) * F.col(IndCQC.number_of_beds),
+    winsorized_lf = lf.with_columns(
+        pl.when(
+            pl.col(IndCQC.filled_posts_per_bed_ratio)
+            < pl.col(IndCQC.min_filled_posts_per_bed_ratio)
+        )
+        .then(
+            pl.col(IndCQC.min_filled_posts_per_bed_ratio)
+            * pl.col(IndCQC.number_of_beds)
         )
         .when(
-            F.col(IndCQC.filled_posts_per_bed_ratio)
-            > F.col(IndCQC.max_filled_posts_per_bed_ratio),
-            F.col(IndCQC.max_filled_posts_per_bed_ratio) * F.col(IndCQC.number_of_beds),
+            pl.col(IndCQC.filled_posts_per_bed_ratio)
+            > pl.col(IndCQC.max_filled_posts_per_bed_ratio)
         )
-        .otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
+        .then(
+            pl.col(IndCQC.max_filled_posts_per_bed_ratio)
+            * pl.col(IndCQC.number_of_beds)
+        )
+        .otherwise(pl.col(IndCQC.ascwds_filled_posts_dedup_clean))
+        .alias(IndCQC.ascwds_filled_posts_dedup_clean)
     )
 
-    winsorized_df = cUtils.calculate_filled_posts_per_bed_ratio(
-        winsorized_df,
+    winsorized_lf = pUtils.calculate_filled_posts_per_bed_ratio(
+        winsorized_lf,
         IndCQC.ascwds_filled_posts_dedup_clean,
         IndCQC.filled_posts_per_bed_ratio,
     )
 
-    return winsorized_df
+    return winsorized_lf
 
 
-def combine_dataframes(
-    filtered_care_home_df: DataFrame, original_non_care_home_df: DataFrame
-) -> DataFrame:
+def combine_data(
+    filtered_care_home_lf: pl.LazyFrame, original_non_care_home_lf: pl.LazyFrame
+) -> pl.LazyFrame:
     """
     Appends the filtered care home data back with the unfiltered non-care home data.
 
     This job filters care home data only so care home and non-care home data was separated at the start of the job.
     This function combines the two datasets back together. Only the columns which existed at the start of the job
-    are required in the returned dataframe.
+    are required in the returned LazyFrame.
 
     Args:
-        filtered_care_home_df (DataFrame): A DataFrame containing filtered care home data.
-        original_non_care_home_df (DataFrame): A DataFrame containing the imported non-care home data.
+        filtered_care_home_lf (pl.LazyFrame): A LazyFrame containing filtered care home data.
+        original_non_care_home_lf (pl.LazyFrame): A LazyFrame containing the imported non-care home data.
 
     Returns:
-        DataFrame: A new DataFrame that combines the selected columns from filtered_care_home_df
+        pl.LazyFrame: A new LazyFrame that combines the selected columns from filtered_care_home_df
         with the original_non_care_home_df.
     """
-    care_home_df = filtered_care_home_df.select(original_non_care_home_df.columns)
+    care_home_lf = filtered_care_home_lf.select(
+        original_non_care_home_lf.collect_schema().names()
+    )
 
-    all_locations_df = original_non_care_home_df.unionByName(care_home_df)
+    all_locations_lf = pl.concat([original_non_care_home_lf, care_home_lf])
 
-    return all_locations_df
+    return all_locations_lf

@@ -20,6 +20,9 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    NullGroupedProviderColumns as NGPcol,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
@@ -617,3 +620,259 @@ class NullFilledPostsUsingInvalidMissingDataCodeSchema:
             (IndCQC.ascwds_filtering_rule, pl.String()),
         ]
     )
+
+
+@dataclass
+class NullGroupedProvidersSchema:
+    null_grouped_providers_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.provider_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.establishment_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+            (IndCQC.pir_people_directly_employed_dedup, pl.Float64()),
+            # Remove folloiwng when calculate_data_for_grouped_provider is converted to polars
+            (NGPcol.location_pir_average, pl.Float64()),
+            (NGPcol.count_of_cqc_locations_in_provider, pl.Int64()),
+            (NGPcol.count_of_awcwds_locations_in_provider, pl.Int64()),
+            (NGPcol.count_of_awcwds_locations_with_data_in_provider, pl.Int64()),
+            (NGPcol.number_of_beds_at_provider, pl.Int64()),
+            (NGPcol.provider_pir_count, pl.Int64()),
+            (NGPcol.provider_pir_sum, pl.Float64()),
+        ]
+    )
+
+    calculate_data_for_grouped_provider_identification_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.provider_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.establishment_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.pir_people_directly_employed_dedup, pl.Float64()),
+        ]
+    )
+    expected_calculate_data_for_grouped_provider_identification_schema = pl.Schema(
+        list(calculate_data_for_grouped_provider_identification_schema.items())
+        + [
+            (NGPcol.location_pir_average, pl.Float64()),
+            (NGPcol.count_of_cqc_locations_in_provider, pl.Int64()),
+            (NGPcol.count_of_awcwds_locations_in_provider, pl.Int64()),
+            (NGPcol.count_of_awcwds_locations_with_data_in_provider, pl.Int64()),
+            (NGPcol.number_of_beds_at_provider, pl.Int64()),
+            (NGPcol.provider_pir_count, pl.Int64()),
+            (NGPcol.provider_pir_sum, pl.Float64()),
+        ]
+    )
+
+    identify_potential_grouped_providers_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (NGPcol.count_of_cqc_locations_in_provider, pl.Int64()),
+            (NGPcol.count_of_awcwds_locations_in_provider, pl.Int64()),
+            (NGPcol.count_of_awcwds_locations_with_data_in_provider, pl.Int64()),
+        ]
+    )
+    expected_identify_potential_grouped_providers_schema = pl.Schema(
+        list(identify_potential_grouped_providers_schema.items())
+        + [
+            (NGPcol.potential_grouped_provider, pl.Boolean()),
+        ]
+    )
+
+    null_care_home_grouped_providers_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (NGPcol.number_of_beds_at_provider, pl.Int64()),
+            (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
+            (NGPcol.potential_grouped_provider, pl.Boolean()),
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+        ]
+    )
+
+    null_non_res_grouped_providers_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.care_home, pl.String()),
+            (NGPcol.potential_grouped_provider, pl.Boolean()),
+            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (NGPcol.location_pir_average, pl.Float64()),
+            (NGPcol.provider_pir_count, pl.Int64()),
+            (NGPcol.provider_pir_sum, pl.Float64()),
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+        ]
+    )
+
+
+@dataclass
+class CleanAscwdsFilledPostOutliersSchema:
+    unfiltered_ind_cqc_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.provider_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.primary_service_type, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+        ]
+    )
+
+
+@dataclass
+class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
+    ind_cqc_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.primary_service_type, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.number_of_beds_banded, pl.Float64()),
+            (IndCQC.ascwds_filled_posts, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+        ]
+    )
+
+    filter_df_to_care_homes_with_known_beds_and_filled_posts_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+        ]
+    )
+
+    select_data_not_in_subset_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            ("other_col", pl.String()),
+        ]
+    )
+
+    calculate_average_filled_posts_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.number_of_beds_banded, pl.Float64()),
+            (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
+        ]
+    )
+
+    expected_calculate_average_filled_posts_schema = pl.Schema(
+        [
+            (IndCQC.number_of_beds_banded, pl.Float64()),
+            (IndCQC.avg_filled_posts_per_bed_ratio, pl.Float64()),
+        ]
+    )
+
+    calculate_standardised_residuals_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.expected_filled_posts, pl.Float64()),
+        ]
+    )
+    expected_calculate_standardised_residuals_schema = pl.Schema(
+        list(calculate_standardised_residuals_schema.items())
+        + [
+            (IndCQC.standardised_residual, pl.Float64()),
+        ]
+    )
+
+    standardised_residual_percentile_cutoff_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.primary_service_type, pl.String()),
+            (IndCQC.standardised_residual, pl.Float64()),
+        ]
+    )
+
+    expected_standardised_residual_percentile_cutoff_with_percentiles_schema = (
+        pl.Schema(
+            [
+                (IndCQC.location_id, pl.String()),
+                (IndCQC.primary_service_type, pl.String()),
+                (IndCQC.standardised_residual, pl.Float64()),
+                (IndCQC.lower_percentile, pl.Float64()),
+                (IndCQC.upper_percentile, pl.Float64()),
+            ]
+        )
+    )
+
+    duplicate_ratios_within_standardised_residual_cutoff_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
+            (IndCQC.standardised_residual, pl.Float64()),
+            (IndCQC.lower_percentile, pl.Float64()),
+            (IndCQC.upper_percentile, pl.Float64()),
+        ]
+    )
+
+    expected_duplicate_ratios_within_standardised_residual_cutoff_schema = pl.Schema(
+        list(duplicate_ratios_within_standardised_residual_cutoff_schema.items())
+        + [
+            (IndCQC.filled_posts_per_bed_ratio_within_std_resids, pl.Float64()),
+        ]
+    )
+
+    min_and_max_permitted_ratios_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.filled_posts_per_bed_ratio_within_std_resids, pl.Float64()),
+            (IndCQC.number_of_beds_banded, pl.Float64()),
+        ]
+    )
+    expected_min_and_max_permitted_ratios_schema = pl.Schema(
+        list(min_and_max_permitted_ratios_schema.items())
+        + [
+            (IndCQC.min_filled_posts_per_bed_ratio, pl.Float64()),
+            (IndCQC.max_filled_posts_per_bed_ratio, pl.Float64()),
+        ]
+    )
+
+    set_minimum_permitted_ratio_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
+        ]
+    )
+
+    winsorize_outliers_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
+            (IndCQC.min_filled_posts_per_bed_ratio, pl.Float64()),
+            (IndCQC.max_filled_posts_per_bed_ratio, pl.Float64()),
+        ]
+    )
+
+    combine_dataframes_care_home_schema = pl.Schema(
+        list(ind_cqc_schema.items())
+        + [
+            ("additional column", pl.Float64()),
+        ]
+    )
+
+    combine_dataframes_non_care_home_schema = ind_cqc_schema
+
+    expected_combined_dataframes_schema = combine_dataframes_non_care_home_schema
