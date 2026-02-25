@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from datetime import date
 
@@ -1452,11 +1453,13 @@ class ForwardFillLatestKnownValue:
     ]
 
     expected_size_based_forward_fill_days_dict = {
-        -float("inf"): 65,
+        -math.inf: 250,
+        10: 125,
+        50: 65,
     }
 
     TEST_SIZE_BASED_FORWARD_FILL_DAYS = {
-        -float("inf"): 1,
+        -math.inf: 1,
         2: 2,
         4: 3,
     }
