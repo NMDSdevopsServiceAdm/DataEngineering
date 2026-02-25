@@ -131,28 +131,22 @@ def get_test_dfs(
 
 
 class TestImputeFullTimeSeries:
-    def test_does_linear_interpolation(self):
-        input_df = pl.DataFrame({"vals": [1, None, 3]})
-        expected_df = pl.DataFrame({"vals": [1, 2, 3]}).cast(pl.Float64)
-        returned_df = input_df.select(job.impute_full_time_series("vals"))
-        pl_testing.assert_frame_equal(returned_df, expected_df)
-
-    def test_backfills(self):
-        input_df = pl.DataFrame({"vals": [None, 1, 3]})
-        expected_df = pl.DataFrame({"vals": [1, 1, 3]}).cast(pl.Float64)
-        returned_df = input_df.select(job.impute_full_time_series("vals"))
-        pl_testing.assert_frame_equal(returned_df, expected_df)
-
-    def test_forward_fills(self):
-        input_df = pl.DataFrame({"vals": [1, 3, None]})
-        expected_df = pl.DataFrame({"vals": [1, 3, 3]}).cast(pl.Float64)
-        returned_df = input_df.select(job.impute_full_time_series("vals"))
-        pl_testing.assert_frame_equal(returned_df, expected_df)
-
-    def test_does_all_three_together_for_full_time_series(self):
-        """Linear interpolates, then forward fills, then backfills."""
-        input_df = pl.DataFrame({"vals": [None, 1, None, 3, None]})
-        expected_df = pl.DataFrame({"vals": [1, 1, 2, 3, 3]}).cast(pl.Float64)
+    @pytest.mark.parametrize(
+        "input, expected",
+        [
+            pytest.param([1, None, 3], [1, 2, 3], id="linear_interpolation"),
+            pytest.param([None, 1, 3], [1, 1, 3], id="backfill"),
+            pytest.param([1, 3, None], [1, 3, 3], id="forward_fill"),
+            pytest.param(
+                [None, 1, None, 3, None],
+                [1, 1, 2, 3, 3],
+                id="combined_time_series",
+            ),
+        ],
+    )
+    def test_does_linear_interpolation(self, input, expected):
+        input_df = pl.DataFrame({"vals": input})
+        expected_df = pl.DataFrame({"vals": expected}).cast(pl.Float64)
         returned_df = input_df.select(job.impute_full_time_series("vals"))
         pl_testing.assert_frame_equal(returned_df, expected_df)
 
