@@ -1,4 +1,5 @@
 import unittest
+from typing import Any
 
 import polars as pl
 import polars.testing as pl_testing
@@ -114,6 +115,24 @@ class TestGetPercentageShare(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_df, expected_df)
 
 
+def get_test_dfs(
+    expected_data: list[tuple[Any]],
+) -> tuple[pl.DataFrame, pl.DataFrame]:
+    """Construct input and expected DataFrames or interpolate and extrapolate tests."""
+    # Remove the output column from the expected data to get input data.
+    input_data = [row[:-1] for row in expected_data]
+    input_schema = [
+        IndCQC.location_id,
+        IndCQC.unix_time,
+        IndCQC.main_job_role_clean_labelled,
+        IndCQC.ascwds_job_role_ratios,
+    ]
+    expected_schema = input_schema + ["output"]
+    input_df = pl.DataFrame(input_data, schema=input_schema, orient="row")
+    expected_df = pl.DataFrame(expected_data, schema=expected_schema, orient="row")
+    return input_df, expected_df
+
+
 class TestInterpolate:
     @pytest.mark.parametrize(
         "expected_data",
@@ -149,30 +168,17 @@ class TestInterpolate:
     )
     def test_linear_interpolation(self, expected_data):
         # Setup.
-        input_schema = {
-            IndCQC.location_id: pl.String,
-            IndCQC.unix_time: pl.Int32,
-            IndCQC.main_job_role_clean_labelled: pl.String,
-            IndCQC.ascwds_job_role_counts: pl.Int64,
-        }
-        expected_schema = input_schema.copy()
-        expected_schema.update(
-            {IndCQC.ascwds_job_role_ratios_interpolated: pl.Float64},
-        )
-        # Remove the output column from the expected data to get input data.
-        input_data = [row[:-1] for row in expected_data]
-        input_df = pl.DataFrame(input_data, schema=input_schema, orient="row")
-        expected_df = pl.DataFrame(expected_data, schema=expected_schema, orient="row")
+        input_df, expected_df = get_test_dfs(expected_data)
         # Do test.
         returned_df = input_df.with_columns(
-            pl.col(IndCQC.ascwds_job_role_counts)
+            pl.col(IndCQC.ascwds_job_role_ratios)
             .interpolate()
             .over(
                 IndCQC.location_id,
                 IndCQC.main_job_role_clean_labelled,
                 order_by=IndCQC.unix_time,
             )
-            .alias(IndCQC.ascwds_job_role_ratios_interpolated)
+            .alias("output")
         )
         pl_testing.assert_frame_equal(returned_df, expected_df)
 
@@ -207,17 +213,7 @@ class TestExtrapolate:
             ("1-003", 1000000500, MainJobRoleLabels.care_worker, None, None),
             ("1-003", 1000000500, MainJobRoleLabels.registered_nurse, None, None),
         ]
-        # Remove the output column from the expected data to get input data.
-        input_data = [row[:-1] for row in expected_data]
-        input_schema = [
-            IndCQC.location_id,
-            IndCQC.unix_time,
-            IndCQC.main_job_role_clean_labelled,
-            IndCQC.ascwds_job_role_ratios,
-        ]
-        expected_schema = input_schema + [IndCQC.ascwds_job_role_ratios_interpolated]
-        input_df = pl.DataFrame(input_data, schema=input_schema, orient="row")
-        expected_df = pl.DataFrame(expected_data, schema=expected_schema, orient="row")
+        input_df, expected_df = get_test_dfs(expected_data)
         # Do test.
         returned_df = input_df.with_columns(
             pl.col(IndCQC.ascwds_job_role_ratios)
@@ -229,6 +225,6 @@ class TestExtrapolate:
                 IndCQC.main_job_role_clean_labelled,
                 order_by=IndCQC.unix_time,
             )
-            .alias(IndCQC.ascwds_job_role_ratios_interpolated)
+            .alias("output")
         )
         pl_testing.assert_frame_equal(returned_df, expected_df)
