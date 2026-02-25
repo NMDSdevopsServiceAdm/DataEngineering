@@ -9,6 +9,8 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+
 
 @dataclass
 class CleaningUtilsSchemas:
@@ -46,5 +48,28 @@ class RawDataAdjustmentsSchemas:
         [
             (CQCLClean.location_id, pl.String()),
             ("other_column", pl.String()),
+        ]
+    )
+
+@dataclass
+class CalculateWindowedColumnSchemas:
+    input_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.ascwds_filled_posts, pl.Float64()),
+        ]
+    )
+    expected_schema_with_float_column = pl.Schema(
+        list(input_schema.items())
+        + [
+            ("new_column", pl.Float64()),
+        ]
+    )
+    expected_schema_with_int_column = pl.Schema(
+        list(input_schema.items())
+        + [
+            ("new_column", pl.UInt32()),
         ]
     )
