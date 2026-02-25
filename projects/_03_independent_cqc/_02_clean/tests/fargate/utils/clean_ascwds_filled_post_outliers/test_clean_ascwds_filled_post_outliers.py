@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import Mock, patch
 
 import polars as pl
-import polars.testing as pl_testing
 
 import projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (

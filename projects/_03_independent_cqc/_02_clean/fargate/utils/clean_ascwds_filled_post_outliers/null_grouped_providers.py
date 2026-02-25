@@ -6,7 +6,7 @@ import polars_utils.cleaning_utils as pUtils
 from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
     update_filtering_rule,
 )
-from polars_utils.utils import calculate_windowed_column
+
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
