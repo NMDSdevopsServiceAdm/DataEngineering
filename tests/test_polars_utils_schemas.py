@@ -51,6 +51,7 @@ class RawDataAdjustmentsSchemas:
         ]
     )
 
+
 @dataclass
 class CalculateWindowedColumnSchemas:
     input_schema = pl.Schema(

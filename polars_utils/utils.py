@@ -459,9 +459,9 @@ def calculate_windowed_column(
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame.
-        new_col (str): The name of the new column to be added.
-        input_column (str): The name of the input column to be aggregated.
-        partition_by (list[str] | None): Columns to partition by (like Spark's partitionBy).
+        new_column_name (str): The name of the new column to be added.
+        input_column_name (str): The name of the input column to be aggregated.
+        partition_by_cols (list[str] | None): Columns to partition by (like Spark's partitionBy).
         aggregation_function (str): The function to use in the calculation ('avg', 'count', 'max', 'min' or 'sum').
 
     Returns:
@@ -493,4 +493,3 @@ def calculate_windowed_column(
     #     lf = lf.sort(order_by_cols)
 
     return lf.with_columns(expr.alias(new_column_name))
-
