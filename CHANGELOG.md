@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 
 - Changed the forward-filling of the last known value from two months for all locations to using a length of time base on the location size.
 
+- Removed minimum value requirement from `merge_columns_in_order`.
+
 ### Fixed
 
 
