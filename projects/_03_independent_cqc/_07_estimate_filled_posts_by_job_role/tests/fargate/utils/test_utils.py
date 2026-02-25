@@ -112,18 +112,6 @@ class TestGetPercentageShare(unittest.TestCase):
 
 class TestInterpolate:
     def setUp():
-        input_data = [
-            ("1000", 1000, MainJobRoleLabels.care_worker, 1.0),
-            ("1000", 1000, MainJobRoleLabels.registered_nurse, 1.0),
-            ("1000", 1000, MainJobRoleLabels.senior_care_worker, 1.0),
-            ("1000", 1000, MainJobRoleLabels.senior_management, 1.0),
-            ("1000", 1001, None, None),
-            ("1000", 1002, MainJobRoleLabels.care_worker, 3.0),
-            ("1000", 1002, MainJobRoleLabels.registered_nurse, 3.0),
-            ("1000", 1002, MainJobRoleLabels.senior_care_worker, 3.0),
-            ("1000", 1002, MainJobRoleLabels.senior_management, 3.0),
-        ]
-
         expected_data = [
             ("1000", 1000, MainJobRoleLabels.care_worker, 1.0, 1.0),
             ("1000", 1000, MainJobRoleLabels.registered_nurse, 1.0, 1.0),
@@ -138,6 +126,7 @@ class TestInterpolate:
             ("1000", 1002, MainJobRoleLabels.senior_care_worker, 3.0, 3.0),
             ("1000", 1002, MainJobRoleLabels.senior_management, 3.0, 3.0),
         ]
+        input_data = [row[:-1] for row in expected_data]
         input_schema = {
             IndCQC.location_id: pl.String,
             IndCQC.unix_time: pl.Int32,
@@ -147,29 +136,11 @@ class TestInterpolate:
         expected_schema = input_schema.copy()
         expected_schema.update({IndCQC.ascwds_job_role_ratios_interpolated: pl.Int64})
 
-        input_data2 = [
-            ("1000", 1000, None, None),
-            ("1000", 1001, MainJobRoleLabels.care_worker, 2.0),
-            ("1000", 1001, MainJobRoleLabels.registered_nurse, 4.0),
-            ("1000", 1001, MainJobRoleLabels.senior_care_worker, 6.0),
-            ("1000", 1001, MainJobRoleLabels.senior_management, 8.0),
-            ("1000", 1002, None, None),
-            ("1000", 1003, MainJobRoleLabels.care_worker, 0.0),
-            ("1000", 1003, MainJobRoleLabels.registered_nurse, 2.0),
-            ("1000", 1003, MainJobRoleLabels.senior_care_worker, 4.0),
-            ("1000", 1003, MainJobRoleLabels.senior_management, 5.0),
-            ("1000", 1004, MainJobRoleLabels.care_worker, 1.0),
-            ("1000", 1004, MainJobRoleLabels.registered_nurse, 1.0),
-            ("1000", 1004, MainJobRoleLabels.senior_care_worker, 1.0),
-            ("1000", 1004, MainJobRoleLabels.senior_management, 1.0),
-            ("1000", 1005, MainJobRoleLabels.care_worker, 5.0),
-            ("1000", 1005, MainJobRoleLabels.registered_nurse, 4.0),
-            ("1000", 1005, MainJobRoleLabels.senior_care_worker, 3.0),
-            ("1000", 1005, MainJobRoleLabels.senior_management, 2.0),
-            ("1000", 1006, None, None),
-        ]
         expected_data2 = [
-            ("1000", 1000, None, None, None),
+            ("1000", 1000, MainJobRoleLabels.care_worker, None, None),
+            ("1000", 1000, MainJobRoleLabels.registered_nurse, None, None),
+            ("1000", 1000, MainJobRoleLabels.senior_care_worker, None, None),
+            ("1000", 1000, MainJobRoleLabels.senior_management, None, None),
             ("1000", 1001, MainJobRoleLabels.care_worker, 2.0, 2.0),
             ("1000", 1001, MainJobRoleLabels.registered_nurse, 4.0, 4.0),
             ("1000", 1001, MainJobRoleLabels.senior_care_worker, 6.0, 6.0),
@@ -190,5 +161,9 @@ class TestInterpolate:
             ("1000", 1005, MainJobRoleLabels.registered_nurse, 4.0, 4.0),
             ("1000", 1005, MainJobRoleLabels.senior_care_worker, 3.0, 3.0),
             ("1000", 1005, MainJobRoleLabels.senior_management, 2.0, 2.0),
-            ("1000", 1006, None, None),
+            ("1000", 1006, MainJobRoleLabels.care_worker, None, None),
+            ("1000", 1006, MainJobRoleLabels.registered_nurse, None, None),
+            ("1000", 1006, MainJobRoleLabels.senior_care_worker, None, None),
+            ("1000", 1006, MainJobRoleLabels.senior_management, None, None),
         ]
+        input_data2 = [row[:-1] for row in expected_data2]
