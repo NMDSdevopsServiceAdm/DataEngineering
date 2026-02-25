@@ -51,6 +51,8 @@ All notable changes to this project will be documented in this file.
 
 - Added a new utils file for all the inline function within clean_ind_cqc_filled_posts.py and converted them to Polars.
 
+- Converted `filtering_utils.py`, `forward_fill_latest_known_value.py` and `utils.py` within clean Ind CQC job to polars.
+
 - Converted clean_ascwds_filled_post_outliers utils folder to polars within Clean Ind CQC Job.
 
 ### Changed

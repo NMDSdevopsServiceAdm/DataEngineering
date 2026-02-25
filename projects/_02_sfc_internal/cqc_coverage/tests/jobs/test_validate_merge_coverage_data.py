@@ -36,6 +36,11 @@ class MainTests(ValidateMergedCoverageDatasetTests):
         read_from_parquet_patch: Mock,
         write_to_parquet_patch: Mock,
     ):
+        read_from_parquet_patch.side_effect = [
+            self.test_clean_cqc_location_df,
+            self.test_merged_coverage_df,
+        ]
+
         with self.assertRaises(ValueError):
             job.main(
                 self.TEST_CQC_LOCATION_SOURCE,
@@ -43,8 +48,8 @@ class MainTests(ValidateMergedCoverageDatasetTests):
                 self.TEST_DESTINATION,
             )
 
-            self.assertEqual(read_from_parquet_patch.call_count, 2)
-            self.assertEqual(write_to_parquet_patch.call_count, 1)
+        self.assertEqual(read_from_parquet_patch.call_count, 2)
+        self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
 class CalculateExpectedSizeofDataset(ValidateMergedCoverageDatasetTests):

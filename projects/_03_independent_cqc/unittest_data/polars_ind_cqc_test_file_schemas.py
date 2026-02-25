@@ -611,6 +611,127 @@ class ArchiveFilledPostsEstimates:
 
 
 @dataclass
+class CleanFilteringUtilsSchemas:
+    add_filtering_column_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+        ]
+    )
+    expected_add_filtering_column_schema = pl.Schema(
+        list(add_filtering_column_schema.items())
+        + [
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+        ]
+    )
+    update_filtering_rule_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+        ]
+    )
+
+    aggregate_values_to_provider_level_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.provider_id, pl.String()),
+            (IndCQC.ct_care_home_total_employed_cleaned, pl.Int64()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+    expected_aggregate_values_to_provider_level_schema = pl.Schema(
+        list(aggregate_values_to_provider_level_schema.items())
+        + [
+            (IndCQC.ct_care_home_total_employed_cleaned_provider_sum, pl.Int64()),
+        ]
+    )
+
+
+@dataclass
+class CleanUtilsSchemas:
+    locations_with_repeated_value_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            ("integer_column", pl.Int64()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    expected_locations_without_repeated_values_schema = pl.Schema(
+        list(locations_with_repeated_value_schema.items())
+        + [
+            ("integer_column_deduplicated", pl.Int64()),
+        ]
+    )
+    providers_with_repeated_value_schema = pl.Schema(
+        [
+            (IndCQC.provider_id, pl.String()),
+            ("integer_column", pl.Int64()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    expected_providers_without_repeated_values_schema = pl.Schema(
+        list(providers_with_repeated_value_schema.items())
+        + [
+            ("integer_column_deduplicated", pl.Int64()),
+        ]
+    )
+
+
+@dataclass
+class ForwardFillLatestKnownValue:
+    col_to_forward_fill: str = "col_to_forward_fill"
+    days_to_forward_fill: str = "days_to_forward_fill"
+    last_known_date: str = "last_known_date"
+    last_known_value: str = "last_known_value"
+
+    input_return_last_known_value_locations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (col_to_forward_fill, pl.Int64()),
+        ]
+    )
+    expected_return_last_known_value_locations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (last_known_date, pl.Date()),
+            (last_known_value, pl.Int64()),
+        ]
+    )
+    forward_fill_locations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (col_to_forward_fill, pl.Int64()),
+            (last_known_date, pl.Date()),
+            (last_known_value, pl.Int64()),
+            (days_to_forward_fill, pl.Int64()),
+        ]
+    )
+    forward_fill_latest_known_value_locations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (col_to_forward_fill, pl.Int64()),
+        ]
+    )
+    size_based_forward_fill_days_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (col_to_forward_fill, pl.Int64()),
+        ]
+    )
+    expected_size_based_forward_fill_days_schema = pl.Schema(
+        list(size_based_forward_fill_days_schema.items())
+        + [(days_to_forward_fill, pl.Int32())]
+    )
+
+
+@dataclass
 class NullFilledPostsUsingInvalidMissingDataCodeSchema:
     null_filled_posts_using_invalid_missing_data_code_schema = pl.Schema(
         [
