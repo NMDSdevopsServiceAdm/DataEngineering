@@ -1,24 +1,14 @@
 import unittest
 
 import utils.validation.validation_utils as job
+from tests.base_test import SparkBaseTest
 from tests.test_file_data import ValidationUtils as Data
 from tests.test_file_schemas import ValidationUtils as Schemas
-from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class ValidateUtilsTests(unittest.TestCase):
+class ValidateDatasetTests(SparkBaseTest):
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
-
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
-
-class ValidateDatasetTests(ValidateUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
         self.rules = Data.multiple_rules
         self.unknown_rules = Data.unknown_rules
         self.test_df = self.spark.createDataFrame(
@@ -39,9 +29,8 @@ class ValidateDatasetTests(ValidateUtilsTests):
         self.assertTrue("Unknown rule to check" in str(context.exception))
 
 
-class CheckForColumnCompletenessTests(ValidateUtilsTests):
+class CheckForColumnCompletenessTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.one_column_rule = Data.one_complete_column_rule
         self.two_column_rule = Data.two_complete_columns_rule
 
@@ -114,9 +103,8 @@ class CheckForColumnCompletenessTests(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class CheckOfUniquenessOfTwoIndexColumns(ValidateUtilsTests):
+class CheckOfUniquenessOfTwoIndexColumns(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.unique_columns_rule = Data.unique_index_columns_rule
 
     def test_create_check_of_uniqueness_of_two_index_columns_returns_success_when_columns_are_unique(
@@ -145,9 +133,8 @@ class CheckOfUniquenessOfTwoIndexColumns(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class CheckOfSizeOfDataset(ValidateUtilsTests):
+class CheckOfSizeOfDataset(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.size_of_dataset_rule = Data.size_of_dataset_rule
 
     def test_create_check_of_size_of_dataset_returns_success_with_valid_data(self):
@@ -185,9 +172,8 @@ class CheckOfSizeOfDataset(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class CheckOfMinValues(ValidateUtilsTests):
+class CheckOfMinValues(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.min_values_rule = Data.min_values_rule
         self.min_values_multiple_columns_rule = Data.min_values_multiple_columns_rule
 
@@ -243,9 +229,8 @@ class CheckOfMinValues(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class CheckOfMaxValues(ValidateUtilsTests):
+class CheckOfMaxValues(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.max_values_rule = Data.max_values_rule
         self.max_values_multiple_columns_rule = Data.max_values_multiple_columns_rule
 
@@ -301,9 +286,8 @@ class CheckOfMaxValues(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class CheckCategoricalValues(ValidateUtilsTests):
+class CheckCategoricalValues(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.categorical_values_rule = Data.categorical_values_rule
 
     def test_create_check_of_categorical_values_in_columns_returns_success_when_all_values_are_present(
@@ -344,9 +328,8 @@ class CheckCategoricalValues(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
+class CheckOfNumberOfDistinctValuesInColumns(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.distinct_values_rule = Data.distinct_values_rule
         self.distinct_values_multiple_columns_rule = (
             Data.distinct_values_multiple_columns_rule
@@ -404,9 +387,8 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class CheckCareHomeAndPrimaryServiceType(ValidateUtilsTests):
+class CheckCareHomeAndPrimaryServiceType(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.custom_type_rule = Data.custom_type_rule
 
     def test_create_check_of_custom_type_when_values_are_related(
@@ -438,9 +420,8 @@ class CheckCareHomeAndPrimaryServiceType(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class AddColumnWithLengthOfString(ValidateUtilsTests):
+class AddColumnWithLengthOfString(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.column_name = IndCQC.location_id
         self.test_df = self.spark.createDataFrame(
             Data.add_column_with_length_of_string_rows,
@@ -463,10 +444,7 @@ class AddColumnWithLengthOfString(ValidateUtilsTests):
         self.assertEqual(self.expected_df.collect(), self.returned_df.collect())
 
 
-class RaiseExceptionOnFailures(ValidateUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
+class RaiseExceptionOnFailures(SparkBaseTest):
     def test_raise_exception_if_any_checks_failed_raises_exception(self):
         test_df = self.spark.createDataFrame(Data.check_rows, Schemas.validation_schema)
         with self.assertRaises(ValueError) as context:

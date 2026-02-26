@@ -193,21 +193,6 @@ module "clean_ons_data_job" {
   }
 }
 
-module "archive_filled_posts_estimates_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_03_independent_cqc/_09_archive_estimates/jobs"
-  script_name     = "archive_filled_posts_estimates.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-
-  job_parameters = {
-    "--estimate_ind_cqc_filled_posts_source"     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/"
-    "--monthly_filled_posts_archive_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_monthly_filled_posts/"
-    "--annual_filled_posts_archive_destination"  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_09_archived_annual_filled_posts/"
-  }
-}
-
 module "clean_ind_cqc_filled_posts_job" {
   source            = "../modules/glue-job"
   script_dir        = "projects/_03_independent_cqc/_02_clean/jobs"
@@ -614,9 +599,9 @@ module "estimate_ind_cqc_filled_posts_job" {
   datasets_bucket   = module.datasets_bucket
 
   job_parameters = {
-    "--bucket_name" = "${module.datasets_bucket.bucket_name}"
-    "--source"      = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
-    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/"
+    "--bucket_name"                   = "${module.datasets_bucket.bucket_name}"
+    "--imputed_ind_cqc_data_source"   = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
+    "--estimated_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/"
   }
 }
 

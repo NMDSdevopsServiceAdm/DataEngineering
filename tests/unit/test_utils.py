@@ -1,4 +1,3 @@
-import shutil
 import unittest
 from datetime import date, datetime
 from enum import Enum
@@ -19,6 +18,7 @@ from pyspark.sql.types import (
     StructType,
 )
 
+from tests.base_test import SparkBaseTest
 from tests.test_file_data import UtilsData
 from tests.test_file_schemas import UtilsSchema
 from utils import utils
@@ -78,10 +78,9 @@ class StubberClass:
         self.__stubber.activate()
 
 
-class UtilsTests(unittest.TestCase):
+class UtilsTests(SparkBaseTest):
     test_csv_path = "tests/test_data/example_csv.csv"
     test_csv_custom_delim_path = "tests/test_data/example_csv_custom_delimiter.csv"
-    tmp_dir = "tmp-out"
     TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp-workplace"
     example_csv_for_schema_tests = "tests/test_data/example_csv_for_schema_tests.csv"
     example_csv_for_schema_tests_extra_column = (
@@ -97,7 +96,6 @@ class UtilsTests(unittest.TestCase):
     smaller_string_boost = 35
 
     def setUp(self):
-        self.spark = utils.get_spark()
         self.df = self.spark.read.csv(self.test_csv_path, header=True)
         self.df_with_extra_col = self.spark.read.csv(
             self.example_csv_for_schema_tests_extra_column, header=True
@@ -115,18 +113,8 @@ class UtilsTests(unittest.TestCase):
             CqcPIRCleanedColumns.pir_submission_date_as_date
         )
 
-    def tearDown(self):
-        try:
-            shutil.rmtree(self.tmp_dir)
-            shutil.rmtree(self.TEST_ASCWDS_WORKPLACE_FILE)
-        except OSError:
-            pass  # Ignore dir does not exist
-
 
 class GeneralUtilsTests(UtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_get_s3_objects_list_returns_all_objects(self):
         partial_response = {
             "Contents": [
@@ -593,10 +581,11 @@ class GeneralUtilsTests(UtilsTests):
 
     def test_write(self):
         df = utils.read_csv(self.test_csv_path)
-        utils.write_to_parquet(df, self.tmp_dir)
+        parquet_dir = self.get_temp_path("test_parquet")
+        utils.write_to_parquet(df, parquet_dir)
 
-        self.assertTrue(Path("tmp-out").is_dir())
-        self.assertTrue(Path("tmp-out/_SUCCESS").exists())
+        self.assertTrue(Path(parquet_dir).is_dir())
+        self.assertTrue(Path(parquet_dir).joinpath("_SUCCESS").exists())
 
     def test_format_date_fields(self):
         self.assertEqual(self.df.select("date_col").first()[0], "28/11/1993")

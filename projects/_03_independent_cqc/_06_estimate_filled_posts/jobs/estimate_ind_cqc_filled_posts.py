@@ -16,6 +16,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res
 )
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
     enrich_with_model_predictions,
+    set_min_value,
 )
 from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
 from utils import utils
@@ -95,13 +96,19 @@ ind_cqc_columns = [
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
-def main(bucket_name: str, source: str, destination: str) -> DataFrame:
+def main(
+    bucket_name: str,
+    imputed_ind_cqc_data_source: str,
+    estimated_ind_cqc_destination: str,
+) -> DataFrame:
     print("Estimating independent CQC filled posts...")
 
     spark = utils.get_spark()
     spark.sql("set spark.sql.broadcastTimeout = 2000")
 
-    estimate_filled_posts_df = utils.read_from_parquet(source, ind_cqc_columns)
+    estimate_filled_posts_df = utils.read_from_parquet(
+        imputed_ind_cqc_data_source, ind_cqc_columns
+    )
 
     estimate_filled_posts_df = enrich_with_model_predictions(
         estimate_filled_posts_df,
@@ -129,6 +136,7 @@ def main(bucket_name: str, source: str, destination: str) -> DataFrame:
         IndCQC.care_home_model,
         IndCQC.imputed_posts_care_home_model,
         care_home=True,
+        extrapolation_method="nominal",
     )
 
     estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
@@ -137,6 +145,7 @@ def main(bucket_name: str, source: str, destination: str) -> DataFrame:
         IndCQC.non_res_combined_model,
         IndCQC.imputed_posts_non_res_combined_model,
         care_home=False,
+        extrapolation_method="nominal",
     )
 
     estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
@@ -145,6 +154,7 @@ def main(bucket_name: str, source: str, destination: str) -> DataFrame:
         IndCQC.non_res_combined_model,
         IndCQC.imputed_pir_filled_posts_model,
         care_home=False,
+        extrapolation_method="nominal",
     )
 
     estimate_filled_posts_df = merge_columns_in_order(
@@ -162,15 +172,19 @@ def main(bucket_name: str, source: str, destination: str) -> DataFrame:
         IndCQC.estimate_filled_posts_source,
     )
 
+    estimate_filled_posts_df = set_min_value(
+        estimate_filled_posts_df, IndCQC.estimate_filled_posts, 1.0
+    )
+
     estimate_filled_posts_df = estimate_non_res_capacity_tracker_filled_posts(
         estimate_filled_posts_df
     )
 
-    print(f"Exporting as parquet to {destination}")
+    print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
 
     utils.write_to_parquet(
         estimate_filled_posts_df,
-        destination,
+        estimated_ind_cqc_destination,
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
@@ -182,9 +196,18 @@ if __name__ == "__main__":
     print("Spark job 'estimate_ind_cqc_filled_posts' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    (bucket_name, source, destination) = utils.collect_arguments(
-        ("--bucket_name", "The s3 bucket name to source and save the datasets to"),
-        ("--source", "S3 directory for reading input dataset"),
-        ("--destination", "S3 directory for storing filled post estimates"),
+    (bucket_name, imputed_ind_cqc_data_source, estimated_ind_cqc_destination) = (
+        utils.collect_arguments(
+            ("--bucket_name", "The s3 bucket name to source and save the datasets to"),
+            (
+                "--imputed_ind_cqc_data_source",
+                "Source s3 directory for imputed ASCWDS and PIR dataset",
+            ),
+            (
+                "--estimated_ind_cqc_destination",
+                "Destination s3 directory for outputting estimates for filled posts",
+            ),
+        )
     )
-    main(bucket_name, source, destination)
+
+    main(bucket_name, imputed_ind_cqc_data_source, estimated_ind_cqc_destination)

@@ -6,11 +6,29 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Converted archive job from pyspark to polars.
 
+- Created polars job script for clean ind cqc filled posts. Script only reads and writes data and has comments
+  for each util call to be added to the script as it's developed.
+  Added this job to the estimates pipeline in parallel with pyspark version.
 
 ### Changed
-- Replaced the static PySpark modelling code for non-residential with dormancy with the auto-retraining sklearn equivalent.
+- Switched test runner to pytest in CI, so that a shared session fixture for a spark configuration optimised for tests
+  can be used. Has resulted in 70% reduction in runtime for current pyspark tests in CI, and improvement on local
+  Windows machines. https://github.com/NMDSdevopsServiceAdm/DataEngineering/pull/1219
 
+- Refactored the rate of change to filter rows instead of nulling values to speed up processing time and make the
+  filtering process in a follow-up PR much easier to implement.
+
+- Changed the forward-filling of the last known value from two months for all locations to using a length of time base on the location size.
+
+- Changed imputation to apply nominal changes instead of converting and applying a ratio.
+
+- Removed minimum value requirement from `merge_columns_in_order`.
+
+- Moved `set_min_value` from model predictions and imputation to after the estimates column is produced.
+
+- Replaced the static PySpark modelling code for non-residential with dormancy with the auto-retraining sklearn equivalent.
 
 ### Fixed
 
@@ -43,6 +61,8 @@ All notable changes to this project will be documented in this file.
 
 - Added a new utils file for all the inline function within clean_ind_cqc_filled_posts.py and converted them to Polars.
 
+- Converted `filtering_utils.py`, `forward_fill_latest_known_value.py` and `utils.py` within clean Ind CQC job to polars.
+
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 
@@ -56,13 +76,13 @@ All notable changes to this project will be documented in this file.
 
 - Moved calculate_care_home_status_count function from estimate filled posts utils to clean_ind_cqc_filled_posts job.
 
-- Replaced the static PySpark modelling code for care homes and non-residential without dormancy with the auto-retraining sklearn equivalent.
-
 - In the clean ASC-WDS workplace job, a new function was added to select only the required columns before saving the cleaned ASC-WDS workplace data.
 
 - Removed filters from run_postcode_matching function. Data is already filtered before passed to this function.
 
 - Added unit tests for combine_non_res_with_and_without_dormancy_models function to check expected columns and row count.
+
+- Replaced the static PySpark modelling code for care homes and non-residential without dormancy with the auto-retraining sklearn equivalent.
 
 ### Fixed
 - Added a new test account in ASC-WDS to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)
