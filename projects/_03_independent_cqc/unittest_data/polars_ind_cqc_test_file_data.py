@@ -243,13 +243,13 @@ class FeaturesEngineeringUtilsData:
         ("1-005", "Sparse with a capital S", "Sparse setting"),
     ]
 
-    add_squared_column_rows = [
+    add_power_column_rows = [
         ("1-001", None),
         ("1-002", 0),
         ("1-003", 2),
         ("1-004", 4),
     ]
-    expected_add_squared_column_rows = [
+    expected_add_power_column_rows = [
         ("1-001", None, None),
         ("1-002", 0, 0),
         ("1-003", 2, 4),

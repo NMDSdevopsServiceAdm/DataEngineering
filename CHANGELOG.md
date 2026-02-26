@@ -28,6 +28,8 @@ All notable changes to this project will be documented in this file.
 
 - Moved `set_min_value` from model predictions and imputation to after the estimates column is produced.
 
+- Replaced the static PySpark modelling code for non-residential with dormancy with the auto-retraining sklearn equivalent.
+
 ### Fixed
 
 
