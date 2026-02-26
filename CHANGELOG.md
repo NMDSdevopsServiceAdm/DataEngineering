@@ -24,6 +24,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed minimum value requirement from `merge_columns_in_order`.
 
+- Moved `set_min_value` from model predictions and imputation to after the estimates column is produced.
+
 ### Fixed
 
 
