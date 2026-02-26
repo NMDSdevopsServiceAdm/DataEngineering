@@ -43,9 +43,9 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
     This is to ensure that we're only using ASCDWS job role data when ASCDWS data has
     been used for estimated filled posts.
 
-    Nullify when conditions not met:
+    Nullify when the following conditions are NOT met:
     1. Source must be "ascwds_pir_merged"
-    2. Estimates must equal the value after dedup_clean step.
+    2. Estimates must equal the value after ASCWDS dedup_clean step.
 
     Args:
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
@@ -53,6 +53,7 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
     Returns:
         pl.LazyFrame: Transformed LazyFrame with ASCDWS job role counts nullified.
     """
+    # Filter for the positive case, `.otherwise(None)` is implied.
     source_is_ascwds = pl.col(IndCQC.estimate_filled_posts_source) == pl.lit(
         EstimateFilledPostsSource.ascwds_pir_merged
     )
