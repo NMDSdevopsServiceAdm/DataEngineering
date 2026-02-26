@@ -61,6 +61,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted `filtering_utils.py`, `forward_fill_latest_known_value.py` and `utils.py` within clean Ind CQC job to polars.
 
+- Converted clean_ascwds_filled_post_outliers utils folder to polars within Clean Ind CQC Job.
+
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 

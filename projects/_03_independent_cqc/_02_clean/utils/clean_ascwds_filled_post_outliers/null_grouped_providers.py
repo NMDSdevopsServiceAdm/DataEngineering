@@ -36,6 +36,7 @@ class NullGroupedProvidersConfig:
     POSTS_PER_PIR_PROVIDER_THRESHOLD: float = 1.5
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\null_grouped_providers.py
 def null_grouped_providers(df: DataFrame) -> DataFrame:
     """
     Null ascwds_filled_posts_dedup_clean where a provider has multiple locations, all their ascwds is under one location.
@@ -65,6 +66,7 @@ def null_grouped_providers(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\null_grouped_providers.py
 def calculate_data_for_grouped_provider_identification(df: DataFrame) -> DataFrame:
     """
     Calculates the variables needed to determine whether a location is likely to be a grouped provider.
@@ -121,6 +123,7 @@ def calculate_data_for_grouped_provider_identification(df: DataFrame) -> DataFra
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\null_grouped_providers.py
 def identify_potential_grouped_providers(df: DataFrame) -> DataFrame:
     """
     Identify potential grouped providers based on one ASCWDS account for a CQC provider with several locations.
@@ -149,6 +152,7 @@ def identify_potential_grouped_providers(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\null_grouped_providers.py
 def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
     """
     Null ASCWDS data when they have submitted their whole workforce into one ASCWDS account.
@@ -211,6 +215,7 @@ def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\null_grouped_providers.py
 def null_non_residential_grouped_providers(df: DataFrame) -> DataFrame:
     """
     Null ASCWDS data when they have submitted their whole workforce into one ASCWDS account.
