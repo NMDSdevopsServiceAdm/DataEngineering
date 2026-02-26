@@ -104,9 +104,6 @@ class IndCqcColumns:
     cqc_location_import_date_indexed: str = (
         CQCLClean.cqc_location_import_date + "_indexed"
     )
-    cqc_location_import_date_indexed_squared: str = (
-        cqc_location_import_date_indexed + "_squared"
-    )
     cqc_location_import_date_indexed_cubed: str = (
         cqc_location_import_date_indexed + "_cubed"
     )
