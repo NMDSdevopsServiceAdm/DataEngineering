@@ -463,23 +463,25 @@ def winsorize_outliers(
     Returns:
         pl.LazyFrame: LazyFrame with outliers winsorized.
     """
+    ratio_below_min_condition = pl.col(IndCQC.filled_posts_per_bed_ratio) < pl.col(
+        IndCQC.min_filled_posts_per_bed_ratio
+    )
+    min_permitted_filled_posts = pl.col(IndCQC.min_filled_posts_per_bed_ratio) * pl.col(
+        IndCQC.number_of_beds
+    )
+
+    ratio_above_max_condition = pl.col(IndCQC.filled_posts_per_bed_ratio) > pl.col(
+        IndCQC.max_filled_posts_per_bed_ratio
+    )
+    max_permitted_filled_posts = pl.col(IndCQC.max_filled_posts_per_bed_ratio) * pl.col(
+        IndCQC.number_of_beds
+    )
+
     winsorized_lf = lf.with_columns(
-        pl.when(
-            pl.col(IndCQC.filled_posts_per_bed_ratio)
-            < pl.col(IndCQC.min_filled_posts_per_bed_ratio)
-        )
-        .then(
-            pl.col(IndCQC.min_filled_posts_per_bed_ratio)
-            * pl.col(IndCQC.number_of_beds)
-        )
-        .when(
-            pl.col(IndCQC.filled_posts_per_bed_ratio)
-            > pl.col(IndCQC.max_filled_posts_per_bed_ratio)
-        )
-        .then(
-            pl.col(IndCQC.max_filled_posts_per_bed_ratio)
-            * pl.col(IndCQC.number_of_beds)
-        )
+        pl.when(ratio_below_min_condition)
+        .then(min_permitted_filled_posts)
+        .when(ratio_above_max_condition)
+        .then(max_permitted_filled_posts)
         .otherwise(pl.col(IndCQC.ascwds_filled_posts_dedup_clean))
         .alias(IndCQC.ascwds_filled_posts_dedup_clean)
     )
