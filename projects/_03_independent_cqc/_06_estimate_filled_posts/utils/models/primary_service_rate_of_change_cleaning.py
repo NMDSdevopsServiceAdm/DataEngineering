@@ -1,4 +1,4 @@
-from pyspark.sql import DataFrame
+from pyspark.sql import Column, DataFrame
 from pyspark.sql import functions as F
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
@@ -74,7 +74,7 @@ def compute_non_residential_thresholds(
     prev_col: str,
     curr_col: str,
     abs_percentile: float = 0.99,
-    perc_percentile: float = 0.995,
+    perc_percentile: float = 0.99,
 ) -> tuple[float, float, float]:
     """
     Computes percentile-based filtering thresholds for non-residential rows.
@@ -84,6 +84,10 @@ def compute_non_residential_thresholds(
         - both values non-null
         - at least one value > 10
         - prev != curr.
+
+    At the time of making this function, the approximate thresholds were:
+        - abs_upper = ~20 (abs_percentile = 0.99)
+        - perc_upper = ~1.24 (perc_percentile = 0.99)
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -117,13 +121,6 @@ def compute_non_residential_thresholds(
     perc_upper = row[TempCol.perc_pct]
     perc_lower = 1 / perc_upper if perc_upper else None
 
-    print(
-        f"Non-residential rate of change thresholds:"
-        f"  abs change: {abs_upper}"
-        f"  perc change upper: {perc_upper}"
-        f"  perc change lower: {perc_lower}"
-    )
-
     return abs_upper, perc_upper, perc_lower
 
 
@@ -133,9 +130,9 @@ def build_non_residential_keep_condition(
     abs_upper: float,
     perc_upper: float,
     perc_lower: float,
-) -> bool:
+) -> Column:
     """
-    Constructs boolean condition determining which rows are retained.
+    Constructs a boolean Column to determine which rows to retain.
 
     Always keep care homes and non-residential rows where both previous and
     current values are both <= 10 (small changes produce large percentage
@@ -150,7 +147,7 @@ def build_non_residential_keep_condition(
         perc_lower (float): Lower percentage change threshold.
 
     Returns:
-        bool: Boolean condition determining which rows are retained.
+        Column: A boolean Column indicating which rows to retain.
     """
 
     return (
