@@ -13,6 +13,7 @@ from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_ca
 from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     CareHome,
+    CTCareHomeFilteringRule,
     Dormancy,
     MainJobRoleLabels,
     PrimaryServiceType,
@@ -2008,4 +2009,24 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
             None,
             AscwdsFilteringRule.populated,
         ),
+    ]
+
+
+@dataclass
+class NullCtPostsToBedsOutliers:
+    null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00, 1, CTCareHomeFilteringRule.populated),
+        ("1-002", 1, None, 1, CTCareHomeFilteringRule.populated),
+        ("1-003", None, 1.00, None, CTCareHomeFilteringRule.missing_data),
+        ("1-004", None, None, None, CTCareHomeFilteringRule.missing_data),
+        ("1-005", 1, 0.65, 1, CTCareHomeFilteringRule.populated),
+        ("1-006", 1, 6.01, 1, CTCareHomeFilteringRule.populated),
+    ]
+    expected_null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00, 1, CTCareHomeFilteringRule.populated),
+        ("1-002", 1, None, 1, CTCareHomeFilteringRule.populated),
+        ("1-003", None, 1.00, None, CTCareHomeFilteringRule.missing_data),
+        ("1-004", None, None, None, CTCareHomeFilteringRule.missing_data),
+        ("1-005", 1, 0.65, None, CTCareHomeFilteringRule.beds_ratio_outlier),
+        ("1-006", 1, 6.01, None, CTCareHomeFilteringRule.beds_ratio_outlier),
     ]
