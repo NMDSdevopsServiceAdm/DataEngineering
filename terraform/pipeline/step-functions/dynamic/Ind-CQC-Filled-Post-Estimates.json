@@ -145,7 +145,7 @@
             },
             "Impute and validate cleaned data": {
               "Type": "Parallel",
-              "Next": "Feature engineering and validate imputed data",
+              "Next": "Model retraining and validate imputed data",
               "Branches": [
                 {
                   "StartAt": "Impute IND CQC data",
@@ -221,9 +221,9 @@
                 }
               ]
             },
-            "Feature engineering and validate imputed data": {
+            "Model retraining and validate imputed data": {
               "Type": "Parallel",
-              "Next": "Estimate filled posts and validate feature engineering data",
+              "Next": "Estimate filled posts",
               "Branches": [
                 {
                   "StartAt": "Model Retraining",
@@ -510,25 +510,148 @@
                               "End": true
                             }
                           }
+                        },
+                        {
+                          "StartAt": "Features - non-res with dormancy (NRwD)",
+                          "States": {
+                            "Features - non-res with dormancy (NRwD)": {
+                              "Type": "Task",
+                              "Resource": "arn:aws:states:::ecs:runTask.sync",
+                              "Parameters": {
+                                "Cluster": "${model_cluster_arn}",
+                                "TaskDefinition": "${independent_cqc_model_task_arn}",
+                                "LaunchType": "FARGATE",
+                                "NetworkConfiguration": {
+                                  "AwsvpcConfiguration": {
+                                    "Subnets": ${public_subnet_ids},
+                                    "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                                    "AssignPublicIp": "ENABLED"
+                                  }
+                                },
+                                "Overrides": {
+                                  "ContainerOverrides": [
+                                    {
+                                      "Name": "_03_independent_cqc_model-container",
+                                      "Command": [
+                                        "model_01_features_non_res_with_dormancy.py",
+                                        "--bucket_name", "${dataset_bucket_name}",
+                                        "--model_name", "non_res_with_dormancy_model"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              },
+                              "Next": "Train NRwD model and predict"
+                            },
+                            "Train NRwD model and predict": {
+                              "Type": "Parallel",
+                              "Branches": [
+                                {
+                                  "StartAt": "Train NRwD model",
+                                  "States": {
+                                    "Train NRwD model": {
+                                    "Type": "Task",
+                                    "Resource": "arn:aws:states:::ecs:runTask.sync",
+                                    "Parameters": {
+                                      "Cluster": "${model_cluster_arn}",
+                                      "TaskDefinition": "${independent_cqc_model_task_arn}",
+                                      "LaunchType": "FARGATE",
+                                      "NetworkConfiguration": {
+                                        "AwsvpcConfiguration": {
+                                          "Subnets": ${public_subnet_ids},
+                                          "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                                          "AssignPublicIp": "ENABLED"
+                                        }
+                                      },
+                                      "Overrides": {
+                                        "ContainerOverrides": [
+                                          {
+                                            "Name": "_03_independent_cqc_model-container",
+                                            "Command": [
+                                              "model_02_train.py",
+                                              "--bucket_name", "${dataset_bucket_name}",
+                                              "--model_name", "non_res_with_dormancy_model"
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "Next": "Predict NRwD"
+                                  },
+                                  "Predict NRwD": {
+                                    "Type": "Task",
+                                    "Resource": "arn:aws:states:::ecs:runTask.sync",
+                                    "Parameters": {
+                                      "Cluster": "${model_cluster_arn}",
+                                      "TaskDefinition": "${independent_cqc_model_task_arn}",
+                                      "LaunchType": "FARGATE",
+                                      "NetworkConfiguration": {
+                                        "AwsvpcConfiguration": {
+                                          "Subnets": ${public_subnet_ids},
+                                          "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                                          "AssignPublicIp": "ENABLED"
+                                        }
+                                      },
+                                      "Overrides": {
+                                        "ContainerOverrides": [
+                                          {
+                                            "Name": "_03_independent_cqc_model-container",
+                                            "Command": [
+                                              "model_03_predict.py",
+                                              "--bucket_name", "${dataset_bucket_name}",
+                                              "--model_name", "non_res_with_dormancy_model"
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "End": true
+                                    }
+                                  }
+                                },
+                                {
+                                  "StartAt": "Validate NRwD features",
+                                  "States": {
+                                    "Validate NRwD features": {
+                                      "Type": "Task",
+                                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                                      "Parameters": {
+                                        "Cluster": "${model_cluster_arn}",
+                                        "TaskDefinition": "${independent_cqc_model_task_arn}",
+                                        "LaunchType": "FARGATE",
+                                        "NetworkConfiguration": {
+                                          "AwsvpcConfiguration": {
+                                            "Subnets": ${public_subnet_ids},
+                                            "SecurityGroups": ["${independent_cqc_model_security_group_id}"],
+                                            "AssignPublicIp": "ENABLED"
+                                          }
+                                        },
+                                        "Overrides": {
+                                          "ContainerOverrides": [
+                                            {
+                                              "Name": "_03_independent_cqc_model-container",
+                                              "Command": [
+                                                "validate_model_01_features.py",
+                                                "--bucket_name", "${dataset_bucket_name}",
+                                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_with_dormancy_model/",
+                                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_04_features_non_res_with_dormancy_model/",
+                                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
+                                                "--model", "non_res_with_dormancy_model"
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "End": true
+                                    }
+                                  }
+                                }
+                              ],
+                              "End": true
+                            }
+                          }
                         }
                       ],
-                      "End": true
-                    }
-                  }
-                },
-                {
-                  "StartAt": "Non residential model features",
-                  "States": {
-                    "Non residential model features": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${prepare_features_non_res_ascwds_ind_cqc_job_name}",
-                        "Arguments": {
-                          "--ind_cqc_filled_posts_cleaned_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
-                          "--with_dormancy_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_ascwds_with_dormancy/"
-                        }
-                      },
                       "End": true
                     }
                   }
@@ -554,58 +677,26 @@
                 }
               ]
             },
-            "Estimate filled posts and validate feature engineering data": {
-              "Type": "Parallel",
-              "Next": "Estimate filled posts by job role and validate estimated filled posts",
-              "Branches": [
-                {
-                  "StartAt": "Estimate filled posts",
-                  "States": {
-                    "Estimate filled posts": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${estimate_ind_cqc_filled_posts_job_name}",
-                        "Arguments": {
-                          "--bucket_name": "${dataset_bucket_name}",
-                          "--imputed_ind_cqc_data_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
-                          "--non_res_with_dormancy_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_ascwds_with_dormancy/",
-                          "--non_res_with_dormancy_model_source": "${pipeline_resources_bucket_uri}/models/non_residential_with_dormancy_prediction/5.1.0/",
-                          "--estimated_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
-                  "StartAt": "Validate non-res with dormancy features",
-                  "States": {
-                      "Validate non-res with dormancy features": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${validate_features_non_res_ascwds_with_dormancy_ind_cqc_data_job_name}",
-                        "Arguments": {
-                          "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
-                          "--non_res_ascwds_with_dormancy_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_ascwds_with_dormancy/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_04_features_non_res_ascwds_with_dormancy/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
+            "Estimate filled posts": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${estimate_ind_cqc_filled_posts_job_name}",
+                "Arguments": {
+                  "--bucket_name": "${dataset_bucket_name}",
+                  "--imputed_ind_cqc_data_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
+                  "--estimated_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/"
                 }
-              ]
+              },
+              "Next": "Validate estimated filled posts and run diagnostics"
             },
-            "Estimate filled posts by job role and validate estimated filled posts": {
+            "Validate estimated filled posts and run diagnostics": {
               "Type": "Parallel",
-              "Next": "Diagnostics and validate estimated filled posts by job role",
               "Branches": [
                 {
                   "StartAt": "Validate estimated filled posts",
                   "States": {
-                      "Validate estimated filled posts": {
+                    "Validate estimated filled posts": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -619,13 +710,7 @@
                       "End": true
                     }
                   }
-                }
-              ]
-            },
-            "Diagnostics and validate estimated filled posts by job role": {
-              "Type": "Parallel",
-              "Next": "Archive estimates",
-              "Branches": [
+                },
                 {
                   "StartAt": "Run diagnostics on known filled posts job",
                   "States": {
@@ -665,7 +750,8 @@
                     }
                   }
                 }
-              ]
+              ],
+              "Next": "Archive estimates"
             },
             "Archive estimates": {
               "Type": "Task",

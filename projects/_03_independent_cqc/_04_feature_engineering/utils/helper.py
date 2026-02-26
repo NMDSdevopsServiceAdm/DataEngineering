@@ -1,4 +1,3 @@
-from datetime import date
 from typing import Dict, List, Tuple
 
 from pyspark.ml.feature import VectorAssembler

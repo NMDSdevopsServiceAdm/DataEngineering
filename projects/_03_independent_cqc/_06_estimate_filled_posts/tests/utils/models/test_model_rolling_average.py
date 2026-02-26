@@ -1,5 +1,3 @@
-import unittest
-
 import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.rolling_average as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     ModelRollingAverageData as Data,
@@ -7,19 +5,12 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ModelRollingAverageSchemas as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
-class ModelRollingAverageTests(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
-
-
-class MainTests(ModelRollingAverageTests):
+class MainTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         number_of_days: int = 3
 
         test_df = self.spark.createDataFrame(

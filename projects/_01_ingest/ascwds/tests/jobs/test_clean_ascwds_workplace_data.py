@@ -10,6 +10,7 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ASCWDSWorkplaceSchemas as Schemas,
 )
+from tests.base_test import SparkBaseTest
 from utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -22,7 +23,7 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import Partition
 PATCH_PATH = "projects._01_ingest.ascwds.jobs.clean_ascwds_workplace_data"
 
 
-class CleanASCWDSWorkplaceDatasetTests(unittest.TestCase):
+class CleanASCWDSWorkplaceDatasetTests(SparkBaseTest):
     TEST_SOURCE = "s3://some_bucket/some_source_key"
     TEST_CLEANED_DESTINATION = "s3://some_bucket/some_destination_key"
     TEST_RECONCILIATION_DESTINATION = "s3://some_other_destination_key"
@@ -34,7 +35,6 @@ class CleanASCWDSWorkplaceDatasetTests(unittest.TestCase):
     ]
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
         self.test_ascwds_workplace_df = self.spark.createDataFrame(
             Data.workplace_rows, Schemas.workplace_schema
         )
@@ -43,9 +43,6 @@ class CleanASCWDSWorkplaceDatasetTests(unittest.TestCase):
 
 
 class MainTests(CleanASCWDSWorkplaceDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.select_columns_required_for_reconciliation_df")
     @patch(f"{PATCH_PATH}.cUtils.set_column_bounds")
@@ -122,9 +119,6 @@ class FilterTestAccountsTests(CleanASCWDSWorkplaceDatasetTests):
 
 
 class RemoveWhiteSpaceFromNmdsidTests(CleanASCWDSWorkplaceDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_remove_white_space_from_nmdsid(self):
         test_df = self.spark.createDataFrame(
             Data.remove_white_space_from_nmdsid_rows,

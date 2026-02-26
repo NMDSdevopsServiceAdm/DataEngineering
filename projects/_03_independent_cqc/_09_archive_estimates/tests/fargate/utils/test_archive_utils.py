@@ -74,6 +74,7 @@ class AddLastestAnnualEstimateDate(unittest.TestCase):
         expected_lf = pl.LazyFrame(
             Data.expected_add_latest_annual_estimate_date_rows,
             Schemas.expected_add_latest_annual_estimate_date_schema,
+            orient="row",
         )
 
         pl_testing.assert_frame_equal(self.returned_lf, expected_lf)
@@ -89,10 +90,12 @@ class CreateArchiveDatePartitionColumns(unittest.TestCase):
         self.expected_partitions_when_date_has_single_digits_lf = pl.LazyFrame(
             Data.expected_partitions_when_date_has_single_digits_lf_rows,
             Schemas.expected_create_archive_date_partitions_schema,
+            orient="row",
         )
         self.expected_partitions_when_date_has_double_digits_lf = pl.LazyFrame(
             Data.expected_partitions_when_date_has_double_digits_lf_rows,
             Schemas.expected_create_archive_date_partitions_schema,
+            orient="row",
         )
 
     def test_only_archive_partition_columns_are_added(self):

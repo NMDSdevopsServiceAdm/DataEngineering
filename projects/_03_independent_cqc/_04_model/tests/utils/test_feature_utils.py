@@ -260,21 +260,21 @@ class GroupRuralUrbanSparseCategoriesTests(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class AddSquaredColumnTests(unittest.TestCase):
-    def test_selection_and_filtering_returns_expected_lazyframe(self):
+class AddPowerColumnTests(unittest.TestCase):
+    def test_returns_expected_lazyframe(self):
         test_lf = pl.LazyFrame(
-            Data.add_squared_column_rows,
-            Schemas.add_squared_column_schema,
+            Data.add_power_column_rows,
+            Schemas.add_power_column_schema,
             orient="row",
         )
 
-        returned_lf = job.add_squared_column(
-            test_lf, IndCQC.cqc_location_import_date_indexed
+        returned_lf = job.add_power_column(
+            test_lf, "values", power=2, new_col_name="squared_values"
         )
 
         expected_lf = pl.LazyFrame(
-            Data.expected_add_squared_column_rows,
-            Schemas.expected_add_squared_column_schema,
+            Data.expected_add_power_column_rows,
+            Schemas.expected_add_power_column_schema,
             orient="row",
         )
 

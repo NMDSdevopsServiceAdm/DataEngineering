@@ -1,12 +1,7 @@
-import unittest
-from unittest.mock import ANY, Mock, patch
 import warnings
-from pyspark.sql import Window, WindowSpec
+from unittest.mock import ANY, Mock, patch
 
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+from pyspark.sql import Window, WindowSpec
 
 import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.extrapolation as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
@@ -15,17 +10,16 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ModelExtrapolation as Schemas,
 )
-
+from tests.base_test import SparkBaseTest
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 PATCH_PATH = (
     "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.extrapolation"
 )
 
 
-class ModelExtrapolationTests(unittest.TestCase):
+class ModelExtrapolationTests(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
-
         self.extrapolation_df = self.spark.createDataFrame(
             Data.extrapolation_rows, Schemas.extrapolation_schema
         )
@@ -43,6 +37,7 @@ class MainTests(ModelExtrapolationTests):
             self.extrapolation_df,
             IndCqc.ascwds_pir_merged,
             self.model_column_name,
+            extrapolation_method="nominal",
         )
 
     def test_model_extrapolation_row_count_unchanged(self):
@@ -53,9 +48,6 @@ class MainTests(ModelExtrapolationTests):
 
 
 class DefineWindowSpecsTests(ModelExtrapolationTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_define_window_spec_return_type(self):
         returned_window_specs = job.define_window_specs()
         self.assertIsInstance(returned_window_specs, tuple)
@@ -157,21 +149,13 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
             Data.extrapolation_forwards_mock_rows,
             Schemas.extrapolation_forwards_mock_schema,
         )
-        self.returned_df = job.extrapolation_forwards(
+        self.returned_nominal_df = job.extrapolation_forwards(
             self.input_df,
             self.column_with_null_values,
             self.model_to_extrapolate_from,
             self.window_spec_lagged,
+            extrapolation_method="nominal",
         )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_extrapolation_forwards_rows,
-            Schemas.expected_extrapolation_forwards_schema,
-        )
-
-        self.returned_data = self.returned_df.sort(
-            IndCqc.location_id, IndCqc.unix_time
-        ).collect()
-        self.expected_data = self.expected_df.collect()
 
     @patch(f"{PATCH_PATH}.get_selected_value")
     def test_extrapolation_forwards_calls_correct_functions(
@@ -185,6 +169,7 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
             self.column_with_null_values,
             self.model_to_extrapolate_from,
             self.window_spec_lagged,
+            extrapolation_method="nominal",
         )
 
         self.assertEqual(get_selected_value_mock.call_count, 2)
@@ -206,16 +191,56 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
             "last",
         )
 
-    def test_extrapolation_forwards_returns_same_number_of_rows(
-        self,
-    ):
-        self.assertEqual(self.input_df.count(), self.returned_df.count())
+    def test_extrapolation_forwards_returns_same_number_of_rows(self):
+        self.assertEqual(self.input_df.count(), self.returned_nominal_df.count())
 
     def test_extrapolation_forwards_added_as_a_new_column(self):
-        self.assertIn(IndCqc.extrapolation_forwards, self.returned_df.columns)
+        self.assertIn(IndCqc.extrapolation_forwards, self.returned_nominal_df.columns)
 
-    def test_returned_extrapolation_forwards_values_match_expected(self):
-        self.assertEqual(self.returned_data, self.expected_data)
+    def test_returned_extrapolation_forwards_values_match_expected_when_nominal(self):
+        expected_df = self.spark.createDataFrame(
+            Data.expected_extrapolation_forwards_when_nominal_rows,
+            Schemas.expected_extrapolation_forwards_schema,
+        )
+
+        self.returned_data = self.returned_nominal_df.sort(
+            IndCqc.location_id, IndCqc.unix_time
+        ).collect()
+
+        self.assertEqual(self.returned_data, expected_df.collect())
+
+    def test_returned_extrapolation_forwards_values_match_expected_when_ratio(self):
+        returned_df = job.extrapolation_forwards(
+            self.input_df,
+            self.column_with_null_values,
+            self.model_to_extrapolate_from,
+            self.window_spec_lagged,
+            extrapolation_method="ratio",
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_extrapolation_forwards_when_ratio_rows,
+            Schemas.expected_extrapolation_forwards_schema,
+        )
+
+        returned_data = returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
+
+        self.assertEqual(returned_data, expected_df.collect())
+
+    def test_error_raised_for_invalid_extrapolation_method(self):
+        with self.assertRaises(ValueError) as context:
+            job.extrapolation_forwards(
+                self.input_df,
+                self.column_with_null_values,
+                self.model_to_extrapolate_from,
+                self.window_spec_lagged,
+                extrapolation_method="invalid_method",
+            )
+
+        self.assertEqual(
+            str(context.exception),
+            "Error: method must be either 'ratio' or 'nominal'.",
+        )
 
 
 class ExtrapolationBackwardsTests(ModelExtrapolationTests):
@@ -237,21 +262,13 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
             Data.extrapolation_backwards_mock_rows,
             Schemas.extrapolation_backwards_mock_schema,
         )
-        self.returned_df = job.extrapolation_backwards(
+        self.returned_nominal_df = job.extrapolation_backwards(
             self.input_df,
             self.column_with_null_values,
             self.model_to_extrapolate_from,
             self.window_spec_all_rows,
+            extrapolation_method="nominal",
         )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_extrapolation_backwards_rows,
-            Schemas.expected_extrapolation_backwards_schema,
-        )
-
-        self.returned_data = self.returned_df.sort(
-            IndCqc.location_id, IndCqc.unix_time
-        ).collect()
-        self.expected_data = self.expected_df.collect()
 
     @patch(f"{PATCH_PATH}.get_selected_value")
     def test_extrapolation_backwards_calls_correct_functions(
@@ -265,6 +282,7 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
             self.column_with_null_values,
             self.model_to_extrapolate_from,
             self.window_spec_all_rows,
+            extrapolation_method="ratio",
         )
 
         self.assertEqual(get_selected_value_mock.call_count, 2)
@@ -286,16 +304,56 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
             "first",
         )
 
-    def test_extrapolation_backwards_returns_same_number_of_rows(
-        self,
-    ):
-        self.assertEqual(self.input_df.count(), self.returned_df.count())
+    def test_extrapolation_backwards_returns_same_number_of_rows(self):
+        self.assertEqual(self.input_df.count(), self.returned_nominal_df.count())
 
     def test_extrapolation_backwards_added_as_a_new_column(self):
-        self.assertIn(IndCqc.extrapolation_backwards, self.returned_df.columns)
+        self.assertIn(IndCqc.extrapolation_backwards, self.returned_nominal_df.columns)
 
-    def test_returned_extrapolation_backwards_values_match_expected(self):
-        self.assertEqual(self.returned_data, self.expected_data)
+    def test_returned_extrapolation_backwards_values_match_expected_when_nominal(self):
+        expected_df = self.spark.createDataFrame(
+            Data.expected_extrapolation_backwards_when_nominal_rows,
+            Schemas.expected_extrapolation_backwards_schema,
+        )
+
+        self.returned_data = self.returned_nominal_df.sort(
+            IndCqc.location_id, IndCqc.unix_time
+        ).collect()
+
+        self.assertEqual(self.returned_data, expected_df.collect())
+
+    def test_returned_extrapolation_backwards_values_match_expected_when_ratio(self):
+        returned_df = job.extrapolation_backwards(
+            self.input_df,
+            self.column_with_null_values,
+            self.model_to_extrapolate_from,
+            self.window_spec_all_rows,
+            extrapolation_method="ratio",
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_extrapolation_backwards_when_ratio_rows,
+            Schemas.expected_extrapolation_backwards_schema,
+        )
+
+        returned_data = returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
+
+        self.assertEqual(returned_data, expected_df.collect())
+
+    def test_error_raised_for_invalid_extrapolation_method(self):
+        with self.assertRaises(ValueError) as context:
+            job.extrapolation_backwards(
+                self.input_df,
+                self.column_with_null_values,
+                self.model_to_extrapolate_from,
+                self.window_spec_all_rows,
+                extrapolation_method="invalid_method",
+            )
+
+        self.assertEqual(
+            str(context.exception),
+            "Error: method must be either 'ratio' or 'nominal'.",
+        )
 
 
 class CombineExtrapolationTests(ModelExtrapolationTests):

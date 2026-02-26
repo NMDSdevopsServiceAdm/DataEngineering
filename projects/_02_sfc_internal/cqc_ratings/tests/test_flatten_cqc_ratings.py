@@ -8,7 +8,7 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     FlattenCQCRatings as Schema,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
@@ -18,7 +18,7 @@ from utils.column_values.categorical_column_values import CQCCurrentOrHistoricVa
 PATCH_PATH = "projects._02_sfc_internal.cqc_ratings.jobs.flatten_cqc_ratings"
 
 
-class FlattenCQCRatingsTests(unittest.TestCase):
+class FlattenCQCRatingsTests(SparkBaseTest):
     TEST_LOCATIONS_SNAPSHOT_SOURCE = "some/directory"
     TEST_LOCATIONS_RAW_DELTA_SOURCE = "some/directory"
     TEST_WORKPLACE_SOURCE = "some/directory"
@@ -26,7 +26,6 @@ class FlattenCQCRatingsTests(unittest.TestCase):
     TEST_BENCHMARK_RATINGS_DESTINATION = "some/other/directory"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
         self.test_cqc_locations_df = self.spark.createDataFrame(
             Data.test_cqc_locations_rows, schema=Schema.test_cqc_locations_schema
         )
@@ -39,9 +38,6 @@ class FlattenCQCRatingsTests(unittest.TestCase):
 
 
 class MainTests(FlattenCQCRatingsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.create_benchmark_ratings_dataset")
     @patch(f"{PATCH_PATH}.join_establishment_ids")
@@ -277,9 +273,6 @@ class PrepareAssessmentRatings(FlattenCQCRatingsTests):
 
 
 class RaiseErrorWhenAssessmentDfContainsOverallData(FlattenCQCRatingsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_raise_error_when_assessment_df_contains_overall_data_raises_error_when_overall_is_populated(
         self,
     ):
@@ -667,7 +660,7 @@ class JoinEstablishmentIds(FlattenCQCRatingsTests):
     def test_join_establishment_ids_returns_correct_values(self):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
-        self.assertEqual(returned_data, expected_data)
+        self.assertEqual(sorted(returned_data), sorted(expected_data))
 
 
 class CreateBenchmarkRatingsDataset(FlattenCQCRatingsTests):
@@ -695,9 +688,6 @@ class CreateBenchmarkRatingsDataset(FlattenCQCRatingsTests):
 
 
 class AddNumericalRatings(FlattenCQCRatingsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_add_numerical_ratings_returns_expected_results(self):
         test_df = self.spark.createDataFrame(
             Data.add_numerical_ratings_rows, Schema.add_numerical_ratings_schema
