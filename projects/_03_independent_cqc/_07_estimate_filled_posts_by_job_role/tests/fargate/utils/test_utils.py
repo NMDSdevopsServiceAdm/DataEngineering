@@ -126,7 +126,7 @@ class TestImputeFullTimeSeries:
             ),
         ],
     )
-    def test_does_linear_interpolation(self, input, expected):
+    def test_imputations(self, input, expected):
         input_df = pl.DataFrame({"vals": input})
         expected_df = pl.DataFrame({"vals": expected}).cast(pl.Float64)
         returned_df = input_df.select(job.impute_full_time_series("vals"))
