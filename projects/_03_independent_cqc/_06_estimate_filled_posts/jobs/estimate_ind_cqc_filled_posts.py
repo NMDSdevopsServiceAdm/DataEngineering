@@ -19,6 +19,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res
 )
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
     enrich_with_model_predictions,
+    set_min_value,
 )
 from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
 from utils import utils
@@ -145,6 +146,7 @@ def main(
         IndCQC.care_home_model,
         IndCQC.imputed_posts_care_home_model,
         care_home=True,
+        extrapolation_method="nominal",
     )
 
     estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
@@ -153,6 +155,7 @@ def main(
         IndCQC.non_res_combined_model,
         IndCQC.imputed_posts_non_res_combined_model,
         care_home=False,
+        extrapolation_method="nominal",
     )
 
     estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
@@ -161,6 +164,7 @@ def main(
         IndCQC.non_res_combined_model,
         IndCQC.imputed_pir_filled_posts_model,
         care_home=False,
+        extrapolation_method="nominal",
     )
 
     estimate_filled_posts_df = merge_columns_in_order(
@@ -176,6 +180,10 @@ def main(
         ],
         IndCQC.estimate_filled_posts,
         IndCQC.estimate_filled_posts_source,
+    )
+
+    estimate_filled_posts_df = set_min_value(
+        estimate_filled_posts_df, IndCQC.estimate_filled_posts, 1.0
     )
 
     estimate_filled_posts_df = estimate_non_res_capacity_tracker_filled_posts(

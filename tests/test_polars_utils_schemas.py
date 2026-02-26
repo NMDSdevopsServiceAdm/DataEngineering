@@ -8,6 +8,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
@@ -39,6 +40,20 @@ class CleaningUtilsSchemas:
     expected_col_to_date_schema = pl.Schema([("date_col", pl.Date())])
     expected_col_to_date_with_new_col_schema = pl.Schema(
         [("date_col", pl.String()), ("new_date_col", pl.Date())]
+    )
+    filled_posts_per_bed_ratio_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.care_home, pl.String()),
+        ]
+    )
+    expected_filled_posts_per_bed_ratio_schema = pl.Schema(
+        list(filled_posts_per_bed_ratio_schema.items())
+        + [
+            (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
+        ]
     )
 
 

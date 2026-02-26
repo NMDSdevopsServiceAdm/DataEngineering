@@ -3,6 +3,10 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
+from utils.column_values.categorical_column_values import (
+    CareHome,
+)
+
 
 @dataclass
 class CleaningUtilsData:
@@ -73,6 +77,33 @@ class CleaningUtilsData:
     expected_column_to_date_with_new_col_rows = [
         ("20230102", "20220504", "20191207", "19081205"),
         (date(2023, 1, 2), date(2022, 5, 4), date(2019, 12, 7), date(1908, 12, 5)),
+    ]
+
+    filled_posts_per_bed_ratio_rows = [
+        ("1-000000001", 5.0, 100, CareHome.care_home),
+        ("1-000000002", 2.0, 1, CareHome.care_home),
+        ("1-000000003", None, 100, CareHome.care_home),
+        ("1-000000004", 0.0, 1, CareHome.care_home),
+        ("1-000000005", 5.0, None, CareHome.care_home),
+        ("1-000000006", 2.0, 0, CareHome.care_home),
+        ("1-000000007", None, 0, CareHome.care_home),
+        ("1-000000008", 0.0, None, CareHome.care_home),
+        ("1-000000009", None, None, CareHome.care_home),
+        ("1-000000010", 0.0, 0, CareHome.care_home),
+        ("1-000000011", 4.0, 10, CareHome.not_care_home),
+    ]
+    expected_filled_posts_per_bed_ratio_rows = [
+        ("1-000000001", 5.0, 100, CareHome.care_home, 0.05),
+        ("1-000000002", 2.0, 1, CareHome.care_home, 2.0),
+        ("1-000000003", None, 100, CareHome.care_home, None),
+        ("1-000000004", 0.0, 1, CareHome.care_home, 0.0),
+        ("1-000000005", 5.0, None, CareHome.care_home, None),
+        ("1-000000006", 2.0, 0, CareHome.care_home, None),
+        ("1-000000007", None, 0, CareHome.care_home, None),
+        ("1-000000008", 0.0, None, CareHome.care_home, None),
+        ("1-000000009", None, None, CareHome.care_home, None),
+        ("1-000000010", 0.0, 0, CareHome.care_home, None),
+        ("1-000000011", 4.0, 10, CareHome.not_care_home, None),
     ]
 
 

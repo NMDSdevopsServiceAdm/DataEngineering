@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from datetime import date
 
@@ -4666,16 +4667,28 @@ class ModelExtrapolation:
         ("1-004", 1677628800, None, 20.0),
     ]
     # fmt: off
-    expected_extrapolation_forwards_rows = [
+    expected_extrapolation_forwards_when_nominal_rows = [
+        ("1-001", 1672531200, 15.0, 10.0, None),
+        ("1-001", 1675209600, None, 20.0, 25.0),
+        ("1-001", 1677628800, 30.0, 30.0, 35.0),
+        ("1-002", 1672531200, None, 10.0, None),
+        ("1-002", 1675209600, 10.0, 20.0, None),
+        ("1-002", 1677628800, None, 30.0, 20.0),
+        ("1-002", 1677629000, None, 100.0, 90.0),
+        ("1-003", 1672531200, 20.0, 100.0, None),
+        ("1-003", 1675209600, None, 20.0, -60.0),
+        ("1-004", 1677628800, None, 20.0, None),
+    ]
+    expected_extrapolation_forwards_when_ratio_rows = [
         ("1-001", 1672531200, 15.0, 10.0, None),
         ("1-001", 1675209600, None, 20.0, 30.0),
         ("1-001", 1677628800, 30.0, 30.0, 45.0),
         ("1-002", 1672531200, None, 10.0, None),
         ("1-002", 1675209600, 10.0, 20.0, None),
         ("1-002", 1677628800, None, 30.0, 15.0),
-        ("1-002", 1677629000, None, 100.0, 40.0),  # capped at upper cutoff
+        ("1-002", 1677629000, None, 100.0, 50.0),
         ("1-003", 1672531200, 20.0, 100.0, None),
-        ("1-003", 1675209600, None, 20.0, 5.0),  # capped at lower cutoff
+        ("1-003", 1675209600, None, 20.0, 4.0),
         ("1-004", 1677628800, None, 20.0, None),
     ]
     # fmt: on
@@ -4692,22 +4705,35 @@ class ModelExtrapolation:
         ("1-002", 1677628800, None, 1675209600, 1675209600, 30.0),
         ("1-003", 1672531200, None, 1675209600, 1675209600, 1.0),
         ("1-003", 1675209600, 20.0, 1675209600, 1675209600, 20.0),
-        ("1-004", 1672531200, None, 1675209600, 1675209600, 100.0),
-        ("1-004", 1675209600, 20.0, 1675209600, 1675209600, 20.0),
+        ("1-004", 1672531200, None, 1675209600, 1675209600, 50.0),
+        ("1-004", 1675209600, 20.0, 1675209600, 1675209600, 10.0),
         ("1-005", 1677628800, None, None, None, 20.0),
     ]
     # fmt: off
-    expected_extrapolation_backwards_rows = [
+    expected_extrapolation_backwards_when_nominal_rows = [
+        ("1-001", 1672531200, 15.0, 1672531200, 1677628800, 10.0, None),
+        ("1-001", 1675209600, None, 1672531200, 1677628800, 20.0, None),
+        ("1-001", 1677628800, 30.0, 1672531200, 1677628800, 30.0, None),
+        ("1-002", 1672531200, None, 1675209600, 1675209600, 10.0, 0.0),
+        ("1-002", 1675209600, 10.0, 1675209600, 1675209600, 20.0, None),
+        ("1-002", 1677628800, None, 1675209600, 1675209600, 30.0, None),
+        ("1-003", 1672531200, None, 1675209600, 1675209600, 1.0, 1.0),
+        ("1-003", 1675209600, 20.0, 1675209600, 1675209600, 20.0, None),
+        ("1-004", 1672531200, None, 1675209600, 1675209600, 50.0, 60.0),
+        ("1-004", 1675209600, 20.0, 1675209600, 1675209600, 10.0, None),
+        ("1-005", 1677628800, None, None, None, 20.0, None),
+    ]
+    expected_extrapolation_backwards_when_ratio_rows = [
         ("1-001", 1672531200, 15.0, 1672531200, 1677628800, 10.0, None),
         ("1-001", 1675209600, None, 1672531200, 1677628800, 20.0, None),
         ("1-001", 1677628800, 30.0, 1672531200, 1677628800, 30.0, None),
         ("1-002", 1672531200, None, 1675209600, 1675209600, 10.0, 5.0),
         ("1-002", 1675209600, 10.0, 1675209600, 1675209600, 20.0, None),
         ("1-002", 1677628800, None, 1675209600, 1675209600, 30.0, None),
-        ("1-003", 1672531200, None, 1675209600, 1675209600, 1.0, 5.0),  # capped at lower cutoff
+        ("1-003", 1672531200, None, 1675209600, 1675209600, 1.0, 1.0),
         ("1-003", 1675209600, 20.0, 1675209600, 1675209600, 20.0, None),
-        ("1-004", 1672531200, None, 1675209600, 1675209600, 100.0, 80.0),  # capped at upper cutoff
-        ("1-004", 1675209600, 20.0, 1675209600, 1675209600, 20.0, None),
+        ("1-004", 1672531200, None, 1675209600, 1675209600, 50.0, 100.0),
+        ("1-004", 1675209600, 20.0, 1675209600, 1675209600, 10.0, None),
         ("1-005", 1677628800, None, None, None, 20.0, None),
     ]
     # fmt: on
@@ -5082,25 +5108,25 @@ class EstimateFilledPostsModelsUtils:
     ]
 
     enrich_model_predictions_care_home_rows = [
-        ("1-003", date(2025, 1, 1), 2, 0.25, "v1_r1"),
+        ("1-003", date(2025, 1, 1), 2, -0.5, "v1_r1"),
         ("1-004", date(2025, 1, 1), 2, 2.5, "v1_r1"),
     ]
     # fmt: off
     expected_enrich_model_ind_cqc_care_home_rows = [
         ("1-001", date(2025, 1, 1), CareHome.not_care_home, None, None, None), # no prediction expected
         ("1-002", date(2025, 1, 1), CareHome.not_care_home, None, None, None), # no prediction expected
-        ("1-003", date(2025, 1, 1), CareHome.care_home, 2, 1.0, "v1_r1"), # minimum of 1.0 applied
+        ("1-003", date(2025, 1, 1), CareHome.care_home, 2, -1.0, "v1_r1"), # prediction (converted to posts) joined in (maintains negative)
         ("1-004", date(2025, 1, 1), CareHome.care_home, 2, 5.0, "v1_r1"), # prediction (converted to posts) joined in
     ]
     # fmt: on
 
     enrich_model_predictions_non_res_rows = [
-        ("1-001", date(2025, 1, 1), 2, 0.25, "v1_r1"),
+        ("1-001", date(2025, 1, 1), 2, -5.0, "v1_r1"),
         ("1-002", date(2025, 1, 1), 2, 2.5, "v1_r1"),
     ]
     # fmt: off
     expected_enrich_model_ind_cqc_non_res_rows = [
-        ("1-001", date(2025, 1, 1), CareHome.not_care_home, None, 1.0, "v1_r1"), # minimum of 1.0 applied
+        ("1-001", date(2025, 1, 1), CareHome.not_care_home, None, -5.0, "v1_r1"), # prediction joined in (maintains negative)
         ("1-002", date(2025, 1, 1), CareHome.not_care_home, None, 2.5, "v1_r1"), # prediction joined in
         ("1-003", date(2025, 1, 1), CareHome.care_home, 2, None, None), # no prediction expected
         ("1-004", date(2025, 1, 1), CareHome.care_home, 2, None, None), # no prediction expected
@@ -5447,37 +5473,21 @@ class DiagnosticsUtilsData:
 
 @dataclass
 class IndCQCDataUtils:
-    input_rows_for_adding_estimate_filled_posts_and_source = [
-        ("1-000001", 10.0, None, 80.0),
-        ("1-000002", None, 30.0, 50.0),
-        ("1-000003", 20.0, 70.0, 60.0),
-        ("1-000004", None, None, 40.0),
-        ("1-000005", None, 0.5, 40.0),
-        ("1-000006", -1.0, 10.0, 30.0),
+    merge_columns_in_order_when_double_type = [
+        ("1-001", -1.0, 10.0, 30.0),
+        ("1-002", 10.0, None, 80.0),
+        ("1-003", None, 30.0, 50.0),
+        ("1-004", None, 0.5, 40.0),
+        ("1-005", None, None, 40.0),
+        ("1-006", None, None, None),
     ]
-
-    expected_rows_with_estimate_filled_posts_and_source = [
-        ("1-000001", 10.0, None, 80.0, 10.0, "model_name_1"),
-        ("1-000002", None, 30.0, 50.0, 30.0, "model_name_2"),
-        ("1-000003", 20.0, 70.0, 60.0, 20.0, "model_name_1"),
-        ("1-000004", None, None, 40.0, 40.0, "model_name_3"),
-        ("1-000005", None, 0.5, 40.0, 40.0, "model_name_3"),
-        ("1-000006", -1.0, 10.0, 30.0, 10.0, "model_name_2"),
-    ]
-
-    merge_columns_in_order_when_df_has_columns_of_multiple_datatypes = [
-        (
-            "1-000001",
-            10.0,
-            {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
-            },
-        )
-    ]
-
-    merge_columns_in_order_when_columns_are_datatype_string = [
-        ("1-000001", "string", "string")
+    expected_merge_columns_in_order_when_double_type = [
+        ("1-001", -1.0, 10.0, 30.0, -1.0, "model_name_1"),
+        ("1-002", 10.0, None, 80.0, 10.0, "model_name_1"),
+        ("1-003", None, 30.0, 50.0, 30.0, "model_name_2"),
+        ("1-004", None, 0.5, 40.0, 0.5, "model_name_2"),
+        ("1-005", None, None, 40.0, 40.0, "model_name_3"),
+        ("1-006", None, None, None, None, None),
     ]
 
     list_of_map_columns_to_be_merged = [
@@ -5486,90 +5496,30 @@ class IndCQCDataUtils:
     ]
 
     # fmt: off
-    merge_map_columns_in_order_when_only_ascwds_known = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-         None)
-    ]
-    # fmt: on
-
-    # fmt: off
-    expected_merge_map_columns_in_order_when_only_ascwds_known = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-         None,
-         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-         IndCQC.ascwds_job_role_ratios)
-    ]
-    # fmt: on
-
-    # fmt: off
-    merge_map_columns_in_order_when_only_primary_service_known = [
-        ("1-001",
-         None,
-         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4})
-    ]
-    # fmt: on
-
-    # fmt: off
-    expected_merge_map_columns_in_order_when_only_primary_service_known = [
-        ("1-001",
-         None,
-         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
-         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
-         IndCQC.ascwds_job_role_rolling_ratio)
-    ]
-    # fmt: on
-
-    # fmt: off
-    merge_map_columns_in_order_when_both_map_columns_populated = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4})
-    ]
-    # fmt: on
-
-    # fmt: off
-    expected_merge_map_columns_in_order_when_both_map_columns_populated = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
-         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-         IndCQC.ascwds_job_role_ratios)
-    ]
-    # fmt: on
-
-    merge_map_columns_in_order_when_both_null = [("1-001", None, None)]
-    expected_merge_map_columns_in_order_when_both_null = [
-        ("1-001", None, None, None, None)
-    ]
-    # fmt: on
-
-    # fmt: off
-    merge_map_columns_in_order_when_both_map_columns_populated_at_multiple_locations = [
+    merge_columns_in_order_when_map_type = [
         ("1-001",
          {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
          {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4}),
         ("1-002",
-         {MainJobRoleLabels.care_worker: 0.7, MainJobRoleLabels.registered_nurse: 0.3},
+         None,
          {MainJobRoleLabels.care_worker: 0.8, MainJobRoleLabels.registered_nurse: 0.2})
     ]
-    # fmt: on
-
-    # fmt: off
-    expected_merge_map_columns_in_order_when_both_map_columns_populated_at_multiple_locations = [
+    expected_merge_columns_in_order_when_map_type = [
         ("1-001",
          {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
          {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
          {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
          IndCQC.ascwds_job_role_ratios),
         ("1-002",
-         {MainJobRoleLabels.care_worker: 0.7, MainJobRoleLabels.registered_nurse: 0.3},
+         None,
          {MainJobRoleLabels.care_worker: 0.8, MainJobRoleLabels.registered_nurse: 0.2},
-         {MainJobRoleLabels.care_worker: 0.7, MainJobRoleLabels.registered_nurse: 0.3},
-         IndCQC.ascwds_job_role_ratios)
+         {MainJobRoleLabels.care_worker: 0.8, MainJobRoleLabels.registered_nurse: 0.2},
+         IndCQC.ascwds_job_role_rolling_ratio)
     ]
     # fmt: on
+
+    merge_columns_in_order_when_all_null = [("1-001", None, None)]
+    expected_merge_columns_in_order_when_all_null = [("1-001", None, None, None, None)]
 
     test_first_selection_rows = [
         ("loc 1", 1, None, 100.0),
@@ -5711,6 +5661,34 @@ class CleanCtRepetition:
 # converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.ForwardFillLatestKnownValue
 @dataclass
 class ForwardFillLatestKnownValue:
+    expected_size_based_forward_fill_days_dict = {
+        -math.inf: 250,
+        10: 125,
+        50: 65,
+    }
+
+    TEST_SIZE_BASED_FORWARD_FILL_DAYS = {
+        -math.inf: 1,
+        2: 2,
+        4: 3,
+    }
+    size_based_forward_fill_days_rows = [
+        ("loc-1", -1),
+        ("loc-2", 1),
+        ("loc-3", 2),
+        ("loc-4", 3),
+        ("loc-5", 4),
+        ("loc-6", None),
+    ]
+    expected_size_based_forward_fill_days_rows = [
+        ("loc-1", -1, 1),
+        ("loc-2", 1, 1),
+        ("loc-3", 2, 2),
+        ("loc-4", 3, 2),
+        ("loc-5", 4, 3),
+        ("loc-6", None, None),
+    ]
+
     last_known_latest_per_location_rows = [
         ("loc-1", date(2025, 1, 1), 10),
         ("loc-1", date(2025, 1, 2), 20),
@@ -5719,7 +5697,6 @@ class ForwardFillLatestKnownValue:
         ("loc-2", date(2025, 1, 3), 15),
         ("loc-2", date(2025, 1, 4), 12),
     ]
-
     expected_last_known_latest_per_location_rows = [
         ("loc-1", date(2025, 1, 3), 15),
         ("loc-2", date(2025, 1, 4), 12),
@@ -5732,64 +5709,36 @@ class ForwardFillLatestKnownValue:
         ("loc-2", date(2025, 1, 1), None),
         ("loc-2", date(2025, 1, 3), 15),
     ]
-
     expected_last_known_ignores_null_rows = [
         ("loc-1", date(2025, 1, 1), 10),
         ("loc-2", date(2025, 1, 3), 15),
     ]
 
     forward_fill_within_days_rows = [
-        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100),
-        ("loc-1", date(2025, 1, 2), None, date(2025, 1, 1), 100),
-        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 1), 100),
-        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 100),
+        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 2), None, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 1), 100, 2),
     ]
-
     expected_forward_fill_within_days_rows = [
-        ("loc-1", date(2025, 1, 1), 100),
-        ("loc-1", date(2025, 1, 2), 100),
-        ("loc-1", date(2025, 1, 3), 100),
-        ("loc-1", date(2025, 1, 4), None),
+        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 2), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 3), 100, date(2025, 1, 1), 100, 2),
     ]
 
     forward_fill_beyond_days_rows = [
-        ("loc-1", date(2025, 1, 1), 50, date(2025, 1, 1), 50),
-        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 50),
+        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 100, 2),
     ]
-
     expected_forward_fill_beyond_days_rows = [
-        ("loc-1", date(2025, 1, 1), 50),
-        ("loc-1", date(2025, 1, 4), None),
+        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 100, 2),
     ]
 
     forward_fill_before_last_known_rows = [
-        ("loc-1", date(2025, 1, 1), None, date(2025, 1, 2), 20),
-        ("loc-1", date(2025, 1, 2), 20, date(2025, 1, 2), 20),
-        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 2), 20),
-        ("loc-2", date(2025, 1, 1), None, date(2025, 1, 3), 50),
-        ("loc-2", date(2025, 1, 2), None, date(2025, 1, 3), 50),
-        ("loc-2", date(2025, 1, 3), 50, date(2025, 1, 3), 50),
-    ]
-
-    expected_forward_fill_before_last_known_rows = [
-        ("loc-1", date(2025, 1, 1), None),
-        ("loc-1", date(2025, 1, 2), 20),
-        ("loc-1", date(2025, 1, 3), 20),
-        ("loc-2", date(2025, 1, 1), None),
-        ("loc-2", date(2025, 1, 2), None),
-        ("loc-2", date(2025, 1, 3), 50),
-    ]
-
-    forward_fill_latest_known_value_rows = [
-        ("loc-1", date(2025, 1, 1), 10),
-        ("loc-1", date(2025, 1, 2), None),
-        ("loc-1", date(2025, 1, 4), 11),
-        ("loc-1", date(2025, 1, 5), None),
-        ("loc-2", date(2025, 1, 1), 20),
-        ("loc-2", date(2025, 1, 2), 20),
-        ("loc-2", date(2025, 1, 3), 22),
-        ("loc-2", date(2025, 1, 5), None),
-        ("loc-2", date(2025, 1, 6), None),
+        ("loc-1", date(2025, 1, 1), None, date(2025, 1, 4), 20, 2),
+        ("loc-1", date(2025, 1, 2), 20, date(2025, 1, 4), 20, 2),
+        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 4), 20, 2),
+        ("loc-1", date(2025, 1, 4), 30, date(2025, 1, 4), 20, 2),
     ]
 
 

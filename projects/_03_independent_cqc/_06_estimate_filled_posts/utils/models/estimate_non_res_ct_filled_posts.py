@@ -1,6 +1,9 @@
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
+    set_min_value,
+)
 from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CareHome
@@ -36,6 +39,7 @@ def estimate_non_res_capacity_tracker_filled_posts(df: DataFrame) -> DataFrame:
         IndCQC.ct_non_res_filled_post_estimate,
         IndCQC.ct_non_res_filled_post_estimate_source,
     )
+    df = set_min_value(df, IndCQC.ct_non_res_filled_post_estimate, 1.0)
     return df
 
 

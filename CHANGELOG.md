@@ -20,6 +20,14 @@ All notable changes to this project will be documented in this file.
 - Refactored the rate of change to filter rows instead of nulling values to speed up processing time and make the
   filtering process in a follow-up PR much easier to implement.
 
+- Changed the forward-filling of the last known value from two months for all locations to using a length of time base on the location size.
+
+- Changed imputation to apply nominal changes instead of converting and applying a ratio.
+
+- Removed minimum value requirement from `merge_columns_in_order`.
+
+- Moved `set_min_value` from model predictions and imputation to after the estimates column is produced.
+
 ### Fixed
 
 
@@ -52,6 +60,8 @@ All notable changes to this project will be documented in this file.
 - Added a new utils file for all the inline function within clean_ind_cqc_filled_posts.py and converted them to Polars.
 
 - Converted `filtering_utils.py`, `forward_fill_latest_known_value.py` and `utils.py` within clean Ind CQC job to polars.
+
+- Converted clean_ascwds_filled_post_outliers utils folder to polars within Clean Ind CQC Job.
 
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.

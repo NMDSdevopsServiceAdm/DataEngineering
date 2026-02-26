@@ -239,12 +239,6 @@ class MainTests(CleanIndFilledPostsTests):
         df = df.collect()
         self.assertEqual(df[0][IndCQC.number_of_beds], 1)
 
-    def test_days_to_repeat_forward_filling_is_correct(self):
-        self.assertEqual(
-            job.NumericalValues.number_of_days_to_forward_fill,
-            65,
-        )
-
 
 class CalculateTimeRegisteredForTests(CleanIndFilledPostsTests):
     def test_calculate_time_registered_returns_one_when_dates_are_on_the_same_day(
