@@ -124,9 +124,7 @@ class NullCareHomeGroupedProvidersTests(unittest.TestCase):
         )
         pl_testing.assert_frame_equal(expected_lf, returned_lf.sort(IndCQC.location_id))
 
-    def test_function_returns_original_data_when_criteria_not_met(
-        self,
-    ):
+    def test_function_returns_original_data_when_criteria_not_met(self):
         test_lf = pl.LazyFrame(
             Data.null_care_home_grouped_providers_where_location_does_not_meet_criteria_rows,
             Schemas.null_care_home_grouped_providers_schema,
@@ -139,9 +137,7 @@ class NullCareHomeGroupedProvidersTests(unittest.TestCase):
 
 
 class NullNonResidentialGroupedProvidersTests(unittest.TestCase):
-    def test_function_returns_null_when_criteria_met(
-        self,
-    ):
+    def test_function_returns_null_when_criteria_met(self):
         test_lf = pl.LazyFrame(
             Data.null_non_res_grouped_providers_when_meets_criteria_rows,
             Schemas.null_non_res_grouped_providers_schema,
@@ -159,9 +155,7 @@ class NullNonResidentialGroupedProvidersTests(unittest.TestCase):
             returned_lf.sort(IndCQC.location_id),
         )
 
-    def test_function_returns_original_data_when_criteria_not_met(
-        self,
-    ):
+    def test_function_returns_original_data_when_criteria_not_met(self):
         test_lf = pl.LazyFrame(
             Data.null_non_res_grouped_providers_when_does_not_meet_criteria_rows,
             Schemas.null_non_res_grouped_providers_schema,
@@ -170,6 +164,4 @@ class NullNonResidentialGroupedProvidersTests(unittest.TestCase):
 
         returned_lf = job.null_non_residential_grouped_providers(test_lf)
 
-        pl_testing.assert_frame_equal(
-            returned_lf.sort(IndCQC.location_id).collect(), test_lf.collect()
-        )
+        pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), test_lf)

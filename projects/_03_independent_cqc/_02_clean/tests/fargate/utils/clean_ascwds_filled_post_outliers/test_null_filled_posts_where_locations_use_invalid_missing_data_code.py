@@ -33,15 +33,11 @@ class NullFilledPostsUsingInvalidMissingDataCodeTests(unittest.TestCase):
             orient="row",
         )
 
-    def test_function_returns_expected_values(
-        self,
-    ):
+    def test_function_returns_expected_values(self):
         pl_testing.assert_frame_equal(
             self.expected_lf,
             self.returned_lf,
         )
 
-    def test_missing_data_code_is_correct(
-        self,
-    ):
+    def test_missing_data_code_is_correct(self):
         self.assertEqual(job.INVALID_MISSING_DATA_CODE, 999.0)

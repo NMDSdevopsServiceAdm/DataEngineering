@@ -20,9 +20,6 @@ from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
 
 from polars_utils import utils
 
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-
-
 SRC_PATH = "polars_utils.validation.actions"
 PATCH_PATH = "polars_utils.utils"
 

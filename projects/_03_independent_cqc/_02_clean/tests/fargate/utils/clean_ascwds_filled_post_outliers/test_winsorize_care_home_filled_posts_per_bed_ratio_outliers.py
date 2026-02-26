@@ -91,11 +91,6 @@ class FilterToCareHomesWithKnownBedsAndFilledPostsTests(unittest.TestCase):
             orient="row",
         )
 
-    def test_filtered_lf_has_expected_number_of_rows(self):
-        self.assertEqual(
-            self.returned_lf.collect().height, self.expected_lf.collect().height
-        )
-
     def test_filtered_lf_matches_expected_dataframe(self):
         pl_testing.assert_frame_equal(self.returned_lf, self.expected_lf)
 
@@ -113,11 +108,7 @@ class SelectDataNotInSubsetTests(unittest.TestCase):
             orient="row",
         )
 
-        data_not_in_subset_lf = job.select_data_not_in_subset(lf, subset_lf)
-        self.assertEqual(
-            data_not_in_subset_lf.collect().height,
-            (lf.collect().height - subset_lf.collect().height),
-        )
+        returned_lf = job.select_data_not_in_subset(lf, subset_lf)
         expected_lf = pl.LazyFrame(
             data=Data.expected_select_data_not_in_subset_rows,
             schema=Schemas.select_data_not_in_subset_schema,
@@ -125,7 +116,7 @@ class SelectDataNotInSubsetTests(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(
-            data_not_in_subset_lf,
+            returned_lf,
             expected_lf,
         )
 
@@ -342,15 +333,6 @@ class CombineDataframeTests(unittest.TestCase):
         )
         self.returned_combined_lf = job.combine_data(
             self.care_home_lf, self.non_care_home_lf
-        )
-
-    def test_combineed_data_keeps_all_rows_of_data(self):
-        self.assertEqual(
-            self.returned_combined_lf.collect().height,
-            (
-                self.care_home_lf.collect().height
-                + self.non_care_home_lf.collect().height
-            ),
         )
 
     def test_function_returns_expected_values(self):
