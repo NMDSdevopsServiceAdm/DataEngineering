@@ -39,7 +39,6 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
     def setUp(self) -> None:
         test_schema = pl.Schema(
             [
-                (IndCQC.location_id, pl.String()),
                 (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
                 (IndCQC.estimate_filled_posts, pl.Float64()),
                 (IndCQC.estimate_filled_posts_source, pl.String()),
@@ -48,17 +47,17 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
         )
         # fmt: off
         input_rows = [
-            ("1-001", 10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 1),
-            ("1-001", 10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 2),
-            ("1-002", None, 20.0, EstimateFilledPostsSource.ascwds_pir_merged, 1),
-            ("1-003", 10.0, 10.0, EstimateFilledPostsSource.care_home_model, 2),
+            (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 1),
+            (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 2),
+            (None, 20.0, EstimateFilledPostsSource.ascwds_pir_merged, 1),
+            (10.0, 10.0, EstimateFilledPostsSource.care_home_model, 2),
         ]
 
         expected_rows = [
-            ("1-001", 10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 1),
-            ("1-001", 10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 2),
-            ("1-002", None, 20.0, EstimateFilledPostsSource.ascwds_pir_merged, None),
-            ("1-003", 10.0, 10.0, EstimateFilledPostsSource.care_home_model, None),
+            (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 1),
+            (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 2),
+            (None, 20.0, EstimateFilledPostsSource.ascwds_pir_merged, None),
+            (10.0, 10.0, EstimateFilledPostsSource.care_home_model, None),
         ]
         # fmt: on
         self.input_lf = pl.LazyFrame(input_rows, test_schema)
