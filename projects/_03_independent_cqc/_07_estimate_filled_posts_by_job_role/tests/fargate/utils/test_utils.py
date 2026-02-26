@@ -38,6 +38,16 @@ class JoinWorkerToEstimatesDataframeTests(unittest.TestCase):
 
 class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
     def setUp(self) -> None:
+        test_schema = pl.Schema(
+            [
+                (IndCQC.location_id, pl.String()),
+                (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+                (IndCQC.estimate_filled_posts, pl.Float64()),
+                (IndCQC.estimate_filled_posts_source, pl.String()),
+                (IndCQC.main_job_role_clean_labelled, pl.String()),
+                (IndCQC.ascwds_job_role_counts, pl.Int64()),
+            ]
+        )
         # fmt: off
         input_rows = [
             ("1-001", 10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, MainJobRoleLabels.care_worker, 1),
@@ -53,16 +63,6 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
             ("1-003", 10.0, 10.0, EstimateFilledPostsSource.care_home_model, MainJobRoleLabels.registered_nurse, None),
         ]
         # fmt: on
-        test_schema = pl.Schema(
-            [
-                (IndCQC.location_id, pl.String()),
-                (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
-                (IndCQC.estimate_filled_posts, pl.Float64()),
-                (IndCQC.estimate_filled_posts_source, pl.String()),
-                (IndCQC.main_job_role_clean_labelled, pl.String()),
-                (IndCQC.ascwds_job_role_counts, pl.Int64()),
-            ]
-        )
         # This function shouldn't change the schema from input.
         self.input_lf = pl.LazyFrame(input_rows, test_schema)
         self.expected_lf = pl.LazyFrame(expected_rows, test_schema)
