@@ -1,6 +1,8 @@
+import math
+from dataclasses import dataclass, fields
+
 import polars as pl
 
-from dataclasses import dataclass, fields
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
@@ -16,7 +18,9 @@ class TempCols:
 
 # Dictionary defining the minimum size of location and corresponding days to forward fill.
 SIZE_BASED_FORWARD_FILL_DAYS = {
-    -float("inf"): 65,
+    -math.inf: 250,  # small location, using 250 as proxy for 8 month repetition.
+    10: 125,  # medium location, using 125 as proxy for 4 month repetition.
+    50: 65,  # large location, using 65 as proxy for 2 month repetition.
 }
 
 

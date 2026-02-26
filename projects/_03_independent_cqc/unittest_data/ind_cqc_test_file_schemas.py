@@ -1581,59 +1581,6 @@ class ValidateCleanedIndCqcData:
 
 
 @dataclass
-class NonResAscwdsFeaturesSchema(object):
-    basic_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.imputed_registration_date, DateType(), False),
-            StructField(IndCQC.time_registered, IntegerType(), False),
-            StructField(IndCQC.time_since_dormant, IntegerType(), True),
-            StructField(IndCQC.current_region, StringType(), False),
-            StructField(IndCQC.dormancy, StringType(), True),
-            StructField(IndCQC.services_offered, ArrayType(StringType()), True),
-            StructField(
-                IndCQC.regulated_activities_offered, ArrayType(StringType()), True
-            ),
-            StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
-            StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
-            StructField(IndCQC.imputed_filled_post_model, DoubleType(), True),
-            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), False),
-            StructField(IndCQC.related_location, StringType(), True),
-            StructField(Keys.year, StringType(), False),
-            StructField(Keys.month, StringType(), False),
-            StructField(Keys.day, StringType(), False),
-            StructField(Keys.import_date, StringType(), False),
-        ]
-    )
-
-
-@dataclass
-class ValidateFeaturesNonResASCWDSWithDormancyIndCqcSchema:
-    cleaned_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.dormancy, StringType(), True),
-            StructField(IndCQC.services_offered, ArrayType(StringType(), True)),
-            StructField(IndCQC.specialisms_offered, ArrayType(StringType(), True)),
-        ]
-    )
-    non_res_ascwds_ind_cqc_features_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    calculate_expected_size_schema = cleaned_ind_cqc_schema
-
-
-@dataclass
 class ModelFeatures:
     vectorise_schema = StructType(
         [
@@ -2250,29 +2197,6 @@ class ModelInterpolation:
 
 
 @dataclass
-class ModelNonResWithDormancy:
-    non_res_with_dormancy_cleaned_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-    non_res_with_dormancy_features_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.features, VectorUDT(), True),
-        ]
-    )
-
-
-@dataclass
 class ModelNonResWithAndWithoutDormancyCombinedSchemas:
     estimated_posts_schema = StructType(
         [
@@ -2843,7 +2767,7 @@ class DiagnosticsUtilsSchemas:
 
 @dataclass
 class IndCQCDataUtils:
-    input_schema_for_adding_estimate_filled_posts_and_source = StructType(
+    merge_columns_in_order_when_double_type_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField("model_name_1", DoubleType(), True),
@@ -2851,38 +2775,15 @@ class IndCQCDataUtils:
             StructField("model_name_3", DoubleType(), True),
         ]
     )
-
-    expected_schema_with_estimate_filled_posts_and_source = StructType(
+    expected_merge_columns_in_order_when_double_type_schema = StructType(
         [
-            *input_schema_for_adding_estimate_filled_posts_and_source,
+            *merge_columns_in_order_when_double_type_schema,
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
             StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
         ]
     )
 
-    merge_columns_in_order_when_df_has_columns_of_multiple_datatypes_schema = (
-        StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.care_home_model, DoubleType(), True),
-                StructField(
-                    IndCQC.ascwds_job_role_ratios, MapType(StringType(), DoubleType())
-                ),
-            ]
-        )
-    )
-
-    merge_columns_in_order_when_columns_are_datatype_string_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
-            StructField(
-                IndCQC.ascwds_job_role_ratios_merged_source, StringType(), True
-            ),
-        ]
-    )
-
-    merge_columns_in_order_using_map_columns_schema = StructType(
+    merge_columns_in_order_when_map_type_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(
@@ -2895,10 +2796,9 @@ class IndCQCDataUtils:
             ),
         ]
     )
-
-    expected_merge_columns_in_order_using_map_columns_schema = StructType(
+    expected_merge_columns_in_order_when_map_type_schema = StructType(
         [
-            *merge_columns_in_order_using_map_columns_schema,
+            *merge_columns_in_order_when_map_type_schema,
             StructField(
                 IndCQC.ascwds_job_role_ratios_merged,
                 MapType(StringType(), DoubleType()),
@@ -2996,41 +2896,47 @@ class CleanCtRepetition:
 # converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.ForwardFillLatestKnownValue
 @dataclass
 class ForwardFillLatestKnownValue:
+    col_to_forward_fill: str = "col_to_forward_fill"
+    days_to_forward_fill: str = "days_to_forward_fill"
+    last_known_date: str = "last_known_date"
+    last_known_value: str = "last_known_value"
+
+    size_based_forward_fill_days_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(col_to_forward_fill, IntegerType(), True),
+        ]
+    )
+    expected_size_based_forward_fill_days_schema = StructType(
+        [
+            *size_based_forward_fill_days_schema,
+            StructField(days_to_forward_fill, IntegerType(), True),
+        ]
+    )
+
     input_return_last_known_value_locations_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField("col_to_repeat", IntegerType(), True),
+            StructField(col_to_forward_fill, IntegerType(), True),
         ]
     )
     expected_return_last_known_value_locations_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField("last_known_date", DateType(), True),
-            StructField("last_known_value", IntegerType(), True),
+            StructField(last_known_date, DateType(), True),
+            StructField(last_known_value, IntegerType(), True),
         ]
     )
-    input_forward_fill_locations_schema = StructType(
+
+    forward_fill_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField("col_to_repeat", IntegerType(), True),
-            StructField("last_known_date", DateType(), True),
-            StructField("last_known_value", IntegerType(), True),
-        ]
-    )
-    expected_forward_fill_locations_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField("col_to_repeat", IntegerType(), True),
-        ]
-    )
-    forward_fill_latest_known_value_locations_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField("col_to_repeat", IntegerType(), True),
+            StructField(col_to_forward_fill, IntegerType(), True),
+            StructField(last_known_date, DateType(), True),
+            StructField(last_known_value, IntegerType(), True),
+            StructField(days_to_forward_fill, IntegerType(), True),
         ]
     )
 

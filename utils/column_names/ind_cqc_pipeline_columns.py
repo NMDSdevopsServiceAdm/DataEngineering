@@ -115,6 +115,9 @@ class IndCqcColumns:
     cqc_location_import_date_indexed_squared: str = (
         cqc_location_import_date_indexed + "_squared"
     )
+    cqc_location_import_date_indexed_cubed: str = (
+        cqc_location_import_date_indexed + "_cubed"
+    )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
     ct_care_home_filtering_rule: str = "ct_care_home_filtering_rule"
