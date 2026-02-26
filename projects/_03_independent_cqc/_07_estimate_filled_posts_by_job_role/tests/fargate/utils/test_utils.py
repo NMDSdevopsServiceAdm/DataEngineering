@@ -37,14 +37,12 @@ class JoinWorkerToEstimatesDataframeTests(unittest.TestCase):
 
 class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
     def setUp(self) -> None:
-        test_schema = pl.Schema(
-            [
-                (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
-                (IndCQC.estimate_filled_posts, pl.Float64()),
-                (IndCQC.estimate_filled_posts_source, pl.String()),
-                (IndCQC.ascwds_job_role_counts, pl.Int64()),
-            ]
-        )
+        test_schema = {
+            IndCQC.ascwds_filled_posts_dedup_clean: pl.Float64,
+            IndCQC.estimate_filled_posts: pl.Float64,
+            IndCQC.estimate_filled_posts_source: pl.String,
+            IndCQC.ascwds_job_role_counts: pl.Int64,
+        }
         # fmt: off
         input_rows = [
             (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 1),
