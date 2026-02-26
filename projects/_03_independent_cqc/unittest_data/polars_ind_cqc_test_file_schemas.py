@@ -769,7 +769,7 @@ class NullGroupedProvidersSchema:
         ]
     )
 
-    calculate_data_for_grouped_provider_identification_schema = pl.Schema(
+    grouped_provider_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.provider_id, pl.String()),
@@ -781,15 +781,15 @@ class NullGroupedProvidersSchema:
             (IndCQC.pir_people_directly_employed_dedup, pl.Float64()),
         ]
     )
-    expected_calculate_data_for_grouped_provider_identification_schema = pl.Schema(
-        list(calculate_data_for_grouped_provider_identification_schema.items())
+    expected_grouped_provider_schema = pl.Schema(
+        list(grouped_provider_schema.items())
         + [
             (NGPcol.location_pir_average, pl.Float64()),
-            (NGPcol.count_of_cqc_locations_in_provider, pl.Int64()),
-            (NGPcol.count_of_awcwds_locations_in_provider, pl.Int64()),
-            (NGPcol.count_of_awcwds_locations_with_data_in_provider, pl.Int64()),
+            (NGPcol.count_of_cqc_locations_in_provider, pl.UInt32()),
+            (NGPcol.count_of_awcwds_locations_in_provider, pl.UInt32()),
+            (NGPcol.count_of_awcwds_locations_with_data_in_provider, pl.UInt32()),
             (NGPcol.number_of_beds_at_provider, pl.Int64()),
-            (NGPcol.provider_pir_count, pl.Int64()),
+            (NGPcol.provider_pir_count, pl.UInt32()),
             (NGPcol.provider_pir_sum, pl.Float64()),
         ]
     )

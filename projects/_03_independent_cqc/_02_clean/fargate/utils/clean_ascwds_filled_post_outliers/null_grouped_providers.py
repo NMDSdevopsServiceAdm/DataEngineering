@@ -63,9 +63,7 @@ def null_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: A polars LazyFrame with grouped providers' data nulled.
     """
-    # # This is part of next PR
-    # #TODO:: Remove comments when converted
-    # lf = calculate_data_for_grouped_provider_identification(lf)
+    lf = calculate_data_for_grouped_provider_identification(lf)
 
     lf = identify_potential_grouped_providers(lf)
 
@@ -76,6 +74,40 @@ def null_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.drop(*columns_to_drop)
 
     return lf
+
+
+def calculate_data_for_grouped_provider_identification(
+    lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """ """
+    provider_date_group = [IndCQC.provider_id, IndCQC.cqc_location_import_date]
+    lf = lf.with_columns(
+        pl.mean(IndCQC.pir_people_directly_employed_dedup)
+        .over(IndCQC.location_id)
+        .alias(NGPcol.location_pir_average),
+        pl.count(IndCQC.location_id)
+        .over(provider_date_group)
+        .alias(NGPcol.count_of_cqc_locations_in_provider),
+        pl.count(IndCQC.establishment_id)
+        .over(provider_date_group)
+        .alias(NGPcol.count_of_awcwds_locations_in_provider),
+        pl.count(IndCQC.ascwds_filled_posts_dedup_clean)
+        .over(provider_date_group)
+        .alias(NGPcol.count_of_awcwds_locations_with_data_in_provider),
+        pl.when(pl.count(IndCQC.number_of_beds) > 0)
+        .then(pl.sum(IndCQC.number_of_beds))
+        .over(provider_date_group)
+        .alias(NGPcol.number_of_beds_at_provider),
+    )
+    return lf.with_columns(
+        pl.count(NGPcol.location_pir_average)
+        .over(provider_date_group)
+        .alias(NGPcol.provider_pir_count),
+        pl.when(pl.count(NGPcol.location_pir_average) > 0)
+        .then(pl.sum(NGPcol.location_pir_average))
+        .over(provider_date_group)
+        .alias(NGPcol.provider_pir_sum),
+    )
 
 
 def identify_potential_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
