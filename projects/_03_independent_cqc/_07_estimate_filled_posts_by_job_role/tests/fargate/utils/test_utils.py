@@ -63,7 +63,6 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
             ("1-003", 10.0, 10.0, EstimateFilledPostsSource.care_home_model, MainJobRoleLabels.registered_nurse, None),
         ]
         # fmt: on
-        # This function shouldn't change the schema from input.
         self.input_lf = pl.LazyFrame(input_rows, test_schema)
         self.expected_lf = pl.LazyFrame(expected_rows, test_schema)
 
