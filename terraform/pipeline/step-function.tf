@@ -96,7 +96,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     validate_estimated_ind_cqc_filled_posts_by_job_role_data_job_name = module.validate_estimated_ind_cqc_filled_posts_by_job_role_data_job.job_name
     diagnostics_on_known_filled_posts_job_name                        = module.diagnostics_on_known_filled_posts_job.job_name
     diagnostics_on_capacity_tracker_job_name                          = module.diagnostics_on_capacity_tracker_job.job_name
-    archive_filled_posts_estimates_job_name                           = module.archive_filled_posts_estimates_job.job_name
     prepare_dpr_external_job_name                                     = module.prepare_dpr_external_data_job.job_name
     prepare_dpr_survey_job_name                                       = module.prepare_dpr_survey_data_job.job_name
     merge_dpr_data_job_name                                           = module.merge_dpr_data_job.job_name

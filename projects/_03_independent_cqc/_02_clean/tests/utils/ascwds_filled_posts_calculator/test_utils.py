@@ -1,4 +1,3 @@
-import unittest
 import warnings
 
 from pyspark.sql import functions as F
@@ -17,11 +16,11 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     CalculateAscwdsFilledPostsUtilsSchemas as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class TestAscwdsFilledPostsCalculatorUtils(unittest.TestCase):
+class TestAscwdsFilledPostsCalculatorUtils(SparkBaseTest):
     common_checks_rows = [("1-000000001", 9, 2, None), ("1-000000002", 2, 2, 2.0)]
     common_checks_schema = StructType(
         [
@@ -33,11 +32,9 @@ class TestAscwdsFilledPostsCalculatorUtils(unittest.TestCase):
     )
 
     def setUp(self):
-        self.spark = utils.get_spark()
         self.df = self.spark.createDataFrame(
             data=self.common_checks_rows, schema=self.common_checks_schema
         )
-
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     def test_ascwds_filled_posts_is_null(self):
@@ -164,9 +161,6 @@ class TestAscwdsFilledPostsCalculatorUtils(unittest.TestCase):
 
 
 class TestSourceDescriptionAdded(TestAscwdsFilledPostsCalculatorUtils):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_add_source_description_added_to_source_column_when_required(self):
         input_df = self.spark.createDataFrame(
             Data.source_missing_rows, Schemas.estimated_source_description_schema

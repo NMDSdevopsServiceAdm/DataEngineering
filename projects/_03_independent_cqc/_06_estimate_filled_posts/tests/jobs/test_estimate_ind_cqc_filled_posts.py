@@ -2,13 +2,14 @@ import unittest
 from unittest.mock import ANY, Mock, patch
 
 import projects._03_independent_cqc._06_estimate_filled_posts.jobs.estimate_ind_cqc_filled_posts as job
-from utils import utils
+from tests.base_test import SparkBaseTest
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.jobs.estimate_ind_cqc_filled_posts"
 
 
-class EstimateIndCQCFilledPostsTests(unittest.TestCase):
+class EstimateIndCQCFilledPostsTests(SparkBaseTest):
     TEST_BUCKET_NAME = "test-bucket"
     SOURCE_TEST_DATA = "some/cleaned/data"
     ESTIMATES_DESTINATION = "estimates/destination"
@@ -20,12 +21,11 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     ]
 
     def setUp(self):
-        self.spark = utils.get_spark()
-
         self.mock_ind_cqc_df = Mock(name="ind_cqc_df")
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.estimate_non_res_capacity_tracker_filled_posts")
+    @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.merge_columns_in_order")
     @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
     @patch(f"{PATCH_PATH}.combine_non_res_with_and_without_dormancy_models")
@@ -38,15 +38,14 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         combine_non_res_with_and_without_dormancy_models_patch: Mock,
         model_imputation_with_extrapolation_and_interpolation: Mock,
         merge_columns_in_order_mock: Mock,
+        set_min_value_mock: Mock,
         estimate_non_res_capacity_tracker_filled_posts_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.return_value = self.mock_ind_cqc_df
 
         job.main(
-            self.TEST_BUCKET_NAME,
-            self.SOURCE_TEST_DATA,
-            self.ESTIMATES_DESTINATION,
+            self.TEST_BUCKET_NAME, self.SOURCE_TEST_DATA, self.ESTIMATES_DESTINATION
         )
 
         read_from_parquet_patch.assert_called_once_with(
@@ -60,6 +59,9 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             model_imputation_with_extrapolation_and_interpolation.call_count, 3
         )
         merge_columns_in_order_mock.assert_called_once()
+        set_min_value_mock.assert_called_once_with(
+            ANY, IndCQC.estimate_filled_posts, 1.0
+        )
         estimate_non_res_capacity_tracker_filled_posts_mock.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
             ANY,

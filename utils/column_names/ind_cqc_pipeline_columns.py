@@ -31,6 +31,7 @@ class PartitionKeys:
     year: str = "year"
 
 
+@dataclass
 class ArchivePartitionKeys:
     archive_day: str = "archive_day"
     archive_month: str = "archive_month"
@@ -105,6 +106,9 @@ class IndCqcColumns:
     )
     cqc_location_import_date_indexed_squared: str = (
         cqc_location_import_date_indexed + "_squared"
+    )
+    cqc_location_import_date_indexed_cubed: str = (
+        cqc_location_import_date_indexed + "_cubed"
     )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
@@ -247,12 +251,10 @@ class IndCqcColumns:
     )
     number_of_beds: str = CQCLClean.number_of_beds
     number_of_beds_banded: str = "number_of_beds_banded"
-    number_of_beds_banded_for_rate_of_change: str = (
-        number_of_beds_banded + "_for_rate_of_change"
-    )
     number_of_beds_banded_for_rolling_avg: str = (
         number_of_beds_banded + "_for_rolling_avg"
     )
+    number_of_beds_banded_roc: str = number_of_beds_banded + "_for_rate_of_change"
     organisation_id: str = AWPClean.organisation_id
     percentage_of_residuals_within_absolute_value: str = (
         "percentage_of_residuals_within_absolute_value"
@@ -338,13 +340,15 @@ class IndCqcColumns:
 class PrimaryServiceRateOfChangeColumns:
     """The names of the temporary columns created during the rate of change process."""
 
-    column_with_values: str = "column_with_values"
-    column_with_values_interpolated: str = "column_with_values_interpolated"
-    previous_column_with_values_interpolated: str = (
-        "previous_column_with_values_interpolated"
-    )
-    rolling_current_period_sum: str = "rolling_current_period_sum"
-    rolling_previous_period_sum: str = "rolling_previous_period_sum"
+    abs_change: str = "absolute_period_change"
+    current_period: str = "current_period"
+    current_period_cleaned: str = "current_period_cleaned"
+    current_period_interpolated: str = "current_period_interpolated"
+    perc_change: str = "percentage_period_change"
+    previous_period_cleaned: str = "previous_period_cleaned"
+    previous_period_interpolated: str = "previous_period_interpolated"
+    rolling_current_sum: str = "rolling_current_sum"
+    rolling_previous_sum: str = "rolling_previous_sum"
     submission_count: str = "submission_count"
 
 
