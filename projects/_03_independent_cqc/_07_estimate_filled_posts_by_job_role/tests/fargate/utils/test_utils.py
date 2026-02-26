@@ -61,6 +61,7 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
         return pl.LazyFrame(
             [*self.input_rows_that_meet_condition, *extra_rows],
             self.test_schema,
+            orient="row",
         )
 
     def _create_expected_lf(self, extra_rows: list[tuple]) -> pl.LazyFrame:
@@ -68,6 +69,7 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
         return pl.LazyFrame(
             [*self.expected_rows_that_meet_condition, *extra_rows],
             self.test_schema,
+            orient="row",
         )
 
     def test_nullifies_when_source_not_ascwds(self):
