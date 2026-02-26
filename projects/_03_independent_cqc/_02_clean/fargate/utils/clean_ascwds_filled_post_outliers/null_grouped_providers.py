@@ -79,7 +79,23 @@ def null_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
 def calculate_data_for_grouped_provider_identification(
     lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
-    """ """
+    """ 
+    Calculates the variables needed to determine whether a location is likely to
+    be a grouped provider.
+
+    Calculates the variables locations_at_provider,
+    locations_in_ascwds_at_provider, locations_in_ascwds_with_data_at_provider
+    and number_of_beds_at_provider.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with independent cqc data.
+
+    Returns:
+        pl.LazyFrame: A LazyFrame with the new variables locations_at_provider,
+            locations_in_ascwds_at_provider,
+            locations_in_ascwds_with_data_at_provider and
+            number_of_beds_at_provider.
+    """
     provider_date_group = [IndCQC.provider_id, IndCQC.cqc_location_import_date]
     lf = lf.with_columns(
         pl.mean(IndCQC.pir_people_directly_employed_dedup)
@@ -99,7 +115,8 @@ def calculate_data_for_grouped_provider_identification(
         .over(provider_date_group)
         .alias(NGPcol.number_of_beds_at_provider),
     )
-    return lf.with_columns(
+
+    lf = lf.with_columns(
         pl.count(NGPcol.location_pir_average)
         .over(provider_date_group)
         .alias(NGPcol.provider_pir_count),
@@ -108,6 +125,8 @@ def calculate_data_for_grouped_provider_identification(
         .over(provider_date_group)
         .alias(NGPcol.provider_pir_sum),
     )
+
+    return lf
 
 
 def identify_potential_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
