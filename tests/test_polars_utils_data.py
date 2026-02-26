@@ -130,4 +130,3 @@ class RawDataAdjustmentsData:
     ]
 
     expected_locations_data = locations_data_without_rows_to_remove
-

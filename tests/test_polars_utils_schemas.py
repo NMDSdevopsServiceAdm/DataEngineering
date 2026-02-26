@@ -63,4 +63,3 @@ class RawDataAdjustmentsSchemas:
             ("other_column", pl.String()),
         ]
     )
-

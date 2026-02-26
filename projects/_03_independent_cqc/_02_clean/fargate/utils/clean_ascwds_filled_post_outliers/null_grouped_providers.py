@@ -79,7 +79,7 @@ def null_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
 def calculate_data_for_grouped_provider_identification(
     lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
-    """ 
+    """
     Calculates the variables needed to determine whether a location is likely to
     be a grouped provider.
 

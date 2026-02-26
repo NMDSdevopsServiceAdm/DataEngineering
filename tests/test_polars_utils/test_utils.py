@@ -661,4 +661,3 @@ class SelectRowsWithNonNullValueTests(unittest.TestCase):
 
     def test_select_rows_with_non_null_value_returns_expected_lf(self):
         pl_testing.assert_frame_equal(self.returned_lf, self.expected_lf)
-
