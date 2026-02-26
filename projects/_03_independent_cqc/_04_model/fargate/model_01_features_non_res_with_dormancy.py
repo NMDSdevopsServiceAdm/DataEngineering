@@ -58,7 +58,12 @@ def main(bucket_name: str, model_name: str) -> None:
         & pl.col(IndCQC.dormancy).is_not_null()
     )
     lf = fUtils.add_date_index_column(lf)
-    lf = fUtils.add_squared_column(lf, IndCQC.cqc_location_import_date_indexed)
+    lf = fUtils.add_power_column(
+        lf,
+        IndCQC.cqc_location_import_date_indexed,
+        power=3,
+        new_col_name=IndCQC.cqc_location_import_date_indexed_cubed,
+    )
 
     lf = fUtils.add_array_column_count(
         lf, IndCQC.service_count, IndCQC.services_offered
