@@ -1,5 +1,4 @@
 import unittest
-from typing import Any
 
 import polars as pl
 import polars.testing as pl_testing
