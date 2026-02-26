@@ -655,8 +655,6 @@
               "Next": "Validate estimated filled posts and run diagnostics"
             },
             "Validate estimated filled posts and run diagnostics": {
-
-
               "Type": "Parallel",
               "Branches": [
                 {

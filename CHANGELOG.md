@@ -76,13 +76,13 @@ All notable changes to this project will be documented in this file.
 
 - Moved calculate_care_home_status_count function from estimate filled posts utils to clean_ind_cqc_filled_posts job.
 
+- Replaced the static PySpark modelling code for care homes and non-residential without dormancy with the auto-retraining sklearn equivalent.
+
 - In the clean ASC-WDS workplace job, a new function was added to select only the required columns before saving the cleaned ASC-WDS workplace data.
 
 - Removed filters from run_postcode_matching function. Data is already filtered before passed to this function.
 
 - Added unit tests for combine_non_res_with_and_without_dormancy_models function to check expected columns and row count.
-
-- Replaced the static PySpark modelling code for care homes and non-residential without dormancy with the auto-retraining sklearn equivalent.
 
 ### Fixed
 - Added a new test account in ASC-WDS to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)
