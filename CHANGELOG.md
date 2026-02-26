@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 
 - Changed the forward-filling of the last known value from two months for all locations to using a length of time base on the location size.
 
+- Changed imputation to apply nominal changes instead of converting and applying a ratio.
+
 - Removed minimum value requirement from `merge_columns_in_order`.
 
 - Moved `set_min_value` from model predictions and imputation to after the estimates column is produced.

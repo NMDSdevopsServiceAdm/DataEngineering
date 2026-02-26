@@ -78,6 +78,7 @@ def main(
         IndCQC.ascwds_rate_of_change_trendline_model,
         IndCQC.imputed_filled_post_model,
         care_home=False,
+        extrapolation_method="ratio",
     )
 
     df = model_imputation_with_extrapolation_and_interpolation(
@@ -86,6 +87,7 @@ def main(
         IndCQC.ascwds_rate_of_change_trendline_model,
         IndCQC.imputed_filled_posts_per_bed_ratio_model,
         care_home=True,
+        extrapolation_method="ratio",
     )
 
     df = model_calculate_rolling_average(
@@ -139,6 +141,7 @@ def main(
         IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
         IndCQC.ct_care_home_total_employed_imputed,
         care_home=True,
+        extrapolation_method="ratio",
     )
 
     df = model_imputation_with_extrapolation_and_interpolation(
@@ -147,6 +150,7 @@ def main(
         IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
         IndCQC.ct_non_res_care_workers_employed_imputed,
         care_home=False,
+        extrapolation_method="ratio",
     )
 
     print(f"Exporting as parquet to {imputed_ind_cqc_ascwds_and_pir_destination}")
