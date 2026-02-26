@@ -1917,6 +1917,53 @@ class ModelPrimaryServiceRateOfChange:
 
 
 @dataclass
+class ModelPrimaryServiceRateOfChangeCleaningSchemas:
+    calculate_absolute_and_percentage_change_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.abs_change, DoubleType(), True),
+            StructField(RoC_TempCol.perc_change, DoubleType(), True),
+        ]
+    )
+
+    compute_non_res_threshold_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.abs_change, DoubleType(), True),
+            StructField(RoC_TempCol.perc_change, DoubleType(), True),
+        ]
+    )
+
+    build_keep_condition_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.abs_change, DoubleType(), True),
+            StructField(RoC_TempCol.perc_change, DoubleType(), True),
+            StructField("keep", BooleanType(), False),
+        ]
+    )
+
+    apply_rate_of_change_cleaning_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
+            StructField("keep", BooleanType(), False),
+            StructField(RoC_TempCol.previous_period_cleaned, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_cleaned, DoubleType(), True),
+        ]
+    )
+
+
+@dataclass
 class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
     primary_service_rate_of_change_trendline_schema = StructType(
         [
