@@ -61,8 +61,7 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
         IndCQC.ascwds_filled_posts_dedup_clean
     )
     return lf.with_columns(
-        # when method combines comma-separated conditions with "&"
-        pl.when(source_is_ascwds, estimate_matches_ascwds).then(
+        pl.when(source_is_ascwds & estimate_matches_ascwds).then(
             IndCQC.ascwds_job_role_counts
         )
     )
