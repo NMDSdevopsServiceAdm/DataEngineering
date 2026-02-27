@@ -15,6 +15,7 @@ class MainTests(unittest.TestCase):
     mock_prepared_job_role_counts_data = Mock(name="prepared_job_role_counts_data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.JRUtils.nullify_job_role_count_when_source_not_ascwds")
     @patch(f"{PATCH_PATH}.JRUtils.join_worker_to_estimates_dataframe")
     @patch(
         f"{PATCH_PATH}.utils.scan_parquet",
@@ -24,6 +25,7 @@ class MainTests(unittest.TestCase):
         self,
         scan_parquet_mock: Mock,
         join_worker_to_estimates_dataframe_mock: Mock,
+        nullify_job_role_count_when_source_not_ascwds_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -47,6 +49,7 @@ class MainTests(unittest.TestCase):
         )
 
         join_worker_to_estimates_dataframe_mock.assert_called_once()
+        nullify_job_role_count_when_source_not_ascwds_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
