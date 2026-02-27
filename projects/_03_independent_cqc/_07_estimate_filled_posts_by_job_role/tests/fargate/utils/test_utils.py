@@ -13,7 +13,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
-    MainJobRoleLabels,
 )
 
 
@@ -38,40 +37,61 @@ class JoinWorkerToEstimatesDataframeTests(unittest.TestCase):
 
 class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
     def setUp(self) -> None:
-        # fmt: off
-        input_rows = [
-            ("1-001", 10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, MainJobRoleLabels.care_worker, 1),
-            ("1-001", 10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, MainJobRoleLabels.registered_nurse, 2),
-            ("1-002", None, 20.0, EstimateFilledPostsSource.ascwds_pir_merged, MainJobRoleLabels.care_worker, 1),
-            ("1-003", 10.0, 10.0, EstimateFilledPostsSource.care_home_model, MainJobRoleLabels.registered_nurse, 2),
+        self.test_schema = {
+            IndCQC.ascwds_filled_posts_dedup_clean: pl.Float64,
+            IndCQC.estimate_filled_posts: pl.Float64,
+            IndCQC.estimate_filled_posts_source: pl.String,
+            IndCQC.ascwds_job_role_counts: pl.Int64,
+        }
+        self.input_rows_that_meet_condition = [
+            (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 1),
+            (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 2),
         ]
 
-        expected_rows = [
-            ("1-001", 10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, MainJobRoleLabels.care_worker, 1),
-            ("1-001", 10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, MainJobRoleLabels.registered_nurse, 2),
-            ("1-002", None, 20.0, EstimateFilledPostsSource.ascwds_pir_merged, MainJobRoleLabels.care_worker, None),
-            ("1-003", 10.0, 10.0, EstimateFilledPostsSource.care_home_model, MainJobRoleLabels.registered_nurse, None),
+        self.expected_rows_that_meet_condition = [
+            (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 1),
+            (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 2),
         ]
-        # fmt: on
-        test_schema = pl.Schema(
-            [
-                (IndCQC.location_id, pl.String()),
-                (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
-                (IndCQC.estimate_filled_posts, pl.Float64()),
-                (IndCQC.estimate_filled_posts_source, pl.String()),
-                (IndCQC.main_job_role_clean_labelled, pl.String()),
-                (IndCQC.ascwds_job_role_counts, pl.Int64()),
-            ]
+
+    def _create_input_lf(self, extra_rows: list[tuple]) -> pl.LazyFrame:
+        """Set the input LazyFrame up with rows that meet condition + given rows."""
+        return pl.LazyFrame(
+            [*self.input_rows_that_meet_condition, *extra_rows],
+            self.test_schema,
+            orient="row",
         )
-        # This function shouldn't change the schema from input.
-        self.input_lf = pl.LazyFrame(input_rows, test_schema, orient="row")
-        self.expected_lf = pl.LazyFrame(expected_rows, test_schema, orient="row")
 
-        return super().setUp()
+    def _create_expected_lf(self, extra_rows: list[tuple]) -> pl.LazyFrame:
+        """Set the expected LazyFrame up with rows that meet condition + given rows."""
+        return pl.LazyFrame(
+            [*self.expected_rows_that_meet_condition, *extra_rows],
+            self.test_schema,
+            orient="row",
+        )
 
-    def test_nullify_job_role_count_when_source_not_ascwds(self):
-        returned_lf = job.nullify_job_role_count_when_source_not_ascwds(self.input_lf)
-        pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
+    def test_nullifies_when_source_not_ascwds(self):
+        input_lf = self._create_input_lf(
+            # Row with non-ASCWDS source
+            [(10.0, 10.0, EstimateFilledPostsSource.care_home_model, 2)],
+        )
+        expected_lf = self._create_expected_lf(
+            # Row with non-ASCWDS source (counts nullified)
+            [(10.0, 10.0, EstimateFilledPostsSource.care_home_model, None)],
+        )
+        returned_lf = job.nullify_job_role_count_when_source_not_ascwds(input_lf)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_nullifies_when_estimate_doesnt_match_ascwds(self):
+        input_lf = self._create_input_lf(
+            # Row that doesn't match estimate filled posts.
+            [(None, 20.0, EstimateFilledPostsSource.ascwds_pir_merged, 1)],
+        )
+        expected_lf = self._create_expected_lf(
+            # Row that doesn't match estimate filled posts (counts nullified)
+            [(None, 20.0, EstimateFilledPostsSource.ascwds_pir_merged, None)],
+        )
+        returned_lf = job.nullify_job_role_count_when_source_not_ascwds(input_lf)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class TestPercentageShare(unittest.TestCase):

@@ -21,6 +21,7 @@ class ReplaceZeroBedsWithNullTests(unittest.TestCase):
         input_lf = pl.LazyFrame(
             data=Data.replace_zero_beds_with_null_rows,
             schema=Schemas.replace_zero_beds_with_null_schema,
+            orient="row",
         )
 
         result = job.replace_zero_beds_with_null(input_lf).collect()
@@ -28,6 +29,7 @@ class ReplaceZeroBedsWithNullTests(unittest.TestCase):
         expected = pl.DataFrame(
             data=Data.expected_replace_zero_beds_with_null_rows,
             schema=Schemas.replace_zero_beds_with_null_schema,
+            orient="row",
         )
 
         pl_testing.assert_frame_equal(

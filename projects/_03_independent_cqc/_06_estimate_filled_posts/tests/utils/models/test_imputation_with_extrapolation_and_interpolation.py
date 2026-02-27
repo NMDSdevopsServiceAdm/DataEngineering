@@ -28,45 +28,52 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.imputation_with_extrapolation_and_interpolation_df = (
-            self.spark.createDataFrame(
-                Data.imputation_with_extrapolation_and_interpolation_rows,
-                Schemas.imputation_with_extrapolation_and_interpolation_schema,
-            )
+        self.input_df = self.spark.createDataFrame(
+            Data.imputation_with_extrapolation_and_interpolation_rows,
+            Schemas.imputation_with_extrapolation_and_interpolation_schema,
         )
         self.returned_df = job.model_imputation_with_extrapolation_and_interpolation(
-            self.imputation_with_extrapolation_and_interpolation_df,
+            self.input_df,
             Data.column_with_null_values_name,
             Data.model_column_name,
             Data.imputation_model_column_name,
             care_home=False,
+            extrapolation_method="nominal",
         )
 
     @patch(f"{PATCH_PATH}.model_interpolation")
     @patch(f"{PATCH_PATH}.model_extrapolation")
+    @patch(f"{PATCH_PATH}.split_dataset_for_imputation")
+    @patch(f"{PATCH_PATH}.identify_locations_with_a_non_null_submission")
     def test_model_imputation_with_extrapolation_and_interpolation_runs(
         self,
+        non_null_locs_mock: Mock,
+        split_dataset_mock: Mock,
         model_extrapolation_mock: Mock,
         model_interpolation_mock: Mock,
     ):
+        split_dataset_mock.side_effect = [
+            (Mock(name="imputed_df"), Mock(name="non_imputed_df"))
+        ]
+
         job.model_imputation_with_extrapolation_and_interpolation(
-            self.imputation_with_extrapolation_and_interpolation_df,
+            self.input_df,
             Data.column_with_null_values_name,
             Data.model_column_name,
             Data.imputation_model_column_name,
             care_home=False,
+            extrapolation_method="nominal",
         )
 
+        non_null_locs_mock.assert_called_once()
+        split_dataset_mock.assert_called_once()
         model_extrapolation_mock.assert_called_once()
         model_interpolation_mock.assert_called_once()
 
     def test_model_imputation_with_extrapolation_and_interpolation_returns_same_number_of_rows(
         self,
     ):
-        self.assertEqual(
-            self.imputation_with_extrapolation_and_interpolation_df.count(),
-            self.returned_df.count(),
-        )
+        self.assertEqual(self.input_df.count(), self.returned_df.count())
 
     def test_model_imputation_with_extrapolation_and_interpolation_returns_new_column(
         self,

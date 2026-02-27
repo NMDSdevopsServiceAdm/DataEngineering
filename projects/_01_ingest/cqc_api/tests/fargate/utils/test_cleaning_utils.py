@@ -244,10 +244,13 @@ class AllocatePrimaryServiceTests(unittest.TestCase):
         expected_lf = pl.LazyFrame(
             data=Data.expected_primary_service_type_rows,
             schema=Schemas.expected_primary_service_type_schema,
+            orient="row",
         )
         returned_lf = job.allocate_primary_service_type(test_primary_service_lf)
 
-        self.assertTrue(CQCLClean.primary_service_type in returned_lf.columns)
+        self.assertTrue(
+            CQCLClean.primary_service_type in returned_lf.collect_schema().names()
+        )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
@@ -265,6 +268,7 @@ class RealignCareHomeColumnWthPrimaryServiceTests(unittest.TestCase):
         expected_lf = pl.LazyFrame(
             data=Data.expected_realign_carehome_column_rows,
             schema=Schemas.realign_carehome_column_schema,
+            orient="row",
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
