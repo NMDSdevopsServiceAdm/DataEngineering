@@ -147,21 +147,20 @@ def build_non_residential_keep_condition(
     Returns:
         Column: A boolean Column indicating which rows to retain.
     """
-
-    return (
-        (F.col(IndCqc.care_home) == CareHome.care_home)
-        | (
-            (F.col(IndCqc.care_home) == CareHome.not_care_home)
-            & (F.col(prev_col) <= 10)
-            & (F.col(curr_col) <= 10)
-        )
-        | (
-            (F.col(IndCqc.care_home) == CareHome.not_care_home)
-            & (F.col(TempCol.abs_change) <= F.lit(abs_upper))
-            & (F.col(TempCol.perc_change) <= F.lit(perc_upper))
-            & (F.col(TempCol.perc_change) >= F.lit(perc_lower))
-        )
+    is_care_home = F.col(IndCqc.care_home) == CareHome.care_home
+    is_small_non_res = (
+        (F.col(IndCqc.care_home) == CareHome.not_care_home)
+        & (F.col(prev_col) <= 10)
+        & (F.col(curr_col) <= 10)
     )
+    is_non_res_within_thresholds = (
+        (F.col(IndCqc.care_home) == CareHome.not_care_home)
+        & (F.col(TempCol.abs_change) <= F.lit(abs_upper))
+        & (F.col(TempCol.perc_change) <= F.lit(perc_upper))
+        & (F.col(TempCol.perc_change) >= F.lit(perc_lower))
+    )
+
+    return is_care_home | is_small_non_res | is_non_res_within_thresholds
 
 
 def apply_rate_of_change_cleaning(
