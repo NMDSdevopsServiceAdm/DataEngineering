@@ -758,14 +758,6 @@ class NullGroupedProvidersSchema:
             (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
             (IndCQC.ascwds_filtering_rule, pl.String()),
             (IndCQC.pir_people_directly_employed_dedup, pl.Float64()),
-            # Remove folloiwng when calculate_data_for_grouped_provider is converted to polars
-            (NGPcol.location_pir_average, pl.Float64()),
-            (NGPcol.count_of_cqc_locations_in_provider, pl.Int64()),
-            (NGPcol.count_of_awcwds_locations_in_provider, pl.Int64()),
-            (NGPcol.count_of_awcwds_locations_with_data_in_provider, pl.Int64()),
-            (NGPcol.number_of_beds_at_provider, pl.Int64()),
-            (NGPcol.provider_pir_count, pl.Int64()),
-            (NGPcol.provider_pir_sum, pl.Float64()),
         ]
     )
 
