@@ -9,9 +9,6 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.extrapo
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.interpolation import (
     model_interpolation,
 )
-from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
-    set_min_value,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
 
@@ -74,7 +71,6 @@ def model_imputation_with_extrapolation_and_interpolation(
     imputed_df = model_imputation(
         imputed_df, column_with_null_values, imputed_column_name
     )
-    imputed_df = set_min_value(imputed_df, imputed_column_name, 1.0)
 
     combined_df = imputed_df.unionByName(non_imputed_df, allowMissingColumns=True)
 
