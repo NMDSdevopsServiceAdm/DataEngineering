@@ -74,11 +74,11 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
 
 
-class TestGetPercentageShare(unittest.TestCase):
+class TestPercentageShare(unittest.TestCase):
     def test_over_whole_dataset(self):
         input_df = pl.DataFrame({"vals": [1, 2, 2]})
         expected_df = pl.DataFrame({"ratios": [0.2, 0.4, 0.4]})
-        returned_df = input_df.select(job.get_percentage_share("vals").alias("ratios"))
+        returned_df = input_df.select(job.percentage_share("vals").alias("ratios"))
         pl_testing.assert_frame_equal(returned_df, expected_df)
 
     def test_over_groups(self):
@@ -93,27 +93,27 @@ class TestGetPercentageShare(unittest.TestCase):
         )
         input_df = expected_df.select("group", "vals")
         returned_df = input_df.with_columns(
-            job.get_percentage_share("vals").over("group").alias("ratios"),
+            job.percentage_share("vals").over("group").alias("ratios"),
         )
         pl_testing.assert_frame_equal(returned_df, expected_df, rel_tol=0.001)
 
     def test_when_some_values_are_null(self):
         input_df = pl.DataFrame({"vals": [None, 3, None, 2]})
         expected_df = pl.DataFrame({"ratios": [None, 0.6, None, 0.4]})
-        returned_df = input_df.select(job.get_percentage_share("vals").alias("ratios"))
+        returned_df = input_df.select(job.percentage_share("vals").alias("ratios"))
         pl_testing.assert_frame_equal(returned_df, expected_df)
 
     def test_when_all_values_are_null(self):
         input_df = pl.DataFrame({"vals": [None, None, None]})
         expected_df = pl.DataFrame({"ratios": [None, None, None]}).cast(pl.Float64)
-        returned_df = input_df.select(job.get_percentage_share("vals").alias("ratios"))
+        returned_df = input_df.select(job.percentage_share("vals").alias("ratios"))
         pl_testing.assert_frame_equal(returned_df, expected_df)
 
     def test_when_some_values_are_zero(self):
         input_df = pl.DataFrame({"vals": [2, 0, 3, 0]})
         # Zero divided by 5 (sum) is still 0.
         expected_df = pl.DataFrame({"ratios": [0.4, 0.0, 0.6, 0.0]})
-        returned_df = input_df.select(job.get_percentage_share("vals").alias("ratios"))
+        returned_df = input_df.select(job.percentage_share("vals").alias("ratios"))
         pl_testing.assert_frame_equal(returned_df, expected_df)
 
     def test_when_all_values_are_zero(self):
@@ -121,5 +121,5 @@ class TestGetPercentageShare(unittest.TestCase):
         # This returns NaN rather than Null because of divide by zero.
         # https://docs.pola.rs/user-guide/expressions/missing-data/#not-a-number-or-nan-values
         expected_df = pl.DataFrame({"ratios": [float("nan")] * 3})
-        returned_df = input_df.select(job.get_percentage_share("vals").alias("ratios"))
+        returned_df = input_df.select(job.percentage_share("vals").alias("ratios"))
         pl_testing.assert_frame_equal(returned_df, expected_df)
