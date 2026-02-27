@@ -16,14 +16,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change_cleaning"
 
 
-class ModelPrimaryServiceRateOfChangeCleaningTests(SparkBaseTest):
+class MainTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
-
-class MainTests(ModelPrimaryServiceRateOfChangeCleaningTests):
-    def setUp(self) -> None:
-        super().setUp()
 
         self.input_df = Mock(name="input_df")
 
@@ -48,12 +42,8 @@ class MainTests(ModelPrimaryServiceRateOfChangeCleaningTests):
         apply_cleaning_mock.assert_called_once()
 
 
-class CalculateAbsoluteAndPercentageChangeTests(
-    ModelPrimaryServiceRateOfChangeCleaningTests
-):
-    def setUp(self):
-        super().setUp()
-
+class CalculateAbsoluteAndPercentageChangeTests(SparkBaseTest):
+    def test_calculates_expected_changes(self):
         expected_df = self.spark.createDataFrame(
             Data.calculate_absolute_and_percentage_change_rows,
             Schemas.calculate_absolute_and_percentage_change_schema,
@@ -67,17 +57,13 @@ class CalculateAbsoluteAndPercentageChangeTests(
             TempCol.current_period_interpolated,
         )
 
-        self.returned_data = returned_df.sort(IndCqc.location_id).collect()
-        self.expected_data = expected_df.collect()
+        returned_data = returned_df.sort(IndCqc.location_id).collect()
+        expected_data = expected_df.collect()
 
-    def test_calculates_expected_changes(self):
-        self.assertEqual(self.returned_data, self.expected_data)
+        self.assertEqual(returned_data, expected_data)
 
 
-class ComputeNonResidentialThresholdTests(ModelPrimaryServiceRateOfChangeCleaningTests):
-    def setUp(self):
-        super().setUp()
-
+class ComputeNonResidentialThresholdTests(SparkBaseTest):
     def test_returns_expected_thresholds(self):
         test_cases = [
             ("all_rows_valid", Data.compute_non_res_threshold_valid_rows),
@@ -106,11 +92,8 @@ class ComputeNonResidentialThresholdTests(ModelPrimaryServiceRateOfChangeCleanin
                 self.assertAlmostEqual(perc_lower, 1 / perc_upper)
 
 
-class BuildNonResidentialKeepConditionTests(
-    ModelPrimaryServiceRateOfChangeCleaningTests
-):
-    def setUp(self):
-        super().setUp()
+class BuildNonResidentialKeepConditionTests(SparkBaseTest):
+    def test_builds_expected_condition(self):
         expected_df = self.spark.createDataFrame(
             Data.build_keep_condition_rows,
             Schemas.build_keep_condition_schema,
@@ -128,18 +111,14 @@ class BuildNonResidentialKeepConditionTests(
 
         returned_df = test_df.withColumn("keep", condition)
 
-        self.returned_data = returned_df.sort(IndCqc.location_id).collect()
-        self.expected_data = expected_df.collect()
+        returned_data = returned_df.sort(IndCqc.location_id).collect()
+        expected_data = expected_df.collect()
 
-    def test_builds_expected_condition(self):
-        self.assertEqual(self.returned_data, self.expected_data)
+        self.assertEqual(returned_data, expected_data)
 
 
-class CalculateAbsoluteAndPercentageChangeTests(
-    ModelPrimaryServiceRateOfChangeCleaningTests
-):
-    def setUp(self):
-        super().setUp()
+class CalculateAbsoluteAndPercentageChangeTests(SparkBaseTest):
+    def test_returns_expected_cleaned_values(self):
 
         expected_df = self.spark.createDataFrame(
             Data.apply_rate_of_change_cleaning_rows,
@@ -159,8 +138,7 @@ class CalculateAbsoluteAndPercentageChangeTests(
             keep_condition,
         )
 
-        self.returned_data = returned_df.sort(IndCqc.location_id).collect()
-        self.expected_data = expected_df.collect()
+        returned_data = returned_df.sort(IndCqc.location_id).collect()
+        expected_data = expected_df.collect()
 
-    def test_returns_expected_cleaned_values(self):
-        self.assertEqual(self.returned_data, self.expected_data)
+        self.assertEqual(returned_data, expected_data)
