@@ -162,23 +162,23 @@ class TestImputeFullTimeSeries:
         ],
     )
     def test_imputations(self, input, expected):
-        input_df = pl.DataFrame({"vals": input})
-        expected_df = pl.DataFrame({"vals": expected}).cast(pl.Float64)
-        returned_df = input_df.select(job.impute_full_time_series("vals"))
-        pl_testing.assert_frame_equal(returned_df, expected_df)
+        input_lf = pl.LazyFrame({"vals": input})
+        expected_lf = pl.LazyFrame({"vals": expected}).cast(pl.Float64)
+        returned_lf = input_lf.select(job.impute_full_time_series("vals"))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     def test_all_nones_returns_nones(self):
         """Test for the all None case in a set of values."""
-        input_df = pl.DataFrame({"vals": [None, None, None, None, None]}).cast(
+        input_lf = pl.LazyFrame({"vals": [None, None, None, None, None]}).cast(
             pl.Float64
         )
-        expected_df = input_df
-        returned_df = input_df.select(job.impute_full_time_series("vals"))
-        pl_testing.assert_frame_equal(returned_df, expected_df)
+        expected_lf = input_lf
+        returned_lf = input_lf.select(job.impute_full_time_series("vals"))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     def test_imputes_time_series_over_groups_with_unordered_time_col(self):
         """Test that it works with `.over(groups)` ordering by a time column."""
-        input_df = pl.DataFrame(
+        input_lf = pl.LazyFrame(
             schema=["group", "time_col", "vals"],
             data=[
                 # Scrambled the order of time_col to test order by.
@@ -193,7 +193,7 @@ class TestImputeFullTimeSeries:
             ],
             orient="row",
         )
-        expected_df = pl.DataFrame(
+        expected_lf = pl.LazyFrame(
             schema=["group", "time_col", "vals"],
             data=[
                 ("a", 1, 0.1),
@@ -207,12 +207,12 @@ class TestImputeFullTimeSeries:
             ],
             orient="row",
         )
-        returned_df = input_df.with_columns(
+        returned_lf = input_lf.with_columns(
             # Overwriting the original column with output
             job.impute_full_time_series("vals").over("group", order_by="time_col")
         )
         # `.over()` will return rows in original order, so need to sort to match expected.
         pl_testing.assert_frame_equal(
-            returned_df.sort("group", "time_col"),
-            expected_df,
+            returned_lf.sort("group", "time_col"),
+            expected_lf,
         )
