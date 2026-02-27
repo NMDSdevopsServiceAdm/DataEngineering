@@ -100,29 +100,23 @@ def calculate_data_for_grouped_provider_identification(
     lf = lf.with_columns(
         pl.mean(IndCQC.pir_people_directly_employed_dedup)
         .over(IndCQC.location_id)
-        .alias(NGPcol.location_pir_average),
-        pl.count(IndCQC.location_id)
-        .over(provider_date_group)
-        .alias(NGPcol.count_of_cqc_locations_in_provider),
-        pl.count(IndCQC.establishment_id)
-        .over(provider_date_group)
-        .alias(NGPcol.count_of_awcwds_locations_in_provider),
-        pl.count(IndCQC.ascwds_filled_posts_dedup_clean)
-        .over(provider_date_group)
-        .alias(NGPcol.count_of_awcwds_locations_with_data_in_provider),
-        pl.sum(IndCQC.number_of_beds)
-        .over(provider_date_group)
-        .alias(NGPcol.number_of_beds_at_provider),
+        .alias(NGPcol.location_pir_average)
     )
 
+    summary_cols = {
+        NGPcol.count_of_cqc_locations_in_provider: pl.count(IndCQC.location_id),
+        NGPcol.count_of_awcwds_locations_in_provider: pl.count(IndCQC.establishment_id),
+        NGPcol.count_of_awcwds_locations_with_data_in_provider: pl.count(
+            IndCQC.ascwds_filled_posts_dedup_clean
+        ),
+        NGPcol.number_of_beds_at_provider: pl.sum(IndCQC.number_of_beds),
+        NGPcol.provider_pir_count: pl.count(NGPcol.location_pir_average),
+        NGPcol.provider_pir_sum: pl.sum(NGPcol.location_pir_average),
+    }
+
     lf = lf.with_columns(
-        pl.count(NGPcol.location_pir_average)
-        .over(provider_date_group)
-        .alias(NGPcol.provider_pir_count),
-        pl.sum(NGPcol.location_pir_average)
-        .over(provider_date_group)
-        .alias(NGPcol.provider_pir_sum),
-    )
+        stats=pl.struct(**summary_cols).over(provider_date_group)
+    ).unnest("stats")
 
     return lf
 
