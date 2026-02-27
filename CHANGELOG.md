@@ -33,6 +33,8 @@ All notable changes to this project will be documented in this file.
 
 - Replaced the static PySpark modelling code for non-residential with dormancy with the auto-retraining sklearn equivalent.
 
+- Removed all remaining PySpark modelling code for care homes and non-residential with/without dormancy.
+
 ### Fixed
 
 
