@@ -110,8 +110,7 @@ def calculate_data_for_grouped_provider_identification(
         pl.count(IndCQC.ascwds_filled_posts_dedup_clean)
         .over(provider_date_group)
         .alias(NGPcol.count_of_awcwds_locations_with_data_in_provider),
-        pl.when(pl.count(IndCQC.number_of_beds) > 0)
-        .then(pl.sum(IndCQC.number_of_beds))
+        pl.sum(IndCQC.number_of_beds)
         .over(provider_date_group)
         .alias(NGPcol.number_of_beds_at_provider),
     )
@@ -120,8 +119,7 @@ def calculate_data_for_grouped_provider_identification(
         pl.count(NGPcol.location_pir_average)
         .over(provider_date_group)
         .alias(NGPcol.provider_pir_count),
-        pl.when(pl.count(NGPcol.location_pir_average) > 0)
-        .then(pl.sum(NGPcol.location_pir_average))
+        pl.sum(NGPcol.location_pir_average)
         .over(provider_date_group)
         .alias(NGPcol.provider_pir_sum),
     )
