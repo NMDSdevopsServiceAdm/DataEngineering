@@ -253,3 +253,13 @@ class TestRollingSum:
         ("1000",1720137600,PrimaryServiceType.care_home_with_nursing,{MainJobRoleLabels.care_worker: 5.0,MainJobRoleLabels.registered_nurse: 6.0,MainJobRoleLabels.senior_care_worker: 7.0,MainJobRoleLabels.senior_management: 8.0,},{MainJobRoleLabels.care_worker: 5.0,MainJobRoleLabels.registered_nurse: 6.0,MainJobRoleLabels.senior_care_worker: 7.0,MainJobRoleLabels.senior_management: 8.0,},),
     ]
     # fmt: off
+    primary_service_rolling_sum_schema = {
+            IndCQC.location_id: pl.String,
+            IndCQC.unix_time: pl.Int32,
+            IndCQC.primary_service_type: pl.String,
+            IndCQC.main_job_role_clean_labelled: pl.String,
+            IndCQC.imputed_ascwds_job_role_counts: pl.Float64,
+    }
+    expected_primary_service_rolling_sum_schema = {
+        IndCQC.ascwds_job_role_rolling_sum: pl.Float64
+    }
