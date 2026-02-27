@@ -107,13 +107,11 @@ def compute_non_residential_thresholds(
     )
 
     row = df_filtered.agg(
-        F.expr(f"percentile({TempCol.abs_change}, {abs_percentile})").alias(
-            TempCol.abs_pct
-        ),
-        F.expr(f"percentile({TempCol.perc_change}, {perc_percentile})").alias(
+        F.percentile_approx(TempCol.abs_change, abs_percentile).alias(TempCol.abs_pct),
+        F.percentile_approx(TempCol.perc_change, perc_percentile).alias(
             TempCol.perc_pct
         ),
-    ).collect()[0]
+    ).first()
 
     abs_upper = row[TempCol.abs_pct]
     perc_upper = row[TempCol.perc_pct]
