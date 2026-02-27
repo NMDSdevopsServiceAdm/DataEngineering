@@ -96,6 +96,22 @@ def main(
         .alias(IndCQC.imputed_ascwds_job_role_ratios)
     )
 
+    # Multiply imputed ratios by estimate filled posts to get counts.
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        (
+            pl.col(IndCQC.estimate_filled_posts)
+            * pl.col(IndCQC.imputed_ascwds_job_role_ratios)
+        ).alias(IndCQC.imputed_ascwds_job_role_counts)
+    )
+
+    # Do a rolling sum over 6 months on the imputed counts.
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        pl.sum(IndCQC.imputed_ascwds_job_role_counts)
+        .rolling(index_column=pl.from_epoch(IndCQC.unix_time), period="6mo")
+        .over(IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled)
+        .alias(IndCQC.ascwds_job_role_rolling_sum)
+    )
+
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
         output_path=estimates_by_job_role_destination,
