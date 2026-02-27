@@ -68,6 +68,6 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
     )
 
 
-def get_percentage_share(values: str) -> pl.Expr:
+def get_percentage_share(column: str) -> pl.Expr:
     """Calculate the percentage share of a column across all values."""
-    return pl.col(values) / pl.col(values).sum()
+    return pl.col(column) / pl.col(column).sum()
