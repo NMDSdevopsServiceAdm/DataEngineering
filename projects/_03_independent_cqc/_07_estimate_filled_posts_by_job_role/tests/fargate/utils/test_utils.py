@@ -2,6 +2,7 @@ import unittest
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
@@ -144,3 +145,74 @@ class TestPercentageShare(unittest.TestCase):
         expected_lf = pl.LazyFrame({"ratios": [float("nan")] * 3})
         returned_lf = input_lf.select(job.percentage_share("vals").alias("ratios"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestImputeFullTimeSeries:
+    @pytest.mark.parametrize(
+        "input, expected",
+        [
+            pytest.param([1, None, 3], [1, 2, 3], id="linear_interpolation"),
+            pytest.param([None, 1, 3], [1, 1, 3], id="backfill"),
+            pytest.param([1, 3, None], [1, 3, 3], id="forward_fill"),
+            pytest.param(
+                [None, 1, None, 3, None],
+                [1, 1, 2, 3, 3],
+                id="combined_time_series",
+            ),
+        ],
+    )
+    def test_imputations(self, input, expected):
+        input_lf = pl.LazyFrame({"vals": input})
+        expected_lf = pl.LazyFrame({"vals": expected}).cast(pl.Float64)
+        returned_lf = input_lf.select(job.impute_full_time_series("vals"))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_all_nones_returns_nones(self):
+        """Test for the all None case in a set of values."""
+        input_lf = pl.LazyFrame({"vals": [None, None, None, None, None]}).cast(
+            pl.Float64
+        )
+        expected_lf = input_lf
+        returned_lf = input_lf.select(job.impute_full_time_series("vals"))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_imputes_time_series_over_groups_with_unordered_time_col(self):
+        """Test that it works with `.over(groups)` ordering by a time column."""
+        input_lf = pl.LazyFrame(
+            schema=["group", "time_col", "vals"],
+            data=[
+                # Scrambled the order of time_col to test order by.
+                ("a", 4, 0.3),
+                ("a", 1, None),
+                ("a", 3, None),
+                ("a", 2, 0.1),
+                ("a", 5, None),
+                ("b", 2, None),
+                ("b", 3, 0.2),
+                ("b", 1, 0.1),
+            ],
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            schema=["group", "time_col", "vals"],
+            data=[
+                ("a", 1, 0.1),
+                ("a", 2, 0.1),
+                ("a", 3, 0.2),
+                ("a", 4, 0.3),
+                ("a", 5, 0.3),
+                ("b", 1, 0.1),
+                ("b", 2, 0.15),
+                ("b", 3, 0.2),
+            ],
+            orient="row",
+        )
+        returned_lf = input_lf.with_columns(
+            # Overwriting the original column with output
+            job.impute_full_time_series("vals").over("group", order_by="time_col")
+        )
+        # `.over()` will return rows in original order, so need to sort to match expected.
+        pl_testing.assert_frame_equal(
+            returned_lf.sort("group", "time_col"),
+            expected_lf,
+        )
