@@ -110,6 +110,7 @@ class TestPercentageShare(unittest.TestCase):
                 ("2", 3, 0.6),
             ],
             schema=["group", "vals", "ratios"],
+            orient="row",
         )
         input_lf = expected_lf.select("group", "vals")
         returned_lf = input_lf.with_columns(
