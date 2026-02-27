@@ -70,5 +70,9 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
 
 # TODO: Move this into a more centralised module of generic polars expression functions.
 def percentage_share(column: str) -> pl.Expr:
-    """Calculate the percentage share of a column across all values."""
+    """Calculate the percentage share of a column across all values.
+
+    Can be used in conjunction with `.group_by` and `.over` methods to get
+    proportions within groups.
+    """
     return pl.col(column) / pl.col(column).sum()
