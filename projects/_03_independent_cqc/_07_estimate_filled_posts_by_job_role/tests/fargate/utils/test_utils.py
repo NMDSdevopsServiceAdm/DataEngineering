@@ -43,7 +43,6 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
             IndCQC.estimate_filled_posts_source: pl.String,
             IndCQC.ascwds_job_role_counts: pl.Int64,
         }
-        # fmt: off
         self.input_rows_that_meet_condition = [
             (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 1),
             (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 2),
@@ -53,8 +52,6 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
             (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 1),
             (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 2),
         ]
-        # fmt: on
-        return super().setUp()
 
     def _create_input_lf(self, extra_rows: list[tuple]) -> pl.LazyFrame:
         """Set the input LazyFrame up with rows that meet condition + given rows."""
@@ -94,4 +91,56 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
             [(None, 20.0, EstimateFilledPostsSource.ascwds_pir_merged, None)],
         )
         returned_lf = job.nullify_job_role_count_when_source_not_ascwds(input_lf)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestPercentageShare(unittest.TestCase):
+    def test_over_whole_dataset(self):
+        input_lf = pl.LazyFrame({"vals": [1, 2, 2]})
+        expected_lf = pl.LazyFrame({"ratios": [0.2, 0.4, 0.4]})
+        returned_lf = input_lf.select(job.percentage_share("vals").alias("ratios"))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_over_groups(self):
+        expected_lf = pl.LazyFrame(
+            data=[
+                ("1", 1, 0.333),
+                ("1", 2, 0.667),
+                ("2", 2, 0.4),
+                ("2", 3, 0.6),
+            ],
+            schema=["group", "vals", "ratios"],
+            orient="row",
+        )
+        input_lf = expected_lf.select("group", "vals")
+        returned_lf = input_lf.with_columns(
+            job.percentage_share("vals").over("group").alias("ratios"),
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
+
+    def test_when_some_values_are_null(self):
+        input_lf = pl.LazyFrame({"vals": [None, 3, None, 2]})
+        expected_lf = pl.LazyFrame({"ratios": [None, 0.6, None, 0.4]})
+        returned_lf = input_lf.select(job.percentage_share("vals").alias("ratios"))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_when_all_values_are_null(self):
+        input_lf = pl.LazyFrame({"vals": [None, None, None]})
+        expected_lf = pl.LazyFrame({"ratios": [None, None, None]}).cast(pl.Float64)
+        returned_lf = input_lf.select(job.percentage_share("vals").alias("ratios"))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_when_some_values_are_zero(self):
+        input_lf = pl.LazyFrame({"vals": [2, 0, 3, 0]})
+        # Zero divided by 5 (sum) is still 0.
+        expected_lf = pl.LazyFrame({"ratios": [0.4, 0.0, 0.6, 0.0]})
+        returned_lf = input_lf.select(job.percentage_share("vals").alias("ratios"))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_when_all_values_are_zero(self):
+        input_lf = pl.LazyFrame({"vals": [0, 0, 0]})
+        # This returns NaN rather than Null because of divide by zero.
+        # https://docs.pola.rs/user-guide/expressions/missing-data/#not-a-number-or-nan-values
+        expected_lf = pl.LazyFrame({"ratios": [float("nan")] * 3})
+        returned_lf = input_lf.select(job.percentage_share("vals").alias("ratios"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
