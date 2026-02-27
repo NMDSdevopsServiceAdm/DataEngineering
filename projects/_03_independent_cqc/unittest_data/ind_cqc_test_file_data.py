@@ -4264,6 +4264,53 @@ class ModelPrimaryServiceRateOfChange:
 
 
 @dataclass
+class ModelPrimaryServiceRateOfChangeCleaningData:
+    calculate_absolute_and_percentage_change_rows = [
+        ("1-001", None, 40.0, None, None),
+        ("1-002", 0.0, 40.0, 40.0, None),
+        ("1-003", 40.0, None, None, None),
+        ("1-004", 40.0, 0.0, 40.0, 0.0),
+        ("1-005", 40.0, 20.0, 20.0, 0.5),
+        ("1-006", 40.0, 40.0, 0.0, 1.0),
+        ("1-007", 40.0, 80.0, 40.0, 2.0),
+    ]
+
+    compute_non_res_threshold_valid_rows = [
+        ("1-001", CareHome.not_care_home, 20.0, 25.0, 5.0, 1.25),
+        ("1-002", CareHome.not_care_home, 30.0, 45.0, 15.0, 1.5),
+        ("1-003", CareHome.not_care_home, 15.0, 18.0, 3.0, 1.2),
+    ]
+    # fmt: off
+    compute_non_res_threshold_invalid_rows = [
+        ("1-004", CareHome.care_home, 2.0, 200.0, 198.0, 100.0), # exclude care home
+        ("1-005", CareHome.not_care_home, None, 100.0, 100.0, 100.0), # exclude null prev value
+        ("1-006", CareHome.not_care_home, 100.0, None, 100.0, 100.0), # exclude null curr value
+        ("1-007", CareHome.not_care_home, 5.0, 6.0, 1.0, 1.2), # exclude when curr and prev below 10
+        ("1-008", CareHome.not_care_home, 50.0, 50.0, 0.0, 1.0), # exclude when curr = prev
+    ]
+    # fmt: on
+    compute_non_res_threshold_with_invalid_rows = (
+        compute_non_res_threshold_valid_rows + compute_non_res_threshold_invalid_rows
+    )
+
+    # fmt: off
+    build_keep_condition_rows = [
+        ("1-001", CareHome.care_home, 100.0, 200.0, 100.0, 2.0, True), # care home
+        ("1-002", CareHome.not_care_home, 5.0, 8.0, 3.0, 1.6, True), # both values below 10
+        ("1-003", CareHome.not_care_home, 100.0, 120.0, 20.0, 1.2, True), # changes within thresholds
+        ("1-004", CareHome.not_care_home, 100.0, 200.0, 100.0, 2.0, False), # abs change too large
+        ("1-005", CareHome.not_care_home, 100.0, 260.0, 160.0, 2.6, False), # perc change too large
+        ("1-006", CareHome.not_care_home, 100.0, 40.0, 60.0, 0.4, False), # perc change too small
+    ]
+    # fmt: on
+
+    apply_rate_of_change_cleaning_rows = [
+        ("1-001", 1.0, 10.0, True, 1.0, 10.0),
+        ("1-002", 1.0, 10.0, False, None, None),
+    ]
+
+
+@dataclass
 class ModelPrimaryServiceRateOfChangeTrendlineData:
     # fmt: off
     primary_service_rate_of_change_trendline_rows = [

@@ -1780,8 +1780,8 @@ class ModelPrimaryServiceRateOfChange:
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.number_of_beds_banded_roc, DoubleType(), True),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
-            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_cleaned, DoubleType(), True),
+            StructField(RoC_TempCol.previous_period_cleaned, DoubleType(), True),
         ]
     )
     expected_calculate_primary_service_rolling_sums_schema = StructType(
@@ -1791,6 +1791,53 @@ class ModelPrimaryServiceRateOfChange:
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(RoC_TempCol.rolling_current_sum, DoubleType(), True),
             StructField(RoC_TempCol.rolling_previous_sum, DoubleType(), True),
+        ]
+    )
+
+
+@dataclass
+class ModelPrimaryServiceRateOfChangeCleaningSchemas:
+    calculate_absolute_and_percentage_change_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.abs_change, DoubleType(), True),
+            StructField(RoC_TempCol.perc_change, DoubleType(), True),
+        ]
+    )
+
+    compute_non_res_threshold_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.abs_change, DoubleType(), True),
+            StructField(RoC_TempCol.perc_change, DoubleType(), True),
+        ]
+    )
+
+    build_keep_condition_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.abs_change, DoubleType(), True),
+            StructField(RoC_TempCol.perc_change, DoubleType(), True),
+            StructField("keep", BooleanType(), False),
+        ]
+    )
+
+    apply_rate_of_change_cleaning_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
+            StructField("keep", BooleanType(), False),
+            StructField(RoC_TempCol.previous_period_cleaned, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_cleaned, DoubleType(), True),
         ]
     )
 
