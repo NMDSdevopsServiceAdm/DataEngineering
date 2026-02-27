@@ -53,15 +53,15 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
     Returns:
         pl.LazyFrame: Transformed LazyFrame with ASCDWS job role counts nullified.
     """
-    # Filter for the positive case, `.otherwise(None)` is implied.
     source_is_ascwds = pl.col(IndCQC.estimate_filled_posts_source) == pl.lit(
         EstimateFilledPostsSource.ascwds_pir_merged
     )
     estimate_matches_ascwds = pl.col(IndCQC.estimate_filled_posts) == pl.col(
         IndCQC.ascwds_filled_posts_dedup_clean
     )
+
     return lf.with_columns(
-        pl.when(source_is_ascwds & estimate_matches_ascwds).then(
-            IndCQC.ascwds_job_role_counts
-        )
+        pl.when(source_is_ascwds & estimate_matches_ascwds)
+        .then(IndCQC.ascwds_job_role_counts)
+        .otherwise(None)
     )
