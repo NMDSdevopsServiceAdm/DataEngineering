@@ -12,6 +12,9 @@ All notable changes to this project will be documented in this file.
   for each util call to be added to the script as it's developed.
   Added this job to the estimates pipeline in parallel with pyspark version.
 
+- Created pointblank validation script for cleaned ind cqc dataset. Added script to estimates pipeline.
+  The validation is all commented out so no checks are run, but they are converted from the pydeequ version.
+
 - Filtering of non-residential outliers in the rate of change calculations.
 
 ### Changed
@@ -31,6 +34,8 @@ All notable changes to this project will be documented in this file.
 - Moved `set_min_value` from model predictions and imputation to after the estimates column is produced.
 
 - Replaced the static PySpark modelling code for non-residential with dormancy with the auto-retraining sklearn equivalent.
+
+- Removed all remaining PySpark modelling code for care homes and non-residential with/without dormancy.
 
 ### Fixed
 
