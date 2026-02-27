@@ -63,9 +63,7 @@ def null_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: A polars LazyFrame with grouped providers' data nulled.
     """
-    # # This is part of next PR
-    # #TODO:: Remove comments when converted
-    # lf = calculate_data_for_grouped_provider_identification(lf)
+    lf = calculate_data_for_grouped_provider_identification(lf)
 
     lf = identify_potential_grouped_providers(lf)
 
@@ -74,6 +72,51 @@ def null_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     columns_to_drop = [field.name for field in fields(NGPcol())]
     lf = lf.drop(*columns_to_drop)
+
+    return lf
+
+
+def calculate_data_for_grouped_provider_identification(
+    lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """
+    Calculates the variables needed to determine whether a location is likely to
+    be a grouped provider.
+
+    Calculates the variables locations_at_provider,
+    locations_in_ascwds_at_provider, locations_in_ascwds_with_data_at_provider
+    and number_of_beds_at_provider.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with independent cqc data.
+
+    Returns:
+        pl.LazyFrame: A LazyFrame with the new variables locations_at_provider,
+            locations_in_ascwds_at_provider,
+            locations_in_ascwds_with_data_at_provider and
+            number_of_beds_at_provider.
+    """
+    provider_date_group = [IndCQC.provider_id, IndCQC.cqc_location_import_date]
+    lf = lf.with_columns(
+        pl.mean(IndCQC.pir_people_directly_employed_dedup)
+        .over(IndCQC.location_id)
+        .alias(NGPcol.location_pir_average)
+    )
+
+    summary_cols = {
+        NGPcol.count_of_cqc_locations_in_provider: pl.count(IndCQC.location_id),
+        NGPcol.count_of_awcwds_locations_in_provider: pl.count(IndCQC.establishment_id),
+        NGPcol.count_of_awcwds_locations_with_data_in_provider: pl.count(
+            IndCQC.ascwds_filled_posts_dedup_clean
+        ),
+        NGPcol.number_of_beds_at_provider: pl.sum(IndCQC.number_of_beds),
+        NGPcol.provider_pir_count: pl.count(NGPcol.location_pir_average),
+        NGPcol.provider_pir_sum: pl.sum(NGPcol.location_pir_average),
+    }
+
+    lf = lf.with_columns(
+        stats=pl.struct(**summary_cols).over(provider_date_group)
+    ).unnest("stats")
 
     return lf
 
