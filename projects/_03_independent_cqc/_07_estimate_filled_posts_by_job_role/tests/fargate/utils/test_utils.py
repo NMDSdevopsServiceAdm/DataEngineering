@@ -95,7 +95,7 @@ class TestGetPercentageShare(unittest.TestCase):
         returned_df = input_df.with_columns(
             job.get_percentage_share("vals").over("group").alias("ratios"),
         )
-        pl_testing.assert_frame_equal(returned_df, expected_df, rel_tol=1e-03)
+        pl_testing.assert_frame_equal(returned_df, expected_df, rel_tol=0.001)
 
     def test_when_some_values_are_null(self):
         input_df = pl.DataFrame({"vals": [None, 3, None, 2]})
