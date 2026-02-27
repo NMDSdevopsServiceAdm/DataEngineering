@@ -108,7 +108,10 @@ def main(
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         pl.sum(IndCQC.imputed_ascwds_job_role_counts)
         .rolling(index_column=pl.from_epoch(IndCQC.unix_time), period="6mo")
-        .over(IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled)
+        .over(
+            [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled],
+            order_by=IndCQC.unix_time,
+        )
         .alias(IndCQC.ascwds_job_role_rolling_sum)
     )
 
