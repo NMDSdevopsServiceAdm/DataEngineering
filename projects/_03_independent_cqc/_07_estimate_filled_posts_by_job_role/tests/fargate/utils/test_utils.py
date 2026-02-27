@@ -216,3 +216,40 @@ class TestImputeFullTimeSeries:
             returned_lf.sort("group", "time_col"),
             expected_lf,
         )
+
+
+class TestRollingSum:
+    # fmt: off
+    primary_service_rolling_sum_when_one_primary_service_present_rows = [
+        ("1000",1,PrimaryServiceType.care_home_with_nursing,{MainJobRoleLabels.care_worker: 1.0,MainJobRoleLabels.registered_nurse: 2.0,MainJobRoleLabels.senior_care_worker: 3.0,MainJobRoleLabels.senior_management: 4.0,},),
+        ("1000",2,PrimaryServiceType.care_home_with_nursing,{MainJobRoleLabels.care_worker: None,MainJobRoleLabels.registered_nurse: None,MainJobRoleLabels.senior_care_worker: None,MainJobRoleLabels.senior_management: None,},),
+        ("1000",3,PrimaryServiceType.care_home_with_nursing,{MainJobRoleLabels.care_worker: 5.0,MainJobRoleLabels.registered_nurse: 6.0,MainJobRoleLabels.senior_care_worker: 7.0,MainJobRoleLabels.senior_management: 8.0,},),
+    ]
+    expected_primary_service_rolling_sum_when_one_primary_service_present_rows = [
+        ("1000",1,PrimaryServiceType.care_home_with_nursing,{MainJobRoleLabels.care_worker: 1.0,MainJobRoleLabels.registered_nurse: 2.0,MainJobRoleLabels.senior_care_worker: 3.0,MainJobRoleLabels.senior_management: 4.0,},{MainJobRoleLabels.care_worker: 1.0,MainJobRoleLabels.registered_nurse: 2.0,MainJobRoleLabels.senior_care_worker: 3.0,MainJobRoleLabels.senior_management: 4.0,},),
+        ("1000",2,PrimaryServiceType.care_home_with_nursing,{MainJobRoleLabels.care_worker: None,MainJobRoleLabels.registered_nurse: None,MainJobRoleLabels.senior_care_worker: None,MainJobRoleLabels.senior_management: None,},{MainJobRoleLabels.care_worker: 1.0,MainJobRoleLabels.registered_nurse: 2.0,MainJobRoleLabels.senior_care_worker: 3.0,MainJobRoleLabels.senior_management: 4.0,},),
+        ("1000",3,PrimaryServiceType.care_home_with_nursing,{MainJobRoleLabels.care_worker: 5.0,MainJobRoleLabels.registered_nurse: 6.0,MainJobRoleLabels.senior_care_worker: 7.0,MainJobRoleLabels.senior_management: 8.0,},{MainJobRoleLabels.care_worker: 6.0,MainJobRoleLabels.registered_nurse: 8.0,MainJobRoleLabels.senior_care_worker: 10.0,MainJobRoleLabels.senior_management: 12.0,},),
+    ]
+
+    primary_service_rolling_sum_when_multiple_primary_services_present_rows = [
+        ("1000",1,PrimaryServiceType.care_home_with_nursing,{MainJobRoleLabels.care_worker: 1.0,MainJobRoleLabels.registered_nurse: 2.0,MainJobRoleLabels.senior_care_worker: 3.0,MainJobRoleLabels.senior_management: 4.0,},),
+        ("1000",2,PrimaryServiceType.care_home_with_nursing,{MainJobRoleLabels.care_worker: 5.0,MainJobRoleLabels.registered_nurse: 6.0,MainJobRoleLabels.senior_care_worker: 7.0,MainJobRoleLabels.senior_management: 8.0,},),
+        ("1000",1,PrimaryServiceType.care_home_only,{MainJobRoleLabels.care_worker: 11.0,MainJobRoleLabels.registered_nurse: 12.0,MainJobRoleLabels.senior_care_worker: 13.0,MainJobRoleLabels.senior_management: 14.0,},),
+        ("1000",2,PrimaryServiceType.care_home_only,{MainJobRoleLabels.care_worker: 15.0,MainJobRoleLabels.registered_nurse: 16.0,MainJobRoleLabels.senior_care_worker: 17.0,MainJobRoleLabels.senior_management: 18.0,},),
+    ]
+    expected_primary_service_rolling_sum_when_multiple_primary_services_present_rows = [
+        ("1000",1,PrimaryServiceType.care_home_with_nursing,{MainJobRoleLabels.care_worker: 1.0,MainJobRoleLabels.registered_nurse: 2.0,MainJobRoleLabels.senior_care_worker: 3.0,MainJobRoleLabels.senior_management: 4.0,},{MainJobRoleLabels.care_worker: 1.0,MainJobRoleLabels.registered_nurse: 2.0,MainJobRoleLabels.senior_care_worker: 3.0,MainJobRoleLabels.senior_management: 4.0,},),
+        ("1000",2,PrimaryServiceType.care_home_with_nursing,{MainJobRoleLabels.care_worker: 5.0,MainJobRoleLabels.registered_nurse: 6.0,MainJobRoleLabels.senior_care_worker: 7.0,MainJobRoleLabels.senior_management: 8.0,},{MainJobRoleLabels.care_worker: 6.0,MainJobRoleLabels.registered_nurse: 8.0,MainJobRoleLabels.senior_care_worker: 10.0,MainJobRoleLabels.senior_management: 12.0,},),
+        ("1000",1,PrimaryServiceType.care_home_only,{MainJobRoleLabels.care_worker: 11.0,MainJobRoleLabels.registered_nurse: 12.0,MainJobRoleLabels.senior_care_worker: 13.0,MainJobRoleLabels.senior_management: 14.0,},{MainJobRoleLabels.care_worker: 11.0,MainJobRoleLabels.registered_nurse: 12.0,MainJobRoleLabels.senior_care_worker: 13.0,MainJobRoleLabels.senior_management: 14.0,},),
+        ("1000",2,PrimaryServiceType.care_home_only,{MainJobRoleLabels.care_worker: 15.0,MainJobRoleLabels.registered_nurse: 16.0,MainJobRoleLabels.senior_care_worker: 17.0,MainJobRoleLabels.senior_management: 18.0,},{MainJobRoleLabels.care_worker: 26.0,MainJobRoleLabels.registered_nurse: 28.0,MainJobRoleLabels.senior_care_worker: 30.0,MainJobRoleLabels.senior_management: 32.0,},),
+    ]
+
+    primary_service_rolling_sum_when_days_not_within_rolling_window_rows = [
+        ("1000",1704067200,PrimaryServiceType.care_home_with_nursing,{MainJobRoleLabels.care_worker: 1.0,MainJobRoleLabels.registered_nurse: 2.0,MainJobRoleLabels.senior_care_worker: 3.0,MainJobRoleLabels.senior_management: 4.0,},),
+        ("1000",1720137600,PrimaryServiceType.care_home_with_nursing,{MainJobRoleLabels.care_worker: 5.0,MainJobRoleLabels.registered_nurse: 6.0,MainJobRoleLabels.senior_care_worker: 7.0,MainJobRoleLabels.senior_management: 8.0,},),
+    ]
+    expected_primary_service_rolling_sum_when_days_not_within_rolling_window_rows = [
+        ("1000",1704067200,PrimaryServiceType.care_home_with_nursing,{MainJobRoleLabels.care_worker: 1.0,MainJobRoleLabels.registered_nurse: 2.0,MainJobRoleLabels.senior_care_worker: 3.0,MainJobRoleLabels.senior_management: 4.0,},{MainJobRoleLabels.care_worker: 1.0,MainJobRoleLabels.registered_nurse: 2.0,MainJobRoleLabels.senior_care_worker: 3.0,MainJobRoleLabels.senior_management: 4.0,},),
+        ("1000",1720137600,PrimaryServiceType.care_home_with_nursing,{MainJobRoleLabels.care_worker: 5.0,MainJobRoleLabels.registered_nurse: 6.0,MainJobRoleLabels.senior_care_worker: 7.0,MainJobRoleLabels.senior_management: 8.0,},{MainJobRoleLabels.care_worker: 5.0,MainJobRoleLabels.registered_nurse: 6.0,MainJobRoleLabels.senior_care_worker: 7.0,MainJobRoleLabels.senior_management: 8.0,},),
+    ]
+    # fmt: off
