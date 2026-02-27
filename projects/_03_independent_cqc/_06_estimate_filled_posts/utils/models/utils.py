@@ -37,8 +37,6 @@ def enrich_with_model_predictions(
             predictions_df, IndCqc.prediction, IndCqc.prediction
         )
 
-    predictions_df = set_min_value(predictions_df, IndCqc.prediction, 1.0)
-
     ind_cqc_with_predictions_df = join_model_predictions(
         ind_cqc_df, predictions_df, model_name, include_run_id=True
     )

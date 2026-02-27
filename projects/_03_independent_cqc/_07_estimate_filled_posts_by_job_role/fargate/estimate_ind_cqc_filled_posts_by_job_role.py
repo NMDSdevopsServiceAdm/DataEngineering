@@ -81,7 +81,7 @@ def main(
     )
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        JRUtils.get_percentage_share(IndCQC.ascwds_job_role_counts)
+        JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
         .over(IndCQC.location_id)
         .alias(IndCQC.ascwds_job_role_ratios)
     )

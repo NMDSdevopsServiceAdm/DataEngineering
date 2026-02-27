@@ -17,7 +17,7 @@ class MainTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.JRUtils.impute_full_time_series")
-    @patch(f"{PATCH_PATH}.JRUtils.get_percentage_share")
+    @patch(f"{PATCH_PATH}.JRUtils.percentage_share")
     @patch(f"{PATCH_PATH}.JRUtils.nullify_job_role_count_when_source_not_ascwds")
     @patch(f"{PATCH_PATH}.JRUtils.join_worker_to_estimates_dataframe")
     @patch(
@@ -29,7 +29,7 @@ class MainTests(unittest.TestCase):
         scan_parquet_mock: Mock,
         join_worker_to_estimates_dataframe_mock: Mock,
         nullify_job_role_count_when_source_not_ascwds_mock: Mock,
-        get_percentage_share_mock: Mock,
+        percentage_share_mock: Mock,
         impute_full_time_series_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -55,7 +55,7 @@ class MainTests(unittest.TestCase):
 
         join_worker_to_estimates_dataframe_mock.assert_called_once()
         nullify_job_role_count_when_source_not_ascwds_mock.assert_called_once()
-        get_percentage_share_mock.assert_called_once_with(IndCQC.ascwds_job_role_counts)
+        percentage_share_mock.assert_called_once_with(IndCQC.ascwds_job_role_counts)
         impute_full_time_series_mock.assert_called_once_with(
             IndCQC.ascwds_job_role_ratios
         )

@@ -75,21 +75,13 @@ class IndCqcColumns:
     average_absolute_residual: str = "average_absolute_residual"
     average_percentage_residual: str = "average_percentage_residual"
     avg_filled_posts_per_bed_ratio: str = "avg_filled_posts_per_bed_ratio"
-    avg_residuals_ascwds_filled_posts_dedup_clean_non_res_pir: str = (
-        "avg_residuals_ascwds_filled_posts_dedup_clean_non_res_pir"
-    )
-    avg_residuals_estimate_filled_posts_non_res_pir: str = (
-        "avg_residuals_estimate_filled_posts_non_res_pir"
-    )
     banded_bed_ratio_rolling_average_model: str = (
         "banded_bed_ratio_rolling_average_model"
     )
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
     care_home_status_count: str = "care_home_status_count"
-    code: str = CQCLClean.code
     combined_ratio_and_filled_posts: str = "combined_ratio_and_filled_posts"
-    contacts: str = CQCLClean.contacts
     contemporary_ccg: str = ONSClean.contemporary_ccg
     contemporary_constituency: str = ONSClean.contemporary_constituency
     contemporary_cssr: str = ONSClean.contemporary_cssr
@@ -112,8 +104,8 @@ class IndCqcColumns:
     cqc_location_import_date_indexed: str = (
         CQCLClean.cqc_location_import_date + "_indexed"
     )
-    cqc_location_import_date_indexed_squared: str = (
-        cqc_location_import_date_indexed + "_squared"
+    cqc_location_import_date_indexed_cubed: str = (
+        cqc_location_import_date_indexed + "_cubed"
     )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
@@ -125,9 +117,6 @@ class IndCqcColumns:
     ct_care_home_total_employed_cleaned_provider_sum: str = (
         ct_care_home_total_employed_cleaned + "_provider_sum"
     )
-    ct_care_home_total_employed_cleaned_provider_sum_dedupicated: str = (
-        ct_care_home_total_employed_cleaned_provider_sum + "_deduplicated"
-    )
     ct_care_home_total_employed_imputed: str = ct_care_home_total_employed + "_imputed"
     ct_combined_care_home_and_non_res: str = "ct_combined_care_home_and_non_res"
     ct_combined_care_home_and_non_res_rate_of_change_trendline: str = (
@@ -137,9 +126,6 @@ class IndCqcColumns:
     ct_non_res_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
     ct_non_res_care_workers_employed_provider_sum: str = (
         ct_non_res_care_workers_employed + "_provider_sum"
-    )
-    ct_non_res_care_workers_employed_provider_sum_deduplicated: str = (
-        ct_non_res_care_workers_employed_provider_sum + "_deduplicated"
     )
     ct_non_res_care_workers_employed_cleaned: str = (
         ct_non_res_care_workers_employed + "_cleaned"
@@ -240,13 +226,8 @@ class IndCqcColumns:
     max_residual: str = "max_residual"
     min_filled_posts_per_bed_ratio: str = "min_filled_posts_per_bed_ratio"
     min_residual: str = "min_residual"
-    model_name: str = "model_name"
-    model_run_timestamp: str = "model_run_timestamp"
-    model_version: str = "model_version"
     name: str = CQCLClean.name
     next_submission_time: str = "next_submission_time"
-    next_value: str = "next_value"
-    next_value_unix_time: str = "next_value_unix_time"
     non_res_combined_model: str = "non_res_combined_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
@@ -303,8 +284,6 @@ class IndCqcColumns:
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
     previous_submission_time: str = "previous_submission_time"
-    previous_value: str = "previous_value"
-    previous_value_unix_time: str = "previous_value_unix_time"
     primary_service_type: str = CQCLClean.primary_service_type
     primary_service_type_second_level: str = (
         CQCLClean.primary_service_type + "_second_level"
@@ -351,7 +330,6 @@ class IndCqcColumns:
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"
-    value_unix_time: str = "value_unix_time"
     worker_records_bounded: str = AWPClean.worker_records_bounded
 
 
@@ -360,10 +338,12 @@ class PrimaryServiceRateOfChangeColumns:
     """The names of the temporary columns created during the rate of change process."""
 
     abs_change: str = "absolute_period_change"
+    abs_pct: str = "absolute_period_change_percentile"
     current_period: str = "current_period"
     current_period_cleaned: str = "current_period_cleaned"
     current_period_interpolated: str = "current_period_interpolated"
     perc_change: str = "percentage_period_change"
+    perc_pct: str = "percentage_period_change_percentile"
     previous_period_cleaned: str = "previous_period_cleaned"
     previous_period_interpolated: str = "previous_period_interpolated"
     rolling_current_sum: str = "rolling_current_sum"
