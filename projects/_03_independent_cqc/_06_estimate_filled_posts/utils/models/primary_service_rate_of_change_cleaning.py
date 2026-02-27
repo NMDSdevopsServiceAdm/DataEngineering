@@ -59,7 +59,7 @@ def calculate_absolute_and_percentage_change(
     return df.withColumns(
         {
             TempCol.abs_change: F.abs(F.col(curr_col) - F.col(prev_col)),
-            TempCol.perc_change: F.try_divide(F.col(curr_col) / F.col(prev_col)),
+            TempCol.perc_change: F.try_divide(F.col(curr_col), F.col(prev_col)),
         },
     )
 
