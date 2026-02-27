@@ -62,7 +62,6 @@ model_registry = {
                 IndCQC.activity_count_capped,
                 IndCQC.cqc_location_import_date_indexed,
                 IndCQC.cqc_location_import_date_indexed_cubed,
-                IndCQC.posts_rolling_average_model,
                 IndCQC.service_count_capped,
                 IndCQC.time_registered,
                 IndCQC.time_since_dormant,
