@@ -39,9 +39,7 @@ def clean_non_residential_rate_of_change(df: DataFrame) -> DataFrame:
         prev_col, curr_col, abs_upper, perc_upper, perc_lower
     )
 
-    df = apply_rate_of_change_cleaning(df, prev_col, curr_col, keep_condition)
-
-    return df
+    return apply_rate_of_change_cleaning(df, prev_col, curr_col, keep_condition)
 
 
 def calculate_absolute_and_percentage_change(
@@ -58,7 +56,6 @@ def calculate_absolute_and_percentage_change(
     Returns:
         DataFrame: The DataFrame with absolute change and percentage change.
     """
-
     return df.withColumns(
         {
             TempCol.abs_change: F.abs(F.col(curr_col) - F.col(prev_col)),
