@@ -117,7 +117,7 @@ class BuildNonResidentialKeepConditionTests(SparkBaseTest):
         self.assertEqual(returned_data, expected_data)
 
 
-class CalculateAbsoluteAndPercentageChangeTests(SparkBaseTest):
+class ApplyRateOfChangeCleaningTests(SparkBaseTest):
     def test_returns_expected_cleaned_values(self):
 
         expected_df = self.spark.createDataFrame(
