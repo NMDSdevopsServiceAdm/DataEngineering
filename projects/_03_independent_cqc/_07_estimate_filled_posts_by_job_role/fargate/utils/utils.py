@@ -77,6 +77,6 @@ def percentage_share(column: str) -> pl.Expr:
     return pl.col(column) / pl.col(column).sum()
 
 
-def impute_full_time_series(values: str) -> pl.Expr:
-    """Uses linear interpolation, followed by back and forward fill to impute nulls."""
-    return pl.col(values).interpolate().forward_fill().backward_fill()
+def impute_full_time_series(column: str) -> pl.Expr:
+    """Impute nulls using linear interpolation, followed by back and forward fill."""
+    return pl.col(column).interpolate().forward_fill().backward_fill()
