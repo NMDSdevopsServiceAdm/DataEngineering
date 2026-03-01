@@ -95,6 +95,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Added a new test account in ASC-WDS to the list of test_accounts in [clean_ascwds_workplace_data](projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py)
+- Versioning in s3 removed from feature branches to enable terraform destroy to work correctly.
 
 
 
