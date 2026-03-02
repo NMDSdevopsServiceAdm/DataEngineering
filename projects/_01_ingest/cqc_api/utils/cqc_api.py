@@ -259,28 +259,14 @@ def normalise_structs(record: dict, schema: dict) -> dict:
     Returns:
         dict: Record with struct/list-of-struct columns normalised to schema.
     """
-    if record is None:
-        record = {}
-
     fixed = dict(record)
+
     for col, dtype in schema.items():
         if isinstance(dtype, pl.Struct):
             fields = [f.name for f in dtype.fields]
             value = fixed.get(col)
             fixed[col] = (
-                {
-                    f: (
-                        normalise_structs(value.get(f), {f: inner})
-                        if isinstance(
-                            inner := next(
-                                (fld for fld in dtype.fields if fld.name == f), None
-                            ),
-                            pl.Struct,
-                        )
-                        else value.get(f, None)
-                    )
-                    for f in fields
-                }
+                {f: value.get(f, None) for f in fields}
                 if isinstance(value, dict)
                 else {f: None for f in fields}
             )
@@ -326,6 +312,8 @@ def primed_generator(
     for col, dtype in schema.items():
         if isinstance(dtype, pl.Struct):
             empty_row[col] = {field.name: None for field in dtype.fields}
+        elif isinstance(dtype, pl.List):
+            empty_row[col] = []
         else:
             empty_row[col] = None
 
