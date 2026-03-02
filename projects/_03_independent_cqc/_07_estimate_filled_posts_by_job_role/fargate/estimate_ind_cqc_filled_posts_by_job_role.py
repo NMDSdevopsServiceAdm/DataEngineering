@@ -98,10 +98,9 @@ def main(
 
     # Multiply imputed ratios by estimate filled posts to get counts.
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        (
-            pl.col(IndCQC.estimate_filled_posts)
-            * pl.col(IndCQC.imputed_ascwds_job_role_ratios)
-        ).alias(IndCQC.imputed_ascwds_job_role_counts)
+        pl.col(IndCQC.estimate_filled_posts)
+        .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
+        .alias(IndCQC.imputed_ascwds_job_role_counts)
     )
 
     # Do a rolling sum over 6 months on the imputed counts.
