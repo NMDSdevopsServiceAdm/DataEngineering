@@ -82,14 +82,14 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             start_timestamp=f"{start_dt.isoformat(timespec='seconds')}Z",
             end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
         )
-        for row in api_generator:
-            cqc.check_field_types(row, POLARS_LOCATION_SCHEMA)
 
         generator = cqc.primed_generator(api_generator, POLARS_LOCATION_SCHEMA)
 
         print("Creating dataframe and writing to Parquet")
-        df: pl.DataFrame = pl.DataFrame(generator, infer_schema_length=500)
-        df = df.cast(POLARS_LOCATION_SCHEMA)
+        df: pl.DataFrame = pl.DataFrame(
+            generator, schema=POLARS_LOCATION_SCHEMA, infer_schema_length=500
+        )
+        # df = df.cast(POLARS_LOCATION_SCHEMA)
         df_schema = df.collect_schema()
         df = df.with_columns(
             [
