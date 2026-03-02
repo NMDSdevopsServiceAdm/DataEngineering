@@ -265,20 +265,25 @@ def normalise_structs(record: dict, schema: dict) -> dict:
         value = fixed.get(col)
 
         if isinstance(dtype, pl.Struct):
-            fields = [f.name for f in dtype.fields]
+            fields = {f.name: f.dtype for f in dtype.fields}
             if isinstance(value, dict):
-                fixed[col] = {f: value.get(f, None) for f in fields}
+                fixed[col] = {
+                    f: coerce_value(value.get(f, None), t) for f, t in fields.items()
+                }
             else:
                 fixed[col] = {f: None for f in fields}
 
         elif isinstance(dtype, pl.List):
             # List of structs
             if isinstance(dtype.inner, pl.Struct):
-                inner_fields = [f.name for f in dtype.inner.fields]
+                inner_fields = {f.name: f.dtype for f in dtype.inner.fields}
                 if isinstance(value, list):
                     fixed[col] = [
                         (
-                            {f: item.get(f, None) for f in inner_fields}
+                            {
+                                f: coerce_value(item.get(f, None), t)
+                                for f, t in inner_fields.items()
+                            }
                             if isinstance(item, dict)
                             else {f: None for f in inner_fields}
                         )
@@ -292,10 +297,29 @@ def normalise_structs(record: dict, schema: dict) -> dict:
 
         else:
             # scalar column
-            if value is None:
-                fixed[col] = None
+            fixed[col] = coerce_value(value, dtype)
 
     return fixed
+
+
+def coerce_value(value, dtype):
+    """Coerce a single scalar to the type expected by Polars schema."""
+    if value is None:
+        return None
+
+    try:
+        if dtype in (pl.Int32, pl.Int64):
+            return int(value)
+        elif dtype in (pl.Float32, pl.Float64):
+            return float(value)
+        elif dtype == pl.Boolean:
+            return bool(value)
+        elif dtype == pl.Utf8:
+            return str(value)
+        else:
+            return value  # leave structs/lists untouched here
+    except Exception:
+        return None  # fallback to None if coercion fails
 
 
 def primed_generator(
