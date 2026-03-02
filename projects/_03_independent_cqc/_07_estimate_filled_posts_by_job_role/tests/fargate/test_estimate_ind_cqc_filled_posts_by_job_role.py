@@ -57,7 +57,14 @@ class MainTests(unittest.TestCase):
 
         join_worker_to_estimates_dataframe_mock.assert_called_once()
         nullify_job_role_count_when_source_not_ascwds_mock.assert_called_once()
-        percentage_share_mock.assert_called_once_with(IndCQC.ascwds_job_role_counts)
+
+        rolling_sum_expr = rolling_sum_mock.return_value
+        calls = [
+            call(IndCQC.ascwds_job_role_counts),
+            call(rolling_sum_expr),
+        ]
+        percentage_share_mock.assert_has_calls(calls, any_order=True)
+
         impute_full_time_series_mock.assert_called_once_with(
             IndCQC.ascwds_job_role_ratios
         )
