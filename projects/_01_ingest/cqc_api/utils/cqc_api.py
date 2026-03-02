@@ -331,3 +331,32 @@ def primed_generator(
     # Yield normalised API rows
     for row in api_generator:
         yield normalise_structs(row, schema)
+
+
+def check_field_types(record: dict, schema: dict, path=""):
+    for col, dtype in schema.items():
+        full_path = f"{path}.{col}" if path else col
+        value = record.get(col)
+
+        if isinstance(dtype, pl.Struct):
+            if not isinstance(value, dict):
+                print(
+                    f"Mismatch: {full_path} expected Struct, got {type(value).__name__}"
+                )
+            else:
+                for f in dtype.fields:
+                    if f.name not in value:
+                        print(f"Missing field: {full_path}.{f.name}")
+        elif isinstance(dtype, pl.List) and isinstance(dtype.inner, pl.Struct):
+            if not isinstance(value, list):
+                print(
+                    f"Mismatch: {full_path} expected List[Struct], got {type(value).__name__}"
+                )
+            else:
+                for i, item in enumerate(value):
+                    for f in dtype.inner.fields:
+                        if f.name not in item:
+                            print(f"Missing field: {full_path}[{i}].{f.name}")
+        else:
+            # Optional: check scalar type
+            pass

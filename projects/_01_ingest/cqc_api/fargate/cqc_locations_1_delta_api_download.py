@@ -82,6 +82,8 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             start_timestamp=f"{start_dt.isoformat(timespec='seconds')}Z",
             end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
         )
+        for row in api_generator:
+            cqc.check_field_types(row, POLARS_LOCATION_SCHEMA)
 
         generator = cqc.primed_generator(api_generator, POLARS_LOCATION_SCHEMA)
 
