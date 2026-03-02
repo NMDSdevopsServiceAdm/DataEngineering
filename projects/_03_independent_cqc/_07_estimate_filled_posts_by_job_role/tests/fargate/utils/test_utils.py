@@ -234,5 +234,6 @@ class TestRollingSum:
         input_lf = expected_lf.drop(expected_lf.columns[-1])
         returned_lf = job.rolling_sum_of_job_role_counts_within_primary_service_type(
             input_lf,
+            period="6mo",
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
