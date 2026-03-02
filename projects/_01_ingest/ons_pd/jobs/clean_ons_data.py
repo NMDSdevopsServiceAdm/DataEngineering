@@ -16,22 +16,22 @@ onsPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(ons_source: str, cleaned_ons_destination: str):
-    contemporary_ons_df = utils.read_from_parquet(ons_source)
+    ons_df = utils.read_from_parquet(ons_source)
 
-    contemporary_ons_df = cUtils.column_to_date(
-        contemporary_ons_df, Keys.import_date, ONSClean.contemporary_ons_import_date
+    ons_df = cUtils.column_to_date(
+        ons_df, Keys.import_date, ONSClean.contemporary_ons_import_date
     )
 
-    refactored_contemporary_ons_df = prepare_contemporary_ons_data(contemporary_ons_df)
+    contemporary_ons_df = prepare_contemporary_ons_data(ons_df)
 
-    refactored_current_ons_df = prepare_current_ons_data(contemporary_ons_df)
+    current_ons_df = prepare_current_ons_data(ons_df)
 
-    contemporary_with_current_ons_df = refactored_contemporary_ons_df.join(
-        refactored_current_ons_df, ONSClean.postcode, "left"
+    combined_ons_df = contemporary_ons_df.join(
+        current_ons_df, ONSClean.postcode, "left"
     )
 
     utils.write_to_parquet(
-        contemporary_with_current_ons_df,
+        combined_ons_df,
         cleaned_ons_destination,
         mode="overwrite",
         partitionKeys=onsPartitionKeys,
