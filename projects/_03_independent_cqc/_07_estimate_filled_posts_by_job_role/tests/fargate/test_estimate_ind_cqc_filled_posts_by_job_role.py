@@ -63,9 +63,7 @@ class MainTests(unittest.TestCase):
         impute_full_time_series_mock.assert_called_once_with(
             IndCQC.ascwds_job_role_ratios
         )
-        rolling_sum_mock.assert_called_once()
-        _, kwargs = rolling_sum_mock.call_args
-        self.assertEqual(kwargs.get("period"), "6mo")
+        rolling_sum_mock.assert_called_once_with(ANY, period="6mo")
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
