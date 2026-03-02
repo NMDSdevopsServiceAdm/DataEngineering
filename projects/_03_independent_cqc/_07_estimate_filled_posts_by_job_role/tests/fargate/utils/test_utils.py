@@ -121,6 +121,16 @@ class TestPercentageShare(unittest.TestCase):
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
 
+    def test_when_passed_an_expression(self):
+        """Test that the function accepts a Polars expression instead of just a string."""
+        input_lf = pl.LazyFrame({"vals": [10, 20, 70]})
+        # The ratios should remain the same as the underlying distribution is the same.
+        expression = pl.col("vals") * 2
+        expected_lf = pl.LazyFrame({"ratios": [0.1, 0.2, 0.7]})
+
+        returned_lf = input_lf.select(job.percentage_share(expression).alias("ratios"))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
     def test_when_some_values_are_null(self):
         input_lf = pl.LazyFrame({"vals": [None, 3, None, 2]})
         expected_lf = pl.LazyFrame({"ratios": [None, 0.6, None, 0.4]})
