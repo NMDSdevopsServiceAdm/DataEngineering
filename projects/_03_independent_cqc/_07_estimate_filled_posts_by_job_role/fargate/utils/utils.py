@@ -89,8 +89,11 @@ def rolling_sum_of_job_role_counts_within_primary_service_type(
     """Compute rolling sum of job role counts within each primary service.
 
     Args:
-        lf (pl.LazyFrame): LazyFrame with following cols: "imputed_ascwds_job_role_counts",
-          "unix_time", "primary_service_type", "main_job_role_clean_labelled".
+        lf (pl.LazyFrame): LazyFrame with following cols:
+          - "imputed_ascwds_job_role_counts"
+          - "cqc_location_import_date"
+          - "primary_service_type"
+          - "main_job_role_clean_labelled"
         period (str): String language timedelta. Default "6mo". See:
           https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.rolling.html
 
@@ -99,10 +102,10 @@ def rolling_sum_of_job_role_counts_within_primary_service_type(
     """
     return lf.with_columns(
         pl.sum(IndCQC.imputed_ascwds_job_role_counts)
-        .rolling(index_column=pl.from_epoch(IndCQC.unix_time), period=period)
+        .rolling(index_column=IndCQC.cqc_location_import_date, period=period)
         .over(
             [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled],
-            order_by=IndCQC.unix_time,
+            order_by=IndCQC.cqc_location_import_date,
         )
         .alias(IndCQC.ascwds_job_role_rolling_sum)
     )
