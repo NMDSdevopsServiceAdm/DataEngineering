@@ -86,10 +86,8 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         generator = cqc.primed_generator(api_generator, POLARS_PROVIDER_SCHEMA)
 
         print("Creating dataframe and writing to Parquet")
-        df: pl.DataFrame = pl.DataFrame(
-            generator, schema=POLARS_PROVIDER_SCHEMA, infer_schema_length=500
-        )
-        # df = df.cast(POLARS_PROVIDER_SCHEMA)
+        df: pl.DataFrame = pl.DataFrame(generator, schema=POLARS_PROVIDER_SCHEMA)
+
         df_schema = df.collect_schema()
         df = df.with_columns(
             [

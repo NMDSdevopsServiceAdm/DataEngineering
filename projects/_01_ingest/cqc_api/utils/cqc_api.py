@@ -330,4 +330,7 @@ def primed_generator(
 
     # Yield normalised API rows
     for row in api_generator:
+        new_cols = set(row.keys()) - set(schema.keys())
+        if new_cols:
+            print(f"New columns detected from API: {new_cols}")
         yield normalise_structs(row, schema)
