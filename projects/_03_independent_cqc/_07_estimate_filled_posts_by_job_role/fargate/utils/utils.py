@@ -82,30 +82,23 @@ def impute_full_time_series(column: str) -> pl.Expr:
     return pl.col(column).interpolate().forward_fill().backward_fill()
 
 
-def rolling_sum_of_job_role_counts_within_primary_service_type(
-    lf: pl.LazyFrame,
+def rolling_sum_of_job_role_counts_expr(
     period: str = "6mo",
-) -> pl.LazyFrame:
+) -> pl.Expr:
     """Compute rolling sum of job role counts within each primary service.
 
     Args:
-        lf (pl.LazyFrame): LazyFrame with following cols:
-          - "imputed_ascwds_job_role_counts"
-          - "cqc_location_import_date"
-          - "primary_service_type"
-          - "main_job_role_clean_labelled"
         period (str): String language timedelta. Default "6mo". See:
           https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.rolling.html
 
     Returns:
-        pl.LazyFrame: With all input columns plus "ascwds_job_role_rolling_sum".
+        pl.Expr: Expression for rolling sum of job role counts.
     """
-    return lf.with_columns(
+    return (
         pl.sum(IndCQC.imputed_ascwds_job_role_counts)
         .rolling(index_column=IndCQC.cqc_location_import_date, period=period)
         .over(
             [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled],
             order_by=IndCQC.cqc_location_import_date,
         )
-        .alias(IndCQC.ascwds_job_role_rolling_sum)
     )
