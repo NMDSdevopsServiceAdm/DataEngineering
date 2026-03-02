@@ -260,69 +260,40 @@ def normalise_structs(record: dict, schema: dict) -> dict:
         dict: Record with struct/list-of-struct columns normalised to schema.
     """
     record = record or {}
-    fixed = dict(record)  # copy all keys including extras
+    out = {}
 
     for col, dtype in schema.items():
-        value = fixed.get(col)
+        value = record.get(col)
 
         if isinstance(dtype, pl.Struct):
             fields = {f.name: f for f in dtype.fields}
-            fixed[col] = {}
-            if isinstance(value, dict):
-                for f_name, f_obj in fields.items():
-                    fixed[col][f_name] = coerce_value(value.get(f_name), f_obj.dtype)
-            else:
-                # missing struct → fill all with None
-                for f_name in fields:
-                    fixed[col][f_name] = None
+            out[col] = {
+                f: value.get(f, None) if isinstance(value, dict) else None
+                for f in fields
+            }
 
-        elif isinstance(dtype, pl.List):
-            # List of Structs
-            if isinstance(dtype.inner, pl.Struct):
-                inner_fields = {f.name: f for f in dtype.inner.fields}
-                new_list = []
-                if isinstance(value, list):
-                    for item in value:
-                        if isinstance(item, dict):
-                            new_item = {
-                                f_name: coerce_value(item.get(f_name), f_obj.dtype)
-                                for f_name, f_obj in inner_fields.items()
-                            }
-                        else:
-                            new_item = {f_name: None for f_name in inner_fields}
-                        new_list.append(new_item)
-                # not a list → replace with empty list
-                fixed[col] = new_list if isinstance(value, list) else []
+        elif isinstance(dtype, pl.List) and isinstance(dtype.inner, pl.Struct):
+            inner_fields = {f.name: f for f in dtype.inner.fields}
+            if isinstance(value, list):
+                out[col] = [
+                    {
+                        f: item.get(f, None) if isinstance(item, dict) else None
+                        for f in inner_fields
+                    }
+                    for item in value
+                ]
             else:
-                # Generic list (not struct)
-                fixed[col] = list(value) if isinstance(value, list) else []
+                out[col] = []
 
         else:
-            # scalar column
-            fixed[col] = coerce_value(value, dtype)
+            out[col] = value if value is not None else None
 
-    return fixed
+    # preserve extra columns untouched
+    for col in record.keys():
+        if col not in schema:
+            out[col] = record[col]
 
-
-def coerce_value(value, dtype):
-    """Coerce a single scalar to match Polars dtype."""
-    if value is None:
-        return None
-    if isinstance(dtype, pl.Utf8):
-        return str(value)
-    if isinstance(dtype, pl.Int64):
-        try:
-            return int(value)
-        except Exception:
-            return None
-    if isinstance(dtype, pl.Float64):
-        try:
-            return float(value)
-        except Exception:
-            return None
-    if isinstance(dtype, pl.Boolean):
-        return bool(value)
-    return value  # fallback, e.g., for Date, Time, etc.
+    return out
 
 
 def primed_generator(
@@ -352,16 +323,9 @@ def primed_generator(
         else:
             empty_row[col] = None
 
-    # Yield priming row for Polars schema inference
+    # Yield priming row
     yield empty_row
 
-    # Yield normalised API rows
+    # Yield normalized API rows
     for row in api_generator:
-        new_cols = set(row.keys()) - set(schema.keys())
-        if new_cols:
-            print(f"New columns detected from API: {new_cols}")
-            for col in new_cols:
-                print(
-                    f"  Column '{col}' sample value/structure: {pl.DataFrame(row[col]).schema}"
-                )
         yield normalise_structs(row, schema)
