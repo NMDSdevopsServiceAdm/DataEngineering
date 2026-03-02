@@ -219,60 +219,93 @@ class TestImputeFullTimeSeries:
 
 
 class TestRollingSum:
-    # fmt: off
-    expected_primary_service_rolling_sum_when_one_primary_service_present_rows = [
-        ("1000",1,"care_home_with_nursing", "care_worker", 1.0, 1.0),
-        ("1000",1,"care_home_with_nursing", "registered_nurse", 2.0, 2.0),
-        ("1000",1,"care_home_with_nursing", "senior_care_worker", 3.0, 3.0),
-        ("1000",1,"care_home_with_nursing", "senior_management", 4.0, 4.0),
-        ("1000",2,"care_home_with_nursing", "care_worker", None, 1.0),
-        ("1000",2,"care_home_with_nursing", "registered_nurse", None, 2.0),
-        ("1000",2,"care_home_with_nursing", "senior_care_worker", None, 3.0),
-        ("1000",2,"care_home_with_nursing", "senior_management", None, 4.0),
-        ("1000",3,"care_home_with_nursing", "care_worker", 5.0, 6.0),
-        ("1000",3,"care_home_with_nursing", "registered_nurse", 6.0, 8.0),
-        ("1000",3,"care_home_with_nursing", "senior_care_worker", 7.0, 10.0),
-        ("1000",3,"care_home_with_nursing", "senior_management", 8.0, 12.0),
-    ]
+    @pytest.fixture(
+        params=[
+            pytest.param(
+                [
+                    ("1000",1,"care_home_with_nursing", "care_worker", 1.0, 1.0),
+                    ("1000",1,"care_home_with_nursing", "registered_nurse", 2.0, 2.0),
+                    ("1000",1,"care_home_with_nursing", "senior_care_worker", 3.0, 3.0),
+                    ("1000",1,"care_home_with_nursing", "senior_management", 4.0, 4.0),
+                    ("1000",2,"care_home_with_nursing", "care_worker", None, 1.0),
+                    ("1000",2,"care_home_with_nursing", "registered_nurse", None, 2.0),
+                    ("1000",2,"care_home_with_nursing", "senior_care_worker", None, 3.0),
+                    ("1000",2,"care_home_with_nursing", "senior_management", None, 4.0),
+                    ("1000",3,"care_home_with_nursing", "care_worker", 5.0, 6.0),
+                    ("1000",3,"care_home_with_nursing", "registered_nurse", 6.0, 8.0),
+                    ("1000",3,"care_home_with_nursing", "senior_care_worker", 7.0, 10.0),
+                    ("1000",3,"care_home_with_nursing", "senior_management", 8.0, 12.0),
+                ],
+                id="when_one_primary_service_present",
+            ),
+            pytest.param(
+                [
+                    ("1000",1,"care_home_with_nursing", "care_worker", 1.0, 1.0),
+                    ("1000",1,"care_home_with_nursing", "registered_nurse", 2.0, 2.0),
+                    ("1000",1,"care_home_with_nursing", "senior_care_worker", 3.0, 3.0),
+                    ("1000",1,"care_home_with_nursing", "senior_management", 4.0, 4.0),
+                    ("1000",2,"care_home_with_nursing", "care_worker", 5.0, 6.0),
+                    ("1000",2,"care_home_with_nursing", "registered_nurse", 6.0, 8.0),
+                    ("1000",2,"care_home_with_nursing", "senior_care_worker", 7.0, 10.0),
+                    ("1000",2,"care_home_with_nursing", "senior_management", 8.0, 12.0),
+                    ("1000",1,"care_home_only", "care_worker", 11.0, 11.0),
+                    ("1000",1,"care_home_only", "registered_nurse", 12.0, 12.0),
+                    ("1000",1,"care_home_only", "senior_care_worker", 13.0, 13.0),
+                    ("1000",1,"care_home_only", "senior_management", 14.0, 14.0),
+                    ("1000",2,"care_home_only", "care_worker", 15.0, 26.0),
+                    ("1000",2,"care_home_only", "registered_nurse", 16.0, 28.0),
+                    ("1000",2,"care_home_only", "senior_care_worker", 17.0, 30.0),
+                    ("1000",2,"care_home_only", "senior_management", 18.0, 32.0),
+                ],
+                id="when_multiple_primary_services_present",
+            ),
+            pytest.param(
+                [
+                    ("1000",1704067200,"care_home_with_nursing", "care_worker", 1.0, 1.0),
+                    ("1000",1704067200,"care_home_with_nursing", "registered_nurse", 2.0, 2.0),
+                    ("1000",1704067200,"care_home_with_nursing", "senior_care_worker", 3.0, 3.0),
+                    ("1000",1704067200,"care_home_with_nursing", "senior_management", 4.0, 4.0),
+                    ("1000",1720137600,"care_home_with_nursing", "care_worker", 5.0, 5.0),
+                    ("1000",1720137600,"care_home_with_nursing", "registered_nurse", 6.0, 6.0),
+                    ("1000",1720137600,"care_home_with_nursing", "senior_care_worker", 7.0, 7.0),
+                    ("1000",1720137600,"care_home_with_nursing", "senior_management", 8.0, 8.0),
+                ],
+                id="when_days_not_within_rolling_window",
+            ),
+        ],
+    )  # fmt: skip
+    def rolling_sum_data(self, request):
+        return request.param
 
-    expected_primary_service_rolling_sum_when_multiple_primary_services_present_rows = [
-        ("1000",1,"care_home_with_nursing", "care_worker", 1.0, 1.0),
-        ("1000",1,"care_home_with_nursing", "registered_nurse", 2.0, 2.0),
-        ("1000",1,"care_home_with_nursing", "senior_care_worker", 3.0, 3.0),
-        ("1000",1,"care_home_with_nursing", "senior_management", 4.0, 4.0),
-        ("1000",2,"care_home_with_nursing", "care_worker", 5.0, 6.0),
-        ("1000",2,"care_home_with_nursing", "registered_nurse", 6.0, 8.0),
-        ("1000",2,"care_home_with_nursing", "senior_care_worker", 7.0, 10.0),
-        ("1000",2,"care_home_with_nursing", "senior_management", 8.0, 12.0),
-        ("1000",1,"care_home_only", "care_worker", 11.0, 11.0),
-        ("1000",1,"care_home_only", "registered_nurse", 12.0, 12.0),
-        ("1000",1,"care_home_only", "senior_care_worker", 13.0, 13.0),
-        ("1000",1,"care_home_only", "senior_management", 14.0, 14.0),
-        ("1000",2,"care_home_only", "care_worker", 15.0, 26.0),
-        ("1000",2,"care_home_only", "registered_nurse", 16.0, 28.0),
-        ("1000",2,"care_home_only", "senior_care_worker", 17.0, 30.0),
-        ("1000",2,"care_home_only", "senior_management", 18.0, 32.0),
-    ]
-
-    expected_primary_service_rolling_sum_when_days_not_within_rolling_window_rows = [
-        ("1000",1704067200,"care_home_with_nursing", "care_worker", 1.0, 1.0),
-        ("1000",1704067200,"care_home_with_nursing", "registered_nurse", 2.0, 2.0),
-        ("1000",1704067200,"care_home_with_nursing", "senior_care_worker", 3.0, 3.0),
-        ("1000",1704067200,"care_home_with_nursing", "senior_management", 4.0, 4.0),
-        ("1000",1720137600,"care_home_with_nursing", "care_worker", 5.0, 5.0),
-        ("1000",1720137600,"care_home_with_nursing", "registered_nurse", 6.0, 6.0),
-        ("1000",1720137600,"care_home_with_nursing", "senior_care_worker", 7.0, 7.0),
-        ("1000",1720137600,"care_home_with_nursing", "senior_management", 8.0, 8.0),
-    ]
-
-    # fmt: off
-    primary_service_rolling_sum_schema = {
+    @pytest.fixture
+    def input_schema(self):
+        return {
             IndCQC.location_id: pl.String,
             IndCQC.unix_time: pl.Int32,
             IndCQC.primary_service_type: pl.String,
             IndCQC.main_job_role_clean_labelled: pl.String,
             IndCQC.imputed_ascwds_job_role_counts: pl.Float64,
-    }
-    expected_primary_service_rolling_sum_schema = {
-        IndCQC.ascwds_job_role_rolling_sum: pl.Float64
-    }
+        }
+
+    @pytest.fixture
+    def input_lf(self, rolling_sum_data, input_schema):
+        input_data = [row[:-1] for row in rolling_sum_data]
+        return pl.LazyFrame(input_data, input_schema, orient="row")
+
+    @pytest.fixture
+    def expected_lf(self, rolling_sum_data, input_schema):
+        output_col = {IndCQC.ascwds_job_role_rolling_sum: pl.Float64}
+        output_schema = input_schema | output_col
+        return pl.LazyFrame(rolling_sum_data, output_schema, orient="row")
+
+    def test_rolling_sum(self, input_lf, expected_lf):
+        returned_lf = input_lf.with_columns(
+            pl.sum(IndCQC.imputed_ascwds_job_role_counts)
+            .rolling(index_column=pl.from_epoch(IndCQC.unix_time), period="6mo")
+            .over(
+                [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled],
+                order_by=IndCQC.unix_time,
+            )
+            .alias(IndCQC.ascwds_job_role_rolling_sum)
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
