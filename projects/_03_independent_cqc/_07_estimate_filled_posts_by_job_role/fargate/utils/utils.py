@@ -80,3 +80,18 @@ def percentage_share(column: str) -> pl.Expr:
 def impute_full_time_series(column: str) -> pl.Expr:
     """Impute nulls using linear interpolation, followed by back and forward fill."""
     return pl.col(column).interpolate().forward_fill().backward_fill()
+
+
+def six_month_rolling_sum_of_job_role_counts_within_primary_service_type(
+    lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """Compute 6-month rolling sum of job role counts within each primary service."""
+    return lf.with_columns(
+        pl.sum(IndCQC.imputed_ascwds_job_role_counts)
+        .rolling(index_column=pl.from_epoch(IndCQC.unix_time), period="6mo")
+        .over(
+            [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled],
+            order_by=IndCQC.unix_time,
+        )
+        .alias(IndCQC.ascwds_job_role_rolling_sum)
+    )

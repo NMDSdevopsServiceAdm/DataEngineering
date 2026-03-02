@@ -299,13 +299,9 @@ class TestRollingSum:
         return pl.LazyFrame(rolling_sum_data, output_schema, orient="row")
 
     def test_rolling_sum(self, input_lf, expected_lf):
-        returned_lf = input_lf.with_columns(
-            pl.sum(IndCQC.imputed_ascwds_job_role_counts)
-            .rolling(index_column=pl.from_epoch(IndCQC.unix_time), period="6mo")
-            .over(
-                [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled],
-                order_by=IndCQC.unix_time,
+        returned_lf = (
+            job.six_month_rolling_sum_of_job_role_counts_within_primary_service_type(
+                input_lf
             )
-            .alias(IndCQC.ascwds_job_role_rolling_sum)
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

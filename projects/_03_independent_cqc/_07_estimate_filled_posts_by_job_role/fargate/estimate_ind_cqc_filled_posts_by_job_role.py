@@ -105,14 +105,10 @@ def main(
     )
 
     # Do a rolling sum over 6 months on the imputed counts.
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        pl.sum(IndCQC.imputed_ascwds_job_role_counts)
-        .rolling(index_column=pl.from_epoch(IndCQC.unix_time), period="6mo")
-        .over(
-            [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled],
-            order_by=IndCQC.unix_time,
+    estimated_job_role_posts_lf = (
+        JRUtils.six_month_rolling_sum_of_job_role_counts_within_primary_service_type(
+            estimated_job_role_posts_lf
         )
-        .alias(IndCQC.ascwds_job_role_rolling_sum)
     )
 
     utils.sink_to_parquet(
