@@ -17,7 +17,7 @@ class MainTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(
-        f"{PATCH_PATH}.JRUtils.six_month_rolling_sum_of_job_role_counts_within_primary_service_type"
+        f"{PATCH_PATH}.JRUtils.rolling_sum_of_job_role_counts_within_primary_service_type"
     )
     @patch(f"{PATCH_PATH}.JRUtils.impute_full_time_series")
     @patch(f"{PATCH_PATH}.JRUtils.percentage_share")
@@ -64,6 +64,8 @@ class MainTests(unittest.TestCase):
             IndCQC.ascwds_job_role_ratios
         )
         rolling_sum_mock.assert_called_once()
+        _, kwargs = rolling_sum_mock.call_args
+        self.assertEqual(kwargs.get("period"), "6mo")
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,

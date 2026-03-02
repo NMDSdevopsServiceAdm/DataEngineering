@@ -299,9 +299,7 @@ class TestRollingSum:
         return pl.LazyFrame(rolling_sum_data, output_schema, orient="row")
 
     def test_rolling_sum(self, input_lf, expected_lf):
-        returned_lf = (
-            job.six_month_rolling_sum_of_job_role_counts_within_primary_service_type(
-                input_lf
-            )
+        returned_lf = job.rolling_sum_of_job_role_counts_within_primary_service_type(
+            input_lf,
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

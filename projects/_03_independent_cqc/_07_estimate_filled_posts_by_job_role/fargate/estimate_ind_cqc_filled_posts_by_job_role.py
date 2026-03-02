@@ -105,8 +105,9 @@ def main(
 
     # Do a rolling sum over 6 months on the imputed counts.
     estimated_job_role_posts_lf = (
-        JRUtils.six_month_rolling_sum_of_job_role_counts_within_primary_service_type(
-            estimated_job_role_posts_lf
+        JRUtils.rolling_sum_of_job_role_counts_within_primary_service_type(
+            estimated_job_role_posts_lf,
+            period="6mo",
         )
     )
 
