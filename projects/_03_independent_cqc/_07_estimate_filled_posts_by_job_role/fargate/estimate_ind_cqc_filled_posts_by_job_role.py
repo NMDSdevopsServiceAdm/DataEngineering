@@ -103,12 +103,18 @@ def main(
         .alias(IndCQC.imputed_ascwds_job_role_counts)
     )
 
-    # Do a rolling sum over 6 months on the imputed counts.
+    # Do a rolling sum over 6 months on the imputed counts then work out the ratios.
     estimated_job_role_posts_lf = (
         JRUtils.rolling_sum_of_job_role_counts_within_primary_service_type(
             estimated_job_role_posts_lf,
             period="6mo",
         )
+        .with_columns(
+            JRUtils.percentage_share(IndCQC.ascwds_job_role_rolling_sum)
+            .over(IndCQC.location_id)
+            .alias(IndCQC.ascwds_job_role_rolling_ratio)
+        )
+        .drop(IndCQC.ascwds_job_role_rolling_sum)
     )
 
     utils.sink_to_parquet(
