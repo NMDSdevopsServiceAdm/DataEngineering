@@ -259,39 +259,41 @@ def normalise_structs(record: dict, schema: dict) -> dict:
     Returns:
         dict: Record with struct/list-of-struct columns normalised to schema.
     """
+    if record is None:
+        record = {}
+
     fixed = dict(record)
-
     for col, dtype in schema.items():
-        value = fixed.get(col)
-
         if isinstance(dtype, pl.Struct):
             fields = [f.name for f in dtype.fields]
-            if isinstance(value, dict):
-                fixed[col] = {f: value.get(f, None) for f in fields}
-            else:
-                fixed[col] = {f: None for f in fields}
-
-            # Recursively normalise nested structs
-            for f, f_dtype in zip(fields, dtype.fields):
-                if isinstance(f_dtype.dtype, (pl.Struct, pl.List)):
-                    fixed[col][f] = normalise_structs(
-                        fixed[col][f], {f: f_dtype.dtype}
-                    )[f]
+            value = fixed.get(col)
+            fixed[col] = (
+                {
+                    f: (
+                        normalise_structs(value.get(f), {f: inner})
+                        if isinstance(
+                            inner := next(
+                                (fld for fld in dtype.fields if fld.name == f), None
+                            ),
+                            pl.Struct,
+                        )
+                        else value.get(f, None)
+                    )
+                    for f in fields
+                }
+                if isinstance(value, dict)
+                else {f: None for f in fields}
+            )
 
         elif isinstance(dtype, pl.List) and isinstance(dtype.inner, pl.Struct):
+            value = fixed.get(col)
             inner_fields = [f.name for f in dtype.inner.fields]
             if isinstance(value, list):
                 fixed[col] = [
-                    normalise_structs(
-                        (
-                            {f: item.get(f, None) for f in inner_fields}
-                            if isinstance(item, dict)
-                            else {f: None for f in inner_fields}
-                        ),
-                        {
-                            f: f_dtype.dtype
-                            for f, f_dtype in zip(inner_fields, dtype.inner.fields)
-                        },
+                    (
+                        {f: item.get(f, None) for f in inner_fields}
+                        if isinstance(item, dict)
+                        else {f: None for f in inner_fields}
                     )
                     for item in value
                 ]
