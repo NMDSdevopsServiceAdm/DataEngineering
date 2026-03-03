@@ -302,37 +302,43 @@ def normalise_structs(record: dict, schema: dict) -> dict:
     return fixed
 
 
-def normalise_schema_columns(
-    record: Dict[str, Any], schema: Dict[str, Any]
-) -> Dict[str, Any]:
+def _normalise_structs(record: dict, schema: dict) -> dict:
     """
-    Normalize only the columns defined in `schema`:
-    - Structs: keep only schema fields, missing fields set to None.
-    - List[Struct]: ensure each item has schema fields, missing items become empty dicts.
-    - Scalars: ensure missing values are None.
-    Other columns in record are left untouched.
+    Normalises only the columns defined in schema, leaving all other columns untouched.
+
+    - Struct columns: keep only schema-defined fields, missing fields → None.
+    - List[Struct] columns: normalise each item to schema-defined fields.
+    - List columns: ensure value is a list.
+    - Scalar columns: pass through (None if missing).
+    - Extra columns not in schema: preserved as-is.
+
+    Args:
+        record (dict): Single raw API record.
+        schema (dict): Column name → Polars dtype (only known columns).
+
+    Returns:
+        dict: Record with schema columns normalised; extra columns untouched.
     """
-    fixed = dict(record or {})
+    record = record or {}
+    fixed = dict(record)  # preserve all columns including unknowns
 
     for col, dtype in schema.items():
         value = fixed.get(col)
 
-        # Struct columns
         if isinstance(dtype, pl.Struct):
             fields = [f.name for f in dtype.fields]
             if isinstance(value, dict):
-                fixed[col] = {f: value.get(f, None) for f in fields}
+                fixed[col] = {f: value.get(f) for f in fields}
             else:
                 fixed[col] = {f: None for f in fields}
 
-        # List columns
         elif isinstance(dtype, pl.List):
             if isinstance(dtype.inner, pl.Struct):
                 inner_fields = [f.name for f in dtype.inner.fields]
                 if isinstance(value, list):
                     fixed[col] = [
                         (
-                            {f: item.get(f, None) for f in inner_fields}
+                            {f: item.get(f) for f in inner_fields}
                             if isinstance(item, dict)
                             else {f: None for f in inner_fields}
                         )
@@ -341,40 +347,59 @@ def normalise_schema_columns(
                 else:
                     fixed[col] = []
             else:
-                # Generic list, ensure list
                 fixed[col] = value if isinstance(value, list) else []
 
-        # Scalar columns
         else:
-            fixed[col] = value if value is not None else None
+            fixed[col] = value  # None if missing is fine; dict.get returns None
 
     return fixed
 
 
-def primed_generator(
-    api_generator: Generator[Dict[str, Any], None, None], schema: Dict[str, Any]
-) -> Generator[Dict[str, Any], None, None]:
+def build_dataframe_from_api(
+    api_generator: Generator[dict, None, None],
+    schema: dict,
+) -> pl.DataFrame:
     """
-    Yield a first row conforming to `schema` (priming row) to ensure
-    Polars infers schema columns correctly, then yield all API rows
-    with schema columns normalized and extra columns preserved.
+    Consumes an API generator, normalises known schema columns on every row,
+    and returns a Polars DataFrame.
+
+    Strategy:
+      1. Collect ALL rows first (normalised), so Polars never has to infer
+         struct shapes mid-stream from inconsistent rows.
+      2. Build the DataFrame from the full list, passing the known schema
+         explicitly so Polars uses it for those columns.
+      3. Extra API columns (not in schema) are carried through as-is and
+         Polars infers their types from the full dataset — which is safe
+         because we have all rows before constructing.
+
+    New/unexpected columns are logged with a sample value.
+
+    Args:
+        api_generator: Generator yielding raw API rows as dicts.
+        schema: Polars schema mapping known column names to data types.
+
+    Returns:
+        pl.DataFrame with all columns (schema-enforced + raw extras).
     """
-    # Construct priming row: only schema columns matter
-    empty_row = {}
-    for col, dtype in schema.items():
-        if isinstance(dtype, pl.Struct):
-            empty_row[col] = {f.name: None for f in dtype.fields}
-        elif isinstance(dtype, pl.List):
-            empty_row[col] = []
-        else:
-            empty_row[col] = None
+    known_cols = set(schema.keys())
+    new_cols_seen: set[str] = set()
+    rows: list[dict] = []
 
-    yield empty_row
-
-    # Yield normalized API rows
     for row in api_generator:
-        # Warn if new columns are present
-        new_cols = set(row.keys()) - set(schema.keys())
-        if new_cols:
-            print(f"New columns detected from API: {new_cols}")
-        yield normalise_schema_columns(row, schema)
+        # Detect and log any columns not in our schema
+        extra = set(row.keys()) - known_cols - new_cols_seen
+        if extra:
+            new_cols_seen.update(extra)
+            for col in sorted(extra):
+                sample = row[col]
+                print(
+                    f"[schema drift] New column '{col}' | sample: {repr(sample)[:120]}"
+                )
+
+        rows.append(_normalise_structs(row, schema))
+
+    if not rows:
+        # Return an empty DataFrame with the correct schema for known columns
+        return pl.DataFrame(schema=schema)
+
+    return pl.DataFrame(rows, schema=schema, infer_schema_length=len(rows))
