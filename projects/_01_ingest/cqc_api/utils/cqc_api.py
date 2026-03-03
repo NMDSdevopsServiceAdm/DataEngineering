@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generator, Iterable, List
+from typing import Generator, Iterable, List
 
 import polars as pl
 import requests
