@@ -251,8 +251,9 @@ class TestRollingSum:
 
 
 class TestCoalesceLabels:
-    def test_output_col_is_coalesce_source_labels(self):
-        input_lf = pl.LazyFrame(
+    @pytest.fixture
+    def input_lf(self):
+        return pl.LazyFrame(
             {
                 "a": [1, None, None, None, None],
                 "b": [None, 2, None, None, 4],
@@ -260,6 +261,7 @@ class TestCoalesceLabels:
             }
         )
 
+    def test_output_col_is_coalesce_source_labels(self, input_lf):
         expected_lf = pl.LazyFrame({"labels": ["a", "b", "c", None, "b"]})
         returned_lf = input_lf.select(
             job.coalesce_labels("a", "b", "c").alias("labels")
