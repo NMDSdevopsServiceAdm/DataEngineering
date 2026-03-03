@@ -11,6 +11,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.value_labels.ons_pd.label_dictionaries import onspd_labels_dict
 
 onsPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -20,6 +21,13 @@ def main(ons_source: str, cleaned_ons_destination: str):
 
     ons_df = cUtils.column_to_date(
         ons_df, Keys.import_date, ONSClean.contemporary_ons_import_date
+    )
+
+    ons_df = cUtils.apply_categorical_labels(
+        ons_df,
+        labels=onspd_labels_dict,
+        column_names=onspd_labels_dict.keys(),
+        add_as_new_column=False,
     )
 
     contemporary_ons_df = prepare_contemporary_ons_data(ons_df)
@@ -52,7 +60,6 @@ def prepare_current_ons_data(df: DataFrame) -> DataFrame:
         df[ONSClean.sub_icb].alias(ONSClean.current_sub_icb),
         df[ONSClean.icb].alias(ONSClean.current_icb),
         df[ONSClean.icb_region].alias(ONSClean.current_icb_region),
-        df[ONSClean.ccg].alias(ONSClean.current_ccg),
         df[ONSClean.latitude].alias(ONSClean.current_latitude),
         df[ONSClean.longitude].alias(ONSClean.current_longitude),
         df[ONSClean.imd_score].alias(ONSClean.current_imd_score),
@@ -78,7 +85,6 @@ def prepare_contemporary_ons_data(df: DataFrame) -> DataFrame:
         df[ONSClean.sub_icb].alias(ONSClean.contemporary_sub_icb),
         df[ONSClean.icb].alias(ONSClean.contemporary_icb),
         df[ONSClean.icb_region].alias(ONSClean.contemporary_icb_region),
-        df[ONSClean.ccg].alias(ONSClean.contemporary_ccg),
         df[ONSClean.latitude].alias(ONSClean.contemporary_latitude),
         df[ONSClean.longitude].alias(ONSClean.contemporary_longitude),
         df[ONSClean.imd_score].alias(ONSClean.contemporary_imd_score),
