@@ -74,22 +74,38 @@ class MainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.null_non_residential_grouped_providers")
     @patch(f"{PATCH_PATH}.null_care_home_grouped_providers")
     @patch(f"{PATCH_PATH}.identify_potential_grouped_providers")
-    # @patch(f"{PATCH_PATH}.calculate_data_for_grouped_provider_identification")
+    @patch(f"{PATCH_PATH}.calculate_data_for_grouped_provider_identification")
     def test_null_grouped_providers_calls_functions(
         self,
-        # calculate_data_for_grouped_provider_identification_mock: Mock,
+        calculate_data_for_grouped_provider_identification_mock: Mock,
         identify_potential_grouped_providers_mock: Mock,
         null_care_home_grouped_providers_mock: Mock,
         null_non_residential_grouped_providers_mock: Mock,
     ):
         job.null_grouped_providers(self.test_lf)
 
-        # calculate_data_for_grouped_provider_identification_mock.assert_called_once_with(
-        #     self.test_lf
-        # )
+        calculate_data_for_grouped_provider_identification_mock.assert_called_once_with(
+            self.test_lf
+        )
         identify_potential_grouped_providers_mock.assert_called_once()
         null_care_home_grouped_providers_mock.assert_called_once()
         null_non_residential_grouped_providers_mock.assert_called_once()
+
+
+class CalculateDataForGroupedProviderIdentificationTests(unittest.TestCase):
+    def test_function_returns_expected_values(self):
+        test_lf = pl.LazyFrame(
+            Data.input_grouped_provider_rows,
+            Schemas.grouped_provider_schema,
+            orient="row",
+        )
+        returned_lf = job.calculate_data_for_grouped_provider_identification(test_lf)
+        expected_lf = pl.LazyFrame(
+            Data.expected_grouped_provider_rows,
+            Schemas.expected_grouped_provider_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(expected_lf, returned_lf.sort(IndCQC.location_id))
 
 
 class IdentifyPotentialGroupedProviderTests(unittest.TestCase):
