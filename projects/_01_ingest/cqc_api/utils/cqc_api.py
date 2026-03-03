@@ -259,41 +259,55 @@ def normalise_structs(record: dict, schema: dict) -> dict:
     Returns:
         dict: Record with struct/list-of-struct columns normalised to schema.
     """
-    record = record or {}
-    out = {}
+    fixed = dict(record or {})  # handle None safely
 
     for col, dtype in schema.items():
-        value = record.get(col)
+        value = fixed.get(col)
 
+        # -------------------------
+        # Struct
+        # -------------------------
         if isinstance(dtype, pl.Struct):
-            fields = {f.name: f for f in dtype.fields}
-            out[col] = {
-                f: value.get(f, None) if isinstance(value, dict) else None
-                for f in fields
-            }
+            fields = [f.name for f in dtype.fields]
 
-        elif isinstance(dtype, pl.List) and isinstance(dtype.inner, pl.Struct):
-            inner_fields = {f.name: f for f in dtype.inner.fields}
-            if isinstance(value, list):
-                out[col] = [
-                    {
-                        f: item.get(f, None) if isinstance(item, dict) else None
-                        for f in inner_fields
-                    }
-                    for item in value
-                ]
+            if isinstance(value, dict):
+                fixed[col] = {f: value.get(f, None) for f in fields}
             else:
-                out[col] = []
+                fixed[col] = {f: None for f in fields}
 
+        # -------------------------
+        # List
+        # -------------------------
+        elif isinstance(dtype, pl.List):
+
+            # List of Struct
+            if isinstance(dtype.inner, pl.Struct):
+                inner_fields = [f.name for f in dtype.inner.fields]
+
+                if isinstance(value, list):
+                    fixed[col] = [
+                        (
+                            {f: item.get(f, None) for f in inner_fields}
+                            if isinstance(item, dict)
+                            else {f: None for f in inner_fields}
+                        )
+                        for item in value
+                    ]
+                else:
+                    fixed[col] = []
+
+            # Generic List
+            else:
+                fixed[col] = value if isinstance(value, list) else []
+
+        # -------------------------
+        # Scalar
+        # -------------------------
         else:
-            out[col] = value if value is not None else None
+            if col not in fixed:
+                fixed[col] = None
 
-    # preserve extra columns untouched
-    for col in record.keys():
-        if col not in schema:
-            out[col] = record[col]
-
-    return out
+    return fixed
 
 
 def primed_generator(
@@ -323,9 +337,16 @@ def primed_generator(
         else:
             empty_row[col] = None
 
-    # Yield priming row
+    # Yield priming row for Polars schema inference
     yield empty_row
 
-    # Yield normalized API rows
+    # Yield normalised API rows
     for row in api_generator:
+        new_cols = set(row.keys()) - set(schema.keys())
+        if new_cols:
+            print(f"New columns detected from API: {new_cols}")
+            for col in new_cols:
+                print(
+                    f"  Column '{col}' sample value/structure: {pl.DataFrame(row[col]).schema}"
+                )
         yield normalise_structs(row, schema)
