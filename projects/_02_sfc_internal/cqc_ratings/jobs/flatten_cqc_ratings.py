@@ -591,7 +591,6 @@ def merge_cqc_ratings(
 
 
 def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
-    # Columns to nullify
     columns_to_clean = [
         CQCRatings.overall_rating,
         CQCRatings.safe_rating,
@@ -601,7 +600,6 @@ def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
         CQCRatings.effective_rating,
     ]
 
-    # Values to replace with None
     labels_to_nullify = [
         "Inspected but not rated",
         "No published rating",
