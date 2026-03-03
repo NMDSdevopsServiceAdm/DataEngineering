@@ -64,7 +64,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1.1-deps-{{ checksum "Pipfile.lock" }}
+            - v1.2-uv-cache-{{ checksum "Pipfile.lock" }}
       - run:
           name: Install system packages
           command: |
@@ -78,10 +78,11 @@ jobs:
             name: Pre-cache Spark JARs
             command: uv run python scripts/fetch_spark_dependencies.py
       - save_cache:
-          key: v1.1-deps-{{ checksum "Pipfile.lock" }}
+          key: v1.2-uv-cache-{{ checksum "Pipfile.lock" }}
           paths:
             - ~/.m2/repository
             - ~/.ivy2/jars
+            - ~/.cache/uv
       - run:
           name: Run unit tests and generate coverage
           command: |
