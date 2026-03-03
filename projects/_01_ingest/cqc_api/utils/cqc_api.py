@@ -246,64 +246,6 @@ def get_changes_within_timeframe(
 
 def normalise_structs(record: dict, schema: dict) -> dict:
     """
-    Normalises struct and list-of-struct columns to strictly match the schema.
-
-    - Structs: keep only schema fields, missing fields set to None.
-    - List[Struct]: ensure each item has schema fields, missing items become empty dicts.
-    - Columns not in schema are untouched.
-
-    Args:
-        record (dict): Single API record.
-        schema (dict): Column name → Polars dtype.
-
-    Returns:
-        dict: Record with struct/list-of-struct columns normalised to schema.
-    """
-    record = record or {}
-    fixed = dict(record)
-
-    for col, dtype in schema.items():
-        value = fixed.get(col)
-
-        # Struct columns
-        if isinstance(dtype, pl.Struct):
-            fields = [f.name for f in dtype.fields]
-            if isinstance(value, dict):
-                fixed[col] = {f: value.get(f, None) for f in fields}
-
-            else:
-                fixed[col] = {f: None for f in fields}
-
-        # List columns
-        elif isinstance(dtype, pl.List):
-            # List of structs
-            if isinstance(dtype.inner, pl.Struct):
-                inner_fields = [f.name for f in dtype.inner.fields]
-                if isinstance(value, list):
-                    fixed[col] = [
-                        (
-                            {f: item.get(f, None) for f in inner_fields}
-                            if isinstance(item, dict)
-                            else {f: None for f in inner_fields}
-                        )
-                        for item in value
-                    ]
-                else:
-                    fixed[col] = []
-            else:
-                # Generic list, ensure at least empty list
-                fixed[col] = value if isinstance(value, list) else []
-
-        # Scalar columns
-        else:
-            if value is None:
-                fixed[col] = None
-
-    return fixed
-
-
-def _normalise_structs(record: dict, schema: dict) -> dict:
-    """
     Normalises only the columns defined in schema, leaving all other columns untouched.
 
     - Struct columns: keep only schema-defined fields, missing fields → None.
@@ -389,7 +331,7 @@ def build_dataframe_from_api(
                     f"[schema drift] New column '{col}' | sample: {repr(sample)[:120]}"
                 )
 
-        rows.append(_normalise_structs(row, schema))
+        rows.append(normalise_structs(row, schema))
 
     if not rows:
         # Return an empty DataFrame with the correct schema for known columns
