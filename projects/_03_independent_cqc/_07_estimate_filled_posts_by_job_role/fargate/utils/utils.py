@@ -104,3 +104,14 @@ def rolling_sum_of_job_role_counts(
             order_by=IndCQC.cqc_location_import_date,
         )
     )
+
+
+def coalesce_labels(*coalesce_columns) -> pl.Expr:
+    """Return the source column labels of a coalesce call i.e. first non-null."""
+    first_col = coalesce_columns[0]
+    label_expr = pl.when(pl.col(first_col).is_not_null()).then(pl.lit(first_col))
+
+    for col in coalesce_columns[1:]:
+        label_expr = label_expr.when(pl.col(col).is_not_null()).then(pl.lit(col))
+
+    return label_expr
