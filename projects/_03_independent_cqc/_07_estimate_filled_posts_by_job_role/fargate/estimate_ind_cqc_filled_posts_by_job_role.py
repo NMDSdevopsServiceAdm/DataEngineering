@@ -103,9 +103,9 @@ def main(
         .alias(IndCQC.imputed_ascwds_job_role_counts)
     )
     # Get the proportions of the rolling sum of job counts within each location.
-    rolling_sum_expr = JRUtils.rolling_sum_of_job_role_counts_expr(period="6mo")
+    rolling_job_counts_sum = JRUtils.rolling_sum_of_job_role_counts(period="6mo")
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        JRUtils.percentage_share(rolling_sum_expr)
+        JRUtils.percentage_share(rolling_job_counts_sum)
         .over(IndCQC.location_id)
         .alias(IndCQC.ascwds_job_role_rolling_ratio)
     )

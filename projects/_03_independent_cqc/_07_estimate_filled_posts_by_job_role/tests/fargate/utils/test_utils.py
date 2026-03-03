@@ -243,7 +243,7 @@ class TestRollingSum:
         )
         input_lf = expected_lf.drop(expected_lf.columns[-1])
         returned_lf = input_lf.with_columns(
-            job.rolling_sum_of_job_role_counts_expr(period="6mo").alias(
+            job.rolling_sum_of_job_role_counts(period="6mo").alias(
                 IndCQC.ascwds_job_role_rolling_sum
             )
         )

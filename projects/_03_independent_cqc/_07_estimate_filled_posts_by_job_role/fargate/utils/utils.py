@@ -84,7 +84,7 @@ def impute_full_time_series(column: str) -> pl.Expr:
     return pl.col(column).interpolate().forward_fill().backward_fill()
 
 
-def rolling_sum_of_job_role_counts_expr(
+def rolling_sum_of_job_role_counts(
     period: str = "6mo",
 ) -> pl.Expr:
     """Compute rolling sum of job role counts within each primary service.
