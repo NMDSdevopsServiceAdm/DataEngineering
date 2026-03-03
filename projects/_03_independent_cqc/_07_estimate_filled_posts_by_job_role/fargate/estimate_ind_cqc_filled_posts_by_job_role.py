@@ -80,9 +80,10 @@ def main(
         estimated_job_role_posts_lf
     )
 
+    pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
-        .over(IndCQC.location_id)
+        .over(pct_share_groups)
         .alias(IndCQC.ascwds_job_role_ratios)
     )
     # Do linear interpolation, then forward fill and backward fill to get a full
@@ -106,7 +107,7 @@ def main(
     rolling_job_counts_sum = JRUtils.rolling_sum_of_job_role_counts(period="6mo")
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         JRUtils.percentage_share(rolling_job_counts_sum)
-        .over(IndCQC.location_id)
+        .over(pct_share_groups)
         .alias(IndCQC.ascwds_job_role_rolling_ratio)
     )
 

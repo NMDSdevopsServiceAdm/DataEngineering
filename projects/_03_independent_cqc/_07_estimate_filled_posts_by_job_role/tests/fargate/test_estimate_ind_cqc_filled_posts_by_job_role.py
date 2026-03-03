@@ -64,6 +64,12 @@ class MainTests(unittest.TestCase):
             call(rolling_sum_expr),
         ]
         percentage_share_mock.assert_has_calls(calls, any_order=True)
+        pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
+        # Assert that we're getting the percentage_share over the required groups.
+        percentage_share_mock.return_value.over.assert_has_calls(
+            [call(pct_share_groups)] * 2,
+            any_order=True,
+        )
 
         impute_full_time_series_mock.assert_called_once_with(
             IndCQC.ascwds_job_role_ratios
