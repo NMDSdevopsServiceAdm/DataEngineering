@@ -9,7 +9,6 @@ partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 estimates_columns_to_import = [
     IndCQC.cqc_location_import_date,
-    IndCQC.unix_time,
     IndCQC.location_id,
     IndCQC.name,
     IndCQC.provider_id,
@@ -92,7 +91,7 @@ def main(
         JRUtils.impute_full_time_series(IndCQC.ascwds_job_role_ratios)
         .over(
             [IndCQC.location_id, IndCQC.main_job_role_clean_labelled],
-            order_by=IndCQC.unix_time,
+            order_by=IndCQC.cqc_location_import_date,
         )
         .alias(IndCQC.imputed_ascwds_job_role_ratios)
     )
