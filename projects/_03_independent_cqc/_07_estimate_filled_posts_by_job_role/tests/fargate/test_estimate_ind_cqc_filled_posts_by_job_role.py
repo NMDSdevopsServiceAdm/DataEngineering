@@ -16,6 +16,7 @@ class MainTests(unittest.TestCase):
     mock_prepared_job_role_counts_data = Mock(name="prepared_job_role_counts_data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.coalesce_ratios")
     @patch(f"{PATCH_PATH}.JRUtils.rolling_sum_of_job_role_counts")
     @patch(f"{PATCH_PATH}.JRUtils.impute_full_time_series")
     @patch(f"{PATCH_PATH}.JRUtils.percentage_share")
@@ -33,6 +34,7 @@ class MainTests(unittest.TestCase):
         percentage_share_mock: Mock,
         impute_full_time_series_mock: Mock,
         rolling_sum_mock: Mock,
+        coalesce_ratios_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -74,6 +76,7 @@ class MainTests(unittest.TestCase):
             IndCQC.ascwds_job_role_ratios
         )
         rolling_sum_mock.assert_called_once_with(period="6mo")
+        coalesce_ratios_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
