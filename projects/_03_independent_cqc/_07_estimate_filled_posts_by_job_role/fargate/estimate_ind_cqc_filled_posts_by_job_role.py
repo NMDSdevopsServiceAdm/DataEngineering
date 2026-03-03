@@ -117,7 +117,9 @@ def main(
         .drop(IndCQC.ascwds_job_role_rolling_sum)
     )
 
-    estimated_job_role_posts_lf = coalesce_ratios(estimated_job_role_posts_lf)
+    estimated_job_role_posts_lf = coalesce_ratios_with_source_label(
+        estimated_job_role_posts_lf
+    )
 
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
@@ -149,8 +151,8 @@ if __name__ == "__main__":
     )
 
 
-def coalesce_ratios(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Coalesces filtered, interpolated and rolling ratios and records chosen label.
+def coalesce_ratios_with_source_label(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Coalesces filtered, interpolated and rolling ratios and records source label.
 
     The first non-null value is chosen from left-to-right and the columns label
     of the resulting value is stored in an additional column.
