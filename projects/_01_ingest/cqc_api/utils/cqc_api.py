@@ -322,7 +322,7 @@ def build_dataframe_from_api(
         schema (dict): Polars schema mapping column names to data types.
 
     Returns:
-        pl.DataFrame : Newly constructed DataFrame with new raw data
+        pl.DataFrame: Newly constructed DataFrame with new raw data
     """
     known_cols = set(schema.keys())
     new_cols_seen: set[str] = set()
