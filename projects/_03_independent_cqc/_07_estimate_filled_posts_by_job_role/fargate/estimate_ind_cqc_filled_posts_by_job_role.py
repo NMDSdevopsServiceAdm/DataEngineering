@@ -126,7 +126,7 @@ def main(
     merged_cols = {
         IndCQC.ascwds_job_role_ratios_merged: pl.coalesce(coalesce_cols),
         IndCQC.ascwds_job_role_ratios_merged_source: JRUtils.coalesce_labels(
-            *coalesce_cols
+            coalesce_cols
         ),
     }
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(merged_cols)
