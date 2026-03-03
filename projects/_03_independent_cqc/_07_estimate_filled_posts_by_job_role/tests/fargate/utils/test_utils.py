@@ -264,6 +264,6 @@ class TestCoalesceLabels:
     def test_output_col_is_coalesce_source_labels(self, input_lf):
         expected_lf = pl.LazyFrame({"labels": ["a", "b", "c", None, "b"]})
         returned_lf = input_lf.select(
-            job.coalesce_labels("a", "b", "c").alias("labels")
+            job.coalesce_labels(["a", "b", "c"]).alias("labels")
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
