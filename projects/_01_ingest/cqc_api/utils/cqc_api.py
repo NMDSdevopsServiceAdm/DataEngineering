@@ -244,68 +244,59 @@ def get_changes_within_timeframe(
     return response
 
 
+def _normalise_value(value, dtype):
+    """
+    Recursively normalise a single value to match dtype.
+    """
+
+    # -------------------------
+    # Struct
+    # -------------------------
+    if isinstance(dtype, pl.Struct):
+        fields = {f.name: f.dtype for f in dtype.fields}
+
+        if not isinstance(value, dict):
+            value = {}
+
+        return {
+            name: _normalise_value(value.get(name), field_dtype)
+            for name, field_dtype in fields.items()
+        }
+
+    # -------------------------
+    # List
+    # -------------------------
+    if isinstance(dtype, pl.List):
+        inner = dtype.inner
+
+        if not isinstance(value, list):
+            return []
+
+        return [_normalise_value(item, inner) for item in value]
+
+    # -------------------------
+    # Scalar
+    # -------------------------
+    # Leave casting to Polars; just ensure existence
+    return value if value is not None else None
+
+
 def normalise_structs(record: dict, schema: dict) -> dict:
     """
-    Normalises struct and list-of-struct columns to strictly match the schema.
+    Recursively normalises struct and list-of-struct columns
+    to strictly match the schema at any nesting depth.
 
     - Structs: keep only schema fields, missing fields set to None.
-    - List[Struct]: ensure each item has schema fields, missing items become empty dicts.
+    - List[Struct]: each item strictly matches inner schema.
+    - Scalar columns ensured to exist (missing → None).
     - Columns not in schema are untouched.
-
-    Args:
-        record (dict): Single API record.
-        schema (dict): Column name → Polars dtype.
-
-    Returns:
-        dict: Record with struct/list-of-struct columns normalised to schema.
     """
-    fixed = dict(record or {})  # handle None safely
+
+    fixed = dict(record or {})
 
     for col, dtype in schema.items():
         value = fixed.get(col)
-
-        # -------------------------
-        # Struct
-        # -------------------------
-        if isinstance(dtype, pl.Struct):
-            fields = [f.name for f in dtype.fields]
-
-            if isinstance(value, dict):
-                fixed[col] = {f: value.get(f, None) for f in fields}
-            else:
-                fixed[col] = {f: None for f in fields}
-
-        # -------------------------
-        # List
-        # -------------------------
-        elif isinstance(dtype, pl.List):
-
-            # List of Struct
-            if isinstance(dtype.inner, pl.Struct):
-                inner_fields = [f.name for f in dtype.inner.fields]
-
-                if isinstance(value, list):
-                    fixed[col] = [
-                        (
-                            {f: item.get(f, None) for f in inner_fields}
-                            if isinstance(item, dict)
-                            else {f: None for f in inner_fields}
-                        )
-                        for item in value
-                    ]
-                else:
-                    fixed[col] = []
-
-            # Generic List
-            else:
-                fixed[col] = value if isinstance(value, list) else []
-
-        # -------------------------
-        # Scalar
-        # -------------------------
-        else:
-            if col not in fixed:
-                fixed[col] = None
+        fixed[col] = _normalise_value(value, dtype)
 
     return fixed
 
