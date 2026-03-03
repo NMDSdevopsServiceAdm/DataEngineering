@@ -82,6 +82,7 @@ jobs:
           paths:
             - ~/.m2/repository
             - ~/.ivy2/jars
+            - ~/.ivy2/cache
             - ~/.cache/uv
       - run:
           name: Run unit tests and generate coverage
