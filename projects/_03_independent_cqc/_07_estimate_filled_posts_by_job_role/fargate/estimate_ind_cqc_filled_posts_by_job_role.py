@@ -117,6 +117,20 @@ def main(
         .drop(IndCQC.ascwds_job_role_rolling_sum)
     )
 
+    # Order matters for coalesce - first non-null value selected from left to right.
+    coalesce_cols = [
+        IndCQC.ascwds_job_role_ratios_filtered,
+        IndCQC.ascwds_job_role_ratios_interpolated,
+        IndCQC.ascwds_job_role_rolling_ratio,
+    ]
+    merged_cols = {
+        IndCQC.ascwds_job_role_ratios_merged: pl.coalesce(coalesce_cols),
+        IndCQC.ascwds_job_role_ratios_merged_source: JRUtils.coalesce_labels(
+            *coalesce_cols
+        ),
+    }
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(merged_cols)
+
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
         output_path=estimates_by_job_role_destination,
