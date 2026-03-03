@@ -292,7 +292,7 @@ def normalise_structs(record: dict, schema: dict) -> dict:
                 fixed[col] = value if isinstance(value, list) else []
 
         else:
-            fixed[col] = value  # None if missing is fine; dict.get returns None
+            fixed[col] = value
 
     return fixed
 
@@ -315,6 +315,14 @@ def build_dataframe_from_api(
          because we have all rows before constructing.
 
     New/unexpected columns are logged with a sample value.
+
+    Args:
+        api_generator (Generator[dict, None, None]): A generator yielding raw
+            API rows as dictionaries.
+        schema (dict): Polars schema mapping column names to data types.
+
+    Returns:
+        pl.DataFrame : Newly constructed DataFrame with new raw data
     """
     known_cols = set(schema.keys())
     new_cols_seen: set[str] = set()

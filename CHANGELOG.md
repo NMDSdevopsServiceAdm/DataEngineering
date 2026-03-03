@@ -38,7 +38,7 @@ All notable changes to this project will be documented in this file.
 - Removed all remaining PySpark modelling code for care homes and non-residential with/without dormancy.
 
 ### Fixed
-
+- Updated the normalise_structs function in cqc_api.py and added a new function to create a DataFrame for the raw data. The new function makes sure the data is properly normalised and can handle any new columns added by CQC. It also logs any newly added columns that are not in our current schema, so we can review them and update the schema if needed.
 
 ## [v2026.01.0] - 12/02/2026
 
