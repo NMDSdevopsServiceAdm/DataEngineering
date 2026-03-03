@@ -56,7 +56,7 @@ jobs:
 
   test:
     docker:
-      - image: cimg/python:3.11.12
+      - image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
     resource_class: large
     environment:
       SPARK_VERSION: "3.5"       # Required for pydeequ to initialize
@@ -72,30 +72,27 @@ jobs:
             sudo apt-get install -y default-jre-headless
       - run:
           name: install dependencies
-          command: |
-            pip install pipenv
-            pipenv install --dev
+          command: uv pip install -r <(uvx pipenv requirements --dev)
       # Pre-cache the pyqeequ dependency so xdist works better.
       - run:
             name: Pre-cache Spark JARs
-            command: pipenv run python scripts/fetch_spark_dependencies.py
+            command: uv run python scripts/fetch_spark_dependencies.py
       - save_cache:
           key: v1.1-deps-{{ checksum "Pipfile.lock" }}
           paths:
             - ~/.m2/repository
             - ~/.ivy2/jars
-            - ~/.local/share/virtualenvs
       - run:
           name: Run unit tests and generate coverage
           command: |
-            pipenv run pytest \
+            uv run pytest \
               -n auto --dist loadfile \
               --cov=. \
               --cov-report=xml \
               --cov-report=html
       - run:
             name: Output Coverage Report
-            command: pipenv run coverage report
+            command: uv run coverage report
       - store_artifacts:
           path: htmlcov
 
