@@ -117,19 +117,7 @@ def main(
         .drop(IndCQC.ascwds_job_role_rolling_sum)
     )
 
-    # Order matters for coalesce - first non-null value selected from left to right.
-    coalesce_cols = [
-        IndCQC.ascwds_job_role_ratios_filtered,
-        IndCQC.ascwds_job_role_ratios_interpolated,
-        IndCQC.ascwds_job_role_rolling_ratio,
-    ]
-    merged_cols = {
-        IndCQC.ascwds_job_role_ratios_merged: pl.coalesce(coalesce_cols),
-        IndCQC.ascwds_job_role_ratios_merged_source: JRUtils.coalesce_labels(
-            coalesce_cols
-        ),
-    }
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(merged_cols)
+    estimated_job_role_posts_lf = coalesce_ratios(estimated_job_role_posts_lf)
 
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
@@ -159,3 +147,23 @@ if __name__ == "__main__":
         ascwds_job_role_counts_source=args.ascwds_job_role_counts_source,
         estimates_by_job_role_destination=args.estimates_by_job_role_destination,
     )
+
+
+def coalesce_ratios(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Coalesces filtered, interpolated and rolling ratios and records chosen label.
+
+    The first non-null value is chosen from left-to-right and the columns label
+    of the resulting value is stored in an additional column.
+    """
+    coalesce_cols_in_order = [
+        IndCQC.ascwds_job_role_ratios_filtered,
+        IndCQC.ascwds_job_role_ratios_interpolated,
+        IndCQC.ascwds_job_role_rolling_ratio,
+    ]
+    new_cols = {
+        IndCQC.ascwds_job_role_ratios_merged: pl.coalesce(coalesce_cols_in_order),
+        IndCQC.ascwds_job_role_ratios_merged_source: JRUtils.coalesce_labels(
+            coalesce_cols_in_order
+        ),
+    }
+    return lf.with_columns(new_cols)
