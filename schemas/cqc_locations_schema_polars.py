@@ -307,6 +307,18 @@ POLARS_LOCATION_SCHEMA = pl.Schema(
             ),
         ),
         (
+            NewColNames.assessment_service_group,
+            pl.List(
+                pl.Struct(
+                    {
+                        NewColNames.assessment_service_id: pl.String(),
+                        NewColNames.assessment_service_name: pl.String(),
+                        NewColNames.status: pl.String(),
+                    }
+                )
+            ),
+        ),
+        (
             NewColNames.assessment,
             pl.List(
                 pl.Struct(
