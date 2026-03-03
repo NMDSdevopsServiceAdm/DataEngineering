@@ -317,7 +317,8 @@ POLARS_LOCATION_SCHEMA = pl.Schema(
                     }
                 )
             ),
-        )(
+        ),
+        (
             NewColNames.assessment,
             pl.List(
                 pl.Struct(
