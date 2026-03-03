@@ -373,13 +373,6 @@ def build_dataframe_from_api(
          because we have all rows before constructing.
 
     New/unexpected columns are logged with a sample value.
-
-    Args:
-        api_generator: Generator yielding raw API rows as dicts.
-        schema: Polars schema mapping known column names to data types.
-
-    Returns:
-        pl.DataFrame with all columns (schema-enforced + raw extras).
     """
     known_cols = set(schema.keys())
     new_cols_seen: set[str] = set()
