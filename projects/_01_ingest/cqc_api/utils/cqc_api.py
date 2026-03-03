@@ -1,4 +1,4 @@
-from typing import Any, Generator, Iterable, List
+from typing import Any, Dict, Generator, Iterable, List
 
 import polars as pl
 import requests
@@ -244,92 +244,122 @@ def get_changes_within_timeframe(
     return response
 
 
-def _normalise_value(value: Any, dtype: pl.DataType) -> Any:
-    """
-    Recursively normalise a value to exactly match the given Polars dtype.
-    Handles Structs, Lists, and Scalars.
-    """
-    # -------------------------
-    # Struct
-    # -------------------------
-    if isinstance(dtype, pl.Struct):
-        fields = {f.name: f.dtype for f in dtype.fields}
-        if not isinstance(value, dict):
-            value = {}
-        # enforce schema order and recurse
-        return {
-            name: _normalise_value(value.get(name), field_dtype)
-            for name, field_dtype in fields.items()
-        }
-
-    # -------------------------
-    # List
-    # -------------------------
-    if isinstance(dtype, pl.List):
-        inner = dtype.inner
-        if not isinstance(value, list):
-            return []
-        return [_normalise_value(item, inner) for item in value]
-
-    # -------------------------
-    # Scalar
-    # -------------------------
-    if value is None:
-        return None
-
-    try:
-        if dtype == pl.Int64:
-            return int(value)
-        if dtype == pl.Int32:
-            return int(value)
-        if dtype == pl.Float64:
-            return float(value)
-        if dtype == pl.Float32:
-            return float(value)
-        if dtype == pl.Utf8:
-            return str(value)
-        if dtype == pl.Boolean:
-            return bool(value)
-    except Exception:
-        # fallback if casting fails
-        return None
-
-    # unknown dtype, return as-is
-    return value
-
-
 def normalise_structs(record: dict, schema: dict) -> dict:
     """
-    Recursively normalises struct and list-of-struct columns
-    to strictly match the schema at any nesting depth.
+    Normalises struct and list-of-struct columns to strictly match the schema.
+
+    - Structs: keep only schema fields, missing fields set to None.
+    - List[Struct]: ensure each item has schema fields, missing items become empty dicts.
+    - Columns not in schema are untouched.
+
+    Args:
+        record (dict): Single API record.
+        schema (dict): Column name → Polars dtype.
+
+    Returns:
+        dict: Record with struct/list-of-struct columns normalised to schema.
+    """
+    record = record or {}
+    fixed = dict(record)
+
+    for col, dtype in schema.items():
+        value = fixed.get(col)
+
+        # Struct columns
+        if isinstance(dtype, pl.Struct):
+            fields = [f.name for f in dtype.fields]
+            if isinstance(value, dict):
+                fixed[col] = {f: value.get(f, None) for f in fields}
+
+            else:
+                fixed[col] = {f: None for f in fields}
+
+        # List columns
+        elif isinstance(dtype, pl.List):
+            # List of structs
+            if isinstance(dtype.inner, pl.Struct):
+                inner_fields = [f.name for f in dtype.inner.fields]
+                if isinstance(value, list):
+                    fixed[col] = [
+                        (
+                            {f: item.get(f, None) for f in inner_fields}
+                            if isinstance(item, dict)
+                            else {f: None for f in inner_fields}
+                        )
+                        for item in value
+                    ]
+                else:
+                    fixed[col] = []
+            else:
+                # Generic list, ensure at least empty list
+                fixed[col] = value if isinstance(value, list) else []
+
+        # Scalar columns
+        else:
+            if value is None:
+                fixed[col] = None
+
+    return fixed
+
+
+def normalise_schema_columns(
+    record: Dict[str, Any], schema: Dict[str, Any]
+) -> Dict[str, Any]:
+    """
+    Normalize only the columns defined in `schema`:
+    - Structs: keep only schema fields, missing fields set to None.
+    - List[Struct]: ensure each item has schema fields, missing items become empty dicts.
+    - Scalars: ensure missing values are None.
+    Other columns in record are left untouched.
     """
     fixed = dict(record or {})
 
     for col, dtype in schema.items():
         value = fixed.get(col)
-        fixed[col] = _normalise_value(value, dtype)
+
+        # Struct columns
+        if isinstance(dtype, pl.Struct):
+            fields = [f.name for f in dtype.fields]
+            if isinstance(value, dict):
+                fixed[col] = {f: value.get(f, None) for f in fields}
+            else:
+                fixed[col] = {f: None for f in fields}
+
+        # List columns
+        elif isinstance(dtype, pl.List):
+            if isinstance(dtype.inner, pl.Struct):
+                inner_fields = [f.name for f in dtype.inner.fields]
+                if isinstance(value, list):
+                    fixed[col] = [
+                        (
+                            {f: item.get(f, None) for f in inner_fields}
+                            if isinstance(item, dict)
+                            else {f: None for f in inner_fields}
+                        )
+                        for item in value
+                    ]
+                else:
+                    fixed[col] = []
+            else:
+                # Generic list, ensure list
+                fixed[col] = value if isinstance(value, list) else []
+
+        # Scalar columns
+        else:
+            fixed[col] = value if value is not None else None
 
     return fixed
 
 
 def primed_generator(
-    api_generator: Generator[dict, None, None], schema: dict
-) -> Generator[dict, None, None]:
+    api_generator: Generator[Dict[str, Any], None, None], schema: Dict[str, Any]
+) -> Generator[Dict[str, Any], None, None]:
     """
-    Yields one fully-normalised, schema-perfect empty row first so that
-    Polars infers the schema correctly then yields all normalised API rows.
-
-    This guarantees Polars never infers incorrect struct widths caused by
-    inconsistent API responses.
-
-    Args:
-        api_generator (Generator[dict, None, None]): A generator yielding raw
-            API rows as dictionaries.
-        schema (dict): Polars schema mapping column names to data types.
-
-    Yields:
-        dict: A priming row followed by fully-normalised API rows.
+    Yield a first row conforming to `schema` (priming row) to ensure
+    Polars infers schema columns correctly, then yield all API rows
+    with schema columns normalized and extra columns preserved.
     """
+    # Construct priming row: only schema columns matter
     empty_row = {}
     for col, dtype in schema.items():
         if isinstance(dtype, pl.Struct):
@@ -339,16 +369,12 @@ def primed_generator(
         else:
             empty_row[col] = None
 
-    # Yield priming row for Polars schema inference
     yield empty_row
 
-    # Yield normalised API rows
+    # Yield normalized API rows
     for row in api_generator:
+        # Warn if new columns are present
         new_cols = set(row.keys()) - set(schema.keys())
         if new_cols:
             print(f"New columns detected from API: {new_cols}")
-            for col in new_cols:
-                print(
-                    f"  Column '{col}' sample value/structure: {pl.DataFrame(row[col]).schema}"
-                )
-        yield normalise_structs(row, schema)
+        yield normalise_schema_columns(row, schema)
