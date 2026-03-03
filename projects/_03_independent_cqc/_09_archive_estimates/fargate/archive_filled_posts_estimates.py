@@ -17,7 +17,6 @@ MONTHLY_ARCHIVE_COLUMNS = [
     IndCQC.ascwds_workplace_import_date,
     IndCQC.care_home,
     IndCQC.care_home_model,
-    IndCQC.contemporary_ccg,
     IndCQC.contemporary_cssr,
     IndCQC.contemporary_icb,
     IndCQC.contemporary_icb_region,

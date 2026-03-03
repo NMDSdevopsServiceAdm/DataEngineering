@@ -4,9 +4,7 @@ from datetime import date
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResColumns as CTNR,
 )
-from utils.column_values.categorical_column_values import (
-    MainJobRoleLabels,
-)
+from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
 @dataclass
@@ -732,11 +730,8 @@ class ValidatePostcodeDirectoryRawData:
 class CleanONSData:
     # fmt: off
     ons_sample_rows_full = [
-        ("AB10AA", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2022", "01", "01", "20220101"),
-        ("AB10AB", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2022", "01", "01", "20220101"),
-        ("AB10AA", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
-        ("AB10AB", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
-        ("AB10AC", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
+        ("AB10AA", "104", "1", "38000006", "54000005", "1", "51.23456", "-.12345", "123", "10123", "20123", "1", "1000001", "2000001", "14000530", "2022", "01", "01", "20220101"),
+        ("AB10AC", "999", "9", "38000265", "54000064", "40000012", "51.23456", "-.12345", "123", "10123", "20123", "9", "1035762", "2007116", "14001605", "2023", "01", "01", "20230101"),
     ]
     # fmt: on
 
