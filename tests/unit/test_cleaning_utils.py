@@ -23,7 +23,7 @@ gender_labels: str = "gender_labels"
 nationality_labels: str = "nationality_labels"
 
 
-class TestCleaningUtilsCategorical(SparkBaseTest):
+class ApplyCategoricalLabelsTests(SparkBaseTest):
     def setUp(self):
         self.test_worker_df = self.spark.createDataFrame(
             Data.worker_rows, schema=Schemas.worker_schema
@@ -84,7 +84,11 @@ class TestCleaningUtilsCategorical(SparkBaseTest):
             [AWK.gender, AWK.nationality],
             add_as_new_column=True,
         )
-        returned_data = returned_df.sort(AWK.worker_id).collect()
+        returned_data = (
+            returned_df.select(self.expected_df_with_new_columns.columns)
+            .sort(AWK.worker_id)
+            .collect()
+        )
         expected_data = self.expected_df_with_new_columns.sort(AWK.worker_id).collect()
         self.assertEqual(returned_data, expected_data)
 
@@ -163,7 +167,11 @@ class TestCleaningUtilsCategorical(SparkBaseTest):
             self.label_dict,
             [AWK.gender, AWK.nationality],
         )
-        returned_data = returned_df.sort(AWK.worker_id).collect()
+        returned_data = (
+            returned_df.select(self.expected_df_with_new_columns.columns)
+            .sort(AWK.worker_id)
+            .collect()
+        )
         expected_data = self.expected_df_with_new_columns.sort(AWK.worker_id).collect()
         self.assertEqual(returned_data, expected_data)
 
