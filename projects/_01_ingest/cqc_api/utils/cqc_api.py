@@ -244,20 +244,19 @@ def get_changes_within_timeframe(
     return response
 
 
-def _normalise_value(value, dtype):
+def _normalise_value(value: Any, dtype: pl.DataType) -> Any:
     """
-    Recursively normalise a single value to match dtype.
+    Recursively normalise a value to exactly match the given Polars dtype.
+    Handles Structs, Lists, and Scalars.
     """
-
     # -------------------------
     # Struct
     # -------------------------
     if isinstance(dtype, pl.Struct):
         fields = {f.name: f.dtype for f in dtype.fields}
-
         if not isinstance(value, dict):
             value = {}
-
+        # enforce schema order and recurse
         return {
             name: _normalise_value(value.get(name), field_dtype)
             for name, field_dtype in fields.items()
@@ -268,30 +267,42 @@ def _normalise_value(value, dtype):
     # -------------------------
     if isinstance(dtype, pl.List):
         inner = dtype.inner
-
         if not isinstance(value, list):
             return []
-
         return [_normalise_value(item, inner) for item in value]
 
     # -------------------------
     # Scalar
     # -------------------------
-    # Leave casting to Polars; just ensure existence
-    return value if value is not None else None
+    if value is None:
+        return None
+
+    try:
+        if dtype == pl.Int64:
+            return int(value)
+        if dtype == pl.Int32:
+            return int(value)
+        if dtype == pl.Float64:
+            return float(value)
+        if dtype == pl.Float32:
+            return float(value)
+        if dtype == pl.Utf8:
+            return str(value)
+        if dtype == pl.Boolean:
+            return bool(value)
+    except Exception:
+        # fallback if casting fails
+        return None
+
+    # unknown dtype, return as-is
+    return value
 
 
 def normalise_structs(record: dict, schema: dict) -> dict:
     """
     Recursively normalises struct and list-of-struct columns
     to strictly match the schema at any nesting depth.
-
-    - Structs: keep only schema fields, missing fields set to None.
-    - List[Struct]: each item strictly matches inner schema.
-    - Scalar columns ensured to exist (missing → None).
-    - Columns not in schema are untouched.
     """
-
     fixed = dict(record or {})
 
     for col, dtype in schema.items():
