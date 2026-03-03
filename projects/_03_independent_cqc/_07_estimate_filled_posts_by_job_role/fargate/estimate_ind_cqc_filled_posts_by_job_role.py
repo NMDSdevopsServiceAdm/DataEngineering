@@ -154,8 +154,9 @@ if __name__ == "__main__":
 def coalesce_ratios_with_source_label(lf: pl.LazyFrame) -> pl.LazyFrame:
     """Coalesces filtered, interpolated and rolling ratios and records source label.
 
-    The first non-null value is chosen from left-to-right and the columns label
-    of the resulting value is stored in an additional column.
+    Produces two new columns:
+     - The first non-null ratio value is chosen from left-to-right.
+     - The source of the non-null value (from filtered, interpolated or rolling).
     """
     coalesce_cols_in_order = [
         IndCQC.ascwds_job_role_ratios_filtered,
