@@ -395,4 +395,4 @@ def build_dataframe_from_api(
         # Return an empty DataFrame with the correct schema for known columns
         return pl.DataFrame(schema=schema)
 
-    return pl.DataFrame(rows, schema=schema, infer_schema_length=len(rows))
+    return pl.DataFrame(rows, infer_schema_length=len(rows))
