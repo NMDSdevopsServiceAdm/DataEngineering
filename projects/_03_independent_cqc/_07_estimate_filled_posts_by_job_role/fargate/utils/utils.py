@@ -106,6 +106,7 @@ def rolling_sum_of_job_role_counts(
     )
 
 
+# TODO: Move to central utils place - currently isn't one for polars utils.
 def coalesce_labels(*coalesce_columns) -> pl.Expr:
     """Return the source column labels of a coalesce call i.e. first non-null."""
     first_col = coalesce_columns[0]
