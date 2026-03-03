@@ -68,8 +68,8 @@ jobs:
       - run:
           name: Install system packages
           command: |
-            sudo apt-get update
-            sudo apt-get install -y default-jre-headless
+            apt-get update
+            apt-get install -y default-jre-headless
       - run:
           name: install dependencies
           command: uv pip install -r <(uvx pipenv requirements --dev)
