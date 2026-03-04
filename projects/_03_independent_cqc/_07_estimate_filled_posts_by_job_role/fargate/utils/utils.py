@@ -3,11 +3,7 @@ import polars as pl
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
-    JobGroupLabels,
     MainJobRoleLabels,
-)
-from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
-    AscwdsWorkerValueLabelsJobGroup,
 )
 
 
@@ -158,21 +154,3 @@ def get_estimated_managers_diff_from_cqc_registered_managers(
         .sub(IndCQC.registered_manager_count)
         .alias(IndCQC.difference_between_estimate_and_cqc_registered_managers),
     )
-
-
-def filter_job_roles(group_label: str) -> list[str]:
-    """Filter for job roles that match the group label."""
-    job_role_dict = AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict
-    return [role for role, group in job_role_dict if group == group_label]
-
-
-def get_non_registered_manager_roles() -> list[str]:
-    """Get list of manager roles except registered manager."""
-    manager_roles = filter_job_roles(JobGroupLabels.managers)
-    return [
-        role for role in manager_roles if role != MainJobRoleLabels.registered_manager
-    ]
-
-
-def get_manager_proportions(lf: pl.LazyFrame):
-    get_non_registered_manager_roles()
