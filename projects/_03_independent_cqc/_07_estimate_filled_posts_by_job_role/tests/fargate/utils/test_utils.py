@@ -250,17 +250,23 @@ class TestRollingSum:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestHasElements:
-    def test_has_elements(self):
-        input_lf = pl.LazyFrame({"names": [["Sarah", "James"], ["Matt"], []]})
-        # Test that empty list is False.
-        expected_lf = pl.LazyFrame({"has_elements": [True, True, False]})
-        returned_lf = input_lf.select(job.has_elements("names").alias("has_elements"))
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_nulls(self):
-        input_lf = pl.LazyFrame({"names": [["Sarah", "James"], None, None]})
-        # Test that empty list is False.
-        expected_lf = pl.LazyFrame({"has_elements": [True, None, None]})
-        returned_lf = input_lf.select(job.has_elements("names").alias("has_elements"))
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+@pytest.mark.parametrize(
+    "input_, expected",
+    [
+        pytest.param(
+            [["Sarah", "James"], ["Matt"], []],
+            [True, True, False],
+            id="empty_list_to_False",
+        ),
+        pytest.param(
+            [["Sarah", "James"], None, None],
+            [True, None, None],
+            id="null_case",
+        ),
+    ],
+)
+def test_has_elements(input_, expected):
+    input_lf = pl.LazyFrame({"names": input_})
+    expected_lf = pl.LazyFrame({"has_elements": expected})
+    returned_lf = input_lf.select(job.has_elements("names").alias("has_elements"))
+    pl_testing.assert_frame_equal(returned_lf, expected_lf)
