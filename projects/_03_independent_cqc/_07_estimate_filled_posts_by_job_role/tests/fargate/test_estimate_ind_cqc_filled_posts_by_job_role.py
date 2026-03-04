@@ -90,15 +90,11 @@ class MainTests(unittest.TestCase):
 
 
 def test_coalesce_ratios_with_source_label():
-    input_lf = pl.LazyFrame(
+    expected_lf = pl.LazyFrame(
         {
             IndCQC.ascwds_job_role_ratios_filtered: [0.1, None, None],
             IndCQC.ascwds_job_role_ratios_interpolated: [0.1, 0.2, None],
             IndCQC.ascwds_job_role_rolling_ratio: [None, 0.2, 0.3],
-        }
-    )
-    output_lf = pl.LazyFrame(
-        {
             IndCQC.ascwds_job_role_ratios_merged: [0.1, 0.2, 0.3],
             IndCQC.ascwds_job_role_ratios_merged_source: [
                 IndCQC.ascwds_job_role_ratios_filtered,
@@ -107,6 +103,9 @@ def test_coalesce_ratios_with_source_label():
             ],
         }
     )
-    expected_lf = pl.concat([input_lf, output_lf], how="horizontal")
+    input_lf = expected_lf.drop(
+        IndCQC.ascwds_job_role_ratios_merged,
+        IndCQC.ascwds_job_role_ratios_merged_source,
+    )
     returned_lf = job.coalesce_ratios_with_source_label(input_lf)
     pl_testing.assert_frame_equal(returned_lf, expected_lf)
