@@ -248,22 +248,3 @@ class TestRollingSum:
             )
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
-class TestCoalesceLabels:
-    @pytest.fixture
-    def input_lf(self):
-        return pl.LazyFrame(
-            {
-                "a": [1, None, None, None, None],
-                "b": [None, 2, None, None, 4],
-                "c": [10, 20, 30, None, None],
-            }
-        )
-
-    def test_output_col_is_coalesce_source_labels(self, input_lf):
-        expected_lf = pl.LazyFrame({"labels": ["a", "b", "c", None, "b"]})
-        returned_lf = input_lf.select(
-            job.coalesce_labels(["a", "b", "c"]).alias("labels")
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)

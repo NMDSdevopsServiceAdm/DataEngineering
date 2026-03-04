@@ -165,7 +165,7 @@ def coalesce_ratios_with_source_label(lf: pl.LazyFrame) -> pl.LazyFrame:
     ]
     new_cols = {
         IndCQC.ascwds_job_role_ratios_merged: pl.coalesce(coalesce_cols_in_order),
-        IndCQC.ascwds_job_role_ratios_merged_source: JRUtils.coalesce_labels(
+        IndCQC.ascwds_job_role_ratios_merged_source: utils.coalesce_labels(
             coalesce_cols_in_order
         ),
     }
