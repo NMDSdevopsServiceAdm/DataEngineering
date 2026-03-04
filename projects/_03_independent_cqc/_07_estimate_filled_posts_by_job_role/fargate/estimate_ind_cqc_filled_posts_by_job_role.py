@@ -4,6 +4,7 @@ import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargat
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -124,7 +125,10 @@ def main(
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         JRUtils.has_elements(IndCQC.registered_manager_names).alias(
             IndCQC.registered_manager_count
-        )
+        ),
+        pl.col(MainJobRoleLabels.registered_manager)
+        .sub(IndCQC.registered_manager_count)
+        .alias(IndCQC.difference_between_estimate_and_cqc_registered_managers),
     )
 
     utils.sink_to_parquet(
