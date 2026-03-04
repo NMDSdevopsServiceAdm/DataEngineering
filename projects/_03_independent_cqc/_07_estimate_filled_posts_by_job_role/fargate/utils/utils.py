@@ -119,7 +119,7 @@ def has_elements(column: str) -> pl.Expr:
     Note:
         Calling .list on a non-list column will raise a `PolarsComputeError` at runtime.
     """
-    return pl.col(column).list.len().ge(1).fill_null(False)
+    return pl.col(column).list.len().ge(1)
 
 
 def cap_registered_managers_to_1(lf: pl.LazyFrame) -> pl.LazyFrame:

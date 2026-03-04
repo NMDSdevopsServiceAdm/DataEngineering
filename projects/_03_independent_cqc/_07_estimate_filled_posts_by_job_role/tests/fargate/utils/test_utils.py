@@ -250,10 +250,17 @@ class TestRollingSum:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class HasElements:
+class TestHasElements:
     def test_has_elements(self):
-        input_lf = pl.LazyFrame({"names": [["Sarah", "James"], ["Matt"], [], None]})
-        # Test that None is filled to False, and empty list is False.
-        expected_lf = pl.LazyFrame({"has_elements": [True, True, False, False]})
+        input_lf = pl.LazyFrame({"names": [["Sarah", "James"], ["Matt"], []]})
+        # Test that empty list is False.
+        expected_lf = pl.LazyFrame({"has_elements": [True, True, False]})
+        returned_lf = input_lf.select(job.has_elements("names").alias("has_elements"))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_nulls(self):
+        input_lf = pl.LazyFrame({"names": [["Sarah", "James"], None, None]})
+        # Test that empty list is False.
+        expected_lf = pl.LazyFrame({"has_elements": [True, None, None]})
         returned_lf = input_lf.select(job.has_elements("names").alias("has_elements"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
