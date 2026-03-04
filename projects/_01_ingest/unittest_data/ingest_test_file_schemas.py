@@ -1,12 +1,6 @@
 from dataclasses import dataclass
 
-from pyspark.sql.types import (
-    DateType,
-    IntegerType,
-    StringType,
-    StructField,
-    StructType,
-)
+from pyspark.sql.types import DateType, IntegerType, StringType, StructField, StructType
 
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
@@ -487,7 +481,6 @@ class CleanONSData:
             StructField(ONS.sub_icb, StringType(), True),
             StructField(ONS.icb, StringType(), True),
             StructField(ONS.icb_region, StringType(), True),
-            StructField(ONS.ccg, StringType(), True),
             StructField(ONS.latitude, StringType(), True),
             StructField(ONS.longitude, StringType(), True),
             StructField(ONS.imd_score, StringType(), True),
@@ -513,7 +506,6 @@ class CleanONSData:
             StructField(ONSClean.contemporary_sub_icb, StringType(), True),
             StructField(ONSClean.contemporary_icb, StringType(), True),
             StructField(ONSClean.contemporary_icb_region, StringType(), True),
-            StructField(ONSClean.contemporary_ccg, StringType(), True),
             StructField(ONSClean.contemporary_latitude, StringType(), True),
             StructField(ONSClean.contemporary_longitude, StringType(), True),
             StructField(ONSClean.contemporary_imd_score, StringType(), True),
@@ -539,7 +531,6 @@ class CleanONSData:
             StructField(ONSClean.current_sub_icb, StringType(), True),
             StructField(ONSClean.current_icb, StringType(), True),
             StructField(ONSClean.current_icb_region, StringType(), True),
-            StructField(ONSClean.current_ccg, StringType(), True),
             StructField(ONSClean.current_latitude, StringType(), True),
             StructField(ONSClean.current_longitude, StringType(), True),
             StructField(ONSClean.current_imd_score, StringType(), True),

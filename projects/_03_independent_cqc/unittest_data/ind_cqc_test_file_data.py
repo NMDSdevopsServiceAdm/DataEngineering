@@ -4077,143 +4077,6 @@ class ValidateCleanedIndCqcData:
 
 
 @dataclass
-class ModelFeatures:
-    vectorise_input_rows = [
-        ("1-0001", 12.0, 0, 1, date(2024, 1, 1)),
-        ("1-0002", 50.0, 1, 1, date(2024, 1, 1)),
-    ]
-    expected_vectorised_feature_rows = [
-        ("1-0001", Vectors.dense([12.0, 0.0, 1.0])),
-        ("1-0002", Vectors.dense([50.0, 1.0, 1.0])),
-    ]
-
-    expand_encode_and_extract_features_lookup_dict = {
-        "has_A": "A",
-        "has_B": "B",
-        "has_C": "C",
-    }
-    expected_expand_encode_and_extract_features_feature_list = [
-        "has_A",
-        "has_B",
-        "has_C",
-    ]
-
-    expand_encode_and_extract_features_when_not_array_rows = [
-        ("1-0001", "A"),
-        ("1-0002", "C"),
-        ("1-0003", "B"),
-        ("1-0004", "D"),
-        ("1-0005", None),
-    ]
-    expected_expand_encode_and_extract_features_when_not_array_rows = [
-        ("1-0001", "A", 1, 0, 0),
-        ("1-0002", "C", 0, 0, 1),
-        ("1-0003", "B", 0, 1, 0),
-        ("1-0004", "D", 0, 0, 0),
-        ("1-0005", None, None, None, None),
-    ]
-
-    expand_encode_and_extract_features_when_is_array_rows = [
-        ("1-0001", ["A", "B"]),
-        ("1-0002", ["B"]),
-        ("1-0003", ["C", "A"]),
-        ("1-0004", ["B", "D"]),
-        ("1-0005", None),
-    ]
-    expected_expand_encode_and_extract_features_when_is_array_rows = [
-        ("1-0001", ["A", "B"], 1, 1, 0),
-        ("1-0002", ["B"], 0, 1, 0),
-        ("1-0003", ["C", "A"], 1, 0, 1),
-        ("1-0004", ["B", "D"], 0, 1, 0),
-        ("1-0005", None, None, None, None),
-    ]
-
-    cap_integer_at_max_value_rows = [
-        ("1-0001", 1),
-        ("1-0002", 2),
-        ("1-0003", 3),
-        ("1-0004", None),
-    ]
-    expected_cap_integer_at_max_value_rows = [
-        ("1-0001", 1, 1),
-        ("1-0002", 2, 2),
-        ("1-0003", 3, 2),
-        ("1-0004", None, None),
-    ]
-
-    add_array_column_count_with_one_element_rows = [
-        ("1-001", ["name"]),
-    ]
-    expected_add_array_column_count_with_one_element_rows = [
-        ("1-001", ["name"], 1),
-    ]
-
-    add_array_column_count_with_multiple_elements_rows = [
-        ("1-001", ["name_1", "name_2", "name_3"]),
-    ]
-    expected_add_array_column_count_with_multiple_elements_rows = [
-        ("1-001", ["name_1", "name_2", "name_3"], 3),
-    ]
-
-    add_array_column_count_with_empty_array_rows = [
-        ("1-001", []),
-    ]
-    expected_add_array_column_count_with_empty_array_rows = [
-        ("1-001", [], 0),
-    ]
-
-    add_array_column_count_with_null_value_rows = [
-        ("1-001", None),
-    ]
-    expected_add_array_column_count_with_null_value_rows = [
-        ("1-001", None, 0),
-    ]
-
-    add_date_index_column_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 10, 1)),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0003", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0004", CareHome.not_care_home, date(2025, 2, 1)),
-        ("1-0005", CareHome.care_home, date(2025, 2, 1)),
-    ]
-    expected_add_date_index_column_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 10, 1), 1),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1), 2),
-        ("1-0003", CareHome.not_care_home, date(2024, 12, 1), 2),
-        ("1-0004", CareHome.not_care_home, date(2025, 2, 1), 3),
-        ("1-0005", CareHome.care_home, date(2025, 2, 1), 1),
-    ]
-
-    group_rural_urban_sparse_categories_rows = [
-        ("1-001", "Rural"),
-        ("1-002", "Rural sparse"),
-        ("1-003", "Another with sparse in it"),
-        ("1-004", "Urban"),
-        ("1-005", "Sparse with a capital S"),
-    ]
-    expected_group_rural_urban_sparse_categories_rows = [
-        ("1-001", "Rural", "Rural"),
-        ("1-002", "Rural sparse", "Sparse setting"),
-        ("1-003", "Another with sparse in it", "Sparse setting"),
-        ("1-004", "Urban", "Urban"),
-        ("1-005", "Sparse with a capital S", "Sparse setting"),
-    ]
-
-    add_squared_column_rows = [
-        ("1-001", None),
-        ("1-002", 0.0),
-        ("1-003", 2.0),
-        ("1-004", 4.0),
-    ]
-    expected_add_squared_column_rows = [
-        ("1-001", None, None),
-        ("1-002", 0.0, 0.0),
-        ("1-003", 2.0, 4.0),
-        ("1-004", 4.0, 16.0),
-    ]
-
-
-@dataclass
 class ModelPrimaryServiceRateOfChange:
     # fmt: off
     primary_service_rate_of_change_rows = [
@@ -4397,6 +4260,53 @@ class ModelPrimaryServiceRateOfChange:
         (PrimaryServiceType.care_home_only, 2.0, 100000, 2.0, 4.0),
         (PrimaryServiceType.non_residential, 1.0, 100000, 2.0, 4.0),
         (PrimaryServiceType.non_residential, 1.0, 500000, 2.0, 4.0),
+    ]
+
+
+@dataclass
+class ModelPrimaryServiceRateOfChangeCleaningData:
+    calculate_absolute_and_percentage_change_rows = [
+        ("1-001", None, 40.0, None, None),
+        ("1-002", 0.0, 40.0, 40.0, None),
+        ("1-003", 40.0, None, None, None),
+        ("1-004", 40.0, 0.0, 40.0, 0.0),
+        ("1-005", 40.0, 20.0, 20.0, 0.5),
+        ("1-006", 40.0, 40.0, 0.0, 1.0),
+        ("1-007", 40.0, 80.0, 40.0, 2.0),
+    ]
+
+    compute_non_res_threshold_valid_rows = [
+        ("1-001", CareHome.not_care_home, 20.0, 25.0, 5.0, 1.25),
+        ("1-002", CareHome.not_care_home, 30.0, 45.0, 15.0, 1.5),
+        ("1-003", CareHome.not_care_home, 15.0, 18.0, 3.0, 1.2),
+    ]
+    # fmt: off
+    compute_non_res_threshold_invalid_rows = [
+        ("1-004", CareHome.care_home, 2.0, 200.0, 198.0, 100.0), # exclude care home
+        ("1-005", CareHome.not_care_home, None, 100.0, 100.0, 100.0), # exclude null prev value
+        ("1-006", CareHome.not_care_home, 100.0, None, 100.0, 100.0), # exclude null curr value
+        ("1-007", CareHome.not_care_home, 5.0, 6.0, 1.0, 1.2), # exclude when curr and prev below 10
+        ("1-008", CareHome.not_care_home, 50.0, 50.0, 0.0, 1.0), # exclude when curr = prev
+    ]
+    # fmt: on
+    compute_non_res_threshold_with_invalid_rows = (
+        compute_non_res_threshold_valid_rows + compute_non_res_threshold_invalid_rows
+    )
+
+    # fmt: off
+    build_keep_condition_rows = [
+        ("1-001", CareHome.care_home, 100.0, 200.0, 100.0, 2.0, True), # care home
+        ("1-002", CareHome.not_care_home, 5.0, 8.0, 3.0, 1.6, True), # both values below 10
+        ("1-003", CareHome.not_care_home, 100.0, 120.0, 20.0, 1.2, True), # changes within thresholds
+        ("1-004", CareHome.not_care_home, 100.0, 200.0, 100.0, 2.0, False), # abs change too large
+        ("1-005", CareHome.not_care_home, 100.0, 260.0, 160.0, 2.6, False), # perc change too large
+        ("1-006", CareHome.not_care_home, 100.0, 40.0, 60.0, 0.4, False), # perc change too small
+    ]
+    # fmt: on
+
+    apply_rate_of_change_cleaning_rows = [
+        ("1-001", 1.0, 10.0, True, 1.0, 10.0),
+        ("1-002", 1.0, 10.0, False, None, None),
     ]
 
 

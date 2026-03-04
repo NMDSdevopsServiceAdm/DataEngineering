@@ -16,16 +16,8 @@ PATCH_PATH: str = (
 )
 
 
-class ModelPrimaryServiceRateOfChangeTests(SparkBaseTest):
-    def setUp(self):
-        warnings.filterwarnings("ignore", category=ResourceWarning)
-        warnings.filterwarnings("ignore", category=DeprecationWarning)
-
-
-class MainTests(ModelPrimaryServiceRateOfChangeTests):
+class MainTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         self.number_of_days: int = 4
         self.test_df = self.spark.createDataFrame(
             Data.primary_service_rate_of_change_rows,
@@ -65,6 +57,7 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
 
     @patch(f"{PATCH_PATH}.calculate_new_column")
     @patch(f"{PATCH_PATH}.calculate_primary_service_rolling_sums")
+    @patch(f"{PATCH_PATH}.clean_non_residential_rate_of_change")
     @patch(f"{PATCH_PATH}.add_previous_value_column")
     @patch(f"{PATCH_PATH}.interpolate_current_values")
     @patch(f"{PATCH_PATH}.remove_ineligible_locations")
@@ -75,6 +68,7 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
         remove_ineligible_locations_mock: Mock,
         interpolate_current_values_mock: Mock,
         add_previous_value_column_mock: Mock,
+        clean_non_residential_rate_of_change_mock: Mock,
         calculate_primary_service_rolling_sums_mock: Mock,
         calculate_new_column_mock: Mock,
     ):
@@ -93,14 +87,12 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
         remove_ineligible_locations_mock.assert_called_once()
         interpolate_current_values_mock.assert_called_once()
         add_previous_value_column_mock.assert_called_once()
+        clean_non_residential_rate_of_change_mock.assert_called_once()
         calculate_primary_service_rolling_sums_mock.assert_called_once()
         calculate_new_column_mock.assert_called_once()
 
 
-class RemoveIneligibleLocationsTests(ModelPrimaryServiceRateOfChangeTests):
-    def setUp(self) -> None:
-        super().setUp()
-
+class RemoveIneligibleLocationsTests(SparkBaseTest):
     def test_eligible_locations_are_not_filtered(self):
         input_df = self.spark.createDataFrame(
             Data.eligible_location_rows,
@@ -132,9 +124,8 @@ class RemoveIneligibleLocationsTests(ModelPrimaryServiceRateOfChangeTests):
         self.assertTrue(returned_df.isEmpty())
 
 
-class InterpolateCurrentValuesTests(ModelPrimaryServiceRateOfChangeTests):
+class InterpolateCurrentValuesTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
 
         test_df = self.spark.createDataFrame(
             Data.interpolate_current_values_rows,
@@ -163,9 +154,8 @@ class InterpolateCurrentValuesTests(ModelPrimaryServiceRateOfChangeTests):
             )
 
 
-class AddPreviousValueColumnTests(ModelPrimaryServiceRateOfChangeTests):
+class AddPreviousValueColumnTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
 
         self.test_df = self.spark.createDataFrame(
             Data.add_previous_value_column_rows,
@@ -194,13 +184,12 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRateOfChangeTests):
             )
 
 
-class CalculatePrimaryServiceRollingSumsTests(ModelPrimaryServiceRateOfChangeTests):
+class CalculatePrimaryServiceRollingSumsTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
 
         self.number_of_days = 3
-        self.current_col = job.TempCol.current_period_interpolated
-        self.previous_col = job.TempCol.previous_period_interpolated
+        self.current_col = job.TempCol.current_period_cleaned
+        self.previous_col = job.TempCol.previous_period_cleaned
 
         self.test_df = self.spark.createDataFrame(
             Data.calculate_primary_service_rolling_sums_rows,

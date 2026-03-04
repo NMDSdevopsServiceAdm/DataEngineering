@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
 - Created pointblank validation script for cleaned ind cqc dataset. Added script to estimates pipeline.
   The validation is all commented out so no checks are run, but they are converted from the pydeequ version.
 
+- Filtering of non-residential outliers in the rate of change calculations.
+
 ### Changed
 - Switched test runner to pytest in CI, so that a shared session fixture for a spark configuration optimised for tests
   can be used. Has resulted in 70% reduction in runtime for current pyspark tests in CI, and improvement on local
@@ -33,8 +35,12 @@ All notable changes to this project will be documented in this file.
 
 - Replaced the static PySpark modelling code for non-residential with dormancy with the auto-retraining sklearn equivalent.
 
-### Fixed
+- Removed all remaining PySpark modelling code for care homes and non-residential with/without dormancy.
 
+- Changed the raw ONS CSV data to contain numeric codes instead of labels. The labels are then added during the cleaning step to improve naming consistency over time.
+
+### Fixed
+- Updated the normalise_structs function in cqc_api.py and added a new function to create a DataFrame for the raw data. The new function makes sure the data is properly normalised and can handle any new columns added by CQC. It also logs any newly added columns that are not in our current schema, so we can review them and update the schema if needed.
 
 ## [v2026.01.0] - 12/02/2026
 
