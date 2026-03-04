@@ -37,6 +37,9 @@ All notable changes to this project will be documented in this file.
 
 - Removed all remaining PySpark modelling code for care homes and non-residential with/without dormancy.
 
+- Switch to use of `uv` in CI for quicker dependency installation. https://github.com/NMDSdevopsServiceAdm/DataEngineering/pull/1237
+
+### Fixed
 - Changed the raw ONS CSV data to contain numeric codes instead of labels. The labels are then added during the cleaning step to improve naming consistency over time.
 
 ### Fixed
