@@ -444,3 +444,14 @@ def select_rows_with_non_null_value(lf: pl.LazyFrame, column: str) -> pl.LazyFra
         pl.LazyFrame: A LazyFrame containing only the rows where the specified column has non-null values.
     """
     return lf.filter(pl.col(column).is_not_null())
+
+
+def coalesce_labels(coalesce_columns: list[str]) -> pl.Expr:
+    """Return the source column labels of a coalesce call i.e. first non-null."""
+    first_col = coalesce_columns[0]
+    label_expr = pl.when(pl.col(first_col).is_not_null()).then(pl.lit(first_col))
+
+    for col in coalesce_columns[1:]:
+        label_expr = label_expr.when(pl.col(col).is_not_null()).then(pl.lit(col))
+
+    return label_expr
