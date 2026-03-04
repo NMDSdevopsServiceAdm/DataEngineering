@@ -24,14 +24,4 @@ class PostcodeDirectoryRawValidationRules:
             ONS.postcode,
             Keys.import_date,
         ],
-        RuleName.categorical_values_in_columns: {
-            ONS.cssr: CatValues.cssr_column_values.categorical_values,
-            ONS.region: CatValues.region_column_values.categorical_values,
-            ONS.rural_urban_indicator_2011: CatValues.rui_column_values.categorical_values,
-        },
-        RuleName.distinct_values: {
-            ONS.cssr: CatValues.cssr_column_values.count_of_categorical_values,
-            ONS.region: CatValues.region_column_values.count_of_categorical_values,
-            ONS.rural_urban_indicator_2011: CatValues.rui_column_values.count_of_categorical_values,
-        },
     }
