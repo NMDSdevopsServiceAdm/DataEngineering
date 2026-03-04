@@ -272,7 +272,7 @@ def filter_df_to_maximum_value_in_column(
     return df.filter(F.col(column_to_filter_on) == max_value)
 
 
-# converted to polars -> polars_utils.utils.select_rows_with_value
+# not converting function to polars, just use as it is
 def select_rows_with_value(df: DataFrame, column: str, value_to_keep: str) -> DataFrame:
     """
     Select rows from a DataFrame where the specified column matches the given value.
@@ -288,7 +288,7 @@ def select_rows_with_value(df: DataFrame, column: str, value_to_keep: str) -> Da
     return df.filter(F.col(column) == value_to_keep)
 
 
-# converted to polars -> polars_utils.utils.select_rows_with_non_null_value
+# not converting function to polars, just use as it is
 def select_rows_with_non_null_value(df: DataFrame, column: str) -> DataFrame:
     """
     Select rows from a DataFrame where the specified column has non-null values.

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
+import polars as pl
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame, Window
@@ -37,12 +38,11 @@ def model_pir_filled_posts(
         DataFrame: The input dataframe with an additional column containing the estimated PIR filled posts model predictions.
     """
 
-    non_res_df = utils.select_rows_with_value(
-        df, IndCQC.care_home, CareHome.not_care_home
+    features_df = df.filter(
+        (pl.col(IndCQC.care_home) == CareHome.not_care_home)
+        & pl.col(IndCQC.pir_people_directly_employed_dedup).is_not_null()
     )
-    features_df = utils.select_rows_with_non_null_value(
-        non_res_df, IndCQC.pir_people_directly_employed_dedup
-    )
+
     vectorised_features_df = vectorise_dataframe(
         features_df, [IndCQC.pir_people_directly_employed_dedup]
     )
