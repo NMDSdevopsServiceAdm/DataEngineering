@@ -121,6 +121,12 @@ def main(
         estimated_job_role_posts_lf
     )
 
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        JRUtils.has_elements(IndCQC.registered_manager_names).alias(
+            IndCQC.registered_manager_count
+        )
+    )
+
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
         output_path=estimates_by_job_role_destination,
