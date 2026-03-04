@@ -442,22 +442,5 @@ class NormaliseStructsTests(CqcApiTests):
         self.assertEqual(returned, record)
 
 
-class PrimedGeneratorTests(CqcApiTests):
-    def test_normalised_generator_yields_correct_records(self):
-        schema = {
-            "a": pl.Struct([pl.Field("x", pl.Utf8)]),
-            "b": pl.Utf8,
-        }
-
-        def fake_api_gen():
-            yield {"a": {"x": "value"}, "b": "data"}
-
-        gen = cqc.primed_generator(fake_api_gen(), schema)
-        first = next(gen)
-
-        expected_first = {"a": {"x": None}, "b": None}
-        self.assertEqual(first, expected_first)
-
-
 if __name__ == "__main__":
     unittest.main()

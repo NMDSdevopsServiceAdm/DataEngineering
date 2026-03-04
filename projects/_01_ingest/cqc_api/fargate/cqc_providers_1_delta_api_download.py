@@ -75,6 +75,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         cqc_api_primary_key_value: str = json.loads(secret)["Ocp-Apim-Subscription-Key"]
 
         print("Collecting providers with changes from API")
+
         api_generator: Generator[dict, None, None] = cqc.get_updated_objects(
             object_type=CQC_OBJECT_TYPE,
             organisation_type=CQC_ORG_TYPE,
@@ -83,10 +84,13 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
         )
 
-        generator = cqc.primed_generator(api_generator, POLARS_PROVIDER_SCHEMA)
-
+        print("Collecting API rows and building DataFrame")
+        df: pl.DataFrame = cqc.build_dataframe_from_api(
+            api_generator, POLARS_PROVIDER_SCHEMA
+        )
+        print(f"DoneDone — {df.shape[0]} rows, {df.shape[1]} columns")
         print("Creating dataframe and writing to Parquet")
-        df: pl.DataFrame = pl.DataFrame(generator, infer_schema_length=500)
+
         df_schema = df.collect_schema()
         df = df.with_columns(
             [
