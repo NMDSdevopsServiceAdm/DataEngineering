@@ -169,4 +169,4 @@ def coalesce_ratios_with_source_label(lf: pl.LazyFrame) -> pl.LazyFrame:
             coalesce_cols_in_order
         ),
     }
-    return lf.with_columns(new_cols)
+    return lf.with_columns(**new_cols)
