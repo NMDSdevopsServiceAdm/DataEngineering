@@ -9,10 +9,7 @@ from projects._03_independent_cqc._02_clean.utils.utils import (
     create_column_with_repeated_values_removed,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import (
-    CTCareHomeFilteringRule,
-    CTNonResFilteringRule,
-)
+from utils.column_values.categorical_column_values import CTFilteringRule
 
 # These dicts are required in clean_value_repetition function.
 DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_NON_RES = {
@@ -58,18 +55,16 @@ def clean_ct_values_after_consecutive_repetition(
             DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_CARE_HOMES
         )
         filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
-        populated_rule = CTCareHomeFilteringRule.populated
-        new_rule_name = CTCareHomeFilteringRule.location_repeats_total_posts
     else:
         repetition_limit_dict = (
             DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_NON_RES
         )
         filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
-        populated_rule = CTNonResFilteringRule.populated
-        new_rule_name = CTNonResFilteringRule.location_repeats_total_posts
 
     # Must filter to populated only so that values can be deduplicated.
-    df_populated_only = df.filter(F.col(filter_rule_column_name) == populated_rule)
+    df_populated_only = df.filter(
+        F.col(filter_rule_column_name) == CTFilteringRule.populated
+    )
 
     df_populated_only = create_column_with_repeated_values_removed(
         df=df_populated_only,
@@ -97,12 +92,12 @@ def clean_ct_values_after_consecutive_repetition(
     )
 
     df_cleaned = update_filtering_rule(
-        df=df_cleaned,
-        filter_rule_col_name=filter_rule_column_name,
-        raw_col_name=column_to_clean,
-        clean_col_name=cleaned_column_name,
-        populated_rule=populated_rule,
-        new_rule_name=new_rule_name,
+        df_cleaned,
+        filter_rule_column_name,
+        column_to_clean,
+        cleaned_column_name,
+        populated_rule=CTFilteringRule.populated,
+        new_rule_name=CTFilteringRule.location_repeats_total_posts,
     )
 
     return df_cleaned
