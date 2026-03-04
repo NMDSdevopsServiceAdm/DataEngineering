@@ -16,6 +16,8 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
 )
 
+from .utils_test_cases import rolling_sum_expected_schema, rolling_sum_test_cases
+
 
 class JoinWorkerToEstimatesDataframeTests(unittest.TestCase):
     def test_join_worker_to_estimates_dataframe_returns_expected_df(self):
@@ -119,6 +121,15 @@ class TestPercentageShare(unittest.TestCase):
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
 
+    def test_when_passed_an_expression(self):
+        """Test that the function accepts a Polars expression instead of just a string."""
+        input_lf = pl.LazyFrame({"vals": [10, 20, 80]})
+        expression = pl.col("vals") - 10
+        expected_lf = pl.LazyFrame({"ratios": [0.0, 0.125, 0.875]})
+
+        returned_lf = input_lf.select(job.percentage_share(expression).alias("ratios"))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
     def test_when_some_values_are_null(self):
         input_lf = pl.LazyFrame({"vals": [None, 3, None, 2]})
         expected_lf = pl.LazyFrame({"ratios": [None, 0.6, None, 0.4]})
@@ -216,3 +227,23 @@ class TestImputeFullTimeSeries:
             returned_lf.sort("group", "time_col"),
             expected_lf,
         )
+
+
+class TestRollingSum:
+    @pytest.fixture(
+        params=[pytest.param(case.data, id=case.id) for case in rolling_sum_test_cases],
+    )
+    def rolling_sum_data(self, request):
+        return request.param
+
+    def test_rolling_sum(self, rolling_sum_data):
+        expected_lf = pl.LazyFrame(
+            rolling_sum_data, rolling_sum_expected_schema, orient="row"
+        )
+        input_lf = expected_lf.drop(expected_lf.columns[-1])
+        returned_lf = input_lf.with_columns(
+            job.rolling_sum_of_job_role_counts(period="6mo").alias(
+                IndCQC.ascwds_job_role_rolling_sum
+            )
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

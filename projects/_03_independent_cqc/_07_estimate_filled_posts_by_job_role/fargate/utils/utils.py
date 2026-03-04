@@ -68,15 +68,39 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
 
 
 # TODO: Move this into a more centralised module of generic polars expression functions.
-def percentage_share(column: str) -> pl.Expr:
+def percentage_share(column: str | pl.Expr) -> pl.Expr:
     """Calculate the percentage share of a column across all values.
 
     Can be used in conjunction with `.group_by` and `.over` methods to get
     proportions within groups.
     """
-    return pl.col(column) / pl.col(column).sum()
+    # If it's a string, turn it into a column expression; otherwise, use as-is.
+    col = pl.col(column) if isinstance(column, str) else column
+    return col / col.sum()
 
 
 def impute_full_time_series(column: str) -> pl.Expr:
     """Impute nulls using linear interpolation, followed by back and forward fill."""
     return pl.col(column).interpolate().forward_fill().backward_fill()
+
+
+def rolling_sum_of_job_role_counts(
+    period: str = "6mo",
+) -> pl.Expr:
+    """Compute rolling sum of job role counts within each primary service.
+
+    Args:
+        period (str): String language timedelta. Default "6mo". See:
+          https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.rolling.html
+
+    Returns:
+        pl.Expr: Expression for rolling sum of job role counts.
+    """
+    return (
+        pl.sum(IndCQC.imputed_ascwds_job_role_counts)
+        .rolling(index_column=IndCQC.cqc_location_import_date, period=period)
+        .over(
+            [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled],
+            order_by=IndCQC.cqc_location_import_date,
+        )
+    )

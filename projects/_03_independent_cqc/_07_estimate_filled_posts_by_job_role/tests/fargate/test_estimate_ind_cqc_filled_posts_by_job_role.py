@@ -16,6 +16,7 @@ class MainTests(unittest.TestCase):
     mock_prepared_job_role_counts_data = Mock(name="prepared_job_role_counts_data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.JRUtils.rolling_sum_of_job_role_counts")
     @patch(f"{PATCH_PATH}.JRUtils.impute_full_time_series")
     @patch(f"{PATCH_PATH}.JRUtils.percentage_share")
     @patch(f"{PATCH_PATH}.JRUtils.nullify_job_role_count_when_source_not_ascwds")
@@ -31,6 +32,7 @@ class MainTests(unittest.TestCase):
         nullify_job_role_count_when_source_not_ascwds_mock: Mock,
         percentage_share_mock: Mock,
         impute_full_time_series_mock: Mock,
+        rolling_sum_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -55,10 +57,23 @@ class MainTests(unittest.TestCase):
 
         join_worker_to_estimates_dataframe_mock.assert_called_once()
         nullify_job_role_count_when_source_not_ascwds_mock.assert_called_once()
-        percentage_share_mock.assert_called_once_with(IndCQC.ascwds_job_role_counts)
+
+        calls = [
+            call(IndCQC.ascwds_job_role_counts),
+            call(IndCQC.ascwds_job_role_rolling_sum),
+        ]
+        percentage_share_mock.assert_has_calls(calls, any_order=True)
+        pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
+        # Assert that we're getting the percentage_share over the required groups.
+        percentage_share_mock.return_value.over.assert_has_calls(
+            [call(pct_share_groups)] * 2,
+            any_order=True,
+        )
+
         impute_full_time_series_mock.assert_called_once_with(
             IndCQC.ascwds_job_role_ratios
         )
+        rolling_sum_mock.assert_called_once_with(period="6mo")
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
