@@ -21,6 +21,11 @@ class PostcodeDirectoryCleanedValidationRules:
             ONSClean.current_ons_import_date,
             ONSClean.current_cssr,
             ONSClean.current_region,
+            ONSClean.current_sub_icb,
+            ONSClean.current_icb,
+            ONSClean.current_icb_region,
+            ONSClean.current_lsoa21,
+            ONSClean.current_msoa21,
             ONSClean.current_rural_urban_ind_11,
         ],
         RuleName.index_columns: [
