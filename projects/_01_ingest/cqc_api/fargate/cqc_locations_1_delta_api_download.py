@@ -88,7 +88,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         df: pl.DataFrame = cqc.build_dataframe_from_api(
             api_generator, POLARS_LOCATION_SCHEMA
         )
-        print(f"DoneDone — {df.shape[0]} rows, {df.shape[1]} columns")
+        print(f"Done — {df.shape[0]} rows, {df.shape[1]} columns")
         print("Creating dataframe and writing to Parquet")
 
         df_schema = df.collect_schema()
