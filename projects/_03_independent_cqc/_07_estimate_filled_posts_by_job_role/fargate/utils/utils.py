@@ -3,6 +3,7 @@ import polars as pl
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
+    MainJobRoleLabels,
 )
 
 
@@ -119,3 +120,37 @@ def has_elements(column: str) -> pl.Expr:
         Calling .list on a non-list column will raise a `PolarsComputeError` at runtime.
     """
     return pl.col(column).list.len().ge(1).fill_null(False)
+
+
+def cap_registered_managers_to_1(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Return 1 if there is one or more registered managers, 0 if not.
+
+    This approach aligns with historical Excel structures where each location
+    was effectively recorded with at most one registered manager.
+
+    Fills Nulls to 0 also.
+    """
+    return lf.with_columns(
+        has_elements(IndCQC.registered_manager_names)
+        .cast(pl.Int8)  # Cast bool to 1/0.
+        .fill_null(0)
+        .alias(IndCQC.registered_manager_count)
+    )
+
+
+def get_estimated_managers_diff_from_cqc_registered_managers(
+    lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """Subtract capped estimate of registered managers from CQC count to get diff.
+
+    A positive value is when CQC have recorded more registered managers than we
+    have estimated. A negative value is when CQC have recorded fewer.
+
+    CQC have the official count of registered managers. Our estimate is based on
+    records in ASC-WDS.
+    """
+    return lf.with_columns(
+        pl.col(MainJobRoleLabels.registered_manager)
+        .sub(IndCQC.registered_manager_count)
+        .alias(IndCQC.difference_between_estimate_and_cqc_registered_managers),
+    )
