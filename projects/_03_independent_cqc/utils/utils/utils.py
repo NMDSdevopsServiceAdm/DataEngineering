@@ -2,9 +2,11 @@ from typing import List
 
 from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
-from pyspark.sql.types import DoubleType, MapType
 
 
+# converted to polars -> polars_utils.utils.coalesce_labels
+# call with a `.coalesce` method to get same outcome, like
+# `coalesce_ratios_with_source_label` does in estimates_by_job_role pipeline.
 def merge_columns_in_order(
     df: DataFrame,
     ordered_list_of_columns_to_be_merged: List,
