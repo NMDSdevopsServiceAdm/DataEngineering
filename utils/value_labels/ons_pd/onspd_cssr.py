@@ -11,6 +11,7 @@ class OnspdCssr:
     column_name: str = OnsCleanedColumns.cssr
 
     labels_dict = {
+        "102": ContemporaryCSSR.cumbria,
         "104": ContemporaryCSSR.northumberland,
         "106": ContemporaryCSSR.gateshead,
         "107": ContemporaryCSSR.newcastle_upon_tyne,
@@ -75,6 +76,7 @@ class OnspdCssr:
         "417": ContemporaryCSSR.shropshire,
         "418": ContemporaryCSSR.telford_and_wrekin,
         "503": ContemporaryCSSR.lincolnshire,
+        "504": ContemporaryCSSR.northamptonshire,
         "506": ContemporaryCSSR.derbyshire,
         "507": ContemporaryCSSR.derby,
         "508": ContemporaryCSSR.leicestershire,
@@ -139,6 +141,8 @@ class OnspdCssr:
         "805": ContemporaryCSSR.surrey,
         "807": ContemporaryCSSR.west_sussex,
         "809": ContemporaryCSSR.dorset,
+        "810": ContemporaryCSSR.bournemouth,
+        "811": ContemporaryCSSR.poole,
         "812": ContemporaryCSSR.hampshire,
         "813": ContemporaryCSSR.portsmouth,
         "814": ContemporaryCSSR.southampton,
