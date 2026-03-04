@@ -270,3 +270,23 @@ def test_has_elements(input_, expected):
     expected_lf = pl.LazyFrame({"has_elements": expected})
     returned_lf = input_lf.select(job.has_elements("names").alias("has_elements"))
     pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+@pytest.mark.parametrize(
+    "input_, expected",
+    [
+        pytest.param(["Sarah", "James"], 1, id="more_than_1_capped_to_1"),
+        pytest.param(["Sarah"], 1, id="1_stays_1"),
+        pytest.param([], 0, id="empty_list_to_0"),
+        pytest.param(None, 0, id="null_to_0"),
+    ],
+)
+def test_cap_registered_managers_to_1(input_, expected):
+    schema = {
+        IndCQC.registered_manager_names: pl.List,
+        IndCQC.registered_manager_count: pl.Int8,
+    }
+    expected_lf = pl.LazyFrame([[input_], [expected]], schema=schema)
+    input_lf = expected_lf.drop(IndCQC.registered_manager_count)
+    returned_lf = job.cap_registered_managers_to_1(input_lf)
+    pl_testing.assert_frame_equal(returned_lf, expected_lf)
