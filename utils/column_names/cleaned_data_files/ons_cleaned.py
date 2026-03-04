@@ -13,7 +13,6 @@ class OnsCleanedColumns(ONScol):
     contemporary_sub_icb: str = "contemporary_" + ONScol.sub_icb
     contemporary_icb: str = "contemporary_" + ONScol.icb
     contemporary_icb_region: str = "contemporary_" + ONScol.icb_region
-    contemporary_ccg: str = "contemporary_" + ONScol.ccg
     contemporary_latitude: str = "contemporary_" + ONScol.latitude
     contemporary_longitude: str = "contemporary_" + ONScol.longitude
     contemporary_imd_score: str = "contemporary_" + ONScol.imd_score
@@ -31,7 +30,6 @@ class OnsCleanedColumns(ONScol):
     current_sub_icb: str = "current_" + ONScol.sub_icb
     current_icb: str = "current_" + ONScol.icb
     current_icb_region: str = "current_" + ONScol.icb_region
-    current_ccg: str = "current_" + ONScol.ccg
     current_latitude: str = "current_" + ONScol.latitude
     current_longitude: str = "current_" + ONScol.longitude
     current_imd_score: str = "current_" + ONScol.imd_score
@@ -50,7 +48,6 @@ contemporary_geography_columns: list = [
     OnsCleanedColumns.contemporary_sub_icb,
     OnsCleanedColumns.contemporary_icb,
     OnsCleanedColumns.contemporary_icb_region,
-    OnsCleanedColumns.contemporary_ccg,
     OnsCleanedColumns.contemporary_latitude,
     OnsCleanedColumns.contemporary_longitude,
     OnsCleanedColumns.contemporary_imd_score,
@@ -69,7 +66,6 @@ current_geography_columns: list = [
     OnsCleanedColumns.current_sub_icb,
     OnsCleanedColumns.current_icb,
     OnsCleanedColumns.current_icb_region,
-    OnsCleanedColumns.current_ccg,
     OnsCleanedColumns.current_latitude,
     OnsCleanedColumns.current_longitude,
     OnsCleanedColumns.current_imd_score,

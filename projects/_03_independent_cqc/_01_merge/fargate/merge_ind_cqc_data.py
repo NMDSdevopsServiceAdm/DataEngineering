@@ -52,7 +52,6 @@ cleaned_cqc_locations_columns_to_import = [
     ONSClean.contemporary_sub_icb,
     ONSClean.contemporary_icb,
     ONSClean.contemporary_icb_region,
-    ONSClean.contemporary_ccg,
     ONSClean.current_ons_import_date,
     ONSClean.current_cssr,
     ONSClean.current_icb,

@@ -3,8 +3,9 @@ from typing import List, Optional, Union
 from pyspark.ml.feature import Bucketizer
 from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
-from pyspark.sql.types import IntegerType
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
+from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome
@@ -16,19 +17,51 @@ pir_submission_date_uri_format = "dd-MMM-yy"
 
 
 def apply_categorical_labels(
-    df: DataFrame,
-    labels: dict,
-    column_names: list,
-    add_as_new_column: bool = True,
+    df: DataFrame, labels: dict, column_names: list, add_as_new_column: bool = True
 ) -> DataFrame:
+    """
+    Apply categorical label mappings to one or more columns using a join-based lookup.
+
+    For each column in `column_names`, the corresponding dictionary in `labels`
+    is converted to a Spark DataFrame and joined to `df` to map codes to labels.
+    Partial mappings are supported: unmapped values will be preserved.
+
+    Labels can either be added as new columns or replace the original columns.
+
+    Args:
+        df (DataFrame): Input Spark DataFrame.
+        labels (dict): Dictionary of column-to-mapping dictionaries.
+        column_names (list): List of column names to apply label mappings to.
+        add_as_new_column (bool, optional): If True, adds a new column with
+            "_labels" suffix. If False, replaces the original column.
+            Defaults to True.
+
+    Returns:
+        DataFrame: DataFrame with categorical labels applied. Unmapped values
+        are preserved.
+    """
+    spark = utils.get_spark()
+
     for column_name in column_names:
-        labels_dict = labels[column_name]
-        if add_as_new_column is True:
-            new_column_name = column_name + "_labels"
-            df = df.withColumn(new_column_name, F.col(column_name))
-            df = df.replace(labels_dict, subset=new_column_name)
-        elif add_as_new_column is False:
-            df = df.replace(labels_dict, subset=column_name)
+        mapping_schema = StructType(
+            [
+                StructField(column_name, StringType(), True),
+                StructField(f"{column_name}_labels", StringType(), True),
+            ]
+        )
+        mapping_df = spark.createDataFrame(
+            labels[column_name].items(), schema=mapping_schema
+        )
+
+        df = df.join(mapping_df, on=column_name, how="left")
+
+        merged_col = F.coalesce(F.col(f"{column_name}_labels"), F.col(column_name))
+
+        if add_as_new_column:
+            df = df.withColumn(f"{column_name}_labels", merged_col)
+        else:
+            df = df.withColumn(column_name, merged_col).drop(f"{column_name}_labels")
+
     return df
 
 
