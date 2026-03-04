@@ -92,6 +92,22 @@ class CleaningUtilsData:
         ("6", "female", None),
     ]
 
+    worker_rows_with_unmatched_labels = [
+        ("1", "0", "100"),
+        ("2", "1", "104"),
+        ("3", None, None),
+    ]
+    expected_worker_rows_with_unmatched_labels_with_new_columns = [
+        ("1", "0", "100", "0", "British"),
+        ("2", "1", "104", "male", "104"),
+        ("3", None, None, None, None),
+    ]
+    expected_worker_rows_with_unmatched_labels_without_new_columns = [
+        ("1", "0", "British"),
+        ("2", "male", "104"),
+        ("3", None, None),
+    ]
+
     scale_data = [
         (23, 10.1, "non scale"),
         (-1, 10.1, "non scale"),

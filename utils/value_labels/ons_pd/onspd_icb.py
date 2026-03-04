@@ -1,0 +1,73 @@
+from dataclasses import dataclass
+
+from utils.column_names.cleaned_data_files.ons_cleaned import OnsCleanedColumns
+
+
+@dataclass
+class OnspdIcb:
+    """The possible values of the ICB column in ONS Postcode Directory data"""
+
+    column_name: str = OnsCleanedColumns.icb
+
+    labels_dict = {
+        "54000005": "NHS West Yorkshire",
+        "54000006": "NHS Humber, Coast and Vale",
+        "54000007": "NHS Greater Manchester",
+        "54000008": "NHS Cheshire and Merseyside",
+        "54000009": "NHS South Yorkshire and Bassetlaw",
+        "54000010": "NHS Staffordshire and Stoke-on-Trent",
+        "54000011": "NHS Shropshire, Telford and Wrekin",
+        "54000012": "NHS Derbyshire",
+        "54000013": "NHS Lincolnshire",
+        "54000014": "NHS Nottingham and Nottinghamshire",
+        "54000015": "NHS Leicester, Leicestershire and Rutland",
+        "54000016": "NHS The Black Country and West Birmingham",
+        "54000017": "NHS Birmingham and Solihull",
+        "54000018": "NHS Coventry and Warwickshire",
+        "54000019": "NHS Herefordshire and Worcestershire",
+        "54000020": "NHS Northamptonshire",
+        "54000021": "NHS Cambridgeshire and Peterborough",
+        "54000022": "NHS Norfolk and Waveney",
+        "54000023": "NHS Suffolk and North East Essex",
+        "54000024": "NHS Bedfordshire, Luton and Milton Keynes",
+        "54000025": "NHS Hertfordshire and West Essex",
+        "54000026": "NHS Mid and South Essex",
+        "54000027": "NHS North West London",
+        "54000028": "NHS North Central London",
+        "54000029": "NHS North East London",
+        "54000030": "NHS South East London",
+        "54000031": "NHS South West London",
+        "54000032": "NHS Kent and Medway",
+        "54000033": "NHS Sussex and East Surrey",
+        "54000034": "NHS Frimley",
+        "54000035": "NHS Surrey Heartlands",
+        "54000036": "NHS Cornwall and the Isles of Scilly",
+        "54000037": "NHS Devon",
+        "54000038": "NHS Somerset",
+        "54000039": "NHS Bristol, North Somerset and South Gloucestershire",
+        "54000040": "NHS Bath and North East Somerset, Swindon and Wiltshire",
+        "54000041": "NHS Dorset",
+        "54000042": "NHS Hampshire and Isle of Wight",
+        "54000043": "NHS Gloucestershire",
+        "54000044": "NHS Buckinghamshire, Oxfordshire and Berkshire West",
+        "54000045": "NHS Durham, Darlington, Teesside, Hambleton, Richmondshire and Whitby",
+        "54000046": "NHS Northumberland, Tyne and Wear and North Durham",
+        "54000047": "NHS West, North and East Cumbria",
+        "54000048": "NHS Lancashire and South Cumbria",
+        "54000049": "NHS Cumbria and North East",
+        "54000050": "NHS North East and North Cumbria",
+        "54000051": "NHS Humber and North Yorkshire",
+        "54000052": "NHS Surrey Heartlands",
+        "54000053": "NHS Sussex",
+        "54000054": "NHS West Yorkshire",
+        "54000055": "NHS Birmingham and Solihull",
+        "54000056": "NHS Cambridgeshire and Peterborough",
+        "54000057": "NHS Greater Manchester",
+        "54000058": "NHS Derby and Derbyshire",
+        "54000059": "NHS Northamptonshire",
+        "54000060": "NHS Nottingham and Nottinghamshire",
+        "54000061": "NHS South Yorkshire",
+        "54000062": "NHS Black Country",
+        "54000063": "NHS Surrey Heartlands",
+        "54000064": "NHS Sussex",
+    }

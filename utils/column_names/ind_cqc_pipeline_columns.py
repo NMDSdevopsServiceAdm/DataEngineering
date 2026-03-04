@@ -82,7 +82,6 @@ class IndCqcColumns:
     care_home_model: str = "care_home_model"
     care_home_status_count: str = "care_home_status_count"
     combined_ratio_and_filled_posts: str = "combined_ratio_and_filled_posts"
-    contemporary_ccg: str = ONSClean.contemporary_ccg
     contemporary_constituency: str = ONSClean.contemporary_constituency
     contemporary_cssr: str = ONSClean.contemporary_cssr
     contemporary_icb: str = ONSClean.contemporary_icb
@@ -141,7 +140,6 @@ class IndCqcColumns:
     )
     ct_non_res_filtering_rule: str = "ct_non_res_filtering_rule"
     ct_non_res_import_date: str = CTNRClean.ct_non_res_import_date
-    current_ccg: str = ONSClean.current_ccg
     current_constituency: str = ONSClean.current_constituency
     current_cssr: str = ONSClean.current_cssr
     current_icb: str = ONSClean.current_icb
