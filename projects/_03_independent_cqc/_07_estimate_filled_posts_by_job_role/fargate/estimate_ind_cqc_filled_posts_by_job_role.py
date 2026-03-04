@@ -121,6 +121,15 @@ def main(
         estimated_job_role_posts_lf
     )
 
+    estimated_job_role_posts_lf = JRUtils.cap_registered_managers_to_1(
+        estimated_job_role_posts_lf
+    )
+    estimated_job_role_posts_lf = (
+        JRUtils.get_estimated_managers_diff_from_cqc_registered_managers(
+            estimated_job_role_posts_lf
+        )
+    )
+
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
         output_path=estimates_by_job_role_destination,

@@ -14,6 +14,7 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
+    MainJobRoleLabels,
 )
 
 from .utils_test_cases import rolling_sum_expected_schema, rolling_sum_test_cases
@@ -248,3 +249,57 @@ class TestRollingSum:
             )
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+@pytest.mark.parametrize(
+    "input_, expected",
+    [
+        pytest.param(
+            [["Sarah", "James"], ["Matt"], []],
+            [True, True, False],
+            id="empty_list_to_False",
+        ),
+        pytest.param(
+            [["Sarah", "James"], None, None],
+            [True, None, None],
+            id="null_case",
+        ),
+    ],
+)
+def test_has_elements(input_, expected):
+    input_lf = pl.LazyFrame({"names": input_})
+    expected_lf = pl.LazyFrame({"has_elements": expected})
+    returned_lf = input_lf.select(job.has_elements("names").alias("has_elements"))
+    pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+@pytest.mark.parametrize(
+    "input_, expected",
+    [
+        pytest.param(["Sarah", "James"], 1, id="more_than_1_capped_to_1"),
+        pytest.param(["Sarah"], 1, id="1_stays_1"),
+        pytest.param([], 0, id="empty_list_to_0"),
+        pytest.param(None, 0, id="null_to_0"),
+    ],
+)
+def test_cap_registered_managers_to_1(input_, expected):
+    schema = {
+        IndCQC.registered_manager_names: pl.List,
+        IndCQC.registered_manager_count: pl.Int8,
+    }
+    expected_lf = pl.LazyFrame([[input_], [expected]], schema=schema)
+    input_lf = expected_lf.drop(IndCQC.registered_manager_count)
+    returned_lf = job.cap_registered_managers_to_1(input_lf)
+    pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+def test_get_estimated_managers_diff_from_cqc_registered_managers():
+    output_col = IndCQC.difference_between_estimate_and_cqc_registered_managers
+    expected_lf = pl.LazyFrame({
+        MainJobRoleLabels.registered_manager: [2, 1, 0, 0, 1],
+        IndCQC.registered_manager_count: [1, 1, 1, 0, 0],
+        output_col: [1, 0, -1, 0, 1],
+    })  # fmt: skip
+    input_lf = expected_lf.drop(output_col)
+    returned_lf = job.get_estimated_managers_diff_from_cqc_registered_managers(input_lf)
+    pl_testing.assert_frame_equal(returned_lf, expected_lf)
