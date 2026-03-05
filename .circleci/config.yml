@@ -290,8 +290,6 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
             aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=pir_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=pir_cleaned/"
             aws s3 sync "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/" "s3://$BRANCH_DATASET_BUCKET/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_06_estimated_filled_posts/"
-            # The below copy is needed for the temporary by role pipeline.
-            aws s3 sync "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/" "s3://$BRANCH_DATASET_BUCKET/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
       - run:
           name: Copy models to non-prod dataset
           command: |
