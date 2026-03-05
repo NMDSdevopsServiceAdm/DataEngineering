@@ -14,7 +14,6 @@ from projects._03_independent_cqc._03_impute.utils.model_and_merge_pir_filled_po
 from projects._03_independent_cqc._03_impute.utils.utils import (
     combine_care_home_and_non_res_values_into_single_column,
     convert_care_home_ratios_to_posts,
-    nullify_ct_values_previous_to_first_submission,
 )
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
@@ -24,6 +23,9 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary
 )
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.rolling_average import (
     model_calculate_rolling_average,
+)
+from projects._03_independent_cqc.utils.utils.utils import (
+    nullify_ct_values_previous_to_first_submission,
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -154,7 +156,13 @@ def main(
         extrapolation_method="ratio",
     )
 
-    df = nullify_ct_values_previous_to_first_submission(df)
+    df = nullify_ct_values_previous_to_first_submission(
+        df,
+        [
+            IndCQC.ct_care_home_total_employed_imputed,
+            IndCQC.ct_non_res_care_workers_employed_imputed,
+        ],
+    )
 
     print(f"Exporting as parquet to {imputed_ind_cqc_ascwds_and_pir_destination}")
 

@@ -1,5 +1,3 @@
-from datetime import date
-
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
@@ -56,34 +54,3 @@ def combine_care_home_and_non_res_values_into_single_column(
         ).otherwise(F.col(non_res_column)),
     )
     return df
-
-
-def nullify_ct_values_previous_to_first_submission(df: DataFrame) -> DataFrame:
-    """
-    Nullifies Capacity Tracker (CT) values for all dates prior to the first
-    submission date.
-
-    This is to ensure that we do not impute filled posts prior to collecting CT
-    data.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-
-    Returns:
-        DataFrame: The input DataFrame with Capacity Tracker values nullified
-        for all dates prior to collecting CT data.
-    """
-    before_first_submission = F.col(IndCQC.cqc_location_import_date) < date(2021, 5, 1)
-
-    return df.withColumns(
-        {
-            IndCQC.ct_care_home_total_employed_imputed: F.when(
-                before_first_submission,
-                None,
-            ).otherwise(F.col(IndCQC.ct_care_home_total_employed_imputed)),
-            IndCQC.ct_non_res_care_workers_employed_imputed: F.when(
-                before_first_submission,
-                None,
-            ).otherwise(F.col(IndCQC.ct_non_res_care_workers_employed_imputed)),
-        }
-    )
