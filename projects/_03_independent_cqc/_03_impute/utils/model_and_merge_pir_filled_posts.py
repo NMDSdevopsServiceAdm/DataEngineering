@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import List
 
-import polars as pl
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame, Window
@@ -39,8 +38,8 @@ def model_pir_filled_posts(
     """
 
     features_df = df.filter(
-        (pl.col(IndCQC.care_home) == CareHome.not_care_home)
-        & pl.col(IndCQC.pir_people_directly_employed_dedup).is_not_null()
+        (F.col(IndCQC.care_home) == CareHome.not_care_home)
+        & F.col(IndCQC.pir_people_directly_employed_dedup).isNotNull()
     )
 
     vectorised_features_df = vectorise_dataframe(
