@@ -72,10 +72,8 @@ class RunDiagnostics(DiagnosticsOnCapacityTrackerTests):
     @patch(f"{PATCH_PATH}.dUtils.filter_to_known_values")
     @patch(f"{PATCH_PATH}.dUtils.restructure_dataframe_to_column_wise")
     @patch(f"{PATCH_PATH}.dUtils.create_list_of_models")
-    @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
     def test_run_diagnostics_runs(
         self,
-        select_rows_with_value_mock: Mock,
         create_list_of_models_mock: Mock,
         restructure_dataframe_to_column_wise_mock: Mock,
         filter_to_known_values_mock: Mock,
@@ -86,7 +84,6 @@ class RunDiagnostics(DiagnosticsOnCapacityTrackerTests):
     ):
         job.run_diagnostics(self.estimate_jobs_df, self.care_home, self.diagnostic_col)
 
-        select_rows_with_value_mock.assert_called_once()
         create_list_of_models_mock.assert_called_once()
         restructure_dataframe_to_column_wise_mock.assert_called_once()
         filter_to_known_values_mock.assert_called_once()

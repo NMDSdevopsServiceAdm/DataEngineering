@@ -35,11 +35,6 @@ class UtilsData:
         ("3", date(2023, 1, 1), "20240101"),
     ]
 
-    select_rows_with_value_rows = [
-        ("id_1", "keep"),
-        ("id_2", "remove"),
-    ]
-
     select_rows_with_non_null_values_rows = [
         ("1-00001", None),
         ("1-00002", 12.34),

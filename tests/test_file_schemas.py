@@ -53,13 +53,6 @@ class UtilsSchema:
         ]
     )
 
-    select_rows_with_value_schema = StructType(
-        [
-            StructField("id", StringType(), True),
-            StructField("value_to_filter_on", StringType(), True),
-        ]
-    )
-
     select_rows_with_non_null_values_schema = StructType(
         [
             StructField("id", StringType(), True),
