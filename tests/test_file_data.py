@@ -35,16 +35,6 @@ class UtilsData:
         ("3", date(2023, 1, 1), "20240101"),
     ]
 
-    select_rows_with_non_null_values_rows = [
-        ("1-00001", None),
-        ("1-00002", 12.34),
-        ("1-00003", -1.0),
-    ]
-    expected_select_rows_with_non_null_values_rows = [
-        ("1-00002", 12.34),
-        ("1-00003", -1.0),
-    ]
-
 
 @dataclass
 class CleaningUtilsData:

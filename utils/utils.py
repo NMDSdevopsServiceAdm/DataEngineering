@@ -270,18 +270,3 @@ def filter_df_to_maximum_value_in_column(
     max_value = df.agg(F.max(column_to_filter_on)).collect()[0][0]
 
     return df.filter(F.col(column_to_filter_on) == max_value)
-
-
-# not converting function to polars, just use as it is
-def select_rows_with_non_null_value(df: DataFrame, column: str) -> DataFrame:
-    """
-    Select rows from a DataFrame where the specified column has non-null values.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-        column (str): The name of the column to filter on.
-
-    Returns:
-        DataFrame: A DataFrame containing only the rows where the specified column has non-null values.
-    """
-    return df.filter(F.col(column).isNotNull())
