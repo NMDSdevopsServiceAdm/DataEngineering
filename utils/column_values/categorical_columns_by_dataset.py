@@ -111,12 +111,8 @@ class MergedIndCQCCategoricalValues:
     current_region_column_values = Region(IndCQC.current_region)
     contemporary_region_column_values = Region(IndCQC.contemporary_region)
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
-    current_cssr_column_values = CurrentCSSR(
-        IndCQC.current_cssr, value_to_remove=CurrentCSSR.isles_of_scilly
-    )
-    contemporary_cssr_column_values = ContemporaryCSSR(
-        IndCQC.contemporary_cssr, value_to_remove=ContemporaryCSSR.isles_of_scilly
-    )
+    current_cssr_column_values = CurrentCSSR(IndCQC.current_cssr)
+    contemporary_cssr_column_values = ContemporaryCSSR(IndCQC.contemporary_cssr)
     related_location_column_values = RelatedLocation(CQCLClean.related_location)
 
 
@@ -143,12 +139,8 @@ class CleanedIndCQCCategoricalValues:
     current_region_column_values = Region(IndCQC.current_region)
     contemporary_region_column_values = Region(IndCQC.contemporary_region)
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
-    current_cssr_column_values = CurrentCSSR(
-        IndCQC.current_cssr, value_to_remove=CurrentCSSR.isles_of_scilly
-    )
-    contemporary_cssr_column_values = ContemporaryCSSR(
-        IndCQC.contemporary_cssr, value_to_remove=ContemporaryCSSR.isles_of_scilly
-    )
+    current_cssr_column_values = CurrentCSSR(IndCQC.current_cssr)
+    contemporary_cssr_column_values = ContemporaryCSSR(IndCQC.contemporary_cssr)
     ascwds_filled_posts_source_column_values = ASCWDSFilledPostsSource(
         IndCQC.ascwds_filled_posts_source, contains_null_values=True
     )
@@ -178,12 +170,8 @@ class ImputedIndCqcAscwdsAndPirCategoricalValues:
     current_region_column_values = Region(IndCQC.current_region)
     contemporary_region_column_values = Region(IndCQC.contemporary_region)
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
-    current_cssr_column_values = CurrentCSSR(
-        IndCQC.current_cssr, value_to_remove=CurrentCSSR.isles_of_scilly
-    )
-    contemporary_cssr_column_values = ContemporaryCSSR(
-        IndCQC.contemporary_cssr, value_to_remove=ContemporaryCSSR.isles_of_scilly
-    )
+    current_cssr_column_values = CurrentCSSR(IndCQC.current_cssr)
+    contemporary_cssr_column_values = ContemporaryCSSR(IndCQC.contemporary_cssr)
     ascwds_filled_posts_source_column_values = ASCWDSFilledPostsSource(
         IndCQC.ascwds_filled_posts_source, contains_null_values=True
     )
@@ -216,9 +204,7 @@ class EstimatedIndCQCFilledPostsCategoricalValues:
         IndCQC.primary_service_type_second_level
     )
     current_region_column_values = Region(IndCQC.current_region)
-    current_cssr_column_values = CurrentCSSR(
-        IndCQC.current_cssr, value_to_remove=CurrentCSSR.isles_of_scilly
-    )
+    current_cssr_column_values = CurrentCSSR(IndCQC.current_cssr)
     ascwds_filled_posts_source_column_values = ASCWDSFilledPostsSource(
         IndCQC.ascwds_filled_posts_source, contains_null_values=True
     )
