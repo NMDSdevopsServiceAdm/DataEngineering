@@ -283,6 +283,15 @@ class ImputeUtilsData:
         ("1-008", CareHome.not_care_home, None, None, None),
     ]
 
+    nullify_ct_values_previous_to_first_submission_rows = [
+        ("1-001", date(2021, 4, 30), 20.0, 1.6),
+        ("1-002", date(2021, 5, 1), 10.0, 2.6),
+    ]
+    expected_nullify_ct_values_previous_to_first_submission_rows = [
+        ("1-001", date(2021, 4, 30), None, None),
+        ("1-002", date(2021, 5, 1), 10.0, 2.6),
+    ]
+
 
 @dataclass
 class ValidateImputedIndCqcAscwdsAndPir:
