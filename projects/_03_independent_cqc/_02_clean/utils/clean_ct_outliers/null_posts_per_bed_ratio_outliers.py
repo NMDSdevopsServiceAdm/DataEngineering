@@ -5,7 +5,7 @@ from projects._03_independent_cqc._02_clean.utils.filtering_utils import (
     update_filtering_rule,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import CTCareHomeFilteringRule
+from utils.column_values.categorical_column_values import CTFilteringRule
 
 MINIMUM_RATIO_CUTOFF: float = 0.66
 MAXIMUM_RATIO_CUTOFF: float = 6.0
@@ -47,8 +47,8 @@ def null_posts_per_bed_outliers(df: DataFrame) -> DataFrame:
         IndCQC.ct_care_home_filtering_rule,
         IndCQC.ct_care_home_total_employed,
         IndCQC.ct_care_home_total_employed_cleaned,
-        CTCareHomeFilteringRule.populated,
-        CTCareHomeFilteringRule.beds_ratio_outlier,
+        CTFilteringRule.populated,
+        CTFilteringRule.beds_ratio_outlier,
     )
 
     return df
