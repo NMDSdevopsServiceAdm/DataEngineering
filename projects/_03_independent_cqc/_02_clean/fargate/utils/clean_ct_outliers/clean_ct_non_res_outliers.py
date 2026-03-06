@@ -11,7 +11,7 @@ from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import
     aggregate_values_to_provider_level,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import CTNonResFilteringRule
+from utils.column_values.categorical_column_values import CTFilteringRule
 
 
 def clean_capacity_tracker_non_res_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -42,8 +42,8 @@ def clean_capacity_tracker_non_res_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
         lf,
         IndCQC.ct_non_res_filtering_rule,
         IndCQC.ct_non_res_care_workers_employed_cleaned,
-        CTNonResFilteringRule.populated,
-        CTNonResFilteringRule.missing_data,
+        CTFilteringRule.populated,
+        CTFilteringRule.missing_data,
     )
 
     lf = aggregate_values_to_provider_level(lf, IndCQC.ct_non_res_care_workers_employed)

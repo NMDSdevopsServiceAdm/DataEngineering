@@ -26,6 +26,7 @@ class EstimateNonResCTFilledPostsTests(SparkBaseTest):
 
 
 class MainTests(EstimateNonResCTFilledPostsTests):
+    @patch(f"{PATCH_PATH}.nullify_ct_values_previous_to_first_submission")
     @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.merge_columns_in_order")
     @patch(f"{PATCH_PATH}.convert_to_all_posts_using_ratio")
@@ -36,6 +37,7 @@ class MainTests(EstimateNonResCTFilledPostsTests):
         convert_to_all_posts_using_ratio_mock: Mock,
         merge_columns_in_order_mock: Mock,
         set_min_value_mock: Mock,
+        nullify_ct_values_previous_to_first_submission_mock: Mock,
     ):
         job.estimate_non_res_capacity_tracker_filled_posts(self.estimates_df)
 
@@ -45,6 +47,7 @@ class MainTests(EstimateNonResCTFilledPostsTests):
         set_min_value_mock.assert_called_once_with(
             ANY, IndCqc.ct_non_res_filled_post_estimate, 1.0
         )
+        nullify_ct_values_previous_to_first_submission_mock.assert_called_once()
 
 
 class CalculateCareWorkerRatioTests(EstimateNonResCTFilledPostsTests):

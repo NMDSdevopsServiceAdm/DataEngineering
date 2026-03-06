@@ -2751,6 +2751,16 @@ class IndCQCDataUtils:
         ]
     )
 
+    nullify_ct_values_previous_to_first_submission_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField("a", DoubleType(), True),
+            StructField("b", DoubleType(), True),
+            StructField("c", StringType(), True),
+        ]
+    )
+
 
 # converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.CleanCtRepetition
 @dataclass

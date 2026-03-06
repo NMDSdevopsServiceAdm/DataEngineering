@@ -5,10 +5,7 @@ from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import
 )
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import (
-    CTCareHomeFilteringRule,
-    CTNonResFilteringRule,
-)
+from utils.column_values.categorical_column_values import CTFilteringRule
 
 
 def clean_longitudinal_outliers(
@@ -44,12 +41,8 @@ def clean_longitudinal_outliers(
     """
     if care_home:
         filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
-        populated_rule = CTCareHomeFilteringRule.populated
-        new_rule_name = None
     else:
         filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
-        populated_rule = CTNonResFilteringRule.populated
-        new_rule_name = CTNonResFilteringRule.longitudinal_outliers
 
     lf = compute_outlier_cutoff_and_clean(
         lf=lf,
@@ -64,8 +57,8 @@ def clean_longitudinal_outliers(
         filter_rule_col_name=filter_rule_column_name,
         raw_col_name=col_to_clean,
         clean_col_name=cleaned_column_name,
-        populated_rule=populated_rule,
-        new_rule_name=new_rule_name,
+        populated_rule=CTFilteringRule.populated,
+        new_rule_name=CTFilteringRule.longitudinal_outliers,
     )
 
     return lf

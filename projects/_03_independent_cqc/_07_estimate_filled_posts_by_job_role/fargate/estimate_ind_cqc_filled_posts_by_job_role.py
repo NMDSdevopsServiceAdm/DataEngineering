@@ -9,7 +9,6 @@ partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 estimates_columns_to_import = [
     IndCQC.cqc_location_import_date,
-    IndCQC.unix_time,
     IndCQC.location_id,
     IndCQC.name,
     IndCQC.provider_id,
@@ -80,9 +79,10 @@ def main(
         estimated_job_role_posts_lf
     )
 
+    pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
-        .over(IndCQC.location_id)
+        .over(pct_share_groups)
         .alias(IndCQC.ascwds_job_role_ratios)
     )
     # Do linear interpolation, then forward fill and backward fill to get a full
@@ -91,9 +91,30 @@ def main(
         JRUtils.impute_full_time_series(IndCQC.ascwds_job_role_ratios)
         .over(
             [IndCQC.location_id, IndCQC.main_job_role_clean_labelled],
-            order_by=IndCQC.unix_time,
+            order_by=IndCQC.cqc_location_import_date,
         )
         .alias(IndCQC.imputed_ascwds_job_role_ratios)
+    )
+
+    # Multiply imputed ratios by estimate filled posts to get counts.
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        pl.col(IndCQC.estimate_filled_posts)
+        .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
+        .alias(IndCQC.imputed_ascwds_job_role_counts)
+    )
+    # Get the proportions of the rolling sum of job counts within each location.
+    estimated_job_role_posts_lf = (
+        estimated_job_role_posts_lf.with_columns(
+            JRUtils.rolling_sum_of_job_role_counts(period="6mo").alias(
+                IndCQC.ascwds_job_role_rolling_sum
+            )
+        )
+        .with_columns(
+            JRUtils.percentage_share(IndCQC.ascwds_job_role_rolling_sum)
+            .over(pct_share_groups)
+            .alias(IndCQC.ascwds_job_role_rolling_ratio)
+        )
+        .drop(IndCQC.ascwds_job_role_rolling_sum)
     )
 
     utils.sink_to_parquet(

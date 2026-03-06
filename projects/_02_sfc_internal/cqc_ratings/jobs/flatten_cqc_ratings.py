@@ -59,8 +59,8 @@ def main(
     cqc_latest_full = utils.read_from_parquet(
         cqc_full_snapshot_source, snapshot_columns
     )
-    cqc_latest_full = utils.select_rows_with_value(
-        cqc_latest_full, CQCL.type, LocationType.social_care_identifier
+    cqc_latest_full = cqc_latest_full.filter(
+        F.col(CQCL.type) == LocationType.social_care_identifier
     )
 
     cqc_delta_raw = utils.read_from_parquet(

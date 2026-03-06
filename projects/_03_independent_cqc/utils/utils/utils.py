@@ -1,8 +1,10 @@
+from datetime import date
 from typing import List
 
 from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
-from pyspark.sql.types import DoubleType, MapType
+
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 def merge_columns_in_order(
@@ -89,4 +91,33 @@ def get_selected_value(
         ).over(window_spec),
     )
 
+    return df
+
+
+def nullify_ct_values_previous_to_first_submission(
+    df: DataFrame, columns: list
+) -> DataFrame:
+    """
+    Nullifies Capacity Tracker (CT) values for all dates prior to the first
+    submission date.
+
+    This is to ensure that we do not impute filled posts prior to collecting CT
+    data.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        columns (list): A list of column names to nullify for dates prior to the
+            first submission.
+
+    Returns:
+        DataFrame: The input DataFrame with Capacity Tracker values nullified
+        for all dates prior to collecting CT data.
+    """
+    before_first_submission = F.col(IndCQC.cqc_location_import_date) < date(2021, 5, 1)
+
+    for col in columns:
+        df = df.withColumn(
+            col,
+            F.when(before_first_submission, None).otherwise(F.col(col)),
+        )
     return df

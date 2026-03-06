@@ -12,7 +12,7 @@ from projects._03_independent_cqc._02_clean.utils.filtering_utils import (
     aggregate_values_to_provider_level,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import CTNonResFilteringRule
+from utils.column_values.categorical_column_values import CTFilteringRule
 
 
 def clean_capacity_tracker_non_res_outliers(df: DataFrame) -> DataFrame:
@@ -38,8 +38,8 @@ def clean_capacity_tracker_non_res_outliers(df: DataFrame) -> DataFrame:
         df,
         IndCQC.ct_non_res_filtering_rule,
         IndCQC.ct_non_res_care_workers_employed_cleaned,
-        CTNonResFilteringRule.populated,
-        CTNonResFilteringRule.missing_data,
+        CTFilteringRule.populated,
+        CTFilteringRule.missing_data,
     )
 
     df = aggregate_values_to_provider_level(df, IndCQC.ct_non_res_care_workers_employed)
