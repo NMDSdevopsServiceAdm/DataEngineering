@@ -9,6 +9,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CTFilteringRule
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ct_outliers\clean_ct_longitudinal_outliers.py
 def clean_longitudinal_outliers(
     df: DataFrame,
     group_by_col: str,
@@ -76,6 +77,7 @@ def clean_longitudinal_outliers(
     return cleaned_df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ct_outliers\clean_ct_longitudinal_outliers.py
 def compute_group_median(df: DataFrame, group_col: str, col_to_clean: str) -> DataFrame:
     """
     Computes the median value of a numerical column within each group.
@@ -98,6 +100,7 @@ def compute_group_median(df: DataFrame, group_col: str, col_to_clean: str) -> Da
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ct_outliers\clean_ct_longitudinal_outliers.py
 def compute_absolute_deviation(df: DataFrame, col_to_clean: str) -> DataFrame:
     """
     Computes the absolute deviation of each value from the group median.
@@ -116,6 +119,7 @@ def compute_absolute_deviation(df: DataFrame, col_to_clean: str) -> DataFrame:
     )
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ct_outliers\clean_ct_longitudinal_outliers.py
 def compute_outlier_cutoff(
     df: DataFrame,
     proportion_to_filter: float,
@@ -148,6 +152,7 @@ def compute_outlier_cutoff(
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ct_outliers\clean_ct_longitudinal_outliers.py
 def apply_outlier_cleaning(
     df: DataFrame,
     col_to_clean: str,

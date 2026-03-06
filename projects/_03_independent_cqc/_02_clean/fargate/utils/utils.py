@@ -32,9 +32,12 @@ def create_column_with_repeated_values_removed(
     if new_column_name is None:
         new_column_name = f"{column_to_clean}_deduplicated"
 
-    previous_value = (
+    # Use the last non-null previous value so that null rows (missing data)
+    # don't break streak detection for the next populated row.
+    last_non_null_previous_value = (
         pl.col(column_to_clean)
         .shift(1)
+        .forward_fill()
         .over(
             partition_by=column_to_partition_by,
             order_by=IndCQC.cqc_location_import_date,
@@ -42,7 +45,10 @@ def create_column_with_repeated_values_removed(
     )
 
     return lf.with_columns(
-        pl.when(previous_value.is_null() | (pl.col(column_to_clean) != previous_value))
+        pl.when(
+            last_non_null_previous_value.is_null()
+            | (pl.col(column_to_clean) != last_non_null_previous_value)
+        )
         .then(pl.col(column_to_clean))
         .otherwise(None)
         .alias(new_column_name)

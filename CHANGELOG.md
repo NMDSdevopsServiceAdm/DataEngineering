@@ -79,6 +79,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted clean_ascwds_filled_post_outliers utils folder to polars within Clean Ind CQC Job.
 
+- Converted `clean_ct_outliers` utils folder to polars within Clean Ind CQC Job and added tests for them as well.
+
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 
