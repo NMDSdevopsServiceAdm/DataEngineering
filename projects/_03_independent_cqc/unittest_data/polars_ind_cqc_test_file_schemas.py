@@ -1144,3 +1144,24 @@ class OutlierCleaningSchemas:
             IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,
         }
     )
+
+
+@dataclass
+class CleanCapacityTrackerCareHomeOutliersSchema:
+    ind_cqc_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.ct_care_home_posts_per_bed_ratio: pl.Float64,
+            IndCQC.ct_care_home_total_employed: pl.Float64,
+        }
+    )
+
+
+@dataclass
+class CleanCapacityTrackerNonResOutliersSchema:
+    ind_cqc_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ct_non_res_care_workers_employed: pl.Float64,
+    }

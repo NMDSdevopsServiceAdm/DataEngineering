@@ -128,6 +128,7 @@ class TestComputeOutlierCutoffAndClean(unittest.TestCase):
         )
 
     def test_function_returns_expected_values(self):
+        print(self.returned_lf.collect())
         pl_testing.assert_frame_equal(
             self.returned_lf.sort(
                 IndCQC.location_id,

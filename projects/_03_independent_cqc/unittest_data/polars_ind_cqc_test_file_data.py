@@ -2186,8 +2186,6 @@ class OutlierCleaningData:
         ("1-004", 50, CTNonResFilteringRule.populated),
     ]
 
-    # Input has no filtering rule column as compute_outlier_cutoff_and_clean
-    # does not use it - it operates purely on the numerical column.
     compute_outlier_cutoff_and_clean_input_rows = [
         ("1-001", 5),
         ("1-001", 10),
@@ -2199,18 +2197,54 @@ class OutlierCleaningData:
         ("1-003", 40),
         ("1-003", 45),
         ("1-003", 50),
+        ("1-004", 5),
+        ("1-004", 10),
+        ("1-004", 15),
+        ("1-004", 80),
+        ("1-004", 94),
+        ("1-004", 20),
+        ("1-004", 90),
+        ("1-004", 40),
+        ("1-004", 45),
+        ("1-004", 50),
     ]
-    # Only the 80 row is an outlier (abs diff from its group median of 12.5 = 67.5,
-    # which exceeds the 90th percentile cutoff of the abs diffs across all rows).
     expected_compute_outlier_cutoff_and_clean_rows = [
         ("1-001", 5),
         ("1-001", 10),
         ("1-001", 15),
         ("1-001", None),
         ("1-002", 95),
-        ("1-002", 20),
+        ("1-002", None),
         ("1-002", 90),
         ("1-003", 40),
         ("1-003", 45),
         ("1-003", 50),
+        ("1-004", 5),
+        ("1-004", 10),
+        ("1-004", 15),
+        ("1-004", 80),
+        ("1-004", 94),
+        ("1-004", 20),
+        ("1-004", 90),
+        ("1-004", 40),
+        ("1-004", 45),
+        ("1-004", 50),
+    ]
+
+
+@dataclass
+class CleanCapacityTrackerCareHomeOutliersData:
+    ind_cqc_rows = [
+        ("1-001", date(2025, 1, 1), 1.5, 30.0),
+        ("1-002", date(2025, 1, 1), 1.5, None),
+        ("1-002", date(2025, 1, 1), None, 30.0),
+        ("1-002", date(2025, 1, 1), None, None),
+    ]
+
+
+@dataclass
+class CleanCapacityTrackerNonResOutliersData:
+    ind_cqc_rows = [
+        ("1-001", date(2025, 1, 1), 30.0),
+        ("1-002", date(2025, 1, 1), None),
     ]
