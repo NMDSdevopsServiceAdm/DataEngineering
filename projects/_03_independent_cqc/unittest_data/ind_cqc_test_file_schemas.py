@@ -1479,6 +1479,7 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
     expected_combined_dataframes_schema = combine_dataframes_non_care_home_schema
 
 
+# converted to polars -> projects\_03_independent_cqc\unittest_data\polars_ind_cqc_test_file_schemas.py
 @dataclass
 class CleanCapacityTrackerNonResOutliersSchema:
     ind_cqc_schema = StructType(
@@ -1490,6 +1491,7 @@ class CleanCapacityTrackerNonResOutliersSchema:
     )
 
 
+# converted to polars -> projects\_03_independent_cqc\unittest_data\polars_ind_cqc_test_file_schemas.py
 @dataclass
 class CleanCapacityTrackerCareHomeOutliersSchema:
     ind_cqc_schema = StructType(
@@ -1502,6 +1504,7 @@ class CleanCapacityTrackerCareHomeOutliersSchema:
     )
 
 
+# converted to polars -> projects\_03_independent_cqc\unittest_data\polars_ind_cqc_test_file_schemas.py
 @dataclass
 class NullCtPostsToBedsOutliers:
     null_ct_posts_to_beds_outliers_schema = StructType(
@@ -2878,6 +2881,7 @@ class ForwardFillLatestKnownValue:
     )
 
 
+# converted to polars -> projects\_03_independent_cqc\unittest_data\polars_ind_cqc_test_file_schemas.py
 @dataclass
 class OutlierCleaningSchemas:
     median_val = f"{IndCQC.ct_non_res_care_workers_employed_cleaned}_median_val"
