@@ -1072,3 +1072,75 @@ class NullCtPostsToBedsOutliers:
             (IndCQC.ct_care_home_filtering_rule, pl.String()),
         ]
     )
+
+
+@dataclass
+class CleanCtRepetition:
+    clean_ct_values_after_consecutive_repetition_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,
+            IndCQC.ct_non_res_filtering_rule: pl.String,
+        }
+    )
+    expected_clean_ct_values_after_consecutive_repetition_schema = (
+        clean_ct_values_after_consecutive_repetition_schema
+    )
+
+    calculate_days_a_value_has_been_repeated_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            "values_deduplicated": pl.Int64,
+            IndCQC.cqc_location_import_date: pl.Date,
+        }
+    )
+    expected_calculate_days_a_value_has_been_repeated_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            "values_deduplicated": pl.Int64,
+            IndCQC.cqc_location_import_date: pl.Date,
+            "days_value_has_been_repeated": pl.Int64,
+        }
+    )
+
+    clean_value_repetition_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.ct_non_res_care_workers_employed: pl.Int64,
+            "days_value_has_been_repeated": pl.Int64,
+        }
+    )
+    expected_clean_value_repetition_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.ct_non_res_care_workers_employed: pl.Int64,
+            "days_value_has_been_repeated": pl.Int64,
+            "repeated_values_nulled": pl.Int64,
+        }
+    )
+
+
+@dataclass
+class OutlierCleaningSchemas:
+    input_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,
+            IndCQC.ct_non_res_filtering_rule: pl.String,
+        }
+    )
+
+    compute_outlier_cutoff_and_clean_input_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,
+        }
+    )
+
+    compute_outlier_cutoff_and_clean_output_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,
+        }
+    )
