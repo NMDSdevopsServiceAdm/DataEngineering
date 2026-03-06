@@ -65,7 +65,9 @@ class DirectPaymentsMisspelledLaNames:
         "Bath & N E Somerset": ContemporaryCSSR.bath_and_north_east_somerset,
         "Blackburn": ContemporaryCSSR.blackburn_with_darwen,
         "Bournemouth, Christchurch and Poole": ContemporaryCSSR.bournemouth_christchurch_and_poole,
+        "Cornwall": ContemporaryCSSR.cornwall_and_isles_of_scilly,
         "East Riding": ContemporaryCSSR.east_riding_of_yorkshire,
+        "Isles of Scilly": ContemporaryCSSR.cornwall_and_isles_of_scilly,
         "Medway Towns": ContemporaryCSSR.medway,
         "Southend": ContemporaryCSSR.southend_on_sea,
     }
