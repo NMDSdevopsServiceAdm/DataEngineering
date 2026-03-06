@@ -8,6 +8,7 @@ from pyspark.sql.types import FloatType, IntegerType, StructField, StructType
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from utils.column_values.categorical_column_values import ContemporaryCSSR
 
 
 @dataclass
@@ -61,10 +62,10 @@ class EstimatePeriodAsDate:
 @dataclass
 class DirectPaymentsMisspelledLaNames:
     DICT_TO_CORRECT_LA_NAMES = {
-        "Bath & N E Somerset": "Bath and North East Somerset",
-        "Blackburn": "Blackburn with Darwen",
-        "Bournemouth, Christchurch and Poole": "Bournemouth Christchurch and Poole",
-        "East Riding": "East Riding of Yorkshire",
-        "Medway Towns": "Medway",
-        "Southend": "Southend on Sea",
+        "Bath & N E Somerset": ContemporaryCSSR.bath_and_north_east_somerset,
+        "Blackburn": ContemporaryCSSR.blackburn_with_darwen,
+        "Bournemouth, Christchurch and Poole": ContemporaryCSSR.bournemouth_christchurch_and_poole,
+        "East Riding": ContemporaryCSSR.east_riding_of_yorkshire,
+        "Medway Towns": ContemporaryCSSR.medway,
+        "Southend": ContemporaryCSSR.southend_on_sea,
     }
