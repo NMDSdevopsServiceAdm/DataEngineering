@@ -13,8 +13,7 @@ from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_ca
 from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     CareHome,
-    CTCareHomeFilteringRule,
-    CTNonResFilteringRule,
+    CTFilteringRule,
     Dormancy,
     MainJobRoleLabels,
     PrimaryServiceType,
@@ -2016,20 +2015,20 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
 @dataclass
 class NullCtPostsToBedsOutliers:
     null_ct_posts_to_beds_outliers_rows = [
-        ("1-001", 1, 1.00, 1, CTCareHomeFilteringRule.populated),
-        ("1-002", 1, None, 1, CTCareHomeFilteringRule.populated),
-        ("1-003", None, 1.00, None, CTCareHomeFilteringRule.missing_data),
-        ("1-004", None, None, None, CTCareHomeFilteringRule.missing_data),
-        ("1-005", 1, 0.65, 1, CTCareHomeFilteringRule.populated),
-        ("1-006", 1, 6.01, 1, CTCareHomeFilteringRule.populated),
+        ("1-001", 1, 1.00, 1, CTFilteringRule.populated),
+        ("1-002", 1, None, 1, CTFilteringRule.populated),
+        ("1-003", None, 1.00, None, CTFilteringRule.missing_data),
+        ("1-004", None, None, None, CTFilteringRule.missing_data),
+        ("1-005", 1, 0.65, 1, CTFilteringRule.populated),
+        ("1-006", 1, 6.01, 1, CTFilteringRule.populated),
     ]
     expected_null_ct_posts_to_beds_outliers_rows = [
-        ("1-001", 1, 1.00, 1, CTCareHomeFilteringRule.populated),
-        ("1-002", 1, None, 1, CTCareHomeFilteringRule.populated),
-        ("1-003", None, 1.00, None, CTCareHomeFilteringRule.missing_data),
-        ("1-004", None, None, None, CTCareHomeFilteringRule.missing_data),
-        ("1-005", 1, 0.65, None, CTCareHomeFilteringRule.beds_ratio_outlier),
-        ("1-006", 1, 6.01, None, CTCareHomeFilteringRule.beds_ratio_outlier),
+        ("1-001", 1, 1.00, 1, CTFilteringRule.populated),
+        ("1-002", 1, None, 1, CTFilteringRule.populated),
+        ("1-003", None, 1.00, None, CTFilteringRule.missing_data),
+        ("1-004", None, None, None, CTFilteringRule.missing_data),
+        ("1-005", 1, 0.65, None, CTFilteringRule.beds_ratio_outlier),
+        ("1-006", 1, 6.01, None, CTFilteringRule.beds_ratio_outlier),
     ]
 
 
@@ -2049,21 +2048,21 @@ class CleanCtRepetition:
 
     # fmt: off
     clean_ct_values_after_consecutive_repetition_rows = [
-        ("1-001", date(2025, 1, 1), 1, CTNonResFilteringRule.populated),
-        ("1-001", date(2025, 2, 1), 2, CTNonResFilteringRule.populated),
-        ("1-001", date(2025, 3, 1), 2, CTNonResFilteringRule.populated),  # Repeated value within repetition limit.
-        ("1-001", date(2025, 4, 1), None, CTNonResFilteringRule.missing_data),  # Missing raw data.
-        ("1-001", date(2025, 11, 7), 2, CTNonResFilteringRule.populated),  # 251 days after repeated value's first import date.
-        ("1-001", date(2025, 12, 1), 3, CTNonResFilteringRule.populated),
+        ("1-001", date(2025, 1, 1), 1, CTFilteringRule.populated),
+        ("1-001", date(2025, 2, 1), 2, CTFilteringRule.populated),
+        ("1-001", date(2025, 3, 1), 2, CTFilteringRule.populated),  # Repeated value within repetition limit.
+        ("1-001", date(2025, 4, 1), None, CTFilteringRule.missing_data),  # Missing raw data.
+        ("1-001", date(2025, 11, 7), 2, CTFilteringRule.populated),  # 251 days after repeated value's first import date.
+        ("1-001", date(2025, 12, 1), 3, CTFilteringRule.populated),
         ("1-001", date(2026, 1, 1), 4, "some_other_rule"),
     ]
     expected_clean_ct_values_after_consecutive_repetition_rows = [
-        ("1-001", date(2025, 1, 1), 1, CTNonResFilteringRule.populated),
-        ("1-001", date(2025, 2, 1), 2, CTNonResFilteringRule.populated),
-        ("1-001", date(2025, 3, 1), 2, CTNonResFilteringRule.populated),   # 28 days after Feb 1
-        ("1-001", date(2025, 4, 1), None, CTNonResFilteringRule.missing_data),   # 59 days after Feb 1; non-populated so days still counts from last populated streak
-        ("1-001", date(2025, 11, 7), None, CTNonResFilteringRule.location_repeats_total_posts),  # 279 days after Feb 1
-        ("1-001", date(2025, 12, 1), 3, CTNonResFilteringRule.populated),
+        ("1-001", date(2025, 1, 1), 1, CTFilteringRule.populated),
+        ("1-001", date(2025, 2, 1), 2, CTFilteringRule.populated),
+        ("1-001", date(2025, 3, 1), 2, CTFilteringRule.populated),   # 28 days after Feb 1
+        ("1-001", date(2025, 4, 1), None, CTFilteringRule.missing_data),   # 59 days after Feb 1; non-populated so days still counts from last populated streak
+        ("1-001", date(2025, 11, 7), None, CTFilteringRule.location_repeats_total_posts),  # 279 days after Feb 1
+        ("1-001", date(2025, 12, 1), 3, CTFilteringRule.populated),
         ("1-001", date(2026, 1, 1), None, "some_other_rule"),   # non-populated, no days tracked
     ]
     # fmt: on
@@ -2130,60 +2129,60 @@ class CleanCtRepetition:
 @dataclass
 class OutlierCleaningData:
     no_outliers_input_rows = [
-        ("1-001", 10, CTNonResFilteringRule.populated),
-        ("1-001", 11, CTNonResFilteringRule.populated),
-        ("1-001", 12, CTNonResFilteringRule.populated),
-        ("1-001", 13, CTNonResFilteringRule.populated),
-        ("1-002", 50, CTNonResFilteringRule.populated),
-        ("1-002", 50, CTNonResFilteringRule.populated),
-        ("1-002", 51, CTNonResFilteringRule.populated),
-        ("1-002", 51, CTNonResFilteringRule.populated),
+        ("1-001", 10, CTFilteringRule.populated),
+        ("1-001", 11, CTFilteringRule.populated),
+        ("1-001", 12, CTFilteringRule.populated),
+        ("1-001", 13, CTFilteringRule.populated),
+        ("1-002", 50, CTFilteringRule.populated),
+        ("1-002", 50, CTFilteringRule.populated),
+        ("1-002", 51, CTFilteringRule.populated),
+        ("1-002", 51, CTFilteringRule.populated),
     ]
 
     clean_longitudinal_outliers_input_rows = [
-        ("1-001", 5, CTNonResFilteringRule.populated),
-        ("1-001", 10, CTNonResFilteringRule.populated),
-        ("1-001", 15, CTNonResFilteringRule.populated),
-        ("1-001", 80, CTNonResFilteringRule.populated),
-        ("1-002", 95, CTNonResFilteringRule.populated),
-        ("1-002", 20, CTNonResFilteringRule.populated),
-        ("1-002", 90, CTNonResFilteringRule.populated),
-        ("1-003", 40, CTNonResFilteringRule.populated),
-        ("1-003", 45, CTNonResFilteringRule.populated),
-        ("1-003", 50, CTNonResFilteringRule.populated),
-        ("1-004", 5, CTNonResFilteringRule.populated),
-        ("1-004", 10, CTNonResFilteringRule.populated),
-        ("1-004", 15, CTNonResFilteringRule.populated),
-        ("1-004", 80, CTNonResFilteringRule.populated),
-        ("1-004", 94, CTNonResFilteringRule.populated),
-        ("1-004", 20, CTNonResFilteringRule.populated),
-        ("1-004", 90, CTNonResFilteringRule.populated),
-        ("1-004", 40, CTNonResFilteringRule.populated),
-        ("1-004", 45, CTNonResFilteringRule.populated),
-        ("1-004", 50, CTNonResFilteringRule.populated),
+        ("1-001", 5, CTFilteringRule.populated),
+        ("1-001", 10, CTFilteringRule.populated),
+        ("1-001", 15, CTFilteringRule.populated),
+        ("1-001", 80, CTFilteringRule.populated),
+        ("1-002", 95, CTFilteringRule.populated),
+        ("1-002", 20, CTFilteringRule.populated),
+        ("1-002", 90, CTFilteringRule.populated),
+        ("1-003", 40, CTFilteringRule.populated),
+        ("1-003", 45, CTFilteringRule.populated),
+        ("1-003", 50, CTFilteringRule.populated),
+        ("1-004", 5, CTFilteringRule.populated),
+        ("1-004", 10, CTFilteringRule.populated),
+        ("1-004", 15, CTFilteringRule.populated),
+        ("1-004", 80, CTFilteringRule.populated),
+        ("1-004", 94, CTFilteringRule.populated),
+        ("1-004", 20, CTFilteringRule.populated),
+        ("1-004", 90, CTFilteringRule.populated),
+        ("1-004", 40, CTFilteringRule.populated),
+        ("1-004", 45, CTFilteringRule.populated),
+        ("1-004", 50, CTFilteringRule.populated),
     ]
 
     expected_clean_longitudinal_outliers_remove_value_only_rows = [
-        ("1-001", 5, CTNonResFilteringRule.populated),
-        ("1-001", 10, CTNonResFilteringRule.populated),
-        ("1-001", 15, CTNonResFilteringRule.populated),
-        ("1-001", None, CTNonResFilteringRule.longitudinal_outliers),
-        ("1-002", 95, CTNonResFilteringRule.populated),
-        ("1-002", None, CTNonResFilteringRule.longitudinal_outliers),
-        ("1-002", 90, CTNonResFilteringRule.populated),
-        ("1-003", 40, CTNonResFilteringRule.populated),
-        ("1-003", 45, CTNonResFilteringRule.populated),
-        ("1-003", 50, CTNonResFilteringRule.populated),
-        ("1-004", 5, CTNonResFilteringRule.populated),
-        ("1-004", 10, CTNonResFilteringRule.populated),
-        ("1-004", 15, CTNonResFilteringRule.populated),
-        ("1-004", 80, CTNonResFilteringRule.populated),
-        ("1-004", 94, CTNonResFilteringRule.populated),
-        ("1-004", 20, CTNonResFilteringRule.populated),
-        ("1-004", 90, CTNonResFilteringRule.populated),
-        ("1-004", 40, CTNonResFilteringRule.populated),
-        ("1-004", 45, CTNonResFilteringRule.populated),
-        ("1-004", 50, CTNonResFilteringRule.populated),
+        ("1-001", 5, CTFilteringRule.populated),
+        ("1-001", 10, CTFilteringRule.populated),
+        ("1-001", 15, CTFilteringRule.populated),
+        ("1-001", None, CTFilteringRule.longitudinal_outliers),
+        ("1-002", 95, CTFilteringRule.populated),
+        ("1-002", None, CTFilteringRule.longitudinal_outliers),
+        ("1-002", 90, CTFilteringRule.populated),
+        ("1-003", 40, CTFilteringRule.populated),
+        ("1-003", 45, CTFilteringRule.populated),
+        ("1-003", 50, CTFilteringRule.populated),
+        ("1-004", 5, CTFilteringRule.populated),
+        ("1-004", 10, CTFilteringRule.populated),
+        ("1-004", 15, CTFilteringRule.populated),
+        ("1-004", 80, CTFilteringRule.populated),
+        ("1-004", 94, CTFilteringRule.populated),
+        ("1-004", 20, CTFilteringRule.populated),
+        ("1-004", 90, CTFilteringRule.populated),
+        ("1-004", 40, CTFilteringRule.populated),
+        ("1-004", 45, CTFilteringRule.populated),
+        ("1-004", 50, CTFilteringRule.populated),
     ]
 
     compute_outlier_cutoff_and_clean_input_rows = [

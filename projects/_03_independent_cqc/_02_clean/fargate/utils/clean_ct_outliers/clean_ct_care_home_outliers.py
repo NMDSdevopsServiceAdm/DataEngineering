@@ -1,5 +1,8 @@
 import polars as pl
 
+from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_longitudinal_outliers import (
+    clean_longitudinal_outliers,
+)
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_repetition import (
     clean_ct_values_after_consecutive_repetition,
 )
@@ -47,6 +50,15 @@ def clean_capacity_tracker_care_home_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = aggregate_values_to_provider_level(lf, IndCQC.ct_care_home_total_employed)
 
     lf = null_posts_per_bed_outliers(lf)
+
+    lf = clean_longitudinal_outliers(
+        lf=lf,
+        group_by_col=IndCQC.location_id,
+        col_to_clean=IndCQC.ct_care_home_total_employed_cleaned,
+        cleaned_column_name=IndCQC.ct_care_home_total_employed_cleaned,
+        proportion_to_filter=0.001,
+        care_home=True,
+    )
 
     lf = clean_ct_values_after_consecutive_repetition(
         lf=lf,
