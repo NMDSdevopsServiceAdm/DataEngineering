@@ -42,6 +42,8 @@ All notable changes to this project will be documented in this file.
 
 - Switch to use of `uv` in CI for quicker dependency installation. https://github.com/NMDSdevopsServiceAdm/DataEngineering/pull/1237
 
+- Combined the CSSR areas Cornwall and Isles of Scilly.
+
 ### Fixed
 - Changed the raw ONS CSV data to contain numeric codes instead of labels. The labels are then added during the cleaning step to improve naming consistency over time.
 
