@@ -12,7 +12,6 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
@@ -181,10 +180,9 @@ def filter_to_locations_relevant_to_reconcilition_process(
 def create_reconciliation_output_for_ascwds_single_and_sub_accounts(
     reconciliation_df: DataFrame,
 ) -> DataFrame:
-    singles_and_subs_df = utils.select_rows_with_value(
-        reconciliation_df,
-        ReconColumn.parents_or_singles_and_subs,
-        ParentsOrSinglesAndSubs.singles_and_subs,
+    singles_and_subs_df = reconciliation_df.filter(
+        F.col(ReconColumn.parents_or_singles_and_subs)
+        == ParentsOrSinglesAndSubs.singles_and_subs
     )
     singles_and_subs_df = add_singles_and_sub_description_column(singles_and_subs_df)
     singles_and_subs_df = add_subject_column(
@@ -216,10 +214,9 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
     reconciliation_df: DataFrame,
     first_of_previous_month: str,
 ) -> DataFrame:
-    reconciliation_parents_df = utils.select_rows_with_value(
-        reconciliation_df,
-        ReconColumn.parents_or_singles_and_subs,
-        ParentsOrSinglesAndSubs.parents,
+    reconciliation_parents_df = reconciliation_df.filter(
+        F.col(ReconColumn.parents_or_singles_and_subs)
+        == ParentsOrSinglesAndSubs.parents
     )
     new_issues_df = reconciliation_parents_df.where(
         F.col(CQCL.deregistration_date) >= first_of_previous_month

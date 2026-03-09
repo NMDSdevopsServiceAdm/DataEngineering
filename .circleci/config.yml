@@ -4,6 +4,7 @@ environment:
   AWS_REGION: eu-west-2
 
 parameters:
+  # These GitHub Actions params are expected by CircleCI even if unused.
   GHA_Actor:
     type: string
     default: ""
@@ -16,6 +17,9 @@ parameters:
   GHA_Meta:
     type: string
     default: ""
+  terraform_version:
+    type: string
+    default: 1.13.5
 
 orbs:
   aws-cli: circleci/aws-cli@5.4.1
@@ -53,37 +57,45 @@ jobs:
 
   test:
     docker:
-      - image: cimg/python:3.11.12
+      - image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
     resource_class: large
+    environment:
+      SPARK_VERSION: "3.5"       # Required for pydeequ to initialize
     steps:
       - checkout
       - restore_cache:
           keys:
-            - v1.1-deps-{{ checksum "Pipfile.lock" }}
+            - v1.2-uv-cache-{{ checksum "Pipfile.lock" }}
       - run:
           name: Install system packages
           command: |
-            sudo apt-get update
-            sudo apt-get install -y default-jre-headless
+            apt-get update
+            apt-get install -y default-jre-headless
       - run:
           name: install dependencies
-          command: |
-            pip install pipenv
-            pipenv install --dev
+          command: uv pip install --system -r <(uvx pipenv requirements --dev)
+      # Pre-cache the pyqeequ dependency so xdist works better.
+      - run:
+            name: Pre-cache Spark JARs
+            command: python scripts/fetch_spark_dependencies.py
       - save_cache:
-          key: v1.1-deps-{{ checksum "Pipfile.lock" }}
+          key: v1.2-uv-cache-{{ checksum "Pipfile.lock" }}
           paths:
-            - ~/.local/share/virtualenvs
+            - ~/.m2/repository
+            - ~/.ivy2/jars
+            - ~/.ivy2/cache
+            - ~/.cache/uv
       - run:
-          name: run unit tests
+          name: Run unit tests and generate coverage
           command: |
-            pipenv run coverage run --source=. -m unittest discover -s . -p "test_*.py"
+            pytest \
+              -n auto --dist loadfile \
+              --cov=. \
+              --cov-report=xml \
+              --cov-report=html
       - run:
-          name: Generate coverage report
-          command: |
-            pipenv run coverage report
-            pipenv run coverage xml
-            pipenv run coverage html
+            name: Output Coverage Report
+            command: coverage report
       - store_artifacts:
           path: htmlcov
 
@@ -115,7 +127,7 @@ jobs:
 
   lint-terraform:
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:<< pipeline.parameters.terraform_version >>
     resource_class: small
     steps:
       - checkout
@@ -135,7 +147,7 @@ jobs:
         type: env_var_name
     working_directory: /tmp/project
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:<< pipeline.parameters.terraform_version >>
     resource_class: small
     steps:
       - checkout
@@ -171,7 +183,7 @@ jobs:
       secret_key:
         type: env_var_name
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:<< pipeline.parameters.terraform_version >>
     resource_class: small
     steps:
       - checkout
@@ -286,7 +298,7 @@ jobs:
   terraform-destroy:
     working_directory: /tmp/project
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:<< pipeline.parameters.terraform_version >>
     resource_class: small
     steps:
       - checkout

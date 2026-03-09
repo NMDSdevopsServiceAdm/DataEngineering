@@ -27,9 +27,6 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    ArchivePartitionKeys as ArchiveKeys,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
@@ -45,52 +42,6 @@ from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     MainJobRoleLabels,
 )
-
-
-@dataclass
-class ValidateMergedIndCqcData:
-    cqc_locations_schema = StructType(
-        [
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.cqc_sector, StringType(), True),
-            StructField(CQCLClean.care_home, StringType(), True),
-            StructField(CQCLClean.number_of_beds, IntegerType(), True),
-        ]
-    )
-    merged_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
-            StructField(IndCQC.cqc_pir_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.name, StringType(), True),
-            StructField(IndCQC.provider_id, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.imputed_registration_date, DateType(), True),
-            StructField(IndCQC.dormancy, StringType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.services_offered, ArrayType(StringType()), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.contemporary_ons_import_date, DateType(), True),
-            StructField(IndCQC.contemporary_cssr, StringType(), True),
-            StructField(IndCQC.contemporary_region, StringType(), True),
-            StructField(IndCQC.current_ons_import_date, DateType(), True),
-            StructField(IndCQC.current_cssr, StringType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.current_lsoa21, StringType(), True),
-            StructField(IndCQC.current_msoa21, StringType(), True),
-            StructField(
-                IndCQC.pir_people_directly_employed_cleaned, IntegerType(), True
-            ),
-            StructField(IndCQC.establishment_id, StringType(), True),
-            StructField(IndCQC.organisation_id, StringType(), True),
-            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
-            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
-        ]
-    )
 
 
 @dataclass
@@ -304,40 +255,6 @@ class ValidateImputedIndCqcAscwdsAndPir:
         ]
     )
     calculate_expected_size_schema = cleaned_ind_cqc_schema
-
-
-@dataclass
-class ArchiveFilledPostsEstimates:
-    filled_posts_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    select_import_dates_to_archive_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    create_archive_date_partitions_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    expected_create_archive_date_partitions_schema = StructType(
-        [
-            *create_archive_date_partitions_schema,
-            StructField(ArchiveKeys.archive_day, StringType(), True),
-            StructField(ArchiveKeys.archive_month, StringType(), True),
-            StructField(ArchiveKeys.archive_year, StringType(), True),
-            StructField(ArchiveKeys.archive_timestamp, StringType(), True),
-        ]
-    )
 
 
 @dataclass
@@ -1144,6 +1061,7 @@ class CleanIndCQCData:
         ]
     )
 
+    # converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.AddColumnWithRepeatedValuesRemovedSchemas.repeated_value_schema
     repeated_value_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -1153,6 +1071,7 @@ class CleanIndCQCData:
         ]
     )
 
+    # converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.AddColumnWithRepeatedValuesRemovedSchemas.expected_without_repeated_values_schema
     expected_without_repeated_values_schema = StructType(
         [
             *repeated_value_schema,
@@ -1174,6 +1093,7 @@ class CleanIndCQCData:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.CalculateAscwdsFilledPostsUtilsSchemas
 @dataclass
 class CalculateAscwdsFilledPostsUtilsSchemas:
     estimated_source_description_schema = StructType(
@@ -1185,6 +1105,7 @@ class CalculateAscwdsFilledPostsUtilsSchemas:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.CalculateAscwdsFilledPostsSchemas
 @dataclass
 class CalculateAscwdsFilledPostsSchemas:
     calculate_ascwds_filled_posts_schema = StructType(
@@ -1198,6 +1119,7 @@ class CalculateAscwdsFilledPostsSchemas:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas
 @dataclass
 class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas:
     calculate_ascwds_filled_posts_schema = StructType(
@@ -1211,6 +1133,7 @@ class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.CalculateAscwdsFilledPostsDifferenceInRangeSchemas
 @dataclass
 class CalculateAscwdsFilledPostsDifferenceInRangeSchemas:
     calculate_ascwds_filled_posts_schema = StructType(
@@ -1224,6 +1147,7 @@ class CalculateAscwdsFilledPostsDifferenceInRangeSchemas:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.CleanFilteringUtilsSchemas
 @dataclass
 class CleanFilteringUtilsSchemas:
     add_filtering_column_schema = StructType(
@@ -1657,180 +1581,6 @@ class ValidateCleanedIndCqcData:
 
 
 @dataclass
-class NonResAscwdsFeaturesSchema(object):
-    basic_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.imputed_registration_date, DateType(), False),
-            StructField(IndCQC.time_registered, IntegerType(), False),
-            StructField(IndCQC.time_since_dormant, IntegerType(), True),
-            StructField(IndCQC.current_region, StringType(), False),
-            StructField(IndCQC.dormancy, StringType(), True),
-            StructField(IndCQC.services_offered, ArrayType(StringType()), True),
-            StructField(
-                IndCQC.regulated_activities_offered, ArrayType(StringType()), True
-            ),
-            StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
-            StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
-            StructField(IndCQC.imputed_filled_post_model, DoubleType(), True),
-            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), False),
-            StructField(IndCQC.related_location, StringType(), True),
-            StructField(Keys.year, StringType(), False),
-            StructField(Keys.month, StringType(), False),
-            StructField(Keys.day, StringType(), False),
-            StructField(Keys.import_date, StringType(), False),
-        ]
-    )
-
-
-@dataclass
-class ValidateFeaturesNonResASCWDSWithDormancyIndCqcSchema:
-    cleaned_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.dormancy, StringType(), True),
-            StructField(IndCQC.services_offered, ArrayType(StringType(), True)),
-            StructField(IndCQC.specialisms_offered, ArrayType(StringType(), True)),
-        ]
-    )
-    non_res_ascwds_ind_cqc_features_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    calculate_expected_size_schema = cleaned_ind_cqc_schema
-
-
-@dataclass
-class ModelFeatures:
-    vectorise_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField("col_1", FloatType(), True),
-            StructField("col_2", IntegerType(), True),
-            StructField("col_3", IntegerType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-    expected_vectorised_feature_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.features, VectorUDT(), True),
-        ]
-    )
-
-    expand_encode_and_extract_features_when_not_array_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField("categories", StringType(), True),
-        ]
-    )
-    expected_expand_encode_and_extract_features_when_not_array_schema = StructType(
-        [
-            *expand_encode_and_extract_features_when_not_array_schema,
-            StructField("has_A", IntegerType(), True),
-            StructField("has_B", IntegerType(), True),
-            StructField("has_C", IntegerType(), True),
-        ]
-    )
-
-    expand_encode_and_extract_features_when_is_array_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField("categories", ArrayType(StringType()), True),
-        ]
-    )
-    expected_expand_encode_and_extract_features_when_is_array_schema = StructType(
-        [
-            *expand_encode_and_extract_features_when_is_array_schema,
-            StructField("has_A", IntegerType(), True),
-            StructField("has_B", IntegerType(), True),
-            StructField("has_C", IntegerType(), True),
-        ]
-    )
-
-    cap_integer_at_max_value_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.service_count, IntegerType(), True),
-        ]
-    )
-    expected_cap_integer_at_max_value_schema = StructType(
-        [
-            *cap_integer_at_max_value_schema,
-            StructField(IndCQC.service_count_capped, IntegerType(), True),
-        ]
-    )
-
-    add_array_column_count_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.services_offered, ArrayType(StringType(), True)),
-        ]
-    )
-    expected_add_array_column_count_schema = StructType(
-        [
-            *add_array_column_count_schema,
-            StructField(IndCQC.service_count, IntegerType(), True),
-        ]
-    )
-
-    add_date_index_column_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-        ]
-    )
-    expected_add_date_index_column_schema = StructType(
-        [
-            *add_date_index_column_schema,
-            StructField(IndCQC.cqc_location_import_date_indexed, IntegerType(), False),
-        ]
-    )
-
-    group_rural_urban_sparse_categories_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-        ]
-    )
-    expected_group_rural_urban_sparse_categories_schema = StructType(
-        [
-            *group_rural_urban_sparse_categories_schema,
-            StructField(
-                IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
-                StringType(),
-                True,
-            ),
-        ]
-    )
-
-    add_squared_column_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date_indexed, DoubleType(), True),
-        ]
-    )
-    expected_add_squared_column_schema = StructType(
-        [
-            *add_squared_column_schema,
-            StructField(
-                IndCQC.cqc_location_import_date_indexed_squared, DoubleType(), True
-            ),
-        ]
-    )
-
-
-@dataclass
 class EstimateFilledPostsModelsUtils:
     enrich_model_ind_cqc_schema = StructType(
         [
@@ -1957,32 +1707,27 @@ class ModelPrimaryServiceRateOfChange:
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(
-                IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
-            ),
+            StructField(IndCQC.number_of_beds_banded_roc, DoubleType(), True),
             StructField(IndCQC.combined_ratio_and_filled_posts, DoubleType(), True),
             StructField(IndCQC.care_home_status_count, IntegerType(), True),
         ]
     )
     expected_primary_service_rate_of_change_schema = StructType(
         [
-            *primary_service_rate_of_change_schema,
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.number_of_beds_banded_roc, DoubleType(), True),
+            StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
         ]
     )
 
-    clean_column_with_values_schema = StructType(
+    remove_ineligible_locations_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.care_home_status_count, IntegerType(), True),
-            StructField(RoC_TempCol.column_with_values, DoubleType(), True),
-        ]
-    )
-    expected_clean_column_with_values_schema = StructType(
-        [
-            *clean_column_with_values_schema,
+            StructField(RoC_TempCol.current_period, DoubleType(), True),
             StructField(RoC_TempCol.submission_count, IntegerType(), True),
         ]
     )
@@ -1991,7 +1736,7 @@ class ModelPrimaryServiceRateOfChange:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
-            StructField(RoC_TempCol.column_with_values, DoubleType(), True),
+            StructField(RoC_TempCol.current_period, DoubleType(), True),
         ]
     )
     expected_calculate_submission_count_schema = StructType(
@@ -2001,19 +1746,17 @@ class ModelPrimaryServiceRateOfChange:
         ]
     )
 
-    interpolate_column_with_values_schema = StructType(
+    interpolate_current_values_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RoC_TempCol.column_with_values, DoubleType(), True),
+            StructField(RoC_TempCol.current_period, DoubleType(), True),
         ]
     )
-    expected_interpolate_column_with_values_schema = StructType(
+    expected_interpolate_current_values_schema = StructType(
         [
-            *interpolate_column_with_values_schema,
-            StructField(
-                RoC_TempCol.column_with_values_interpolated, DoubleType(), True
-            ),
+            *interpolate_current_values_schema,
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
         ]
     )
 
@@ -2021,55 +1764,80 @@ class ModelPrimaryServiceRateOfChange:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(
-                RoC_TempCol.column_with_values_interpolated, DoubleType(), True
-            ),
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
         ]
     )
     expected_add_previous_value_column_schema = StructType(
         [
             *add_previous_value_column_schema,
-            StructField(
-                RoC_TempCol.previous_column_with_values_interpolated, DoubleType(), True
-            ),
+            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
         ]
     )
 
-    add_rolling_sum_columns_schema = StructType(
+    calculate_primary_service_rolling_sums_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(
-                IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
-            ),
+            StructField(IndCQC.number_of_beds_banded_roc, DoubleType(), True),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(
-                RoC_TempCol.column_with_values_interpolated, DoubleType(), True
-            ),
-            StructField(
-                RoC_TempCol.previous_column_with_values_interpolated, DoubleType(), True
-            ),
+            StructField(RoC_TempCol.current_period_cleaned, DoubleType(), True),
+            StructField(RoC_TempCol.previous_period_cleaned, DoubleType(), True),
         ]
     )
-    expected_add_rolling_sum_columns_schema = StructType(
+    expected_calculate_primary_service_rolling_sums_schema = StructType(
         [
-            *add_rolling_sum_columns_schema,
-            StructField(RoC_TempCol.rolling_current_period_sum, DoubleType(), True),
-            StructField(RoC_TempCol.rolling_previous_period_sum, DoubleType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.number_of_beds_banded_roc, DoubleType(), True),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(RoC_TempCol.rolling_current_sum, DoubleType(), True),
+            StructField(RoC_TempCol.rolling_previous_sum, DoubleType(), True),
         ]
     )
 
-    calculate_rate_of_change_schema = StructType(
+
+@dataclass
+class ModelPrimaryServiceRateOfChangeCleaningSchemas:
+    calculate_absolute_and_percentage_change_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(RoC_TempCol.rolling_current_period_sum, DoubleType(), True),
-            StructField(RoC_TempCol.rolling_previous_period_sum, DoubleType(), True),
+            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.abs_change, DoubleType(), True),
+            StructField(RoC_TempCol.perc_change, DoubleType(), True),
         ]
     )
-    expected_calculate_rate_of_change_schema = StructType(
+
+    compute_non_res_threshold_schema = StructType(
         [
-            *calculate_rate_of_change_schema,
-            StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.abs_change, DoubleType(), True),
+            StructField(RoC_TempCol.perc_change, DoubleType(), True),
+        ]
+    )
+
+    build_keep_condition_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.abs_change, DoubleType(), True),
+            StructField(RoC_TempCol.perc_change, DoubleType(), True),
+            StructField("keep", BooleanType(), False),
+        ]
+    )
+
+    apply_rate_of_change_cleaning_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(RoC_TempCol.previous_period_interpolated, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_interpolated, DoubleType(), True),
+            StructField("keep", BooleanType(), False),
+            StructField(RoC_TempCol.previous_period_cleaned, DoubleType(), True),
+            StructField(RoC_TempCol.current_period_cleaned, DoubleType(), True),
         ]
     )
 
@@ -2095,47 +1863,11 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
             ),
         ]
     )
-    calculate_rate_of_change_trendline_mock_schema = StructType(
-        [
-            StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(
-                IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
-            ),
-            StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(
-                IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
-            ),
-        ]
-    )
-
-    deduplicate_dataframe_schema = StructType(
-        [
-            StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(
-                IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
-            ),
-            StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
-            StructField("another_col", DoubleType(), True),
-        ]
-    )
-    expected_deduplicate_dataframe_schema = StructType(
-        [
-            StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(
-                IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
-            ),
-            StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
-        ]
-    )
 
     calculate_rate_of_change_trendline_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(
-                IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
-            ),
+            StructField(IndCQC.number_of_beds_banded_roc, DoubleType(), True),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
         ]
@@ -2143,9 +1875,7 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
     expected_calculate_rate_of_change_trendline_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(
-                IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
-            ),
+            StructField(IndCQC.number_of_beds_banded_roc, DoubleType(), True),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(
                 IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
@@ -2388,29 +2118,6 @@ class ModelInterpolation:
         [
             *calculate_interpolated_values_schema,
             StructField(IndCQC.interpolation_model, DoubleType(), True),
-        ]
-    )
-
-
-@dataclass
-class ModelNonResWithDormancy:
-    non_res_with_dormancy_cleaned_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-    non_res_with_dormancy_features_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.features, VectorUDT(), True),
         ]
     )
 
@@ -2986,7 +2693,7 @@ class DiagnosticsUtilsSchemas:
 
 @dataclass
 class IndCQCDataUtils:
-    input_schema_for_adding_estimate_filled_posts_and_source = StructType(
+    merge_columns_in_order_when_double_type_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField("model_name_1", DoubleType(), True),
@@ -2994,38 +2701,15 @@ class IndCQCDataUtils:
             StructField("model_name_3", DoubleType(), True),
         ]
     )
-
-    expected_schema_with_estimate_filled_posts_and_source = StructType(
+    expected_merge_columns_in_order_when_double_type_schema = StructType(
         [
-            *input_schema_for_adding_estimate_filled_posts_and_source,
+            *merge_columns_in_order_when_double_type_schema,
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
             StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
         ]
     )
 
-    merge_columns_in_order_when_df_has_columns_of_multiple_datatypes_schema = (
-        StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.care_home_model, DoubleType(), True),
-                StructField(
-                    IndCQC.ascwds_job_role_ratios, MapType(StringType(), DoubleType())
-                ),
-            ]
-        )
-    )
-
-    merge_columns_in_order_when_columns_are_datatype_string_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
-            StructField(
-                IndCQC.ascwds_job_role_ratios_merged_source, StringType(), True
-            ),
-        ]
-    )
-
-    merge_columns_in_order_using_map_columns_schema = StructType(
+    merge_columns_in_order_when_map_type_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(
@@ -3038,10 +2722,9 @@ class IndCQCDataUtils:
             ),
         ]
     )
-
-    expected_merge_columns_in_order_using_map_columns_schema = StructType(
+    expected_merge_columns_in_order_when_map_type_schema = StructType(
         [
-            *merge_columns_in_order_using_map_columns_schema,
+            *merge_columns_in_order_when_map_type_schema,
             StructField(
                 IndCQC.ascwds_job_role_ratios_merged,
                 MapType(StringType(), DoubleType()),
@@ -3065,6 +2748,16 @@ class IndCQCDataUtils:
         [
             *get_selected_value_schema,
             StructField("new_column", FloatType(), True),
+        ]
+    )
+
+    nullify_ct_values_previous_to_first_submission_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField("a", DoubleType(), True),
+            StructField("b", DoubleType(), True),
+            StructField("c", StringType(), True),
         ]
     )
 
@@ -3136,43 +2829,50 @@ class CleanCtRepetition:
     )
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.ForwardFillLatestKnownValue
 @dataclass
 class ForwardFillLatestKnownValue:
+    col_to_forward_fill: str = "col_to_forward_fill"
+    days_to_forward_fill: str = "days_to_forward_fill"
+    last_known_date: str = "last_known_date"
+    last_known_value: str = "last_known_value"
+
+    size_based_forward_fill_days_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(col_to_forward_fill, IntegerType(), True),
+        ]
+    )
+    expected_size_based_forward_fill_days_schema = StructType(
+        [
+            *size_based_forward_fill_days_schema,
+            StructField(days_to_forward_fill, IntegerType(), True),
+        ]
+    )
+
     input_return_last_known_value_locations_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField("col_to_repeat", IntegerType(), True),
+            StructField(col_to_forward_fill, IntegerType(), True),
         ]
     )
     expected_return_last_known_value_locations_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField("last_known_date", DateType(), True),
-            StructField("last_known_value", IntegerType(), True),
+            StructField(last_known_date, DateType(), True),
+            StructField(last_known_value, IntegerType(), True),
         ]
     )
-    input_forward_fill_locations_schema = StructType(
+
+    forward_fill_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField("col_to_repeat", IntegerType(), True),
-            StructField("last_known_date", DateType(), True),
-            StructField("last_known_value", IntegerType(), True),
-        ]
-    )
-    expected_forward_fill_locations_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField("col_to_repeat", IntegerType(), True),
-        ]
-    )
-    forward_fill_latest_known_value_locations_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField("col_to_repeat", IntegerType(), True),
+            StructField(col_to_forward_fill, IntegerType(), True),
+            StructField(last_known_date, DateType(), True),
+            StructField(last_known_value, IntegerType(), True),
+            StructField(days_to_forward_fill, IntegerType(), True),
         ]
     )
 

@@ -1,5 +1,8 @@
 import polars as pl
 
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import CareHome
+
 
 def add_aligned_date_column(
     primary_lf: pl.LazyFrame,
@@ -71,3 +74,34 @@ def column_to_date(
         .str.to_date(string_format)
         .alias(target_col)
     )
+
+
+def calculate_filled_posts_per_bed_ratio(
+    input_lf: pl.LazyFrame, filled_posts_column: str, new_column_name: str
+) -> pl.LazyFrame:
+    """
+    Add a column with the filled post per bed ratio for care homes.
+
+    Args:
+        input_lf (pl.LazyFrame): A LazyFrame containing the given column, care_home
+            and numberofbeds.
+        filled_posts_column (str): The name of the column to use for calculating
+            the ratio.
+        new_column_name (str): The name to give the new column.
+
+    Returns:
+        pl.LazyFrame: The same LazyFrame with an additional column contianing the
+            filled posts per bed ratio for care homes.
+    """
+    lf = input_lf.with_columns(
+        pl.when(
+            (pl.col(IndCQC.care_home) == CareHome.care_home)
+            & pl.col(IndCQC.number_of_beds).is_not_null()
+            & (pl.col(IndCQC.number_of_beds) != 0)
+        )
+        .then(pl.col(filled_posts_column) / pl.col(IndCQC.number_of_beds))
+        .otherwise(pl.lit(None))
+        .alias(new_column_name)
+    )
+
+    return lf

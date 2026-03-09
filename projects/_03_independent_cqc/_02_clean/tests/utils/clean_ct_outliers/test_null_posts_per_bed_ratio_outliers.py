@@ -1,5 +1,3 @@
-import unittest
-
 import projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.null_posts_per_bed_ratio_outliers as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     NullCtPostsToBedsOutliers as Data,
@@ -7,13 +5,11 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     NullCtPostsToBedsOutliers as Schemas,
 )
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from tests.base_test import SparkBaseTest
 
 
-class TestCleanCtCareHomeOutliers(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
+class TestCleanCtCareHomeOutliers(SparkBaseTest):
+    def setUp(self): ...
 
 
 class TestNullCtPostsToBedsOutliers(TestCleanCtCareHomeOutliers):
@@ -35,9 +31,6 @@ class TestNullCtPostsToBedsOutliers(TestCleanCtCareHomeOutliers):
 
 
 class RatioCutoffValueTests(TestCleanCtCareHomeOutliers):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_ratio_cutoffs_are_correct(self):
         self.assertEqual(job.MINIMUM_RATIO_CUTOFF, 0.66)
         self.assertEqual(job.MAXIMUM_RATIO_CUTOFF, 6.0)

@@ -1,4 +1,3 @@
-import unittest
 import warnings
 from unittest.mock import Mock, patch
 
@@ -9,16 +8,16 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     CleanAscwdsFilledPostOutliersSchema as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 
 PATCH_PATH: str = (
     "projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers"
 )
 
 
-class CleanAscwdsFilledPostOutliersTests(unittest.TestCase):
+class CleanAscwdsFilledPostOutliersTests(SparkBaseTest):
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.unfiltered_ind_cqc_df = self.spark.createDataFrame(
             Data.unfiltered_ind_cqc_rows,
             Schemas.unfiltered_ind_cqc_schema,

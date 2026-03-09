@@ -5,11 +5,54 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Converted archive job from pyspark to polars.
+
+- Created polars job script for clean ind cqc filled posts. Script only reads and writes data and has comments
+  for each util call to be added to the script as it's developed.
+  Added this job to the estimates pipeline in parallel with pyspark version.
+
+- Created pointblank validation script for cleaned ind cqc dataset. Added script to estimates pipeline.
+  The validation is all commented out so no checks are run, but they are converted from the pydeequ version.
+
+- Filtering of non-residential outliers in the rate of change calculations.
+
+- Longitudinal filtering of Capacity Tracker Care Home data to nullify trend outliers.
+  Removed all Capacity Tracker data pre 1st May 2021.
+
+### Changed
+- Switched test runner to pytest in CI, so that a shared session fixture for a spark configuration optimised for tests
+  can be used. Has resulted in 70% reduction in runtime for current pyspark tests in CI, and improvement on local
+  Windows machines. https://github.com/NMDSdevopsServiceAdm/DataEngineering/pull/1219
+
+- Refactored the rate of change to filter rows instead of nulling values to speed up processing time and make the
+  filtering process in a follow-up PR much easier to implement.
+
+- Changed the forward-filling of the last known value from two months for all locations to using a length of time base on the location size.
+
+- Changed imputation to apply nominal changes instead of converting and applying a ratio.
+
+- Removed minimum value requirement from `merge_columns_in_order`.
+
+- Moved `set_min_value` from model predictions and imputation to after the estimates column is produced.
+
+- Replaced the static PySpark modelling code for non-residential with dormancy with the auto-retraining sklearn equivalent.
+
+- Removed all remaining PySpark modelling code for care homes and non-residential with/without dormancy.
+
+- Switch to use of `uv` in CI for quicker dependency installation. https://github.com/NMDSdevopsServiceAdm/DataEngineering/pull/1237
+
+- Combined the CSSR areas Cornwall and Isles of Scilly.
+
+### Fixed
+- Changed the raw ONS CSV data to contain numeric codes instead of labels. The labels are then added during the cleaning step to improve naming consistency over time.
+
+- Updated the normalise_structs function in cqc_api.py and added a new function to create a DataFrame for the raw data. The new function makes sure the data is properly normalised and can handle any new columns added by CQC. It also logs any newly added columns that are not in our current schema, so we can review them and update the schema if needed.
+
+## [v2026.01.0] - 12/02/2026
 
 ### Added
 - A new function to remove longitudinal outliers from CT data. The function flags the outliers based on absolute difference in median values and removes the ourlier value.
-
-- Converted util functions select_rows_with_value and select_rows_with_non_null_value from spark to polars.
 
 - Polars job [model_03_predict](projects/_03_independent_cqc/_04_model/fargate/model_03_predict.py) to load a specified model then generate and save predictions.
 
@@ -23,6 +66,18 @@ All notable changes to this project will be documented in this file.
 - Added three validation rules for primary_service_second_level column to check expected values.
 
 - Python package [aws-mfa-v2] (https://pypi.org/project/aws-mfa-v2/) to allow for terraform to handle MFA authentication in a cross role account when used locally.
+
+- Converted the validate_merged_ind_cqc_data job script from PyDeequ to Pointblank
+
+- Converted the validate_merge_coverage_data job script from PyDeequ to Pointblank.
+
+- Converted ascwds_filled_posts_calculator utils folder to polars within Clean Ind CQC Job.
+
+- Added a new utils file for all the inline function within clean_ind_cqc_filled_posts.py and converted them to Polars.
+
+- Converted `filtering_utils.py`, `forward_fill_latest_known_value.py` and `utils.py` within clean Ind CQC job to polars.
+
+- Converted clean_ascwds_filled_post_outliers utils folder to polars within Clean Ind CQC Job.
 
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.

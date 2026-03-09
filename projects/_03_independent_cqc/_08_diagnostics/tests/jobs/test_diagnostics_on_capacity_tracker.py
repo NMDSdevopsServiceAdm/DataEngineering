@@ -8,7 +8,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     DiagnosticsOnCapacityTrackerSchemas as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome
 
@@ -17,7 +17,7 @@ PATCH_PATH: str = (
 )
 
 
-class DiagnosticsOnCapacityTrackerTests(unittest.TestCase):
+class DiagnosticsOnCapacityTrackerTests(SparkBaseTest):
     ESTIMATED_FILLED_POSTS_SOURCE = "some/directory"
     CARE_HOME_DIAGNOSTICS_DESTINATION = "some/other/directory"
     CARE_HOME_SUMMARY_DIAGNOSTICS_DESTINATION = "another/directory"
@@ -26,7 +26,6 @@ class DiagnosticsOnCapacityTrackerTests(unittest.TestCase):
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self):
-        self.spark = utils.get_spark()
         self.estimate_jobs_df = self.spark.createDataFrame(
             Data.estimate_filled_posts_rows,
             Schemas.estimate_filled_posts_schema,
@@ -36,9 +35,6 @@ class DiagnosticsOnCapacityTrackerTests(unittest.TestCase):
 
 
 class MainTests(DiagnosticsOnCapacityTrackerTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.dUtils.create_summary_diagnostics_table")
     @patch(f"{PATCH_PATH}.run_diagnostics")
@@ -69,9 +65,6 @@ class MainTests(DiagnosticsOnCapacityTrackerTests):
 
 
 class RunDiagnostics(DiagnosticsOnCapacityTrackerTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.dUtils.calculate_aggregate_residuals")
     @patch(f"{PATCH_PATH}.dUtils.calculate_residuals")
     @patch(f"{PATCH_PATH}.dUtils.calculate_distribution_metrics")
@@ -79,10 +72,8 @@ class RunDiagnostics(DiagnosticsOnCapacityTrackerTests):
     @patch(f"{PATCH_PATH}.dUtils.filter_to_known_values")
     @patch(f"{PATCH_PATH}.dUtils.restructure_dataframe_to_column_wise")
     @patch(f"{PATCH_PATH}.dUtils.create_list_of_models")
-    @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
     def test_run_diagnostics_runs(
         self,
-        select_rows_with_value_mock: Mock,
         create_list_of_models_mock: Mock,
         restructure_dataframe_to_column_wise_mock: Mock,
         filter_to_known_values_mock: Mock,
@@ -93,7 +84,6 @@ class RunDiagnostics(DiagnosticsOnCapacityTrackerTests):
     ):
         job.run_diagnostics(self.estimate_jobs_df, self.care_home, self.diagnostic_col)
 
-        select_rows_with_value_mock.assert_called_once()
         create_list_of_models_mock.assert_called_once()
         restructure_dataframe_to_column_wise_mock.assert_called_once()
         filter_to_known_values_mock.assert_called_once()
@@ -104,9 +94,6 @@ class RunDiagnostics(DiagnosticsOnCapacityTrackerTests):
 
 
 class CheckConstantsTests(DiagnosticsOnCapacityTrackerTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_absolute_value_cutoff_is_expected_value(self):
         self.assertEqual(job.absolute_value_cutoff, 10.0)
         self.assertIsInstance(job.absolute_value_cutoff, float)

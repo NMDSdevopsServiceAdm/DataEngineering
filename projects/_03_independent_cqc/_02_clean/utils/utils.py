@@ -6,6 +6,7 @@ from pyspark.sql import functions as F
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.utils.create_column_with_repeated_values_removed
 def create_column_with_repeated_values_removed(
     df: DataFrame,
     column_to_clean: str,

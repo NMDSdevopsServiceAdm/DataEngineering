@@ -8,7 +8,7 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     MergeCoverageData as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -26,7 +26,7 @@ from utils.column_values.categorical_column_values import (
 PATCH_PATH = "projects._02_sfc_internal.cqc_coverage.jobs.merge_coverage_data"
 
 
-class SetupForTests(unittest.TestCase):
+class SetupForTests(SparkBaseTest):
     TEST_CQC_LOCATION_SOURCE = "some/directory"
     TEST_ASCWDS_WORKPLACE_SOURCE = "some/other/directory"
     TEST_CQC_RATINGS_SOURCE = "some/other/directory"
@@ -36,7 +36,6 @@ class SetupForTests(unittest.TestCase):
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
         self.test_clean_cqc_location_df = self.spark.createDataFrame(
             Data.clean_cqc_location_for_merge_rows,
             Schemas.clean_cqc_location_for_merge_schema,
@@ -56,9 +55,6 @@ class SetupForTests(unittest.TestCase):
 
 
 class MainTests(SetupForTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.filter_df_to_maximum_value_in_column")
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.join_provider_name_into_merged_coverage_df")
@@ -128,9 +124,6 @@ class MainTests(SetupForTests):
 
 
 class JoinAscwdsIntoCqcLocationsTests(SetupForTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_join_ascwds_data_into_cqc_location_df(self):
         returned_df = job.join_ascwds_data_into_cqc_location_df(
             self.test_clean_cqc_location_df,
@@ -281,7 +274,10 @@ class JoinProviderNameIntoMergedCovergae(SetupForTests):
         self.assertEqual(self.returned_df.count(), self.expected_df.count())
 
     def test_join_provider_name_into_merged_coverage_df_has_expected_values(self):
-        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+        self.assertEqual(
+            sorted(self.returned_df.collect()),
+            sorted(self.expected_df.collect()),
+        )
 
 
 if __name__ == "__main__":

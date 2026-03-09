@@ -1,6 +1,3 @@
-import unittest
-import warnings
-from datetime import date
 from unittest.mock import ANY, Mock, patch
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
@@ -12,7 +9,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     EstimateFilledPostsModelsUtils as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 PATCH_PATH: str = (
@@ -20,15 +17,8 @@ PATCH_PATH: str = (
 )
 
 
-class EstimateFilledPostsModelsUtilsTests(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
-
-
-class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
+class EnrichWithModelPredictionsTest(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         self.test_bucket = "test_bucket"
 
         self.mock_ind_cqc_df = Mock(name="ind_cqc_df")
@@ -59,7 +49,6 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         )
 
     @patch(f"{PATCH_PATH}.join_model_predictions")
-    @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.calculate_filled_posts_from_beds_and_ratio")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.generate_predictions_path")
@@ -68,7 +57,6 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         generate_predictions_path_mock: Mock,
         read_from_parquet_mock: Mock,
         calculate_filled_posts_mock: Mock,
-        set_min_value_mock: Mock,
         join_model_predictions_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.mock_predictions_df
@@ -84,13 +72,11 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
             generate_predictions_path_mock.return_value
         )
         calculate_filled_posts_mock.assert_called_once()
-        set_min_value_mock.assert_called_once_with(ANY, IndCqc.prediction, 1.0)
         join_model_predictions_mock.assert_called_once_with(
             ANY, ANY, self.care_home_model, include_run_id=True
         )
 
     @patch(f"{PATCH_PATH}.join_model_predictions")
-    @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.calculate_filled_posts_from_beds_and_ratio")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.generate_predictions_path")
@@ -99,7 +85,6 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         generate_predictions_path_mock: Mock,
         read_from_parquet_mock: Mock,
         calculate_filled_posts_mock: Mock,
-        set_min_value_mock: Mock,
         join_model_predictions_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.mock_predictions_df
@@ -115,7 +100,6 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
             generate_predictions_path_mock.return_value
         )
         calculate_filled_posts_mock.assert_not_called()
-        set_min_value_mock.assert_called_once_with(ANY, IndCqc.prediction, 1.0)
         join_model_predictions_mock.assert_called_once_with(
             ANY, ANY, self.non_res_model, include_run_id=True
         )
@@ -161,9 +145,8 @@ class EnrichWithModelPredictionsTest(EstimateFilledPostsModelsUtilsTests):
         )
 
 
-class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
+class SetMinimumValueTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
         self.test_df = self.spark.createDataFrame(
             Data.set_min_value_when_below_minimum_rows,
             Schemas.set_min_value_schema,
@@ -230,10 +213,8 @@ class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class JoinModelPredictionsTests(EstimateFilledPostsModelsUtilsTests):
+class JoinModelPredictionsTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         self.model_name = Schemas.join_test_model
 
         ind_cqc_df = self.spark.createDataFrame(

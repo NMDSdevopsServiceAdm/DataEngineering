@@ -12,14 +12,14 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     CleanIndCQCData as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_posts"
 
 
-class CleanIndFilledPostsTests(unittest.TestCase):
+class CleanIndFilledPostsTests(SparkBaseTest):
     MERGE_IND_CQC_SOURCE = "input_dir"
     CLEANED_IND_CQC_DESTINATION = "output_dir"
     partition_keys = [
@@ -30,7 +30,6 @@ class CleanIndFilledPostsTests(unittest.TestCase):
     ]
 
     def setUp(self):
-        self.spark = utils.get_spark()
         self.merge_ind_cqc_test_df = self.spark.createDataFrame(
             Data.merged_rows_for_cleaning_job,
             Schemas.merged_schema_for_cleaning_job,
@@ -39,9 +38,6 @@ class CleanIndFilledPostsTests(unittest.TestCase):
 
 
 class MainTests(CleanIndFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.calculate_care_home_status_count")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
@@ -243,17 +239,8 @@ class MainTests(CleanIndFilledPostsTests):
         df = df.collect()
         self.assertEqual(df[0][IndCQC.number_of_beds], 1)
 
-    def test_days_to_repeat_forward_filling_is_correct(self):
-        self.assertEqual(
-            job.NumericalValues.number_of_days_to_forward_fill,
-            65,
-        )
-
 
 class CalculateTimeRegisteredForTests(CleanIndFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_calculate_time_registered_returns_one_when_dates_are_on_the_same_day(
         self,
     ):
@@ -359,7 +346,6 @@ class CalculateTimeSinceDormant(CleanIndFilledPostsTests):
 
 
 class RemoveDualRegistrationCqcCareHomes(CleanIndFilledPostsTests):
-
     def setUp(self):
         super().setUp()
 

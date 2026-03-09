@@ -9,7 +9,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ImputeIndCqcAscwdsAndPirSchemas as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH: str = (
@@ -17,7 +17,7 @@ PATCH_PATH: str = (
 )
 
 
-class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
+class ImputeIndCqcAscwdsAndPirTests(SparkBaseTest):
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
     ESTIMATES_DESTINATION = "estimates destination"
     NON_RES_PIR_MODEL = (
@@ -31,7 +31,6 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
     ]
 
     def setUp(self):
-        self.spark = utils.get_spark()
         self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(
             Data.cleaned_ind_cqc_rows, Schemas.cleaned_ind_cqc_schema
         )
@@ -41,6 +40,7 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
 
 class MainTests(ImputeIndCqcAscwdsAndPirTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.nullify_ct_values_previous_to_first_submission")
     @patch(f"{PATCH_PATH}.convert_care_home_ratios_to_posts")
     @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
     @patch(f"{PATCH_PATH}.model_calculate_rolling_average")
@@ -63,6 +63,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         model_calculate_rolling_average_mock: Mock,
         create_banded_bed_count_column_mock: Mock,
         convert_care_home_ratios_to_posts_mock: Mock,
+        nullify_ct_values_previous_to_first_submission_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.return_value = self.test_cleaned_ind_cqc_df
@@ -89,6 +90,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         self.assertEqual(model_calculate_rolling_average_mock.call_count, 2)
         create_banded_bed_count_column_mock.assert_called_once()
         convert_care_home_ratios_to_posts_mock.assert_called_once()
+        nullify_ct_values_previous_to_first_submission_mock.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.ESTIMATES_DESTINATION,
@@ -98,9 +100,6 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
 
 
 class NumericalValuesTests(ImputeIndCqcAscwdsAndPirTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_number_of_days_in_window_value(self):
         self.assertEqual(job.NumericalValues.number_of_days_in_window, 95)
 

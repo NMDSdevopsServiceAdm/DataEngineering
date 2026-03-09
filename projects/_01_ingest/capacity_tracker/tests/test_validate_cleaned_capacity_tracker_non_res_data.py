@@ -8,20 +8,19 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ValidateCleanedCapacityTrackerNonResData as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 
 PATCH_PATH: str = (
     "projects._01_ingest.capacity_tracker.jobs.validate_cleaned_capacity_tracker_non_res_data"
 )
 
 
-class ValidateCleanedCapacityTrackerNonResDatasetTests(unittest.TestCase):
+class ValidateCleanedCapacityTrackerNonResDatasetTests(SparkBaseTest):
     TEST_CT_NON_RES_SOURCE = "some/directory"
     TEST_CLEANED_CT_NON_RES_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
         self.test_ct_non_res_df = self.spark.createDataFrame(
             Data.ct_non_res_rows,
             Schemas.ct_non_res_schema,
@@ -30,15 +29,8 @@ class ValidateCleanedCapacityTrackerNonResDatasetTests(unittest.TestCase):
             Data.cleaned_ct_non_res_rows, Schemas.cleaned_ct_non_res_schema
         )
 
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
 
 class MainTests(ValidateCleanedCapacityTrackerNonResDatasetTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
@@ -63,9 +55,6 @@ class MainTests(ValidateCleanedCapacityTrackerNonResDatasetTests):
 
 
 class CalculateExpectedSizeofDataset(ValidateCleanedCapacityTrackerNonResDatasetTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
     def test_calculate_expected_size_of_cleaned_ct_non_res_dataset_returns_correct_row_count(
         self,
     ):

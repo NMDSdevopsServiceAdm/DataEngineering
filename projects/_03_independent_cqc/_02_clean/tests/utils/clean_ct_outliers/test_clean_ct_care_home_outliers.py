@@ -1,4 +1,3 @@
-import unittest
 import warnings
 from unittest.mock import Mock, patch
 
@@ -9,16 +8,16 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     CleanCapacityTrackerCareHomeOutliersSchema as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 
 PATCH_PATH: str = (
     "projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_care_home_outliers"
 )
 
 
-class CleanCapacityTrackerCareHomeOutliersTests(unittest.TestCase):
+class CleanCapacityTrackerCareHomeOutliersTests(SparkBaseTest):
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.ind_cqc_df = self.spark.createDataFrame(
             Data.ind_cqc_rows, Schemas.ind_cqc_schema
         )
@@ -26,6 +25,7 @@ class CleanCapacityTrackerCareHomeOutliersTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     @patch(f"{PATCH_PATH}.clean_ct_values_after_consecutive_repetition")
+    @patch(f"{PATCH_PATH}.clean_longitudinal_outliers")
     @patch(f"{PATCH_PATH}.null_posts_per_bed_outliers")
     @patch(f"{PATCH_PATH}.aggregate_values_to_provider_level")
     @patch(f"{PATCH_PATH}.add_filtering_rule_column")
@@ -34,6 +34,7 @@ class CleanCapacityTrackerCareHomeOutliersTests(unittest.TestCase):
         add_filtering_rule_column_mock: Mock,
         aggregate_values_to_provider_level_mock: Mock,
         null_posts_per_bed_outliers_mock: Mock,
+        clean_longitudinal_outliers_mock: Mock,
         clean_ct_values_after_consecutive_repetition_mock: Mock,
     ):
         job.clean_capacity_tracker_care_home_outliers(self.ind_cqc_df)
@@ -41,4 +42,5 @@ class CleanCapacityTrackerCareHomeOutliersTests(unittest.TestCase):
         add_filtering_rule_column_mock.assert_called_once()
         aggregate_values_to_provider_level_mock.assert_called_once()
         null_posts_per_bed_outliers_mock.assert_called_once()
+        clean_longitudinal_outliers_mock.assert_called_once()
         clean_ct_values_after_consecutive_repetition_mock.assert_called_once()

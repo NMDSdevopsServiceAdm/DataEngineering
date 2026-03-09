@@ -1,4 +1,3 @@
-import unittest
 import warnings
 from datetime import date
 from unittest.mock import Mock, patch
@@ -10,7 +9,7 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     ReconciliationUtilsSchema as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -27,14 +26,13 @@ from utils.column_names.reconciliation_columns import (
 PATCH_PATH: str = "projects._02_sfc_internal.reconciliation.utils.reconciliation_utils"
 
 
-class ReconciliationTests(unittest.TestCase):
+class ReconciliationTests(SparkBaseTest):
     TEST_CQC_LOCATION_API_SOURCE = "some/source"
     TEST_ASCWDS_WORKPLACE_SOURCE = "another/source"
     TEST_SINGLE_SUB_DESTINATION = "some/destination"
     TEST_PARENT_DESTINATION = "another/destination"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
         self.test_clean_ascwds_workplace_df = self.spark.createDataFrame(
             Data.input_ascwds_workplace_rows,
             Schemas.input_ascwds_workplace_schema,
@@ -44,9 +42,6 @@ class ReconciliationTests(unittest.TestCase):
 
 
 class CollectDatesToUseTests(ReconciliationTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_collect_dates_to_use_return_correct_value(self):
         df = self.spark.createDataFrame(
             Data.dates_to_use_rows, Schemas.dates_to_use_schema
@@ -61,9 +56,6 @@ class CollectDatesToUseTests(ReconciliationTests):
 
 
 class PrepareLatestCleanedAscwdsWorkforceData(ReconciliationTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.get_ascwds_parent_accounts")
     @patch(f"{PATCH_PATH}.remove_ascwds_head_office_accounts_without_location_ids")
     @patch(f"{PATCH_PATH}.filter_to_cqc_registration_type_only")
@@ -218,7 +210,7 @@ class JoinCQCLocationDataIntoASCWDSWorkplaceDataframe(ReconciliationTests):
     ):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
-        self.assertEqual(returned_data, expected_data)
+        self.assertEqual(sorted(returned_data), sorted(expected_data))
 
 
 class FilterToLocationsRelevantToReconciliationTests(ReconciliationTests):

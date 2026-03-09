@@ -33,12 +33,10 @@ class IndCQCMergeTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.join_data_into_cqc_lf")
-    @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_data)
     def test_main_runs_successfully(
         self,
         scan_parquet_mock: Mock,
-        select_rows_with_value_mock: Mock,
         join_data_into_cqc_lf_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -53,9 +51,6 @@ class IndCQCMergeTests(unittest.TestCase):
         )
 
         self.assertEqual(scan_parquet_mock.call_count, 5)
-        select_rows_with_value_mock.assert_called_once_with(
-            lf=ANY, column=CQCLClean.cqc_sector, value_to_keep=Sector.independent
-        )
         self.assertEqual(join_data_into_cqc_lf_mock.call_count, 4)
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
@@ -112,7 +107,7 @@ class IndCQCMergeTests(unittest.TestCase):
             self.TEST_DESTINATION,
         )
         expected_lf = pl.LazyFrame(
-            data=Data.expected_data, schema=Schemas.expected_schema
+            data=Data.expected_data, schema=Schemas.expected_schema, orient="row"
         )
 
         pl_testing.assert_frame_equal(sink_to_parquet_mock.call_args[0][0], expected_lf)

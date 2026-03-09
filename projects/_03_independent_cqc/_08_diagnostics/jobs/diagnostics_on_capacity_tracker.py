@@ -108,9 +108,7 @@ def run_diagnostics(
     Returns:
         DataFrame: A dataframe containing diagnostic data for locations using capacity tracker values.
     """
-    filtered_df = utils.select_rows_with_value(
-        df, IndCQC.care_home, value_to_keep=care_home_value
-    )
+    filtered_df = df.filter(df[IndCQC.care_home] == care_home_value)
 
     list_of_models = dUtils.create_list_of_models()
     restructured_df = dUtils.restructure_dataframe_to_column_wise(

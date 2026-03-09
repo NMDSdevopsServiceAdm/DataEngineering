@@ -8,7 +8,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     DiagnosticsOnKnownFilledPostsSchemas as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH: str = (
@@ -16,7 +16,7 @@ PATCH_PATH: str = (
 )
 
 
-class DiagnosticsOnKnownFilledPostsTests(unittest.TestCase):
+class DiagnosticsOnKnownFilledPostsTests(SparkBaseTest):
     ESTIMATED_FILLED_POSTS_SOURCE = "some/directory"
     DIAGNOSTICS_DESTINATION = "some/other/directory"
     SUMMARY_DIAGNOSTICS_DESTINATION = "another/directory"
@@ -24,7 +24,6 @@ class DiagnosticsOnKnownFilledPostsTests(unittest.TestCase):
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self):
-        self.spark = utils.get_spark()
         self.estimate_jobs_df = self.spark.createDataFrame(
             Data.estimate_filled_posts_rows,
             Schemas.estimate_filled_posts_schema,
@@ -32,9 +31,6 @@ class DiagnosticsOnKnownFilledPostsTests(unittest.TestCase):
 
 
 class MainTests(DiagnosticsOnKnownFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(

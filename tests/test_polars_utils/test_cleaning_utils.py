@@ -12,6 +12,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class PolarsCleaningUtilsTests(unittest.TestCase):
@@ -207,3 +208,21 @@ class ColumnToDateTests(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
         self.assertEqual(returned_lf.collect_schema(), expected_lf.collect_schema())
+
+
+class CalculateFilledPostsPerBedRatioTests(unittest.TestCase):
+    def test_calculate_filled_posts_per_bed_ratio(self):
+        test_lf = pl.LazyFrame(
+            Data.filled_posts_per_bed_ratio_rows,
+            Schemas.filled_posts_per_bed_ratio_schema,
+            orient="row",
+        )
+        returned_lf = job.calculate_filled_posts_per_bed_ratio(
+            test_lf, IndCQC.ascwds_filled_posts_dedup, IndCQC.filled_posts_per_bed_ratio
+        )
+        expected_lf = pl.LazyFrame(
+            Data.expected_filled_posts_per_bed_ratio_rows,
+            Schemas.expected_filled_posts_per_bed_ratio_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), expected_lf)

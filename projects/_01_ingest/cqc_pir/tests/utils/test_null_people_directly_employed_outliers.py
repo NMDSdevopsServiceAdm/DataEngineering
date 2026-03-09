@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.cqc_pir.utils.null_people_directly_employed_outliers as job
@@ -8,7 +7,7 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     NullPeopleDirectlyEmployedSchema as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as PIRCleanCols,
 )
@@ -18,15 +17,8 @@ PATCH_PATH: str = (
 )
 
 
-class NullPeopleDirectlyEmployedTests(unittest.TestCase):
+class MainTests(SparkBaseTest):
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
-
-
-class MainTests(NullPeopleDirectlyEmployedTests):
-    def setUp(self) -> None:
-        super().setUp()
-
         self.test_df = self.spark.createDataFrame(
             Data.null_people_directly_employed_outliers_rows,
             Schemas.null_people_directly_employed_outliers_schema,
@@ -55,10 +47,8 @@ class MainTests(NullPeopleDirectlyEmployedTests):
         self.assertEqual(self.returned_df.count(), self.test_df.count())
 
 
-class NullLargeSingleSubmissionLocationsTests(NullPeopleDirectlyEmployedTests):
+class NullLargeSingleSubmissionLocationsTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         test_df = self.spark.createDataFrame(
             Data.null_large_single_submission_locations_rows,
             Schemas.null_large_single_submission_locations_schema,

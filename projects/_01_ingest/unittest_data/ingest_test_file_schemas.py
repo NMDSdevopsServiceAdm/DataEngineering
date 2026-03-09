@@ -1,14 +1,6 @@
 from dataclasses import dataclass
 
-from pyspark.sql.types import (
-    ArrayType,
-    DateType,
-    FloatType,
-    IntegerType,
-    StringType,
-    StructField,
-    StructType,
-)
+from pyspark.sql.types import DateType, IntegerType, StringType, StructField, StructType
 
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
@@ -31,9 +23,6 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
-from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
-    CqcProviderCleanedColumns as CQCPClean,
-)
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
@@ -45,9 +34,6 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
 from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as CQCPIR
-from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    CqcProviderApiColumns as CQCP,
-)
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
 )
@@ -495,7 +481,6 @@ class CleanONSData:
             StructField(ONS.sub_icb, StringType(), True),
             StructField(ONS.icb, StringType(), True),
             StructField(ONS.icb_region, StringType(), True),
-            StructField(ONS.ccg, StringType(), True),
             StructField(ONS.latitude, StringType(), True),
             StructField(ONS.longitude, StringType(), True),
             StructField(ONS.imd_score, StringType(), True),
@@ -521,7 +506,6 @@ class CleanONSData:
             StructField(ONSClean.contemporary_sub_icb, StringType(), True),
             StructField(ONSClean.contemporary_icb, StringType(), True),
             StructField(ONSClean.contemporary_icb_region, StringType(), True),
-            StructField(ONSClean.contemporary_ccg, StringType(), True),
             StructField(ONSClean.contemporary_latitude, StringType(), True),
             StructField(ONSClean.contemporary_longitude, StringType(), True),
             StructField(ONSClean.contemporary_imd_score, StringType(), True),
@@ -547,7 +531,6 @@ class CleanONSData:
             StructField(ONSClean.current_sub_icb, StringType(), True),
             StructField(ONSClean.current_icb, StringType(), True),
             StructField(ONSClean.current_icb_region, StringType(), True),
-            StructField(ONSClean.current_ccg, StringType(), True),
             StructField(ONSClean.current_latitude, StringType(), True),
             StructField(ONSClean.current_longitude, StringType(), True),
             StructField(ONSClean.current_imd_score, StringType(), True),

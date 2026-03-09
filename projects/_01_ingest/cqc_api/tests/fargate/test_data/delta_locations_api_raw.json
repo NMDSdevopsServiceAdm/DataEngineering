@@ -206,5 +206,6 @@
   "specialism": [[],[],[]],
   "ageGroup": [[],[],[]],
   "settingServices": [[],[],[]],
+  "assessmentServiceGroup": [[],[],[]],
   "assessment": [[],[],[]]
 }

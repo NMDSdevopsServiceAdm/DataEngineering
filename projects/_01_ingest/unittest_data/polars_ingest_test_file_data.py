@@ -1355,16 +1355,6 @@ class PostcodeMatcherTest:
             "SubICB 1",
         ),
         (
-            "CCG 1",
-            "CCG 1",
-            "CCG 1",
-            None,
-            None,
-            None,
-            None,
-            None,
-        ),
-        (
             "CSSR 1",
             "CSSR 2",
             "CSSR 3",
@@ -1473,14 +1463,13 @@ class PostcodeMatcherTest:
             date(2025, 1, 1),
         ),
         ("LA_1", "LA_2", "LA_2", "LA_3", "LA_4", "LA_3"),
-        ("CCG_1", "CCG_2", "CCG_2", "CCG_1", "CCG_1", "CCG_3"),
         ("ICB_1", "ICB_2", "ICB_2", "ICB_1", "ICB_1", "ICB_3"),
         ("LA_1", "LA_2", "LA_2", "LA_1", "LA_1", "LA_3"),
         ("ICB_1", "ICB_2", "ICB_2", "ICB_1", "ICB_1", "ICB_3"),
     ]
     expected_create_truncated_postcode_df_rows = [
-        (date(2025, 1, 1), "LA_2", "CCG_2", "ICB_2", "LA_2", "ICB_2", "AB12"),
-        (date(2025, 1, 1), "LA_3", "CCG_3", "ICB_3", "LA_3", "ICB_3", "AB13"),
+        (date(2025, 1, 1), "LA_2", "ICB_2", "LA_2", "ICB_2", "AB12"),
+        (date(2025, 1, 1), "LA_3", "ICB_3", "LA_3", "ICB_3", "AB13"),
     ]
 
     raise_error_if_unmatched_rows = [

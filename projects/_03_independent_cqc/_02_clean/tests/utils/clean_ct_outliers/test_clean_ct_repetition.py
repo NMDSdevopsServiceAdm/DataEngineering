@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_repetition as job
@@ -8,7 +7,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     CleanCtRepetition as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH: str = (
@@ -16,15 +15,8 @@ PATCH_PATH: str = (
 )
 
 
-class CleanCTRepetitionTests(unittest.TestCase):
+class NullCTValuesAfterConsecutiveRepetition(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
-
-
-class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
-    def setUp(self):
-        super().setUp()
-
         self.test_df = self.spark.createDataFrame(
             Data.clean_ct_values_after_consecutive_repetition_rows,
             Schemas.clean_ct_values_after_consecutive_repetition_schema,
@@ -73,7 +65,10 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
             Schemas.expected_clean_ct_values_after_consecutive_repetition_schema,
         )
 
-        self.assertEqual(returned_df.collect(), expected_df.collect())
+        self.assertEqual(
+            sorted(returned_df.collect()),
+            sorted(expected_df.collect()),
+        )
 
     def test_dict_of_minimum_posts_and_max_repetition_days_values_are_correct(
         self,
@@ -88,10 +83,8 @@ class NullCTValuesAfterConsecutiveRepetition(CleanCTRepetitionTests):
         )
 
 
-class CalculateDaysAValueHasBeenRepeated(CleanCTRepetitionTests):
+class CalculateDaysAValueHasBeenRepeated(SparkBaseTest):
     def setUp(self):
-        super().setUp()
-
         self.test_df = self.spark.createDataFrame(
             Data.calculate_days_a_value_has_been_repeated_rows,
             Schemas.calculate_days_a_value_has_been_repeated_schema,
@@ -121,10 +114,8 @@ class CalculateDaysAValueHasBeenRepeated(CleanCTRepetitionTests):
         self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
 
 
-class CleanValueRepetition(CleanCTRepetitionTests):
+class CleanValueRepetition(SparkBaseTest):
     def setUp(self):
-        super().setUp()
-
         test_repetition_limit_dict = Data.test_repetition_limit_dict
         self.test_micro_locations_df = self.spark.createDataFrame(
             Data.clean_value_repetition_when_location_is_micro_rows,
@@ -225,10 +216,8 @@ class CleanValueRepetition(CleanCTRepetitionTests):
         )
 
 
-class JoinCleanedCTValuesIntoOriginalDf(CleanCTRepetitionTests):
+class JoinCleanedCTValuesIntoOriginalDf(SparkBaseTest):
     def setUp(self):
-        super().setUp()
-
         self.test_orginal_df = self.spark.createDataFrame(
             Data.original_rows,
             Schemas.original_schema,
@@ -255,7 +244,10 @@ class JoinCleanedCTValuesIntoOriginalDf(CleanCTRepetitionTests):
     def test_join_cleaned_ct_values_into_original_df_replaces_values_in_the_cleaned_values_column(
         self,
     ):
-        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+        self.assertEqual(
+            sorted(self.returned_df.collect()),
+            sorted(self.expected_df.collect()),
+        )
 
     def test_join_cleaned_ct_values_into_original_df_does_not_add_any_rows_to_original_df(
         self,

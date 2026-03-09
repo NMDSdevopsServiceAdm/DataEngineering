@@ -334,7 +334,7 @@ class CurrentCSSR(ColumnValues):
     cheshire_east: str = "Cheshire East"
     cheshire_west_and_chester: str = "Cheshire West & Chester"
     city_of_london: str = "City of London"
-    cornwall: str = "Cornwall"
+    cornwall_and_isles_of_scilly: str = "Cornwall and Isles of Scilly"
     coventry: str = "Coventry"
     croydon: str = "Croydon"
     cumberland: str = "Cumberland"
@@ -367,7 +367,6 @@ class CurrentCSSR(ColumnValues):
     hillingdon: str = "Hillingdon"
     hounslow: str = "Hounslow"
     isle_of_wight: str = "Isle of Wight"
-    isles_of_scilly: str = "Isles of Scilly"
     islington: str = "Islington"
     kensington_and_chelsea: str = "Kensington & Chelsea"
     kent: str = "Kent"
@@ -570,17 +569,10 @@ class AscwdsFilteringRule(ColumnValues):
 
 
 @dataclass
-class CTCareHomeFilteringRule(ColumnValues):
+class CTFilteringRule(ColumnValues):
     populated: str = "populated"
     missing_data: str = "missing_data"
     beds_ratio_outlier: str = "beds_ratio_outlier"
-    location_repeats_total_posts: str = "location_repeats_total_posts"
-
-
-@dataclass
-class CTNonResFilteringRule(ColumnValues):
-    populated: str = "populated"
-    missing_data: str = "missing_data"
     location_repeats_total_posts: str = "location_repeats_total_posts"
     longitudinal_outliers: str = "longitudinal_outliers"
 

@@ -258,7 +258,8 @@ Python
 8. Name the folder `.vscode`
 
 9. Right click on this folder, add a file named `launch.json` and paste in the code below:
-```
+
+```json
 {
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
@@ -283,17 +284,10 @@ Python
 
 10. Right click on the folder again, add a file named `settings.json` and paste in the code below:
 <i>Note: Replace `_your_name_` and `_your_code_` in the filepath with your personal options:</i>
-```
+
+```json
 {
-    "python.testing.unittestArgs": [
-        "-v",
-        "-s",
-        "./tests",
-        "-p",
-        "test*.py"
-    ],
-    "python.testing.pytestEnabled": false,
-    "python.testing.unittestEnabled": true,
+    "python.testing.pytestEnabled": true,
     "python.envFile": "${workspaceFolder}/.env",
     "python.linting.flake8Enabled": true,
     "python.linting.enabled": true,
@@ -406,7 +400,7 @@ role_arn = arn:aws:iam::856699698263:role/CrossAccountAccessRole
 ```
 4. Set an environment variable for HOME:
 ```
-$Env:HOME = 'C:\Users\<username>' 
+$Env:HOME = 'C:\Users\<username>'
 ```
 5. Provide your MFA token:
 ```
@@ -414,8 +408,8 @@ aws-mfa --mfa-profile prod --token xxxxxx
 ```
 6. Test you've logged in successfully. Both commands should return a user ID, account and ARN.
 ```
-aws sts get-caller-identity --profile prod-mfa 
-aws sts get-caller-identity --profile non-prod 
+aws sts get-caller-identity --profile prod-mfa
+aws sts get-caller-identity --profile non-prod
 ```
 7. Ensure you're in the Terraform directory `cd terraform/pipeline`
 

@@ -54,7 +54,6 @@ cleaned_cqc_locations_columns_to_import = [
     ONSClean.contemporary_sub_icb,
     ONSClean.contemporary_icb,
     ONSClean.contemporary_icb_region,
-    ONSClean.contemporary_ccg,
     ONSClean.current_ons_import_date,
     ONSClean.current_cssr,
     ONSClean.current_icb,
@@ -147,10 +146,8 @@ def main(
     )
     print("Cleaned capacity tracker care home LazyFrame read in")
 
-    independent_cqc_lf = utils.select_rows_with_value(
-        lf=cleaned_cqc_location_lf,
-        column=CQCLClean.cqc_sector,
-        value_to_keep=Sector.independent,
+    independent_cqc_lf = cleaned_cqc_location_lf.filter(
+        pl.col(CQCLClean.cqc_sector) == Sector.independent
     )
 
     independent_cqc_lf = join_data_into_cqc_lf(

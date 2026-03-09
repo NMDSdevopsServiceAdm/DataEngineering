@@ -1,6 +1,9 @@
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import (
+    EstimateFilledPostsSource,
+)
 
 
 def join_worker_to_estimates_dataframe(
@@ -31,3 +34,73 @@ def join_worker_to_estimates_dataframe(
     )
 
     return merged_lf
+
+
+def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Set job role counts to NULL when source is not ASCDWS.
+
+    This is to ensure that we're only using ASCDWS job role data when ASCDWS data has
+    been used for estimated filled posts.
+
+    Nullify when the following conditions are NOT met:
+    1. Source must be "ascwds_pir_merged"
+    2. Estimates must equal the value after ASCWDS dedup_clean step.
+
+    Args:
+        lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
+
+    Returns:
+        pl.LazyFrame: Transformed LazyFrame with ASCDWS job role counts nullified.
+    """
+    source_is_ascwds = pl.col(IndCQC.estimate_filled_posts_source) == pl.lit(
+        EstimateFilledPostsSource.ascwds_pir_merged
+    )
+    estimate_matches_ascwds = pl.col(IndCQC.estimate_filled_posts) == pl.col(
+        IndCQC.ascwds_filled_posts_dedup_clean
+    )
+
+    return lf.with_columns(
+        pl.when(source_is_ascwds & estimate_matches_ascwds)
+        .then(IndCQC.ascwds_job_role_counts)
+        .otherwise(None)
+    )
+
+
+# TODO: Move this into a more centralised module of generic polars expression functions.
+def percentage_share(column: str | pl.Expr) -> pl.Expr:
+    """Calculate the percentage share of a column across all values.
+
+    Can be used in conjunction with `.group_by` and `.over` methods to get
+    proportions within groups.
+    """
+    # If it's a string, turn it into a column expression; otherwise, use as-is.
+    col = pl.col(column) if isinstance(column, str) else column
+    return col / col.sum()
+
+
+def impute_full_time_series(column: str) -> pl.Expr:
+    """Impute nulls using linear interpolation, followed by back and forward fill."""
+    return pl.col(column).interpolate().forward_fill().backward_fill()
+
+
+def rolling_sum_of_job_role_counts(
+    period: str = "6mo",
+) -> pl.Expr:
+    """Compute rolling sum of job role counts within each primary service.
+
+    Args:
+        period (str): String language timedelta. Default "6mo". See:
+          https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.rolling.html
+
+    Returns:
+        pl.Expr: Expression for rolling sum of job role counts.
+    """
+    return (
+        pl.sum(IndCQC.imputed_ascwds_job_role_counts)
+        .rolling(index_column=IndCQC.cqc_location_import_date, period=period)
+        .over(
+            [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled],
+            order_by=IndCQC.cqc_location_import_date,
+        )
+    )
