@@ -183,7 +183,7 @@ def get_manager_proportions(lf: pl.LazyFrame):
     non_rm_manager_lf = lf.filter()
 
 
-def percentage_share_handling_zero_sum(column: str):
+def percentage_share_handling_zero_sum(column: str) -> pl.Expr:
     """Calculate the percentage share of a column handling zero sum case.
 
     If all values are zero, dividing by zero leads to a NaN. In this case we
