@@ -129,6 +129,17 @@ def main(
             estimated_job_role_posts_lf
         )
     )
+    non_rm_manager_roles = JRUtils.get_non_registered_manager_roles()
+
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        pl.when(pl.col(IndCQC.main_job_role_clean_labelled).is_in(non_rm_manager_roles))
+        .then(
+            JRUtils.percentage_share_handling_zero_sum(
+                IndCQC.estimate_filled_posts_by_job_role
+            ).over(IndCQC.location_id)
+        )
+        .alias(IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role)
+    )
 
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
