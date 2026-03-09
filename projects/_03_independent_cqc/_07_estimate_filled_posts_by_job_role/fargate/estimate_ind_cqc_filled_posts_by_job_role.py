@@ -134,9 +134,13 @@ def main(
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         pl.when(pl.col(IndCQC.main_job_role_clean_labelled).is_in(non_rm_manager_roles))
         .then(
-            JRUtils.percentage_share_handling_zero_sum(
-                IndCQC.estimate_filled_posts_by_job_role
-            ).over(IndCQC.location_id)
+            pl.col(IndCQC.difference_between_estimate_and_cqc_registered_managers)
+            .mul(
+                JRUtils.percentage_share_handling_zero_sum(
+                    IndCQC.estimate_filled_posts_by_job_role
+                ).over(IndCQC.location_id)
+            )
+            .clip(lower_bound=0)
         )
         .alias(IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role)
     )
