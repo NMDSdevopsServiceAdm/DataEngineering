@@ -3,7 +3,11 @@ import polars as pl
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
+    JobGroupLabels,
     MainJobRoleLabels,
+)
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
 )
 
 
@@ -153,4 +157,43 @@ def get_estimated_managers_diff_from_cqc_registered_managers(
         pl.col(MainJobRoleLabels.registered_manager)
         .sub(IndCQC.registered_manager_count)
         .alias(IndCQC.difference_between_estimate_and_cqc_registered_managers),
+    )
+
+
+def filter_job_roles(group_label: str) -> list[str]:
+    """Filter for job roles that match the group label."""
+    job_role_dict = AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict
+    return [role for role, group in job_role_dict if group == group_label]
+
+
+def get_non_registered_manager_roles() -> list[str]:
+    """Get list of manager roles except registered manager."""
+    manager_roles = filter_job_roles(JobGroupLabels.managers)
+    return [
+        role for role in manager_roles if role != MainJobRoleLabels.registered_manager
+    ]
+
+
+# TODO: Write this function (in the test body).
+# Do percentage share over location.
+# Handle case where sum of all counts within location is zero (to avoid zero division)
+# with a when, then.
+def get_manager_proportions(lf: pl.LazyFrame):
+    non_rm_manager_roles = get_non_registered_manager_roles()
+    non_rm_manager_lf = lf.filter()
+
+
+def percentage_share_handling_zero_sum(column: str):
+    """Calculate the percentage share of a column handling zero sum case.
+
+    If all values are zero, dividing by zero leads to a NaN. In this case we
+    want to assume an even distribution across all rows.
+
+    Can be used in conjunction with `.group_by` and `.over` methods to get
+    proportions within groups.
+    """
+    return (
+        pl.when(pl.col(column).sum() == 0)
+        .then(1 / pl.len())
+        .otherwise(percentage_share(column))
     )
