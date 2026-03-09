@@ -232,12 +232,10 @@ class TestImputeFullTimeSeries:
 
 
 class TestRollingSum:
-    @pytest.fixture(
-        params=[pytest.param(case.data, id=case.id) for case in rolling_sum_test_cases],
+    @pytest.mark.parametrize(
+        "rolling_sum_data",
+        [pytest.param(case.data, id=case.id) for case in rolling_sum_test_cases],
     )
-    def rolling_sum_data(self, request):
-        return request.param
-
     def test_rolling_sum(self, rolling_sum_data):
         expected_lf = pl.LazyFrame(
             rolling_sum_data, rolling_sum_expected_schema, orient="row"
