@@ -174,15 +174,6 @@ def get_non_registered_manager_roles() -> list[str]:
     ]
 
 
-# TODO: Write this function (in the test body).
-# Do percentage share over location.
-# Handle case where sum of all counts within location is zero (to avoid zero division)
-# with a when, then.
-def get_manager_proportions(lf: pl.LazyFrame):
-    non_rm_manager_roles = get_non_registered_manager_roles()
-    non_rm_manager_lf = lf.filter()
-
-
 def percentage_share_handling_zero_sum(column: str) -> pl.Expr:
     """Calculate the percentage share of a column handling zero sum case.
 
