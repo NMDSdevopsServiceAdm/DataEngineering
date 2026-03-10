@@ -116,10 +116,10 @@ def reduce_dataset_to_earliest_file_per_month(lf: pl.LazyFrame) -> pl.LazyFrame:
     This function identifies the date of the first import date in each month and then filters the dataset to those import dates only.
 
     Args:
-        lf (Lazyframe): A lazyframe containing the partition keys year, month and day.
+        lf (pl.Lazyframe): A lazyframe containing the partition keys year, month and day.
 
     Returns:
-        Lazyframe: A lazyframe with only the first import date of each month.
+        pl.Lazyframe: A lazyframe with only the first import date of each month.
     """
     earliest_day_in_month = "first_day_in_month"
     lf = lf.with_columns(
@@ -145,12 +145,12 @@ def create_banded_bed_count_column(
     If the location is non-res then zero is returned.
 
     Args:
-        input_df (Lazyframe): The Lazyframe containing the column 'number_of_beds' to be banded.
+        input_lf (pl.Lazyframe): The Lazyframe containing the column 'number_of_beds' to be banded.
         new_col (str): The name of the output column with the banded values.
         splits (List[float]): The list of split points for bucketing (must be strictly increasing).
 
     Returns:
-        Lazyframe: A new Lazyframe that includes the original data along with a new column 'number_of_beds_banded'.
+        pl.Lazyframe: A new Lazyframe that includes the original data along with a new column 'number_of_beds_banded'.
     """
     zero: float = 0.0
 
