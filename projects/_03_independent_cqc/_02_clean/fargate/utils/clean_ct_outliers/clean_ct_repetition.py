@@ -100,17 +100,17 @@ def repetition_limit_expr(
     repetition_limit_dict: dict[int, int],
 ) -> pl.Expr:
     """
-    Creates a Polars Expression which defines the repetition limit based on
+    Creates a Polars Expression which defines the repetition_limit based on
     'repetition_limit_dict'
 
     Args:
         column_to_clean (str): The column with post counts to check against
-        limits.
+            repetition_limit_dict.
         repetition_limit_dict (dict[int, int]): Keys are min posts, values
-        are max days a posts value can be repeated.
+            are max days a posts value can be repeated.
 
     Returns:
-        pl.Expr: Polars Expression defining the repetition limit.
+        pl.Expr: Polars Expression defining the repetition_limit.
     """
     repetition_limits_sorted = sorted(repetition_limit_dict.items())
 
