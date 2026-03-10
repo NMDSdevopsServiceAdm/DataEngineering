@@ -1,6 +1,8 @@
 import polars as pl
+from typing import List
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome
 
 
@@ -105,3 +107,69 @@ def calculate_filled_posts_per_bed_ratio(
     )
 
     return lf
+
+
+def reduce_dataset_to_earliest_file_per_month(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Reduce the dataset to the first file of every month.
+
+    This function identifies the date of the first import date in each month and then filters the dataset to those import dates only.
+
+    Args:
+        lf (Lazyframe): A lazyframe containing the partition keys year, month and day.
+
+    Returns:
+        Lazyframe: A lazyframe with only the first import date of each month.
+    """
+    earliest_day_in_month = "first_day_in_month"
+    lf = lf.with_columns(
+        pl.col(Keys.day)
+        .first()
+        .over([Keys.year, Keys.month], order_by=Keys.day)
+        .alias(earliest_day_in_month)
+    )
+    return lf.filter(pl.col(earliest_day_in_month) == pl.col(Keys.day)).drop(
+        earliest_day_in_month
+    )
+
+
+def create_banded_bed_count_column(
+    input_lf: pl.LazyFrame, new_col: str, splits: List[float]
+) -> pl.LazyFrame:
+    """
+    Creates a new column in the input Lazyframe that categorises the number of beds into defined bands.
+
+    This function uses a Bucketizer to categorise the number of beds into specified bands.
+    The banded bed counts are joined into the original Lazyframe.
+
+    If the location is non-res then zero is returned.
+
+    Args:
+        input_df (Lazyframe): The Lazyframe containing the column 'number_of_beds' to be banded.
+        new_col (str): The name of the output column with the banded values.
+        splits (List[float]): The list of split points for bucketing (must be strictly increasing).
+
+    Returns:
+        Lazyframe: A new Lazyframe that includes the original data along with a new column 'number_of_beds_banded'.
+    """
+    zero: float = 0.0
+
+    number_of_beds_lf = (
+        input_lf.select(IndCQC.number_of_beds)
+        .filter(pl.col(IndCQC.number_of_beds).is_not_null())
+        .unique()
+    )
+
+    number_of_beds_with_bands_lf = number_of_beds_lf.with_columns(
+        pl.col(IndCQC.number_of_beds).cut(splits).alias(new_col)
+    )
+    output_lf = input_lf.join(
+        number_of_beds_with_bands_lf, IndCQC.number_of_beds, "left"
+    )
+
+    return output_lf.with_columns(
+        new_col,
+        pl.when(pl.col(IndCQC.care_home) == CareHome.not_care_home)
+        .then(zero)
+        .otherwise(pl.col(new_col)),
+    )
