@@ -84,6 +84,11 @@ def percentage_share(column: str | pl.Expr) -> pl.Expr:
     return col / col.sum()
 
 
+def percentage_share_horizontal(*columns: str) -> pl.Expr:
+    """Calculate the percentage share horizontally across given columns."""
+    return cs.by_name(*columns) / pl.sum_horizontal(*columns)
+
+
 def impute_full_time_series(column: str) -> pl.Expr:
     """Impute nulls using linear interpolation, followed by back and forward fill."""
     return pl.col(column).interpolate().forward_fill().backward_fill()

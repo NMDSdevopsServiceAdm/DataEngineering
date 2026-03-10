@@ -160,6 +160,63 @@ class TestPercentageShare(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestPercentageShareHorizontal:
+    def test_basic_case(self):
+        schema = ["label1", "label2", "label3"]
+        input_lf = pl.LazyFrame(
+            schema=schema,
+            data=[
+                [1, 2, 2],
+                [1, 4, 5],
+            ],
+        )
+        expected_lf = pl.LazyFrame(
+            schema=schema,
+            data=[
+                [0.2, 0.4, 0.4],
+                [0.1, 0.4, 0.5],
+            ],
+        )
+        returned_lf = input_lf.select(job.percentage_share_horizontal(*schema))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    @pytest.mark.parametrize(
+        "input_data, output_data",
+        [
+            pytest.param(
+                [None, 3, None, 2],
+                [None, 0.6, None, 0.4],
+                id="when_some_values_are_null",
+            ),
+            pytest.param(
+                [None, None, None, None],
+                [None, None, None, None],
+                id="when_all_values_are_null",
+            ),
+            pytest.param(
+                [2, 0, 3, 0], [0.4, 0.0, 0.6, 0.0], id="when_some_values_are_zero"
+            ),
+            pytest.param(
+                [0, 0, 0, 0], [float("nan")] * 4, id="when_all_values_are_zero"
+            ),
+        ],
+    )
+    def test_edge_cases(self, input_data, output_data):
+        schema = ["label1", "label2", "label3", "label4"]
+        input_lf = pl.LazyFrame(
+            schema=schema,
+            data=[input_data],
+            orient="row",
+        ).cast(pl.Float64)
+        expected_lf = pl.LazyFrame(
+            schema=schema,
+            data=[output_data],
+            orient="row",
+        ).cast(pl.Float64)
+        returned_lf = input_lf.select(job.percentage_share_horizontal(*schema))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 class TestImputeFullTimeSeries:
     @pytest.mark.parametrize(
         "input, expected",
