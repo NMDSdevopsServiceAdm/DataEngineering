@@ -1,7 +1,7 @@
 import math
 from dataclasses import dataclass
 from datetime import date
-
+from typing import Any
 import numpy as np
 
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.difference_within_range import (
@@ -2033,112 +2033,141 @@ class NullCtPostsToBedsOutliers:
 
 
 @dataclass
-class CleanCtRepetition:
-    expected_dict_non_residential_locations = {
-        0: 250,
-        10: 125,
-        50: 65,
-    }
-    expected_dict_care_home_locations = {
-        0: 370,
-        10: 155,
-        50: 125,
-        250: 65,
-    }
+class CleanCtRepetitionTestCase:
+    id: str
+    data: list[Any]
 
-    # fmt: off
-    clean_ct_values_after_consecutive_repetition_rows = [
-        ("1-001", date(2025, 1, 1), 1, CTFilteringRule.populated),
-        ("1-001", date(2025, 2, 1), 2, CTFilteringRule.populated),
-        ("1-001", date(2025, 3, 1), 2, CTFilteringRule.populated),  # Repeated value within repetition limit.
-        ("1-001", date(2025, 4, 1), None, CTFilteringRule.missing_data),  # Missing raw data.
-        ("1-001", date(2025, 11, 7), 2, CTFilteringRule.populated),  # 251 days after repeated value's first import date.
-        ("1-001", date(2025, 12, 1), 3, CTFilteringRule.populated),
-        ("1-001", date(2026, 1, 1), 4, "some_other_rule"),
-    ]
-    expected_clean_ct_values_after_consecutive_repetition_rows = [
-        ("1-001", date(2025, 1, 1), 1, CTFilteringRule.populated),
-        ("1-001", date(2025, 2, 1), 2, CTFilteringRule.populated),
-        ("1-001", date(2025, 3, 1), 2, CTFilteringRule.populated),   # 28 days after Feb 1
-        ("1-001", date(2025, 4, 1), None, CTFilteringRule.missing_data),   # 59 days after Feb 1; non-populated so days still counts from last populated streak
-        ("1-001", date(2025, 11, 7), None, CTFilteringRule.location_repeats_total_posts),  # 279 days after Feb 1
-        ("1-001", date(2025, 12, 1), 3, CTFilteringRule.populated),
-        ("1-001", date(2026, 1, 1), None, "some_other_rule"),   # non-populated, no days tracked
-    ]
-    # fmt: on
 
-    calculate_days_a_value_has_been_repeated_rows = [
-        ("1-001", 1, date(2025, 1, 1)),
-        ("1-001", 2, date(2025, 2, 1)),
-        ("1-001", 3, date(2025, 3, 1)),
-        ("1-001", None, date(2025, 4, 1)),
-        ("1-001", None, date(2025, 5, 1)),
-        ("1-001", 4, date(2025, 6, 1)),
-    ]
-    expected_calculate_days_a_value_has_been_repeated_rows = [
-        ("1-001", 1, date(2025, 1, 1), 0),
-        ("1-001", 2, date(2025, 2, 1), 0),
-        ("1-001", 3, date(2025, 3, 1), 0),
-        ("1-001", None, date(2025, 4, 1), 31),
-        ("1-001", None, date(2025, 5, 1), 61),
-        ("1-001", 4, date(2025, 6, 1), 0),
-    ]
-
-    # fmt: off
-    test_repetition_limit_dict = {
-        0: 250,
-        10: 125,
-        50: 65,
-        250: 35,
-    }
-    clean_value_repetition_when_location_is_micro_rows = [
-        ("1-001", 1, 250),
-        ("1-001", 9, 251),
-    ]
-    expected_clean_value_repetition_when_location_is_micro_rows = [
-        ("1-001", 1, 250, 1),
-        ("1-001", 9, 251, None),
-    ]
-    clean_value_repetition_when_location_is_small_rows = [
-        ("1-002", 10, 125),
-        ("1-002", 49, 126),
-    ]
-    expected_clean_value_repetition_when_location_is_small_rows = [
-        ("1-002", 10, 125, 10),
-        ("1-002", 49, 126, None),
-    ]
-    clean_value_repetition_when_location_is_medium_rows = [
-        ("1-003", 50, 65),
-        ("1-003", 51, 66),
-    ]
-    expected_clean_value_repetition_when_location_is_medium_rows = [
-        ("1-003", 50, 65, 50),
-        ("1-003", 51, 66, None),
-    ]
-    clean_value_repetition_when_location_is_large_rows = [
-        ("1-003", 250, 35),
-        ("1-003", 251, 36),
-    ]
-    expected_clean_value_repetition_when_location_is_large_rows = [
-        ("1-003", 250, 35, 250),
-        ("1-003", 251, 36, None),
-    ]
-    # fmt: on
+clean_ct_repetition_values_test_cases = [
+    CleanCtRepetitionTestCase(
+        id="basic_streaks_with_nulls",
+        data=[
+            (
+                "1-001",
+                date(2025, 1, 1),
+                1,
+                1,
+                CTFilteringRule.populated,
+            ),
+            (
+                "1-001",
+                date(2025, 2, 1),
+                2,
+                2,
+                CTFilteringRule.populated,
+            ),
+            (
+                "1-001",
+                date(2025, 3, 1),
+                2,
+                2,
+                CTFilteringRule.populated,
+            ),
+            (
+                "1-001",
+                date(2025, 4, 1),
+                None,
+                None,
+                CTFilteringRule.missing_data,
+            ),
+            (
+                "1-001",
+                date(2025, 11, 7),
+                2,
+                None,
+                CTFilteringRule.location_repeats_total_posts,
+            ),
+            (
+                "1-001",
+                date(2025, 12, 1),
+                3,
+                3,
+                CTFilteringRule.populated,
+            ),
+            ("1-001", date(2026, 1, 1), 4, 4, "some_other_rule", "some_other_rule"),
+        ],
+    ),
+    CleanCtRepetitionTestCase(
+        id="micro_location_streaks",
+        data=[
+            (
+                "1-001",
+                date(2025, 1, 1),
+                1,
+                1,
+                CTFilteringRule.populated,
+            ),
+            (
+                "1-001",
+                date(2026, 10, 1),
+                1,
+                None,
+                CTFilteringRule.location_repeats_total_posts,
+            ),
+        ],
+    ),
+    CleanCtRepetitionTestCase(
+        id="small_location_streaks",
+        data=[
+            (
+                "1-002",
+                date(2025, 2, 1),
+                10,
+                10,
+                CTFilteringRule.populated,
+            ),
+            (
+                "1-002",
+                date(2025, 7, 1),
+                10,
+                None,
+                CTFilteringRule.location_repeats_total_posts,
+            ),
+        ],
+    ),
+    CleanCtRepetitionTestCase(
+        id="medium_location_streaks",
+        data=[
+            (
+                "1-003",
+                date(2025, 3, 1),
+                50,
+                50,
+                CTFilteringRule.populated,
+            ),
+            (
+                "1-003",
+                date(2025, 7, 1),
+                50,
+                None,
+                CTFilteringRule.location_repeats_total_posts,
+            ),
+        ],
+    ),
+    CleanCtRepetitionTestCase(
+        id="large_location_streaks",
+        data=[
+            (
+                "1-004",
+                date(2025, 4, 1),
+                250,
+                250,
+                CTFilteringRule.populated,
+            ),
+            (
+                "1-004",
+                date(2025, 7, 1),
+                250,
+                None,
+                CTFilteringRule.location_repeats_total_posts,
+            ),
+        ],
+    ),
+]
 
 
 @dataclass
 class OutlierCleaningData:
-    no_outliers_input_rows = [
-        ("1-001", 10, CTFilteringRule.populated),
-        ("1-001", 11, CTFilteringRule.populated),
-        ("1-001", 12, CTFilteringRule.populated),
-        ("1-001", 13, CTFilteringRule.populated),
-        ("1-002", 50, CTFilteringRule.populated),
-        ("1-002", 50, CTFilteringRule.populated),
-        ("1-002", 51, CTFilteringRule.populated),
-        ("1-002", 51, CTFilteringRule.populated),
-    ]
-
     clean_longitudinal_outliers_input_rows = [
         ("1-001", 5, CTFilteringRule.populated),
         ("1-001", 10, CTFilteringRule.populated),
@@ -2228,22 +2257,4 @@ class OutlierCleaningData:
         ("1-004", 40),
         ("1-004", 45),
         ("1-004", 50),
-    ]
-
-
-@dataclass
-class CleanCapacityTrackerCareHomeOutliersData:
-    ind_cqc_rows = [
-        ("1-001", date(2025, 1, 1), 1.5, 30.0),
-        ("1-002", date(2025, 1, 1), 1.5, None),
-        ("1-002", date(2025, 1, 1), None, 30.0),
-        ("1-002", date(2025, 1, 1), None, None),
-    ]
-
-
-@dataclass
-class CleanCapacityTrackerNonResOutliersData:
-    ind_cqc_rows = [
-        ("1-001", date(2025, 1, 1), 30.0),
-        ("1-002", date(2025, 1, 1), None),
     ]

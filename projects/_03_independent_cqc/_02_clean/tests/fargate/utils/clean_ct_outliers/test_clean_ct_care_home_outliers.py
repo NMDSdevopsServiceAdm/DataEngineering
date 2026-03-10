@@ -3,13 +3,6 @@ from unittest.mock import Mock, patch
 import polars as pl
 
 import projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_care_home_outliers as job
-from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
-    CleanCapacityTrackerCareHomeOutliersData as Data,
-)
-from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
-    CleanCapacityTrackerCareHomeOutliersSchema as Schemas,
-)
-
 
 PATCH_PATH: str = (
     "projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_care_home_outliers"
@@ -18,10 +11,7 @@ PATCH_PATH: str = (
 
 class CleanCapacityTrackerCareHomeOutliersTests(unittest.TestCase):
     def setUp(self) -> None:
-
-        self.test_lf = pl.LazyFrame(
-            Data.ind_cqc_rows, Schemas.ind_cqc_schema, orient="row"
-        )
+        self.test_lf = Mock(name="ind_cqc_df")
 
     @patch(f"{PATCH_PATH}.clean_ct_values_after_consecutive_repetition")
     @patch(f"{PATCH_PATH}.clean_longitudinal_outliers")

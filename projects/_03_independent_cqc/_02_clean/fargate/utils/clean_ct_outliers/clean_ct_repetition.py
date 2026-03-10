@@ -29,7 +29,6 @@ def clean_ct_values_after_consecutive_repetition(
     column_to_clean: str,
     cleaned_column_name: str,
     care_home: bool,
-    partitioning_column: str,
 ) -> pl.LazyFrame:
     """
     Nulls Capacity Tracker values after they have consecutively repeated for too
@@ -47,8 +46,6 @@ def clean_ct_values_after_consecutive_repetition(
         cleaned_column_name (str): A column with cleaned values.
         care_home (bool): True when cleaning care home values, False when cleaning
             non-residential values.
-        partitioning_column (str): The column to partition by when deduplicating
-            column_to_clean.
 
     Returns:
         pl.LazyFrame: LazyFrame with an additional column.
@@ -64,47 +61,27 @@ def clean_ct_values_after_consecutive_repetition(
         )
         filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
 
-    deduplicated_col = f"{column_to_clean}_deduplicated"
+    limit_expr = repetition_limit_expr(column_to_clean, repetition_limit_dict)
 
-    # Work on the full frame but scope windowed ops to populated rows only by
-    # using .filter() inside the over() expression where needed.
-    lf = create_column_with_repeated_values_removed(
-        lf=lf,
-        column_to_clean=column_to_clean,
-        new_column_name=deduplicated_col,
-        column_to_partition_by=partitioning_column,
+    streak_id = pl.col(column_to_clean).forward_fill().rle_id().over(IndCQC.location_id)
+
+    streak_start = (
+        pl.col(IndCQC.cqc_location_import_date)
+        .min()
+        .over([IndCQC.location_id, streak_id])
     )
 
-    # Mask the deduplicated column to null for non-populated rows so that the
-    # backwards-looking "last non-null date" window ignores them.
-    lf = lf.with_columns(
-        pl.when(pl.col(filter_rule_column_name) == CTFilteringRule.populated)
-        .then(pl.col(deduplicated_col))
+    days_repeated = (
+        pl.col(IndCQC.cqc_location_import_date) - streak_start
+    ).dt.total_days()
+
+    cleaned_expr = (
+        pl.when(days_repeated <= limit_expr)
+        .then(pl.col(column_to_clean))
         .otherwise(None)
-        .alias(deduplicated_col)
     )
 
-    lf = calculate_days_a_value_has_been_repeated(
-        lf=lf,
-        deduplicated_values_column=deduplicated_col,
-        partitioning_column=IndCQC.location_id,
-    )
-
-    lf = clean_value_repetition(
-        lf=lf,
-        column_to_clean=column_to_clean,
-        repetition_limit_dict=repetition_limit_dict,
-    )
-
-    # Apply cleaned values: populated rows get the nulled-if-repeated value;
-    # all other rows get null (matching the original join behaviour).
-
-    lf = lf.with_columns(
-        pl.when(pl.col(filter_rule_column_name) == CTFilteringRule.populated)
-        .then(pl.col("repeated_values_nulled"))
-        .otherwise(None)
-        .alias(cleaned_column_name)
-    ).drop(["repeated_values_nulled", deduplicated_col, "days_value_has_been_repeated"])
+    lf = lf.with_columns(cleaned_expr.alias(cleaned_column_name))
 
     lf_cleaned = update_filtering_rule(
         lf=lf,
@@ -118,67 +95,25 @@ def clean_ct_values_after_consecutive_repetition(
     return lf_cleaned
 
 
-def calculate_days_a_value_has_been_repeated(
-    lf: pl.LazyFrame,
-    deduplicated_values_column: str,
-    partitioning_column: str,
-) -> pl.LazyFrame:
-    """
-    Adds a column with the number of days between import date on the row and
-    the import date when the current repeated value was first submitted.
-
-    Args:
-        lf (pl.LazyFrame): A LazyFrame with import date and a deduplicated value column.
-        deduplicated_values_column (str): A column with repeated values removed (nulls where repeated).
-        partitioning_column (str): The column to partition by.
-
-    Returns:
-        pl.LazyFrame: The input LazyFrame with a new column days_value_has_been_repeated.
-    """
-    # Get the import date of the last non-null deduplicated value (i.e. when the
-    # current streak started). Because deduplicated_values_column is only non-null
-    # on the first occurrence of each run, the last non-null date within the
-    # backwards-looking window is exactly when the current value was first submitted.
-    date_when_first_submitted = (
-        pl.when(pl.col(deduplicated_values_column).is_not_null())
-        .then(pl.col(IndCQC.cqc_location_import_date))
-        .otherwise(None)
-        .forward_fill()
-        .over(
-            partition_by=partitioning_column,
-            order_by=IndCQC.cqc_location_import_date,
-        )
-    )
-
-    return lf.with_columns(
-        (pl.col(IndCQC.cqc_location_import_date) - date_when_first_submitted)
-        .dt.total_days()
-        .alias("days_value_has_been_repeated")
-    )
-
-
-def clean_value_repetition(
-    lf: pl.LazyFrame,
+def repetition_limit_expr(
     column_to_clean: str,
     repetition_limit_dict: dict[int, int],
-) -> pl.LazyFrame:
+) -> pl.Expr:
     """
-    Adds a new column repeated_values_nulled in which values from column_to_clean
-    are nulled when days_value_has_been_repeated exceeds the limit for that post count.
+    Creates a Polars Expression which defines the repetition limit based on
+    'repetition_limit_dict'
 
     Args:
-        lf (pl.LazyFrame): A LazyFrame with days_value_has_been_repeated column.
-        column_to_clean (str): The column with post counts to check against limits.
-        repetition_limit_dict (dict[int, int]): Keys = min posts, values = max days
-            a posts value can be repeated.
+        column_to_clean (str): The column with post counts to check against
+        limits.
+        repetition_limit_dict (dict[int, int]): Keys are min posts, values
+        are max days a posts value can be repeated.
 
     Returns:
-        pl.LazyFrame: The input LazyFrame with an additional repeated_values_nulled column.
+        pl.Expr: Polars Expression defining the repetition limit.
     """
     repetition_limits_sorted = sorted(repetition_limit_dict.items())
 
-    # Build a pl.when/then/otherwise chain (innermost = smallest min_posts bucket).
-    # We iterate in ascending order so larger post counts override smaller ones.
     limit_expr = pl.lit(repetition_limits_sorted[0][1])
     for min_posts, rep_limit in repetition_limits_sorted[1:]:
         limit_expr = (
@@ -187,9 +122,4 @@ def clean_value_repetition(
             .otherwise(limit_expr)
         )
 
-    return lf.with_columns(
-        pl.when(pl.col("days_value_has_been_repeated") <= limit_expr)
-        .then(pl.col(column_to_clean))
-        .otherwise(None)
-        .alias("repeated_values_nulled")
-    )
+    return limit_expr

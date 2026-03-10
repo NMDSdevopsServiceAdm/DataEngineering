@@ -10,7 +10,6 @@ from utils.column_values.categorical_column_values import CTFilteringRule
 
 def clean_longitudinal_outliers(
     lf: pl.LazyFrame,
-    group_by_col: str,
     col_to_clean: str,
     cleaned_column_name: str,
     proportion_to_filter: float,
@@ -26,8 +25,6 @@ def clean_longitudinal_outliers(
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame containing the data to clean.
-        group_by_col (str): Column name to group by when computing medians and
-            absolute deviation.
         col_to_clean (str): Column name containing numerical values to clean.
         cleaned_column_name (str): Name of the new column to store cleaned values.
         proportion_to_filter (float): Proportion of extreme values to consider as
@@ -46,7 +43,6 @@ def clean_longitudinal_outliers(
 
     lf = compute_outlier_cutoff_and_clean(
         lf=lf,
-        group_by_col=group_by_col,
         col_to_clean=col_to_clean,
         cleaned_column_name=cleaned_column_name,
         proportion_to_filter=proportion_to_filter,
@@ -66,7 +62,6 @@ def clean_longitudinal_outliers(
 
 def compute_outlier_cutoff_and_clean(
     lf: pl.LazyFrame,
-    group_by_col: str,
     col_to_clean: str,
     cleaned_column_name: str,
     proportion_to_filter: float,
@@ -81,7 +76,6 @@ def compute_outlier_cutoff_and_clean(
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame.
-        group_by_col (str): Column to group by when computing the median.
         col_to_clean (str): Column containing numerical values to clean.
         cleaned_column_name (str): Name of the output cleaned column.
         proportion_to_filter (float): Proportion of extreme values to treat as
@@ -92,30 +86,15 @@ def compute_outlier_cutoff_and_clean(
             removed.
     """
     percentile = 1 - proportion_to_filter
-    median_col = f"{col_to_clean}_median_val"
-    abs_diff_col = f"{col_to_clean}_abs_diff"
-    cutoff_col = f"{col_to_clean}_overall_abs_diff_cutoff"
+    median_expr = pl.col(col_to_clean).median().over(IndCQC.location_id)
+    abs_diff_expr = (pl.col(col_to_clean) - median_expr).abs()
+    cutoff_expr = abs_diff_expr.quantile(percentile, interpolation="linear").first()
 
     lf = lf.with_columns(
-        pl.col(col_to_clean).median().over(group_by_col).alias(median_col)
-    )
-
-    lf = lf.with_columns(
-        (pl.col(col_to_clean) - pl.col(median_col)).abs().alias(abs_diff_col)
-    )
-
-    lf = lf.with_columns(
-        pl.col(abs_diff_col)
-        .quantile(percentile, interpolation="linear")
-        .first()
-        .alias(cutoff_col)
-    )
-
-    lf = lf.with_columns(
-        pl.when(pl.col(abs_diff_col) > pl.col(cutoff_col))
+        pl.when(abs_diff_expr > cutoff_expr)
         .then(None)
         .otherwise(pl.col(col_to_clean))
         .alias(cleaned_column_name)
-    ).drop([median_col, abs_diff_col, cutoff_col])
+    )
 
     return lf

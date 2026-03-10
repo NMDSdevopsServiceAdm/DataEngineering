@@ -46,11 +46,8 @@ def clean_capacity_tracker_non_res_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
         CTFilteringRule.missing_data,
     )
 
-    lf = aggregate_values_to_provider_level(lf, IndCQC.ct_non_res_care_workers_employed)
-
     lf = clean_longitudinal_outliers(
         lf=lf,
-        group_by_col=IndCQC.location_id,
         col_to_clean=IndCQC.ct_non_res_care_workers_employed,
         cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
         proportion_to_filter=0.001,
@@ -62,7 +59,6 @@ def clean_capacity_tracker_non_res_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
         column_to_clean=IndCQC.ct_non_res_care_workers_employed,
         cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
         care_home=False,
-        partitioning_column=IndCQC.location_id,
     )
 
     return lf

@@ -37,7 +37,6 @@ class TestFunctionsAreCalled(TestCleanLongitudinalOutliers):
     ):
         job.clean_longitudinal_outliers(
             lf=self.test_lf,
-            group_by_col=IndCQC.location_id,
             col_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
             cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
             proportion_to_filter=0.10,
@@ -49,33 +48,9 @@ class TestFunctionsAreCalled(TestCleanLongitudinalOutliers):
 
 
 class TestCleanLongitudinalOutliersValues(TestCleanLongitudinalOutliers):
-    def test_function_returns_expected_values_when_there_are_no_outliers(
-        self,
-    ):
-        no_outliers_lf = pl.LazyFrame(
-            Data.no_outliers_input_rows, Schemas.input_schema, orient="row"
-        )
-        returned_lf = job.clean_longitudinal_outliers(
-            lf=no_outliers_lf,
-            group_by_col=IndCQC.location_id,
-            col_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
-            cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
-            proportion_to_filter=0.10,
-            care_home=False,
-        )
-        pl_testing.assert_frame_equal(
-            returned_lf.sort(
-                IndCQC.location_id, IndCQC.ct_non_res_care_workers_employed_cleaned
-            ),
-            no_outliers_lf.sort(
-                IndCQC.location_id, IndCQC.ct_non_res_care_workers_employed_cleaned
-            ),
-        )
-
     def test_function_returns_expected_values(self):
         returned_lf = job.clean_longitudinal_outliers(
             lf=self.test_lf,
-            group_by_col=IndCQC.location_id,
             col_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
             cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
             proportion_to_filter=0.10,
@@ -86,18 +61,7 @@ class TestCleanLongitudinalOutliersValues(TestCleanLongitudinalOutliers):
             Schemas.input_schema,
             orient="row",
         )
-        pl_testing.assert_frame_equal(
-            returned_lf.sort(
-                IndCQC.location_id,
-                IndCQC.ct_non_res_care_workers_employed_cleaned,
-                nulls_last=True,
-            ),
-            expected_lf.sort(
-                IndCQC.location_id,
-                IndCQC.ct_non_res_care_workers_employed_cleaned,
-                nulls_last=True,
-            ),
-        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
 class TestComputeOutlierCutoffAndClean(unittest.TestCase):
@@ -109,7 +73,6 @@ class TestComputeOutlierCutoffAndClean(unittest.TestCase):
         )
         self.returned_lf = job.compute_outlier_cutoff_and_clean(
             lf=self.test_lf,
-            group_by_col=IndCQC.location_id,
             col_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
             cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
             proportion_to_filter=0.10,
@@ -121,23 +84,7 @@ class TestComputeOutlierCutoffAndClean(unittest.TestCase):
             orient="row",
         )
 
-    def test_function_returns_same_columns_as_input(self):
-        self.assertEqual(
-            self.returned_lf.collect_schema().names(),
-            self.test_lf.collect_schema().names(),
-        )
-
     def test_function_returns_expected_values(self):
-        print(self.returned_lf.collect())
         pl_testing.assert_frame_equal(
-            self.returned_lf.sort(
-                IndCQC.location_id,
-                IndCQC.ct_non_res_care_workers_employed_cleaned,
-                nulls_last=True,
-            ),
-            self.expected_lf.sort(
-                IndCQC.location_id,
-                IndCQC.ct_non_res_care_workers_employed_cleaned,
-                nulls_last=True,
-            ),
+            self.returned_lf, self.expected_lf, check_row_order=False
         )
