@@ -4,7 +4,6 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome, Dormancy
 
-cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 average_number_of_beds: str = "avg_beds"
 
 
@@ -271,3 +270,21 @@ def replace_null_beds_with_average(lf: pl.LazyFrame) -> pl.LazyFrame:
             pl.col(average_number_of_beds),
         ).alias(IndCQC.number_of_beds)
     ).drop(average_number_of_beds)
+
+
+def calculate_care_home_status_count(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Calculate how many care home statuses each location has had.
+    Args:
+        lf (pl.LazyFrame): A polars LazyFrame containing ?????
+    Returns:
+         pl.LazyFrame: A polars LazyFrame with a column containing count of care home statuses per location
+    """
+    partition_cols = [IndCQC.location_id]
+    return lf.with_columns(
+        pl.col(IndCQC.care_home)
+        .unique()
+        .over(partition_cols)
+        .len()
+        .alias(IndCQC.care_home_status_count)
+    )

@@ -1,4 +1,40 @@
+import os
+import sys
+
+import polars as pl
+
+from utils import utils
 from polars_utils import utils
+import utils.cleaning_utils as cUtils
+from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
+    calculate_ascwds_filled_posts,
+)
+from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers import (
+    clean_ascwds_filled_post_outliers,
+)
+
+# from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_care_home_outliers import (
+#     clean_capacity_tracker_care_home_outliers,
+# )
+# from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_non_res_outliers import (
+#     clean_capacity_tracker_non_res_outliers,
+# )
+from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils import (
+    remove_dual_registration_cqc_care_homes,
+    replace_zero_beds_with_null,
+    populate_missing_care_home_number_of_beds,
+    calculate_time_registered_for,
+    calculate_time_since_dormant,
+)
+from projects._03_independent_cqc._02_clean.fargate.utils.forward_fill_latest_known_value import (
+    forward_fill_latest_known_value,
+)
+from projects._03_independent_cqc._02_clean.fargate.utils.utils import (
+    create_column_with_repeated_values_removed,
+)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_values.categorical_column_values import CareHome, Dormancy
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -20,39 +56,75 @@ def main(
     locations_lf = utils.scan_parquet(merged_ind_cqc_source)
     print("Merged independent CQC location LazyFrame read in")
 
-    # reduce_dataset_to_earliest_file_per_month
+    locations_lf = cUtils.reduce_dataset_to_earliest_file_per_month(locations_lf)
 
-    # calculate_time_registered_for
-    # calculate_time_since_dormant
+    locations_lf = calculate_time_registered_for(locations_lf)
+    locations_lf = calculate_time_since_dormant(locations_lf)
 
-    # remove_dual_registration_cqc_care_homes
+    locations_lf = remove_dual_registration_cqc_care_homes(locations_lf)
 
-    # replace_zero_beds_with_null
-    # populate_missing_care_home_number_of_beds
+    locations_lf = replace_zero_beds_with_null(locations_lf)
+    locations_lf = populate_missing_care_home_number_of_beds(locations_lf)
 
-    # calculate_ascwds_filled_posts
+    locations_lf = calculate_ascwds_filled_posts(
+        locations_lf,
+        IndCQC.total_staff_bounded,
+        IndCQC.worker_records_bounded,
+        IndCQC.ascwds_filled_posts,
+        IndCQC.ascwds_filled_posts_source,
+    )
 
-    # create_column_with_repeated_values_removed - ascwds_filled_posts
-    # create_column_with_repeated_values_removed - pir_people_directly_employed_cleaned
+    locations_lf = create_column_with_repeated_values_removed(
+        locations_lf,
+        IndCQC.ascwds_filled_posts,
+        IndCQC.ascwds_filled_posts_dedup,
+    )
+    locations_lf = create_column_with_repeated_values_removed(
+        locations_lf,
+        IndCQC.pir_people_directly_employed_cleaned,
+        IndCQC.pir_people_directly_employed_dedup,
+    )
 
-    # calculate_filled_posts_per_bed_ratio - ascwds_filled_posts_dedup
+    locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
+        locations_lf,
+        IndCQC.ascwds_filled_posts_dedup,
+        IndCQC.filled_posts_per_bed_ratio,
+    )
 
-    # create_banded_bed_count_column
+    locations_lf = cUtils.create_banded_bed_count_column(
+        locations_lf,
+        IndCQC.number_of_beds_banded,
+        [0, 1, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
+    )
 
-    # clean_ascwds_filled_post_outliers
+    locations_lf = clean_ascwds_filled_post_outliers(locations_lf)
 
-    # forward_fill_latest_known_value - ascwds_filled_posts_dedup_clean
+    locations_lf = forward_fill_latest_known_value(
+        locations_lf, IndCQC.ascwds_filled_posts_dedup_clean
+    )
 
-    # forward_fill_latest_known_value - pir_people_directly_employed_dedup
+    locations_lf = forward_fill_latest_known_value(
+        locations_lf, IndCQC.pir_people_directly_employed_dedup
+    )
 
-    # calculate_filled_posts_per_bed_ratio - ascwds_filled_posts_dedup_clean
+    locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
+        locations_lf,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.filled_posts_per_bed_ratio,
+    )
 
-    # calculate_filled_posts_per_bed_ratio - ct_care_home_total_employed
+    locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
+        locations_lf,
+        IndCQC.ct_care_home_total_employed,
+        IndCQC.ct_care_home_posts_per_bed_ratio,
+    )
 
-    # clean_capacity_tracker_care_home_outliers
-    # clean_capacity_tracker_non_res_outliers
+    # locations_lf = clean_capacity_tracker_care_home_outliers(locations_lf)
+    # locations_lf = clean_capacity_tracker_non_res_outliers(locations_lf)
 
-    # calculate_care_home_status_count
+    # locations_lf = calculate_care_home_status_count(locations_lf)
+
+    # print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 
     utils.sink_to_parquet(
         locations_lf,

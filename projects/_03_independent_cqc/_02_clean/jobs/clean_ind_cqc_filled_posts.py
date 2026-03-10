@@ -106,12 +106,12 @@ def main(
         IndCQC.ct_care_home_posts_per_bed_ratio,
     )
 
-    locations_df = clean_capacity_tracker_care_home_outliers(locations_df)
-    locations_df = clean_capacity_tracker_non_res_outliers(locations_df)
+    # locations_df = clean_capacity_tracker_care_home_outliers(locations_df)
+    # locations_df = clean_capacity_tracker_non_res_outliers(locations_df)
 
-    locations_df = calculate_care_home_status_count(locations_df)
+    # locations_df = calculate_care_home_status_count(locations_df)
 
-    print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
+    # print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 
     utils.write_to_parquet(
         locations_df,
