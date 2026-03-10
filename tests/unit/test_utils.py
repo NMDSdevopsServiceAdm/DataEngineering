@@ -819,57 +819,5 @@ class FilterDataframeToMaximumValueTests(UtilsTests):
         self.assertEqual(expected_data, returned_data)
 
 
-class SelectRowsWithValueTests(UtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.df = self.spark.createDataFrame(
-            UtilsData.select_rows_with_value_rows,
-            UtilsSchema.select_rows_with_value_schema,
-        )
-
-        self.returned_df = utils.select_rows_with_value(
-            self.df, "value_to_filter_on", "keep"
-        )
-
-        self.returned_ids = (
-            self.returned_df.select("id").rdd.flatMap(lambda x: x).collect()
-        )
-
-    def test_select_rows_with_value_selects_rows_with_value(self):
-        self.assertTrue("id_1" in self.returned_ids)
-
-    def test_select_rows_with_value_drops_other_rows(self):
-        self.assertFalse("id_2" in self.returned_ids)
-
-    def test_select_rows_with_value_does_not_change_columns(self):
-        self.assertEqual(
-            self.returned_df.schema, UtilsSchema.select_rows_with_value_schema
-        )
-
-
-class SelectRowsWithNonNullValueTests(UtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-        self.test_df = self.spark.createDataFrame(
-            UtilsData.select_rows_with_non_null_values_rows,
-            UtilsSchema.select_rows_with_non_null_values_schema,
-        )
-
-    def test_select_rows_returns_expected_non_null_rows(self):
-        returned_df = utils.select_rows_with_non_null_value(
-            self.test_df, "column_with_nulls"
-        )
-        expected_df = self.spark.createDataFrame(
-            UtilsData.expected_select_rows_with_non_null_values_rows,
-            UtilsSchema.select_rows_with_non_null_values_schema,
-        )
-
-        returned_data = returned_df.sort("id").collect()
-        expected_data = expected_df.collect()
-
-        self.assertEqual(returned_data, expected_data)
-
-
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

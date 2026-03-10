@@ -164,3 +164,24 @@ class GetSelectedValueFunctionTests(TestIndCqcFilledPostUtils):
             "Error: The selection parameter 'other' was not found. Please use 'first' or 'last'.",
             "Exception does not contain the correct error message",
         )
+
+
+class NullifyCtValuesPreviousToFirstSubmissionTests(SparkBaseTest):
+    def setUp(self) -> None:
+        self.test_df = self.spark.createDataFrame(
+            Data.nullify_ct_values_previous_to_first_submission_rows,
+            Schemas.nullify_ct_values_previous_to_first_submission_schema,
+        )
+        self.returned_df = job.nullify_ct_values_previous_to_first_submission(
+            self.test_df, ["a", "c"]
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_nullify_ct_values_previous_to_first_submission_rows,
+            Schemas.nullify_ct_values_previous_to_first_submission_schema,
+        )
+
+    def test_returned_data_matches_expected(self):
+        returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        expected_data = self.expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)

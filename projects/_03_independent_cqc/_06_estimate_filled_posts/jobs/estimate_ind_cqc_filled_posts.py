@@ -55,7 +55,6 @@ ind_cqc_columns = [
     IndCQC.current_msoa21,
     IndCQC.contemporary_cssr,
     IndCQC.contemporary_region,
-    IndCQC.contemporary_ccg,
     IndCQC.contemporary_sub_icb,
     IndCQC.contemporary_icb,
     IndCQC.contemporary_icb_region,

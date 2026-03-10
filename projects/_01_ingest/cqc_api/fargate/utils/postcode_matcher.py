@@ -288,7 +288,6 @@ def create_truncated_postcode_lf(lf: pl.LazyFrame) -> pl.LazyFrame:
     grouping_cols = [
         ONSClean.contemporary_cssr,
         ONSClean.contemporary_sub_icb,
-        ONSClean.contemporary_ccg,
         ONSClean.current_cssr,
         ONSClean.current_sub_icb,
     ]
@@ -306,7 +305,7 @@ def create_truncated_postcode_lf(lf: pl.LazyFrame) -> pl.LazyFrame:
     # 3. Identifies the most common combination for each truncated postcode.
     lf = lf.sort(
         by=[count_col] + grouping_cols,
-        descending=[True, False, False, False, False, False],
+        descending=[True, False, False, False, False],
     )
 
     rank_over = [CQCLClean.postcode_truncated, ONSClean.contemporary_ons_import_date]
