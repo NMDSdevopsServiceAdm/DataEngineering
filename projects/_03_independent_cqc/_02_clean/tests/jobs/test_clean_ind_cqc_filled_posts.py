@@ -39,9 +39,9 @@ class CleanIndFilledPostsTests(SparkBaseTest):
 
 class MainTests(CleanIndFilledPostsTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.calculate_care_home_status_count")
-    @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
-    @patch(f"{PATCH_PATH}.clean_capacity_tracker_care_home_outliers")
+    # @patch(f"{PATCH_PATH}.calculate_care_home_status_count")
+    # @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
+    # @patch(f"{PATCH_PATH}.clean_capacity_tracker_care_home_outliers")
     @patch(f"{PATCH_PATH}.forward_fill_latest_known_value")
     @patch(f"{PATCH_PATH}.clean_ascwds_filled_post_outliers")
     @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
