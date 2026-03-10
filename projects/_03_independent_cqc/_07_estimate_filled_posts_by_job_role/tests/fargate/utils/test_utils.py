@@ -287,7 +287,9 @@ def test_cap_registered_managers_to_1(input_, expected):
     }
     expected_lf = pl.LazyFrame([[input_], [expected]], schema=schema)
     input_lf = expected_lf.drop(IndCQC.registered_manager_count)
-    returned_lf = job.cap_registered_managers_to_1(input_lf)
+    returned_lf = input_lf.with_columns(
+        job.cap_registered_managers_to_1().alias(IndCQC.registered_manager_count)
+    )
     pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
@@ -295,11 +297,13 @@ def test_get_estimated_managers_diff_from_cqc_registered_managers():
     output_col = IndCQC.difference_between_estimate_and_cqc_registered_managers
     expected_lf = pl.LazyFrame({
         MainJobRoleLabels.registered_manager: [2, 1, 0, 0, 1],
-        IndCQC.registered_manager_count: [1, 1, 1, 0, 0],
+        IndCQC.registered_manager_names: [["Sarah", "James"], ["Sarah"], ["James"], [], []],
         output_col: [1, 0, -1, 0, 1],
     })  # fmt: skip
     input_lf = expected_lf.drop(output_col)
-    returned_lf = job.get_estimated_managers_diff_from_cqc_registered_managers(input_lf)
+    returned_lf = input_lf.with_columns(
+        job.get_estimated_managers_diff_from_cqc_registered_managers().alias(output_col)
+    )
     pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 

@@ -126,7 +126,7 @@ def has_elements(column: str) -> pl.Expr:
     return pl.col(column).list.len().ge(1)
 
 
-def cap_registered_managers_to_1(lf: pl.LazyFrame) -> pl.LazyFrame:
+def cap_registered_managers_to_1() -> pl.Expr:
     """Return 1 if there is one or more registered managers, 0 if not.
 
     This approach aligns with historical Excel structures where each location
@@ -134,17 +134,11 @@ def cap_registered_managers_to_1(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Fills Nulls to 0 also.
     """
-    return lf.with_columns(
-        has_elements(IndCQC.registered_manager_names)
-        .cast(pl.Int8)  # Cast bool to 1/0.
-        .fill_null(0)
-        .alias(IndCQC.registered_manager_count)
-    )
+    # Cast bool to 1/0.
+    return has_elements(IndCQC.registered_manager_names).cast(pl.Int8).fill_null(0)
 
 
-def get_estimated_managers_diff_from_cqc_registered_managers(
-    lf: pl.LazyFrame,
-) -> pl.LazyFrame:
+def get_estimated_managers_diff_from_cqc_registered_managers() -> pl.Expr:
     """Subtract capped estimate of registered managers from CQC count to get diff.
 
     A positive value is when CQC have recorded more registered managers than we
@@ -153,10 +147,8 @@ def get_estimated_managers_diff_from_cqc_registered_managers(
     CQC have the official count of registered managers. Our estimate is based on
     records in ASC-WDS.
     """
-    return lf.with_columns(
-        pl.col(MainJobRoleLabels.registered_manager)
-        .sub(IndCQC.registered_manager_count)
-        .alias(IndCQC.difference_between_estimate_and_cqc_registered_managers),
+    return pl.col(MainJobRoleLabels.registered_manager).sub(
+        cap_registered_managers_to_1()
     )
 
 
@@ -187,4 +179,25 @@ def percentage_share_handling_zero_sum(column: str) -> pl.Expr:
         pl.when(pl.col(column).sum() == 0)
         .then(1 / pl.len())
         .otherwise(percentage_share(column))
+    )
+
+
+def adjusted_non_rm_managerial_filled_posts_expr() -> pl.Expr:
+    """
+    Return an expression to calculate adjusted managerial filled posts estimates.
+
+    Proportionally redistributes the difference between estimated and actual "registered
+    managers" (RM) across all non-RM managerial roles, ensuring that the total number of
+    estimated managerial filled posts remains consistent after correcting for RM
+    discrepancies.
+    """
+    filled_posts = IndCQC.estimate_filled_posts_by_job_role
+    proportional_estimates = percentage_share_handling_zero_sum(filled_posts).over(
+        IndCQC.location_id
+    )
+    manager_diff = get_estimated_managers_diff_from_cqc_registered_managers()
+    return (
+        pl.col(filled_posts)
+        .add(manager_diff.mul(proportional_estimates))
+        .clip(lower_bound=0)
     )

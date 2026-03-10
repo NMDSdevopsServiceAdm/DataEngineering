@@ -121,15 +121,6 @@ def main(
         estimated_job_role_posts_lf
     )
 
-    estimated_job_role_posts_lf = JRUtils.cap_registered_managers_to_1(
-        estimated_job_role_posts_lf
-    )
-    estimated_job_role_posts_lf = (
-        JRUtils.get_estimated_managers_diff_from_cqc_registered_managers(
-            estimated_job_role_posts_lf
-        )
-    )
-
     estimated_job_role_posts_lf = adjust_non_rm_managerial_filled_posts(
         estimated_job_role_posts_lf
     )
@@ -164,36 +155,24 @@ if __name__ == "__main__":
     )
 
 
-def adjusted_non_rm_managerial_filled_posts_expr() -> pl.Expr:
-    """
-    Return an expression to calculate adjusted managerial filled posts estimates.
-
-    Proportionally redistributes the difference between estimated and actual "registered
-    managers" (RM) across all non-RM managerial roles, ensuring that the total number of
-    estimated managerial filled posts remains consistent after correcting for RM
-    discrepancies.
-    """
-    proportional_estimates = JRUtils.percentage_share_handling_zero_sum(
-        IndCQC.estimate_filled_posts_by_job_role
-    ).over(IndCQC.location_id)
-
-    manager_diff = pl.col(
-        IndCQC.difference_between_estimate_and_cqc_registered_managers
-    )
-    return (
-        pl.col(IndCQC.estimate_filled_posts_by_job_role)
-        .add(manager_diff.mul(proportional_estimates))
-        .clip(lower_bound=0)
-    )
-
-
 def adjust_non_rm_managerial_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Apply adjustment to non-RM managerial filled posts estimates."""
+    """Apply adjustment to non-RM managerial filled posts estimates.
+
+    Args:
+        lf (pl.LazyFrame): A polars DataFrame with the following columns:
+            - IndCQC.estimate_filled_posts_by_job_role
+            - IndCQC.main_job_role_clean_labelled
+            - IndCQC.location_id
+            - IndCQC.registered_manager_names
+
+    Returns:
+        pl.LazyFrame: Adjusted managerial filled posts.
+    """
     non_rm_manager_roles = JRUtils.get_non_registered_manager_roles()
     job_roles = pl.col(IndCQC.main_job_role_clean_labelled)
     return lf.with_columns(
         pl.when(job_roles.is_in(non_rm_manager_roles))
-        .then(adjusted_non_rm_managerial_filled_posts_expr())
+        .then(JRUtils.adjusted_non_rm_managerial_filled_posts_expr())
         .alias(IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role)
     )
 
