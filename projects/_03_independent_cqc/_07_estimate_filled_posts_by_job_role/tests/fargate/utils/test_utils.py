@@ -98,7 +98,49 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestPercentageShare(unittest.TestCase):
+@pytest.fixture(
+    params=[
+        pytest.param(
+            (
+                [None, 3, None, 2],
+                [None, 0.6, None, 0.4],
+            ),
+            id="when_some_values_are_null",
+        ),
+        pytest.param(
+            (
+                [None, None, None, None],
+                [None, None, None, None],
+            ),
+            id="when_all_values_are_null",
+        ),
+        pytest.param(
+            (
+                [2, 0, 3, 0],
+                [0.4, 0.0, 0.6, 0.0],
+            ),
+            id="when_some_values_are_zero",
+        ),
+        pytest.param(
+            (
+                [0, 0, 0, 0],
+                # This returns NaN rather than Null because of divide by zero.
+                # https://docs.pola.rs/user-guide/expressions/missing-data/#not-a-number-or-nan-values
+                [float("nan")] * 4,
+            ),
+            id="when_all_values_are_zero",
+        ),
+    ],
+)
+def percent_share_edge_cases_test_data(request):
+    """Provides data for the percentage share edge cases.
+
+    When using unpack the tuple into `input_` and `expected`.
+    """
+    return request.param
+
+
+class TestPercentageShare:
     def test_over_whole_dataset(self):
         input_lf = pl.LazyFrame({"vals": [1, 2, 2]})
         expected_lf = pl.LazyFrame({"ratios": [0.2, 0.4, 0.4]})
@@ -132,31 +174,13 @@ class TestPercentageShare(unittest.TestCase):
         returned_lf = input_lf.select(job.percentage_share(expression).alias("ratios"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_when_some_values_are_null(self):
-        input_lf = pl.LazyFrame({"vals": [None, 3, None, 2]})
-        expected_lf = pl.LazyFrame({"ratios": [None, 0.6, None, 0.4]})
-        returned_lf = input_lf.select(job.percentage_share("vals").alias("ratios"))
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+    def test_edge_cases(self, percent_share_edge_cases_test_data):
+        # Unpack the tuple returned by the fixture
+        input_, expected = percent_share_edge_cases_test_data
 
-    def test_when_all_values_are_null(self):
-        input_lf = pl.LazyFrame({"vals": [None, None, None]})
-        expected_lf = pl.LazyFrame({"ratios": [None, None, None]}).cast(pl.Float64)
-        returned_lf = input_lf.select(job.percentage_share("vals").alias("ratios"))
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_when_some_values_are_zero(self):
-        input_lf = pl.LazyFrame({"vals": [2, 0, 3, 0]})
-        # Zero divided by 5 (sum) is still 0.
-        expected_lf = pl.LazyFrame({"ratios": [0.4, 0.0, 0.6, 0.0]})
-        returned_lf = input_lf.select(job.percentage_share("vals").alias("ratios"))
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_when_all_values_are_zero(self):
-        input_lf = pl.LazyFrame({"vals": [0, 0, 0]})
-        # This returns NaN rather than Null because of divide by zero.
-        # https://docs.pola.rs/user-guide/expressions/missing-data/#not-a-number-or-nan-values
-        expected_lf = pl.LazyFrame({"ratios": [float("nan")] * 3})
-        returned_lf = input_lf.select(job.percentage_share("vals").alias("ratios"))
+        input_lf = pl.LazyFrame({"values": input_}).cast(pl.Float64)
+        expected_lf = pl.LazyFrame({"output": expected}).cast(pl.Float64)
+        returned_lf = input_lf.select(job.percentage_share("values").alias("output"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
@@ -180,28 +204,10 @@ class TestPercentageShareHorizontal:
         returned_lf = input_lf.select(job.percentage_share_horizontal(*schema))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    @pytest.mark.parametrize(
-        "input_, expected",
-        [
-            pytest.param(
-                [None, 3, None, 2],
-                [None, 0.6, None, 0.4],
-                id="when_some_values_are_null",
-            ),
-            pytest.param(
-                [None, None, None, None],
-                [None, None, None, None],
-                id="when_all_values_are_null",
-            ),
-            pytest.param(
-                [2, 0, 3, 0], [0.4, 0.0, 0.6, 0.0], id="when_some_values_are_zero"
-            ),
-            pytest.param(
-                [0, 0, 0, 0], [float("nan")] * 4, id="when_all_values_are_zero"
-            ),
-        ],
-    )
-    def test_edge_cases(self, input_, expected):
+    def test_edge_cases(self, percent_share_edge_cases_test_data):
+        # Unpack the tuple returned by the fixture
+        input_, expected = percent_share_edge_cases_test_data
+
         schema = ["label1", "label2", "label3", "label4"]
         input_lf = pl.LazyFrame(schema=schema, data=[input_], orient="row").cast(
             pl.Float64
