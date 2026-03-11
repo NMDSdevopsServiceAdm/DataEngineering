@@ -249,6 +249,37 @@ class TestPercentageShareHandlingZeroSum:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestPercentageShareHorizontalHandlingZeroSum:
+    @pytest.mark.parametrize(
+        "input_, expected",
+        [
+            pytest.param(
+                [5.0, 2.0, 1.0],
+                [0.625, 0.25, 0.125],
+                id="when_all_values_present",
+            ),
+            pytest.param(
+                [0, 0, 0],
+                [0.333, 0.333, 0.333],
+                id="handles_zero_sum_case_with_even_distribution",
+            ),
+            pytest.param(
+                [1.0, 0.0, 1.0],
+                [0.5, 0.0, 0.5],
+                id="when_some_values_are_zero",
+            ),
+        ],
+    )
+    def test_cases(self, input_, expected):
+        schema = ["label1", "label2", "label3"]
+        input_lf = pl.LazyFrame(schema=schema, data=[input_], orient="row")
+        expected_lf = pl.LazyFrame(schema=schema, data=[expected], orient="row")
+        returned_lf = input_lf.select(
+            job.percentage_share_horizontal_handling_zero_sum(*schema)
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
+
+
 class TestImputeFullTimeSeries:
     @pytest.mark.parametrize(
         "input, expected",

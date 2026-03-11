@@ -106,6 +106,23 @@ def percentage_share_handling_zero_sum(column: str) -> pl.Expr:
     )
 
 
+def percentage_share_horizontal_handling_zero_sum(*columns: str) -> list[pl.Expr]:
+    """Calculate the percentage share horizontally handling zero sum case.
+
+    If all values are zero, dividing by zero leads to a NaN. In this case we
+    want to assume an even distribution.
+    """
+    n_cols = len(columns)
+    total = pl.sum_horizontal(*columns)
+    return [
+        pl.when(total == 0)
+        .then(pl.lit(1 / n_cols))
+        .otherwise(pl.col(col) / total)
+        .alias(col)
+        for col in columns
+    ]
+
+
 def impute_full_time_series(column: str) -> pl.Expr:
     """Impute nulls using linear interpolation, followed by back and forward fill."""
     return pl.col(column).interpolate().forward_fill().backward_fill()
