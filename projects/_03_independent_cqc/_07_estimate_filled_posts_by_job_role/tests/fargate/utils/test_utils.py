@@ -218,29 +218,31 @@ class TestPercentageShareHorizontal:
 
 
 class TestPercentageShareHandlingZeroSum:
-    def test_percentage_share_handling_zero_sum(self):
-        expected_lf = pl.LazyFrame(
-            data=[
-                ("1-001", 5.0, 0.5),
-                ("1-001", 2.0, 0.2),
-                ("1-001", 1.0, 0.1),
-                ("1-001", 1.0, 0.1),
-                ("1-001", 1.0, 0.1),
-                # All zeros then assume even dist.
-                ("1-002", 0.0, 0.5),
-                ("1-002", 0.0, 0.5),
-                # When some values are zero.
-                ("1-003", 1.0, 0.5),
-                ("1-003", 0.0, 0.0),
-                ("1-003", 1.0, 0.5),
-            ],
-            schema=["location", "value", "proportion"],
-        )
-        input_lf = expected_lf.drop("proportion")
-        returned_lf = input_lf.with_columns(
-            job.percentage_share_handling_zero_sum("value")
-            .over("location")
-            .alias("proportion")
+    @pytest.mark.parametrize(
+        "input_, expected",
+        [
+            pytest.param(
+                [5.0, 2.0, 1.0],
+                [0.625, 0.25, 0.125],
+                id="when_all_values_present",
+            ),
+            pytest.param(
+                [0, 0],
+                [0.5, 0.5],
+                id="handles_zero_sum_case_with_even_distribution",
+            ),
+            pytest.param(
+                [1.0, 0.0, 1.0],
+                [0.5, 0.0, 0.5],
+                id="when_some_values_are_zero",
+            ),
+        ],
+    )
+    def test_percentage_share_handling_zero_sum(self, input_, expected):
+        input_lf = pl.LazyFrame({"values": input_})
+        expected_lf = pl.LazyFrame({"pct_share": expected})
+        returned_lf = input_lf.select(
+            job.percentage_share_handling_zero_sum("values").alias("pct_share")
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
