@@ -217,6 +217,34 @@ class TestPercentageShareHorizontal:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+class TestPercentageShareHandlingZeroSum:
+    def test_percentage_share_handling_zero_sum(self):
+        expected_lf = pl.LazyFrame(
+            data=[
+                ("1-001", 5.0, 0.5),
+                ("1-001", 2.0, 0.2),
+                ("1-001", 1.0, 0.1),
+                ("1-001", 1.0, 0.1),
+                ("1-001", 1.0, 0.1),
+                # All zeros then assume even dist.
+                ("1-002", 0.0, 0.5),
+                ("1-002", 0.0, 0.5),
+                # When some values are zero.
+                ("1-003", 1.0, 0.5),
+                ("1-003", 0.0, 0.0),
+                ("1-003", 1.0, 0.5),
+            ],
+            schema=["location", "value", "proportion"],
+        )
+        input_lf = expected_lf.drop("proportion")
+        returned_lf = input_lf.with_columns(
+            job.percentage_share_handling_zero_sum("value")
+            .over("location")
+            .alias("proportion")
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 class TestImputeFullTimeSeries:
     @pytest.mark.parametrize(
         "input, expected",
@@ -362,31 +390,3 @@ def test_get_estimated_managers_diff_from_cqc_registered_managers():
         job.get_estimated_managers_diff_from_cqc_registered_managers().alias(output_col)
     )
     pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
-class TestPercentageShareHandlingZeroSum:
-    def test_percentage_share_handling_zero_sum(self):
-        expected_lf = pl.LazyFrame(
-            data=[
-                ("1-001", 5.0, 0.5),
-                ("1-001", 2.0, 0.2),
-                ("1-001", 1.0, 0.1),
-                ("1-001", 1.0, 0.1),
-                ("1-001", 1.0, 0.1),
-                # All zeros then assume even dist.
-                ("1-002", 0.0, 0.5),
-                ("1-002", 0.0, 0.5),
-                # When some values are zero.
-                ("1-003", 1.0, 0.5),
-                ("1-003", 0.0, 0.0),
-                ("1-003", 1.0, 0.5),
-            ],
-            schema=["location", "value", "proportion"],
-        )
-        input_lf = expected_lf.drop("proportion")
-        returned_lf = input_lf.with_columns(
-            job.percentage_share_handling_zero_sum("value")
-            .over("location")
-            .alias("proportion")
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)

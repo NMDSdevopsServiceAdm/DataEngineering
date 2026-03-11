@@ -90,6 +90,22 @@ def percentage_share_horizontal(*columns: str) -> pl.Expr:
     return cs.by_name(*columns) / pl.sum_horizontal(*columns)
 
 
+def percentage_share_handling_zero_sum(column: str) -> pl.Expr:
+    """Calculate the percentage share of a column handling zero sum case.
+
+    If all values are zero, dividing by zero leads to a NaN. In this case we
+    want to assume an even distribution across all rows.
+
+    Can be used in conjunction with `.group_by` and `.over` methods to get
+    proportions within groups.
+    """
+    return (
+        pl.when(pl.col(column).sum() == 0)
+        .then(1 / pl.len())
+        .otherwise(percentage_share(column))
+    )
+
+
 def impute_full_time_series(column: str) -> pl.Expr:
     """Impute nulls using linear interpolation, followed by back and forward fill."""
     return pl.col(column).interpolate().forward_fill().backward_fill()
@@ -170,22 +186,6 @@ def get_non_registered_manager_roles() -> list[str]:
     return [
         role for role in manager_roles if role != MainJobRoleLabels.registered_manager
     ]
-
-
-def percentage_share_handling_zero_sum(column: str) -> pl.Expr:
-    """Calculate the percentage share of a column handling zero sum case.
-
-    If all values are zero, dividing by zero leads to a NaN. In this case we
-    want to assume an even distribution across all rows.
-
-    Can be used in conjunction with `.group_by` and `.over` methods to get
-    proportions within groups.
-    """
-    return (
-        pl.when(pl.col(column).sum() == 0)
-        .then(1 / pl.len())
-        .otherwise(percentage_share(column))
-    )
 
 
 def adjusted_non_rm_managerial_filled_posts_expr() -> pl.Expr:
