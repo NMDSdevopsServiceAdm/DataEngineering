@@ -181,7 +181,7 @@ class TestPercentageShareHorizontal:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     @pytest.mark.parametrize(
-        "input_data, output_data",
+        "input_, expected",
         [
             pytest.param(
                 [None, 3, None, 2],
@@ -201,18 +201,14 @@ class TestPercentageShareHorizontal:
             ),
         ],
     )
-    def test_edge_cases(self, input_data, output_data):
+    def test_edge_cases(self, input_, expected):
         schema = ["label1", "label2", "label3", "label4"]
-        input_lf = pl.LazyFrame(
-            schema=schema,
-            data=[input_data],
-            orient="row",
-        ).cast(pl.Float64)
-        expected_lf = pl.LazyFrame(
-            schema=schema,
-            data=[output_data],
-            orient="row",
-        ).cast(pl.Float64)
+        input_lf = pl.LazyFrame(schema=schema, data=[input_], orient="row").cast(
+            pl.Float64
+        )
+        expected_lf = pl.LazyFrame(schema=schema, data=[expected], orient="row").cast(
+            pl.Float64
+        )
         returned_lf = input_lf.select(job.percentage_share_horizontal(*schema))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
