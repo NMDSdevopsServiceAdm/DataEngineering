@@ -186,8 +186,16 @@ def get_estimated_managers_diff_from_cqc_registered_managers() -> pl.Expr:
     CQC have the official count of registered managers. Our estimate is based on
     records in ASC-WDS.
     """
-    return pl.col(MainJobRoleLabels.registered_manager).sub(
-        cap_registered_managers_to_1()
+    return (
+        pl.col(IndCQC.estimate_filled_posts)
+        .filter(
+            pl.col(IndCQC.main_job_role_clean_labelled)
+            == MainJobRoleLabels.registered_manager
+        )
+        .sub(cap_registered_managers_to_1())
+        # Because of the filter, the result should be a single row so we just need an
+        # arbitrary aggregation method here.
+        .first()
     )
 
 

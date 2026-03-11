@@ -415,11 +415,22 @@ def test_cap_registered_managers_to_1(input_, expected):
 
 def test_get_estimated_managers_diff_from_cqc_registered_managers():
     output_col = IndCQC.difference_between_estimate_and_cqc_registered_managers
-    expected_lf = pl.LazyFrame({
-        MainJobRoleLabels.registered_manager: [2, 1, 0, 0, 1],
-        IndCQC.registered_manager_names: [["Sarah", "James"], ["Sarah"], ["James"], [], []],
-        output_col: [1, 0, -1, 0, 1],
-    })  # fmt: skip
+    schema = [
+        IndCQC.registered_manager_names,
+        IndCQC.main_job_role_clean_labelled,
+        IndCQC.estimate_filled_posts,
+        output_col,
+    ]
+    # The output col here should be the filled_posts value for
+    # "registered_manager" minus the registered_manager_names count (3 - 1 = 2)
+    # broadcast across the remaining rows.
+    data = [
+        (["Sarah"], MainJobRoleLabels.registered_manager, 3, 2),
+        (["Sarah"], MainJobRoleLabels.social_worker, 7, 2),
+        (["Sarah"], MainJobRoleLabels.care_worker, 12, 2),
+        (["Sarah"], MainJobRoleLabels.supervisor, 4, 2),
+    ]
+    expected_lf = pl.LazyFrame(data=data, schema=schema, orient="row")  # fmt: skip
     input_lf = expected_lf.drop(output_col)
     returned_lf = input_lf.with_columns(
         job.get_estimated_managers_diff_from_cqc_registered_managers().alias(output_col)
