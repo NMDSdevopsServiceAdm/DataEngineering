@@ -223,12 +223,12 @@ def adjusted_non_rm_managerial_filled_posts_expr() -> pl.Expr:
     discrepancies.
     """
     filled_posts = IndCQC.estimate_filled_posts_by_job_role
-    proportional_estimates = percentage_share_handling_zero_sum(filled_posts).over(
-        IndCQC.location_id
-    )
-    manager_diff = get_estimated_managers_diff_from_cqc_registered_managers()
+    proportional_estimates_expr = percentage_share_handling_zero_sum(filled_posts)
+    manager_diff_expr = get_estimated_managers_diff_from_cqc_registered_managers()
     return (
         pl.col(filled_posts)
-        .add(manager_diff.mul(proportional_estimates))
+        .add(
+            manager_diff_expr.mul(proportional_estimates_expr).over(IndCQC.location_id)
+        )
         .clip(lower_bound=0)
     )
