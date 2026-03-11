@@ -416,23 +416,36 @@ def test_cap_registered_managers_to_1(input_, expected):
 def test_get_estimated_managers_diff_from_cqc_registered_managers():
     output_col = IndCQC.difference_between_estimate_and_cqc_registered_managers
     schema = [
+        IndCQC.location_id,
         IndCQC.registered_manager_names,
         IndCQC.main_job_role_clean_labelled,
         IndCQC.estimate_filled_posts,
         output_col,
     ]
-    # The output col here should be the filled_posts value for
-    # "registered_manager" minus the registered_manager_names count (3 - 1 = 2)
-    # broadcast across the remaining rows.
     data = [
-        (["Sarah"], MainJobRoleLabels.registered_manager, 3, 2),
-        (["Sarah"], MainJobRoleLabels.social_worker, 7, 2),
-        (["Sarah"], MainJobRoleLabels.care_worker, 12, 2),
-        (["Sarah"], MainJobRoleLabels.supervisor, 4, 2),
+        # The output col here should be the filled_posts value for
+        # "registered_manager" minus the registered_manager_names count (3 - 1 = 2)
+        # broadcast across the remaining rows.
+        ("1-001", ["Sarah"], MainJobRoleLabels.registered_manager, 3, 2),
+        ("1-001", ["Sarah"], MainJobRoleLabels.social_worker, 7, 2),
+        ("1-001", ["Sarah"], MainJobRoleLabels.care_worker, 12, 2),
+        ("1-001", ["Sarah"], MainJobRoleLabels.supervisor, 4, 2),
+        # There are no registered manager names, and therefore the diff is.
+        ("1-002", [], MainJobRoleLabels.registered_manager, 3, 3),
+        ("1-002", [], MainJobRoleLabels.social_worker, 7, 3),
+        ("1-002", [], MainJobRoleLabels.care_worker, 12, 3),
+        ("1-002", [], MainJobRoleLabels.supervisor, 4, 3),
+        # Same as for first location block.
+        ("1-003", ["Sarah", "James"], MainJobRoleLabels.registered_manager, 3, 2),
+        ("1-003", ["Sarah", "James"], MainJobRoleLabels.social_worker, 7, 2),
+        ("1-003", ["Sarah", "James"], MainJobRoleLabels.care_worker, 12, 2),
+        ("1-003", ["Sarah", "James"], MainJobRoleLabels.supervisor, 4, 2),
     ]
     expected_lf = pl.LazyFrame(data=data, schema=schema, orient="row")  # fmt: skip
     input_lf = expected_lf.drop(output_col)
     returned_lf = input_lf.with_columns(
-        job.get_estimated_managers_diff_from_cqc_registered_managers().alias(output_col)
+        job.get_estimated_managers_diff_from_cqc_registered_managers()
+        .over(IndCQC.location_id)
+        .alias(output_col)
     )
     pl_testing.assert_frame_equal(returned_lf, expected_lf)
