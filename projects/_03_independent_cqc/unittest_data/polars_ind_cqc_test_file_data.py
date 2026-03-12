@@ -2042,128 +2042,44 @@ clean_ct_repetition_values_test_cases = [
     CleanCtRepetitionTestCase(
         id="basic_streaks_with_nulls",
         data=[
-            (
-                "1-001",
-                date(2025, 1, 1),
-                1,
-                1,
-                CTFilteringRule.populated,
-            ),
-            (
-                "1-001",
-                date(2025, 2, 1),
-                2,
-                2,
-                CTFilteringRule.populated,
-            ),
-            (
-                "1-001",
-                date(2025, 3, 1),
-                2,
-                2,
-                CTFilteringRule.populated,
-            ),
-            (
-                "1-001",
-                date(2025, 4, 1),
-                None,
-                None,
-                CTFilteringRule.missing_data,
-            ),
-            (
-                "1-001",
-                date(2025, 11, 7),
-                2,
-                None,
-                CTFilteringRule.location_repeats_total_posts,
-            ),
-            (
-                "1-001",
-                date(2025, 12, 1),
-                3,
-                3,
-                CTFilteringRule.populated,
-            ),
+            ("1-001",date(2025, 1, 1),1,1,CTFilteringRule.populated,),
+            ("1-001",date(2025, 2, 1),2,2,CTFilteringRule.populated,),
+            ("1-001",date(2025, 3, 1),2,2,CTFilteringRule.populated,),
+            ("1-001",date(2025, 4, 1),None,None,CTFilteringRule.missing_data,),
+            ("1-001",date(2025, 11, 7),2,None,CTFilteringRule.location_repeats_total_posts,),
+            ("1-001",date(2025, 12, 1),3,3,CTFilteringRule.populated,),
             ("1-001", date(2026, 1, 1), 4, 4, "some_other_rule", "some_other_rule"),
-        ],        # fmt: skip
+        ],
     ),
     CleanCtRepetitionTestCase(
         id="micro_location_streaks",
         data=[
-            (
-                "1-001",
-                date(2025, 1, 1),
-                1,
-                1,
-                CTFilteringRule.populated,
-            ),
-            (
-                "1-001",
-                date(2026, 10, 1),
-                1,
-                None,
-                CTFilteringRule.location_repeats_total_posts,
-            ),
-        ],        # fmt: skip
+            ("1-001",date(2025, 1, 1),1,1,CTFilteringRule.populated,),
+            ("1-001",date(2026, 10, 1),1,None,CTFilteringRule.location_repeats_total_posts,),
+        ],
     ),
     CleanCtRepetitionTestCase(
         id="small_location_streaks",
         data=[
-            (
-                "1-002",
-                date(2025, 2, 1),
-                10,
-                10,
-                CTFilteringRule.populated,
-            ),
-            (
-                "1-002",
-                date(2025, 7, 1),
-                10,
-                None,
-                CTFilteringRule.location_repeats_total_posts,
-            ),
-        ],        # fmt: skip
+            ("1-002",date(2025, 2, 1),10,10,CTFilteringRule.populated,),
+            ("1-002",date(2025, 7, 1),10,None,CTFilteringRule.location_repeats_total_posts,),
+        ],
     ),
     CleanCtRepetitionTestCase(
         id="medium_location_streaks",
         data=[
-            (
-                "1-003",
-                date(2025, 3, 1),
-                50,
-                50,
-                CTFilteringRule.populated,
-            ),
-            (
-                "1-003",
-                date(2025, 7, 1),
-                50,
-                None,
-                CTFilteringRule.location_repeats_total_posts,
-            ),
-        ],        # fmt: skip
+            ("1-003",date(2025, 3, 1),50,50,CTFilteringRule.populated,),
+            ("1-003",date(2025, 7, 1),50,None,CTFilteringRule.location_repeats_total_posts,),
+        ],
     ),
     CleanCtRepetitionTestCase(
         id="large_location_streaks",
         data=[
-            (
-                "1-004",
-                date(2025, 4, 1),
-                250,
-                250,
-                CTFilteringRule.populated,
-            ),
-            (
-                "1-004",
-                date(2025, 7, 1),
-                250,
-                None,
-                CTFilteringRule.location_repeats_total_posts,
-            ),
-        ],        # fmt: skip
+            ("1-004",date(2025, 4, 1),250,250,CTFilteringRule.populated,),
+            ("1-004",date(2025, 7, 1),250,None,CTFilteringRule.location_repeats_total_posts,),
+        ],
     ),
-]
+] # fmt: skip
 
 
 @dataclass
