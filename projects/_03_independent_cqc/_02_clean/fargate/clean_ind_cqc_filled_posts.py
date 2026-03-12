@@ -20,9 +20,9 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_p
     calculate_time_registered_for,
     calculate_time_since_dormant,
 )
-from projects._03_independent_cqc._02_clean.fargate.utils.forward_fill_latest_known_value import (
-    forward_fill_latest_known_value,
-)
+# from projects._03_independent_cqc._02_clean.fargate.utils.forward_fill_latest_known_value import (
+#     forward_fill_latest_known_value,
+# )
 from projects._03_independent_cqc._02_clean.fargate.utils.utils import (
     create_column_with_repeated_values_removed,
 )
@@ -92,25 +92,25 @@ def main(
 
     locations_lf = clean_ascwds_filled_post_outliers(locations_lf)
 
-    locations_lf = forward_fill_latest_known_value(
-        locations_lf, IndCQC.ascwds_filled_posts_dedup_clean
-    )
+    # locations_lf = forward_fill_latest_known_value(
+    #     locations_lf, IndCQC.ascwds_filled_posts_dedup_clean
+    # )
 
-    locations_lf = forward_fill_latest_known_value(
-        locations_lf, IndCQC.pir_people_directly_employed_dedup
-    )
+    # locations_lf = forward_fill_latest_known_value(
+    #     locations_lf, IndCQC.pir_people_directly_employed_dedup
+    # )
 
-    locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
-        locations_lf,
-        IndCQC.ascwds_filled_posts_dedup_clean,
-        IndCQC.filled_posts_per_bed_ratio,
-    )
+    # locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
+    #     locations_lf,
+    #     IndCQC.ascwds_filled_posts_dedup_clean,
+    #     IndCQC.filled_posts_per_bed_ratio,
+    # )
 
-    locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
-        locations_lf,
-        IndCQC.ct_care_home_total_employed,
-        IndCQC.ct_care_home_posts_per_bed_ratio,
-    )
+    # locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
+    #     locations_lf,
+    #     IndCQC.ct_care_home_total_employed,
+    #     IndCQC.ct_care_home_posts_per_bed_ratio,
+    # )
 
     # locations_lf = clean_capacity_tracker_care_home_outliers(locations_lf)
     # locations_lf = clean_capacity_tracker_non_res_outliers(locations_lf)
