@@ -44,6 +44,8 @@ All notable changes to this project will be documented in this file.
 
 - Combined the CSSR areas Cornwall and Isles of Scilly.
 
+- Set the historical non-residential without dormancy to no longer re-train.
+
 ### Fixed
 - Changed the raw ONS CSV data to contain numeric codes instead of labels. The labels are then added during the cleaning step to improve naming consistency over time.
 
