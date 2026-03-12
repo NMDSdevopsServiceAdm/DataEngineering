@@ -183,19 +183,14 @@ def get_estimated_managers_diff_from_cqc_registered_managers() -> pl.Expr:
     CQC have the official count of registered managers. Our estimate is based on
     records in ASC-WDS.
     """
-    return (
-        pl.when(
-            pl.col(IndCQC.main_job_role_clean_labelled)
-            == MainJobRoleLabels.registered_manager
-        )
-        .then(
-            pl.col(IndCQC.estimate_filled_posts_by_job_role).sub(
-                cap_registered_managers_to_1()
-            )
-        )
-        .otherwise(0)
-        .sum()
+    is_registered_manager = (
+        pl.col(IndCQC.main_job_role_clean_labelled)
+        == MainJobRoleLabels.registered_manager
     )
+    diff = pl.col(IndCQC.estimate_filled_posts_by_job_role).sub(
+        cap_registered_managers_to_1()
+    )
+    return pl.when(is_registered_manager).then(diff).otherwise(0).sum()
 
 
 def get_non_rm_manager_proportions() -> pl.Expr:
@@ -232,12 +227,10 @@ def adjusted_non_rm_managerial_filled_posts_expr() -> pl.Expr:
     discrepancies.
     """
     filled_posts = IndCQC.estimate_filled_posts_by_job_role
-    proportional_estimates_expr = get_non_rm_manager_proportions()
+    proportions_expr = get_non_rm_manager_proportions()
     manager_diff_expr = get_estimated_managers_diff_from_cqc_registered_managers()
     return (
         pl.col(filled_posts)
-        .add(
-            manager_diff_expr.mul(proportional_estimates_expr).over(IndCQC.location_id)
-        )
+        .add(manager_diff_expr.mul(proportions_expr).over(IndCQC.location_id))
         .clip(lower_bound=0)
     )
