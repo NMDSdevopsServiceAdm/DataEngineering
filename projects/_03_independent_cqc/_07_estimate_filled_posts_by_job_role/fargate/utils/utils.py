@@ -162,7 +162,7 @@ def has_elements(column: str) -> pl.Expr:
     return pl.col(column).list.len().ge(1)
 
 
-def cap_registered_managers_to_1() -> pl.Expr:
+def cap_registered_manager_count_to_1() -> pl.Expr:
     """Return 1 if there is one or more registered managers, 0 if not.
 
     This approach aligns with historical Excel structures where each location
@@ -170,8 +170,12 @@ def cap_registered_managers_to_1() -> pl.Expr:
 
     Fills Nulls to 0 also.
     """
-    # Cast bool to 1/0.
-    return has_elements(IndCQC.registered_manager_names).cast(pl.Int8).fill_null(0)
+    return (
+        pl.col(IndCQC.registered_manager_names)
+        .list.len()
+        .clip(upper_bound=1)
+        .fill_null(0)
+    )
 
 
 def get_estimated_managers_diff_from_cqc_registered_managers() -> pl.Expr:
@@ -188,7 +192,7 @@ def get_estimated_managers_diff_from_cqc_registered_managers() -> pl.Expr:
         == MainJobRoleLabels.registered_manager
     )
     diff = pl.col(IndCQC.estimate_filled_posts_by_job_role).sub(
-        cap_registered_managers_to_1()
+        cap_registered_manager_count_to_1()
     )
     return pl.when(is_registered_manager).then(diff).otherwise(0).sum()
 
