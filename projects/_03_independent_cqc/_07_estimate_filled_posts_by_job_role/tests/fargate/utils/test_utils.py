@@ -278,7 +278,7 @@ class TestRollingSum:
         expected_lf = pl.LazyFrame(
             rolling_sum_data, rolling_sum_expected_schema, orient="row"
         )
-        input_lf = expected_lf.drop(expected_lf.columns[-1])
+        input_lf = expected_lf.drop(IndCQC.ascwds_job_role_rolling_sum)
         returned_lf = input_lf.with_columns(
             job.rolling_sum_of_job_role_counts(period="6mo").alias(
                 IndCQC.ascwds_job_role_rolling_sum
