@@ -147,21 +147,6 @@ def rolling_sum_of_job_role_counts(
     )
 
 
-def has_elements(column: str) -> pl.Expr:
-    """Return True if List column has 1 or more elements.
-
-    Args:
-        column (str): Must be a column of type pl.List.
-
-    Returns:
-        pl.Expr: A boolean column, True if list has elements, False if not.
-
-    Note:
-        Calling .list on a non-list column will raise a `PolarsComputeError` at runtime.
-    """
-    return pl.col(column).list.len().ge(1)
-
-
 def cap_registered_manager_count_to_1() -> pl.Expr:
     """Return 1 if there is one or more registered managers, 0 if not.
 
