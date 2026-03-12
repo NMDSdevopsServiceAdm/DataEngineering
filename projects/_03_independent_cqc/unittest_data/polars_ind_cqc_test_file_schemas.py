@@ -17,6 +17,9 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
 )
@@ -627,6 +630,57 @@ class CleanIndCQCSchema:
             (AWPClean.total_staff_bounded, pl.Int64()),
             (AWPClean.worker_records_bounded, pl.Int64()),
             (IndCQC.imputed_registration_date, pl.Date()),
+        ]
+    )
+
+    repeated_value_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.provider_id, pl.String()),
+            ("integer_column", pl.Int64()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    expected_without_repeated_values_schema = pl.Schema(
+        [
+            *repeated_value_schema.items(),
+            ("integer_column_deduplicated", pl.Int64()),
+        ]
+    )
+
+    calculate_care_home_status_count_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.care_home, pl.String()),
+        ]
+    )
+    expected_calculate_care_home_status_count_schema = pl.Schema(
+        [
+            *calculate_care_home_status_count_schema.items(),
+            (IndCQC.care_home_status_count, pl.UInt32()),
+        ]
+    )
+    merged_schema_for_cleaning_job = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.import_date, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (ONSClean.current_region, pl.String()),
+            (CQCLClean.current_cssr, pl.String()),
+            (CQCLClean.current_rural_urban_ind_11, pl.String()),
+            (CQCLClean.care_home, pl.String()),
+            (CQCLClean.number_of_beds, pl.Int64()),
+            (CQCPIRClean.pir_people_directly_employed_cleaned, pl.Int64()),
+            (AWPClean.total_staff_bounded, pl.Int64()),
+            (AWPClean.worker_records_bounded, pl.Int64()),
+            (CQCLClean.primary_service_type, pl.String()),
+            (IndCQC.name, pl.String()),
+            (IndCQC.postcode, pl.String()),
+            (IndCQC.imputed_registration_date, pl.Date()),
+            (Keys.year, pl.String()),
+            (Keys.month, pl.String()),
+            (Keys.day, pl.String()),
         ]
     )
 

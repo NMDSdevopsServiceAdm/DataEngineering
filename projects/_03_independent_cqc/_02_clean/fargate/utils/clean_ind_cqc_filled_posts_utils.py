@@ -280,11 +280,10 @@ def calculate_care_home_status_count(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
          pl.LazyFrame: A polars LazyFrame with a column containing count of care home statuses per location
     """
-    partition_cols = [IndCQC.location_id]
     return lf.with_columns(
         pl.col(IndCQC.care_home)
         .unique()
-        .over(partition_cols)
         .len()
+        .over(IndCQC.location_id)
         .alias(IndCQC.care_home_status_count)
     )

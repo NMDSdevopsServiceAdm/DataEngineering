@@ -401,3 +401,33 @@ class RemoveDualRegistrationCqcCareHomes(unittest.TestCase):
         pl_testing.assert_frame_equal(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
+
+
+class CalculateCareHomeStatusCountTests(unittest.TestCase):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_lf = pl.LazyFrame(
+            Data.calculate_care_home_status_count_rows,
+            Schemas.calculate_care_home_status_count_schema,
+            orient="row",
+        )
+        self.returned_lf = job.calculate_care_home_status_count(test_lf)
+        self.expected_lf = pl.LazyFrame(
+            Data.expected_calculate_care_home_status_count_rows,
+            Schemas.expected_calculate_care_home_status_count_schema,
+            orient="row",
+        )
+        self.returned_data = self.returned_lf.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_lf.collect()
+
+    def test_calculate_care_home_status_count_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_lf.columns),
+            sorted(self.expected_lf.columns),
+        )
+
+    def test_returned_care_home_status_count_values_match_expected(
+        self,
+    ):
+        pl_testing.assert_frame_equal(self.returned_data, self.expected_data)
