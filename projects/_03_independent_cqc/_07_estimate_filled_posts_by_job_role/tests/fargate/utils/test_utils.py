@@ -14,6 +14,7 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
+    JobGroupLabels,
     MainJobRoleLabels,
 )
 
@@ -433,3 +434,36 @@ def test_adjusted_non_rm_managerial_filled_posts_expr(input_data):
         job.adjust_managerial_filled_posts_expr().alias(output_col)
     )
     pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
+
+
+class TestFilterJobRoles:
+    def test_for_one_label(self):
+        managers = job.filter_job_roles(JobGroupLabels.managers)
+        assert managers == [
+            MainJobRoleLabels.data_governance_manager,
+            MainJobRoleLabels.deputy_manager,
+            MainJobRoleLabels.first_line_manager,
+            MainJobRoleLabels.it_manager,
+            MainJobRoleLabels.it_service_desk_manager,
+            MainJobRoleLabels.middle_management,
+            MainJobRoleLabels.other_managerial_staff,
+            MainJobRoleLabels.registered_manager,
+            MainJobRoleLabels.senior_management,
+            MainJobRoleLabels.supervisor,
+            MainJobRoleLabels.team_leader,
+        ]
+
+
+def test_get_non_registered_manager_roles():
+    assert job.get_non_registered_manager_roles() == [
+        MainJobRoleLabels.data_governance_manager,
+        MainJobRoleLabels.deputy_manager,
+        MainJobRoleLabels.first_line_manager,
+        MainJobRoleLabels.it_manager,
+        MainJobRoleLabels.it_service_desk_manager,
+        MainJobRoleLabels.middle_management,
+        MainJobRoleLabels.other_managerial_staff,
+        MainJobRoleLabels.senior_management,
+        MainJobRoleLabels.supervisor,
+        MainJobRoleLabels.team_leader,
+    ]
