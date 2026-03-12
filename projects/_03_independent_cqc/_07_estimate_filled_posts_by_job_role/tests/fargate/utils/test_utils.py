@@ -19,6 +19,8 @@ from utils.column_values.categorical_column_values import (
 )
 
 from .utils_test_cases import (
+    managerial_adjustment_core_columns,
+    managerial_adjustment_expected_schema,
     managerial_adjustment_test_cases,
     rolling_sum_expected_schema,
     rolling_sum_test_cases,
@@ -307,35 +309,29 @@ def test_clip_registered_manager_count_to_1(input_, expected):
     pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-def test_get_estimated_managers_diff_from_cqc_registered_managers():
-    output_col = IndCQC.difference_between_estimate_and_cqc_registered_managers
-    schema = [
-        IndCQC.location_id,
-        IndCQC.registered_manager_names,
-        IndCQC.main_job_role_clean_labelled,
-        IndCQC.estimate_filled_posts_by_job_role,
-        output_col,
-    ]
-    data = [
-        # The output col here should be the filled_posts value for
-        # "registered_manager" minus the registered_manager_names count (3 - 1 = 2)
-        # broadcast across the remaining rows.
-        ("1-001", ["Sarah"], MainJobRoleLabels.registered_manager, 3, 2),
-        ("1-001", ["Sarah"], MainJobRoleLabels.social_worker, 7, 2),
-        ("1-001", ["Sarah"], MainJobRoleLabels.care_worker, 12, 2),
-        ("1-001", ["Sarah"], MainJobRoleLabels.supervisor, 4, 2),
-        # There are no registered manager names, and therefore the diff is.
-        ("1-002", [], MainJobRoleLabels.registered_manager, 3, 3),
-        ("1-002", [], MainJobRoleLabels.social_worker, 7, 3),
-        ("1-002", [], MainJobRoleLabels.care_worker, 12, 3),
-        ("1-002", [], MainJobRoleLabels.supervisor, 4, 3),
-        # Same as for first location block.
-        ("1-003", ["Sarah", "James"], MainJobRoleLabels.registered_manager, 3, 2),
-        ("1-003", ["Sarah", "James"], MainJobRoleLabels.social_worker, 7, 2),
-        ("1-003", ["Sarah", "James"], MainJobRoleLabels.care_worker, 12, 2),
-        ("1-003", ["Sarah", "James"], MainJobRoleLabels.supervisor, 4, 2),
-    ]
-    expected_lf = pl.LazyFrame(data=data, schema=schema, orient="row")
+@pytest.fixture(
+    params=[case.as_pytest_param() for case in managerial_adjustment_test_cases]
+)
+def managerial_input_data(request):
+    """Provides 4 different test cases to put through the managerial adjustment tests.
+
+    The test data comes with three different output columns: "diff",
+    "proportions", "adjusted_estimates". The right one should be selected for
+    each expected_lf.
+
+    """
+    return request.param
+
+
+def test_get_estimated_managers_diff_from_cqc_registered_managers(
+    managerial_input_data,
+):
+    output_col = "diff"
+    expected_lf = pl.LazyFrame(
+        data=managerial_input_data,
+        schema=managerial_adjustment_expected_schema,
+        orient="row",
+    ).select(*managerial_adjustment_core_columns, output_col)
     input_lf = expected_lf.drop(output_col)
     returned_lf = input_lf.with_columns(
         job.get_estimated_managers_diff_from_cqc_registered_managers()
@@ -345,53 +341,27 @@ def test_get_estimated_managers_diff_from_cqc_registered_managers():
     pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-def test_get_non_rm_manager_proportions():
-    output_col = "manager_proportions"
-    schema = [
-        IndCQC.location_id,
-        IndCQC.registered_manager_names,
-        IndCQC.main_job_role_clean_labelled,
-        IndCQC.estimate_filled_posts_by_job_role,
-        output_col,
-    ]
-    data = [
-        # The output col here should be the filled_posts value for
-        # "registered_manager" minus the registered_manager_names count (3 - 1 = 2)
-        # broadcast across the remaining rows.
-        ("1-001", ["Sarah"], MainJobRoleLabels.care_worker, 10, None),
-        ("1-001", ["Sarah"], MainJobRoleLabels.senior_care_worker, 15, None),
-        ("1-001", ["Sarah"], MainJobRoleLabels.supervisor, 20, 0.4444),
-        ("1-001", ["Sarah"], MainJobRoleLabels.team_leader, 25, 0.5556),
-        ("1-001", ["Sarah"], MainJobRoleLabels.registered_manager, 5, None),
-        # There are no registered manager names, and therefore the diff is.
-        ("1-002", [], MainJobRoleLabels.care_worker, 10, None),
-        ("1-002", [], MainJobRoleLabels.senior_care_worker, 15, None),
-        ("1-002", [], MainJobRoleLabels.supervisor, 20, 0.4444),
-        ("1-002", [], MainJobRoleLabels.team_leader, 25, 0.5556),
-        ("1-002", [], MainJobRoleLabels.registered_manager, 5, None),
-    ]
-    expected_lf = pl.LazyFrame(data=data, schema=schema, orient="row")
+def test_get_non_rm_manager_proportions(managerial_input_data):
+    output_col = "proportions"
+    expected_lf = pl.LazyFrame(
+        data=managerial_input_data,
+        schema=managerial_adjustment_expected_schema,
+        orient="row",
+    ).select(*managerial_adjustment_core_columns, output_col)
     input_lf = expected_lf.drop(output_col)
     returned_lf = input_lf.with_columns(
-        job.get_non_rm_manager_proportions().over(IndCQC.location_id).alias(output_col)
+        job.get_non_rm_manager_proportions().alias(output_col)
     )
     pl_testing.assert_frame_equal(returned_lf, expected_lf, abs_tol=0.001)
 
 
-@pytest.mark.parametrize(
-    "input_data",
-    [pytest.param(case.data, id=case.id) for case in managerial_adjustment_test_cases],
-)
-def test_adjusted_non_rm_managerial_filled_posts_expr(input_data):
-    output_col = "estimate_filled_posts_by_job_role_adjusted"
-    schema = [
-        IndCQC.location_id,
-        IndCQC.registered_manager_names,
-        IndCQC.main_job_role_clean_labelled,
-        IndCQC.estimate_filled_posts_by_job_role,
-        output_col,
-    ]
-    expected_lf = pl.LazyFrame(data=input_data, schema=schema, orient="row")
+def test_adjusted_non_rm_managerial_filled_posts_expr(managerial_input_data):
+    output_col = "adjusted_estimates"
+    expected_lf = pl.LazyFrame(
+        data=managerial_input_data,
+        schema=managerial_adjustment_expected_schema,
+        orient="row",
+    ).select(*managerial_adjustment_core_columns, output_col)
     input_lf = expected_lf.drop(output_col)
     returned_lf = input_lf.with_columns(
         job.adjust_managerial_filled_posts_expr().alias(output_col)

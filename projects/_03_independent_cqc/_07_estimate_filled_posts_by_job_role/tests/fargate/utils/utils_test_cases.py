@@ -5,6 +5,7 @@ from datetime import date
 from typing import Any
 
 import polars as pl
+import pytest
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
@@ -16,6 +17,10 @@ from utils.column_values.categorical_column_values import (
 class TestCase:
     id: str
     data: list[Any]
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(self.data, id=self.id)
 
 
 rolling_sum_expected_schema = {
@@ -82,45 +87,63 @@ rolling_sum_test_cases = [
     ),
 ]  # fmt: skip
 
+managerial_adjustment_core_columns = [
+    IndCQC.location_id,
+    IndCQC.registered_manager_names,
+    IndCQC.main_job_role_clean_labelled,
+    IndCQC.estimate_filled_posts_by_job_role,
+]
+
+managerial_adjustment_expected_schema = {
+    IndCQC.location_id: pl.String,
+    IndCQC.registered_manager_names: pl.List,
+    IndCQC.main_job_role_clean_labelled: pl.String,
+    IndCQC.estimate_filled_posts_by_job_role: pl.Float64,
+    # The rest are output columns, and will be used by different tests.
+    "diff": pl.Float64,
+    "proportions": pl.Float64,
+    "adjusted_estimates": pl.Float64,
+}
+
 managerial_adjustment_test_cases = [
     TestCase(
         id="one_or_more_registered_manager_name_with_estimate_greater_than_1",
         data=[
-            ("1-001", ["Sarah"], MainJobRoleLabels.care_worker, 10, 10),
-            ("1-001", ["Sarah"], MainJobRoleLabels.senior_care_worker, 15, 15),
-            ("1-001", ["Sarah"], MainJobRoleLabels.supervisor, 20, 21.778),
-            ("1-001", ["Sarah"], MainJobRoleLabels.team_leader, 25, 27.222),
-            ("1-001", ["Sarah"], MainJobRoleLabels.registered_manager, 5, 1),
+            ("1-001", ["Sarah"], MainJobRoleLabels.care_worker, 10, 4, None, 10),
+            ("1-001", ["Sarah"], MainJobRoleLabels.senior_care_worker, 15, 4, None, 15),
+            ("1-001", ["Sarah"], MainJobRoleLabels.supervisor, 20, 4, 0.4444, 21.778),
+            ("1-001", ["Sarah"], MainJobRoleLabels.team_leader, 25, 4, 0.5556, 27.222),
+            ("1-001", ["Sarah"], MainJobRoleLabels.registered_manager, 5, 4, None, 1),
         ],
     ),
     TestCase(
         id="zero_registered_manager_name_with_estimate_greater_than_1",
         data=[
-            ("1-002", [], MainJobRoleLabels.care_worker, 10, 10),
-            ("1-002", [], MainJobRoleLabels.senior_care_worker, 15, 15),
-            ("1-002", [], MainJobRoleLabels.supervisor, 20, 22.222),
-            ("1-002", [], MainJobRoleLabels.team_leader, 25, 27.778),
-            ("1-002", [], MainJobRoleLabels.registered_manager, 5, 0),
+            ("1-002", [], MainJobRoleLabels.care_worker, 10, 5, None, 10),
+            ("1-002", [], MainJobRoleLabels.senior_care_worker, 15, 5, None, 15),
+            ("1-002", [], MainJobRoleLabels.supervisor, 20, 5, 0.4444, 22.222),
+            ("1-002", [], MainJobRoleLabels.team_leader, 25, 5, 0.5556, 27.778),
+            ("1-002", [], MainJobRoleLabels.registered_manager, 5, 5, None, 0),
         ],
     ),
     TestCase(
         id="one_or_more_registered_manager_name_with_estimate_equal_to_0",
         data=[
-            ("1-003", ["James"], MainJobRoleLabels.care_worker, 10, 10),
-            ("1-003", ["James"], MainJobRoleLabels.senior_care_worker, 15, 15),
-            ("1-003", ["James"], MainJobRoleLabels.supervisor, 20, 19.556),
-            ("1-003", ["James"], MainJobRoleLabels.team_leader, 25, 24.444),
-            ("1-003", ["James"], MainJobRoleLabels.registered_manager, 0, 1),
+            ("1-003", ["James"], MainJobRoleLabels.care_worker, 10, -1, None, 10),
+            ("1-003", ["James"], MainJobRoleLabels.senior_care_worker, 15, -1, None, 15),
+            ("1-003", ["James"], MainJobRoleLabels.supervisor, 20, -1, 0.4444, 19.556),
+            ("1-003", ["James"], MainJobRoleLabels.team_leader, 25, -1, 0.5556, 24.444),
+            ("1-003", ["James"], MainJobRoleLabels.registered_manager, 0, -1, None, 1),
         ],
     ),
     TestCase(
         id="one_registered_manager_and_manager_roles_sum_to_less_than_1",
         data=[
-            ("1-004", ["James"], MainJobRoleLabels.care_worker, 10, 10.0),
-            ("1-004", ["James"], MainJobRoleLabels.senior_care_worker, 15, 15),
-            ("1-004", ["James"], MainJobRoleLabels.supervisor, 0.2, 0.0),
-            ("1-004", ["James"], MainJobRoleLabels.team_leader, 0.1, 0.0),
-            ("1-004", ["James"], MainJobRoleLabels.registered_manager, 0, 1.0),
+            ("1-004", ["James"], MainJobRoleLabels.care_worker, 10, -1, None, 10.0),
+            ("1-004", ["James"], MainJobRoleLabels.senior_care_worker, 15, -1, None, 15),
+            ("1-004", ["James"], MainJobRoleLabels.supervisor, 0.2, -1, 0.6667, 0.0),
+            ("1-004", ["James"], MainJobRoleLabels.team_leader, 0.1, -1, 0.3333, 0.0),
+            ("1-004", ["James"], MainJobRoleLabels.registered_manager, 0, -1, None, 1.0),
         ],
     ),
-]
+]  # fmt: skip
