@@ -323,15 +323,25 @@ def managerial_input_data(request):
     return request.param
 
 
+@pytest.fixture
+def manager_test_expected_lf_constructor(managerial_input_data):
+    """A helper fixture to construct the expected_lf given output_col."""
+
+    def inner(output_col: str) -> pl.LazyFrame:
+        return pl.LazyFrame(
+            data=managerial_input_data,
+            schema=managerial_adjustment_expected_schema,
+            orient="row",
+        ).select(*managerial_adjustment_core_columns, output_col)
+
+    return inner
+
+
 def test_get_estimated_managers_diff_from_cqc_registered_managers(
-    managerial_input_data,
+    manager_test_expected_lf_constructor,
 ):
     output_col = "diff"
-    expected_lf = pl.LazyFrame(
-        data=managerial_input_data,
-        schema=managerial_adjustment_expected_schema,
-        orient="row",
-    ).select(*managerial_adjustment_core_columns, output_col)
+    expected_lf = manager_test_expected_lf_constructor(output_col)
     input_lf = expected_lf.drop(output_col)
     returned_lf = input_lf.with_columns(
         job.get_estimated_managers_diff_from_cqc_registered_managers()
@@ -341,13 +351,9 @@ def test_get_estimated_managers_diff_from_cqc_registered_managers(
     pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-def test_get_non_rm_manager_proportions(managerial_input_data):
+def test_get_non_rm_manager_proportions(manager_test_expected_lf_constructor):
     output_col = "proportions"
-    expected_lf = pl.LazyFrame(
-        data=managerial_input_data,
-        schema=managerial_adjustment_expected_schema,
-        orient="row",
-    ).select(*managerial_adjustment_core_columns, output_col)
+    expected_lf = manager_test_expected_lf_constructor(output_col)
     input_lf = expected_lf.drop(output_col)
     returned_lf = input_lf.with_columns(
         job.get_non_rm_manager_proportions().alias(output_col)
@@ -355,13 +361,11 @@ def test_get_non_rm_manager_proportions(managerial_input_data):
     pl_testing.assert_frame_equal(returned_lf, expected_lf, abs_tol=0.001)
 
 
-def test_adjusted_non_rm_managerial_filled_posts_expr(managerial_input_data):
+def test_adjusted_non_rm_managerial_filled_posts_expr(
+    manager_test_expected_lf_constructor,
+):
     output_col = "adjusted_estimates"
-    expected_lf = pl.LazyFrame(
-        data=managerial_input_data,
-        schema=managerial_adjustment_expected_schema,
-        orient="row",
-    ).select(*managerial_adjustment_core_columns, output_col)
+    expected_lf = manager_test_expected_lf_constructor(output_col)
     input_lf = expected_lf.drop(output_col)
     returned_lf = input_lf.with_columns(
         job.adjust_managerial_filled_posts_expr().alias(output_col)
