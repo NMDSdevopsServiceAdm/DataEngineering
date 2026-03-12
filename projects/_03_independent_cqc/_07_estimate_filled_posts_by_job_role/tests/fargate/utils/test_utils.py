@@ -429,14 +429,7 @@ def test_adjusted_non_rm_managerial_filled_posts_expr(input_data):
     ]
     expected_lf = pl.LazyFrame(data=input_data, schema=schema, orient="row")
     input_lf = expected_lf.drop(output_col)
-    non_rm_manager_roles = job.get_non_registered_manager_roles()
-    job_roles = pl.col(IndCQC.main_job_role_clean_labelled)
     returned_lf = input_lf.with_columns(
-        pl.when(job_roles.is_in(non_rm_manager_roles))
-        .then(job.adjusted_non_rm_managerial_filled_posts_expr())
-        .when(job_roles == MainJobRoleLabels.registered_manager)
-        .then(job.clip_registered_manager_count_to_1())
-        .otherwise(pl.col(IndCQC.estimate_filled_posts_by_job_role))
-        .alias(output_col)
+        job.adjust_managerial_filled_posts_expr().alias(output_col)
     )
     pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)

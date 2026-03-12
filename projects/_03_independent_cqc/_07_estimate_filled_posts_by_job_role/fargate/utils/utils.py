@@ -200,3 +200,22 @@ def adjusted_non_rm_managerial_filled_posts_expr() -> pl.Expr:
         .add(manager_diff_expr.mul(proportions_expr).over(IndCQC.location_id))
         .clip(lower_bound=0)
     )
+
+
+def adjust_managerial_filled_posts_expr() -> pl.Expr:
+    """Adjust managerial filled post estimates.
+
+    If the count of registered managers (clipped to 1) does not match our
+    estimate for registered managers, then the difference is distributed across
+    the remaining managerial roles according to existing proportions within each
+    location.
+    """
+    non_rm_manager_roles = get_non_registered_manager_roles()
+    job_roles = pl.col(IndCQC.main_job_role_clean_labelled)
+    return (
+        pl.when(job_roles.is_in(non_rm_manager_roles))
+        .then(adjusted_non_rm_managerial_filled_posts_expr())
+        .when(job_roles == MainJobRoleLabels.registered_manager)
+        .then(clip_registered_manager_count_to_1())
+        .otherwise(pl.col(IndCQC.estimate_filled_posts_by_job_role))
+    )
