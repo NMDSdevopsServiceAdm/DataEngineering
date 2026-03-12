@@ -2085,7 +2085,7 @@ clean_ct_repetition_values_test_cases = [
                 CTFilteringRule.populated,
             ),
             ("1-001", date(2026, 1, 1), 4, 4, "some_other_rule", "some_other_rule"),
-        ],
+        ],        # fmt: skip
     ),
     CleanCtRepetitionTestCase(
         id="micro_location_streaks",
@@ -2104,7 +2104,7 @@ clean_ct_repetition_values_test_cases = [
                 None,
                 CTFilteringRule.location_repeats_total_posts,
             ),
-        ],
+        ],        # fmt: skip
     ),
     CleanCtRepetitionTestCase(
         id="small_location_streaks",
@@ -2123,7 +2123,7 @@ clean_ct_repetition_values_test_cases = [
                 None,
                 CTFilteringRule.location_repeats_total_posts,
             ),
-        ],
+        ],        # fmt: skip
     ),
     CleanCtRepetitionTestCase(
         id="medium_location_streaks",
@@ -2142,7 +2142,7 @@ clean_ct_repetition_values_test_cases = [
                 None,
                 CTFilteringRule.location_repeats_total_posts,
             ),
-        ],
+        ],        # fmt: skip
     ),
     CleanCtRepetitionTestCase(
         id="large_location_streaks",
@@ -2161,7 +2161,7 @@ clean_ct_repetition_values_test_cases = [
                 None,
                 CTFilteringRule.location_repeats_total_posts,
             ),
-        ],
+        ],        # fmt: skip
     ),
 ]
 

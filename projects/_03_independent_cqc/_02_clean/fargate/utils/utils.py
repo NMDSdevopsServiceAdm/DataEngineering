@@ -32,8 +32,6 @@ def create_column_with_repeated_values_removed(
     if new_column_name is None:
         new_column_name = f"{column_to_clean}_deduplicated"
 
-    # Use the last non-null previous value so that null rows (missing data)
-    # don't break streak detection for the next populated row.
     last_non_null_previous_value = (
         pl.col(column_to_clean)
         .shift(1)

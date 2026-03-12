@@ -37,7 +37,6 @@ def null_posts_per_bed_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.with_columns(
         pl.when(value_is_null | value_is_within_bounds)
         .then(pl.col(IndCQC.ct_care_home_total_employed_cleaned))
-        .otherwise(None)
         .alias(IndCQC.ct_care_home_total_employed_cleaned)
     )
 

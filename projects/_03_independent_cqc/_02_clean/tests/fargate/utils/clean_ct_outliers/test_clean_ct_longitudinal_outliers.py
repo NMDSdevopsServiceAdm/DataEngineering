@@ -68,7 +68,7 @@ class TestComputeOutlierCutoffAndClean(unittest.TestCase):
     def setUp(self):
         self.test_lf = pl.LazyFrame(
             Data.compute_outlier_cutoff_and_clean_input_rows,
-            Schemas.compute_outlier_cutoff_and_clean_input_schema,
+            Schemas.compute_outlier_cutoff_and_clean_schema,
             orient="row",
         )
         self.returned_lf = job.compute_outlier_cutoff_and_clean(
@@ -80,7 +80,7 @@ class TestComputeOutlierCutoffAndClean(unittest.TestCase):
 
         self.expected_lf = pl.LazyFrame(
             Data.expected_compute_outlier_cutoff_and_clean_rows,
-            Schemas.compute_outlier_cutoff_and_clean_output_schema,
+            Schemas.compute_outlier_cutoff_and_clean_schema,
             orient="row",
         )
 
