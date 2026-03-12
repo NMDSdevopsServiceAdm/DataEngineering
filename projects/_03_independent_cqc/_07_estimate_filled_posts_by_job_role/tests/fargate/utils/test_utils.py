@@ -18,7 +18,11 @@ from utils.column_values.categorical_column_values import (
     MainJobRoleLabels,
 )
 
-from .utils_test_cases import rolling_sum_expected_schema, rolling_sum_test_cases
+from .utils_test_cases import (
+    managerial_adjustment_test_cases,
+    rolling_sum_expected_schema,
+    rolling_sum_test_cases,
+)
 
 
 class JoinWorkerToEstimatesDataframeTests(unittest.TestCase):
@@ -376,48 +380,7 @@ def test_get_non_rm_manager_proportions():
 
 @pytest.mark.parametrize(
     "input_data",
-    [
-        pytest.param(
-            [
-                ("1-001", ["Sarah"], MainJobRoleLabels.care_worker, 10, 10),
-                ("1-001", ["Sarah"], MainJobRoleLabels.senior_care_worker, 15, 15),
-                ("1-001", ["Sarah"], MainJobRoleLabels.supervisor, 20, 21.778),
-                ("1-001", ["Sarah"], MainJobRoleLabels.team_leader, 25, 27.222),
-                ("1-001", ["Sarah"], MainJobRoleLabels.registered_manager, 5, 1),
-            ],
-            id="one_or_more_registered_manager_name_with_estimate_greater_than_1",
-        ),
-        pytest.param(
-            [
-                ("1-002", [], MainJobRoleLabels.care_worker, 10, 10),
-                ("1-002", [], MainJobRoleLabels.senior_care_worker, 15, 15),
-                ("1-002", [], MainJobRoleLabels.supervisor, 20, 22.222),
-                ("1-002", [], MainJobRoleLabels.team_leader, 25, 27.778),
-                ("1-002", [], MainJobRoleLabels.registered_manager, 5, 0),
-            ],
-            id="zero_registered_manager_name_with_estimate_greater_than_1",
-        ),
-        pytest.param(
-            [
-                ("1-003", ["James"], MainJobRoleLabels.care_worker, 10, 10),
-                ("1-003", ["James"], MainJobRoleLabels.senior_care_worker, 15, 15),
-                ("1-003", ["James"], MainJobRoleLabels.supervisor, 20, 19.556),
-                ("1-003", ["James"], MainJobRoleLabels.team_leader, 25, 24.444),
-                ("1-003", ["James"], MainJobRoleLabels.registered_manager, 0, 1),
-            ],
-            id="one_or_more_registered_manager_name_with_estimate_equal_to_0",
-        ),
-        pytest.param(
-            [
-                ("1-004", ["James"], MainJobRoleLabels.care_worker, 10, 10.0),
-                ("1-004", ["James"], MainJobRoleLabels.senior_care_worker, 15, 15),
-                ("1-004", ["James"], MainJobRoleLabels.supervisor, 0.2, 0.0),
-                ("1-004", ["James"], MainJobRoleLabels.team_leader, 0.1, 0.0),
-                ("1-004", ["James"], MainJobRoleLabels.registered_manager, 0, 1.0),
-            ],
-            id="one_registered_manager_and_manager_roles_sum_to_less_than_1",
-        ),
-    ],
+    [pytest.param(case.data, id=case.id) for case in managerial_adjustment_test_cases],
 )
 def test_adjusted_non_rm_managerial_filled_posts_expr(input_data):
     output_col = "estimate_filled_posts_by_job_role_adjusted"

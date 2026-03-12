@@ -7,6 +7,9 @@ from typing import Any
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import (
+    MainJobRoleLabels,
+)
 
 
 @dataclass
@@ -78,3 +81,46 @@ rolling_sum_test_cases = [
         ],
     ),
 ]  # fmt: skip
+
+managerial_adjustment_test_cases = [
+    TestCase(
+        id="one_or_more_registered_manager_name_with_estimate_greater_than_1",
+        data=[
+            ("1-001", ["Sarah"], MainJobRoleLabels.care_worker, 10, 10),
+            ("1-001", ["Sarah"], MainJobRoleLabels.senior_care_worker, 15, 15),
+            ("1-001", ["Sarah"], MainJobRoleLabels.supervisor, 20, 21.778),
+            ("1-001", ["Sarah"], MainJobRoleLabels.team_leader, 25, 27.222),
+            ("1-001", ["Sarah"], MainJobRoleLabels.registered_manager, 5, 1),
+        ],
+    ),
+    TestCase(
+        id="zero_registered_manager_name_with_estimate_greater_than_1",
+        data=[
+            ("1-002", [], MainJobRoleLabels.care_worker, 10, 10),
+            ("1-002", [], MainJobRoleLabels.senior_care_worker, 15, 15),
+            ("1-002", [], MainJobRoleLabels.supervisor, 20, 22.222),
+            ("1-002", [], MainJobRoleLabels.team_leader, 25, 27.778),
+            ("1-002", [], MainJobRoleLabels.registered_manager, 5, 0),
+        ],
+    ),
+    TestCase(
+        id="one_or_more_registered_manager_name_with_estimate_equal_to_0",
+        data=[
+            ("1-003", ["James"], MainJobRoleLabels.care_worker, 10, 10),
+            ("1-003", ["James"], MainJobRoleLabels.senior_care_worker, 15, 15),
+            ("1-003", ["James"], MainJobRoleLabels.supervisor, 20, 19.556),
+            ("1-003", ["James"], MainJobRoleLabels.team_leader, 25, 24.444),
+            ("1-003", ["James"], MainJobRoleLabels.registered_manager, 0, 1),
+        ],
+    ),
+    TestCase(
+        id="one_registered_manager_and_manager_roles_sum_to_less_than_1",
+        data=[
+            ("1-004", ["James"], MainJobRoleLabels.care_worker, 10, 10.0),
+            ("1-004", ["James"], MainJobRoleLabels.senior_care_worker, 15, 15),
+            ("1-004", ["James"], MainJobRoleLabels.supervisor, 0.2, 0.0),
+            ("1-004", ["James"], MainJobRoleLabels.team_leader, 0.1, 0.0),
+            ("1-004", ["James"], MainJobRoleLabels.registered_manager, 0, 1.0),
+        ],
+    ),
+]
