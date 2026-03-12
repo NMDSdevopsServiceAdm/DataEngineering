@@ -272,7 +272,7 @@ class TestImputeFullTimeSeries:
 class TestRollingSum:
     @pytest.mark.parametrize(
         "rolling_sum_data",
-        [pytest.param(case.data, id=case.id) for case in rolling_sum_test_cases],
+        [case.as_pytest_param() for case in rolling_sum_test_cases],
     )
     def test_rolling_sum(self, rolling_sum_data):
         expected_lf = pl.LazyFrame(
