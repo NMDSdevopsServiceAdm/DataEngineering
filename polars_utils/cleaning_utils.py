@@ -159,17 +159,20 @@ def create_banded_bed_count_column(
         .filter(pl.col(IndCQC.number_of_beds).is_not_null())
         .unique()
     )
-
+    labels = [str(i) for i in range(len(splits[1:-1]) + 1)]
     number_of_beds_with_bands_lf = number_of_beds_lf.with_columns(
-        pl.col(IndCQC.number_of_beds).cut(splits).alias(new_col)
+        pl.col(IndCQC.number_of_beds)
+        .cut(breaks=splits[1:-1], labels=labels, left_closed=True)
+        .alias(new_col)
     )
+
     output_lf = input_lf.join(
         number_of_beds_with_bands_lf, IndCQC.number_of_beds, "left"
-    )
+    ).with_columns(pl.col(new_col).cast(pl.String).cast(pl.Float64))
 
     return output_lf.with_columns(
-        new_col,
         pl.when(pl.col(IndCQC.care_home) == CareHome.not_care_home)
         .then(zero)
-        .otherwise(pl.col(new_col)),
+        .otherwise(pl.col(new_col))
+        .alias(new_col)
     )

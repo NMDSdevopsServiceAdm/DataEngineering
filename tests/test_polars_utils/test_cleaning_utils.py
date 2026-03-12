@@ -226,3 +226,45 @@ class CalculateFilledPostsPerBedRatioTests(unittest.TestCase):
             orient="row",
         )
         pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), expected_lf)
+
+
+class ReduceDatasetToEarliestFilePerMonthTests(unittest.TestCase):
+    def setUp(self): ...
+
+    def test_reduce_dataset_to_earliest_file_per_month_returns_correct_rows(self):
+        test_lf = pl.LazyFrame(
+            Data.reduce_dataset_to_earliest_file_per_month_rows,
+            Schemas.reduce_dataset_to_earliest_file_per_month_schema,
+            orient="row",
+        )
+        returned_lf = job.reduce_dataset_to_earliest_file_per_month(test_lf)
+        expected_lf = pl.LazyFrame(
+            Data.expected_reduce_dataset_to_earliest_file_per_month_rows,
+            Schemas.reduce_dataset_to_earliest_file_per_month_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(
+            returned_lf.sort(IndCQC.location_id),
+            expected_lf,
+        )
+
+
+class CreateBandedBedCountColumnTests(unittest.TestCase):
+    def test_create_banded_bed_count_column(self):
+        test_lf = pl.LazyFrame(
+            Data.create_banded_bed_count_column_rows,
+            Schemas.create_banded_bed_count_column_schema,
+            orient="row",
+        )
+        test_splits = [0, 1, 25, float("Inf")]
+        returned_lf = job.create_banded_bed_count_column(
+            test_lf, IndCQC.number_of_beds_banded, test_splits
+        )
+
+        expected_lf = pl.LazyFrame(
+            Data.expected_create_banded_bed_count_column_rows,
+            Schemas.expected_create_banded_bed_count_column_schema,
+            orient="row",
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
