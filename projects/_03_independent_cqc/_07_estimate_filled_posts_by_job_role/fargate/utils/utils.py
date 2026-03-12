@@ -147,7 +147,7 @@ def rolling_sum_of_job_role_counts(
     )
 
 
-def cap_registered_manager_count_to_1() -> pl.Expr:
+def clip_registered_manager_count_to_1() -> pl.Expr:
     """Return 1 if there is one or more registered managers, 0 if not.
 
     This approach aligns with historical Excel structures where each location
@@ -177,7 +177,7 @@ def get_estimated_managers_diff_from_cqc_registered_managers() -> pl.Expr:
         == MainJobRoleLabels.registered_manager
     )
     diff = pl.col(IndCQC.estimate_filled_posts_by_job_role).sub(
-        cap_registered_manager_count_to_1()
+        clip_registered_manager_count_to_1()
     )
     return pl.when(is_registered_manager).then(diff).otherwise(0).sum()
 

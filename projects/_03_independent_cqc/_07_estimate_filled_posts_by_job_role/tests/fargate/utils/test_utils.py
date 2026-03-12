@@ -378,7 +378,7 @@ class TestRollingSum:
         pytest.param(None, 0, id="null_to_0"),
     ],
 )
-def test_cap_registered_manager_count_to_1(input_, expected):
+def test_clip_registered_manager_count_to_1(input_, expected):
     schema = {
         IndCQC.registered_manager_names: pl.List,
         IndCQC.registered_manager_count: pl.UInt32,
@@ -386,7 +386,7 @@ def test_cap_registered_manager_count_to_1(input_, expected):
     expected_lf = pl.LazyFrame([[input_], [expected]], schema=schema)
     input_lf = expected_lf.drop(IndCQC.registered_manager_count)
     returned_lf = input_lf.with_columns(
-        job.cap_registered_manager_count_to_1().alias(IndCQC.registered_manager_count)
+        job.clip_registered_manager_count_to_1().alias(IndCQC.registered_manager_count)
     )
     pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
@@ -495,7 +495,7 @@ def test_adjusted_non_rm_managerial_filled_posts_expr():
         pl.when(job_roles.is_in(non_rm_manager_roles))
         .then(job.adjusted_non_rm_managerial_filled_posts_expr())
         .when(job_roles == MainJobRoleLabels.registered_manager)
-        .then(job.cap_registered_manager_count_to_1())
+        .then(job.clip_registered_manager_count_to_1())
         .otherwise(pl.col(IndCQC.estimate_filled_posts_by_job_role))
         .alias(output_col)
     )
