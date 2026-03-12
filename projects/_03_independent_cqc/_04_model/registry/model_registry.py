@@ -32,7 +32,7 @@ model_registry = {
     },
     IndCQC.non_res_without_dormancy_model: {
         MRKeys.version: "5.0.0",
-        MRKeys.auto_retrain: True,
+        MRKeys.auto_retrain: False,
         MRKeys.model_type: ModelTypes.lasso,
         MRKeys.model_params: {"alpha": 0.001},
         MRKeys.dependent: IndCQC.imputed_filled_post_model,
