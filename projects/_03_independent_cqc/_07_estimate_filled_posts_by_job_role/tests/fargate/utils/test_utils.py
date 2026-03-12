@@ -419,7 +419,7 @@ def test_get_estimated_managers_diff_from_cqc_registered_managers():
         IndCQC.location_id,
         IndCQC.registered_manager_names,
         IndCQC.main_job_role_clean_labelled,
-        IndCQC.estimate_filled_posts,
+        IndCQC.estimate_filled_posts_by_job_role,
         output_col,
     ]
     data = [
@@ -441,7 +441,7 @@ def test_get_estimated_managers_diff_from_cqc_registered_managers():
         ("1-003", ["Sarah", "James"], MainJobRoleLabels.care_worker, 12, 2),
         ("1-003", ["Sarah", "James"], MainJobRoleLabels.supervisor, 4, 2),
     ]
-    expected_lf = pl.LazyFrame(data=data, schema=schema, orient="row")  # fmt: skip
+    expected_lf = pl.LazyFrame(data=data, schema=schema, orient="row")
     input_lf = expected_lf.drop(output_col)
     returned_lf = input_lf.with_columns(
         job.get_estimated_managers_diff_from_cqc_registered_managers()
@@ -449,3 +449,76 @@ def test_get_estimated_managers_diff_from_cqc_registered_managers():
         .alias(output_col)
     )
     pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+def test_get_non_rm_manager_proportions():
+    output_col = "manager_proportions"
+    schema = [
+        IndCQC.location_id,
+        IndCQC.registered_manager_names,
+        IndCQC.main_job_role_clean_labelled,
+        IndCQC.estimate_filled_posts_by_job_role,
+        output_col,
+    ]
+    data = [
+        # The output col here should be the filled_posts value for
+        # "registered_manager" minus the registered_manager_names count (3 - 1 = 2)
+        # broadcast across the remaining rows.
+        ("1-001", ["Sarah"], MainJobRoleLabels.care_worker, 10, None),
+        ("1-001", ["Sarah"], MainJobRoleLabels.senior_care_worker, 15, None),
+        ("1-001", ["Sarah"], MainJobRoleLabels.supervisor, 20, 0.4444),
+        ("1-001", ["Sarah"], MainJobRoleLabels.team_leader, 25, 0.5556),
+        ("1-001", ["Sarah"], MainJobRoleLabels.registered_manager, 5, None),
+        # There are no registered manager names, and therefore the diff is.
+        ("1-002", [], MainJobRoleLabels.care_worker, 10, None),
+        ("1-002", [], MainJobRoleLabels.senior_care_worker, 15, None),
+        ("1-002", [], MainJobRoleLabels.supervisor, 20, 0.4444),
+        ("1-002", [], MainJobRoleLabels.team_leader, 25, 0.5556),
+        ("1-002", [], MainJobRoleLabels.registered_manager, 5, None),
+    ]
+    expected_lf = pl.LazyFrame(data=data, schema=schema, orient="row")
+    input_lf = expected_lf.drop(output_col)
+    returned_lf = input_lf.with_columns(
+        job.get_non_rm_manager_proportions().over(IndCQC.location_id).alias(output_col)
+    )
+    pl_testing.assert_frame_equal(returned_lf, expected_lf, abs_tol=0.001)
+
+
+def test_adjusted_non_rm_managerial_filled_posts_expr():
+    output_col = "estimate_filled_posts_by_job_role_adjusted"
+    schema = [
+        IndCQC.location_id,
+        IndCQC.registered_manager_names,
+        IndCQC.main_job_role_clean_labelled,
+        IndCQC.estimate_filled_posts_by_job_role,
+        output_col,
+    ]
+    data = [
+        # The output col here should be the filled_posts value for
+        # "registered_manager" minus the registered_manager_names count (3 - 1 = 2)
+        # broadcast across the remaining rows.
+        ("1-001", ["Sarah"], MainJobRoleLabels.care_worker, 10, 10),
+        ("1-001", ["Sarah"], MainJobRoleLabels.senior_care_worker, 15, 15),
+        ("1-001", ["Sarah"], MainJobRoleLabels.supervisor, 20, 21.778),
+        ("1-001", ["Sarah"], MainJobRoleLabels.team_leader, 25, 27.222),
+        ("1-001", ["Sarah"], MainJobRoleLabels.registered_manager, 5, 1),
+        # There are no registered manager names, and therefore the diff is.
+        ("1-002", [], MainJobRoleLabels.care_worker, 10, 10),
+        ("1-002", [], MainJobRoleLabels.senior_care_worker, 15, 15),
+        ("1-002", [], MainJobRoleLabels.supervisor, 20, 22.222),
+        ("1-002", [], MainJobRoleLabels.team_leader, 25, 27.778),
+        ("1-002", [], MainJobRoleLabels.registered_manager, 5, 0),
+    ]
+    expected_lf = pl.LazyFrame(data=data, schema=schema, orient="row")
+    input_lf = expected_lf.drop(output_col)
+    non_rm_manager_roles = job.get_non_registered_manager_roles()
+    job_roles = pl.col(IndCQC.main_job_role_clean_labelled)
+    returned_lf = input_lf.with_columns(
+        pl.when(job_roles.is_in(non_rm_manager_roles))
+        .then(job.adjusted_non_rm_managerial_filled_posts_expr())
+        .when(job_roles == MainJobRoleLabels.registered_manager)
+        .then(job.cap_registered_managers_to_1())
+        .otherwise(pl.col(IndCQC.estimate_filled_posts_by_job_role))
+        .alias(output_col)
+    )
+    pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)

@@ -90,7 +90,7 @@ def percentage_share_horizontal(*columns: str) -> pl.Expr:
     return cs.by_name(*columns) / pl.sum_horizontal(*columns)
 
 
-def percentage_share_handling_zero_sum(column: str) -> pl.Expr:
+def percentage_share_handling_zero_sum(column: str | pl.Expr) -> pl.Expr:
     """Calculate the percentage share of a column handling zero sum case.
 
     If all values are zero, dividing by zero leads to a NaN. In this case we
@@ -99,11 +99,8 @@ def percentage_share_handling_zero_sum(column: str) -> pl.Expr:
     Can be used in conjunction with `.group_by` and `.over` methods to get
     proportions within groups.
     """
-    return (
-        pl.when(pl.col(column).sum() == 0)
-        .then(1 / pl.len())
-        .otherwise(percentage_share(column))
-    )
+    col = pl.col(column) if isinstance(column, str) else column
+    return pl.when(col.sum() == 0).then(1 / pl.len()).otherwise(percentage_share(col))
 
 
 def percentage_share_horizontal_handling_zero_sum(*columns: str) -> list[pl.Expr]:
@@ -187,22 +184,34 @@ def get_estimated_managers_diff_from_cqc_registered_managers() -> pl.Expr:
     records in ASC-WDS.
     """
     return (
-        pl.col(IndCQC.estimate_filled_posts)
-        .filter(
+        pl.when(
             pl.col(IndCQC.main_job_role_clean_labelled)
             == MainJobRoleLabels.registered_manager
         )
-        .sub(cap_registered_managers_to_1())
-        # Because of the filter, the result should be a single row so we just need an
-        # arbitrary aggregation method here.
-        .first()
+        .then(
+            pl.col(IndCQC.estimate_filled_posts_by_job_role).sub(
+                cap_registered_managers_to_1()
+            )
+        )
+        .otherwise(0)
+        .sum()
     )
+
+
+def get_non_rm_manager_proportions() -> pl.Expr:
+    filled_posts = IndCQC.estimate_filled_posts_by_job_role
+    non_rm_manager_roles = get_non_registered_manager_roles()
+    non_rm_manager_mask = pl.col(IndCQC.main_job_role_clean_labelled).is_in(
+        non_rm_manager_roles
+    )
+    masked_estimates = pl.when(non_rm_manager_mask).then(filled_posts)
+    return percentage_share_handling_zero_sum(masked_estimates)
 
 
 def filter_job_roles(group_label: str) -> list[str]:
     """Filter for job roles that match the group label."""
     job_role_dict = AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict
-    return [role for role, group in job_role_dict if group == group_label]
+    return [role for role, group in job_role_dict.items() if group == group_label]
 
 
 def get_non_registered_manager_roles() -> list[str]:
@@ -223,7 +232,7 @@ def adjusted_non_rm_managerial_filled_posts_expr() -> pl.Expr:
     discrepancies.
     """
     filled_posts = IndCQC.estimate_filled_posts_by_job_role
-    proportional_estimates_expr = percentage_share_handling_zero_sum(filled_posts)
+    proportional_estimates_expr = get_non_rm_manager_proportions()
     manager_diff_expr = get_estimated_managers_diff_from_cqc_registered_managers()
     return (
         pl.col(filled_posts)
