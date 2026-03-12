@@ -373,7 +373,52 @@ def test_get_non_rm_manager_proportions():
     pl_testing.assert_frame_equal(returned_lf, expected_lf, abs_tol=0.001)
 
 
-def test_adjusted_non_rm_managerial_filled_posts_expr():
+@pytest.mark.parametrize(
+    "input_data",
+    [
+        pytest.param(
+            [
+                ("1-001", ["Sarah"], MainJobRoleLabels.care_worker, 10, 10),
+                ("1-001", ["Sarah"], MainJobRoleLabels.senior_care_worker, 15, 15),
+                ("1-001", ["Sarah"], MainJobRoleLabels.supervisor, 20, 21.778),
+                ("1-001", ["Sarah"], MainJobRoleLabels.team_leader, 25, 27.222),
+                ("1-001", ["Sarah"], MainJobRoleLabels.registered_manager, 5, 1),
+            ],
+            id="one_or_more_registered_manager_name_with_estimate_greater_than_1",
+        ),
+        pytest.param(
+            [
+                ("1-002", [], MainJobRoleLabels.care_worker, 10, 10),
+                ("1-002", [], MainJobRoleLabels.senior_care_worker, 15, 15),
+                ("1-002", [], MainJobRoleLabels.supervisor, 20, 22.222),
+                ("1-002", [], MainJobRoleLabels.team_leader, 25, 27.778),
+                ("1-002", [], MainJobRoleLabels.registered_manager, 5, 0),
+            ],
+            id="zero_registered_manager_name_with_estimate_greater_than_1",
+        ),
+        pytest.param(
+            [
+                ("1-003", ["James"], MainJobRoleLabels.care_worker, 10, 10),
+                ("1-003", ["James"], MainJobRoleLabels.senior_care_worker, 15, 15),
+                ("1-003", ["James"], MainJobRoleLabels.supervisor, 20, 19.556),
+                ("1-003", ["James"], MainJobRoleLabels.team_leader, 25, 24.444),
+                ("1-003", ["James"], MainJobRoleLabels.registered_manager, 0, 1),
+            ],
+            id="one_or_more_registered_manager_name_with_estimate_equal_to_0",
+        ),
+        pytest.param(
+            [
+                ("1-004", ["James"], MainJobRoleLabels.care_worker, 10, 10.0),
+                ("1-004", ["James"], MainJobRoleLabels.senior_care_worker, 15, 15),
+                ("1-004", ["James"], MainJobRoleLabels.supervisor, 0.2, 0.0),
+                ("1-004", ["James"], MainJobRoleLabels.team_leader, 0.1, 0.0),
+                ("1-004", ["James"], MainJobRoleLabels.registered_manager, 0, 1.0),
+            ],
+            id="one_registered_manager_and_manager_roles_sum_to_less_than_1",
+        ),
+    ],
+)
+def test_adjusted_non_rm_managerial_filled_posts_expr(input_data):
     output_col = "estimate_filled_posts_by_job_role_adjusted"
     schema = [
         IndCQC.location_id,
@@ -382,23 +427,7 @@ def test_adjusted_non_rm_managerial_filled_posts_expr():
         IndCQC.estimate_filled_posts_by_job_role,
         output_col,
     ]
-    data = [
-        # The output col here should be the filled_posts value for
-        # "registered_manager" minus the registered_manager_names count (3 - 1 = 2)
-        # broadcast across the remaining rows.
-        ("1-001", ["Sarah"], MainJobRoleLabels.care_worker, 10, 10),
-        ("1-001", ["Sarah"], MainJobRoleLabels.senior_care_worker, 15, 15),
-        ("1-001", ["Sarah"], MainJobRoleLabels.supervisor, 20, 21.778),
-        ("1-001", ["Sarah"], MainJobRoleLabels.team_leader, 25, 27.222),
-        ("1-001", ["Sarah"], MainJobRoleLabels.registered_manager, 5, 1),
-        # There are no registered manager names, and therefore the diff is.
-        ("1-002", [], MainJobRoleLabels.care_worker, 10, 10),
-        ("1-002", [], MainJobRoleLabels.senior_care_worker, 15, 15),
-        ("1-002", [], MainJobRoleLabels.supervisor, 20, 22.222),
-        ("1-002", [], MainJobRoleLabels.team_leader, 25, 27.778),
-        ("1-002", [], MainJobRoleLabels.registered_manager, 5, 0),
-    ]
-    expected_lf = pl.LazyFrame(data=data, schema=schema, orient="row")
+    expected_lf = pl.LazyFrame(data=input_data, schema=schema, orient="row")
     input_lf = expected_lf.drop(output_col)
     non_rm_manager_roles = job.get_non_registered_manager_roles()
     job_roles = pl.col(IndCQC.main_job_role_clean_labelled)
