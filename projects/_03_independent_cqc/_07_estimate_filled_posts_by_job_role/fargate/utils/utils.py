@@ -1,5 +1,4 @@
 import polars as pl
-from polars import selectors as cs
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
@@ -85,11 +84,6 @@ def percentage_share(column: str | pl.Expr) -> pl.Expr:
     return col / col.sum()
 
 
-def percentage_share_horizontal(*columns: str) -> pl.Expr:
-    """Calculate the percentage share horizontally across given columns."""
-    return cs.by_name(*columns) / pl.sum_horizontal(*columns)
-
-
 def percentage_share_handling_zero_sum(column: str | pl.Expr) -> pl.Expr:
     """Calculate the percentage share of a column handling zero sum case.
 
@@ -101,23 +95,6 @@ def percentage_share_handling_zero_sum(column: str | pl.Expr) -> pl.Expr:
     """
     col = pl.col(column) if isinstance(column, str) else column
     return pl.when(col.sum() == 0).then(1 / pl.len()).otherwise(percentage_share(col))
-
-
-def percentage_share_horizontal_handling_zero_sum(*columns: str) -> list[pl.Expr]:
-    """Calculate the percentage share horizontally handling zero sum case.
-
-    If all values are zero, dividing by zero leads to a NaN. In this case we
-    want to assume an even distribution.
-    """
-    n_cols = len(columns)
-    total = pl.sum_horizontal(*columns)
-    return [
-        pl.when(total == 0)
-        .then(pl.lit(1 / n_cols))
-        .otherwise(pl.col(col) / total)
-        .alias(col)
-        for col in columns
-    ]
 
 
 def impute_full_time_series(column: str) -> pl.Expr:
