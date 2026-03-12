@@ -160,6 +160,11 @@ def get_estimated_managers_diff_from_cqc_registered_managers() -> pl.Expr:
 
 
 def get_non_rm_manager_proportions() -> pl.Expr:
+    """Get proportion of non-RM managerial roles as a percentage of the total.
+
+    The total in this case is the sum of all non-RM managerial roles. If this
+    totals to 0, then an even distribution is assumed.
+    """
     filled_posts = IndCQC.estimate_filled_posts_by_job_role
     non_rm_manager_roles = get_non_registered_manager_roles()
     non_rm_manager_mask = pl.col(IndCQC.main_job_role_clean_labelled).is_in(
