@@ -323,16 +323,14 @@ class TestManagerialFilledPostAdjustmentExpression:
             pytest.param(None, 0, id="null_to_0"),
         ],
     )
-    def test_clip_registered_manager_count_to_1(self, input_, expected):
+    def test_clip_rm_count(self, input_, expected):
         schema = {
             IndCQC.registered_manager_names: pl.List,
             IndCQC.registered_manager_count: pl.UInt32,
         }
         expected_lf = pl.LazyFrame([[input_], [expected]], schema=schema)
         input_lf = expected_lf.drop(IndCQC.registered_manager_count)
-        clip_count_expr = (
-            job.ManagerialFilledPostAdjustmentExpression._clip_registered_manager_count_to_1()
-        )
+        clip_count_expr = job.ManagerialFilledPostAdjustmentExpression._clip_rm_count()
         returned_lf = input_lf.with_columns(
             clip_count_expr.alias(IndCQC.registered_manager_count)
         )

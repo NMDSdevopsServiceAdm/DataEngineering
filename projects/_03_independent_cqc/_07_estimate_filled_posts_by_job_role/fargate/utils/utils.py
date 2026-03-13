@@ -154,7 +154,7 @@ class ManagerialFilledPostAdjustmentExpression:
             pl.when(cls._is_non_rm_manager())
             .then(cls._adjusted_non_rm_manager_estimates())
             .when(cls._is_registered_manager)
-            .then(cls._clip_registered_manager_count_to_1())
+            .then(cls._clip_rm_count())
             .otherwise(cls.filled_post_estimates)
         )
 
@@ -169,7 +169,7 @@ class ManagerialFilledPostAdjustmentExpression:
         return [r for r in manager_roles if r != MainJobRoleLabels.registered_manager]
 
     @classmethod
-    def _clip_registered_manager_count_to_1(cls) -> pl.Expr:
+    def _clip_rm_count(cls) -> pl.Expr:
         """Return 1 if there is one or more registered manager names listed, 0 if not."""
         return (
             pl.col(IndCQC.registered_manager_names)
@@ -181,7 +181,7 @@ class ManagerialFilledPostAdjustmentExpression:
     @classmethod
     def _rm_manager_diff(cls) -> pl.Expr:
         """Subtract capped estimate of registered managers from CQC count to get diff."""
-        diff = cls.filled_post_estimates.sub(cls._clip_registered_manager_count_to_1())
+        diff = cls.filled_post_estimates.sub(cls._clip_rm_count())
         # Sum here is only summing a single value - used to broadcast to all rows.
         return pl.when(cls._is_registered_manager).then(diff).otherwise(0).sum()
 
