@@ -338,16 +338,11 @@ class TestManagerialFilledPostAdjustmentExpression:
 
     @pytest.fixture(
         params=[
-            pytest.param(
-                {"method": "_rm_manager_diff", "col": "diff"},
-                id="rm_manager_diff",
-            ),
-            pytest.param(
-                {"method": "_non_rm_manager_proportions", "col": "proportions"},
-                id="non_rm_manager_proportions",
-            ),
-            pytest.param({"method": "build", "col": "adjusted_estimates"}, id="build"),
-        ]
+            {"method": "_rm_manager_diff", "col": "diff"},
+            {"method": "_non_rm_manager_proportions", "col": "proportions"},
+            {"method": "build", "col": "adjusted_estimates"},
+        ],
+        ids=lambda d: d["method"].lstrip("_"),
     )
     def config_data(self, request):
         return request.param
