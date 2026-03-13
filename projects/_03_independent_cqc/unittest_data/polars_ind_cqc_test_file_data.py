@@ -1,7 +1,7 @@
 import math
 from dataclasses import dataclass
 from datetime import date
-
+from typing import Any
 import numpy as np
 
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.difference_within_range import (
@@ -13,6 +13,7 @@ from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_ca
 from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     CareHome,
+    CTFilteringRule,
     Dormancy,
     MainJobRoleLabels,
     PrimaryServiceType,
@@ -2008,4 +2009,168 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
             None,
             AscwdsFilteringRule.populated,
         ),
+    ]
+
+
+@dataclass
+class NullCtPostsToBedsOutliers:
+    null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00, 1, CTFilteringRule.populated),
+        ("1-002", 1, None, 1, CTFilteringRule.populated),
+        ("1-003", None, 1.00, None, CTFilteringRule.missing_data),
+        ("1-004", None, None, None, CTFilteringRule.missing_data),
+        ("1-005", 1, 0.65, 1, CTFilteringRule.populated),
+        ("1-006", 1, 6.01, 1, CTFilteringRule.populated),
+    ]
+    expected_null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00, 1, CTFilteringRule.populated),
+        ("1-002", 1, None, 1, CTFilteringRule.populated),
+        ("1-003", None, 1.00, None, CTFilteringRule.missing_data),
+        ("1-004", None, None, None, CTFilteringRule.missing_data),
+        ("1-005", 1, 0.65, None, CTFilteringRule.beds_ratio_outlier),
+        ("1-006", 1, 6.01, None, CTFilteringRule.beds_ratio_outlier),
+    ]
+
+
+@dataclass
+class CleanCtRepetitionTestCase:
+    id: str
+    data: list[Any]
+
+
+clean_ct_repetition_values_test_cases = [
+    CleanCtRepetitionTestCase(
+        id="basic_streaks_with_nulls",
+        data=[
+            ("1-001",date(2025, 1, 1),1,1,CTFilteringRule.populated,),
+            ("1-001",date(2025, 2, 1),2,2,CTFilteringRule.populated,),
+            ("1-001",date(2025, 3, 1),2,2,CTFilteringRule.populated,),
+            ("1-001",date(2025, 4, 1),None,None,CTFilteringRule.missing_data,),
+            ("1-001",date(2025, 11, 7),2,None,CTFilteringRule.location_repeats_total_posts,),
+            ("1-001",date(2025, 12, 1),3,3,CTFilteringRule.populated,),
+            ("1-001", date(2026, 1, 1), 4, 4, "some_other_rule", "some_other_rule"),
+        ],
+    ),
+    CleanCtRepetitionTestCase(
+        id="micro_location_streaks",
+        data=[
+            ("1-001",date(2025, 1, 1),1,1,CTFilteringRule.populated,),
+            ("1-001",date(2026, 10, 1),1,None,CTFilteringRule.location_repeats_total_posts,),
+        ],
+    ),
+    CleanCtRepetitionTestCase(
+        id="small_location_streaks",
+        data=[
+            ("1-002",date(2025, 2, 1),10,10,CTFilteringRule.populated,),
+            ("1-002",date(2025, 7, 1),10,None,CTFilteringRule.location_repeats_total_posts,),
+        ],
+    ),
+    CleanCtRepetitionTestCase(
+        id="medium_location_streaks",
+        data=[
+            ("1-003",date(2025, 3, 1),50,50,CTFilteringRule.populated,),
+            ("1-003",date(2025, 7, 1),50,None,CTFilteringRule.location_repeats_total_posts,),
+        ],
+    ),
+    CleanCtRepetitionTestCase(
+        id="large_location_streaks",
+        data=[
+            ("1-004",date(2025, 4, 1),250,250,CTFilteringRule.populated,),
+            ("1-004",date(2025, 7, 1),250,None,CTFilteringRule.location_repeats_total_posts,),
+        ],
+    ),
+] # fmt: skip
+
+
+@dataclass
+class OutlierCleaningData:
+    clean_longitudinal_outliers_input_rows = [
+        ("1-001", 5, CTFilteringRule.populated),
+        ("1-001", 10, CTFilteringRule.populated),
+        ("1-001", 15, CTFilteringRule.populated),
+        ("1-001", 80, CTFilteringRule.populated),
+        ("1-002", 95, CTFilteringRule.populated),
+        ("1-002", 20, CTFilteringRule.populated),
+        ("1-002", 90, CTFilteringRule.populated),
+        ("1-003", 40, CTFilteringRule.populated),
+        ("1-003", 45, CTFilteringRule.populated),
+        ("1-003", 50, CTFilteringRule.populated),
+        ("1-004", 5, CTFilteringRule.populated),
+        ("1-004", 10, CTFilteringRule.populated),
+        ("1-004", 15, CTFilteringRule.populated),
+        ("1-004", 80, CTFilteringRule.populated),
+        ("1-004", 94, CTFilteringRule.populated),
+        ("1-004", 20, CTFilteringRule.populated),
+        ("1-004", 90, CTFilteringRule.populated),
+        ("1-004", 40, CTFilteringRule.populated),
+        ("1-004", 45, CTFilteringRule.populated),
+        ("1-004", 50, CTFilteringRule.populated),
+    ]
+
+    expected_clean_longitudinal_outliers_remove_value_only_rows = [
+        ("1-001", 5, CTFilteringRule.populated),
+        ("1-001", 10, CTFilteringRule.populated),
+        ("1-001", 15, CTFilteringRule.populated),
+        ("1-001", None, CTFilteringRule.longitudinal_outliers),
+        ("1-002", 95, CTFilteringRule.populated),
+        ("1-002", None, CTFilteringRule.longitudinal_outliers),
+        ("1-002", 90, CTFilteringRule.populated),
+        ("1-003", 40, CTFilteringRule.populated),
+        ("1-003", 45, CTFilteringRule.populated),
+        ("1-003", 50, CTFilteringRule.populated),
+        ("1-004", 5, CTFilteringRule.populated),
+        ("1-004", 10, CTFilteringRule.populated),
+        ("1-004", 15, CTFilteringRule.populated),
+        ("1-004", 80, CTFilteringRule.populated),
+        ("1-004", 94, CTFilteringRule.populated),
+        ("1-004", 20, CTFilteringRule.populated),
+        ("1-004", 90, CTFilteringRule.populated),
+        ("1-004", 40, CTFilteringRule.populated),
+        ("1-004", 45, CTFilteringRule.populated),
+        ("1-004", 50, CTFilteringRule.populated),
+    ]
+
+    compute_outlier_cutoff_and_clean_input_rows = [
+        ("1-001", 5),
+        ("1-001", 10),
+        ("1-001", 15),
+        ("1-001", 80),
+        ("1-002", 95),
+        ("1-002", 20),
+        ("1-002", 90),
+        ("1-003", 40),
+        ("1-003", 45),
+        ("1-003", 50),
+        ("1-004", 5),
+        ("1-004", 10),
+        ("1-004", 15),
+        ("1-004", 80),
+        ("1-004", 94),
+        ("1-004", 20),
+        ("1-004", 90),
+        ("1-004", 40),
+        ("1-004", 45),
+        ("1-004", 50),
+    ]
+    expected_compute_outlier_cutoff_and_clean_rows = [
+        ("1-001", 5),
+        ("1-001", 10),
+        ("1-001", 15),
+        ("1-001", None),
+        ("1-002", 95),
+        ("1-002", None),
+        ("1-002", 90),
+        ("1-003", 40),
+        ("1-003", 45),
+        ("1-003", 50),
+        ("1-004", 5),
+        ("1-004", 10),
+        ("1-004", 15),
+        ("1-004", 80),
+        ("1-004", 94),
+        ("1-004", 20),
+        ("1-004", 90),
+        ("1-004", 40),
+        ("1-004", 45),
+        ("1-004", 50),
     ]

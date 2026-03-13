@@ -4002,6 +4002,7 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
     ]
 
 
+# converted to polars -> projects\_03_independent_cqc\unittest_data\polars_ind_cqc_test_file_data.py
 @dataclass
 class CleanCapacityTrackerNonResOutliersData:
     ind_cqc_rows = [
@@ -4010,6 +4011,7 @@ class CleanCapacityTrackerNonResOutliersData:
     ]
 
 
+# converted to polars -> projects\_03_independent_cqc\unittest_data\polars_ind_cqc_test_file_data.py
 @dataclass
 class CleanCapacityTrackerCareHomeOutliersData:
     ind_cqc_rows = [
@@ -4020,6 +4022,7 @@ class CleanCapacityTrackerCareHomeOutliersData:
     ]
 
 
+# converted to polars -> projects\_03_independent_cqc\unittest_data\polars_ind_cqc_test_file_data.py
 @dataclass
 class NullCtPostsToBedsOutliers:
     null_ct_posts_to_beds_outliers_rows = [
@@ -5357,6 +5360,7 @@ class IndCQCDataUtils:
     ]
 
 
+# converted to polars -> projects\_03_independent_cqc\unittest_data\polars_ind_cqc_test_file_data.py
 @dataclass
 class CleanCtRepetition:
     expected_dict_non_residential_locations = {
@@ -5556,6 +5560,7 @@ class ForwardFillLatestKnownValue:
     ]
 
 
+# converted to polars -> projects\_03_independent_cqc\unittest_data\polars_ind_cqc_test_file_data.py
 @dataclass
 class OutlierCleaningData:
 
