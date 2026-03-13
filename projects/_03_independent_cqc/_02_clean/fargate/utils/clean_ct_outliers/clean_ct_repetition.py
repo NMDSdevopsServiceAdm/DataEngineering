@@ -1,6 +1,5 @@
 import polars as pl
 
-import projects._03_independent_cqc.utils.utils.utils as utils
 from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
     update_filtering_rule,
 )
