@@ -14,6 +14,7 @@ from unittest.mock import MagicMock, Mock, patch
 import boto3
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 from botocore.exceptions import ClientError
 from moto import mock_aws, sns
 from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
@@ -25,7 +26,6 @@ PATCH_PATH = "polars_utils.utils"
 
 
 class TestUtils(unittest.TestCase):
-
     def setUp(self):
         self.temp_dir = Path(tempfile.mkdtemp())
         self.types_df = pl.DataFrame(
@@ -626,4 +626,23 @@ class TestFilterToMaximumValueInColumn(TestUtils):
             }
         )
 
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestCoalesceLabels:
+    @pytest.fixture
+    def input_lf(self):
+        return pl.LazyFrame(
+            {
+                "a": [1, None, None, None, None],
+                "b": [None, 2, None, None, 4],
+                "c": [10, 20, 30, None, None],
+            }
+        )
+
+    def test_output_col_is_coalesce_source_labels(self, input_lf):
+        expected_lf = pl.LazyFrame({"labels": ["a", "b", "c", None, "b"]})
+        returned_lf = input_lf.select(
+            utils.coalesce_labels(["a", "b", "c"]).alias("labels")
+        )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

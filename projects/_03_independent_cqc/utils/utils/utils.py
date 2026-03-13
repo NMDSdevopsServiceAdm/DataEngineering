@@ -7,6 +7,9 @@ from pyspark.sql import functions as F
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
+# converted to polars -> polars_utils.utils.coalesce_labels
+# call with a `.coalesce` method to get same outcome, like
+# `coalesce_ratios_with_source_label` does in estimates_by_job_role pipeline.
 def merge_columns_in_order(
     df: DataFrame,
     ordered_list_of_columns_to_be_merged: List,

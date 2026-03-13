@@ -413,3 +413,14 @@ def filter_to_maximum_value_in_column(
     lf = lf.with_columns(pl.col(column_to_filter).max().alias(max_value))
     lf = lf.filter(pl.col(column_to_filter) == pl.col(max_value))
     return lf.drop(max_value)
+
+
+def coalesce_labels(coalesce_columns: list[str]) -> pl.Expr:
+    """Return the source column labels of a coalesce call i.e. first non-null."""
+    first_col = coalesce_columns[0]
+    label_expr = pl.when(pl.col(first_col).is_not_null()).then(pl.lit(first_col))
+
+    for col in coalesce_columns[1:]:
+        label_expr = label_expr.when(pl.col(col).is_not_null()).then(pl.lit(col))
+
+    return label_expr
