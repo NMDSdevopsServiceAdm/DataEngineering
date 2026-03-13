@@ -129,7 +129,7 @@ class ManagerialFilledPostAdjustmentExpression:
 
     This class provides a method to adjust "Registered Manager" (RM) estimates based
     on the counts of names given in the CQC data, and proportionally redistributes the
-    difference across other managerial roles.
+    difference across other managerial roles within each location.
 
     The expression is returned via the class method `.build()`.
 
@@ -174,7 +174,7 @@ class ManagerialFilledPostAdjustmentExpression:
         )
 
     @classmethod
-    def _get_estimated_managers_diff_from_cqc_registered_managers(cls) -> pl.Expr:
+    def _rm_manager_diff(cls) -> pl.Expr:
         """Subtract capped estimate of registered managers from CQC count to get diff.
 
         A positive value is when CQC have recorded more registered managers than we
@@ -187,7 +187,7 @@ class ManagerialFilledPostAdjustmentExpression:
         return pl.when(cls._is_registered_manager).then(diff).otherwise(0).sum()
 
     @classmethod
-    def _get_non_rm_manager_proportions(cls) -> pl.Expr:
+    def _non_rm_manager_proportions(cls) -> pl.Expr:
         """Get proportion of non-RM managerial role estimates as a percentage of total.
 
         The total in this case is the sum of all non-RM managerial roles. If this
@@ -198,7 +198,7 @@ class ManagerialFilledPostAdjustmentExpression:
         )
 
     @classmethod
-    def _adjusted_non_rm_managerial_filled_posts_expr(cls) -> pl.Expr:
+    def _adjusted_non_rm_manager_estimates(cls) -> pl.Expr:
         """
         Return an expression to calculate adjusted managerial filled posts estimates.
 
@@ -207,8 +207,8 @@ class ManagerialFilledPostAdjustmentExpression:
         estimated managerial filled posts remains consistent after correcting for RM
         discrepancies.
         """
-        proportions = cls._get_non_rm_manager_proportions()
-        manager_diff = cls._get_estimated_managers_diff_from_cqc_registered_managers()
+        proportions = cls._non_rm_manager_proportions()
+        manager_diff = cls._rm_manager_diff()
         return cls.filled_post_estimates.add(
             manager_diff.mul(proportions).over(IndCQC.location_id)
         ).clip(lower_bound=0)
@@ -224,7 +224,7 @@ class ManagerialFilledPostAdjustmentExpression:
         """
         return (
             pl.when(cls._is_non_rm_manager())
-            .then(cls._adjusted_non_rm_managerial_filled_posts_expr())
+            .then(cls._adjusted_non_rm_manager_estimates())
             .when(cls._is_registered_manager)
             .then(cls._clip_registered_manager_count_to_1())
             .otherwise(cls.filled_post_estimates)

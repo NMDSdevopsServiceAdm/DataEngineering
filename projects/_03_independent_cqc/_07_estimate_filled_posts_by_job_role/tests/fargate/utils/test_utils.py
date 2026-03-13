@@ -338,30 +338,25 @@ class TestManagerialFilledPostAdjustmentExpression:
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_get_estimated_managers_diff_from_cqc_registered_managers(
-        self,
-        expected_lf_constructor,
-    ):
+    def test_rm_manager_diff(self, expected_lf_constructor):
         output_col = "diff"
         expected_lf = expected_lf_constructor(output_col)
         input_lf = expected_lf.drop(output_col)
-        diff_expr = (
-            job.ManagerialFilledPostAdjustmentExpression._get_estimated_managers_diff_from_cqc_registered_managers()
-        )
+        diff_expr = job.ManagerialFilledPostAdjustmentExpression._rm_manager_diff()
         returned_lf = input_lf.with_columns(diff_expr.alias(output_col))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_get_non_rm_manager_proportions(self, expected_lf_constructor):
+    def test_non_rm_manager_proportions(self, expected_lf_constructor):
         output_col = "proportions"
         expected_lf = expected_lf_constructor(output_col)
         input_lf = expected_lf.drop(output_col)
         proportion_expr = (
-            job.ManagerialFilledPostAdjustmentExpression._get_non_rm_manager_proportions()
+            job.ManagerialFilledPostAdjustmentExpression._non_rm_manager_proportions()
         )
         returned_lf = input_lf.with_columns(proportion_expr.alias(output_col))
         pl_testing.assert_frame_equal(returned_lf, expected_lf, abs_tol=0.001)
 
-    def test_build_expr(self, expected_lf_constructor):
+    def test_build(self, expected_lf_constructor):
         output_col = "adjusted_estimates"
         expected_lf = expected_lf_constructor(output_col)
         input_lf = expected_lf.drop(output_col)
