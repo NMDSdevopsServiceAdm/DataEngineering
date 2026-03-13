@@ -20,6 +20,7 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_p
     calculate_time_registered_for,
     calculate_time_since_dormant,
 )
+
 # from projects._03_independent_cqc._02_clean.fargate.utils.forward_fill_latest_known_value import (
 #     forward_fill_latest_known_value,
 # )
