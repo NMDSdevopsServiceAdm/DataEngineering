@@ -3,6 +3,11 @@ import polars as pl
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
+    JobGroupLabels,
+    MainJobRoleLabels,
+)
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
 )
 
 
@@ -79,6 +84,19 @@ def percentage_share(column: str | pl.Expr) -> pl.Expr:
     return col / col.sum()
 
 
+def percentage_share_handling_zero_sum(column: str | pl.Expr) -> pl.Expr:
+    """Calculate the percentage share of a column handling zero sum case.
+
+    If all values are zero, dividing by zero leads to a NaN. In this case we
+    want to assume an even distribution across all rows.
+
+    Can be used in conjunction with `.group_by` and `.over` methods to get
+    proportions within groups.
+    """
+    col = pl.col(column) if isinstance(column, str) else column
+    return pl.when(col.sum() == 0).then(1 / pl.len()).otherwise(percentage_share(col))
+
+
 def impute_full_time_series(column: str) -> pl.Expr:
     """Impute nulls using linear interpolation, followed by back and forward fill."""
     return pl.col(column).interpolate().forward_fill().backward_fill()
@@ -104,3 +122,96 @@ def rolling_sum_of_job_role_counts(
             order_by=IndCQC.cqc_location_import_date,
         )
     )
+
+
+class ManagerialFilledPostAdjustmentExpression:
+    """Polars expression factory for redistributing managerial filled posts.
+
+    This class provides a method to adjust "Registered Manager" (RM) estimates based
+    on the counts of names given in the CQC data, and proportionally redistributes the
+    difference across other managerial roles within each location.
+
+    The expression is returned via the class method `.build()`.
+
+    Expects DataFrame to contain the following columns:
+        - IndCQC.main_job_role_clean_labelled
+        - IndCQC.estimate_filled_posts_by_job_role
+        - IndCQC.location_id
+        - IndCQC.registered_manager_names
+
+    Example Usage:
+        >>> lf.with_columns(ManagerialFilledPostAdjustmentExpression.build().alias("new_col"))
+    """
+
+    job_roles: pl.Expr = pl.col(IndCQC.main_job_role_clean_labelled)
+    filled_post_estimates: pl.Expr = pl.col(IndCQC.estimate_filled_posts_by_job_role)
+    _is_registered_manager: pl.Expr = job_roles == MainJobRoleLabels.registered_manager
+
+    @classmethod
+    def build(cls) -> pl.Expr:
+        """Build adjust managerial filled post estimates expression."""
+        return (
+            pl.when(cls._is_non_rm_manager())
+            .then(cls._adjusted_non_rm_manager_estimates())
+            .when(cls._is_registered_manager)
+            .then(cls._clip_rm_count())
+            .otherwise(cls.filled_post_estimates)
+        )
+
+    @classmethod
+    def _is_non_rm_manager(cls) -> pl.Expr:
+        return cls.job_roles.is_in(cls._get_non_registered_manager_roles())
+
+    @classmethod
+    def _get_non_registered_manager_roles(cls) -> list[str]:
+        """Get list of manager roles except registered manager."""
+        manager_roles = filter_job_roles(JobGroupLabels.managers)
+        return [r for r in manager_roles if r != MainJobRoleLabels.registered_manager]
+
+    @classmethod
+    def _clip_rm_count(cls) -> pl.Expr:
+        """Return 1 if there is one or more registered manager names listed, 0 if not."""
+        return (
+            pl.col(IndCQC.registered_manager_names)
+            .list.len()
+            .clip(upper_bound=1)
+            .fill_null(0)
+        )
+
+    @classmethod
+    def _rm_manager_diff(cls) -> pl.Expr:
+        """Subtract capped estimate of registered managers from CQC count to get diff."""
+        diff = cls.filled_post_estimates.sub(cls._clip_rm_count())
+        # Sum here is only summing a single value - used to broadcast to all rows.
+        return pl.when(cls._is_registered_manager).then(diff).otherwise(0).sum()
+
+    @classmethod
+    def _non_rm_manager_proportions(cls) -> pl.Expr:
+        """Get proportion of non-RM managerial role estimates as a percentage of total.
+
+        The total in this case is the sum of all non-RM managerial roles. If this
+        totals to 0, then an even distribution is assumed.
+        """
+        return percentage_share_handling_zero_sum(
+            pl.when(cls._is_non_rm_manager()).then(cls.filled_post_estimates)
+        )
+
+    @classmethod
+    def _adjusted_non_rm_manager_estimates(cls) -> pl.Expr:
+        """Proportionally redistribute difference across remaining managerial roles.
+
+        Ensure non-negative values to ensure that the total number of estimated
+        managerial filled posts remains consistent after correcting for RM
+        discrepancies.
+        """
+        return cls.filled_post_estimates.add(
+            cls._rm_manager_diff().mul(cls._non_rm_manager_proportions())
+            # QUESTION: Should this be over import date too?
+            .over(IndCQC.location_id)
+        ).clip(lower_bound=0)
+
+
+def filter_job_roles(group_label: str) -> list[str]:
+    """Filter for job roles that match the group label."""
+    job_role_dict = AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict
+    return [role for role, group in job_role_dict.items() if group == group_label]

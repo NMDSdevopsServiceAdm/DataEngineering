@@ -19,6 +19,7 @@ class MainTests(unittest.TestCase):
     mock_prepared_job_role_counts_data = Mock(name="prepared_job_role_counts_data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.JRUtils.ManagerialFilledPostAdjustmentExpression")
     @patch(f"{PATCH_PATH}.coalesce_ratios_with_source_label")
     @patch(f"{PATCH_PATH}.JRUtils.rolling_sum_of_job_role_counts")
     @patch(f"{PATCH_PATH}.JRUtils.impute_full_time_series")
@@ -38,6 +39,7 @@ class MainTests(unittest.TestCase):
         impute_full_time_series_mock: Mock,
         rolling_sum_mock: Mock,
         coalesce_ratios_with_source_label_mock: Mock,
+        ManagerialFilledPostAdjustmentExpressionMock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -80,6 +82,8 @@ class MainTests(unittest.TestCase):
         )
         rolling_sum_mock.assert_called_once_with(period="6mo")
         coalesce_ratios_with_source_label_mock.assert_called_once()
+
+        ManagerialFilledPostAdjustmentExpressionMock.build.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,

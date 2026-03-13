@@ -14,9 +14,17 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
+    JobGroupLabels,
+    MainJobRoleLabels,
 )
 
-from .utils_test_cases import rolling_sum_expected_schema, rolling_sum_test_cases
+from .utils_test_cases import (
+    managerial_adjustment_core_columns,
+    managerial_adjustment_expected_schema,
+    managerial_adjustment_test_cases,
+    rolling_sum_expected_schema,
+    rolling_sum_test_cases,
+)
 
 
 class JoinWorkerToEstimatesDataframeTests(unittest.TestCase):
@@ -97,7 +105,7 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestPercentageShare(unittest.TestCase):
+class TestPercentageShare:
     def test_over_whole_dataset(self):
         input_lf = pl.LazyFrame({"vals": [1, 2, 2]})
         expected_lf = pl.LazyFrame({"ratios": [0.2, 0.4, 0.4]})
@@ -130,31 +138,62 @@ class TestPercentageShare(unittest.TestCase):
         returned_lf = input_lf.select(job.percentage_share(expression).alias("ratios"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_when_some_values_are_null(self):
-        input_lf = pl.LazyFrame({"vals": [None, 3, None, 2]})
-        expected_lf = pl.LazyFrame({"ratios": [None, 0.6, None, 0.4]})
-        returned_lf = input_lf.select(job.percentage_share("vals").alias("ratios"))
+    @pytest.mark.parametrize(
+        "input_, expected",
+        [
+            pytest.param(
+                [None, 3, None, 2],
+                [None, 0.6, None, 0.4],
+                id="when_some_values_are_null",
+            ),
+            pytest.param(
+                [None, None, None, None],
+                [None, None, None, None],
+                id="when_all_values_are_null",
+            ),
+            pytest.param(
+                [2, 0, 3, 0],
+                [0.4, 0.0, 0.6, 0.0],
+                id="when_some_values_are_zero",
+            ),
+            pytest.param(
+                # This returns NaN rather than Null because of divide by zero.
+                # https://docs.pola.rs/user-guide/expressions/missing-data/#not-a-number-or-nan-values
+                [0, 0, 0, 0],
+                [float("nan")] * 4,
+                id="when_all_values_are_zero",
+            ),
+        ],
+    )
+    def test_edge_cases(self, input_, expected):
+        input_lf = pl.LazyFrame({"values": input_}).cast(pl.Float64)
+        expected_lf = pl.LazyFrame({"output": expected}).cast(pl.Float64)
+        returned_lf = input_lf.select(job.percentage_share("values").alias("output"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_when_all_values_are_null(self):
-        input_lf = pl.LazyFrame({"vals": [None, None, None]})
-        expected_lf = pl.LazyFrame({"ratios": [None, None, None]}).cast(pl.Float64)
-        returned_lf = input_lf.select(job.percentage_share("vals").alias("ratios"))
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_when_some_values_are_zero(self):
-        input_lf = pl.LazyFrame({"vals": [2, 0, 3, 0]})
-        # Zero divided by 5 (sum) is still 0.
-        expected_lf = pl.LazyFrame({"ratios": [0.4, 0.0, 0.6, 0.0]})
-        returned_lf = input_lf.select(job.percentage_share("vals").alias("ratios"))
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_when_all_values_are_zero(self):
-        input_lf = pl.LazyFrame({"vals": [0, 0, 0]})
-        # This returns NaN rather than Null because of divide by zero.
-        # https://docs.pola.rs/user-guide/expressions/missing-data/#not-a-number-or-nan-values
-        expected_lf = pl.LazyFrame({"ratios": [float("nan")] * 3})
-        returned_lf = input_lf.select(job.percentage_share("vals").alias("ratios"))
+class TestPercentageShareHandlingZeroSum:
+    @pytest.mark.parametrize(
+        "input_, expected",
+        [
+            pytest.param(
+                [5.0, 2.0, 1.0],
+                [0.625, 0.25, 0.125],
+                id="when_all_values_present",
+            ),
+            pytest.param(
+                [0, 0],
+                [0.5, 0.5],
+                id="handles_zero_sum_case_with_even_distribution",
+            ),
+        ],
+    )
+    def test_percentage_share_handling_zero_sum(self, input_, expected):
+        input_lf = pl.LazyFrame({"values": input_})
+        expected_lf = pl.LazyFrame({"pct_share": expected})
+        returned_lf = input_lf.select(
+            job.percentage_share_handling_zero_sum("values").alias("pct_share")
+        )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
@@ -230,20 +269,107 @@ class TestImputeFullTimeSeries:
 
 
 class TestRollingSum:
-    @pytest.fixture(
-        params=[pytest.param(case.data, id=case.id) for case in rolling_sum_test_cases],
+    @pytest.mark.parametrize(
+        "rolling_sum_data",
+        [case.as_pytest_param() for case in rolling_sum_test_cases],
     )
-    def rolling_sum_data(self, request):
-        return request.param
-
     def test_rolling_sum(self, rolling_sum_data):
         expected_lf = pl.LazyFrame(
             rolling_sum_data, rolling_sum_expected_schema, orient="row"
         )
-        input_lf = expected_lf.drop(expected_lf.columns[-1])
+        input_lf = expected_lf.drop(IndCQC.ascwds_job_role_rolling_sum)
         returned_lf = input_lf.with_columns(
             job.rolling_sum_of_job_role_counts(period="6mo").alias(
                 IndCQC.ascwds_job_role_rolling_sum
             )
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestManagerialFilledPostAdjustmentExpression:
+    @pytest.fixture(
+        params=[case.as_pytest_param() for case in managerial_adjustment_test_cases]
+    )
+    def input_data(self, request):
+        """Provides 4 different test cases to put through the managerial adjustment tests.
+
+        The test data comes with three different output columns: "diff",
+        "proportions", "adjusted_estimates". The right one should be selected for
+        each expected_lf.
+
+        """
+        return request.param
+
+    @pytest.fixture
+    def expected_lf_constructor(self, input_data):
+        """A helper fixture to construct the expected_lf given output_col."""
+
+        def inner(output_col: str) -> pl.LazyFrame:
+            return pl.LazyFrame(
+                data=input_data,
+                schema=managerial_adjustment_expected_schema,
+                orient="row",
+            ).select(*managerial_adjustment_core_columns, output_col)
+
+        return inner
+
+    @pytest.mark.parametrize(
+        "input_, expected",
+        [
+            pytest.param(["Sarah", "James"], 1, id="more_than_1_capped_to_1"),
+            pytest.param(["Sarah"], 1, id="1_stays_1"),
+            pytest.param([], 0, id="empty_list_to_0"),
+            pytest.param(None, 0, id="null_to_0"),
+        ],
+    )
+    def test_clip_rm_count(self, input_, expected):
+        schema = {
+            IndCQC.registered_manager_names: pl.List,
+            IndCQC.registered_manager_count: pl.UInt32,
+        }
+        expected_lf = pl.LazyFrame([[input_], [expected]], schema=schema)
+        input_lf = expected_lf.drop(IndCQC.registered_manager_count)
+        clip_count_expr = job.ManagerialFilledPostAdjustmentExpression._clip_rm_count()
+        returned_lf = input_lf.with_columns(
+            clip_count_expr.alias(IndCQC.registered_manager_count)
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    @pytest.fixture(
+        params=[
+            {"method": "_rm_manager_diff", "col": "diff"},
+            {"method": "_non_rm_manager_proportions", "col": "proportions"},
+            {"method": "build", "col": "adjusted_estimates"},
+        ],
+        ids=lambda d: d["method"].lstrip("_"),
+    )
+    def config_data(self, request):
+        return request.param
+
+    def test_expr_methods(self, expected_lf_constructor, config_data):
+        output_col = config_data["col"]
+        expected_lf = expected_lf_constructor(output_col)
+        input_lf = expected_lf.drop(output_col)
+        expr_method = getattr(
+            job.ManagerialFilledPostAdjustmentExpression, config_data["method"]
+        )
+        returned_lf = input_lf.with_columns(expr_method().alias(output_col))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, abs_tol=0.001)
+
+
+class TestFilterJobRoles:
+    def test_for_one_label(self):
+        managers = job.filter_job_roles(JobGroupLabels.managers)
+        assert managers == [
+            MainJobRoleLabels.data_governance_manager,
+            MainJobRoleLabels.deputy_manager,
+            MainJobRoleLabels.first_line_manager,
+            MainJobRoleLabels.it_manager,
+            MainJobRoleLabels.it_service_desk_manager,
+            MainJobRoleLabels.middle_management,
+            MainJobRoleLabels.other_managerial_staff,
+            MainJobRoleLabels.registered_manager,
+            MainJobRoleLabels.senior_management,
+            MainJobRoleLabels.supervisor,
+            MainJobRoleLabels.team_leader,
+        ]
