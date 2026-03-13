@@ -7,18 +7,19 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_po
     clean_ascwds_filled_post_outliers,
 )
 
-# from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_care_home_outliers import (
-#     clean_capacity_tracker_care_home_outliers,
-# )
-# from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_non_res_outliers import (
-#     clean_capacity_tracker_non_res_outliers,
-# )
+from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_care_home_outliers import (
+    clean_capacity_tracker_care_home_outliers,
+)
+from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_non_res_outliers import (
+    clean_capacity_tracker_non_res_outliers,
+)
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils import (
     remove_dual_registration_cqc_care_homes,
     replace_zero_beds_with_null,
     populate_missing_care_home_number_of_beds,
     calculate_time_registered_for,
     calculate_time_since_dormant,
+    calculate_care_home_status_count,
 )
 
 from projects._03_independent_cqc._02_clean.fargate.utils.forward_fill_latest_known_value import (
@@ -101,24 +102,24 @@ def main(
         locations_lf, IndCQC.pir_people_directly_employed_dedup
     )
 
-    # locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
-    #     locations_lf,
-    #     IndCQC.ascwds_filled_posts_dedup_clean,
-    #     IndCQC.filled_posts_per_bed_ratio,
-    # )
+    locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
+        locations_lf,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.filled_posts_per_bed_ratio,
+    )
 
-    # locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
-    #     locations_lf,
-    #     IndCQC.ct_care_home_total_employed,
-    #     IndCQC.ct_care_home_posts_per_bed_ratio,
-    # )
+    locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
+        locations_lf,
+        IndCQC.ct_care_home_total_employed,
+        IndCQC.ct_care_home_posts_per_bed_ratio,
+    )
 
-    # locations_lf = clean_capacity_tracker_care_home_outliers(locations_lf)
-    # locations_lf = clean_capacity_tracker_non_res_outliers(locations_lf)
+    locations_lf = clean_capacity_tracker_care_home_outliers(locations_lf)
+    locations_lf = clean_capacity_tracker_non_res_outliers(locations_lf)
 
-    # locations_lf = calculate_care_home_status_count(locations_lf)
+    locations_lf = calculate_care_home_status_count(locations_lf)
 
-    # print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
+    print(f"Exporting as parquet to {destination}")
 
     utils.sink_to_parquet(
         locations_lf,
