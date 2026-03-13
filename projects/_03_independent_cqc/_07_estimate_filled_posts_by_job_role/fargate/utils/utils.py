@@ -205,8 +205,8 @@ class ManagerialFilledPostAdjustmentExpression:
         discrepancies.
         """
         return cls.filled_post_estimates.add(
-            cls._rm_manager_diff()
-            .mul(cls._non_rm_manager_proportions())
+            cls._rm_manager_diff().mul(cls._non_rm_manager_proportions())
+            # QUESTION: Should this be over import date too?
             .over(IndCQC.location_id)
         ).clip(lower_bound=0)
 
