@@ -134,35 +134,24 @@ class classproperty:
         return self.fget(owner_cls)
 
 
-class ManagerialFilledPostAdjustmentTransform:
+class ManagerialFilledPostAdjustmentExpression:
     job_roles: pl.Expr = pl.col(IndCQC.main_job_role_clean_labelled)
     filled_post_estimates: pl.Expr = pl.col(IndCQC.estimate_filled_posts_by_job_role)
+    _is_registered_manager: pl.Expr = job_roles == MainJobRoleLabels.registered_manager
 
-    @classproperty
-    def is_registered_manager(cls):
-        return cls.job_roles == MainJobRoleLabels.registered_manager
-
-    @classproperty
-    def is_non_rm_manager(cls):
-        return cls.job_roles.is_in(cls.non_registered_manager_roles)
-
-    @classproperty
-    def non_registered_manager_roles(cls):
-        return cls._get_non_registered_manager_roles()
+    @classmethod
+    def _is_non_rm_manager(cls) -> pl.Expr:
+        return cls.job_roles.is_in(cls._get_non_registered_manager_roles())
 
     @classmethod
     def _get_non_registered_manager_roles(cls) -> list[str]:
         """Get list of manager roles except registered manager."""
         manager_roles = filter_job_roles(JobGroupLabels.managers)
-        return [
-            role
-            for role in manager_roles
-            if role != MainJobRoleLabels.registered_manager
-        ]
+        return [r for r in manager_roles if r != MainJobRoleLabels.registered_manager]
 
     @classmethod
-    def clip_registered_manager_count_to_1(cls) -> pl.Expr:
-        """Return 1 if there is one or more registered managers, 0 if not.
+    def _clip_registered_manager_count_to_1(cls) -> pl.Expr:
+        """Return 1 if there is one or more registered manager names listed, 0 if not.
 
         This approach aligns with historical Excel structures where each location
         was effectively recorded with at most one registered manager.
@@ -177,7 +166,7 @@ class ManagerialFilledPostAdjustmentTransform:
         )
 
     @classmethod
-    def get_estimated_managers_diff_from_cqc_registered_managers(cls) -> pl.Expr:
+    def _get_estimated_managers_diff_from_cqc_registered_managers(cls) -> pl.Expr:
         """Subtract capped estimate of registered managers from CQC count to get diff.
 
         A positive value is when CQC have recorded more registered managers than we
@@ -186,23 +175,22 @@ class ManagerialFilledPostAdjustmentTransform:
         CQC have the official count of registered managers. Our estimate is based on
         records in ASC-WDS.
         """
-        diff = cls.filled_post_estimates.sub(cls.clip_registered_manager_count_to_1())
-        return pl.when(cls.is_registered_manager).then(diff).otherwise(0).sum()
+        diff = cls.filled_post_estimates.sub(cls._clip_registered_manager_count_to_1())
+        return pl.when(cls._is_registered_manager).then(diff).otherwise(0).sum()
 
     @classmethod
-    def get_non_rm_manager_proportions(cls) -> pl.Expr:
-        """Get proportion of non-RM managerial roles as a percentage of the total.
+    def _get_non_rm_manager_proportions(cls) -> pl.Expr:
+        """Get proportion of non-RM managerial role estimates as a percentage of total.
 
         The total in this case is the sum of all non-RM managerial roles. If this
         totals to 0, then an even distribution is assumed.
         """
-        masked_estimates = pl.when(cls.is_non_rm_manager).then(
-            cls.filled_post_estimates
+        return percentage_share_handling_zero_sum(
+            pl.when(cls._is_non_rm_manager()).then(cls.filled_post_estimates)
         )
-        return percentage_share_handling_zero_sum(masked_estimates)
 
     @classmethod
-    def adjusted_non_rm_managerial_filled_posts_expr(cls) -> pl.Expr:
+    def _adjusted_non_rm_managerial_filled_posts_expr(cls) -> pl.Expr:
         """
         Return an expression to calculate adjusted managerial filled posts estimates.
 
@@ -211,17 +199,15 @@ class ManagerialFilledPostAdjustmentTransform:
         estimated managerial filled posts remains consistent after correcting for RM
         discrepancies.
         """
-        proportions_expr = cls.get_non_rm_manager_proportions()
-        manager_diff_expr = (
-            cls.get_estimated_managers_diff_from_cqc_registered_managers()
-        )
+        proportions = cls._get_non_rm_manager_proportions()
+        manager_diff = cls._get_estimated_managers_diff_from_cqc_registered_managers()
         return cls.filled_post_estimates.add(
-            manager_diff_expr.mul(proportions_expr).over(IndCQC.location_id)
+            manager_diff.mul(proportions).over(IndCQC.location_id)
         ).clip(lower_bound=0)
 
     @classmethod
-    def adjust_managerial_filled_posts_expr(cls) -> pl.Expr:
-        """Adjust managerial filled post estimates.
+    def build(cls) -> pl.Expr:
+        """Build adjust managerial filled post estimates expression.
 
         If the count of registered managers (clipped to 1) does not match our
         estimate for registered managers, then the difference is distributed across
@@ -229,17 +215,12 @@ class ManagerialFilledPostAdjustmentTransform:
         location.
         """
         return (
-            pl.when(cls.is_non_rm_manager)
-            .then(cls.adjusted_non_rm_managerial_filled_posts_expr())
-            .when(cls.is_registered_manager)
-            .then(cls.clip_registered_manager_count_to_1())
+            pl.when(cls._is_non_rm_manager())
+            .then(cls._adjusted_non_rm_managerial_filled_posts_expr())
+            .when(cls._is_registered_manager)
+            .then(cls._clip_registered_manager_count_to_1())
             .otherwise(cls.filled_post_estimates)
         )
-
-    @classmethod
-    def __call__(cls) -> pl.Expr:
-        """Return the main transformation expression."""
-        return cls.adjust_managerial_filled_posts_expr()
 
 
 def adjust_non_rm_managerial_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
