@@ -195,6 +195,7 @@ class ManagerialFilledPostAdjustmentExpression:
         records in ASC-WDS.
         """
         diff = cls.filled_post_estimates.sub(cls._clip_registered_manager_count_to_1())
+        # Sum here is only summing a single value - used to broadcast to all rows.
         return pl.when(cls._is_registered_manager).then(diff).otherwise(0).sum()
 
     @classmethod
