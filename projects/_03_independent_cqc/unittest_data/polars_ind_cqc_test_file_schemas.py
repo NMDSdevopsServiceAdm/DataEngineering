@@ -1113,3 +1113,45 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
     combine_dataframes_non_care_home_schema = ind_cqc_schema
 
     expected_combined_dataframes_schema = combine_dataframes_non_care_home_schema
+
+
+@dataclass
+class NullCtPostsToBedsOutliers:
+    null_ct_posts_to_beds_outliers_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ct_care_home_total_employed, pl.Int64()),
+            (IndCQC.ct_care_home_posts_per_bed_ratio, pl.Float64()),
+            (IndCQC.ct_care_home_total_employed_cleaned, pl.Int64()),
+            (IndCQC.ct_care_home_filtering_rule, pl.String()),
+        ]
+    )
+
+
+@dataclass
+class CleanCtRepetition:
+    clean_ct_values_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ct_non_res_care_workers_employed: pl.Int64,
+        IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,
+        IndCQC.ct_non_res_filtering_rule: pl.String,
+    }
+
+
+@dataclass
+class OutlierCleaningSchemas:
+    input_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,
+            IndCQC.ct_non_res_filtering_rule: pl.String,
+        }
+    )
+
+    compute_outlier_cutoff_and_clean_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,
+        }
+    )
