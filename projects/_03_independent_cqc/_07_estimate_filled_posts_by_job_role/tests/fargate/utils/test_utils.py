@@ -287,90 +287,88 @@ class TestRollingSum:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-@pytest.mark.parametrize(
-    "input_, expected",
-    [
-        pytest.param(["Sarah", "James"], 1, id="more_than_1_capped_to_1"),
-        pytest.param(["Sarah"], 1, id="1_stays_1"),
-        pytest.param([], 0, id="empty_list_to_0"),
-        pytest.param(None, 0, id="null_to_0"),
-    ],
-)
-def test_clip_registered_manager_count_to_1(input_, expected):
-    schema = {
-        IndCQC.registered_manager_names: pl.List,
-        IndCQC.registered_manager_count: pl.UInt32,
-    }
-    expected_lf = pl.LazyFrame([[input_], [expected]], schema=schema)
-    input_lf = expected_lf.drop(IndCQC.registered_manager_count)
-    returned_lf = input_lf.with_columns(
-        job.clip_registered_manager_count_to_1().alias(IndCQC.registered_manager_count)
+class TestManagerialFilledPostAdjustmentExpression:
+    @pytest.fixture(
+        params=[case.as_pytest_param() for case in managerial_adjustment_test_cases]
     )
-    pl_testing.assert_frame_equal(returned_lf, expected_lf)
+    def input_data(self, request):
+        """Provides 4 different test cases to put through the managerial adjustment tests.
 
+        The test data comes with three different output columns: "diff",
+        "proportions", "adjusted_estimates". The right one should be selected for
+        each expected_lf.
 
-@pytest.fixture(
-    params=[case.as_pytest_param() for case in managerial_adjustment_test_cases]
-)
-def managerial_input_data(request):
-    """Provides 4 different test cases to put through the managerial adjustment tests.
+        """
+        return request.param
 
-    The test data comes with three different output columns: "diff",
-    "proportions", "adjusted_estimates". The right one should be selected for
-    each expected_lf.
+    @pytest.fixture
+    def expected_lf_constructor(self, input_data):
+        """A helper fixture to construct the expected_lf given output_col."""
 
-    """
-    return request.param
+        def inner(output_col: str) -> pl.LazyFrame:
+            return pl.LazyFrame(
+                data=input_data,
+                schema=managerial_adjustment_expected_schema,
+                orient="row",
+            ).select(*managerial_adjustment_core_columns, output_col)
 
+        return inner
 
-@pytest.fixture
-def manager_test_expected_lf_constructor(managerial_input_data):
-    """A helper fixture to construct the expected_lf given output_col."""
-
-    def inner(output_col: str) -> pl.LazyFrame:
-        return pl.LazyFrame(
-            data=managerial_input_data,
-            schema=managerial_adjustment_expected_schema,
-            orient="row",
-        ).select(*managerial_adjustment_core_columns, output_col)
-
-    return inner
-
-
-def test_get_estimated_managers_diff_from_cqc_registered_managers(
-    manager_test_expected_lf_constructor,
-):
-    output_col = "diff"
-    expected_lf = manager_test_expected_lf_constructor(output_col)
-    input_lf = expected_lf.drop(output_col)
-    returned_lf = input_lf.with_columns(
-        job.get_estimated_managers_diff_from_cqc_registered_managers()
-        .over(IndCQC.location_id)
-        .alias(output_col)
+    @pytest.mark.parametrize(
+        "input_, expected",
+        [
+            pytest.param(["Sarah", "James"], 1, id="more_than_1_capped_to_1"),
+            pytest.param(["Sarah"], 1, id="1_stays_1"),
+            pytest.param([], 0, id="empty_list_to_0"),
+            pytest.param(None, 0, id="null_to_0"),
+        ],
     )
-    pl_testing.assert_frame_equal(returned_lf, expected_lf)
+    def test_clip_registered_manager_count_to_1(self, input_, expected):
+        schema = {
+            IndCQC.registered_manager_names: pl.List,
+            IndCQC.registered_manager_count: pl.UInt32,
+        }
+        expected_lf = pl.LazyFrame([[input_], [expected]], schema=schema)
+        input_lf = expected_lf.drop(IndCQC.registered_manager_count)
+        clip_count_expr = (
+            job.ManagerialFilledPostAdjustmentExpression._clip_registered_manager_count_to_1()
+        )
+        returned_lf = input_lf.with_columns(
+            clip_count_expr.alias(IndCQC.registered_manager_count)
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
+    def test_get_estimated_managers_diff_from_cqc_registered_managers(
+        self,
+        expected_lf_constructor,
+    ):
+        output_col = "diff"
+        expected_lf = expected_lf_constructor(output_col)
+        input_lf = expected_lf.drop(output_col)
+        diff_expr = (
+            job.ManagerialFilledPostAdjustmentExpression._get_estimated_managers_diff_from_cqc_registered_managers()
+        )
+        returned_lf = input_lf.with_columns(diff_expr.alias(output_col))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-def test_get_non_rm_manager_proportions(manager_test_expected_lf_constructor):
-    output_col = "proportions"
-    expected_lf = manager_test_expected_lf_constructor(output_col)
-    input_lf = expected_lf.drop(output_col)
-    returned_lf = input_lf.with_columns(
-        job.get_non_rm_manager_proportions().alias(output_col)
-    )
-    pl_testing.assert_frame_equal(returned_lf, expected_lf, abs_tol=0.001)
+    def test_get_non_rm_manager_proportions(self, expected_lf_constructor):
+        output_col = "proportions"
+        expected_lf = expected_lf_constructor(output_col)
+        input_lf = expected_lf.drop(output_col)
+        proportion_expr = (
+            job.ManagerialFilledPostAdjustmentExpression._get_non_rm_manager_proportions()
+        )
+        returned_lf = input_lf.with_columns(proportion_expr.alias(output_col))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, abs_tol=0.001)
 
-
-def test_adjusted_non_rm_managerial_filled_posts_expr(
-    manager_test_expected_lf_constructor,
-):
-    output_col = "adjusted_estimates"
-    expected_lf = manager_test_expected_lf_constructor(output_col)
-    input_lf = expected_lf.drop(output_col)
-    returned_lf = input_lf.with_columns(
-        job.adjust_managerial_filled_posts_expr().alias(output_col)
-    )
-    pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
+    def test_build_expr(self, expected_lf_constructor):
+        output_col = "adjusted_estimates"
+        expected_lf = expected_lf_constructor(output_col)
+        input_lf = expected_lf.drop(output_col)
+        returned_lf = input_lf.with_columns(
+            job.ManagerialFilledPostAdjustmentExpression.build().alias(output_col)
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
 
 
 class TestFilterJobRoles:
@@ -389,18 +387,3 @@ class TestFilterJobRoles:
             MainJobRoleLabels.supervisor,
             MainJobRoleLabels.team_leader,
         ]
-
-
-def test_get_non_registered_manager_roles():
-    assert job.get_non_registered_manager_roles() == [
-        MainJobRoleLabels.data_governance_manager,
-        MainJobRoleLabels.deputy_manager,
-        MainJobRoleLabels.first_line_manager,
-        MainJobRoleLabels.it_manager,
-        MainJobRoleLabels.it_service_desk_manager,
-        MainJobRoleLabels.middle_management,
-        MainJobRoleLabels.other_managerial_staff,
-        MainJobRoleLabels.senior_management,
-        MainJobRoleLabels.supervisor,
-        MainJobRoleLabels.team_leader,
-    ]

@@ -124,16 +124,6 @@ def rolling_sum_of_job_role_counts(
     )
 
 
-class classproperty:
-    """Read-only property for classes."""
-
-    def __init__(self, fget):
-        self.fget = fget
-
-    def __get__(self, owner_self, owner_cls):
-        return self.fget(owner_cls)
-
-
 class ManagerialFilledPostAdjustmentExpression:
     job_roles: pl.Expr = pl.col(IndCQC.main_job_role_clean_labelled)
     filled_post_estimates: pl.Expr = pl.col(IndCQC.estimate_filled_posts_by_job_role)
@@ -223,125 +213,7 @@ class ManagerialFilledPostAdjustmentExpression:
         )
 
 
-def adjust_non_rm_managerial_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Apply adjustment to non-RM managerial filled posts estimates.
-
-    Args:
-        lf (pl.LazyFrame): A polars DataFrame with the following columns:
-            - IndCQC.estimate_filled_posts_by_job_role
-            - IndCQC.main_job_role_clean_labelled
-            - IndCQC.location_id
-            - IndCQC.registered_manager_names
-
-    Returns:
-        pl.LazyFrame: Adjusted managerial filled posts.
-    """
-    non_rm_manager_roles = get_non_registered_manager_roles()
-    job_roles = pl.col(IndCQC.main_job_role_clean_labelled)
-    return lf.with_columns(
-        pl.when(job_roles.is_in(non_rm_manager_roles))
-        .then(adjusted_non_rm_managerial_filled_posts_expr())
-        .alias(IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role)
-    )
-
-
-def clip_registered_manager_count_to_1() -> pl.Expr:
-    """Return 1 if there is one or more registered managers, 0 if not.
-
-    This approach aligns with historical Excel structures where each location
-    was effectively recorded with at most one registered manager.
-
-    Fills Nulls to 0 also.
-    """
-    return (
-        pl.col(IndCQC.registered_manager_names)
-        .list.len()
-        .clip(upper_bound=1)
-        .fill_null(0)
-    )
-
-
-def get_estimated_managers_diff_from_cqc_registered_managers() -> pl.Expr:
-    """Subtract capped estimate of registered managers from CQC count to get diff.
-
-    A positive value is when CQC have recorded more registered managers than we
-    have estimated. A negative value is when CQC have recorded fewer.
-
-    CQC have the official count of registered managers. Our estimate is based on
-    records in ASC-WDS.
-    """
-    is_registered_manager = (
-        pl.col(IndCQC.main_job_role_clean_labelled)
-        == MainJobRoleLabels.registered_manager
-    )
-    diff = pl.col(IndCQC.estimate_filled_posts_by_job_role).sub(
-        clip_registered_manager_count_to_1()
-    )
-    return pl.when(is_registered_manager).then(diff).otherwise(0).sum()
-
-
-def get_non_rm_manager_proportions() -> pl.Expr:
-    """Get proportion of non-RM managerial roles as a percentage of the total.
-
-    The total in this case is the sum of all non-RM managerial roles. If this
-    totals to 0, then an even distribution is assumed.
-    """
-    filled_posts = IndCQC.estimate_filled_posts_by_job_role
-    non_rm_manager_roles = get_non_registered_manager_roles()
-    non_rm_manager_mask = pl.col(IndCQC.main_job_role_clean_labelled).is_in(
-        non_rm_manager_roles
-    )
-    masked_estimates = pl.when(non_rm_manager_mask).then(filled_posts)
-    return percentage_share_handling_zero_sum(masked_estimates)
-
-
 def filter_job_roles(group_label: str) -> list[str]:
     """Filter for job roles that match the group label."""
     job_role_dict = AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict
     return [role for role, group in job_role_dict.items() if group == group_label]
-
-
-def get_non_registered_manager_roles() -> list[str]:
-    """Get list of manager roles except registered manager."""
-    manager_roles = filter_job_roles(JobGroupLabels.managers)
-    return [
-        role for role in manager_roles if role != MainJobRoleLabels.registered_manager
-    ]
-
-
-def adjusted_non_rm_managerial_filled_posts_expr() -> pl.Expr:
-    """
-    Return an expression to calculate adjusted managerial filled posts estimates.
-
-    Proportionally redistributes the difference between estimated and actual "registered
-    managers" (RM) across all non-RM managerial roles, ensuring that the total number of
-    estimated managerial filled posts remains consistent after correcting for RM
-    discrepancies.
-    """
-    filled_posts = IndCQC.estimate_filled_posts_by_job_role
-    proportions_expr = get_non_rm_manager_proportions()
-    manager_diff_expr = get_estimated_managers_diff_from_cqc_registered_managers()
-    return (
-        pl.col(filled_posts)
-        .add(manager_diff_expr.mul(proportions_expr).over(IndCQC.location_id))
-        .clip(lower_bound=0)
-    )
-
-
-def adjust_managerial_filled_posts_expr() -> pl.Expr:
-    """Adjust managerial filled post estimates.
-
-    If the count of registered managers (clipped to 1) does not match our
-    estimate for registered managers, then the difference is distributed across
-    the remaining managerial roles according to existing proportions within each
-    location.
-    """
-    non_rm_manager_roles = get_non_registered_manager_roles()
-    job_roles = pl.col(IndCQC.main_job_role_clean_labelled)
-    return (
-        pl.when(job_roles.is_in(non_rm_manager_roles))
-        .then(adjusted_non_rm_managerial_filled_posts_expr())
-        .when(job_roles == MainJobRoleLabels.registered_manager)
-        .then(clip_registered_manager_count_to_1())
-        .otherwise(pl.col(IndCQC.estimate_filled_posts_by_job_role))
-    )

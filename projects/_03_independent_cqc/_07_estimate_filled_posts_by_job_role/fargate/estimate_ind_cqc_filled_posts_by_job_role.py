@@ -121,8 +121,9 @@ def main(
         estimated_job_role_posts_lf
     )
 
-    estimated_job_role_posts_lf = adjust_non_rm_managerial_filled_posts(
-        estimated_job_role_posts_lf
+    adjustment_expr = JRUtils.ManagerialFilledPostAdjustmentExpression.build()
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        adjustment_expr.alias("estimate_filled_posts_manager_adjusted")
     )
 
     utils.sink_to_parquet(
@@ -152,28 +153,6 @@ if __name__ == "__main__":
         estimates_source=args.estimates_source,
         ascwds_job_role_counts_source=args.ascwds_job_role_counts_source,
         estimates_by_job_role_destination=args.estimates_by_job_role_destination,
-    )
-
-
-def adjust_non_rm_managerial_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Apply adjustment to non-RM managerial filled posts estimates.
-
-    Args:
-        lf (pl.LazyFrame): A polars DataFrame with the following columns:
-            - IndCQC.estimate_filled_posts_by_job_role
-            - IndCQC.main_job_role_clean_labelled
-            - IndCQC.location_id
-            - IndCQC.registered_manager_names
-
-    Returns:
-        pl.LazyFrame: Adjusted managerial filled posts.
-    """
-    non_rm_manager_roles = JRUtils.get_non_registered_manager_roles()
-    job_roles = pl.col(IndCQC.main_job_role_clean_labelled)
-    return lf.with_columns(
-        pl.when(job_roles.is_in(non_rm_manager_roles))
-        .then(JRUtils.adjusted_non_rm_managerial_filled_posts_expr())
-        .alias(IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role)
     )
 
 
