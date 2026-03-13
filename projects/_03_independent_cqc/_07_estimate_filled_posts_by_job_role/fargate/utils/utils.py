@@ -148,6 +148,17 @@ class ManagerialFilledPostAdjustmentExpression:
     _is_registered_manager: pl.Expr = job_roles == MainJobRoleLabels.registered_manager
 
     @classmethod
+    def build(cls) -> pl.Expr:
+        """Build adjust managerial filled post estimates expression."""
+        return (
+            pl.when(cls._is_non_rm_manager())
+            .then(cls._adjusted_non_rm_manager_estimates())
+            .when(cls._is_registered_manager)
+            .then(cls._clip_registered_manager_count_to_1())
+            .otherwise(cls.filled_post_estimates)
+        )
+
+    @classmethod
     def _is_non_rm_manager(cls) -> pl.Expr:
         return cls.job_roles.is_in(cls._get_non_registered_manager_roles())
 
@@ -212,23 +223,6 @@ class ManagerialFilledPostAdjustmentExpression:
         return cls.filled_post_estimates.add(
             manager_diff.mul(proportions).over(IndCQC.location_id)
         ).clip(lower_bound=0)
-
-    @classmethod
-    def build(cls) -> pl.Expr:
-        """Build adjust managerial filled post estimates expression.
-
-        If the count of registered managers (clipped to 1) does not match our
-        estimate for registered managers, then the difference is distributed across
-        the remaining managerial roles according to existing proportions within each
-        location.
-        """
-        return (
-            pl.when(cls._is_non_rm_manager())
-            .then(cls._adjusted_non_rm_manager_estimates())
-            .when(cls._is_registered_manager)
-            .then(cls._clip_registered_manager_count_to_1())
-            .otherwise(cls.filled_post_estimates)
-        )
 
 
 def filter_job_roles(group_label: str) -> list[str]:
