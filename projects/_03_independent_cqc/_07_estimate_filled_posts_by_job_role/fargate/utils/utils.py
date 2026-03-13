@@ -125,6 +125,24 @@ def rolling_sum_of_job_role_counts(
 
 
 class ManagerialFilledPostAdjustmentExpression:
+    """Polars expression factory for redistributing managerial filled posts.
+
+    This class provides a method to adjust "Registered Manager" (RM) estimates based
+    on the counts of names given in the CQC data, and proportionally redistributes the
+    difference across other managerial roles.
+
+    The expression is returned via the class method `.build()`.
+
+    Expects DataFrame to contain the following columns:
+        - IndCQC.main_job_role_clean_labelled
+        - IndCQC.estimate_filled_posts_by_job_role
+        - IndCQC.location_id
+        - IndCQC.registered_manager_names
+
+    Example Usage:
+        >>> lf.with_columns(ManagerialFilledPostAdjustmentExpression.build().alias("new_col"))
+    """
+
     job_roles: pl.Expr = pl.col(IndCQC.main_job_role_clean_labelled)
     filled_post_estimates: pl.Expr = pl.col(IndCQC.estimate_filled_posts_by_job_role)
     _is_registered_manager: pl.Expr = job_roles == MainJobRoleLabels.registered_manager
