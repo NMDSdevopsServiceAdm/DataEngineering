@@ -170,13 +170,7 @@ class ManagerialFilledPostAdjustmentExpression:
 
     @classmethod
     def _clip_registered_manager_count_to_1(cls) -> pl.Expr:
-        """Return 1 if there is one or more registered manager names listed, 0 if not.
-
-        This approach aligns with historical Excel structures where each location
-        was effectively recorded with at most one registered manager.
-
-        Fills Nulls to 0 also.
-        """
+        """Return 1 if there is one or more registered manager names listed, 0 if not."""
         return (
             pl.col(IndCQC.registered_manager_names)
             .list.len()
@@ -186,14 +180,7 @@ class ManagerialFilledPostAdjustmentExpression:
 
     @classmethod
     def _rm_manager_diff(cls) -> pl.Expr:
-        """Subtract capped estimate of registered managers from CQC count to get diff.
-
-        A positive value is when CQC have recorded more registered managers than we
-        have estimated. A negative value is when CQC have recorded fewer.
-
-        CQC have the official count of registered managers. Our estimate is based on
-        records in ASC-WDS.
-        """
+        """Subtract capped estimate of registered managers from CQC count to get diff."""
         diff = cls.filled_post_estimates.sub(cls._clip_registered_manager_count_to_1())
         # Sum here is only summing a single value - used to broadcast to all rows.
         return pl.when(cls._is_registered_manager).then(diff).otherwise(0).sum()
@@ -211,12 +198,10 @@ class ManagerialFilledPostAdjustmentExpression:
 
     @classmethod
     def _adjusted_non_rm_manager_estimates(cls) -> pl.Expr:
-        """
-        Return an expression to calculate adjusted managerial filled posts estimates.
+        """Proportionally redistribute difference across remaining managerial roles.
 
-        Proportionally redistributes the difference between estimated and actual "registered
-        managers" (RM) across all non-RM managerial roles, ensuring that the total number of
-        estimated managerial filled posts remains consistent after correcting for RM
+        Ensure non-negative values to ensure that the total number of estimated
+        managerial filled posts remains consistent after correcting for RM
         discrepancies.
         """
         proportions = cls._non_rm_manager_proportions()
