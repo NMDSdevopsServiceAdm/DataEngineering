@@ -49,12 +49,8 @@ def spark(worker_id):
             f"-Dderby.system.home={derby_db_path.as_posix()}",
         )
         .config("spark.sql.warehouse.dir", warehouse_path.as_uri())
-        # Force Spark to bind to the local interface
-        .config("spark.driver.host", "127.0.0.1")
-        .config("spark.driver.bindAddress", "127.0.0.1")
         # KEY: Randomize UI port to avoid 'Address already in use'
         .config("spark.ui.port", "0")
-        .config("spark.blockManager.port", "0")
         # Optimization: set shuffle partitions to 1 for speed
         .config("spark.sql.shuffle.partitions", "1")
         .config("spark.default.parallelism", "1")
