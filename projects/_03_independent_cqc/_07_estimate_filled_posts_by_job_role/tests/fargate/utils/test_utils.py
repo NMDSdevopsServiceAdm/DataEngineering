@@ -354,7 +354,9 @@ class TestManagerialFilledPostAdjustmentExpression:
         expr_method = getattr(
             job.ManagerialFilledPostAdjustmentExpression, config_data["method"]
         )
-        returned_lf = input_lf.with_columns(expr_method().alias(output_col))
+        returned_lf = input_lf.with_columns(
+            expr_method().over(IndCQC.location_id).alias(output_col)
+        )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, abs_tol=0.001)
 
 
