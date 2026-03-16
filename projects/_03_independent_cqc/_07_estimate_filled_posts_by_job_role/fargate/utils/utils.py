@@ -180,9 +180,14 @@ class ManagerialFilledPostAdjustmentExpression:
 
     @classmethod
     def _rm_manager_diff(cls) -> pl.Expr:
-        """Subtract capped estimate of registered managers from CQC count to get diff."""
+        """Subtract capped estimate of registered managers from CQC count to get diff.
+
+        The "_is_registered_manager" mask should only equate to a single row
+        (for each location and import date), and so summing with all other
+        values as 0 results in the value at that "rsegistered_manager" row
+        broadcast to all other rows within the group.
+        """
         diff = cls.filled_post_estimates.sub(cls._clip_rm_count())
-        # Sum here is only summing a single value - used to broadcast to all rows.
         return pl.when(cls._is_registered_manager).then(diff).otherwise(0).sum()
 
     @classmethod
