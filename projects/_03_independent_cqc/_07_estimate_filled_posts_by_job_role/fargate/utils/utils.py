@@ -165,13 +165,12 @@ class ManagerialFilledPostAdjustmentExpression:
 
     @classmethod
     def _is_non_rm_manager(cls) -> pl.Expr:
-        return cls.job_roles.is_in(cls._get_non_registered_manager_roles())
-
-    @classmethod
-    def _get_non_registered_manager_roles(cls) -> list[str]:
-        """Get list of manager roles except registered manager."""
+        """Return DataFrame mask for non-RM manager roles."""
         manager_roles = AscwdsWorkerValueLabelsJobGroup.manager_roles()
-        return [r for r in manager_roles if r != MainJobRoleLabels.registered_manager]
+        non_rm_manager_roles = [
+            r for r in manager_roles if r != MainJobRoleLabels.registered_manager
+        ]
+        return cls.job_roles.is_in(non_rm_manager_roles)
 
     @classmethod
     def _clip_rm_count(cls) -> pl.Expr:
