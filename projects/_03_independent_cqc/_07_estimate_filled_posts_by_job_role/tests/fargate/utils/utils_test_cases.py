@@ -146,4 +146,14 @@ managerial_adjustment_test_cases = [
             ("1-004", ["James"], MainJobRoleLabels.registered_manager,   0, -1,   None, 1.0),
         ],
     ),
+    TestCase(
+        id="1_rm_count_with_manager_roles_sum_==_0_check_even_distribution",
+        data=[
+            ("1-005", ["James"], MainJobRoleLabels.care_worker,         10, 2,   None, 10.0),
+            ("1-005", ["James"], MainJobRoleLabels.senior_care_worker,  15, 2,   None, 15.0),
+            ("1-005", ["James"], MainJobRoleLabels.supervisor,           0, 2,    0.5, 1.0),
+            ("1-005", ["James"], MainJobRoleLabels.team_leader,          0, 2,    0.5, 1.0),
+            ("1-005", ["James"], MainJobRoleLabels.registered_manager,   3, 2,   None, 1.0),
+        ],
+    ),
 ]  # fmt: skip

@@ -185,6 +185,11 @@ class TestPercentageShareHandlingZeroSum:
                 [0.5, 0.5],
                 id="handles_zero_sum_case_with_even_distribution",
             ),
+            pytest.param(
+                [0, None, 0, None],
+                [0.5, None, 0.5, None],
+                id="handles_zero_sum_case_with_even_distribution_across_non_nulls",
+            ),
         ],
     )
     def test_percentage_share_handling_zero_sum(self, input_, expected):

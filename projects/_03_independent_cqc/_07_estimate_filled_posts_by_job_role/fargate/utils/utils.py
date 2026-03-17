@@ -86,15 +86,20 @@ def percentage_share(column: str | pl.Expr) -> pl.Expr:
 def percentage_share_handling_zero_sum(column: str | pl.Expr) -> pl.Expr:
     """Calculate the percentage share of a column handling zero sum case.
 
-    If all values are zero, dividing by zero leads to a NaN. In this case we
-    want to assume an even distribution across all rows.
+    If the sum of all non-null values is zero, dividing by zero leads to a NaN.
+    In this case we want to assume an even distribution across all non-null
+    rows.
 
     Can be used in conjunction with `.group_by` and `.over` methods to get
     proportions within groups.
     """
     col = pl.col(column) if isinstance(column, str) else column
     total = col.sum()
-    return pl.when(total == 0).then(1 / pl.len()).otherwise(col / total)
+    return (
+        pl.when((total == 0) & (col == 0))
+        .then(1 / col.is_not_null().sum())
+        .otherwise(col / total)
+    )
 
 
 def impute_full_time_series(column: str) -> pl.Expr:
