@@ -11,7 +11,6 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils i
     join_model_predictions,
 )
 from projects._03_independent_cqc.utils.utils.utils import get_selected_value
-from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CareHome
 
@@ -23,6 +22,7 @@ class ThresholdValues:
     months_in_two_years: int = 24
 
 
+# converted to polars -> projects\_03_independent_cqc\_03_impute\fargate\utils\model_and_merge_pir_filled_posts.py
 def model_pir_filled_posts(
     df: DataFrame, linear_regression_model_source: str
 ) -> DataFrame:
@@ -58,6 +58,7 @@ def model_pir_filled_posts(
     return df
 
 
+# doesn't require converting to polars
 def vectorise_dataframe(df: DataFrame, list_for_vectorisation: List[str]) -> DataFrame:
     """
     Combines specified columns into a single feature vector for the modelling process.
