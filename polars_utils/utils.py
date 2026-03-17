@@ -434,4 +434,4 @@ def coalesce_with_source_labels(cols: list[str], name: str) -> tuple[pl.Expr, pl
     for c in cols[1:]:
         label_expr = label_expr.when(pl.col(c).is_not_null()).then(pl.lit(c))
 
-    return (val_expr, label_expr.otherwise(None).alias(f"{name}_source"))
+    return (val_expr, label_expr.alias(f"{name}_source"))
