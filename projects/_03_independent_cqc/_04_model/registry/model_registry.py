@@ -73,12 +73,12 @@ model_registry = {
             ]
         ),
     },
-    "non_res_pir": {
+    IndCQC.pir_filled_posts_model: {
         MRKeys.version: "3.0.0",
         MRKeys.auto_retrain: True,
         MRKeys.model_type: ModelTypes.linear_regression,
         MRKeys.model_params: {"fit_intercept": False},
         MRKeys.dependent: IndCQC.ascwds_filled_posts_dedup_clean,
-        MRKeys.features: [IndCQC.pir_people_directly_employed_dedup],
+        MRKeys.features: IndCQC.pir_people_directly_employed_dedup,
     },
 }
