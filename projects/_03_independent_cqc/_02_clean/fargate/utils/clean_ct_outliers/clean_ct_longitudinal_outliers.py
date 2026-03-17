@@ -79,26 +79,25 @@ def compute_outlier_cutoff_and_clean(
         col_to_clean (str): Column containing numerical values to clean.
         cleaned_column_name (str): Name of the output cleaned column.
         proportion_to_filter (float): Proportion of extreme values to treat as
-            outliers.
+        outliers.
 
     Returns:
         pl.LazyFrame: LazyFrame with the cleaned column added and helper columns
-            removed.
+        removed.
     """
     percentile = 1 - proportion_to_filter
     median_expr = pl.col(col_to_clean).median().over(IndCQC.location_id)
     abs_diff_expr = (pl.col(col_to_clean) - median_expr).abs()
     cutoff_expr = (
-        lf.select(abs_diff_expr.quantile(percentile, interpolation="linear"))
+        lf.select(abs_diff_expr.alias("abs_diff"))
+        .select(pl.col("abs_diff").quantile(percentile, interpolation="linear"))
         .collect()
         .item()
     )
 
-    lf = lf.with_columns(
+    return lf.with_columns(
         pl.when(abs_diff_expr > cutoff_expr)
         .then(None)
         .otherwise(pl.col(col_to_clean))
         .alias(cleaned_column_name)
     )
-
-    return lf
