@@ -133,19 +133,23 @@ class ManagerialFilledPostAdjustmentExpr:
     """Polars expression factory for redistributing managerial filled posts.
 
     This class provides a method to adjust "Registered Manager" (RM) estimates based
-    on the counts of names given in the CQC data, and proportionally redistributes the
-    difference across other managerial roles within each location.
+    on the counts of names given in the CQC data, and proportionally redistribute the
+    difference across other managerial roles.
 
     The expression is returned via the class method `.build()`.
 
     Expects DataFrame to contain the following columns:
         - IndCQC.main_job_role_clean_labelled
         - IndCQC.estimate_filled_posts_by_job_role
-        - IndCQC.location_id
         - IndCQC.registered_manager_names
 
+    It's expected that we'd execute this expression over each location and import date,
+    as shown in the example usage.
+
     Example Usage:
-        >>> lf.with_columns(ManagerialFilledPostAdjustmentExpression.build().alias("new_col"))
+        >>> adjustment_expr = ManagerialFilledPostAdjustmentExpression.build()
+        >>> groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
+        >>> lf.with_columns(adjustment_expr.over(groups).alias("new_col"))
     """
 
     job_roles: pl.Expr = pl.col(IndCQC.main_job_role_clean_labelled)
