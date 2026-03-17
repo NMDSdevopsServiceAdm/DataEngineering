@@ -14,7 +14,6 @@ from unittest.mock import MagicMock, Mock, patch
 import boto3
 import polars as pl
 import polars.testing as pl_testing
-import pytest
 from botocore.exceptions import ClientError
 from moto import mock_aws, sns
 from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
@@ -630,24 +629,18 @@ class TestFilterToMaximumValueInColumn(TestUtils):
 
 
 class TestCoalesceWithSourceLabels:
-    @pytest.fixture
-    def input_lf(self):
-        return pl.LazyFrame(
+    def test_returns_two_expressions_for_values_and_source(self):
+        expected_lf = pl.LazyFrame(
             {
                 "a": [1, None, None, None, None],
                 "b": [None, 2, None, None, 4],
                 "c": [10, 20, 30, None, None],
-            }
-        )
-
-    def test_returns_two_expressions_for_values_and_source(self, input_lf):
-        expected_lf = pl.LazyFrame(
-            {
                 "values": [1, 2, 30, None, 4],
                 "values_source": ["a", "b", "c", None, "b"],
             }
         )
-        returned_lf = input_lf.select(
+        input_lf = expected_lf.drop("values", "values_source")
+        returned_lf = input_lf.with_columns(
             utils.coalesce_with_source_labels(["a", "b", "c"], name="values")
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
