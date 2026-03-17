@@ -87,18 +87,17 @@ def compute_outlier_cutoff_and_clean(
     """
     percentile = 1 - proportion_to_filter
     median_expr = pl.col(col_to_clean).median().over(IndCQC.location_id)
+    abs_diff_expr = (pl.col(col_to_clean) - median_expr).abs()
+
+    cutoff_value = lf.select(
+        abs_diff_expr.quantile(percentile, interpolation="linear").alias("cutoff")
+    ).collect()["cutoff"][0]
+
     lf = lf.with_columns(
-        median_expr.alias("median_val"),
-        (pl.col(col_to_clean) - median_expr).abs().alias("abs_diff"),
-    )
-    cutoff_lf = lf.select(
-        pl.col("abs_diff").quantile(percentile, interpolation="linear").alias("cutoff")
-    )
-    cutoff_expr = cutoff_lf.select("cutoff").first()
-    lf = lf.with_columns(
-        pl.when(pl.col("abs_diff") > cutoff_expr)
+        pl.when(abs_diff_expr > pl.lit(cutoff_value))
         .then(None)
         .otherwise(pl.col(col_to_clean))
         .alias(cleaned_column_name)
     )
-    return lf.drop(["median_val", "abs_diff"])
+
+    return lf
