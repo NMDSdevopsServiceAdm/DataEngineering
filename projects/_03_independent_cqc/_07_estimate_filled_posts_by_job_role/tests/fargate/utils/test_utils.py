@@ -19,6 +19,7 @@ from utils.column_values.categorical_column_values import (
 from .utils_test_cases import (
     managerial_adjustment_core_schema,
     managerial_adjustment_expected_schema,
+    managerial_adjustment_grouping_test_data,
     managerial_adjustment_test_cases,
     rolling_sum_expected_schema,
     rolling_sum_test_cases,
@@ -362,18 +363,12 @@ class TestManagerialFilledPostAdjustmentExpr:
     def test_build_expr_over_groups(self):
         """Test by grouping over location_id and cqc_location_import_date."""
         output_col = "adjusted_estimates"
-        # Combine all test cases into one DataFrame, they each have different groupings
-        # which we will apply over.
-        expected_lf = pl.concat(
-            [
-                pl.LazyFrame(
-                    data=case.data,
-                    schema=managerial_adjustment_expected_schema,
-                    orient="row",
-                ).select(*managerial_adjustment_core_schema.keys(), output_col)
-                for case in managerial_adjustment_test_cases
-            ]
-        )
+        expected_lf = pl.LazyFrame(
+            data=managerial_adjustment_grouping_test_data,
+            schema=managerial_adjustment_expected_schema,
+            orient="row",
+        ).select(*managerial_adjustment_core_schema.keys(), output_col)
+
         input_lf = expected_lf.drop(output_col)
         returned_lf = input_lf.with_columns(
             job.ManagerialFilledPostAdjustmentExpr.build()
