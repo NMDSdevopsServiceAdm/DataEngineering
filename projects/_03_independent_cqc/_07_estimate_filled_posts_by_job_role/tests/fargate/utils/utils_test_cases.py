@@ -153,4 +153,14 @@ managerial_adjustment_test_cases = [
             ("1-005", date(2024, 1, 1), ["James"], MainJobRoleLabels.registered_manager,   3, 2,   None, 1.0),
         ],
     ),
+    TestCase(
+        id="1_rm_count_multiple_manager_names_with_estimate_>_1",
+        data=[
+            ("1-008", date(2025, 1, 1), ["Sarah", "James"], MainJobRoleLabels.care_worker,         10, 4,   None, 10),
+            ("1-008", date(2025, 1, 1), ["Sarah", "James"], MainJobRoleLabels.senior_care_worker,  15, 4,   None, 15),
+            ("1-008", date(2025, 1, 1), ["Sarah", "James"], MainJobRoleLabels.supervisor,          20, 4, 0.4444, 21.778),
+            ("1-008", date(2025, 1, 1), ["Sarah", "James"], MainJobRoleLabels.team_leader,         25, 4, 0.5556, 27.222),
+            ("1-008", date(2025, 1, 1), ["Sarah", "James"], MainJobRoleLabels.registered_manager,   5, 4,   None, 1),
+        ],
+    ),
 ]  # fmt: skip
