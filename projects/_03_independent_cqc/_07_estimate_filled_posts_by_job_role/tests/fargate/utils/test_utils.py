@@ -17,7 +17,7 @@ from utils.column_values.categorical_column_values import (
 )
 
 from .utils_test_cases import (
-    managerial_adjustment_core_columns,
+    managerial_adjustment_core_schema,
     managerial_adjustment_expected_schema,
     managerial_adjustment_test_cases,
     rolling_sum_expected_schema,
@@ -313,7 +313,7 @@ class TestManagerialFilledPostAdjustmentExpression:
                 data=input_data,
                 schema=managerial_adjustment_expected_schema,
                 orient="row",
-            ).select(*managerial_adjustment_core_columns, output_col)
+            ).select(*managerial_adjustment_core_schema.keys(), output_col)
 
         return inner
 

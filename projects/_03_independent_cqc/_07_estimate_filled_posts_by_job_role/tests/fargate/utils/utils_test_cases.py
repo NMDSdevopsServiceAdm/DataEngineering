@@ -87,19 +87,15 @@ rolling_sum_test_cases = [
     ),
 ]  # fmt: skip
 
-managerial_adjustment_core_columns = [
-    IndCQC.location_id,
-    IndCQC.registered_manager_names,
-    IndCQC.main_job_role_clean_labelled,
-    IndCQC.estimate_filled_posts_by_job_role,
-]
-
-managerial_adjustment_expected_schema = {
+managerial_adjustment_core_schema = {
     IndCQC.location_id: pl.String,
     IndCQC.registered_manager_names: pl.List,
     IndCQC.main_job_role_clean_labelled: pl.String,
     IndCQC.estimate_filled_posts_by_job_role: pl.Float64,
-    # The rest are output columns, and will be used by different tests.
+}
+
+managerial_adjustment_expected_schema = managerial_adjustment_core_schema | {
+    # These output colujmns will be used by different tests.
     "diff": pl.Float64,
     "proportions": pl.Float64,
     "adjusted_estimates": pl.Float64,
