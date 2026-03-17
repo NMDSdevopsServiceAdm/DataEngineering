@@ -25,7 +25,6 @@ PATCH_PATH = "polars_utils.utils"
 
 
 class TestUtils(unittest.TestCase):
-
     def setUp(self):
         self.temp_dir = Path(tempfile.mkdtemp())
         self.types_df = pl.DataFrame(
@@ -626,4 +625,22 @@ class TestFilterToMaximumValueInColumn(TestUtils):
             }
         )
 
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestCoalesceWithSourceLabels:
+    def test_returns_two_expressions_for_values_and_source(self):
+        expected_lf = pl.LazyFrame(
+            {
+                "a": [1, None, None, None, None],
+                "b": [None, 2, None, None, 4],
+                "c": [10, 20, 30, None, None],
+                "values": [1, 2, 30, None, 4],
+                "values_source": ["a", "b", "c", None, "b"],
+            }
+        )
+        input_lf = expected_lf.drop("values", "values_source")
+        returned_lf = input_lf.with_columns(
+            utils.coalesce_with_source_labels(["a", "b", "c"], name="values")
+        )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
