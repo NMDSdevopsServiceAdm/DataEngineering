@@ -357,7 +357,28 @@ class TestManagerialFilledPostAdjustmentExpression:
         expr_method = getattr(
             job.ManagerialFilledPostAdjustmentExpression, config_data["method"]
         )
+        returned_lf = input_lf.with_columns(expr_method().alias(output_col))
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, abs_tol=0.001)
+
+    def test_build_expr_over_groups(self):
+        """Test by grouping over location_id and cqc_location_import_date."""
+        output_col = "adjusted_estimates"
+        # Combine all test cases into one DataFrame, they each have different groupings
+        # which we will apply over.
+        expected_lf = pl.concat(
+            [
+                pl.LazyFrame(
+                    data=case.data,
+                    schema=managerial_adjustment_expected_schema,
+                    orient="row",
+                ).select(*managerial_adjustment_core_schema.keys(), output_col)
+                for case in managerial_adjustment_test_cases
+            ]
+        )
+        input_lf = expected_lf.drop(output_col)
         returned_lf = input_lf.with_columns(
-            expr_method().over(IndCQC.location_id).alias(output_col)
+            job.ManagerialFilledPostAdjustmentExpression.build()
+            .over(IndCQC.location_id, IndCQC.cqc_location_import_date)
+            .alias(output_col)
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, abs_tol=0.001)
