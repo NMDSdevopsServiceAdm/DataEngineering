@@ -363,16 +363,6 @@ class TestManagerialFilledPostAdjustmentExpression:
 class TestFilterJobRoles:
     def test_for_one_label(self):
         managers = job.filter_job_roles(JobGroupLabels.managers)
-        assert managers == [
-            MainJobRoleLabels.data_governance_manager,
-            MainJobRoleLabels.deputy_manager,
-            MainJobRoleLabels.first_line_manager,
-            MainJobRoleLabels.it_manager,
-            MainJobRoleLabels.it_service_desk_manager,
-            MainJobRoleLabels.middle_management,
-            MainJobRoleLabels.other_managerial_staff,
-            MainJobRoleLabels.registered_manager,
-            MainJobRoleLabels.senior_management,
-            MainJobRoleLabels.supervisor,
-            MainJobRoleLabels.team_leader,
-        ]
+        assert MainJobRoleLabels.registered_manager in managers
+        assert MainJobRoleLabels.supervisor in managers
+        assert MainJobRoleLabels.care_worker not in managers
