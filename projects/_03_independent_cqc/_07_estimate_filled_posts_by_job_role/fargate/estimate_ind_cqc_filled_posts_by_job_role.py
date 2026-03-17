@@ -117,8 +117,15 @@ def main(
         .drop(IndCQC.ascwds_job_role_rolling_sum)
     )
 
-    estimated_job_role_posts_lf = coalesce_ratios_with_source_label(
-        estimated_job_role_posts_lf
+    estimated_job_role_posts_lf = utils.coalesce_with_source_labels(
+        estimated_job_role_posts_lf,
+        coalesce_columns=[
+            IndCQC.ascwds_job_role_ratios_filtered,
+            IndCQC.ascwds_job_role_ratios_interpolated,
+            IndCQC.ascwds_job_role_rolling_ratio,
+        ],
+        value_column_name=IndCQC.ascwds_job_role_ratios_merged,
+        source_label_column_name=IndCQC.ascwds_job_role_ratios_merged_source,
     )
 
     utils.sink_to_parquet(
@@ -149,24 +156,3 @@ if __name__ == "__main__":
         ascwds_job_role_counts_source=args.ascwds_job_role_counts_source,
         estimates_by_job_role_destination=args.estimates_by_job_role_destination,
     )
-
-
-def coalesce_ratios_with_source_label(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Coalesces filtered, interpolated and rolling ratios and records source label.
-
-    Produces two new columns:
-     - The first non-null ratio value is chosen from left-to-right.
-     - The source of the non-null value (from filtered, interpolated or rolling).
-    """
-    coalesce_cols_in_order = [
-        IndCQC.ascwds_job_role_ratios_filtered,
-        IndCQC.ascwds_job_role_ratios_interpolated,
-        IndCQC.ascwds_job_role_rolling_ratio,
-    ]
-    new_cols = {
-        IndCQC.ascwds_job_role_ratios_merged: pl.coalesce(coalesce_cols_in_order),
-        IndCQC.ascwds_job_role_ratios_merged_source: utils.coalesce_labels(
-            coalesce_cols_in_order
-        ),
-    }
-    return lf.with_columns(**new_cols)

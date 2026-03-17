@@ -646,3 +646,28 @@ class TestCoalesceLabels:
             utils.coalesce_labels(["a", "b", "c"]).alias("labels")
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+def test_coalesce_with_source_label():
+    expected_lf = pl.LazyFrame(
+        {
+            "value1": [0.1, None, None, None],
+            "value2": [0.1, 0.2, None, None],
+            "value3": [None, 0.2, 0.3, None],
+            "coalesce_values": [0.1, 0.2, 0.3, None],
+            "coalesce_source": [
+                "value1",
+                "value2",
+                "value3",
+                None,
+            ],
+        }
+    )
+    input_lf = expected_lf.drop("coalesce_values", "coalesce_source")
+    returned_lf = utils.coalesce_with_source_labels(
+        input_lf,
+        coalesce_columns=["value1", "value2", "value3"],
+        value_column_name="coalesce_values",
+        source_label_column_name="coalesce_source",
+    )
+    pl_testing.assert_frame_equal(returned_lf, expected_lf)

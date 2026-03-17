@@ -424,3 +424,29 @@ def coalesce_labels(coalesce_columns: list[str]) -> pl.Expr:
         label_expr = label_expr.when(pl.col(col).is_not_null()).then(pl.lit(col))
 
     return label_expr
+
+
+def coalesce_with_source_labels(
+    lf: pl.LazyFrame,
+    coalesce_columns: list[str],
+    value_column_name: str,
+    source_label_column_name: str,
+) -> pl.LazyFrame:
+    """Create a coalesced column and a coalesce source label column.
+
+    The source label column indicates the column header of the first non-null
+    value chosen by the coalesce.
+
+    Args:
+        lf (pl.LazyFrame): The LazyFrame to transform.
+        coalesce_columns (list[str]): The columns to coalesce.
+        value_column_name (str): Name of the coalesced column.
+        source_label_column_name (str): Name of the column containing coalesce source labels.
+
+    Returns:
+        pl.LazyFrame: The input DataFrame with the two additional columns.
+    """
+    return lf.with_columns(
+        pl.coalesce(coalesce_columns).alias(value_column_name),
+        coalesce_labels(coalesce_columns).alias(source_label_column_name),
+    )
