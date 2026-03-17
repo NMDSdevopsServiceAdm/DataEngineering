@@ -96,7 +96,7 @@ managerial_adjustment_core_schema = {
 }
 
 managerial_adjustment_expected_schema = managerial_adjustment_core_schema | {
-    # These output colujmns will be used by different tests.
+    # These output columns will be used by different tests.
     "diff": pl.Float64,
     "proportions": pl.Float64,
     "adjusted_estimates": pl.Float64,

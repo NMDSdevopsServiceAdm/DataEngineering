@@ -192,7 +192,7 @@ class ManagerialFilledPostAdjustmentExpr:
 
         The "_is_registered_manager" mask should only equate to a single row
         (for each location and import date), and so summing with all other
-        values as 0 results in the value at that "rsegistered_manager" row
+        values as 0 results in the value at that "registered_manager" row
         broadcast to all other rows within the group.
         """
         diff = cls.filled_post_estimates.sub(cls._clip_rm_count())
@@ -213,9 +213,7 @@ class ManagerialFilledPostAdjustmentExpr:
     def _adjusted_non_rm_manager_estimates(cls) -> pl.Expr:
         """Proportionally redistribute difference across remaining managerial roles.
 
-        Ensure non-negative values to ensure that the total number of estimated
-        managerial filled posts remains consistent after correcting for RM
-        discrepancies.
+        Ensure non-negative values following redistribution of RMs.
         """
         return cls.filled_post_estimates.add(
             cls._rm_manager_diff().mul(cls._non_rm_manager_proportions())
