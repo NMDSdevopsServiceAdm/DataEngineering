@@ -129,7 +129,7 @@ def rolling_sum_of_job_role_counts(
     )
 
 
-class ManagerialFilledPostAdjustmentExpression:
+class ManagerialFilledPostAdjustmentExpr:
     """Polars expression factory for redistributing managerial filled posts.
 
     This class provides a method to adjust "Registered Manager" (RM) estimates based

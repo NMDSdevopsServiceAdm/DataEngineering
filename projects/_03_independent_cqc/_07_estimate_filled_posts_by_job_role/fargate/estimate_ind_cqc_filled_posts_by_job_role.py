@@ -121,7 +121,7 @@ def main(
         estimated_job_role_posts_lf
     )
 
-    adjustment_expr = JRUtils.ManagerialFilledPostAdjustmentExpression.build()
+    adjustment_expr = JRUtils.ManagerialFilledPostAdjustmentExpr.build()
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         adjustment_expr.over(pct_share_groups).alias(
             IndCQC.estimate_filled_posts_manager_adjusted

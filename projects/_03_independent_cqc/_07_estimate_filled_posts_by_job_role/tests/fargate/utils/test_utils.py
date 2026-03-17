@@ -290,7 +290,7 @@ class TestRollingSum:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestManagerialFilledPostAdjustmentExpression:
+class TestManagerialFilledPostAdjustmentExpr:
     @pytest.fixture(
         params=[case.as_pytest_param() for case in managerial_adjustment_test_cases]
     )
@@ -333,7 +333,7 @@ class TestManagerialFilledPostAdjustmentExpression:
         }
         expected_lf = pl.LazyFrame([[input_], [expected]], schema=schema)
         input_lf = expected_lf.drop(IndCQC.registered_manager_count)
-        clip_count_expr = job.ManagerialFilledPostAdjustmentExpression._clip_rm_count()
+        clip_count_expr = job.ManagerialFilledPostAdjustmentExpr._clip_rm_count()
         returned_lf = input_lf.with_columns(
             clip_count_expr.alias(IndCQC.registered_manager_count)
         )
@@ -355,7 +355,7 @@ class TestManagerialFilledPostAdjustmentExpression:
         expected_lf = expected_lf_constructor(output_col)
         input_lf = expected_lf.drop(output_col)
         expr_method = getattr(
-            job.ManagerialFilledPostAdjustmentExpression, config_data["method"]
+            job.ManagerialFilledPostAdjustmentExpr, config_data["method"]
         )
         returned_lf = input_lf.with_columns(expr_method().alias(output_col))
         pl_testing.assert_frame_equal(returned_lf, expected_lf, abs_tol=0.001)
@@ -377,7 +377,7 @@ class TestManagerialFilledPostAdjustmentExpression:
         )
         input_lf = expected_lf.drop(output_col)
         returned_lf = input_lf.with_columns(
-            job.ManagerialFilledPostAdjustmentExpression.build()
+            job.ManagerialFilledPostAdjustmentExpr.build()
             .over(IndCQC.location_id, IndCQC.cqc_location_import_date)
             .alias(output_col)
         )
