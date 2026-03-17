@@ -94,7 +94,8 @@ def percentage_share_handling_zero_sum(column: str | pl.Expr) -> pl.Expr:
     proportions within groups.
     """
     col = pl.col(column) if isinstance(column, str) else column
-    return pl.when(col.sum() == 0).then(1 / pl.len()).otherwise(percentage_share(col))
+    total = col.sum()
+    return pl.when(total == 0).then(1 / pl.len()).otherwise(col / total)
 
 
 def impute_full_time_series(column: str) -> pl.Expr:
