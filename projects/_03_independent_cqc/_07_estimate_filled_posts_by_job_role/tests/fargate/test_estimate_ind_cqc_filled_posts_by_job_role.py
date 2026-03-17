@@ -1,9 +1,6 @@
 import unittest
 from unittest.mock import ANY, Mock, call, patch
 
-import polars as pl
-import polars.testing as pl_testing
-
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
@@ -20,7 +17,7 @@ class MainTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.JRUtils.ManagerialFilledPostAdjustmentExpr")
-    @patch(f"{PATCH_PATH}.coalesce_ratios_with_source_label")
+    @patch(f"{PATCH_PATH}.utils.coalesce_with_source_labels")
     @patch(f"{PATCH_PATH}.JRUtils.rolling_sum_of_job_role_counts")
     @patch(f"{PATCH_PATH}.JRUtils.impute_full_time_series")
     @patch(f"{PATCH_PATH}.JRUtils.percentage_share")
@@ -38,7 +35,7 @@ class MainTests(unittest.TestCase):
         percentage_share_mock: Mock,
         impute_full_time_series_mock: Mock,
         rolling_sum_mock: Mock,
-        coalesce_ratios_with_source_label_mock: Mock,
+        coalesce_with_source_labels_mock: Mock,
         ManagerialFilledPostAdjustmentExprMock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -81,7 +78,7 @@ class MainTests(unittest.TestCase):
             IndCQC.ascwds_job_role_ratios
         )
         rolling_sum_mock.assert_called_once_with(period="6mo")
-        coalesce_ratios_with_source_label_mock.assert_called_once()
+        coalesce_with_source_labels_mock.assert_called_once()
 
         ManagerialFilledPostAdjustmentExprMock.build.assert_called_once()
         ManagerialFilledPostAdjustmentExprMock.build.return_value.over.assert_called_once_with(
@@ -94,25 +91,3 @@ class MainTests(unittest.TestCase):
             partition_cols=job.partition_keys,
             append=False,
         )
-
-
-def test_coalesce_ratios_with_source_label():
-    expected_lf = pl.LazyFrame(
-        {
-            IndCQC.ascwds_job_role_ratios_filtered: [0.1, None, None],
-            IndCQC.ascwds_job_role_ratios_interpolated: [0.1, 0.2, None],
-            IndCQC.ascwds_job_role_rolling_ratio: [None, 0.2, 0.3],
-            IndCQC.ascwds_job_role_ratios_merged: [0.1, 0.2, 0.3],
-            IndCQC.ascwds_job_role_ratios_merged_source: [
-                IndCQC.ascwds_job_role_ratios_filtered,
-                IndCQC.ascwds_job_role_ratios_interpolated,
-                IndCQC.ascwds_job_role_rolling_ratio,
-            ],
-        }
-    )
-    input_lf = expected_lf.drop(
-        IndCQC.ascwds_job_role_ratios_merged,
-        IndCQC.ascwds_job_role_ratios_merged_source,
-    )
-    returned_lf = job.coalesce_ratios_with_source_label(input_lf)
-    pl_testing.assert_frame_equal(returned_lf, expected_lf)

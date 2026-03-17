@@ -17,6 +17,9 @@ All notable changes to this project will be documented in this file.
 
 - Filtering of non-residential outliers in the rate of change calculations.
 
+- Longitudinal filtering of Capacity Tracker Care Home data to nullify trend outliers.
+  Removed all Capacity Tracker data pre 1st May 2021.
+
 ### Changed
 - Switched test runner to pytest in CI, so that a shared session fixture for a spark configuration optimised for tests
   can be used. Has resulted in 70% reduction in runtime for current pyspark tests in CI, and improvement on local
@@ -37,15 +40,19 @@ All notable changes to this project will be documented in this file.
 
 - Removed all remaining PySpark modelling code for care homes and non-residential with/without dormancy.
 
-### Fixed
+- Switch to use of `uv` in CI for quicker dependency installation. https://github.com/NMDSdevopsServiceAdm/DataEngineering/pull/1237
 
+- Combined the CSSR areas Cornwall and Isles of Scilly.
+
+### Fixed
+- Changed the raw ONS CSV data to contain numeric codes instead of labels. The labels are then added during the cleaning step to improve naming consistency over time.
+
+- Updated the normalise_structs function in cqc_api.py and added a new function to create a DataFrame for the raw data. The new function makes sure the data is properly normalised and can handle any new columns added by CQC. It also logs any newly added columns that are not in our current schema, so we can review them and update the schema if needed.
 
 ## [v2026.01.0] - 12/02/2026
 
 ### Added
 - A new function to remove longitudinal outliers from CT data. The function flags the outliers based on absolute difference in median values and removes the ourlier value.
-
-- Converted util functions select_rows_with_value and select_rows_with_non_null_value from spark to polars.
 
 - Polars job [model_03_predict](projects/_03_independent_cqc/_04_model/fargate/model_03_predict.py) to load a specified model then generate and save predictions.
 

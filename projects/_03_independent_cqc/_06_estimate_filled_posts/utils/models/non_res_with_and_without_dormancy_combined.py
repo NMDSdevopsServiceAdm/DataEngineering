@@ -26,7 +26,7 @@ def combine_non_res_with_and_without_dormancy_models(
     Returns:
         DataFrame: The original DataFrame with the combined model predictions joined in.
     """
-    locations_reduced_df = locations_df.select(
+    non_res_locations_df = locations_df.select(
         IndCqc.location_id,
         IndCqc.cqc_location_import_date,
         IndCqc.care_home,
@@ -34,11 +34,7 @@ def combine_non_res_with_and_without_dormancy_models(
         IndCqc.time_registered,
         IndCqc.non_res_without_dormancy_model,
         IndCqc.non_res_with_dormancy_model,
-    )
-
-    non_res_locations_df = utils.select_rows_with_value(
-        locations_reduced_df, IndCqc.care_home, CareHome.not_care_home
-    )
+    ).filter(F.col(IndCqc.care_home) == CareHome.not_care_home)
 
     combined_models_df = group_time_registered_to_six_month_bands(non_res_locations_df)
 

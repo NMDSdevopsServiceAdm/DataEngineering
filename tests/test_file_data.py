@@ -35,21 +35,6 @@ class UtilsData:
         ("3", date(2023, 1, 1), "20240101"),
     ]
 
-    select_rows_with_value_rows = [
-        ("id_1", "keep"),
-        ("id_2", "remove"),
-    ]
-
-    select_rows_with_non_null_values_rows = [
-        ("1-00001", None),
-        ("1-00002", 12.34),
-        ("1-00003", -1.0),
-    ]
-    expected_select_rows_with_non_null_values_rows = [
-        ("1-00002", 12.34),
-        ("1-00003", -1.0),
-    ]
-
 
 @dataclass
 class CleaningUtilsData:
@@ -90,6 +75,22 @@ class CleaningUtilsData:
         ("4", "female", "Portuguese"),
         ("5", None, "Portuguese"),
         ("6", "female", None),
+    ]
+
+    worker_rows_with_unmatched_labels = [
+        ("1", "0", "100"),
+        ("2", "1", "104"),
+        ("3", None, None),
+    ]
+    expected_worker_rows_with_unmatched_labels_with_new_columns = [
+        ("1", "0", "100", "0", "British"),
+        ("2", "1", "104", "male", "104"),
+        ("3", None, None, None, None),
+    ]
+    expected_worker_rows_with_unmatched_labels_without_new_columns = [
+        ("1", "0", "British"),
+        ("2", "male", "104"),
+        ("3", None, None),
     ]
 
     scale_data = [

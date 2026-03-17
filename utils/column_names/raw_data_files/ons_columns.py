@@ -9,7 +9,6 @@ class OnsPostcodeDirectoryColumns:
     sub_icb: str = "Sub_ICB"
     icb: str = "ICB"
     icb_region: str = "ICB_Region"
-    ccg: str = "CCG"
     latitude: str = "lat"
     longitude: str = "long"
     imd_score: str = "imd"

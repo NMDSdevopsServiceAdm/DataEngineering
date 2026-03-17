@@ -14,7 +14,6 @@ from unittest.mock import MagicMock, Mock, patch
 import boto3
 import polars as pl
 import polars.testing as pl_testing
-import pytest
 from botocore.exceptions import ClientError
 from moto import mock_aws, sns
 from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
@@ -629,54 +628,19 @@ class TestFilterToMaximumValueInColumn(TestUtils):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class SelectRowsWithValueTests(unittest.TestCase):
-    def setUp(self) -> None:
-
-        lf = pl.LazyFrame(
-            {"id": ["id_1", "id_2"], "value_to_filter_on": ["keep", "remove"]}
-        )
-        self.returned_lf = utils.select_rows_with_value(
-            lf, "value_to_filter_on", "keep"
-        )
-        self.expected_lf = pl.LazyFrame(
-            {"id": ["id_1"], "value_to_filter_on": ["keep"]}
-        )
-
-    def test_select_rows_with_value_returns_expected_lf(self):
-        pl_testing.assert_frame_equal(self.returned_lf, self.expected_lf)
-
-
-class SelectRowsWithNonNullValueTests(unittest.TestCase):
-    def setUp(self) -> None:
-
-        lf = pl.LazyFrame(
-            {"id": ["id_1", "id_2", "id_3"], "column_with_nulls": [None, 12.34, -1.0]}
-        )
-        self.returned_lf = utils.select_rows_with_non_null_value(
-            lf, "column_with_nulls"
-        )
-        self.expected_lf = pl.LazyFrame(
-            {"id": ["id_2", "id_3"], "column_with_nulls": [12.34, -1.0]}
-        )
-
-    def test_select_rows_with_non_null_value_returns_expected_lf(self):
-        pl_testing.assert_frame_equal(self.returned_lf, self.expected_lf)
-
-
-class TestCoalesceLabels:
-    @pytest.fixture
-    def input_lf(self):
-        return pl.LazyFrame(
+class TestCoalesceWithSourceLabels:
+    def test_returns_two_expressions_for_values_and_source(self):
+        expected_lf = pl.LazyFrame(
             {
                 "a": [1, None, None, None, None],
                 "b": [None, 2, None, None, 4],
                 "c": [10, 20, 30, None, None],
+                "values": [1, 2, 30, None, 4],
+                "values_source": ["a", "b", "c", None, "b"],
             }
         )
-
-    def test_output_col_is_coalesce_source_labels(self, input_lf):
-        expected_lf = pl.LazyFrame({"labels": ["a", "b", "c", None, "b"]})
-        returned_lf = input_lf.select(
-            utils.coalesce_labels(["a", "b", "c"]).alias("labels")
+        input_lf = expected_lf.drop("values", "values_source")
+        returned_lf = input_lf.with_columns(
+            utils.coalesce_with_source_labels(["a", "b", "c"], name="values")
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

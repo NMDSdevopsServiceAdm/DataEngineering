@@ -129,10 +129,9 @@ class TestPercentageShare:
 
     def test_when_passed_an_expression(self):
         """Test that the function accepts a Polars expression instead of just a string."""
-        input_lf = pl.LazyFrame({"vals": [10, 20, 70]})
-        # The ratios should remain the same as the underlying distribution is the same.
-        expression = pl.col("vals") * 2
-        expected_lf = pl.LazyFrame({"ratios": [0.1, 0.2, 0.7]})
+        input_lf = pl.LazyFrame({"vals": [10, 20, 80]})
+        expression = pl.col("vals") - 10
+        expected_lf = pl.LazyFrame({"ratios": [0.0, 0.125, 0.875]})
 
         returned_lf = input_lf.select(job.percentage_share(expression).alias("ratios"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

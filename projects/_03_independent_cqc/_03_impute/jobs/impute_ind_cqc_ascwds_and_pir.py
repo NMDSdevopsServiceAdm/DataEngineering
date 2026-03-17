@@ -24,6 +24,9 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.rolling_average import (
     model_calculate_rolling_average,
 )
+from projects._03_independent_cqc.utils.utils.utils import (
+    nullify_ct_values_previous_to_first_submission,
+)
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -151,6 +154,14 @@ def main(
         IndCQC.ct_non_res_care_workers_employed_imputed,
         care_home=False,
         extrapolation_method="ratio",
+    )
+
+    df = nullify_ct_values_previous_to_first_submission(
+        df,
+        [
+            IndCQC.ct_care_home_total_employed_imputed,
+            IndCQC.ct_non_res_care_workers_employed_imputed,
+        ],
     )
 
     print(f"Exporting as parquet to {imputed_ind_cqc_ascwds_and_pir_destination}")

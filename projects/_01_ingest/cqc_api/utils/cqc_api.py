@@ -246,76 +246,103 @@ def get_changes_within_timeframe(
 
 def normalise_structs(record: dict, schema: dict) -> dict:
     """
-    Normalises struct and list-of-struct columns to strictly match the schema.
+    Normalises only the columns defined in schema, leaving all other columns untouched.
 
-    - Structs: keep only schema fields, missing fields set to None.
-    - List[Struct]: ensure each item has schema fields, missing items become empty dicts.
-    - Columns not in schema are untouched.
+    - Struct columns: keep only schema-defined fields, missing fields → None.
+    - List[Struct] columns: normalise each item to schema-defined fields.
+    - List columns: ensure value is a list.
+    - Scalar columns: pass through (None if missing).
+    - Extra columns not in schema: preserved as-is.
 
     Args:
-        record (dict): Single API record.
-        schema (dict): Column name → Polars dtype.
+        record (dict): Single raw API record.
+        schema (dict): Column name → Polars dtype (only known columns).
 
     Returns:
-        dict: Record with struct/list-of-struct columns normalised to schema.
+        dict: Record with schema columns normalised; extra columns untouched.
     """
-    fixed = dict(record)
+    record = record or {}
+    fixed = dict(record)  # preserve all columns including unknowns
 
     for col, dtype in schema.items():
+        value = fixed.get(col)
+
         if isinstance(dtype, pl.Struct):
             fields = [f.name for f in dtype.fields]
-            value = fixed.get(col)
-            fixed[col] = (
-                {f: value.get(f, None) for f in fields}
-                if isinstance(value, dict)
-                else {f: None for f in fields}
-            )
-
-        elif isinstance(dtype, pl.List) and isinstance(dtype.inner, pl.Struct):
-            value = fixed.get(col)
-            inner_fields = [f.name for f in dtype.inner.fields]
-            if isinstance(value, list):
-                fixed[col] = [
-                    (
-                        {f: item.get(f, None) for f in inner_fields}
-                        if isinstance(item, dict)
-                        else {f: None for f in inner_fields}
-                    )
-                    for item in value
-                ]
+            if isinstance(value, dict):
+                fixed[col] = {f: value.get(f) for f in fields}
             else:
-                fixed[col] = []
+                fixed[col] = {f: None for f in fields}
+
+        elif isinstance(dtype, pl.List):
+            if isinstance(dtype.inner, pl.Struct):
+                inner_fields = [f.name for f in dtype.inner.fields]
+                if isinstance(value, list):
+                    fixed[col] = [
+                        (
+                            {f: item.get(f) for f in inner_fields}
+                            if isinstance(item, dict)
+                            else {f: None for f in inner_fields}
+                        )
+                        for item in value
+                    ]
+                else:
+                    fixed[col] = []
+            else:
+                fixed[col] = value if isinstance(value, list) else []
+
+        else:
+            fixed[col] = value
 
     return fixed
 
 
-def primed_generator(
-    api_generator: Generator[dict, None, None], schema: dict
-) -> Generator[dict, None, None]:
+def build_dataframe_from_api(
+    api_generator: Generator[dict, None, None],
+    schema: dict,
+) -> pl.DataFrame:
     """
-    Yields one fully-normalised, schema-perfect empty row first so that
-    Polars infers the schema correctly then yields all normalised API rows.
+    Consumes an API generator, normalises known schema columns on every row,
+    and returns a Polars DataFrame.
 
-    This guarantees Polars never infers incorrect struct widths caused by
-    inconsistent API responses.
+    Strategy:
+      1. Collect ALL rows first (normalised), so Polars never has to infer
+         struct shapes mid-stream from inconsistent rows.
+      2. Build the DataFrame from the full list, passing the known schema
+         explicitly so Polars uses it for those columns.
+      3. Extra API columns (not in schema) are carried through as-is and
+         Polars infers their types from the full dataset — which is safe
+         because we have all rows before constructing.
+
+    New/unexpected columns are logged with a sample value.
 
     Args:
         api_generator (Generator[dict, None, None]): A generator yielding raw
             API rows as dictionaries.
         schema (dict): Polars schema mapping column names to data types.
 
-    Yields:
-        dict: A priming row followed by fully-normalised API rows.
+    Returns:
+        pl.DataFrame: Newly constructed DataFrame with new raw data
     """
-    empty_row = {}
-
-    for col, dtype in schema.items():
-        if isinstance(dtype, pl.Struct):
-            empty_row[col] = {field.name: None for field in dtype.fields}
-        else:
-            empty_row[col] = None
-
-    yield empty_row
+    known_cols = set(schema.keys())
+    new_cols_seen: set[str] = set()
+    rows: list[dict] = []
 
     for row in api_generator:
-        yield normalise_structs(row, schema)
+        # Detect and log any columns not in our schema
+        extra = set(row.keys()) - known_cols - new_cols_seen
+        if extra:
+            new_cols_seen.update(extra)
+            for col in sorted(extra):
+                sample = row[col]
+                print(
+                    f"[schema drift] New column '{col}' | sample: {repr(sample)[:120]}"
+                )
+
+        rows.append(normalise_structs(row, schema))
+
+    if not rows:
+        # Return an empty DataFrame with the correct schema for known columns
+        return pl.DataFrame(schema=schema)
+
+    return pl.DataFrame(rows, infer_schema_length=len(rows))

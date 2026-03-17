@@ -415,43 +415,23 @@ def filter_to_maximum_value_in_column(
     return lf.drop(max_value)
 
 
-def select_rows_with_value(
-    lf: pl.LazyFrame, column: str, value_to_keep: str
-) -> pl.LazyFrame:
-    """
-    Select rows from a LazyFrame where the specified column matches the given value.
+def coalesce_with_source_labels(cols: list[str], name: str) -> tuple[pl.Expr, pl.Expr]:
+    """Return expressions for the coalesced value and its source label.
 
     Args:
-        lf (pl.LazyFrame): The input LazyFrame.
-        column (str): The name of the column to filter on.
-        value_to_keep (str): The value to keep in the specified column.
+        cols (list[str]): The columns to coalesce from left-to-right.
+        name (str): The root name for the new columns.
 
     Returns:
-        pl.LazyFrame: A LazyFrame containing only the rows where the specified column matches the given value.
+        tuple[pl.Expr, pl.Expr]: Tuple of expressions:
+            - Coalesce expression aliased with `name`.
+            - Coalesce source label expression aliased name with suffix "_source".
     """
-    return lf.filter(pl.col(column) == value_to_keep)
+    val_expr = pl.coalesce(cols).alias(name)
 
+    # Build the label logic
+    label_expr = pl.when(pl.col(cols[0]).is_not_null()).then(pl.lit(cols[0]))
+    for c in cols[1:]:
+        label_expr = label_expr.when(pl.col(c).is_not_null()).then(pl.lit(c))
 
-def select_rows_with_non_null_value(lf: pl.LazyFrame, column: str) -> pl.LazyFrame:
-    """
-    Select rows from a LazyFrame where the specified column has non-null values.
-
-    Args:
-        lf (pl.LazyFrame): The input LazyFrame.
-        column (str): The name of the column to filter on.
-
-    Returns:
-        pl.LazyFrame: A LazyFrame containing only the rows where the specified column has non-null values.
-    """
-    return lf.filter(pl.col(column).is_not_null())
-
-
-def coalesce_labels(coalesce_columns: list[str]) -> pl.Expr:
-    """Return the source column labels of a coalesce call i.e. first non-null."""
-    first_col = coalesce_columns[0]
-    label_expr = pl.when(pl.col(first_col).is_not_null()).then(pl.lit(first_col))
-
-    for col in coalesce_columns[1:]:
-        label_expr = label_expr.when(pl.col(col).is_not_null()).then(pl.lit(col))
-
-    return label_expr
+    return (val_expr, label_expr.alias(f"{name}_source"))

@@ -5,12 +5,8 @@ from projects._03_independent_cqc._02_clean.utils.filtering_utils import (
     update_filtering_rule,
 )
 from projects.utils.utils.utils import calculate_new_column
-
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import (
-    CTCareHomeFilteringRule,
-    CTNonResFilteringRule,
-)
+from utils.column_values.categorical_column_values import CTFilteringRule
 
 
 def clean_longitudinal_outliers(
@@ -59,20 +55,16 @@ def clean_longitudinal_outliers(
 
     if care_home:
         filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
-        populated_rule = CTCareHomeFilteringRule.populated
-        new_rule_name = None
     else:
         filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
-        populated_rule = CTNonResFilteringRule.populated
-        new_rule_name = CTNonResFilteringRule.longitudinal_outliers
 
     cleaned_df = update_filtering_rule(
         cleaned_df,
         filter_rule_column_name,
         col_to_clean,
         cleaned_column_name,
-        populated_rule,
-        new_rule_name,
+        populated_rule=CTFilteringRule.populated,
+        new_rule_name=CTFilteringRule.longitudinal_outliers,
     )
 
     cleaned_df = cleaned_df.drop(

@@ -291,7 +291,6 @@ class PostcodeMatcherTest:
             (ONSClean.contemporary_ons_import_date, pl.Date()),
             (ONSClean.contemporary_cssr, pl.String()),
             (ONSClean.contemporary_sub_icb, pl.String()),
-            (ONSClean.contemporary_ccg, pl.String()),
             (ONSClean.current_cssr, pl.String()),
             (ONSClean.current_sub_icb, pl.String()),
         ]
@@ -363,7 +362,6 @@ class PostcodeMatcherTest:
             (CQCLClean.postcode_cleaned, pl.String()),
             (CQCLClean.contemporary_ons_import_date, pl.Date()),
             (CQCLClean.contemporary_cssr, pl.String()),
-            (CQCLClean.contemporary_ccg, pl.String()),
             (CQCLClean.contemporary_sub_icb, pl.String()),
             (CQCLClean.current_cssr, pl.String()),
             (CQCLClean.current_sub_icb, pl.String()),
@@ -373,7 +371,6 @@ class PostcodeMatcherTest:
         [
             (ONSClean.contemporary_ons_import_date, pl.Date()),
             (ONSClean.contemporary_cssr, pl.String()),
-            (ONSClean.contemporary_ccg, pl.String()),
             (ONSClean.contemporary_sub_icb, pl.String()),
             (ONSClean.current_cssr, pl.String()),
             (ONSClean.current_sub_icb, pl.String()),
