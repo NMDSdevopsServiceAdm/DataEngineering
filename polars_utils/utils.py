@@ -415,38 +415,23 @@ def filter_to_maximum_value_in_column(
     return lf.drop(max_value)
 
 
-def coalesce_labels(coalesce_columns: list[str]) -> pl.Expr:
-    """Return the source column labels of a coalesce call i.e. first non-null."""
-    first_col = coalesce_columns[0]
-    label_expr = pl.when(pl.col(first_col).is_not_null()).then(pl.lit(first_col))
-
-    for col in coalesce_columns[1:]:
-        label_expr = label_expr.when(pl.col(col).is_not_null()).then(pl.lit(col))
-
-    return label_expr
-
-
-def coalesce_with_source_labels(
-    lf: pl.LazyFrame,
-    coalesce_columns: list[str],
-    value_column_name: str,
-    source_label_column_name: str,
-) -> pl.LazyFrame:
-    """Create a coalesced column and a coalesce source label column.
-
-    The source label column indicates the column header of the first non-null
-    value chosen by the coalesce.
+def coalesce_with_source_labels(cols: list[str], name: str) -> tuple[pl.Expr, pl.Expr]:
+    """Return expressions for the coalesced value and its source label.
 
     Args:
-        lf (pl.LazyFrame): The LazyFrame to transform.
-        coalesce_columns (list[str]): The columns to coalesce.
-        value_column_name (str): Name of the coalesced column.
-        source_label_column_name (str): Name of the column containing coalesce source labels.
+        cols (list[str]): The columns to coalesce from left-to-right.
+        name (str): The root name for the new columns.
 
     Returns:
-        pl.LazyFrame: The input DataFrame with the two additional columns.
+        tuple[pl.Expr, pl.Expr]: Tuple of expressions:
+            - Coalesce expression aliased with `name`.
+            - Coalesce source label expression aliased name with suffix "_source".
     """
-    return lf.with_columns(
-        pl.coalesce(coalesce_columns).alias(value_column_name),
-        coalesce_labels(coalesce_columns).alias(source_label_column_name),
-    )
+    val_expr = pl.coalesce(cols).alias(name)
+
+    # Build the label logic
+    label_expr = pl.when(pl.col(cols[0]).is_not_null()).then(pl.lit(cols[0]))
+    for c in cols[1:]:
+        label_expr = label_expr.when(pl.col(c).is_not_null()).then(pl.lit(c))
+
+    return (val_expr, label_expr.otherwise(None).alias(f"{name}_source"))

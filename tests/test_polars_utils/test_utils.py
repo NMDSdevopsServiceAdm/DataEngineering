@@ -629,7 +629,7 @@ class TestFilterToMaximumValueInColumn(TestUtils):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestCoalesceLabels:
+class TestCoalesceWithSourceLabels:
     @pytest.fixture
     def input_lf(self):
         return pl.LazyFrame(
@@ -640,34 +640,14 @@ class TestCoalesceLabels:
             }
         )
 
-    def test_output_col_is_coalesce_source_labels(self, input_lf):
-        expected_lf = pl.LazyFrame({"labels": ["a", "b", "c", None, "b"]})
+    def test_returns_two_expressions_for_values_and_source(self, input_lf):
+        expected_lf = pl.LazyFrame(
+            {
+                "values": [1, 2, 30, None, 4],
+                "values_source": ["a", "b", "c", None, "b"],
+            }
+        )
         returned_lf = input_lf.select(
-            utils.coalesce_labels(["a", "b", "c"]).alias("labels")
+            utils.coalesce_with_source_labels(["a", "b", "c"], name="values")
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
-def test_coalesce_with_source_label():
-    expected_lf = pl.LazyFrame(
-        {
-            "value1": [0.1, None, None, None],
-            "value2": [0.1, 0.2, None, None],
-            "value3": [None, 0.2, 0.3, None],
-            "coalesce_values": [0.1, 0.2, 0.3, None],
-            "coalesce_source": [
-                "value1",
-                "value2",
-                "value3",
-                None,
-            ],
-        }
-    )
-    input_lf = expected_lf.drop("coalesce_values", "coalesce_source")
-    returned_lf = utils.coalesce_with_source_labels(
-        input_lf,
-        coalesce_columns=["value1", "value2", "value3"],
-        value_column_name="coalesce_values",
-        source_label_column_name="coalesce_source",
-    )
-    pl_testing.assert_frame_equal(returned_lf, expected_lf)

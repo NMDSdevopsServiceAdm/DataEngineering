@@ -117,15 +117,15 @@ def main(
         .drop(IndCQC.ascwds_job_role_rolling_sum)
     )
 
-    estimated_job_role_posts_lf = utils.coalesce_with_source_labels(
-        estimated_job_role_posts_lf,
-        coalesce_columns=[
-            IndCQC.ascwds_job_role_ratios_filtered,
-            IndCQC.ascwds_job_role_ratios_interpolated,
-            IndCQC.ascwds_job_role_rolling_ratio,
-        ],
-        value_column_name=IndCQC.ascwds_job_role_ratios_merged,
-        source_label_column_name=IndCQC.ascwds_job_role_ratios_merged_source,
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        utils.coalesce_with_source_labels(
+            cols=[
+                IndCQC.ascwds_job_role_ratios_filtered,
+                IndCQC.ascwds_job_role_ratios_interpolated,
+                IndCQC.ascwds_job_role_rolling_ratio,
+            ],
+            name=IndCQC.ascwds_job_role_ratios_merged,
+        ),
     )
 
     utils.sink_to_parquet(
