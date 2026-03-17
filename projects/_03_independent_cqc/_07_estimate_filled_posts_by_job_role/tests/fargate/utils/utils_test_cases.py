@@ -107,7 +107,7 @@ managerial_adjustment_expected_schema = {
 
 managerial_adjustment_test_cases = [
     TestCase(
-        id="one_or_more_registered_manager_name_with_estimate_greater_than_1",
+        id="1_rm_count_with_estimate_>_1",
         data=[
             ("1-001", ["Sarah"], MainJobRoleLabels.care_worker,         10, 4,   None, 10),
             ("1-001", ["Sarah"], MainJobRoleLabels.senior_care_worker,  15, 4,   None, 15),
@@ -117,7 +117,7 @@ managerial_adjustment_test_cases = [
         ],
     ),
     TestCase(
-        id="zero_registered_manager_name_with_estimate_greater_than_1",
+        id="0_rm_count_with_estimate_>_1",
         data=[
             ("1-002", [], MainJobRoleLabels.care_worker,        10, 5,   None, 10),
             ("1-002", [], MainJobRoleLabels.senior_care_worker, 15, 5,   None, 15),
@@ -127,7 +127,7 @@ managerial_adjustment_test_cases = [
         ],
     ),
     TestCase(
-        id="one_or_more_registered_manager_name_with_estimate_equal_to_0",
+        id="1_rm_count_with_estimate_==_0",
         data=[
             ("1-003", ["James"], MainJobRoleLabels.care_worker,         10, -1,   None, 10),
             ("1-003", ["James"], MainJobRoleLabels.senior_care_worker,  15, -1,   None, 15),
@@ -137,7 +137,7 @@ managerial_adjustment_test_cases = [
         ],
     ),
     TestCase(
-        id="one_registered_manager_and_manager_roles_sum_to_less_than_1",
+        id="1_rm_count_with_manager_roles_sum_<_1",
         data=[
             ("1-004", ["James"], MainJobRoleLabels.care_worker,         10, -1,   None, 10.0),
             ("1-004", ["James"], MainJobRoleLabels.senior_care_worker,  15, -1,   None, 15.0),
