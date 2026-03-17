@@ -14,8 +14,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
-    JobGroupLabels,
-    MainJobRoleLabels,
 )
 
 from .utils_test_cases import (
@@ -358,11 +356,3 @@ class TestManagerialFilledPostAdjustmentExpression:
             expr_method().over(IndCQC.location_id).alias(output_col)
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, abs_tol=0.001)
-
-
-class TestFilterJobRoles:
-    def test_for_one_label(self):
-        managers = job.filter_job_roles(JobGroupLabels.managers)
-        assert MainJobRoleLabels.registered_manager in managers
-        assert MainJobRoleLabels.supervisor in managers
-        assert MainJobRoleLabels.care_worker not in managers

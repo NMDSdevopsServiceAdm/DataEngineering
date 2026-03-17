@@ -3,7 +3,6 @@ import polars as pl
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
-    JobGroupLabels,
     MainJobRoleLabels,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
@@ -166,7 +165,7 @@ class ManagerialFilledPostAdjustmentExpression:
     @classmethod
     def _get_non_registered_manager_roles(cls) -> list[str]:
         """Get list of manager roles except registered manager."""
-        manager_roles = filter_job_roles(JobGroupLabels.managers)
+        manager_roles = AscwdsWorkerValueLabelsJobGroup.manager_roles()
         return [r for r in manager_roles if r != MainJobRoleLabels.registered_manager]
 
     @classmethod
@@ -213,9 +212,3 @@ class ManagerialFilledPostAdjustmentExpression:
         return cls.filled_post_estimates.add(
             cls._rm_manager_diff().mul(cls._non_rm_manager_proportions())
         ).clip(lower_bound=0)
-
-
-def filter_job_roles(group_label: str) -> list[str]:
-    """Filter for job roles that match the group label."""
-    job_role_dict = AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict
-    return [role for role, group in job_role_dict.items() if group == group_label]
