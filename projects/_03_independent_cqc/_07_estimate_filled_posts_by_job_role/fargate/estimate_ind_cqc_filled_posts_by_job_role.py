@@ -1,3 +1,5 @@
+import sys
+
 import polars as pl
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as JRUtils
@@ -149,6 +151,8 @@ def main(
         .alias(IndCQC.estimate_filled_posts_from_all_job_roles)
     )
 
+    debug_plan(estimated_job_role_posts_lf, "Final Transformation")
+
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
         output_path=estimates_by_job_role_destination,
@@ -177,3 +181,11 @@ if __name__ == "__main__":
         ascwds_job_role_counts_source=args.ascwds_job_role_counts_source,
         estimates_by_job_role_destination=args.estimates_by_job_role_destination,
     )
+
+
+def debug_plan(lf: pl.LazyFrame, stage_name: str) -> None:
+    """Send the explain plan to the logs in ECS."""
+    print(f"--- PRE-FLIGHT PLAN: {stage_name} ---", flush=True)
+    print(lf.explain(streaming=True), flush=True)
+    # This force-tells the OS to send the data to the logs.
+    sys.stdout.flush()
