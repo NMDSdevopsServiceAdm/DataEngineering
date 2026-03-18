@@ -16,8 +16,8 @@ class ValidateEstimatedIndCqcFilledPostsDatasetTests(SparkBaseTest):
 
     def setUp(self) -> None:
         self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(
-            Data.imputed_ind_cqc_rows,
-            Schemas.imputed_ind_cqc_schema,
+            Data.cleaned_ind_cqc_rows,
+            Schemas.cleaned_ind_cqc_schema,
         )
         self.test_estimated_ind_cqc_filled_posts_df = self.spark.createDataFrame(
             Data.estimated_ind_cqc_filled_posts_rows,

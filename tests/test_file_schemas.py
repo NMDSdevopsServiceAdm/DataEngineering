@@ -320,7 +320,7 @@ class ValidationUtils:
 
 @dataclass
 class ValidateEstimatedIndCqcFilledPostsData:
-    imputed_ind_cqc_schema = StructType(
+    cleaned_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
@@ -354,7 +354,7 @@ class ValidateEstimatedIndCqcFilledPostsData:
             StructField(IndCQC.care_home_model, DoubleType(), True),
         ]
     )
-    calculate_expected_size_schema = imputed_ind_cqc_schema
+    calculate_expected_size_schema = cleaned_ind_cqc_schema
 
 
 @dataclass
