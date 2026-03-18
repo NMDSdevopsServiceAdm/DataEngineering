@@ -17,7 +17,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+partition_keys = [Keys.year]
 
 estimates_columns_to_import = [
     IndCQC.cqc_location_import_date,
