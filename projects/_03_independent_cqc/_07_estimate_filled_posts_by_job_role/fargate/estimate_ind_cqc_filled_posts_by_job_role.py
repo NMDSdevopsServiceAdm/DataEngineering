@@ -139,8 +139,14 @@ def main(
     adjustment_expr = JRUtils.ManagerialFilledPostAdjustmentExpr.build()
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         adjustment_expr.over(pct_share_groups).alias(
-            IndCQC.estimate_filled_posts_manager_adjusted
+            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
         )
+    )
+
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        pl.sum(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
+        .over(pct_share_groups)
+        .alias(IndCQC.estimate_filled_posts_from_all_job_roles)
     )
 
     utils.sink_to_parquet(
