@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-
+- Setup polars version of estimates job and validation. The job only reads and writes data, no functionality.
 
 ### Changed
 
