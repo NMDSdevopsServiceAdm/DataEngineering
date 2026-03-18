@@ -25,7 +25,7 @@ class MainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.JRUtils.join_worker_to_estimates_dataframe")
     @patch(
         f"{PATCH_PATH}.utils.scan_parquet",
-        return_value=[mock_estimate_data, mock_prepared_job_role_counts_data],
+        side_effect=[mock_estimate_data, mock_prepared_job_role_counts_data],
     )
     def test_main_runs(
         self,
