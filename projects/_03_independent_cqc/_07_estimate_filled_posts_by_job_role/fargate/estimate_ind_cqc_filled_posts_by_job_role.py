@@ -128,6 +128,13 @@ def main(
         ),
     )
 
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        (
+            pl.col(IndCQC.estimate_filled_posts)
+            * pl.col(IndCQC.ascwds_job_role_ratios_merged)
+        ).alias(IndCQC.estimate_filled_posts_by_job_role)
+    )
+
     adjustment_expr = JRUtils.ManagerialFilledPostAdjustmentExpr.build()
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         adjustment_expr.over(pct_share_groups).alias(
