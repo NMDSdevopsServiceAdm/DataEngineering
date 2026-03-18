@@ -516,8 +516,6 @@ class ValidateEstimatedIndCQCFilledPostsSchemas:
         ]
     )
 
-    calculate_expected_size_schema = imputed_ind_cqc_schema
-
 
 @dataclass
 class CalculateAscwdsFilledPostsSchemas:

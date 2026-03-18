@@ -84,11 +84,3 @@ class ValidateEstimatedIndCQCFilledPostsDataTests(unittest.TestCase):
                 assertion_types_present,
                 f"{assertion} not found in validation report",
             )
-
-
-if __name__ == "__main__":
-    unittest.main(warnings="ignore")
-
-
-if __name__ == "__main__":
-    unittest.main(warnings="ignore")

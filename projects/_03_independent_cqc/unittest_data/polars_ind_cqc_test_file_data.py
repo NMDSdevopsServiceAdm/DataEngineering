@@ -674,13 +674,6 @@ class ValidateEstimatedIndCQCFilledPostsData:
         ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
     ] # fmt: skip
 
-    calculate_expected_size_rows = [
-        (
-            "1-000000001",
-            date(2024, 1, 1),
-        ),
-    ]
-
 
 @dataclass
 class CalculateAscwdsFilledPostsData:

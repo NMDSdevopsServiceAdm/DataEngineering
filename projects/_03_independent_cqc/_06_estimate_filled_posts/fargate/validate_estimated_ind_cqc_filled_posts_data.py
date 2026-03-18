@@ -89,12 +89,12 @@ def main(
         #     IndCqcColumns.imputed_posts_non_res_combined_model, -100.0, 3000.0
         # )
         # .col_vals_between(IndCqcColumns.estimate_filled_posts, 1.0, 3000.0)
-        # .col_vals_between(IndCqcColumns.non_res_with_dormancy_model, -100.0, 3000.0)
-        # .col_vals_between(IndCqcColumns.non_res_without_dormancy_model, -100.0, 3000.0)
+        .col_vals_between(IndCqcColumns.non_res_with_dormancy_model, -100.0, 3000.0)
+        .col_vals_between(IndCqcColumns.non_res_without_dormancy_model, -100.0, 3000.0)
         .col_vals_between(IndCqcColumns.number_of_beds, 1, 500)
-        # .col_vals_between(IndCqcColumns.pir_people_directly_employed_dedup, 1, 3000)
-        # .col_vals_between(IndCqcColumns.imputed_pir_filled_posts_model, -100.0, 3000.0)
-        # .col_vals_between(IndCqcColumns.posts_rolling_average_model, 1.0, 3000.0)
+        .col_vals_between(IndCqcColumns.pir_people_directly_employed_dedup, 1, 3000)
+        .col_vals_between(IndCqcColumns.imputed_pir_filled_posts_model, -100.0, 3000.0)
+        .col_vals_between(IndCqcColumns.posts_rolling_average_model, 1.0, 3000.0)
         .col_vals_between(
             IndCqcColumns.unix_time, 1262304000, int(time.time())
         )  # 1st Jan 2010 in unix time and current unix time
@@ -119,10 +119,10 @@ def main(
             IndCqcColumns.current_region,
             CatValues.current_region_column_values.categorical_values,
         )
-        # .col_vals_in_set(
-        #     IndCqcColumns.ascwds_filled_posts_source,
-        #     CatValues.ascwds_filled_posts_source_column_values.categorical_values,
-        # )
+        .col_vals_in_set(
+            IndCqcColumns.ascwds_filled_posts_source,
+            CatValues.ascwds_filled_posts_source_column_values.categorical_values,
+        )
         # .col_vals_in_set(
         #     IndCqcColumns.estimate_filled_posts_source,
         #     CatValues.estimate_filled_posts_source_column_values.categorical_values,
@@ -163,13 +163,13 @@ def main(
             ),
             brief=f"{IndCqcColumns.current_region} needs to be one of {CatValues.current_region_column_values.categorical_values}",
         )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.ascwds_filled_posts_source,
-        #         CatValues.ascwds_filled_posts_source_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.ascwds_filled_posts_source} needs to be one of {CatValues.ascwds_filled_posts_source_column_values.categorical_values}",
-        # )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.ascwds_filled_posts_source,
+                CatValues.ascwds_filled_posts_source_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.ascwds_filled_posts_source} needs to be one of {CatValues.ascwds_filled_posts_source_column_values.categorical_values}",
+        )
         # .specially(
         #     vl.is_unique_count_equal(
         #         IndCqcColumns.estimate_filled_posts_source,

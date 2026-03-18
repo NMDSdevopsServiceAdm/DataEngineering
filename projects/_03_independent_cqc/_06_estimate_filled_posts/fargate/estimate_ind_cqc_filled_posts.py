@@ -81,7 +81,7 @@ def main(
 ) -> None:
     print("Estimating independent CQC filled posts...")
 
-    estimate_filled_posts_df = utils.scan_parquet(
+    lf = utils.scan_parquet(
         source=imputed_ind_cqc_data_source,
         selected_columns=ind_cqc_columns,
     )
@@ -108,7 +108,7 @@ def main(
     # estimate_non_res_capacity_tracker_filled_posts
 
     utils.sink_to_parquet(
-        estimate_filled_posts_df,
+        lf,
         destination,
         partition_cols=cqc_partition_keys,
         append=False,
