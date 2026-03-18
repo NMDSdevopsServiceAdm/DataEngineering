@@ -8,7 +8,12 @@ from utils.column_values.categorical_column_values import (
 
 @dataclass
 class AscwdsWorkerValueLabelsJobGroup:
-    """A dict where keys = job role and values = job group"""
+    """Class that provides job role to job group dicts.
+
+    It also provides the following convenience methods to filter job roles:
+        - `filter_roles`: Filter roles by job group.
+        - `manager_roles`: Return the list of roles in the "managers" job group.
+    """
 
     job_role_to_job_group_dict = {
         MainJobRoleLabels.advocacy: JobGroupLabels.direct_care,
@@ -50,3 +55,14 @@ class AscwdsWorkerValueLabelsJobGroup:
         MainJobRoleLabels.other_non_care_related_staff: JobGroupLabels.other,
         MainJobRoleLabels.software_developer: JobGroupLabels.other,
     }
+
+    @classmethod
+    def filter_roles(cls, group_label: str) -> list[str]:
+        """Filter for job roles that match the group label."""
+        d = cls.job_role_to_job_group_dict
+        return [role for role, group in d.items() if group == group_label]
+
+    @classmethod
+    def manager_roles(cls) -> list[str]:
+        """Return a list of roles in the "managers" job group."""
+        return cls.filter_roles(JobGroupLabels.managers)
