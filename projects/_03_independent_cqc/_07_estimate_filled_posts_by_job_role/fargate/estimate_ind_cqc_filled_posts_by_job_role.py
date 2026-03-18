@@ -181,6 +181,24 @@ def main(
     )
 
 
+def log_polars_plan(lf: pl.LazyFrame, context: str):
+    """Logs the explain plan and schema to CloudWatch immediately."""
+    logger.info(f"--- PRE-FLIGHT CHECK: {context} ---")
+
+    plan = lf.explain(streaming=True)
+
+    # We log line-by-line so CloudWatch doesn't truncate a massive single string.
+    for line in plan.split("\n"):
+        if line.strip():  # Skip empty lines
+            logger.info(f"[PLAN] {line}")
+
+    # Log the schema too.
+    logger.info(f"Schema for {context}: {lf.collect_schema()}")
+
+    logger.info(f"--- END PRE-FLIGHT PLAN: {context} ---")
+    sys.stdout.flush()
+
+
 if __name__ == "__main__":
     args = utils.get_args(
         (
@@ -201,21 +219,3 @@ if __name__ == "__main__":
         ascwds_job_role_counts_source=args.ascwds_job_role_counts_source,
         estimates_by_job_role_destination=args.estimates_by_job_role_destination,
     )
-
-
-def log_polars_plan(lf: pl.LazyFrame, context: str):
-    """Logs the explain plan and schema to CloudWatch immediately."""
-    logger.info(f"--- PRE-FLIGHT CHECK: {context} ---")
-
-    plan = lf.explain(streaming=True)
-
-    # We log line-by-line so CloudWatch doesn't truncate a massive single string.
-    for line in plan.split("\n"):
-        if line.strip():  # Skip empty lines
-            logger.info(f"[PLAN] {line}")
-
-    # Log the schema too.
-    logger.info(f"Schema for {context}: {lf.collect_schema()}")
-
-    logger.info(f"--- END PRE-FLIGHT PLAN: {context} ---")
-    sys.stdout.flush()
