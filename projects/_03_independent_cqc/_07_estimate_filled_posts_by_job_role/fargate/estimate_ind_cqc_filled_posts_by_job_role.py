@@ -120,8 +120,9 @@ def main(
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         utils.coalesce_with_source_labels(
             cols=[
-                IndCQC.ascwds_job_role_ratios_filtered,
-                IndCQC.ascwds_job_role_ratios_interpolated,
+                # TODO: Uncomment when filtered column is created.
+                # IndCQC.ascwds_job_role_ratios_filtered,
+                IndCQC.imputed_ascwds_job_role_ratios,
                 IndCQC.ascwds_job_role_rolling_ratio,
             ],
             name=IndCQC.ascwds_job_role_ratios_merged,
