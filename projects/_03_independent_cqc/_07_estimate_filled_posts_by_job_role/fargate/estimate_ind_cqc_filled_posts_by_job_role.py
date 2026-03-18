@@ -78,21 +78,21 @@ def main(
         source=estimates_source,
         selected_columns=estimates_columns_to_import,
     )
-    estimated_posts_nrows = estimated_posts_lf.select(pl.len()).collect()
+    estimated_posts_nrows = estimated_posts_lf.select(pl.len()).collect().item()
     logger.info(f"nrows - estimated_posts: {estimated_posts_nrows}")
 
     ascwds_job_role_counts_lf = utils.scan_parquet(
         source=ascwds_job_role_counts_source,
         selected_columns=ascwds_columns_to_import,
     )
-    ascwds_nrows = ascwds_job_role_counts_lf.select(pl.len()).collect()
+    ascwds_nrows = ascwds_job_role_counts_lf.select(pl.len()).collect().item()
     logger.info(f"nrows - ascwds_job_role_counts: {ascwds_nrows}")
     sys.stdout.flush()
 
     estimated_job_role_posts_lf = JRUtils.join_worker_to_estimates_dataframe(
         estimated_posts_lf, ascwds_job_role_counts_lf
     )
-    post_join_nrows = estimated_job_role_posts_lf.select(pl.len()).collect()
+    post_join_nrows = estimated_job_role_posts_lf.select(pl.len()).collect().item()
     logger.info(f"nrows - after join: {post_join_nrows}")
 
     log_polars_plan(estimated_job_role_posts_lf, "Join")
