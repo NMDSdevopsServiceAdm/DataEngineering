@@ -1,3 +1,4 @@
+import logging
 import sys
 
 import polars as pl
@@ -6,6 +7,15 @@ import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargat
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+
+# ECS/Cloudwatch captures stdout logging.
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+logger = logging.getLogger(__name__)
+
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -84,7 +94,7 @@ def main(
     post_join_nrows = estimated_job_role_posts_lf.select(pl.len()).collect()
     print(f"nrows - after join: {post_join_nrows}")
 
-    debug_plan(estimated_job_role_posts_lf, "Join")
+    log_polars_plan(estimated_job_role_posts_lf, "Join")
 
     estimated_job_role_posts_lf = JRUtils.nullify_job_role_count_when_source_not_ascwds(
         estimated_job_role_posts_lf
@@ -160,7 +170,7 @@ def main(
         .alias(IndCQC.estimate_filled_posts_from_all_job_roles)
     )
 
-    debug_plan(estimated_job_role_posts_lf, "Final Transformation")
+    log_polars_plan(estimated_job_role_posts_lf, "Final Transformation")
 
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
@@ -192,9 +202,19 @@ if __name__ == "__main__":
     )
 
 
-def debug_plan(lf: pl.LazyFrame, stage_name: str) -> None:
-    """Send the explain plan to the logs in ECS."""
-    print(f"--- PRE-FLIGHT PLAN: {stage_name} ---", flush=True)
-    print(lf.explain(streaming=True), flush=True)
-    # This force-tells the OS to send the data to the logs.
+def log_polars_plan(lf: pl.LazyFrame, context: str):
+    """Logs the explain plan and schema to CloudWatch immediately."""
+    logger.info(f"--- PRE-FLIGHT CHECK: {context} ---")
+
+    plan = lf.explain(streaming=True)
+
+    # We log line-by-line so CloudWatch doesn't truncate a massive single string.
+    for line in plan.split("\n"):
+        if line.strip():  # Skip empty lines
+            logger.info(f"[PLAN] {line}")
+
+    # Log the schema too.
+    logger.info(f"Schema for {context}: {lf.collect_schema()}")
+
+    logger.info(f"--- END PRE-FLIGHT PLAN: {context} ---")
     sys.stdout.flush()
