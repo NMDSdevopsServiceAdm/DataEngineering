@@ -2,6 +2,7 @@ import math
 from dataclasses import dataclass
 from datetime import date
 from typing import Any
+
 import numpy as np
 
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.difference_within_range import (
@@ -655,6 +656,23 @@ class ValidateCleanIndCQCData:
         (date(2024, 2, 1), "1-002", Sector.independent, "N", None),
     ]
     # fmt: on
+
+
+@dataclass
+class ValidateEstimatedIndCQCFilledPostsData:
+    imputed_ind_cqc_rows = [
+        ("1-000000001", date(2024, 1, 1)),
+        ("1-000000002", date(2024, 1, 1)),
+        ("1-000000001", date(2024, 2, 1)),
+        ("1-000000002", date(2024, 2, 1)),
+    ]
+
+    estimated_ind_cqc_filled_posts_rows = [
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+    ] # fmt: skip
 
 
 @dataclass
