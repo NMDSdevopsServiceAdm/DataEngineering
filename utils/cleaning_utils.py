@@ -222,6 +222,7 @@ def add_aligned_date_column(
     return primary_df_with_aligned_dates
 
 
+# converted to polars -> polars_utils.cleaning_utils.reduce_dataset_to_earliest_file_per_month
 def reduce_dataset_to_earliest_file_per_month(df: DataFrame) -> DataFrame:
     """
     Reduce the dataset to the first file of every month.
@@ -335,6 +336,7 @@ def remove_duplicates_based_on_column_order(
     return df
 
 
+# converted to polars -> polars_utils.cleaning_utils.create_banded_bed_count_column
 def create_banded_bed_count_column(
     input_df: DataFrame, new_col: str, splits: List[float]
 ) -> DataFrame:

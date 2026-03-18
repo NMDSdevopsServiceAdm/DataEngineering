@@ -311,82 +311,12 @@ class ModelUtilsData:
 @dataclass
 class ValidateModelsData:
     validate_model_feature_rows = [
-        (
-            "1-001",
-            date(2025, 1, 1),
-            "N",
-            None,
-            ["activity 1"],
-            12.0,
-            ["service 1"],
-            ["specialism 1"],
-            "rui",
-            "region",
-            "Y",
-            10,
-            None,
-        ),
-        (
-            "1-002",
-            date(2025, 1, 1),
-            "Y",
-            "Y",
-            ["activity 1"],
-            12.0,
-            ["service 1"],
-            ["specialism 1"],
-            "rui",
-            "region",
-            "Y",
-            10,
-            5,
-        ),
-        (
-            "1-003",
-            date(2025, 1, 1),
-            "N",
-            "Y",
-            ["activity 1"],
-            12.0,
-            None,
-            ["specialism 1"],
-            "rui",
-            "region",
-            "Y",
-            10,
-            5,
-        ),
-        (
-            "1-004",
-            date(2025, 1, 1),
-            "N",
-            "Y",
-            ["activity 1"],
-            12.0,
-            ["service 1"],
-            ["specialism 1"],
-            "rui",
-            "region",
-            "Y",
-            10,
-            5,
-        ),
-        (
-            "1-005",
-            date(2024, 1, 1),
-            "N",
-            None,
-            ["activity 1"],
-            12.0,
-            ["service 1"],
-            ["specialism 1"],
-            "rui",
-            "region",
-            "Y",
-            10,
-            None,
-        ),
-    ]
+        ("1-001", date(2025, 1, 1), "N", None, ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, None),
+        ("1-002", date(2025, 1, 1), "Y", "Y", ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5),
+        ("1-003", date(2025, 1, 1), "N", "Y", ["activity 1"], 12.0, None, ["specialism 1"], "rui", "region", "Y", 10, 5),
+        ("1-004", date(2025, 1, 1), "N", "Y", ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, 5),
+        ("1-005", date(2024, 1, 1), "N", None, ["activity 1"], 12.0, ["service 1"], ["specialism 1"], "rui", "region", "Y", 10, None),
+    ] # fmt: skip
     expected_get_expected_row_count_rows = 1
 
 
@@ -401,55 +331,28 @@ class ValidateModel01FeaturesData:
 @dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsData:
     estimates_df_before_join_rows = [
-        (
-            "1-001",
-            "1-001",
-            "1-002",
-        ),
-        (
-            "1001",
-            "1001",
-            "1002",
-        ),
+        ("1-001", "1-001", "1-002"),
+        ("1001", "1001", "1002"),
         (date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 1)),
     ]
+    # fmt: off
     worker_df_before_join_rows = [
         ("1001", "1001", "1002"),
         (date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 1)),
-        (
-            MainJobRoleLabels.care_worker,
-            MainJobRoleLabels.senior_management,
-            MainJobRoleLabels.care_worker,
-        ),
+        (MainJobRoleLabels.care_worker, MainJobRoleLabels.senior_management, MainJobRoleLabels.care_worker),
         (10, 5, 20),
     ]
+    # fmt: on
+
+    # fmt: off
     expected_join_worker_to_estimates_dataframe_rows = [
-        (
-            "1-001",
-            "1-001",
-            "1-001",
-            "1-002",
-        ),
-        (
-            "1001",
-            "1001",
-            "1001",
-            "1002",
-        ),
-        (
-            date(2025, 1, 1),
-            date(2025, 1, 1),
-            date(2025, 1, 2),
-            date(2025, 1, 1),
-        ),
-        (
-            MainJobRoleLabels.care_worker,
-            MainJobRoleLabels.senior_management,
-            None,
-            MainJobRoleLabels.care_worker,
-        ),
+        ("1-001", "1-001", "1-001", "1-002"),
+        ("1001", "1001", "1001", "1002"),
+        (date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 1)),
+        (MainJobRoleLabels.care_worker, MainJobRoleLabels.senior_management, None, MainJobRoleLabels.care_worker),
         (10, 5, None, 20),
     ]
+    # fmt: on
 
 
 @dataclass
@@ -549,45 +452,10 @@ class MergeUtilsData:
 class ValidateMergeIndCQCData:
     # fmt: off
     merged_ind_cqc_data_rows = [
-        (
-            "1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1),
-            "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1),
-            "Y", 5, ["service"], PrimaryServiceType.care_home_only,
-            date(2024, 1, 1), "cssr", "region",
-            date(2024, 1, 1), "cssr", "region",
-            "RUI", "lsoa", "msoa", 5,
-            "estab_1", "org_1", 5, 5,"Y"
-         ),
-
-        (
-            "1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1),
-            "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1),
-            "Y", 5, ["service"], PrimaryServiceType.care_home_only,
-            date(2024, 1, 1), "cssr", "region",
-            date(2024, 1, 1), "cssr", "region",
-            "RUI", "lsoa", "msoa", 5,
-            "estab_1", "org_1", 5, 5,"N"
-         ),
-
-        (
-            "1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1),
-            "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1),
-            "Y", 5, ["service"], PrimaryServiceType.care_home_only,
-            date(2024, 1, 1), "cssr", "region",
-            date(2024, 1, 1), "cssr", "region",
-            "RUI", "lsoa", "msoa", 5,
-            "estab_1", "org_1", 5, 5,"Y"
-         ),
-
-        (
-            "1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1),
-            "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1),
-            "Y", 5, ["service"], PrimaryServiceType.care_home_only,
-            date(2024, 1, 1), "cssr", "region",
-            date(2024, 1, 1), "cssr", "region",
-            "RUI", "lsoa", "msoa", 5,
-            "estab_1", "org_1", 5, 5,"N"
-         ),
+        ("1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y"),
+        ("1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N"),
+        ("1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y"),
+        ("1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N"),
     ]
     # fmt: on
 
@@ -605,45 +473,10 @@ class ValidateMergeIndCQCData:
 class ValidateCleanIndCQCData:
     # fmt: off
     cleaned_ind_cqc_data_rows = [
-        (
-            "1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1),
-            "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1),
-            "Y", 5, ["service"], PrimaryServiceType.care_home_only,
-            date(2024, 1, 1), "cssr", "region",
-            date(2024, 1, 1), "cssr", "region",
-            "RUI", "lsoa", "msoa", 5,
-            "estab_1", "org_1", 5, 5,"Y"
-         ),
-
-        (
-            "1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1),
-            "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1),
-            "Y", 5, ["service"], PrimaryServiceType.care_home_only,
-            date(2024, 1, 1), "cssr", "region",
-            date(2024, 1, 1), "cssr", "region",
-            "RUI", "lsoa", "msoa", 5,
-            "estab_1", "org_1", 5, 5,"N"
-         ),
-
-        (
-            "1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1),
-            "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1),
-            "Y", 5, ["service"], PrimaryServiceType.care_home_only,
-            date(2024, 1, 1), "cssr", "region",
-            date(2024, 1, 1), "cssr", "region",
-            "RUI", "lsoa", "msoa", 5,
-            "estab_1", "org_1", 5, 5,"Y"
-         ),
-
-        (
-            "1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1),
-            "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1),
-            "Y", 5, ["service"], PrimaryServiceType.care_home_only,
-            date(2024, 1, 1), "cssr", "region",
-            date(2024, 1, 1), "cssr", "region",
-            "RUI", "lsoa", "msoa", 5,
-            "estab_1", "org_1", 5, 5,"N"
-         ),
+        ("1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y"),
+        ("1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N"),
+        ("1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y"),
+        ("1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N"),
     ]
     # fmt: on
 
@@ -945,283 +778,91 @@ class CleanIndCQCData:
         ("1-002", date(2025, 10, 1), Dormancy.not_dormant, None),
     ]
     # fmt: on
+    # fmt: off
     remove_cqc_dual_registrations_when_carehome_and_asc_data_populated_rows = [
-        (
-            "loc 1",
-            date(2024, 1, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            10,
-            10,
-            date(2018, 1, 1),
-        ),
-        (
-            "loc 2",
-            date(2024, 1, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            10,
-            10,
-            date(2022, 1, 1),
-        ),
+        ("loc 1", date(2024, 1, 1), "care home", "AB1 2CD", CareHome.care_home, 10, 10, date(2018, 1, 1)),
+        ("loc 2", date(2024, 1, 1), "care home", "AB1 2CD", CareHome.care_home, 10, 10, date(2022, 1, 1)),
     ]
+    # fmt: on
+    # fmt: off
     expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_populated_rows = [
-        (
-            "loc 1",
-            date(2024, 1, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            10,
-            10,
-            date(2018, 1, 1),
-        ),
+        ("loc 1", date(2024, 1, 1), "care home", "AB1 2CD", CareHome.care_home, 10, 10, date(2018, 1, 1)),
     ]
-
+    # fmt: on
+    # fmt: off
     remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows = [
-        (
-            "loc 1",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            None,
-            None,
-            date(2018, 1, 1),
-        ),
-        (
-            "loc 2",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            10,
-            10,
-            date(2022, 1, 1),
-        ),
+        ("loc 1", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, None, None, date(2018, 1, 1)),
+        ("loc 2", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, 10, 10, date(2022, 1, 1)),
     ]
+    # fmt: on
+    # fmt: off
     expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows = [
-        (
-            "loc 1",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            10,
-            10,
-            date(2018, 1, 1),
-        ),
+        ("loc 1", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, 10, 10, date(2018, 1, 1)),
     ]
-
+    # fmt: on
+    # fmt: off
     remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_later_reg_date_rows = [
-        (
-            "loc 1",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            10,
-            10,
-            date(2018, 1, 1),
-        ),
-        (
-            "loc 2",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            None,
-            None,
-            date(2022, 1, 1),
-        ),
+        ("loc 1", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, 10, 10, date(2018, 1, 1)),
+        ("loc 2", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, None, None, date(2022, 1, 1)),
     ]
+    # fmt: on
+    # fmt: off
     expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_later_reg_date_rows = [
-        (
-            "loc 1",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            10,
-            10,
-            date(2018, 1, 1),
-        ),
+        ("loc 1", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, 10, 10, date(2018, 1, 1)),
     ]
-
+    # fmt: on
+    # fmt: off
     remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_all_reg_dates_rows = [
-        (
-            "loc 1",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            None,
-            None,
-            date(2018, 1, 1),
-        ),
-        (
-            "loc 2",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            None,
-            None,
-            date(2022, 1, 1),
-        ),
+        ("loc 1", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, None, None, date(2018, 1, 1)),
+        ("loc 2", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, None, None, date(2022, 1, 1)),
     ]
+    # fmt: on
+    # fmt: off
     expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_all_reg_dates_rows = [
-        (
-            "loc 1",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            None,
-            None,
-            date(2018, 1, 1),
-        ),
+        ("loc 1", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, None, None, date(2018, 1, 1)),
     ]
-
+    # fmt: on
+    # fmt: off
     remove_cqc_dual_registrations_when_carehome_and_asc_data_different_on_all_reg_dates_rows = [
-        (
-            "loc 1",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            10,
-            10,
-            date(2018, 1, 1),
-        ),
-        (
-            "loc 2",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            11,
-            11,
-            date(2022, 1, 1),
-        ),
+        ("loc 1", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, 10, 10, date(2018, 1, 1)),
+        ("loc 2", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, 11, 11, date(2022, 1, 1)),
     ]
+    # fmt: on
+    # fmt: off
     expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_different_on_all_reg_dates_rows = [
-        (
-            "loc 1",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            10,
-            10,
-            date(2018, 1, 1),
-        ),
+        ("loc 1", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, 10, 10, date(2018, 1, 1)),
     ]
-
+    # fmt: on
+    # fmt: off
     remove_cqc_dual_registrations_when_carehome_and_registration_dates_the_same_rows = [
-        (
-            "loc 1",
-            date(2024, 1, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            10,
-            10,
-            date(2022, 1, 1),
-        ),
-        (
-            "loc 2",
-            date(2024, 1, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            None,
-            None,
-            date(2022, 1, 1),
-        ),
+        ("loc 1", date(2024, 1, 1), "care home", "AB1 2CD", CareHome.care_home, 10, 10, date(2022, 1, 1)),
+        ("loc 2", date(2024, 1, 1), "care home", "AB1 2CD", CareHome.care_home, None, None, date(2022, 1, 1)),
     ]
+    # fmt: on
+    # fmt: off
     expected_remove_cqc_dual_registrations_when_carehome_and_registration_dates_the_same_rows = [
-        (
-            "loc 1",
-            date(2024, 1, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            10,
-            10,
-            date(2022, 1, 1),
-        ),
+        ("loc 1", date(2024, 1, 1), "care home", "AB1 2CD", CareHome.care_home, 10, 10, date(2022, 1, 1)),
     ]
-
+    # fmt: on
+    # fmt: off
     remove_cqc_dual_registrations_when_locations_not_sorted_numerically = [
-        (
-            "loc 3",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            10,
-            10,
-            date(2018, 1, 1),
-        ),
-        (
-            "loc 1",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            10,
-            10,
-            date(2018, 1, 1),
-        ),
-        (
-            "loc 2",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            11,
-            11,
-            date(2022, 1, 1),
-        ),
+        ("loc 3", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, 10, 10, date(2018, 1, 1)),
+        ("loc 1", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, 10, 10, date(2018, 1, 1)),
+        ("loc 2", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, 11, 11, date(2022, 1, 1)),
     ]
+    # fmt: on
+    # fmt: off
     expected_remove_cqc_dual_registrations_when_locations_not_sorted_numerically = [
-        (
-            "loc 1",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            10,
-            10,
-            date(2018, 1, 1),
-        ),
+        ("loc 1", date(2024, 2, 1), "care home", "AB1 2CD", CareHome.care_home, 10, 10, date(2018, 1, 1)),
     ]
-
+    # fmt: on
+    # fmt: off
     remove_cqc_dual_registrations_when_non_res_rows = [
-        (
-            "loc 1",
-            date(2024, 1, 1),
-            "not care home",
-            "AB1 2CD",
-            CareHome.not_care_home,
-            None,
-            None,
-            date(2022, 1, 1),
-        ),
-        (
-            "loc 2",
-            date(2024, 1, 1),
-            "not care home",
-            "AB1 2CD",
-            CareHome.not_care_home,
-            10,
-            10,
-            date(2022, 1, 1),
-        ),
+        ("loc 1", date(2024, 1, 1), "not care home", "AB1 2CD", CareHome.not_care_home, None, None, date(2022, 1, 1)),
+        ("loc 2", date(2024, 1, 1), "not care home", "AB1 2CD", CareHome.not_care_home, 10, 10, date(2022, 1, 1)),
     ]
+    # fmt: on
+    # fmt: off
     expected_remove_cqc_dual_registrations_when_non_res_rows = (
         remove_cqc_dual_registrations_when_non_res_rows
     )
@@ -1260,148 +901,17 @@ class CleanIndCQCData:
         ("1-002", CareHome.care_home, 2),
         ("1-002", CareHome.not_care_home, 2),
     ]
+    # fmt: off
     merged_rows_for_cleaning_job = [
-        (
-            "1-1000001",
-            "20220201",
-            date(2020, 2, 1),
-            "South East",
-            "Surrey",
-            "Rural",
-            "Y",
-            0,
-            5,
-            82,
-            None,
-            "Care home without nursing",
-            "name",
-            "postcode",
-            date(2022, 1, 1),
-            "2020",
-            "01",
-            "01",
-        ),
-        (
-            "1-1000001",
-            "20220101",
-            date(2022, 1, 1),
-            "South East",
-            "Surrey",
-            "Rural",
-            "Y",
-            5,
-            5,
-            None,
-            67,
-            "Care home without nursing",
-            "name",
-            "postcode",
-            date(2022, 1, 1),
-            "2020",
-            "01",
-            "01",
-        ),
-        (
-            "1-1000002",
-            "20220101",
-            date(2022, 1, 1),
-            "South East",
-            "Surrey",
-            "Rural",
-            "N",
-            0,
-            17,
-            None,
-            None,
-            "non-residential",
-            "name",
-            "postcode",
-            date(2022, 1, 1),
-            "2020",
-            "01",
-            "01",
-        ),
-        (
-            "1-1000002",
-            "20220201",
-            date(2022, 2, 1),
-            "South East",
-            "Surrey",
-            "Rural",
-            "N",
-            0,
-            34,
-            None,
-            None,
-            "non-residential",
-            "name",
-            "postcode",
-            date(2022, 1, 1),
-            "2020",
-            "01",
-            "01",
-        ),
-        (
-            "1-1000003",
-            "20220301",
-            date(2022, 3, 1),
-            "North West",
-            "Bolton",
-            "Urban",
-            "N",
-            0,
-            34,
-            None,
-            None,
-            "non-residential",
-            "name",
-            "postcode",
-            date(2022, 1, 1),
-            "2020",
-            "01",
-            "01",
-        ),
-        (
-            "1-1000003",
-            "20220308",
-            date(2022, 3, 8),
-            "North West",
-            "Bolton",
-            "Rural",
-            "N",
-            0,
-            15,
-            None,
-            None,
-            "non-residential",
-            "name",
-            "postcode",
-            date(2022, 1, 1),
-            "2020",
-            "01",
-            "01",
-        ),
-        (
-            "1-1000004",
-            "20220308",
-            date(2022, 3, 8),
-            "South West",
-            "Dorset",
-            "Urban",
-            "Y",
-            9,
-            0,
-            25,
-            25,
-            "Care home with nursing",
-            "name",
-            "postcode",
-            date(2022, 1, 1),
-            "2020",
-            "01",
-            "01",
-        ),
+        ("1-1000001", "20220201", date(2020, 2, 1), "South East", "Surrey", "Rural", "Y", 0, 5, 82, None, "Care home without nursing", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
+        ("1-1000001", "20220101", date(2022, 1, 1), "South East", "Surrey", "Rural", "Y", 5, 5, None, 67, "Care home without nursing", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
+        ("1-1000002", "20220101", date(2022, 1, 1), "South East", "Surrey", "Rural", "N", 0, 17, None, None, "non-residential", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
+        ("1-1000002", "20220201", date(2022, 2, 1), "South East", "Surrey", "Rural", "N", 0, 34, None, None, "non-residential", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
+        ("1-1000003", "20220301", date(2022, 3, 1), "North West", "Bolton", "Urban", "N", 0, 34, None, None, "non-residential", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
+        ("1-1000003", "20220308", date(2022, 3, 8), "North West", "Bolton", "Rural", "N", 0, 15, None, None, "non-residential", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
+        ("1-1000004", "20220308", date(2022, 3, 8), "South West", "Dorset", "Urban", "Y", 9, 0, 25, 25, "Care home with nursing", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
     ]
+    # fmt: on
 
 
 @dataclass
@@ -2099,94 +1609,24 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
         ("2", 2.55),
     ]
 
+    # fmt: off
     combine_dataframes_care_home_rows = [
-        (
-            "01",
-            date(2023, 1, 1),
-            "Y",
-            PrimaryServiceType.care_home_only,
-            25,
-            6.0,
-            1.0,
-            1.0,
-            None,
-            0.04,
-            AscwdsFilteringRule.populated,
-            10.0,
-        ),
-        (
-            "02",
-            date(2023, 1, 1),
-            "Y",
-            PrimaryServiceType.care_home_only,
-            25,
-            6.0,
-            2.0,
-            2.0,
-            2.0,
-            0.08,
-            AscwdsFilteringRule.populated,
-            20.0,
-        ),
+        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 1.0, 1.0, None, 0.04, AscwdsFilteringRule.populated, 10.0),
+        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 2.0, 2.0, 2.0, 0.08, AscwdsFilteringRule.populated, 20.0),
     ]
-
+    # fmt: on
+    # fmt: off
     combine_dataframes_non_care_home_rows = [
-        (
-            "03",
-            date(2023, 1, 1),
-            "N",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            3.0,
-            3.0,
-            3.0,
-            None,
-            AscwdsFilteringRule.populated,
-        ),
+        ("03", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, None, 3.0, 3.0, 3.0, None, AscwdsFilteringRule.populated),
     ]
-
+    # fmt: on
+    # fmt: off
     expected_combined_dataframes_rows = [
-        (
-            "01",
-            date(2023, 1, 1),
-            "Y",
-            PrimaryServiceType.care_home_only,
-            25,
-            6.0,
-            1.0,
-            1.0,
-            None,
-            0.04,
-            AscwdsFilteringRule.populated,
-        ),
-        (
-            "02",
-            date(2023, 1, 1),
-            "Y",
-            PrimaryServiceType.care_home_only,
-            25,
-            6.0,
-            2.0,
-            2.0,
-            2.0,
-            0.08,
-            AscwdsFilteringRule.populated,
-        ),
-        (
-            "03",
-            date(2023, 1, 1),
-            "N",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            3.0,
-            3.0,
-            3.0,
-            None,
-            AscwdsFilteringRule.populated,
-        ),
+        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 1.0, 1.0, None, 0.04, AscwdsFilteringRule.populated),
+        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 2.0, 2.0, 2.0, 0.08, AscwdsFilteringRule.populated),
+        ("03", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, None, 3.0, 3.0, 3.0, None, AscwdsFilteringRule.populated),
     ]
+    # fmt: on
 
 
 @dataclass

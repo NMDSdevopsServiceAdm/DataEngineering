@@ -27,11 +27,7 @@ class CleanIndFilledPostsTests(unittest.TestCase):
     ]
 
     def setUp(self):
-        self.merge_ind_cqc_test_df = pl.LazyFrame(
-            data=Data.merged_rows_for_cleaning_job,
-            schema=Schemas.merged_schema_for_cleaning_job,
-        )
-        warnings.filterwarnings("ignore", category=ResourceWarning)
+        self.merge_ind_cqc_test_df = Mock(name="merge_ind_cqc_data")
 
 
 class MainTests(CleanIndFilledPostsTests):
