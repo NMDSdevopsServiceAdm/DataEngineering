@@ -937,10 +937,10 @@ class ValidationUtils:
 class ValidateEstimatedIndCqcFilledPostsData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1)),
-        ("1-000000002", date(2024, 1, 1)),
-        ("1-000000001", date(2024, 2, 1)),
-        ("1-000000002", date(2024, 2, 1)),
+        ("1-000000001", date(2024, 1, 1),),
+        ("1-000000002", date(2024, 1, 1),),
+        ("1-000000001", date(2024, 2, 1),),
+        ("1-000000002", date(2024, 2, 1),),
     ]
 
     estimated_ind_cqc_filled_posts_rows = [
