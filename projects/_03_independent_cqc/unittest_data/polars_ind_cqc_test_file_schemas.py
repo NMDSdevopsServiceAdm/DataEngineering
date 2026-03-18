@@ -20,10 +20,10 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
 )
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
@@ -472,6 +472,51 @@ class ValidateCleanIndCQCSchemas:
             (CQCLClean.number_of_beds, pl.Int64()),
         ]
     )
+
+
+@dataclass
+class ValidateEstimatedIndCQCFilledPostsSchemas:
+    imputed_ind_cqc_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    estimated_ind_cqc_filled_posts_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.ascwds_workplace_import_date, pl.Date()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.cqc_sector, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.primary_service_type, pl.String()),
+            (IndCQC.primary_service_type_second_level, pl.String()),
+            (IndCQC.current_ons_import_date, pl.Date()),
+            (IndCQC.current_cssr, pl.String()),
+            (IndCQC.current_region, pl.String()),
+            (IndCQC.pir_people_directly_employed_cleaned, pl.Int64()),
+            (IndCQC.total_staff_bounded, pl.Int64()),
+            (IndCQC.worker_records_bounded, pl.Int64()),
+            (IndCQC.ascwds_filled_posts_source, pl.String()),
+            (IndCQC.ascwds_filled_posts, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.pir_people_directly_employed_dedup, pl.Int64()),
+            (IndCQC.ascwds_pir_merged, pl.Float64()),
+            (IndCQC.unix_time, pl.Int64()),
+            (IndCQC.estimate_filled_posts, pl.Float64()),
+            (IndCQC.estimate_filled_posts_source, pl.String()),
+            (IndCQC.posts_rolling_average_model, pl.Float64()),
+            (IndCQC.care_home_model, pl.Float64()),
+            (IndCQC.imputed_posts_non_res_combined_model, pl.Float64()),
+            (IndCQC.non_res_with_dormancy_model, pl.Float64()),
+            (IndCQC.non_res_without_dormancy_model, pl.Float64()),
+            (IndCQC.imputed_pir_filled_posts_model, pl.Float64()),
+        ]
+    )
+
+    calculate_expected_size_schema = imputed_ind_cqc_schema
 
 
 @dataclass
