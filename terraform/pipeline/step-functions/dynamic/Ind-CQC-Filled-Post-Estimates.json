@@ -704,7 +704,7 @@
                   "States": {
                     "Polars Estimate filled posts": {
                       "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
                         "TaskDefinition": "${independent_cqc_task_arn}",
@@ -801,7 +801,7 @@
                   "States": {
                     "Polars Validate estimated filled posts": {
                       "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
                         "TaskDefinition": "${independent_cqc_task_arn}",
