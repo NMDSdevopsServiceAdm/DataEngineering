@@ -95,9 +95,9 @@ def main(
         # .col_vals_between(IndCQC.posts_rolling_average_model, 0.0, 3000.0)
         # .col_vals_between(IndCQC.imputed_filled_post_model, 0.0, 3000.0)
         # .col_vals_between(IndCQC.imputed_filled_posts_per_bed_ratio_model, 0.0, 3000.0)
-        .col_vals_between(
-            IndCQC.unix_time, 1262304000, int(time.time())
-        )  # 1st Jan 2010 in unix time and current unix time
+        # .col_vals_between(
+        #     IndCQC.unix_time, 1262304000, int(time.time())
+        # )  # 1st Jan 2010 in unix time and current unix time
         # .col_vals_between(IndCQC.pir_filled_posts_model, 0.0, 3000.0)
         # categorical
         .col_vals_in_set(
