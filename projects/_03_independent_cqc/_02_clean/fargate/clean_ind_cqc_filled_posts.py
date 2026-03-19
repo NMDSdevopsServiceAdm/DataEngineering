@@ -1,12 +1,11 @@
-from polars_utils import utils
 import polars_utils.cleaning_utils as cUtils
+from polars_utils import utils
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
 )
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers import (
     clean_ascwds_filled_post_outliers,
 )
-
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_care_home_outliers import (
     clean_capacity_tracker_care_home_outliers,
 )
@@ -14,14 +13,13 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clea
     clean_capacity_tracker_non_res_outliers,
 )
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils import (
-    remove_dual_registration_cqc_care_homes,
-    replace_zero_beds_with_null,
-    populate_missing_care_home_number_of_beds,
+    calculate_care_home_status_count,
     calculate_time_registered_for,
     calculate_time_since_dormant,
-    calculate_care_home_status_count,
+    populate_missing_care_home_number_of_beds,
+    remove_dual_registration_cqc_care_homes,
+    replace_zero_beds_with_null,
 )
-
 from projects._03_independent_cqc._02_clean.fargate.utils.forward_fill_latest_known_value import (
     forward_fill_latest_known_value,
 )
@@ -29,7 +27,6 @@ from projects._03_independent_cqc._02_clean.fargate.utils.utils import (
     create_column_with_repeated_values_removed,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -115,7 +112,7 @@ def main(
     )
 
     locations_lf = clean_capacity_tracker_care_home_outliers(locations_lf)
-    # locations_lf = clean_capacity_tracker_non_res_outliers(locations_lf)
+    locations_lf = clean_capacity_tracker_non_res_outliers(locations_lf)
 
     # locations_lf = calculate_care_home_status_count(locations_lf)
 
