@@ -77,7 +77,7 @@ def main(
     estimated_posts_lf = utils.scan_parquet(
         source=estimates_source,
         selected_columns=estimates_columns_to_import,
-    )
+    ).with_row_index(name="id")
     log_nrows(estimated_posts_lf, "estimated_posts")
 
     ascwds_job_role_counts_lf = utils.scan_parquet(
