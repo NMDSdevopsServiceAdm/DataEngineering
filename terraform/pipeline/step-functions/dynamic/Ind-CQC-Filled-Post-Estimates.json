@@ -858,7 +858,7 @@
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts_polars/",
                                 "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_06_estimated_filled_posts/",
-                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
+                                "--compare_path", "domain=ind_cqc_03_imputed_ascwds_and_pir/"
                               ]
                             }
                           ]
