@@ -90,7 +90,6 @@ def main(
         estimated_posts_lf, ascwds_job_role_counts_lf
     )
     log_nrows(estimated_job_role_posts_lf, "after join")
-    log_polars_plan(estimated_job_role_posts_lf, "Join")
 
     estimated_job_role_posts_lf = JRUtils.nullify_job_role_count_when_source_not_ascwds(
         estimated_job_role_posts_lf
