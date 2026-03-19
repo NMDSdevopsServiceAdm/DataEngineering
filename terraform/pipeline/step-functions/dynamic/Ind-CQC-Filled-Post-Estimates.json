@@ -166,42 +166,6 @@
                   }
                 },
                 {
-                  "StartAt": "Polars Impute IND CQC data",
-                  "States": {
-                    "Polars Impute IND CQC data": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask.sync",
-                      "Parameters": {
-                        "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${independent_cqc_task_arn}",
-                        "LaunchType": "FARGATE",
-                        "NetworkConfiguration": {
-                          "AwsvpcConfiguration": {
-                            "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
-                            "AssignPublicIp": "ENABLED"
-                          }
-                        },
-                        "Overrides": {
-                          "ContainerOverrides": [
-                            {
-                              "Name": "_03_independent_cqc-container",
-                              "Command": [
-                                "impute_ind_cqc_ascwds_and_pir.py",
-                                "--cleaned_ind_cqc_source",
-                                "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
-                                "--destination",
-                                "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir_polars/"
-                              ]
-                            }
-                          ]
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
                   "StartAt": "Validate cleaned data",
                   "States": {
                     "Validate cleaned data": {
@@ -705,10 +669,10 @@
                           "--imputed_ind_cqc_ascwds_and_pir_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
                           "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_03_imputed_ascwds_and_pir/"
                         }
-                      }
-                    },
-                    "ResultPath": null,
-                    "End": true
+                      },
+                      "ResultPath": null,
+                      "End": true
+                    }
                   }
                 },
                 {
@@ -727,17 +691,17 @@
                             "SecurityGroups": ["${independent_cqc_security_group_id}"],
                             "AssignPublicIp": "ENABLED"
                           }
-                      },
-                      "Overrides": {
-                        "ContainerOverrides": [
-                          {
-                            "Name": "_03_independent_cqc-container",
-                            "Command": [
-                              "validate_imputed_ind_cqc_ascwds_and_pir_data.py",
-                              "--bucket_name", "${dataset_bucket_name}",
-                              "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir_polars/",
-                              "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_03_imputed_ascwds_and_pir/",
-                              "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "validate_imputed_ind_cqc_ascwds_and_pir_data.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir_polars/",
+                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_03_imputed_ascwds_and_pir/",
+                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
                               ]
                             }
                           ]
@@ -776,7 +740,7 @@
                   "States": {
                     "Polars Estimate filled posts": {
                       "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Resource": "arn:aws:states:::ecs:runTask",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
                         "TaskDefinition": "${independent_cqc_task_arn}",
@@ -873,7 +837,7 @@
                   "States": {
                     "Polars Validate estimated filled posts": {
                       "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Resource": "arn:aws:states:::ecs:runTask",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
                         "TaskDefinition": "${independent_cqc_task_arn}",
@@ -894,7 +858,7 @@
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts_polars/",
                                 "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_06_estimated_filled_posts/",
-                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
+                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
                               ]
                             }
                           ]
