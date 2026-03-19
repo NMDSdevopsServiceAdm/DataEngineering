@@ -185,7 +185,7 @@ def log_polars_plan(lf: pl.LazyFrame, context: str):
     """Logs the explain plan and schema to CloudWatch immediately."""
     logger.info(f"--- PRE-FLIGHT CHECK: {context} ---")
 
-    plan = lf.explain(streaming=True)
+    plan = lf.explain(engine="streaming")
 
     # We log line-by-line so CloudWatch doesn't truncate a massive single string.
     for line in plan.split("\n"):
