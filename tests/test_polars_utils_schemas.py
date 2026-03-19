@@ -54,6 +54,15 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    filled_posts_from_beds_and_ratio_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.filled_posts_per_bed_ratio: pl.Float64,
+            IndCQC.number_of_beds: pl.Int64,
+            IndCQC.care_home_model: pl.Float64,
+        }
+    )
+
 
 @dataclass
 class RawDataAdjustmentsSchemas:
