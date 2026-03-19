@@ -6,7 +6,6 @@ cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 def main(
     cleaned_ind_cqc_source: str,
-    linear_regression_model_source: str,
     destination: str,
 ) -> None:
     print("Imputing independent CQC ASCWDS and PIR values...")
@@ -66,10 +65,6 @@ if __name__ == "__main__":
             "S3 URI to read cleaned independent CQC data from",
         ),
         (
-            "--linear_regression_model_source",
-            "S3 URI to read linear regression model from",
-        ),
-        (
             "--destination",
             "S3 URI to save imputed data to",
         ),
@@ -77,7 +72,6 @@ if __name__ == "__main__":
 
     main(
         cleaned_ind_cqc_source=args.cleaned_ind_cqc_source,
-        linear_regression_model_source=args.linear_regression_model_source,
         destination=args.destination,
     )
 
