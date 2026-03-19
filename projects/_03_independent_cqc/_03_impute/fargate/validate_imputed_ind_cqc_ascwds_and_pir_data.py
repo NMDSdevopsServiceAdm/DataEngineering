@@ -87,11 +87,13 @@ def main(
         )
         # between (inclusive)
         .col_vals_between(Validation.location_id_length, 3, 14)
-        .col_vals_between(IndCQC.number_of_beds, 1, 500)
-        .col_vals_between(IndCQC.pir_people_directly_employed_cleaned, 1, 1500)
-        .col_vals_between(IndCQC.total_staff_bounded, 1, 3000)
-        .col_vals_between(IndCQC.worker_records_bounded, 1, 3000)
-        .col_vals_between(IndCQC.filled_posts_per_bed_ratio, 0.0, 20.0)
+        .col_vals_between(IndCQC.number_of_beds, 1, 500, na_pass=True)
+        .col_vals_between(
+            IndCQC.pir_people_directly_employed_cleaned, 1, 1500, na_pass=True
+        )
+        .col_vals_between(IndCQC.total_staff_bounded, 1, 3000, na_pass=True)
+        .col_vals_between(IndCQC.worker_records_bounded, 1, 3000, na_pass=True)
+        .col_vals_between(IndCQC.filled_posts_per_bed_ratio, 0.0, 20.0, na_pass=True)
         # .col_vals_between(IndCQC.posts_rolling_average_model, 0.0, 3000.0)
         # .col_vals_between(IndCQC.imputed_filled_post_model, 0.0, 3000.0)
         # .col_vals_between(IndCQC.imputed_filled_posts_per_bed_ratio_model, 0.0, 3000.0)
@@ -110,7 +112,7 @@ def main(
         )
         .col_vals_in_set(
             IndCQC.dormancy,
-            CatValues.dormancy_column_values.categorical_values,
+            [*CatValues.dormancy_column_values.categorical_values, None],
         )
         .col_vals_in_set(
             IndCQC.primary_service_type,
@@ -138,7 +140,10 @@ def main(
         )
         .col_vals_in_set(
             IndCQC.ascwds_filled_posts_source,
-            CatValues.ascwds_filled_posts_source_column_values.categorical_values,
+            [
+                *CatValues.ascwds_filled_posts_source_column_values.categorical_values,
+                None,
+            ],
         )
         .col_vals_in_set(
             IndCQC.ascwds_filtering_rule,
