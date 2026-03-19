@@ -70,10 +70,9 @@ transformation_columns = {
     IndCQC.registered_manager_names: pl.List(str),
     IndCQC.ascwds_filled_posts_dedup_clean: pl.Float64,
 }
-join_keys = [
+left_join_keys = [
     IndCQC.establishment_id,
     IndCQC.ascwds_workplace_import_date,
-    IndCQC.ascwds_worker_import_date,
 ]
 dropped_columns = [
     IndCQC.establishment_id,
@@ -120,7 +119,7 @@ def main(
 
         estimated_job_role_posts_lf = JRUtils.join_worker_to_estimates_dataframe(
             estimated_posts_lf, ascwds_job_role_counts_lf
-        ).drop(join_keys)
+        ).drop(left_join_keys)
         log_nrows(estimated_job_role_posts_lf, "after join")
 
     estimated_job_role_posts_lf = JRUtils.nullify_job_role_count_when_source_not_ascwds(
