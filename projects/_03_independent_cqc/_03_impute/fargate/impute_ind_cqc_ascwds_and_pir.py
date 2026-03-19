@@ -8,9 +8,15 @@ def main(
     cleaned_ind_cqc_source: str,
     destination: str,
 ) -> None:
-    print("Imputing independent CQC ASCWDS and PIR values...")
+    """
+    Impute values into ASC-WDS, PIR and Capacity Tracker data.
 
+    Args:
+        cleaned_ind_cqc_source (str): s3 path to the cleaned ind cqc data
+        destination (str): s3 path to save the output data
+    """
     lf = utils.scan_parquet(cleaned_ind_cqc_source)
+    print("Cleaned IND CQC LazyFrame read in")
 
     # create_unix_timestamp_variable_from_date_column
 
