@@ -16,10 +16,12 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     mock_data = Mock(name="data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.enrich_with_model_predictions")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_data)
     def test_main_runs_successfully(
         self,
         scan_parquet_mock: Mock,
+        enrich_with_model_predictions_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
 
@@ -33,6 +35,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             source=ANY,
             selected_columns=job.ind_cqc_columns,
         )
+        self.assertEqual(enrich_with_model_predictions_mock.call_count, 3)
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,

@@ -105,3 +105,24 @@ def calculate_filled_posts_per_bed_ratio(
     )
 
     return lf
+
+
+def calculate_filled_posts_from_beds_and_ratio(
+    lf: pl.LazyFrame, ratio_column: str, new_column_name: str
+) -> pl.LazyFrame:
+    """
+    Calculate a column with the number of filled posts, based on the number of
+    beds and the given beds ratio column.
+
+    Args:
+        lf(pl.LazyFrame): A LazyFrame with number_of_beds and a beds ratio
+        column. ratio_column(str): The name of the beds ratio column to use.
+        new_column_name(str): The name of the column to fill.
+
+    Returns:
+        pl.LazyFrame: A LazyFrame with the new calculated filled posts column.
+    """
+    lf = lf.with_columns(
+        (pl.col(ratio_column) * pl.col(IndCQC.number_of_beds)).alias(new_column_name)
+    )
+    return lf

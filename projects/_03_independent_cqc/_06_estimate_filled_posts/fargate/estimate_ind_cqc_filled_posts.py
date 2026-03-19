@@ -1,4 +1,7 @@
 from polars_utils import utils
+from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.utils import (
+    enrich_with_model_predictions,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
@@ -87,11 +90,21 @@ def main(
     )
     print("Imputed independent CQC LazyFrame read in")
 
-    # enrich_with_model_predictions - care_home_model
-
-    # enrich_with_model_predictions - non_res_with_dormancy_model
-
-    # enrich_with_model_predictions - non_res_without_dormancy_model
+    lf = enrich_with_model_predictions(
+        lf,
+        bucket_name,
+        IndCQC.care_home_model,
+    )
+    lf = enrich_with_model_predictions(
+        lf,
+        bucket_name,
+        IndCQC.non_res_with_dormancy_model,
+    )
+    lf = enrich_with_model_predictions(
+        lf,
+        bucket_name,
+        IndCQC.non_res_without_dormancy_model,
+    )
 
     # combine_non_res_with_and_without_dormancy_models
 
