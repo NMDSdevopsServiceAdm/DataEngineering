@@ -96,22 +96,32 @@ def main(
         ascwds_job_role_counts_source (str): path to the prepared ascwds job role counts data
         estimates_by_job_role_destination (str): destination for output
     """
-    estimated_posts_lf = utils.scan_parquet(
-        source=estimates_source,
-        schema=transformation_columns,
-    ).with_row_index(name="id")
-    log_nrows(estimated_posts_lf, "estimated_posts")
+    # Needed so we can join on Categorical columns.
+    with pl.StringCache():
+        estimated_posts_lf = (
+            utils.scan_parquet(
+                source=estimates_source,
+                selected_columns=list(transformation_columns),
+            )
+            .with_row_index(name="id")
+            .with_columns(
+                [pl.col(c).cast(dtype) for c, dtype in transformation_columns.items()]
+            )
+        )
+        log_nrows(estimated_posts_lf, "estimated_posts")
 
-    ascwds_job_role_counts_lf = utils.scan_parquet(
-        source=ascwds_job_role_counts_source,
-        schema=ascwds_columns_to_import,
-    )
-    log_nrows(estimated_posts_lf, "ascwds_job_role_counts")
+        ascwds_job_role_counts_lf = utils.scan_parquet(
+            source=ascwds_job_role_counts_source,
+            selected_columns=list(ascwds_columns_to_import),
+        ).with_columns(
+            [pl.col(c).cast(dtype) for c, dtype in ascwds_columns_to_import.items()]
+        )
+        log_nrows(estimated_posts_lf, "ascwds_job_role_counts")
 
-    estimated_job_role_posts_lf = JRUtils.join_worker_to_estimates_dataframe(
-        estimated_posts_lf, ascwds_job_role_counts_lf
-    ).drop(join_keys)
-    log_nrows(estimated_job_role_posts_lf, "after join")
+        estimated_job_role_posts_lf = JRUtils.join_worker_to_estimates_dataframe(
+            estimated_posts_lf, ascwds_job_role_counts_lf
+        ).drop(join_keys)
+        log_nrows(estimated_job_role_posts_lf, "after join")
 
     estimated_job_role_posts_lf = JRUtils.nullify_job_role_count_when_source_not_ascwds(
         estimated_job_role_posts_lf
