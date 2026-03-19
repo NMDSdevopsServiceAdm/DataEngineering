@@ -53,22 +53,23 @@ estimates_columns_to_import = [
     Keys.day,
     Keys.import_date,
 ]
-ascwds_columns_to_import = [
-    IndCQC.ascwds_worker_import_date,
-    IndCQC.establishment_id,
-    IndCQC.main_job_role_clean_labelled,
-    IndCQC.ascwds_job_role_counts,
-]
-transformation_columns = [
-    IndCQC.location_id,
-    IndCQC.cqc_location_import_date,
-    IndCQC.establishment_id,
-    IndCQC.ascwds_workplace_import_date,
-    IndCQC.estimate_filled_posts,
-    IndCQC.estimate_filled_posts_source,
-    IndCQC.primary_service_type,
-    IndCQC.ascwds_filled_posts_dedup_clean,
-]
+ascwds_columns_to_import = {
+    IndCQC.ascwds_worker_import_date: pl.Date,
+    IndCQC.establishment_id: pl.Categorical,
+    IndCQC.main_job_role_clean_labelled: pl.Categorical,
+    IndCQC.ascwds_job_role_counts: pl.Int16,
+}
+transformation_columns = {
+    IndCQC.location_id: pl.Categorical,
+    IndCQC.cqc_location_import_date: pl.Date,
+    IndCQC.establishment_id: pl.Categorical,
+    IndCQC.ascwds_workplace_import_date: pl.Date,
+    IndCQC.estimate_filled_posts: pl.Float64,
+    IndCQC.estimate_filled_posts_source: pl.Categorical,
+    IndCQC.primary_service_type: pl.Categorical,
+    IndCQC.registered_manager_names: pl.List(str),
+    IndCQC.ascwds_filled_posts_dedup_clean: pl.Float64,
+}
 join_keys = [
     IndCQC.establishment_id,
     IndCQC.ascwds_workplace_import_date,
@@ -97,13 +98,13 @@ def main(
     """
     estimated_posts_lf = utils.scan_parquet(
         source=estimates_source,
-        selected_columns=transformation_columns,
+        schema=transformation_columns,
     ).with_row_index(name="id")
     log_nrows(estimated_posts_lf, "estimated_posts")
 
     ascwds_job_role_counts_lf = utils.scan_parquet(
         source=ascwds_job_role_counts_source,
-        selected_columns=ascwds_columns_to_import,
+        schema=ascwds_columns_to_import,
     )
     log_nrows(estimated_posts_lf, "ascwds_job_role_counts")
 
