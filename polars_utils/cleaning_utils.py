@@ -116,7 +116,8 @@ def calculate_filled_posts_from_beds_and_ratio(
 
     Args:
         lf(pl.LazyFrame): A LazyFrame with number_of_beds and a beds ratio
-        column. ratio_column(str): The name of the beds ratio column to use.
+            column. 
+        ratio_column(str): The name of the beds ratio column to use.
         new_column_name(str): The name of the column to fill.
 
     Returns:
