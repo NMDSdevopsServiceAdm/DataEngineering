@@ -75,7 +75,7 @@ def main(
                 IndCQC.current_region,
                 IndCQC.current_rural_urban_indicator_2011,
                 IndCQC.ascwds_filtering_rule,
-                IndCQC.unix_time,
+                # IndCQC.unix_time,
             ]
         )
         # index columns
