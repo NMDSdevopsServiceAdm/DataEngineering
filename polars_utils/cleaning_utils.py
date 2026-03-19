@@ -121,16 +121,9 @@ def reduce_dataset_to_earliest_file_per_month(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: A lazyframe with only the first import date of each month.
     """
-    earliest_day_in_month = "first_day_in_month"
-    lf = lf.with_columns(
-        pl.col(Keys.day)
-        .first()
-        .over(Keys.year, Keys.month, order_by=Keys.day)
-        .alias(earliest_day_in_month)
-    )
-    return lf.filter(pl.col(earliest_day_in_month) == pl.col(Keys.day)).drop(
-        earliest_day_in_month
-    )
+    expr = pl.col(Keys.day).first().over(Keys.year, Keys.month, order_by=Keys.day)
+
+    return lf.filter(expr == pl.col(Keys.day))
 
 
 def create_banded_bed_count_column(
@@ -154,21 +147,14 @@ def create_banded_bed_count_column(
     """
     zero: float = 0.0
 
-    number_of_beds_lf = (
-        input_lf.select(IndCQC.number_of_beds)
-        .filter(pl.col(IndCQC.number_of_beds).is_not_null())
-        .unique()
-    )
     labels = [str(i) for i in range(len(splits[1:-1]) + 1)]
-    number_of_beds_with_bands_lf = number_of_beds_lf.with_columns(
+    output_lf = input_lf.with_columns(
         pl.col(IndCQC.number_of_beds)
         .cut(breaks=splits[1:-1], labels=labels, left_closed=True)
         .alias(new_col)
+        .cast(pl.String)
+        .cast(pl.Float64)
     )
-
-    output_lf = input_lf.join(
-        number_of_beds_with_bands_lf, IndCQC.number_of_beds, "left"
-    ).with_columns(pl.col(new_col).cast(pl.String).cast(pl.Float64))
 
     return output_lf.with_columns(
         pl.when(pl.col(IndCQC.care_home) == CareHome.not_care_home)
