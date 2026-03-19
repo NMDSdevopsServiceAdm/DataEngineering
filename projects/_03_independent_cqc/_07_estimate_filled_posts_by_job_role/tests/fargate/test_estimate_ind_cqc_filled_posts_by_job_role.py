@@ -50,11 +50,11 @@ class MainTests(unittest.TestCase):
             [
                 call(
                     source=self.ESTIMATE_SOURCE,
-                    selected_columns=job.estimates_columns_to_import,
+                    schema=job.transformation_columns,
                 ),
                 call(
                     source=self.PREPARED_JOB_ROLE_COUNTS_SOURCE,
-                    selected_columns=job.ascwds_columns_to_import,
+                    schema=job.ascwds_columns_to_import,
                 ),
             ]
         )
