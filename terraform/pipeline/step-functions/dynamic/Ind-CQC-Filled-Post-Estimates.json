@@ -706,10 +706,9 @@
                           "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_03_imputed_ascwds_and_pir/"
                         }
                       }
-                      },
-                      "ResultPath": null,
-                      "End": true
-                    }
+                    },
+                    "ResultPath": null,
+                    "End": true
                   }
                 },
                 {
