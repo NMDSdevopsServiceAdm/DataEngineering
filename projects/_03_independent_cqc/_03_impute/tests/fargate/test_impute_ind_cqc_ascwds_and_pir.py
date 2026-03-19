@@ -11,9 +11,6 @@ PATCH_PATH = (
 
 class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
     TEST_CLEANED_IND_CQC_DATA_SOURCE = "some/directory"
-    TEST_NON_RES_PIR_MODEL = (
-        "tests/test_models/non_res_pir_linear_regression_prediction/1.0.0/"
-    )
     TEST_DESTINATION = "some/other/directory"
     cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -29,7 +26,6 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
 
         job.main(
             self.TEST_CLEANED_IND_CQC_DATA_SOURCE,
-            self.TEST_NON_RES_PIR_MODEL,
             self.TEST_DESTINATION,
         )
 
