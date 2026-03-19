@@ -78,23 +78,18 @@ def main(
         source=estimates_source,
         selected_columns=estimates_columns_to_import,
     )
-    estimated_posts_nrows = estimated_posts_lf.select(pl.len()).collect().item()
-    logger.info(f"nrows - estimated_posts: {estimated_posts_nrows}")
+    log_nrows(estimated_posts_lf, "estimated_posts")
 
     ascwds_job_role_counts_lf = utils.scan_parquet(
         source=ascwds_job_role_counts_source,
         selected_columns=ascwds_columns_to_import,
     )
-    ascwds_nrows = ascwds_job_role_counts_lf.select(pl.len()).collect().item()
-    logger.info(f"nrows - ascwds_job_role_counts: {ascwds_nrows}")
-    sys.stdout.flush()
+    log_nrows(estimated_posts_lf, "ascwds_job_role_counts")
 
     estimated_job_role_posts_lf = JRUtils.join_worker_to_estimates_dataframe(
         estimated_posts_lf, ascwds_job_role_counts_lf
     )
-    post_join_nrows = estimated_job_role_posts_lf.select(pl.len()).collect().item()
-    logger.info(f"nrows - after join: {post_join_nrows}")
-
+    log_nrows(estimated_job_role_posts_lf, "after join")
     log_polars_plan(estimated_job_role_posts_lf, "Join")
 
     estimated_job_role_posts_lf = JRUtils.nullify_job_role_count_when_source_not_ascwds(
@@ -181,7 +176,7 @@ def main(
     )
 
 
-def log_polars_plan(lf: pl.LazyFrame, context: str):
+def log_polars_plan(lf: pl.LazyFrame, context: str) -> None:
     """Logs the explain plan and schema to CloudWatch immediately."""
     logger.info(f"--- PRE-FLIGHT CHECK: {context} ---")
 
@@ -196,6 +191,12 @@ def log_polars_plan(lf: pl.LazyFrame, context: str):
     logger.info(f"Schema for {context}: {lf.collect_schema()}")
 
     logger.info(f"--- END PRE-FLIGHT PLAN: {context} ---")
+    sys.stdout.flush()
+
+
+def log_nrows(lf: pl.LazyFrame, context: str) -> None:
+    """Logs the count of rows to CloudWatch immediately."""
+    logger.info(f"nrows - {context}: {lf.select(pl.len()).collect().item()}")
     sys.stdout.flush()
 
 
