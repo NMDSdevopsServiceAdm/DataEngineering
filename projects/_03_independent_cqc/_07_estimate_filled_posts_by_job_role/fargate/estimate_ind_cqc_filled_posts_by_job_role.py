@@ -59,6 +59,27 @@ ascwds_columns_to_import = [
     IndCQC.main_job_role_clean_labelled,
     IndCQC.ascwds_job_role_counts,
 ]
+transformation_columns = [
+    IndCQC.location_id,
+    IndCQC.cqc_location_import_date,
+    IndCQC.establishment_id,
+    IndCQC.ascwds_workplace_import_date,
+    IndCQC.estimate_filled_posts,
+    IndCQC.estimate_filled_posts_source,
+    IndCQC.primary_service_type,
+    IndCQC.ascwds_filled_posts_dedup_clean,
+]
+join_keys = [
+    IndCQC.establishment_id,
+    IndCQC.ascwds_workplace_import_date,
+    IndCQC.ascwds_worker_import_date,
+]
+dropped_columns = [
+    IndCQC.establishment_id,
+    IndCQC.ascwds_workplace_import_date,
+    IndCQC.ascwds_worker_import_date,
+    IndCQC.estimate_filled_posts_source,
+]
 
 
 def main(
@@ -76,7 +97,7 @@ def main(
     """
     estimated_posts_lf = utils.scan_parquet(
         source=estimates_source,
-        selected_columns=estimates_columns_to_import,
+        selected_columns=transformation_columns,
     ).with_row_index(name="id")
     log_nrows(estimated_posts_lf, "estimated_posts")
 
@@ -88,11 +109,14 @@ def main(
 
     estimated_job_role_posts_lf = JRUtils.join_worker_to_estimates_dataframe(
         estimated_posts_lf, ascwds_job_role_counts_lf
-    )
+    ).drop(join_keys)
     log_nrows(estimated_job_role_posts_lf, "after join")
 
     estimated_job_role_posts_lf = JRUtils.nullify_job_role_count_when_source_not_ascwds(
         estimated_job_role_posts_lf
+    ).drop(
+        IndCQC.estimate_filled_posts_source,
+        IndCQC.ascwds_filled_posts_dedup_clean,
     )
 
     pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
