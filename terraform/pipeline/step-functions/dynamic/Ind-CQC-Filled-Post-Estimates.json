@@ -747,7 +747,8 @@
                     }
                   }
                 }
-              ]
+              ],
+              "End": true
             },
             "Estimate filled posts state": {
               "Type": "Parallel",
