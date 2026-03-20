@@ -475,6 +475,50 @@ class ValidateCleanIndCQCSchemas:
 
 
 @dataclass
+class ValidateImputedIndCqcAscwdsAndPir:
+    cleaned_ind_cqc_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    imputed_ind_cqc_ascwds_and_pir_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.ascwds_workplace_import_date, pl.Date()),
+            (IndCQC.cqc_pir_import_date, pl.Date()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.provider_id, pl.String()),
+            (IndCQC.cqc_sector, pl.String()),
+            (IndCQC.imputed_registration_date, pl.Date()),
+            (IndCQC.dormancy, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+            (IndCQC.primary_service_type, pl.String()),
+            (IndCQC.contemporary_ons_import_date, pl.Date()),
+            (IndCQC.contemporary_cssr, pl.String()),
+            (IndCQC.contemporary_region, pl.String()),
+            (IndCQC.current_ons_import_date, pl.Date()),
+            (IndCQC.current_cssr, pl.String()),
+            (IndCQC.current_region, pl.String()),
+            (IndCQC.current_rural_urban_indicator_2011, pl.String()),
+            (IndCQC.current_lsoa21, pl.String()),
+            (IndCQC.current_msoa21, pl.String()),
+            (IndCQC.total_staff_bounded, pl.Int64()),
+            (IndCQC.worker_records_bounded, pl.Int64()),
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+            (IndCQC.ascwds_filled_posts_source, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.pir_people_directly_employed_dedup, pl.Int64()),
+            (IndCQC.unix_time, pl.Int64()),
+            (IndCQC.pir_people_directly_employed_cleaned, pl.Int64()),
+            (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
+        ]
+    )
+
+
+@dataclass
 class ValidateEstimatedIndCQCFilledPostsSchemas:
     imputed_ind_cqc_schema = pl.Schema(
         [
