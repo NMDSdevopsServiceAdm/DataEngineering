@@ -89,7 +89,7 @@ def compute_outlier_cutoff_and_clean(
     abs_diff_expr = (pl.col(col_to_clean) - median_expr).abs()
     cutoff_expr = abs_diff_expr.quantile(percentile, interpolation="linear").first()
 
-    lf - lf.with_columns(
+    lf = lf.with_columns(
         median_expr.alias("median_expr"),
         abs_diff_expr.alias("abs_diff_expr"),
         cutoff_expr.alias("cutoff_expr"),
