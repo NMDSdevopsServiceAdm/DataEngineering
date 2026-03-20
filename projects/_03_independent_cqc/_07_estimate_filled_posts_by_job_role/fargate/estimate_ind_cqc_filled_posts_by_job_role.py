@@ -106,9 +106,9 @@ def main(
                 source=estimates_source,
                 selected_columns=list(transformation_columns),
             )
-            .with_row_index(name="id")
-            .with_columns(
-                [pl.col(c).cast(dtype) for c, dtype in transformation_columns.items()]
+            # This row index will be used to join back metadata.
+            .with_row_index(name="id").with_columns(
+                cast_to_schema(transformation_columns)
             )
         )
         log_nrows(estimated_posts_lf, "estimated_posts")
@@ -134,9 +134,7 @@ def main(
                 source=ascwds_job_role_counts_source,
                 selected_columns=list(ascwds_columns_to_import),
             )
-            .with_columns(
-                [pl.col(c).cast(dtype) for c, dtype in ascwds_columns_to_import.items()]
-            )
+            .with_columns(cast_to_schema(ascwds_columns_to_import))
             .rename(
                 {IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date}
             )
@@ -319,3 +317,8 @@ if __name__ == "__main__":
         ascwds_job_role_counts_source=args.ascwds_job_role_counts_source,
         estimates_by_job_role_destination=args.estimates_by_job_role_destination,
     )
+
+
+def cast_to_schema(schema: dict[str, pl.DataType]) -> list[pl.Expr]:
+    """Cast columns to given schema."""
+    return [pl.col(c).cast(dtype) for c, dtype in schema.items()]
