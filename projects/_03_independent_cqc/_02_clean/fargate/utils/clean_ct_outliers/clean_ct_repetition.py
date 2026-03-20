@@ -77,7 +77,10 @@ def clean_ct_values_after_consecutive_repetition(
     ).dt.total_days()
 
     cleaned_expr = (
-        pl.when(days_repeated <= limit_expr)
+        pl.when(
+            (pl.col(filter_rule_column_name) == CTFilteringRule.populated)
+            & (days_repeated <= limit_expr)
+        )
         .then(pl.col(column_to_clean))
         .otherwise(None)
     )
