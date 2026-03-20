@@ -135,6 +135,8 @@ def main(
             on=join_keys,
             how="anti",
         )
+        log_nrows(unmatched_keys_lf, "unmatched_keys_lf")
+
         job_roles_lf = pl.LazyFrame(
             data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
             schema={IndCQC.main_job_role_clean_labelled: pl.Categorical},
@@ -142,6 +144,8 @@ def main(
         dummy_fill_lf = unmatched_keys_lf.join(job_roles_lf, how="cross").with_columns(
             pl.lit(None).cast(pl.Int16).alias(IndCQC.ascwds_job_role_counts)
         )
+        log_nrows(dummy_fill_lf, "dummy_fill_lf=unmatched_len * 38")
+
         ascwds_job_role_counts_lf = pl.union([ascwds_job_role_counts_lf, dummy_fill_lf])
         log_nrows(ascwds_job_role_counts_lf, "ascwds_job_role_counts_full")
 
@@ -161,7 +165,7 @@ def main(
     )
 
     pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
-
+    log_polars_plan(estimated_job_role_posts_lf, "Post Join")
     # Sort, gather to struct, explain then save to a temp file.
     tmp_dest = estimates_by_job_role_destination.replace("dataset=", "dataset=temp_")
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(pct_share_groups)
@@ -172,7 +176,7 @@ def main(
         *[pl.col(c).first() for c in metadata_cols],
         pl.struct(struct_cols).alias("job_role_data"),
     )
-    log_polars_plan(estimated_job_role_posts_lf, "Post Join")
+    log_polars_plan(estimated_job_role_posts_lf, "After collecting to struct")
     tmp_file = f"{tmp_dest}file.parquet"
     estimated_job_role_posts_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
     estimated_job_role_posts_lf = (
