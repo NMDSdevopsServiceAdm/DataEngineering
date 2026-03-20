@@ -105,6 +105,34 @@ class CleaningUtilsData:
         ("1-000000010", 0.0, 0, CareHome.care_home, None),
         ("1-000000011", 4.0, 10, CareHome.not_care_home, None),
     ]
+    reduce_dataset_to_earliest_file_per_month_rows = [
+        ("loc 1", "20220101", "2022", "01", "01"),
+        ("loc 2", "20220105", "2022", "01", "05"),
+        ("loc 3", "20220205", "2022", "02", "05"),
+        ("loc 4", "20220207", "2022", "02", "07"),
+        ("loc 5", "20220301", "2022", "03", "01"),
+        ("loc 6", "20220402", "2022", "04", "02"),
+    ]
+    expected_reduce_dataset_to_earliest_file_per_month_rows = [
+        ("loc 1", "20220101", "2022", "01", "01"),
+        ("loc 3", "20220205", "2022", "02", "05"),
+        ("loc 5", "20220301", "2022", "03", "01"),
+        ("loc 6", "20220402", "2022", "04", "02"),
+    ]
+    create_banded_bed_count_column_rows = [
+        ("1-001", CareHome.care_home, 1),
+        ("1-002", CareHome.care_home, 24),
+        ("1-003", CareHome.care_home, 500),
+        ("1-004", CareHome.not_care_home, None),
+        ("1-005", CareHome.not_care_home, 20),
+    ]
+    expected_create_banded_bed_count_column_rows = [
+        ("1-001", CareHome.care_home, 1, 1.0),
+        ("1-002", CareHome.care_home, 24, 1.0),
+        ("1-003", CareHome.care_home, 500, 2.0),
+        ("1-004", CareHome.not_care_home, None, 0.0),
+        ("1-005", CareHome.not_care_home, 20, 0.0),
+    ]
 
 
 @dataclass

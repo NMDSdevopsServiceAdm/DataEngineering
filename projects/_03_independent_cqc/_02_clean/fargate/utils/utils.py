@@ -35,10 +35,9 @@ def create_column_with_repeated_values_removed(
     last_non_null_previous_value = (
         pl.col(column_to_clean)
         .shift(1)
-        .forward_fill()
         .over(
             partition_by=column_to_partition_by,
-            order_by=IndCQC.cqc_location_import_date,
+            order_by=[column_to_partition_by, IndCQC.cqc_location_import_date],
         )
     )
 

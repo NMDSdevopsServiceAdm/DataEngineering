@@ -46,6 +46,8 @@ def clean_capacity_tracker_non_res_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
         CTFilteringRule.missing_data,
     )
 
+    lf = aggregate_values_to_provider_level(lf, IndCQC.ct_non_res_care_workers_employed)
+
     lf = clean_longitudinal_outliers(
         lf=lf,
         col_to_clean=IndCQC.ct_non_res_care_workers_employed,

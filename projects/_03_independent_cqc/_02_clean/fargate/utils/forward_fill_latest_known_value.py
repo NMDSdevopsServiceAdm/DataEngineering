@@ -13,7 +13,6 @@ class TempCols:
     days_to_forward_fill: str = "days_to_forward_fill"
     last_known_date: str = "last_known_date"
     last_known_value: str = "last_known_value"
-    latest: str = "latest"
 
 
 # Dictionary defining the minimum size of location and corresponding days to forward fill.
