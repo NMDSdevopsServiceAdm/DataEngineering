@@ -3,7 +3,6 @@ import polars as pl
 from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
     update_filtering_rule,
 )
-
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CTFilteringRule
 
@@ -89,6 +88,12 @@ def compute_outlier_cutoff_and_clean(
     median_expr = pl.col(col_to_clean).median().over(IndCQC.location_id)
     abs_diff_expr = (pl.col(col_to_clean) - median_expr).abs()
     cutoff_expr = abs_diff_expr.quantile(percentile, interpolation="linear").first()
+
+    lf - lf.with_columns(
+        median_expr.alias("median_expr"),
+        abs_diff_expr.alias("abs_diff_expr"),
+        cutoff_expr.alias("cutoff_expr"),
+    )
 
     lf = lf.with_columns(
         pl.when(abs_diff_expr > cutoff_expr)

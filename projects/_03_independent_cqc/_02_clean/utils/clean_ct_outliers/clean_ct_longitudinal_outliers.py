@@ -68,11 +68,11 @@ def clean_longitudinal_outliers(
         new_rule_name=CTFilteringRule.longitudinal_outliers,
     )
 
-    cleaned_df = cleaned_df.drop(
-        f"{col_to_clean}_median_val",
-        f"{col_to_clean}_abs_diff",
-        f"{col_to_clean}_overall_abs_diff_cutoff",
-    )
+    # cleaned_df = cleaned_df.drop(
+    #     f"{col_to_clean}_median_val",
+    #     f"{col_to_clean}_abs_diff",
+    #     f"{col_to_clean}_overall_abs_diff_cutoff",
+    # )
 
     return cleaned_df
 
