@@ -114,11 +114,16 @@ def main(
         log_nrows(estimated_posts_lf, "estimated_posts")
 
         dummy_establishment_ID = "DUMMY"
-        dummy_keys = (
-            estimated_posts_lf.filter(pl.col(IndCQC.establishment_id).is_null())
-            .select(IndCQC.ascwds_workplace_import_date)
-            .unique()
-            .with_columns(pl.lit(dummy_establishment_ID).alias(IndCQC.establishment_id))
+        dummy_col = (
+            pl.lit(dummy_establishment_ID)
+            .alias(IndCQC.establishment_id)
+            .cast(pl.Categorical)
+        )
+        dummy_keys = estimated_posts_lf.filter(
+            pl.col(IndCQC.establishment_id).is_null()
+        ).select(
+            dummy_col,
+            pl.col(IndCQC.ascwds_workplace_import_date).unique(),
         )
         estimated_posts_lf = estimated_posts_lf.with_columns(
             pl.col(IndCQC.establishment_id).fill_null(dummy_establishment_ID)
@@ -139,9 +144,8 @@ def main(
         log_nrows(ascwds_job_role_counts_lf, "ascwds_job_role_counts")
 
         job_roles_lf = pl.LazyFrame(
-            {
-                IndCQC.main_job_role_clean_labelled: AscwdsWorkerValueLabelsJobGroup.all_roles()
-            }
+            data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
+            schema={IndCQC.main_job_role_clean_labelled: pl.Categorical},
         )
         job_roles_establishment_cross_lf = (
             pl.union(

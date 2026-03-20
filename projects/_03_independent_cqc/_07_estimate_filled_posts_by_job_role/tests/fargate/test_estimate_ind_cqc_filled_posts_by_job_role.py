@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import ANY, Mock, call, patch
 
+import polars as pl
+
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
@@ -12,8 +14,8 @@ class MainTests(unittest.TestCase):
     PREPARED_JOB_ROLE_COUNTS_SOURCE = "some/other/source"
     ESTIMATES_DESTINATION = "some/destination"
 
-    mock_estimate_data = Mock(name="estimate_data")
-    mock_prepared_job_role_counts_data = Mock(name="prepared_job_role_counts_data")
+    mock_estimate_lf = pl.LazyFrame(schema=job.transformation_columns)
+    mock_prepared_job_role_counts_lf = pl.LazyFrame(schema=job.ascwds_columns_to_import)
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.JRUtils.ManagerialFilledPostAdjustmentExpr")
@@ -22,15 +24,13 @@ class MainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.JRUtils.impute_full_time_series")
     @patch(f"{PATCH_PATH}.JRUtils.percentage_share")
     @patch(f"{PATCH_PATH}.JRUtils.nullify_job_role_count_when_source_not_ascwds")
-    @patch(f"{PATCH_PATH}.JRUtils.join_worker_to_estimates_dataframe")
     @patch(
         f"{PATCH_PATH}.utils.scan_parquet",
-        side_effect=[mock_estimate_data, mock_prepared_job_role_counts_data],
+        side_effect=[mock_estimate_lf, mock_prepared_job_role_counts_lf],
     )
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
-        join_worker_to_estimates_dataframe_mock: Mock,
         nullify_job_role_count_when_source_not_ascwds_mock: Mock,
         percentage_share_mock: Mock,
         impute_full_time_series_mock: Mock,
@@ -39,11 +39,12 @@ class MainTests(unittest.TestCase):
         ManagerialFilledPostAdjustmentExprMock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        job.main(
-            self.ESTIMATE_SOURCE,
-            self.PREPARED_JOB_ROLE_COUNTS_SOURCE,
-            self.ESTIMATES_DESTINATION,
-        )
+        with patch(f"{PATCH_PATH}.log_polars_plan", return_value="Mocked Plan"):
+            job.main(
+                self.ESTIMATE_SOURCE,
+                self.PREPARED_JOB_ROLE_COUNTS_SOURCE,
+                self.ESTIMATES_DESTINATION,
+            )
 
         self.assertEqual(scan_parquet_mock.call_count, 2)
         scan_parquet_mock.assert_has_calls(
@@ -59,7 +60,6 @@ class MainTests(unittest.TestCase):
             ]
         )
 
-        join_worker_to_estimates_dataframe_mock.assert_called_once()
         nullify_job_role_count_when_source_not_ascwds_mock.assert_called_once()
 
         calls = [
