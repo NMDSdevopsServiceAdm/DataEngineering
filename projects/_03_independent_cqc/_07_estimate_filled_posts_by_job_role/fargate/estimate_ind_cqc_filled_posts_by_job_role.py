@@ -130,10 +130,14 @@ def main(
         )
         log_nrows(ascwds_job_role_counts_lf, "ascwds_job_role_counts")
 
-        unmatched_keys_lf = estimated_posts_lf.select(join_keys).join(
-            ascwds_job_role_counts_lf.select(join_keys),
-            on=join_keys,
-            how="anti",
+        unmatched_keys_lf = (
+            estimated_posts_lf.select(join_keys)
+            .join(
+                ascwds_job_role_counts_lf.select(join_keys),
+                on=join_keys,
+                how="anti",
+            )
+            .unique()
         )
         log_nrows(unmatched_keys_lf, "unmatched_keys_lf")
 
