@@ -90,20 +90,12 @@ def main(
     )
     print("Imputed independent CQC LazyFrame read in")
 
+    lf = enrich_with_model_predictions(lf, bucket_name, IndCQC.care_home_model)
     lf = enrich_with_model_predictions(
-        lf,
-        bucket_name,
-        IndCQC.care_home_model,
+        lf, bucket_name, IndCQC.non_res_with_dormancy_model
     )
     lf = enrich_with_model_predictions(
-        lf,
-        bucket_name,
-        IndCQC.non_res_with_dormancy_model,
-    )
-    lf = enrich_with_model_predictions(
-        lf,
-        bucket_name,
-        IndCQC.non_res_without_dormancy_model,
+        lf, bucket_name, IndCQC.non_res_without_dormancy_model
     )
 
     # combine_non_res_with_and_without_dormancy_models

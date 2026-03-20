@@ -2,7 +2,7 @@ import polars as pl
 
 from projects._03_independent_cqc._04_model.utils.paths import generate_predictions_path
 from polars_utils import utils
-from polars_utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
+
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
@@ -32,8 +32,10 @@ def enrich_with_model_predictions(
     predictions_lf = utils.scan_parquet(predictions_path)
 
     if model_name == IndCqc.care_home_model:
-        predictions_lf = calculate_filled_posts_from_beds_and_ratio(
-            predictions_lf, IndCqc.prediction, IndCqc.prediction
+        predictions_lf = predictions_lf.with_columns(
+            pl.col(IndCqc.prediction)
+            .mul(pl.col(IndCqc.number_of_beds))
+            .alias(IndCqc.prediction)
         )
 
     ind_cqc_with_predictions_lf = join_model_predictions(

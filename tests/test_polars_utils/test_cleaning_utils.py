@@ -226,17 +226,3 @@ class CalculateFilledPostsPerBedRatioTests(unittest.TestCase):
             orient="row",
         )
         pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), expected_lf)
-
-
-class CalculateFilledPostsFromBedsAndRatioTests(unittest.TestCase):
-    def test_function_returns_expected_values(self):
-        expected_lf = pl.LazyFrame(
-            Data.filled_posts_from_beds_and_ratio_rows,
-            Schemas.filled_posts_from_beds_and_ratio_schema,
-            orient="row",
-        )
-        test_lf = expected_lf.drop(IndCQC.care_home_model)
-        returned_lf = job.calculate_filled_posts_from_beds_and_ratio(
-            test_lf, IndCQC.filled_posts_per_bed_ratio, IndCQC.care_home_model
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
