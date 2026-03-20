@@ -74,7 +74,7 @@ transformation_columns = {
     IndCQC.ascwds_filled_posts_dedup_clean: pl.Float64,
     Keys.year: pl.Categorical,
 }
-left_join_keys = [
+join_keys = [
     IndCQC.establishment_id,
     IndCQC.ascwds_workplace_import_date,
 ]
@@ -113,11 +113,17 @@ def main(
         )
         log_nrows(estimated_posts_lf, "estimated_posts")
 
-        ascwds_job_role_counts_lf = utils.scan_parquet(
-            source=ascwds_job_role_counts_source,
-            selected_columns=list(ascwds_columns_to_import),
-        ).with_columns(
-            [pl.col(c).cast(dtype) for c, dtype in ascwds_columns_to_import.items()]
+        ascwds_job_role_counts_lf = (
+            utils.scan_parquet(
+                source=ascwds_job_role_counts_source,
+                selected_columns=list(ascwds_columns_to_import),
+            )
+            .with_columns(
+                [pl.col(c).cast(dtype) for c, dtype in ascwds_columns_to_import.items()]
+            )
+            .rename(
+                {IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date}
+            )
         )
         log_nrows(estimated_posts_lf, "ascwds_job_role_counts")
 
@@ -128,7 +134,8 @@ def main(
         )
         job_roles_establishment_cross_lf = (
             ascwds_job_role_counts_lf.select(
-                IndCQC.establishment_id, IndCQC.ascwds_worker_import_date
+                IndCQC.establishment_id,
+                IndCQC.ascwds_workplace_import_date,
             )
             .unique()
             .join(job_roles_lf, how="cross")
@@ -138,16 +145,18 @@ def main(
             ascwds_job_role_counts_lf,
             on=[
                 IndCQC.establishment_id,
-                IndCQC.ascwds_worker_import_date,
+                IndCQC.ascwds_workplace_import_date,
                 IndCQC.main_job_role_clean_labelled,
             ],
             how="left",
         )
 
-        estimated_job_role_posts_lf = JRUtils.join_worker_to_estimates_dataframe(
-            estimated_posts_lf,
-            ascwds_job_role_counts_lf,
-        ).drop(left_join_keys)
+        estimated_job_role_posts_lf = estimated_posts_lf.join(
+            other=ascwds_job_role_counts_lf,
+            on=join_keys,
+            how="left",
+        ).drop(join_keys)
+
         log_nrows(estimated_job_role_posts_lf, "after join")
 
     estimated_job_role_posts_lf = JRUtils.nullify_job_role_count_when_source_not_ascwds(
@@ -159,9 +168,8 @@ def main(
 
     pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
 
-    tmp_dest = estimates_by_job_role_destination.replace("dataset=", "dataset=temp_")
-
     # Sort, explain then save to a temp file.
+    tmp_dest = estimates_by_job_role_destination.replace("dataset=", "dataset=temp_")
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(pct_share_groups)
     log_polars_plan(estimated_job_role_posts_lf, "Post Join")
     estimated_job_role_posts_lf.sink_parquet(tmp_dest, mkdir=True, engine="streaming")
