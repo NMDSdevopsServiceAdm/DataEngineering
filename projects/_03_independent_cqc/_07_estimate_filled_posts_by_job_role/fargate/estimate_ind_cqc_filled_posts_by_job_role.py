@@ -111,7 +111,7 @@ def main(
                 cast_to_schema(transformation_columns)
             )
         )
-        log_nrows(estimated_posts_lf, "estimated_posts")
+        # log_nrows(estimated_posts_lf, "estimated_posts")
 
         # Fill Nulls with dummy key
         estimated_posts_lf = estimated_posts_lf.with_columns(
@@ -128,7 +128,7 @@ def main(
                 {IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date}
             )
         )
-        log_nrows(ascwds_job_role_counts_lf, "ascwds_job_role_counts")
+        # log_nrows(ascwds_job_role_counts_lf, "ascwds_job_role_counts")
 
         unmatched_keys_lf = (
             estimated_posts_lf.select(join_keys)
@@ -139,7 +139,7 @@ def main(
             )
             .unique()
         )
-        log_nrows(unmatched_keys_lf, "unmatched_keys_lf")
+        # log_nrows(unmatched_keys_lf, "unmatched_keys_lf")
 
         job_roles_lf = pl.LazyFrame(
             data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
@@ -148,10 +148,10 @@ def main(
         dummy_fill_lf = unmatched_keys_lf.join(job_roles_lf, how="cross").with_columns(
             pl.lit(None).cast(pl.Int16).alias(IndCQC.ascwds_job_role_counts)
         )
-        log_nrows(dummy_fill_lf, "dummy_fill_lf=unmatched_len * 38")
+        # log_nrows(dummy_fill_lf, "dummy_fill_lf=unmatched_len * 38")
 
         ascwds_job_role_counts_lf = pl.union([ascwds_job_role_counts_lf, dummy_fill_lf])
-        log_nrows(ascwds_job_role_counts_lf, "ascwds_job_role_counts_full")
+        # log_nrows(ascwds_job_role_counts_lf, "ascwds_job_role_counts_full")
 
         estimated_job_role_posts_lf = estimated_posts_lf.join(
             other=ascwds_job_role_counts_lf,
@@ -159,7 +159,7 @@ def main(
             how="left",
         )
 
-        log_nrows(estimated_job_role_posts_lf, "after join")
+        # log_nrows(estimated_job_role_posts_lf, "after join")
 
     estimated_job_role_posts_lf = JRUtils.nullify_job_role_count_when_source_not_ascwds(
         estimated_job_role_posts_lf
