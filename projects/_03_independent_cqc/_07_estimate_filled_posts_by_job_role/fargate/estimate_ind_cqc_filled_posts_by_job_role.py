@@ -75,8 +75,8 @@ transformation_columns = {
     Keys.year: pl.Categorical,
 }
 join_keys = [
-    IndCQC.establishment_id,
     IndCQC.ascwds_workplace_import_date,
+    IndCQC.establishment_id,
 ]
 dropped_columns = [
     IndCQC.establishment_id,
@@ -113,20 +113,9 @@ def main(
         )
         log_nrows(estimated_posts_lf, "estimated_posts")
 
-        dummy_establishment_ID = "DUMMY"
-        dummy_col = (
-            pl.lit(dummy_establishment_ID)
-            .alias(IndCQC.establishment_id)
-            .cast(pl.Categorical)
-        )
-        dummy_keys = estimated_posts_lf.filter(
-            pl.col(IndCQC.establishment_id).is_null()
-        ).select(
-            pl.col(IndCQC.ascwds_workplace_import_date).unique(),
-            dummy_col,
-        )
+        # Fill Nulls with dummy key
         estimated_posts_lf = estimated_posts_lf.with_columns(
-            pl.col(IndCQC.establishment_id).fill_null(dummy_establishment_ID)
+            pl.col(IndCQC.establishment_id).fill_null("DUMMY")
         )
 
         ascwds_job_role_counts_lf = (
@@ -141,25 +130,26 @@ def main(
         )
         log_nrows(ascwds_job_role_counts_lf, "ascwds_job_role_counts")
 
+        unmatched_keys_lf = estimated_posts_lf.select(join_keys).join(
+            ascwds_job_role_counts_lf.select(join_keys),
+            on=join_keys,
+            how="anti",
+        )
         job_roles_lf = pl.LazyFrame(
             data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
             schema={IndCQC.main_job_role_clean_labelled: pl.Categorical},
         )
-        ascwds_job_role_counts_lf = pl.union(
-            [
-                ascwds_job_role_counts_lf,
-                dummy_keys.join(job_roles_lf, how="cross").with_columns(
-                    pl.lit(None).cast(pl.Int16).alias(IndCQC.ascwds_job_role_counts)
-                ),
-            ]
+        dummy_fill_lf = unmatched_keys_lf.join(job_roles_lf, how="cross").with_columns(
+            pl.lit(None).cast(pl.Int16).alias(IndCQC.ascwds_job_role_counts)
         )
+        ascwds_job_role_counts_lf = pl.union([ascwds_job_role_counts_lf, dummy_fill_lf])
         log_nrows(ascwds_job_role_counts_lf, "ascwds_job_role_counts_full")
 
         estimated_job_role_posts_lf = estimated_posts_lf.join(
             other=ascwds_job_role_counts_lf,
             on=join_keys,
             how="left",
-        ).drop(join_keys)
+        )
 
         log_nrows(estimated_job_role_posts_lf, "after join")
 
@@ -189,6 +179,7 @@ def main(
         pl.scan_parquet(tmp_file, cache=False)
         .explode("job_role_data")
         .unnest("job_role_data")
+        .drop(join_keys)
     )
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
