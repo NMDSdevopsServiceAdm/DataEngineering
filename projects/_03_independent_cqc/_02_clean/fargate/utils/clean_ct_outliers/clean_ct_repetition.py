@@ -33,6 +33,8 @@ def clean_ct_values_after_consecutive_repetition(
     Nulls Capacity Tracker values after they have consecutively repeated for too
     long.
 
+    Warning: This function return null values unless column filter_rule_column_name = "populated".
+
     When a value is repeated for more than a repetition limit, then the value is
     nulled after the limit period until a different value has been submitted.
     The repetition limit is based on the 75th percentile of the mean days that
@@ -64,7 +66,6 @@ def clean_ct_values_after_consecutive_repetition(
 
     streak_id = (
         pl.col(column_to_clean)
-        .forward_fill()
         .rle_id()
         .over(
             partition_by=[IndCQC.location_id, filter_rule_column_name],
