@@ -191,8 +191,9 @@ def main(
     tmp_dest = estimates_by_job_role_destination.replace("dataset=", "dataset=temp_")
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(pct_share_groups)
     log_polars_plan(estimated_job_role_posts_lf, "Post Join")
-    estimated_job_role_posts_lf.sink_parquet(tmp_dest, mkdir=True, engine="streaming")
-    estimated_job_role_posts_lf = pl.scan_parquet(tmp_dest, cache=False)
+    tmp_file = f"{tmp_dest}file.parquet"
+    estimated_job_role_posts_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
+    estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False)
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
