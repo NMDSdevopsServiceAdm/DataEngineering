@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 
 - Setup polars version of imputation job and validation. The job only reads and writes data, no functionality.
 
+- Converted enrich_with_model_predictions utils function to Polars and converted the tests for the same.
+
 ### Changed
 
 

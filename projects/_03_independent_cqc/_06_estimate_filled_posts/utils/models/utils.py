@@ -7,6 +7,7 @@ from utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\utils.py
 def enrich_with_model_predictions(
     ind_cqc_df: DataFrame, bucket_name: str, model_name: str
 ) -> DataFrame:
@@ -65,6 +66,7 @@ def set_min_value(df: DataFrame, col_name: str, min_value: float = 1.0) -> DataF
     )
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\utils.py
 def join_model_predictions(
     df: DataFrame,
     predictions_df: DataFrame,

@@ -1188,3 +1188,83 @@ class OutlierCleaningSchemas:
             IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,
         }
     )
+
+
+@dataclass
+class EstimateFilledPostsModelsUtils:
+    enrich_model_ind_cqc_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.care_home: pl.String,
+            IndCQC.number_of_beds: pl.Int64,
+        }
+    )
+
+    test_non_res_model_name: str = "non_res_model"
+    enrich_model_predictions_non_res_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.service_count: pl.Int64,
+            IndCQC.prediction: pl.Float64,
+            IndCQC.prediction_run_id: pl.String,
+        }
+    )
+    expected_enrich_model_ind_cqc_non_res_schema = pl.Schema(
+        {
+            **enrich_model_ind_cqc_schema,
+            test_non_res_model_name: pl.Float64,
+            f"{test_non_res_model_name}_run_id": pl.String,
+        }
+    )
+
+    test_care_home_model_name: str = IndCQC.care_home_model
+    enrich_model_predictions_care_home_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.number_of_beds: pl.Int64,
+            IndCQC.prediction: pl.Float64,
+            IndCQC.prediction_run_id: pl.String,
+        }
+    )
+    expected_enrich_model_ind_cqc_care_home_schema = pl.Schema(
+        {
+            **enrich_model_ind_cqc_schema,
+            test_care_home_model_name: pl.Float64,
+            f"{test_care_home_model_name}_run_id": pl.String,
+        }
+    )
+
+    join_test_model: str = IndCQC.care_home_model
+    join_ind_cqc_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.current_region: pl.String,
+            IndCQC.number_of_beds: pl.Int64,
+            IndCQC.cqc_location_import_date: pl.Date,
+        }
+    )
+    join_prediction_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.number_of_beds: pl.Int64,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.prediction: pl.Float64,
+            IndCQC.prediction_run_id: pl.String,
+        }
+    )
+    expected_join_without_run_id_schema = pl.Schema(
+        {
+            **join_ind_cqc_schema,
+            join_test_model: pl.Float64,
+        }
+    )
+    expected_join_with_run_id_schema = pl.Schema(
+        {
+            **join_ind_cqc_schema,
+            join_test_model: pl.Float64,
+            f"{join_test_model}_run_id": pl.String,
+        }
+    )
