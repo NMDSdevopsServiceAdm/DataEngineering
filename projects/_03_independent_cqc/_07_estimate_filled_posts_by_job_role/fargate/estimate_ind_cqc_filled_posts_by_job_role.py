@@ -113,6 +113,17 @@ def main(
         )
         log_nrows(estimated_posts_lf, "estimated_posts")
 
+        dummy_establishment_ID = "DUMMY"
+        dummy_keys = (
+            estimated_posts_lf.filter(pl.col(IndCQC.establishment_id).is_null())
+            .select(IndCQC.ascwds_workplace_import_date)
+            .unique()
+            .with_columns(pl.lit(dummy_establishment_ID).alias(IndCQC.establishment_id))
+        )
+        estimated_posts_lf = estimated_posts_lf.with_columns(
+            pl.col(IndCQC.establishment_id).fill_null(dummy_establishment_ID)
+        )
+
         ascwds_job_role_counts_lf = (
             utils.scan_parquet(
                 source=ascwds_job_role_counts_source,
@@ -125,7 +136,7 @@ def main(
                 {IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date}
             )
         )
-        log_nrows(estimated_posts_lf, "ascwds_job_role_counts")
+        log_nrows(ascwds_job_role_counts_lf, "ascwds_job_role_counts")
 
         job_roles_lf = pl.LazyFrame(
             {
@@ -133,9 +144,14 @@ def main(
             }
         )
         job_roles_establishment_cross_lf = (
-            ascwds_job_role_counts_lf.select(
-                IndCQC.establishment_id,
-                IndCQC.ascwds_workplace_import_date,
+            pl.union(
+                [
+                    ascwds_job_role_counts_lf.select(
+                        IndCQC.establishment_id,
+                        IndCQC.ascwds_workplace_import_date,
+                    ),
+                    dummy_keys,
+                ]
             )
             .unique()
             .join(job_roles_lf, how="cross")
@@ -150,6 +166,7 @@ def main(
             ],
             how="left",
         )
+        log_nrows(ascwds_job_role_counts_lf, "ascwds_job_role_counts")
 
         estimated_job_role_posts_lf = estimated_posts_lf.join(
             other=ascwds_job_role_counts_lf,
