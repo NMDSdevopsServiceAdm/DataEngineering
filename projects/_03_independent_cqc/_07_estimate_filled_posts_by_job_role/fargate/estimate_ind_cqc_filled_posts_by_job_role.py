@@ -131,6 +131,15 @@ def main(
     )
 
     pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
+
+    tmp_dest = estimates_by_job_role_destination.replace("dataset=", "dataset=temp_")
+
+    # Sort, explain then save to a temp file.
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(pct_share_groups)
+    log_polars_plan(estimated_job_role_posts_lf, "Post Join")
+    estimated_job_role_posts_lf.sink_parquet(tmp_dest, mkdir=True, engine="streaming")
+    estimated_job_role_posts_lf = pl.scan_parquet(tmp_dest, cache=False)
+
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
         .over(pct_share_groups)
