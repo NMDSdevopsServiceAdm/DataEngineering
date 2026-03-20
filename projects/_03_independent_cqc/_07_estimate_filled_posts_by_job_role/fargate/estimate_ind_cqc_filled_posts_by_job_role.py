@@ -7,6 +7,9 @@ import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargat
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
+)
 
 # ECS/Cloudwatch captures stdout logging.
 logging.basicConfig(
@@ -118,8 +121,32 @@ def main(
         )
         log_nrows(estimated_posts_lf, "ascwds_job_role_counts")
 
+        job_roles_lf = pl.LazyFrame(
+            {
+                IndCQC.main_job_role_clean_labelled: AscwdsWorkerValueLabelsJobGroup.all_roles()
+            }
+        )
+        job_roles_establishment_cross_lf = (
+            ascwds_job_role_counts_lf.select(
+                IndCQC.establishment_id, IndCQC.ascwds_worker_import_date
+            )
+            .unique()
+            .join(job_roles_lf, how="cross")
+        )
+
+        ascwds_job_role_counts_lf = job_roles_establishment_cross_lf.join(
+            ascwds_job_role_counts_lf,
+            on=[
+                IndCQC.establishment_id,
+                IndCQC.ascwds_worker_import_date,
+                IndCQC.main_job_role_clean_labelled,
+            ],
+            how="left",
+        )
+
         estimated_job_role_posts_lf = JRUtils.join_worker_to_estimates_dataframe(
-            estimated_posts_lf, ascwds_job_role_counts_lf
+            estimated_posts_lf,
+            ascwds_job_role_counts_lf,
         ).drop(left_join_keys)
         log_nrows(estimated_job_role_posts_lf, "after join")
 
