@@ -107,7 +107,7 @@ def main(
     )
 
     locations_df = clean_capacity_tracker_care_home_outliers(locations_df)
-    # locations_df = clean_capacity_tracker_non_res_outliers(locations_df)
+    locations_df = clean_capacity_tracker_non_res_outliers(locations_df)
 
     locations_df = calculate_care_home_status_count(locations_df)
 
