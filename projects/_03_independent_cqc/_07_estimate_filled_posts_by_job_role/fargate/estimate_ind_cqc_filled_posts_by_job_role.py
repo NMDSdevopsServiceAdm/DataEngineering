@@ -168,7 +168,7 @@ def main(
             ],
             how="left",
         )
-        log_nrows(ascwds_job_role_counts_lf, "ascwds_job_role_counts")
+        log_nrows(ascwds_job_role_counts_lf, "ascwds_job_role_counts_full")
 
         estimated_job_role_posts_lf = estimated_posts_lf.join(
             other=ascwds_job_role_counts_lf,
@@ -298,6 +298,11 @@ def log_nrows(lf: pl.LazyFrame, context: str) -> None:
     sys.stdout.flush()
 
 
+def cast_to_schema(schema: dict[str, pl.DataType]) -> list[pl.Expr]:
+    """Cast columns to given schema."""
+    return [pl.col(c).cast(dtype) for c, dtype in schema.items()]
+
+
 if __name__ == "__main__":
     args = utils.get_args(
         (
@@ -318,8 +323,3 @@ if __name__ == "__main__":
         ascwds_job_role_counts_source=args.ascwds_job_role_counts_source,
         estimates_by_job_role_destination=args.estimates_by_job_role_destination,
     )
-
-
-def cast_to_schema(schema: dict[str, pl.DataType]) -> list[pl.Expr]:
-    """Cast columns to given schema."""
-    return [pl.col(c).cast(dtype) for c, dtype in schema.items()]
