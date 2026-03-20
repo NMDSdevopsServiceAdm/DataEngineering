@@ -72,7 +72,7 @@ transformation_columns = {
     IndCQC.primary_service_type: pl.Categorical,
     IndCQC.registered_manager_names: pl.List(str),
     IndCQC.ascwds_filled_posts_dedup_clean: pl.Float64,
-    Keys.year: pl.Categorical,
+    Keys.year: pl.Int16,
 }
 join_keys = [
     IndCQC.ascwds_workplace_import_date,
