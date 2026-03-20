@@ -97,7 +97,7 @@ def compute_outlier_cutoff_and_clean(
 
     lf = lf.with_columns(
         pl.when("abs_diff_expr" > "cutoff_expr")
-        .then(None)
+        .then(pl.lit(None))
         .otherwise(pl.col(col_to_clean))
         .alias(cleaned_column_name)
     )
