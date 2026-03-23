@@ -64,14 +64,11 @@ def clean_ct_values_after_consecutive_repetition(
 
     limit_expr = repetition_limit_expr(column_to_clean, repetition_limit_dict)
 
-    streak_id = (
-        pl.col(column_to_clean)
-        .rle_id()
-        .over(
-            partition_by=[IndCQC.location_id, filter_rule_column_name],
-            order_by=[IndCQC.location_id, IndCQC.cqc_location_import_date],
-        )
-    )  # Why forward fill here???
+    lf = lf.sort(
+        [IndCQC.location_id, IndCQC.cqc_location_import_date, filter_rule_column_name]
+    )
+
+    streak_id = pl.col(column_to_clean).forward_fill().rle_id().over(IndCQC.location_id)
 
     streak_start = (
         pl.col(IndCQC.cqc_location_import_date)
@@ -94,7 +91,7 @@ def clean_ct_values_after_consecutive_repetition(
 
     lf = lf.with_columns(cleaned_expr.alias(cleaned_column_name))
 
-    lf_cleaned = update_filtering_rule(
+    lf = update_filtering_rule(
         lf=lf,
         filter_rule_col_name=filter_rule_column_name,
         raw_col_name=column_to_clean,
@@ -103,7 +100,7 @@ def clean_ct_values_after_consecutive_repetition(
         new_rule_name=CTFilteringRule.location_repeats_total_posts,
     )
 
-    return lf_cleaned
+    return lf
 
 
 def repetition_limit_expr(
