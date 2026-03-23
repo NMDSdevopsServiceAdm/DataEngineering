@@ -9,7 +9,7 @@ from utils.column_values.categorical_column_values import CTFilteringRule
 
 def clean_longitudinal_outliers(
     lf: pl.LazyFrame,
-    col_to_clean: str,
+    column_to_clean: str,
     cleaned_column_name: str,
     proportion_to_filter: float,
     care_home: bool,
@@ -24,7 +24,7 @@ def clean_longitudinal_outliers(
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame containing the data to clean.
-        col_to_clean (str): Column name containing numerical values to clean.
+        column_to_clean (str): Column name containing numerical values to clean.
         cleaned_column_name (str): Name of the new column to store cleaned values.
         proportion_to_filter (float): Proportion of extreme values to consider as
             outliers.
@@ -42,7 +42,7 @@ def clean_longitudinal_outliers(
 
     lf = compute_outlier_cutoff_and_clean(
         lf=lf,
-        col_to_clean=col_to_clean,
+        column_to_clean=column_to_clean,
         cleaned_column_name=cleaned_column_name,
         proportion_to_filter=proportion_to_filter,
     )
@@ -50,7 +50,7 @@ def clean_longitudinal_outliers(
     lf = update_filtering_rule(
         lf=lf,
         filter_rule_col_name=filter_rule_column_name,
-        raw_col_name=col_to_clean,
+        raw_col_name=column_to_clean,
         clean_col_name=cleaned_column_name,
         populated_rule=CTFilteringRule.populated,
         new_rule_name=CTFilteringRule.longitudinal_outliers,
@@ -61,7 +61,7 @@ def clean_longitudinal_outliers(
 
 def compute_outlier_cutoff_and_clean(
     lf: pl.LazyFrame,
-    col_to_clean: str,
+    column_to_clean: str,
     cleaned_column_name: str,
     proportion_to_filter: float,
 ) -> pl.LazyFrame:
@@ -75,7 +75,7 @@ def compute_outlier_cutoff_and_clean(
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame.
-        col_to_clean (str): Column containing numerical values to clean.
+        column_to_clean (str): Column containing numerical values to clean.
         cleaned_column_name (str): Name of the output cleaned column.
         proportion_to_filter (float): Proportion of extreme values to treat as
             outliers.
@@ -85,14 +85,14 @@ def compute_outlier_cutoff_and_clean(
             removed.
     """
     percentile = 1 - proportion_to_filter
-    median_expr = pl.col(col_to_clean).median().over(IndCQC.location_id)
-    abs_diff_expr = (pl.col(col_to_clean) - median_expr).abs()
+    median_expr = pl.col(column_to_clean).median().over(IndCQC.location_id)
+    abs_diff_expr = (pl.col(column_to_clean) - median_expr).abs()
     cutoff_expr = abs_diff_expr.quantile(percentile, interpolation="linear").first()
 
     lf = lf.with_columns(
         pl.when(abs_diff_expr > cutoff_expr)
-        .then(pl.lit(None))
-        .otherwise(pl.col(col_to_clean))
+        .then(None)
+        .otherwise(pl.col(column_to_clean))
         .alias(cleaned_column_name)
     )
 

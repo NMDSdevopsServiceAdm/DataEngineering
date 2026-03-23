@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import Mock, patch
+
 import polars as pl
 import polars.testing as pl_testing
 
@@ -10,7 +11,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     OutlierCleaningSchemas as Schemas,
 )
-
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH: str = (
@@ -37,7 +37,7 @@ class TestFunctionsAreCalled(TestCleanLongitudinalOutliers):
     ):
         job.clean_longitudinal_outliers(
             lf=self.test_lf,
-            col_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
+            column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
             cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
             proportion_to_filter=0.10,
             care_home=False,
@@ -51,7 +51,7 @@ class TestCleanLongitudinalOutliersValues(TestCleanLongitudinalOutliers):
     def test_function_returns_expected_values(self):
         returned_lf = job.clean_longitudinal_outliers(
             lf=self.test_lf,
-            col_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
+            column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
             cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
             proportion_to_filter=0.10,
             care_home=False,
@@ -73,7 +73,7 @@ class TestComputeOutlierCutoffAndClean(unittest.TestCase):
         )
         self.returned_lf = job.compute_outlier_cutoff_and_clean(
             lf=self.test_lf,
-            col_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
+            column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
             cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
             proportion_to_filter=0.10,
         )
