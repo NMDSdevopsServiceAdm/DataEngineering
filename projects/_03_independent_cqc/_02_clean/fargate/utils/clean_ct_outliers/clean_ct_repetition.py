@@ -1,6 +1,5 @@
 import polars as pl
 
-import projects._03_independent_cqc.utils.utils.utils as utils
 from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
     update_filtering_rule,
 )
@@ -62,6 +61,8 @@ def clean_ct_values_after_consecutive_repetition(
         filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
 
     limit_expr = repetition_limit_expr(column_to_clean, repetition_limit_dict)
+
+    lf = lf.sort([IndCQC.location_id, IndCQC.cqc_location_import_date])
 
     streak_id = pl.col(column_to_clean).forward_fill().rle_id().over(IndCQC.location_id)
 
