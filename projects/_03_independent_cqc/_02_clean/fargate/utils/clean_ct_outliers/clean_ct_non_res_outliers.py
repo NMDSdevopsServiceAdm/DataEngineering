@@ -48,18 +48,18 @@ def clean_capacity_tracker_non_res_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     lf = aggregate_values_to_provider_level(lf, IndCQC.ct_non_res_care_workers_employed)
 
+    lf = clean_ct_values_after_consecutive_repetition(
+        lf=lf,
+        column_to_clean=IndCQC.ct_non_res_care_workers_employed,
+        cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
+        care_home=False,
+    )
+
     lf = clean_longitudinal_outliers(
         lf=lf,
         col_to_clean=IndCQC.ct_non_res_care_workers_employed,
         cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
         proportion_to_filter=0.001,
-        care_home=False,
-    )
-
-    lf = clean_ct_values_after_consecutive_repetition(
-        lf=lf,
-        column_to_clean=IndCQC.ct_non_res_care_workers_employed,
-        cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
         care_home=False,
     )
 

@@ -51,18 +51,18 @@ def clean_capacity_tracker_care_home_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     lf = null_posts_per_bed_outliers(lf)
 
+    lf = clean_ct_values_after_consecutive_repetition(
+        lf=lf,
+        column_to_clean=IndCQC.ct_care_home_total_employed_cleaned,
+        cleaned_column_name=IndCQC.ct_care_home_total_employed_cleaned,
+        care_home=True,
+    )
+
     lf = clean_longitudinal_outliers(
         lf=lf,
         col_to_clean=IndCQC.ct_care_home_total_employed_cleaned,
         cleaned_column_name=IndCQC.ct_care_home_total_employed_cleaned,
         proportion_to_filter=0.001,
-        care_home=True,
-    )
-
-    lf = clean_ct_values_after_consecutive_repetition(
-        lf=lf,
-        column_to_clean=IndCQC.ct_care_home_total_employed_cleaned,
-        cleaned_column_name=IndCQC.ct_care_home_total_employed_cleaned,
         care_home=True,
     )
 
