@@ -3,7 +3,6 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.5"
 
-from pyspark.sql import DataFrame
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.estimate_non_res_ct_filled_posts import (
     estimate_non_res_capacity_tracker_filled_posts,
@@ -92,14 +91,14 @@ ind_cqc_columns = [
     Keys.import_date,
 ]
 
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+PartitionKeys = [Keys.year]
 
 
 def main(
     bucket_name: str,
     imputed_ind_cqc_data_source: str,
     estimated_ind_cqc_destination: str,
-) -> DataFrame:
+) -> None:
     print("Estimating independent CQC filled posts...")
 
     spark = utils.get_spark()
