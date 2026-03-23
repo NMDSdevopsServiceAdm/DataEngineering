@@ -274,6 +274,7 @@ def calculate_filled_posts_per_bed_ratio(
     return input_df
 
 
+# not converting this function to polars, use '.mul()' instead
 def calculate_filled_posts_from_beds_and_ratio(
     df: DataFrame, ratio_column: str, new_column_name: str
 ) -> DataFrame:
