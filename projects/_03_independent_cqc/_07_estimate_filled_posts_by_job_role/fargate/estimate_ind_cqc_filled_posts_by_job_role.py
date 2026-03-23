@@ -113,7 +113,7 @@ def main(
         )
 
         # Cartesian product all roles before joining ASCWDS.
-        estimated_posts_lf = estimated_posts_lf.with_columns().join(
+        estimated_posts_lf = estimated_posts_lf.join(
             pl.LazyFrame(
                 data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
                 schema={IndCQC.main_job_role_clean_labelled: pl.Categorical},
