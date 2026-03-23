@@ -28,12 +28,10 @@ class TestCleanLongitudinalOutliers(unittest.TestCase):
 
 
 class TestFunctionsAreCalled(TestCleanLongitudinalOutliers):
-    @patch(f"{PATCH_PATH}.compute_outlier_cutoff_and_clean")
     @patch(f"{PATCH_PATH}.update_filtering_rule")
     def test_functions_are_called(
         self,
         update_filtering_rule_mock: Mock,
-        compute_outlier_cutoff_and_clean_mock: Mock,
     ):
         job.clean_longitudinal_outliers(
             lf=self.test_lf,
@@ -42,8 +40,6 @@ class TestFunctionsAreCalled(TestCleanLongitudinalOutliers):
             proportion_to_filter=0.10,
             care_home=False,
         )
-
-        compute_outlier_cutoff_and_clean_mock.assert_called_once()
         update_filtering_rule_mock.assert_called_once()
 
 
@@ -61,30 +57,5 @@ class TestCleanLongitudinalOutliersValues(TestCleanLongitudinalOutliers):
             Schemas.input_schema,
             orient="row",
         )
+        print(returned_lf.collect().glimpse(max_items_per_column=23))
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
-
-
-class TestComputeOutlierCutoffAndClean(unittest.TestCase):
-    def setUp(self):
-        self.test_lf = pl.LazyFrame(
-            Data.compute_outlier_cutoff_and_clean_input_rows,
-            Schemas.compute_outlier_cutoff_and_clean_schema,
-            orient="row",
-        )
-        self.returned_lf = job.compute_outlier_cutoff_and_clean(
-            lf=self.test_lf,
-            column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
-            cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
-            proportion_to_filter=0.10,
-        )
-
-        self.expected_lf = pl.LazyFrame(
-            Data.expected_compute_outlier_cutoff_and_clean_rows,
-            Schemas.compute_outlier_cutoff_and_clean_schema,
-            orient="row",
-        )
-
-    def test_function_returns_expected_values(self):
-        pl_testing.assert_frame_equal(
-            self.returned_lf, self.expected_lf, check_row_order=False
-        )

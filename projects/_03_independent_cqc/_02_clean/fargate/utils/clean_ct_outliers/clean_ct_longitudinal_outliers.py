@@ -17,10 +17,14 @@ def clean_longitudinal_outliers(
     """
     Cleans longitudinal outliers from a numerical column in a LazyFrame.
 
+    Warning: This function will return null values where the filtering
+    rule is not "populated", as well as outlying values.
+
     The function computes the group-wise median and absolute deviation,
-    flags outliers based on the specified proportion to filter, and replaces
-    outlier values with null. Additionally, updates filtering rules for care
-    home or non-residential data.
+    on rows where the filtering rule is "populated".
+    The cutoff is then determined by the value at the given percentile.
+    Values greater than the cutoff are nulled.
+    The filtering rule value is then updated.
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame containing the data to clean.
@@ -40,11 +44,28 @@ def clean_longitudinal_outliers(
     else:
         filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
 
-    lf = compute_outlier_cutoff_and_clean(
-        lf=lf,
-        column_to_clean=column_to_clean,
-        cleaned_column_name=cleaned_column_name,
-        proportion_to_filter=proportion_to_filter,
+    percentile = 1 - proportion_to_filter
+
+    median_expr = (
+        pl.col(column_to_clean)
+        .median()
+        .over([IndCQC.location_id, filter_rule_column_name])
+    )
+
+    abs_diff_expr = pl.when(
+        pl.col(filter_rule_column_name) == CTFilteringRule.populated
+    ).then((pl.col(column_to_clean) - median_expr).abs())
+
+    cutoff_expr = abs_diff_expr.quantile(percentile, interpolation="linear").first()
+
+    lf = lf.with_columns(
+        pl.when(
+            (pl.col(filter_rule_column_name) == CTFilteringRule.populated)
+            & (abs_diff_expr <= cutoff_expr)
+        )
+        .then(pl.col(column_to_clean))
+        .otherwise(None)
+        .alias(cleaned_column_name)
     )
 
     lf = update_filtering_rule(
@@ -54,46 +75,6 @@ def clean_longitudinal_outliers(
         clean_col_name=cleaned_column_name,
         populated_rule=CTFilteringRule.populated,
         new_rule_name=CTFilteringRule.longitudinal_outliers,
-    )
-
-    return lf
-
-
-def compute_outlier_cutoff_and_clean(
-    lf: pl.LazyFrame,
-    column_to_clean: str,
-    cleaned_column_name: str,
-    proportion_to_filter: float,
-) -> pl.LazyFrame:
-    """
-    Computes the group-wise median, absolute deviation, global cutoff threshold,
-    and applies outlier cleaning in a single LazyFrame pipeline.
-
-    The cutoff is the (1 - proportion_to_filter) percentile of all absolute
-    deviations from the group median. Values whose absolute deviation exceeds
-    this cutoff are replaced with null in the cleaned column.
-
-    Args:
-        lf (pl.LazyFrame): Input LazyFrame.
-        column_to_clean (str): Column containing numerical values to clean.
-        cleaned_column_name (str): Name of the output cleaned column.
-        proportion_to_filter (float): Proportion of extreme values to treat as
-            outliers.
-
-    Returns:
-        pl.LazyFrame: LazyFrame with the cleaned column added and helper columns
-            removed.
-    """
-    percentile = 1 - proportion_to_filter
-    median_expr = pl.col(column_to_clean).median().over(IndCQC.location_id)
-    abs_diff_expr = (pl.col(column_to_clean) - median_expr).abs()
-    cutoff_expr = abs_diff_expr.quantile(percentile, interpolation="linear").first()
-
-    lf = lf.with_columns(
-        pl.when(abs_diff_expr > cutoff_expr)
-        .then(None)
-        .otherwise(pl.col(column_to_clean))
-        .alias(cleaned_column_name)
     )
 
     return lf
