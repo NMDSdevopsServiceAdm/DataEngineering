@@ -6,6 +6,21 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Setup polars version of estimates job and validation. The job only reads and writes data, no functionality.
+
+- Setup polars version of imputation job and validation. The job only reads and writes data, no functionality.
+
+- Converted enrich_with_model_predictions utils function to Polars and converted the tests for the same.
+
+### Changed
+
+
+### Fixed
+
+
+## [v2026.02.0] - 12/03/2026
+
+### Added
 - Converted archive job from pyspark to polars.
 
 - Created polars job script for clean ind cqc filled posts. Script only reads and writes data and has comments
@@ -44,6 +59,8 @@ All notable changes to this project will be documented in this file.
 
 - Combined the CSSR areas Cornwall and Isles of Scilly.
 
+- Set the historical non-residential without dormancy to no longer re-train.
+
 ### Fixed
 - Changed the raw ONS CSV data to contain numeric codes instead of labels. The labels are then added during the cleaning step to improve naming consistency over time.
 
@@ -78,6 +95,8 @@ All notable changes to this project will be documented in this file.
 - Converted `filtering_utils.py`, `forward_fill_latest_known_value.py` and `utils.py` within clean Ind CQC job to polars.
 
 - Converted clean_ascwds_filled_post_outliers utils folder to polars within Clean Ind CQC Job.
+
+- Converted `clean_ct_outliers` utils folder to polars within Clean Ind CQC Job and added tests for them as well.
 
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.

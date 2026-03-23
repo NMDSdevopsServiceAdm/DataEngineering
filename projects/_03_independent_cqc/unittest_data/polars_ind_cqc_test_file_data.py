@@ -1,6 +1,7 @@
 import math
 from dataclasses import dataclass
 from datetime import date
+from typing import Any
 
 import numpy as np
 
@@ -13,9 +14,11 @@ from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_ca
 from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     CareHome,
+    CTFilteringRule,
     Dormancy,
     MainJobRoleLabels,
     PrimaryServiceType,
+    Region,
     Sector,
 )
 
@@ -654,6 +657,40 @@ class ValidateCleanIndCQCData:
         (date(2024, 2, 1), "1-002", Sector.independent, "N", None),
     ]
     # fmt: on
+
+
+@dataclass
+class ValidateImputedIndCqcAscwdsAndPir:
+    cleaned_ind_cqc_rows = [
+        ("1-000000001", date(2024, 1, 1),),
+        ("1-000000002", date(2024, 1, 1),),
+        ("1-000000001", date(2024, 2, 1),),
+        ("1-000000002", date(2024, 2, 1),),
+    ] # fmt: skip
+
+    imputed_ind_cqc_ascwds_and_pir_rows = [
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
+    ] # fmt: skip
+
+
+@dataclass
+class ValidateEstimatedIndCQCFilledPostsData:
+    imputed_ind_cqc_rows = [
+        ("1-000000001", date(2024, 1, 1)),
+        ("1-000000002", date(2024, 1, 1)),
+        ("1-000000001", date(2024, 2, 1)),
+        ("1-000000002", date(2024, 2, 1)),
+    ]
+
+    estimated_ind_cqc_filled_posts_rows = [
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+    ] # fmt: skip
 
 
 @dataclass
@@ -2008,4 +2045,221 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
             None,
             AscwdsFilteringRule.populated,
         ),
+    ]
+
+
+@dataclass
+class NullCtPostsToBedsOutliers:
+    null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00, 1, CTFilteringRule.populated),
+        ("1-002", 1, None, 1, CTFilteringRule.populated),
+        ("1-003", None, 1.00, None, CTFilteringRule.missing_data),
+        ("1-004", None, None, None, CTFilteringRule.missing_data),
+        ("1-005", 1, 0.65, 1, CTFilteringRule.populated),
+        ("1-006", 1, 6.01, 1, CTFilteringRule.populated),
+    ]
+    expected_null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00, 1, CTFilteringRule.populated),
+        ("1-002", 1, None, 1, CTFilteringRule.populated),
+        ("1-003", None, 1.00, None, CTFilteringRule.missing_data),
+        ("1-004", None, None, None, CTFilteringRule.missing_data),
+        ("1-005", 1, 0.65, None, CTFilteringRule.beds_ratio_outlier),
+        ("1-006", 1, 6.01, None, CTFilteringRule.beds_ratio_outlier),
+    ]
+
+
+@dataclass
+class CleanCtRepetitionTestCase:
+    id: str
+    data: list[Any]
+
+
+clean_ct_repetition_values_test_cases = [
+    CleanCtRepetitionTestCase(
+        id="basic_streaks_with_nulls",
+        data=[
+            ("1-001",date(2025, 1, 1),1,1,CTFilteringRule.populated,),
+            ("1-001",date(2025, 2, 1),2,2,CTFilteringRule.populated,),
+            ("1-001",date(2025, 3, 1),2,2,CTFilteringRule.populated,),
+            ("1-001",date(2025, 4, 1),None,None,CTFilteringRule.missing_data,),
+            ("1-001",date(2025, 11, 7),2,None,CTFilteringRule.location_repeats_total_posts,),
+            ("1-001",date(2025, 12, 1),3,3,CTFilteringRule.populated,),
+            ("1-001", date(2026, 1, 1), 4, 4, "some_other_rule", "some_other_rule"),
+        ],
+    ),
+    CleanCtRepetitionTestCase(
+        id="micro_location_streaks",
+        data=[
+            ("1-001",date(2025, 1, 1),1,1,CTFilteringRule.populated,),
+            ("1-001",date(2026, 10, 1),1,None,CTFilteringRule.location_repeats_total_posts,),
+        ],
+    ),
+    CleanCtRepetitionTestCase(
+        id="small_location_streaks",
+        data=[
+            ("1-002",date(2025, 2, 1),10,10,CTFilteringRule.populated,),
+            ("1-002",date(2025, 7, 1),10,None,CTFilteringRule.location_repeats_total_posts,),
+        ],
+    ),
+    CleanCtRepetitionTestCase(
+        id="medium_location_streaks",
+        data=[
+            ("1-003",date(2025, 3, 1),50,50,CTFilteringRule.populated,),
+            ("1-003",date(2025, 7, 1),50,None,CTFilteringRule.location_repeats_total_posts,),
+        ],
+    ),
+    CleanCtRepetitionTestCase(
+        id="large_location_streaks",
+        data=[
+            ("1-004",date(2025, 4, 1),250,250,CTFilteringRule.populated,),
+            ("1-004",date(2025, 7, 1),250,None,CTFilteringRule.location_repeats_total_posts,),
+        ],
+    ),
+] # fmt: skip
+
+
+@dataclass
+class OutlierCleaningData:
+    clean_longitudinal_outliers_input_rows = [
+        ("1-001", 5, CTFilteringRule.populated),
+        ("1-001", 10, CTFilteringRule.populated),
+        ("1-001", 15, CTFilteringRule.populated),
+        ("1-001", 80, CTFilteringRule.populated),
+        ("1-002", 95, CTFilteringRule.populated),
+        ("1-002", 20, CTFilteringRule.populated),
+        ("1-002", 90, CTFilteringRule.populated),
+        ("1-003", 40, CTFilteringRule.populated),
+        ("1-003", 45, CTFilteringRule.populated),
+        ("1-003", 50, CTFilteringRule.populated),
+        ("1-004", 5, CTFilteringRule.populated),
+        ("1-004", 10, CTFilteringRule.populated),
+        ("1-004", 15, CTFilteringRule.populated),
+        ("1-004", 80, CTFilteringRule.populated),
+        ("1-004", 94, CTFilteringRule.populated),
+        ("1-004", 20, CTFilteringRule.populated),
+        ("1-004", 90, CTFilteringRule.populated),
+        ("1-004", 40, CTFilteringRule.populated),
+        ("1-004", 45, CTFilteringRule.populated),
+        ("1-004", 50, CTFilteringRule.populated),
+    ]
+
+    expected_clean_longitudinal_outliers_remove_value_only_rows = [
+        ("1-001", 5, CTFilteringRule.populated),
+        ("1-001", 10, CTFilteringRule.populated),
+        ("1-001", 15, CTFilteringRule.populated),
+        ("1-001", None, CTFilteringRule.longitudinal_outliers),
+        ("1-002", 95, CTFilteringRule.populated),
+        ("1-002", None, CTFilteringRule.longitudinal_outliers),
+        ("1-002", 90, CTFilteringRule.populated),
+        ("1-003", 40, CTFilteringRule.populated),
+        ("1-003", 45, CTFilteringRule.populated),
+        ("1-003", 50, CTFilteringRule.populated),
+        ("1-004", 5, CTFilteringRule.populated),
+        ("1-004", 10, CTFilteringRule.populated),
+        ("1-004", 15, CTFilteringRule.populated),
+        ("1-004", 80, CTFilteringRule.populated),
+        ("1-004", 94, CTFilteringRule.populated),
+        ("1-004", 20, CTFilteringRule.populated),
+        ("1-004", 90, CTFilteringRule.populated),
+        ("1-004", 40, CTFilteringRule.populated),
+        ("1-004", 45, CTFilteringRule.populated),
+        ("1-004", 50, CTFilteringRule.populated),
+    ]
+
+    compute_outlier_cutoff_and_clean_input_rows = [
+        ("1-001", 5),
+        ("1-001", 10),
+        ("1-001", 15),
+        ("1-001", 80),
+        ("1-002", 95),
+        ("1-002", 20),
+        ("1-002", 90),
+        ("1-003", 40),
+        ("1-003", 45),
+        ("1-003", 50),
+        ("1-004", 5),
+        ("1-004", 10),
+        ("1-004", 15),
+        ("1-004", 80),
+        ("1-004", 94),
+        ("1-004", 20),
+        ("1-004", 90),
+        ("1-004", 40),
+        ("1-004", 45),
+        ("1-004", 50),
+    ]
+    expected_compute_outlier_cutoff_and_clean_rows = [
+        ("1-001", 5),
+        ("1-001", 10),
+        ("1-001", 15),
+        ("1-001", None),
+        ("1-002", 95),
+        ("1-002", None),
+        ("1-002", 90),
+        ("1-003", 40),
+        ("1-003", 45),
+        ("1-003", 50),
+        ("1-004", 5),
+        ("1-004", 10),
+        ("1-004", 15),
+        ("1-004", 80),
+        ("1-004", 94),
+        ("1-004", 20),
+        ("1-004", 90),
+        ("1-004", 40),
+        ("1-004", 45),
+        ("1-004", 50),
+    ]
+
+
+@dataclass
+class EstimateFilledPostsModelsUtils:
+    enrich_model_ind_cqc_rows = [
+        ("1-001", date(2025, 1, 1), CareHome.not_care_home, None),
+        ("1-002", date(2025, 1, 1), CareHome.not_care_home, None),
+        ("1-003", date(2025, 1, 1), CareHome.care_home, 2),
+        ("1-004", date(2025, 1, 1), CareHome.care_home, 2),
+    ]
+
+    enrich_model_predictions_care_home_rows = [
+        ("1-003", date(2025, 1, 1), 2, -0.5, "v1_r1"),
+        ("1-004", date(2025, 1, 1), 2, 2.5, "v1_r1"),
+    ]
+
+    expected_enrich_model_ind_cqc_care_home_rows = [
+        ("1-001", date(2025, 1, 1), CareHome.not_care_home, None, None, None),  # no prediction expected
+        ("1-002", date(2025, 1, 1), CareHome.not_care_home, None, None, None),  # no prediction expected
+        ("1-003", date(2025, 1, 1), CareHome.care_home, 2, -1.0, "v1_r1"),  # prediction (converted to posts) joined in (maintains negative)
+        ("1-004", date(2025, 1, 1), CareHome.care_home, 2, 5.0, "v1_r1"),  # prediction (converted to posts) joined in
+    ] # fmt: skip
+
+    enrich_model_predictions_non_res_rows = [
+        ("1-001", date(2025, 1, 1), 2, -5.0, "v1_r1"),
+        ("1-002", date(2025, 1, 1), 2, 2.5, "v1_r1"),
+    ]
+
+    expected_enrich_model_ind_cqc_non_res_rows = [
+        ("1-001", date(2025, 1, 1), CareHome.not_care_home, None, -5.0, "v1_r1"),  # prediction joined in (maintains negative)
+        ("1-002", date(2025, 1, 1), CareHome.not_care_home, None, 2.5, "v1_r1"),  # prediction joined in
+        ("1-003", date(2025, 1, 1), CareHome.care_home, 2, None, None),  # no prediction expected
+        ("1-004", date(2025, 1, 1), CareHome.care_home, 2, None, None),  # no prediction expected
+    ] # fmt: skip
+    join_ind_cqc_rows = [
+        ("1-001", Region.london, 67, date(2022, 2, 20)),
+        ("1-001", Region.london, 67, date(2022, 3, 29)),
+        ("1-002", Region.north_east, 12, date(2022, 3, 29)),
+    ]
+
+    join_prediction_rows = [
+        ("1-001", 67, date(2022, 3, 29), 10.0, "v1.0.0_r2"),
+    ]
+    expected_join_without_run_id_rows = [
+        ("1-001", Region.london, 67, date(2022, 2, 20), None),
+        ("1-001", Region.london, 67, date(2022, 3, 29), 10.0),
+        ("1-002", Region.north_east, 12, date(2022, 3, 29), None),
+    ]
+    expected_join_with_run_id_rows = [
+        ("1-001", Region.london, 67, date(2022, 2, 20), None, None),
+        ("1-001", Region.london, 67, date(2022, 3, 29), 10.0, "v1.0.0_r2"),
+        ("1-002", Region.north_east, 12, date(2022, 3, 29), None, None),
     ]
