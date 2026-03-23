@@ -90,12 +90,6 @@ def compute_outlier_cutoff_and_clean(
     cutoff_expr = abs_diff_expr.quantile(percentile, interpolation="linear").first()
 
     lf = lf.with_columns(
-        median_expr.alias("median_expr"),
-        abs_diff_expr.alias("abs_diff_expr"),
-        cutoff_expr.alias("cutoff_expr"),
-    )
-
-    lf = lf.with_columns(
         pl.when(abs_diff_expr > cutoff_expr)
         .then(pl.lit(None))
         .otherwise(pl.col(col_to_clean))
