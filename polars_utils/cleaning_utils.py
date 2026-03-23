@@ -148,17 +148,16 @@ def create_banded_bed_count_column(
     zero: float = 0.0
 
     labels = [str(i) for i in range(len(splits[1:-1]) + 1)]
-    output_lf = input_lf.with_columns(
+    expr = (
         pl.col(IndCQC.number_of_beds)
         .cut(breaks=splits[1:-1], labels=labels, left_closed=True)
-        .alias(new_col)
         .cast(pl.String)
         .cast(pl.Float64)
     )
 
-    return output_lf.with_columns(
+    return input_lf.with_columns(
         pl.when(pl.col(IndCQC.care_home) == CareHome.not_care_home)
         .then(zero)
-        .otherwise(pl.col(new_col))
+        .otherwise(expr)
         .alias(new_col)
     )

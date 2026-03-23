@@ -128,6 +128,13 @@ def main(
         ),
     )
 
+    adjustment_expr = JRUtils.ManagerialFilledPostAdjustmentExpr.build()
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        adjustment_expr.over(pct_share_groups).alias(
+            IndCQC.estimate_filled_posts_manager_adjusted
+        )
+    )
+
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
         output_path=estimates_by_job_role_destination,

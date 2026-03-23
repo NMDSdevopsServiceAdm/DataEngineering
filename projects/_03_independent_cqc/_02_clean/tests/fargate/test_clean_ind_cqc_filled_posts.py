@@ -32,7 +32,7 @@ class CleanIndFilledPostsTests(unittest.TestCase):
 
 class MainTests(CleanIndFilledPostsTests):
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    # @patch(f"{PATCH_PATH}.calculate_care_home_status_count")
+    @patch(f"{PATCH_PATH}.calculate_care_home_status_count")
     # @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_care_home_outliers")
     @patch(f"{PATCH_PATH}.forward_fill_latest_known_value")
@@ -65,7 +65,7 @@ class MainTests(CleanIndFilledPostsTests):
         forward_fill_latest_known_value_mock: Mock,
         clean_capacity_tracker_care_home_outliers_mock: Mock,
         # clean_capacity_tracker_non_res_outliers_mock: Mock,
-        # calculate_care_home_status_count_mock: Mock,
+        calculate_care_home_status_count_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = self.merge_ind_cqc_test_df
@@ -89,7 +89,7 @@ class MainTests(CleanIndFilledPostsTests):
         clean_ascwds_filled_post_outliers_mock.assert_called_once()
         clean_capacity_tracker_care_home_outliers_mock.assert_called_once()
         # clean_capacity_tracker_non_res_outliers_mock.assert_called_once()
-        # calculate_care_home_status_count_mock.assert_called_once()
+        calculate_care_home_status_count_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
             ANY,

@@ -4,39 +4,28 @@ from unittest.mock import Mock, call, patch
 
 import polars as pl
 
-import projects._03_independent_cqc._02_clean.fargate.validate_cleaned_ind_cqc_data as job
+import projects._03_independent_cqc._06_estimate_filled_posts.fargate.validate_estimated_ind_cqc_filled_posts_data as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
-    ValidateCleanIndCQCData as Data,
+    ValidateEstimatedIndCQCFilledPostsData as Data,
 )
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
-    ValidateCleanIndCQCSchemas as Schemas,
-)
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
+    ValidateEstimatedIndCQCFilledPostsSchemas as Schemas,
 )
 
-PATCH_PATH = (
-    "projects._03_independent_cqc._02_clean.fargate.validate_cleaned_ind_cqc_data"
-)
-
-merged_locations_columns_to_import = [
-    CQCLClean.cqc_location_import_date,
-    CQCLClean.location_id,
-    CQCLClean.cqc_sector,
-]
+PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.fargate.validate_estimated_ind_cqc_filled_posts_data"
 
 
-class ValidateMergeIndCqcDataTests(unittest.TestCase):
+class ValidateEstimatedIndCQCFilledPostsDataTests(unittest.TestCase):
     def setUp(self) -> None:
         self.source_df = pl.DataFrame(
-            Data.cleaned_ind_cqc_data_rows,
-            Schemas.clean_ind_cqc_schema,
+            Data.estimated_ind_cqc_filled_posts_rows,
+            Schemas.estimated_ind_cqc_filled_posts_schema,
             strict=False,
             orient="row",
         )
         self.compare_df = pl.DataFrame(
-            Data.merged_ind_cqc_data_rows,
-            Schemas.merged_ind_cqc_schema,
+            Data.imputed_ind_cqc_rows,
+            Schemas.imputed_ind_cqc_schema,
             strict=False,
             orient="row",
         )
@@ -56,7 +45,7 @@ class ValidateMergeIndCqcDataTests(unittest.TestCase):
                 call("s3://bucket/my/dataset/", exclude_complex_types=True),
                 call(
                     "s3://bucket/other/dataset/",
-                    selected_columns=merged_locations_columns_to_import,
+                    selected_columns=job.imputed_ind_cqc_cols_to_import,
                 ),
             ]
         )
@@ -81,7 +70,7 @@ class ValidateMergeIndCqcDataTests(unittest.TestCase):
 
         # Check that key validations were run
         expected_assertions = {
-            # "row_count_match",
+            "row_count_match",
             "col_vals_not_null",
             "rows_distinct",
             "col_vals_between",
@@ -95,7 +84,3 @@ class ValidateMergeIndCqcDataTests(unittest.TestCase):
                 assertion_types_present,
                 f"{assertion} not found in validation report",
             )
-
-
-if __name__ == "__main__":
-    unittest.main(warnings="ignore")

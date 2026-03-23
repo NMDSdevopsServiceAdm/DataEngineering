@@ -114,7 +114,7 @@ def main(
     locations_lf = clean_capacity_tracker_care_home_outliers(locations_lf)
     locations_lf = clean_capacity_tracker_non_res_outliers(locations_lf)
 
-    # locations_lf = calculate_care_home_status_count(locations_lf)
+    locations_lf = calculate_care_home_status_count(locations_lf)
 
     print(f"Exporting as parquet to {destination}")
 
