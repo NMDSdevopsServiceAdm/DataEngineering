@@ -166,6 +166,42 @@
                   }
                 },
                 {
+                  "StartAt": "Polars Impute IND CQC data",
+                  "States": {
+                    "Polars Impute IND CQC data": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "impute_ind_cqc_ascwds_and_pir.py",
+                                "--cleaned_ind_cqc_source",
+                                "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
+                                "--destination",
+                                "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir_polars/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
                   "StartAt": "Validate cleaned data",
                   "States": {
                     "Validate cleaned data": {
@@ -223,7 +259,7 @@
             },
             "Model retraining and validate imputed data": {
               "Type": "Parallel",
-              "Next": "Estimate filled posts",
+              "Next": "Estimate filled posts state",
               "Branches": [
                 {
                   "StartAt": "Model Retraining",
@@ -674,21 +710,103 @@
                       "End": true
                     }
                   }
+                },
+                {
+                  "StartAt": "Polars Validate imputed data",
+                  "States": {
+                    "Polars Validate imputed data": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "validate_imputed_ind_cqc_ascwds_and_pir_data.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir_polars/",
+                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_03_imputed_ascwds_and_pir/",
+                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
                 }
               ]
             },
-            "Estimate filled posts": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${estimate_ind_cqc_filled_posts_job_name}",
-                "Arguments": {
-                  "--bucket_name": "${dataset_bucket_name}",
-                  "--imputed_ind_cqc_data_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
-                  "--estimated_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/"
+            "Estimate filled posts state": {
+              "Type": "Parallel",
+              "Next": "Validate estimated filled posts and run diagnostics",
+              "Branches": [
+                {
+                  "StartAt": "Estimate filled posts",
+                  "States": {
+                    "Estimate filled posts": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${estimate_ind_cqc_filled_posts_job_name}",
+                        "Arguments": {
+                          "--bucket_name": "${dataset_bucket_name}",
+                          "--imputed_ind_cqc_data_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
+                          "--estimated_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/"
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Polars Estimate filled posts",
+                  "States": {
+                    "Polars Estimate filled posts": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "estimate_ind_cqc_filled_posts.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--imputed_ind_cqc_data_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
+                                "--destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts_polars/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
                 }
-              },
-              "Next": "Validate estimated filled posts and run diagnostics"
+              ]
             },
             "Validate estimated filled posts and run diagnostics": {
               "Type": "Parallel",
@@ -744,6 +862,42 @@
                           "--care_home_summary_diagnostics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_08_capacity_tracker_care_home_diagnostics_summary/",
                           "--non_res_diagnostics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_08_capacity_tracker_non_residential_diagnostics/",
                           "--non_res_summary_diagnostics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_08_capacity_tracker_non_residential_diagnostics_summary/"
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Polars Validate estimated filled posts",
+                  "States": {
+                    "Polars Validate estimated filled posts": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "validate_estimated_ind_cqc_filled_posts_data.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts_polars/",
+                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_06_estimated_filled_posts/",
+                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
+                              ]
+                            }
+                          ]
                         }
                       },
                       "End": true

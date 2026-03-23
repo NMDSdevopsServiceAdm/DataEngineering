@@ -16,6 +16,8 @@ class MainTests(unittest.TestCase):
     mock_prepared_job_role_counts_data = Mock(name="prepared_job_role_counts_data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.JRUtils.ManagerialFilledPostAdjustmentExpr")
+    @patch(f"{PATCH_PATH}.utils.coalesce_with_source_labels")
     @patch(f"{PATCH_PATH}.JRUtils.rolling_sum_of_job_role_counts")
     @patch(f"{PATCH_PATH}.JRUtils.impute_full_time_series")
     @patch(f"{PATCH_PATH}.JRUtils.percentage_share")
@@ -33,6 +35,8 @@ class MainTests(unittest.TestCase):
         percentage_share_mock: Mock,
         impute_full_time_series_mock: Mock,
         rolling_sum_mock: Mock,
+        coalesce_with_source_labels_mock: Mock,
+        ManagerialFilledPostAdjustmentExprMock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -74,6 +78,12 @@ class MainTests(unittest.TestCase):
             IndCQC.ascwds_job_role_ratios
         )
         rolling_sum_mock.assert_called_once_with(period="6mo")
+        coalesce_with_source_labels_mock.assert_called_once()
+
+        ManagerialFilledPostAdjustmentExprMock.build.assert_called_once()
+        ManagerialFilledPostAdjustmentExprMock.build.return_value.over.assert_called_once_with(
+            pct_share_groups
+        )
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
