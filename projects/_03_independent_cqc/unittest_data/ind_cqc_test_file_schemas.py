@@ -2960,15 +2960,8 @@ class OutlierCleaningSchemas:
             StructField(
                 IndCQC.ct_non_res_care_workers_employed_cleaned, IntegerType(), True
             ),
-            StructField(
-                abs_diff,
-                IntegerType(),
-                True,
-            ),
-            StructField(
-                overall_abs_diff_cutoff,
-                IntegerType(),
-                True,
-            ),
+            StructField(abs_diff, IntegerType(), True),
+            StructField(overall_abs_diff_cutoff, IntegerType(), True),
+            StructField(IndCQC.ct_non_res_filtering_rule, StringType(), True),
         ]
     )
