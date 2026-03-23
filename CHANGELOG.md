@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted enrich_with_model_predictions utils function to Polars and converted the tests for the same.
 
+- Converted combine_non_res_with_and_without_dormancy_models utils function to Polars and converted the tests for the same.
+
 ### Changed
 
 
