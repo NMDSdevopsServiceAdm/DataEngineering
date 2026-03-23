@@ -24,6 +24,9 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
+)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
@@ -1266,5 +1269,81 @@ class EstimateFilledPostsModelsUtils:
             **join_ind_cqc_schema,
             join_test_model: pl.Float64,
             f"{join_test_model}_run_id": pl.String,
+        }
+    )
+
+
+@dataclass
+class ModelNonResWithAndWithoutDormancyCombinedSchemas:
+    estimated_posts_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.care_home: pl.String,
+            IndCQC.related_location: pl.String,
+            IndCQC.time_registered: pl.Int64,
+            IndCQC.non_res_without_dormancy_model: pl.Float64,
+            IndCQC.non_res_with_dormancy_model: pl.Float64,
+            IndCQC.non_res_combined_model: pl.Float64,
+        }
+    )
+
+    group_time_registered_to_six_month_bands_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.time_registered: pl.Int64,
+            NRModel_TempCol.time_registered_banded_and_capped: pl.Float64,
+        }
+    )
+
+    calculate_and_apply_model_ratios_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.related_location: pl.String,
+            NRModel_TempCol.time_registered_banded_and_capped: pl.Int64,
+            IndCQC.non_res_without_dormancy_model: pl.Float64,
+            IndCQC.non_res_with_dormancy_model: pl.Float64,
+            NRModel_TempCol.avg_with_dormancy: pl.Float64,
+            NRModel_TempCol.avg_without_dormancy: pl.Float64,
+            NRModel_TempCol.adjustment_ratio: pl.Float64,
+            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float64,
+        }
+    )
+
+    calculate_and_apply_residuals_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.non_res_with_dormancy_model: pl.Float64,
+            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float64,
+            NRModel_TempCol.residual_at_overlap: pl.Float64,
+            NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied: pl.Float64,
+        }
+    )
+
+    calculate_residuals_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            NRModel_TempCol.first_overlap_date: pl.Date,
+            IndCQC.non_res_with_dormancy_model: pl.Float64,
+            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float64,
+        }
+    )
+
+    expected_calculate_residuals_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            NRModel_TempCol.residual_at_overlap: pl.Float64,
+        }
+    )
+
+    apply_residuals_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float64,
+            NRModel_TempCol.residual_at_overlap: pl.Float64,
+            NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied: pl.Float64,
         }
     )

@@ -2263,3 +2263,91 @@ class EstimateFilledPostsModelsUtils:
         ("1-001", Region.london, 67, date(2022, 3, 29), 10.0, "v1.0.0_r2"),
         ("1-002", Region.north_east, 12, date(2022, 3, 29), None, None),
     ]
+
+
+@dataclass
+class ModelNonResWithAndWithoutDormancyCombinedRows:
+    estimated_posts_rows = [
+        ("1-001", date(2021, 1, 1), "N", "Y", 1, 1.0, None, 2.702127659574468),
+        ("1-001", date(2022, 2, 1), "N", "Y", 2, 3.0, None, 4.23404255319149),
+        ("1-001", date(2023, 3, 1), "N", "Y", 3, 4.0, 5.0, 5.0),
+        ("1-001", date(2024, 4, 1), "N", "Y", 4, 5.0, 5.5, 5.5),
+        ("1-001", date(2025, 5, 1), "N", "Y", 5, 6.0, 6.0, 6.0),
+        ("1-001", date(2025, 6, 1), "N", "Y", 6, 7.0, 6.5, 6.5),
+        ("1-002", date(2021, 1, 1), "N", "Y", 3, 8.0, None, 4.0),
+        ("1-002", date(2022, 2, 1), "N", "Y", 4, 8.0, None, 4.0),
+        ("1-002", date(2023, 3, 1), "N", "Y", 5, 8.0, 4.0, 4.0),
+        ("1-002", date(2024, 4, 1), "N", "Y", 6, 8.0, 4.5, 4.5),
+        ("1-002", date(2025, 5, 1), "N", "Y", 7, 8.0, 5.0, 5.0),
+        ("1-002", date(2025, 6, 1), "N", "Y", 8, 8.0, 5.5, 5.5),
+        ("1-003", date(2021, 1, 1), "N", "N", 1, 2.0, None, 3.25),
+        ("1-003", date(2022, 2, 1), "N", "N", 2, 2.0, None, 3.25),
+        ("1-003", date(2021, 3, 1), "N", "N", 3, 4.0, None, 5.625),
+        ("1-003", date(2022, 4, 1), "N", "N", 4, 4.0, None, 5.625),
+        ("1-003", date(2023, 5, 1), "N", "N", 5, 6.0, 8.0, 8.0),
+        ("1-003", date(2024, 6, 1), "N", "N", 6, 6.0, 9.0, 9.0),
+        ("1-004", date(2024, 4, 1), "Y", "Y", 1, None, None, None),
+        ("1-005", date(2024, 5, 1), "N", "Y", 1, 4.0, 2.0, 2.0),
+        ("1-005", date(2024, 6, 1), "N", "Y", 2, 5.0, 2.5, 2.5),
+        ("1-006", date(2024, 5, 1), "N", "N", 1, 3.0, 2.5, 2.5),
+        ("1-006", date(2024, 6, 1), "N", "N", 2, 3.0, 3.0, 3.0),
+        ("1-006", date(2024, 7, 1), "N", "N", 3, 3.0, 3.0, 3.0),
+        ("1-006", date(2024, 8, 1), "N", "N", 4, 3.0, 3.0, 3.0),
+    ]
+
+    expected_group_time_registered_to_six_month_bands_rows = [
+        ("1-001", 6, 0),
+        ("1-002", 7, 1),
+        ("1-003", 200, 20),
+    ]
+
+    calculate_and_apply_model_ratios_rows = [
+        ("1-001", date(2022, 2, 1), "Y", 2, 3.0, None, 2.5, 5.0, 0.5, 1.5),
+        ("1-001", date(2023, 3, 1), "Y", 3, 4.0, 5.0, 5.0, 4.0, 1.25, 5.0),
+
+        ("1-002", date(2022, 2, 1), "Y", 4, 8.0, None, None, None, None, None),
+        ("1-002", date(2023, 3, 1), "Y", 5, 8.0, 4.0, 4.0, 8.0, 0.5, 4.0),
+
+        ("1-003", date(2022, 2, 1), "N", 2, 2.0, None, None, None, None, None),
+        ("1-003", date(2021, 3, 1), "N", 3, 4.0, None, None, None, None, None),
+        ("1-003", date(2022, 4, 1), "N", 4, 4.0, None, None, None, None, None),
+        ("1-003", date(2023, 5, 1), "N", 5, 6.0, 8.0, 8.0, 6.0, 1.3333333333333333, 8.0),
+        ("1-003", date(2024, 6, 1), "N", 6, 6.0, 9.0, 9.0, 6.0, 1.5, 9.0),
+
+        ("1-004", date(2024, 5, 1), "Y", 1, 4.0, 2.0, 2.0, 4.0, 0.5, 2.0),
+        ("1-004", date(2024, 6, 1), "Y", 2, 5.0, 2.5, 2.5, 5.0, 0.5, 2.5),
+    ]  # fmt: skip
+
+    calculate_and_apply_residuals_rows = [
+        ("1-001", date(2025, 2, 1), 20.0, 15.0, 5.0, 20.0),  # dates match, both models not null, residual calculated
+        ("1-002", date(2025, 1, 1), None, 16.0, -5.0, 11.0),  # "1-002" - with_dormancy is null, residual added from date(2025, 2, 1) but not applied
+        ("1-002", date(2025, 2, 1), 10.0, 15.0, -5.0, 10.0),  # "1-002" - first period with both models present, take the residual
+        ("1-002", date(2025, 3, 1), 11.0, 14.0, -5.0, 9.0),  # "1-002" - residual added from date(2025, 2, 1)
+        ("1-002", date(2025, 4, 1), 12.0, None, -5.0, None),  # "1-002" - without_dormancy is null, residual added from date(2025, 2, 1) but not applied
+        ("1-003", date(2025, 2, 1), 30.0, None, None, None),  # doesn't pass filter, no residual, keep original model value
+        ("1-004", date(2025, 2, 1), None, 15.0, None, 15.0),  # doesn't pass filter, no residual, keep original model value
+        ("1-005", date(2025, 2, 1), None, None, None, None),  # doesn't pass filter, no residual, keep original model value
+    ] # fmt: skip
+
+    calculate_residuals_rows = [
+        ("1-001", date(2025, 1, 1), date(2025, 2, 1), 10.0, 15.0),  # filtered out, dates not equal
+        ("1-002", date(2025, 2, 1), date(2025, 2, 1), 10.0, 15.0),  # not filtered, negative residual
+        ("1-003", date(2025, 2, 1), date(2025, 2, 1), 20.0, 15.0),  # not filtered, positive residual
+        ("1-004", date(2025, 2, 1), date(2025, 2, 1), 30.0, None),  # filtered out, null model value
+        ("1-005", date(2025, 2, 1), date(2025, 2, 1), None, 15.0),  # filtered out, null model value
+        ("1-006", date(2025, 2, 1), date(2025, 2, 1), None, None),  # filtered out, null model value
+    ]  # fmt: skip
+
+    expected_calculate_residuals_rows = [
+        ("1-002", -5.0),  # not filtered, negative residual
+        ("1-003", 5.0),  # not filtered, positive residual
+    ]
+
+    apply_residuals_rows = [
+        ("1-001", 7.0, 12.0, 19.0),
+        ("1-002", 5.0, -0.5, 4.5),
+        ("1-003", 1.0, -2.5, -1.5),
+        ("1-004", 10.0, None, 10.0),
+        ("1-005", None, -1.0, None),
+        ("1-006", None, None, None),
+    ]
