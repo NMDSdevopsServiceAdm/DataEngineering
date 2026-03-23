@@ -134,7 +134,7 @@ def main(
 
         estimated_job_role_posts_lf = estimated_posts_lf.join(
             other=ascwds_job_role_counts_lf,
-            on=join_keys,
+            on=join_keys + [IndCQC.main_job_role_clean_labelled],
             how="left",
         )
 
