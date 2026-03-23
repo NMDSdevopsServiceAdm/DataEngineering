@@ -112,9 +112,13 @@ def main(
             )
         )
 
-        # Fill Nulls with dummy key
-        estimated_posts_lf = estimated_posts_lf.with_columns(
-            pl.col(IndCQC.establishment_id).fill_null("DUMMY")
+        # Cartesian product all roles before joining ASCWDS.
+        estimated_posts_lf = estimated_posts_lf.with_columns().join(
+            pl.LazyFrame(
+                data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
+                schema={IndCQC.main_job_role_clean_labelled: pl.Categorical},
+            ),
+            how="cross",
         )
 
         ascwds_job_role_counts_lf = (
@@ -127,26 +131,6 @@ def main(
                 {IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date}
             )
         )
-
-        unmatched_keys_lf = (
-            estimated_posts_lf.select(join_keys)
-            .join(
-                ascwds_job_role_counts_lf.select(join_keys),
-                on=join_keys,
-                how="anti",
-            )
-            .unique()
-        )
-
-        job_roles_lf = pl.LazyFrame(
-            data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
-            schema={IndCQC.main_job_role_clean_labelled: pl.Categorical},
-        )
-        dummy_fill_lf = unmatched_keys_lf.join(job_roles_lf, how="cross").with_columns(
-            pl.lit(None).cast(pl.Int16).alias(IndCQC.ascwds_job_role_counts)
-        )
-
-        ascwds_job_role_counts_lf = pl.union([ascwds_job_role_counts_lf, dummy_fill_lf])
 
         estimated_job_role_posts_lf = estimated_posts_lf.join(
             other=ascwds_job_role_counts_lf,
