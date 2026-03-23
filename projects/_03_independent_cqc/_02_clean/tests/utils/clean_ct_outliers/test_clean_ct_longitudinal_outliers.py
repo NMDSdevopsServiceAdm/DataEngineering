@@ -81,7 +81,6 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
 
         returned_df = job.clean_longitudinal_outliers(
             test_df,
-            IndCQC.location_id,
             IndCQC.ct_non_res_care_workers_employed_cleaned,
             IndCQC.ct_non_res_care_workers_employed_cleaned,
             0.10,

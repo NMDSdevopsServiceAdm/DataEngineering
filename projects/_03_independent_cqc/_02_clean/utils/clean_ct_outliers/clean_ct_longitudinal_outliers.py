@@ -12,7 +12,6 @@ from utils.column_values.categorical_column_values import CTFilteringRule
 # converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ct_outliers\clean_ct_longitudinal_outliers.py
 def clean_longitudinal_outliers(
     df: DataFrame,
-    group_by_col: str,
     col_to_clean: str,
     cleaned_column_name: str,
     proportion_to_filter: float,
@@ -28,7 +27,6 @@ def clean_longitudinal_outliers(
 
     Args:
         df (DataFrame): Input DataFrame containing the data to clean.
-        group_by_col (str): Column name to group by when computing medians and Absolute difference.
         col_to_clean (str): Column name containing numerical values to clean.
         cleaned_column_name (str): Name of the new column to store cleaned values.
         proportion_to_filter (float): Proportion of extreme values to consider as outliers.
@@ -44,7 +42,11 @@ def clean_longitudinal_outliers(
     else:
         filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
 
-    df_median = compute_group_median(df, group_by_col, col_to_clean)
+    df_median = compute_group_median(
+        df,
+        group_cols=[IndCQC.location_id, filter_rule_column_name],
+        col_to_clean=col_to_clean,
+    )
     df_deviation = calculate_new_column(
         df_median,
         f"{col_to_clean}_abs_diff",
@@ -69,23 +71,25 @@ def clean_longitudinal_outliers(
         new_rule_name=CTFilteringRule.longitudinal_outliers,
     )
 
-    cleaned_df = cleaned_df.drop(
-        f"{col_to_clean}_median_val",
-        f"{col_to_clean}_abs_diff",
-        f"{col_to_clean}_overall_abs_diff_cutoff",
-    )
+    # cleaned_df = cleaned_df.drop(
+    #     f"{col_to_clean}_median_val",
+    #     f"{col_to_clean}_abs_diff",
+    #     f"{col_to_clean}_overall_abs_diff_cutoff",
+    # )
 
     return cleaned_df
 
 
 # converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ct_outliers\clean_ct_longitudinal_outliers.py
-def compute_group_median(df: DataFrame, group_col: str, col_to_clean: str) -> DataFrame:
+def compute_group_median(
+    df: DataFrame, group_cols: list, col_to_clean: str
+) -> DataFrame:
     """
     Computes the median value of a numerical column within each group.
 
     Args:
         df (DataFrame): Input DataFrame.
-        group_col (str): Column name to group by.
+        group_cols (list): Column name to group by.
         col_to_clean (str): Column for which to compute the median.
 
     Returns:
@@ -93,7 +97,7 @@ def compute_group_median(df: DataFrame, group_col: str, col_to_clean: str) -> Da
         the group-wise median.
     """
 
-    w = Window.partitionBy(group_col)
+    w = Window.partitionBy(group_cols)
     df = df.withColumn(
         f"{col_to_clean}_median_val",
         F.percentile(col_to_clean, 0.5).over(w),
