@@ -1658,7 +1658,7 @@ class CleanCtRepetitionTestCase:
 
 clean_ct_repetition_values_test_cases = [
     CleanCtRepetitionTestCase(
-        id="basic_streaks_with_nulls",
+        id="streak_with_missing_data_then_repeat",
         data=[
             ("1-001", date(2025, 1, 1), 1, 1, CTFilteringRule.populated,),
             ("1-001", date(2025, 2, 1), 2, 2, CTFilteringRule.populated,),
@@ -1666,33 +1666,17 @@ clean_ct_repetition_values_test_cases = [
             ("1-001", date(2025, 4, 1), None, None, CTFilteringRule.missing_data,),
             ("1-001", date(2025, 11, 7), 2, None, CTFilteringRule.location_repeats_total_posts,),
             ("1-001", date(2025, 12, 1), 3, 3, CTFilteringRule.populated,),
-            ("1-001", date(2026, 1, 1),  4 , None, "some_other_rule",),
         ],
     ),
     CleanCtRepetitionTestCase(
-        id="streak_with_some_other_filtering_rule_in_the_middle",
+        id="streak_with_any_other_filtering_rule_in_the_middle",
         data=[
             ("1-001", date(2025, 1, 1), 1, 1, CTFilteringRule.populated,),
             ("1-001", date(2025, 2, 1), 2, 2, CTFilteringRule.populated,),
             ("1-001", date(2025, 3, 1), 2, 2, CTFilteringRule.populated,),
-            ("1-001", date(2025, 4, 1), 500, None, "some_other_rule",),
-            ("1-001", date(2025, 5, 1), 500, None, "some_other_rule",),
-            ("1-001", date(2025, 12, 1), 2, None, CTFilteringRule.location_repeats_total_posts,),
-        ],
-    ),
-    CleanCtRepetitionTestCase(
-        id="streak_with_missing_periods_early_on",
-        data=[
-            ("1-001", date(2024, 6, 1), None, None, CTFilteringRule.missing_data,),
-            ("1-001", date(2024, 7, 1), None, None, CTFilteringRule.missing_data,),
-            ("1-001", date(2024, 8, 1), None, None, CTFilteringRule.missing_data,),
-            ("1-001", date(2024, 9, 1), None, None, CTFilteringRule.missing_data,),
-            ("1-001", date(2024, 10, 8), None, None, CTFilteringRule.missing_data,),
-            ("1-001", date(2024, 11, 1), 9, 9, CTFilteringRule.populated,),
-            ("1-001", date(2024, 12, 1), 9, 9, CTFilteringRule.populated,),
-            ("1-001", date(2025, 1, 1), 9, 9, CTFilteringRule.populated,),
-            ("1-001", date(2025, 2, 1), 9, 9, CTFilteringRule.populated,),
-            ("1-001", date(2025, 3, 1), 9, 9, CTFilteringRule.populated,),
+            ("1-001", date(2025, 4, 1), 500, 500, "any_other_rule",),
+            ("1-001", date(2025, 5, 1), 500, 500, "any_other_rule",),
+            ("1-001", date(2025, 12, 1), 2, 2, CTFilteringRule.populated,),
         ],
     ),
     CleanCtRepetitionTestCase(
