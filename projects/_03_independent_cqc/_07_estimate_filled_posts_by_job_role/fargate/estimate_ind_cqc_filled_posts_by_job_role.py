@@ -153,7 +153,9 @@ def main(
     cols = estimated_job_role_posts_lf.collect_schema().names()
     struct_cols = [IndCQC.main_job_role_clean_labelled, IndCQC.ascwds_job_role_counts]
     metadata_cols = [c for c in cols if c not in struct_cols + pct_share_groups]
-    estimated_job_role_posts_lf.group_by(pct_share_groups).agg(
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.group_by(
+        pct_share_groups
+    ).agg(
         *[pl.col(c).first() for c in metadata_cols],
         pl.struct(struct_cols).alias("job_role_data"),
     )
