@@ -147,27 +147,11 @@ def main(
 
     pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
     log_polars_plan(estimated_job_role_posts_lf, "Post Join")
-    # Sort, gather to struct, explain then save to a temp file.
+    # Sink to temp, then rescan to reset Lazy pipeline.
     tmp_dest = estimates_by_job_role_destination.replace("dataset=", "dataset=temp_")
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(pct_share_groups)
-    cols = estimated_job_role_posts_lf.collect_schema().names()
-    struct_cols = [IndCQC.main_job_role_clean_labelled, IndCQC.ascwds_job_role_counts]
-    metadata_cols = [c for c in cols if c not in struct_cols + pct_share_groups]
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.group_by(
-        pct_share_groups
-    ).agg(
-        *[pl.col(c).first() for c in metadata_cols],
-        pl.struct(struct_cols).alias("job_role_data"),
-    )
-    log_polars_plan(estimated_job_role_posts_lf, "After collecting to struct")
     tmp_file = f"{tmp_dest}file.parquet"
     estimated_job_role_posts_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
-    estimated_job_role_posts_lf = (
-        pl.scan_parquet(tmp_file, cache=False)
-        .explode("job_role_data")
-        .unnest("job_role_data")
-        .drop(join_keys)
-    )
+    estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False).drop(join_keys)
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
