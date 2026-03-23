@@ -39,6 +39,11 @@ def clean_longitudinal_outliers(
         DataFrame: A new PySpark DataFrame with outliers cleaned, updated filtering rules,
             and helper columns removed.
     """
+    if care_home:
+        filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
+    else:
+        filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
+
     df_median = compute_group_median(df, group_by_col, col_to_clean)
     df_deviation = calculate_new_column(
         df_median,
@@ -46,18 +51,14 @@ def clean_longitudinal_outliers(
         col_to_clean,
         "absolute difference",
         f"{col_to_clean}_median_val",
+        when_clause=F.col(filter_rule_column_name) == CTFilteringRule.populated,
     )
     df_thresholds = compute_outlier_cutoff(
         df_deviation, proportion_to_filter, col_to_clean
     )
     cleaned_df = apply_outlier_cleaning(
-        df_thresholds, col_to_clean, cleaned_column_name
+        df_thresholds, filter_rule_column_name, col_to_clean, cleaned_column_name
     )
-
-    if care_home:
-        filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
-    else:
-        filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
 
     cleaned_df = update_filtering_rule(
         cleaned_df,
@@ -155,6 +156,7 @@ def compute_outlier_cutoff(
 # converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ct_outliers\clean_ct_longitudinal_outliers.py
 def apply_outlier_cleaning(
     df: DataFrame,
+    filter_rule_column_name: str,
     col_to_clean: str,
     cleaned_column_name: str,
 ) -> DataFrame:
@@ -164,6 +166,7 @@ def apply_outlier_cleaning(
 
     Args:
         df (DataFrame): DataFrame containing 'abs_diff' and 'overall_abs_diff_cutoff'.
+        filter_rule_column_name (str): The name of the new filtering rule column.
         col_to_clean (str): Column to clean.
         cleaned_column_name (str): Name of the new column to store cleaned values.
 
@@ -173,9 +176,12 @@ def apply_outlier_cleaning(
     df = df.withColumn(
         cleaned_column_name,
         F.when(
-            F.col(f"{col_to_clean}_abs_diff")
-            > F.col(f"{col_to_clean}_overall_abs_diff_cutoff"),
-            None,
-        ).otherwise(F.col(col_to_clean)),
+            (F.col(filter_rule_column_name) == CTFilteringRule.populated)
+            & (
+                F.col(f"{col_to_clean}_abs_diff")
+                <= F.col(f"{col_to_clean}_overall_abs_diff_cutoff")
+            ),
+            F.col(col_to_clean),
+        ).otherwise(None),
     )
     return df
