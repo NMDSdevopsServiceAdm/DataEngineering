@@ -57,5 +57,4 @@ class TestCleanLongitudinalOutliersValues(TestCleanLongitudinalOutliers):
             Schemas.input_schema,
             orient="row",
         )
-        print(returned_lf.collect().glimpse(max_items_per_column=23))
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
