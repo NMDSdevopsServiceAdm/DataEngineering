@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import Mock, patch
+
 import polars as pl
 
 import projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_care_home_outliers as job
@@ -31,5 +32,5 @@ class CleanCapacityTrackerCareHomeOutliersTests(unittest.TestCase):
         add_filtering_rule_column_mock.assert_called_once()
         aggregate_values_to_provider_level_mock.assert_called_once()
         null_posts_per_bed_outliers_mock.assert_called_once()
-        clean_longitudinal_outliers_mock.assert_called_once()
         clean_ct_values_after_consecutive_repetition_mock.assert_called_once()
+        clean_longitudinal_outliers_mock.assert_called_once()
