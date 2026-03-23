@@ -9,8 +9,8 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
-- Refactored the cleaning of capacity tracker outliers so that repeated values are removed then outliers. These changes are in
-  the Spark and Polars scripts.
+- Refactored the cleaning of capacity tracker outliers so that repeated values are nulled first then
+  outliers are nulled from the remaining data. These changes are in the Spark and Polars scripts.
 
 
 ### Fixed
