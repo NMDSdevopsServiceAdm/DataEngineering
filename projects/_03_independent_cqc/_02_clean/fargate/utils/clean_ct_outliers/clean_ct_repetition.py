@@ -65,10 +65,10 @@ def clean_ct_values_after_consecutive_repetition(
     limit_expr = repetition_limit_expr(column_to_clean, repetition_limit_dict)
 
     lf = lf.sort(
-        [IndCQC.location_id, IndCQC.cqc_location_import_date, filter_rule_column_name]
+        [IndCQC.location_id, filter_rule_column_name, IndCQC.cqc_location_import_date]
     )
 
-    streak_id = pl.col(column_to_clean).forward_fill().rle_id().over(IndCQC.location_id)
+    streak_id = pl.col(column_to_clean).rle_id().over(IndCQC.location_id)
 
     streak_start = (
         pl.col(IndCQC.cqc_location_import_date)
