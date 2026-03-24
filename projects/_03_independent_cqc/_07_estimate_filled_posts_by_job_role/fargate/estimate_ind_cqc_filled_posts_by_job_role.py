@@ -245,19 +245,15 @@ def main(
         ]
         estimated_job_role_posts_lf = (
             estimated_job_role_posts_lf.sort(*rolling_groups, order_key)
-            .group_by_dynamic(
-                order_key,
-                every="1mo",
-                period="6mo",
-                group_by=rolling_groups,
-            )
+            .group_by(rolling_groups)
             .agg(
                 pl.all(),
                 pl.col(IndCQC.imputed_ascwds_job_role_counts)
                 .sum()
+                .rolling(order_key, period="6mo")
                 .alias("rolling_sum"),
             )
-            .explode(cs.all() - cs.by_name(*rolling_groups, order_key))
+            .explode(cs.all() - cs.by_name(rolling_groups))
         )
         estimated_job_role_posts_lf = (
             estimated_job_role_posts_lf.sort(pct_share_groups)
