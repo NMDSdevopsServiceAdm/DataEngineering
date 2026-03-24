@@ -19,14 +19,8 @@ PATCH_PATH = (
     "projects._03_independent_cqc._02_clean.fargate.validate_cleaned_ind_cqc_data"
 )
 
-merged_locations_columns_to_import = [
-    CQCLClean.cqc_location_import_date,
-    CQCLClean.location_id,
-    CQCLClean.cqc_sector,
-]
 
-
-class ValidateMergeIndCqcDataTests(unittest.TestCase):
+class ValidateCleanedIndCqcDataTests(unittest.TestCase):
     def setUp(self) -> None:
         self.source_df = pl.DataFrame(
             Data.cleaned_ind_cqc_data_rows,
@@ -56,7 +50,7 @@ class ValidateMergeIndCqcDataTests(unittest.TestCase):
                 call("s3://bucket/my/dataset/", exclude_complex_types=True),
                 call(
                     "s3://bucket/other/dataset/",
-                    selected_columns=merged_locations_columns_to_import,
+                    selected_columns=job.merged_locations_columns_to_import,
                 ),
             ]
         )
