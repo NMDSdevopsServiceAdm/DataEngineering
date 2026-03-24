@@ -252,19 +252,21 @@ def main(
                 group_by=rolling_groups,
             )
             .agg(
-                pl.col(IndCQC.imputed_ascwds_job_role_counts).sum().alias("rolling_sum")
+                pl.all(),
+                pl.col(IndCQC.imputed_ascwds_job_role_counts)
+                .sum()
+                .alias("rolling_sum"),
             )
+            .explode(cs.all() - cs.by_name(*rolling_groups, order_key))
         )
         estimated_job_role_posts_lf = (
             estimated_job_role_posts_lf.sort(pct_share_groups)
             .group_by(pct_share_groups)
             .agg(
-                [
-                    pl.all(),  # Keep all existing columns (rolling_sum, etc.)
-                    JRUtils.percentage_share("rolling_sum").alias(
-                        IndCQC.ascwds_job_role_rolling_ratio
-                    ),
-                ]
+                pl.all(),
+                JRUtils.percentage_share("rolling_sum").alias(
+                    IndCQC.ascwds_job_role_rolling_ratio
+                ),
             )
             .explode(cs.all() - cs.by_name(pct_share_groups))
         )
