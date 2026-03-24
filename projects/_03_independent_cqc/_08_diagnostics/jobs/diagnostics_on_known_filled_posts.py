@@ -79,13 +79,11 @@ def main(
         filled_posts_df,
         diagnostics_destination,
         mode="overwrite",
-        partitionKeys=partition_keys,
     )
     utils.write_to_parquet(
         summary_df,
         summary_diagnostics_destination,
         mode="overwrite",
-        partitionKeys=[IndCQC.primary_service_type],
     )
 
 

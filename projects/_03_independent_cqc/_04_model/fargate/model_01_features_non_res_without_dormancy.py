@@ -129,7 +129,6 @@ def main(bucket_name: str, model_name: str) -> None:
     utils.sink_to_parquet(
         features_lf,
         destination,
-        partition_cols=partition_keys,
         append=False,
     )
 

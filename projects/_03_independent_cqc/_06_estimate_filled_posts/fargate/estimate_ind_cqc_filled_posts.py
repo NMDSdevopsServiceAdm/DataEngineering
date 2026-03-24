@@ -115,7 +115,6 @@ def main(
     utils.sink_to_parquet(
         lf,
         destination,
-        partition_cols=cqc_partition_keys,
         append=False,
     )
 

@@ -117,7 +117,6 @@ def main(
         locations_df,
         cleaned_ind_cqc_destination,
         mode="overwrite",
-        partitionKeys=PartitionKeys,
     )
 
 

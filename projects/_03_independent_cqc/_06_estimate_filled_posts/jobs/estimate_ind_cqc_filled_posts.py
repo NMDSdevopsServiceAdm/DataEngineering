@@ -185,7 +185,6 @@ def main(
         estimate_filled_posts_df,
         estimated_ind_cqc_destination,
         mode="overwrite",
-        partitionKeys=PartitionKeys,
     )
 
     print("Completed estimate independent CQC filled posts")

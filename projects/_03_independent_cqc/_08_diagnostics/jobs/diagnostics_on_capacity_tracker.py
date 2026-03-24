@@ -72,25 +72,21 @@ def main(
         care_home_diagnostics_df,
         care_home_diagnostics_destination,
         mode="overwrite",
-        partitionKeys=partition_keys,
     )
     utils.write_to_parquet(
         care_home_summary_df,
         care_home_summary_diagnostics_destination,
         mode="overwrite",
-        partitionKeys=[IndCQC.primary_service_type],
     )
     utils.write_to_parquet(
         non_res_diagnostics_df,
         non_res_diagnostics_destination,
         mode="overwrite",
-        partitionKeys=partition_keys,
     )
     utils.write_to_parquet(
         non_res_summary_df,
         non_res_summary_diagnostics_destination,
         mode="overwrite",
-        partitionKeys=[IndCQC.primary_service_type],
     )
 
 

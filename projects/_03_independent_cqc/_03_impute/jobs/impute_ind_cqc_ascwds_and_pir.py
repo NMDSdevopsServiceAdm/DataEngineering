@@ -170,7 +170,6 @@ def main(
         df,
         imputed_ind_cqc_ascwds_and_pir_destination,
         mode="overwrite",
-        partitionKeys=PartitionKeys,
     )
 
     print("Completed imputing independent CQC ASCWDS and PIR")
