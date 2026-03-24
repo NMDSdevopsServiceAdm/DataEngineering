@@ -164,15 +164,13 @@ def main(
         estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False).drop(
             join_keys
         )
+        job_role_ratios = JRUtils.percentage_share(IndCQC.ascwds_job_role_counts).alias(
+            IndCQC.ascwds_job_role_ratios
+        )
         estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(pct_share_groups)
         groupby_agg_lf = (
             estimated_job_role_posts_lf.group_by(pct_share_groups)
-            .agg(
-                pl.all(),
-                JRUtils.percentage_share(IndCQC.ascwds_job_role_counts).alias(
-                    IndCQC.ascwds_job_role_ratios
-                ),
-            )
+            .agg(pl.all(), job_role_ratios)
             .explode(cs.all() - cs.by_name(pct_share_groups))
         )
 
@@ -203,17 +201,17 @@ def main(
         estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False)
         groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
         order_key = IndCQC.cqc_location_import_date
+        imputed_ratios = (
+            pl.col(IndCQC.ascwds_job_role_ratios)
+            .interpolate()
+            .forward_fill()
+            .backward_fill()
+            .alias(IndCQC.imputed_ascwds_job_role_ratios)
+        )
         estimated_job_role_posts_lf = (
             estimated_job_role_posts_lf.sort(*groups, order_key)
             .group_by(groups)
-            .agg(
-                pl.all(),
-                pl.col(IndCQC.ascwds_job_role_ratios)
-                .interpolate()
-                .forward_fill()
-                .backward_fill()
-                .alias(IndCQC.imputed_ascwds_job_role_ratios),
-            )
+            .agg(pl.all(), imputed_ratios)
             .explode(cs.all() - cs.by_name(groups))
         )
 
