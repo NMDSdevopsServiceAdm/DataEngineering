@@ -1,12 +1,15 @@
 import sys
 
 import pointblank as pb
-import polars as pl
 
+import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
 from polars_utils.expressions import str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils import (
+    remove_dual_registration_cqc_care_homes,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.validation_table_columns import Validation
 from utils.column_values.categorical_columns_by_dataset import (
@@ -38,13 +41,14 @@ def main(
     ).with_columns(
         str_length_cols([IndCqcColumns.location_id]),
     )
-    compare_df = utils.read_parquet(
+    compare_lf = utils.scan_parquet(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=merged_locations_columns_to_import,
     )
-    # TODO: Add filter function to reduce compare_df to earliest file per month and remove dual registrations.
 
-    expected_row_count = compare_df.height
+    compare_lf = cUtils.reduce_dataset_to_earliest_file_per_month(compare_lf)
+    compare_lf = remove_dual_registration_cqc_care_homes(compare_lf)
+    expected_row_count = compare_lf.collect().height
 
     validation = (
         pb.Validate(
@@ -54,11 +58,11 @@ def main(
             brief=True,
             actions=GLOBAL_ACTIONS,
         )
-        # dataset size - Uncomment when TODO above is done.
-        # .row_count_match(
-        #     expected_row_count,
-        #     brief=f"Cleaned Ind CQC data file has {source_df.height} rows but expecting {expected_row_count} rows",
-        # )
+        # dataset size
+        .row_count_match(
+            expected_row_count,
+            brief=f"Cleaned Ind CQC data file has {source_df.height} rows but expecting {expected_row_count} rows",
+        )
         # complete columns
         .col_vals_not_null(
             [
@@ -77,10 +81,10 @@ def main(
                 IndCqcColumns.current_cssr,
                 IndCqcColumns.current_region,
                 IndCqcColumns.current_rural_urban_indicator_2011,
-                #         IndCqcColumns.ascwds_filtering_rule,
-                #         IndCqcColumns.specialism_dementia,
-                #         IndCqcColumns.specialism_learning_disabilities,
-                #         IndCqcColumns.specialism_mental_health,
+                IndCqcColumns.ascwds_filtering_rule,
+                IndCqcColumns.specialism_dementia,
+                IndCqcColumns.specialism_learning_disabilities,
+                IndCqcColumns.specialism_mental_health,
             ]
         )
         # # index columns
@@ -91,7 +95,7 @@ def main(
             ],
         )
         # # above
-        # .col_vals_ge(IndCqcColumns.time_registered, 1)
+        .col_vals_ge(IndCqcColumns.time_registered, 1)
         # between (inclusive)
         .col_vals_between(Validation.location_id_length, 3, 14)
         .col_vals_between(IndCqcColumns.number_of_beds, 0, 500, na_pass=True)
@@ -100,9 +104,9 @@ def main(
         )
         .col_vals_between(IndCqcColumns.total_staff_bounded, 1, 3000, na_pass=True)
         .col_vals_between(IndCqcColumns.worker_records_bounded, 1, 3000, na_pass=True)
-        # .col_vals_between(
-        #     IndCqcColumns.filled_posts_per_bed_ratio, 0.0, 20.0, na_pass=True
-        # )
+        .col_vals_between(
+            IndCqcColumns.filled_posts_per_bed_ratio, 0.0, 20.0, na_pass=True
+        )
         # categorical
         .col_vals_in_set(
             IndCqcColumns.care_home,
@@ -140,30 +144,30 @@ def main(
             IndCqcColumns.current_rural_urban_indicator_2011,
             CatValues.current_rui_column_values.categorical_values,
         )
-        # .col_vals_in_set(
-        #     IndCqcColumns.ascwds_filled_posts_source,
-        #     CatValues.ascwds_filled_posts_source_column_values.categorical_values,
-        # )
-        # .col_vals_in_set(
-        #     IndCqcColumns.ascwds_filtering_rule,
-        #     CatValues.ascwds_filtering_rule_column_values.categorical_values,
-        # )
+        .col_vals_in_set(
+            IndCqcColumns.ascwds_filled_posts_source,
+            CatValues.ascwds_filled_posts_source_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            IndCqcColumns.ascwds_filtering_rule,
+            CatValues.ascwds_filtering_rule_column_values.categorical_values,
+        )
         .col_vals_in_set(
             IndCqcColumns.related_location,
             CatValues.related_location_column_values.categorical_values,
         )
-        # .col_vals_in_set(
-        #     IndCqcColumns.specialism_dementia,
-        #     CatValues.specialism_dementia_column_values.categorical_values,
-        # )
-        # .col_vals_in_set(
-        #     IndCqcColumns.specialism_learning_disabilities,
-        #     CatValues.specialism_learning_disabilities_column_values.categorical_values,
-        # )
-        # .col_vals_in_set(
-        #     IndCqcColumns.specialism_mental_health,
-        #     CatValues.specialism_mental_health_column_values.categorical_values,
-        # )
+        .col_vals_in_set(
+            IndCqcColumns.specialism_dementia,
+            CatValues.specialism_dementia_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            IndCqcColumns.specialism_learning_disabilities,
+            CatValues.specialism_learning_disabilities_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            IndCqcColumns.specialism_mental_health,
+            CatValues.specialism_mental_health_column_values.categorical_values,
+        )
         # distinct values
         .specially(
             vl.is_unique_count_equal(
@@ -228,20 +232,20 @@ def main(
             ),
             brief=f"{IndCqcColumns.current_rural_urban_indicator_2011} needs to be one of {CatValues.current_rui_column_values.categorical_values}",
         )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.ascwds_filled_posts_source,
-        #         CatValues.ascwds_filled_posts_source_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.ascwds_filled_posts_source} needs to be one of {CatValues.ascwds_filled_posts_source_column_values.categorical_values}",
-        # )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.ascwds_filtering_rule,
-        #         CatValues.ascwds_filtering_rule_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.ascwds_filtering_rule} needs to be one of {CatValues.ascwds_filtering_rule_column_values.categorical_values}",
-        # )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.ascwds_filled_posts_source,
+                CatValues.ascwds_filled_posts_source_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.ascwds_filled_posts_source} needs to be one of {CatValues.ascwds_filled_posts_source_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.ascwds_filtering_rule,
+                CatValues.ascwds_filtering_rule_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.ascwds_filtering_rule} needs to be one of {CatValues.ascwds_filtering_rule_column_values.categorical_values}",
+        )
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.related_location,
@@ -249,27 +253,27 @@ def main(
             ),
             brief=f"{IndCqcColumns.related_location} needs to be one of {CatValues.related_location_column_values.categorical_values}",
         )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.specialism_dementia,
-        #         CatValues.specialism_dementia_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.specialism_dementia} needs to be one of {CatValues.specialism_dementia_column_values.categorical_values}",
-        # )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.specialism_learning_disabilities,
-        #         CatValues.specialism_learning_disabilities_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.specialism_learning_disabilities} needs to be one of {CatValues.specialism_learning_disabilities_column_values.categorical_values}",
-        # )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.specialism_mental_health,
-        #         CatValues.specialism_mental_health_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.specialism_mental_health} needs to be one of {CatValues.specialism_mental_health_column_values.categorical_values}",
-        # )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.specialism_dementia,
+                CatValues.specialism_dementia_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.specialism_dementia} needs to be one of {CatValues.specialism_dementia_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.specialism_learning_disabilities,
+                CatValues.specialism_learning_disabilities_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.specialism_learning_disabilities} needs to be one of {CatValues.specialism_learning_disabilities_column_values.categorical_values}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.specialism_mental_health,
+                CatValues.specialism_mental_health_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.specialism_mental_health} needs to be one of {CatValues.specialism_mental_health_column_values.categorical_values}",
+        )
         # # TODO - Add custom validation rule that the data in carehome and primary_service_type should be related.
         .interrogate()
     )
