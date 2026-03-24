@@ -21,7 +21,7 @@ os.environ["POLARS_MAX_THREADS"] = "4"
 # ECS/Cloudwatch captures stdout logging.
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
+    format="[%(levelname)s] %(message)s",
     handlers=[logging.StreamHandler(sys.stdout)],
 )
 logger = logging.getLogger(__name__)
@@ -349,7 +349,7 @@ def time_it(label: str):
         yield
     finally:
         elapsed = time.perf_counter() - start
-        print(f"[METRIC] {label}: {elapsed:.4f}s")
+        logger.info(f"[METRIC] {label}: {elapsed:.4f}s")
         sys.stdout.flush()
 
 
