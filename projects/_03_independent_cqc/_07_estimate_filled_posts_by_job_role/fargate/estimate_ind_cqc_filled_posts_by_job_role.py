@@ -285,12 +285,6 @@ def log_polars_plan(lf: pl.LazyFrame, context: str) -> None:
     sys.stdout.flush()
 
 
-def log_nrows(lf: pl.LazyFrame, context: str) -> None:
-    """Logs the count of rows to CloudWatch immediately."""
-    logger.info(f"nrows - {context}: {lf.select(pl.len()).collect().item()}")
-    sys.stdout.flush()
-
-
 def cast_to_schema(schema: dict[str, pl.DataType]) -> list[pl.Expr]:
     """Cast columns to given schema."""
     return [pl.col(c).cast(dtype) for c, dtype in schema.items()]
