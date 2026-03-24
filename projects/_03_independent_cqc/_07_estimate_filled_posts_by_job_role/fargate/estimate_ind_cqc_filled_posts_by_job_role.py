@@ -237,56 +237,65 @@ def main(
         )
 
     # Get the proportions of the rolling sum of job counts within each location.
-
-    estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False)
-    rolling_groups = [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled]
-    estimated_job_role_posts_lf = (
-        estimated_job_role_posts_lf.sort(*rolling_groups, order_key)
-        .group_by_dynamic(
-            order_key,
-            every="1mo",
-            period="6mo",
-            group_by=rolling_groups,
+    with time_it("rolling_ratios_and_coalesce"):
+        estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False)
+        rolling_groups = [
+            IndCQC.primary_service_type,
+            IndCQC.main_job_role_clean_labelled,
+        ]
+        estimated_job_role_posts_lf = (
+            estimated_job_role_posts_lf.sort(*rolling_groups, order_key)
+            .group_by_dynamic(
+                order_key,
+                every="1mo",
+                period="6mo",
+                group_by=rolling_groups,
+            )
+            .agg(
+                pl.col(IndCQC.imputed_ascwds_job_role_counts).sum().alias("rolling_sum")
+            )
         )
-        .agg(pl.col(IndCQC.imputed_ascwds_job_role_counts).sum().alias("rolling_sum"))
-    )
-    estimated_job_role_posts_lf = (
-        estimated_job_role_posts_lf.sort(pct_share_groups)
-        .group_by(pct_share_groups)
-        .agg(
-            [
-                pl.all(),  # Keep all existing columns (rolling_sum, etc.)
-                JRUtils.percentage_share("rolling_sum").alias(
-                    IndCQC.ascwds_job_role_rolling_ratio
-                ),
-            ]
+        estimated_job_role_posts_lf = (
+            estimated_job_role_posts_lf.sort(pct_share_groups)
+            .group_by(pct_share_groups)
+            .agg(
+                [
+                    pl.all(),  # Keep all existing columns (rolling_sum, etc.)
+                    JRUtils.percentage_share("rolling_sum").alias(
+                        IndCQC.ascwds_job_role_rolling_ratio
+                    ),
+                ]
+            )
+            .explode(cs.all() - cs.by_name(pct_share_groups))
         )
-        .explode(cs.all() - cs.by_name(pct_share_groups))
-    )
 
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        utils.coalesce_with_source_labels(
-            cols=[
-                # TODO: Uncomment when filtered column is created.
-                # IndCQC.ascwds_job_role_ratios_filtered,
-                IndCQC.imputed_ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_rolling_ratio,
-            ],
-            name=IndCQC.ascwds_job_role_ratios_merged,
-        ),
-    )
+        estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+            utils.coalesce_with_source_labels(
+                cols=[
+                    # TODO: Uncomment when filtered column is created.
+                    # IndCQC.ascwds_job_role_ratios_filtered,
+                    IndCQC.imputed_ascwds_job_role_ratios,
+                    IndCQC.ascwds_job_role_rolling_ratio,
+                ],
+                name=IndCQC.ascwds_job_role_ratios_merged,
+            ),
+        )
 
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        (
-            pl.col(IndCQC.estimate_filled_posts)
-            * pl.col(IndCQC.ascwds_job_role_ratios_merged)
-        ).alias(IndCQC.estimate_filled_posts_by_job_role)
-    )
+        estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+            (
+                pl.col(IndCQC.estimate_filled_posts)
+                * pl.col(IndCQC.ascwds_job_role_ratios_merged)
+            ).alias(IndCQC.estimate_filled_posts_by_job_role)
+        )
 
-    log_polars_plan(estimated_job_role_posts_lf, "rolling_ratios_and_coalesce")
-    tmp_dest = estimates_by_job_role_destination.replace("dataset=", "dataset=temp3_")
-    tmp_file = f"{tmp_dest}file.parquet"
-    estimated_job_role_posts_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
+        log_polars_plan(estimated_job_role_posts_lf, "rolling_ratios_and_coalesce")
+        tmp_dest = estimates_by_job_role_destination.replace(
+            "dataset=", "dataset=temp3_"
+        )
+        tmp_file = f"{tmp_dest}file.parquet"
+        estimated_job_role_posts_lf.sink_parquet(
+            tmp_file, mkdir=True, engine="streaming"
+        )
 
     adjustment_expr = JRUtils.ManagerialFilledPostAdjustmentExpr.build()
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
