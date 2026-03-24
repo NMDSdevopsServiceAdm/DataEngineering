@@ -155,6 +155,7 @@ def main(
     estimated_job_role_posts_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
     estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False).drop(join_keys)
 
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(pct_share_groups)
     with time_it("group-by-join"):
         groupby_join_lf = (
             estimated_job_role_posts_lf.join(
