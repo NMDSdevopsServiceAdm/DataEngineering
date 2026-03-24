@@ -21,7 +21,8 @@ PATCH_PATH: str = (
 class EnrichWithModelPredictionsTest(unittest.TestCase):
     def setUp(self) -> None:
         self.test_bucket = "test_bucket"
-
+        self.predictions_path_care_home = "s3://test_bucket/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_predictions_care_home_model"
+        self.prediction_path_non_res = "s3://test_bucket/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_predictions_non_res_model"
         self.mock_ind_cqc_lf = Mock(name="ind_cqc_lf")
         self.mock_predictions_lf = Mock(name="predictions_lf")
 
@@ -57,10 +58,8 @@ class EnrichWithModelPredictionsTest(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.join_model_predictions")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    @patch(f"{PATCH_PATH}.generate_predictions_path")
     def test_function_calls_all_necessary_functions_when_care_home_model(
         self,
-        generate_predictions_path_mock: Mock,
         scan_parquet_mock: Mock,
         join_model_predictions_mock: Mock,
     ):
@@ -69,23 +68,15 @@ class EnrichWithModelPredictionsTest(unittest.TestCase):
         job.enrich_with_model_predictions(
             self.mock_ind_cqc_lf, self.test_bucket, self.care_home_model
         )
-
-        generate_predictions_path_mock.assert_called_once_with(
-            self.test_bucket, self.care_home_model
-        )
-        scan_parquet_mock.assert_called_once_with(
-            generate_predictions_path_mock.return_value
-        )
+        scan_parquet_mock.assert_called_once_with(self.predictions_path_care_home)
         join_model_predictions_mock.assert_called_once_with(
             ANY, ANY, self.care_home_model, include_run_id=True
         )
 
     @patch(f"{PATCH_PATH}.join_model_predictions")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    @patch(f"{PATCH_PATH}.generate_predictions_path")
     def test_function_does_not_call_ratio_conversion_for_non_care_home_model(
         self,
-        generate_predictions_path_mock: Mock,
         scan_parquet_mock: Mock,
         join_model_predictions_mock: Mock,
     ):
@@ -94,22 +85,14 @@ class EnrichWithModelPredictionsTest(unittest.TestCase):
         job.enrich_with_model_predictions(
             self.mock_ind_cqc_lf, self.test_bucket, self.non_res_model
         )
-
-        generate_predictions_path_mock.assert_called_once_with(
-            self.test_bucket, self.non_res_model
-        )
-        scan_parquet_mock.assert_called_once_with(
-            generate_predictions_path_mock.return_value
-        )
+        scan_parquet_mock.assert_called_once_with(self.prediction_path_non_res)
         join_model_predictions_mock.assert_called_once_with(
             ANY, ANY, self.non_res_model, include_run_id=True
         )
 
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    @patch(f"{PATCH_PATH}.generate_predictions_path")
     def test_function_returns_expected_data_for_care_home_model(
         self,
-        generate_predictions_path_mock: Mock,
         scan_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = self.care_home_pred_lf
@@ -122,10 +105,8 @@ class EnrichWithModelPredictionsTest(unittest.TestCase):
         )
 
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    @patch(f"{PATCH_PATH}.generate_predictions_path")
     def test_function_returns_expected_data_for_non_care_home_model(
         self,
-        generate_predictions_path_mock: Mock,
         scan_parquet_mock: Mock,
     ):
         scan_parquet_mock.return_value = self.non_res_pred_lf
