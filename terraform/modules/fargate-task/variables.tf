@@ -36,6 +36,11 @@ variable "ram_size" {
   default = 61440
 }
 
+variable "ephemeral_storage_size" {
+  type    = number
+  default = 100
+}
+
 variable "environment" {
   type = list(map(string))
 }

@@ -6,6 +6,9 @@ resource "aws_ecs_task_definition" "ecs_task" {
   memory                   = var.ram_size
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_task_role.arn
+  ephemeral_storage {
+    size_in_gib = var.ephemeral_storage_size
+  }
 
   runtime_platform {
     operating_system_family = "LINUX"
@@ -14,11 +17,12 @@ resource "aws_ecs_task_definition" "ecs_task" {
 
   container_definitions = jsonencode([
     {
-      name        = "${var.task_name}-container",
-      image       = "${local.account_id}.dkr.ecr.${var.region}.amazonaws.com/${var.ecr_repo_name}:${var.tag_name}",
-      essential   = true,
-      cpu         = var.cpu_size,
-      memory      = var.ram_size,
+      name      = "${var.task_name}-container",
+      image     = "${local.account_id}.dkr.ecr.${var.region}.amazonaws.com/${var.ecr_repo_name}:${var.tag_name}",
+      essential = true,
+      cpu       = var.cpu_size,
+      memory    = var.ram_size,
+
       environment = var.environment
       logConfiguration = {
         logDriver = "awslogs",
