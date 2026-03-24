@@ -81,7 +81,7 @@ class ValidateMergeIndCqcDataTests(unittest.TestCase):
 
         # Check that key validations were run
         expected_assertions = {
-            # "row_count_match",
+            "row_count_match",
             "col_vals_not_null",
             "rows_distinct",
             "col_vals_between",
