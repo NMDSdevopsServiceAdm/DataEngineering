@@ -161,7 +161,7 @@ def main(
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(pct_share_groups)
     with time_it("group-by-agg"):
-        groupby_join_lf = (
+        groupby_agg_lf = (
             estimated_job_role_posts_lf.group_by(pct_share_groups)
             .agg(
                 *[pl.col(c) for c in keep_cols],
@@ -172,28 +172,26 @@ def main(
             .explode(*keep_cols, IndCQC.ascwds_job_role_ratios)
         )
 
-        log_polars_plan(groupby_join_lf, "Groupby agg pct share")
+        log_polars_plan(groupby_agg_lf, "Groupby agg pct share")
         tmp_dest = estimates_by_job_role_destination.replace(
             "dataset=", "dataset=temp1_"
         )
         tmp_file = f"{tmp_dest}file.parquet"
-        groupby_join_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
+        groupby_agg_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
 
     with time_it("over-groups"):
-        estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        groupby_over_lf = estimated_job_role_posts_lf.with_columns(
             JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
             .over(pct_share_groups)
             .alias(IndCQC.ascwds_job_role_ratios)
         )
 
-        log_polars_plan(estimated_job_role_posts_lf, "Groupby join over")
+        log_polars_plan(groupby_over_lf, "Groupby join over")
         tmp_dest = estimates_by_job_role_destination.replace(
             "dataset=", "dataset=temp2_"
         )
         tmp_file = f"{tmp_dest}file.parquet"
-        estimated_job_role_posts_lf.sink_parquet(
-            tmp_file, mkdir=True, engine="streaming"
-        )
+        groupby_over_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
 
     # Do linear interpolation, then forward fill and backward fill to get a full
     # time series for each job role and location.
@@ -202,7 +200,7 @@ def main(
     all_cols = estimated_job_role_posts_lf.collect_schema().names()
     keep_cols = [c for c in all_cols if c not in groups]
     estimated_job_role_posts_lf = (
-        estimated_job_role_posts_lf.sort(*groups, order_key)
+        groupby_agg_lf.sort(*groups, order_key)
         .group_by(groups)
         .agg(
             *[pl.col(c) for c in keep_cols],
