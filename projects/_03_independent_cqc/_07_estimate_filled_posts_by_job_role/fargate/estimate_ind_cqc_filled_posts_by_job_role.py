@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 import time
 from contextlib import contextmanager
@@ -12,6 +13,9 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
+
+# Restrict vCPU count so memory isn't throttled (8 available on ECS).
+os.environ["POLARS_MAX_THREADS"] = "4"
 
 # ECS/Cloudwatch captures stdout logging.
 logging.basicConfig(
