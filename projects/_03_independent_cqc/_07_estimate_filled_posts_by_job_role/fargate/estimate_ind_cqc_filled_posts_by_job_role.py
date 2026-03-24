@@ -153,11 +153,35 @@ def main(
     estimated_job_role_posts_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
     estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False).drop(join_keys)
 
+    groupby_join_lf = (
+        estimated_job_role_posts_lf.join(
+            estimated_job_role_posts_lf.group_by(pct_share_groups).agg(
+                pl.col(IndCQC.ascwds_job_role_counts).sum().alias("total_counts")
+            ),
+            on=pct_share_groups,
+        )
+        .with_columns(pl.col(IndCQC.ascwds_job_role_counts) / pl.col("total_counts"))
+        .drop("total_counts")
+    )
+
+    log_polars_plan(groupby_join_lf, "Groupby join pct share")
+    # Sink to temp, then rescan to reset Lazy pipeline.
+    tmp_dest = estimates_by_job_role_destination.replace("dataset=", "dataset=temp1_")
+    tmp_file = f"{tmp_dest}file.parquet"
+    groupby_join_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
+
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
         .over(pct_share_groups)
         .alias(IndCQC.ascwds_job_role_ratios)
     )
+
+    log_polars_plan(estimated_job_role_posts_lf, "Groupby join over")
+    # Sink to temp, then rescan to reset Lazy pipeline.
+    tmp_dest = estimates_by_job_role_destination.replace("dataset=", "dataset=temp2_")
+    tmp_file = f"{tmp_dest}file.parquet"
+    groupby_join_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
+
     # Do linear interpolation, then forward fill and backward fill to get a full
     # time series for each job role and location.
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
