@@ -3,7 +3,6 @@ import polars as pl
 from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.utils import (
     join_model_predictions,
 )
-from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.ind_cqc_pipeline_columns import (
