@@ -113,7 +113,7 @@ def write_to_parquet(
         df (pl.DataFrame): The Polars DataFrame to write.
         output_path (str | Path): The file path where the Parquet file(s) will be written.
             This must be a directory if append is set to True.
-        append (bool): Whether to append to existing files or overwrite them. Defaults to False.
+        append (bool): Whether to append to existing files or overwrite them. Defaults to True.
         partition_cols (list[str] | None): List of columns to partition by (optional - mutually exclusive with append).
 
     Return:
@@ -183,10 +183,10 @@ def sink_to_parquet(
                     [pl.col(c).cast(pl.Utf8).str.zfill(2) for c in pad_cols]
                 )
 
-            path = pl.PartitionByKey(
+            path = pl.PartitionBy(
                 base_path=f"{output_path}",
                 include_key=False,
-                by=partition_cols,
+                key=partition_cols,
             )
             lazy_df.sink_parquet(path=path, mkdir=True, engine="streaming")
             print(
@@ -413,3 +413,25 @@ def filter_to_maximum_value_in_column(
     lf = lf.with_columns(pl.col(column_to_filter).max().alias(max_value))
     lf = lf.filter(pl.col(column_to_filter) == pl.col(max_value))
     return lf.drop(max_value)
+
+
+def coalesce_with_source_labels(cols: list[str], name: str) -> tuple[pl.Expr, pl.Expr]:
+    """Return expressions for the coalesced value and its source label.
+
+    Args:
+        cols (list[str]): The columns to coalesce from left-to-right.
+        name (str): The root name for the new columns.
+
+    Returns:
+        tuple[pl.Expr, pl.Expr]: Tuple of expressions:
+            - Coalesce expression aliased with `name`.
+            - Coalesce source label expression aliased name with suffix "_source".
+    """
+    val_expr = pl.coalesce(cols).alias(name)
+
+    # Build the label logic
+    label_expr = pl.when(pl.col(cols[0]).is_not_null()).then(pl.lit(cols[0]))
+    for c in cols[1:]:
+        label_expr = label_expr.when(pl.col(c).is_not_null()).then(pl.lit(c))
+
+    return (val_expr, label_expr.alias(f"{name}_source"))

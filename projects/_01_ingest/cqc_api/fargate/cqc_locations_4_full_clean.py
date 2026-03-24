@@ -1,6 +1,6 @@
 import polars as pl
 
-from polars_utils import utils
+from polars_utils import raw_data_adjustments, utils
 from polars_utils.cleaning_utils import column_to_date
 from projects._01_ingest.cqc_api.fargate.utils import cleaning_utils as cUtils
 from projects._01_ingest.cqc_api.fargate.utils import postcode_matcher as pmUtils
@@ -44,26 +44,23 @@ def main(
     )
     print("Full Flattened CQC Location LazyFrame read in")
 
-    cqc_lf = cqc_lf.filter(
-        pl.col(CQCLClean.type) == LocationType.social_care_identifier
-    )
-
     cqc_lf = column_to_date(
         cqc_lf, Keys.import_date, CQCLClean.cqc_location_import_date
     )
 
     cUtils.save_latest_full_snapshot(cqc_lf, cqc_full_snapshot_destination)
 
-    cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)
-
-    cqc_reg_lf = cqc_lf.filter(
-        pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
+    cqc_lf = cqc_lf.filter(
+        pl.col(CQCLClean.type) == LocationType.social_care_identifier,
+        raw_data_adjustments.is_valid_location(),
     )
 
-    cqc_reg_lf = cUtils.clean_provider_id_column(cqc_reg_lf)
+    cqc_lf = cUtils.clean_and_impute_registration_date(cqc_lf)
 
-    cqc_reg_lf = cUtils.impute_missing_values(
-        cqc_reg_lf,
+    cqc_lf = cUtils.clean_provider_id_column(cqc_lf)
+
+    cqc_lf = cUtils.impute_missing_values(
+        cqc_lf,
         [
             CQCLClean.provider_id,
             CQCLClean.services_offered,
@@ -72,6 +69,10 @@ def main(
             CQCLClean.relationships_types,
             CQCLClean.registered_manager_names,
         ],
+    )
+
+    cqc_reg_lf = cqc_lf.filter(
+        pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
     )
 
     cqc_reg_lf = cUtils.allocate_primary_service_type(cqc_reg_lf)

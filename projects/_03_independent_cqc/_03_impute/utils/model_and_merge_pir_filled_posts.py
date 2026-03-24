@@ -1,15 +1,14 @@
 from dataclasses import dataclass
+from typing import List
 
+from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 from pyspark.sql.types import IntegerType
 
-from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
-    vectorise_dataframe,
-)
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
-    insert_predictions_into_pipeline,
+    join_model_predictions,
 )
 from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 from utils import utils
@@ -38,12 +37,11 @@ def model_pir_filled_posts(
         DataFrame: The input dataframe with an additional column containing the estimated PIR filled posts model predictions.
     """
 
-    non_res_df = utils.select_rows_with_value(
-        df, IndCQC.care_home, CareHome.not_care_home
+    features_df = df.filter(
+        (F.col(IndCQC.care_home) == CareHome.not_care_home)
+        & F.col(IndCQC.pir_people_directly_employed_dedup).isNotNull()
     )
-    features_df = utils.select_rows_with_non_null_value(
-        non_res_df, IndCQC.pir_people_directly_employed_dedup
-    )
+
     vectorised_features_df = vectorise_dataframe(
         features_df, [IndCQC.pir_people_directly_employed_dedup]
     )
@@ -51,12 +49,35 @@ def model_pir_filled_posts(
 
     predictions = lr_trained_model.transform(vectorised_features_df)
 
-    df = insert_predictions_into_pipeline(
+    df = join_model_predictions(
         df,
         predictions,
         IndCQC.pir_filled_posts_model,
+        include_run_id=False,
     )
     return df
+
+
+def vectorise_dataframe(df: DataFrame, list_for_vectorisation: List[str]) -> DataFrame:
+    """
+    Combines specified columns into a single feature vector for the modelling process.
+
+    This function uses `VectorAssembler` to merge multiple input columns into a single vector column.
+    Invalid values are skipped to prevent transformation errors.
+
+    Args:
+        df (DataFrame): Input DataFrame containing columns to be vectorised.
+        list_for_vectorisation (List[str]): List of column names to be combined into the feature vector.
+
+    Returns:
+        DataFrame: A DataFrame with an additional 'features' column.
+    """
+    loc_df = VectorAssembler(
+        inputCols=list_for_vectorisation,
+        outputCol=IndCQC.features,
+        handleInvalid="skip",
+    ).transform(df)
+    return loc_df
 
 
 def merge_ascwds_and_pir_filled_post_submissions(df: DataFrame) -> DataFrame:

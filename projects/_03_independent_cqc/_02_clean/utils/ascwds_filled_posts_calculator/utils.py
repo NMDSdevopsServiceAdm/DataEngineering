@@ -9,20 +9,24 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 absolute_difference: str = "absolute_difference"
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.utils.ascwds_filled_posts_is_null
 def ascwds_filled_posts_is_null() -> bool:
     return F.col(IndCQC.ascwds_filled_posts).isNull()
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.utils.selected_column_is_not_null
 def selected_column_is_not_null(col_name: str) -> bool:
     return F.col(col_name).isNotNull()
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.utils.selected_column_is_at_least_the_min_permitted_value
 def selected_column_is_at_least_the_min_permitted_value(col_name: str) -> bool:
     return selected_column_is_not_null(col_name) & (
         F.col(col_name) >= calculation_constant.MIN_ASCWDS_FILLED_POSTS_PERMITTED
     )
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.utils.absolute_difference_between_total_staff_and_worker_records_below_cut_off
 def absolute_difference_between_total_staff_and_worker_records_below_cut_off() -> bool:
     return (
         absolute_difference_between_two_columns(
@@ -32,6 +36,7 @@ def absolute_difference_between_total_staff_and_worker_records_below_cut_off() -
     )
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.utils.percentage_difference_between_total_staff_and_worker_records_below_cut_off
 def percentage_difference_between_total_staff_and_worker_records_below_cut_off() -> (
     bool
 ):
@@ -48,6 +53,7 @@ def percentage_difference_between_total_staff_and_worker_records_below_cut_off()
     )
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.utils.two_cols_are_equal_and_at_least_minimum_permitted_value
 def two_cols_are_equal_and_at_least_minimum_permitted_value(
     first_col: str, second_col: str
 ) -> bool:
@@ -56,14 +62,17 @@ def two_cols_are_equal_and_at_least_minimum_permitted_value(
     ) & selected_column_is_at_least_the_min_permitted_value(first_col)
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.utils.absolute_difference_between_two_columns
 def absolute_difference_between_two_columns(first_col: str, second_col: str) -> int:
     return F.abs(F.col(first_col) - F.col(second_col))
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.utils.average_of_two_columns
 def average_of_two_columns(first_col: str, second_col: str):
     return (F.col(first_col) + F.col(second_col)) / 2
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.utils.add_source_description_to_source_column
 def add_source_description_to_source_column(
     input_df: DataFrame,
     populated_column_name: str,

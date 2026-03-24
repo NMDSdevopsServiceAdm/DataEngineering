@@ -2,15 +2,25 @@ provider "aws" {
   access_key = var.aws_access_key
   secret_key = var.aws_secret_key
   region     = var.region
+  alias      = "prod"
+  profile    = "prod"
+}
+
+provider "aws" {
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
+  region     = var.region
+  alias      = "non-prod"
+  profile    = "non-prod"
 }
 
 terraform {
   backend "s3" {
     # Bucket defined in ../*.s3.tfbackend
-    key            = "statefiles/workspace=default/backend.tfstate"
-    region         = "eu-west-2"
-    dynamodb_table = "terraform-locks"
-    encrypt        = true
+    key          = "statefiles/workspace=default/backend.tfstate"
+    region       = "eu-west-2"
+    use_lockfile = true
+    encrypt      = true
   }
 }
 
@@ -33,15 +43,5 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state_e
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
     }
-  }
-}
-
-resource "aws_dynamodb_table" "terraform_locks" {
-  name         = "terraform-locks"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "LockID"
-  attribute {
-    name = "LockID"
-    type = "S"
   }
 }

@@ -10,7 +10,6 @@ import utils.aws_secrets_manager_utilities as ars
 
 class AWSSecretsManagerUtilitiesTests(unittest.TestCase):
     def setUp(self) -> None:
-        super().setUp()
         self.mock_client = MagicMock()
 
 

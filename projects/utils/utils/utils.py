@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 
 from pyspark.sql import Column, DataFrame, Window
 from pyspark.sql import functions as F
@@ -8,7 +8,9 @@ def calculate_new_column(
     df: DataFrame,
     new_col: str,
     col_1: str,
-    method: str,
+    method: Literal[
+        "plus", "minus", "multiplied by", "divided by", "average", "absolute difference"
+    ],
     col_2: str,
     when_clause: Optional[Column] = None,
 ) -> DataFrame:
@@ -21,7 +23,7 @@ def calculate_new_column(
         df (DataFrame): Input DataFrame.
         new_col (str): Name of the new column to be created.
         col_1 (str): Name of the first operand column.
-        method (str): Calculation to perform: "plus", "minus", "multiplied by", "divided by, "average" or "absolute difference".
+        method (Literal["plus", "minus", "multiplied by", "divided by", "average", "absolute difference"]): Calculation to perform.
         col_2 (str): Name of the second operand column.
         when_clause (Optional[Column]): Optional Boolean condition for applying the calculation.
 

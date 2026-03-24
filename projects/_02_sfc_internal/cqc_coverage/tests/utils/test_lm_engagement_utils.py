@@ -7,15 +7,14 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     LmEngagementUtilsSchemas as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 
 
-class SetupForTests(unittest.TestCase):
+class SetupForTests(SparkBaseTest):
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
         (
             self.w,
             self.agg_w,
@@ -24,9 +23,6 @@ class SetupForTests(unittest.TestCase):
 
 
 class AddColumnsForLocalityManagerDashboardTests(SetupForTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_add_columns_for_locality_manager_dashboard_returns_correct_values(self):
         test_df = self.spark.createDataFrame(
             Data.add_columns_for_locality_manager_dashboard_rows,

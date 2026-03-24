@@ -4,10 +4,7 @@ from datetime import date
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResColumns as CTNR,
 )
-from utils.column_values.categorical_column_values import (
-    LocationType,
-    MainJobRoleLabels,
-)
+from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
 @dataclass
@@ -733,11 +730,11 @@ class ValidatePostcodeDirectoryRawData:
 class CleanONSData:
     # fmt: off
     ons_sample_rows_full = [
-        ("AB10AA", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2022", "01", "01", "20220101"),
-        ("AB10AB", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2022", "01", "01", "20220101"),
-        ("AB10AA", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
-        ("AB10AB", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
-        ("AB10AC", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
+        ("AB10AA", "104", "1", "38000006", "54000005", "1", "51.23456", "-.12345", "123", "10123", "20123", "1", "1000001", "2000001", "14000530", "2022", "01", "01", "20220101"),
+        ("AB10AB", "104", "1", "38000006", "54000005", "1", "51.23456", "-.12345", "123", "10123", "20123", "1", "1000001", "2000001", "14000530", "2022", "01", "01", "20220101"),
+        ("AB10AA", "999", "9", "38000265", "54000064", "40000012", "51.23456", "-.12345", "123", "10123", "20123", "9", "1035762", "2007116", "14001605", "2023", "01", "01", "20230101"),
+        ("AB10AB", "999", "9", "38000265", "54000064", "40000012", "51.23456", "-.12345", "123", "10123", "20123", "9", "1035762", "2007116", "14001605", "2023", "01", "01", "20230101"),
+        ("AB10AC", "999", "9", "38000265", "54000064", "40000012", "51.23456", "-.12345", "123", "10123", "20123", "9", "1035762", "2007116", "14001605", "2023", "01", "01", "20230101"),
     ]
     # fmt: on
 
@@ -955,113 +952,3 @@ class ValidatePIRCleanedData:
         ("1-000000001", date(2024, 1, 9), 10, "Y"),
         ("1-000000002", date(2024, 1, 9), 10, "Y"),
     ]
-
-
-@dataclass
-class ValidateProvidersAPIRawData:
-    # fmt: off
-    raw_cqc_providers_rows = [
-        ("1-000000001", "20240101", "name"),
-        ("1-000000002", "20240101", "name"),
-        ("1-000000001", "20240201", "name"),
-        ("1-000000002", "20240201", "name"),
-    ]
-
-
-@dataclass
-class CQCProviderData:
-    sample_rows_full = [
-        (
-            "1-10000000001",
-            ["1-12000000001"],
-            "Provider",
-            "Organisation",
-            "Independent Healthcare Org",
-            "10000000001",
-            "Care Solutions Direct Limited",
-            "Registered",
-            "2022-01-14",
-            None,
-            "Threefield House",
-            "Southampton",
-            None,
-            "South East",
-            "AA10 3LP",
-            50.93761444091797,
-            -1.452439546585083,
-            "0238206106",
-            "10000001",
-            "Adult social care",
-            "Southampton, Itchen",
-            "Southampton",
-            "20230405",
-        ),
-        (
-            "1-10000000002",
-            ["1-12000000002"],
-            "Provider",
-            "Partnership",
-            "Social Care Org",
-            "10000000002",
-            "Care Solutions Direct Limited",
-            "Registered",
-            "2022-01-14",
-            None,
-            "Threefield House",
-            "Southampton",
-            "Some County",
-            "South East",
-            "AA10 3LP",
-            50.93761444091797,
-            -1.452439546585083,
-            "0238206106",
-            "10000002",
-            "Adult social care",
-            "Southampton, Itchen",
-            "Southampton",
-            "20230405",
-        ),
-        (
-            "1-10000000003",
-            ["1-12000000003"],
-            "Provider",
-            "Individual",
-            "Social Care Org",
-            "10000000003",
-            "Care Solutions Direct Limited",
-            "Deregistered",
-            "2022-01-14",
-            "2022-03-07",
-            "Threefield House",
-            "Southampton",
-            None,
-            "South East",
-            "SO14 3LP",
-            50.93761444091797,
-            -1.452439546585083,
-            "0238206106",
-            "10000003",
-            "Adult social care",
-            "Southampton, Itchen",
-            "Southampton",
-            "20230405",
-        ),
-    ]
-
-
-@dataclass
-class ValidateProvidersAPICleanedData:
-    raw_cqc_providers_rows = [
-        ("1-000000001", "20240101"),
-        ("1-000000002", "20240101"),
-        ("1-000000001", "20240201"),
-        ("1-000000002", "20240201"),
-    ]
-    cleaned_cqc_providers_rows = [
-        ("1-000000001", date(2024, 1, 1), "name"),
-        ("1-000000002", date(2024, 1, 1), "name"),
-        ("1-000000001", date(2024, 1, 9), "name"),
-        ("1-000000002", date(2024, 1, 9), None),
-    ]
-
-    calculate_expected_size_rows = raw_cqc_providers_rows

@@ -1,5 +1,3 @@
-import unittest
-
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.models import (
     primary_service_rolling_sum as job,
 )
@@ -9,21 +7,12 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     EstimateJobRolesPrimaryServiceRollingSumSchemas as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class EstimateJobRolesPrimaryServiceRollingSumTests(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
-
-
-class AddRollingSumPartitionedByPrimaryServiceTyoe(
-    EstimateJobRolesPrimaryServiceRollingSumTests
-):
+class AddRollingSumPartitionedByPrimaryServiceTyoe(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         self.number_of_days_in_rolling_sum = 1
 
     def test_add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled(
@@ -52,12 +41,8 @@ class AddRollingSumPartitionedByPrimaryServiceTyoe(
         )
 
 
-class CalculateRollingSumOfCountOfJobRoles(
-    EstimateJobRolesPrimaryServiceRollingSumTests
-):
+class CalculateRollingSumOfCountOfJobRoles(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         self.number_of_days_in_rolling_sum = 185
         self.list_of_job_roles_for_tests = Data.list_of_job_roles_for_tests
 

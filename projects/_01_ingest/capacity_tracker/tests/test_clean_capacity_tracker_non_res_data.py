@@ -8,7 +8,7 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CleanCapacityTrackerNonResSchema as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH: str = (
@@ -16,7 +16,7 @@ PATCH_PATH: str = (
 )
 
 
-class CapacityTrackerNonResTests(unittest.TestCase):
+class CapacityTrackerNonResTests(SparkBaseTest):
     TEST_CAPACITY_TRACKER_SOURCE = "some/dir/source"
     TEST_CAPACITY_TRACKER_DESTINATION = "some/dir/destination"
     partition_keys = [
@@ -26,13 +26,9 @@ class CapacityTrackerNonResTests(unittest.TestCase):
         Keys.import_date,
     ]
 
-    def setUp(self) -> None:
-        self.spark = utils.get_spark()
-
 
 class MainTests(CapacityTrackerNonResTests):
     def setUp(self) -> None:
-        super().setUp()
         self.test_df = self.spark.createDataFrame(
             Data.capacity_tracker_non_res_rows,
             Schemas.capacity_tracker_non_res_schema,

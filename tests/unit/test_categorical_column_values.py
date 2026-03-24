@@ -3,14 +3,8 @@ import unittest
 from utils.column_values.categorical_column_values import Dormancy
 
 
-class ColumnValuesTests(unittest.TestCase):
+class ListValuesTests(unittest.TestCase):
     def setUp(self) -> None:
-        return super().setUp()
-
-
-class ListValuesTests(ColumnValuesTests):
-    def setUp(self) -> None:
-        super().setUp()
         self.expected_categorical_values = [Dormancy.dormant, Dormancy.not_dormant]
         self.expected_filtered_categorical_values = [Dormancy.dormant]
 
@@ -31,9 +25,8 @@ class ListValuesTests(ColumnValuesTests):
         )
 
 
-class CountValuesTests(ColumnValuesTests):
+class CountValuesTests(unittest.TestCase):
     def setUp(self) -> None:
-        super().setUp()
         self.expected_count = 2
         self.expected_filtered_count = 1
         self.expected_count_with_null_vales = 3

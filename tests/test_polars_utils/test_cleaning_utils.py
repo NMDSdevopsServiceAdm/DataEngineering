@@ -12,6 +12,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class PolarsCleaningUtilsTests(unittest.TestCase):
@@ -24,45 +25,28 @@ class AddAlignedDateColumnsTests(PolarsCleaningUtilsTests):
         self.primary_column = CQCLClean.cqc_location_import_date
         self.secondary_column = AWPClean.ascwds_workplace_import_date
 
-        self.primary_lf = pl.LazyFrame(
+    def test_mix_of_misaligned_dates_joined_correctly(self):
+        primary_lf = pl.LazyFrame(
             Data.align_dates_primary_rows, Schemas.align_dates_primary_schema
         )
-        self.secondary_lf = pl.LazyFrame(
+        secondary_lf = pl.LazyFrame(
             Data.align_dates_secondary_rows,
             Schemas.align_dates_secondary_schema,
         )
-        self.column_order_for_assertion = [
-            self.primary_column,
-            self.secondary_column,
-        ]
-        self.returned_lf = job.add_aligned_date_column(
-            self.primary_lf,
-            self.secondary_lf,
+        returned_lf = job.add_aligned_date_column(
+            primary_lf,
+            secondary_lf,
             self.primary_column,
             self.secondary_column,
         )
-
-    def test_expected_columns_are_returned(self):
-        returned_columns = sorted(self.returned_lf.collect_schema().names())
-        expected_columns = sorted(
-            self.primary_lf.collect_schema().names() + [self.secondary_column]
-        )
-
-        self.assertEqual(returned_columns, expected_columns)
-
-    def test_mix_of_misaligned_dates_joined_correctly(self):
         expected_lf = pl.LazyFrame(
             Data.expected_align_dates_primary_with_secondary_rows,
             Schemas.expected_merged_dates_schema,
         )
 
         pl_testing.assert_frame_equal(
-            self.returned_lf.select(self.column_order_for_assertion).sort(
-                self.primary_column
-            ),
-            expected_lf.select(self.column_order_for_assertion).sort(
-                self.primary_column
-            ),
+            returned_lf,
+            expected_lf,
         )
 
     def test_exact_match_date_joined_correctly(self):
@@ -85,10 +69,7 @@ class AddAlignedDateColumnsTests(PolarsCleaningUtilsTests):
             Schemas.expected_merged_dates_schema,
         )
 
-        pl_testing.assert_frame_equal(
-            returned_lf.select(self.column_order_for_assertion),
-            expected_lf.select(self.column_order_for_assertion),
-        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     def test_closest_historical_date_joined_correctly(self):
         primary_lf = pl.LazyFrame(
@@ -111,8 +92,8 @@ class AddAlignedDateColumnsTests(PolarsCleaningUtilsTests):
         )
 
         pl_testing.assert_frame_equal(
-            returned_lf.select(self.column_order_for_assertion),
-            expected_lf.select(self.column_order_for_assertion),
+            returned_lf,
+            expected_lf,
         )
 
     def test_future_date_only_returns_null_secondary_column(self):
@@ -136,8 +117,8 @@ class AddAlignedDateColumnsTests(PolarsCleaningUtilsTests):
         )
 
         pl_testing.assert_frame_equal(
-            returned_lf.select(self.column_order_for_assertion),
-            expected_lf.select(self.column_order_for_assertion),
+            returned_lf,
+            expected_lf,
         )
 
 
@@ -172,8 +153,6 @@ class ColumnToDateTests(unittest.TestCase):
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-        self.assertEqual(returned_lf.collect_schema(), expected_lf.collect_schema())
-
     def test_converts_date_string_with_hyphens_to_date(self):
         lf = pl.LazyFrame(
             data=Data.column_to_date_string_with_hyphens_rows,
@@ -189,21 +168,61 @@ class ColumnToDateTests(unittest.TestCase):
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-        self.assertEqual(returned_lf.collect_schema(), expected_lf.collect_schema())
-
     def test_adds_a_new_column_with_converted_date(self):
-        lf = pl.LazyFrame(
-            data=Data.column_to_date_with_new_col_rows,
-            schema=Schemas.col_to_date_string_schema,
-        )
-
-        returned_lf = job.column_to_date(lf, "date_col", "new_date_col")
-
         expected_lf = pl.LazyFrame(
             data=Data.expected_column_to_date_with_new_col_rows,
             schema=Schemas.expected_col_to_date_with_new_col_schema,
         )
+        returned_lf = job.column_to_date(
+            expected_lf.drop("new_date_col"), "date_col", "new_date_col"
+        )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-        self.assertEqual(returned_lf.collect_schema(), expected_lf.collect_schema())
+
+class CalculateFilledPostsPerBedRatioTests(unittest.TestCase):
+    def test_calculate_filled_posts_per_bed_ratio(self):
+        expected_lf = pl.LazyFrame(
+            Data.expected_filled_posts_per_bed_ratio_rows,
+            Schemas.expected_filled_posts_per_bed_ratio_schema,
+            orient="row",
+        )
+        returned_lf = job.calculate_filled_posts_per_bed_ratio(
+            expected_lf.drop(IndCQC.filled_posts_per_bed_ratio),
+            IndCQC.ascwds_filled_posts_dedup,
+            IndCQC.filled_posts_per_bed_ratio,
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class ReduceDatasetToEarliestFilePerMonthTests(unittest.TestCase):
+    def test_reduce_dataset_to_earliest_file_per_month_returns_correct_rows(self):
+        test_lf = pl.LazyFrame(
+            Data.reduce_dataset_to_earliest_file_per_month_rows,
+            Schemas.reduce_dataset_to_earliest_file_per_month_schema,
+            orient="row",
+        )
+        returned_lf = job.reduce_dataset_to_earliest_file_per_month(test_lf)
+        expected_lf = pl.LazyFrame(
+            Data.expected_reduce_dataset_to_earliest_file_per_month_rows,
+            Schemas.reduce_dataset_to_earliest_file_per_month_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class CreateBandedBedCountColumnTests(unittest.TestCase):
+    def test_create_banded_bed_count_column(self):
+        expected_lf = pl.LazyFrame(
+            Data.expected_create_banded_bed_count_column_rows,
+            Schemas.expected_create_banded_bed_count_column_schema,
+            orient="row",
+        )
+        test_splits = [0, 1, 25, float("Inf")]
+        returned_lf = job.create_banded_bed_count_column(
+            expected_lf.drop(IndCQC.number_of_beds_banded),
+            IndCQC.number_of_beds_banded,
+            test_splits,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

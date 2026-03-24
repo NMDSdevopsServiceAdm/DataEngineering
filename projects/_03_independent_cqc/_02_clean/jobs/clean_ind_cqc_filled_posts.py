@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import Optional
+from dataclasses import dataclass
 
 os.environ["SPARK_VERSION"] = "3.5"
 
@@ -14,8 +14,17 @@ from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator
 from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers import (
     clean_ascwds_filled_post_outliers,
 )
-from projects._03_independent_cqc._02_clean.utils.clean_ct_care_home_outliers.clean_ct_care_home_outliers import (
-    null_ct_posts_to_beds_outliers,
+from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_care_home_outliers import (
+    clean_capacity_tracker_care_home_outliers,
+)
+from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_non_res_outliers import (
+    clean_capacity_tracker_non_res_outliers,
+)
+from projects._03_independent_cqc._02_clean.utils.forward_fill_latest_known_value import (
+    forward_fill_latest_known_value,
+)
+from projects._03_independent_cqc._02_clean.utils.utils import (
+    create_column_with_repeated_values_removed,
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -39,7 +48,7 @@ def main(
     locations_df = calculate_time_registered_for(locations_df)
     locations_df = calculate_time_since_dormant(locations_df)
 
-    locations_df = remove_duplicate_cqc_care_homes(locations_df)
+    locations_df = remove_dual_registration_cqc_care_homes(locations_df)
 
     locations_df = replace_zero_beds_with_null(locations_df)
     locations_df = populate_missing_care_home_number_of_beds(locations_df)
@@ -77,6 +86,14 @@ def main(
 
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
 
+    locations_df = forward_fill_latest_known_value(
+        locations_df, IndCQC.ascwds_filled_posts_dedup_clean
+    )
+
+    locations_df = forward_fill_latest_known_value(
+        locations_df, IndCQC.pir_people_directly_employed_dedup
+    )
+
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
         locations_df,
         IndCQC.ascwds_filled_posts_dedup_clean,
@@ -89,7 +106,10 @@ def main(
         IndCQC.ct_care_home_posts_per_bed_ratio,
     )
 
-    locations_df = null_ct_posts_to_beds_outliers(locations_df)
+    locations_df = clean_capacity_tracker_care_home_outliers(locations_df)
+    locations_df = clean_capacity_tracker_non_res_outliers(locations_df)
+
+    locations_df = calculate_care_home_status_count(locations_df)
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 
@@ -101,13 +121,20 @@ def main(
     )
 
 
-def remove_duplicate_cqc_care_homes(df: DataFrame) -> DataFrame:
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.remove_dual_registration_cqc_care_homes
+def remove_dual_registration_cqc_care_homes(df: DataFrame) -> DataFrame:
     """
-    Removes cqc locations with dual registration and ensures no loss of ascwds data.
+    Removes cqc care home locations with dual registration and ensures no loss of ascwds data.
 
-    This function removes one instance of cqc care home locations with dual registration. Duplicates
+    This function removes one instance of cqc care home locations with dual registration. These
     are identified using cqc_location_import_date, name, postcode, and carehome. Any ASCWDS data in either
     location is shared to the other and then the location with the newer registration date is removed.
+
+    The CQC locations dataset includes instances of 'dual registration', where two providers have evidenced to
+    CQC that they are both responsible for managing the regulated activities at a single location.
+    In this data, these instances appear as two separate lines, with different Location IDs, but with the same
+    names and addresses of services. To understand care provision in England accurately, one of these 'dual registered'
+    location pairs should be removed.
 
     Args:
         df (DataFrame): A dataframe containing cqc location data and ascwds data
@@ -121,14 +148,15 @@ def remove_duplicate_cqc_care_homes(df: DataFrame) -> DataFrame:
         IndCQC.postcode,
         IndCQC.care_home,
     ]
-    distinguishing_column = IndCQC.imputed_registration_date
+    distinguishing_columns = [IndCQC.imputed_registration_date, IndCQC.location_id]
     df = copy_ascwds_data_across_duplicate_rows(df, duplicate_columns)
-    df = deduplicate_care_homes(df, duplicate_columns, distinguishing_column)
+    df = deduplicate_care_homes(df, duplicate_columns, distinguishing_columns)
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.deduplicate_care_homes
 def deduplicate_care_homes(
-    df: DataFrame, duplicate_columns: list, distinguishing_column: str
+    df: DataFrame, duplicate_columns: list[str], distinguishing_columns: list[str]
 ) -> DataFrame:
     """
     Removes cqc locations with dual registration.
@@ -137,8 +165,8 @@ def deduplicate_care_homes(
 
     Args:
         df (DataFrame): A dataframe containing cqc location data and ascwds data.
-        duplicate_columns (list): A list of column names to identify duplicates.
-        distinguishing_column (str): The name of the column which will decide which of the duplicates to keep.
+        duplicate_columns (list[str]): A list of column names to identify duplicates.
+        distinguishing_columns (list[str]): A list of the columns which will decide which of the duplicates to keep.
 
     Returns:
         DataFrame: A dataframe with dual regestrations deduplicated.
@@ -147,7 +175,7 @@ def deduplicate_care_homes(
     df = df.withColumn(
         temp_col,
         F.row_number().over(
-            Window.partitionBy(duplicate_columns).orderBy(distinguishing_column)
+            Window.partitionBy(duplicate_columns).orderBy(distinguishing_columns)
         ),
     )
     df = df.where(
@@ -159,6 +187,7 @@ def deduplicate_care_homes(
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.copy_ascwds_data_across_duplicate_rows
 def copy_ascwds_data_across_duplicate_rows(
     df: DataFrame, duplicate_columns: list
 ) -> DataFrame:
@@ -172,30 +201,36 @@ def copy_ascwds_data_across_duplicate_rows(
     Returns:
         DataFrame: A dataframe with total_staff_bounded and worker_records_bounded copied across duplicate rows.
     """
-    window = (
-        Window.partitionBy(duplicate_columns)
-        .orderBy(IndCQC.imputed_registration_date)
-        .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+    window = Window.partitionBy(duplicate_columns)
+
+    df = df.withColumns(
+        {
+            IndCQC.total_staff_bounded: F.when(
+                df[IndCQC.care_home] == CareHome.care_home,
+                F.coalesce(
+                    F.col(IndCQC.total_staff_bounded),
+                    F.max(IndCQC.total_staff_bounded).over(window),
+                ),
+            ).otherwise(F.col(IndCQC.total_staff_bounded)),
+            IndCQC.worker_records_bounded: F.when(
+                df[IndCQC.care_home] == CareHome.care_home,
+                F.coalesce(
+                    F.col(IndCQC.worker_records_bounded),
+                    F.max(IndCQC.worker_records_bounded).over(window),
+                ),
+            ).otherwise(F.col(IndCQC.worker_records_bounded)),
+        },
     )
-    columns_to_copy = [IndCQC.total_staff_bounded, IndCQC.worker_records_bounded]
-    functions_to_run = [F.first, F.last]
-    for column in columns_to_copy:
-        for function in functions_to_run:
-            df = df.withColumn(
-                column,
-                F.when(
-                    (df[IndCQC.care_home] == CareHome.care_home)
-                    & (df[column].isNull()),
-                    function(column).over(window),
-                ).otherwise(F.col(column)),
-            )
+
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.replace_zero_beds_with_null
 def replace_zero_beds_with_null(df: DataFrame) -> DataFrame:
     return df.replace(0, None, IndCQC.number_of_beds)
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.populate_missing_care_home_number_of_beds
 def populate_missing_care_home_number_of_beds(
     df: DataFrame,
 ) -> DataFrame:
@@ -206,6 +241,7 @@ def populate_missing_care_home_number_of_beds(
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.filter_to_care_homes_with_known_beds
 def filter_to_care_homes_with_known_beds(
     df: DataFrame,
 ) -> DataFrame:
@@ -214,6 +250,7 @@ def filter_to_care_homes_with_known_beds(
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.average_beds_per_location
 def average_beds_per_location(df: DataFrame) -> DataFrame:
     df = df.groupBy(IndCQC.location_id).agg(
         F.avg(IndCQC.number_of_beds).alias(average_number_of_beds)
@@ -225,6 +262,7 @@ def average_beds_per_location(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.replace_null_beds_with_average
 def replace_null_beds_with_average(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         IndCQC.number_of_beds,
@@ -233,53 +271,7 @@ def replace_null_beds_with_average(df: DataFrame) -> DataFrame:
     return df.drop(average_number_of_beds)
 
 
-def create_column_with_repeated_values_removed(
-    df: DataFrame,
-    column_to_clean: str,
-    new_column_name: Optional[str] = None,
-) -> DataFrame:
-    """
-    Some data we have (such as ASCWDS) repeats data until it is changed. This function creates a new column which converts repeated
-    values to nulls, so we only see newly submitted values once. This also happens as a result of joining the same datafile mulitple
-    times as part of the align dates field.
-
-    For each location, this function iterates over the dataframe in date order and compares the current column value to the
-    previously submitted value. If the value differs from the previously submitted value then enter that value into the new column.
-    Otherwise null the value in the new column as it is a previously submitted value which has been repeated.
-
-    Args:
-        df (DataFrame): The dataframe to use
-        column_to_clean (str): The name of the column to convert
-        new_column_name (Optional [str]): If not provided, "_deduplicated" will be appended onto the original column name
-
-    Returns:
-        DataFrame: A DataFrame with an addional column with repeated values changed to nulls.
-    """
-    PREVIOUS_VALUE: str = "previous_value"
-
-    if new_column_name is None:
-        new_column_name = column_to_clean + "_deduplicated"
-
-    w = Window.partitionBy(IndCQC.location_id).orderBy(IndCQC.cqc_location_import_date)
-
-    df_with_previously_submitted_value = df.withColumn(
-        PREVIOUS_VALUE, F.lag(column_to_clean).over(w)
-    )
-
-    df_without_repeated_values = df_with_previously_submitted_value.withColumn(
-        new_column_name,
-        F.when(
-            (F.col(PREVIOUS_VALUE).isNull())
-            | (F.col(column_to_clean) != F.col(PREVIOUS_VALUE)),
-            F.col(column_to_clean),
-        ).otherwise(None),
-    )
-
-    df_without_repeated_values = df_without_repeated_values.drop(PREVIOUS_VALUE)
-
-    return df_without_repeated_values
-
-
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.calculate_time_registered_for
 def calculate_time_registered_for(df: DataFrame) -> DataFrame:
     """
     Adds a new column called time_registered which is the number of months the location has been registered with CQC for (rounded up).
@@ -307,6 +299,7 @@ def calculate_time_registered_for(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.calculate_time_since_dormant
 def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
     """
     Adds a column to show the number of months since the location was last dormant.
@@ -360,6 +353,26 @@ def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
         IndCQC.last_dormant_date,
     )
 
+    return df
+
+
+# converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.calculate_care_home_status_count
+def calculate_care_home_status_count(df: DataFrame) -> DataFrame:
+    """
+    Calculate how many care home statuses each location has had.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+
+    Returns:
+        DataFrame: The input DataFrame with care home status count.
+    """
+    w = Window.partitionBy(IndCQC.location_id)
+
+    df = df.withColumn(
+        IndCQC.care_home_status_count,
+        F.size((F.collect_set(IndCQC.care_home).over(w))),
+    )
     return df
 
 

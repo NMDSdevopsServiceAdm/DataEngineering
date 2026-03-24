@@ -49,3 +49,22 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     specialism_dementia: str = "specialism_dementia"
     specialism_learning_disabilities: str = "specialism_learning_disabilities"
     specialism_mental_health: str = "specialism_mental_health_conditions"
+
+
+@dataclass
+class CqcLocationCleanedNewValidationColumns:
+    registered_manager_names_has_no_empty_or_null: str = (
+        "registered_manager_names_has_no_empty_or_null"
+    )
+    regulated_activities_offered_has_no_empty_or_null: str = (
+        "regulated_activities_offered_has_no_empty_or_null"
+    )
+    regulated_activities_offered_is_not_null: str = (
+        "regulated_activities_offered_is_not_null"
+    )
+    services_offered_is_not_null: str = "services_offered_is_not_null"
+    services_offered_has_no_empty_or_null: str = "services_offered_has_no_empty_or_null"
+    specialisms_offered_is_not_null: str = "specialisms_offered_is_not_null"
+    specialisms_offered_has_no_empty_or_null: str = (
+        "specialisms_offered_has_no_empty_or_null"
+    )

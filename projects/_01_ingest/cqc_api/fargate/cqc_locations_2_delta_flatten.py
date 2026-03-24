@@ -1,10 +1,9 @@
-from polars_utils import raw_data_adjustments, utils
+from polars_utils import utils
 from polars_utils.cleaning_utils import column_to_date
 from projects._01_ingest.cqc_api.fargate.utils import flatten_utils as fUtils
 from projects._01_ingest.cqc_api.fargate.utils.extract_registered_manager_names import (
     extract_registered_manager_names,
 )
-from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -45,12 +44,9 @@ def main(
 ) -> None:
     cqc_lf = utils.scan_parquet(
         cqc_locations_api_delta_source,
-        schema=POLARS_LOCATION_SCHEMA,
         selected_columns=cqc_location_cols_to_import,
     )
     print("CQC Location LazyFrame read in")
-
-    cqc_lf = cqc_lf.filter(raw_data_adjustments.is_valid_location())
 
     cqc_lf = column_to_date(cqc_lf, CQCLClean.registration_date)
     cqc_lf = column_to_date(cqc_lf, CQCLClean.deregistration_date)

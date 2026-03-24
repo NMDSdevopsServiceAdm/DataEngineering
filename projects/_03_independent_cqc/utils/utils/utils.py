@@ -1,21 +1,13 @@
+from datetime import date
 from typing import List
 
 from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
-from pyspark.sql.types import DoubleType, MapType
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
-from utils.column_values.categorical_column_values import (
-    PrimaryServiceTypeSecondLevel as PSSL_values,
-)
-from utils.value_labels.ind_cqc_filled_posts.primary_service_type_mapping import (
-    CqcServiceToPrimaryServiceTypeSecondLevelLookup as PSSL_lookup,
-)
 
 
+# converted to polars -> polars_utils.utils.coalesce_with_source_labels
 def merge_columns_in_order(
     df: DataFrame,
     ordered_list_of_columns_to_be_merged: List,
@@ -27,9 +19,6 @@ def merge_columns_in_order(
 
     This function creates a new column using the values from other columns given in a list.
     Values are taken from the given list of columns in the order of the list.
-    The given list of columns must all be of the same datatype which can be float or map.
-    Float values will only be taken if they are greater than or equal to 1.0.
-    Map elements will only be taken if they are not null.
     This function also adds a new column for the source, which is the column name that values were taken from.
 
     Args:
@@ -40,62 +29,18 @@ def merge_columns_in_order(
 
     Returns:
         DataFrame: A dataframe with a column for the merged job role ratios.
-
-    Raises:
-        ValueError: If the given list of columns are not all 'double' or all 'map' datatypes.
     """
-    column_types = list(
-        set(
-            [
-                df.schema[column].dataType
-                for column in ordered_list_of_columns_to_be_merged
-            ]
-        )
+    df = df.withColumn(
+        merged_column_name,
+        F.coalesce(*[F.col(column) for column in ordered_list_of_columns_to_be_merged]),
     )
-    if len(column_types) > 1:
-        raise ValueError(
-            f"The columns to merge must all have the same datatype. Found {column_types}."
-        )
 
-    if isinstance(column_types[0], DoubleType):
-        df = df.withColumn(
-            merged_column_name,
-            F.coalesce(
-                *[
-                    F.when((F.col(column) >= 1.0), F.col(column))
-                    for column in ordered_list_of_columns_to_be_merged
-                ]
-            ),
-        )
-
-        source_column = F.when(
-            F.col(ordered_list_of_columns_to_be_merged[0]) >= 1.0,
-            ordered_list_of_columns_to_be_merged[0],
-        )
-        for column_name in ordered_list_of_columns_to_be_merged[1:]:
-            source_column = source_column.when(F.col(column_name) >= 1.0, column_name)
-
-    elif isinstance(column_types[0], MapType):
-        df = df.withColumn(
-            merged_column_name,
-            F.coalesce(
-                *[F.col(column) for column in ordered_list_of_columns_to_be_merged]
-            ),
-        )
-
-        source_column = F.when(
-            F.col(ordered_list_of_columns_to_be_merged[0]).isNotNull(),
-            ordered_list_of_columns_to_be_merged[0],
-        )
-        for column_name in ordered_list_of_columns_to_be_merged[1:]:
-            source_column = source_column.when(
-                F.col(column_name).isNotNull(), column_name
-            )
-
-    else:
-        raise ValueError(
-            f"Columns to merge must be either 'double' or 'map' type. Found {column_types}."
-        )
+    source_column = F.when(
+        F.col(ordered_list_of_columns_to_be_merged[0]).isNotNull(),
+        ordered_list_of_columns_to_be_merged[0],
+    )
+    for column_name in ordered_list_of_columns_to_be_merged[1:]:
+        source_column = source_column.when(F.col(column_name).isNotNull(), column_name)
 
     df = df.withColumn(merged_column_source_name, source_column)
 
@@ -147,4 +92,33 @@ def get_selected_value(
         ).over(window_spec),
     )
 
+    return df
+
+
+def nullify_ct_values_previous_to_first_submission(
+    df: DataFrame, columns: list
+) -> DataFrame:
+    """
+    Nullifies Capacity Tracker (CT) values for all dates prior to the first
+    submission date.
+
+    This is to ensure that we do not impute filled posts prior to collecting CT
+    data.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        columns (list): A list of column names to nullify for dates prior to the
+            first submission.
+
+    Returns:
+        DataFrame: The input DataFrame with Capacity Tracker values nullified
+        for all dates prior to collecting CT data.
+    """
+    before_first_submission = F.col(IndCQC.cqc_location_import_date) < date(2021, 5, 1)
+
+    for col in columns:
+        df = df.withColumn(
+            col,
+            F.when(before_first_submission, None).otherwise(F.col(col)),
+        )
     return df

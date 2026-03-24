@@ -1,6 +1,10 @@
 version: 2.1
 
+environment:
+  AWS_REGION: eu-west-2
+
 parameters:
+  # These GitHub Actions params are expected by CircleCI even if unused.
   GHA_Actor:
     type: string
     default: ""
@@ -13,9 +17,11 @@ parameters:
   GHA_Meta:
     type: string
     default: ""
+  terraform_version:
+    type: string
+    default: 1.13.5
 
 orbs:
-  aws-s3: circleci/aws-s3@3.0
   aws-cli: circleci/aws-cli@5.4.1
 
 jobs:
@@ -34,7 +40,7 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - aws-cli/setup:
-          region: "eu-west-2"
+          region: $AWS_REGION
       - run:
           name: Build Docker Images
           command: |
@@ -51,37 +57,45 @@ jobs:
 
   test:
     docker:
-      - image: cimg/python:3.11.12
+      - image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
     resource_class: large
+    environment:
+      SPARK_VERSION: "3.5"       # Required for pydeequ to initialize
     steps:
       - checkout
       - restore_cache:
           keys:
-            - v1.1-deps-{{ checksum "Pipfile.lock" }}
+            - v1.2-uv-cache-{{ checksum "Pipfile.lock" }}
       - run:
           name: Install system packages
           command: |
-            sudo apt-get update
-            sudo apt-get install -y default-jre-headless
+            apt-get update
+            apt-get install -y default-jre-headless
       - run:
           name: install dependencies
-          command: |
-            pip install pipenv
-            pipenv install --dev
+          command: uv pip install --system -r <(uvx pipenv requirements --dev)
+      # Pre-cache the pyqeequ dependency so xdist works better.
+      - run:
+            name: Pre-cache Spark JARs
+            command: python scripts/fetch_spark_dependencies.py
       - save_cache:
-          key: v1.1-deps-{{ checksum "Pipfile.lock" }}
+          key: v1.2-uv-cache-{{ checksum "Pipfile.lock" }}
           paths:
-            - ~/.local/share/virtualenvs
+            - ~/.m2/repository
+            - ~/.ivy2/jars
+            - ~/.ivy2/cache
+            - ~/.cache/uv
       - run:
-          name: run unit tests
+          name: Run unit tests and generate coverage
           command: |
-            pipenv run coverage run --source=. -m unittest discover -s . -p "test_*.py"
+            pytest \
+              -n auto --dist loadfile \
+              --cov=. \
+              --cov-report=xml \
+              --cov-report=html
       - run:
-          name: Generate coverage report
-          command: |
-            pipenv run coverage report
-            pipenv run coverage xml
-            pipenv run coverage html
+            name: Output Coverage Report
+            command: coverage report
       - store_artifacts:
           path: htmlcov
 
@@ -113,7 +127,7 @@ jobs:
 
   lint-terraform:
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:<< pipeline.parameters.terraform_version >>
     resource_class: small
     steps:
       - checkout
@@ -133,7 +147,7 @@ jobs:
         type: env_var_name
     working_directory: /tmp/project
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:<< pipeline.parameters.terraform_version >>
     resource_class: small
     steps:
       - checkout
@@ -169,7 +183,7 @@ jobs:
       secret_key:
         type: env_var_name
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:<< pipeline.parameters.terraform_version >>
     resource_class: small
     steps:
       - checkout
@@ -214,6 +228,8 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - aws-cli/setup:
+          region: $AWS_REGION
       - run:
           name: Setup Environment Variables
           command: |
@@ -234,10 +250,11 @@ jobs:
             cd target && zip -r pydeequ-1.5.0.zip pydeequ && cd ..
             mv target/pydeequ-1.5.0.zip dependencies/pydeequ-1.5.0.zip
             rm -rf target
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: dependencies
-          to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
+      - run:
+          name: Sync dependencies to S3
+          command: |
+            PIPELINE_RESOURCES=$(cat terraform/pipeline/pipeline_resources_bucket_name)
+            aws s3 sync dependencies "s3://$PIPELINE_RESOURCES/dependencies"
 
   copy-main-data:
     docker:
@@ -246,81 +263,89 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - aws-cli/setup:
+          region: $AWS_REGION
       - run:
           name: Setup Environment Variables
           command: |
             echo 'export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"' >> "$BASH_ENV"
             echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api/version=3.1.0/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_providers_api/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_providers_api/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_providers_api/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_providers_api/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=cqc_providers_03_full_flattened/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=cqc_providers_03_full_flattened/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=postcode_corrections/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory_cleaned/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ONS/dataset=postcode_directory_cleaned/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=workplace/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=worker/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC/dataset=pir_cleaned/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=pir_cleaned/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-pipeline-resources/models/"
-          to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/models/"
+            echo 'export BRANCH_DATASET_BUCKET=$(cat terraform/pipeline/datasets_bucket_name)' >> "$BASH_ENV"
+            echo 'export BRANCH_RESOURCES_BUCKET=$(cat terraform/pipeline/pipeline_resources_bucket_name)' >> "$BASH_ENV"
+      - run:
+          name: Copy main datasets to non-prod dataset bucket
+          command: |
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=delta_locations_api/version=3.1.0/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=delta_locations_api/version=3.1.0/"
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=delta_providers_api/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=delta_providers_api/"
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_03_full_flattened/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_locations_03_full_flattened/"
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_providers_03_full_flattened/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_providers_03_full_flattened/"
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=postcode_corrections/"
+            aws s3 sync "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=ONS/dataset=postcode_directory_cleaned/"
+            aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/" "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace/"
+            aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace_cleaned/"
+            aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker/" "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=worker/"
+            aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=worker_cleaned/"
+            aws s3 sync "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
+            aws s3 sync "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=pir_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=pir_cleaned/"
+            aws s3 sync "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/" "s3://$BRANCH_DATASET_BUCKET/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_06_estimated_filled_posts/"
+      - run:
+          name: Copy models to non-prod dataset
+          command: |
+            aws s3 sync "s3://sfc-main-pipeline-resources/models/" "s3://$BRANCH_RESOURCES_BUCKET/models/"
 
   terraform-destroy:
     working_directory: /tmp/project
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:<< pipeline.parameters.terraform_version >>
     resource_class: small
     steps:
       - checkout
+      - aws-cli/setup:
+          region: $AWS_REGION
       - run:
           name: terraform destroy
           command: |
             export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"
             export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"
+            export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
+            # --- Safeguard to never destroy main ---
+            if [ "$SANITISED_CIRCLE_BRANCH" = "main" ]; then
+              echo "Skipping destroy for main branch"
+              exit 0
+            fi
+            # --- Select workspace ---
             cd terraform/pipeline
             terraform init -input=false -backend-config=../non_prod.s3.tfbackend
-            export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
-            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
             terraform workspace select ${SANITISED_CIRCLE_BRANCH}
+            # --- Force-empty dataset bucket for this branch ---
+            echo "Emptying dataset bucket: s3://sfc-${SANITISED_CIRCLE_BRANCH}-datasets"
+            NB_OBJECTS=$(aws s3api list-object-versions --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --query='length(Versions[*] || `[]` )' | awk '{ print $1 }')
+            echo "      '${NB_OBJECTS}' objects to remove"
+            if [[ "$NB_OBJECTS" != "0" ]]; then
+              start=$SECONDS
+              while [[ $NB_OBJECTS -gt 0 ]]
+              do
+                aws s3api delete-objects --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --delete "$(aws s3api list-object-versions --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --max-items 100 --query='{Objects: Versions[0:100].{Key:Key,VersionId:VersionId}}')" --query 'length(Deleted[*] || `[]` )' > /dev/null
+                NB_OBJECTS=$((NB_OBJECTS  > 100 ? NB_OBJECTS - 100 : 0))
+                echo "      Removed batch of Objects... Remaining : $NB_OBJECTS ($(( SECONDS - start ))s)"
+              done
+            fi
+
+            NB_OBJECTS=$(aws s3api list-object-versions --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --query='length(DeleteMarkers[*] || `[]` )' | awk '{ print $1 }')
+            echo "      '${NB_OBJECTS}' markers to remove"
+            if [[ "$NB_OBJECTS" != "0" ]]; then
+              start=$SECONDS
+              while [[ $NB_OBJECTS -gt 0 ]]
+              do
+                aws s3api delete-objects --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --delete "$(aws s3api list-object-versions --bucket "sfc-${SANITISED_CIRCLE_BRANCH}-datasets" --max-items 100 --query='{Objects: DeleteMarkers[0:100].{Key:Key,VersionId:VersionId}}')" --query 'length(Deleted[*] || `[]` )' > /dev/null
+                NB_OBJECTS=$((NB_OBJECTS  > 100 ? NB_OBJECTS - 100 : 0))
+                echo "      Removed batch of Markers... Remaining : $NB_OBJECTS (took $(( SECONDS - start ))s)"
+              done
+            fi
+            # --- Run destroy ---
             terraform destroy -auto-approve
       - run:
           name: delete workspace
@@ -330,7 +355,7 @@ jobs:
             cd terraform/pipeline
             terraform workspace select default
             export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
-            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
             terraform workspace delete ${SANITISED_CIRCLE_BRANCH}
 
 

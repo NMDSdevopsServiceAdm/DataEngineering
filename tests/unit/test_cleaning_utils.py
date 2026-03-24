@@ -1,12 +1,10 @@
-import unittest
-
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 
 import utils.cleaning_utils as job
+from tests.base_test import SparkBaseTest
 from tests.test_file_data import CleaningUtilsData as Data
 from tests.test_file_schemas import CleaningUtilsSchemas as Schemas
-from utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -25,9 +23,8 @@ gender_labels: str = "gender_labels"
 nationality_labels: str = "nationality_labels"
 
 
-class TestCleaningUtilsCategorical(unittest.TestCase):
+class ApplyCategoricalLabelsTests(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
         self.test_worker_df = self.spark.createDataFrame(
             Data.worker_rows, schema=Schemas.worker_schema
         )
@@ -50,7 +47,7 @@ class TestCleaningUtilsCategorical(unittest.TestCase):
 
         self.assertIsNotNone(returned_df)
 
-    def test_apply_categorical_labels_adds_a_new_column_when_given_one_column_and_new_column_is_set_to_true(
+    def test_single_column_added_with_replaced_values_when_new_column_is_set_to_true(
         self,
     ):
         returned_df = job.apply_categorical_labels(
@@ -64,7 +61,7 @@ class TestCleaningUtilsCategorical(unittest.TestCase):
 
         self.assertEqual(len(returned_df.columns), expected_columns)
 
-    def test_apply_categorical_labels_adds_two_new_columns_when_given_two_columns_and_new_column_is_set_to_true(
+    def test_multiple_columns_added_with_replaced_values_when_new_column_is_set_to_true(
         self,
     ):
         returned_df = job.apply_categorical_labels(
@@ -73,39 +70,19 @@ class TestCleaningUtilsCategorical(unittest.TestCase):
             [AWK.gender, AWK.nationality],
             add_as_new_column=True,
         )
+        returned_data = (
+            returned_df.select(self.expected_df_with_new_columns.columns)
+            .sort(AWK.worker_id)
+            .collect()
+        )
+        expected_data = self.expected_df_with_new_columns.sort(AWK.worker_id).collect()
 
         expected_columns = len(self.test_worker_df.columns) + 2
 
         self.assertEqual(len(returned_df.columns), expected_columns)
-
-    def test_apply_categorical_labels_adds_new_columns_with_replaced_values_when_new_column_is_set_to_true(
-        self,
-    ):
-        returned_df = job.apply_categorical_labels(
-            self.test_worker_df,
-            self.label_dict,
-            [AWK.gender, AWK.nationality],
-            add_as_new_column=True,
-        )
-        returned_data = returned_df.sort(AWK.worker_id).collect()
-        expected_data = self.expected_df_with_new_columns.sort(AWK.worker_id).collect()
         self.assertEqual(returned_data, expected_data)
 
-    def test_apply_categorical_labels_does_not_add_a_new_column_when_given_one_column_and_new_column_is_set_to_false(
-        self,
-    ):
-        returned_df = job.apply_categorical_labels(
-            self.test_worker_df,
-            self.label_dict,
-            [AWK.gender],
-            add_as_new_column=False,
-        )
-
-        expected_columns = len(self.test_worker_df.columns)
-
-        self.assertEqual(len(returned_df.columns), expected_columns)
-
-    def test_apply_categorical_labels_does_not_add_new_columns_when_given_two_columns_and_new_column_is_set_to_false(
+    def test_replaces_values_in_original_columns_when_new_column_is_set_to_false(
         self,
     ):
         returned_df = job.apply_categorical_labels(
@@ -114,66 +91,83 @@ class TestCleaningUtilsCategorical(unittest.TestCase):
             [AWK.gender, AWK.nationality],
             add_as_new_column=False,
         )
-
-        expected_columns = len(self.test_worker_df.columns)
-
-        self.assertEqual(len(returned_df.columns), expected_columns)
-
-    def test_apply_categorical_labels_replaces_values_when_new_column_is_set_to_false(
-        self,
-    ):
-        returned_df = job.apply_categorical_labels(
-            self.test_worker_df,
-            self.label_dict,
-            [AWK.gender, AWK.nationality],
-            add_as_new_column=False,
+        returned_data = (
+            returned_df.select(self.expected_df_without_new_columns.columns)
+            .sort(AWK.worker_id)
+            .collect()
         )
-        returned_data = returned_df.sort(AWK.worker_id).collect()
         expected_data = self.expected_df_without_new_columns.sort(
             AWK.worker_id
         ).collect()
-        self.assertEqual(returned_data, expected_data)
 
-    def test_apply_categorical_labels_adds_a_new_column_when_given_one_column_and_new_column_is_undefined(
-        self,
-    ):
-        returned_df = job.apply_categorical_labels(
-            self.test_worker_df, self.label_dict, [AWK.gender]
-        )
-
-        expected_columns = len(self.test_worker_df.columns) + 1
+        expected_columns = len(self.test_worker_df.columns)
 
         self.assertEqual(len(returned_df.columns), expected_columns)
+        self.assertEqual(returned_data, expected_data)
 
-    def test_apply_categorical_labels_adds_two_new_columns_when_given_two_columns_and_new_column_is_undefined(
-        self,
-    ):
+    def test_add_as_new_column_defaults_to_true(self):
         returned_df = job.apply_categorical_labels(
             self.test_worker_df,
             self.label_dict,
             [AWK.gender, AWK.nationality],
         )
-
         expected_columns = len(self.test_worker_df.columns) + 2
 
         self.assertEqual(len(returned_df.columns), expected_columns)
 
-    def test_apply_categorical_labels_adds_new_columns_with_replaced_values_when_new_column_is_undefined(
-        self,
-    ):
+    def test_original_values_not_in_label_dict_are_retained_when_new_col_added(self):
+        input_df = self.spark.createDataFrame(
+            Data.worker_rows_with_unmatched_labels,
+            Schemas.worker_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_worker_rows_with_unmatched_labels_with_new_columns,
+            Schemas.expected_schema_with_new_columns,
+        )
+
         returned_df = job.apply_categorical_labels(
-            self.test_worker_df,
+            input_df,
             self.label_dict,
             [AWK.gender, AWK.nationality],
+            add_as_new_column=True,
         )
-        returned_data = returned_df.sort(AWK.worker_id).collect()
-        expected_data = self.expected_df_with_new_columns.sort(AWK.worker_id).collect()
+
+        returned_data = (
+            returned_df.select(expected_df.columns).sort(AWK.worker_id).collect()
+        )
+        expected_data = expected_df.sort(AWK.worker_id).collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_original_values_not_in_label_dict_are_retained_when_labels_added_into_original_col(
+        self,
+    ):
+        input_df = self.spark.createDataFrame(
+            Data.worker_rows_with_unmatched_labels,
+            Schemas.worker_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_worker_rows_with_unmatched_labels_without_new_columns,
+            Schemas.worker_schema,
+        )
+
+        returned_df = job.apply_categorical_labels(
+            input_df,
+            self.label_dict,
+            [AWK.gender, AWK.nationality],
+            add_as_new_column=False,
+        )
+
+        returned_data = (
+            returned_df.select(expected_df.columns).sort(AWK.worker_id).collect()
+        )
+        expected_data = expected_df.sort(AWK.worker_id).collect()
+
         self.assertEqual(returned_data, expected_data)
 
 
-class TestCleaningUtilsScale(unittest.TestCase):
+class TestCleaningUtilsScale(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
         self.test_scale_df = self.spark.createDataFrame(
             Data.scale_data, schema=Schemas.scale_schema
         )
@@ -360,9 +354,8 @@ class TestCleaningUtilsScale(unittest.TestCase):
         self.assertEqual(returned_data, expected_data)
 
 
-class TestCleaningUtilsColumnToDate(unittest.TestCase):
+class TestCleaningUtilsColumnToDate(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
         self.sample_df = self.spark.createDataFrame(
             Data.column_to_date_data, Schemas.sample_col_to_date_schema
         )
@@ -393,9 +386,8 @@ class TestCleaningUtilsColumnToDate(unittest.TestCase):
         )
 
 
-class TestCleaningUtilsAlignDates(unittest.TestCase):
+class TestCleaningUtilsAlignDates(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
         self.primary_column = AWPClean.ascwds_workplace_import_date
         self.secondary_column = CQCLClean.cqc_location_import_date
         self.primary_df = self.spark.createDataFrame(
@@ -578,9 +570,8 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
         self.assertEqual(returned_columns, expected_columns)
 
 
-class ReduceDatasetToEarliestFilePerMonthTests(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
+class ReduceDatasetToEarliestFilePerMonthTests(SparkBaseTest):
+    def setUp(self): ...
 
     def test_reduce_dataset_to_earliest_file_per_month_returns_correct_rows(self):
         test_df = self.spark.createDataFrame(
@@ -598,9 +589,9 @@ class ReduceDatasetToEarliestFilePerMonthTests(unittest.TestCase):
         )
 
 
-class CastToIntTests(unittest.TestCase):
+class CastToIntTests(SparkBaseTest):
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+
         self.filled_posts_columns = [AWP.total_staff, AWP.worker_records]
 
     def test_cast_to_int_returns_strings_formatted_as_ints_to_ints(self):
@@ -638,10 +629,7 @@ class CastToIntTests(unittest.TestCase):
         self.assertEqual(expected_data, returned_data)
 
 
-class CalculateFilledPostsPerBedRatioTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.spark = utils.get_spark()
-
+class CalculateFilledPostsPerBedRatioTests(SparkBaseTest):
     def test_calculate_filled_posts_per_bed_ratio(self):
         test_df = self.spark.createDataFrame(
             Data.filled_posts_per_bed_ratio_rows,
@@ -659,10 +647,7 @@ class CalculateFilledPostsPerBedRatioTests(unittest.TestCase):
         )
 
 
-class CalculateFilledPostsFromBedsAndRatioTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.spark = utils.get_spark()
-
+class CalculateFilledPostsFromBedsAndRatioTests(SparkBaseTest):
     def test_calculate_filled_posts_from_beds_and_ratio(self):
         test_df = self.spark.createDataFrame(
             Data.filled_posts_from_beds_and_ratio_rows,
@@ -680,11 +665,7 @@ class CalculateFilledPostsFromBedsAndRatioTests(unittest.TestCase):
         )
 
 
-class RemoveDuplicatesBasedOnColumnOrderTests(unittest.TestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        self.spark = utils.get_spark()
-
+class RemoveDuplicatesBasedOnColumnOrderTests(SparkBaseTest):
     def test_remove_duplicate_locationids_returns_expected_rows_when_descending(self):
         test_df = self.spark.createDataFrame(
             Data.remove_duplicate_locationids_rows,
@@ -733,11 +714,7 @@ class RemoveDuplicatesBasedOnColumnOrderTests(unittest.TestCase):
         self.assertEqual(returned_data, expected_data)
 
 
-class CreateBandedBedCountColumnTests(unittest.TestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        self.spark = utils.get_spark()
-
+class CreateBandedBedCountColumnTests(SparkBaseTest):
     def test_create_banded_bed_count_column(self):
         test_df = self.spark.createDataFrame(
             Data.create_banded_bed_count_column_rows,

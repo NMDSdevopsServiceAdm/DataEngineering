@@ -8,28 +8,20 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ValidateASCWDSWorkplaceRawData as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 
 
-class ValidateASCWDSWorkplaceRawDatasetTests(unittest.TestCase):
+class ValidateASCWDSWorkplaceRawDatasetTests(SparkBaseTest):
     TEST_ASCWDS_WORKPLACE_RAW_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
         self.test_raw_ascwds_workplace_df = self.spark.createDataFrame(
             Data.raw_ascwds_workplace_rows, Schemas.raw_ascwds_workplace_schema
         )
 
-    def tearDown(self) -> None:
-        if self.spark.sparkContext._gateway:
-            self.spark.sparkContext._gateway.shutdown_callback_server()
-
 
 class MainTests(ValidateASCWDSWorkplaceRawDatasetTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(

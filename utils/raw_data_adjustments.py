@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from pyspark.sql import DataFrame
 
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (

@@ -5,6 +5,7 @@ import os
 import sys
 from datetime import date
 from datetime import datetime as dt
+from typing import Generator
 
 import polars as pl
 
@@ -74,7 +75,8 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         cqc_api_primary_key_value: str = json.loads(secret)["Ocp-Apim-Subscription-Key"]
 
         print("Collecting locations with changes from API")
-        generator = cqc.get_updated_objects(
+
+        api_generator: Generator[dict, None, None] = cqc.get_updated_objects(
             object_type=CQC_OBJECT_TYPE,
             organisation_type=CQC_ORG_TYPE,
             cqc_api_primary_key=cqc_api_primary_key_value,
@@ -82,9 +84,24 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
         )
 
+        print("Collecting API rows and building DataFrame")
+        df: pl.DataFrame = cqc.build_dataframe_from_api(
+            api_generator, POLARS_LOCATION_SCHEMA
+        )
+        print(f"Done — {df.shape[0]} rows, {df.shape[1]} columns")
         print("Creating dataframe and writing to Parquet")
-        df: pl.DataFrame = pl.DataFrame(generator, POLARS_LOCATION_SCHEMA)
-        df_unique: pl.DataFrame = df.unique(subset=[ColNames.location_id])
+
+        df_schema = df.collect_schema()
+        df = df.with_columns(
+            [
+                pl.col(k).cast(v)
+                for k, v in POLARS_LOCATION_SCHEMA.items()
+                if k in df_schema.keys()
+            ]
+        )
+        df_unique: pl.DataFrame = df.unique(subset=[ColNames.location_id]).filter(
+            pl.col(ColNames.location_id).is_not_null()
+        )
 
         utils.write_to_parquet(df_unique, destination)
         return None
@@ -116,7 +133,7 @@ if __name__ == "__main__":
     date_today = date.today()
     destination = utils.generate_s3_dir(
         destination_prefix=args.destination_prefix,
-        domain="CQC_delta",
+        domain="CQC",
         dataset="delta_locations_api",
         date=date_today,
         version="3.1.0",

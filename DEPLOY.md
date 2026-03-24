@@ -1,46 +1,49 @@
 # Terraform Deployment Guide
 
-## Installing AWS Command Line Interface
-Amazon Web Services Command Line Interface is a prerequisite of Terraform.
-1. [Install Amazon Web Services Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-2. Request access to the Amazon Web Services Console
-3. Once this access is granted, follow the steps here to [setup your access and secret key](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html)
+Amazon Web Services Command Line Interface is a prerequisite of Terraform. [See our windows setup guide for instructions on setting up AWS CLI and terraform for the first time](WindowsSetup.md)
 
 ## Deploying Terraform
 
-1. Set up your Amazon Web Services credentials as terraform variables
+1. Set an environment variable for HOME:
+```
+$Env:HOME = 'C:\Users\<username>' 
+```
+2. Provide your MFA token:
+```
+aws-mfa --mfa-profile prod --token xxxxxx
+```
+3. Ensure you're in the Terraform directory `cd terraform/pipeline`
 
-Copy the file located at `terraform/pipeline/terraform.tfvars.example` and save as `terraform/pipeline/terraform.tfvars`.
-
+4. Set an environment variable for AWS_PROFILE:
 ```
-cp terraform/pipeline/terraform.tfvars.example terraform/pipeline/terraform.tfvars
+$Env:AWS_PROFILE="non-prod"
 ```
-Populate this file with your access key and secret access key.
-
-2. From terminal/command line ensure you're in the Terraform directory
+5. Initialise terraform:
 ```
-% pwd
-/Users/username/Projects/skillsforcare/DataEngineering/terraform/pipeline
+terraform init -backend-config="../non_prod_local.s3.tfbackend"
 ```
-3. Run `terraform init -backend-config=../non_prod.s3.tfbackend` to ensure you are using the correct AWS account and have all modules installed
-4. Run `terraform plan` to evaluate the planned changes
+6. Select workspace
+```
+terraform workspace select <branch name>
+```
+7. Run `terraform plan` to evaluate the planned changes
 ```
 terraform plan
 ```
-5. Check the planned changes to make sure they are correct!
-6. Then run `terraform apply` to deploy the changes. Confirm with `yes` when prompted
+8. Check the planned changes to make sure they are correct!
+9. Then run `terraform apply` to deploy the changes. Confirm with `yes` when prompted
 ```
 terraform apply
 ```
 
-In the very rare case you need to do a manual production deployment from your own machine, you'll need to rerun `terraform init`, using `../prod.s3.tfbackend` as the value for `-backend-config`. It is then essential that once you have performed this deployment, you rerun `terraform init -backend-config=../non_prod.s3.tfbackend`, otherwise any summary action may be accidentally applied to the production environment if the `allowed_account_ids` entry is accidentally deleted.
+In the very rare case you need to do a manual production deployment from your own machine, you'll need to rerun `terraform init`, using `../prod_local.s3.tfbackend` as the value for `-backend-config`. You will need elevated permissions to do this. It is then essential that once you have performed this deployment, you rerun `terraform init -backend-config="../non_prod.s3.tfbackend"`, otherwise any summary action may be accidentally applied to the production environment if the `allowed_account_ids` entry is accidentally deleted.
 
 ## Destroying Terraform
 To remove Terraform generated infrastructure first ensure you are in the correct directory working on the correct workspace.
 
 ```
 cd terraform/pipeline
-terraform init -backend-config=../non_prod.s3.tfbackend
+terraform init -backend-config="../non_prod_local.s3.tfbackend"
 terraform workspace list
 ```
 

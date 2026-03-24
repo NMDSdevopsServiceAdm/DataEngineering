@@ -1,0 +1,9 @@
+from dataclasses import dataclass
+
+
+@dataclass
+class ASCWDSFilledPostCalculationConstants:
+    MAX_ABSOLUTE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT: int = 5
+    MAX_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT: float = 0.1
+
+    MIN_ASCWDS_FILLED_POSTS_PERMITTED: int = 3

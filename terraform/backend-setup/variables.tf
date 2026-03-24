@@ -3,12 +3,14 @@ variable "aws_access_key" {
   type        = string
   default     = ""
   sensitive   = true
+  ephemeral   = true
 }
 variable "aws_secret_key" {
   description = "Secret key for AWS - displayed when IAM user is created"
   type        = string
   default     = ""
   sensitive   = true
+  ephemeral   = true
 }
 
 variable "bucket" {

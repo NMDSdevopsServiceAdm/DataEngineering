@@ -1,3 +1,4 @@
+import math
 from typing import Optional
 
 from pyspark.sql import DataFrame, Window
@@ -8,6 +9,8 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary
     model_primary_service_rate_of_change,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+
+BANDED_BED_THRESHOLDS: list = [0, 1, 15, 25, math.inf]
 
 
 def model_primary_service_rate_of_change_trendline(
@@ -51,11 +54,11 @@ def model_primary_service_rate_of_change_trendline(
 
     df = cUtils.create_banded_bed_count_column(
         df,
-        IndCqc.number_of_beds_banded_for_rate_of_change,
-        [0, 1, 15, 25, float("Inf")],
+        IndCqc.number_of_beds_banded_roc,
+        BANDED_BED_THRESHOLDS,
     )
 
-    df = model_primary_service_rate_of_change(
+    single_roc_df = model_primary_service_rate_of_change(
         df,
         column_with_values,
         number_of_days,
@@ -63,58 +66,30 @@ def model_primary_service_rate_of_change_trendline(
         max_days_between_submissions,
     )
 
-    deduped_df = deduplicate_dataframe(df)
-
     rate_of_change_trendline_df = calculate_rate_of_change_trendline(
-        deduped_df, rate_of_change_trendline_column_name
+        single_roc_df, rate_of_change_trendline_column_name
     )
 
     df = df.join(
         rate_of_change_trendline_df,
         [
             IndCqc.primary_service_type,
-            IndCqc.number_of_beds_banded_for_rate_of_change,
+            IndCqc.number_of_beds_banded_roc,
             IndCqc.unix_time,
         ],
         "left",
-    )
-
-    df = df.drop(
-        IndCqc.number_of_beds_banded_for_rate_of_change,
+    ).drop(
+        IndCqc.number_of_beds_banded_roc,
         IndCqc.single_period_rate_of_change,
     )
 
-    return df
-
-
-def deduplicate_dataframe(df: DataFrame) -> DataFrame:
-    """
-    Selects primary service type, banded beds, unix time and single period rate of change then deduplicates the DataFrame based on primary service type and unix time.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-
-    Returns:
-        DataFrame: The deduplicated DataFrame.
-    """
-    df = df.select(
-        IndCqc.primary_service_type,
-        IndCqc.number_of_beds_banded_for_rate_of_change,
-        IndCqc.unix_time,
-        IndCqc.single_period_rate_of_change,
-    ).dropDuplicates(
-        [
-            IndCqc.primary_service_type,
-            IndCqc.number_of_beds_banded_for_rate_of_change,
-            IndCqc.unix_time,
-        ]
-    )
+    df = df.na.fill({rate_of_change_trendline_column_name: 1.0})
 
     return df
 
 
 def calculate_rate_of_change_trendline(
-    df: DataFrame,
+    single_period_rate_of_change_df: DataFrame,
     rate_of_change_trendline_column_name: str,
 ) -> DataFrame:
     """
@@ -126,21 +101,19 @@ def calculate_rate_of_change_trendline(
     This approach avoids issues in pyspark with direct multiplication of many numbers.
 
     Args:
-        df (DataFrame): The input DataFrame.
+        single_period_rate_of_change_df (DataFrame): The input DataFrame containing the single period rate of change values.
         rate_of_change_trendline_column_name (str): Name of the new column to store the rate of change trendline.
 
     Returns:
         DataFrame: The DataFrame with the rate of change trendline included.
     """
     w = Window.partitionBy(
-        IndCqc.primary_service_type, IndCqc.number_of_beds_banded_for_rate_of_change
+        IndCqc.primary_service_type, IndCqc.number_of_beds_banded_roc
     ).orderBy(IndCqc.unix_time)
 
-    trendline_df = df.withColumn(
+    trendline_df = single_period_rate_of_change_df.withColumn(
         rate_of_change_trendline_column_name,
         F.exp(F.sum(F.log(IndCqc.single_period_rate_of_change)).over(w)),
-    )
-
-    trendline_df = trendline_df.drop(IndCqc.single_period_rate_of_change)
+    ).drop(IndCqc.single_period_rate_of_change)
 
     return trendline_df

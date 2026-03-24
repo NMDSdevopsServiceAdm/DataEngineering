@@ -1,39 +1,48 @@
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
+from projects._03_independent_cqc._04_model.utils.paths import generate_predictions_path
+from utils import utils
+from utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from utils.column_values.categorical_column_values import CareHome
 
 
-def insert_predictions_into_pipeline(
-    locations_df: DataFrame,
-    predictions_df: DataFrame,
-    model_column_name: str,
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\utils.py
+def enrich_with_model_predictions(
+    ind_cqc_df: DataFrame, bucket_name: str, model_name: str
 ) -> DataFrame:
     """
-    Inserts model predictions into locations dataframe.
+    Loads model predictions, applies transformations and joins into the input dataframe.
 
-    This function renames the model prediction column and performs a left join
-    to merge it into the locations dataframe based on matching 'location_id'
-    and 'cqc_location_import_date' values.
+    This function calls utility functions to:
+    - load model predictions from the specified data bucket
+    - convert predicted ratios to filled posts (care home specific)
+    - set minimum values for predictions
+    - join the model predictions into the input dataframe
+    - return the updated dataframe.
 
     Args:
-        locations_df (DataFrame): A dataframe containing independent CQC data.
-        predictions_df (DataFrame): A dataframe containing model predictions.
-        model_column_name (str): The name of the column containing the model predictions.
+        ind_cqc_df (DataFrame): The input DataFrame.
+        bucket_name (str): the bucket (name only) in which to source the model predictions dataset from.
+        model_name (str): The name of the model.
 
     Returns:
-        DataFrame: A dataframe with model predictions added.
+        DataFrame: The input DataFrame with the model predictions merged in.
     """
-    predictions_df = predictions_df.select(
-        IndCqc.location_id, IndCqc.cqc_location_import_date, IndCqc.prediction
-    ).withColumnRenamed(IndCqc.prediction, model_column_name)
+    predictions_path = generate_predictions_path(bucket_name, model_name)
 
-    locations_with_predictions = locations_df.join(
-        predictions_df, [IndCqc.location_id, IndCqc.cqc_location_import_date], "left"
+    predictions_df = utils.read_from_parquet(predictions_path)
+
+    if model_name == IndCqc.care_home_model:
+        predictions_df = calculate_filled_posts_from_beds_and_ratio(
+            predictions_df, IndCqc.prediction, IndCqc.prediction
+        )
+
+    ind_cqc_with_predictions_df = join_model_predictions(
+        ind_cqc_df, predictions_df, model_name, include_run_id=True
     )
 
-    return locations_with_predictions
+    return ind_cqc_with_predictions_df
 
 
 def set_min_value(df: DataFrame, col_name: str, min_value: float = 1.0) -> DataFrame:
@@ -57,29 +66,49 @@ def set_min_value(df: DataFrame, col_name: str, min_value: float = 1.0) -> DataF
     )
 
 
-def convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values(
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\utils.py
+def join_model_predictions(
     df: DataFrame,
-    ratio_column: str,
-    posts_column: str,
+    predictions_df: DataFrame,
+    model_name: str,
+    include_run_id: bool = True,
 ) -> DataFrame:
     """
-    Multiplies the filled posts per bed ratio values by the number of beds at each care home location to create a filled posts figure.
+    Prepares the predictions dataframe then joins them into the input dataframe on location ID and import date.
 
-    If the location is not a care home, the original filled posts figure is kept.
+    Selects location ID and import date for joining on plus the predicted values and run ID, if required.
+    The generic prediction columns are renamed to be model-specific so it is clear which model they relate to after the join.
+    The prepared predictions dataframe is then left-joined into the input dataframe.
 
     Args:
-        df (DataFrame): The input DataFrame.
-        ratio_column (str): The name of the filled posts per bed ratio column (for care homes only).
-        posts_column (str): The name of the filled posts column.
+        df (DataFrame): The input DataFrame to join predictions into.
+        predictions_df (DataFrame): The input DataFrame containing model predictions.
+        model_name (str): The name of the model to use for renaming columns.
+        include_run_id (bool): Whether to include the prediction run ID column.
 
     Returns:
-        DataFrame: The input DataFrame with the new column containing a single column with the relevant combined column.
+        DataFrame: The input DataFrame with the model predictions joined in.
     """
-    df = df.withColumn(
-        posts_column,
-        F.when(
-            F.col(IndCqc.care_home) == CareHome.care_home,
-            F.col(ratio_column) * F.col(IndCqc.number_of_beds),
-        ).otherwise(F.col(posts_column)),
+    cols = [
+        IndCqc.location_id,
+        IndCqc.cqc_location_import_date,
+        IndCqc.prediction,
+    ]
+
+    rename_map = {
+        IndCqc.prediction: model_name,
+    }
+
+    if include_run_id:
+        cols.append(IndCqc.prediction_run_id)
+        rename_map[IndCqc.prediction_run_id] = f"{model_name}_run_id"
+
+    prepared_predictions_df = predictions_df.select(*cols).withColumnsRenamed(
+        rename_map
     )
-    return df
+
+    return df.join(
+        prepared_predictions_df,
+        [IndCqc.location_id, IndCqc.cqc_location_import_date],
+        "left",
+    )

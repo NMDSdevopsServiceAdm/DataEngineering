@@ -856,14 +856,14 @@ class ExtractRegisteredManagerNamesData:
 class LocationsCleanUtilsData:
     # fmt: off
     save_latest_full_snapshot_rows  = [
-        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.registered, None),
-        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.deregistered, date(2025, 1, 1)),
-        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.registered, None),
-        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1)),
+        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.registered, None, LocationType.social_care_identifier),
+        ("1-001", "1-901", date(2025, 1, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier),
+        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.registered, None, LocationType.social_care_identifier),
+        ("1-001", "1-901", date(2025, 2, 1), RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier),
     ]
     expected_save_latest_full_snapshot_rows = [
-        (date(2025, 2, 1), "1-001", RegistrationStatus.registered, None),
-        (date(2025, 2, 1), "1-001", RegistrationStatus.deregistered, date(2025, 1, 1)),
+        (date(2025, 2, 1), "1-001", RegistrationStatus.registered, None, LocationType.social_care_identifier),
+        (date(2025, 2, 1), "1-001", RegistrationStatus.deregistered, date(2025, 1, 1), LocationType.social_care_identifier),
     ]
     # fmt: on
 
@@ -1305,24 +1305,6 @@ class PostcodeMatcherTest:
             "4 road name",
         ),
         ("AA1 1aa", "AA1 1aa", "AA1 ZAA", "AA1 2AA", "AA1 3AA", "TF7 3QH", "AA1 4ZZ"),
-        (
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-        ),
-        (
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-        ),
     ]
     locations_with_unmatched_postcode_rows = [
         ("1-001", "1-001", "1-005"),
@@ -1330,16 +1312,6 @@ class PostcodeMatcherTest:
         ("name 1", "name 1", "name 5"),
         ("1 road name", "1 road name", "5 road name"),
         ("AA1 1aa", "AA1 1aa", "AA2 5XX"),
-        (
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-            RegistrationStatus.registered,
-        ),
-        (
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-            LocationType.social_care_identifier,
-        ),
     ]
     postcodes_rows = [
         (
@@ -1381,16 +1353,6 @@ class PostcodeMatcherTest:
             "SubICB 1",
             "SubICB 1",
             "SubICB 1",
-        ),
-        (
-            "CCG 1",
-            "CCG 1",
-            "CCG 1",
-            None,
-            None,
-            None,
-            None,
-            None,
         ),
         (
             "CSSR 1",
@@ -1501,14 +1463,13 @@ class PostcodeMatcherTest:
             date(2025, 1, 1),
         ),
         ("LA_1", "LA_2", "LA_2", "LA_3", "LA_4", "LA_3"),
-        ("CCG_1", "CCG_2", "CCG_2", "CCG_1", "CCG_1", "CCG_3"),
         ("ICB_1", "ICB_2", "ICB_2", "ICB_1", "ICB_1", "ICB_3"),
         ("LA_1", "LA_2", "LA_2", "LA_1", "LA_1", "LA_3"),
         ("ICB_1", "ICB_2", "ICB_2", "ICB_1", "ICB_1", "ICB_3"),
     ]
     expected_create_truncated_postcode_df_rows = [
-        (date(2025, 1, 1), "LA_2", "CCG_2", "ICB_2", "LA_2", "ICB_2", "AB12"),
-        (date(2025, 1, 1), "LA_3", "CCG_3", "ICB_3", "LA_3", "ICB_3", "AB13"),
+        (date(2025, 1, 1), "LA_2", "ICB_2", "LA_2", "ICB_2", "AB12"),
+        (date(2025, 1, 1), "LA_3", "ICB_3", "LA_3", "ICB_3", "AB13"),
     ]
 
     raise_error_if_unmatched_rows = [
@@ -1569,6 +1530,24 @@ class ValidateCqcLocations4FullCleanTest:
         (ContemporaryCSSR.barking_and_dagenham,),
         (Region.london,),
         (RUI.urban_major,),
+        (
+            [
+                Services.care_home_service_with_nursing,
+                Services.care_home_service_without_nursing,
+            ],
+        ),
+        (
+            [
+                "Accommodation for persons who require nursing or personal care",
+            ],
+        ),
+        (["Name Surname"],),
+        (
+            [
+                Specialisms.dementia,
+                Specialisms.eating_disorders,
+            ],
+        ),
     ]
 
 

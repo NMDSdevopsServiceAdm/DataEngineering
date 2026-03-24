@@ -5,6 +5,32 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CareHome
 
 
+def convert_care_home_ratios_to_posts(
+    df: DataFrame, ratio_column: str, posts_column: str
+) -> DataFrame:
+    """
+    Multiplies the filled posts per bed ratio values by the number of beds at each care home location to create a filled posts figure.
+
+    If the location is not a care home, the original filled posts figure is kept.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        ratio_column (str): The name of the filled posts per bed ratio column (for care homes only).
+        posts_column (str): The name of the filled posts column.
+
+    Returns:
+        DataFrame: The input DataFrame with the new column containing a single column with the relevant combined column.
+    """
+    df = df.withColumn(
+        posts_column,
+        F.when(
+            F.col(IndCQC.care_home) == CareHome.care_home,
+            F.col(ratio_column) * F.col(IndCQC.number_of_beds),
+        ).otherwise(F.col(posts_column)),
+    )
+    return df
+
+
 def combine_care_home_and_non_res_values_into_single_column(
     df: DataFrame, care_home_column: str, non_res_column: str, new_column_name: str
 ) -> DataFrame:

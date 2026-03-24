@@ -29,8 +29,6 @@ def null_people_directly_employed_outliers(df: DataFrame) -> DataFrame:
 
     df = null_large_single_submission_locations(df)
 
-    # TODO remove locations with large differences (top 1% of (max-min)/avg?)
-
     return df
 
 

@@ -61,7 +61,7 @@ class TestWriteReports(TestValidate):
         )
 
         # calls include null check for each column
-        self.assertEquals(mock_report_on_fail.call_count, 4)
+        self.assertEqual(mock_report_on_fail.call_count, 4)
 
         calls = mock_report_on_fail.call_args_list
         rows_distinct_step = calls[0][0][0]
@@ -69,41 +69,46 @@ class TestWriteReports(TestValidate):
         col_vals_not_null_my_date_step = calls[2][0][0]
         col_vals_not_null_name_step = calls[3][0][0]
 
-        self.assertDictContainsSubset(
-            {
+        self.assertEqual(
+            rows_distinct_step,
+            rows_distinct_step
+            | {
                 "i": 1,
                 "assertion_type": "rows_distinct",
                 "column": ["someId", "my_date"],
                 "all_passed": False,
             },
-            rows_distinct_step,
         )
-        self.assertDictContainsSubset(
-            {
+
+        self.assertEqual(
+            col_vals_not_null_someId_step,
+            col_vals_not_null_someId_step
+            | {
                 "i": 2,
                 "assertion_type": "col_vals_not_null",
                 "column": "someId",
                 "all_passed": True,
             },
-            col_vals_not_null_someId_step,
         )
-        self.assertDictContainsSubset(
-            {
+        self.assertEqual(
+            col_vals_not_null_my_date_step,
+            col_vals_not_null_my_date_step
+            | {
                 "i": 3,
                 "assertion_type": "col_vals_not_null",
                 "column": "my_date",
                 "all_passed": True,
             },
-            col_vals_not_null_my_date_step,
         )
-        self.assertDictContainsSubset(
-            {
+        self.assertEqual(
+            col_vals_not_null_name_step,
+            col_vals_not_null_name_step
+            | {
                 "i": 4,
                 "assertion_type": "col_vals_not_null",
                 "column": "name",
                 "all_passed": False,
             },
-            col_vals_not_null_name_step,
         )
 
 
@@ -151,7 +156,7 @@ class TestReportOnFail(TestValidate):
         # When
         vl._report_on_fail(step, pb.Validate(ANY), "bucket", "path")
         # Then
-        self.assertEquals(
+        self.assertEqual(
             mock_validate.return_value.get_data_extracts.call_args_list, []
         )
 

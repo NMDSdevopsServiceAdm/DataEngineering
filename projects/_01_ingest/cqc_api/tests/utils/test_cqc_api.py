@@ -1,8 +1,12 @@
+import io
 import unittest
+from contextlib import redirect_stdout
 from http.client import HTTPMessage
 from typing import Generator
 from unittest.mock import Mock, call, patch
 
+import polars as pl
+import polars.testing as pl_testing
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -32,8 +36,13 @@ class CqcApiTests(unittest.TestCase):
         ]
         self.cqc_api_primary_key_stub = "cqc_api_primary_key"
 
+    def gen(self, *rows: dict) -> Generator[dict, None, None]:
+        yield from rows
+
 
 class TestResponse:
+    # Adding so pytest doesn't try to collect as a Test Classß.
+    __test__ = False
     status_code: int = 500
     content: dict = {}
     text: str = ""
@@ -345,6 +354,255 @@ class GetChangesWithinTimeframeTests(CqcApiTests):
             },
         )
         self.assertEqual(result, {"changes": ["1", "2", "3"]})
+
+
+class NormaliseStructsTests(CqcApiTests):
+    def test_adds_missing_struct_fields(self):
+        schema = {
+            "address": pl.Struct(
+                [
+                    pl.Field("line1", pl.Utf8),
+                    pl.Field("postcode", pl.Utf8),
+                ]
+            )
+        }
+
+        record = {"address": {"line1": "123 Main St"}}
+        expected = {"address": {"line1": "123 Main St", "postcode": None}}
+
+        returned = cqc.normalise_structs(record, schema)
+        self.assertEqual(returned, expected)
+
+    def test_struct_invalid_or_missing_value_becomes_null_struct(self):
+        schema = {
+            "address": pl.Struct(
+                [pl.Field("line1", pl.Utf8), pl.Field("postcode", pl.Utf8)]
+            )
+        }
+        scenarios = [
+            {"address": None},  # null value
+            {"address": "bad_value"},  # non-dict value
+            {},  # key missing entirely
+        ]
+        for record in scenarios:
+            with self.subTest(record=record):
+                returned = cqc.normalise_structs(record, schema)
+                self.assertEqual(returned["address"], {"line1": None, "postcode": None})
+
+    def test_strips_extra_fields_not_in_schema(self):
+        schema = {
+            "address": pl.Struct(
+                [
+                    pl.Field("line1", pl.Utf8),
+                    pl.Field("postcode", pl.Utf8),
+                ]
+            )
+        }
+
+        record = {
+            "address": {
+                "line1": "123 Main St",
+                "postcode": "AB1 2CD",
+                "extra": "IGNORE",
+            }
+        }
+
+        expected = {"address": {"line1": "123 Main St", "postcode": "AB1 2CD"}}
+
+        returned = cqc.normalise_structs(record, schema)
+        self.assertEqual(returned, expected)
+
+    def test_normalise_structs_keeps_column_not_in_schema(self):
+        schema = {
+            "address": pl.Struct(
+                [
+                    pl.Field("line1", pl.Utf8),
+                    pl.Field("postcode", pl.Utf8),
+                ]
+            )
+        }
+
+        record = {
+            "name": "Care Home",
+            "address": {"line1": "123 Main St", "postcode": "AB1 2CD"},
+        }
+
+        returned = cqc.normalise_structs(record, schema)
+        self.assertEqual(returned, record)
+
+    def test_normalise_structs_does_not_change_original_data_type_to_match_schema(self):
+        schema = {
+            "struct_col": pl.Struct(
+                [
+                    pl.Field("number", pl.Int32),
+                    pl.Field("string_date", pl.Utf8),
+                ]
+            ),
+        }
+
+        record = {
+            "struct_col": {"number": "123", "string_date": "2025-01-01"},
+        }
+
+        returned = cqc.normalise_structs(record, schema)
+        self.assertEqual(returned, record)
+
+    def test_list_of_structs_normalisation(self):
+        schema = {
+            "contacts": pl.List(
+                pl.Struct([pl.Field("name", pl.Utf8), pl.Field("phone", pl.Utf8)])
+            )
+        }
+        scenarios = [
+            (
+                {"contacts": [{"name": "Alice"}]},
+                [{"name": "Alice", "phone": None}],
+            ),  # missing inner field → None
+            ({"contacts": None}, []),  # null list → []
+            (
+                {"contacts": ["not_a_dict"]},
+                [{"name": None, "phone": None}],
+            ),  # non-dict item → null struct
+        ]
+        for record, expected in scenarios:
+            with self.subTest(record=record):
+                returned = cqc.normalise_structs(record, schema)
+                self.assertEqual(returned["contacts"], expected)
+
+    def test_list_scalar_normalisation(self):
+        schema = {"tags": pl.List(pl.Utf8)}
+        self.assertEqual(
+            cqc.normalise_structs({"tags": ["a", "b"]}, schema)["tags"], ["a", "b"]
+        )
+        self.assertEqual(cqc.normalise_structs({"tags": None}, schema)["tags"], [])
+
+
+class BuildDataframeFromApi(CqcApiTests):
+    def setUp(self) -> None:
+        self.COMBINED_SCHEMA = {
+            "id": pl.Utf8,
+            "count": pl.Int64,
+            "address": pl.Struct(
+                [pl.Field("line1", pl.Utf8), pl.Field("postcode", pl.Utf8)]
+            ),
+            "contacts": pl.List(
+                pl.Struct([pl.Field("name", pl.Utf8), pl.Field("phone", pl.Utf8)])
+            ),
+        }
+
+    def test_empty_generator_returns_empty_df_with_schema(self):
+        schema = {"id": pl.Utf8, "count": pl.Int64}
+        df = cqc.build_dataframe_from_api(self.gen(), schema)
+        pl_testing.assert_frame_equal(df, pl.DataFrame(schema=schema))
+
+    def test_normalises_scalar_struct_and_list_columns(self):
+        """
+        Covers in one pass:
+        - scalar: present value, missing value (→ null)
+        - struct: full match, missing field (→ null), null value (→ null struct), extra field stripped
+        - list-of-struct: full match, missing inner field (→ null), null/empty list (→ [])
+        """
+        rows = [
+            {  # all fields fully populated
+                "id": "1",
+                "count": 10,
+                "address": {"line1": "A", "postcode": "EC1"},
+                "contacts": [{"name": "Alice", "phone": "111"}],
+            },
+            {  # missing scalar, missing struct field, missing inner list field
+                "id": "2",
+                "address": {"line1": "B"},
+                "contacts": [{"name": "Bob"}],
+            },
+            {  # null struct → null struct fields, null list → empty list
+                "id": "3",
+                "count": 30,
+                "address": None,
+                "contacts": None,
+            },
+            {  # extra struct field stripped, empty list preserved
+                "id": "4",
+                "count": 40,
+                "address": {"line1": "D", "postcode": "N1", "country": "UK"},
+                "contacts": [],
+            },
+        ]
+        df = cqc.build_dataframe_from_api(self.gen(*rows), self.COMBINED_SCHEMA)
+
+        expected = pl.DataFrame(
+            {
+                "id": ["1", "2", "3", "4"],
+                "count": [10, None, 30, 40],
+                "address": [
+                    {"line1": "A", "postcode": "EC1"},
+                    {"line1": "B", "postcode": None},
+                    {"line1": None, "postcode": None},
+                    {"line1": "D", "postcode": "N1"},
+                ],
+                "contacts": [
+                    [{"name": "Alice", "phone": "111"}],
+                    [{"name": "Bob", "phone": None}],
+                    [],
+                    [],
+                ],
+            },
+            schema=self.COMBINED_SCHEMA,
+        )
+        pl_testing.assert_frame_equal(
+            df.select(list(self.COMBINED_SCHEMA.keys())),
+            expected,
+            check_column_order=False,
+        )
+
+    def test_extra_api_columns_preserved_alongside_schema_columns(self):
+        """Columns not in schema pass through untouched; schema columns are still correct."""
+        rows = [
+            {
+                "id": "1",
+                "count": 1,
+                "address": {"line1": "A", "postcode": "EC1"},
+                "contacts": [],
+                "new_col": "foo",
+                "another": 99,
+            },
+            {
+                "id": "2",
+                "count": 2,
+                "address": {"line1": "B", "postcode": "N1"},
+                "contacts": [],
+                "new_col": "bar",
+                "another": 100,
+            },
+        ]
+        df = cqc.build_dataframe_from_api(self.gen(*rows), self.COMBINED_SCHEMA)
+
+        pl_testing.assert_series_equal(
+            df["new_col"], pl.Series("new_col", ["foo", "bar"])
+        )
+        pl_testing.assert_series_equal(df["another"], pl.Series("another", [99, 100]))
+        pl_testing.assert_frame_equal(
+            df.select(["id", "count"]),
+            pl.DataFrame(
+                {"id": ["1", "2"], "count": [1, 2]},
+                schema={"id": pl.Utf8, "count": pl.Int64},
+            ),
+        )
+
+    def test_schema_drift_logged_once_per_new_column(self):
+        schema = {"id": pl.Utf8, "count": pl.Int64}
+        rows = [
+            {"id": str(i), "count": i, "drift_col": i, "other_new": "x"}
+            for i in range(5)
+        ]
+
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            cqc.build_dataframe_from_api(self.gen(*rows), schema)
+
+        output = buf.getvalue()
+        self.assertIn("[schema drift]", output)
+        self.assertEqual(output.count("drift_col"), 1)
+        self.assertEqual(output.count("other_new"), 1)
 
 
 if __name__ == "__main__":

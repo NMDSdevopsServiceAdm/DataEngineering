@@ -59,14 +59,12 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         Exception: For any other unspecified errors that occur during API
             calls, secret retrieval, or data processing.
     """
-    print("Starting Execution")
     try:
         destination = destination if destination[-1] == "/" else f"{destination}/"
 
         start_dt = dt.fromisoformat(start_timestamp.replace("Z", ""))
         end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))
 
-        print("Validating start and end timestamps")
         if start_dt > end_dt:
             raise InvalidTimestampArgumentError(
                 "Start timestamp is after end timestamp"
@@ -78,7 +76,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
 
         print("Collecting providers with changes from API")
 
-        generator: Generator[dict, None, None] = cqc.get_updated_objects(
+        api_generator: Generator[dict, None, None] = cqc.get_updated_objects(
             object_type=CQC_OBJECT_TYPE,
             organisation_type=CQC_ORG_TYPE,
             cqc_api_primary_key=cqc_api_primary_key_value,
@@ -86,11 +84,28 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
         )
 
+        print("Collecting API rows and building DataFrame")
+        df: pl.DataFrame = cqc.build_dataframe_from_api(
+            api_generator, POLARS_PROVIDER_SCHEMA
+        )
+        print(f"Done — {df.shape[0]} rows, {df.shape[1]} columns")
         print("Creating dataframe and writing to Parquet")
-        df: pl.DataFrame = pl.DataFrame(generator, POLARS_PROVIDER_SCHEMA)
-        df_unique: pl.DataFrame = df.unique(subset=[ColNames.provider_id])
+
+        df_schema = df.collect_schema()
+        df = df.with_columns(
+            [
+                pl.col(k).cast(v)
+                for k, v in POLARS_PROVIDER_SCHEMA.items()
+                if k in df_schema.keys()
+            ]
+        )
+        df_unique: pl.DataFrame = df.unique(subset=[ColNames.provider_id]).filter(
+            pl.col(ColNames.provider_id).is_not_null()
+        )
+
         utils.write_to_parquet(df_unique, destination)
         return None
+
     except InvalidTimestampArgumentError:
         print(f"ERROR: Start timestamp is after end timestamp: Args: {sys.argv}")
         raise
@@ -121,7 +136,7 @@ if __name__ == "__main__":
     todays_date = date.today()
     destination = utils.generate_s3_dir(
         destination_prefix=args.destination_prefix,
-        domain="CQC_delta",
+        domain="CQC",
         dataset="delta_providers_api",
         date=todays_date,
         version="3.0.0",

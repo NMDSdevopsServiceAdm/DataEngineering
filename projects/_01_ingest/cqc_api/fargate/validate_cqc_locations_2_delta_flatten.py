@@ -2,7 +2,7 @@ import sys
 
 import pointblank as pb
 
-from polars_utils import raw_data_adjustments, utils
+from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -36,9 +36,7 @@ def main(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=compare_columns_to_import,
     )
-    expected_row_count = compare_df.filter(
-        raw_data_adjustments.is_valid_location()
-    ).height
+    expected_row_count = compare_df.height
 
     validation = (
         pb.Validate(

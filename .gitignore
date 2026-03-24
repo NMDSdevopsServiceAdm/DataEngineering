@@ -59,7 +59,6 @@ terraform.tfvars
 .python-version
 *.pyc
 .DS_Store
-Pipfile.lock
 .coverage
 
 # ------ lambda artefacts ---- #

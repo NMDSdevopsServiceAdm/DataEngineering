@@ -1,5 +1,6 @@
 from typing import Generator, Iterable, List
 
+import polars as pl
 import requests
 from ratelimit import limits, sleep_and_retry
 from requests.adapters import HTTPAdapter
@@ -192,9 +193,8 @@ def get_updated_objects(
                 # return each object within a generator
                 yield get_object(id, object_type, cqc_api_primary_key)
             except NoProviderOrLocationException as err:
-                # CQC API changes URL returns unfetchable providerIds
-                print(err)
-                print(f"Unable to fetch data for providerId: {id}")
+                # CQC API changes URL returns unfetchable IDs
+                print(f"{err}: {id}")
 
         if changes_by_page["page"] == total_pages:
             print("Completed final page of changes.")
@@ -242,3 +242,107 @@ def get_changes_within_timeframe(
         },
     )
     return response
+
+
+def normalise_structs(record: dict, schema: dict) -> dict:
+    """
+    Normalises only the columns defined in schema, leaving all other columns untouched.
+
+    - Struct columns: keep only schema-defined fields, missing fields → None.
+    - List[Struct] columns: normalise each item to schema-defined fields.
+    - List columns: ensure value is a list.
+    - Scalar columns: pass through (None if missing).
+    - Extra columns not in schema: preserved as-is.
+
+    Args:
+        record (dict): Single raw API record.
+        schema (dict): Column name → Polars dtype (only known columns).
+
+    Returns:
+        dict: Record with schema columns normalised; extra columns untouched.
+    """
+    record = record or {}
+    fixed = dict(record)  # preserve all columns including unknowns
+
+    for col, dtype in schema.items():
+        value = fixed.get(col)
+
+        if isinstance(dtype, pl.Struct):
+            fields = [f.name for f in dtype.fields]
+            if isinstance(value, dict):
+                fixed[col] = {f: value.get(f) for f in fields}
+            else:
+                fixed[col] = {f: None for f in fields}
+
+        elif isinstance(dtype, pl.List):
+            if isinstance(dtype.inner, pl.Struct):
+                inner_fields = [f.name for f in dtype.inner.fields]
+                if isinstance(value, list):
+                    fixed[col] = [
+                        (
+                            {f: item.get(f) for f in inner_fields}
+                            if isinstance(item, dict)
+                            else {f: None for f in inner_fields}
+                        )
+                        for item in value
+                    ]
+                else:
+                    fixed[col] = []
+            else:
+                fixed[col] = value if isinstance(value, list) else []
+
+        else:
+            fixed[col] = value
+
+    return fixed
+
+
+def build_dataframe_from_api(
+    api_generator: Generator[dict, None, None],
+    schema: dict,
+) -> pl.DataFrame:
+    """
+    Consumes an API generator, normalises known schema columns on every row,
+    and returns a Polars DataFrame.
+
+    Strategy:
+      1. Collect ALL rows first (normalised), so Polars never has to infer
+         struct shapes mid-stream from inconsistent rows.
+      2. Build the DataFrame from the full list, passing the known schema
+         explicitly so Polars uses it for those columns.
+      3. Extra API columns (not in schema) are carried through as-is and
+         Polars infers their types from the full dataset — which is safe
+         because we have all rows before constructing.
+
+    New/unexpected columns are logged with a sample value.
+
+    Args:
+        api_generator (Generator[dict, None, None]): A generator yielding raw
+            API rows as dictionaries.
+        schema (dict): Polars schema mapping column names to data types.
+
+    Returns:
+        pl.DataFrame: Newly constructed DataFrame with new raw data
+    """
+    known_cols = set(schema.keys())
+    new_cols_seen: set[str] = set()
+    rows: list[dict] = []
+
+    for row in api_generator:
+        # Detect and log any columns not in our schema
+        extra = set(row.keys()) - known_cols - new_cols_seen
+        if extra:
+            new_cols_seen.update(extra)
+            for col in sorted(extra):
+                sample = row[col]
+                print(
+                    f"[schema drift] New column '{col}' | sample: {repr(sample)[:120]}"
+                )
+
+        rows.append(normalise_structs(row, schema))
+
+    if not rows:
+        # Return an empty DataFrame with the correct schema for known columns
+        return pl.DataFrame(schema=schema)
+
+    return pl.DataFrame(rows, infer_schema_length=len(rows))

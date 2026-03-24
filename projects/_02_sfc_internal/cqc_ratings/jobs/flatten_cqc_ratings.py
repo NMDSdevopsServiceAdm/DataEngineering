@@ -25,9 +25,6 @@ from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
 )
-from utils.value_labels.cqc_ratings.label_dictionary import (
-    unknown_ratings_labels_dict as UnknownRatings,
-)
 
 delta_columns = [
     CQCL.location_id,
@@ -62,6 +59,10 @@ def main(
     cqc_latest_full = utils.read_from_parquet(
         cqc_full_snapshot_source, snapshot_columns
     )
+    cqc_latest_full = cqc_latest_full.filter(
+        F.col(CQCL.type) == LocationType.social_care_identifier
+    )
+
     cqc_delta_raw = utils.read_from_parquet(
         cqc_locations_api_delta_source,
         delta_columns,
@@ -590,14 +591,33 @@ def merge_cqc_ratings(
 
 
 def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
-    ratings_df = cUtils.apply_categorical_labels(
-        ratings_df,
-        UnknownRatings,
-        UnknownRatings.keys(),
-        add_as_new_column=False,
-    )
-    ratings_df = ratings_df.drop_duplicates()
-    return ratings_df
+    columns_to_clean = [
+        CQCRatings.overall_rating,
+        CQCRatings.safe_rating,
+        CQCRatings.well_led_rating,
+        CQCRatings.caring_rating,
+        CQCRatings.responsive_rating,
+        CQCRatings.effective_rating,
+    ]
+
+    labels_to_nullify = [
+        "Inspected but not rated",
+        "No published rating",
+        "Insufficient evidence to rate",
+        "Evidence requirements partially / not yet scored",
+        "No Approved Rating",
+        "",
+    ]
+
+    for col_name in columns_to_clean:
+        ratings_df = ratings_df.withColumn(
+            col_name,
+            F.when(F.col(col_name).isin(labels_to_nullify), None).otherwise(
+                F.col(col_name)
+            ),
+        )
+
+    return ratings_df.drop_duplicates()
 
 
 def add_current_or_historic_column(

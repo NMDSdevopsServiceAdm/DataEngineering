@@ -8,7 +8,7 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     IngestASCWDSData as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
@@ -16,10 +16,8 @@ from utils.column_names.raw_data_files.ascwds_worker_columns import (
 PATCH_PATH = "projects._01_ingest.ascwds.jobs.ingest_ascwds_dataset"
 
 
-class IngestASCWDSDatasetTests(unittest.TestCase):
+class IngestASCWDSDatasetTests(SparkBaseTest):
     def setUp(self):
-        self.spark = utils.get_spark()
-
         self.single_csv_file_source = "s3://bucket/source.csv"
         self.bucket = "bucket"
         self.csv_file_name = "source.csv"
@@ -28,9 +26,6 @@ class IngestASCWDSDatasetTests(unittest.TestCase):
 
 
 class IngestSingleFileTest(IngestASCWDSDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.construct_destination_path")
     @patch(f"{PATCH_PATH}.handle_job")
     def test_ingest_single_file(
@@ -77,11 +72,11 @@ class IngestMultipleFilesTests(IngestASCWDSDatasetTests):
         objects_list = [file1, file2]
 
         get_s3_objects_list_mock.return_value = objects_list
-        construct_s3_uri_mock.side_effect = (
-            lambda bucket, prefix: f"s3://{bucket}/{prefix}"
+        construct_s3_uri_mock.side_effect = lambda bucket, prefix: (
+            f"s3://{bucket}/{prefix}"
         )
-        construct_destination_path_mock.side_effect = (
-            lambda destination, prefix: f"{destination}{prefix}"
+        construct_destination_path_mock.side_effect = lambda destination, prefix: (
+            f"{destination}{prefix}"
         )
 
         job.ingest_multiple_files(

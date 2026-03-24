@@ -1,9 +1,7 @@
-from polars_utils import logger, utils
+from polars_utils import utils
 from projects._01_ingest.cqc_api.fargate.utils.convert_delta_to_full import (
     convert_delta_to_full,
 )
-
-logger = logger.get_logger(__name__)
 
 
 def main(delta_source: str, full_destination: str) -> None:
@@ -20,9 +18,7 @@ def main(delta_source: str, full_destination: str) -> None:
 
 
 if __name__ == "__main__":
-    logger.info(
-        "Running conversion from delta to full dataset job for providers dataset"
-    )
+    print("Running conversion from delta to full dataset job for providers dataset")
 
     args = utils.get_args(
         (
@@ -40,4 +36,4 @@ if __name__ == "__main__":
         full_destination=args.full_destination,
     )
 
-    logger.info("Finished converting delta to full dataset job")
+    print("Finished converting delta to full dataset job")

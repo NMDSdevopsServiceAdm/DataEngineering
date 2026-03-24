@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_and_without_dormancy_combined as job
@@ -8,10 +7,8 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ModelNonResWithAndWithoutDormancyCombinedSchemas as Schemas,
 )
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+from tests.base_test import SparkBaseTest
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
 )
@@ -19,48 +16,51 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_and_without_dormancy_combined"
 
 
-class ModelNonResWithAndWithoutDormancyCombinedTests(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
-
-
-class MainTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+class MainTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
-        self.estimated_posts_df = self.spark.createDataFrame(
+        self.input_df = self.spark.createDataFrame(
             Data.estimated_posts_rows, Schemas.estimated_posts_schema
         )
-
-    @patch(f"{PATCH_PATH}.set_min_value")
-    @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
-    @patch(f"{PATCH_PATH}.insert_predictions_into_pipeline")
-    @patch(f"{PATCH_PATH}.get_selected_value")
-    def test_models_runs(
-        self,
-        get_selected_value_mock: Mock,
-        insert_predictions_into_pipeline_mock: Mock,
-        select_rows_with_value_mock: Mock,
-        set_min_value_mock: Mock,
-    ):
-        returned_df = job.combine_non_res_with_and_without_dormancy_models(
-            self.estimated_posts_df
+        self.returned_df = job.combine_non_res_with_and_without_dormancy_models(
+            self.input_df
         )
 
-        get_selected_value_mock.assert_called_once()
-        insert_predictions_into_pipeline_mock.assert_called_once()
-        select_rows_with_value_mock.assert_called_once()
-        set_min_value_mock.assert_called_once()
+    @patch(f"{PATCH_PATH}.join_model_predictions")
+    @patch(f"{PATCH_PATH}.combine_model_predictions")
+    @patch(f"{PATCH_PATH}.calculate_and_apply_residuals")
+    @patch(f"{PATCH_PATH}.calculate_and_apply_model_ratios")
+    @patch(f"{PATCH_PATH}.group_time_registered_to_six_month_bands")
+    def test_models_runs(
+        self,
+        group_time_registered_mock: Mock,
+        calculate_and_apply_model_ratios_mock: Mock,
+        calculate_and_apply_residuals_mock: Mock,
+        combine_model_predictions_mock: Mock,
+        join_model_predictions_mock: Mock,
+    ):
+        job.combine_non_res_with_and_without_dormancy_models(self.input_df)
 
-    # TODO flesh out main tests to usual standard (expected columns/rows/anything else?)
+        group_time_registered_mock.assert_called_once()
+        calculate_and_apply_model_ratios_mock.assert_called_once()
+        calculate_and_apply_residuals_mock.assert_called_once()
+        combine_model_predictions_mock.assert_called_once()
+        join_model_predictions_mock.assert_called_once()
+
+    def test_non_res_combined_model_column_is_added(self):
+
+        self.assertIn(IndCqc.non_res_combined_model, self.returned_df.columns)
+
+        cols_added = set(self.returned_df.columns) - set(self.input_df.columns)
+        self.assertEqual(cols_added, {IndCqc.non_res_combined_model})
+
+    def test_row_count_unchanged(
+        self,
+    ):
+        self.assertEqual(self.input_df.count(), self.returned_df.count())
 
 
-class GroupTimeRegisteredToSixMonthBandsTests(
-    ModelNonResWithAndWithoutDormancyCombinedTests
-):
+class GroupTimeRegisteredToSixMonthBandsTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         test_df = self.spark.createDataFrame(
             Data.group_time_registered_to_six_month_bands_rows,
             Schemas.group_time_registered_to_six_month_bands_schema,
@@ -91,10 +91,8 @@ class GroupTimeRegisteredToSixMonthBandsTests(
             )
 
 
-class CalculateAndApplyModelRatioTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+class CalculateAndApplyModelRatioTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         self.test_df = self.spark.createDataFrame(
             Data.calculate_and_apply_model_ratios_rows,
             Schemas.calculate_and_apply_model_ratios_schema,
@@ -114,12 +112,8 @@ class CalculateAndApplyModelRatioTests(ModelNonResWithAndWithoutDormancyCombined
         )
 
 
-class AverageModelsByRelatedLocationAndTimeRegisteredTests(
-    ModelNonResWithAndWithoutDormancyCombinedTests
-):
+class AverageModelsByRelatedLocationAndTimeRegisteredTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         test_df = self.spark.createDataFrame(
             Data.average_models_by_related_location_and_time_registered_rows,
             Schemas.average_models_by_related_location_and_time_registered_schema,
@@ -159,10 +153,8 @@ class AverageModelsByRelatedLocationAndTimeRegisteredTests(
             )
 
 
-class CalculateAdjustmentRatiosTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+class CalculateAdjustmentRatiosTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         test_df = self.spark.createDataFrame(
             Data.calculate_adjustment_ratios_rows,
             Schemas.calculate_adjustment_ratios_schema,
@@ -213,10 +205,8 @@ class CalculateAdjustmentRatiosTests(ModelNonResWithAndWithoutDormancyCombinedTe
             )
 
 
-class ApplyModelRatiosTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+class ApplyModelRatiosTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         test_df = self.spark.createDataFrame(
             Data.apply_model_ratios_returns_expected_values_when_all_values_known_rows,
             Schemas.apply_model_ratios_schema,
@@ -272,10 +262,8 @@ class ApplyModelRatiosTests(ModelNonResWithAndWithoutDormancyCombinedTests):
             )
 
 
-class CalculateAndApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+class CalculateAndApplyResidualsTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         self.test_df = self.spark.createDataFrame(
             Data.calculate_and_apply_residuals_rows,
             Schemas.calculate_and_apply_residuals_schema,
@@ -320,10 +308,8 @@ class CalculateAndApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedT
             )
 
 
-class CalculateResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+class CalculateResidualsTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         test_df = self.spark.createDataFrame(
             Data.calculate_residuals_rows,
             Schemas.calculate_residuals_schema,
@@ -360,10 +346,8 @@ class CalculateResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
             )
 
 
-class ApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+class ApplyResidualsTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         test_df = self.spark.createDataFrame(
             Data.apply_residuals_rows,
             Schemas.apply_residuals_schema,
@@ -394,10 +378,8 @@ class ApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
             )
 
 
-class CombineModelPredictionsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+class CombineModelPredictionsTests(SparkBaseTest):
     def setUp(self) -> None:
-        super().setUp()
-
         test_df = self.spark.createDataFrame(
             Data.combine_model_predictions_rows,
             Schemas.combine_model_predictions_schema,

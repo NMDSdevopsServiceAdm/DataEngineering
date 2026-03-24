@@ -31,6 +31,7 @@ class PartitionKeys:
     year: str = "year"
 
 
+@dataclass
 class ArchivePartitionKeys:
     archive_day: str = "archive_day"
     archive_month: str = "archive_month"
@@ -74,21 +75,13 @@ class IndCqcColumns:
     average_absolute_residual: str = "average_absolute_residual"
     average_percentage_residual: str = "average_percentage_residual"
     avg_filled_posts_per_bed_ratio: str = "avg_filled_posts_per_bed_ratio"
-    avg_residuals_ascwds_filled_posts_dedup_clean_non_res_pir: str = (
-        "avg_residuals_ascwds_filled_posts_dedup_clean_non_res_pir"
-    )
-    avg_residuals_estimate_filled_posts_non_res_pir: str = (
-        "avg_residuals_estimate_filled_posts_non_res_pir"
-    )
     banded_bed_ratio_rolling_average_model: str = (
         "banded_bed_ratio_rolling_average_model"
     )
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
-    code: str = CQCLClean.code
+    care_home_status_count: str = "care_home_status_count"
     combined_ratio_and_filled_posts: str = "combined_ratio_and_filled_posts"
-    contacts: str = CQCLClean.contacts
-    contemporary_ccg: str = ONSClean.contemporary_ccg
     contemporary_constituency: str = ONSClean.contemporary_constituency
     contemporary_cssr: str = ONSClean.contemporary_cssr
     contemporary_icb: str = ONSClean.contemporary_icb
@@ -110,15 +103,19 @@ class IndCqcColumns:
     cqc_location_import_date_indexed: str = (
         CQCLClean.cqc_location_import_date + "_indexed"
     )
-    cqc_location_import_date_indexed_squared: str = (
-        cqc_location_import_date_indexed + "_squared"
+    cqc_location_import_date_indexed_cubed: str = (
+        cqc_location_import_date_indexed + "_cubed"
     )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
+    ct_care_home_filtering_rule: str = "ct_care_home_filtering_rule"
     ct_care_home_import_date: str = CTCHClean.ct_care_home_import_date
     ct_care_home_posts_per_bed_ratio: str = "ct_care_home_posts_per_bed_ratio"
     ct_care_home_total_employed: str = CTCHClean.ct_care_home_total_employed
     ct_care_home_total_employed_cleaned: str = ct_care_home_total_employed + "_cleaned"
+    ct_care_home_total_employed_cleaned_provider_sum: str = (
+        ct_care_home_total_employed_cleaned + "_provider_sum"
+    )
     ct_care_home_total_employed_imputed: str = ct_care_home_total_employed + "_imputed"
     ct_combined_care_home_and_non_res: str = "ct_combined_care_home_and_non_res"
     ct_combined_care_home_and_non_res_rate_of_change_trendline: str = (
@@ -126,6 +123,12 @@ class IndCqcColumns:
     )
     ct_non_res_all_posts: str = "capacity_tracker_non_res_all_posts"
     ct_non_res_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
+    ct_non_res_care_workers_employed_provider_sum: str = (
+        ct_non_res_care_workers_employed + "_provider_sum"
+    )
+    ct_non_res_care_workers_employed_cleaned: str = (
+        ct_non_res_care_workers_employed + "_cleaned"
+    )
     ct_non_res_care_workers_employed_imputed: str = (
         CTNRClean.cqc_care_workers_employed + "_imputed"
     )
@@ -135,8 +138,8 @@ class IndCqcColumns:
     ct_non_res_filled_post_estimate_source: str = (
         ct_non_res_filled_post_estimate + "_source"
     )
+    ct_non_res_filtering_rule: str = "ct_non_res_filtering_rule"
     ct_non_res_import_date: str = CTNRClean.ct_non_res_import_date
-    current_ccg: str = ONSClean.current_ccg
     current_constituency: str = ONSClean.current_constituency
     current_cssr: str = ONSClean.current_cssr
     current_icb: str = ONSClean.current_icb
@@ -178,6 +181,9 @@ class IndCqcColumns:
     )
     estimate_filled_posts_source: str = "estimate_filled_posts_source"
     estimate_filled_posts_by_job_role: str = "estimate_filled_posts_by_job_role"
+    estimate_filled_posts_manager_adjusted: str = (
+        "estimate_filled_posts_manager_adjusted"
+    )
     estimate_source: str = "estimate_source"
     estimate_value: str = "estimate_value"
     expected_filled_posts: str = "expected_filled_posts"
@@ -221,13 +227,8 @@ class IndCqcColumns:
     max_residual: str = "max_residual"
     min_filled_posts_per_bed_ratio: str = "min_filled_posts_per_bed_ratio"
     min_residual: str = "min_residual"
-    model_name: str = "model_name"
-    model_run_timestamp: str = "model_run_timestamp"
-    model_version: str = "model_version"
     name: str = CQCLClean.name
     next_submission_time: str = "next_submission_time"
-    next_value: str = "next_value"
-    next_value_unix_time: str = "next_value_unix_time"
     non_res_combined_model: str = "non_res_combined_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
@@ -248,12 +249,10 @@ class IndCqcColumns:
     )
     number_of_beds: str = CQCLClean.number_of_beds
     number_of_beds_banded: str = "number_of_beds_banded"
-    number_of_beds_banded_for_rate_of_change: str = (
-        number_of_beds_banded + "_for_rate_of_change"
-    )
     number_of_beds_banded_for_rolling_avg: str = (
         number_of_beds_banded + "_for_rolling_avg"
     )
+    number_of_beds_banded_roc: str = number_of_beds_banded + "_for_rate_of_change"
     organisation_id: str = AWPClean.organisation_id
     percentage_of_residuals_within_absolute_value: str = (
         "percentage_of_residuals_within_absolute_value"
@@ -282,11 +281,10 @@ class IndCqcColumns:
     postcode: str = CQCLClean.postal_code
     posts_rolling_average_model: str = "posts_rolling_average_model"
     prediction: str = "prediction"
+    prediction_run_id: str = "prediction_run_id"
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
     previous_submission_time: str = "previous_submission_time"
-    previous_value: str = "previous_value"
-    previous_value_unix_time: str = "previous_value_unix_time"
     primary_service_type: str = CQCLClean.primary_service_type
     primary_service_type_second_level: str = (
         CQCLClean.primary_service_type + "_second_level"
@@ -312,6 +310,7 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
+    rmse: str = "rmse"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
@@ -332,7 +331,6 @@ class IndCqcColumns:
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"
-    value_unix_time: str = "value_unix_time"
     worker_records_bounded: str = AWPClean.worker_records_bounded
 
 
@@ -340,14 +338,17 @@ class IndCqcColumns:
 class PrimaryServiceRateOfChangeColumns:
     """The names of the temporary columns created during the rate of change process."""
 
-    care_home_status_count: str = "care_home_status_count"
-    column_with_values: str = "column_with_values"
-    column_with_values_interpolated: str = "column_with_values_interpolated"
-    previous_column_with_values_interpolated: str = (
-        "previous_column_with_values_interpolated"
-    )
-    rolling_current_period_sum: str = "rolling_current_period_sum"
-    rolling_previous_period_sum: str = "rolling_previous_period_sum"
+    abs_change: str = "absolute_period_change"
+    abs_pct: str = "absolute_period_change_percentile"
+    current_period: str = "current_period"
+    current_period_cleaned: str = "current_period_cleaned"
+    current_period_interpolated: str = "current_period_interpolated"
+    perc_change: str = "percentage_period_change"
+    perc_pct: str = "percentage_period_change_percentile"
+    previous_period_cleaned: str = "previous_period_cleaned"
+    previous_period_interpolated: str = "previous_period_interpolated"
+    rolling_current_sum: str = "rolling_current_sum"
+    rolling_previous_sum: str = "rolling_previous_sum"
     submission_count: str = "submission_count"
 
 
@@ -383,3 +384,13 @@ class NullGroupedProviderColumns:
     potential_grouped_provider: str = "potential_grouped_provider"
     provider_pir_count: str = "provider_pir_count"
     provider_pir_sum: str = "provider_pir_sum"
+
+
+@dataclass
+class ModelRegistryKeys:
+    auto_retrain: str = "auto_retrain"
+    dependent: str = "dependent"
+    features: str = "features"
+    model_params: str = "model_params"
+    model_type: str = "model_type"
+    version: str = "version"

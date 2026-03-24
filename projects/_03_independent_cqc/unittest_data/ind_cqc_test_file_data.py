@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from datetime import date
 
@@ -10,108 +11,22 @@ from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
 from utils.column_values.categorical_column_values import (
-    RUI,
     AscwdsFilteringRule,
     CareHome,
+    CTFilteringRule,
     Dormancy,
     EstimateFilledPostsSource,
     JobGroupLabels,
-    LocationType,
     MainJobRoleLabels,
     PrimaryServiceType,
-    PrimaryServiceTypeSecondLevel,
     Region,
     RelatedLocation,
     Sector,
-    Services,
-    Specialisms,
 )
 from utils.column_values.categorical_columns_by_dataset import (
     DiagnosticOnKnownFilledPostsCategoricalValues as CatValues,
 )
-
-
-@dataclass
-class MergeIndCQCData:
-    clean_cqc_location_for_merge_rows = [
-        (date(2024, 1, 1), "1-001", Sector.independent, "Y", 10),
-        (date(2024, 1, 1), "1-002", Sector.independent, "N", None),
-        (date(2024, 1, 1), "1-003", Sector.independent, "N", None),
-        (date(2024, 2, 1), "1-001", Sector.independent, "Y", 10),
-        (date(2024, 2, 1), "1-002", Sector.independent, "N", None),
-        (date(2024, 2, 1), "1-003", Sector.independent, "N", None),
-        (date(2024, 3, 1), "1-001", Sector.independent, "Y", 10),
-        (date(2024, 3, 1), "1-002", Sector.independent, "N", None),
-        (date(2024, 3, 1), "1-003", Sector.independent, "N", None),
-    ]
-
-    data_to_merge_without_care_home_col_rows = [
-        (date(2024, 1, 1), "1-001", "1", 1),
-        (date(2024, 1, 1), "1-003", "3", 2),
-        (date(2024, 1, 5), "1-001", "1", 3),
-        (date(2024, 1, 9), "1-001", "1", 4),
-        (date(2024, 1, 9), "1-003", "3", 5),
-        (date(2024, 3, 1), "1-003", "4", 6),
-    ]
-    # fmt: off
-    expected_merged_without_care_home_col_rows = [
-        ("1-001", date(2024, 1, 1), date(2024, 1, 1), Sector.independent, "Y", 10, "1", 1),
-        ("1-002", date(2024, 1, 1), date(2024, 1, 1), Sector.independent, "N", None, None, None),
-        ("1-003", date(2024, 1, 1), date(2024, 1, 1), Sector.independent, "N", None, "3", 2),
-        ("1-001", date(2024, 1, 9), date(2024, 2, 1), Sector.independent, "Y", 10, "1", 4),
-        ("1-002", date(2024, 1, 9), date(2024, 2, 1), Sector.independent, "N", None, None, None),
-        ("1-003", date(2024, 1, 9), date(2024, 2, 1), Sector.independent, "N", None, "3", 5),
-        ("1-001", date(2024, 3, 1), date(2024, 3, 1), Sector.independent, "Y", 10, None, None),
-        ("1-002", date(2024, 3, 1), date(2024, 3, 1), Sector.independent, "N", None, None, None),
-        ("1-003", date(2024, 3, 1), date(2024, 3, 1), Sector.independent, "N", None, "4", 6),
-    ]
-    # fmt: on
-
-    data_to_merge_with_care_home_col_rows = [
-        ("1-001", "Y", date(2024, 1, 1), 10),
-        ("1-002", "N", date(2024, 1, 1), 20),
-        ("1-003", "Y", date(2024, 1, 1), 30),
-        ("1-001", "Y", date(2024, 2, 1), 1),
-        ("1-002", "N", date(2024, 2, 1), 4),
-    ]
-    # fmt: off
-    expected_merged_with_care_home_col_rows = [
-        (date(2024, 1, 1), "1-001", Sector.independent, "Y", 10, 10, date(2024, 1, 1)),
-        (date(2024, 1, 1), "1-002", Sector.independent, "N", None, 20, date(2024, 1, 1)),
-        (date(2024, 1, 1), "1-003", Sector.independent, "N", None, None, date(2024, 1, 1)),
-        (date(2024, 2, 1), "1-001", Sector.independent, "Y", 10, 1, date(2024, 2, 1)),
-        (date(2024, 2, 1), "1-002", Sector.independent, "N", None, 4, date(2024, 2, 1)),
-        (date(2024, 2, 1), "1-003", Sector.independent, "N", None, None, date(2024, 2, 1)),
-        (date(2024, 3, 1), "1-001", Sector.independent, "Y", 10, 1, date(2024, 2, 1)),
-        (date(2024, 3, 1), "1-002", Sector.independent, "N", None, 4, date(2024, 2, 1)),
-        (date(2024, 3, 1), "1-003", Sector.independent, "N", None, None, date(2024, 2, 1)),
-    ]
-    # fmt: on
-
-
-@dataclass
-class ValidateMergedIndCqcData:
-    # fmt: off
-    cqc_locations_rows = [
-        (date(2024, 1, 1), "1-001", "Independent", "Y", 10),
-        (date(2024, 1, 1), "1-002", "Independent", "N", None),
-        (date(2024, 2, 1), "1-001", "Independent", "Y", 10),
-        (date(2024, 2, 1), "1-002", "Independent", "N", None),
-    ]
-    # fmt: on
-
-    # fmt: off
-    merged_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5),
-        ("1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5),
-        ("1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5),
-        ("1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5),
-    ]
-    # fmt: on
 
 
 @dataclass
@@ -143,6 +58,15 @@ class ModelAndMergePirData:
         ("loc 2", date(2024, 1, 1), CareHome.not_care_home, None, None),
         ("loc 3", date(2024, 1, 1), CareHome.care_home, 10, None),
         ("loc 4", date(2024, 1, 1), CareHome.care_home, None, None),
+    ]
+
+    vectorise_input_rows = [
+        ("1-0001", 12.0, 0, 1, date(2024, 1, 1)),
+        ("1-0002", 50.0, 1, 1, date(2024, 1, 1)),
+    ]
+    expected_vectorised_feature_rows = [
+        ("1-0001", Vectors.dense([12.0, 0.0, 1.0])),
+        ("1-0002", Vectors.dense([50.0, 1.0, 1.0])),
     ]
 
     blend_pir_and_ascwds_rows = [
@@ -309,6 +233,35 @@ class ModelAndMergePirData:
 
 @dataclass
 class ImputeUtilsData:
+    convert_care_home_ratios_to_posts_rows = [
+        ("1-001", CareHome.care_home, 5, 1.6, 20.0),
+        ("1-002", CareHome.care_home, 5, None, 10.0),
+        ("1-003", CareHome.care_home, None, 1.6, 20.0),
+        ("1-004", CareHome.care_home, None, None, 10.0),
+        ("1-005", CareHome.care_home, 5, 1.8, None),
+        ("1-006", CareHome.care_home, 5, None, None),
+        ("1-007", CareHome.care_home, None, 1.8, None),
+        ("1-008", CareHome.care_home, None, None, None),
+        ("1-009", CareHome.not_care_home, 5, 1.6, 20.0),
+        ("1-010", CareHome.not_care_home, None, None, 10.0),
+        ("1-011", CareHome.not_care_home, 5, 1.6, None),
+        ("1-012", CareHome.not_care_home, None, None, None),
+    ]
+    expected_convert_care_home_ratios_to_posts_rows = [
+        ("1-001", CareHome.care_home, 5, 1.6, 8.0),
+        ("1-002", CareHome.care_home, 5, None, None),
+        ("1-003", CareHome.care_home, None, 1.6, None),
+        ("1-004", CareHome.care_home, None, None, None),
+        ("1-005", CareHome.care_home, 5, 1.8, 9.0),
+        ("1-006", CareHome.care_home, 5, None, None),
+        ("1-007", CareHome.care_home, None, 1.8, None),
+        ("1-008", CareHome.care_home, None, None, None),
+        ("1-009", CareHome.not_care_home, 5, 1.6, 20.0),
+        ("1-010", CareHome.not_care_home, None, None, 10.0),
+        ("1-011", CareHome.not_care_home, 5, 1.6, None),
+        ("1-012", CareHome.not_care_home, None, None, None),
+    ]
+
     combine_care_home_and_non_res_values_into_single_column_rows = [
         ("1-001", CareHome.care_home, 20.0, 1.6),
         ("1-002", CareHome.care_home, 10.0, None),
@@ -342,10 +295,10 @@ class ValidateImputedIndCqcAscwdsAndPir:
     ]
 
     imputed_ind_cqc_ascwds_and_pir_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, 5, "source", 5.0, 5),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, 5, "source", 5.0, 5),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, 5, "source", 5.0, 5),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, 5, "source", 5.0, 5),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "source", 5.0, 5),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "source", 5.0, 5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "source", 5.0, 5),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "source", 5.0, 5),
     ]
     # fmt: on
 
@@ -355,36 +308,6 @@ class ValidateImputedIndCqcAscwdsAndPir:
             date(2024, 1, 1),
         ),
     ]
-
-
-@dataclass
-class ArchiveFilledPostsEstimates:
-    filled_posts_rows = [("loc 1", date(2024, 1, 1))]
-
-    select_import_dates_to_archive_rows = [
-        ("loc 1", date(2024, 6, 8)),
-        ("loc 1", date(2024, 5, 1)),
-        ("loc 1", date(2024, 4, 1)),
-        ("loc 1", date(2024, 3, 1)),
-        ("loc 1", date(2023, 4, 1)),
-        ("loc 1", date(2023, 3, 1)),
-    ]
-    expected_select_import_dates_to_archive_rows = [
-        ("loc 1", date(2024, 6, 8)),
-        ("loc 1", date(2024, 5, 1)),
-        ("loc 1", date(2024, 4, 1)),
-        ("loc 1", date(2023, 4, 1)),
-    ]
-
-    create_archive_date_partitions_rows = [("loc 1", date(2024, 1, 2))]
-    expected_create_archive_date_partitions_rows = [
-        ("loc 1", date(2024, 1, 2), "02", "01", "2024", "2024-01-02 12:00"),
-    ]
-
-    single_digit_number = 9
-    expected_single_digit_number_as_string = "09"
-    double_digit_number = 10
-    expected_double_digit_number_as_string = "10"
 
 
 @dataclass
@@ -3112,7 +3035,7 @@ class CleanIndCQCData:
         ("1-0001", date(2025, 1, 2), date(2024, 12, 1), 2),
         ("1-0002", date(2025, 6, 1), date(2025, 1, 31), 5),
     ]
-    remove_cqc_duplicates_when_carehome_and_asc_data_populated_rows = [
+    remove_cqc_dual_registrations_when_carehome_and_asc_data_populated_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -3134,7 +3057,7 @@ class CleanIndCQCData:
             date(2022, 1, 1),
         ),
     ]
-    expected_remove_cqc_duplicates_when_carehome_and_asc_data_populated_rows = [
+    expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_populated_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -3147,7 +3070,7 @@ class CleanIndCQCData:
         ),
     ]
 
-    remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows = [
+    remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3169,7 +3092,7 @@ class CleanIndCQCData:
             date(2022, 1, 1),
         ),
     ]
-    expected_remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows = [
+    expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3182,7 +3105,7 @@ class CleanIndCQCData:
         ),
     ]
 
-    remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_later_reg_date_rows = [
+    remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_later_reg_date_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3204,7 +3127,7 @@ class CleanIndCQCData:
             date(2022, 1, 1),
         ),
     ]
-    expected_remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_later_reg_date_rows = [
+    expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_later_reg_date_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3217,7 +3140,7 @@ class CleanIndCQCData:
         ),
     ]
 
-    remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_all_reg_dates_rows = [
+    remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_all_reg_dates_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3239,7 +3162,7 @@ class CleanIndCQCData:
             date(2022, 1, 1),
         ),
     ]
-    expected_remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_all_reg_dates_rows = [
+    expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_all_reg_dates_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3252,7 +3175,7 @@ class CleanIndCQCData:
         ),
     ]
 
-    remove_cqc_duplicates_when_carehome_and_asc_data_different_on_all_reg_dates_rows = [
+    remove_cqc_dual_registrations_when_carehome_and_asc_data_different_on_all_reg_dates_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3274,7 +3197,7 @@ class CleanIndCQCData:
             date(2022, 1, 1),
         ),
     ]
-    expected_remove_cqc_duplicates_when_carehome_and_asc_data_different_on_all_reg_dates_rows = [
+    expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_different_on_all_reg_dates_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3287,7 +3210,7 @@ class CleanIndCQCData:
         ),
     ]
 
-    remove_cqc_duplicates_when_carehome_and_registration_dates_the_same_rows = [
+    remove_cqc_dual_registrations_when_carehome_and_registration_dates_the_same_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -3299,17 +3222,17 @@ class CleanIndCQCData:
             date(2022, 1, 1),
         ),
         (
-            "loc 1",
+            "loc 2",
             date(2024, 1, 1),
             "care home",
             "AB1 2CD",
             CareHome.care_home,
-            10,
-            10,
+            None,
+            None,
             date(2022, 1, 1),
         ),
     ]
-    expected_remove_cqc_duplicates_when_carehome_and_registration_dates_the_same_rows = [
+    expected_remove_cqc_dual_registrations_when_carehome_and_registration_dates_the_same_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -3322,7 +3245,52 @@ class CleanIndCQCData:
         ),
     ]
 
-    remove_cqc_duplicates_when_non_res_rows = [
+    remove_cqc_dual_registrations_when_locations_not_sorted_numerically = [
+        (
+            "loc 3",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2018, 1, 1),
+        ),
+        (
+            "loc 1",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2018, 1, 1),
+        ),
+        (
+            "loc 2",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            11,
+            11,
+            date(2022, 1, 1),
+        ),
+    ]
+    expected_remove_cqc_dual_registrations_when_locations_not_sorted_numerically = [
+        (
+            "loc 1",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2018, 1, 1),
+        ),
+    ]
+
+    remove_cqc_dual_registrations_when_non_res_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -3344,33 +3312,49 @@ class CleanIndCQCData:
             date(2022, 1, 1),
         ),
     ]
-    expected_remove_cqc_duplicates_when_non_res_rows = (
-        remove_cqc_duplicates_when_non_res_rows
+    expected_remove_cqc_dual_registrations_when_non_res_rows = (
+        remove_cqc_dual_registrations_when_non_res_rows
     )
 
+    # converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data.AddColumnWithRepeatedValuesRemovedData.repeated_value_rows
     repeated_value_rows = [
-        ("1", 1, date(2023, 2, 1)),
-        ("1", 2, date(2023, 3, 1)),
-        ("1", 2, date(2023, 4, 1)),
-        ("1", 3, date(2023, 8, 1)),
-        ("2", 3, date(2023, 2, 1)),
-        ("2", 9, date(2023, 4, 1)),
-        ("2", 3, date(2024, 1, 1)),
-        ("2", 3, date(2024, 2, 1)),
+        ("1", "1-0001", 1, date(2023, 2, 1)),
+        ("1", "1-0001", 2, date(2023, 3, 1)),
+        ("1", "1-0001", 2, date(2023, 4, 1)),
+        ("1", "1-0001", 3, date(2023, 8, 1)),
+        ("2", "1-0002", 3, date(2023, 2, 1)),
+        ("2", "1-0002", 9, date(2023, 4, 1)),
+        ("2", "1-0002", 3, date(2024, 1, 1)),
+        ("2", "1-0002", 3, date(2024, 2, 1)),
     ]
 
+    # converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data.AddColumnWithRepeatedValuesRemovedData.expected_without_repeated_values_rows
     expected_without_repeated_values_rows = [
-        ("1", 1, date(2023, 2, 1), 1),
-        ("1", 2, date(2023, 3, 1), 2),
-        ("1", 2, date(2023, 4, 1), None),
-        ("1", 3, date(2023, 8, 1), 3),
-        ("2", 3, date(2023, 2, 1), 3),
-        ("2", 9, date(2023, 4, 1), 9),
-        ("2", 3, date(2024, 1, 1), 3),
-        ("2", 3, date(2024, 2, 1), None),
+        ("1", "1-0001", 1, date(2023, 2, 1), 1),
+        ("1", "1-0001", 2, date(2023, 3, 1), 2),
+        ("1", "1-0001", 2, date(2023, 4, 1), None),
+        ("1", "1-0001", 3, date(2023, 8, 1), 3),
+        ("2", "1-0002", 3, date(2023, 2, 1), 3),
+        ("2", "1-0002", 9, date(2023, 4, 1), 9),
+        ("2", "1-0002", 3, date(2024, 1, 1), 3),
+        ("2", "1-0002", 3, date(2024, 2, 1), None),
+    ]
+
+    calculate_care_home_status_count_rows = [
+        ("1-001", CareHome.care_home),
+        ("1-001", CareHome.care_home),
+        ("1-002", CareHome.care_home),
+        ("1-002", CareHome.not_care_home),
+    ]
+    expected_calculate_care_home_status_count_rows = [
+        ("1-001", CareHome.care_home, 1),
+        ("1-001", CareHome.care_home, 1),
+        ("1-002", CareHome.care_home, 2),
+        ("1-002", CareHome.not_care_home, 2),
     ]
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data.CalculateAscwdsFilledPostsUtilsData
 @dataclass
 class CalculateAscwdsFilledPostsUtilsData:
     source_missing_rows = [
@@ -3386,6 +3370,7 @@ class CalculateAscwdsFilledPostsUtilsData:
     ]
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data.CalculateAscwdsFilledPostsData
 @dataclass
 class CalculateAscwdsFilledPostsData:
     # fmt: off
@@ -3435,6 +3420,7 @@ class CalculateAscwdsFilledPostsData:
     # fmt: on
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data.CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsData
 @dataclass
 class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsData:
     # fmt: off
@@ -3461,6 +3447,7 @@ class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsData:
     # fmt: on
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data.CalculateAscwdsFilledPostsDifferenceInRangeData
 @dataclass
 class CalculateAscwdsFilledPostsDifferenceInRangeData:
     # fmt: off
@@ -3510,8 +3497,9 @@ class CalculateAscwdsFilledPostsDifferenceInRangeData:
     # fmt: on
 
 
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data.CleanFilteringUtilsData
 @dataclass
-class ASCWDSFilteringUtilsData:
+class CleanFilteringUtilsData:
     add_filtering_column_rows = [
         ("loc 1", 10.0),
         ("loc 2", None),
@@ -3520,113 +3508,63 @@ class ASCWDSFilteringUtilsData:
         ("loc 1", 10.0, AscwdsFilteringRule.populated),
         ("loc 2", None, AscwdsFilteringRule.missing_data),
     ]
+
+    # fmt: off
     update_filtering_rule_populated_to_nulled_rows = [
-        (
-            "loc 1",
-            10.0,
-            10.0,
-            AscwdsFilteringRule.populated,
-        ),
-        (
-            "loc 2",
-            10.0,
-            None,
-            AscwdsFilteringRule.populated,
-        ),
-        (
-            "loc 3",
-            10.0,
-            None,
-            AscwdsFilteringRule.missing_data,
-        ),
-    ]
-    update_filtering_rule_populated_to_winsorized_rows = [
-        (
-            "loc 1",
-            10.0,
-            9.0,
-            AscwdsFilteringRule.populated,
-        ),
-        (
-            "loc 2",
-            10.0,
-            11.0,
-            AscwdsFilteringRule.populated,
-        ),
-        (
-            "loc 3",
-            10.0,
-            10.0,
-            AscwdsFilteringRule.populated,
-        ),
-    ]
-    update_filtering_rule_winsorized_to_nulled_rows = [
-        (
-            "loc 1",
-            10.0,
-            9.0,
-            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
-        ),
-        (
-            "loc 2",
-            10.0,
-            None,
-            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
-        ),
+        ("loc 1", 10.0, 10.0, AscwdsFilteringRule.populated),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.populated),
+        ("loc 3", 10.0, None, AscwdsFilteringRule.missing_data),
     ]
     expected_update_filtering_rule_populated_to_nulled_rows = [
-        (
-            "loc 1",
-            10.0,
-            10.0,
-            AscwdsFilteringRule.populated,
-        ),
-        (
-            "loc 2",
-            10.0,
-            None,
-            AscwdsFilteringRule.contained_invalid_missing_data_code,
-        ),
-        (
-            "loc 3",
-            10.0,
-            None,
-            AscwdsFilteringRule.missing_data,
-        ),
+        ("loc 1", 10.0, 10.0, AscwdsFilteringRule.populated),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
+        ("loc 3", 10.0, None, AscwdsFilteringRule.missing_data),
+    ]
+    # fmt: on
+
+    # fmt: off
+    update_filtering_rule_populated_to_winsorized_rows = [
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.populated),
+        ("loc 2", 10.0, 11.0, AscwdsFilteringRule.populated),
+        ("loc 3", 10.0, 10.0, AscwdsFilteringRule.populated),
     ]
     expected_update_filtering_rule_populated_to_winsorized_rows = [
-        (
-            "loc 1",
-            10.0,
-            9.0,
-            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
-        ),
-        (
-            "loc 2",
-            10.0,
-            11.0,
-            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
-        ),
-        (
-            "loc 3",
-            10.0,
-            10.0,
-            AscwdsFilteringRule.populated,
-        ),
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 2", 10.0, 11.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 3", 10.0, 10.0, AscwdsFilteringRule.populated),
+    ]
+    # fmt: on
+
+    # fmt: off
+    update_filtering_rule_winsorized_to_nulled_rows = [
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
     ]
     expected_update_filtering_rule_winsorized_to_nulled_rows = [
-        (
-            "loc 1",
-            10.0,
-            9.0,
-            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
-        ),
-        (
-            "loc 2",
-            10.0,
-            None,
-            AscwdsFilteringRule.contained_invalid_missing_data_code,
-        ),
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
+    ]
+    # fmt: on
+
+    aggregate_values_to_provider_level_rows = [
+        ("1-001", "1-0001", 1, date(2025, 1, 1)),
+        ("1-002", "1-0001", 1, date(2025, 1, 1)),
+        ("1-003", "1-0002", 1, date(2025, 1, 1)),
+        ("1-004", "1-0002", None, date(2025, 1, 1)),
+        ("1-005", "1-0003", None, date(2025, 1, 1)),
+        ("1-006", "1-0003", None, date(2025, 1, 1)),
+        ("1-001", "1-0001", 2, date(2025, 2, 1)),
+        ("1-002", "1-0001", 2, date(2025, 2, 1)),
+    ]
+    expected_aggregate_values_to_provider_level_rows = [
+        ("1-001", "1-0001", 1, date(2025, 1, 1), 2),
+        ("1-002", "1-0001", 1, date(2025, 1, 1), 2),
+        ("1-003", "1-0002", 1, date(2025, 1, 1), 1),
+        ("1-004", "1-0002", None, date(2025, 1, 1), 1),
+        ("1-005", "1-0003", None, date(2025, 1, 1), None),
+        ("1-006", "1-0003", None, date(2025, 1, 1), None),
+        ("1-001", "1-0001", 2, date(2025, 2, 1), 4),
+        ("1-002", "1-0001", 2, date(2025, 2, 1), 4),
     ]
 
 
@@ -4064,6 +4002,47 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
     ]
 
 
+# converted to polars -> projects\_03_independent_cqc\unittest_data\polars_ind_cqc_test_file_data.py
+@dataclass
+class CleanCapacityTrackerNonResOutliersData:
+    ind_cqc_rows = [
+        ("1-001", date(2025, 1, 1), 30.0),
+        ("1-002", date(2025, 1, 1), None),
+    ]
+
+
+# converted to polars -> projects\_03_independent_cqc\unittest_data\polars_ind_cqc_test_file_data.py
+@dataclass
+class CleanCapacityTrackerCareHomeOutliersData:
+    ind_cqc_rows = [
+        ("1-001", date(2025, 1, 1), 1.5, 30.0),
+        ("1-002", date(2025, 1, 1), 1.5, None),
+        ("1-002", date(2025, 1, 1), None, 30.0),
+        ("1-002", date(2025, 1, 1), None, None),
+    ]
+
+
+# converted to polars -> projects\_03_independent_cqc\unittest_data\polars_ind_cqc_test_file_data.py
+@dataclass
+class NullCtPostsToBedsOutliers:
+    null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00, 1, CTFilteringRule.populated),
+        ("1-002", 1, None, 1, CTFilteringRule.populated),
+        ("1-003", None, 1.00, None, CTFilteringRule.missing_data),
+        ("1-004", None, None, None, CTFilteringRule.missing_data),
+        ("1-005", 1, 0.65, 1, CTFilteringRule.populated),
+        ("1-006", 1, 6.01, 1, CTFilteringRule.populated),
+    ]
+    expected_null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00, 1, CTFilteringRule.populated),
+        ("1-002", 1, None, 1, CTFilteringRule.populated),
+        ("1-003", None, 1.00, None, CTFilteringRule.missing_data),
+        ("1-004", None, None, None, CTFilteringRule.missing_data),
+        ("1-005", 1, 0.65, None, CTFilteringRule.beds_ratio_outlier),
+        ("1-006", 1, 6.01, None, CTFilteringRule.beds_ratio_outlier),
+    ]
+
+
 @dataclass
 class ValidateCleanedIndCqcData:
     # fmt: off
@@ -4075,10 +4054,10 @@ class ValidateCleanedIndCqcData:
     ]
 
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "01"),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "01"),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "09"),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "09"),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "01"),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "01"),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "09"),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "09"),
     ]
     # fmt: on
 
@@ -4097,453 +4076,45 @@ class ValidateCleanedIndCqcData:
 
 
 @dataclass
-class CareHomeFeaturesData:
-    clean_merged_data_rows = [
-        (
-            "1-001",
-            date(2022, 1, 1),
-            Region.south_east,
-            0,
-            [Services.domiciliary_care_service],
-            [Specialisms.dementia],
-            [{IndCQC.name: "name", IndCQC.code: "code"}],
-            CareHome.not_care_home,
-            RUI.rural_hamlet_sparse,
-            None,
-            None,
-            None,
-            "2023",
-            "01",
-            "01",
-            "20230101",
-        ),
-        (
-            "1-002",
-            date(2022, 1, 1),
-            Region.yorkshire_and_the_humber,
-            10,
-            [Services.care_home_service_with_nursing],
-            [Specialisms.dementia],
-            [{IndCQC.name: "name", IndCQC.code: "code"}],
-            CareHome.care_home,
-            RUI.urban_city,
-            1.8,
-            2.5,
-            1.5,
-            "2023",
-            "01",
-            "01",
-            "20230101",
-        ),
-        (
-            "1-003",
-            date(2022, 1, 1),
-            Region.south_west,
-            None,
-            [Services.dental_service, Services.care_home_service_without_nursing],
-            [Specialisms.dementia, Specialisms.mental_health],
-            [{IndCQC.name: "name", IndCQC.code: "code"}],
-            CareHome.care_home,
-            RUI.rural_town,
-            1.6,
-            1.1,
-            1.4,
-            "2023",
-            "01",
-            "01",
-            "20230101",
-        ),
-    ]
-
-
-@dataclass
-class NonResAscwdsFeaturesData(object):
-    # fmt: off
-    rows = [
-        ("1-00001", date(2022, 2, 1), date(2019, 1, 1), 35, 1, Region.south_east, Dormancy.dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 17.5, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.has_related_location, '2022', '02', '01', '20220201'),
-        ("1-00002", date(2022, 2, 1), date(2019, 2, 1), 36, 10, Region.south_east, Dormancy.not_dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, 67.0, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00003", date(2022, 2, 1), date(2019, 2, 1), 36, 1, Region.south_west, Dormancy.dormant, [Services.urgent_care_services, Services.supported_living_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00004", date(2022, 2, 1), date(2019, 2, 1), 36, None, Region.north_east, None, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00005", date(2022, 2, 1), date(2019, 2, 1), 36, 10, Region.north_east, Dormancy.not_dormant, [Services.specialist_college_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia, Specialisms.mental_health], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00006", date(2022, 2, 1), date(2019, 2, 1), 36, 10, Region.north_east, Dormancy.not_dormant, [Services.specialist_college_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], None, PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00007", date(2022, 2, 1), date(2019, 2, 1), 36, 1, Region.north_west, Dormancy.dormant, [Services.supported_living_service, Services.care_home_service_with_nursing], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.care_home_with_nursing, None, 20.0, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-    ]
-    # fmt: on
-
-
-@dataclass
-class ValidateCareHomeIndCqcFeaturesData:
-    # fmt: off
-    cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.care_home, ["Specialism Name"]),
-        ("1-000000002", date(2024, 1, 1), CareHome.care_home, ["Specialism Name"]),
-        ("1-000000001", date(2024, 1, 9), CareHome.care_home, ["Specialism Name"]),
-        ("1-000000002", date(2024, 1, 9), CareHome.care_home, ["Specialism Name"]),
-    ]
-
-    care_home_ind_cqc_features_rows = [
-        ("1-000000001", date(2024, 1, 1), "region", 5, 5, "Y", "features", 5.0),
-        ("1-000000002", date(2024, 1, 1), "region", 5, 5, "Y", "features", 5.0),
-        ("1-000000001", date(2024, 1, 9), "region", 5, 5, "Y", "features", 5.0),
-        ("1-000000002", date(2024, 1, 9), "region", 5, 5, "Y", "features", 5.0),
-    ]
-
-    calculate_expected_size_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.care_home, ["Specialism Name"]),
-        ("1-002", date(2024, 1, 1), CareHome.care_home, None),
-        ("1-003", date(2024, 1, 1), CareHome.not_care_home, ["Specialism Name"]),
-        ("1-004", date(2024, 1, 1), CareHome.not_care_home, None),
-        ("1-005", date(2024, 1, 1), None, ["Specialism Name"]),
-        ("1-006", date(2024, 1, 1), None, None),
-    ]
-    # fmt: on
-
-
-@dataclass
-class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
-    # fmt: off
-    cleaned_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.not_dormant, ["Name"], ["Specialism Name"]),
-        ("1-001", date(2024, 1, 9), CareHome.not_care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]),
-        ("1-002", date(2024, 1, 9), CareHome.not_care_home, Dormancy.not_dormant, ["Name"], ["Specialism Name"]),
-    ]
-    # fmt: on
-
-    non_res_ascwds_ind_cqc_features_rows = [
-        ("1-001", date(2024, 1, 1)),
-        ("1-002", date(2024, 1, 1)),
-        ("1-001", date(2024, 1, 9)),
-        ("1-002", date(2024, 1, 9)),
-    ]
-
-    # fmt: off
-    calculate_expected_size_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, ["Name"], None), # filtered - null specialism
-        ("1-003", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, None, ["Specialism Name"]), # filtered - null service
-        ("1-005", date(2024, 1, 1), CareHome.not_care_home, None, ["Name"], ["Specialism Name"]), # filtered - null dormancy
-        ("1-004", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, ["Name"], ["Specialism Name"]), # filtered - care home
-    ]
-    # fmt: on
-
-
-@dataclass
-class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
-    # fmt: off
-    cleaned_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
-        ("1-001", date(2024, 1, 9), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
-        ("1-002", date(2024, 1, 9), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
-    ]
-    # fmt: on
-
-    non_res_ascwds_ind_cqc_features_rows = [
-        ("1-001", date(2024, 1, 1)),
-        ("1-002", date(2024, 1, 1)),
-        ("1-001", date(2024, 1, 9)),
-        ("1-002", date(2024, 1, 9)),
-    ]
-
-    # fmt: off
-    calculate_expected_size_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, ["Name"], ["Specialism Name"]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, ["Name"], None), # filtered - null specialism
-        ("1-003", date(2024, 1, 1), CareHome.not_care_home, None, ["Specialism Name"]), # filtered - null service
-        ("1-004", date(2024, 1, 1), CareHome.care_home, ["Name"], ["Specialism Name"]), # filtered - care home
-        ("1-005", date(2025, 1, 2), CareHome.not_care_home, ["Name"], ["Specialism Name"]), # filtered - date after 1/1/2025
-    ]
-    # fmt: on
-
-
-@dataclass
-class ModelFeatures:
-    vectorise_input_rows = [
-        ("1-0001", 12.0, 0, 1, date(2024, 1, 1)),
-        ("1-0002", 50.0, 1, 1, date(2024, 1, 1)),
-    ]
-    expected_vectorised_feature_rows = [
-        ("1-0001", Vectors.dense([12.0, 0.0, 1.0])),
-        ("1-0002", Vectors.dense([50.0, 1.0, 1.0])),
-    ]
-
-    expand_encode_and_extract_features_lookup_dict = {
-        "has_A": "A",
-        "has_B": "B",
-        "has_C": "C",
-    }
-    expected_expand_encode_and_extract_features_feature_list = [
-        "has_A",
-        "has_B",
-        "has_C",
-    ]
-
-    expand_encode_and_extract_features_when_not_array_rows = [
-        ("1-0001", "A"),
-        ("1-0002", "C"),
-        ("1-0003", "B"),
-        ("1-0004", "D"),
-        ("1-0005", None),
-    ]
-    expected_expand_encode_and_extract_features_when_not_array_rows = [
-        ("1-0001", "A", 1, 0, 0),
-        ("1-0002", "C", 0, 0, 1),
-        ("1-0003", "B", 0, 1, 0),
-        ("1-0004", "D", 0, 0, 0),
-        ("1-0005", None, None, None, None),
-    ]
-
-    expand_encode_and_extract_features_when_is_array_rows = [
-        ("1-0001", ["A", "B"]),
-        ("1-0002", ["B"]),
-        ("1-0003", ["C", "A"]),
-        ("1-0004", ["B", "D"]),
-        ("1-0005", None),
-    ]
-    expected_expand_encode_and_extract_features_when_is_array_rows = [
-        ("1-0001", ["A", "B"], 1, 1, 0),
-        ("1-0002", ["B"], 0, 1, 0),
-        ("1-0003", ["C", "A"], 1, 0, 1),
-        ("1-0004", ["B", "D"], 0, 1, 0),
-        ("1-0005", None, None, None, None),
-    ]
-
-    cap_integer_at_max_value_rows = [
-        ("1-0001", 1),
-        ("1-0002", 2),
-        ("1-0003", 3),
-        ("1-0004", None),
-    ]
-    expected_cap_integer_at_max_value_rows = [
-        ("1-0001", 1, 1),
-        ("1-0002", 2, 2),
-        ("1-0003", 3, 2),
-        ("1-0004", None, None),
-    ]
-
-    add_array_column_count_with_one_element_rows = [
-        ("1-001", ["name"]),
-    ]
-    expected_add_array_column_count_with_one_element_rows = [
-        ("1-001", ["name"], 1),
-    ]
-
-    add_array_column_count_with_multiple_elements_rows = [
-        ("1-001", ["name_1", "name_2", "name_3"]),
-    ]
-    expected_add_array_column_count_with_multiple_elements_rows = [
-        ("1-001", ["name_1", "name_2", "name_3"], 3),
-    ]
-
-    add_array_column_count_with_empty_array_rows = [
-        ("1-001", []),
-    ]
-    expected_add_array_column_count_with_empty_array_rows = [
-        ("1-001", [], 0),
-    ]
-
-    add_array_column_count_with_null_value_rows = [
-        ("1-001", None),
-    ]
-    expected_add_array_column_count_with_null_value_rows = [
-        ("1-001", None, 0),
-    ]
-
-    add_date_index_column_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 10, 1)),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0003", CareHome.not_care_home, date(2024, 12, 1)),
-        ("1-0004", CareHome.not_care_home, date(2025, 2, 1)),
-        ("1-0005", CareHome.care_home, date(2025, 2, 1)),
-    ]
-    expected_add_date_index_column_rows = [
-        ("1-0001", CareHome.not_care_home, date(2024, 10, 1), 1),
-        ("1-0002", CareHome.not_care_home, date(2024, 12, 1), 2),
-        ("1-0003", CareHome.not_care_home, date(2024, 12, 1), 2),
-        ("1-0004", CareHome.not_care_home, date(2025, 2, 1), 3),
-        ("1-0005", CareHome.care_home, date(2025, 2, 1), 1),
-    ]
-
-    group_rural_urban_sparse_categories_rows = [
-        ("1-001", "Rural"),
-        ("1-002", "Rural sparse"),
-        ("1-003", "Another with sparse in it"),
-        ("1-004", "Urban"),
-        ("1-005", "Sparse with a capital S"),
-    ]
-    expected_group_rural_urban_sparse_categories_rows = [
-        ("1-001", "Rural", "Rural"),
-        ("1-002", "Rural sparse", "Sparse setting"),
-        ("1-003", "Another with sparse in it", "Sparse setting"),
-        ("1-004", "Urban", "Urban"),
-        ("1-005", "Sparse with a capital S", "Sparse setting"),
-    ]
-
-    filter_without_dormancy_features_to_pre_2025_rows = [
-        ("1-001", date(2024, 12, 31)),
-        ("1-002", date(2025, 1, 1)),
-        ("1-003", date(2025, 1, 2)),
-    ]
-    expected_filter_without_dormancy_features_to_pre_2025_rows = [
-        ("1-001", date(2024, 12, 31)),
-        ("1-002", date(2025, 1, 1)),
-    ]
-
-    add_squared_column_rows = [
-        ("1-001", None),
-        ("1-002", 0.0),
-        ("1-003", 2.0),
-        ("1-004", 4.0),
-    ]
-    expected_add_squared_column_rows = [
-        ("1-001", None, None),
-        ("1-002", 0.0, 0.0),
-        ("1-003", 2.0, 4.0),
-        ("1-004", 4.0, 16.0),
-    ]
-
-
-@dataclass
-class ModelCareHomes:
-    care_homes_cleaned_ind_cqc_rows = [
-        (
-            "1-000000001",
-            "Care home with nursing",
-            None,
-            None,
-            "Y",
-            "South West",
-            67,
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000002",
-            "Care home without nursing",
-            None,
-            None,
-            "N",
-            "Merseyside",
-            12,
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000003",
-            "Care home with nursing",
-            None,
-            None,
-            None,
-            "Merseyside",
-            34,
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000004",
-            "non-residential",
-            10.0,
-            "already_populated",
-            "N",
-            None,
-            0,
-            date(2022, 3, 29),
-        ),
-        ("1-000000001", "non-residential", None, None, "N", None, 0, date(2022, 2, 20)),
-    ]
-    care_homes_features_rows = [
-        (
-            "1-000000001",
-            date(2022, 3, 29),
-            10,
-            62.0,
-            Vectors.sparse(39, {0: 1.0, 1: 1.2, 2: 1.0, 3: 50.0}),
-        ),
-        (
-            "1-000000003",
-            date(2022, 3, 29),
-            15,
-            45.0,
-            None,
-        ),
-    ]
-
-
-@dataclass
 class ModelPrimaryServiceRateOfChange:
     # fmt: off
     primary_service_rate_of_change_rows = [
-        ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 3.0),
-        ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 1.0, 2.8),
-        ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 1.0, 3.4),
-        ("1-001", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 1.0, 3.2),
-        ("1-002", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 2.0),
-        ("1-002", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 1.0, None),
-        ("1-002", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 1.0, None),
-        ("1-002", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 1.0, 3.2),
-        ("1-003", CareHome.not_care_home, 1704067200, PrimaryServiceType.non_residential, None, 0.0, 40.0),
-        ("1-003", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 50.0),
-        ("1-004", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 60.0),
-        ("1-005", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 4.0),
-        ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 50.0),
-    ]
-    expected_primary_service_rate_of_change_rows = [
-        ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 3.0, 1.0),
-        ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 1.0, 2.8, 1.03999),
-        ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 1.0, 3.4, 1.1176),
-        ("1-001", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 1.0, 3.2, 1.0854),
-        ("1-002", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 2.0, 1.0),
-        ("1-002", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 1.0, None, 1.03999),
-        ("1-002", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 1.0, None, 1.1176),
-        ("1-002", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 1.0, 3.2, 1.0854),
-        ("1-003", CareHome.not_care_home, 1704067200, PrimaryServiceType.non_residential, None, 0.0, 40.0, 1.0),
-        ("1-003", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 50.0, 1.25),
-        ("1-004", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 60.0, 1.25),
-        ("1-005", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 1.0, 4.0, 1.0),
-        ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 0.0, 50.0, 1.25),
+        ("1-001", CareHome.care_home, 100000, PrimaryServiceType.care_home_only, 10, 1.0, 3.0, 1),
+        ("1-001", CareHome.care_home, 200000, PrimaryServiceType.care_home_only, 10, 1.0, 2.8, 1),
+        ("1-001", CareHome.care_home, 300000, PrimaryServiceType.care_home_only, 10, 1.0, 3.4, 1),
+        ("1-001", CareHome.care_home, 400000, PrimaryServiceType.care_home_only, 10, 1.0, 3.2, 1),
+        ("1-002", CareHome.care_home, 100000, PrimaryServiceType.care_home_only, 10, 1.0, 2.0, 1),
+        ("1-002", CareHome.care_home, 200000, PrimaryServiceType.care_home_only, 10, 1.0, None, 1),
+        ("1-002", CareHome.care_home, 300000, PrimaryServiceType.care_home_only, 10, 1.0, None, 1),
+        ("1-002", CareHome.care_home, 400000, PrimaryServiceType.care_home_only, 10, 1.0, 3.2, 1),
+        ("1-003", CareHome.not_care_home, 100000, PrimaryServiceType.non_residential, None, 0.0, 40.0, 1),
+        ("1-003", CareHome.not_care_home, 200000, PrimaryServiceType.non_residential, None, 0.0, 50.0, 1),
+        ("1-004", CareHome.not_care_home, 200000, PrimaryServiceType.non_residential, None, 0.0, 60.0, 1),
+        ("1-005", CareHome.care_home, 100000, PrimaryServiceType.care_home_only, 10, 1.0, 4.0, 2),
+        ("1-005", CareHome.not_care_home, 200000, PrimaryServiceType.non_residential, None, 0.0, 50.0, 2),
     ]
     # fmt: on
-
-    clean_column_with_values_rows = [
-        ("1-001", 1000000001, CareHome.care_home, 10.0),
-        ("1-001", 1000000002, CareHome.care_home, None),
-        ("1-001", 1000000003, CareHome.care_home, 10.0),
-    ]
-    expected_clean_column_with_values_rows = [
-        ("1-001", 1000000001, CareHome.care_home, 10.0, 1, 2),
-        ("1-001", 1000000002, CareHome.care_home, None, 1, 2),
-        ("1-001", 1000000003, CareHome.care_home, 10.0, 1, 2),
+    expected_primary_service_rate_of_change_rows = [
+        (PrimaryServiceType.care_home_only, 1.0, 200000, 1.03999),
+        (PrimaryServiceType.care_home_only, 1.0, 300000, 1.1176),
+        (PrimaryServiceType.care_home_only, 1.0, 400000, 1.0854),
+        (PrimaryServiceType.non_residential, None, 200000, 1.25),
     ]
 
-    clean_column_with_values_one_submission_rows = [
-        ("1-001", 1000000001, CareHome.care_home, 10.0),
-        ("1-001", 1000000002, CareHome.care_home, None),
+    eligible_location_rows = [
+        ("1-001", 100000, CareHome.care_home, 1, 10.0, 2),
+        ("1-001", 200000, CareHome.care_home, 1, None, 2),
+        ("1-001", 300000, CareHome.care_home, 1, 10.0, 2),
+        ("1-001", 400000, CareHome.care_home, 1, None, 2),
     ]
-    expected_clean_column_with_values_one_submission_rows = [
-        ("1-001", 1000000001, CareHome.care_home, None, 1, 1),
-        ("1-001", 1000000002, CareHome.care_home, None, 1, 1),
+    remove_ineligible_locations_with_one_submission_rows = [
+        ("1-001", 100000, CareHome.care_home, 1, 10.0, 1),
+        ("1-001", 200000, CareHome.care_home, 1, None, 1),
     ]
-
-    clean_column_with_values_both_statuses_rows = [
-        ("1-001", 1000000001, CareHome.care_home, 10.0),
-        ("1-001", 1000000002, CareHome.care_home, 10.0),
-        ("1-001", 1000000003, CareHome.not_care_home, 10.0),
-    ]
-    expected_clean_column_with_values_both_statuses_rows = [
-        ("1-001", 1000000001, CareHome.care_home, None, 2, 2),
-        ("1-001", 1000000002, CareHome.care_home, None, 2, 2),
-        ("1-001", 1000000003, CareHome.not_care_home, None, 2, 1),
-    ]
-
-    calculate_care_home_status_count_rows = [
-        ("1-001", CareHome.care_home),
-        ("1-001", CareHome.care_home),
-        ("1-002", CareHome.care_home),
-        ("1-002", CareHome.not_care_home),
-    ]
-    expected_calculate_care_home_status_count_rows = [
-        ("1-001", CareHome.care_home, 1),
-        ("1-001", CareHome.care_home, 1),
-        ("1-002", CareHome.care_home, 2),
-        ("1-002", CareHome.not_care_home, 2),
+    remove_ineligible_locations_with_multiple_statuses_rows = [
+        ("1-001", 100000, CareHome.care_home, 2, 10.0, 2),
+        ("1-001", 200000, CareHome.care_home, 2, 10.0, 2),
+        ("1-001", 300000, CareHome.not_care_home, 2, 10.0, 1),
     ]
 
     calculate_submission_count_same_care_home_status_rows = [
@@ -4574,76 +4145,167 @@ class ModelPrimaryServiceRateOfChange:
         ("1-001", CareHome.care_home, 10.0, 2),
     ]
 
-    interpolate_column_with_values_rows = [
-        ("1-001", 1704067200, 30.0),
-        ("1-001", 1704153600, None),
-        ("1-001", 1704240000, 34.0),
-        ("1-001", 1704326400, None),
+    interpolate_current_values_rows = [
+        ("1-001", 100000, 30.0),
+        ("1-001", 200000, None),
+        ("1-001", 300000, 34.0),
+        ("1-001", 400000, None),
     ]
-    expected_interpolate_column_with_values_rows = [
-        ("1-001", 1704067200, 30.0, 30.0),
-        ("1-001", 1704153600, None, 32.0),
-        ("1-001", 1704240000, 34.0, 34.0),
-        ("1-001", 1704326400, None, None),
+    expected_interpolate_current_values_rows = [
+        ("1-001", 100000, 30.0, 30.0),
+        ("1-001", 200000, None, 32.0),
+        ("1-001", 300000, 34.0, 34.0),
+        ("1-001", 400000, None, None),
     ]
 
     add_previous_value_column_rows = [
-        ("1-001", 1672531200, 1.1),
-        ("1-001", 1672617600, 1.2),
-        ("1-001", 1672704000, 1.3),
-        ("1-001", 1672790400, 1.4),
-        ("1-002", 1672617600, 10.2),
-        ("1-002", 1672704000, 10.3),
+        ("1-001", 100000, 1.1),
+        ("1-001", 200000, 1.2),
+        ("1-001", 300000, None),
+        ("1-001", 400000, 1.4),
+        ("1-001", 500000, 1.5),
+        ("1-002", 200000, 10.2),
+        ("1-002", 300000, 10.3),
     ]
     expected_add_previous_value_column_rows = [
-        ("1-001", 1672531200, 1.1, None),
-        ("1-001", 1672617600, 1.2, 1.1),
-        ("1-001", 1672704000, 1.3, 1.2),
-        ("1-001", 1672790400, 1.4, 1.3),
-        ("1-002", 1672617600, 10.2, None),
-        ("1-002", 1672704000, 10.3, 10.2),
+        ("1-001", 100000, 1.1, None),
+        ("1-001", 200000, 1.2, 1.1),
+        ("1-001", 300000, None, 1.2),
+        ("1-001", 400000, 1.4, None),
+        ("1-001", 500000, 1.5, 1.4),
+        ("1-002", 200000, 10.2, None),
+        ("1-002", 300000, 10.3, 10.2),
     ]
 
-    # fmt: off
-    add_rolling_sum_columns_rows = [
-        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.1, None),
-        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.2, 1.1),
-        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672704000, 1.3, 1.2),
-        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672790400, None, 1.3),
-        ("1-002", PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.4, None),
-        ("1-002", PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.3, 1.4),
-        ("1-003", PrimaryServiceType.care_home_only, 2.0, 1672531200, 1.5, None),
-        ("1-003", PrimaryServiceType.care_home_only, 2.0, 1672617600, 1.6, 1.5),
-        ("1-004", PrimaryServiceType.non_residential, 0.0, 1672531200, 10.0, None),
-        ("1-004", PrimaryServiceType.non_residential, 0.0, 1672617600, 20.0, 10.0),
-        ("1-004", PrimaryServiceType.non_residential, 0.0, 1672704000, 30.0, 20.0),
+    calculate_primary_service_rolling_sums_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 100000, 1.1, None),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 200000, 1.2, 1.1),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 300000, 1.3, 1.2),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 400000, None, 1.3),
+        ("1-002", PrimaryServiceType.care_home_only, 1.0, 100000, 1.4, None),
+        ("1-002", PrimaryServiceType.care_home_only, 1.0, 200000, 1.3, 1.4),
+        ("1-003", PrimaryServiceType.care_home_only, 2.0, 100000, 1.5, None),
+        ("1-003", PrimaryServiceType.care_home_only, 2.0, 200000, 1.6, 1.5),
+        ("1-004", PrimaryServiceType.non_residential, 0.0, 100000, 10.0, None),
+        ("1-004", PrimaryServiceType.non_residential, 0.0, 200000, 20.0, 10.0),
+        ("1-004", PrimaryServiceType.non_residential, 0.0, 300000, 30.0, 20.0),
     ]
-    expected_add_rolling_sum_columns_rows = [
-        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.1, None, None, None),
-        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.2, 1.1, 2.5, 2.5),
-        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672704000, 1.3, 1.2, 3.8, 3.7),
-        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672790400, None, 1.3, 3.8, 3.7),
-        ("1-002", PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.4, None, None, None),
-        ("1-002", PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.3, 1.4, 2.5, 2.5),
-        ("1-003", PrimaryServiceType.care_home_only, 2.0, 1672531200, 1.5, None, None, None),
-        ("1-003", PrimaryServiceType.care_home_only, 2.0, 1672617600, 1.6, 1.5, 1.6, 1.5),
-        ("1-004", PrimaryServiceType.non_residential, 0.0, 1672531200, 10.0, None, None, None),
-        ("1-004", PrimaryServiceType.non_residential, 0.0, 1672617600, 20.0, 10.0, 20.0, 10.0),
-        ("1-004", PrimaryServiceType.non_residential, 0.0, 1672704000, 30.0, 20.0, 50.0, 30.0),
+    expected_calculate_primary_service_rolling_sums_rows = [
+        (PrimaryServiceType.care_home_only, 1.0, 100000, 2.5, 2.5),
+        (PrimaryServiceType.care_home_only, 1.0, 200000, 3.8, 3.7),
+        (PrimaryServiceType.care_home_only, 2.0, 100000, 1.6, 1.5),
+        (PrimaryServiceType.non_residential, 0.0, 100000, 20.0, 10.0),
+        (PrimaryServiceType.non_residential, 0.0, 200000, 50.0, 30.0),
+    ]
+
+    rolling_sums_filtering_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 100000, None, 1.3),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 200000, 1.2, 1.1),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 300000, 1.1, None),
+    ]
+    expected_rolling_sums_filtering_rows = [
+        (PrimaryServiceType.care_home_only, 1.0, 200000, 1.2, 1.1),
+    ]
+
+    rolling_sums_simple_window_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 100000, 1.0, 2.0),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 100001, 3.0, 4.0),
+    ]
+    expected_rolling_sums_simple_window_rows = [
+        (PrimaryServiceType.care_home_only, 1.0, 100000, 1.0, 2.0),
+        (PrimaryServiceType.care_home_only, 1.0, 100001, 4.0, 6.0),
+    ]
+
+    rolling_sums_window_includes_values_within_range_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 100000, 1.0, 2.0),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 300000, 3.0, 4.0),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 500000, 5.0, 6.0),
+    ]
+    expected_rolling_sums_window_includes_values_within_range_rows = [
+        (PrimaryServiceType.care_home_only, 1.0, 100000, 1.0, 2.0),
+        (PrimaryServiceType.care_home_only, 1.0, 300000, 4.0, 6.0),
+        (PrimaryServiceType.care_home_only, 1.0, 500000, 8.0, 10.0),
+    ]
+
+    rolling_sums_window_partitions_correctly_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 100000, 1.0, 2.0),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 200000, 10.0, 20.0),
+        ("1-002", PrimaryServiceType.care_home_only, 2.0, 100000, 3.0, 4.0),
+        ("1-002", PrimaryServiceType.care_home_only, 2.0, 200000, 30.0, 40.0),
+        ("1-003", PrimaryServiceType.non_residential, 1.0, 100000, 5.0, 6.0),
+        ("1-003", PrimaryServiceType.non_residential, 1.0, 200000, 50.0, 60.0),
+    ]
+    expected_rolling_sums_window_partitions_correctly_rows = [
+        (PrimaryServiceType.care_home_only, 1.0, 100000, 1.0, 2.0),
+        (PrimaryServiceType.care_home_only, 1.0, 200000, 11.0, 22.0),
+        (PrimaryServiceType.care_home_only, 2.0, 100000, 3.0, 4.0),
+        (PrimaryServiceType.care_home_only, 2.0, 200000, 33.0, 44.0),
+        (PrimaryServiceType.non_residential, 1.0, 100000, 5.0, 6.0),
+        (PrimaryServiceType.non_residential, 1.0, 200000, 55.0, 66.0),
+    ]
+
+    rolling_sums_deduplication_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 100000, 1.0, 2.0),
+        ("1-002", PrimaryServiceType.care_home_only, 1.0, 100000, 1.0, 2.0),
+        ("1-003", PrimaryServiceType.care_home_only, 2.0, 100000, 1.0, 2.0),
+        ("1-004", PrimaryServiceType.care_home_only, 2.0, 100000, 1.0, 2.0),
+        ("1-005", PrimaryServiceType.non_residential, 1.0, 100000, 1.0, 2.0),
+        ("1-006", PrimaryServiceType.non_residential, 1.0, 100000, 1.0, 2.0),
+        ("1-007", PrimaryServiceType.non_residential, 1.0, 500000, 1.0, 2.0),
+        ("1-008", PrimaryServiceType.non_residential, 1.0, 500000, 1.0, 2.0),
+    ]
+    expected_rolling_sums_deduplication_rows = [
+        (PrimaryServiceType.care_home_only, 1.0, 100000, 2.0, 4.0),
+        (PrimaryServiceType.care_home_only, 2.0, 100000, 2.0, 4.0),
+        (PrimaryServiceType.non_residential, 1.0, 100000, 2.0, 4.0),
+        (PrimaryServiceType.non_residential, 1.0, 500000, 2.0, 4.0),
+    ]
+
+
+@dataclass
+class ModelPrimaryServiceRateOfChangeCleaningData:
+    calculate_absolute_and_percentage_change_rows = [
+        ("1-001", None, 40.0, None, None),
+        ("1-002", 0.0, 40.0, 40.0, None),
+        ("1-003", 40.0, None, None, None),
+        ("1-004", 40.0, 0.0, 40.0, 0.0),
+        ("1-005", 40.0, 20.0, 20.0, 0.5),
+        ("1-006", 40.0, 40.0, 0.0, 1.0),
+        ("1-007", 40.0, 80.0, 40.0, 2.0),
+    ]
+
+    compute_non_res_threshold_valid_rows = [
+        ("1-001", CareHome.not_care_home, 20.0, 25.0, 5.0, 1.25),
+        ("1-002", CareHome.not_care_home, 30.0, 45.0, 15.0, 1.5),
+        ("1-003", CareHome.not_care_home, 15.0, 18.0, 3.0, 1.2),
+    ]
+    # fmt: off
+    compute_non_res_threshold_invalid_rows = [
+        ("1-004", CareHome.care_home, 2.0, 200.0, 198.0, 100.0), # exclude care home
+        ("1-005", CareHome.not_care_home, None, 100.0, 100.0, 100.0), # exclude null prev value
+        ("1-006", CareHome.not_care_home, 100.0, None, 100.0, 100.0), # exclude null curr value
+        ("1-007", CareHome.not_care_home, 5.0, 6.0, 1.0, 1.2), # exclude when curr and prev below 10
+        ("1-008", CareHome.not_care_home, 50.0, 50.0, 0.0, 1.0), # exclude when curr = prev
+    ]
+    # fmt: on
+    compute_non_res_threshold_with_invalid_rows = (
+        compute_non_res_threshold_valid_rows + compute_non_res_threshold_invalid_rows
+    )
+
+    # fmt: off
+    build_keep_condition_rows = [
+        ("1-001", CareHome.care_home, 100.0, 200.0, 100.0, 2.0, True), # care home
+        ("1-002", CareHome.not_care_home, 5.0, 8.0, 3.0, 1.6, True), # both values below 10
+        ("1-003", CareHome.not_care_home, 100.0, 120.0, 20.0, 1.2, True), # changes within thresholds
+        ("1-004", CareHome.not_care_home, 100.0, 200.0, 100.0, 2.0, False), # abs change too large
+        ("1-005", CareHome.not_care_home, 100.0, 260.0, 160.0, 2.6, False), # perc change too large
+        ("1-006", CareHome.not_care_home, 100.0, 40.0, 60.0, 0.4, False), # perc change too small
     ]
     # fmt: on
 
-    calculate_rate_of_change_rows = [
-        ("1-001", 12.0, 10.0),
-        ("1-002", 15.0, None),
-        ("1-003", None, 20.0),
-        ("1-004", None, None),
-    ]
-    expected_calculate_rate_of_change_rows = [
-        ("1-001", 12.0, 10.0, 1.2),
-        ("1-002", 15.0, None, 1.0),
-        ("1-003", None, 20.0, 1.0),
-        ("1-004", None, None, 1.0),
+    apply_rate_of_change_cleaning_rows = [
+        ("1-001", 1.0, 10.0, True, 1.0, 10.0),
+        ("1-002", 1.0, 10.0, False, None, None),
     ]
 
 
@@ -4651,67 +4313,36 @@ class ModelPrimaryServiceRateOfChange:
 class ModelPrimaryServiceRateOfChangeTrendlineData:
     # fmt: off
     primary_service_rate_of_change_trendline_rows = [
-        ("1-001", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.0),
-        ("1-001", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.8),
-        ("1-001", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.4),
-        ("1-001", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2),
-        ("1-002", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.0),
-        ("1-002", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None),
-        ("1-002", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None),
-        ("1-002", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2),
-        ("1-003", 1704067200, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 40.0),
-        ("1-003", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0),
-        ("1-004", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 60.0),
-        ("1-005", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 4.0),
-        ("1-005", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0),
+        ("1-001", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.0, 1),
+        ("1-001", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.8, 1),
+        ("1-001", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.4, 1),
+        ("1-001", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2, 1),
+        ("1-002", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.0, 1),
+        ("1-002", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None, 1),
+        ("1-002", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None, 1),
+        ("1-002", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2, 1),
+        ("1-003", 1704067200, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 40.0, 1),
+        ("1-003", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0, 1),
+        ("1-004", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 60.0, 1),
+        ("1-005", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 4.0, 1),
+        ("1-005", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0, 2),
     ]
     expected_primary_service_rate_of_change_trendline_rows = [
-        ("1-001", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.0, 1.0),
-        ("1-001", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.8, 1.03999),
-        ("1-001", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.4, 1.16235),
-        ("1-001", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2, 1.26158),
-        ("1-002", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.0, 1.0),
-        ("1-002", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None, 1.03999),
-        ("1-002", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None, 1.16235),
-        ("1-002", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2, 1.26158),
-        ("1-003", 1704067200, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 40.0, 1.0),
-        ("1-003", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0, 1.25),
-        ("1-004", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 60.0, 1.25),
-        ("1-005", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 4.0, 1.0),
-        ("1-005", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0, 1.25),
+        ("1-001", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.0, 1, 1.0),
+        ("1-001", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.8, 1, 1.03999),
+        ("1-001", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.4, 1, 1.16235),
+        ("1-001", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2, 1, 1.26158),
+        ("1-002", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 2.0, 1, 1.0),
+        ("1-002", 1704153600, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None, 1, 1.03999),
+        ("1-002", 1704240000, CareHome.care_home, 10, PrimaryServiceType.care_home_only, None, 1, 1.16235),
+        ("1-002", 1704326400, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 3.2, 1, 1.26158),
+        ("1-003", 1704067200, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 40.0, 1, 1.0),
+        ("1-003", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0, 1, 1.25),
+        ("1-004", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 60.0, 1, 1.25),
+        ("1-005", 1704067200, CareHome.care_home, 10, PrimaryServiceType.care_home_only, 4.0, 1, 1.0),
+        ("1-005", 1704153600, CareHome.not_care_home, None, PrimaryServiceType.non_residential, 50.0, 2, 1.25),
     ]
     # fmt: on
-
-    calculate_rate_of_change_trendline_mock_rows = [
-        (PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.0),
-        (PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.5),
-        (PrimaryServiceType.care_home_only, 1.0, 1672704000, 3.0),
-        (PrimaryServiceType.care_home_only, 1.0, 1672790400, 4.5),
-        (PrimaryServiceType.non_residential, 0.0, 1672531200, 1.0),
-        (PrimaryServiceType.non_residential, 0.0, 1672617600, 1.2),
-        (PrimaryServiceType.non_residential, 0.0, 1672704000, 1.2),
-        (PrimaryServiceType.non_residential, 0.0, 1672790400, 1.8),
-    ]
-
-    deduplicate_dataframe_rows = [
-        (PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.0, 2.0),
-        (PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.1, 2.0),
-        (PrimaryServiceType.care_home_only, 1.0, 1672704000, 1.2, 2.0),
-        (PrimaryServiceType.care_home_only, 1.0, 1672790400, 1.3, 2.0),
-        (PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.0, 2.0),
-        (PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.1, 2.0),
-        (PrimaryServiceType.care_home_only, 2.0, 1672531200, 1.0, 2.0),
-        (PrimaryServiceType.non_residential, 0.0, 1672617600, 10.0, 2.0),
-        (PrimaryServiceType.non_residential, 0.0, 1672617600, 10.0, 2.0),
-    ]
-    expected_deduplicate_dataframe_rows = [
-        (PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.0),
-        (PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.1),
-        (PrimaryServiceType.care_home_only, 1.0, 1672704000, 1.2),
-        (PrimaryServiceType.care_home_only, 1.0, 1672790400, 1.3),
-        (PrimaryServiceType.care_home_only, 2.0, 1672531200, 1.0),
-        (PrimaryServiceType.non_residential, 0.0, 1672617600, 10.0),
-    ]
 
     calculate_rate_of_change_trendline_rows = [
         (PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.0),
@@ -4901,16 +4532,28 @@ class ModelExtrapolation:
         ("1-004", 1677628800, None, 20.0),
     ]
     # fmt: off
-    expected_extrapolation_forwards_rows = [
+    expected_extrapolation_forwards_when_nominal_rows = [
+        ("1-001", 1672531200, 15.0, 10.0, None),
+        ("1-001", 1675209600, None, 20.0, 25.0),
+        ("1-001", 1677628800, 30.0, 30.0, 35.0),
+        ("1-002", 1672531200, None, 10.0, None),
+        ("1-002", 1675209600, 10.0, 20.0, None),
+        ("1-002", 1677628800, None, 30.0, 20.0),
+        ("1-002", 1677629000, None, 100.0, 90.0),
+        ("1-003", 1672531200, 20.0, 100.0, None),
+        ("1-003", 1675209600, None, 20.0, -60.0),
+        ("1-004", 1677628800, None, 20.0, None),
+    ]
+    expected_extrapolation_forwards_when_ratio_rows = [
         ("1-001", 1672531200, 15.0, 10.0, None),
         ("1-001", 1675209600, None, 20.0, 30.0),
         ("1-001", 1677628800, 30.0, 30.0, 45.0),
         ("1-002", 1672531200, None, 10.0, None),
         ("1-002", 1675209600, 10.0, 20.0, None),
         ("1-002", 1677628800, None, 30.0, 15.0),
-        ("1-002", 1677629000, None, 100.0, 40.0),  # capped at upper cutoff
+        ("1-002", 1677629000, None, 100.0, 50.0),
         ("1-003", 1672531200, 20.0, 100.0, None),
-        ("1-003", 1675209600, None, 20.0, 5.0),  # capped at lower cutoff
+        ("1-003", 1675209600, None, 20.0, 4.0),
         ("1-004", 1677628800, None, 20.0, None),
     ]
     # fmt: on
@@ -4927,22 +4570,35 @@ class ModelExtrapolation:
         ("1-002", 1677628800, None, 1675209600, 1675209600, 30.0),
         ("1-003", 1672531200, None, 1675209600, 1675209600, 1.0),
         ("1-003", 1675209600, 20.0, 1675209600, 1675209600, 20.0),
-        ("1-004", 1672531200, None, 1675209600, 1675209600, 100.0),
-        ("1-004", 1675209600, 20.0, 1675209600, 1675209600, 20.0),
+        ("1-004", 1672531200, None, 1675209600, 1675209600, 50.0),
+        ("1-004", 1675209600, 20.0, 1675209600, 1675209600, 10.0),
         ("1-005", 1677628800, None, None, None, 20.0),
     ]
     # fmt: off
-    expected_extrapolation_backwards_rows = [
+    expected_extrapolation_backwards_when_nominal_rows = [
+        ("1-001", 1672531200, 15.0, 1672531200, 1677628800, 10.0, None),
+        ("1-001", 1675209600, None, 1672531200, 1677628800, 20.0, None),
+        ("1-001", 1677628800, 30.0, 1672531200, 1677628800, 30.0, None),
+        ("1-002", 1672531200, None, 1675209600, 1675209600, 10.0, 0.0),
+        ("1-002", 1675209600, 10.0, 1675209600, 1675209600, 20.0, None),
+        ("1-002", 1677628800, None, 1675209600, 1675209600, 30.0, None),
+        ("1-003", 1672531200, None, 1675209600, 1675209600, 1.0, 1.0),
+        ("1-003", 1675209600, 20.0, 1675209600, 1675209600, 20.0, None),
+        ("1-004", 1672531200, None, 1675209600, 1675209600, 50.0, 60.0),
+        ("1-004", 1675209600, 20.0, 1675209600, 1675209600, 10.0, None),
+        ("1-005", 1677628800, None, None, None, 20.0, None),
+    ]
+    expected_extrapolation_backwards_when_ratio_rows = [
         ("1-001", 1672531200, 15.0, 1672531200, 1677628800, 10.0, None),
         ("1-001", 1675209600, None, 1672531200, 1677628800, 20.0, None),
         ("1-001", 1677628800, 30.0, 1672531200, 1677628800, 30.0, None),
         ("1-002", 1672531200, None, 1675209600, 1675209600, 10.0, 5.0),
         ("1-002", 1675209600, 10.0, 1675209600, 1675209600, 20.0, None),
         ("1-002", 1677628800, None, 1675209600, 1675209600, 30.0, None),
-        ("1-003", 1672531200, None, 1675209600, 1675209600, 1.0, 5.0),  # capped at lower cutoff
+        ("1-003", 1672531200, None, 1675209600, 1675209600, 1.0, 1.0),
         ("1-003", 1675209600, 20.0, 1675209600, 1675209600, 20.0, None),
-        ("1-004", 1672531200, None, 1675209600, 1675209600, 100.0, 80.0),  # capped at upper cutoff
-        ("1-004", 1675209600, 20.0, 1675209600, 1675209600, 20.0, None),
+        ("1-004", 1672531200, None, 1675209600, 1675209600, 50.0, 100.0),
+        ("1-004", 1675209600, 20.0, 1675209600, 1675209600, 10.0, None),
         ("1-005", 1677628800, None, None, None, 20.0, None),
     ]
     # fmt: on
@@ -5069,120 +4725,6 @@ class ModelInterpolation:
         ("1-001", 432000, None, 20.0, 10.0, 345600, 0.75, None),
         ("1-001", 518400, 30.0, 20.0, 10.0, None, None, None),
         ("1-001", 604800, None, None, None, None, None, None),
-    ]
-
-
-@dataclass
-class ModelNonResWithDormancy:
-    non_res_with_dormancy_cleaned_ind_cqc_rows = [
-        (
-            "1-000000001",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            "Y",
-            "South West",
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000002",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            "N",
-            "Merseyside",
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000003",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            None,
-            "Merseyside",
-            date(2022, 3, 29),
-        ),
-    ]
-    non_res_with_dormancy_features_rows = [
-        (
-            "1-000000001",
-            date(2022, 3, 29),
-            10.0,
-            Vectors.sparse(
-                32,
-                {
-                    0: 1.0,
-                    1: 1.0,
-                    4: 17.5,
-                    10: 1.0,
-                    18: 1.0,
-                    31: 35.0,
-                },
-            ),
-        ),
-        (
-            "1-000000003",
-            date(2022, 3, 29),
-            20.0,
-            None,
-        ),
-    ]
-
-
-@dataclass
-class ModelNonResWithoutDormancy:
-    non_res_without_dormancy_cleaned_ind_cqc_rows = [
-        (
-            "1-000000001",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            "Y",
-            "South West",
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000002",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            "N",
-            "Merseyside",
-            date(2022, 3, 29),
-        ),
-        (
-            "1-000000003",
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            None,
-            "Merseyside",
-            date(2022, 3, 29),
-        ),
-    ]
-    non_res_without_dormancy_features_rows = [
-        (
-            "1-000000001",
-            date(2022, 3, 29),
-            10.0,
-            Vectors.sparse(
-                31,
-                {
-                    0: 1.0,
-                    1: 1.0,
-                    3: 17.5,
-                    9: 1.0,
-                    17: 1.0,
-                    30: 35.0,
-                },
-            ),
-        ),
-        (
-            "1-000000003",
-            date(2022, 3, 29),
-            20.0,
-            None,
-        ),
     ]
 
 
@@ -5365,44 +4907,39 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
 
 
 @dataclass
-class MLModelMetrics:
-    ind_cqc_with_predictions_rows = [
-        ("1-00001", "care home", 50.0, "Y", "South West", 67, date(2022, 3, 9), 56.89),
-        ("1-00002", "non-res", 10.0, "N", "North East", 0, date(2022, 3, 9), 12.34),
-    ]
-
-    r2_metric_rows = [
-        ("1-00001", 50.0, 56.89),
-        ("1-00002", 10.0, 12.34),
-    ]
-
-    predictions_rows = [
-        ("1-00001", 50.0, 56.89),
-        ("1-00002", None, 46.80),
-        ("1-00003", 10.0, 12.34),
-    ]
-    expected_predictions_with_dependent_rows = [
-        ("1-00001", 50.0, 56.89),
-        ("1-00003", 10.0, 12.34),
-    ]
-
-
-@dataclass
 class EstimateFilledPostsModelsUtils:
-    cleaned_cqc_rows = ModelCareHomes.care_homes_cleaned_ind_cqc_rows
-
-    predictions_rows = [
-        (
-            "1-000000001",
-            "Care home with nursing",
-            50.0,
-            "Y",
-            "South West",
-            67,
-            date(2022, 3, 29),
-            56.89,
-        ),
+    enrich_model_ind_cqc_rows = [
+        ("1-001", date(2025, 1, 1), CareHome.not_care_home, None),
+        ("1-002", date(2025, 1, 1), CareHome.not_care_home, None),
+        ("1-003", date(2025, 1, 1), CareHome.care_home, 2),
+        ("1-004", date(2025, 1, 1), CareHome.care_home, 2),
     ]
+
+    enrich_model_predictions_care_home_rows = [
+        ("1-003", date(2025, 1, 1), 2, -0.5, "v1_r1"),
+        ("1-004", date(2025, 1, 1), 2, 2.5, "v1_r1"),
+    ]
+    # fmt: off
+    expected_enrich_model_ind_cqc_care_home_rows = [
+        ("1-001", date(2025, 1, 1), CareHome.not_care_home, None, None, None), # no prediction expected
+        ("1-002", date(2025, 1, 1), CareHome.not_care_home, None, None, None), # no prediction expected
+        ("1-003", date(2025, 1, 1), CareHome.care_home, 2, -1.0, "v1_r1"), # prediction (converted to posts) joined in (maintains negative)
+        ("1-004", date(2025, 1, 1), CareHome.care_home, 2, 5.0, "v1_r1"), # prediction (converted to posts) joined in
+    ]
+    # fmt: on
+
+    enrich_model_predictions_non_res_rows = [
+        ("1-001", date(2025, 1, 1), 2, -5.0, "v1_r1"),
+        ("1-002", date(2025, 1, 1), 2, 2.5, "v1_r1"),
+    ]
+    # fmt: off
+    expected_enrich_model_ind_cqc_non_res_rows = [
+        ("1-001", date(2025, 1, 1), CareHome.not_care_home, None, -5.0, "v1_r1"), # prediction joined in (maintains negative)
+        ("1-002", date(2025, 1, 1), CareHome.not_care_home, None, 2.5, "v1_r1"), # prediction joined in
+        ("1-003", date(2025, 1, 1), CareHome.care_home, 2, None, None), # no prediction expected
+        ("1-004", date(2025, 1, 1), CareHome.care_home, 2, None, None), # no prediction expected
+    ]
+    # fmt: on
 
     set_min_value_when_below_minimum_rows = [
         ("1-001", 0.5, -7.5),
@@ -5425,33 +4962,23 @@ class EstimateFilledPostsModelsUtils:
         ("1-001", None, None),
     ]
 
-    convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_rows = [
-        ("1-001", CareHome.care_home, 5, 1.6, 20.0),
-        ("1-002", CareHome.care_home, 5, None, 10.0),
-        ("1-003", CareHome.care_home, None, 1.6, 20.0),
-        ("1-004", CareHome.care_home, None, None, 10.0),
-        ("1-005", CareHome.care_home, 5, 1.8, None),
-        ("1-006", CareHome.care_home, 5, None, None),
-        ("1-007", CareHome.care_home, None, 1.8, None),
-        ("1-008", CareHome.care_home, None, None, None),
-        ("1-009", CareHome.not_care_home, 5, 1.6, 20.0),
-        ("1-010", CareHome.not_care_home, None, None, 10.0),
-        ("1-011", CareHome.not_care_home, 5, 1.6, None),
-        ("1-012", CareHome.not_care_home, None, None, None),
+    join_ind_cqc_rows = [
+        ("1-001", Region.london, 67, date(2022, 2, 20)),
+        ("1-001", Region.london, 67, date(2022, 3, 29)),
+        ("1-002", Region.north_east, 12, date(2022, 3, 29)),
     ]
-    expected_convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_rows = [
-        ("1-001", CareHome.care_home, 5, 1.6, 8.0),
-        ("1-002", CareHome.care_home, 5, None, None),
-        ("1-003", CareHome.care_home, None, 1.6, None),
-        ("1-004", CareHome.care_home, None, None, None),
-        ("1-005", CareHome.care_home, 5, 1.8, 9.0),
-        ("1-006", CareHome.care_home, 5, None, None),
-        ("1-007", CareHome.care_home, None, 1.8, None),
-        ("1-008", CareHome.care_home, None, None, None),
-        ("1-009", CareHome.not_care_home, 5, 1.6, 20.0),
-        ("1-010", CareHome.not_care_home, None, None, 10.0),
-        ("1-011", CareHome.not_care_home, 5, 1.6, None),
-        ("1-012", CareHome.not_care_home, None, None, None),
+    join_prediction_rows = [
+        ("1-001", 67, date(2022, 3, 29), 10.0, "v1.0.0_r2"),
+    ]
+    expected_join_without_run_id_rows = [
+        ("1-001", Region.london, 67, date(2022, 2, 20), None),
+        ("1-001", Region.london, 67, date(2022, 3, 29), 10.0),
+        ("1-002", Region.north_east, 12, date(2022, 3, 29), None),
+    ]
+    expected_join_with_run_id_rows = [
+        ("1-001", Region.london, 67, date(2022, 2, 20), None, None),
+        ("1-001", Region.london, 67, date(2022, 3, 29), 10.0, "v1.0.0_r2"),
+        ("1-002", Region.north_east, 12, date(2022, 3, 29), None, None),
     ]
 
 
@@ -5754,37 +5281,21 @@ class DiagnosticsUtilsData:
 
 @dataclass
 class IndCQCDataUtils:
-    input_rows_for_adding_estimate_filled_posts_and_source = [
-        ("1-000001", 10.0, None, 80.0),
-        ("1-000002", None, 30.0, 50.0),
-        ("1-000003", 20.0, 70.0, 60.0),
-        ("1-000004", None, None, 40.0),
-        ("1-000005", None, 0.5, 40.0),
-        ("1-000006", -1.0, 10.0, 30.0),
+    merge_columns_in_order_when_double_type = [
+        ("1-001", -1.0, 10.0, 30.0),
+        ("1-002", 10.0, None, 80.0),
+        ("1-003", None, 30.0, 50.0),
+        ("1-004", None, 0.5, 40.0),
+        ("1-005", None, None, 40.0),
+        ("1-006", None, None, None),
     ]
-
-    expected_rows_with_estimate_filled_posts_and_source = [
-        ("1-000001", 10.0, None, 80.0, 10.0, "model_name_1"),
-        ("1-000002", None, 30.0, 50.0, 30.0, "model_name_2"),
-        ("1-000003", 20.0, 70.0, 60.0, 20.0, "model_name_1"),
-        ("1-000004", None, None, 40.0, 40.0, "model_name_3"),
-        ("1-000005", None, 0.5, 40.0, 40.0, "model_name_3"),
-        ("1-000006", -1.0, 10.0, 30.0, 10.0, "model_name_2"),
-    ]
-
-    merge_columns_in_order_when_df_has_columns_of_multiple_datatypes = [
-        (
-            "1-000001",
-            10.0,
-            {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
-            },
-        )
-    ]
-
-    merge_columns_in_order_when_columns_are_datatype_string = [
-        ("1-000001", "string", "string")
+    expected_merge_columns_in_order_when_double_type = [
+        ("1-001", -1.0, 10.0, 30.0, -1.0, "model_name_1"),
+        ("1-002", 10.0, None, 80.0, 10.0, "model_name_1"),
+        ("1-003", None, 30.0, 50.0, 30.0, "model_name_2"),
+        ("1-004", None, 0.5, 40.0, 0.5, "model_name_2"),
+        ("1-005", None, None, 40.0, 40.0, "model_name_3"),
+        ("1-006", None, None, None, None, None),
     ]
 
     list_of_map_columns_to_be_merged = [
@@ -5793,90 +5304,30 @@ class IndCQCDataUtils:
     ]
 
     # fmt: off
-    merge_map_columns_in_order_when_only_ascwds_known = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-         None)
-    ]
-    # fmt: on
-
-    # fmt: off
-    expected_merge_map_columns_in_order_when_only_ascwds_known = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-         None,
-         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-         IndCQC.ascwds_job_role_ratios)
-    ]
-    # fmt: on
-
-    # fmt: off
-    merge_map_columns_in_order_when_only_primary_service_known = [
-        ("1-001",
-         None,
-         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4})
-    ]
-    # fmt: on
-
-    # fmt: off
-    expected_merge_map_columns_in_order_when_only_primary_service_known = [
-        ("1-001",
-         None,
-         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
-         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
-         IndCQC.ascwds_job_role_rolling_ratio)
-    ]
-    # fmt: on
-
-    # fmt: off
-    merge_map_columns_in_order_when_both_map_columns_populated = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4})
-    ]
-    # fmt: on
-
-    # fmt: off
-    expected_merge_map_columns_in_order_when_both_map_columns_populated = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
-         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-         IndCQC.ascwds_job_role_ratios)
-    ]
-    # fmt: on
-
-    merge_map_columns_in_order_when_both_null = [("1-001", None, None)]
-    expected_merge_map_columns_in_order_when_both_null = [
-        ("1-001", None, None, None, None)
-    ]
-    # fmt: on
-
-    # fmt: off
-    merge_map_columns_in_order_when_both_map_columns_populated_at_multiple_locations = [
+    merge_columns_in_order_when_map_type = [
         ("1-001",
          {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
          {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4}),
         ("1-002",
-         {MainJobRoleLabels.care_worker: 0.7, MainJobRoleLabels.registered_nurse: 0.3},
+         None,
          {MainJobRoleLabels.care_worker: 0.8, MainJobRoleLabels.registered_nurse: 0.2})
     ]
-    # fmt: on
-
-    # fmt: off
-    expected_merge_map_columns_in_order_when_both_map_columns_populated_at_multiple_locations = [
+    expected_merge_columns_in_order_when_map_type = [
         ("1-001",
          {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
          {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
          {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
          IndCQC.ascwds_job_role_ratios),
         ("1-002",
-         {MainJobRoleLabels.care_worker: 0.7, MainJobRoleLabels.registered_nurse: 0.3},
+         None,
          {MainJobRoleLabels.care_worker: 0.8, MainJobRoleLabels.registered_nurse: 0.2},
-         {MainJobRoleLabels.care_worker: 0.7, MainJobRoleLabels.registered_nurse: 0.3},
-         IndCQC.ascwds_job_role_ratios)
+         {MainJobRoleLabels.care_worker: 0.8, MainJobRoleLabels.registered_nurse: 0.2},
+         IndCQC.ascwds_job_role_rolling_ratio)
     ]
     # fmt: on
+
+    merge_columns_in_order_when_all_null = [("1-001", None, None)]
+    expected_merge_columns_in_order_when_all_null = [("1-001", None, None, None, None)]
 
     test_first_selection_rows = [
         ("loc 1", 1, None, 100.0),
@@ -5899,22 +5350,341 @@ class IndCQCDataUtils:
         ("loc 1", 3, None, 25.0, 50.0),
     ]
 
-
-@dataclass
-class NullCtPostsToBedsOutliers:
-    null_ct_posts_to_beds_outliers_rows = [
-        ("1-001", 1, 1.00),
-        ("1-002", 1, None),
-        ("1-003", None, 1.00),
-        ("1-004", None, None),
-        ("1-005", 1, 0.65),
-        ("1-006", 1, 6.01),
+    nullify_ct_values_previous_to_first_submission_rows = [
+        ("1-001", date(2021, 4, 30), 20.0, 1.6, "str_1"),
+        ("1-002", date(2021, 5, 1), 10.0, 2.6, "str_2"),
     ]
-    expected_null_ct_posts_to_beds_outliers_rows = [
-        ("1-001", 1, 1.00, 1),
-        ("1-002", 1, None, 1),
-        ("1-003", None, 1.00, None),
-        ("1-004", None, None, None),
-        ("1-005", 1, 0.65, None),
-        ("1-006", 1, 6.01, None),
+    expected_nullify_ct_values_previous_to_first_submission_rows = [
+        ("1-001", date(2021, 4, 30), None, 1.6, None),
+        ("1-002", date(2021, 5, 1), 10.0, 2.6, "str_2"),
+    ]
+
+
+# converted to polars -> projects\_03_independent_cqc\unittest_data\polars_ind_cqc_test_file_data.py
+@dataclass
+class CleanCtRepetition:
+    expected_dict_non_residential_locations = {
+        0: 250,
+        10: 125,
+        50: 65,
+    }
+    expected_dict_care_home_locations = {
+        0: 370,
+        10: 155,
+        50: 125,
+        250: 65,
+    }
+
+    # fmt: off
+    clean_ct_values_after_consecutive_repetition_rows = [
+        ("1-001", date(2025, 1, 1), 1, CTFilteringRule.populated),
+        ("1-001", date(2025, 2, 1), 2, CTFilteringRule.populated),
+        ("1-001", date(2025, 3, 1), 2, CTFilteringRule.populated), # Repeated value within repetition limit.
+        ("1-001", date(2025, 4, 1), None, CTFilteringRule.missing_data), # Missing raw data. Could be missing from not being submitted or removed by us for being a spike.
+        ("1-001", date(2025, 11, 7), 2, CTFilteringRule.populated), # 251 days after repeated value's first import date.
+        ("1-001", date(2025, 12, 1), 3, CTFilteringRule.populated),
+        ("1-001", date(2026, 1, 1), 4, "some_other_rule"),
+    ]
+    expected_clean_ct_values_after_consecutive_repetition_rows = [
+        ("1-001", date(2025, 1, 1), 1, CTFilteringRule.populated),
+        ("1-001", date(2025, 2, 1), 2, CTFilteringRule.populated),
+        ("1-001", date(2025, 3, 1), 2, CTFilteringRule.populated),
+        ("1-001", date(2025, 4, 1), None, CTFilteringRule.missing_data),
+        ("1-001", date(2025, 11, 7), None, CTFilteringRule.location_repeats_total_posts), # This row had it's repeated value nulled.
+        ("1-001", date(2025, 12, 1), 3, CTFilteringRule.populated),
+        ("1-001", date(2026, 1, 1), None, "some_other_rule"), # This row had it's value nulled because the filtering rule is not "populated".
+    ]
+    # fmt: on
+
+    calculate_days_a_value_has_been_repeated_rows = [
+        ("1-001", 1, date(2025, 1, 1)),
+        ("1-001", 2, date(2025, 2, 1)),
+        ("1-001", 3, date(2025, 3, 1)),
+        ("1-001", None, date(2025, 4, 1)),
+        ("1-001", None, date(2025, 5, 1)),
+        ("1-001", 4, date(2025, 6, 1)),
+    ]
+    expected_calculate_days_a_value_has_been_repeated_rows = [
+        ("1-001", 1, date(2025, 1, 1), 0),
+        ("1-001", 2, date(2025, 2, 1), 0),
+        ("1-001", 3, date(2025, 3, 1), 0),
+        ("1-001", None, date(2025, 4, 1), 31),
+        ("1-001", None, date(2025, 5, 1), 61),
+        ("1-001", 4, date(2025, 6, 1), 0),
+    ]
+
+    # fmt: off
+    test_repetition_limit_dict = {
+        0: 250,
+        10: 125,
+        50: 65,
+        250: 35,
+    }
+    clean_value_repetition_when_location_is_micro_rows = [
+        ("1-001", 1, 250),
+        ("1-001", 9, 251),
+    ]
+    expected_clean_value_repetition_when_location_is_micro_rows = [
+        ("1-001", 1, 250, 1),
+        ("1-001", 9, 251, None),
+    ]
+    clean_value_repetition_when_location_is_small_rows = [
+        ("1-002", 10, 125),
+        ("1-002", 49, 126),
+    ]
+    expected_clean_value_repetition_when_location_is_small_rows = [
+        ("1-002", 10, 125, 10),
+        ("1-002", 49, 126, None),
+    ]
+    clean_value_repetition_when_location_is_medium_rows = [
+        ("1-003", 50, 65),
+        ("1-003", 51, 66),
+    ]
+    expected_clean_value_repetition_when_location_is_medium_rows = [
+        ("1-003", 50, 65, 50),
+        ("1-003", 51, 66, None),
+    ]
+    clean_value_repetition_when_location_is_large_rows = [
+        ("1-003", 250, 35),
+        ("1-003", 251, 36),
+    ]
+    expected_clean_value_repetition_when_location_is_large_rows = [
+        ("1-003", 250, 35, 250),
+        ("1-003", 251, 36, None),
+    ]
+
+    original_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2026, 1, 7), 1),  # Repeated value after 371 days.
+        ("1-001", date(2026, 2, 1), 2),  # New value submitted.
+        ("1-002", date(2026, 2, 1), 1),  # Different location with a value.
+        ("1-003", date(2026, 2, 1), None),  # Different location with a null.
+    ]
+    populated_only_rows = [
+        ("1-001", date(2025, 1, 1), 1, "something_else"),
+        ("1-001", date(2026, 1, 7), None, "something_else"),
+        ("1-001", date(2026, 2, 1), 2, "something_else"),
+        ("1-002", date(2026, 2, 1), 1, "something_else"),
+    ]
+    expected_populated_only_joined_with_original_rows = [
+        ("1-001", date(2025, 1, 1), 1),
+        ("1-001", date(2026, 1, 7), None),  # Repeated value after 371 days has been nulled.
+        ("1-001", date(2026, 2, 1), 2),  # New value submitted has been kept.
+        ("1-002", date(2026, 2, 1), 1),  # Different location with a value has been kept.
+        ("1-003", date(2026, 2, 1), None),  # Different location with a null is still null.
+    ]
+    # fmt: on
+
+
+# converted to polars -> projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas.ForwardFillLatestKnownValue
+@dataclass
+class ForwardFillLatestKnownValue:
+    expected_size_based_forward_fill_days_dict = {
+        -math.inf: 250,
+        10: 125,
+        50: 65,
+    }
+
+    TEST_SIZE_BASED_FORWARD_FILL_DAYS = {
+        -math.inf: 1,
+        2: 2,
+        4: 3,
+    }
+    size_based_forward_fill_days_rows = [
+        ("loc-1", -1),
+        ("loc-2", 1),
+        ("loc-3", 2),
+        ("loc-4", 3),
+        ("loc-5", 4),
+        ("loc-6", None),
+    ]
+    expected_size_based_forward_fill_days_rows = [
+        ("loc-1", -1, 1),
+        ("loc-2", 1, 1),
+        ("loc-3", 2, 2),
+        ("loc-4", 3, 2),
+        ("loc-5", 4, 3),
+        ("loc-6", None, None),
+    ]
+
+    last_known_latest_per_location_rows = [
+        ("loc-1", date(2025, 1, 1), 10),
+        ("loc-1", date(2025, 1, 2), 20),
+        ("loc-1", date(2025, 1, 3), 15),
+        ("loc-2", date(2025, 1, 1), 5),
+        ("loc-2", date(2025, 1, 3), 15),
+        ("loc-2", date(2025, 1, 4), 12),
+    ]
+    expected_last_known_latest_per_location_rows = [
+        ("loc-1", date(2025, 1, 3), 15),
+        ("loc-2", date(2025, 1, 4), 12),
+    ]
+
+    last_known_ignores_null_rows = [
+        ("loc-1", date(2025, 1, 1), 10),
+        ("loc-1", date(2025, 1, 2), None),
+        ("loc-1", date(2025, 1, 3), None),
+        ("loc-2", date(2025, 1, 1), None),
+        ("loc-2", date(2025, 1, 3), 15),
+    ]
+    expected_last_known_ignores_null_rows = [
+        ("loc-1", date(2025, 1, 1), 10),
+        ("loc-2", date(2025, 1, 3), 15),
+    ]
+
+    forward_fill_within_days_rows = [
+        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 2), None, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 1), 100, 2),
+    ]
+    expected_forward_fill_within_days_rows = [
+        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 2), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 3), 100, date(2025, 1, 1), 100, 2),
+    ]
+
+    forward_fill_beyond_days_rows = [
+        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 100, 2),
+    ]
+    expected_forward_fill_beyond_days_rows = [
+        ("loc-1", date(2025, 1, 1), 100, date(2025, 1, 1), 100, 2),
+        ("loc-1", date(2025, 1, 4), None, date(2025, 1, 1), 100, 2),
+    ]
+
+    forward_fill_before_last_known_rows = [
+        ("loc-1", date(2025, 1, 1), None, date(2025, 1, 4), 20, 2),
+        ("loc-1", date(2025, 1, 2), 20, date(2025, 1, 4), 20, 2),
+        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 4), 20, 2),
+        ("loc-1", date(2025, 1, 4), 30, date(2025, 1, 4), 20, 2),
+    ]
+
+
+# converted to polars -> projects\_03_independent_cqc\unittest_data\polars_ind_cqc_test_file_data.py
+@dataclass
+class OutlierCleaningData:
+
+    no_outliers_input_rows = [
+        ("1-001", 10, CTFilteringRule.populated),
+        ("1-001", 11, CTFilteringRule.populated),
+        ("1-001", 12, CTFilteringRule.populated),
+        ("1-001", 13, CTFilteringRule.populated),
+        ("1-002", 50, CTFilteringRule.populated),
+        ("1-002", 50, CTFilteringRule.populated),
+        ("1-002", 51, CTFilteringRule.populated),
+        ("1-002", 51, CTFilteringRule.populated),
+    ]
+
+    clean_longitudinal_outliers_input_rows = [
+        ("1-001", 5, CTFilteringRule.populated),
+        ("1-001", 10, CTFilteringRule.populated),
+        ("1-001", 15, CTFilteringRule.populated),
+        ("1-001", 80, CTFilteringRule.populated),
+        ("1-002", 95, CTFilteringRule.populated),
+        ("1-002", 20, CTFilteringRule.populated),
+        ("1-002", 90, CTFilteringRule.populated),
+        ("1-003", 40, CTFilteringRule.populated),
+        ("1-003", 45, CTFilteringRule.populated),
+        ("1-003", 50, CTFilteringRule.populated),
+        (
+            "1-004",
+            5,
+            CTFilteringRule.populated,
+        ),
+        ("1-004", 10, CTFilteringRule.populated),
+        ("1-004", 15, CTFilteringRule.populated),
+        ("1-004", 80, CTFilteringRule.populated),
+        ("1-004", 94, CTFilteringRule.populated),
+        ("1-004", 20, CTFilteringRule.populated),
+        ("1-004", 90, CTFilteringRule.populated),
+        ("1-004", 40, CTFilteringRule.populated),
+        ("1-004", 45, CTFilteringRule.populated),
+        ("1-004", 50, CTFilteringRule.populated),
+    ]
+
+    expected_clean_longitudinal_outliers_remove_value_only_rows = [
+        ("1-001", 5, CTFilteringRule.populated),
+        ("1-001", 10, CTFilteringRule.populated),
+        ("1-001", 15, CTFilteringRule.populated),
+        ("1-001", None, CTFilteringRule.longitudinal_outliers),
+        ("1-002", 95, CTFilteringRule.populated),
+        ("1-002", None, CTFilteringRule.longitudinal_outliers),
+        ("1-002", 90, CTFilteringRule.populated),
+        ("1-003", 40, CTFilteringRule.populated),
+        ("1-003", 45, CTFilteringRule.populated),
+        ("1-003", 50, CTFilteringRule.populated),
+        (
+            "1-004",
+            5,
+            CTFilteringRule.populated,
+        ),
+        ("1-004", 10, CTFilteringRule.populated),
+        ("1-004", 15, CTFilteringRule.populated),
+        ("1-004", 80, CTFilteringRule.populated),
+        ("1-004", 94, CTFilteringRule.populated),
+        ("1-004", 20, CTFilteringRule.populated),
+        ("1-004", 90, CTFilteringRule.populated),
+        ("1-004", 40, CTFilteringRule.populated),
+        ("1-004", 45, CTFilteringRule.populated),
+        ("1-004", 50, CTFilteringRule.populated),
+    ]
+
+    compute_group_median_rows = [
+        ("1-001", 10, CTFilteringRule.populated),
+        ("1-001", 20, CTFilteringRule.populated),
+        ("1-001", 30, CTFilteringRule.populated),
+        ("1-001", 100, CTFilteringRule.populated),
+        ("1-002", 100, CTFilteringRule.populated),
+        ("1-002", None, CTFilteringRule.populated),
+        ("1-003", None, CTFilteringRule.populated),
+    ]
+
+    expected_compute_group_median_rows = [
+        ("1-001", 10, CTFilteringRule.populated, 25.0),
+        ("1-001", 20, CTFilteringRule.populated, 25.0),
+        ("1-001", 30, CTFilteringRule.populated, 25.0),
+        ("1-001", 100, CTFilteringRule.populated, 25.0),
+        ("1-002", 100, CTFilteringRule.populated, 100.0),
+        ("1-002", None, CTFilteringRule.populated, 100.0),
+        ("1-003", None, CTFilteringRule.populated, None),
+    ]
+
+    compute_outlier_cutoff_rows = [
+        ("1-001", 10, 15),
+        ("1-001", 20, 5),
+        ("1-001", 30, 5),
+        ("1-001", 100, 75),
+        ("1-002", 100, 0),
+        ("1-002", None, None),
+        ("1-003", None, None),
+    ]
+
+    expected_outlier_cutoff_rows = [
+        ("1-001", 10, CTFilteringRule.populated, 25, 15, 51),
+        ("1-001", 20, CTFilteringRule.populated, 25, 5, 51),
+        ("1-001", 30, CTFilteringRule.populated, 25, 5, 51),
+        ("1-001", 100, CTFilteringRule.populated, 25, 75, 51),
+        ("1-002", 100, CTFilteringRule.populated, 100, 0, 51),
+        ("1-002", None, CTFilteringRule.populated, 100, None, 51),
+        ("1-003", None, CTFilteringRule.populated, None, None, 51),
+    ]
+
+    apply_outlier_cleaning_input_rows = [
+        ("1-001", 10, 15, 51),
+        ("1-001", 20, 5, 51),
+        ("1-001", 30, 5, 51),
+        ("1-001", 100, 75, 51),
+        ("1-002", 100, 0, 51),
+        ("1-002", None, None, 51),
+        ("1-003", None, None, 51),
+    ]
+
+    expected_apply_outlier_cleaning_input_rows = [
+        ("1-001", 10, 15, 51),
+        ("1-001", 20, 5, 51),
+        ("1-001", 30, 5, 51),
+        ("1-001", None, 75, 51),
+        ("1-002", 100, 0, 51),
+        ("1-002", None, None, 51),
+        ("1-003", None, None, 51),
     ]

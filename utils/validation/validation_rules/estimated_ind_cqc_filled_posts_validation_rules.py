@@ -34,14 +34,14 @@ class EstimatedIndCqcFilledPostsValidationRules:
         RuleName.min_values: {
             IndCqcColumns.ascwds_filled_posts: 1.0,
             IndCqcColumns.ascwds_pir_merged: 1.0,
-            IndCqcColumns.care_home_model: 1.0,
-            # IndCqcColumns.imputed_posts_non_res_combined_model: 1.0, # temporarily removed until imputation is fixed
+            IndCqcColumns.care_home_model: -100.0,
+            IndCqcColumns.imputed_posts_non_res_combined_model: -100.0,
             IndCqcColumns.estimate_filled_posts: 1.0,
-            IndCqcColumns.non_res_with_dormancy_model: 1.0,
-            IndCqcColumns.non_res_without_dormancy_model: 1.0,
+            IndCqcColumns.non_res_with_dormancy_model: -100.0,
+            IndCqcColumns.non_res_without_dormancy_model: -100.0,
             IndCqcColumns.number_of_beds: 1,
             IndCqcColumns.pir_people_directly_employed_dedup: 1,
-            # IndCqcColumns.imputed_pir_filled_posts_model: 1.0,  temporarily removed until imputation is fixed
+            IndCqcColumns.imputed_pir_filled_posts_model: -100.0,
             IndCqcColumns.posts_rolling_average_model: 1.0,
             IndCqcColumns.unix_time: 1262304000,  # 1st Jan 2010 in unix time
         },
@@ -49,9 +49,9 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.ascwds_filled_posts: 3000.0,
             IndCqcColumns.ascwds_pir_merged: 3000.0,
             IndCqcColumns.imputed_posts_care_home_model: 3000.0,
-            # IndCqcColumns.imputed_posts_non_res_combined_model: 3000.0, # temporarily removed until imputation is fixed
+            IndCqcColumns.imputed_posts_non_res_combined_model: 3000.0,
             IndCqcColumns.care_home_model: 3000.0,
-            # IndCqcColumns.estimate_filled_posts: 3000.0, # temporarily removed until imputation is fixed
+            IndCqcColumns.estimate_filled_posts: 3000.0,
             IndCqcColumns.non_res_with_dormancy_model: 3000.0,
             IndCqcColumns.non_res_without_dormancy_model: 3000.0,
             IndCqcColumns.number_of_beds: 500,
@@ -79,5 +79,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.estimate_filled_posts_source: CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
         },
         RuleName.custom_type: CustomValidationRules.care_home_and_primary_service_type,
-        # RuleName.custom_type: CustomValidationRules.cqc_gac_services_and_primary_service_type_second_level,
+        RuleName.custom_type: CustomValidationRules.primary_service_type_second_level_shared_lives,
+        RuleName.custom_type: CustomValidationRules.primary_service_type_second_level_care_home_with_nursing,
+        RuleName.custom_type: CustomValidationRules.primary_service_type_second_level_care_home_without_nursing,
     }

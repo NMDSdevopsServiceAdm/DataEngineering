@@ -12,14 +12,14 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     CleanIndCQCData as Schemas,
 )
-from utils import utils
+from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_posts"
 
 
-class CleanIndFilledPostsTests(unittest.TestCase):
+class CleanIndFilledPostsTests(SparkBaseTest):
     MERGE_IND_CQC_SOURCE = "input_dir"
     CLEANED_IND_CQC_DESTINATION = "output_dir"
     partition_keys = [
@@ -30,7 +30,6 @@ class CleanIndFilledPostsTests(unittest.TestCase):
     ]
 
     def setUp(self):
-        self.spark = utils.get_spark()
         self.merge_ind_cqc_test_df = self.spark.createDataFrame(
             Data.merged_rows_for_cleaning_job,
             Schemas.merged_schema_for_cleaning_job,
@@ -39,11 +38,11 @@ class CleanIndFilledPostsTests(unittest.TestCase):
 
 
 class MainTests(CleanIndFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.null_ct_posts_to_beds_outliers")
+    @patch(f"{PATCH_PATH}.calculate_care_home_status_count")
+    @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
+    @patch(f"{PATCH_PATH}.clean_capacity_tracker_care_home_outliers")
+    @patch(f"{PATCH_PATH}.forward_fill_latest_known_value")
     @patch(f"{PATCH_PATH}.clean_ascwds_filled_post_outliers")
     @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
     @patch(f"{PATCH_PATH}.cUtils.calculate_filled_posts_per_bed_ratio")
@@ -51,7 +50,7 @@ class MainTests(CleanIndFilledPostsTests):
     @patch(f"{PATCH_PATH}.calculate_ascwds_filled_posts")
     @patch(f"{PATCH_PATH}.populate_missing_care_home_number_of_beds")
     @patch(f"{PATCH_PATH}.replace_zero_beds_with_null")
-    @patch(f"{PATCH_PATH}.remove_duplicate_cqc_care_homes")
+    @patch(f"{PATCH_PATH}.remove_dual_registration_cqc_care_homes")
     @patch(f"{PATCH_PATH}.calculate_time_registered_for")
     @patch(f"{PATCH_PATH}.calculate_time_since_dormant")
     @patch(f"{PATCH_PATH}.cUtils.reduce_dataset_to_earliest_file_per_month")
@@ -62,7 +61,7 @@ class MainTests(CleanIndFilledPostsTests):
         reduce_dataset_to_earliest_file_per_month_mock: Mock,
         calculate_time_since_dormant_mock: Mock,
         calculate_time_registered_for_mock: Mock,
-        remove_duplicate_cqc_care_homes_mock: Mock,
+        remove_dual_registration_cqc_care_homes_mock: Mock,
         replace_zero_beds_with_null_mock: Mock,
         populate_missing_care_home_number_of_beds_mock: Mock,
         calculate_ascwds_filled_posts_mock: Mock,
@@ -70,7 +69,10 @@ class MainTests(CleanIndFilledPostsTests):
         calculate_filled_posts_per_bed_ratio_mock: Mock,
         create_banded_bed_count_column_mock: Mock,
         clean_ascwds_filled_post_outliers_mock: Mock,
-        null_ct_posts_to_beds_outliers_mock: Mock,
+        forward_fill_latest_known_value_mock: Mock,
+        clean_capacity_tracker_care_home_outliers_mock: Mock,
+        clean_capacity_tracker_non_res_outliers_mock: Mock,
+        calculate_care_home_status_count_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.merge_ind_cqc_test_df
@@ -83,15 +85,18 @@ class MainTests(CleanIndFilledPostsTests):
         reduce_dataset_to_earliest_file_per_month_mock.assert_called_once()
         calculate_time_registered_for_mock.assert_called_once()
         calculate_time_since_dormant_mock.assert_called_once()
-        remove_duplicate_cqc_care_homes_mock.assert_called_once()
+        remove_dual_registration_cqc_care_homes_mock.assert_called_once()
         replace_zero_beds_with_null_mock.assert_called_once()
         populate_missing_care_home_number_of_beds_mock.assert_called_once()
         calculate_ascwds_filled_posts_mock.assert_called_once()
         self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
         self.assertEqual(calculate_filled_posts_per_bed_ratio_mock.call_count, 3)
         create_banded_bed_count_column_mock.assert_called_once()
+        self.assertEqual(forward_fill_latest_known_value_mock.call_count, 2)
         clean_ascwds_filled_post_outliers_mock.assert_called_once()
-        null_ct_posts_to_beds_outliers_mock.assert_called_once()
+        clean_capacity_tracker_care_home_outliers_mock.assert_called_once()
+        clean_capacity_tracker_non_res_outliers_mock.assert_called_once()
+        calculate_care_home_status_count_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_once_with(
             ANY,
@@ -236,9 +241,6 @@ class MainTests(CleanIndFilledPostsTests):
 
 
 class CalculateTimeRegisteredForTests(CleanIndFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     def test_calculate_time_registered_returns_one_when_dates_are_on_the_same_day(
         self,
     ):
@@ -343,193 +345,171 @@ class CalculateTimeSinceDormant(CleanIndFilledPostsTests):
         self.assertEqual(returned_data, expected_data)
 
 
-class RemoveDuplicateCqcCareHomesTests(CleanIndFilledPostsTests):
+class RemoveDualRegistrationCqcCareHomes(CleanIndFilledPostsTests):
     def setUp(self):
         super().setUp()
 
-    def test_remove_duplicate_cqc_care_homes_returns_expected_values_when_carehome_and_asc_data_populated(
+    def test_remove_dual_registration_cqc_care_homes_returns_expected_values_when_carehome_and_asc_data_populated(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.remove_cqc_duplicates_when_carehome_and_asc_data_populated_rows,
-            Schemas.remove_cqc_duplicates_schema,
+            Data.remove_cqc_dual_registrations_when_carehome_and_asc_data_populated_rows,
+            Schemas.remove_cqc_dual_registrations_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_remove_cqc_duplicates_when_carehome_and_asc_data_populated_rows,
-            Schemas.remove_cqc_duplicates_schema,
+            Data.expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_populated_rows,
+            Schemas.remove_cqc_dual_registrations_schema,
         )
-        returned_df = job.remove_duplicate_cqc_care_homes(test_df)
+        returned_df = job.remove_dual_registration_cqc_care_homes(test_df)
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
 
-    def test_remove_duplicate_cqc_care_homes_returns_expected_values_when_carehome_and_asc_data_missing_on_earlier_reg_date(
+    def test_remove_dual_registration_cqc_care_homes_returns_expected_values_when_carehome_and_asc_data_missing_on_earlier_reg_date(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows,
-            Schemas.remove_cqc_duplicates_schema,
+            Data.remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows,
+            Schemas.remove_cqc_dual_registrations_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows,
-            Schemas.remove_cqc_duplicates_schema,
+            Data.expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows,
+            Schemas.remove_cqc_dual_registrations_schema,
         )
-        returned_df = job.remove_duplicate_cqc_care_homes(test_df)
+        returned_df = job.remove_dual_registration_cqc_care_homes(test_df)
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
 
-    def test_remove_duplicate_cqc_care_homes_returns_expected_values_when_carehome_and_asc_data_missing_on_later_reg_date(
+    def test_remove_dual_registration_cqc_care_homes_returns_expected_values_when_carehome_and_asc_data_missing_on_later_reg_date(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_later_reg_date_rows,
-            Schemas.remove_cqc_duplicates_schema,
+            Data.remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_later_reg_date_rows,
+            Schemas.remove_cqc_dual_registrations_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_later_reg_date_rows,
-            Schemas.remove_cqc_duplicates_schema,
+            Data.expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_later_reg_date_rows,
+            Schemas.remove_cqc_dual_registrations_schema,
         )
-        returned_df = job.remove_duplicate_cqc_care_homes(test_df)
+        returned_df = job.remove_dual_registration_cqc_care_homes(test_df)
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
 
-    def test_remove_duplicate_cqc_care_homes_returns_expected_values_when_carehome_and_asc_data_missing_on_all_reg_dates(
+    def test_remove_dual_registration_cqc_care_homes_returns_expected_values_when_carehome_and_asc_data_missing_on_all_reg_dates(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_all_reg_dates_rows,
-            Schemas.remove_cqc_duplicates_schema,
+            Data.remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_all_reg_dates_rows,
+            Schemas.remove_cqc_dual_registrations_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_all_reg_dates_rows,
-            Schemas.remove_cqc_duplicates_schema,
+            Data.expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_all_reg_dates_rows,
+            Schemas.remove_cqc_dual_registrations_schema,
         )
-        returned_df = job.remove_duplicate_cqc_care_homes(test_df)
+        returned_df = job.remove_dual_registration_cqc_care_homes(test_df)
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
 
-    def test_remove_duplicate_cqc_care_homes_returns_expected_values_when_carehome_and_asc_data_different_on_all_reg_dates(
+    def test_remove_dual_registration_cqc_care_homes_returns_expected_values_when_carehome_and_asc_data_different_on_all_reg_dates(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.remove_cqc_duplicates_when_carehome_and_asc_data_different_on_all_reg_dates_rows,
-            Schemas.remove_cqc_duplicates_schema,
+            Data.remove_cqc_dual_registrations_when_carehome_and_asc_data_different_on_all_reg_dates_rows,
+            Schemas.remove_cqc_dual_registrations_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_remove_cqc_duplicates_when_carehome_and_asc_data_different_on_all_reg_dates_rows,
-            Schemas.remove_cqc_duplicates_schema,
+            Data.expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_different_on_all_reg_dates_rows,
+            Schemas.remove_cqc_dual_registrations_schema,
         )
-        returned_df = job.remove_duplicate_cqc_care_homes(test_df)
+        returned_df = job.remove_dual_registration_cqc_care_homes(test_df)
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
 
-    def test_remove_duplicate_cqc_care_homes_returns_expected_values_when_carehome_and_registration_dates_the_same(
+    def test_remove_dual_registration_cqc_care_homes_returns_expected_values_when_carehome_and_registration_dates_the_same(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.remove_cqc_duplicates_when_carehome_and_registration_dates_the_same_rows,
-            Schemas.remove_cqc_duplicates_schema,
+            Data.remove_cqc_dual_registrations_when_carehome_and_registration_dates_the_same_rows,
+            Schemas.remove_cqc_dual_registrations_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_remove_cqc_duplicates_when_carehome_and_registration_dates_the_same_rows,
-            Schemas.remove_cqc_duplicates_schema,
+            Data.expected_remove_cqc_dual_registrations_when_carehome_and_registration_dates_the_same_rows,
+            Schemas.remove_cqc_dual_registrations_schema,
         )
-        returned_df = job.remove_duplicate_cqc_care_homes(test_df)
+        returned_df = job.remove_dual_registration_cqc_care_homes(test_df)
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
 
-    def test_remove_duplicate_cqc_care_homes_returns_expected_values_when_non_res(self):
+    def test_remove_dual_registration_cqc_care_homes_returns_expected_values_when_locations_not_sorted_numerically(
+        self,
+    ):
         test_df = self.spark.createDataFrame(
-            Data.remove_cqc_duplicates_when_non_res_rows,
-            Schemas.remove_cqc_duplicates_schema,
+            Data.remove_cqc_dual_registrations_when_locations_not_sorted_numerically,
+            Schemas.remove_cqc_dual_registrations_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_remove_cqc_duplicates_when_non_res_rows,
-            Schemas.remove_cqc_duplicates_schema,
+            Data.expected_remove_cqc_dual_registrations_when_locations_not_sorted_numerically,
+            Schemas.remove_cqc_dual_registrations_schema,
         )
-        returned_df = job.remove_duplicate_cqc_care_homes(test_df)
+        returned_df = job.remove_dual_registration_cqc_care_homes(test_df)
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+    def test_remove_dual_registration_cqc_care_homes_returns_expected_values_when_non_res(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.remove_cqc_dual_registrations_when_non_res_rows,
+            Schemas.remove_cqc_dual_registrations_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_remove_cqc_dual_registrations_when_non_res_rows,
+            Schemas.remove_cqc_dual_registrations_schema,
+        )
+        returned_df = job.remove_dual_registration_cqc_care_homes(test_df)
+
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
 
 
-class AddColumnWithRepeatedValuesRemovedTests(CleanIndFilledPostsTests):
-    def setUp(self):
+class CalculateCareHomeStatusCountTests(CleanIndFilledPostsTests):
+    def setUp(self) -> None:
         super().setUp()
-        self.test_purge_outdated_df = self.spark.createDataFrame(
-            Data.repeated_value_rows, Schemas.repeated_value_schema
-        )
-        self.expected_df_without_repeated_values_df = self.spark.createDataFrame(
-            Data.expected_without_repeated_values_rows,
-            Schemas.expected_without_repeated_values_schema,
-        )
-        self.returned_df = job.create_column_with_repeated_values_removed(
-            self.test_purge_outdated_df,
-            column_to_clean="integer_column",
-        )
-        self.OUTPUT_COLUMN = "integer_column_deduplicated"
 
-        self.returned_data = self.returned_df.sort(
-            IndCQC.location_id, IndCQC.cqc_location_import_date
-        ).collect()
-        self.expected_data = self.expected_df_without_repeated_values_df.sort(
-            IndCQC.location_id, IndCQC.cqc_location_import_date
-        ).collect()
-
-    def test_first_submitted_value_is_included_in_new_column(self):
-        self.assertEqual(
-            self.returned_data[0][self.OUTPUT_COLUMN],
-            self.expected_data[0][self.OUTPUT_COLUMN],
+        test_df = self.spark.createDataFrame(
+            Data.calculate_care_home_status_count_rows,
+            Schemas.calculate_care_home_status_count_schema,
         )
+        self.returned_df = job.calculate_care_home_status_count(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_care_home_status_count_rows,
+            Schemas.expected_calculate_care_home_status_count_schema,
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_calculate_care_home_status_count_returns_expected_columns(self):
         self.assertEqual(
-            self.returned_data[4][self.OUTPUT_COLUMN],
-            self.expected_data[4][self.OUTPUT_COLUMN],
+            sorted(self.returned_df.columns),
+            sorted(self.expected_df.columns),
         )
 
-    def test_submitted_value_is_included_if_it_wasnt_repeated(self):
-        self.assertEqual(
-            self.returned_data[1][self.OUTPUT_COLUMN],
-            self.expected_data[1][self.OUTPUT_COLUMN],
-        )
-        self.assertEqual(
-            self.returned_data[5][self.OUTPUT_COLUMN],
-            self.expected_data[5][self.OUTPUT_COLUMN],
-        )
-
-    def test_repeated_value_entered_as_null_value(self):
-        self.assertEqual(
-            self.returned_data[2][self.OUTPUT_COLUMN],
-            self.expected_data[2][self.OUTPUT_COLUMN],
-        )
-        self.assertEqual(
-            self.returned_data[7][self.OUTPUT_COLUMN],
-            self.expected_data[7][self.OUTPUT_COLUMN],
-        )
-
-    def test_value_which_has_appeared_before_but_isnt_a_repeat_is_included(self):
-        self.assertEqual(
-            self.returned_data[6][self.OUTPUT_COLUMN],
-            self.expected_data[6][self.OUTPUT_COLUMN],
-        )
-
-    def test_returned_df_matches_expected_df(self):
-        self.assertEqual(
-            self.returned_data,
-            self.expected_data,
-        )
-
-    def test_returned_df_has_one_additional_column(self):
-        self.assertEqual(
-            len(self.returned_df.columns), len(self.test_purge_outdated_df.columns) + 1
-        )
-
-    def test_returned_df_has_same_number_of_rows(self):
-        self.assertEqual(self.returned_df.count(), self.test_purge_outdated_df.count())
+    def test_returned_care_home_status_count_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][job.IndCQC.care_home_status_count],
+                self.expected_data[i][job.IndCQC.care_home_status_count],
+                f"Returned row {i} does not match expected",
+            )
 
 
 if __name__ == "__main__":

@@ -235,6 +235,7 @@ class CreateTruncatedPostcodeDfTests(RunPostcodeMatchingTests):
         expected_lf = pl.LazyFrame(
             Data.expected_create_truncated_postcode_df_rows,
             Schemas.expected_create_truncated_postcode_df_schema,
+            orient="row",
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

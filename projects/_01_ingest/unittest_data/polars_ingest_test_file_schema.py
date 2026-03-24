@@ -152,6 +152,7 @@ class LocationsCleanUtilsSchema:
             (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.registration_status, pl.String()),
             (CQCLClean.deregistration_date, pl.Date()),
+            (CQCLClean.type, pl.String()),
         ]
     )
     expected_save_latest_full_snapshot_schema = pl.Schema(
@@ -160,6 +161,7 @@ class LocationsCleanUtilsSchema:
             (CQCLClean.location_id, pl.String()),
             (CQCLClean.registration_status, pl.String()),
             (CQCLClean.deregistration_date, pl.Date()),
+            (CQCLClean.type, pl.String()),
         ]
     )
 
@@ -281,8 +283,6 @@ class PostcodeMatcherTest:
             (CQCL.name, pl.String()),
             (CQCL.postal_address_line1, pl.String()),
             (CQCL.postal_code, pl.String()),
-            (CQCLClean.registration_status, pl.String()),
-            (CQCLClean.type, pl.String()),
         ]
     )
     postcodes_schema = pl.Schema(
@@ -291,7 +291,6 @@ class PostcodeMatcherTest:
             (ONSClean.contemporary_ons_import_date, pl.Date()),
             (ONSClean.contemporary_cssr, pl.String()),
             (ONSClean.contemporary_sub_icb, pl.String()),
-            (ONSClean.contemporary_ccg, pl.String()),
             (ONSClean.current_cssr, pl.String()),
             (ONSClean.current_sub_icb, pl.String()),
         ]
@@ -363,7 +362,6 @@ class PostcodeMatcherTest:
             (CQCLClean.postcode_cleaned, pl.String()),
             (CQCLClean.contemporary_ons_import_date, pl.Date()),
             (CQCLClean.contemporary_cssr, pl.String()),
-            (CQCLClean.contemporary_ccg, pl.String()),
             (CQCLClean.contemporary_sub_icb, pl.String()),
             (CQCLClean.current_cssr, pl.String()),
             (CQCLClean.current_sub_icb, pl.String()),
@@ -373,7 +371,6 @@ class PostcodeMatcherTest:
         [
             (ONSClean.contemporary_ons_import_date, pl.Date()),
             (ONSClean.contemporary_cssr, pl.String()),
-            (ONSClean.contemporary_ccg, pl.String()),
             (ONSClean.contemporary_sub_icb, pl.String()),
             (ONSClean.current_cssr, pl.String()),
             (ONSClean.current_sub_icb, pl.String()),
@@ -448,6 +445,10 @@ class ValidateCqcLocations4FullCleanTest:
             (CQCLClean.current_cssr, pl.String()),
             (CQCLClean.current_region, pl.String()),
             (CQCLClean.current_rural_urban_ind_11, pl.String()),
+            (CQCLClean.services_offered, pl.List(pl.String())),
+            (CQCLClean.regulated_activities_offered, pl.List(pl.String())),
+            (CQCLClean.registered_manager_names, pl.List(pl.String())),
+            (CQCLClean.specialisms_offered, pl.List(pl.String())),
         ]
     )
 

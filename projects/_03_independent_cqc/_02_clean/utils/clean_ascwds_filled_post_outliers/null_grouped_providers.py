@@ -4,7 +4,7 @@ from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 
 import utils.cleaning_utils as cUtils
-from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.ascwds_filtering_utils import (
+from projects._03_independent_cqc._02_clean.utils.filtering_utils import (
     update_filtering_rule,
 )
 from projects.utils.utils.utils import calculate_windowed_column
@@ -36,6 +36,7 @@ class NullGroupedProvidersConfig:
     POSTS_PER_PIR_PROVIDER_THRESHOLD: float = 1.5
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\null_grouped_providers.py
 def null_grouped_providers(df: DataFrame) -> DataFrame:
     """
     Null ascwds_filled_posts_dedup_clean where a provider has multiple locations, all their ascwds is under one location.
@@ -65,6 +66,7 @@ def null_grouped_providers(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\null_grouped_providers.py
 def calculate_data_for_grouped_provider_identification(df: DataFrame) -> DataFrame:
     """
     Calculates the variables needed to determine whether a location is likely to be a grouped provider.
@@ -121,6 +123,7 @@ def calculate_data_for_grouped_provider_identification(df: DataFrame) -> DataFra
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\null_grouped_providers.py
 def identify_potential_grouped_providers(df: DataFrame) -> DataFrame:
     """
     Identify potential grouped providers based on one ASCWDS account for a CQC provider with several locations.
@@ -149,6 +152,7 @@ def identify_potential_grouped_providers(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\null_grouped_providers.py
 def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
     """
     Null ASCWDS data when they have submitted their whole workforce into one ASCWDS account.
@@ -201,11 +205,17 @@ def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
     )
 
     df = update_filtering_rule(
-        df, rule_name=AscwdsFilteringRule.care_home_location_was_grouped_provider
+        df,
+        IndCQC.ascwds_filtering_rule,
+        IndCQC.ascwds_filled_posts_dedup,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        AscwdsFilteringRule.populated,
+        AscwdsFilteringRule.care_home_location_was_grouped_provider,
     )
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\null_grouped_providers.py
 def null_non_residential_grouped_providers(df: DataFrame) -> DataFrame:
     """
     Null ASCWDS data when they have submitted their whole workforce into one ASCWDS account.
@@ -262,7 +272,12 @@ def null_non_residential_grouped_providers(df: DataFrame) -> DataFrame:
     )
 
     df = update_filtering_rule(
-        df, rule_name=AscwdsFilteringRule.non_res_location_was_grouped_provider
+        df,
+        IndCQC.ascwds_filtering_rule,
+        IndCQC.ascwds_filled_posts_dedup,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        AscwdsFilteringRule.populated,
+        AscwdsFilteringRule.non_res_location_was_grouped_provider,
     )
 
     return df

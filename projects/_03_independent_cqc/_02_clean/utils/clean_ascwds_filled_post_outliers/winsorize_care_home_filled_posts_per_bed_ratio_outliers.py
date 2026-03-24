@@ -4,7 +4,7 @@ from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
 import utils.cleaning_utils as cUtils
-from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.ascwds_filtering_utils import (
+from projects._03_independent_cqc._02_clean.utils.filtering_utils import (
     update_filtering_rule,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -36,6 +36,7 @@ class SetValuesForWinsorization:
     MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF: float = 5.0
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\winsorize_care_home_filled_posts_per_bed_ratio_outliers.py
 def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
     input_df: DataFrame,
 ) -> DataFrame:
@@ -91,7 +92,12 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
     winsorized_df = winsorize_outliers(care_homes_df)
 
     winsorized_df = update_filtering_rule(
-        winsorized_df, AscwdsFilteringRule.winsorized_beds_ratio_outlier
+        winsorized_df,
+        IndCQC.ascwds_filtering_rule,
+        IndCQC.ascwds_filled_posts_dedup,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        AscwdsFilteringRule.populated,
+        AscwdsFilteringRule.winsorized_beds_ratio_outlier,
     )
 
     output_df = combine_dataframes(winsorized_df, data_not_relevant_to_filter_df)
@@ -99,6 +105,7 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
     return output_df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\winsorize_care_home_filled_posts_per_bed_ratio_outliers.py
 def filter_df_to_care_homes_with_known_beds_and_filled_posts(
     df: DataFrame,
 ) -> DataFrame:
@@ -129,6 +136,7 @@ def filter_df_to_care_homes_with_known_beds_and_filled_posts(
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\winsorize_care_home_filled_posts_per_bed_ratio_outliers.py
 def select_data_not_in_subset_df(
     complete_df: DataFrame, subset_df: DataFrame
 ) -> DataFrame:
@@ -147,6 +155,7 @@ def select_data_not_in_subset_df(
     return output_df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\winsorize_care_home_filled_posts_per_bed_ratio_outliers.py
 def calculate_average_filled_posts_per_banded_bed_count(
     input_df: DataFrame,
 ) -> DataFrame:
@@ -171,6 +180,7 @@ def calculate_average_filled_posts_per_banded_bed_count(
     return output_df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\winsorize_care_home_filled_posts_per_bed_ratio_outliers.py
 def calculate_expected_filled_posts_based_on_number_of_beds(
     df: DataFrame,
     expected_filled_posts_per_banded_bed_count_df: DataFrame,
@@ -205,6 +215,7 @@ def calculate_expected_filled_posts_based_on_number_of_beds(
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\winsorize_care_home_filled_posts_per_bed_ratio_outliers.py
 def calculate_filled_post_standardised_residual(
     df: DataFrame,
 ) -> DataFrame:
@@ -234,6 +245,7 @@ def calculate_filled_post_standardised_residual(
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\winsorize_care_home_filled_posts_per_bed_ratio_outliers.py
 def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
     df: DataFrame,
     percentage_of_data_to_filter_out: float,
@@ -278,6 +290,7 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\winsorize_care_home_filled_posts_per_bed_ratio_outliers.py
 def duplicate_ratios_within_standardised_residual_cutoffs(df: DataFrame) -> DataFrame:
     """
     Creates a column with the filled_posts_per_bed_ratio values when the standardised residuals are inside the percentile cutoffs.
@@ -303,6 +316,7 @@ def duplicate_ratios_within_standardised_residual_cutoffs(df: DataFrame) -> Data
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\winsorize_care_home_filled_posts_per_bed_ratio_outliers.py
 def calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
     df: DataFrame,
 ) -> DataFrame:
@@ -350,6 +364,7 @@ def calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\winsorize_care_home_filled_posts_per_bed_ratio_outliers.py
 def set_minimum_permitted_ratio(
     df: DataFrame,
     column_name: str,
@@ -373,6 +388,7 @@ def set_minimum_permitted_ratio(
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\winsorize_care_home_filled_posts_per_bed_ratio_outliers.py
 def winsorize_outliers(
     df: DataFrame,
 ) -> DataFrame:
@@ -413,6 +429,7 @@ def winsorize_outliers(
     return winsorized_df
 
 
+# converted to polars -> projects\_03_independent_cqc\_02_clean\fargate\utils\clean_ascwds_filled_post_outliers\winsorize_care_home_filled_posts_per_bed_ratio_outliers.py
 def combine_dataframes(
     filtered_care_home_df: DataFrame, original_non_care_home_df: DataFrame
 ) -> DataFrame:
