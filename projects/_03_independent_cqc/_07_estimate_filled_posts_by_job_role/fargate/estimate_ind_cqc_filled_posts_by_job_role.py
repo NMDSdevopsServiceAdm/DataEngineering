@@ -199,10 +199,8 @@ def main(
 
     # Do linear interpolation, then forward fill and backward fill to get a full
     # time series for each job role and location.
-    with time_it("over-groups"):
-        estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False).drop(
-            join_keys
-        )
+    with time_it("impute_ratios"):
+        estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False)
         groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
         order_key = IndCQC.cqc_location_import_date
         all_cols = groupby_agg_lf.collect_schema().names()
@@ -221,21 +219,22 @@ def main(
             .explode(*keep_cols, IndCQC.imputed_ascwds_job_role_ratios)
         )
 
+        # Multiply imputed ratios by estimate filled posts to get counts.
+        estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+            pl.col(IndCQC.estimate_filled_posts)
+            .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
+            .alias(IndCQC.imputed_ascwds_job_role_counts)
+        )
+
         log_polars_plan(estimated_job_role_posts_lf, "groupby-impute-agg")
         tmp_dest = estimates_by_job_role_destination.replace(
-            "dataset=", "dataset=temp3_"
+            "dataset=", "dataset=temp2_"
         )
         tmp_file = f"{tmp_dest}file.parquet"
         estimated_job_role_posts_lf.sink_parquet(
             tmp_file, mkdir=True, engine="streaming"
         )
 
-    # Multiply imputed ratios by estimate filled posts to get counts.
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        pl.col(IndCQC.estimate_filled_posts)
-        .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
-        .alias(IndCQC.imputed_ascwds_job_role_counts)
-    )
     # Get the proportions of the rolling sum of job counts within each location.
     estimated_job_role_posts_lf = (
         estimated_job_role_posts_lf.with_columns(
