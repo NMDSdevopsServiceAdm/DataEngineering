@@ -159,22 +159,21 @@ def main(
     tmp_dest = estimates_by_job_role_destination.replace("dataset=", "dataset=temp_")
     tmp_file = f"{tmp_dest}file.parquet"
     estimated_job_role_posts_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
-    estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False).drop(join_keys)
 
-    post_join_cols = estimated_job_role_posts_lf.collect_schema().names()
-    keep_cols = [c for c in post_join_cols if c not in pct_share_groups]
-
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(pct_share_groups)
     with time_it("group-by-agg"):
+        estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False).drop(
+            join_keys
+        )
+        estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(pct_share_groups)
         groupby_agg_lf = (
             estimated_job_role_posts_lf.group_by(pct_share_groups)
             .agg(
-                *[pl.col(c) for c in keep_cols],
+                pl.all(),
                 JRUtils.percentage_share(IndCQC.ascwds_job_role_counts).alias(
                     IndCQC.ascwds_job_role_ratios
                 ),
             )
-            .explode(*keep_cols, IndCQC.ascwds_job_role_ratios)
+            .explode(cs.all() - cs.by_name(pct_share_groups))
         )
 
         log_polars_plan(groupby_agg_lf, "Groupby agg pct share")
@@ -204,20 +203,18 @@ def main(
         estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False)
         groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
         order_key = IndCQC.cqc_location_import_date
-        all_cols = estimated_job_role_posts_lf.collect_schema().names()
-        keep_cols = [c for c in all_cols if c not in groups]
         estimated_job_role_posts_lf = (
             estimated_job_role_posts_lf.sort(*groups, order_key)
             .group_by(groups)
             .agg(
-                *[pl.col(c) for c in keep_cols],
+                pl.all(),
                 pl.col(IndCQC.ascwds_job_role_ratios)
                 .interpolate()
                 .forward_fill()
                 .backward_fill()
                 .alias(IndCQC.imputed_ascwds_job_role_ratios),
             )
-            .explode(*keep_cols, IndCQC.imputed_ascwds_job_role_ratios)
+            .explode(cs.all() - cs.by_name(groups))
         )
 
         # Multiply imputed ratios by estimate filled posts to get counts.
