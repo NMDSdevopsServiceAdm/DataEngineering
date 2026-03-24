@@ -203,10 +203,10 @@ def main(
         estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False)
         groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
         order_key = IndCQC.cqc_location_import_date
-        all_cols = groupby_agg_lf.collect_schema().names()
+        all_cols = estimated_job_role_posts_lf.collect_schema().names()
         keep_cols = [c for c in all_cols if c not in groups]
         estimated_job_role_posts_lf = (
-            groupby_agg_lf.sort(*groups, order_key)
+            estimated_job_role_posts_lf.sort(*groups, order_key)
             .group_by(groups)
             .agg(
                 *[pl.col(c) for c in keep_cols],
