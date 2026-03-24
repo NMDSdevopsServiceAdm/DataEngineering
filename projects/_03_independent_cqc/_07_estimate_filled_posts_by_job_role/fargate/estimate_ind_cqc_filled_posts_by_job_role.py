@@ -5,6 +5,7 @@ import time
 from contextlib import contextmanager
 
 import polars as pl
+import polars.selectors as cs
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as JRUtils
 from polars_utils import utils
@@ -236,18 +237,31 @@ def main(
         )
 
     # Get the proportions of the rolling sum of job counts within each location.
+
+    estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False)
+    rolling_groups = [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled]
     estimated_job_role_posts_lf = (
-        estimated_job_role_posts_lf.with_columns(
-            JRUtils.rolling_sum_of_job_role_counts(period="6mo").alias(
-                IndCQC.ascwds_job_role_rolling_sum
-            )
+        estimated_job_role_posts_lf.sort(*rolling_groups, order_key)
+        .group_by_dynamic(
+            order_key,
+            every="1mo",
+            period="6mo",
+            group_by=rolling_groups,
         )
-        .with_columns(
-            JRUtils.percentage_share(IndCQC.ascwds_job_role_rolling_sum)
-            .over(pct_share_groups)
-            .alias(IndCQC.ascwds_job_role_rolling_ratio)
+        .agg(pl.col(IndCQC.imputed_ascwds_job_role_counts).sum().alias("rolling_sum"))
+    )
+    estimated_job_role_posts_lf = (
+        estimated_job_role_posts_lf.sort(pct_share_groups)
+        .group_by(pct_share_groups)
+        .agg(
+            [
+                pl.all(),  # Keep all existing columns (rolling_sum, etc.)
+                JRUtils.percentage_share("rolling_sum").alias(
+                    IndCQC.ascwds_job_role_rolling_ratio
+                ),
+            ]
         )
-        .drop(IndCQC.ascwds_job_role_rolling_sum)
+        .explode(cs.all() - cs.by_name(pct_share_groups))
     )
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
@@ -268,6 +282,11 @@ def main(
             * pl.col(IndCQC.ascwds_job_role_ratios_merged)
         ).alias(IndCQC.estimate_filled_posts_by_job_role)
     )
+
+    log_polars_plan(estimated_job_role_posts_lf, "rolling_ratios_and_coalesce")
+    tmp_dest = estimates_by_job_role_destination.replace("dataset=", "dataset=temp3_")
+    tmp_file = f"{tmp_dest}file.parquet"
+    estimated_job_role_posts_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
 
     adjustment_expr = JRUtils.ManagerialFilledPostAdjustmentExpr.build()
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
