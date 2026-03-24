@@ -243,27 +243,25 @@ def main(
             IndCQC.primary_service_type,
             IndCQC.main_job_role_clean_labelled,
         ]
+        rolling_sum_counts = (
+            pl.col(IndCQC.imputed_ascwds_job_role_counts)
+            .sum()
+            .rolling(order_key, period="6mo")
+            .alias("rolling_sum")
+        )
         estimated_job_role_posts_lf = (
             estimated_job_role_posts_lf.sort(*rolling_groups, order_key)
             .group_by(rolling_groups)
-            .agg(
-                pl.all(),
-                pl.col(IndCQC.imputed_ascwds_job_role_counts)
-                .sum()
-                .rolling(order_key, period="6mo")
-                .alias("rolling_sum"),
-            )
+            .agg(pl.all(), rolling_sum_counts)
             .explode(cs.all() - cs.by_name(rolling_groups))
+        )
+        rolling_ratios = JRUtils.percentage_share("rolling_sum").alias(
+            IndCQC.ascwds_job_role_rolling_ratio
         )
         estimated_job_role_posts_lf = (
             estimated_job_role_posts_lf.sort(pct_share_groups)
             .group_by(pct_share_groups)
-            .agg(
-                pl.all(),
-                JRUtils.percentage_share("rolling_sum").alias(
-                    IndCQC.ascwds_job_role_rolling_ratio
-                ),
-            )
+            .agg(pl.all(), rolling_ratios)
             .explode(cs.all() - cs.by_name(pct_share_groups))
         )
 
