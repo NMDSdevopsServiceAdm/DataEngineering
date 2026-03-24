@@ -1,6 +1,7 @@
 import sys
 
 import pointblank as pb
+import polars as pl
 
 import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
@@ -55,10 +56,7 @@ def main(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=merged_locations_columns_to_import,
     )
-
-    compare_lf = cUtils.reduce_dataset_to_earliest_file_per_month(compare_lf)
-    compare_lf = remove_dual_registration_cqc_care_homes(compare_lf)
-    expected_row_count = compare_lf.collect().height
+    expected_row_count = get_expected_row_count(compare_lf)
 
     validation = (
         pb.Validate(
@@ -291,6 +289,22 @@ def main(
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
+
+
+def get_expected_row_count(lf: pl.LazyFrame) -> int:
+    """
+    Gets the row height from the comparator LazyFrame.
+
+    Args:
+        lf (pl.LazyFrame): The comparator LazyFrame.
+
+    Returns:
+        int: The height of the comparator LazyFrame.
+    """
+    lf = cUtils.reduce_dataset_to_earliest_file_per_month(lf)
+    lf = remove_dual_registration_cqc_care_homes(lf)
+
+    return lf.collect().height
 
 
 if __name__ == "__main__":

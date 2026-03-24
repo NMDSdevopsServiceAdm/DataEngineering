@@ -463,10 +463,10 @@ class ValidateMergeIndCQCData:
 class ValidateCleanIndCQCData:
 
     cleaned_ind_cqc_data_rows = [
-        ("1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y"),
-        ("1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N"),
-        ("1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y"),
-        ("1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N"),
+        ("1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y", "ascwds_filtering_rule", "specialist", "specialist", "specialist", 1, 1.0, "ascwds_filled_posts_source"),
+        ("1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N", "ascwds_filtering_rule", "specialist", "specialist", "specialist", 1, 1.0, "ascwds_filled_posts_source"),
+        ("1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"Y", "ascwds_filtering_rule", "specialist", "specialist", "specialist", 1, 1.0, "ascwds_filled_posts_source"),
+        ("1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5,"N", "ascwds_filtering_rule", "specialist", "specialist", "specialist", 1, 1.0, "ascwds_filled_posts_source"),
     ] # fmt: skip
 
     merged_ind_cqc_data_rows = [
@@ -474,6 +474,12 @@ class ValidateCleanIndCQCData:
         (date(2024, 1, 1), "1-002", Sector.independent, "N", None),
         (date(2024, 2, 1), "1-001", Sector.independent, "Y", 10),
         (date(2024, 2, 1), "1-002", Sector.independent, "N", None),
+    ] # fmt: skip
+
+    expected_size_rows = [
+        ("1-001", date(2025, 1, 1), "name", "postcode", "Y", date(2025, 1, 1), 1, 1, "2025", "01", "01"),
+        ("1-001", date(2025, 1, 1), "name", "postcode", "Y", date(2025, 1, 1), 1, 1, "2025", "01", "02"),
+        ("1-002", date(2025, 1, 1), "name", "postcode", "Y", date(2025, 1, 1), 1, 1, "2025", "01", "02"),
     ] # fmt: skip
 
 
