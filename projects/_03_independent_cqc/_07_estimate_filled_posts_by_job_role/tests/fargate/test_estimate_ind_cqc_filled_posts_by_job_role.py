@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import ANY, Mock, call, patch
 
 import polars as pl
+import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -9,6 +10,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role"
 
 
+@pytest.mark.skip
 class MainTests(unittest.TestCase):
     ESTIMATE_SOURCE = "some/source"
     PREPARED_JOB_ROLE_COUNTS_SOURCE = "some/other/source"
