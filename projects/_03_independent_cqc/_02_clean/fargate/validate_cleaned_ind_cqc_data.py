@@ -156,7 +156,10 @@ def main(
         )
         .col_vals_in_set(
             IndCqcColumns.ascwds_filled_posts_source,
-            CatValues.ascwds_filled_posts_source_column_values.categorical_values,
+            [
+                *CatValues.ascwds_filled_posts_source_column_values.categorical_values,
+                None,
+            ],
         )
         .col_vals_in_set(
             IndCqcColumns.ascwds_filtering_rule,
