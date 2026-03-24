@@ -179,44 +179,52 @@ def main(
         tmp_file = f"{tmp_dest}file.parquet"
         groupby_agg_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
 
-    with time_it("over-groups"):
-        groupby_over_lf = estimated_job_role_posts_lf.with_columns(
-            JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
-            .over(pct_share_groups)
-            .alias(IndCQC.ascwds_job_role_ratios)
-        )
+    # with time_it("over-groups"):
+    #     groupby_over_lf = estimated_job_role_posts_lf.with_columns(
+    #         JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
+    #         .over(pct_share_groups)
+    #         .alias(IndCQC.ascwds_job_role_ratios)
+    #     )
 
-        log_polars_plan(groupby_over_lf, "Groupby join over")
-        tmp_dest = estimates_by_job_role_destination.replace(
-            "dataset=", "dataset=temp2_"
-        )
-        tmp_file = f"{tmp_dest}file.parquet"
-        groupby_over_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
+    #     log_polars_plan(groupby_over_lf, "Groupby join over pct share")
+    #     tmp_dest = estimates_by_job_role_destination.replace(
+    #         "dataset=", "dataset=temp2_"
+    #     )
+    #     tmp_file = f"{tmp_dest}file.parquet"
+    #     groupby_over_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
 
     # Do linear interpolation, then forward fill and backward fill to get a full
     # time series for each job role and location.
-    groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
-    order_key = IndCQC.cqc_location_import_date
-    all_cols = estimated_job_role_posts_lf.collect_schema().names()
-    keep_cols = [c for c in all_cols if c not in groups]
-    estimated_job_role_posts_lf = (
-        groupby_agg_lf.sort(*groups, order_key)
-        .group_by(groups)
-        .agg(
-            *[pl.col(c) for c in keep_cols],
-            pl.col(IndCQC.ascwds_job_role_ratios)
-            .interpolate()
-            .forward_fill()
-            .backward_fill()
-            .alias(IndCQC.imputed_ascwds_job_role_ratios),
+    with time_it("over-groups"):
+        estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False).drop(
+            join_keys
         )
-        .explode(*keep_cols, IndCQC.imputed_ascwds_job_role_ratios)
-    )
+        groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
+        order_key = IndCQC.cqc_location_import_date
+        all_cols = groupby_agg_lf.collect_schema().names()
+        keep_cols = [c for c in all_cols if c not in groups]
+        estimated_job_role_posts_lf = (
+            groupby_agg_lf.sort(*groups, order_key)
+            .group_by(groups)
+            .agg(
+                *[pl.col(c) for c in keep_cols],
+                pl.col(IndCQC.ascwds_job_role_ratios)
+                .interpolate()
+                .forward_fill()
+                .backward_fill()
+                .alias(IndCQC.imputed_ascwds_job_role_ratios),
+            )
+            .explode(*keep_cols, IndCQC.imputed_ascwds_job_role_ratios)
+        )
 
-    log_polars_plan(estimated_job_role_posts_lf, "groupby-impute-agg")
-    tmp_dest = estimates_by_job_role_destination.replace("dataset=", "dataset=temp3_")
-    tmp_file = f"{tmp_dest}file.parquet"
-    estimated_job_role_posts_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
+        log_polars_plan(estimated_job_role_posts_lf, "groupby-impute-agg")
+        tmp_dest = estimates_by_job_role_destination.replace(
+            "dataset=", "dataset=temp3_"
+        )
+        tmp_file = f"{tmp_dest}file.parquet"
+        estimated_job_role_posts_lf.sink_parquet(
+            tmp_file, mkdir=True, engine="streaming"
+        )
 
     # Multiply imputed ratios by estimate filled posts to get counts.
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
