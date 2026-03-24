@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 - Converted enrich_with_model_predictions utils function to Polars and converted the tests for the same.
 
 ### Changed
-
+- Added last logged in date and la permissions to columns imported in merge_coverage_data job.
 
 ### Fixed
 
@@ -256,8 +256,6 @@ All notable changes to this project will be documented in this file.
   - Updated the validation script to replicate the newly added filter from the cleaning process, ensuring row count validations now pass.
   - Introduced a new function that creates boolean flag columns for complex-type columns and removes the original complex columns from the source DataFrame. These flag columns are now used in PointBlank validations to check for True values.
 
-
-- Added last logged in date and la permissions to columns imported in merge_coverage_data job.
 
 ### Improved
 - Migrated the original `PySpark` CQC API ingestion process to be run in `Polars` for notable increases in efficiency.
