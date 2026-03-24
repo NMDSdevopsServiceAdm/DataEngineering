@@ -85,6 +85,7 @@ dropped_columns = [
     IndCQC.ascwds_workplace_import_date,
     IndCQC.ascwds_worker_import_date,
     IndCQC.estimate_filled_posts_source,
+    IndCQC.ascwds_filled_posts_dedup_clean,
 ]
 
 
@@ -155,9 +156,7 @@ def main(
     estimated_job_role_posts_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
     estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False).drop(join_keys)
 
-    post_join_cols = [
-        c for c in list(transformation_columns) + ["id"] if c not in dropped_columns
-    ]
+    post_join_cols = estimated_job_role_posts_lf.collect_schema().names()
     keep_cols = [c for c in post_join_cols if c not in pct_share_groups]
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(pct_share_groups)
@@ -198,14 +197,28 @@ def main(
 
     # Do linear interpolation, then forward fill and backward fill to get a full
     # time series for each job role and location.
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        JRUtils.impute_full_time_series(IndCQC.ascwds_job_role_ratios)
-        .over(
-            [IndCQC.location_id, IndCQC.main_job_role_clean_labelled],
-            order_by=IndCQC.cqc_location_import_date,
+    groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
+    order_key = IndCQC.cqc_location_import_date
+    all_cols = estimated_job_role_posts_lf.collect_schema().names()
+    keep_cols = [c for c in all_cols if c not in groups]
+    estimated_job_role_posts_lf = (
+        estimated_job_role_posts_lf.sort(*groups, order_key)
+        .group_by(groups)
+        .agg(
+            *[pl.col(c) for c in keep_cols],
+            pl.col(IndCQC.ascwds_job_role_ratios)
+            .interpolate()
+            .forward_fill()
+            .backward_fill()
+            .alias(IndCQC.imputed_ascwds_job_role_ratios),
         )
-        .alias(IndCQC.imputed_ascwds_job_role_ratios)
+        .explode(*keep_cols, IndCQC.imputed_ascwds_job_role_ratios)
     )
+
+    log_polars_plan(estimated_job_role_posts_lf, "groupby-impute-agg")
+    tmp_dest = estimates_by_job_role_destination.replace("dataset=", "dataset=temp3_")
+    tmp_file = f"{tmp_dest}file.parquet"
+    estimated_job_role_posts_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
 
     # Multiply imputed ratios by estimate filled posts to get counts.
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
