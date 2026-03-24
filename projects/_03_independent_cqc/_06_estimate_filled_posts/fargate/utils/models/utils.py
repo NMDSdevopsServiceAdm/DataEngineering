@@ -1,6 +1,5 @@
 import polars as pl
 
-from projects._03_independent_cqc._04_model.utils.paths import generate_predictions_path
 from polars_utils import utils
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
@@ -27,7 +26,7 @@ def enrich_with_model_predictions(
     Returns:
         pl.LazyFrame: The input LazyFrame with the model predictions merged in.
     """
-    predictions_path = generate_predictions_path(bucket_name, model_name)
+    predictions_path = f"s3://{bucket_name}/domain=ind_cqc_filled_posts/dataset=ind_cqc_04_predictions_{model_name}"
 
     predictions_lf = utils.scan_parquet(predictions_path)
 

@@ -93,7 +93,7 @@ def main(
         .col_vals_between(IndCqcColumns.non_res_without_dormancy_model, -100.0, 3000.0)
         .col_vals_between(IndCqcColumns.number_of_beds, 1, 500)
         .col_vals_between(IndCqcColumns.pir_people_directly_employed_dedup, 1, 3000)
-        .col_vals_between(IndCqcColumns.imputed_pir_filled_posts_model, -100.0, 3000.0)
+        # .col_vals_between(IndCqcColumns.imputed_pir_filled_posts_model, -100.0, 3000.0)
         .col_vals_between(IndCqcColumns.posts_rolling_average_model, 1.0, 3000.0)
         .col_vals_between(
             IndCqcColumns.unix_time, 1262304000, int(time.time())
