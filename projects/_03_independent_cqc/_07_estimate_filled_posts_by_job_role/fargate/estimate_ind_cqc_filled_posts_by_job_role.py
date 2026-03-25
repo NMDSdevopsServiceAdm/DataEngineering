@@ -306,11 +306,9 @@ def main(
                 .drop("pct_share", "rm_diff", "non_rm_total", "non_rm_len")
             )
 
-            sum_all_job_roles = (
-                pl.sum(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted).alias(
-                    IndCQC.estimate_filled_posts_from_all_job_roles
-                ),
-            )
+            sum_all_job_roles = pl.sum(
+                IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
+            ).alias(IndCQC.estimate_filled_posts_from_all_job_roles)
             estimated_job_role_posts_lf = (
                 estimated_job_role_posts_lf.sort(pct_share_groups)
                 .group_by(pct_share_groups)
