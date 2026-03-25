@@ -1592,6 +1592,23 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
 
 
 @dataclass
+class ConvertPirPeopleToFilledPostsData:
+    valid_rows = [
+        (CareHome.care_home,     10.0,  10.0),  # invalid (care home)
+        (CareHome.not_care_home, None,  10.0),  # invalid (people is null)
+        (CareHome.not_care_home, 0.0,   10.0),  # invalid (people is zero)
+        (CareHome.not_care_home, 10.0,  None),  # invalid (posts in null)
+        (CareHome.not_care_home, 10.0,   0.0),  # invalid (posts is zero)
+        (CareHome.not_care_home, 10.0,   1.0),  # invalid (ratio too low)
+        (CareHome.not_care_home, 10.0, 100.0),  # invalid (ratio too high)
+        (CareHome.not_care_home, 10.0,  10.0),  # valid
+    ] # fmt: skip
+    expected_valid_rows = [
+        (CareHome.not_care_home, 10.0, 10.0),
+    ]
+
+
+@dataclass
 class NullCtPostsToBedsOutliers:
     null_ct_posts_to_beds_outliers_rows = [
         ("1-001", 1, 1.00, 1, CTFilteringRule.populated),
