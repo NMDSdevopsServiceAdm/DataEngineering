@@ -289,21 +289,58 @@ def main(
         )
     with time_it("manager_adjustments"):
         estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False)
-        adjustment_expr = JRUtils.ManagerialFilledPostAdjustmentExpr.build()
-        estimated_job_role_posts_lf = (
-            estimated_job_role_posts_lf.sort(pct_share_groups)
-            .group_by(pct_share_groups)
-            .agg(
-                pl.all(),
-                adjustment_expr.alias(
-                    IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
-                ),
-                pl.sum(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted).alias(
-                    IndCQC.estimate_filled_posts_from_all_job_roles
-                ),
-            )
-            .explode(cs.all() - cs.by_name(pct_share_groups))
+        is_non_rm_manager = (
+            JRUtils.ManagerialFilledPostAdjustmentExpr._is_non_rm_manager()
         )
+        filled_posts = pl.col(IndCQC.estimate_filled_posts_by_job_role)
+        stats_lf = estimated_job_role_posts_lf.group_by(pct_share_groups).agg(
+            # Calculate the RM diff once per group
+            rm_diff=JRUtils.ManagerialFilledPostAdjustmentExpr._rm_manager_diff(),
+            # Calculate the denominator for proportions once per group
+            non_rm_total=(pl.when(is_non_rm_manager).then(filled_posts).sum()),
+            non_rm_len=(pl.when(is_non_rm_manager).then(pl.lit(1)).sum()),
+        )
+
+        estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
+            stats_lf,
+            on=pct_share_groups,
+            how="left",
+        )
+
+        estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+            pct_share=pl.when(is_non_rm_manager).then(
+                pl.when(pl.col("non_rm_total") == 0)
+                .then(1 / pl.col("non_rm_len"))
+                .otherwise(filled_posts / pl.col("non_rm_total"))
+            ),
+            adjusted_posts=(
+                pl.when(is_non_rm_manager)
+                .then(
+                    filled_posts.add(pl.col("rm_diff").mul(pl.col("pct_share"))).clip(
+                        lower_bound=0
+                    )
+                )
+                .when(JRUtils.ManagerialFilledPostAdjustmentExpr._is_registered_manager)
+                .then(JRUtils.ManagerialFilledPostAdjustmentExpr._clip_rm_count())
+                .otherwise(filled_posts)
+            ),
+        )
+
+        # adjustment_expr = JRUtils.ManagerialFilledPostAdjustmentExpr.build()
+        # estimated_job_role_posts_lf = (
+        #     estimated_job_role_posts_lf.sort(pct_share_groups)
+        #     .group_by(pct_share_groups)
+        #     .agg(
+        #         pl.all(),
+        #         adjustment_expr.alias(
+        #             IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
+        #         ),
+        #         pl.sum(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted).alias(
+        #             IndCQC.estimate_filled_posts_from_all_job_roles
+        #         ),
+        #     )
+        #     .explode(cs.all() - cs.by_name(pct_share_groups))
+        # )
 
         log_polars_plan(estimated_job_role_posts_lf, "Final Transformation")
 
