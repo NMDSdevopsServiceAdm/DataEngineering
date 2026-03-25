@@ -283,18 +283,14 @@ def main(
 
             # STEP B: Sort and roll on the TINY dataset
             # This .sort() is completely safe because it's only operating on ~50k rows
-            rolling_sum_counts = (
-                pl.col(IndCQC.imputed_ascwds_job_role_counts)
-                .rolling(order_key, period="6mo")
-                .sum()
-                .alias("rolling_sum")
-            )
-
             rolling_agg_lf = (
                 monthly_totals_lf.sort(*rolling_groups, order_key)
-                .group_by(rolling_groups)
-                .agg(pl.col(order_key), rolling_sum_counts)
-                .explode([order_key, "rolling_sum"])
+                .rolling(index_column=order_key, group_by=rolling_groups, period="6mo")
+                .agg(
+                    pl.col(IndCQC.imputed_ascwds_job_role_counts)
+                    .sum()
+                    .alias("rolling_sum")
+                )
             )
 
             # STEP C: Join the rolling sum back to the main 152M row table
