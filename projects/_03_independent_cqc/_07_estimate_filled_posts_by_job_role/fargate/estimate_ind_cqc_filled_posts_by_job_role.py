@@ -181,20 +181,6 @@ def main(
         tmp_file = f"{tmp_dest}file.parquet"
         groupby_agg_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
 
-    # with time_it("over-groups"):
-    #     groupby_over_lf = estimated_job_role_posts_lf.with_columns(
-    #         JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
-    #         .over(pct_share_groups)
-    #         .alias(IndCQC.ascwds_job_role_ratios)
-    #     )
-
-    #     log_polars_plan(groupby_over_lf, "Groupby join over pct share")
-    #     tmp_dest = estimates_by_job_role_destination.replace(
-    #         "dataset=", "dataset=temp2_"
-    #     )
-    #     tmp_file = f"{tmp_dest}file.parquet"
-    #     groupby_over_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
-
     # Do linear interpolation, then forward fill and backward fill to get a full
     # time series for each job role and location.
     with time_it("impute_ratios"):
@@ -340,22 +326,6 @@ def main(
             .agg(pl.all().exclude(pct_share_groups), sum_all_job_roles)
             .explode(cs.all() - cs.by_name(pct_share_groups))
         )
-
-        # adjustment_expr = JRUtils.ManagerialFilledPostAdjustmentExpr.build()
-        # estimated_job_role_posts_lf = (
-        #     estimated_job_role_posts_lf.sort(pct_share_groups)
-        #     .group_by(pct_share_groups)
-        #     .agg(
-        #         pl.all(),
-        #         adjustment_expr.alias(
-        #             IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
-        #         ),
-        #         pl.sum(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted).alias(
-        #             IndCQC.estimate_filled_posts_from_all_job_roles
-        #         ),
-        #     )
-        #     .explode(cs.all() - cs.by_name(pct_share_groups))
-        # )
 
         log_polars_plan(estimated_job_role_posts_lf, "Final Transformation")
 
