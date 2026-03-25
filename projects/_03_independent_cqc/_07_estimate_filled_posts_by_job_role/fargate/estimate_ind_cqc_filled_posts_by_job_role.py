@@ -176,6 +176,12 @@ def main(
                 )
             )
 
+            estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(
+                IndCQC.location_id,
+                IndCQC.main_job_role_clean_labelled,
+                IndCQC.cqc_location_import_date,
+            )
+
             log_polars_plan(estimated_job_role_posts_lf, "Post Join")
             checkpoint_filepath = CHECKPOINT_PATH / "checkpoint1.parquet"
 
@@ -203,9 +209,10 @@ def main(
 
             ratios_agg_lf = (
                 estimated_job_role_posts_lf.select(
-                    pct_share_groups + [job_role_col, IndCQC.ascwds_job_role_counts]
+                    *pct_share_groups,
+                    job_role_col,
+                    IndCQC.ascwds_job_role_counts,
                 )
-                .sort(pct_share_groups)
                 .group_by(pct_share_groups)
                 .agg(
                     pl.col(job_role_col),  # Keep to align during explode
@@ -238,7 +245,7 @@ def main(
                 estimated_job_role_posts_lf.select(
                     impute_groups + [order_key, IndCQC.ascwds_job_role_ratios]
                 )
-                .sort(*impute_groups, order_key)
+                .with_columns(pl.col(order_key).set_sorted())
                 .group_by(impute_groups)
                 .agg(
                     pl.col(order_key),  # Keep to align during explode
@@ -335,14 +342,10 @@ def main(
             )
             filled_posts = pl.col(IndCQC.estimate_filled_posts_by_job_role)
 
-            stats_lf = (
-                estimated_job_role_posts_lf.sort(pct_share_groups)
-                .group_by(pct_share_groups)
-                .agg(
-                    rm_diff=JRUtils.ManagerialFilledPostAdjustmentExpr._rm_manager_diff(),
-                    non_rm_total=(pl.when(is_non_rm_manager).then(filled_posts).sum()),
-                    non_rm_len=(pl.when(is_non_rm_manager).then(pl.lit(1)).sum()),
-                )
+            stats_lf = estimated_job_role_posts_lf.group_by(pct_share_groups).agg(
+                rm_diff=JRUtils.ManagerialFilledPostAdjustmentExpr._rm_manager_diff(),
+                non_rm_total=(pl.when(is_non_rm_manager).then(filled_posts).sum()),
+                non_rm_len=(pl.when(is_non_rm_manager).then(pl.lit(1)).sum()),
             )
 
             estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
@@ -384,11 +387,9 @@ def main(
             ).alias(IndCQC.estimate_filled_posts_from_all_job_roles)
 
             # Since this is a scalar reduction per group, no explode is needed.
-            final_sum_agg_lf = (
-                estimated_job_role_posts_lf.sort(pct_share_groups)
-                .group_by(pct_share_groups)
-                .agg(sum_all_job_roles)
-            )
+            final_sum_agg_lf = estimated_job_role_posts_lf.group_by(
+                pct_share_groups
+            ).agg(sum_all_job_roles)
 
             estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
                 final_sum_agg_lf,
