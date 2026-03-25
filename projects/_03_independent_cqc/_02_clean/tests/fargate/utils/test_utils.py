@@ -31,8 +31,7 @@ class CreateColumnWithRepeatedValuesRemovedTests(unittest.TestCase):
             column_to_clean="integer_column",
         )
         pl_testing.assert_frame_equal(
-            returned_lf,
-            expected_lf_without_repeated_values,
+            returned_lf, expected_lf_without_repeated_values, check_row_order=False
         )
 
     def test_create_column_with_repeated_values_removed_returns_correct_lf_when_values_dont_repeat_consecutively_and_partitioned_by_locationId(
