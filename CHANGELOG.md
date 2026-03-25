@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 - Converted enrich_with_model_predictions utils function to Polars and converted the tests for the same.
 
 ### Changed
-
+- Added la permissions to columns imported in merge_coverage_data job.
 
 ### Fixed
 
