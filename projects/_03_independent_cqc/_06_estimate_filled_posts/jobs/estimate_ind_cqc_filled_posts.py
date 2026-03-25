@@ -92,8 +92,6 @@ ind_cqc_columns = [
     Keys.import_date,
 ]
 
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
-
 
 def main(
     bucket_name: str,

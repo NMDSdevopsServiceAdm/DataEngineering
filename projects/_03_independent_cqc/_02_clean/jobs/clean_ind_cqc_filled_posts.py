@@ -28,10 +28,8 @@ from projects._03_independent_cqc._02_clean.utils.utils import (
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome, Dormancy
 
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 average_number_of_beds: str = "avg_beds"
 
 

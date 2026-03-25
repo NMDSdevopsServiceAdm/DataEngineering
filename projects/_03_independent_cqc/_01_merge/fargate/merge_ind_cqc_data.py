@@ -25,8 +25,6 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import Sector
 
-cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
-
 cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
     CQCLClean.location_id,

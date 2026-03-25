@@ -74,8 +74,6 @@ ind_cqc_columns = [
     Keys.import_date,
 ]
 
-cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
-
 
 def main(
     bucket_name: str,
