@@ -117,26 +117,27 @@ def main(
     # Needed so we can join on Categorical columns.
     with pl.StringCache():
         with time_it("scan_and_join"):
-            estimated_posts_lf = (
+            # 1. Base Scan: Load wide data and generate the unique 'id' index
+            estimated_posts_base_lf = (
                 utils.scan_parquet(
                     source=estimates_source,
                     selected_columns=list(transformation_columns),
                 )
-                # This row index will be used to join back metadata.
-                .with_row_index(name="id").with_columns(
-                    cast_to_schema(transformation_columns)
-                )
+                .with_row_index(name="id")
+                .with_columns(cast_to_schema(transformation_columns))
             )
 
-            # Cartesian product all roles before joining ASCWDS.
-            estimated_posts_lf = estimated_posts_lf.join(
-                pl.LazyFrame(
-                    data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
-                    schema={IndCQC.main_job_role_clean_labelled: pl.Categorical},
-                ),
-                how="cross",
-            )
+            # 2. Subset: Extract ONLY the keys needed for the cross join and ASCWDS join
+            narrow_keys_lf = estimated_posts_base_lf.select(["id"] + join_keys)
 
+            # 3. Expand: Perform the massive cross-join on the tiny subset
+            roles_lf = pl.LazyFrame(
+                data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
+                schema={IndCQC.main_job_role_clean_labelled: pl.Categorical},
+            )
+            expanded_keys_lf = narrow_keys_lf.join(roles_lf, how="cross")
+
+            # 4. Prepare ASCWDS data
             ascwds_job_role_counts_lf = (
                 utils.scan_parquet(
                     source=ascwds_job_role_counts_source,
@@ -150,12 +151,22 @@ def main(
                 )
             )
 
-            estimated_job_role_posts_lf = estimated_posts_lf.join(
+            # 5. Join ASCWDS counts onto the expanded narrow subset
+            expanded_counts_lf = expanded_keys_lf.join(
                 other=ascwds_job_role_counts_lf,
                 on=join_keys + [IndCQC.main_job_role_clean_labelled],
                 how="left",
             )
 
+            # 6. Join Back: Re-attach the wide base data right before processing logic
+            # The streaming engine easily handles this 1-to-many join via the 'id' column
+            estimated_job_role_posts_lf = estimated_posts_base_lf.join(
+                expanded_counts_lf,
+                on="id",
+                how="right",
+            ).drop(join_keys)
+
+            # 7. Apply row-level nullification logic
             estimated_job_role_posts_lf = (
                 JRUtils.nullify_job_role_count_when_source_not_ascwds(
                     estimated_job_role_posts_lf
@@ -167,6 +178,9 @@ def main(
 
             log_polars_plan(estimated_job_role_posts_lf, "Post Join")
             checkpoint_filepath = CHECKPOINT_PATH / "checkpoint1.parquet"
+
+            # The streaming engine will push the join directly into the parquet file
+            # in manageable chunks, avoiding full memory materialization.
             estimated_job_role_posts_lf.sink_parquet(
                 checkpoint_filepath,
                 mkdir=True,
@@ -177,7 +191,7 @@ def main(
             estimated_job_role_posts_lf = pl.scan_parquet(
                 checkpoint_filepath,
                 cache=False,
-            ).drop(join_keys)
+            )
 
             pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
             job_role_col = IndCQC.main_job_role_clean_labelled
@@ -191,6 +205,7 @@ def main(
                 estimated_job_role_posts_lf.select(
                     pct_share_groups + [job_role_col, IndCQC.ascwds_job_role_counts]
                 )
+                .sort(pct_share_groups)
                 .group_by(pct_share_groups)
                 .agg(
                     pl.col(job_role_col),  # Keep to align during explode
@@ -320,10 +335,14 @@ def main(
             )
             filled_posts = pl.col(IndCQC.estimate_filled_posts_by_job_role)
 
-            stats_lf = estimated_job_role_posts_lf.group_by(pct_share_groups).agg(
-                rm_diff=JRUtils.ManagerialFilledPostAdjustmentExpr._rm_manager_diff(),
-                non_rm_total=(pl.when(is_non_rm_manager).then(filled_posts).sum()),
-                non_rm_len=(pl.when(is_non_rm_manager).then(pl.lit(1)).sum()),
+            stats_lf = (
+                estimated_job_role_posts_lf.sort(pct_share_groups)
+                .group_by(pct_share_groups)
+                .agg(
+                    rm_diff=JRUtils.ManagerialFilledPostAdjustmentExpr._rm_manager_diff(),
+                    non_rm_total=(pl.when(is_non_rm_manager).then(filled_posts).sum()),
+                    non_rm_len=(pl.when(is_non_rm_manager).then(pl.lit(1)).sum()),
+                )
             )
 
             estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
@@ -365,9 +384,11 @@ def main(
             ).alias(IndCQC.estimate_filled_posts_from_all_job_roles)
 
             # Since this is a scalar reduction per group, no explode is needed.
-            final_sum_agg_lf = estimated_job_role_posts_lf.group_by(
-                pct_share_groups
-            ).agg(sum_all_job_roles)
+            final_sum_agg_lf = (
+                estimated_job_role_posts_lf.sort(pct_share_groups)
+                .group_by(pct_share_groups)
+                .agg(sum_all_job_roles)
+            )
 
             estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
                 final_sum_agg_lf,
