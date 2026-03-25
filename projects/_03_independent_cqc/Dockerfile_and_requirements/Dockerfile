@@ -9,6 +9,7 @@ ENV PYTHONPATH=/app
 # Dependencies
 COPY projects/_03_independent_cqc/_01_merge/fargate/utils /app/projects/_03_independent_cqc/_01_merge/fargate/utils
 COPY projects/_03_independent_cqc/_02_clean/fargate/utils /app/projects/_03_independent_cqc/_02_clean/fargate/utils
+COPY projects/_03_independent_cqc/_03_impute/fargate/utils /app/projects/_03_independent_cqc/_03_impute/fargate/utils
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/utils /app/projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/utils
 COPY projects/_03_independent_cqc/_09_archive_estimates/fargate/utils /app/projects/_03_independent_cqc/_09_archive_estimates/fargate/utils
 COPY polars_utils /app/polars_utils
