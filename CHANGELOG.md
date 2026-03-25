@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 - Converted enrich_with_model_predictions utils function to Polars and converted the tests for the same.
 
 ### Changed
-
+- Finished converting the ind cqc cleaning validation from Spark to Polars.
 
 ### Fixed
 
