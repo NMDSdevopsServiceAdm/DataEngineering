@@ -28,6 +28,7 @@ def convert_pir_to_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.when(
             (pl.col(IndCQC.care_home) == CareHome.not_care_home)
             & people_col.is_not_null()
+            & (people_col > 0)
         )
         .then(people_col * ratio)
         .otherwise(None)

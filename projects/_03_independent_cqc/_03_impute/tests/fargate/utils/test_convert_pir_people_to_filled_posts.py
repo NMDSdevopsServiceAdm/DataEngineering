@@ -1,7 +1,8 @@
-import unittest
+from dataclasses import dataclass
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 import projects._03_independent_cqc._03_impute.fargate.utils.convert_pir_people_to_filled_posts as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
@@ -11,9 +12,65 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
     ConvertPirPeopleToFilledPostsSchema as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import CareHome
 
 
-class ValidRowsTests(unittest.TestCase):
+@dataclass
+class ConvertPirCase:
+    id: str
+    expected_data: list[tuple]
+
+
+convert_pir_test_cases = [
+    ConvertPirCase(
+        id="basic_conversion",
+        expected_data=[
+            (CareHome.not_care_home, 10.0, 14.0, 15.0),
+            (CareHome.not_care_home, 10.0, 16.0, 15.0),
+        ],
+    ),
+    ConvertPirCase(
+        id="only_applies_to_not_care_home",
+        expected_data=[
+            (CareHome.not_care_home, 10.0, 15.0, 15.0),
+            (CareHome.care_home, 10.0, 10.0, None), # returns null
+        ],
+    ),
+    ConvertPirCase(
+        id="null_and_zero_people_return_null",
+        expected_data=[
+            (CareHome.not_care_home, None, 10.0, None), # null returns null
+            (CareHome.not_care_home, 10.0, 15.0, 15.0),
+            (CareHome.not_care_home,  0.0, 10.0, None), # zero returns null
+        ],
+    ),
+]  # fmt: skip
+
+
+class TestConvertPirToFilledPosts:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in convert_pir_test_cases],
+    )
+    def test_function_returns_expected_values(self, case):
+        expected_lf = pl.LazyFrame(
+            case.expected_data,
+            Schemas.output_schema,
+            orient="row",
+        )
+
+        input_lf = expected_lf.drop(IndCQC.pir_filled_posts_model)
+
+        result_lf = job.convert_pir_to_filled_posts(input_lf)
+
+        pl_testing.assert_frame_equal(
+            result_lf,
+            expected_lf,
+            check_row_order=False,
+        )
+
+
+class TestValidRows:
     def test_valid_rows_filters_correctly(self):
         lf = pl.LazyFrame(
             Data.valid_rows,
@@ -32,5 +89,71 @@ class ValidRowsTests(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class GlobalRatioTests(unittest.TestCase):
-    pass
+@dataclass
+class ComputeGlobalRatioCase:
+    id: str
+    data: list[tuple]
+    expected_ratio: float | None
+    expect_error: bool = False
+
+
+compute_global_ratio_test_cases = [
+    ComputeGlobalRatioCase(
+        id="all_rows_valid",
+        data=[
+            (CareHome.not_care_home, 20.0, 25.0),
+            (CareHome.not_care_home, 20.0, 35.0),
+        ],
+        expected_ratio=1.5,
+    ),
+    ComputeGlobalRatioCase(
+        id="excludes_outliers",
+        data=[
+            (CareHome.not_care_home, 10.0, 15.0),
+            (CareHome.not_care_home, 1000.0, 10.0),
+            (CareHome.not_care_home, 10.0, 0.0),
+            (CareHome.not_care_home, None, 10.0),
+            (CareHome.care_home, 10.0, 20.0),
+        ],
+        expected_ratio=1.5,
+    ),
+    ComputeGlobalRatioCase(
+        id="mixed_validity",
+        data=[
+            (CareHome.not_care_home, 20.0, 25.0),
+            (CareHome.not_care_home, None, 10.0),
+            (CareHome.not_care_home, 10.0, None),
+            (CareHome.care_home, 10.0, 10.0),
+            (CareHome.not_care_home, 20.0, 35.0),
+        ],
+        expected_ratio=1.5,
+    ),
+    ComputeGlobalRatioCase(
+        id="no_valid_rows_raises_error",
+        data=[
+            (CareHome.not_care_home, 1000.0, 1.0),
+        ],
+        expected_ratio=None,
+        expect_error=True,
+    ),
+]  # fmt: skip
+
+
+class TestComputeGlobalRatio:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in compute_global_ratio_test_cases],
+    )
+    def test_function_returns_expected_values(self, case):
+        lf = pl.LazyFrame(
+            case.data,
+            Schemas.input_schema,
+            orient="row",
+        )
+
+        if case.expect_error:
+            with pytest.raises(ValueError):
+                job.compute_global_ratio(lf)
+        else:
+            ratio = job.compute_global_ratio(lf)
+            assert ratio == pytest.approx(case.expected_ratio)
