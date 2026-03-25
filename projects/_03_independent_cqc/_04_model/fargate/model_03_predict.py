@@ -71,8 +71,9 @@ def main(bucket_name: str, model_name: str) -> None:
     predictions_df = add_predictions_into_df(df, predictions, model_version, run_number)
 
     predictions_path = paths.generate_predictions_path(bucket_name, model_name)
+    predictions_file = f"{predictions_path}predictions.parquet"
 
-    utils.write_to_parquet(predictions_df, predictions_path, append=False)
+    utils.write_to_parquet(predictions_df, predictions_file, append=False)
 
 
 if __name__ == "__main__":
