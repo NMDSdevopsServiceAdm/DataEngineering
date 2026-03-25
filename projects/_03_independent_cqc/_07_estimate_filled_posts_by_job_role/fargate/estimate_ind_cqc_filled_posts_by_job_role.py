@@ -208,28 +208,11 @@ def main(
             .backward_fill()
             .alias(IndCQC.imputed_ascwds_job_role_ratios)
         )
-        imputation_lf = (
-            estimated_job_role_posts_lf.select(
-                groups + [order_key, IndCQC.ascwds_job_role_ratios]
-            )
+        estimated_job_role_posts_lf = (
+            estimated_job_role_posts_lf.sort(*groups, order_key)
             .group_by(groups)
-            .agg([pl.col(order_key), pl.col(IndCQC.ascwds_job_role_ratios)])
-            .with_columns(
-                [
-                    # Ensure local order within each group for interpolation
-                    pl.col(order_key).sort_by(order_key),
-                    pl.col(IndCQC.ascwds_job_role_ratios).sort_by(order_key),
-                ]
-            )
-            .with_columns(imputed_ratios)
-            .explode([order_key, IndCQC.imputed_ascwds_job_role_ratios])
-            .drop(IndCQC.ascwds_job_role_ratios)
-        )
-
-        estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
-            imputation_lf,
-            on=groups + [order_key],
-            how="left",
+            .agg(pl.all(), imputed_ratios)
+            .explode(cs.all() - cs.by_name(groups))
         )
 
         # Multiply imputed ratios by estimate filled posts to get counts.
