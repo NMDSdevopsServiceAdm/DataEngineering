@@ -268,28 +268,39 @@ def main(
             # ---------------------------------------------------------
             # 3. Rolling Sum and Rolling Ratios
             # ---------------------------------------------------------
-            rolling_groups = [IndCQC.primary_service_type, job_role_col]
 
+            rolling_groups = [IndCQC.primary_service_type, job_role_col]
+            monthly_groups = rolling_groups + [order_key]
+            # STEP A: Pre-aggregate down to monthly totals
+            # (Shrinks 152M rows -> ~50k rows instantly via Hash Aggregation)
+            monthly_totals_lf = (
+                estimated_job_role_posts_lf.select(
+                    monthly_groups + [IndCQC.imputed_ascwds_job_role_counts]
+                )
+                .group_by(monthly_groups)
+                .agg(pl.col(IndCQC.imputed_ascwds_job_role_counts).sum())
+            )
+
+            # STEP B: Sort and roll on the TINY dataset
+            # This .sort() is completely safe because it's only operating on ~50k rows
             rolling_sum_counts = (
                 pl.col(IndCQC.imputed_ascwds_job_role_counts)
-                .sum()
                 .rolling(order_key, period="6mo")
+                .sum()
                 .alias("rolling_sum")
             )
 
             rolling_agg_lf = (
-                estimated_job_role_posts_lf.select(
-                    rolling_groups + [order_key, IndCQC.imputed_ascwds_job_role_counts]
-                )
-                .sort(*rolling_groups, order_key)
+                monthly_totals_lf.sort(*rolling_groups, order_key)
                 .group_by(rolling_groups)
                 .agg(pl.col(order_key), rolling_sum_counts)
                 .explode([order_key, "rolling_sum"])
             )
 
+            # STEP C: Join the rolling sum back to the main 152M row table
             estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
                 rolling_agg_lf,
-                on=rolling_groups + [order_key],
+                on=monthly_groups,
                 how="left",
             )
 
