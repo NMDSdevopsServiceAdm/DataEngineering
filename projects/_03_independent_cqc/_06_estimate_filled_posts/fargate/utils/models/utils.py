@@ -1,8 +1,7 @@
 import polars as pl
 
-from projects._03_independent_cqc._04_model.utils.paths import generate_predictions_path
 from polars_utils import utils
-
+from projects._03_independent_cqc._04_model.utils.paths import generate_predictions_path
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
