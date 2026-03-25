@@ -10,6 +10,11 @@ resource "aws_ecs_task_definition" "ecs_task" {
     size_in_gib = var.ephemeral_storage_size
   }
 
+  volume {
+    name = "polars_temp_storage"
+    # For Fargate, leaving this empty uses the ephemeral storage
+  }
+
   runtime_platform {
     operating_system_family = "LINUX"
     cpu_architecture        = "X86_64"
@@ -32,6 +37,15 @@ resource "aws_ecs_task_definition" "ecs_task" {
           "awslogs-stream-prefix" = "ecs"
         }
       }
+      # Mount the volume to the path Polars expects
+      mountPoints = [
+        {
+          sourceVolume  = "polars_temp_storage"
+          containerPath = "/polars_scratch"
+          readOnly      = false
+        }
+      ]
+
       command = ["default"]
     }
   ])

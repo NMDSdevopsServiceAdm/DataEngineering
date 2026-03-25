@@ -287,28 +287,32 @@ def main(
         estimated_job_role_posts_lf.sink_parquet(
             tmp_file, mkdir=True, engine="streaming"
         )
-
-    adjustment_expr = JRUtils.ManagerialFilledPostAdjustmentExpr.build()
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        adjustment_expr.over(pct_share_groups).alias(
-            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
+    with time_it("manager_adjustments"):
+        estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False)
+        adjustment_expr = JRUtils.ManagerialFilledPostAdjustmentExpr.build()
+        estimated_job_role_posts_lf = (
+            estimated_job_role_posts_lf.sort(pct_share_groups)
+            .group_by(pct_share_groups)
+            .agg(
+                pl.all(),
+                adjustment_expr.alias(
+                    IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
+                ),
+                pl.sum(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted).alias(
+                    IndCQC.estimate_filled_posts_from_all_job_roles
+                ),
+            )
+            .explode(cs.all() - cs.by_name(pct_share_groups))
         )
-    )
 
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        pl.sum(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
-        .over(pct_share_groups)
-        .alias(IndCQC.estimate_filled_posts_from_all_job_roles)
-    )
+        log_polars_plan(estimated_job_role_posts_lf, "Final Transformation")
 
-    log_polars_plan(estimated_job_role_posts_lf, "Final Transformation")
-
-    utils.sink_to_parquet(
-        lazy_df=estimated_job_role_posts_lf,
-        output_path=estimates_by_job_role_destination,
-        partition_cols=partition_keys,
-        append=False,
-    )
+        utils.sink_to_parquet(
+            lazy_df=estimated_job_role_posts_lf,
+            output_path=estimates_by_job_role_destination,
+            partition_cols=partition_keys,
+            append=False,
+        )
 
 
 def log_polars_plan(lf: pl.LazyFrame, context: str) -> None:
