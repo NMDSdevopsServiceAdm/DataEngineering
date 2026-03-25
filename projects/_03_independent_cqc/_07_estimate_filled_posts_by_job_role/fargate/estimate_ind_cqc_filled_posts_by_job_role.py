@@ -167,6 +167,7 @@ def main(
         job_role_ratios = JRUtils.percentage_share(IndCQC.ascwds_job_role_counts).alias(
             IndCQC.ascwds_job_role_ratios
         )
+        estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(pct_share_groups)
         groupby_agg_lf = (
             estimated_job_role_posts_lf.group_by(pct_share_groups)
             .agg(pl.all(), job_role_ratios)
@@ -258,33 +259,22 @@ def main(
             pl.col(IndCQC.imputed_ascwds_job_role_counts)
             .sum()
             .rolling(order_key, period="6mo")
+            .alias("rolling_sum")
         )
-        rolling_stats_lf = (
-            estimated_job_role_posts_lf.group_by(rolling_groups)
-            .agg([pl.col(order_key), pl.col(IndCQC.imputed_ascwds_job_role_counts)])
-            .with_columns(
-                [
-                    # Sort the columns inside the group context
-                    pl.col(order_key).sort_by(order_key),
-                    pl.col(IndCQC.imputed_ascwds_job_role_counts).sort_by(order_key),
-                ]
-            )
-            .with_columns(rolling_sum_counts.alias("rolling_sum"))
-            .explode([order_key, "rolling_sum"])
-        )
-        share_denominators_lf = rolling_stats_lf.group_by(pct_share_groups).agg(
-            pl.col("rolling_sum").sum().alias("group_total_rolling_sum")
-        )
-        rolling_ratios = pl.col("rolling_sum") / pl.col("group_total_rolling_sum")
         estimated_job_role_posts_lf = (
-            estimated_job_role_posts_lf.join(
-                rolling_stats_lf,
-                on=rolling_groups,
-                how="left",
-            )
-            .join(share_denominators_lf, on=pct_share_groups, how="left")
-            .with_columns(rolling_ratios.alias(IndCQC.ascwds_job_role_rolling_ratio))
-            .drop(["group_total_rolling_sum"])
+            estimated_job_role_posts_lf.sort(*rolling_groups, order_key)
+            .group_by(rolling_groups)
+            .agg(pl.all(), rolling_sum_counts)
+            .explode(cs.all() - cs.by_name(rolling_groups))
+        )
+        rolling_ratios = JRUtils.percentage_share("rolling_sum").alias(
+            IndCQC.ascwds_job_role_rolling_ratio
+        )
+        estimated_job_role_posts_lf = (
+            estimated_job_role_posts_lf.sort(pct_share_groups)
+            .group_by(pct_share_groups)
+            .agg(pl.all(), rolling_ratios)
+            .explode(cs.all() - cs.by_name(pct_share_groups))
         )
 
         estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
