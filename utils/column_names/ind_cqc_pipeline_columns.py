@@ -271,7 +271,10 @@ class IndCqcColumns:
     person_given_name: str = CQCLClean.person_given_name
     person_roles: str = CQCLClean.person_roles
     person_title: str = CQCLClean.person_title
-    pir_filled_posts_model: str = "pir_filled_posts_model"
+    pir_filled_posts_model: str = (
+        "pir_filled_posts_model"  # replaced with "pir_filled_posts_estimate" in Polars
+    )
+    pir_filled_posts_estimate: str = "pir_filled_posts_estimate"
     pir_people_directly_employed_cleaned: str = (
         CQCPIRClean.pir_people_directly_employed_cleaned
     )
