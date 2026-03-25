@@ -7,7 +7,6 @@ from contextlib import contextmanager
 from pathlib import Path
 
 import polars as pl
-import polars.selectors as cs
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as JRUtils
 from polars_utils import utils
@@ -181,22 +180,37 @@ def main(
             ).drop(join_keys)
 
             pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
+            job_role_col = IndCQC.main_job_role_clean_labelled
 
+            # ---------------------------------------------------------
+            # 1. Job Role Ratios
+            # ---------------------------------------------------------
             job_role_ratios = JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
-            estimated_job_role_posts_lf = (
-                estimated_job_role_posts_lf.sort(pct_share_groups)
+
+            ratios_agg_lf = (
+                estimated_job_role_posts_lf.select(
+                    pct_share_groups + [job_role_col, IndCQC.ascwds_job_role_counts]
+                )
                 .group_by(pct_share_groups)
                 .agg(
-                    pl.all().exclude(pct_share_groups),
+                    pl.col(job_role_col),  # Keep to align during explode
                     job_role_ratios.alias(IndCQC.ascwds_job_role_ratios),
                 )
-                .explode(cs.all() - cs.by_name(pct_share_groups))
+                .explode([job_role_col, IndCQC.ascwds_job_role_ratios])
             )
 
-            # Do linear interpolation, then forward fill and backward fill to
-            # get a full time series for each job role and location.
-            impute_groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
+            estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
+                ratios_agg_lf,
+                on=pct_share_groups + [job_role_col],
+                how="left",
+            )
+
+            # ---------------------------------------------------------
+            # 2. Imputation (Interpolate, FF, BF)
+            # ---------------------------------------------------------
+            impute_groups = [IndCQC.location_id, job_role_col]
             order_key = IndCQC.cqc_location_import_date
+
             imputed_ratios = (
                 pl.col(IndCQC.ascwds_job_role_ratios)
                 .interpolate()
@@ -204,51 +218,85 @@ def main(
                 .backward_fill()
                 .alias(IndCQC.imputed_ascwds_job_role_ratios)
             )
-            estimated_job_role_posts_lf = (
-                estimated_job_role_posts_lf.sort(*impute_groups, order_key)
+
+            impute_agg_lf = (
+                estimated_job_role_posts_lf.select(
+                    impute_groups + [order_key, IndCQC.ascwds_job_role_ratios]
+                )
+                .sort(*impute_groups, order_key)
                 .group_by(impute_groups)
-                .agg(pl.all().exclude(impute_groups), imputed_ratios)
-                .explode(cs.all() - cs.by_name(impute_groups))
+                .agg(
+                    pl.col(order_key),  # Keep to align during explode
+                    imputed_ratios,
+                )
+                .explode([order_key, IndCQC.imputed_ascwds_job_role_ratios])
             )
 
-            # Multiply imputed ratios by estimate filled posts to get counts.
+            estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
+                impute_agg_lf, on=impute_groups + [order_key], how="left"
+            )
+
+            # Multiply imputed ratios by estimate filled posts
             estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
                 pl.col(IndCQC.estimate_filled_posts)
                 .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
                 .alias(IndCQC.imputed_ascwds_job_role_counts)
             )
 
-            # Get the proportions of the rolling sum of job counts within each location.
-            rolling_groups = [
-                IndCQC.primary_service_type,
-                IndCQC.main_job_role_clean_labelled,
-            ]
+            # ---------------------------------------------------------
+            # 3. Rolling Sum and Rolling Ratios
+            # ---------------------------------------------------------
+            rolling_groups = [IndCQC.primary_service_type, job_role_col]
+
             rolling_sum_counts = (
                 pl.col(IndCQC.imputed_ascwds_job_role_counts)
                 .sum()
                 .rolling(order_key, period="6mo")
                 .alias("rolling_sum")
             )
-            estimated_job_role_posts_lf = (
-                estimated_job_role_posts_lf.sort(*rolling_groups, order_key)
+
+            rolling_agg_lf = (
+                estimated_job_role_posts_lf.select(
+                    rolling_groups + [order_key, IndCQC.imputed_ascwds_job_role_counts]
+                )
+                .sort(*rolling_groups, order_key)
                 .group_by(rolling_groups)
-                .agg(pl.all().exclude(rolling_groups), rolling_sum_counts)
-                .explode(cs.all() - cs.by_name(rolling_groups))
-            )
-            rolling_ratios = JRUtils.percentage_share("rolling_sum").alias(
-                IndCQC.ascwds_job_role_rolling_ratio
-            )
-            estimated_job_role_posts_lf = (
-                estimated_job_role_posts_lf.sort(pct_share_groups)
-                .group_by(pct_share_groups)
-                .agg(pl.all().exclude(pct_share_groups), rolling_ratios)
-                .explode(cs.all() - cs.by_name(pct_share_groups))
+                .agg(pl.col(order_key), rolling_sum_counts)
+                .explode([order_key, "rolling_sum"])
             )
 
+            estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
+                rolling_agg_lf,
+                on=rolling_groups + [order_key],
+                how="left",
+            )
+
+            rolling_ratios_agg_lf = (
+                estimated_job_role_posts_lf.select(
+                    pct_share_groups + [job_role_col, "rolling_sum"]
+                )
+                .group_by(pct_share_groups)
+                .agg(
+                    pl.col(job_role_col),
+                    JRUtils.percentage_share("rolling_sum").alias(
+                        IndCQC.ascwds_job_role_rolling_ratio
+                    ),
+                )
+                .explode([job_role_col, IndCQC.ascwds_job_role_rolling_ratio])
+            )
+
+            estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
+                rolling_ratios_agg_lf,
+                on=pct_share_groups + [job_role_col],
+                how="left",
+            ).drop("rolling_sum")
+
+            # ---------------------------------------------------------
+            # Coalesce & Multiply
+            # ---------------------------------------------------------
             estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
                 utils.coalesce_with_source_labels(
                     cols=[
-                        # TODO: Uncomment when filtered column is created.
                         # IndCQC.ascwds_job_role_ratios_filtered,
                         IndCQC.imputed_ascwds_job_role_ratios,
                         IndCQC.ascwds_job_role_rolling_ratio,
@@ -264,11 +312,14 @@ def main(
                 ).alias(IndCQC.estimate_filled_posts_by_job_role)
             )
 
+            # ---------------------------------------------------------
+            # Stats & Manager Adjustment
+            # ---------------------------------------------------------
             is_non_rm_manager = (
                 JRUtils.ManagerialFilledPostAdjustmentExpr._is_non_rm_manager()
             )
             filled_posts = pl.col(IndCQC.estimate_filled_posts_by_job_role)
-            # Calculate the grouped stats first and then join back.
+
             stats_lf = estimated_job_role_posts_lf.group_by(pct_share_groups).agg(
                 rm_diff=JRUtils.ManagerialFilledPostAdjustmentExpr._rm_manager_diff(),
                 non_rm_total=(pl.when(is_non_rm_manager).then(filled_posts).sum()),
@@ -306,14 +357,22 @@ def main(
                 .drop("pct_share", "rm_diff", "non_rm_total", "non_rm_len")
             )
 
+            # ---------------------------------------------------------
+            # 4. Final Sum (Scalar Aggregation)
+            # ---------------------------------------------------------
             sum_all_job_roles = pl.sum(
                 IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
             ).alias(IndCQC.estimate_filled_posts_from_all_job_roles)
-            estimated_job_role_posts_lf = (
-                estimated_job_role_posts_lf.sort(pct_share_groups)
-                .group_by(pct_share_groups)
-                .agg(pl.all().exclude(pct_share_groups), sum_all_job_roles)
-                .explode(cs.all() - cs.by_name(pct_share_groups))
+
+            # Since this is a scalar reduction per group, no explode is needed.
+            final_sum_agg_lf = estimated_job_role_posts_lf.group_by(
+                pct_share_groups
+            ).agg(sum_all_job_roles)
+
+            estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
+                final_sum_agg_lf,
+                on=pct_share_groups,
+                how="left",
             )
 
             log_polars_plan(estimated_job_role_posts_lf, "Final Transformation")
