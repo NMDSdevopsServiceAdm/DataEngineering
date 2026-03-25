@@ -63,7 +63,7 @@ def main(
             NumericalValues.number_of_days_in_window,
             [IndCQC.primary_service_type, IndCQC.number_of_beds_banded_for_rolling_avg],
         ).alias(IndCQC.banded_bed_ratio_rolling_average_model)
-    )
+    ).drop(IndCQC.number_of_beds_banded_for_rolling_avg)
 
     # convert_care_home_ratios_to_posts
 
