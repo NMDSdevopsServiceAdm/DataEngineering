@@ -6,6 +6,14 @@ resource "aws_ecs_task_definition" "ecs_task" {
   memory                   = var.ram_size
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_task_role.arn
+  ephemeral_storage {
+    size_in_gib = var.ephemeral_storage_size
+  }
+
+  volume {
+    name = "polars_temp_storage"
+    # For Fargate, leaving this empty uses the ephemeral storage
+  }
 
   runtime_platform {
     operating_system_family = "LINUX"
@@ -14,12 +22,18 @@ resource "aws_ecs_task_definition" "ecs_task" {
 
   container_definitions = jsonencode([
     {
-      name        = "${var.task_name}-container",
-      image       = "${local.account_id}.dkr.ecr.${var.region}.amazonaws.com/${var.ecr_repo_name}:${var.tag_name}",
-      essential   = true,
-      cpu         = var.cpu_size,
-      memory      = var.ram_size,
-      environment = var.environment
+      name      = "${var.task_name}-container",
+      image     = "${local.account_id}.dkr.ecr.${var.region}.amazonaws.com/${var.ecr_repo_name}:${var.tag_name}",
+      essential = true,
+      cpu       = var.cpu_size,
+      memory    = var.ram_size,
+
+      environment = concat(var.environment, [
+        { name = "POLARS_TEMP_DIR", value = "/polars_scratch" },
+        { name = "POLARS_STREAMING_GROUPBY_SPILL_SIZE", value = "1000000000" },
+        { name = "POLARS_VERBOSE", value = "1" }
+      ])
+
       logConfiguration = {
         logDriver = "awslogs",
         options = {
@@ -28,6 +42,16 @@ resource "aws_ecs_task_definition" "ecs_task" {
           "awslogs-stream-prefix" = "ecs"
         }
       }
+
+      # Mount the volume to the path Polars expects
+      mountPoints = [
+        {
+          sourceVolume  = "polars_temp_storage"
+          containerPath = "/polars_scratch"
+          readOnly      = false
+        }
+      ]
+
       command = ["default"]
     }
   ])

@@ -1,9 +1,9 @@
 FROM python:3.11-slim
 
-RUN mkdir -p /tmp/polars
 WORKDIR /app
 
-ENV POLARS_TEMP_DIR=/tmp/polars
+RUN mkdir -p /polars_scratch && chmod 777 /polars_scratch
+ENV POLARS_TEMP_DIR=/polars_scratch
 ENV PYTHONPATH=/app
 
 # Dependencies

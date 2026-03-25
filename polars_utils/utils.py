@@ -12,7 +12,7 @@ from botocore.exceptions import ClientError
 
 def scan_parquet(
     source: str | Path,
-    schema: pl.Schema | None = None,
+    schema: pl.Schema | dict[str, pl.DataType] | None = None,
     selected_columns: list[str] | None = None,
 ) -> pl.LazyFrame:
     """
@@ -20,7 +20,8 @@ def scan_parquet(
 
     Args:
         source (str | Path): the full path in s3 of the dataset
-        schema (pl.Schema | None, optional): Polars schema to apply to dataset read
+        schema (pl.Schema | dict[str, pl.DataType] | None, optional): Polars schema
+            to apply to dataset read.
         selected_columns (list[str] | None, optional): list of columns to return as a
             subset of the columns in the schema. Defaults to None.
 
@@ -47,6 +48,10 @@ def scan_parquet(
     lf = pl.scan_parquet(
         source,
         schema=schema,
+        low_memory=True,
+        rechunk=False,
+        use_statistics=True,
+        cache=False,
         cast_options=pl.ScanCastOptions(
             missing_struct_fields="insert",
             extra_struct_fields="ignore",
