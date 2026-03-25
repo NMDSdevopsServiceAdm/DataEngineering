@@ -170,7 +170,7 @@ def main(
         estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(pct_share_groups)
         groupby_agg_lf = (
             estimated_job_role_posts_lf.group_by(pct_share_groups)
-            .agg(pl.all(), job_role_ratios)
+            .agg(pl.all().exclude(pct_share_groups), job_role_ratios)
             .explode(cs.all() - cs.by_name(pct_share_groups))
         )
 
@@ -211,7 +211,7 @@ def main(
         estimated_job_role_posts_lf = (
             estimated_job_role_posts_lf.sort(*groups, order_key)
             .group_by(groups)
-            .agg(pl.all(), imputed_ratios)
+            .agg(pl.all().exclude(groups), imputed_ratios)
             .explode(cs.all() - cs.by_name(groups))
         )
 
@@ -247,7 +247,7 @@ def main(
         estimated_job_role_posts_lf = (
             estimated_job_role_posts_lf.sort(*rolling_groups, order_key)
             .group_by(rolling_groups)
-            .agg(pl.all(), rolling_sum_counts)
+            .agg(pl.all().exclude(rolling_groups), rolling_sum_counts)
             .explode(cs.all() - cs.by_name(rolling_groups))
         )
         rolling_ratios = JRUtils.percentage_share("rolling_sum").alias(
@@ -256,7 +256,7 @@ def main(
         estimated_job_role_posts_lf = (
             estimated_job_role_posts_lf.sort(pct_share_groups)
             .group_by(pct_share_groups)
-            .agg(pl.all(), rolling_ratios)
+            .agg(pl.all().exclude(pct_share_groups), rolling_ratios)
             .explode(cs.all() - cs.by_name(pct_share_groups))
         )
 
