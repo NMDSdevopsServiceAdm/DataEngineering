@@ -22,7 +22,7 @@ class ThresholdValues:
     months_in_two_years: int = 24
 
 
-# converted to polars -> projects\_03_independent_cqc\_03_impute\fargate\utils\model_and_merge_pir_filled_posts.py
+# converted to polars -> projects\_03_independent_cqc\_03_impute\fargate\utils\convert_pir_people_to_filled_posts.py
 def model_pir_filled_posts(
     df: DataFrame, linear_regression_model_source: str
 ) -> DataFrame:
