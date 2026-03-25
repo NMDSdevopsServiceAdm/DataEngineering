@@ -12,6 +12,9 @@ All notable changes to this project will be documented in this file.
 
 - Converted enrich_with_model_predictions utils function to Polars and converted the tests for the same.
 
+- Converted model_calculate_rolling_average from Spark to Polars. Called Polars function in imputation job, which
+  required calling create_banded_bed_count_column so added that too.
+
 ### Changed
 - Added la permissions to columns imported in merge_coverage_data job.
 

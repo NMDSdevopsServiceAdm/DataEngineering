@@ -1,7 +1,18 @@
+from dataclasses import dataclass
+
+import polars as pl
+
+import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+
+
+@dataclass
+class NumericalValues:
+    number_of_days_in_window: str = "3mo5d"  # 3 months and 5 days
 
 
 def main(
@@ -32,11 +43,27 @@ def main(
 
     # model_imputation_with_extrapolation_and_interpolation - imputed_filled_posts_per_bed_ratio_model
 
-    # model_calculate_rolling_average - posts_rolling_average_model
+    lf = lf.with_columns(
+        calculate_rolling_average(
+            IndCQC.imputed_filled_post_model,
+            NumericalValues.number_of_days_in_window,
+            [IndCQC.primary_service_type],
+        ).alias(IndCQC.posts_rolling_average_model)
+    )
 
-    # create_banded_bed_count_column
+    lf = cUtils.create_banded_bed_count_column(
+        lf,
+        IndCQC.number_of_beds_banded_for_rolling_avg,
+        [0, 1, 10, 15, 20, 25, 50, float("Inf")],
+    )
 
-    # model_calculate_rolling_average - banded_bed_ratio_rolling_average_model
+    lf = lf.with_columns(
+        calculate_rolling_average(
+            IndCQC.imputed_filled_posts_per_bed_ratio_model,
+            NumericalValues.number_of_days_in_window,
+            [IndCQC.primary_service_type, IndCQC.number_of_beds_banded_for_rolling_avg],
+        ).alias(IndCQC.banded_bed_ratio_rolling_average_model)
+    ).drop(IndCQC.number_of_beds_banded_for_rolling_avg)
 
     # convert_care_home_ratios_to_posts
 
@@ -62,6 +89,35 @@ def main(
     print("Completed imputing independent CQC ASCWDS and PIR")
 
 
+def calculate_rolling_average(
+    column_to_average: str,
+    period: str,
+    columns_to_partition_by: list,
+) -> pl.Expr:
+    """
+    Calculate the rolling mean of the "column_to_average" over a given period
+    and partition.
+
+    This function calculates the rolling mean of a column based on a given
+    number of days and a column to partition by. For example, a 3-day rolling
+    average includes the current day plus the two preceding days.
+
+    Args:
+        column_to_average (str): The name of the column with the values to average.
+        period (str): period (str): String language timedelta. See:
+          https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.rolling.html
+        columns_to_partition_by (list): The name of the column to partition by.
+
+    Returns:
+        pl.Expr: Expression for rolling mean of column_to_average.
+    """
+    return (
+        pl.mean(column_to_average)
+        .rolling(index_column=IndCQC.cqc_location_import_date, period=period)
+        .over(columns_to_partition_by)
+    )
+
+
 if __name__ == "__main__":
     print("Running impute independent CQC ASCWDS and PIR job")
 
@@ -81,4 +137,6 @@ if __name__ == "__main__":
         destination=args.destination,
     )
 
+    print("Finished impute independent CQC ASCWDS and PIR job")
+    print("Finished impute independent CQC ASCWDS and PIR job")
     print("Finished impute independent CQC ASCWDS and PIR job")
