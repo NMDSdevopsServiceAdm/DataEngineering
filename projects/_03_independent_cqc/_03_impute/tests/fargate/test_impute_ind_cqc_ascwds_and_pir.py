@@ -27,10 +27,12 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
     mock_data = Mock(name="data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.calculate_rolling_average")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_data)
     def test_main_runs_successfully(
         self,
         scan_parquet_mock: Mock,
+        calculate_rolling_average_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
 
@@ -40,6 +42,7 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
         )
 
         scan_parquet_mock.assert_called_once()
+        calculate_rolling_average_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
