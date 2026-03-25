@@ -5,6 +5,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.utils import convert_days_to_unix_time
 
 
+# converted to polars as "calculate_rolling_average" -> projects\_03_independent_cqc\_03_impute\fargate\impute_ind_cqc_ascwds_and_pir.py
 def model_calculate_rolling_average(
     df: DataFrame,
     column_to_average: str,
