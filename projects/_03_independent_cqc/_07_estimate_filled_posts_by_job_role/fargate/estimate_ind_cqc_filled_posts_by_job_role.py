@@ -307,13 +307,15 @@ def main(
             how="left",
         )
 
-        estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-            pct_share=pl.when(is_non_rm_manager).then(
-                pl.when(pl.col("non_rm_total") == 0)
-                .then(1 / pl.col("non_rm_len"))
-                .otherwise(filled_posts / pl.col("non_rm_total"))
-            ),
-            adjusted_posts=(
+        estimated_job_role_posts_lf = (
+            estimated_job_role_posts_lf.with_columns(
+                pct_share=pl.when(is_non_rm_manager).then(
+                    pl.when(pl.col("non_rm_total") == 0)
+                    .then(1 / pl.col("non_rm_len"))
+                    .otherwise(filled_posts / pl.col("non_rm_total"))
+                )
+            )
+            .with_columns(
                 pl.when(is_non_rm_manager)
                 .then(
                     filled_posts.add(pl.col("rm_diff").mul(pl.col("pct_share"))).clip(
@@ -323,7 +325,21 @@ def main(
                 .when(JRUtils.ManagerialFilledPostAdjustmentExpr._is_registered_manager)
                 .then(JRUtils.ManagerialFilledPostAdjustmentExpr._clip_rm_count())
                 .otherwise(filled_posts)
+                .alias(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
+            )
+            .drop("pct_share", "rm_diff", "non_rm_total", "non_rm_len")
+        )
+
+        sum_all_job_roles = (
+            pl.sum(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted).alias(
+                IndCQC.estimate_filled_posts_from_all_job_roles
             ),
+        )
+        estimated_job_role_posts_lf = (
+            estimated_job_role_posts_lf.sort(pct_share_groups)
+            .group_by(pct_share_groups)
+            .agg(pl.all().exclude(pct_share_groups), sum_all_job_roles)
+            .explode(cs.all() - cs.by_name(pct_share_groups))
         )
 
         # adjustment_expr = JRUtils.ManagerialFilledPostAdjustmentExpr.build()
