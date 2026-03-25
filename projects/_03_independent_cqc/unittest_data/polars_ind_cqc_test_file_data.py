@@ -478,8 +478,9 @@ class ValidateCleanIndCQCData:
 
     expected_size_rows = [
         ("1-001", date(2025, 1, 1), "name", "postcode", "Y", date(2025, 1, 1), 1, 1, "2025", "01", "01"),
+        ("1-002", date(2025, 1, 1), "name", "postcode", "Y", date(2025, 1, 1), 1, 1, "2025", "01", "01"),
         ("1-001", date(2025, 1, 1), "name", "postcode", "Y", date(2025, 1, 1), 1, 1, "2025", "01", "02"),
-        ("1-002", date(2025, 1, 1), "name", "postcode", "Y", date(2025, 1, 1), 1, 1, "2025", "01", "02"),
+
     ] # fmt: skip
 
 
