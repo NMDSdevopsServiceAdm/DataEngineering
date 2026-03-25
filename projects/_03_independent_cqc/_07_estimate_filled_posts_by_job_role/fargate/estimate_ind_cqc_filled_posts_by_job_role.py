@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import tempfile
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -27,10 +28,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-logging.info(f"Polars temp dir set at: {os.environ['POLARS_TEMP_DIR']}")
+polars_temp_dir = os.getenv("POLARS_TEMP_DIR", tempfile.gettempdir())
+
+logging.info(f"Polars temp dir set at: {polars_temp_dir}")
 logging.info(f"Polars max threads set at: {os.environ['POLARS_MAX_THREADS']}")
 
-CHECKPOINT_PATH = Path(os.environ["POLARS_TEMP_DIR"]) / "checkpoints"
+CHECKPOINT_PATH = Path(polars_temp_dir) / "checkpoints"
 
 partition_keys = [Keys.year]
 
