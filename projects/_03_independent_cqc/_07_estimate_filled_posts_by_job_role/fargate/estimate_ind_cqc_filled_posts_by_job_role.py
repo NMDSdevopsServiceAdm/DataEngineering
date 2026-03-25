@@ -293,10 +293,9 @@ def main(
             JRUtils.ManagerialFilledPostAdjustmentExpr._is_non_rm_manager()
         )
         filled_posts = pl.col(IndCQC.estimate_filled_posts_by_job_role)
+        # Calculate the grouped stats first and then join back.
         stats_lf = estimated_job_role_posts_lf.group_by(pct_share_groups).agg(
-            # Calculate the RM diff once per group
             rm_diff=JRUtils.ManagerialFilledPostAdjustmentExpr._rm_manager_diff(),
-            # Calculate the denominator for proportions once per group
             non_rm_total=(pl.when(is_non_rm_manager).then(filled_posts).sum()),
             non_rm_len=(pl.when(is_non_rm_manager).then(pl.lit(1)).sum()),
         )
