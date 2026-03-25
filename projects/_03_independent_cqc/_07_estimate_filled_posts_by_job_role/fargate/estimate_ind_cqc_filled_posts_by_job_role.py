@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from contextlib import contextmanager
+from pathlib import Path
 
 import polars as pl
 import polars.selectors as cs
@@ -28,6 +29,8 @@ logger = logging.getLogger(__name__)
 
 logging.info(f"Polars temp dir set at: {os.environ['POLARS_TEMP_DIR']}")
 logging.info(f"Polars max threads set at: {os.environ['POLARS_MAX_THREADS']}")
+
+CHECKPOINT_PATH = Path(os.environ["POLARS_TEMP_DIR"]) / "checkpoints"
 
 partition_keys = [Keys.year]
 
@@ -160,45 +163,36 @@ def main(
                 )
             )
 
-            pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
             log_polars_plan(estimated_job_role_posts_lf, "Post Join")
-            # Sink to temp, then rescan to reset Lazy pipeline.
-            tmp_dest = estimates_by_job_role_destination.replace(
-                "dataset=", "dataset=temp_"
-            )
-            tmp_file = f"{tmp_dest}file.parquet"
+            checkpoint_filepath = CHECKPOINT_PATH / "checkpoint1.parquet"
             estimated_job_role_posts_lf.sink_parquet(
-                tmp_file, mkdir=True, engine="streaming"
+                checkpoint_filepath,
+                mkdir=True,
+                engine="streaming",
             )
 
-        with time_it("group-by-agg"):
-            estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False).drop(
-                join_keys
-            )
-            job_role_ratios = JRUtils.percentage_share(
-                IndCQC.ascwds_job_role_counts
-            ).alias(IndCQC.ascwds_job_role_ratios)
-            estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(
-                pct_share_groups
-            )
-            groupby_agg_lf = (
-                estimated_job_role_posts_lf.group_by(pct_share_groups)
-                .agg(pl.all().exclude(pct_share_groups), job_role_ratios)
+        with time_it("Final pipeline"):
+            estimated_job_role_posts_lf = pl.scan_parquet(
+                checkpoint_filepath,
+                cache=False,
+            ).drop(join_keys)
+
+            pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
+
+            job_role_ratios = JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
+            estimated_job_role_posts_lf = (
+                estimated_job_role_posts_lf.sort(pct_share_groups)
+                .group_by(pct_share_groups)
+                .agg(
+                    pl.all().exclude(pct_share_groups),
+                    job_role_ratios.alias(IndCQC.ascwds_job_role_ratios),
+                )
                 .explode(cs.all() - cs.by_name(pct_share_groups))
             )
 
-            log_polars_plan(groupby_agg_lf, "Groupby agg pct share")
-            tmp_dest = estimates_by_job_role_destination.replace(
-                "dataset=", "dataset=temp1_"
-            )
-            tmp_file = f"{tmp_dest}file.parquet"
-            groupby_agg_lf.sink_parquet(tmp_file, mkdir=True, engine="streaming")
-
-        # Do linear interpolation, then forward fill and backward fill to get a full
-        # time series for each job role and location.
-        with time_it("impute_ratios"):
-            estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False)
-            groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
+            # Do linear interpolation, then forward fill and backward fill to
+            # get a full time series for each job role and location.
+            impute_groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
             order_key = IndCQC.cqc_location_import_date
             imputed_ratios = (
                 pl.col(IndCQC.ascwds_job_role_ratios)
@@ -208,10 +202,10 @@ def main(
                 .alias(IndCQC.imputed_ascwds_job_role_ratios)
             )
             estimated_job_role_posts_lf = (
-                estimated_job_role_posts_lf.sort(*groups, order_key)
-                .group_by(groups)
-                .agg(pl.all().exclude(groups), imputed_ratios)
-                .explode(cs.all() - cs.by_name(groups))
+                estimated_job_role_posts_lf.sort(*impute_groups, order_key)
+                .group_by(impute_groups)
+                .agg(pl.all().exclude(impute_groups), imputed_ratios)
+                .explode(cs.all() - cs.by_name(impute_groups))
             )
 
             # Multiply imputed ratios by estimate filled posts to get counts.
@@ -221,18 +215,7 @@ def main(
                 .alias(IndCQC.imputed_ascwds_job_role_counts)
             )
 
-            log_polars_plan(estimated_job_role_posts_lf, "groupby-impute-agg")
-            tmp_dest = estimates_by_job_role_destination.replace(
-                "dataset=", "dataset=temp2_"
-            )
-            tmp_file = f"{tmp_dest}file.parquet"
-            estimated_job_role_posts_lf.sink_parquet(
-                tmp_file, mkdir=True, engine="streaming"
-            )
-
-        # Get the proportions of the rolling sum of job counts within each location.
-        with time_it("rolling_ratios_and_coalesce"):
-            estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False)
+            # Get the proportions of the rolling sum of job counts within each location.
             rolling_groups = [
                 IndCQC.primary_service_type,
                 IndCQC.main_job_role_clean_labelled,
@@ -278,16 +261,6 @@ def main(
                 ).alias(IndCQC.estimate_filled_posts_by_job_role)
             )
 
-            log_polars_plan(estimated_job_role_posts_lf, "rolling_ratios_and_coalesce")
-            tmp_dest = estimates_by_job_role_destination.replace(
-                "dataset=", "dataset=temp3_"
-            )
-            tmp_file = f"{tmp_dest}file.parquet"
-            estimated_job_role_posts_lf.sink_parquet(
-                tmp_file, mkdir=True, engine="streaming"
-            )
-        with time_it("manager_adjustments"):
-            estimated_job_role_posts_lf = pl.scan_parquet(tmp_file, cache=False)
             is_non_rm_manager = (
                 JRUtils.ManagerialFilledPostAdjustmentExpr._is_non_rm_manager()
             )
