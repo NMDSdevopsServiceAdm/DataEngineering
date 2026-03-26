@@ -23,7 +23,6 @@ DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_CARE_HOMES = {
 def null_values_exceeding_repetition_limit(
     lf: pl.LazyFrame,
     column_to_clean: str,
-    cleaned_column_name: str,
     care_home: bool,
 ) -> pl.LazyFrame:
     """
@@ -39,7 +38,6 @@ def null_values_exceeding_repetition_limit(
     Args:
         lf (pl.LazyFrame): A LazyFrame with consecutive import dates.
         column_to_clean (str): A column with repeated values.
-        cleaned_column_name (str): A column with cleaned values.
         care_home (bool): True when cleaning care home values, False when cleaning
             non-residential values.
 
@@ -79,13 +77,13 @@ def null_values_exceeding_repetition_limit(
         .otherwise(None)
     )
 
-    lf = lf.with_columns(cleaned_expr.alias(cleaned_column_name))
+    lf = lf.with_columns(cleaned_expr.alias(column_to_clean))
 
     lf = update_filtering_rule(
         lf=lf,
         filter_rule_col_name=filter_rule_column_name,
         raw_col_name=column_to_clean,
-        clean_col_name=cleaned_column_name,
+        clean_col_name=column_to_clean,
         populated_rule=CTFilteringRule.populated,
         new_rule_name=CTFilteringRule.location_repeats_total_posts,
     )

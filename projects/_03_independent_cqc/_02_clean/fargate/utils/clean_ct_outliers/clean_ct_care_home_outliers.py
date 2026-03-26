@@ -54,7 +54,6 @@ def clean_capacity_tracker_care_home_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = null_values_exceeding_repetition_limit(
         lf=lf,
         column_to_clean=IndCQC.ct_care_home_total_employed_cleaned,
-        cleaned_column_name=IndCQC.ct_care_home_total_employed_cleaned,
         care_home=True,
     )
 
