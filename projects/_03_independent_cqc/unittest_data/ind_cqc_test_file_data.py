@@ -4151,17 +4151,17 @@ class NullCtPostsToBedsOutliers:
 class ValidateCleanedIndCqcData:
     # fmt: off
     merged_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.care_home, "name", "postcode", "2024", "01", "01"),
-        ("1-000000002", date(2024, 1, 1), CareHome.not_care_home, "name", "postcode", "2024", "01", "01"),
-        ("1-000000001", date(2024, 2, 1), CareHome.care_home, "name", "postcode", "2024", "02", "01"),
-        ("1-000000002", date(2024, 2, 1), CareHome.not_care_home, "name", "postcode", "2024", "02", "01"),
+        ("1-000000001", date(2024, 1, 1), CareHome.care_home, "name", "postcode"),
+        ("1-000000002", date(2024, 1, 1), CareHome.not_care_home, "name", "postcode"),
+        ("1-000000001", date(2024, 2, 1), CareHome.care_home, "name", "postcode"),
+        ("1-000000002", date(2024, 2, 1), CareHome.not_care_home, "name", "postcode"),
     ]
 
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "01"),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "01"),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "09"),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "09"),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
     ]
     # fmt: on
 
@@ -4172,9 +4172,6 @@ class ValidateCleanedIndCqcData:
             CareHome.care_home,
             "name",
             "postcode",
-            "2024",
-            "01",
-            "01",
         ),
     ]
 
@@ -5135,10 +5132,6 @@ class DiagnosticsOnKnownFilledPostsData:
             None,
             None,
             10.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
         ),
     ]
 
@@ -5163,10 +5156,6 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             11.0,
             None,
-            "2024",
-            "01",
-            "01",
-            "20240101",
         ),
         (
             "loc 1",
@@ -5185,10 +5174,6 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             11.0,
             None,
-            "2024",
-            "01",
-            "01",
-            "20240101",
         ),
         (
             "loc 2",
@@ -5207,10 +5192,6 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             None,
             10.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
         ),
     ]
 
@@ -5240,10 +5221,6 @@ class DiagnosticsUtilsData:
             PrimaryServiceType.care_home_only,
             13.0,
             12.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
         ),
     ]
     expected_restructure_dataframe_rows = [
@@ -5254,10 +5231,6 @@ class DiagnosticsUtilsData:
             10.0,
             "model_type_one",
             13.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
         ),
         (
             "loc 1",
@@ -5266,10 +5239,6 @@ class DiagnosticsUtilsData:
             10.0,
             "model_type_two",
             12.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
         ),
     ]
     # fmt: off
