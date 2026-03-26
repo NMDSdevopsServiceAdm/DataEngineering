@@ -3,9 +3,6 @@ import polars as pl
 from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
     update_filtering_rule,
 )
-from projects._03_independent_cqc._02_clean.fargate.utils.utils import (
-    create_column_with_repeated_values_removed,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CTFilteringRule
 
