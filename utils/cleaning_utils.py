@@ -235,22 +235,10 @@ def reduce_dataset_to_earliest_file_per_month(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with only the first import date of each month.
     """
-    earliest_date_in_month = "earliest_date_in_month"
-
-    w = Window.partitionBy(
-        F.year(IndCQC.cqc_location_import_date),
-        F.month(IndCQC.cqc_location_import_date),
-    )
-
-    df = (
-        df.withColumn(
-            earliest_date_in_month,
-            F.min(F.col(IndCQC.cqc_location_import_date)).over(w),
-        )
-        .where(F.col(IndCQC.cqc_location_import_date) == F.col(earliest_date_in_month))
-        .drop(earliest_date_in_month)
-    )
-
+    earliest_day_in_month = "first_day_in_month"
+    w = Window.partitionBy(Keys.year, Keys.month).orderBy(Keys.day)
+    df = df.withColumn(earliest_day_in_month, F.first(Keys.day).over(w))
+    df = df.where(df[earliest_day_in_month] == df[Keys.day]).drop(earliest_day_in_month)
     return df
 
 
