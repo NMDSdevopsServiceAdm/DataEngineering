@@ -78,7 +78,7 @@ class TestValidRows:
             orient="row",
         )
 
-        returned_lf = lf.filter(job.valid_rows())
+        returned_lf = lf.filter(job.valid_rows(ratio_cutoff=2.0, abs_diff_cutoff=10))
 
         expected_lf = pl.LazyFrame(
             Data.expected_valid_rows,

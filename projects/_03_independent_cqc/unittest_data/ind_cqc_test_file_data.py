@@ -48,12 +48,12 @@ class ImputeIndCqcAscwdsAndPirData:
 @dataclass
 class ModelAndMergePirData:
     expected_convert_pir_to_filled_posts_rows = [
-        ("loc 1", date(2024, 1, 1), CareHome.not_care_home,   10, 14.0, 15.0),
-        ("loc 2", date(2024, 1, 1), CareHome.not_care_home,   10, 16.0, 15.0),
-        ("loc 3", date(2024, 1, 1), CareHome.not_care_home, None, 10.0, None),
-        ("loc 4", date(2024, 1, 1), CareHome.not_care_home,   10, 20.0, 15.0),
-        ("loc 5", date(2024, 1, 1), CareHome.not_care_home,    0,  1.0, None),
-        ("loc 6", date(2024, 1, 1), CareHome.care_home,       10, None, None),
+        ("loc 1", date(2024, 1, 1), CareHome.not_care_home,   10, 14.0,  15.0),
+        ("loc 2", date(2024, 1, 1), CareHome.not_care_home,   10, 16.0,  15.0),
+        ("loc 3", date(2024, 1, 1), CareHome.not_care_home, None, 10.0,  None),
+        ("loc 4", date(2024, 1, 1), CareHome.not_care_home,    1, 100.0,  1.5),
+        ("loc 5", date(2024, 1, 1), CareHome.not_care_home,    0,  1.0,  None),
+        ("loc 6", date(2024, 1, 1), CareHome.care_home,       10, None,  None),
     ]  # fmt: skip
 
     blend_pir_and_ascwds_rows = [

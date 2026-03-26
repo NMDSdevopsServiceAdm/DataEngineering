@@ -1594,18 +1594,24 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
 @dataclass
 class ConvertPirPeopleToFilledPostsData:
     valid_rows = [
-        (CareHome.care_home,     10.0,  10.0),  # invalid (care home)
-        (CareHome.not_care_home, None,  10.0),  # invalid (people is null)
-        (CareHome.not_care_home, 0.0,   10.0),  # invalid (people is zero)
-        (CareHome.not_care_home, 10.0,  None),  # invalid (posts in null)
-        (CareHome.not_care_home, 10.0,   0.0),  # invalid (posts is zero)
-        (CareHome.not_care_home, 10.0,   1.0),  # invalid (ratio too low)
-        (CareHome.not_care_home, 10.0, 100.0),  # invalid (ratio too high)
-        (CareHome.not_care_home, 10.0,  10.0),  # valid
+        (CareHome.care_home,     10.0,   10.0),  # invalid (care home)
+        (CareHome.not_care_home, None,   10.0),  # invalid (people is null)
+        (CareHome.not_care_home, 0.0,    10.0),  # invalid (people is zero)
+        (CareHome.not_care_home, 10.0,   None),  # invalid (posts in null)
+        (CareHome.not_care_home, 10.0,    0.0),  # invalid (posts is zero)
+        (CareHome.not_care_home, 100.0,  10.0),  # invalid (ratio too low, outside abs_diff cutoff)
+        (CareHome.not_care_home, 10.0,  100.0),  # invalid (ratio too high, outside abs_diff cutoff)
+        (CareHome.not_care_home, 20.0,   35.0),  # valid (outside abs_diff cutoff but ratio ok)
+        (CareHome.not_care_home, 10.0,    1.0),  # valid (ratio too low but inside abs_diff cutoff)
+        (CareHome.not_care_home, 1.0,    10.0),  # valid (ratio too high but inside abs_diff cutoff)
+        (CareHome.not_care_home, 10.0,   10.0),  # valid (ratio and abs_diff within limits)
     ] # fmt: skip
     expected_valid_rows = [
-        (CareHome.not_care_home, 10.0, 10.0),
-    ]
+        (CareHome.not_care_home, 20.0,   35.0),
+        (CareHome.not_care_home, 10.0,    1.0),
+        (CareHome.not_care_home, 1.0,    10.0),
+        (CareHome.not_care_home, 10.0,   10.0),
+    ] # fmt: skip
 
 
 @dataclass
