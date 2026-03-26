@@ -4,7 +4,7 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clea
     clean_longitudinal_outliers,
 )
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_repetition import (
-    clean_ct_values_after_consecutive_repetition,
+    null_values_exceeding_repetition_limit,
 )
 from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
     add_filtering_rule_column,
@@ -48,18 +48,16 @@ def clean_capacity_tracker_non_res_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     lf = aggregate_values_to_provider_level(lf, IndCQC.ct_non_res_care_workers_employed)
 
-    lf = clean_longitudinal_outliers(
+    lf = null_values_exceeding_repetition_limit(
         lf=lf,
-        col_to_clean=IndCQC.ct_non_res_care_workers_employed,
-        cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
-        proportion_to_filter=0.001,
+        column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
         care_home=False,
     )
 
-    lf = clean_ct_values_after_consecutive_repetition(
+    lf = clean_longitudinal_outliers(
         lf=lf,
-        column_to_clean=IndCQC.ct_non_res_care_workers_employed,
-        cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
+        column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
+        proportion_to_filter=0.001,
         care_home=False,
     )
 

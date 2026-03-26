@@ -1217,13 +1217,13 @@ class NullCtPostsToBedsOutliers:
 
 @dataclass
 class CleanCtRepetition:
-    clean_ct_values_schema = {
+    clean_ct_repetition_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ct_non_res_care_workers_employed: pl.Int64,
         IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,
         IndCQC.ct_non_res_filtering_rule: pl.String,
     }
+    expected_clean_ct_repetition_schema = clean_ct_repetition_schema
 
 
 @dataclass
