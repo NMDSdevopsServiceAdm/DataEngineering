@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import ANY, Mock, patch
+
 import polars as pl
 import polars.testing as pl_testing
 
@@ -10,7 +11,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     ModelNonResWithAndWithoutDormancyCombinedSchemas as Schemas,
 )
-
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
@@ -118,35 +118,3 @@ class CalculateAndApplyResidualsTests(unittest.TestCase):
             check_row_order=False,
             check_column_order=False,
         )
-
-
-class CalculateResidualsTests(unittest.TestCase):
-    def setUp(self) -> None:
-        test_lf = pl.LazyFrame(
-            Data.calculate_residuals_rows,
-            Schemas.calculate_residuals_schema,
-            orient="row",
-        )
-        self.returned_lf = job.calculate_residuals(test_lf)
-        self.expected_lf = pl.LazyFrame(
-            Data.expected_calculate_residuals_rows,
-            Schemas.expected_calculate_residuals_schema,
-            orient="row",
-        )
-
-    def test_function_returns_expected_values(self):
-        pl_testing.assert_frame_equal(self.returned_lf, self.expected_lf)
-
-
-class ApplyResidualsTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.expected_lf = pl.LazyFrame(
-            Data.apply_residuals_rows, Schemas.apply_residuals_schema, orient="row"
-        )
-        test_lf = self.expected_lf.drop(
-            NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied
-        )
-        self.returned_lf = job.apply_residuals(test_lf)
-
-    def test_function_returns_expected_values(self):
-        pl_testing.assert_frame_equal(self.returned_lf, self.expected_lf)

@@ -25,10 +25,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
-    NullGroupedProviderColumns as NGPcol,
+    NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
-    NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
+    NullGroupedProviderColumns as NGPcol,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
@@ -1370,32 +1370,6 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             IndCQC.location_id: pl.String,
             IndCQC.cqc_location_import_date: pl.Date,
             IndCQC.non_res_with_dormancy_model: pl.Float64,
-            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float64,
-            NRModel_TempCol.residual_at_overlap: pl.Float64,
-            NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied: pl.Float64,
-        }
-    )
-
-    calculate_residuals_schema = pl.Schema(
-        {
-            IndCQC.location_id: pl.String,
-            IndCQC.cqc_location_import_date: pl.Date,
-            NRModel_TempCol.first_overlap_date: pl.Date,
-            IndCQC.non_res_with_dormancy_model: pl.Float64,
-            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float64,
-        }
-    )
-
-    expected_calculate_residuals_schema = pl.Schema(
-        {
-            IndCQC.location_id: pl.String,
-            NRModel_TempCol.residual_at_overlap: pl.Float64,
-        }
-    )
-
-    apply_residuals_schema = pl.Schema(
-        {
-            IndCQC.location_id: pl.String,
             NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float64,
             NRModel_TempCol.residual_at_overlap: pl.Float64,
             NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied: pl.Float64,

@@ -3,7 +3,6 @@ import polars as pl
 from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.utils import (
     join_model_predictions,
 )
-
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as TempColumns,
@@ -168,75 +167,31 @@ def calculate_and_apply_residuals(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: LazyFrame with smoothed predictions.
     """
-    first_overlap_lf = lf.sort(
-        [IndCqc.location_id, IndCqc.cqc_location_import_date]
-    ).with_columns(
-        pl.col(IndCqc.cqc_location_import_date)
+    first_non_res_with_dormancy = (
+        pl.col(IndCqc.non_res_with_dormancy_model)
         .filter(pl.col(IndCqc.non_res_with_dormancy_model).is_not_null())
         .first()
-        .over(IndCqc.location_id)
-        .alias(TempColumns.first_overlap_date)
+        .over(
+            partition_by=IndCqc.location_id,
+            order_by=IndCqc.cqc_location_import_date,
+        )
+    )
+    first_non_res_without_dormancy_model_adjusted = (
+        pl.col(TempColumns.non_res_without_dormancy_model_adjusted)
+        .filter(pl.col(IndCqc.non_res_with_dormancy_model).is_not_null())
+        .first()
+        .over(
+            partition_by=IndCqc.location_id,
+            order_by=IndCqc.cqc_location_import_date,
+        )
     )
 
-    residual_lf = calculate_residuals(first_overlap_lf)
-
-    lf = lf.join(residual_lf, IndCqc.location_id, "left")
-
-    lf = apply_residuals(lf)
-
-    return lf
-
-
-def calculate_residuals(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Calculates residuals between 'with_dormancy' and
-    'non_res_without_dormancy_model_adjusted' models at the first overlap date.
-
-    This function filters the LazyFrame at the first point in time
-    ('first_overlap_date') when the 'with_dormancy_model' has values, and to
-    locations who have both a 'with_dormancy' and 'without_dormancy_adjusted'
-    model prediction. This is used elsewhere in the code to smooth out the
-    predictions at the point in time when one model switches the other.
-
-    The residual is calculated as 'with_dormancy' values minus
-    'without_dormancy_adjusted'. Only the columns 'location_id' and
-    'residual_at_overlap' are returned.
-
-    Args:
-        lf (pl.LazyFrame): LazyFrame with model predictions.
-
-    Returns:
-        pl.LazyFrame: LazyFrame with 'location_id' and 'residual_at_overlap'.
-    """
-    overlap_date_condition = pl.col(IndCqc.cqc_location_import_date) == pl.col(
-        TempColumns.first_overlap_date
+    lf = lf.with_columns(
+        first_non_res_with_dormancy.sub(
+            first_non_res_without_dormancy_model_adjusted
+        ).alias(TempColumns.residual_at_overlap)
     )
-    not_null_condition = (
-        pl.col(IndCqc.non_res_with_dormancy_model).is_not_null()
-        & pl.col(TempColumns.non_res_without_dormancy_model_adjusted).is_not_null()
-    )
-    filtered_lf = lf.filter(overlap_date_condition & not_null_condition)
 
-    residual_lf = filtered_lf.with_columns(
-        pl.col(IndCqc.non_res_with_dormancy_model)
-        .sub(pl.col(TempColumns.non_res_without_dormancy_model_adjusted))
-        .alias(TempColumns.residual_at_overlap)
-    ).select(IndCqc.location_id, TempColumns.residual_at_overlap)
-
-    return residual_lf
-
-
-def apply_residuals(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Applies the residuals to smooth predictions when both the model value and
-    residual are not null.
-
-    Args:
-        lf (pl.LazyFrame): LazyFrame with model predictions and residuals.
-
-    Returns:
-        pl.LazyFrame: LazyFrame with smoothed predictions.
-    """
     model_and_residual_are_not_null_condition = (
         pl.col(TempColumns.non_res_without_dormancy_model_adjusted).is_not_null()
         & pl.col(TempColumns.residual_at_overlap).is_not_null()
@@ -252,4 +207,5 @@ def apply_residuals(lf: pl.LazyFrame) -> pl.LazyFrame:
         .otherwise(pl.col(TempColumns.non_res_without_dormancy_model_adjusted))
         .alias(TempColumns.non_res_without_dormancy_model_adjusted_and_residual_applied)
     )
+
     return lf

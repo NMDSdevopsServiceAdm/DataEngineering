@@ -1871,26 +1871,3 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-004", date(2025, 2, 1), None, 15.0, None, 15.0),  # doesn't pass filter, no residual, keep original model value
         ("1-005", date(2025, 2, 1), None, None, None, None),  # doesn't pass filter, no residual, keep original model value
     ] # fmt: skip
-
-    calculate_residuals_rows = [
-        ("1-001", date(2025, 1, 1), date(2025, 2, 1), 10.0, 15.0),  # filtered out, dates not equal
-        ("1-002", date(2025, 2, 1), date(2025, 2, 1), 10.0, 15.0),  # not filtered, negative residual
-        ("1-003", date(2025, 2, 1), date(2025, 2, 1), 20.0, 15.0),  # not filtered, positive residual
-        ("1-004", date(2025, 2, 1), date(2025, 2, 1), 30.0, None),  # filtered out, null model value
-        ("1-005", date(2025, 2, 1), date(2025, 2, 1), None, 15.0),  # filtered out, null model value
-        ("1-006", date(2025, 2, 1), date(2025, 2, 1), None, None),  # filtered out, null model value
-    ]  # fmt: skip
-
-    expected_calculate_residuals_rows = [
-        ("1-002", -5.0),  # not filtered, negative residual
-        ("1-003", 5.0),  # not filtered, positive residual
-    ]
-
-    apply_residuals_rows = [
-        ("1-001", 7.0, 12.0, 19.0),
-        ("1-002", 5.0, -0.5, 4.5),
-        ("1-003", 1.0, -2.5, -1.5),
-        ("1-004", 10.0, None, 10.0),
-        ("1-005", None, -1.0, None),
-        ("1-006", None, None, None),
-    ]
