@@ -157,7 +157,7 @@
                         "JobName": "${impute_ind_cqc_ascwds_and_pir_job_name}",
                         "Arguments": {
                           "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
-                          "--imputed_ind_cqc_ascwds_and_pir_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
+                          "--imputed_ind_cqc_ascwds_and_pir_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
                         }
                       },
                       "End": true
