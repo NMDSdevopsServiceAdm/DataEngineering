@@ -10,7 +10,6 @@ from projects._03_independent_cqc._04_model.utils.validate_models import (
     get_expected_row_count_for_model_features,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.validation_table_columns import Validation
 
 
@@ -72,7 +71,6 @@ def main(
             [
                 IndCQC.location_id,
                 IndCQC.cqc_location_import_date,
-                Keys.import_date,
             ]
         )
         # numeric column values are between (inclusive)

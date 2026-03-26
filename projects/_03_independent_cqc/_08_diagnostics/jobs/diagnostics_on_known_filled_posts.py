@@ -10,7 +10,6 @@ from projects._03_independent_cqc._08_diagnostics.utils import (
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 estimate_filled_posts_columns: list = [
     IndCQC.location_id,
@@ -27,10 +26,6 @@ estimate_filled_posts_columns: list = [
     IndCQC.imputed_posts_care_home_model,
     IndCQC.imputed_posts_non_res_combined_model,
     IndCQC.estimate_filled_posts,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
 ]
 absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25

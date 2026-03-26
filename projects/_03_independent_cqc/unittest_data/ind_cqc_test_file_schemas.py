@@ -998,7 +998,6 @@ class CleanIndCQCData:
     merged_schema_for_cleaning_job = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.import_date, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(ONSClean.current_region, StringType(), True),
             StructField(CQCLClean.current_cssr, StringType(), True),
@@ -1014,9 +1013,6 @@ class CleanIndCQCData:
             StructField(IndCQC.name, StringType(), True),
             StructField(IndCQC.postcode, StringType(), True),
             StructField(IndCQC.imputed_registration_date, DateType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
         ]
     )
     calculate_time_registered_for_schema = StructType(

@@ -15,10 +15,7 @@ from projects._03_independent_cqc._04_model.utils.value_labels import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome
-
-partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(bucket_name: str, model_name: str) -> None:
@@ -101,7 +98,7 @@ def main(bucket_name: str, model_name: str) -> None:
     )
 
     features_lf = fUtils.select_and_filter_features_data(
-        lf, feature_cols, dependent_col, partition_keys
+        lf, feature_cols, dependent_col
     )
 
     utils.sink_to_parquet(

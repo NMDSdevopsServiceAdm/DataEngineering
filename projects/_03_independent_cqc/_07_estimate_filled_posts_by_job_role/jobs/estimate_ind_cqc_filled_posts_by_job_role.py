@@ -20,12 +20,10 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.mo
 from projects._03_independent_cqc.utils.utils import utils as FPutils
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup as JobGroupDicts,
 )
 
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ascwds_worker_columns_to_import = [
     IndCQC.ascwds_worker_import_date,
     IndCQC.establishment_id,
@@ -61,10 +59,6 @@ estimated_ind_cqc_filled_posts_columns_to_import = [
     IndCQC.current_msoa21,
     IndCQC.estimate_filled_posts,
     IndCQC.estimate_filled_posts_source,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
 ]
 
 

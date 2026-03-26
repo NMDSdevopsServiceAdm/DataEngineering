@@ -10,7 +10,6 @@ from projects._03_independent_cqc._08_diagnostics.utils import (
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome
 
 estimate_filled_posts_columns: list = [
@@ -32,10 +31,6 @@ estimate_filled_posts_columns: list = [
     IndCQC.ct_care_home_total_employed_imputed,
     IndCQC.ct_non_res_care_workers_employed,
     IndCQC.ct_non_res_filled_post_estimate,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
 ]
 absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25
