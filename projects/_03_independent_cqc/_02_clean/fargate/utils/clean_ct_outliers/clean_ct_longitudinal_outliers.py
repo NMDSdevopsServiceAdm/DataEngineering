@@ -50,16 +50,13 @@ def clean_longitudinal_outliers(
         .over([IndCQC.location_id, filter_rule_column_name])
     )
 
-    abs_diff_expr = pl.when(
-        pl.col(filter_rule_column_name) == CTFilteringRule.populated
-    ).then((pl.col(column_to_clean) - median_expr).abs())
+    abs_diff_expr = (pl.col(column_to_clean) - median_expr).abs()
 
     cutoff_expr = abs_diff_expr.quantile(percentile, interpolation="linear").first()
 
     lf = lf.with_columns(
         pl.when(
-            (pl.col(filter_rule_column_name) == CTFilteringRule.populated)
-            & (abs_diff_expr <= cutoff_expr)
+            (pl.col(column_to_clean).is_not_null()) & (abs_diff_expr <= cutoff_expr)
         )
         .then(pl.col(column_to_clean))
         .otherwise(None)

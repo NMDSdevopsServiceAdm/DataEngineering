@@ -1699,9 +1699,6 @@ class OutlierCleaningData:
         ("1-004", 40, CTFilteringRule.populated),
         ("1-004", 45, CTFilteringRule.populated),
         ("1-004", 50, CTFilteringRule.populated),
-        ("1-005", 10000, "any/other/rule"),
-        ("1-005", 10000, "any/other/rule"),
-        ("1-005", 10000, "any/other/rule"),
     ]
 
     expected_clean_longitudinal_outliers_remove_value_only_rows = [
@@ -1725,9 +1722,6 @@ class OutlierCleaningData:
         ("1-004", 40, CTFilteringRule.populated),
         ("1-004", 45, CTFilteringRule.populated),
         ("1-004", 50, CTFilteringRule.populated),
-        ("1-005", None, "any/other/rule"),
-        ("1-005", None, "any/other/rule"),
-        ("1-005", None, "any/other/rule"),
     ]
 
 
