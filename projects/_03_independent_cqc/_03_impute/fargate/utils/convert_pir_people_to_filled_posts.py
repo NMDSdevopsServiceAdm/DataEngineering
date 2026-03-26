@@ -60,7 +60,7 @@ def compute_global_ratio(lf: pl.LazyFrame) -> float:
     """
     Computes the global ratio of filled posts to PIR people using only valid rows.
     """
-    df = (
+    row = (
         lf.filter(valid_rows())
         .select(
             [
@@ -69,10 +69,10 @@ def compute_global_ratio(lf: pl.LazyFrame) -> float:
             ]
         )
         .collect()
+        .row(0)
     )
 
-    posts_sum = df["posts_sum"][0]
-    people_sum = df["people_sum"][0]
+    posts_sum, people_sum = row
 
     if people_sum == 0 or posts_sum is None:
         raise ValueError("No valid rows available to compute PIR ratio.")
