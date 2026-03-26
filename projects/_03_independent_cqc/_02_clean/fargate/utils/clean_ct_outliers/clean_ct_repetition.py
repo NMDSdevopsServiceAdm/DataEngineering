@@ -20,7 +20,7 @@ DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_CARE_HOMES = {
 }
 
 
-def clean_ct_values_after_consecutive_repetition(
+def null_values_exceeding_repetition_limit(
     lf: pl.LazyFrame,
     column_to_clean: str,
     cleaned_column_name: str,

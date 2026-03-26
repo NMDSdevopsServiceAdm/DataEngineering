@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import Mock, patch
+
 import polars as pl
 import polars.testing as pl_testing
 import pytest
@@ -11,7 +12,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     CleanCtRepetition as Schemas,
 )
-
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH: str = (
@@ -30,7 +30,7 @@ class CleanCTValuesAfterConsecutiveRepetitionTests(unittest.TestCase):
         repetition_limit_expr_mock: Mock,
         update_filtering_rule_mock: Mock,
     ):
-        job.clean_ct_values_after_consecutive_repetition(
+        job.null_values_exceeding_repetition_limit(
             lf=self.test_lf,
             column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
             cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
@@ -56,7 +56,7 @@ class TestSomething:
             data=clean_ct_case_data, schema=Schemas.clean_ct_values_schema, orient="row"
         )
         input_lf = expected_lf.drop(IndCQC.ct_non_res_care_workers_employed_cleaned)
-        returned_lf = job.clean_ct_values_after_consecutive_repetition(
+        returned_lf = job.null_values_exceeding_repetition_limit(
             lf=input_lf,
             column_to_clean=IndCQC.ct_non_res_care_workers_employed,
             cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
