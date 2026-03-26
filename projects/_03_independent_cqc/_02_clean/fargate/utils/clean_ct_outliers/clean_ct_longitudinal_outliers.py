@@ -16,9 +16,6 @@ def clean_longitudinal_outliers(
     """
     Cleans longitudinal outliers from a numerical column in a LazyFrame.
 
-    Warning: This function will return null values where the filtering
-    rule is not "populated", as well as outlying values.
-
     The function computes the group-wise median and absolute deviation,
     on rows where the filtering rule is "populated".
     The cutoff is then determined by the value at the given percentile.
