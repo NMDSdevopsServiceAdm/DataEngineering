@@ -18,7 +18,7 @@ PATCH_PATH: str = (
 )
 
 
-class TestCleanLongitudinalOutliers(unittest.TestCase):
+class CleanLongitudinalOutliersTests(unittest.TestCase):
     def setUp(self):
         self.test_lf = pl.LazyFrame(
             Data.clean_longitudinal_outliers_input_rows,
@@ -26,8 +26,6 @@ class TestCleanLongitudinalOutliers(unittest.TestCase):
             orient="row",
         )
 
-
-class TestFunctionsAreCalled(TestCleanLongitudinalOutliers):
     @patch(f"{PATCH_PATH}.update_filtering_rule")
     def test_functions_are_called(
         self,
@@ -36,19 +34,15 @@ class TestFunctionsAreCalled(TestCleanLongitudinalOutliers):
         job.clean_longitudinal_outliers(
             lf=self.test_lf,
             column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
-            cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
             proportion_to_filter=0.10,
             care_home=False,
         )
         update_filtering_rule_mock.assert_called_once()
 
-
-class TestCleanLongitudinalOutliersValues(TestCleanLongitudinalOutliers):
     def test_function_returns_expected_values(self):
         returned_lf = job.clean_longitudinal_outliers(
             lf=self.test_lf,
             column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
-            cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
             proportion_to_filter=0.10,
             care_home=False,
         )

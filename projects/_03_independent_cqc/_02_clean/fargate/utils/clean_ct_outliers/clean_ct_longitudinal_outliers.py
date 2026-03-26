@@ -10,7 +10,6 @@ from utils.column_values.categorical_column_values import CTFilteringRule
 def clean_longitudinal_outliers(
     lf: pl.LazyFrame,
     column_to_clean: str,
-    cleaned_column_name: str,
     proportion_to_filter: float,
     care_home: bool,
 ) -> pl.LazyFrame:
@@ -29,7 +28,6 @@ def clean_longitudinal_outliers(
     Args:
         lf (pl.LazyFrame): Input LazyFrame containing the data to clean.
         column_to_clean (str): Column name containing numerical values to clean.
-        cleaned_column_name (str): Name of the new column to store cleaned values.
         proportion_to_filter (float): Proportion of extreme values to consider as
             outliers.
         care_home (bool): If True, applies care home-specific filtering rules;
@@ -65,14 +63,14 @@ def clean_longitudinal_outliers(
         )
         .then(pl.col(column_to_clean))
         .otherwise(None)
-        .alias(cleaned_column_name)
+        .alias(column_to_clean)
     )
 
     lf = update_filtering_rule(
         lf=lf,
         filter_rule_col_name=filter_rule_column_name,
         raw_col_name=column_to_clean,
-        clean_col_name=cleaned_column_name,
+        clean_col_name=column_to_clean,
         populated_rule=CTFilteringRule.populated,
         new_rule_name=CTFilteringRule.longitudinal_outliers,
     )
