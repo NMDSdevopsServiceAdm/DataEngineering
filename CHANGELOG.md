@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Added la permissions to columns imported in merge_coverage_data job.
 
+- In PySpark, a linear regression model was used to convert the original PIR (people) values to filled posts. As part of the conversion to Polars, the filtering for which locations are included has been tightened and the linear regression model has been replaced with a simple ratio multiplier.
+
 ### Fixed
 
 

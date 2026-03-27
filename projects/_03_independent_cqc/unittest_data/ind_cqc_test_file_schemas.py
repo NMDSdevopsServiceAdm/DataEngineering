@@ -62,34 +62,14 @@ class ImputeIndCqcAscwdsAndPirSchemas:
 
 @dataclass
 class ModelAndMergePirData:
-    model_pir_filled_posts_schema = StructType(
+    expected_convert_pir_to_filled_posts_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
-        ]
-    )
-    expected_model_pir_filled_posts_schema = StructType(
-        [
-            *model_pir_filled_posts_schema,
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.pir_filled_posts_model, FloatType(), True),
-        ]
-    )
-
-    vectorise_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField("col_1", FloatType(), True),
-            StructField("col_2", IntegerType(), True),
-            StructField("col_3", IntegerType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-    expected_vectorised_feature_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.features, VectorUDT(), True),
         ]
     )
 

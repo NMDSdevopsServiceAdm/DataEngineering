@@ -20,9 +20,6 @@ PATCH_PATH: str = (
 class ImputeIndCqcAscwdsAndPirTests(SparkBaseTest):
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
     ESTIMATES_DESTINATION = "estimates destination"
-    NON_RES_PIR_MODEL = (
-        "tests/test_models/non_res_pir_linear_regression_prediction/1.0.0/"
-    )
     partition_keys = [
         Keys.year,
         Keys.month,
@@ -46,7 +43,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
     @patch(f"{PATCH_PATH}.model_calculate_rolling_average")
     @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
     @patch(f"{PATCH_PATH}.merge_ascwds_and_pir_filled_post_submissions")
-    @patch(f"{PATCH_PATH}.model_pir_filled_posts")
+    @patch(f"{PATCH_PATH}.convert_pir_to_filled_posts")
     @patch(f"{PATCH_PATH}.model_primary_service_rate_of_change_trendline")
     @patch(f"{PATCH_PATH}.combine_care_home_and_non_res_values_into_single_column")
     @patch(f"{PATCH_PATH}.utils.create_unix_timestamp_variable_from_date_column")
@@ -57,7 +54,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         create_unix_timestamp_variable_from_date_column_mock: Mock,
         combine_care_home_and_non_res_values_into_single_column_mock: Mock,
         model_primary_service_rate_of_change_trendline_mock: Mock,
-        model_pir_filled_posts_mock: Mock,
+        convert_pir_to_filled_posts_mock: Mock,
         merge_ascwds_and_pir_filled_post_submissions_mock: Mock,
         model_imputation_with_extrapolation_and_interpolation_mock: Mock,
         model_calculate_rolling_average_mock: Mock,
@@ -71,7 +68,6 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         job.main(
             self.CLEANED_IND_CQC_TEST_DATA,
             self.ESTIMATES_DESTINATION,
-            self.NON_RES_PIR_MODEL,
         )
 
         read_from_parquet_patch.assert_called_once()
@@ -82,7 +78,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         self.assertEqual(
             model_primary_service_rate_of_change_trendline_mock.call_count, 2
         )
-        model_pir_filled_posts_mock.assert_called_once()
+        convert_pir_to_filled_posts_mock.assert_called_once()
         merge_ascwds_and_pir_filled_post_submissions_mock.assert_called_once()
         self.assertEqual(
             model_imputation_with_extrapolation_and_interpolation_mock.call_count, 4
