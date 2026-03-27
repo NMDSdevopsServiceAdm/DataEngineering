@@ -56,6 +56,12 @@ class PrepareJobRoleCountsUtilsSchemas:
         ]
     )
 
+    filter_to_cqc_locations_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+        ]
+    )
+
 
 @dataclass
 class FeaturesEngineeringUtilsSchemas:
