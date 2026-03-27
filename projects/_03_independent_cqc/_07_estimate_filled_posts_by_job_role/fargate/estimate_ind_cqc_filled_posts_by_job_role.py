@@ -79,11 +79,11 @@ transformation_columns = {
     IndCQC.cqc_location_import_date: pl.Date,
     IndCQC.establishment_id: pl.Categorical,
     IndCQC.ascwds_workplace_import_date: pl.Date,
-    IndCQC.estimate_filled_posts: pl.Float64,
+    IndCQC.estimate_filled_posts: pl.Float32,
     IndCQC.estimate_filled_posts_source: pl.Categorical,
     IndCQC.primary_service_type: pl.Categorical,
     IndCQC.registered_manager_names: pl.List(str),
-    IndCQC.ascwds_filled_posts_dedup_clean: pl.Float64,
+    IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
     Keys.year: pl.Int16,
 }
 join_keys = [
