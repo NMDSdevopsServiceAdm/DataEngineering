@@ -169,13 +169,10 @@ def main(
                 )
             )
 
-            # TODO: Experiment with getting rid of this.
             long_id: str = "long_id"
-            estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(
-                IndCQC.location_id,
-                IndCQC.main_job_role_clean_labelled,
-                IndCQC.cqc_location_import_date,
-            ).with_row_index(long_id)
+            estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
+                long_id
+            )
 
             log_polars_plan(estimated_job_role_posts_lf, "Post Join")
             checkpoint_filepath = CHECKPOINT_PATH / "checkpoint1.parquet"
@@ -228,6 +225,7 @@ def main(
 
             imputed_ratios = (
                 pl.col(IndCQC.ascwds_job_role_ratios)
+                .sort_by(order_key)
                 .interpolate()
                 .forward_fill()
                 .backward_fill()
@@ -241,10 +239,10 @@ def main(
                     long_id,
                     IndCQC.ascwds_job_role_ratios,
                 )
-                .with_columns(pl.col(order_key).set_sorted())
                 .group_by(impute_groups)
                 .agg(
-                    pl.col(long_id),  # Keep to align during explode
+                    # Sort the join key in the same manner as the imputed values.
+                    pl.col(long_id).sort_by(order_key),
                     imputed_ratios,
                 )
                 .explode(long_id, IndCQC.imputed_ascwds_job_role_ratios)
