@@ -117,7 +117,7 @@ def main(
         with time_it("scan_and_join"):
             estimated_posts_base_lf = (
                 pl.scan_parquet(estimates_source, low_memory=True)
-                .select(selected_columns=list(transformation_columns))
+                .select(list(transformation_columns))
                 .with_row_index(name="id")
                 .with_columns(cast_to_schema(transformation_columns))
             )
