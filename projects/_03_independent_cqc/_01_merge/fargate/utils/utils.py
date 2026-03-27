@@ -8,6 +8,20 @@ from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
 LIST_OF_JOB_ROLES_SORTED = sorted(list(AscwdsJobRoles.labels_dict.values()))
 
 
+def filter_to_cqc_locations(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Filters dataset to rows with a CQC locationid.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame containing cleaned ASC-WDS worker data.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with rows without a CQC locationid removed.
+    """
+    # TODO
+    return lf
+
+
 def aggregate_ascwds_worker_job_roles_per_establishment(
     lf: pl.LazyFrame,
     list_of_job_roles: list,
