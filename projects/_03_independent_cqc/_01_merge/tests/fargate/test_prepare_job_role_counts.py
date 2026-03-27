@@ -36,6 +36,5 @@ class MainTests(unittest.TestCase):
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
             output_path=self.PREPARED_JOB_ROLE_COUNTS_DESTINATION,
-            partition_cols=job.partition_keys,
             append=False,
         )

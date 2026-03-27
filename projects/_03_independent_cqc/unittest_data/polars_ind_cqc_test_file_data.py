@@ -29,18 +29,10 @@ class PrepareJobRoleCountsUtilsData:
         ("101", "101"),
         (date(2025, 1, 1), date(2025, 1, 1)),
         (MainJobRoleLabels.care_worker, MainJobRoleLabels.care_worker),
-        ("2025", "2025"),
-        ("01", "01"),
-        ("01", "01"),
-        ("20250101", "20250101"),
     ]
     expected_aggregate_ascwds_worker_job_roles_per_establishment_when_estab_has_many_in_same_role_rows = [
         ("101", "101"),
         (date(2025, 1, 1), date(2025, 1, 1)),
-        ("2025", "2025"),
-        ("01", "01"),
-        ("01", "01"),
-        ("20250101", "20250101"),
         (MainJobRoleLabels.care_worker, MainJobRoleLabels.senior_care_worker),
         (2, 0),
     ]
@@ -49,18 +41,10 @@ class PrepareJobRoleCountsUtilsData:
         ("101", "101"),
         (date(2025, 1, 1), date(2025, 1, 2)),
         (MainJobRoleLabels.care_worker, MainJobRoleLabels.care_worker),
-        ("2025", "2025"),
-        ("01", "01"),
-        ("01", "02"),
-        ("20250101", "20250102"),
     ]
     expected_aggregate_ascwds_worker_job_roles_per_establishment_when_estab_has_multiple_import_dates_rows = [
         ("101", "101", "101", "101"),
         (date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 2)),
-        ("2025", "2025", "2025", "2025"),
-        ("01", "01", "01", "01"),
-        ("01", "01", "02", "02"),
-        ("20250101", "20250101", "20250102", "20250102"),
         (
             MainJobRoleLabels.care_worker,
             MainJobRoleLabels.senior_care_worker,
@@ -74,18 +58,10 @@ class PrepareJobRoleCountsUtilsData:
         ("101", "102"),
         (date(2025, 1, 1), date(2025, 1, 1)),
         (MainJobRoleLabels.care_worker, MainJobRoleLabels.care_worker),
-        ("2025", "2025"),
-        ("01", "01"),
-        ("01", "01"),
-        ("20250101", "20250101"),
     ]
     expected_aggregate_ascwds_worker_job_roles_per_establishment_when_multiple_estabs_have_same_import_date_rows = [
         ("101", "101", "102", "102"),
         (date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 1)),
-        ("2025", "2025", "2025", "2025"),
-        ("01", "01", "01", "01"),
-        ("01", "01", "01", "01"),
-        ("20250101", "20250101", "20250101", "20250101"),
         (
             MainJobRoleLabels.care_worker,
             MainJobRoleLabels.senior_care_worker,
@@ -264,12 +240,12 @@ class FeaturesEngineeringUtilsData:
     ]
 
     select_and_filter_features_rows = [
-        ("1-001", date(2025, 1, 1), "20250101", "Y", 10, 5, 1, 100.0, 1),
-        ("1-002", date(2025, 1, 2), "20250102", "N", None, 10, 1, 150.0, 1),
-        ("1-003", date(2025, 1, 3), "20250103", "Y", 30, None, 0, 200.0, 1),
+        ("1-001", date(2025, 1, 1), "Y", 10, 5, 1, 100.0, 1),
+        ("1-002", date(2025, 1, 2), "N", None, 10, 1, 150.0, 1),
+        ("1-003", date(2025, 1, 3), "Y", 30, None, 0, 200.0, 1),
     ]
     expected_select_and_filter_features_rows = [
-        ("1-001", date(2025, 1, 1), 1, 100.0, 10, 5, 1, "20250101"),
+        ("1-001", date(2025, 1, 1), 1, 100.0, 10, 5, 1),
     ]
 
 
@@ -329,7 +305,7 @@ class ValidateModelsData:
 @dataclass
 class ValidateModel01FeaturesData:
     validation_rows = [
-        ("1-001", date(2025, 1, 1), "Y", "Y", "20250101", "feature", "feature", None),
+        ("1-001", date(2025, 1, 1), "Y", "Y", "feature", "feature", None),
     ]
     expected_get_expected_row_count_rows = 2
 

@@ -141,10 +141,7 @@ class CleaningUtilsSchemas:
     reduce_dataset_to_earliest_file_per_month_schema = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.import_date, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
         ]
     )
 

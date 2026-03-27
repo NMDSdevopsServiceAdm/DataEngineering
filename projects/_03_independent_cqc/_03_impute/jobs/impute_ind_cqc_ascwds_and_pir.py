@@ -29,9 +29,6 @@ from projects._03_independent_cqc.utils.utils.utils import (
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 @dataclass
@@ -170,7 +167,6 @@ def main(
         df,
         imputed_ind_cqc_ascwds_and_pir_destination,
         mode="overwrite",
-        partitionKeys=PartitionKeys,
     )
 
     print("Completed imputing independent CQC ASCWDS and PIR")
