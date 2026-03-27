@@ -57,64 +57,57 @@ class MainTests(unittest.TestCase):
 
 
 class GroupTimeRegisteredToSixMonthBandsTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.expected_lf = pl.LazyFrame(
+    def test_function_returns_expected_values(self):
+        expected_lf = pl.LazyFrame(
             Data.expected_group_time_registered_to_six_month_bands_rows,
             Schemas.group_time_registered_to_six_month_bands_schema,
             orient="row",
         )
-        test_lf = self.expected_lf.drop(
-            NRModel_TempCol.time_registered_banded_and_capped
-        )
-        self.returned_lf = job.group_time_registered_to_six_month_bands(test_lf)
+        test_lf = expected_lf.drop(NRModel_TempCol.time_registered_banded_and_capped)
+        returned_lf = job.group_time_registered_to_six_month_bands(test_lf)
 
-    def test_function_returns_expected_values(self):
-        pl_testing.assert_frame_equal(
-            self.returned_lf, self.expected_lf, check_row_order=False
-        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
 class CalculateAndApplyModelRatioTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.expected_lf = pl.LazyFrame(
+    def test_function_returns_expected_values(self):
+        expected_lf = pl.LazyFrame(
             Data.calculate_and_apply_model_ratios_rows,
             Schemas.calculate_and_apply_model_ratios_schema,
             orient="row",
         )
-        self.test_lf = self.expected_lf.drop(
+        test_lf = expected_lf.drop(
             NRModel_TempCol.avg_with_dormancy,
             NRModel_TempCol.avg_without_dormancy,
             NRModel_TempCol.adjustment_ratio,
             NRModel_TempCol.non_res_without_dormancy_model_adjusted,
         )
-        self.returned_lf = job.calculate_and_apply_model_ratios(self.test_lf)
+        returned_lf = job.calculate_and_apply_model_ratios(test_lf)
 
-    def test_function_returns_expected_values(self):
         pl_testing.assert_frame_equal(
-            self.returned_lf,
-            self.expected_lf,
+            returned_lf,
+            expected_lf,
             check_row_order=False,
             check_column_order=False,
         )
 
 
 class CalculateAndApplyResidualsTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.expected_lf = pl.LazyFrame(
+    def test_function_returns_expected_values(self):
+        expected_lf = pl.LazyFrame(
             Data.calculate_and_apply_residuals_rows,
             Schemas.calculate_and_apply_residuals_schema,
             orient="row",
         )
-        self.test_lf = self.expected_lf.drop(
+        test_lf = expected_lf.drop(
             NRModel_TempCol.residual_at_overlap,
             NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied,
         )
-        self.returned_lf = job.calculate_and_apply_residuals(self.test_lf)
+        returned_lf = job.calculate_and_apply_residuals(test_lf)
 
-    def test_function_returns_expected_values(self):
         pl_testing.assert_frame_equal(
-            self.returned_lf,
-            self.expected_lf,
+            returned_lf,
+            expected_lf,
             check_row_order=False,
             check_column_order=False,
         )

@@ -110,50 +110,48 @@ def calculate_and_apply_model_ratios(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: LazyFrame with partition-level ratios applied.
     """
+    group_cols = [
+        IndCqc.related_location,
+        TempColumns.time_registered_banded_and_capped,
+    ]
+
     not_null_condition = (
         pl.col(IndCqc.non_res_with_dormancy_model).is_not_null()
         & pl.col(IndCqc.non_res_without_dormancy_model).is_not_null()
     )
 
-    ratio_lf = (
-        lf.filter(not_null_condition)
-        .group_by(
-            IndCqc.related_location, TempColumns.time_registered_banded_and_capped
-        )
-        .agg(
-            pl.mean(IndCqc.non_res_with_dormancy_model).alias(
-                TempColumns.avg_with_dormancy
-            ),
-            pl.mean(IndCqc.non_res_without_dormancy_model).alias(
-                TempColumns.avg_without_dormancy
-            ),
-        )
+    avg_with_expr = (
+        pl.when(not_null_condition)
+        .then(pl.col(IndCqc.non_res_with_dormancy_model))
+        .otherwise(None)
+        .mean()
+        .over(group_cols)
     )
 
-    ratio_lf = ratio_lf.with_columns(
-        pl.when(pl.col(TempColumns.avg_without_dormancy) != 0)
-        .then(
-            pl.col(TempColumns.avg_with_dormancy).truediv(
-                pl.col(TempColumns.avg_without_dormancy)
-            )
-        )
+    avg_without_expr = (
+        pl.when(not_null_condition)
+        .then(pl.col(IndCqc.non_res_without_dormancy_model))
+        .otherwise(None)
+        .mean()
+        .over(group_cols)
+    )
+
+    adjustment_ratio_expr = (
+        pl.when(avg_without_expr.is_null())
+        .then(None)
+        .when(avg_without_expr != 0)
+        .then(avg_with_expr.truediv(avg_without_expr))
         .otherwise(1.0)
-        .alias(TempColumns.adjustment_ratio)
     )
 
-    lf = lf.join(
-        ratio_lf,
-        [IndCqc.related_location, TempColumns.time_registered_banded_and_capped],
-        "left",
+    return lf.with_columns(
+        avg_with_expr.alias(TempColumns.avg_with_dormancy),
+        avg_without_expr.alias(TempColumns.avg_without_dormancy),
+        adjustment_ratio_expr.alias(TempColumns.adjustment_ratio),
+        (
+            pl.col(IndCqc.non_res_without_dormancy_model).mul(adjustment_ratio_expr)
+        ).alias(TempColumns.non_res_without_dormancy_model_adjusted),
     )
-
-    lf = lf.with_columns(
-        pl.col(IndCqc.non_res_without_dormancy_model)
-        .mul(pl.col(TempColumns.adjustment_ratio))
-        .alias(TempColumns.non_res_without_dormancy_model_adjusted)
-    )
-
-    return lf
 
 
 def calculate_and_apply_residuals(lf: pl.LazyFrame) -> pl.LazyFrame:
