@@ -17,6 +17,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed partitioning from the IND CQC pipeline when saving data. Parquet files are now written without partitions.
 
+- Reduced worker job role data to CQC locations only.
+
 ### Fixed
 
 
