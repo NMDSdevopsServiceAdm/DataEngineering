@@ -4,7 +4,6 @@ WORKDIR /app
 
 RUN mkdir -p /polars_scratch && chmod 777 /polars_scratch
 ENV POLARS_TEMP_DIR=/polars_scratch
-ENV POLARS_VERBOSE=1
 ENV PYTHONPATH=/app
 
 # Dependencies
