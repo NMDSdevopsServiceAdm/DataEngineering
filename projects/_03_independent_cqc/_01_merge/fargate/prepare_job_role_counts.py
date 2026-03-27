@@ -1,12 +1,15 @@
 import projects._03_independent_cqc._01_merge.fargate.utils.utils as JRUtils
 from polars_utils import utils
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 cleaned_ascwds_worker_columns_to_import = [
     IndCQC.establishment_id,
     IndCQC.ascwds_worker_import_date,
     IndCQC.main_job_role_clean_labelled,
-    IndCQC.location_id,
+    AWKClean.location_id,
 ]
 
 
