@@ -209,6 +209,7 @@ def main(
                     job_role_ratios.alias(IndCQC.ascwds_job_role_ratios),
                 )
                 .explode(long_id, IndCQC.ascwds_job_role_ratios)
+                .drop(pct_share_groups)
             )
 
             estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
@@ -246,6 +247,7 @@ def main(
                     imputed_ratios,
                 )
                 .explode(long_id, IndCQC.imputed_ascwds_job_role_ratios)
+                .drop(impute_groups)
             )
 
             estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
@@ -311,6 +313,7 @@ def main(
                     ),
                 )
                 .explode(long_id, IndCQC.ascwds_job_role_rolling_ratio)
+                .drop(pct_share_groups)
             )
 
             estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
