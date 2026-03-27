@@ -38,9 +38,9 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - aws-cli/setup:
-          role-arn: ${<< parameters.role_arn >>}
+          role_arn: ${<< parameters.role_arn >>}
           region: $AWS_REGION
-          role-session-name: "CircleCI-Container-Job"
+          role_session_name: "CircleCI-Container-Job"
       - run:
           name: Build Docker Images
           command: |
@@ -144,7 +144,7 @@ jobs:
     steps:
       - checkout
       - aws-cli/setup:
-          role-arn: ${<< parameters.role_arn >>}
+          role_arn: ${<< parameters.role_arn >>}
           region: $AWS_REGION
       - run:
           name: terraform plan
@@ -181,7 +181,7 @@ jobs:
       - attach_workspace:
           at: .
       - aws-cli/setup:
-          role-arn: ${<< parameters.role_arn >>}
+          role_arn: ${<< parameters.role_arn >>}
           region: $AWS_REGION
       - run:
           name: terraform apply
@@ -214,7 +214,7 @@ jobs:
       - attach_workspace:
           at: .
       - aws-cli/setup:
-          role-arn: ${<< parameters.role_arn >>}
+          role_arn: ${<< parameters.role_arn >>}
           region: $AWS_REGION
       - run:
           name: package utils, schemas, projects and environment
@@ -287,9 +287,9 @@ jobs:
     steps:
       - checkout
       - aws-cli/setup:
-          role-arn: ${<< parameters.role_arn >>}
+          role_arn: ${<< parameters.role_arn >>}
           region: $AWS_REGION
-          role-session-name: "CircleCI-Terraform-Destroy"
+          role_session_name: "CircleCI-Terraform-Destroy"
       - run:
           name: terraform destroy
           command: |
