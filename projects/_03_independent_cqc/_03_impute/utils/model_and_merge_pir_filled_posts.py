@@ -50,17 +50,10 @@ def convert_pir_to_filled_posts(df: DataFrame) -> DataFrame:
 
 
 # converted to polars -> projects\_03_independent_cqc\_03_impute\fargate\utils\convert_pir_people_to_filled_posts.py
-def compute_global_ratio(
-    df: DataFrame, ratio_cutoff: float = 2.0, abs_diff_cutoff: float = 50.0
-) -> float:
+def compute_global_ratio(df: DataFrame) -> float:
     """
     Computes the global ratio of filled posts to PIR people using only valid rows.
     """
-    ratio = F.col(posts_col) / F.col(people_col)
-    abs_diff = F.abs(F.col(posts_col) - F.col(people_col))
-
-    lower_ratio_cutoff = 1 / ratio_cutoff
-    upper_ratio_cutoff = ratio_cutoff
 
     agg_df = df.filter(
         (F.col(IndCQC.care_home) == CareHome.not_care_home)
@@ -68,10 +61,6 @@ def compute_global_ratio(
         & (F.col(people_col) > 0)
         & F.col(posts_col).isNotNull()
         & (F.col(posts_col) > 0)
-        & (
-            ((ratio >= lower_ratio_cutoff) & (ratio <= upper_ratio_cutoff))
-            | (abs_diff <= abs_diff_cutoff)
-        )
     ).select(
         [
             F.sum(F.col(posts_col)).alias("posts_sum"),

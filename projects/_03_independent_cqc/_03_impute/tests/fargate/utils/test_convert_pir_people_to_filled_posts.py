@@ -70,25 +70,6 @@ class TestConvertPirToFilledPosts:
         )
 
 
-class TestValidRows:
-    def test_valid_rows_filters_correctly(self):
-        lf = pl.LazyFrame(
-            Data.valid_rows,
-            Schemas.input_schema,
-            orient="row",
-        )
-
-        returned_lf = lf.filter(job.valid_rows(ratio_cutoff=2.0, abs_diff_cutoff=10))
-
-        expected_lf = pl.LazyFrame(
-            Data.expected_valid_rows,
-            Schemas.input_schema,
-            orient="row",
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
 @dataclass
 class ComputeGlobalRatioCase:
     id: str
@@ -101,19 +82,20 @@ compute_global_ratio_test_cases = [
     ComputeGlobalRatioCase(
         id="all_rows_valid",
         data=[
-            (CareHome.not_care_home, 20.0, 25.0),
-            (CareHome.not_care_home, 20.0, 35.0),
+            (CareHome.not_care_home, 19.0, 25.0),
+            (CareHome.not_care_home, 21.0, 35.0),
         ],
         expected_ratio=1.5,
     ),
     ComputeGlobalRatioCase(
-        id="excludes_outliers",
+        id="excludes_invalid",
         data=[
             (CareHome.not_care_home, 10.0, 15.0),
-            (CareHome.not_care_home, 1000.0, 10.0),
-            (CareHome.not_care_home, 10.0, 0.0),
+            (CareHome.not_care_home, 10.0, None),
+            (CareHome.not_care_home, 10.0,  0.0),
+            (CareHome.not_care_home, 0.0,  10.0),
             (CareHome.not_care_home, None, 10.0),
-            (CareHome.care_home, 10.0, 20.0),
+            (CareHome.care_home,     10.0, 20.0),
         ],
         expected_ratio=1.5,
     ),
@@ -123,7 +105,7 @@ compute_global_ratio_test_cases = [
             (CareHome.not_care_home, 20.0, 25.0),
             (CareHome.not_care_home, None, 10.0),
             (CareHome.not_care_home, 10.0, None),
-            (CareHome.care_home, 10.0, 10.0),
+            (CareHome.care_home,     10.0, 10.0),
             (CareHome.not_care_home, 20.0, 35.0),
         ],
         expected_ratio=1.5,
@@ -131,7 +113,7 @@ compute_global_ratio_test_cases = [
     ComputeGlobalRatioCase(
         id="no_valid_rows_raises_error",
         data=[
-            (CareHome.not_care_home, 1000.0, 1.0),
+            (CareHome.not_care_home, 10.0, None),
         ],
         expected_ratio=None,
         expect_error=True,

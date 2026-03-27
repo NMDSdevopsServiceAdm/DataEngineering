@@ -36,35 +36,18 @@ def convert_pir_to_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
-def valid_rows(ratio_cutoff: float = 2.0, abs_diff_cutoff: float = 50.0) -> pl.Expr:
-    """
-    Returns an expression filtering rows suitable for ratio calculation.
-    """
-    ratio = posts_col / people_col
-    abs_diff = (posts_col - people_col).abs()
-
-    lower_ratio_cutoff = 1 / ratio_cutoff
-    upper_ratio_cutoff = ratio_cutoff
-
-    return (
-        (pl.col(IndCQC.care_home) == CareHome.not_care_home)
-        & people_col.is_not_null()
-        & (people_col > 0)
-        & posts_col.is_not_null()
-        & (posts_col > 0)
-        & (
-            ((ratio >= lower_ratio_cutoff) & (ratio <= upper_ratio_cutoff))
-            | (abs_diff <= abs_diff_cutoff)
-        )
-    )
-
-
 def compute_global_ratio(lf: pl.LazyFrame) -> float:
     """
     Computes the global ratio of filled posts to PIR people using only valid rows.
     """
     row = (
-        lf.filter(valid_rows())
+        lf.filter(
+            (pl.col(IndCQC.care_home) == CareHome.not_care_home)
+            & people_col.is_not_null()
+            & (people_col > 0)
+            & posts_col.is_not_null()
+            & (posts_col > 0)
+        )
         .select(
             [
                 posts_col.sum().alias("posts_sum"),
