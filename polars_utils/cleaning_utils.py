@@ -121,9 +121,6 @@ def reduce_dataset_to_earliest_file_per_month(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: A lazyframe with only the first import date of each month.
     """
-    # expr = pl.col(Keys.day).first().over(Keys.year, Keys.month, order_by=Keys.day)
-
-    # return lf.filter(expr == pl.col(Keys.day))
     date_col = pl.col(IndCQC.cqc_location_import_date)
 
     expr = date_col.min().over(date_col.dt.year(), date_col.dt.month())
