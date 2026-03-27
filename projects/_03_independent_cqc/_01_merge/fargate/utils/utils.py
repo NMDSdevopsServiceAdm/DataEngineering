@@ -18,8 +18,8 @@ def filter_to_cqc_locations(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: The input LazyFrame with rows without a CQC locationid removed.
     """
-    # TODO
-    return lf
+    filtered_lf = lf.filter(pl.col(IndCQC.location_id).str.len_chars() > 0)
+    return filtered_lf
 
 
 def aggregate_ascwds_worker_job_roles_per_establishment(
