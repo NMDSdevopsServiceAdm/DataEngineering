@@ -48,10 +48,6 @@ def scan_parquet(
     lf = pl.scan_parquet(
         source,
         schema=schema,
-        low_memory=True,
-        rechunk=False,
-        use_statistics=True,
-        cache=False,
         cast_options=pl.ScanCastOptions(
             missing_struct_fields="insert",
             extra_struct_fields="ignore",
