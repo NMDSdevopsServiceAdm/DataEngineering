@@ -16,9 +16,6 @@ from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
 
-# Restrict vCPU count so memory isn't throttled (8 available on ECS).
-os.environ["POLARS_MAX_THREADS"] = "4"
-
 # ECS/Cloudwatch captures stdout logging.
 logging.basicConfig(
     level=logging.INFO,
@@ -28,10 +25,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 polars_temp_dir = os.getenv("POLARS_TEMP_DIR", tempfile.gettempdir())
-
 logging.info(f"Polars temp dir set at: {polars_temp_dir}")
-logging.info(f"Polars max threads set at: {os.environ['POLARS_MAX_THREADS']}")
-
 CHECKPOINT_PATH = Path(polars_temp_dir) / "checkpoints"
 
 partition_keys = [Keys.year]
