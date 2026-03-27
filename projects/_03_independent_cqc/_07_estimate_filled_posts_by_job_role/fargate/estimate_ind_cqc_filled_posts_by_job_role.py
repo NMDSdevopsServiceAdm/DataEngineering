@@ -117,7 +117,6 @@ def main(
     # Needed so we can join on Categorical columns.
     with pl.StringCache():
         with time_it("scan_and_join"):
-            # 1. Base Scan: Load wide data and generate the unique 'id' index
             estimated_posts_base_lf = (
                 utils.scan_parquet(
                     source=estimates_source,
@@ -127,38 +126,37 @@ def main(
                 .with_columns(cast_to_schema(transformation_columns))
             )
 
-            # 2. Subset: Extract ONLY the keys needed for the cross join and ASCWDS join
+            # Subset: Extract ONLY the keys needed for the cross join and ASCWDS join
             narrow_keys_lf = estimated_posts_base_lf.select(["id"] + join_keys)
 
-            # 3. Expand: Perform the massive cross-join on the tiny subset
+            # Expand: Perform the massive cross-join on the tiny subset
             roles_lf = pl.LazyFrame(
                 data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
                 schema={IndCQC.main_job_role_clean_labelled: pl.Categorical},
             )
             expanded_keys_lf = narrow_keys_lf.join(roles_lf, how="cross")
 
-            # 4. Prepare ASCWDS data
+            # Prepare ASCWDS data
+            col_name_map = {
+                IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date
+            }
             ascwds_job_role_counts_lf = (
                 utils.scan_parquet(
                     source=ascwds_job_role_counts_source,
                     selected_columns=list(ascwds_columns_to_import),
                 )
                 .with_columns(cast_to_schema(ascwds_columns_to_import))
-                .rename(
-                    {
-                        IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date
-                    }
-                )
+                .rename(col_name_map)
             )
 
-            # 5. Join ASCWDS counts onto the expanded narrow subset
+            # Join ASCWDS counts onto the expanded narrow subset
             expanded_counts_lf = expanded_keys_lf.join(
                 other=ascwds_job_role_counts_lf,
                 on=join_keys + [IndCQC.main_job_role_clean_labelled],
                 how="left",
             )
 
-            # 6. Join Back: Re-attach the wide base data right before processing logic
+            # Join Back: Re-attach the wide base data right before processing logic
             # The streaming engine easily handles this 1-to-many join via the 'id' column
             estimated_job_role_posts_lf = estimated_posts_base_lf.join(
                 expanded_counts_lf,
@@ -166,7 +164,6 @@ def main(
                 how="right",
             ).drop(join_keys)
 
-            # 7. Apply row-level nullification logic
             estimated_job_role_posts_lf = (
                 JRUtils.nullify_job_role_count_when_source_not_ascwds(
                     estimated_job_role_posts_lf
@@ -185,8 +182,6 @@ def main(
             log_polars_plan(estimated_job_role_posts_lf, "Post Join")
             checkpoint_filepath = CHECKPOINT_PATH / "checkpoint1.parquet"
 
-            # The streaming engine will push the join directly into the parquet file
-            # in manageable chunks, avoiding full memory materialization.
             estimated_job_role_posts_lf.sink_parquet(
                 checkpoint_filepath,
                 mkdir=True,
