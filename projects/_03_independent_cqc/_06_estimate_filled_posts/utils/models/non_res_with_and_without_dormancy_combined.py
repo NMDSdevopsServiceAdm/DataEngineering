@@ -13,6 +13,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_values.categorical_column_values import CareHome
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\non_res_with_and_without_dormancy_combined.py
 def combine_non_res_with_and_without_dormancy_models(
     locations_df: DataFrame,
 ) -> DataFrame:
@@ -54,6 +55,7 @@ def combine_non_res_with_and_without_dormancy_models(
     return locations_with_predictions_df
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\non_res_with_and_without_dormancy_combined.py
 def group_time_registered_to_six_month_bands(df: DataFrame) -> DataFrame:
     """
     Groups 'time_registered' into six-month bands and caps values beyond ten years.
@@ -91,6 +93,7 @@ def group_time_registered_to_six_month_bands(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\non_res_with_and_without_dormancy_combined.py
 def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
     """
     Calculates the ratio between 'with_dormancy' and 'without_dormancy' models by partitioning
@@ -117,6 +120,7 @@ def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
     return df
 
 
+# not converting this function to polars, use '.group_by()' & '.agg()' instead
 def average_models_by_related_location_and_time_registered(df: DataFrame) -> DataFrame:
     """
     Averages model predictions by 'related_location' and 'time_registered_banded_and_capped'.
@@ -145,6 +149,7 @@ def average_models_by_related_location_and_time_registered(df: DataFrame) -> Dat
     return avg_df
 
 
+# not converting this function to polars, use '.when()' & '.then()' instead
 def calculate_adjustment_ratios(df: DataFrame) -> DataFrame:
     """
     Calculates the adjustment ratio between 'with_dormancy' and 'without_dormancy' models.
@@ -169,6 +174,7 @@ def calculate_adjustment_ratios(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\non_res_with_and_without_dormancy_combined.py
 def apply_model_ratios(df: DataFrame) -> DataFrame:
     """
     Applies the adjustment ratio to 'without_dormancy' model predictions.
@@ -188,6 +194,7 @@ def apply_model_ratios(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\non_res_with_and_without_dormancy_combined.py
 def calculate_and_apply_residuals(df: DataFrame) -> DataFrame:
     """
     Calculates and applies residuals between models at the first point in time when both models exist to smooth predictions.
@@ -219,6 +226,7 @@ def calculate_and_apply_residuals(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\non_res_with_and_without_dormancy_combined.py
 def calculate_residuals(df: DataFrame) -> DataFrame:
     """
     Calculates residuals between 'with_dormancy' and 'non_res_without_dormancy_model_adjusted' models at the first overlap date.
@@ -256,6 +264,7 @@ def calculate_residuals(df: DataFrame) -> DataFrame:
     return residual_df
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\non_res_with_and_without_dormancy_combined.py
 def apply_residuals(df: DataFrame) -> DataFrame:
     """
     Applies the residuals to smooth predictions when both the model value and residual are not null.
@@ -282,6 +291,7 @@ def apply_residuals(df: DataFrame) -> DataFrame:
     return df
 
 
+# not converting this function to polars, use '.coalesce()' instead
 def combine_model_predictions(df: DataFrame) -> DataFrame:
     """
     Coalesces the models in the order provided into a single column called 'prediction'.
