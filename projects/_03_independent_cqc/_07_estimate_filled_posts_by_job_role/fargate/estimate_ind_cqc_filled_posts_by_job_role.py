@@ -122,7 +122,7 @@ def main(
                 .with_columns(cast_to_schema(transformation_columns))
             )
 
-            # Subset: Extract ONLY the keys needed for the cross join and ASCWDS join
+            # Subset: Extract ONLY the keys needed for the cross join and ASCWDS join.
             narrow_keys_lf = estimated_posts_base_lf.select(["id"] + join_keys)
 
             # Expand: Perform the massive cross-join on the tiny subset
