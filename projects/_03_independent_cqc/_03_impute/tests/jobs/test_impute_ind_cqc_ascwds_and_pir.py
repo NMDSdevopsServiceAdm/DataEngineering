@@ -10,7 +10,6 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     ImputeIndCqcAscwdsAndPirSchemas as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH: str = (
     "projects._03_independent_cqc._03_impute.jobs.impute_ind_cqc_ascwds_and_pir"
@@ -23,12 +22,6 @@ class ImputeIndCqcAscwdsAndPirTests(SparkBaseTest):
     NON_RES_PIR_MODEL = (
         "tests/test_models/non_res_pir_linear_regression_prediction/1.0.0/"
     )
-    partition_keys = [
-        Keys.year,
-        Keys.month,
-        Keys.day,
-        Keys.import_date,
-    ]
 
     def setUp(self):
         self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(
@@ -95,7 +88,6 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
             ANY,
             self.ESTIMATES_DESTINATION,
             mode="overwrite",
-            partitionKeys=self.partition_keys,
         )
 
 

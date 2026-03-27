@@ -22,10 +22,7 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import Sector
-
-cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
@@ -61,10 +58,6 @@ cleaned_cqc_locations_columns_to_import = [
     ONSClean.current_lsoa21,
     ONSClean.current_msoa21,
     ONSClean.current_rural_urban_ind_11,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
 ]
 cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.ascwds_workplace_import_date,
@@ -188,7 +181,6 @@ def main(
     utils.sink_to_parquet(
         independent_cqc_lf,
         destination,
-        partition_cols=cqc_partition_keys,
         append=False,
     )
 

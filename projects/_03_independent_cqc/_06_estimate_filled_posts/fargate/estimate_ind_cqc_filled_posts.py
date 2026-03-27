@@ -3,7 +3,6 @@ from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models
     enrich_with_model_predictions,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 ind_cqc_columns = [
     IndCQC.cqc_location_import_date,
@@ -68,13 +67,7 @@ ind_cqc_columns = [
     IndCQC.imputed_filled_posts_per_bed_ratio_model,
     IndCQC.posts_rolling_average_model,
     IndCQC.unix_time,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
 ]
-
-cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(
@@ -115,7 +108,6 @@ def main(
     utils.sink_to_parquet(
         lf,
         destination,
-        partition_cols=cqc_partition_keys,
         append=False,
     )
 
