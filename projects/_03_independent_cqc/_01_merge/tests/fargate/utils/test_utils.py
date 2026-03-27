@@ -89,3 +89,22 @@ class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(unittest.TestCase):
             returned_lf.sort(self.columns_to_sort_outputs_on),
             expected_lf.sort(self.columns_to_sort_outputs_on),
         )
+
+
+class FilterToCQCLocationsTests(unittest.TestCase):
+    def test_filter_to_cqc_locations_tests(
+        self,
+    ):
+        test_lf = pl.LazyFrame(
+            data=Data.filter_to_cqc_locations_rows,
+            schema=Schemas.filter_to_cqc_locations_schema,
+        )
+        returned_lf = job.filter_to_cqc_locations(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_filter_to_cqc_locations_rows,
+            schema=Schemas.filter_to_cqc_locations_schema,
+        )
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+        )

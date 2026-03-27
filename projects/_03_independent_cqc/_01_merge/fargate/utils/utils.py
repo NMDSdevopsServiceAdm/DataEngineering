@@ -1,11 +1,28 @@
 import polars as pl
 
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid as AscwdsJobRoles,
 )
 
 LIST_OF_JOB_ROLES_SORTED = sorted(list(AscwdsJobRoles.labels_dict.values()))
+
+
+def filter_to_cqc_locations(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Filters dataset to rows with a CQC locationid.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame containing cleaned ASC-WDS worker data.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with rows without a CQC locationid removed.
+    """
+    filtered_lf = lf.filter(pl.col(AWKClean.location_id).str.len_chars() > 0)
+    return filtered_lf
 
 
 def aggregate_ascwds_worker_job_roles_per_establishment(

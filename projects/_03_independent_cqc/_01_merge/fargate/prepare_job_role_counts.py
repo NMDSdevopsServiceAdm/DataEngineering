@@ -1,12 +1,15 @@
 import projects._03_independent_cqc._01_merge.fargate.utils.utils as JRUtils
 from polars_utils import utils
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-
 
 cleaned_ascwds_worker_columns_to_import = [
     IndCQC.establishment_id,
     IndCQC.ascwds_worker_import_date,
     IndCQC.main_job_role_clean_labelled,
+    AWKClean.location_id,
 ]
 
 
@@ -32,8 +35,10 @@ def main(
         IndCQC.main_job_role_clean_labelled,
     ]
 
+    cqc_worker_lf = JRUtils.filter_to_cqc_locations(cleaned_ascwds_worker_lf)
+
     aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
-        cleaned_ascwds_worker_lf,
+        cqc_worker_lf,
         JRUtils.LIST_OF_JOB_ROLES_SORTED,
         columns_to_aggregate_on,
     )
