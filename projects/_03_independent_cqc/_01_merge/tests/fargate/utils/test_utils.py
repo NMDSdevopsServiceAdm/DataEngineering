@@ -96,7 +96,6 @@ class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(unittest.TestCase):
         )
 
 
-# TODO: Write test for filtering dataset to where length of location id is greater than 0
 class FilterToCQCLocationsTests(unittest.TestCase):
     def test_filter_to_cqc_locations_tests(
         self,
