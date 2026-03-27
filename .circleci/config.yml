@@ -29,9 +29,7 @@ jobs:
     parameters:
       aws_account_id:
         type: env_var_name
-      access_key:
-        type: env_var_name
-      secret_key:
+      role_arn:
         type: env_var_name
     docker:
       - image: docker:latest
@@ -40,19 +38,15 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - aws-cli/setup:
+          role-arn: ${<< parameters.role_arn >>}
           region: $AWS_REGION
+          role-session-name: "CircleCI-Container-Job"
       - run:
           name: Build Docker Images
           command: |
-            export AWS_ACCESS_KEY_ID=${<< parameters.access_key >>}
-            export AWS_SECRET_ACCESS_KEY=${<< parameters.secret_key >>}
             # Authenticate Docker to ECR
-            aws ecr get-login-password --region eu-west-2 | docker login -u AWS --password-stdin ${<< parameters.aws_account_id >>}.dkr.ecr.eu-west-2.amazonaws.com
-            echo "Rebuilding lambdas and pushing to ECR."
-            export AWS_ACCOUNT_ID=${<< parameters.aws_account_id >>}
-            # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
+            aws ecr get-login-password --region $AWS_REGION | docker login -u AWS --password-stdin ${<< parameters.aws_account_id >>}.dkr.ecr.eu-west-2.amazonaws.com
             export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
-
             docker buildx bake all --push
 
   test:
@@ -141,9 +135,7 @@ jobs:
         type: enum
         description: The short name of the AWS account, used to reference the relevant `tfbackend` file, and auth credentials
         enum: ["prod", "non_prod"]
-      access_key:
-        type: env_var_name
-      secret_key:
+      role_arn:
         type: env_var_name
     working_directory: /tmp/project
     docker:
@@ -151,13 +143,14 @@ jobs:
     resource_class: small
     steps:
       - checkout
+      - aws-cli/setup:
+          role-arn: ${<< parameters.role_arn >>}
+          region: $AWS_REGION
       - run:
           name: terraform plan
           command: |
             # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
             export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
-            export AWS_ACCESS_KEY_ID=${<< parameters.access_key >>}
-            export AWS_SECRET_ACCESS_KEY=${<< parameters.secret_key >>}
             cd terraform/pipeline
             export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID_<< parameters.aws_account >>}
             terraform init -input=false -backend-config=../<< parameters.aws_account >>.s3.tfbackend
@@ -178,9 +171,7 @@ jobs:
         type: enum
         description: The short name of the AWS account, used to reference the relevant auth credentials
         enum: ["prod", "non_prod"]
-      access_key:
-        type: env_var_name
-      secret_key:
+      role_arn:
         type: env_var_name
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:<< pipeline.parameters.terraform_version >>
@@ -189,26 +180,22 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
+      - aws-cli/setup:
+          role-arn: ${<< parameters.role_arn >>}
+          region: $AWS_REGION
       - run:
           name: terraform apply
           command: |
-            export AWS_ACCESS_KEY_ID=${<< parameters.access_key >>}
-            export AWS_SECRET_ACCESS_KEY=${<< parameters.secret_key >>}
             cd terraform/pipeline
             terraform apply -auto-approve tfapply
       - run:
           name: save pipeline resources bucket name
           command: |
-            cd terraform/pipeline
-            export AWS_ACCESS_KEY_ID=${<< parameters.access_key >>}
-            export AWS_SECRET_ACCESS_KEY=${<< parameters.secret_key >>}
             echo $(terraform output --raw pipeline_resources_bucket_name) > pipeline_resources_bucket_name
       - run:
           name: save datasets bucket name
           command: |
             cd terraform/pipeline
-            export AWS_ACCESS_KEY_ID=${<< parameters.access_key >>}
-            export AWS_SECRET_ACCESS_KEY=${<< parameters.secret_key >>}
             echo $(terraform output --raw datasets_bucket_name) > datasets_bucket_name
       - persist_to_workspace:
           root: .
@@ -218,9 +205,7 @@ jobs:
 
   deploy-dependencies:
     parameters:
-      access_key:
-        type: env_var_name
-      secret_key:
+      role_arn:
         type: env_var_name
     docker:
       - image: cimg/python:3.11.12
@@ -229,12 +214,8 @@ jobs:
       - attach_workspace:
           at: .
       - aws-cli/setup:
+          role-arn: ${<< parameters.role_arn >>}
           region: $AWS_REGION
-      - run:
-          name: Setup Environment Variables
-          command: |
-            echo 'export AWS_ACCESS_KEY_ID="${<< parameters.access_key >>}"' >> "$BASH_ENV"
-            echo 'export AWS_SECRET_ACCESS_KEY="${<< parameters.secret_key >>}"' >> "$BASH_ENV"
       - run:
           name: package utils, schemas, projects and environment
           command: |
@@ -296,6 +277,9 @@ jobs:
             aws s3 sync "s3://sfc-main-pipeline-resources/models/" "s3://$BRANCH_RESOURCES_BUCKET/models/"
 
   terraform-destroy:
+    parameters:
+      role_arn:
+        type: env_var_name
     working_directory: /tmp/project
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:<< pipeline.parameters.terraform_version >>
@@ -303,12 +287,12 @@ jobs:
     steps:
       - checkout
       - aws-cli/setup:
+          role-arn: ${<< parameters.role_arn >>}
           region: $AWS_REGION
+          role-session-name: "CircleCI-Terraform-Destroy"
       - run:
           name: terraform destroy
           command: |
-            export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"
-            export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"
             export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
             export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
             # --- Safeguard to never destroy main ---
@@ -350,8 +334,6 @@ jobs:
       - run:
           name: delete workspace
           command: |
-            export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"
-            export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"
             cd terraform/pipeline
             terraform workspace select default
             export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
@@ -364,8 +346,7 @@ workflows:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
       - task-containerisation:
-          access_key: AWS_ACCESS_KEY_ID
-          secret_key: AWS_SECRET_ACCESS_KEY
+          role_arn: AWS_ROLE_ARN
           aws_account_id: AWS_ACCOUNT_ID
           filters:
             branches:
@@ -375,8 +356,7 @@ workflows:
             branches:
               only: main
       - terraform-plan:
-          access_key: AWS_ACCESS_KEY_ID
-          secret_key: AWS_SECRET_ACCESS_KEY
+          role_arn: AWS_ROLE_ARN
           aws_account: "prod"
           requires:
             - test
@@ -386,24 +366,19 @@ workflows:
           requires:
             - terraform-plan
       - terraform-apply:
-          access_key: AWS_ACCESS_KEY_ID
-          secret_key: AWS_SECRET_ACCESS_KEY
+          role_arn: AWS_ROLE_ARN
           aws_account: "prod"
-          requires:
-            - plan-approval
+          requires: [plan-approval]
       - deploy-dependencies:
-          access_key: AWS_ACCESS_KEY_ID
-          secret_key: AWS_SECRET_ACCESS_KEY
+          role_arn: AWS_ROLE_ARN
           requires:
             - terraform-apply
-
 
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
       - task-containerisation:
-          access_key: AWS_ACCESS_KEY_ID_non_prod
-          secret_key: AWS_SECRET_ACCESS_KEY_non_prod
+          role_arn: AWS_ROLE_ARN_non_prod
           aws_account_id: AWS_ACCOUNT_ID_non_prod
           filters:
             branches:
@@ -421,21 +396,18 @@ workflows:
             branches:
               ignore: main
       - terraform-plan:
-          access_key: AWS_ACCESS_KEY_ID_non_prod
-          secret_key: AWS_SECRET_ACCESS_KEY_non_prod
+          role_arn: AWS_ROLE_ARN_non_prod
           aws_account: "non_prod"
           requires:
             - lint-terraform
             - task-containerisation
       - terraform-apply:
-          access_key: AWS_ACCESS_KEY_ID_non_prod
-          secret_key: AWS_SECRET_ACCESS_KEY_non_prod
+          role_arn: AWS_ROLE_ARN_non_prod
           aws_account: "non_prod"
           requires:
             - terraform-plan
       - deploy-dependencies:
-          access_key: AWS_ACCESS_KEY_ID_non_prod
-          secret_key: AWS_SECRET_ACCESS_KEY_non_prod
+          role_arn: AWS_ROLE_ARN_non_prod
           requires:
             - terraform-apply
       - copy-main-data:
@@ -451,4 +423,5 @@ workflows:
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
     jobs:
-      - terraform-destroy
+      - terraform-destroy:
+          role_arn: AWS_ROLE_ARN_non_prod
