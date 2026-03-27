@@ -118,10 +118,8 @@ def main(
     with pl.StringCache():
         with time_it("scan_and_join"):
             estimated_posts_base_lf = (
-                utils.scan_parquet(
-                    source=estimates_source,
-                    selected_columns=list(transformation_columns),
-                )
+                pl.scan_parquet(estimates_source, low_memory=True)
+                .select(selected_columns=list(transformation_columns))
                 .with_row_index(name="id")
                 .with_columns(cast_to_schema(transformation_columns))
             )
@@ -173,6 +171,7 @@ def main(
                 )
             )
 
+            # TODO: Experiment with getting rid of this.
             estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(
                 IndCQC.location_id,
                 IndCQC.main_job_role_clean_labelled,
@@ -191,7 +190,7 @@ def main(
         with time_it("Final pipeline"):
             estimated_job_role_posts_lf = pl.scan_parquet(
                 checkpoint_filepath,
-                cache=False,
+                low_memory=True,
             )
 
             pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
