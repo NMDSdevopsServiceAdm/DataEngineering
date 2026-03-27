@@ -30,7 +30,6 @@ resource "aws_ecs_task_definition" "ecs_task" {
 
       environment = concat(var.environment, [
         { name = "POLARS_TEMP_DIR", value = "/polars_scratch" },
-        { name = "POLARS_STREAMING_GROUPBY_SPILL_SIZE", value = "1000000000" },
         { name = "POLARS_VERBOSE", value = "1" }
       ])
 
