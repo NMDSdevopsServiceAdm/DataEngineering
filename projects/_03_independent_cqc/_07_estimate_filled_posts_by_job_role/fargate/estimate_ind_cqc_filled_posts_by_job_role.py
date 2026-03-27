@@ -28,6 +28,10 @@ polars_temp_dir = os.getenv("POLARS_TEMP_DIR", tempfile.gettempdir())
 logging.info(f"Polars temp dir set at: {polars_temp_dir}")
 CHECKPOINT_PATH = Path(polars_temp_dir) / "checkpoints"
 
+# Set streaming chunk size for memory management - each thread (per CPU core) will load
+# in a chunk of this size.
+pl.Config.set_streaming_chunk_size(50000)
+
 partition_keys = [Keys.year]
 
 estimates_columns_to_import = [
