@@ -6,6 +6,7 @@ cleaned_ascwds_worker_columns_to_import = [
     IndCQC.establishment_id,
     IndCQC.ascwds_worker_import_date,
     IndCQC.main_job_role_clean_labelled,
+    IndCQC.location_id,
 ]
 
 
