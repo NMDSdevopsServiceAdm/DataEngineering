@@ -11,11 +11,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     MergeIndCQCSchemas as Schemas,
 )
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
-)
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.column_values.categorical_column_values import Sector
 
 PATCH_PATH = "projects._03_independent_cqc._01_merge.fargate.merge_ind_cqc_data"
 
@@ -27,7 +22,6 @@ class IndCQCMergeTests(unittest.TestCase):
     TEST_CT_NON_RES_SOURCE = "yet/another/directory"
     TEST_CT_CARE_HOME_SOURCE = "one/more/directory"
     TEST_DESTINATION = "an/other/directory"
-    partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     mock_data = Mock(name="data")
 
@@ -55,7 +49,6 @@ class IndCQCMergeTests(unittest.TestCase):
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
-            partition_cols=self.partition_keys,
             append=False,
         )
 

@@ -14,7 +14,6 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
 )
 from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_posts"
 
@@ -22,12 +21,6 @@ PATCH_PATH = "projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_p
 class CleanIndFilledPostsTests(SparkBaseTest):
     MERGE_IND_CQC_SOURCE = "input_dir"
     CLEANED_IND_CQC_DESTINATION = "output_dir"
-    partition_keys = [
-        Keys.year,
-        Keys.month,
-        Keys.day,
-        Keys.import_date,
-    ]
 
     def setUp(self):
         self.merge_ind_cqc_test_df = self.spark.createDataFrame(
@@ -102,7 +95,6 @@ class MainTests(CleanIndFilledPostsTests):
             ANY,
             self.CLEANED_IND_CQC_DESTINATION,
             mode=ANY,
-            partitionKeys=self.partition_keys,
         )
 
     def test_replace_zero_beds_with_null(self):
