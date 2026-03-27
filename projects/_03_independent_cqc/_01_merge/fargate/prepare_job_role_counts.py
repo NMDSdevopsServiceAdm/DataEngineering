@@ -42,10 +42,10 @@ def main(
         Keys.import_date,
     ]
 
-    # TODO: Filter dataset to where length of location id is greater than 0
+    cqc_worker_lf = JRUtils.filter_to_cqc_locations(cleaned_ascwds_worker_lf)
 
     aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
-        cleaned_ascwds_worker_lf,
+        cqc_worker_lf,
         JRUtils.LIST_OF_JOB_ROLES_SORTED,
         columns_to_aggregate_on,
     )
