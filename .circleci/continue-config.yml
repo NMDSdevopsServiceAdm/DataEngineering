@@ -419,30 +419,37 @@ workflows:
           keyword: "fargate or polars"
           filters:
             and:
-              - pipeline.parameters.run-polars-tests
-              - not: pipeline.parameters.run-pyspark-tests
-              - not: pipeline.parameters.run-other-tests
+              - << pipeline.parameters.run-polars-tests >>
+              - not: << pipeline.parameters.run-pyspark-tests >>
+              - not: << pipeline.parameters.run-other-tests >>
       - test:
           name: pyspark-tests
           keyword: "jobs"
           filters:
             and:
-              - pipeline.parameters.run-pyspark-tests
-              - not: pipeline.parameters.run-polars-tests
-              - not: pipeline.parameters.run-other-tests
+              - << pipeline.parameters.run-pyspark-tests >>
+              - not: << pipeline.parameters.run-polars-tests >>
+              - not: << pipeline.parameters.run-other-tests >>
+      - test:
+          name: other-tests
+          keyword: "not (fargate or polars or jobs)"
+          filters:
+            and:
+              - << pipeline.parameters.run-other-tests >>
+              - not: << pipeline.parameters.run-polars-tests >>
+              - not: << pipeline.parameters.run-pyspark-tests >>
       - test:
           name: all-tests
           keyword: ""
           filters:
             or:
-              - and: [ pipeline.parameters.run-polars-tests, pipeline.parameters.run-pyspark-tests ]
-              - and: [ pipeline.parameters.run-polars-tests, pipeline.parameters.run-other-tests ]
-              - and: [ pipeline.parameters.run-pyspark-tests >>, << pipeline.parameters.run-other-tests ]
-      - test:
-          name: all-tests
-          filters: 
+              - and: [ << pipeline.parameters.run-polars-tests >>, << pipeline.parameters.run-pyspark-tests >> ]
+              - and: [ << pipeline.parameters.run-polars-tests >>, << pipeline.parameters.run-other-tests >> ]
+              - and: [ << pipeline.parameters.run-pyspark-tests >>, << pipeline.parameters.run-other-tests >> ]
       - lint-terraform:
-          filters: pipeline.parameters.run-terraform-lint
+          filters:
+            and: 
+              - << pipeline.parameters.run-terraform-lint >>
       - task-containerisation:
           access_key: AWS_ACCESS_KEY_ID_non_prod
           secret_key: AWS_SECRET_ACCESS_KEY_non_prod
