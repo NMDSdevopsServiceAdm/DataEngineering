@@ -195,7 +195,11 @@ def main(
             # ---------------------------------------------------------
             # 1. Job Role Ratios
             # ---------------------------------------------------------
-            job_role_ratios = JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
+            job_role_ratios = (
+                JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
+                .cast(pl.Float32)
+                .alias(IndCQC.ascwds_job_role_ratios)
+            )
 
             ratios_agg_lf = (
                 estimated_job_role_posts_lf.select(
@@ -206,7 +210,7 @@ def main(
                 .group_by(pct_share_groups)
                 .agg(
                     pl.col(long_id),  # Keep to align during explode
-                    job_role_ratios.alias(IndCQC.ascwds_job_role_ratios),
+                    job_role_ratios,
                 )
                 .explode(long_id, IndCQC.ascwds_job_role_ratios)
                 .drop(pct_share_groups)
