@@ -417,27 +417,27 @@ workflows:
       - test:
           name: polars-tests
           keyword: "fargate or polars"
-          when:
+          filters:
             and:
-              - << pipeline.parameters.run-polars-tests >>
-              - not: << pipeline.parameters.run-pyspark-tests >>
-              - not: << pipeline.parameters.run-other-tests >>
+              - pipeline.parameters.run-polars-tests
+              - not: pipeline.parameters.run-pyspark-tests
+              - not: pipeline.parameters.run-other-tests
       - test:
           name: pyspark-tests
           keyword: "jobs"
-          when:
+          filters:
             and:
-              - << pipeline.parameters.run-pyspark-tests >>
-              - not: << pipeline.parameters.run-polars-tests >>
-              - not: << pipeline.parameters.run-other-tests >>
+              - pipeline.parameters.run-pyspark-tests
+              - not: pipeline.parameters.run-polars-tests
+              - not: pipeline.parameters.run-other-tests
       - test:
           name: all-tests
           keyword: ""
-          when:
+          filters:
             or:
-              - and: [ << pipeline.parameters.run-polars-tests >>, << pipeline.parameters.run-pyspark-tests >> ]
-              - and: [ << pipeline.parameters.run-polars-tests >>, << pipeline.parameters.run-other-tests >> ]
-              - and: [ << pipeline.parameters.run-pyspark-tests >>, << pipeline.parameters.run-other-tests >> ]
+              - and: [ pipeline.parameters.run-polars-tests, pipeline.parameters.run-pyspark-tests ]
+              - and: [ pipeline.parameters.run-polars-tests, pipeline.parameters.run-other-tests ]
+              - and: [ pipeline.parameters.run-pyspark-tests >>, << pipeline.parameters.run-other-tests ]
       - test:
           name: all-tests
           filters: 
