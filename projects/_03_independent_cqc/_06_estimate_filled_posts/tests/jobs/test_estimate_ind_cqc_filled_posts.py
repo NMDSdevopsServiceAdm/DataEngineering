@@ -4,7 +4,6 @@ from unittest.mock import ANY, Mock, patch
 import projects._03_independent_cqc._06_estimate_filled_posts.jobs.estimate_ind_cqc_filled_posts as job
 from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.jobs.estimate_ind_cqc_filled_posts"
 
@@ -13,12 +12,6 @@ class EstimateIndCQCFilledPostsTests(SparkBaseTest):
     TEST_BUCKET_NAME = "test-bucket"
     SOURCE_TEST_DATA = "some/cleaned/data"
     ESTIMATES_DESTINATION = "estimates/destination"
-    partition_keys = [
-        Keys.year,
-        Keys.month,
-        Keys.day,
-        Keys.import_date,
-    ]
 
     def setUp(self):
         self.mock_ind_cqc_df = Mock(name="ind_cqc_df")
@@ -67,7 +60,6 @@ class EstimateIndCQCFilledPostsTests(SparkBaseTest):
             ANY,
             self.ESTIMATES_DESTINATION,
             mode="overwrite",
-            partitionKeys=self.partition_keys,
         )
 
 

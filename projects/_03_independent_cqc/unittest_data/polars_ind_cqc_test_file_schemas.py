@@ -27,7 +27,6 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
 @dataclass
@@ -37,20 +36,12 @@ class PrepareJobRoleCountsUtilsSchemas:
             (IndCQC.establishment_id, pl.String()),
             (IndCQC.ascwds_worker_import_date, pl.Date()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
-            (Keys.year, pl.String()),
-            (Keys.month, pl.String()),
-            (Keys.day, pl.String()),
-            (Keys.import_date, pl.String()),
         ]
     )
     expected_aggregate_ascwds_worker_job_roles_per_establishment_schema = pl.Schema(
         [
             (IndCQC.establishment_id, pl.String()),
             (IndCQC.ascwds_worker_import_date, pl.Date()),
-            (Keys.year, pl.String()),
-            (Keys.month, pl.String()),
-            (Keys.day, pl.String()),
-            (Keys.import_date, pl.String()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.ascwds_job_role_counts, pl.UInt32()),
         ]
@@ -150,7 +141,6 @@ class FeaturesEngineeringUtilsSchemas:
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.DataType()),
-            ("import_date", pl.String()),
             ("other_col", pl.String()),
             ("feature_1", pl.UInt32()),
             ("feature_2", pl.UInt32()),
@@ -168,7 +158,6 @@ class FeaturesEngineeringUtilsSchemas:
             ("feature_1", pl.Int32()),
             ("feature_2", pl.Int32()),
             ("feature_3", pl.Int32()),
-            ("import_date", pl.String()),
         ]
     )
 
@@ -244,7 +233,6 @@ class ValidateModel01FeaturesSchemas:
             (IndCQC.cqc_location_import_date, pl.DataType()),
             (IndCQC.care_home, pl.String()),
             (IndCQC.dormancy, pl.String()),
-            (Keys.import_date, pl.String()),
             ("feature 1", pl.String()),
             ("feature 2", pl.String()),
             (IndCQC.imputed_filled_post_model, pl.Float32),
@@ -774,7 +762,6 @@ class CleanIndCQCSchema:
     merged_schema_for_cleaning_job = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
-            (CQCLClean.import_date, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),
             (ONSClean.current_region, pl.String()),
             (CQCLClean.current_cssr, pl.String()),
@@ -788,9 +775,6 @@ class CleanIndCQCSchema:
             (IndCQC.name, pl.String()),
             (IndCQC.postcode, pl.String()),
             (IndCQC.imputed_registration_date, pl.Date()),
-            (Keys.year, pl.String()),
-            (Keys.month, pl.String()),
-            (Keys.day, pl.String()),
         ]
     )
 

@@ -58,10 +58,7 @@ class CleaningUtilsSchemas:
     reduce_dataset_to_earliest_file_per_month_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
-            (CQCLClean.import_date, pl.String()),
-            (Keys.year, pl.String()),
-            (Keys.month, pl.String()),
-            (Keys.day, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
         ]
     )
 
