@@ -212,7 +212,7 @@ def main(
             ).alias(IndCQC.estimate_filled_posts_by_job_role)
         )
 
-        log_polars_plan(estimated_job_role_posts_lf, "Post Join")
+        log_polars_plan(estimated_job_role_posts_lf, "Impute and rolling")
         checkpoint_filepath = CHECKPOINT_PATH / "checkpoint2.ipc"
         estimated_job_role_posts_lf.sink_ipc(
             checkpoint_filepath,
