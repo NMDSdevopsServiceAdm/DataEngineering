@@ -2284,6 +2284,17 @@ get_percent_share_ratios_test_cases = [
         ],
     ),
     GetPercentShareRatiosTestCase(
+        id="one_location_with_different_import_dates",
+        data=[
+            (0, "1-001", date(2026, 1, 1), 1, 0.1),
+            (1, "1-001", date(2026, 1, 1), 4, 0.4),
+            (2, "1-001", date(2026, 1, 1), 5, 0.5),
+            (3, "1-001", date(2026, 2, 1), 3, 0.3),
+            (4, "1-001", date(2026, 2, 1), 5, 0.5),
+            (5, "1-001", date(2026, 2, 1), 2, 0.2),
+        ],
+    ),
+    GetPercentShareRatiosTestCase(
         id="one_location_with_same_import_date_and_input_column_has_null",
         data=[
             (0, "1-001", date(2026, 1, 1), 1, 0.2),
