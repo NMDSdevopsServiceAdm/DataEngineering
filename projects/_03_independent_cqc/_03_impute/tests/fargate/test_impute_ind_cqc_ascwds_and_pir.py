@@ -12,7 +12,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
     ImputeIndCqcAscwdsAndPirSchema as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = (
     "projects._03_independent_cqc._03_impute.fargate.impute_ind_cqc_ascwds_and_pir"
@@ -22,7 +21,6 @@ PATCH_PATH = (
 class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
     TEST_CLEANED_IND_CQC_DATA_SOURCE = "some/directory"
     TEST_DESTINATION = "some/other/directory"
-    cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     mock_data = Mock(name="data")
 
@@ -43,7 +41,6 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
-            partition_cols=self.cqc_partition_keys,
             append=False,
         )
 

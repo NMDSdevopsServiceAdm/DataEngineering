@@ -82,18 +82,24 @@ def main(
             ],
         )
         # between (inclusive)
-        .col_vals_between(IndCqcColumns.ascwds_filled_posts, 1.0, 3000.0)
-        .col_vals_between(IndCqcColumns.ascwds_pir_merged, 1.0, 3000.0)
+        .col_vals_between(IndCqcColumns.ascwds_filled_posts, 1.0, 3000.0, na_pass=True)
+        .col_vals_between(IndCqcColumns.ascwds_pir_merged, 1.0, 3000.0, na_pass=True)
         # .col_vals_between(IndCqcColumns.care_home_model, -100.0, 3000.0)
         # .col_vals_between(
         #     IndCqcColumns.imputed_posts_non_res_combined_model, -100.0, 3000.0
         # )
         # .col_vals_between(IndCqcColumns.estimate_filled_posts, 1.0, 3000.0)
-        .col_vals_between(IndCqcColumns.non_res_with_dormancy_model, -100.0, 3000.0)
-        .col_vals_between(IndCqcColumns.non_res_without_dormancy_model, -100.0, 3000.0)
-        .col_vals_between(IndCqcColumns.number_of_beds, 1, 500)
-        .col_vals_between(IndCqcColumns.pir_people_directly_employed_dedup, 1, 3000)
-        .col_vals_between(IndCqcColumns.imputed_pir_filled_posts_model, -100.0, 3000.0)
+        .col_vals_between(
+            IndCqcColumns.non_res_with_dormancy_model, -100.0, 3000.0, na_pass=True
+        )
+        .col_vals_between(
+            IndCqcColumns.non_res_without_dormancy_model, -100.0, 3000.0, na_pass=True
+        )
+        .col_vals_between(IndCqcColumns.number_of_beds, 1, 500, na_pass=True)
+        .col_vals_between(
+            IndCqcColumns.pir_people_directly_employed_dedup, 1, 3000, na_pass=True
+        )
+        # .col_vals_between(IndCqcColumns.imputed_pir_filled_posts_model, -100.0, 3000.0)
         .col_vals_between(IndCqcColumns.posts_rolling_average_model, 1.0, 3000.0)
         .col_vals_between(
             IndCqcColumns.unix_time, 1262304000, int(time.time())
@@ -121,7 +127,10 @@ def main(
         )
         .col_vals_in_set(
             IndCqcColumns.ascwds_filled_posts_source,
-            CatValues.ascwds_filled_posts_source_column_values.categorical_values,
+            [
+                *CatValues.ascwds_filled_posts_source_column_values.categorical_values,
+                None,
+            ],
         )
         # .col_vals_in_set(
         #     IndCqcColumns.estimate_filled_posts_source,

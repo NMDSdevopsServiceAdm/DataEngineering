@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import ANY, Mock, patch
 
 import projects._03_independent_cqc._04_model.fargate.model_01_features_non_res_with_dormancy as job
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._04_model.fargate.model_01_features_non_res_with_dormancy"
 
@@ -13,7 +12,6 @@ class ModelFeaturesNonResWithoutDormancyTests(unittest.TestCase):
     TEST_MODEL_REGISTRY = {
         "my_model": {"dependent": "dependent_col_test", "features": ["feat1", "feat2"]}
     }
-    partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     mock_ind_cqc_data = Mock(name="ind_cqc_data")
 
@@ -59,6 +57,4 @@ class ModelFeaturesNonResWithoutDormancyTests(unittest.TestCase):
         group_rural_urban_sparse_categories_mock.assert_called_once()
         self.assertEqual(expand_encode_and_extract_features_mock.call_count, 5)
         select_and_filter_features_data_mock.assert_called_once()
-        sink_to_parquet_mock.assert_called_once_with(
-            ANY, ANY, partition_cols=self.partition_keys, append=False
-        )
+        sink_to_parquet_mock.assert_called_once_with(ANY, ANY, append=False)
