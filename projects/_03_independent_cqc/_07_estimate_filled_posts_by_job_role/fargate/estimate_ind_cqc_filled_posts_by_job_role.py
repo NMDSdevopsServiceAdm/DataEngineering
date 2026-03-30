@@ -36,6 +36,7 @@ pl.Config.set_streaming_chunk_size(50000)
 partition_keys = [Keys.year]
 
 establishment_categories = pl.Categories("establishment", namespace="filled_posts")
+EstablishmentType = pl.Categorical(establishment_categories)
 location_categories = pl.Categories("location", namespace="filled_posts")
 # TODO: Change these types to pl.Enum
 job_role_categories = pl.Categories(
@@ -79,14 +80,14 @@ metadata_columns = {
 }
 ascwds_columns_to_import = {
     IndCQC.ascwds_worker_import_date: pl.Date,
-    IndCQC.establishment_id: pl.Categorical(establishment_categories),
+    IndCQC.establishment_id: EstablishmentType,
     IndCQC.main_job_role_clean_labelled: pl.Categorical(job_role_categories),
     IndCQC.ascwds_job_role_counts: pl.Int16,
 }
 transformation_columns = {
     IndCQC.location_id: pl.Categorical(location_categories),
     IndCQC.cqc_location_import_date: pl.Date,
-    IndCQC.establishment_id: pl.Categorical(establishment_categories),
+    IndCQC.establishment_id: EstablishmentType,
     IndCQC.ascwds_workplace_import_date: pl.Date,
     IndCQC.estimate_filled_posts: pl.Float32,
     IndCQC.estimate_filled_posts_source: pl.Categorical(primary_service_categories),
