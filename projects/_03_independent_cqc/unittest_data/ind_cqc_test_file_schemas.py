@@ -34,7 +34,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.ind_cqc_pipeline_columns import (
     PrimaryServiceRateOfChangeColumns as RoC_TempCol,
 )
@@ -978,7 +977,6 @@ class CleanIndCQCData:
     merged_schema_for_cleaning_job = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.import_date, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(ONSClean.current_region, StringType(), True),
             StructField(CQCLClean.current_cssr, StringType(), True),
@@ -994,9 +992,6 @@ class CleanIndCQCData:
             StructField(IndCQC.name, StringType(), True),
             StructField(IndCQC.postcode, StringType(), True),
             StructField(IndCQC.imputed_registration_date, DateType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
         ]
     )
     calculate_time_registered_for_schema = StructType(
@@ -1509,9 +1504,6 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.name, StringType(), True),
             StructField(IndCQC.postcode, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
         ]
     )
     cleaned_ind_cqc_schema = StructType(
@@ -1555,9 +1547,6 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
         ]
     )
     calculate_expected_size_schema = merged_ind_cqc_schema
@@ -2393,10 +2382,6 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.imputed_pir_filled_posts_model, FloatType(), True),
             StructField(IndCQC.imputed_posts_non_res_combined_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
         ]
     )
 
@@ -2421,10 +2406,6 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
             StructField(IndCQC.ct_care_home_total_employed_imputed, DoubleType(), True),
             StructField(IndCQC.ct_non_res_filled_post_estimate, DoubleType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
         ]
     )
 
@@ -2446,10 +2427,6 @@ class DiagnosticsUtilsSchemas:
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField("model_type_one", FloatType(), True),
             StructField("model_type_two", FloatType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
         ]
     )
     expected_restructure_dataframe_schema = StructType(
@@ -2460,10 +2437,6 @@ class DiagnosticsUtilsSchemas:
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.estimate_source, StringType(), True),
             StructField(IndCQC.estimate_value, FloatType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
         ]
     )
     calculate_distribution_metrics_schema = StructType(

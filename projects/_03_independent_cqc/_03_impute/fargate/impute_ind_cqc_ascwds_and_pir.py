@@ -2,9 +2,6 @@ from polars_utils import utils
 from projects._03_independent_cqc._03_impute.fargate.utils.convert_pir_people_to_filled_posts import (
     convert_pir_to_filled_posts,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-
-cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(
@@ -58,7 +55,6 @@ def main(
     utils.sink_to_parquet(
         lf,
         destination,
-        partition_cols=cqc_partition_keys,
         append=False,
     )
 

@@ -10,7 +10,6 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     ImputeIndCqcAscwdsAndPirSchemas as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH: str = (
     "projects._03_independent_cqc._03_impute.jobs.impute_ind_cqc_ascwds_and_pir"
@@ -20,12 +19,6 @@ PATCH_PATH: str = (
 class ImputeIndCqcAscwdsAndPirTests(SparkBaseTest):
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
     ESTIMATES_DESTINATION = "estimates destination"
-    partition_keys = [
-        Keys.year,
-        Keys.month,
-        Keys.day,
-        Keys.import_date,
-    ]
 
     def setUp(self):
         self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(
@@ -91,7 +84,6 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
             ANY,
             self.ESTIMATES_DESTINATION,
             mode="overwrite",
-            partitionKeys=self.partition_keys,
         )
 
 

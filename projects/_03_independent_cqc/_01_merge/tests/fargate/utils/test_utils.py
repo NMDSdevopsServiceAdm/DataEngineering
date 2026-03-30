@@ -11,7 +11,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
     PrepareJobRoleCountsUtilsSchemas as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
@@ -25,10 +24,6 @@ class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(unittest.TestCase):
             IndCQC.establishment_id,
             IndCQC.ascwds_worker_import_date,
             IndCQC.main_job_role_clean_labelled,
-            Keys.year,
-            Keys.month,
-            Keys.day,
-            Keys.import_date,
         ]
         self.columns_to_sort_outputs_on = [
             IndCQC.establishment_id,

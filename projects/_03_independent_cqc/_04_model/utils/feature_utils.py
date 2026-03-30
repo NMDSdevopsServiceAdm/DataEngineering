@@ -155,7 +155,6 @@ def select_and_filter_features_data(
     lf: pl.LazyFrame,
     features_list: list[str],
     dependent_col: str,
-    partition_keys: list[str],
 ) -> pl.LazyFrame:
     """
     Selects columns from a Polars LazyFrame and filters to non-null feature columns.
@@ -170,7 +169,6 @@ def select_and_filter_features_data(
         lf (pl.LazyFrame): Input Polars LazyFrame.
         features_list (list[str]): List of feature column names.
         dependent_col (str): The name of the dependent column.
-        partition_keys (list[str]): List of column names used for partitioning.
 
     Returns:
         pl.LazyFrame: Polars LazyFrame containing only selected columns and rows
@@ -179,16 +177,12 @@ def select_and_filter_features_data(
     Raises:
         ValueError: If any required columns are missing from the LazyFrame.
     """
-    select_cols = (
-        [
-            IndCQC.location_id,
-            IndCQC.cqc_location_import_date,
-            IndCQC.care_home_status_count,
-            dependent_col,
-        ]
-        + features_list
-        + partition_keys
-    )
+    select_cols = [
+        IndCQC.location_id,
+        IndCQC.cqc_location_import_date,
+        IndCQC.care_home_status_count,
+        dependent_col,
+    ] + features_list
 
     missing_cols = [
         col for col in select_cols if col not in lf.collect_schema().names()

@@ -285,7 +285,6 @@ class SelectAndFilterFeaturesDataTests(unittest.TestCase):
 
     def setUp(self):
         self.dependent = "dependent"
-        self.partition_keys = ["import_date"]
 
         self.test_lf = pl.LazyFrame(
             Data.select_and_filter_features_rows,
@@ -297,7 +296,7 @@ class SelectAndFilterFeaturesDataTests(unittest.TestCase):
         features = ["feature_1", "feature_2", "feature_3"]
 
         returned_lf = job.select_and_filter_features_data(
-            self.test_lf, features, self.dependent, self.partition_keys
+            self.test_lf, features, self.dependent
         )
 
         expected_lf = pl.LazyFrame(
@@ -312,9 +311,7 @@ class SelectAndFilterFeaturesDataTests(unittest.TestCase):
         features = ["feature_1", "missing_feature"]
 
         with self.assertRaises(ValueError) as cm:
-            job.select_and_filter_features_data(
-                self.test_lf, features, self.dependent, self.partition_keys
-            )
+            job.select_and_filter_features_data(self.test_lf, features, self.dependent)
 
         self.assertEqual(
             "Missing columns in LazyFrame: ['missing_feature']", str(cm.exception)
