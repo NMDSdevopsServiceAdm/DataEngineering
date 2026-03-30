@@ -4,7 +4,6 @@ import tempfile
 from pathlib import Path
 
 import polars as pl
-import polars.selectors as cs
 
 from polars_utils import utils
 from polars_utils.pipeline_utils import log_polars_plan, time_it
@@ -245,23 +244,7 @@ def main(
             on=pct_share_groups,
             how="left",
         )
-
-        # Implode to struct, then join back the metadata before sinking.
-        job_role_col = IndCQC.main_job_role_clean_labelled
-        estimates_col = IndCQC.estimate_filled_posts_by_job_role
-        computed_cols = cs.contains("_job_role_").exclude(estimates_col)
-
-        metadata_selector = (
-            cs.all().exclude(*pct_share_groups, job_role_col) - computed_cols
-        )
-        estimated_job_role_posts_lf = estimated_job_role_posts_lf.group_by(
-            pct_share_groups
-        ).agg(
-            metadata_selector.first(),
-            pl.struct(job_role_col, computed_cols).alias("by_job_role_data"),
-            pl.len().alias("role_count"),
-        )
-
+        # Join back original metadata.
         estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
             metadata_lf,
             on="id",
