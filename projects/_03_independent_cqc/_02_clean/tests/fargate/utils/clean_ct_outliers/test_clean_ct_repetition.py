@@ -33,7 +33,6 @@ class CleanCTValuesAfterConsecutiveRepetitionTests(unittest.TestCase):
         job.null_values_exceeding_repetition_limit(
             lf=self.test_lf,
             column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
-            cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
             care_home=False,
         )
 
