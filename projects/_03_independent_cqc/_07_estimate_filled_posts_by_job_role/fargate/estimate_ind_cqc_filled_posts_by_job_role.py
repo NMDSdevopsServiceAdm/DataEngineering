@@ -35,6 +35,19 @@ pl.Config.set_streaming_chunk_size(50000)
 
 partition_keys = [Keys.year]
 
+establishment_categories = pl.Categories("establishment", namespace="filled_posts")
+location_categories = pl.Categories("location", namespace="filled_posts")
+# TODO: Change these types to pl.Enum
+job_role_categories = pl.Categories(
+    "job_role", namespace="filled_posts", physical=pl.UInt8
+)
+estimates_source_categories = pl.Categories(
+    "estimates_source", namespace="filled_posts", physical=pl.UInt8
+)
+primary_service_categories = pl.Categories(
+    "primary_service_type", namespace="filled_posts", physical=pl.UInt8
+)
+
 metadata_columns = {
     IndCQC.name: str,
     IndCQC.provider_id: str,
@@ -66,18 +79,18 @@ metadata_columns = {
 }
 ascwds_columns_to_import = {
     IndCQC.ascwds_worker_import_date: pl.Date,
-    IndCQC.establishment_id: pl.Categorical,
-    IndCQC.main_job_role_clean_labelled: pl.Categorical,
+    IndCQC.establishment_id: pl.Categorical(establishment_categories),
+    IndCQC.main_job_role_clean_labelled: pl.Categorical(job_role_categories),
     IndCQC.ascwds_job_role_counts: pl.Int16,
 }
 transformation_columns = {
-    IndCQC.location_id: pl.Categorical,
+    IndCQC.location_id: pl.Categorical(location_categories),
     IndCQC.cqc_location_import_date: pl.Date,
-    IndCQC.establishment_id: pl.Categorical,
+    IndCQC.establishment_id: pl.Categorical(establishment_categories),
     IndCQC.ascwds_workplace_import_date: pl.Date,
     IndCQC.estimate_filled_posts: pl.Float32,
-    IndCQC.estimate_filled_posts_source: pl.Categorical,
-    IndCQC.primary_service_type: pl.Categorical,
+    IndCQC.estimate_filled_posts_source: pl.Categorical(primary_service_categories),
+    IndCQC.primary_service_type: pl.Categorical(primary_service_categories),
     IndCQC.registered_manager_names: pl.List(str),
     IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
 }
@@ -96,223 +109,219 @@ def main(
         ascwds_job_role_counts_source (str): path to the prepared ascwds job role counts data
         estimates_by_job_role_destination (str): destination for output
     """
-    # Needed so we can join on Categorical columns.
-    with pl.StringCache():
-        with time_it("scan_and_join"):
-            combined_schema = transformation_columns | metadata_columns
-            full_estimates_lf = (
-                pl.scan_parquet(estimates_source, low_memory=True)
-                .select(list(combined_schema))
-                # Add row id index for single-key joining.
-                .with_row_index(name="id")
-                .with_columns(cast_to_schema(combined_schema))
-            )
-            estimated_posts_base_lf = full_estimates_lf.select(
-                "id", *list(transformation_columns)
-            )
-            # This will be joined on at the end.
-            metadata_lf = full_estimates_lf.select("id", *list(metadata_columns))
+    with time_it("scan_and_join"):
+        combined_schema = transformation_columns | metadata_columns
+        full_estimates_lf = (
+            pl.scan_parquet(estimates_source, low_memory=True)
+            .select(list(combined_schema))
+            # Add row id index for single-key joining.
+            .with_row_index(name="id")
+            .with_columns(cast_to_schema(combined_schema))
+        )
+        estimated_posts_base_lf = full_estimates_lf.select(
+            "id", *list(transformation_columns)
+        )
+        # This will be joined on at the end.
+        metadata_lf = full_estimates_lf.select("id", *list(metadata_columns))
 
-            col_name_map = {
-                IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date
-            }
-            ascwds_job_role_counts_lf = (
-                utils.scan_parquet(
-                    source=ascwds_job_role_counts_source,
-                    selected_columns=list(ascwds_columns_to_import),
-                ).with_columns(cast_to_schema(ascwds_columns_to_import))
-                # Rename to avoid providing left + right on in subsequent join.
-                .rename(col_name_map)
-            )
+        col_name_map = {
+            IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date
+        }
+        ascwds_job_role_counts_lf = (
+            utils.scan_parquet(
+                source=ascwds_job_role_counts_source,
+                selected_columns=list(ascwds_columns_to_import),
+            ).with_columns(cast_to_schema(ascwds_columns_to_import))
+            # Rename to avoid providing left + right on in subsequent join.
+            .rename(col_name_map)
+        )
 
-            estimated_job_role_posts_lf = join_estimates_to_ascwds(
-                estimated_posts_base_lf,
-                ascwds_job_role_counts_lf,
-            )
+        estimated_job_role_posts_lf = join_estimates_to_ascwds(
+            estimated_posts_base_lf,
+            ascwds_job_role_counts_lf,
+        )
 
-            estimated_job_role_posts_lf = (
-                JRUtils.nullify_job_role_count_when_source_not_ascwds(
-                    estimated_job_role_posts_lf
-                ).drop(
-                    IndCQC.estimate_filled_posts_source,
-                    IndCQC.ascwds_filled_posts_dedup_clean,
-                )
-            )
-
-            long_id: str = "long_id"
-            estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
-                long_id
-            )
-
-            log_polars_plan(estimated_job_role_posts_lf, "Post Join")
-            checkpoint_filepath = CHECKPOINT_PATH / "checkpoint1.parquet"
-
-            estimated_job_role_posts_lf.sink_parquet(
-                checkpoint_filepath,
-                mkdir=True,
-                engine="streaming",
-            )
-
-        with time_it("Impute ratios"):
-            estimated_job_role_posts_lf = pl.scan_parquet(
-                checkpoint_filepath,
-                low_memory=True,
-            )
-
-            pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
-            estimated_job_role_posts_lf = get_percent_share_ratios(
-                estimated_job_role_posts_lf,
-                input_col=IndCQC.ascwds_job_role_counts,
-                output_col=IndCQC.ascwds_job_role_ratios,
-            )
-
-            estimated_job_role_posts_lf = impute_ratios(estimated_job_role_posts_lf)
-
-            # Multiply imputed ratios by estimate filled posts
-            estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-                pl.col(IndCQC.estimate_filled_posts)
-                .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
-                .alias(IndCQC.imputed_ascwds_job_role_counts)
-            )
-
-            estimated_job_role_posts_lf = get_job_counts_rolling_sum(
+        estimated_job_role_posts_lf = (
+            JRUtils.nullify_job_role_count_when_source_not_ascwds(
                 estimated_job_role_posts_lf
+            ).drop(
+                IndCQC.estimate_filled_posts_source,
+                IndCQC.ascwds_filled_posts_dedup_clean,
             )
-            estimated_job_role_posts_lf = get_percent_share_ratios(
-                estimated_job_role_posts_lf,
-                input_col="rolling_sum",
-                output_col=IndCQC.ascwds_job_role_rolling_ratio,
+        )
+
+        long_id: str = "long_id"
+        estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
+            long_id
+        )
+
+        log_polars_plan(estimated_job_role_posts_lf, "Post Join")
+        checkpoint_filepath = CHECKPOINT_PATH / "checkpoint1.parquet"
+
+        estimated_job_role_posts_lf.sink_parquet(
+            checkpoint_filepath,
+            mkdir=True,
+            engine="streaming",
+        )
+
+    with time_it("Impute ratios"):
+        estimated_job_role_posts_lf = pl.scan_parquet(
+            checkpoint_filepath,
+            low_memory=True,
+        )
+
+        pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
+        estimated_job_role_posts_lf = get_percent_share_ratios(
+            estimated_job_role_posts_lf,
+            input_col=IndCQC.ascwds_job_role_counts,
+            output_col=IndCQC.ascwds_job_role_ratios,
+        )
+
+        estimated_job_role_posts_lf = impute_ratios(estimated_job_role_posts_lf)
+
+        # Multiply imputed ratios by estimate filled posts
+        estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+            pl.col(IndCQC.estimate_filled_posts)
+            .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
+            .alias(IndCQC.imputed_ascwds_job_role_counts)
+        )
+
+        estimated_job_role_posts_lf = get_job_counts_rolling_sum(
+            estimated_job_role_posts_lf
+        )
+        estimated_job_role_posts_lf = get_percent_share_ratios(
+            estimated_job_role_posts_lf,
+            input_col="rolling_sum",
+            output_col=IndCQC.ascwds_job_role_rolling_ratio,
+        )
+
+        # ---------------------------------------------------------
+        # Coalesce & Multiply
+        # ---------------------------------------------------------
+        estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+            utils.coalesce_with_source_labels(
+                cols=[
+                    # IndCQC.ascwds_job_role_ratios_filtered,
+                    IndCQC.imputed_ascwds_job_role_ratios,
+                    IndCQC.ascwds_job_role_rolling_ratio,
+                ],
+                name=IndCQC.ascwds_job_role_ratios_merged,
+            ),
+        )
+
+        estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+            (
+                pl.col(IndCQC.estimate_filled_posts)
+                * pl.col(IndCQC.ascwds_job_role_ratios_merged)
+            ).alias(IndCQC.estimate_filled_posts_by_job_role)
+        )
+
+        log_polars_plan(estimated_job_role_posts_lf, "Post Join")
+        checkpoint_filepath = CHECKPOINT_PATH / "checkpoint2.parquet"
+
+        estimated_job_role_posts_lf.sink_parquet(
+            checkpoint_filepath,
+            mkdir=True,
+            engine="streaming",
+        )
+
+    with time_it("Manager adjustments"):
+        # ---------------------------------------------------------
+        # Manager Adjustment
+        # ---------------------------------------------------------
+        estimated_job_role_posts_lf = pl.scan_parquet(
+            checkpoint_filepath,
+            low_memory=True,
+        )
+
+        is_non_rm_manager = (
+            JRUtils.ManagerialFilledPostAdjustmentExpr._is_non_rm_manager()
+        )
+        filled_posts = pl.col(IndCQC.estimate_filled_posts_by_job_role)
+
+        stats_lf = estimated_job_role_posts_lf.group_by(pct_share_groups).agg(
+            rm_diff=JRUtils.ManagerialFilledPostAdjustmentExpr._rm_manager_diff(),
+            non_rm_total=(pl.when(is_non_rm_manager).then(filled_posts).sum()),
+            non_rm_len=(pl.when(is_non_rm_manager).then(pl.lit(1)).sum()),
+        )
+
+        estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
+            stats_lf,
+            on=pct_share_groups,
+            how="left",
+        )
+
+        estimated_job_role_posts_lf = (
+            estimated_job_role_posts_lf.with_columns(
+                pct_share=pl.when(is_non_rm_manager).then(
+                    pl.when(pl.col("non_rm_total") == 0)
+                    .then(1 / pl.col("non_rm_len"))
+                    .otherwise(filled_posts / pl.col("non_rm_total"))
+                )
             )
-
-            # ---------------------------------------------------------
-            # Coalesce & Multiply
-            # ---------------------------------------------------------
-            estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-                utils.coalesce_with_source_labels(
-                    cols=[
-                        # IndCQC.ascwds_job_role_ratios_filtered,
-                        IndCQC.imputed_ascwds_job_role_ratios,
-                        IndCQC.ascwds_job_role_rolling_ratio,
-                    ],
-                    name=IndCQC.ascwds_job_role_ratios_merged,
-                ),
-            )
-
-            estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-                (
-                    pl.col(IndCQC.estimate_filled_posts)
-                    * pl.col(IndCQC.ascwds_job_role_ratios_merged)
-                ).alias(IndCQC.estimate_filled_posts_by_job_role)
-            )
-
-            log_polars_plan(estimated_job_role_posts_lf, "Post Join")
-            checkpoint_filepath = CHECKPOINT_PATH / "checkpoint2.parquet"
-
-            estimated_job_role_posts_lf.sink_parquet(
-                checkpoint_filepath,
-                mkdir=True,
-                engine="streaming",
-            )
-
-        with time_it("Manager adjustments"):
-            # ---------------------------------------------------------
-            # Manager Adjustment
-            # ---------------------------------------------------------
-            estimated_job_role_posts_lf = pl.scan_parquet(
-                checkpoint_filepath,
-                low_memory=True,
-            )
-
-            is_non_rm_manager = (
-                JRUtils.ManagerialFilledPostAdjustmentExpr._is_non_rm_manager()
-            )
-            filled_posts = pl.col(IndCQC.estimate_filled_posts_by_job_role)
-
-            stats_lf = estimated_job_role_posts_lf.group_by(pct_share_groups).agg(
-                rm_diff=JRUtils.ManagerialFilledPostAdjustmentExpr._rm_manager_diff(),
-                non_rm_total=(pl.when(is_non_rm_manager).then(filled_posts).sum()),
-                non_rm_len=(pl.when(is_non_rm_manager).then(pl.lit(1)).sum()),
-            )
-
-            estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
-                stats_lf,
-                on=pct_share_groups,
-                how="left",
-            )
-
-            estimated_job_role_posts_lf = (
-                estimated_job_role_posts_lf.with_columns(
-                    pct_share=pl.when(is_non_rm_manager).then(
-                        pl.when(pl.col("non_rm_total") == 0)
-                        .then(1 / pl.col("non_rm_len"))
-                        .otherwise(filled_posts / pl.col("non_rm_total"))
+            .with_columns(
+                pl.when(is_non_rm_manager)
+                .then(
+                    filled_posts.add(pl.col("rm_diff").mul(pl.col("pct_share"))).clip(
+                        lower_bound=0
                     )
                 )
-                .with_columns(
-                    pl.when(is_non_rm_manager)
-                    .then(
-                        filled_posts.add(
-                            pl.col("rm_diff").mul(pl.col("pct_share"))
-                        ).clip(lower_bound=0)
-                    )
-                    .when(
-                        JRUtils.ManagerialFilledPostAdjustmentExpr._is_registered_manager
-                    )
-                    .then(JRUtils.ManagerialFilledPostAdjustmentExpr._clip_rm_count())
-                    .otherwise(filled_posts)
-                    .alias(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
-                )
-                .drop("pct_share", "rm_diff", "non_rm_total", "non_rm_len")
+                .when(JRUtils.ManagerialFilledPostAdjustmentExpr._is_registered_manager)
+                .then(JRUtils.ManagerialFilledPostAdjustmentExpr._clip_rm_count())
+                .otherwise(filled_posts)
+                .alias(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
             )
+            .drop("pct_share", "rm_diff", "non_rm_total", "non_rm_len")
+        )
 
-            # ---------------------------------------------------------
-            # 4. Final Sum (Scalar Aggregation)
-            # ---------------------------------------------------------
-            sum_all_job_roles = pl.sum(
-                IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
-            ).alias(IndCQC.estimate_filled_posts_from_all_job_roles)
+        # ---------------------------------------------------------
+        # 4. Final Sum (Scalar Aggregation)
+        # ---------------------------------------------------------
+        sum_all_job_roles = pl.sum(
+            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
+        ).alias(IndCQC.estimate_filled_posts_from_all_job_roles)
 
-            # Since this is a scalar reduction per group, no explode is needed.
-            final_sum_agg_lf = estimated_job_role_posts_lf.group_by(
-                pct_share_groups
-            ).agg(sum_all_job_roles)
+        # Since this is a scalar reduction per group, no explode is needed.
+        final_sum_agg_lf = estimated_job_role_posts_lf.group_by(pct_share_groups).agg(
+            sum_all_job_roles
+        )
 
-            estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
-                final_sum_agg_lf,
-                on=pct_share_groups,
-                how="left",
-            )
+        estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
+            final_sum_agg_lf,
+            on=pct_share_groups,
+            how="left",
+        )
 
-            # Implode to struct, then join back the metadata before sinking.
-            job_role_col = IndCQC.main_job_role_clean_labelled
-            estimates_col = IndCQC.estimate_filled_posts_by_job_role
-            computed_cols = cs.contains("_job_role_").exclude(estimates_col)
+        # Implode to struct, then join back the metadata before sinking.
+        job_role_col = IndCQC.main_job_role_clean_labelled
+        estimates_col = IndCQC.estimate_filled_posts_by_job_role
+        computed_cols = cs.contains("_job_role_").exclude(estimates_col)
 
-            metadata_selector = (
-                cs.all().exclude(*pct_share_groups, job_role_col) - computed_cols
-            )
-            estimated_job_role_posts_lf = estimated_job_role_posts_lf.group_by(
-                pct_share_groups
-            ).agg(
-                metadata_selector.first(),
-                pl.struct(job_role_col, computed_cols.cast(pl.Float16)).alias(
-                    "by_job_role_data"
-                ),
-                pl.len().alias("role_count"),
-            )
+        metadata_selector = (
+            cs.all().exclude(*pct_share_groups, job_role_col) - computed_cols
+        )
+        estimated_job_role_posts_lf = estimated_job_role_posts_lf.group_by(
+            pct_share_groups
+        ).agg(
+            metadata_selector.first(),
+            pl.struct(job_role_col, computed_cols.cast(pl.Float16)).alias(
+                "by_job_role_data"
+            ),
+            pl.len().alias("role_count"),
+        )
 
-            estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
-                metadata_lf,
-                on="id",
-            )
-            log_polars_plan(estimated_job_role_posts_lf, "Final Transformation")
+        estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
+            metadata_lf,
+            on="id",
+        )
+        log_polars_plan(estimated_job_role_posts_lf, "Final Transformation")
 
-            utils.sink_to_parquet(
-                lazy_df=estimated_job_role_posts_lf,
-                output_path=estimates_by_job_role_destination,
-                partition_cols=partition_keys,
-                append=False,
-            )
+        utils.sink_to_parquet(
+            lazy_df=estimated_job_role_posts_lf,
+            output_path=estimates_by_job_role_destination,
+            partition_cols=partition_keys,
+            append=False,
+        )
 
 
 def join_estimates_to_ascwds(
