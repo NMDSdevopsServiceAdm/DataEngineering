@@ -48,10 +48,9 @@ convert_pir_test_cases = [
 
 
 class TestConvertPirToFilledPosts:
-    @pytest.mark.parametrize(
-        "case",
-        [pytest.param(case, id=case.id) for case in convert_pir_test_cases],
-    )
+    CASES = [pytest.param(case, id=case.id) for case in convert_pir_test_cases]
+
+    @pytest.mark.parametrize("case", CASES)
     def test_function_returns_expected_values(self, case):
         expected_lf = pl.LazyFrame(
             case.expected_data,
@@ -95,6 +94,14 @@ compute_global_ratio_test_cases = [
             (CareHome.not_care_home, 0.0,  10.0),
             (CareHome.not_care_home, None, 10.0),
             (CareHome.care_home,     10.0, 20.0),
+        ],
+        expected_ratio=1.5,
+    ),
+    ComputeGlobalRatioCase(
+        id="ignores_rows_which_fail_quality_filter",
+        data=[
+            (CareHome.not_care_home, 10.0, 15.0),
+            (CareHome.not_care_home, 10.0,  7.0), # ratio of 0.7 fails quality filter
         ],
         expected_ratio=1.5,
     ),

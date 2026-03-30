@@ -61,6 +61,7 @@ def compute_global_ratio(df: DataFrame) -> float:
         & (F.col(people_col) > 0)
         & F.col(posts_col).isNotNull()
         & (F.col(posts_col) > 0)
+        & ((F.col(posts_col) / F.col(people_col)) >= 0.75)
     ).select(
         [
             F.sum(F.col(posts_col)).alias("posts_sum"),

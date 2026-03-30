@@ -53,6 +53,7 @@ class ModelAndMergePirData:
         ("loc 3", date(2024, 1, 1), CareHome.not_care_home, None, 10.0,  None),
         ("loc 4", date(2024, 1, 1), CareHome.not_care_home,    1,  0.0,  1.5),
         ("loc 5", date(2024, 1, 1), CareHome.not_care_home,    0,  1.0,  None),
+        ("loc 5", date(2024, 1, 1), CareHome.not_care_home,   10,  7.0,  15.0),
         ("loc 6", date(2024, 1, 1), CareHome.care_home,       10, None,  None),
     ]  # fmt: skip
 

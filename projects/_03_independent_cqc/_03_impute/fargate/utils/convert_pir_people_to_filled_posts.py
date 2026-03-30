@@ -37,8 +37,21 @@ def convert_pir_to_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def compute_global_ratio(lf: pl.LazyFrame) -> float:
     """
-    Computes the global ratio of filled posts to PIR people using only valid rows.
+    Computes the global ratio of filled posts to PIR people using only valid
+    rows.
+
+    Valid rows are defined as locations which:
+        - are non-care home
+        - have non-null and greater than zero values for both PIR people and
+          ASC-WDS filled posts
+        - have a ratio of filled posts to PIR people greater than or equal to
+          0.75. The number of people should be greater than or equal to the
+          number of filled posts, so we filter out rows where this ratio is less
+          than 0.75 to exclude potentially poor quality data whilst allowing for
+          some variance in the relationship.
     """
+    quality_filter_expr = posts_col.truediv(people_col) >= 0.75
+
     return (
         lf.filter(
             (pl.col(IndCQC.care_home) == CareHome.not_care_home)
@@ -46,6 +59,7 @@ def compute_global_ratio(lf: pl.LazyFrame) -> float:
             & (people_col > 0)
             & posts_col.is_not_null()
             & (posts_col > 0)
+            & quality_filter_expr
         )
         .select((posts_col.sum().truediv(people_col.sum())))
         .collect()
