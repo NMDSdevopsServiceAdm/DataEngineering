@@ -120,7 +120,7 @@ def main(
     with time_it("scan_and_join"):
         combined_schema = transformation_columns | metadata_columns
         full_estimates_lf = (
-            pl.scan_parquet(estimates_source)
+            pl.scan_parquet(estimates_source, low_memory=True)
             .select(list(combined_schema))
             # Add row id index for single-key joining.
             .with_row_index(name="id")
@@ -136,7 +136,7 @@ def main(
             IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date
         }
         ascwds_job_role_counts_lf = (
-            pl.scan_parquet(ascwds_job_role_counts_source)
+            pl.scan_parquet(ascwds_job_role_counts_source, low_memory=True)
             .select(list(ascwds_columns_to_import))
             .with_columns(utils.cast_to_schema(ascwds_columns_to_import))
             # Rename to avoid providing left + right "on" in subsequent join.
@@ -169,7 +169,10 @@ def main(
         )
 
     with time_it("Impute ratios"):
-        estimated_job_role_posts_lf = pl.scan_parquet(checkpoint_filepath)
+        estimated_job_role_posts_lf = pl.scan_parquet(
+            checkpoint_filepath,
+            low_memory=True,
+        )
 
         pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
         estimated_job_role_posts_lf = get_percent_share_ratios(
@@ -223,9 +226,10 @@ def main(
         )
 
     with time_it("Manager adjustments"):
-        estimated_job_role_posts_lf = pl.scan_parquet(checkpoint_filepath).pipe(
-            apply_manager_adjustments
-        )
+        estimated_job_role_posts_lf = pl.scan_parquet(
+            checkpoint_filepath,
+            low_memory=True,
+        ).pipe(apply_manager_adjustments)
 
         sum_all_job_roles = pl.sum(
             IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
