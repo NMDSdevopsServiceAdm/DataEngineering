@@ -107,10 +107,10 @@ def main(
                 .with_columns(cast_to_schema(combined_schema))
             )
             estimated_posts_base_lf = full_estimates_lf.select(
-                list(transformation_columns)
+                "id", *list(transformation_columns)
             )
             # This will be joined on at the end.
-            metadata_lf = full_estimates_lf.select(list(metadata_columns))
+            metadata_lf = full_estimates_lf.select("id", *list(metadata_columns))
 
             col_name_map = {
                 IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date
