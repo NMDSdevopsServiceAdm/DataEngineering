@@ -94,7 +94,7 @@ def main(
         .col_vals_between(IndCQC.total_staff_bounded, 1, 3000, na_pass=True)
         .col_vals_between(IndCQC.worker_records_bounded, 1, 3000, na_pass=True)
         .col_vals_between(IndCQC.filled_posts_per_bed_ratio, 0.0, 20.0, na_pass=True)
-        # .col_vals_between(IndCQC.posts_rolling_average_model, 0.0, 3000.0)
+        .col_vals_between(IndCQC.posts_rolling_average_model, 0.0, 3000.0)
         # .col_vals_between(IndCQC.imputed_filled_post_model, 0.0, 3000.0)
         # .col_vals_between(IndCQC.imputed_filled_posts_per_bed_ratio_model, 0.0, 3000.0)
         # .col_vals_between(
