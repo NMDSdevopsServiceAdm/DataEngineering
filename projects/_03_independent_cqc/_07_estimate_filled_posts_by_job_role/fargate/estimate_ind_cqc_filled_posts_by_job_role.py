@@ -378,13 +378,7 @@ def impute_ratios(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
     impute_agg_lf = (
-        estimated_job_role_posts_lf.select(
-            *impute_groups,
-            order_key,
-            long_id,
-            IndCQC.ascwds_job_role_ratios,
-        )
-        .group_by(impute_groups)
+        estimated_job_role_posts_lf.group_by(impute_groups)
         .agg(
             # Sort the join key in the same manner as the imputed values.
             pl.col(long_id).sort_by(order_key),
@@ -411,8 +405,7 @@ def get_percent_share_ratios(
 
     # Groupby-agg-explode on only necessary subset, before joining back on long_id.
     ratios_agg_lf = (
-        estimated_job_role_posts_lf.select(*groups, long_id, input_col)
-        .group_by(groups)
+        estimated_job_role_posts_lf.group_by(groups)
         .agg(
             pl.col(long_id),  # Keep to align during explode
             JRUtils.percentage_share(input_col).cast(pl.Float32).alias(output_col),
@@ -434,13 +427,8 @@ def get_job_counts_rolling_sum(
     monthly_groups = rolling_groups + [order_key]
     # STEP A: Pre-aggregate down to monthly totals
     # (Shrinks 152M rows -> ~50k rows instantly via Hash Aggregation)
-    monthly_totals_lf = (
-        estimated_job_role_posts_lf.select(
-            *monthly_groups,
-            IndCQC.imputed_ascwds_job_role_counts,
-        )
-        .group_by(monthly_groups)
-        .agg(pl.col(IndCQC.imputed_ascwds_job_role_counts).sum())
+    monthly_totals_lf = estimated_job_role_posts_lf.group_by(monthly_groups).agg(
+        pl.col(IndCQC.imputed_ascwds_job_role_counts).sum()
     )
 
     # STEP B: Sort and roll on the small dataset.
