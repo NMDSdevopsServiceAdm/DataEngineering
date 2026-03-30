@@ -19,5 +19,3 @@ workflows:
             .*/jobs/.*\.py run-pyspark-tests true
             .*/fargate/.*\.py run-polars-tests true
             .*polars.*\.py run-polars-tests true
-            ^(?!.*(?:/fargate/|polars|/jobs/)).*\.py$ run-other-tests true
-            terraform/.* run-terraform-lint true

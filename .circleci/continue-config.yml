@@ -17,16 +17,10 @@ parameters:
   terraform_version:
     type: string
     default: 1.13.5
-  run-terraform-lint:
-    type: boolean
-    default: false
   run-polars-tests:
     type: boolean
     default: false
   run-pyspark-tests:
-    type: boolean
-    default: false
-  run-other-tests:
     type: boolean
     default: false
 
@@ -372,6 +366,28 @@ jobs:
             export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
             terraform workspace delete ${SANITISED_CIRCLE_BRANCH}
 
+aws_auth: &aws_auth
+  access_key: AWS_ACCESS_KEY_ID
+  secret_key: AWS_SECRET_ACCESS_KEY
+
+aws_auth_non_prod: &aws_auth_non_prod
+  access_key: AWS_ACCESS_KEY_ID_non_prod
+  secret_key: AWS_SECRET_ACCESS_KEY_non_prod
+
+deploy_sequence: &deploy_sequence
+  - terraform-plan:
+      <<: *aws_auth_non_prod
+      aws_account: "non_prod"
+      requires: [lint-terraform, task-containerisation]
+  - terraform-apply:
+      <<: *aws_auth_non_prod
+      aws_account: "non_prod"
+      requires: [terraform-plan]
+  - deploy-dependencies:
+      <<: *aws_auth_non_prod
+      requires: [terraform-apply]
+  - copy-main-data:
+      requires: [terraform-apply]
 
 workflows:
   test-plan-approve-and-deploy-to-main:
@@ -380,12 +396,10 @@ workflows:
     jobs:
       - test
       - task-containerisation:
-          access_key: AWS_ACCESS_KEY_ID
-          secret_key: AWS_SECRET_ACCESS_KEY
+          <<: *aws_auth
           aws_account_id: AWS_ACCOUNT_ID
       - terraform-plan:
-          access_key: AWS_ACCESS_KEY_ID
-          secret_key: AWS_SECRET_ACCESS_KEY
+          <<: *aws_auth
           aws_account: "prod"
           requires:
             - test
@@ -395,93 +409,74 @@ workflows:
           requires:
             - terraform-plan
       - terraform-apply:
-          access_key: AWS_ACCESS_KEY_ID
-          secret_key: AWS_SECRET_ACCESS_KEY
+          <<: *aws_auth
           aws_account: "prod"
           requires:
             - plan-approval
       - deploy-dependencies:
-          access_key: AWS_ACCESS_KEY_ID
-          secret_key: AWS_SECRET_ACCESS_KEY
+          <<: *aws_auth
           requires:
             - terraform-apply
 
-
   test-plan-and-deploy-to-dev:
-    when: 
-      not:
-        equal: [ main, << pipeline.git.branch >> ]
+    when:
+      and:
+        - not: { equal: [ main, << pipeline.git.branch >> ] }
+        - or: 
+            - and:
+                - not: << pipeline.parameters.run-pyspark-tests >>
+                - not: << pipeline.parameters.run-polars-tests >>
+            - and:
+                - << pipeline.parameters.run-pyspark-tests >>
+                - << pipeline.parameters.run-polars-tests >>
     jobs:
       - lint-python
       - lint-docstrings
+      - lint-terraform
+      - test
+      - task-containerisation:
+          <<: *aws_auth_non_prod
+          aws_account_id: AWS_ACCOUNT_ID_non_prod
+          requires: [lint-python, lint-docstrings, test]
+          <<: *deploy_sequence
+
+  polars-test-plan-and-deploy-to-dev:
+    when:
+      and:
+        - not: { equal: [ main, << pipeline.git.branch >> ] }
+        - << pipeline.parameters.run-polars-tests >>
+        - not: << pipeline.parameters.run-pyspark-tests >>
+    jobs:
+      - lint-python
+      - lint-docstrings
+      - lint-terraform
       - test:
           name: polars-tests
           keyword: "fargate or polars"
-          filters:
-            and:
-              - << pipeline.parameters.run-polars-tests >>
-              - not: << pipeline.parameters.run-pyspark-tests >>
-              - not: << pipeline.parameters.run-other-tests >>
+      - task-containerisation:
+          <<: *aws_auth_non_prod
+          aws_account_id: AWS_ACCOUNT_ID_non_prod
+          requires: [lint-python, lint-docstrings, polars-tests]
+          <<: *deploy_sequence
+
+  pyspark-test-plan-and-deploy-to-dev:
+    when:
+      and:
+        - not: { equal: [ main, << pipeline.git.branch >> ] }
+        - << pipeline.parameters.run-pyspark-tests >>
+        - not: << pipeline.parameters.run-polars-tests >>
+    jobs:
+      - lint-python
+      - lint-docstrings
+      - lint-terraform
       - test:
           name: pyspark-tests
           keyword: "jobs"
-          filters:
-            and:
-              - << pipeline.parameters.run-pyspark-tests >>
-              - not: << pipeline.parameters.run-polars-tests >>
-              - not: << pipeline.parameters.run-other-tests >>
-      - test:
-          name: other-tests
-          keyword: "not (fargate or polars or jobs)"
-          filters:
-            and:
-              - << pipeline.parameters.run-other-tests >>
-              - not: << pipeline.parameters.run-polars-tests >>
-              - not: << pipeline.parameters.run-pyspark-tests >>
-      - test:
-          name: all-tests
-          keyword: ""
-          filters:
-            or:
-              - and: [ << pipeline.parameters.run-polars-tests >>, << pipeline.parameters.run-pyspark-tests >> ]
-              - and: [ << pipeline.parameters.run-polars-tests >>, << pipeline.parameters.run-other-tests >> ]
-              - and: [ << pipeline.parameters.run-pyspark-tests >>, << pipeline.parameters.run-other-tests >> ]
-      - lint-terraform:
-          filters:
-            and: 
-              - << pipeline.parameters.run-terraform-lint >>
       - task-containerisation:
-          access_key: AWS_ACCESS_KEY_ID_non_prod
-          secret_key: AWS_SECRET_ACCESS_KEY_non_prod
+          <<: *aws_auth_non_prod
           aws_account_id: AWS_ACCOUNT_ID_non_prod
-          requires:
-          - lint-python
-          - lint-docstrings
-          - polars-tests
-          - pyspark-tests
-          - other-tests
-          - all-tests
-      - terraform-plan:
-          access_key: AWS_ACCESS_KEY_ID_non_prod
-          secret_key: AWS_SECRET_ACCESS_KEY_non_prod
-          aws_account: "non_prod"
-          requires:
-            - lint-terraform
-            - task-containerisation
-      - terraform-apply:
-          access_key: AWS_ACCESS_KEY_ID_non_prod
-          secret_key: AWS_SECRET_ACCESS_KEY_non_prod
-          aws_account: "non_prod"
-          requires:
-            - terraform-plan
-      - deploy-dependencies:
-          access_key: AWS_ACCESS_KEY_ID_non_prod
-          secret_key: AWS_SECRET_ACCESS_KEY_non_prod
-          requires:
-            - terraform-apply
-      - copy-main-data:
-          requires:
-            - terraform-apply
+          requires: [lint-python, lint-docstrings, pyspark-tests]
+          <<: *deploy_sequence
 
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
