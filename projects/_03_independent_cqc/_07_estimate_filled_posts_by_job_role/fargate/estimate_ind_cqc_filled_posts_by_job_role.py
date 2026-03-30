@@ -162,6 +162,7 @@ def main(
         checkpoint_filepath = CHECKPOINT_PATH / "checkpoint1.ipc"
         estimated_job_role_posts_lf.sink_ipc(
             checkpoint_filepath,
+            compression="lz4",
             mkdir=True,
             engine="streaming",
         )
@@ -216,6 +217,7 @@ def main(
         checkpoint_filepath = CHECKPOINT_PATH / "checkpoint2.ipc"
         estimated_job_role_posts_lf.sink_ipc(
             checkpoint_filepath,
+            compression="lz4",
             mkdir=True,
             engine="streaming",
         )
