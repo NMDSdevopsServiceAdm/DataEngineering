@@ -165,37 +165,12 @@ def main(
                 low_memory=True,
             )
 
-            pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
             job_role_col = IndCQC.main_job_role_clean_labelled
 
-            # ---------------------------------------------------------
-            # 1. Job Role Ratios
-            # ---------------------------------------------------------
-            job_role_ratios = (
-                JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
-                .cast(pl.Float32)
-                .alias(IndCQC.ascwds_job_role_ratios)
-            )
-
-            ratios_agg_lf = (
-                estimated_job_role_posts_lf.select(
-                    *pct_share_groups,
-                    long_id,
-                    IndCQC.ascwds_job_role_counts,
-                )
-                .group_by(pct_share_groups)
-                .agg(
-                    pl.col(long_id),  # Keep to align during explode
-                    job_role_ratios,
-                )
-                .explode(long_id, IndCQC.ascwds_job_role_ratios)
-                .drop(pct_share_groups)
-            )
-
-            estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
-                ratios_agg_lf,
-                on=long_id,
-                how="left",
+            pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
+            estimated_job_role_posts_lf = get_job_role_ratios(
+                estimated_job_role_posts_lf,
+                groups=pct_share_groups,
             )
 
             # ---------------------------------------------------------
@@ -505,3 +480,38 @@ def join_estimates_to_ascwds(
     # 1-to-many join via the 'id' column. Drop the join keys as they are not
     # relevant to the rest of the pipeline.
     return estimates_lf.join(expanded_counts_lf, on="id", how="right").drop(join_keys)
+
+
+def get_job_role_ratios(
+    estimated_job_role_posts_lf: pl.LazyFrame,
+    groups: list[str],
+) -> pl.LazyFrame:
+    """Calculate job role ratios using groupby-agg-explode pattern.
+
+    Using groupby-agg-explode ensures it can be processed with the streaming engine.
+    """
+    long_id: str = "long_id"
+    job_role_ratios = (
+        JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
+        .cast(pl.Float32)
+        .alias(IndCQC.ascwds_job_role_ratios)
+    )
+
+    # Groupby-agg-explode on only necessary subset, before joining back on long_id.
+    ratios_agg_lf = (
+        estimated_job_role_posts_lf.select(
+            *groups,
+            long_id,
+            IndCQC.ascwds_job_role_counts,
+        )
+        .group_by(groups)
+        .agg(
+            pl.col(long_id),  # Keep to align during explode
+            job_role_ratios,
+        )
+        .explode(long_id, IndCQC.ascwds_job_role_ratios)
+        # Drop groups to prevent duplicate columns after join.
+        .drop(groups)
+    )
+
+    return estimated_job_role_posts_lf.join(ratios_agg_lf, on=long_id, how="left")
