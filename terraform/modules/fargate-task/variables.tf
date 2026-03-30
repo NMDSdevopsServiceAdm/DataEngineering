@@ -38,7 +38,7 @@ variable "ram_size" {
 
 variable "ephemeral_storage_size" {
   type    = number
-  default = 100
+  default = 20
 }
 
 variable "environment" {
