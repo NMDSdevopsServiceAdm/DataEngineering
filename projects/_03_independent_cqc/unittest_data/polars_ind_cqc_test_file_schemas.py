@@ -481,9 +481,6 @@ class ValidateCleanIndCQCSchemas:
             (IndCQC.imputed_registration_date, pl.Date()),
             (IndCQC.total_staff_bounded, pl.Int64()),
             (IndCQC.worker_records_bounded, pl.Int64()),
-            (Keys.year, pl.String()),
-            (Keys.month, pl.String()),
-            (Keys.day, pl.String()),
         ]
     )
 
