@@ -39,7 +39,7 @@ def compute_global_ratio(lf: pl.LazyFrame) -> float:
     """
     Computes the global ratio of filled posts to PIR people using only valid rows.
     """
-    row = (
+    return (
         lf.filter(
             (pl.col(IndCQC.care_home) == CareHome.not_care_home)
             & people_col.is_not_null()
@@ -47,19 +47,7 @@ def compute_global_ratio(lf: pl.LazyFrame) -> float:
             & posts_col.is_not_null()
             & (posts_col > 0)
         )
-        .select(
-            [
-                posts_col.sum().alias("posts_sum"),
-                people_col.sum().alias("people_sum"),
-            ]
-        )
+        .select((posts_col.sum().truediv(people_col.sum())))
         .collect()
-        .row(0)
+        .item()
     )
-
-    posts_sum, people_sum = row
-
-    if people_sum == 0 or posts_sum is None:
-        raise ValueError("No valid rows available to compute PIR ratio.")
-
-    return posts_sum / people_sum

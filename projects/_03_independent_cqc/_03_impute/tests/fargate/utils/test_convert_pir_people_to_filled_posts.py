@@ -75,12 +75,11 @@ class ComputeGlobalRatioCase:
     id: str
     data: list[tuple]
     expected_ratio: float | None
-    expect_error: bool = False
 
 
 compute_global_ratio_test_cases = [
     ComputeGlobalRatioCase(
-        id="all_rows_valid",
+        id="all_valid_rows_included_in_ratio",
         data=[
             (CareHome.not_care_home, 19.0, 25.0),
             (CareHome.not_care_home, 21.0, 35.0),
@@ -88,7 +87,7 @@ compute_global_ratio_test_cases = [
         expected_ratio=1.5,
     ),
     ComputeGlobalRatioCase(
-        id="excludes_invalid",
+        id="ignores_null_zero_and_care_home_rows",
         data=[
             (CareHome.not_care_home, 10.0, 15.0),
             (CareHome.not_care_home, 10.0, None),
@@ -100,7 +99,7 @@ compute_global_ratio_test_cases = [
         expected_ratio=1.5,
     ),
     ComputeGlobalRatioCase(
-        id="mixed_validity",
+        id="mix_of_valid_and_invalid_rows_only_valid_used",
         data=[
             (CareHome.not_care_home, 20.0, 25.0),
             (CareHome.not_care_home, None, 10.0),
@@ -110,32 +109,19 @@ compute_global_ratio_test_cases = [
         ],
         expected_ratio=1.5,
     ),
-    ComputeGlobalRatioCase(
-        id="no_valid_rows_raises_error",
-        data=[
-            (CareHome.not_care_home, 10.0, None),
-        ],
-        expected_ratio=None,
-        expect_error=True,
-    ),
 ]  # fmt: skip
 
 
 class TestComputeGlobalRatio:
-    @pytest.mark.parametrize(
-        "case",
-        [pytest.param(case, id=case.id) for case in compute_global_ratio_test_cases],
-    )
-    def test_function_returns_expected_values(self, case):
+    CASES = [pytest.param(case, id=case.id) for case in compute_global_ratio_test_cases]
+
+    @pytest.mark.parametrize("case", CASES)
+    def test_compute_global_ratio_returns_expected_ratio(self, case):
         lf = pl.LazyFrame(
             case.data,
             Schemas.input_schema,
             orient="row",
         )
 
-        if case.expect_error:
-            with pytest.raises(ValueError):
-                job.compute_global_ratio(lf)
-        else:
-            ratio = job.compute_global_ratio(lf)
-            assert ratio == pytest.approx(case.expected_ratio)
+        ratio = job.compute_global_ratio(lf)
+        assert ratio == pytest.approx(case.expected_ratio)
