@@ -1268,3 +1268,41 @@ class EstimateFilledPostsModelsUtils:
             f"{join_test_model}_run_id": pl.String,
         }
     )
+
+
+@dataclass
+class TestJoinEstimatesToAscwds:
+    estimates_schema = pl.Schema(
+        {
+            "id": pl.Int32,
+            IndCQC.ascwds_workplace_import_date: pl.String,
+            IndCQC.establishment_id: pl.String,
+        }
+    )
+    ascwds_schema = pl.Schema(
+        {
+            IndCQC.ascwds_workplace_import_date: pl.String,
+            IndCQC.establishment_id: pl.String,
+            IndCQC.main_job_role_clean_labelled: pl.Categorical(),
+            "value": pl.Float64,
+        }
+    )
+    expected_schema = pl.Schema(
+        {
+            "id": pl.Int32,
+            IndCQC.main_job_role_clean_labelled: pl.Categorical(),
+            "value": pl.Float64,
+        }
+    )
+
+
+@dataclass
+class TestImputeRatios:
+    impute_ratios_schema = {
+        IndCQC.location_id: pl.Int64,
+        IndCQC.main_job_role_clean_labelled: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        "long_id": pl.Int64,
+        IndCQC.ascwds_job_role_ratios: pl.Float64,
+        IndCQC.imputed_ascwds_job_role_ratios: pl.Float64,
+    }

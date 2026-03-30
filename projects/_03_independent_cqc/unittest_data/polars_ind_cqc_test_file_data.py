@@ -2263,3 +2263,139 @@ class EstimateFilledPostsModelsUtils:
         ("1-001", Region.london, 67, date(2022, 3, 29), 10.0, "v1.0.0_r2"),
         ("1-002", Region.north_east, 12, date(2022, 3, 29), None, None),
     ]
+
+
+@dataclass
+class JoinEstimatesCase:
+    id: str
+    estimates_data: list[tuple]
+    ascwds_data: list[tuple]
+    expected_data: list[tuple]
+
+
+@dataclass
+class TestJoinEstimatesToAscwds:
+    join_estimates_test_cases = [
+        JoinEstimatesCase(
+            id="basic_match",
+            estimates_data=[
+                (1, "2024-01-01", "loc1"),
+            ],
+            ascwds_data=[
+                ("2024-01-01", "loc1", "role_a", 10.0),
+                ("2024-01-01", "loc1", "role_b", 20.0),
+            ],
+            expected_data=[
+                (1, "role_a", 10.0),
+                (1, "role_b", 20.0),
+            ],
+        ),
+        JoinEstimatesCase(
+            id="missing_role_returns_null",
+            estimates_data=[
+                (1, "2024-01-01", "loc1"),
+            ],
+            ascwds_data=[
+                ("2024-01-01", "loc1", "role_a", 10.0),
+            ],
+            expected_data=[
+                (1, "role_a", 10.0),
+                (1, "role_b", None),
+            ],
+        ),
+        JoinEstimatesCase(
+            id="multiple_rows_expand_correctly",
+            estimates_data=[
+                (1, "2024-01-01", "loc1"),
+                (2, "2024-01-01", "loc2"),
+            ],
+            ascwds_data=[
+                ("2024-01-01", "loc1", "role_a", 5.0),
+                ("2024-01-01", "loc2", "role_b", 7.0),
+            ],
+            expected_data=[
+                (1, "role_a", 5.0),
+                (1, "role_b", None),
+                (2, "role_a", None),
+                (2, "role_b", 7.0),
+            ],
+        ),
+    ] # fmt: skip
+
+
+@dataclass
+class ImputeCase:
+    id: str
+    test_data: list[tuple]
+
+
+class TestImputeRatios:
+    impute_ratios_test_cases = [
+        ImputeCase(
+            id="linear_interpolation_middle_gap",
+            test_data=[
+                (1, "role_a", date(2023, 1, 1), 1, 0.0, 0.0),
+                (1, "role_a", date(2023, 2, 1), 2, None, 0.5),
+                (1, "role_a", date(2023, 3, 1), 3, 1.0, 1.0),
+            ],
+        ),
+        ImputeCase(
+            id="forward_fill_trailing_null",
+            test_data=[
+                (1, "role_a", date(2023, 1, 1), 1, 0.3, 0.3),
+                (1, "role_a", date(2023, 2, 1), 2, None, 0.3),
+                (1, "role_a", date(2023, 3, 1), 3, None, 0.3),
+            ],
+        ),
+        ImputeCase(
+            id="backward_fill_leading_null",
+            test_data=[
+                (1, "role_a", date(2023, 1, 1), 1, None, 0.8),
+                (1, "role_a", date(2023, 2, 1), 2, None, 0.8),
+                (1, "role_a", date(2023, 3, 1), 3, 0.8, 0.8),
+            ],
+        ),
+        ImputeCase(
+            id="all_null_group",
+            test_data=[
+                (1, "role_a", date(2023, 1, 1), 1, None, None),
+                (1, "role_a", date(2023, 2, 1), 2, None, None),
+            ],
+        ),
+        ImputeCase(
+            id="mixed_interpolation_and_fill",
+            test_data=[
+                (1, "role_a", date(2023, 1, 1), 1, None, 0.2),
+                (1, "role_a", date(2023, 2, 1), 2, 0.2, 0.2),
+                (1, "role_a", date(2023, 3, 1), 3, None, 0.4),
+                (1, "role_a", date(2023, 4, 1), 4, 0.6, 0.6),
+                (1, "role_a", date(2023, 5, 1), 5, None, 0.6),
+            ],
+        ),
+        ImputeCase(
+            id="unsorted_input_order",
+            test_data=[
+                (1, "role_a", date(2023, 3, 1), 3, 1.0, 1.0),
+                (1, "role_a", date(2023, 1, 1), 1, 0.0, 0.0),
+                (1, "role_a", date(2023, 2, 1), 2, None, 0.5),
+            ],
+        ),
+        ImputeCase(
+            id="multiple_groups_isolated",
+            test_data=[
+                (1, "role_a", date(2023, 1, 1), 1, 0.0, 0.0),
+                (1, "role_a", date(2023, 2, 1), 2, None, 0.0),
+                (2, "role_a", date(2023, 1, 1), 3, 1.0, 1.0),
+                (2, "role_a", date(2023, 2, 1), 4, None, 1.0),
+            ],
+        ),
+        ImputeCase(
+            id="multiple_roles_same_location",
+            test_data=[
+                (1, "role_a", date(2023, 1, 1), 1, 0.1, 0.1),
+                (1, "role_a", date(2023, 2, 1), 2, None, 0.1),
+                (1, "role_b", date(2023, 1, 1), 3, 0.5, 0.5),
+                (1, "role_b", date(2023, 2, 1), 4, None, 0.5),
+            ],
+        ),
+    ]
