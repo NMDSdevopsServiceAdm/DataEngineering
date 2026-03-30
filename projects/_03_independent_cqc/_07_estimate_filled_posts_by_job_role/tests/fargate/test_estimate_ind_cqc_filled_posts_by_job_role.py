@@ -2,9 +2,16 @@ import unittest
 from unittest.mock import ANY, Mock, call, patch
 
 import polars as pl
+import polars.testing as pl_testing
 import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role as job
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    get_job_counts_rolling_sum_test_cases,
+)
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
+    GetJobCountsRollingSumSchema as Schemas,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role"
@@ -92,4 +99,30 @@ class MainTests(unittest.TestCase):
             output_path=self.ESTIMATES_DESTINATION,
             partition_cols=job.partition_keys,
             append=False,
+        )
+
+
+class TestGetJobCountsRollingSum:
+    @pytest.fixture(
+        params=[
+            pytest.param(case.data, id=case.id)
+            for case in get_job_counts_rolling_sum_test_cases
+        ],
+    )
+    def case_data(self, request):
+        return request.param
+
+    def test_function_returns_expected_values(self, case_data):
+        expected_lf = pl.LazyFrame(
+            data=case_data,
+            schema=Schemas.expected_get_job_counts_rolling_sum_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop("rolling_sum")
+        returned_lf = job.get_job_counts_rolling_sum(input_lf)
+
+        print(returned_lf.collect())
+
+        pl_testing.assert_frame_equal(
+            returned_lf, expected_lf, check_column_order=False, check_row_order=False
         )

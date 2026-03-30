@@ -2263,3 +2263,25 @@ class EstimateFilledPostsModelsUtils:
         ("1-001", Region.london, 67, date(2022, 3, 29), 10.0, "v1.0.0_r2"),
         ("1-002", Region.north_east, 12, date(2022, 3, 29), None, None),
     ]
+
+
+@dataclass
+class GetJobCountsRollingSumTestCase:
+    id: str
+    data: list[tuple]
+
+
+get_job_counts_rolling_sum_test_cases = [
+    GetJobCountsRollingSumTestCase(
+        id="six_month_rolling_sum_across_single_service_type_and_single_job_role",
+        data=[
+            ("1-001", date(2026, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
+            ("1-002", date(2026, 2, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 2),
+            ("1-003", date(2026, 3, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 3),
+            ("1-004", date(2026, 4, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 4),
+            ("1-004", date(2026, 5, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 5),
+            ("1-004", date(2026, 6, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 6),
+            ("1-004", date(2026, 7, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 6),
+        ],
+    )
+] # fmt: skip

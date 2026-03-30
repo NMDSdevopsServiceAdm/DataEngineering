@@ -1268,3 +1268,17 @@ class EstimateFilledPostsModelsUtils:
             f"{join_test_model}_run_id": pl.String,
         }
     )
+
+
+@dataclass
+class GetJobCountsRollingSumSchema:
+    expected_get_job_counts_rolling_sum_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.primary_service_type, pl.String()),
+            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (IndCQC.imputed_ascwds_job_role_counts, pl.Int64()),
+            ("rolling_sum", pl.Int64()),
+        ]
+    )
