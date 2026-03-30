@@ -54,7 +54,7 @@ def column_to_date(
     lf: pl.LazyFrame, column: str, new_column: str = None
 ) -> pl.LazyFrame:
     """
-    Converts a string or integer column (YYYYmmDD or YYYY-mm-DD) to a Polars Date column
+    Converts a string or integer column (YYYYmmDD or YYYY-mm-DD) to a Polars Date column.
 
     The conversion will overwrite the original `column` unless `new_column` is provided.
 

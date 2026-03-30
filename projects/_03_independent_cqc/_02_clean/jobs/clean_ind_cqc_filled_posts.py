@@ -356,7 +356,7 @@ def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
 # converted to polars -> projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils.calculate_care_home_status_count
 def calculate_care_home_status_count(df: DataFrame) -> DataFrame:
     """
-    Calculate how many care home statuses each location has had.
+    Calculate how many care home statuses each location has had
 
     Args:
         df (DataFrame): The input DataFrame.
