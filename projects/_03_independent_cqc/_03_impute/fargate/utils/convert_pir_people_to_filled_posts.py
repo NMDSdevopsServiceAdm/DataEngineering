@@ -31,7 +31,6 @@ def convert_pir_to_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
             & (people_col > 0)
         )
         .then(people_col * ratio)
-        .otherwise(None)
         .alias(IndCQC.pir_filled_posts_model)
     )
 
