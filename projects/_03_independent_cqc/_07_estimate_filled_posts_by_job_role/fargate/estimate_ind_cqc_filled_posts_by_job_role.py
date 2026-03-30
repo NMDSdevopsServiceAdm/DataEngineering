@@ -304,9 +304,7 @@ def main(
             pct_share_groups
         ).agg(
             metadata_selector.first(),
-            pl.struct(job_role_col, computed_cols.cast(pl.Float16)).alias(
-                "by_job_role_data"
-            ),
+            pl.struct(job_role_col, computed_cols).alias("by_job_role_data"),
             pl.len().alias("role_count"),
         )
 
