@@ -86,10 +86,6 @@ transformation_columns = {
     IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
     Keys.year: pl.Int16,
 }
-join_keys = [
-    IndCQC.ascwds_workplace_import_date,
-    IndCQC.establishment_id,
-]
 dropped_columns = [
     IndCQC.establishment_id,
     IndCQC.ascwds_workplace_import_date,
@@ -123,17 +119,6 @@ def main(
                 .with_columns(cast_to_schema(transformation_columns))
             )
 
-            # Subset: Extract ONLY the keys needed for the cross join and ASCWDS join.
-            narrow_keys_lf = estimated_posts_base_lf.select(["id"] + join_keys)
-
-            # Expand: Perform the massive cross-join on the tiny subset
-            roles_lf = pl.LazyFrame(
-                data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
-                schema={IndCQC.main_job_role_clean_labelled: pl.Categorical},
-            )
-            expanded_keys_lf = narrow_keys_lf.join(roles_lf, how="cross")
-
-            # Prepare ASCWDS data
             col_name_map = {
                 IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date
             }
@@ -141,25 +126,15 @@ def main(
                 utils.scan_parquet(
                     source=ascwds_job_role_counts_source,
                     selected_columns=list(ascwds_columns_to_import),
-                )
-                .with_columns(cast_to_schema(ascwds_columns_to_import))
+                ).with_columns(cast_to_schema(ascwds_columns_to_import))
+                # Rename to avoid providing left + right on in subsequent join.
                 .rename(col_name_map)
             )
 
-            # Join ASCWDS counts onto the expanded narrow subset
-            expanded_counts_lf = expanded_keys_lf.join(
-                other=ascwds_job_role_counts_lf,
-                on=join_keys + [IndCQC.main_job_role_clean_labelled],
-                how="left",
+            estimated_job_role_posts_lf = join_estimates_to_ascwds(
+                estimated_posts_base_lf,
+                ascwds_job_role_counts_lf,
             )
-
-            # Join Back: Re-attach the wide base data right before processing logic
-            # The streaming engine easily handles this 1-to-many join via the 'id' column
-            estimated_job_role_posts_lf = estimated_posts_base_lf.join(
-                expanded_counts_lf,
-                on="id",
-                how="right",
-            ).drop(join_keys)
 
             estimated_job_role_posts_lf = (
                 JRUtils.nullify_job_role_count_when_source_not_ascwds(
@@ -491,3 +466,42 @@ if __name__ == "__main__":
         ascwds_job_role_counts_source=args.ascwds_job_role_counts_source,
         estimates_by_job_role_destination=args.estimates_by_job_role_destination,
     )
+
+
+def join_estimates_to_ascwds(
+    estimates_lf: pl.LazyFrame,
+    ascwds_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """Join job role estimates to ASCWDS counts ensuring a row for every job role.
+
+    Performs a cross join on the estimates join keys first to ensure there is a row for
+    every job role across all time periods for each location. This is then joined with
+    the ASCWDS data.
+    """
+    join_keys = [
+        IndCQC.ascwds_workplace_import_date,
+        IndCQC.establishment_id,
+    ]
+    job_role_labels = IndCQC.main_job_role_clean_labelled
+
+    # Narrow select "id" and join keys first to improve memory performance of
+    # cross join. From this we get the full amount of rows expected.
+    narrow_keys_lf = estimates_lf.select(["id"] + join_keys)
+    # This is just a single column df with a row for each job role (~38).
+    roles_lf = pl.LazyFrame(
+        data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
+        schema={job_role_labels: pl.Categorical},
+    )
+    # This will be the length of estimates dataset x number of job roles.
+    expanded_keys_lf = narrow_keys_lf.join(roles_lf, how="cross")
+
+    expanded_counts_lf = expanded_keys_lf.join(
+        other=ascwds_lf,
+        on=join_keys + [job_role_labels],
+        how="left",
+    )
+
+    # Re-attach the wide base data - The streaming engine easily handles this
+    # 1-to-many join via the 'id' column. Drop the join keys as they are not
+    # relevant to the rest of the pipeline.
+    return estimates_lf.join(expanded_counts_lf, on="id", how="right").drop(join_keys)
