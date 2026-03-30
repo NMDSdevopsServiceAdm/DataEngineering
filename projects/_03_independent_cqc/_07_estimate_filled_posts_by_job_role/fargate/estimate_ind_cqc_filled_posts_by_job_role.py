@@ -118,6 +118,7 @@ def main(
             estimated_posts_base_lf = (
                 pl.scan_parquet(estimates_source, low_memory=True)
                 .select(list(transformation_columns))
+                # Add row id index for single-key joining.
                 .with_row_index(name="id")
                 .with_columns(cast_to_schema(transformation_columns))
             )
