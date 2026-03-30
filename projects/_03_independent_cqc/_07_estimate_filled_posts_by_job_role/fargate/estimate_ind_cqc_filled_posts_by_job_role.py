@@ -166,8 +166,10 @@ def main(
             )
 
             pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
-            estimated_job_role_posts_lf = get_job_role_ratios(
-                estimated_job_role_posts_lf
+            estimated_job_role_posts_lf = get_percent_share_ratios(
+                estimated_job_role_posts_lf,
+                input_col=IndCQC.ascwds_job_role_counts,
+                output_col=IndCQC.ascwds_job_role_ratios,
             )
 
             estimated_job_role_posts_lf = impute_ratios(estimated_job_role_posts_lf)
@@ -182,29 +184,11 @@ def main(
             estimated_job_role_posts_lf = get_job_counts_rolling_sum(
                 estimated_job_role_posts_lf
             )
-
-            rolling_ratios_agg_lf = (
-                estimated_job_role_posts_lf.select(
-                    *pct_share_groups,
-                    long_id,
-                    "rolling_sum",
-                )
-                .group_by(pct_share_groups)
-                .agg(
-                    pl.col(long_id),
-                    JRUtils.percentage_share("rolling_sum").alias(
-                        IndCQC.ascwds_job_role_rolling_ratio
-                    ),
-                )
-                .explode(long_id, IndCQC.ascwds_job_role_rolling_ratio)
-                .drop(pct_share_groups)
+            estimated_job_role_posts_lf = get_percent_share_ratios(
+                estimated_job_role_posts_lf,
+                input_col="rolling_sum",
+                output_col=IndCQC.ascwds_job_role_rolling_ratio,
             )
-
-            estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
-                rolling_ratios_agg_lf,
-                on=long_id,
-                how="left",
-            ).drop("rolling_sum")
 
             # ---------------------------------------------------------
             # Coalesce & Multiply
@@ -450,32 +434,27 @@ def impute_ratios(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFrame:
     return estimated_job_role_posts_lf.join(impute_agg_lf, on=long_id, how="left")
 
 
-def get_job_role_ratios(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Calculate job role ratios using groupby-agg-explode pattern.
+def get_percent_share_ratios(
+    estimated_job_role_posts_lf: pl.LazyFrame,
+    input_col: str,
+    output_col: str,
+) -> pl.LazyFrame:
+    """Calculate ratios over location and date using groupby-agg-explode pattern.
 
     Using groupby-agg-explode ensures it can be processed with the streaming engine.
     """
     long_id: str = "long_id"
     groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
-    job_role_ratios = (
-        JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
-        .cast(pl.Float32)
-        .alias(IndCQC.ascwds_job_role_ratios)
-    )
 
     # Groupby-agg-explode on only necessary subset, before joining back on long_id.
     ratios_agg_lf = (
-        estimated_job_role_posts_lf.select(
-            *groups,
-            long_id,
-            IndCQC.ascwds_job_role_counts,
-        )
+        estimated_job_role_posts_lf.select(*groups, long_id, input_col)
         .group_by(groups)
         .agg(
             pl.col(long_id),  # Keep to align during explode
-            job_role_ratios,
+            JRUtils.percentage_share(input_col).cast(pl.Float32).alias(output_col),
         )
-        .explode(long_id, IndCQC.ascwds_job_role_ratios)
+        .explode(long_id, output_col)
         # Drop groups to prevent duplicate columns after join.
         .drop(groups)
     )
