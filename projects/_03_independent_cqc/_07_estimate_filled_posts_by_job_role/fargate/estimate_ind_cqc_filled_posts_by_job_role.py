@@ -35,25 +35,26 @@ pl.Config.set_streaming_chunk_size(50000)
 
 partition_keys = [Keys.year]
 
-establishment_categories = pl.Categories("establishment", namespace="filled_posts")
-EstablishmentType = pl.Categorical(establishment_categories)
-location_categories = pl.Categories("location", namespace="filled_posts")
+EstablishmentType = pl.Categorical(
+    pl.Categories("establishment", namespace="filled_posts")
+)
+LocationType = pl.Categorical(pl.Categories("location", namespace="filled_posts"))
 # TODO: Change these types to pl.Enum
-job_role_categories = pl.Categories(
-    "job_role", namespace="filled_posts", physical=pl.UInt8
+JobRoleType = pl.Categorical(
+    pl.Categories("job_role", namespace="filled_posts", physical=pl.UInt8)
 )
-estimates_source_categories = pl.Categories(
-    "estimates_source", namespace="filled_posts", physical=pl.UInt8
+EstimatesFilledPostSourceType = pl.Categorical(
+    pl.Categories("estimates_source", namespace="filled_posts", physical=pl.UInt8)
 )
-primary_service_categories = pl.Categories(
-    "primary_service_type", namespace="filled_posts", physical=pl.UInt8
+PrimaryServiceType = pl.Categorical(
+    pl.Categories("primary_service_type", namespace="filled_posts", physical=pl.UInt8)
 )
 
 metadata_columns = {
     IndCQC.name: str,
     IndCQC.provider_id: str,
     IndCQC.services_offered: pl.List(str),
-    IndCQC.primary_service_type: pl.Categorical,
+    IndCQC.primary_service_type: PrimaryServiceType,
     IndCQC.primary_service_type_second_level: pl.Categorical,
     IndCQC.care_home: pl.Categorical,
     IndCQC.dormancy: pl.Categorical,
@@ -61,7 +62,7 @@ metadata_columns = {
     IndCQC.imputed_registration_date: pl.Date,
     IndCQC.registered_manager_names: pl.List(str),
     IndCQC.ascwds_workplace_import_date: pl.Date,
-    IndCQC.establishment_id: pl.Categorical,
+    IndCQC.establishment_id: EstablishmentType,
     IndCQC.organisation_id: str,
     IndCQC.worker_records_bounded: pl.Int16,
     IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
@@ -74,24 +75,24 @@ metadata_columns = {
     IndCQC.current_rural_urban_indicator_2011: pl.Categorical,
     IndCQC.current_lsoa21: pl.Categorical,
     IndCQC.current_msoa21: pl.Categorical,
-    IndCQC.estimate_filled_posts_source: pl.Categorical,
+    IndCQC.estimate_filled_posts_source: EstimatesFilledPostSourceType,
     Keys.year: pl.Int16,
     Keys.import_date: pl.Date,
 }
 ascwds_columns_to_import = {
     IndCQC.ascwds_worker_import_date: pl.Date,
     IndCQC.establishment_id: EstablishmentType,
-    IndCQC.main_job_role_clean_labelled: pl.Categorical(job_role_categories),
+    IndCQC.main_job_role_clean_labelled: JobRoleType,
     IndCQC.ascwds_job_role_counts: pl.Int16,
 }
 transformation_columns = {
-    IndCQC.location_id: pl.Categorical(location_categories),
+    IndCQC.location_id: LocationType,
     IndCQC.cqc_location_import_date: pl.Date,
     IndCQC.establishment_id: EstablishmentType,
     IndCQC.ascwds_workplace_import_date: pl.Date,
     IndCQC.estimate_filled_posts: pl.Float32,
-    IndCQC.estimate_filled_posts_source: pl.Categorical(primary_service_categories),
-    IndCQC.primary_service_type: pl.Categorical(primary_service_categories),
+    IndCQC.estimate_filled_posts_source: EstimatesFilledPostSourceType,
+    IndCQC.primary_service_type: PrimaryServiceType,
     IndCQC.registered_manager_names: pl.List(str),
     IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
 }
