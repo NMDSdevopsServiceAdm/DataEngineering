@@ -285,7 +285,6 @@ def main(
             ),
             brief=f"{IndCqcColumns.specialism_mental_health} needs to be one of {CatValues.specialism_mental_health_column_values.categorical_values}",
         )
-        # # TODO - Add custom validation rule that the data in carehome and primary_service_type should be related.
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
