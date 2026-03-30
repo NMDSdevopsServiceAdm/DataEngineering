@@ -161,16 +161,15 @@ def main(
         )
 
         log_polars_plan(estimated_job_role_posts_lf, "Post Join")
-        checkpoint_filepath = CHECKPOINT_PATH / "checkpoint1.ipc"
-        estimated_job_role_posts_lf.sink_ipc(
+        checkpoint_filepath = CHECKPOINT_PATH / "checkpoint1.parquet"
+        estimated_job_role_posts_lf.sink_parquet(
             checkpoint_filepath,
-            compression="lz4",
             mkdir=True,
             engine="streaming",
         )
 
     with time_it("Impute ratios"):
-        estimated_job_role_posts_lf = pl.scan_ipc(checkpoint_filepath)
+        estimated_job_role_posts_lf = pl.scan_parquet(checkpoint_filepath)
 
         pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
         estimated_job_role_posts_lf = get_percent_share_ratios(
@@ -216,16 +215,15 @@ def main(
         )
 
         log_polars_plan(estimated_job_role_posts_lf, "Impute and rolling")
-        checkpoint_filepath = CHECKPOINT_PATH / "checkpoint2.ipc"
-        estimated_job_role_posts_lf.sink_ipc(
+        checkpoint_filepath = CHECKPOINT_PATH / "checkpoint2.parquet"
+        estimated_job_role_posts_lf.sink_parquet(
             checkpoint_filepath,
-            compression="lz4",
             mkdir=True,
             engine="streaming",
         )
 
     with time_it("Manager adjustments"):
-        estimated_job_role_posts_lf = pl.scan_ipc(checkpoint_filepath).pipe(
+        estimated_job_role_posts_lf = pl.scan_parquet(checkpoint_filepath).pipe(
             apply_manager_adjustments
         )
 
