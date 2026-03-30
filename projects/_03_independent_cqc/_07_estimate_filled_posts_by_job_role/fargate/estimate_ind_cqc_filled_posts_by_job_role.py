@@ -333,9 +333,13 @@ def join_estimates_to_ascwds(
     )
 
     # Re-attach the wide base data - The streaming engine easily handles this
-    # 1-to-many join via the 'id' column. Drop the join keys as they are not
-    # relevant to the rest of the pipeline.
-    return estimates_lf.join(expanded_counts_lf, on="id", how="right").drop(join_keys)
+    # 1-to-many join via the 'id' column. Drop the join keys (used earlier) from
+    # both sides as they are not relevant to the rest of the pipeline.
+    return estimates_lf.join(
+        expanded_counts_lf.drop(join_keys),
+        on="id",
+        how="right",
+    ).drop(join_keys)
 
 
 def impute_ratios(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFrame:
