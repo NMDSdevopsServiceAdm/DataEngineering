@@ -299,63 +299,6 @@ def main(
             )
 
 
-def log_polars_plan(lf: pl.LazyFrame, context: str) -> None:
-    """Logs the explain plan and schema to CloudWatch immediately."""
-    logger.info(f"--- PRE-FLIGHT CHECK: {context} ---")
-
-    plan = lf.explain(engine="streaming")
-
-    # We log line-by-line so CloudWatch doesn't truncate a massive single string.
-    for line in plan.split("\n"):
-        if line.strip():  # Skip empty lines
-            logger.info(f"[PLAN] {line}")
-
-    # Log the schema too.
-    logger.info(f"Schema for {context}: {lf.collect_schema()}")
-
-    logger.info(f"--- END PRE-FLIGHT PLAN: {context} ---")
-    sys.stdout.flush()
-
-
-def cast_to_schema(schema: dict[str, pl.DataType]) -> list[pl.Expr]:
-    """Cast columns to given schema."""
-    return [pl.col(c).cast(dtype) for c, dtype in schema.items()]
-
-
-@contextmanager
-def time_it(label: str):
-    """Context manager to time code execution."""
-    start = time.perf_counter()
-    try:
-        yield
-    finally:
-        elapsed = time.perf_counter() - start
-        logger.info(f"[METRIC] {label}: {elapsed:.4f}s")
-        sys.stdout.flush()
-
-
-if __name__ == "__main__":
-    args = utils.get_args(
-        (
-            "--estimates_source",
-            "Source s3 directory for estimated ind cqc filled posts data",
-        ),
-        (
-            "--ascwds_job_role_counts_source",
-            "Source s3 directory for parquet ASCWDS worker job role counts dataset",
-        ),
-        (
-            "--estimates_by_job_role_destination",
-            "Destination s3 directory",
-        ),
-    )
-    main(
-        estimates_source=args.estimates_source,
-        ascwds_job_role_counts_source=args.ascwds_job_role_counts_source,
-        estimates_by_job_role_destination=args.estimates_by_job_role_destination,
-    )
-
-
 def join_estimates_to_ascwds(
     estimates_lf: pl.LazyFrame,
     ascwds_lf: pl.LazyFrame,
@@ -493,4 +436,61 @@ def get_job_counts_rolling_sum(
         rolling_agg_lf,
         on=monthly_groups,
         how="left",
+    )
+
+
+def log_polars_plan(lf: pl.LazyFrame, context: str) -> None:
+    """Logs the explain plan and schema to CloudWatch immediately."""
+    logger.info(f"--- PRE-FLIGHT CHECK: {context} ---")
+
+    plan = lf.explain(engine="streaming")
+
+    # We log line-by-line so CloudWatch doesn't truncate a massive single string.
+    for line in plan.split("\n"):
+        if line.strip():  # Skip empty lines
+            logger.info(f"[PLAN] {line}")
+
+    # Log the schema too.
+    logger.info(f"Schema for {context}: {lf.collect_schema()}")
+
+    logger.info(f"--- END PRE-FLIGHT PLAN: {context} ---")
+    sys.stdout.flush()
+
+
+def cast_to_schema(schema: dict[str, pl.DataType]) -> list[pl.Expr]:
+    """Cast columns to given schema."""
+    return [pl.col(c).cast(dtype) for c, dtype in schema.items()]
+
+
+@contextmanager
+def time_it(label: str):
+    """Context manager to time code execution."""
+    start = time.perf_counter()
+    try:
+        yield
+    finally:
+        elapsed = time.perf_counter() - start
+        logger.info(f"[METRIC] {label}: {elapsed:.4f}s")
+        sys.stdout.flush()
+
+
+if __name__ == "__main__":
+    args = utils.get_args(
+        (
+            "--estimates_source",
+            "Source s3 directory for estimated ind cqc filled posts data",
+        ),
+        (
+            "--ascwds_job_role_counts_source",
+            "Source s3 directory for parquet ASCWDS worker job role counts dataset",
+        ),
+        (
+            "--estimates_by_job_role_destination",
+            "Destination s3 directory",
+        ),
+    )
+    main(
+        estimates_source=args.estimates_source,
+        ascwds_job_role_counts_source=args.ascwds_job_role_counts_source,
+        estimates_by_job_role_destination=args.estimates_by_job_role_destination,
     )
