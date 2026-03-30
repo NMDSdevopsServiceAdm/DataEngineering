@@ -44,6 +44,9 @@ jobs:
       - run:
           name: Build Docker Images
           command: |
+            # UNSET old keys to force AWS CLI to use OIDC
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
             # Authenticate Docker to ECR
             aws ecr get-login-password --region eu-west-2 | docker login -u AWS --password-stdin ${<< parameters.aws_account_id >>}.dkr.ecr.eu-west-2.amazonaws.com
             echo "Rebuilding lambdas and pushing to ECR."
