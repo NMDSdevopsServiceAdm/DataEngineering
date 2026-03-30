@@ -165,14 +165,11 @@ def main(
                 low_memory=True,
             )
 
-            job_role_col = IndCQC.main_job_role_clean_labelled
-
             pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
             estimated_job_role_posts_lf = get_job_role_ratios(
                 estimated_job_role_posts_lf
             )
 
-            order_key = IndCQC.cqc_location_import_date
             estimated_job_role_posts_lf = impute_ratios(estimated_job_role_posts_lf)
 
             # Multiply imputed ratios by estimate filled posts
@@ -182,40 +179,8 @@ def main(
                 .alias(IndCQC.imputed_ascwds_job_role_counts)
             )
 
-            # ---------------------------------------------------------
-            # 3. Rolling Sum and Rolling Ratios
-            # ---------------------------------------------------------
-
-            rolling_groups = [IndCQC.primary_service_type, job_role_col]
-            monthly_groups = rolling_groups + [order_key]
-            # STEP A: Pre-aggregate down to monthly totals
-            # (Shrinks 152M rows -> ~50k rows instantly via Hash Aggregation)
-            monthly_totals_lf = (
-                estimated_job_role_posts_lf.select(
-                    *monthly_groups,
-                    IndCQC.imputed_ascwds_job_role_counts,
-                )
-                .group_by(monthly_groups)
-                .agg(pl.col(IndCQC.imputed_ascwds_job_role_counts).sum())
-            )
-
-            # STEP B: Sort and roll on the TINY dataset
-            # This .sort() is completely safe because it's only operating on ~50k rows
-            rolling_agg_lf = (
-                monthly_totals_lf.sort(*rolling_groups, order_key)
-                .rolling(index_column=order_key, group_by=rolling_groups, period="6mo")
-                .agg(
-                    pl.col(IndCQC.imputed_ascwds_job_role_counts)
-                    .sum()
-                    .alias("rolling_sum")
-                )
-            )
-
-            # STEP C: Join the rolling sum back to the main 152M row table
-            estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
-                rolling_agg_lf,
-                on=monthly_groups,
-                how="left",
+            estimated_job_role_posts_lf = get_job_counts_rolling_sum(
+                estimated_job_role_posts_lf
             )
 
             rolling_ratios_agg_lf = (
@@ -516,3 +481,37 @@ def get_job_role_ratios(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFra
     )
 
     return estimated_job_role_posts_lf.join(ratios_agg_lf, on=long_id, how="left")
+
+
+def get_job_counts_rolling_sum(
+    estimated_job_role_posts_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """ """
+    rolling_groups = [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled]
+    order_key = IndCQC.cqc_location_import_date
+    monthly_groups = rolling_groups + [order_key]
+    # STEP A: Pre-aggregate down to monthly totals
+    # (Shrinks 152M rows -> ~50k rows instantly via Hash Aggregation)
+    monthly_totals_lf = (
+        estimated_job_role_posts_lf.select(
+            *monthly_groups,
+            IndCQC.imputed_ascwds_job_role_counts,
+        )
+        .group_by(monthly_groups)
+        .agg(pl.col(IndCQC.imputed_ascwds_job_role_counts).sum())
+    )
+
+    # STEP B: Sort and roll on the small dataset.
+    # This .sort() is completely safe because it's only operating on ~50k rows.
+    rolling_agg_lf = (
+        monthly_totals_lf.sort(*rolling_groups, order_key)
+        .rolling(index_column=order_key, group_by=rolling_groups, period="6mo")
+        .agg(pl.col(IndCQC.imputed_ascwds_job_role_counts).sum().alias("rolling_sum"))
+    )
+
+    # STEP C: Join the rolling sum back to the main 152M row table
+    return estimated_job_role_posts_lf.join(
+        rolling_agg_lf,
+        on=monthly_groups,
+        how="left",
+    )
