@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 import polars as pl
 
-import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -53,20 +52,9 @@ def main(
     )
 
     # create_banded_bed_count_column
-    lf = cUtils.create_banded_bed_count_column(
-        lf,
-        IndCQC.number_of_beds_banded_for_rolling_avg,
-        [0, 1, 10, 15, 20, 25, 50, float("Inf")],
-    )
 
     # model_calculate_rolling_average - banded_bed_ratio_rolling_average_model
-    lf = lf.with_columns(
-        calculate_rolling_average(
-            IndCQC.imputed_filled_posts_per_bed_ratio_model,
-            NumericalValues.number_of_days_in_window,
-            [IndCQC.primary_service_type, IndCQC.number_of_beds_banded_for_rolling_avg],
-        ).alias(IndCQC.banded_bed_ratio_rolling_average_model)
-    )
+    #   Need to make banded bed count before calling rolling average.
 
     # convert_care_home_ratios_to_posts
 
