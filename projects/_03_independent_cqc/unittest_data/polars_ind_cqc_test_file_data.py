@@ -2275,12 +2275,28 @@ get_percent_share_ratios_test_cases = [
     GetPercentShareRatiosTestCase(
         id="two_locations_with_same_import_date",
         data=[
-            (0, "1-001", date(2026, 1, 1), MainJobRoleLabels.care_worker, 1, 0.1),
-            (1, "1-001", date(2026, 1, 1), MainJobRoleLabels.admin_staff, 4, 0.4),
-            (2, "1-001", date(2026, 1, 1), MainJobRoleLabels.supervisor, 5, 0.5),
-            (3, "1-002", date(2026, 1, 1), MainJobRoleLabels.care_worker, 3, 0.3),
-            (4, "1-002", date(2026, 1, 1), MainJobRoleLabels.admin_staff, 5, 0.5),
-            (5, "1-002", date(2026, 1, 1), MainJobRoleLabels.supervisor, 2, 0.2),
+            (0, "1-001", date(2026, 1, 1), 1, 0.1),
+            (1, "1-001", date(2026, 1, 1), 4, 0.4),
+            (2, "1-001", date(2026, 1, 1), 5, 0.5),
+            (3, "1-002", date(2026, 1, 1), 3, 0.3),
+            (4, "1-002", date(2026, 1, 1), 5, 0.5),
+            (5, "1-002", date(2026, 1, 1), 2, 0.2),
+        ],
+    ),
+    GetPercentShareRatiosTestCase(
+        id="one_location_with_same_import_date_and_input_column_has_null",
+        data=[
+            (0, "1-001", date(2026, 1, 1), 1, 0.2),
+            (1, "1-001", date(2026, 1, 1), 4, 0.8),
+            (2, "1-001", date(2026, 1, 1), None, None),
+        ],
+    ),
+    GetPercentShareRatiosTestCase(
+        id="one_location_with_same_import_date_and_entirely_null_input_column",
+        data=[
+            (0, "1-001", date(2026, 1, 1), None, None),
+            (1, "1-001", date(2026, 1, 1), None, None),
+            (2, "1-001", date(2026, 1, 1), None, None),
         ],
     ),
 ] # fmt: skip
