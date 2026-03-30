@@ -169,8 +169,7 @@ def main(
 
             pct_share_groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
             estimated_job_role_posts_lf = get_job_role_ratios(
-                estimated_job_role_posts_lf,
-                groups=pct_share_groups,
+                estimated_job_role_posts_lf
             )
 
             # ---------------------------------------------------------
@@ -482,15 +481,13 @@ def join_estimates_to_ascwds(
     return estimates_lf.join(expanded_counts_lf, on="id", how="right").drop(join_keys)
 
 
-def get_job_role_ratios(
-    estimated_job_role_posts_lf: pl.LazyFrame,
-    groups: list[str],
-) -> pl.LazyFrame:
+def get_job_role_ratios(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFrame:
     """Calculate job role ratios using groupby-agg-explode pattern.
 
     Using groupby-agg-explode ensures it can be processed with the streaming engine.
     """
     long_id: str = "long_id"
+    groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
     job_role_ratios = (
         JRUtils.percentage_share(IndCQC.ascwds_job_role_counts)
         .cast(pl.Float32)
