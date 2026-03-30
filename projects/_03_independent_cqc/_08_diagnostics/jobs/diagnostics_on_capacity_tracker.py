@@ -10,10 +10,8 @@ from projects._03_independent_cqc._08_diagnostics.utils import (
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome
 
-partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
     IndCQC.location_id,
     IndCQC.cqc_location_import_date,
@@ -33,10 +31,6 @@ estimate_filled_posts_columns: list = [
     IndCQC.ct_care_home_total_employed_imputed,
     IndCQC.ct_non_res_care_workers_employed,
     IndCQC.ct_non_res_filled_post_estimate,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
 ]
 absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25
@@ -72,25 +66,21 @@ def main(
         care_home_diagnostics_df,
         care_home_diagnostics_destination,
         mode="overwrite",
-        partitionKeys=partition_keys,
     )
     utils.write_to_parquet(
         care_home_summary_df,
         care_home_summary_diagnostics_destination,
         mode="overwrite",
-        partitionKeys=[IndCQC.primary_service_type],
     )
     utils.write_to_parquet(
         non_res_diagnostics_df,
         non_res_diagnostics_destination,
         mode="overwrite",
-        partitionKeys=partition_keys,
     )
     utils.write_to_parquet(
         non_res_summary_df,
         non_res_summary_diagnostics_destination,
         mode="overwrite",
-        partitionKeys=[IndCQC.primary_service_type],
     )
 
 
