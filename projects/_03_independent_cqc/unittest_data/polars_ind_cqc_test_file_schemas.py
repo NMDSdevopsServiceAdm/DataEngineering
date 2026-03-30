@@ -1271,7 +1271,18 @@ class EstimateFilledPostsModelsUtils:
 
 
 @dataclass
-class GetJobCountsRollingSumSchema:
+class EstimateIndCqcFilledPostsByJobRoleSchemas:
+    expected_get_percent_share_ratios_schema = pl.Schema(
+        [
+            ("long_id", pl.String()),
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (IndCQC.imputed_ascwds_job_role_counts, pl.Int64()),
+            (IndCQC.ascwds_job_role_ratios, pl.Float32()),
+        ]
+    )
+
     expected_get_job_counts_rolling_sum_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),

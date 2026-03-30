@@ -8,9 +8,10 @@ import pytest
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     get_job_counts_rolling_sum_test_cases,
+    get_percent_share_ratios_test_cases,
 )
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
-    GetJobCountsRollingSumSchema as Schemas,
+    EstimateIndCqcFilledPostsByJobRoleSchemas as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
@@ -99,6 +100,36 @@ class MainTests(unittest.TestCase):
             output_path=self.ESTIMATES_DESTINATION,
             partition_cols=job.partition_keys,
             append=False,
+        )
+
+
+class TestGetPercentShareRatios:
+    @pytest.fixture(
+        params=[
+            pytest.param(case.data, id=case.id)
+            for case in get_percent_share_ratios_test_cases
+        ],
+    )
+    def case_data(self, request):
+        return request.param
+
+    def test_function_returns_expected_values(self, case_data):
+        expected_lf = pl.LazyFrame(
+            data=case_data,
+            schema=Schemas.expected_get_percent_share_ratios_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop(IndCQC.ascwds_job_role_ratios)
+        returned_lf = job.get_percent_share_ratios(
+            estimated_job_role_posts_lf=input_lf,
+            input_col=IndCQC.imputed_ascwds_job_role_counts,
+            output_col=IndCQC.ascwds_job_role_ratios,
+        )
+
+        print(returned_lf.collect())
+
+        pl_testing.assert_frame_equal(
+            returned_lf, expected_lf, check_column_order=False, check_row_order=False
         )
 
 

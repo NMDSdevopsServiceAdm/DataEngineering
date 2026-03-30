@@ -2266,6 +2266,27 @@ class EstimateFilledPostsModelsUtils:
 
 
 @dataclass
+class GetPercentShareRatiosTestCase:
+    id: str
+    data: list[tuple]
+
+
+get_percent_share_ratios_test_cases = [
+    GetPercentShareRatiosTestCase(
+        id="two_locations_with_same_import_date",
+        data=[
+            (0, "1-001", date(2026, 1, 1), MainJobRoleLabels.care_worker, 1, 0.1),
+            (1, "1-001", date(2026, 1, 1), MainJobRoleLabels.admin_staff, 4, 0.4),
+            (2, "1-001", date(2026, 1, 1), MainJobRoleLabels.supervisor, 5, 0.5),
+            (3, "1-002", date(2026, 1, 1), MainJobRoleLabels.care_worker, 3, 0.3),
+            (4, "1-002", date(2026, 1, 1), MainJobRoleLabels.admin_staff, 5, 0.5),
+            (5, "1-002", date(2026, 1, 1), MainJobRoleLabels.supervisor, 2, 0.2),
+        ],
+    ),
+] # fmt: skip
+
+
+@dataclass
 class GetJobCountsRollingSumTestCase:
     id: str
     data: list[tuple]
