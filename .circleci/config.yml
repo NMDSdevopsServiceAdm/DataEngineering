@@ -348,6 +348,8 @@ jobs:
       - run:
           name: delete workspace
           command: |
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
             cd terraform/pipeline
             terraform workspace select default
             export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
