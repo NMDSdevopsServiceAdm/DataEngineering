@@ -154,6 +154,12 @@ jobs:
           role_arn: ${<< parameters.role_arn >>}
           region: $AWS_REGION
       - run:
+          name: Debug AWS Identity
+          command: |
+            # Verify Account ID and ARN
+            echo "Checking AWS Identity..."
+            aws sts get-caller-identity
+      - run:
           name: terraform plan
           command: |
             # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
@@ -375,11 +381,13 @@ workflows:
       - terraform-apply:
           role_arn: AWS_ROLE_ARN
           aws_account: "prod"
-          requires: [plan-approval]
+          requires:
+            - plan-approval
       - deploy-dependencies:
           role_arn: AWS_ROLE_ARN
           requires:
             - terraform-apply
+
 
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
