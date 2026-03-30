@@ -1821,20 +1821,25 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
     ]
 
     calculate_and_apply_model_ratios_rows = [
-        ("1-001", date(2022, 2, 1), "Y", 2, 3.0, None, 2.5, 5.0, 0.5, 1.5),
-        ("1-001", date(2023, 3, 1), "Y", 3, 4.0, 5.0, 5.0, 4.0, 1.25, 5.0),
+        # CASE 1: "Y" + band 2 → BOTH populated
+        ("Y", 2, 4.0, 2.0, 2.25, 4.5, 0.5, 2.0),
+        ("Y", 2, 5.0, 2.5, 2.25, 4.5, 0.5, 2.5),
 
-        ("1-002", date(2022, 2, 1), "Y", 4, 8.0, None, None, None, None, None),
-        ("1-002", date(2023, 3, 1), "Y", 5, 8.0, 4.0, 4.0, 8.0, 0.5, 4.0),
+        # CASE 2: "N" + band 2 → BOTH populated (different values)
+        ("N", 2, 6.0, 8.0, 8.5, 6.0, 1.4166666666666667, 8.5),
+        ("N", 2, 6.0, 9.0, 8.5, 6.0, 1.4166666666666667, 8.5),
 
-        ("1-003", date(2022, 2, 1), "N", 2, 2.0, None, None, None, None, None),
-        ("1-003", date(2021, 3, 1), "N", 3, 4.0, None, None, None, None, None),
-        ("1-003", date(2022, 4, 1), "N", 4, 4.0, None, None, None, None, None),
-        ("1-003", date(2023, 5, 1), "N", 5, 6.0, 8.0, 8.0, 6.0, 1.3333333333333333, 8.0),
-        ("1-003", date(2024, 6, 1), "N", 6, 6.0, 9.0, 9.0, 6.0, 1.5, 9.0),
+        # CASE 3: "Y" + band 3 → with_dormancy NULL → NO valid rows
+        ("Y", 3, 3.0, None, None, None, None, None),
+        ("Y", 3, 4.0, None, None, None, None, None),
 
-        ("1-004", date(2024, 5, 1), "Y", 1, 4.0, 2.0, 2.0, 4.0, 0.5, 2.0),
-        ("1-004", date(2024, 6, 1), "Y", 2, 5.0, 2.5, 2.5, 5.0, 0.5, 2.5),
+        # CASE 4: "Y" + band 3 → without_dormancy NULL → NO valid rows
+        ("Y", 3, None, 4.0, None, None, None, None),
+        ("Y", 3, None, 5.0, None, None, None, None),
+
+        # CASE 5: "Y" + band 3 → BOTH NULL → NO valid rows
+        ("Y", 3, None, None, None, None, None, None),
+        ("Y", 3, None, None, None, None, None, None),
     ]  # fmt: skip
 
     calculate_and_apply_residuals_rows = [

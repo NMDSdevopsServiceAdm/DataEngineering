@@ -1336,8 +1336,6 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
 
     calculate_and_apply_model_ratios_schema = pl.Schema(
         {
-            IndCQC.location_id: pl.String,
-            IndCQC.cqc_location_import_date: pl.Date,
             IndCQC.related_location: pl.String,
             NRModel_TempCol.time_registered_banded_and_capped: pl.Int64,
             IndCQC.non_res_without_dormancy_model: pl.Float64,

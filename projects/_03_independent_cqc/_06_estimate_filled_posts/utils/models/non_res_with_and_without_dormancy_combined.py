@@ -120,7 +120,7 @@ def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
     return df
 
 
-# not converting this function to polars, use '.group_by()' & '.agg()' instead
+# not converting this function to polars, used polars expressions instead
 def average_models_by_related_location_and_time_registered(df: DataFrame) -> DataFrame:
     """
     Averages model predictions by 'related_location' and 'time_registered_banded_and_capped'.
