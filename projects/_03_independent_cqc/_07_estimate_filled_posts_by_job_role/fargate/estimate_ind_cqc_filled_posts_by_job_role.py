@@ -13,6 +13,7 @@ import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargat
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_values.categorical_column_values import PrimaryServiceType
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
@@ -35,26 +36,35 @@ pl.Config.set_streaming_chunk_size(50000)
 
 partition_keys = [Keys.year]
 
-EstablishmentType = pl.Categorical(
+EstablishmentCatType = pl.Categorical(
     pl.Categories("establishment", namespace="filled_posts")
 )
-LocationType = pl.Categorical(pl.Categories("location", namespace="filled_posts"))
-# TODO: Change these types to pl.Enum
-JobRoleType = pl.Categorical(
-    pl.Categories("job_role", namespace="filled_posts", physical=pl.UInt8)
+LocationCatType = pl.Categorical(pl.Categories("location", namespace="filled_posts"))
+JobRoleEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
+EstimatesFilledPostSourceEnumType = pl.Enum(
+    [
+        "imputed_pir_filled_posts_model",
+        "ascwds_pir_merged",
+        "imputed_posts_care_home_model",
+        "care_home_model",
+        "imputed_posts_non_res_combined_model",
+        "non_res_combined_model",
+        "posts_rolling_average_model",
+    ]
 )
-EstimatesFilledPostSourceType = pl.Categorical(
-    pl.Categories("estimates_source", namespace="filled_posts", physical=pl.UInt8)
-)
-PrimaryServiceType = pl.Categorical(
-    pl.Categories("primary_service_type", namespace="filled_posts", physical=pl.UInt8)
+PrimaryServiceEnumType = pl.Enum(
+    [
+        PrimaryServiceType.care_home_only,
+        PrimaryServiceType.care_home_with_nursing,
+        PrimaryServiceType.non_residential,
+    ]
 )
 
 metadata_columns = {
     IndCQC.name: str,
     IndCQC.provider_id: str,
     IndCQC.services_offered: pl.List(str),
-    IndCQC.primary_service_type: PrimaryServiceType,
+    IndCQC.primary_service_type: PrimaryServiceEnumType,
     IndCQC.primary_service_type_second_level: pl.Categorical,
     IndCQC.care_home: pl.Categorical,
     IndCQC.dormancy: pl.Categorical,
@@ -62,7 +72,7 @@ metadata_columns = {
     IndCQC.imputed_registration_date: pl.Date,
     IndCQC.registered_manager_names: pl.List(str),
     IndCQC.ascwds_workplace_import_date: pl.Date,
-    IndCQC.establishment_id: EstablishmentType,
+    IndCQC.establishment_id: EstablishmentCatType,
     IndCQC.organisation_id: str,
     IndCQC.worker_records_bounded: pl.Int16,
     IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
@@ -75,24 +85,24 @@ metadata_columns = {
     IndCQC.current_rural_urban_indicator_2011: pl.Categorical,
     IndCQC.current_lsoa21: pl.Categorical,
     IndCQC.current_msoa21: pl.Categorical,
-    IndCQC.estimate_filled_posts_source: EstimatesFilledPostSourceType,
+    IndCQC.estimate_filled_posts_source: EstimatesFilledPostSourceEnumType,
     Keys.year: pl.Int16,
     Keys.import_date: pl.Date,
 }
 ascwds_columns_to_import = {
     IndCQC.ascwds_worker_import_date: pl.Date,
-    IndCQC.establishment_id: EstablishmentType,
-    IndCQC.main_job_role_clean_labelled: JobRoleType,
+    IndCQC.establishment_id: EstablishmentCatType,
+    IndCQC.main_job_role_clean_labelled: JobRoleEnumType,
     IndCQC.ascwds_job_role_counts: pl.Int16,
 }
 transformation_columns = {
-    IndCQC.location_id: LocationType,
+    IndCQC.location_id: LocationCatType,
     IndCQC.cqc_location_import_date: pl.Date,
-    IndCQC.establishment_id: EstablishmentType,
+    IndCQC.establishment_id: EstablishmentCatType,
     IndCQC.ascwds_workplace_import_date: pl.Date,
     IndCQC.estimate_filled_posts: pl.Float32,
-    IndCQC.estimate_filled_posts_source: EstimatesFilledPostSourceType,
-    IndCQC.primary_service_type: PrimaryServiceType,
+    IndCQC.estimate_filled_posts_source: EstimatesFilledPostSourceEnumType,
+    IndCQC.primary_service_type: PrimaryServiceEnumType,
     IndCQC.registered_manager_names: pl.List(str),
     IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
 }
@@ -346,7 +356,7 @@ def join_estimates_to_ascwds(
     # This is just a single column df with a row for each job role (~38).
     roles_lf = pl.LazyFrame(
         data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
-        schema={job_role_labels: JobRoleType},
+        schema={job_role_labels: JobRoleEnumType},
     )
     # This will be the length of estimates dataset x number of job roles.
     expanded_keys_lf = narrow_keys_lf.join(roles_lf, how="cross")
