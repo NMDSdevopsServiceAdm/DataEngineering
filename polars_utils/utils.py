@@ -436,3 +436,8 @@ def coalesce_with_source_labels(cols: list[str], name: str) -> tuple[pl.Expr, pl
         label_expr = label_expr.when(pl.col(c).is_not_null()).then(pl.lit(c))
 
     return (val_expr, label_expr.alias(f"{name}_source"))
+
+
+def cast_to_schema(schema: dict[str, pl.DataType]) -> list[pl.Expr]:
+    """Cast columns to given schema."""
+    return [pl.col(c).cast(dtype) for c, dtype in schema.items()]

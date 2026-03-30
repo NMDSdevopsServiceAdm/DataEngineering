@@ -1,9 +1,6 @@
 import logging
 import os
-import sys
 import tempfile
-import time
-from contextlib import contextmanager
 from pathlib import Path
 
 import polars as pl
@@ -11,6 +8,7 @@ import polars.selectors as cs
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as JRUtils
 from polars_utils import utils
+from polars_utils.pipeline_utils import log_polars_plan, time_it
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import PrimaryServiceType
@@ -18,12 +16,6 @@ from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
 
-# ECS/Cloudwatch captures stdout logging.
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(levelname)s] %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)],
-)
 logger = logging.getLogger(__name__)
 
 polars_temp_dir = os.getenv("POLARS_TEMP_DIR", tempfile.gettempdir())
@@ -128,7 +120,7 @@ def main(
             .select(list(combined_schema))
             # Add row id index for single-key joining.
             .with_row_index(name="id")
-            .with_columns(cast_to_schema(combined_schema))
+            .with_columns(utils.cast_to_schema(combined_schema))
         )
         estimated_posts_base_lf = full_estimates_lf.select(
             "id", *list(transformation_columns)
@@ -142,7 +134,7 @@ def main(
         ascwds_job_role_counts_lf = (
             pl.scan_parquet(ascwds_job_role_counts_source, low_memory=True)
             .select(list(ascwds_columns_to_import))
-            .with_columns(cast_to_schema(ascwds_columns_to_import))
+            .with_columns(utils.cast_to_schema(ascwds_columns_to_import))
             # Rename to avoid providing left + right "on" in subsequent join.
             .rename(col_name_map)
         )
@@ -452,41 +444,6 @@ def get_job_counts_rolling_sum(
         on=monthly_groups,
         how="left",
     )
-
-
-def log_polars_plan(lf: pl.LazyFrame, context: str) -> None:
-    """Logs the explain plan and schema to CloudWatch immediately."""
-    logger.info(f"--- PRE-FLIGHT CHECK: {context} ---")
-
-    plan = lf.explain(engine="streaming")
-
-    # We log line-by-line so CloudWatch doesn't truncate a massive single string.
-    for line in plan.split("\n"):
-        if line.strip():  # Skip empty lines
-            logger.info(f"[PLAN] {line}")
-
-    # Log the schema too.
-    logger.info(f"Schema for {context}: {lf.collect_schema()}")
-
-    logger.info(f"--- END PRE-FLIGHT PLAN: {context} ---")
-    sys.stdout.flush()
-
-
-def cast_to_schema(schema: dict[str, pl.DataType]) -> list[pl.Expr]:
-    """Cast columns to given schema."""
-    return [pl.col(c).cast(dtype) for c, dtype in schema.items()]
-
-
-@contextmanager
-def time_it(label: str):
-    """Context manager to time code execution."""
-    start = time.perf_counter()
-    try:
-        yield
-    finally:
-        elapsed = time.perf_counter() - start
-        logger.info(f"[METRIC] {label}: {elapsed:.4f}s")
-        sys.stdout.flush()
 
 
 if __name__ == "__main__":
