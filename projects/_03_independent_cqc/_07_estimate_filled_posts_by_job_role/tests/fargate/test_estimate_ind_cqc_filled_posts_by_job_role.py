@@ -1,7 +1,8 @@
 import unittest
 from unittest.mock import ANY, Mock, call, patch
-
+from dataclasses import dataclass
 import polars as pl
+import polars.testing as pl_testing
 import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role as job
@@ -93,3 +94,122 @@ class MainTests(unittest.TestCase):
             partition_cols=job.partition_keys,
             append=False,
         )
+
+
+@dataclass
+class JoinEstimatesCase:
+    id: str
+    estimates_data: list[tuple]
+    ascwds_data: list[tuple]
+    expected_data: list[tuple]
+
+
+# --- Mock roles globally for all tests ---
+@pytest.fixture(autouse=True)
+def mock_roles(monkeypatch):
+    monkeypatch.setattr(
+        job.AscwdsWorkerValueLabelsJobGroup,
+        "all_roles",
+        lambda: ["role_a", "role_b"],
+    )
+
+
+join_estimates_test_cases = [
+    JoinEstimatesCase(
+        id="basic_match",
+        estimates_data=[
+            (1, "2024-01-01", "loc1"),
+        ],
+        ascwds_data=[
+            ("2024-01-01", "loc1", "role_a", 10.0),
+            ("2024-01-01", "loc1", "role_b", 20.0),
+        ],
+        expected_data=[
+            (1, "role_a", 10.0),
+            (1, "role_b", 20.0),
+        ],
+    ),
+    JoinEstimatesCase(
+        id="missing_role_returns_null",
+        estimates_data=[
+            (1, "2024-01-01", "loc1"),
+        ],
+        ascwds_data=[
+            ("2024-01-01", "loc1", "role_a", 10.0),
+        ],
+        expected_data=[
+            (1, "role_a", 10.0),
+            (1, "role_b", None),
+        ],
+    ),
+    JoinEstimatesCase(
+        id="multiple_rows_expand_correctly",
+        estimates_data=[
+            (1, "2024-01-01", "loc1"),
+            (2, "2024-01-01", "loc2"),
+        ],
+        ascwds_data=[
+            ("2024-01-01", "loc1", "role_a", 5.0),
+            ("2024-01-01", "loc2", "role_b", 7.0),
+        ],
+        expected_data=[
+            (1, "role_a", 5.0),
+            (1, "role_b", None),
+            (2, "role_a", None),
+            (2, "role_b", 7.0),
+        ],
+    ),
+] # fmt: skip
+
+
+class TestJoinEstimatesToAscwds:
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in join_estimates_test_cases],
+    )
+    def test_join_estimates(self, case):
+        estimates_lf = pl.LazyFrame(
+            case.estimates_data,
+            schema={
+                "id": pl.Int32,
+                IndCQC.ascwds_workplace_import_date: pl.String,
+                IndCQC.establishment_id: pl.String,
+            },
+            orient="row",
+        )
+
+        ascwds_lf = pl.LazyFrame(
+            case.ascwds_data,
+            schema={
+                IndCQC.ascwds_workplace_import_date: pl.String,
+                IndCQC.establishment_id: pl.String,
+                IndCQC.main_job_role_clean_labelled: pl.Categorical,
+                "value": pl.Float64,
+            },
+            orient="row",
+        )
+
+        expected_lf = pl.LazyFrame(
+            case.expected_data,
+            schema={
+                "id": pl.Int32,
+                IndCQC.main_job_role_clean_labelled: pl.Categorical,
+                "value": pl.Float64,
+            },
+            orient="row",
+        )
+
+        result_lf = job.join_estimates_to_ascwds(estimates_lf, ascwds_lf)
+
+        # Only compare relevant columns
+        result_lf = result_lf.select(expected_lf.collect_schema().names())
+
+        pl_testing.assert_frame_equal(
+            result_lf,
+            expected_lf,
+            check_row_order=False,
+        )
+
+        # Sanity check: correct expansion
+        expected_rows = len(case.estimates_data) * 2  # mocked roles
+        assert result_lf.collect().height == expected_rows
