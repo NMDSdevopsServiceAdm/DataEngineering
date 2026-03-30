@@ -34,40 +34,35 @@ pl.Config.set_streaming_chunk_size(50000)
 
 partition_keys = [Keys.year]
 
-estimates_columns_to_import = [
-    IndCQC.cqc_location_import_date,
-    IndCQC.location_id,
-    IndCQC.name,
-    IndCQC.provider_id,
-    IndCQC.services_offered,
-    IndCQC.primary_service_type,
-    IndCQC.primary_service_type_second_level,
-    IndCQC.care_home,
-    IndCQC.dormancy,
-    IndCQC.number_of_beds,
-    IndCQC.imputed_registration_date,
-    IndCQC.registered_manager_names,
-    IndCQC.ascwds_workplace_import_date,
-    IndCQC.establishment_id,
-    IndCQC.organisation_id,
-    IndCQC.worker_records_bounded,
-    IndCQC.ascwds_filled_posts_dedup_clean,
-    IndCQC.ascwds_pir_merged,
-    IndCQC.ascwds_filtering_rule,
-    IndCQC.current_ons_import_date,
-    IndCQC.current_cssr,
-    IndCQC.current_region,
-    IndCQC.current_icb,
-    IndCQC.current_rural_urban_indicator_2011,
-    IndCQC.current_lsoa21,
-    IndCQC.current_msoa21,
-    IndCQC.estimate_filled_posts,
-    IndCQC.estimate_filled_posts_source,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
-]
+metadata_columns = {
+    IndCQC.name: str,
+    IndCQC.provider_id: str,
+    IndCQC.services_offered: pl.List(str),
+    IndCQC.primary_service_type: pl.Categorical,
+    IndCQC.primary_service_type_second_level: pl.Categorical,
+    IndCQC.care_home: pl.Categorical,
+    IndCQC.dormancy: pl.Categorical,
+    IndCQC.number_of_beds: pl.Int16,
+    IndCQC.imputed_registration_date: pl.Date,
+    IndCQC.registered_manager_names: pl.List(str),
+    IndCQC.ascwds_workplace_import_date: pl.Date,
+    IndCQC.establishment_id: pl.Categorical,
+    IndCQC.organisation_id: str,
+    IndCQC.worker_records_bounded: pl.Int16,
+    IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
+    IndCQC.ascwds_pir_merged: pl.Float32,
+    IndCQC.ascwds_filtering_rule: pl.Categorical,
+    IndCQC.current_ons_import_date: pl.Date,
+    IndCQC.current_cssr: pl.Categorical,
+    IndCQC.current_region: pl.Categorical,
+    IndCQC.current_icb: pl.Categorical,
+    IndCQC.current_rural_urban_indicator_2011: pl.Categorical,
+    IndCQC.current_lsoa21: pl.Categorical,
+    IndCQC.current_msoa21: pl.Categorical,
+    IndCQC.estimate_filled_posts_source: pl.Categorical,
+    Keys.year: pl.Int16,
+    Keys.import_date: pl.Date,
+}
 ascwds_columns_to_import = {
     IndCQC.ascwds_worker_import_date: pl.Date,
     IndCQC.establishment_id: pl.Categorical,
@@ -84,15 +79,7 @@ transformation_columns = {
     IndCQC.primary_service_type: pl.Categorical,
     IndCQC.registered_manager_names: pl.List(str),
     IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
-    Keys.year: pl.Int16,
 }
-dropped_columns = [
-    IndCQC.establishment_id,
-    IndCQC.ascwds_workplace_import_date,
-    IndCQC.ascwds_worker_import_date,
-    IndCQC.estimate_filled_posts_source,
-    IndCQC.ascwds_filled_posts_dedup_clean,
-]
 
 
 def main(
@@ -111,13 +98,19 @@ def main(
     # Needed so we can join on Categorical columns.
     with pl.StringCache():
         with time_it("scan_and_join"):
-            estimated_posts_base_lf = (
+            combined_schema = transformation_columns | metadata_columns
+            full_estimates_lf = (
                 pl.scan_parquet(estimates_source, low_memory=True)
-                .select(list(transformation_columns))
+                .select(list(combined_schema))
                 # Add row id index for single-key joining.
                 .with_row_index(name="id")
-                .with_columns(cast_to_schema(transformation_columns))
+                .with_columns(cast_to_schema(combined_schema))
             )
+            estimated_posts_base_lf = full_estimates_lf.select(
+                list(transformation_columns)
+            )
+            # This will be joined on at the end.
+            metadata_lf = full_estimates_lf.select(list(metadata_columns))
 
             col_name_map = {
                 IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date
@@ -289,6 +282,11 @@ def main(
                 how="left",
             )
 
+            # Join back the metadata before sinking.
+            estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
+                metadata_lf,
+                on="id",
+            )
             log_polars_plan(estimated_job_role_posts_lf, "Final Transformation")
 
             utils.sink_to_parquet(
