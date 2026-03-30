@@ -157,6 +157,8 @@ jobs:
           name: Debug AWS Identity
           command: |
             # Verify Account ID and ARN
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
             echo "Checking AWS Identity..."
             aws sts get-caller-identity
       - run:
