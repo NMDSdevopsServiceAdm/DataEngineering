@@ -43,6 +43,7 @@ def main(
 
     # model_imputation_with_extrapolation_and_interpolation - imputed_filled_posts_per_bed_ratio_model
 
+    # model_calculate_rolling_average - posts_rolling_average_model
     lf = lf.with_columns(
         calculate_rolling_average(
             IndCQC.imputed_filled_post_model,
@@ -51,12 +52,14 @@ def main(
         ).alias(IndCQC.posts_rolling_average_model)
     )
 
+    # create_banded_bed_count_column
     lf = cUtils.create_banded_bed_count_column(
         lf,
         IndCQC.number_of_beds_banded_for_rolling_avg,
         [0, 1, 10, 15, 20, 25, 50, float("Inf")],
     )
 
+    # model_calculate_rolling_average - banded_bed_ratio_rolling_average_model
     lf = lf.with_columns(
         calculate_rolling_average(
             IndCQC.imputed_filled_posts_per_bed_ratio_model,
@@ -106,7 +109,7 @@ def calculate_rolling_average(
         column_to_average (str): The name of the column with the values to average.
         period (str): period (str): String language timedelta. See:
           https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.rolling.html
-        columns_to_partition_by (list): The name of the column to partition by.
+        columns_to_partition_by (list): The name of the column to partition the window by.
 
     Returns:
         pl.Expr: Expression for rolling mean of column_to_average.
