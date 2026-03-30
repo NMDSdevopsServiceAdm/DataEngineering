@@ -172,43 +172,8 @@ def main(
                 estimated_job_role_posts_lf
             )
 
-            # ---------------------------------------------------------
-            # 2. Imputation (Interpolate, FF, BF)
-            # ---------------------------------------------------------
-            impute_groups = [IndCQC.location_id, job_role_col]
             order_key = IndCQC.cqc_location_import_date
-
-            imputed_ratios = (
-                pl.col(IndCQC.ascwds_job_role_ratios)
-                .sort_by(order_key)
-                .interpolate()
-                .forward_fill()
-                .backward_fill()
-                .alias(IndCQC.imputed_ascwds_job_role_ratios)
-            )
-
-            impute_agg_lf = (
-                estimated_job_role_posts_lf.select(
-                    *impute_groups,
-                    order_key,
-                    long_id,
-                    IndCQC.ascwds_job_role_ratios,
-                )
-                .group_by(impute_groups)
-                .agg(
-                    # Sort the join key in the same manner as the imputed values.
-                    pl.col(long_id).sort_by(order_key),
-                    imputed_ratios,
-                )
-                .explode(long_id, IndCQC.imputed_ascwds_job_role_ratios)
-                .drop(impute_groups)
-            )
-
-            estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
-                impute_agg_lf,
-                on=long_id,
-                how="left",
-            )
+            estimated_job_role_posts_lf = impute_ratios(estimated_job_role_posts_lf)
 
             # Multiply imputed ratios by estimate filled posts
             estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
@@ -479,6 +444,45 @@ def join_estimates_to_ascwds(
     # 1-to-many join via the 'id' column. Drop the join keys as they are not
     # relevant to the rest of the pipeline.
     return estimates_lf.join(expanded_counts_lf, on="id", how="right").drop(join_keys)
+
+
+def impute_ratios(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Impute job role ratios by interpolation forward fill and backward fill.
+
+    Uses groupby-agg-explode pattern to keep processing within polars streaming
+    engine.
+    """
+    impute_groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
+    order_key = IndCQC.cqc_location_import_date
+    long_id = "long_id"
+
+    imputed_ratios = (
+        pl.col(IndCQC.ascwds_job_role_ratios)
+        .sort_by(order_key)
+        .interpolate()
+        .forward_fill()
+        .backward_fill()
+        .alias(IndCQC.imputed_ascwds_job_role_ratios)
+    )
+
+    impute_agg_lf = (
+        estimated_job_role_posts_lf.select(
+            *impute_groups,
+            order_key,
+            long_id,
+            IndCQC.ascwds_job_role_ratios,
+        )
+        .group_by(impute_groups)
+        .agg(
+            # Sort the join key in the same manner as the imputed values.
+            pl.col(long_id).sort_by(order_key),
+            imputed_ratios,
+        )
+        .explode(long_id, IndCQC.imputed_ascwds_job_role_ratios)
+        .drop(impute_groups)
+    )
+
+    return estimated_job_role_posts_lf.join(impute_agg_lf, on=long_id, how="left")
 
 
 def get_job_role_ratios(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFrame:
