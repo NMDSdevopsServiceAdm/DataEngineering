@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 import polars as pl
 
 from polars_utils import utils
@@ -7,11 +5,6 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
-
-
-@dataclass
-class NumericalValues:
-    number_of_days_in_window: str = "3mo5d"  # 3 months and 5 days
 
 
 def main(
@@ -43,18 +36,10 @@ def main(
     # model_imputation_with_extrapolation_and_interpolation - imputed_filled_posts_per_bed_ratio_model
 
     # model_calculate_rolling_average - posts_rolling_average_model
-    lf = lf.with_columns(
-        calculate_rolling_average(
-            IndCQC.imputed_filled_post_model,
-            NumericalValues.number_of_days_in_window,
-            [IndCQC.primary_service_type],
-        ).alias(IndCQC.posts_rolling_average_model)
-    )
 
     # create_banded_bed_count_column
 
     # model_calculate_rolling_average - banded_bed_ratio_rolling_average_model
-    #   Need to make banded bed count before calling rolling average.
 
     # convert_care_home_ratios_to_posts
 
@@ -128,6 +113,4 @@ if __name__ == "__main__":
         destination=args.destination,
     )
 
-    print("Finished impute independent CQC ASCWDS and PIR job")
-    print("Finished impute independent CQC ASCWDS and PIR job")
     print("Finished impute independent CQC ASCWDS and PIR job")
