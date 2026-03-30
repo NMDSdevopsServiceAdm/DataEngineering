@@ -45,7 +45,7 @@ jobs:
           name: Build Docker Images
           command: |
             # Authenticate Docker to ECR
-            aws ecr get-login-password --region $AWS_REGION | docker login -u AWS --password-stdin ${<< parameters.aws_account_id >>}.dkr.ecr.eu-west-2.amazonaws.com
+            aws ecr get-login-password --region eu-west-2| docker login -u AWS --password-stdin ${<< parameters.aws_account_id >>}.dkr.ecr.eu-west-2.amazonaws.com
             export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
             docker buildx bake all --push
 
