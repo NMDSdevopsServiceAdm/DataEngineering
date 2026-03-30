@@ -116,7 +116,7 @@ def main(
     with time_it("scan_and_join"):
         combined_schema = transformation_columns | metadata_columns
         full_estimates_lf = (
-            pl.scan_parquet(estimates_source, low_memory=True)
+            pl.scan_parquet(estimates_source)
             .select(list(combined_schema))
             # Add row id index for single-key joining.
             .with_row_index(name="id")
@@ -132,7 +132,7 @@ def main(
             IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date
         }
         ascwds_job_role_counts_lf = (
-            pl.scan_parquet(ascwds_job_role_counts_source, low_memory=True)
+            pl.scan_parquet(ascwds_job_role_counts_source)
             .select(list(ascwds_columns_to_import))
             .with_columns(utils.cast_to_schema(ascwds_columns_to_import))
             # Rename to avoid providing left + right "on" in subsequent join.
