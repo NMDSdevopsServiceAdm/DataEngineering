@@ -183,7 +183,7 @@ def main(
                 engine="streaming",
             )
 
-        with time_it("Final pipeline"):
+        with time_it("Impute ratios"):
             estimated_job_role_posts_lf = pl.scan_parquet(
                 checkpoint_filepath,
                 low_memory=True,
@@ -343,9 +343,24 @@ def main(
                 ).alias(IndCQC.estimate_filled_posts_by_job_role)
             )
 
+            log_polars_plan(estimated_job_role_posts_lf, "Post Join")
+            checkpoint_filepath = CHECKPOINT_PATH / "checkpoint2.parquet"
+
+            estimated_job_role_posts_lf.sink_parquet(
+                checkpoint_filepath,
+                mkdir=True,
+                engine="streaming",
+            )
+
+        with time_it("Manager adjustments"):
             # ---------------------------------------------------------
             # Manager Adjustment
             # ---------------------------------------------------------
+            estimated_job_role_posts_lf = pl.scan_parquet(
+                checkpoint_filepath,
+                low_memory=True,
+            )
+
             is_non_rm_manager = (
                 JRUtils.ManagerialFilledPostAdjustmentExpr._is_non_rm_manager()
             )
