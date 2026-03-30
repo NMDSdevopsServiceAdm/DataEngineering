@@ -11,7 +11,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     CleanIndCQCSchema as Schemas,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._02_clean.fargate.clean_ind_cqc_filled_posts"
 
@@ -19,12 +18,6 @@ PATCH_PATH = "projects._03_independent_cqc._02_clean.fargate.clean_ind_cqc_fille
 class CleanIndFilledPostsTests(unittest.TestCase):
     MERGE_IND_CQC_SOURCE = "input_dir"
     CLEANED_IND_CQC_DESTINATION = "output_dir"
-    partition_keys = [
-        Keys.year,
-        Keys.month,
-        Keys.day,
-        Keys.import_date,
-    ]
 
     def setUp(self):
         self.merge_ind_cqc_test_df = Mock(name="merge_ind_cqc_data")
@@ -94,7 +87,6 @@ class MainTests(CleanIndFilledPostsTests):
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.CLEANED_IND_CQC_DESTINATION,
-            partition_cols=self.partition_keys,
             append=False,
         )
 

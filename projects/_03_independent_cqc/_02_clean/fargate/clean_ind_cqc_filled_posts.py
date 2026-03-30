@@ -27,9 +27,6 @@ from projects._03_independent_cqc._02_clean.fargate.utils.utils import (
     create_column_with_repeated_values_removed,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-
-cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(
@@ -121,7 +118,6 @@ def main(
     utils.sink_to_parquet(
         locations_lf,
         destination,
-        partition_cols=cqc_partition_keys,
         append=False,
     )
 

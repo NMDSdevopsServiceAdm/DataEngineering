@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Added la permissions to columns imported in merge_coverage_data job.
 
+- Removed partitioning from the IND CQC pipeline when saving data. Parquet files are now written without partitions.
+
 - Refactored the cleaning of capacity tracker outliers so that repeated values are nulled first then
   outliers are nulled from the remaining data. These changes are in the Spark and Polars scripts.
 
