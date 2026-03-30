@@ -1,6 +1,7 @@
 import polars as pl
 
 from polars_utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 def main(
@@ -108,4 +109,5 @@ if __name__ == "__main__":
         destination=args.destination,
     )
 
+    print("Finished impute independent CQC ASCWDS and PIR job")
     print("Finished impute independent CQC ASCWDS and PIR job")
