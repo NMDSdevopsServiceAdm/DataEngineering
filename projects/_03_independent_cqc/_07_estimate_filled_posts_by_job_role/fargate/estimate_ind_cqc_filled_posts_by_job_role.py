@@ -33,6 +33,7 @@ CHECKPOINT_PATH = Path(polars_temp_dir) / "checkpoints"
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
 pl.Config.set_streaming_chunk_size(50000)
+pl.Config.set_engine_affinity("streaming")  # Set to streaming
 
 partition_keys = [Keys.year]
 
@@ -170,11 +171,7 @@ def main(
         log_polars_plan(estimated_job_role_posts_lf, "Post Join")
         checkpoint_filepath = CHECKPOINT_PATH / "checkpoint1.parquet"
 
-        estimated_job_role_posts_lf.sink_parquet(
-            checkpoint_filepath,
-            mkdir=True,
-            engine="streaming",
-        )
+        estimated_job_role_posts_lf.sink_parquet(checkpoint_filepath, mkdir=True)
 
     with time_it("Impute ratios"):
         estimated_job_role_posts_lf = pl.scan_parquet(
@@ -231,11 +228,7 @@ def main(
         log_polars_plan(estimated_job_role_posts_lf, "Post Join")
         checkpoint_filepath = CHECKPOINT_PATH / "checkpoint2.parquet"
 
-        estimated_job_role_posts_lf.sink_parquet(
-            checkpoint_filepath,
-            mkdir=True,
-            engine="streaming",
-        )
+        estimated_job_role_posts_lf.sink_parquet(checkpoint_filepath, mkdir=True)
 
     with time_it("Manager adjustments"):
         # ---------------------------------------------------------
