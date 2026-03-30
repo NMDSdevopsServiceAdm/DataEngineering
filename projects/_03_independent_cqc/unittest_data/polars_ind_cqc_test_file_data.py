@@ -2279,9 +2279,34 @@ get_job_counts_rolling_sum_test_cases = [
             ("1-002", date(2026, 2, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 2),
             ("1-003", date(2026, 3, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 3),
             ("1-004", date(2026, 4, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 4),
-            ("1-004", date(2026, 5, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 5),
-            ("1-004", date(2026, 6, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 6),
-            ("1-004", date(2026, 7, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 6),
+            ("1-005", date(2026, 5, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 5),
+            ("1-006", date(2026, 6, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 6),
+            ("1-007", date(2026, 7, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 6),
         ],
-    )
+    ),
+    GetJobCountsRollingSumTestCase(
+        id="six_month_rolling_sum_across_multiple_service_types_and_single_job_role",
+        data=[
+            ("1-001", date(2026, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
+            ("1-002", date(2026, 2, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 2),
+            ("1-003", date(2026, 3, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 3),
+            ("1-004", date(2026, 4, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 4),
+            ("1-005", date(2026, 5, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 5),
+            ("1-006", date(2026, 6, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 6),
+            ("1-007", date(2026, 7, 1), PrimaryServiceType.non_residential, MainJobRoleLabels.care_worker, 1, 1),
+        ]
+    ),
+    GetJobCountsRollingSumTestCase(
+        id="six_month_rolling_sum_across_single_service_type_and_multiple_job_roles",
+        data=[
+            ("1-001", date(2026, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
+            ("1-002", date(2026, 2, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.admin_staff, 2, 2),
+            ("1-003", date(2026, 3, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 2),
+            ("1-004", date(2026, 4, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.admin_staff, 2, 4),
+            ("1-005", date(2026, 5, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 3),
+            ("1-006", date(2026, 6, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.admin_staff, 2, 6),
+            ("1-007", date(2026, 7, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 3),
+            ("1-008", date(2026, 8, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.admin_staff, 2, 6),
+        ]
+    ),
 ] # fmt: skip
