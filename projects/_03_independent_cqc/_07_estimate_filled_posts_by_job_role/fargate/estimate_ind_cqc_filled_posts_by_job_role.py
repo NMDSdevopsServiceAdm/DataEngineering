@@ -140,11 +140,10 @@ def main(
             IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date
         }
         ascwds_job_role_counts_lf = (
-            utils.scan_parquet(
-                source=ascwds_job_role_counts_source,
-                selected_columns=list(ascwds_columns_to_import),
-            ).with_columns(cast_to_schema(ascwds_columns_to_import))
-            # Rename to avoid providing left + right on in subsequent join.
+            pl.scan_parquet(ascwds_job_role_counts_source, low_memory=True)
+            .select(list(ascwds_columns_to_import))
+            .with_columns(cast_to_schema(ascwds_columns_to_import))
+            # Rename to avoid providing left + right "on" in subsequent join.
             .rename(col_name_map)
         )
 
