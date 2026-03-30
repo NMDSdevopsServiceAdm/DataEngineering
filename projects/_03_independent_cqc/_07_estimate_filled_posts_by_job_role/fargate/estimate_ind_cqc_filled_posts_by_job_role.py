@@ -346,7 +346,7 @@ def join_estimates_to_ascwds(
     # This is just a single column df with a row for each job role (~38).
     roles_lf = pl.LazyFrame(
         data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
-        schema={job_role_labels: pl.Categorical},
+        schema={job_role_labels: JobRoleType},
     )
     # This will be the length of estimates dataset x number of job roles.
     expanded_keys_lf = narrow_keys_lf.join(roles_lf, how="cross")
