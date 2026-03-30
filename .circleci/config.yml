@@ -40,7 +40,6 @@ jobs:
       - aws-cli/setup:
           role_arn: ${<< parameters.role_arn >>}
           region: $AWS_REGION
-          role_session_name: "CircleCI-Container-Job"
       - run:
           name: Build Docker Images
           command: |
@@ -156,11 +155,8 @@ jobs:
       - run:
           name: terraform plan
           command: |
-            # Verify Account ID and ARN
             unset AWS_ACCESS_KEY_ID
             unset AWS_SECRET_ACCESS_KEY
-            echo "Checking AWS Identity..."
-            aws sts get-caller-identity
             # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
             export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
             cd terraform/pipeline
@@ -198,15 +194,22 @@ jobs:
       - run:
           name: terraform apply
           command: |
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
             cd terraform/pipeline
             terraform apply -auto-approve tfapply
       - run:
           name: save pipeline resources bucket name
           command: |
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
+            cd terraform/pipeline
             echo $(terraform output --raw pipeline_resources_bucket_name) > pipeline_resources_bucket_name
       - run:
           name: save datasets bucket name
           command: |
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
             cd terraform/pipeline
             echo $(terraform output --raw datasets_bucket_name) > datasets_bucket_name
       - persist_to_workspace:
@@ -301,7 +304,6 @@ jobs:
       - aws-cli/setup:
           role_arn: ${<< parameters.role_arn >>}
           region: $AWS_REGION
-          role_session_name: "CircleCI-Terraform-Destroy"
       - run:
           name: terraform destroy
           command: |
