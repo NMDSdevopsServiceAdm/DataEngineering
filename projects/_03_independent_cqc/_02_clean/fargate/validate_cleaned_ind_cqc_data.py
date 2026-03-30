@@ -12,7 +12,6 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_p
     remove_dual_registration_cqc_care_homes,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.validation_table_columns import Validation
 from utils.column_values.categorical_columns_by_dataset import (
     CleanedIndCQCCategoricalValues as CatValues,
