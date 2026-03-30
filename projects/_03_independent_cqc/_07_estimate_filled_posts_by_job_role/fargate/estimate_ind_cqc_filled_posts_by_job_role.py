@@ -200,9 +200,6 @@ def main(
             output_col=IndCQC.ascwds_job_role_rolling_ratio,
         )
 
-        # ---------------------------------------------------------
-        # Coalesce & Multiply
-        # ---------------------------------------------------------
         estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
             utils.coalesce_with_source_labels(
                 cols=[
