@@ -28,9 +28,6 @@ merged_locations_columns_to_import = [
     IndCqcColumns.imputed_registration_date,
     IndCqcColumns.total_staff_bounded,
     IndCqcColumns.worker_records_bounded,
-    Keys.year,
-    Keys.month,
-    Keys.day,
 ]
 
 
