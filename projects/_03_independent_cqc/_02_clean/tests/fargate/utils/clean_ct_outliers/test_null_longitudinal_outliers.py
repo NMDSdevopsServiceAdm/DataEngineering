@@ -4,24 +4,24 @@ from unittest.mock import Mock, patch
 import polars as pl
 import polars.testing as pl_testing
 
-import projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_longitudinal_outliers as job
+import projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.null_longitudinal_outliers as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
-    OutlierCleaningData as Data,
+    NullLongitudinalOutliersData as Data,
 )
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
-    OutlierCleaningSchemas as Schemas,
+    NullLongitudinalOutliersSchema as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH: str = (
-    "projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_longitudinal_outliers"
+    "projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.null_longitudinal_outliers"
 )
 
 
-class CleanLongitudinalOutliersTests(unittest.TestCase):
+class NullLongitudinalOutliersTests(unittest.TestCase):
     def setUp(self):
         self.test_lf = pl.LazyFrame(
-            Data.clean_longitudinal_outliers_input_rows,
+            Data.null_longitudinal_outliers_input_rows,
             Schemas.input_schema,
             orient="row",
         )
@@ -31,7 +31,7 @@ class CleanLongitudinalOutliersTests(unittest.TestCase):
         self,
         update_filtering_rule_mock: Mock,
     ):
-        job.clean_longitudinal_outliers(
+        job.null_longitudinal_outliers(
             lf=self.test_lf,
             column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
             proportion_to_filter=0.10,
@@ -40,14 +40,14 @@ class CleanLongitudinalOutliersTests(unittest.TestCase):
         update_filtering_rule_mock.assert_called_once()
 
     def test_function_returns_expected_values(self):
-        returned_lf = job.clean_longitudinal_outliers(
+        returned_lf = job.null_longitudinal_outliers(
             lf=self.test_lf,
             column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
             proportion_to_filter=0.10,
             care_home=False,
         )
         expected_lf = pl.LazyFrame(
-            Data.expected_clean_longitudinal_outliers_remove_value_only_rows,
+            Data.expected_null_longitudinal_outliers_remove_value_only_rows,
             Schemas.input_schema,
             orient="row",
         )

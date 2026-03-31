@@ -1260,7 +1260,7 @@ class NullValuesExceedingRepetitionLimitSchema:
 
 
 @dataclass
-class OutlierCleaningSchemas:
+class NullLongitudinalOutliersSchema:
     input_schema = pl.Schema(
         {
             IndCQC.location_id: pl.String,

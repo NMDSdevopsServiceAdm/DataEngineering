@@ -1,7 +1,7 @@
 import polars as pl
 
-from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_longitudinal_outliers import (
-    clean_longitudinal_outliers,
+from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.null_longitudinal_outliers import (
+    null_longitudinal_outliers,
 )
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.null_values_exceeding_repetition_limit import (
     null_values_exceeding_repetition_limit,
@@ -54,7 +54,7 @@ def clean_capacity_tracker_non_res_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
         care_home=False,
     )
 
-    lf = clean_longitudinal_outliers(
+    lf = null_longitudinal_outliers(
         lf=lf,
         column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
         proportion_to_filter=0.001,

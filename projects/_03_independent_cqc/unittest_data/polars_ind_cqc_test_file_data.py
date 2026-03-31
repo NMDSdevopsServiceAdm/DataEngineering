@@ -1699,8 +1699,8 @@ class NullValuesExceedingRepetitionLimitData:
 
 
 @dataclass
-class OutlierCleaningData:
-    clean_longitudinal_outliers_input_rows = [
+class NullLongitudinalOutliersData:
+    null_longitudinal_outliers_input_rows = [
         ("1-001", 5, CTFilteringRule.populated),
         ("1-001", 10, CTFilteringRule.populated),
         ("1-001", 15, CTFilteringRule.populated),
@@ -1723,7 +1723,7 @@ class OutlierCleaningData:
         ("1-004", 50, CTFilteringRule.populated),
     ]
 
-    expected_clean_longitudinal_outliers_remove_value_only_rows = [
+    expected_null_longitudinal_outliers_remove_value_only_rows = [
         ("1-001", 5, CTFilteringRule.populated),
         ("1-001", 10, CTFilteringRule.populated),
         ("1-001", 15, CTFilteringRule.populated),

@@ -12,7 +12,7 @@ class CleanCapacityTrackerCareHomeOutliersTests(unittest.TestCase):
     def setUp(self) -> None:
         self.test_lf = Mock(name="ind_cqc_df")
 
-    @patch(f"{PATCH_PATH}.clean_longitudinal_outliers")
+    @patch(f"{PATCH_PATH}.null_longitudinal_outliers")
     @patch(f"{PATCH_PATH}.null_values_exceeding_repetition_limit")
     @patch(f"{PATCH_PATH}.null_posts_per_bed_outliers")
     @patch(f"{PATCH_PATH}.aggregate_values_to_provider_level")

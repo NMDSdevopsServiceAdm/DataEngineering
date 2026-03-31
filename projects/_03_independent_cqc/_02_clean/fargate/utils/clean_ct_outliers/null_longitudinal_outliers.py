@@ -7,7 +7,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CTFilteringRule
 
 
-def clean_longitudinal_outliers(
+def null_longitudinal_outliers(
     lf: pl.LazyFrame,
     column_to_clean: str,
     proportion_to_filter: float,
