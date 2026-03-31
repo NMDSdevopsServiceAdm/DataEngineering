@@ -1269,13 +1269,6 @@ class OutlierCleaningSchemas:
         }
     )
 
-    compute_outlier_cutoff_and_clean_schema = pl.Schema(
-        {
-            IndCQC.location_id: pl.String,
-            IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,
-        }
-    )
-
 
 @dataclass
 class EstimateFilledPostsModelsUtils:

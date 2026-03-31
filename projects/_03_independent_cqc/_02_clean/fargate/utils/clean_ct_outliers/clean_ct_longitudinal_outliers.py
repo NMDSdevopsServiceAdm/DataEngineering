@@ -41,11 +41,7 @@ def clean_longitudinal_outliers(
 
     percentile = 1 - proportion_to_filter
 
-    median_expr = (
-        pl.col(column_to_clean)
-        .median()
-        .over([IndCQC.location_id, filter_rule_column_name])
-    )
+    median_expr = pl.col(column_to_clean).median().over([IndCQC.location_id])
 
     abs_diff_expr = (pl.col(column_to_clean) - median_expr).abs()
 
