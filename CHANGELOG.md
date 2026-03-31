@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 
 
+## [v2026.03.0] - 31/03/2026
+
+### Added
+
+### Changed
+- Updated jobs in config.yml to use role-arn to authenticate instead of AWS keys.
+
+### Fixed
+
+
 ## [Unreleased]
 
 ### Added
