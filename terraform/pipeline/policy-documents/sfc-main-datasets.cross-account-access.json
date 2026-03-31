@@ -6,7 +6,7 @@
             "Effect": "Allow",
             "Principal": {
                 "AWS": [
-					"arn:aws:iam::856699698263:user/circleci",
+					"arn:aws:iam::856699698263:role/circleci-oidc",
 					"arn:aws:iam::856699698263:role/CrossAccountAccessRole"
 				]
             },
@@ -23,7 +23,7 @@
             "Effect": "Allow",
             "Principal": {
                 "AWS": [
-					"arn:aws:iam::856699698263:user/circleci",
+					"arn:aws:iam::856699698263:role/circleci-oidc",
 					"arn:aws:iam::856699698263:role/CrossAccountAccessRole"
 				]
             },
