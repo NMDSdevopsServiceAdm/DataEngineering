@@ -1256,7 +1256,6 @@ class NullValuesExceedingRepetitionLimitSchema:
         IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,
         IndCQC.ct_non_res_filtering_rule: pl.String,
     }
-    expected_clean_ct_repetition_schema = clean_ct_repetition_schema
 
 
 @dataclass

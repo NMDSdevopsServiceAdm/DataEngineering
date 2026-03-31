@@ -47,7 +47,7 @@ class NullValuesExceedingRepetitionLimitTests(unittest.TestCase):
         )
         expected_lf = pl.LazyFrame(
             Data.expected_values_repeat_after_a_missing_value,
-            Schemas.expected_clean_ct_repetition_schema,
+            Schemas.clean_ct_repetition_schema,
             orient="row",
         )
         returned_lf = job.null_values_exceeding_repetition_limit(
@@ -81,7 +81,7 @@ class NullValuesExceedingRepetitionLimitTests(unittest.TestCase):
         )
         expected_lf = pl.LazyFrame(
             Data.expected_micro_location_repeats_after_too_long,
-            Schemas.expected_clean_ct_repetition_schema,
+            Schemas.clean_ct_repetition_schema,
             orient="row",
         )
         returned_lf = job.null_values_exceeding_repetition_limit(
@@ -100,7 +100,7 @@ class NullValuesExceedingRepetitionLimitTests(unittest.TestCase):
         )
         expected_lf = pl.LazyFrame(
             Data.expected_small_location_repeats_after_too_long,
-            Schemas.expected_clean_ct_repetition_schema,
+            Schemas.clean_ct_repetition_schema,
             orient="row",
         )
         returned_lf = job.null_values_exceeding_repetition_limit(
@@ -119,7 +119,7 @@ class NullValuesExceedingRepetitionLimitTests(unittest.TestCase):
         )
         expected_lf = pl.LazyFrame(
             Data.expected_medium_location_repeats_after_too_long,
-            Schemas.expected_clean_ct_repetition_schema,
+            Schemas.clean_ct_repetition_schema,
             orient="row",
         )
         returned_lf = job.null_values_exceeding_repetition_limit(
@@ -138,7 +138,7 @@ class NullValuesExceedingRepetitionLimitTests(unittest.TestCase):
         )
         expected_lf = pl.LazyFrame(
             Data.expected_large_location_repeats_after_too_long,
-            Schemas.expected_clean_ct_repetition_schema,
+            Schemas.clean_ct_repetition_schema,
             orient="row",
         )
         returned_lf = job.null_values_exceeding_repetition_limit(
