@@ -7,6 +7,7 @@
             "Principal": {
                 "AWS": [
 					"arn:aws:iam::856699698263:role/circleci-oidc",
+                    "arn:aws:iam::344210435447:role/circleci-oidc-prod",
 					"arn:aws:iam::856699698263:role/CrossAccountAccessRole"
 				]
             },
@@ -24,6 +25,7 @@
             "Principal": {
                 "AWS": [
 					"arn:aws:iam::856699698263:role/circleci-oidc",
+                    "arn:aws:iam::344210435447:role/circleci-oidc-prod",
 					"arn:aws:iam::856699698263:role/CrossAccountAccessRole"
 				]
             },
