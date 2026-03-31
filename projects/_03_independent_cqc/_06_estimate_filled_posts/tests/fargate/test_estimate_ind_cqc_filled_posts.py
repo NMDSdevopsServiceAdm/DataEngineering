@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import ANY, Mock, patch
 
 import projects._03_independent_cqc._06_estimate_filled_posts.fargate.estimate_ind_cqc_filled_posts as job
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.fargate.estimate_ind_cqc_filled_posts"
 
@@ -11,17 +10,18 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     TEST_BUCKET_NAME = "some/bucket/name"
     TEST_IMPUTED_IND_CQC_DATA_SOURCE = "some/s3/uri"
     TEST_DESTINATION = "some/other/s3/uri"
-    partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     mock_data = Mock(name="data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.combine_non_res_with_and_without_dormancy_models")
     @patch(f"{PATCH_PATH}.enrich_with_model_predictions")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_data)
     def test_main_runs_successfully(
         self,
         scan_parquet_mock: Mock,
         enrich_with_model_predictions_mock: Mock,
+        combine_non_res_with_and_without_dormancy_models_mcok: Mock,
         sink_to_parquet_mock: Mock,
     ):
 
@@ -36,9 +36,9 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             selected_columns=job.ind_cqc_columns,
         )
         self.assertEqual(enrich_with_model_predictions_mock.call_count, 3)
+        combine_non_res_with_and_without_dormancy_models_mcok.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
-            partition_cols=self.partition_keys,
             append=False,
         )

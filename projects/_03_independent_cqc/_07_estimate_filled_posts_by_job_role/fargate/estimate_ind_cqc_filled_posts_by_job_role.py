@@ -13,7 +13,6 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.
     percentage_share,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import PrimaryServiceType
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
@@ -28,8 +27,6 @@ CHECKPOINT_PATH = Path(polars_temp_dir) / "checkpoints"
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
 pl.Config.set_streaming_chunk_size(50000)
-
-partition_keys = [Keys.year]
 
 EstablishmentCatType = pl.Categorical(
     pl.Categories("establishment", namespace="filled_posts")
@@ -81,8 +78,6 @@ metadata_columns = {
     IndCQC.current_lsoa21: pl.Categorical,
     IndCQC.current_msoa21: pl.Categorical,
     IndCQC.estimate_filled_posts_source: EstimatesFilledPostSourceEnumType,
-    Keys.year: pl.Int16,
-    Keys.import_date: pl.Date,
 }
 ascwds_columns_to_import = {
     IndCQC.ascwds_worker_import_date: pl.Date,
@@ -254,7 +249,6 @@ def main(
         utils.sink_to_parquet(
             lazy_df=estimated_job_role_posts_lf,
             output_path=estimates_by_job_role_destination,
-            partition_cols=partition_keys,
             append=False,
         )
 
