@@ -399,6 +399,7 @@ workflows:
           requires:
             - terraform-apply
       - copy-main-data:
+          context: non-prod
           requires:
             - terraform-apply
       - test:
