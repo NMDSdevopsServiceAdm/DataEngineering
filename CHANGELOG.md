@@ -3,16 +3,6 @@
 All notable changes to this project will be documented in this file.
 
 
-## [v2026.03.0] - 31/03/2026
-
-### Added
-
-### Changed
-- Updated jobs in config.yml to use role-arn to authenticate instead of AWS keys.
-
-### Fixed
-
-
 ## [Unreleased]
 
 ### Added
@@ -24,6 +14,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Added la permissions to columns imported in merge_coverage_data job.
+
+- Updated jobs in config.yml to use role-arn to authenticate instead of AWS keys.
 
 - Removed partitioning from the IND CQC pipeline when saving data. Parquet files are now written without partitions.
 
