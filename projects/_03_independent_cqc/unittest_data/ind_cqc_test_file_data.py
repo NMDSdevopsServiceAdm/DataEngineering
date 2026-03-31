@@ -47,27 +47,15 @@ class ImputeIndCqcAscwdsAndPirData:
 
 @dataclass
 class ModelAndMergePirData:
-    model_pir_filled_posts_rows = [
-        ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10),
-        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, None),
-        ("loc 3", date(2024, 1, 1), CareHome.care_home, 10),
-        ("loc 4", date(2024, 1, 1), CareHome.care_home, None),
-    ]
-    expected_model_pir_filled_posts_rows = [
-        ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10, 10.64384),
-        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, None, None),
-        ("loc 3", date(2024, 1, 1), CareHome.care_home, 10, None),
-        ("loc 4", date(2024, 1, 1), CareHome.care_home, None, None),
-    ]
-
-    vectorise_input_rows = [
-        ("1-0001", 12.0, 0, 1, date(2024, 1, 1)),
-        ("1-0002", 50.0, 1, 1, date(2024, 1, 1)),
-    ]
-    expected_vectorised_feature_rows = [
-        ("1-0001", Vectors.dense([12.0, 0.0, 1.0])),
-        ("1-0002", Vectors.dense([50.0, 1.0, 1.0])),
-    ]
+    expected_convert_pir_to_filled_posts_rows = [
+        ("loc 1", date(2024, 1, 1), CareHome.not_care_home,   10, 14.0,  15.0),
+        ("loc 2", date(2024, 1, 1), CareHome.not_care_home,   10, 16.0,  15.0),
+        ("loc 3", date(2024, 1, 1), CareHome.not_care_home, None, 10.0,  None),
+        ("loc 4", date(2024, 1, 1), CareHome.not_care_home,    1,  0.0,  1.5),
+        ("loc 5", date(2024, 1, 1), CareHome.not_care_home,    0,  1.0,  None),
+        ("loc 5", date(2024, 1, 1), CareHome.not_care_home,   10,  7.0,  15.0),
+        ("loc 6", date(2024, 1, 1), CareHome.care_home,       10, None,  None),
+    ]  # fmt: skip
 
     blend_pir_and_ascwds_rows = [
         ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10.0, 20.0),
