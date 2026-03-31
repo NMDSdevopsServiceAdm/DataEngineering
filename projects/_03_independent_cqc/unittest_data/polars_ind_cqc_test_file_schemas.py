@@ -1190,6 +1190,20 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
 
 
 @dataclass
+class ConvertPirPeopleToFilledPostsSchema:
+    input_schema = pl.Schema(
+        [
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.pir_people_directly_employed_dedup, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+        ]
+    )
+    output_schema = pl.Schema(
+        list(input_schema.items()) + [(IndCQC.pir_filled_posts_model, pl.Float64())]
+    )
+
+
+@dataclass
 class NullCtPostsToBedsOutliers:
     null_ct_posts_to_beds_outliers_schema = pl.Schema(
         [

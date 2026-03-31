@@ -1,17 +1,10 @@
 from dataclasses import dataclass
-from typing import List
 
-from pyspark.ml.feature import VectorAssembler
-from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 from pyspark.sql.types import IntegerType
 
-from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
-    join_model_predictions,
-)
 from projects._03_independent_cqc.utils.utils.utils import get_selected_value
-from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CareHome
 
@@ -23,63 +16,70 @@ class ThresholdValues:
     months_in_two_years: int = 24
 
 
-def model_pir_filled_posts(
-    df: DataFrame, linear_regression_model_source: str
-) -> DataFrame:
+posts_col = IndCQC.ascwds_filled_posts_dedup_clean
+people_col = IndCQC.pir_people_directly_employed_dedup
+
+
+# converted to polars -> projects\_03_independent_cqc\_03_impute\fargate\utils\convert_pir_people_to_filled_posts.py
+def convert_pir_to_filled_posts(df: DataFrame) -> DataFrame:
     """
-    Uses a linear regression model to convert PIR values from 'people directly employed' to estimated 'filled posts'.
+    Converts PIR people to filled posts using a global ratio.
+
+    The ratio is calculated using a filtered subset of valid rows and then
+    applied only to non-care home locations where PIR people is present.
 
     Args:
-        df (DataFrame): A dataframe with the column people directly employed deduplicated.
-        linear_regression_model_source (str): The location of the linear regression model in s3.
+        df (DataFrame): A dataframe with PIR people and ASC-WDS filled posts.
 
     Returns:
-        DataFrame: The input dataframe with an additional column containing the estimated PIR filled posts model predictions.
+        DataFrame: The input dataframe with estimated PIR filled posts.
     """
 
-    features_df = df.filter(
-        (F.col(IndCQC.care_home) == CareHome.not_care_home)
-        & F.col(IndCQC.pir_people_directly_employed_dedup).isNotNull()
-    )
+    ratio = compute_global_ratio(df)
+    print(f"PIR people to filled posts ratio: {ratio:.4f}")
 
-    vectorised_features_df = vectorise_dataframe(
-        features_df, [IndCQC.pir_people_directly_employed_dedup]
-    )
-    lr_trained_model = LinearRegressionModel.load(linear_regression_model_source)
-
-    predictions = lr_trained_model.transform(vectorised_features_df)
-
-    df = join_model_predictions(
-        df,
-        predictions,
+    return df.withColumn(
         IndCQC.pir_filled_posts_model,
-        include_run_id=False,
+        F.when(
+            (F.col(IndCQC.care_home) == CareHome.not_care_home)
+            & F.col(people_col).isNotNull()
+            & (F.col(people_col) > 0),
+            F.col(people_col) * F.lit(ratio),
+        ).otherwise(None),
     )
-    return df
 
 
-def vectorise_dataframe(df: DataFrame, list_for_vectorisation: List[str]) -> DataFrame:
+# converted to polars -> projects\_03_independent_cqc\_03_impute\fargate\utils\convert_pir_people_to_filled_posts.py
+def compute_global_ratio(df: DataFrame) -> float:
     """
-    Combines specified columns into a single feature vector for the modelling process.
-
-    This function uses `VectorAssembler` to merge multiple input columns into a single vector column.
-    Invalid values are skipped to prevent transformation errors.
-
-    Args:
-        df (DataFrame): Input DataFrame containing columns to be vectorised.
-        list_for_vectorisation (List[str]): List of column names to be combined into the feature vector.
-
-    Returns:
-        DataFrame: A DataFrame with an additional 'features' column.
+    Computes the global ratio of filled posts to PIR people using only valid rows.
     """
-    loc_df = VectorAssembler(
-        inputCols=list_for_vectorisation,
-        outputCol=IndCQC.features,
-        handleInvalid="skip",
-    ).transform(df)
-    return loc_df
+
+    agg_df = df.filter(
+        (F.col(IndCQC.care_home) == CareHome.not_care_home)
+        & F.col(people_col).isNotNull()
+        & (F.col(people_col) > 0)
+        & F.col(posts_col).isNotNull()
+        & (F.col(posts_col) > 0)
+        & ((F.col(posts_col) / F.col(people_col)) >= 0.75)
+    ).select(
+        [
+            F.sum(F.col(posts_col)).alias("posts_sum"),
+            F.sum(F.col(people_col)).alias("people_sum"),
+        ]
+    )
+    result = agg_df.collect()
+
+    posts_sum = result[0]["posts_sum"]
+    people_sum = result[0]["people_sum"]
+
+    if people_sum == 0 or posts_sum is None:
+        raise ValueError("No valid rows available to compute PIR ratio.")
+
+    return posts_sum / people_sum
 
 
+# TO DO - write polars code here - projects\_03_independent_cqc\_03_impute\fargate\utils\combine_ascwds_and_pir.py
 def merge_ascwds_and_pir_filled_post_submissions(df: DataFrame) -> DataFrame:
     """
     Merges ASCWDS and PIR filled post estimates based on recently and similarity thresholds and stores in a new column.

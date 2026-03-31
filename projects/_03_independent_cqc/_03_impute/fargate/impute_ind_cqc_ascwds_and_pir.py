@@ -1,4 +1,7 @@
 from polars_utils import utils
+from projects._03_independent_cqc._03_impute.fargate.utils.convert_pir_people_to_filled_posts import (
+    convert_pir_to_filled_posts,
+)
 
 
 def main(
@@ -21,7 +24,7 @@ def main(
 
     # model_primary_service_rate_of_change_trendline - ascwds_rate_of_change_trendline_model
 
-    # model_pir_filled_posts
+    lf = convert_pir_to_filled_posts(lf)
 
     # merge_ascwds_and_pir_filled_post_submissions
 
