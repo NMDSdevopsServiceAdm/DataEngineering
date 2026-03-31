@@ -454,6 +454,13 @@ class ValidateCleanIndCQCSchemas:
             (IndCQC.total_staff_bounded, pl.Int64()),
             (IndCQC.worker_records_bounded, pl.Int64()),
             (IndCQC.related_location, pl.String()),
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+            (IndCQC.specialism_dementia, pl.String()),
+            (IndCQC.specialism_learning_disabilities, pl.String()),
+            (IndCQC.specialism_mental_health, pl.String()),
+            (IndCQC.time_registered, pl.Int32()),
+            (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_source, pl.String()),
         ]
     )
 
@@ -464,6 +471,19 @@ class ValidateCleanIndCQCSchemas:
             (CQCLClean.cqc_sector, pl.String()),
             (CQCLClean.care_home, pl.String()),
             (CQCLClean.number_of_beds, pl.Int64()),
+        ]
+    )
+
+    expected_size_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.name, pl.String()),
+            (IndCQC.postcode, pl.String()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.imputed_registration_date, pl.Date()),
+            (IndCQC.total_staff_bounded, pl.Int64()),
+            (IndCQC.worker_records_bounded, pl.Int64()),
         ]
     )
 

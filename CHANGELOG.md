@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
 
 - In PySpark, a linear regression model was used to convert the original PIR (people) values to filled posts. As part of the conversion to Polars, the filtering for which locations are included has been tightened and the linear regression model has been replaced with a simple ratio multiplier.
 
+- Finished converting the ind cqc cleaning validation from Spark to Polars.
+
 ### Fixed
 
 
