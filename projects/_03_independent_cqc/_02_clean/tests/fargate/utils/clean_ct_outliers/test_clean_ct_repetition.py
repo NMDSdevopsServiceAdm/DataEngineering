@@ -58,9 +58,9 @@ class CleanCTValuesAfterConsecutiveRepetitionTests(unittest.TestCase):
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_when_values_repeat_after_an_outlier_returns_input_values(self):
+    def test_when_values_repeat_but_not_consecutively_returns_input_values(self):
         test_lf = pl.LazyFrame(
-            Data.values_repeat_after_an_outlier,
+            Data.values_repeat_but_not_consecutively,
             Schemas.clean_ct_repetition_schema,
             orient="row",
         )

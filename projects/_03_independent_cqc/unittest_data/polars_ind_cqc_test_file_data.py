@@ -1652,7 +1652,7 @@ class CleanCtRepetitionData:
         ("1-001", date(2025, 12, 1), 3, CTFilteringRule.populated),
     ] # fmt: skip
 
-    values_repeat_after_an_outlier = [
+    values_repeat_but_not_consecutively = [
         ("1-001", date(2025, 1, 1), 1, CTFilteringRule.populated),
         ("1-001", date(2025, 2, 1), 2, CTFilteringRule.populated),
         ("1-001", date(2025, 3, 1), 2, CTFilteringRule.populated),
