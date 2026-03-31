@@ -1250,7 +1250,7 @@ class NullCtPostsToBedsOutliers:
 
 @dataclass
 class NullValuesExceedingRepetitionLimitSchema:
-    clean_ct_repetition_schema = {
+    input_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,

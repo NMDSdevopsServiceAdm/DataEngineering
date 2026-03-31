@@ -7,7 +7,7 @@ import pytest
 
 import projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.null_values_exceeding_repetition_limit as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
-    NullValuesExceedingRepetitionLimitData as Data,
+    null_values_exceeding_repetition_limit_test_cases,
 )
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     NullValuesExceedingRepetitionLimitSchema as Schemas,
@@ -19,7 +19,7 @@ PATCH_PATH: str = (
 )
 
 
-class NullValuesExceedingRepetitionLimitTests(unittest.TestCase):
+class NullValuesExceedingRepetitionLimitSucceedsTests(unittest.TestCase):
     def setUp(self):
         self.test_lf = Mock(name="ind_cqc_df")
 
@@ -39,112 +39,30 @@ class NullValuesExceedingRepetitionLimitTests(unittest.TestCase):
         repetition_limit_expr_mock.assert_called_once()
         update_filtering_rule_mock.assert_called_once()
 
-    def test_when_values_repeat_after_a_missing_value_returns_nulled_value(self):
-        test_lf = pl.LazyFrame(
-            Data.values_repeat_after_a_missing_value,
-            Schemas.clean_ct_repetition_schema,
-            orient="row",
+
+class TestNullValuesExceedingRepetitionLimitValues:
+    @pytest.mark.parametrize(
+        "input_case_data, expected_case_data",
+        [
+            (case.input_data, case.expected_data)
+            for case in null_values_exceeding_repetition_limit_test_cases
+        ],
+        ids=[case.id for case in null_values_exceeding_repetition_limit_test_cases],
+    )
+    def test_funciton_returns_expected_values(
+        self, input_case_data, expected_case_data
+    ):
+        input_lf = pl.LazyFrame(
+            data=input_case_data, schema=Schemas.input_schema, orient="row"
         )
         expected_lf = pl.LazyFrame(
-            Data.expected_values_repeat_after_a_missing_value,
-            Schemas.clean_ct_repetition_schema,
-            orient="row",
+            data=expected_case_data, schema=Schemas.input_schema, orient="row"
         )
         returned_lf = job.null_values_exceeding_repetition_limit(
-            test_lf,
-            IndCQC.ct_non_res_care_workers_employed_cleaned,
-            False,
+            lf=input_lf,
+            column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
+            care_home=False,
         )
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_when_values_repeat_but_not_consecutively_returns_input_values(self):
-        test_lf = pl.LazyFrame(
-            Data.values_repeat_but_not_consecutively,
-            Schemas.clean_ct_repetition_schema,
-            orient="row",
-        )
-        expected_lf = test_lf
-        returned_lf = job.null_values_exceeding_repetition_limit(
-            test_lf,
-            IndCQC.ct_non_res_care_workers_employed_cleaned,
-            False,
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_when_micro_location_repeats_after_too_long_returns_nulled_value(self):
-        test_lf = pl.LazyFrame(
-            Data.micro_location_repeats_after_too_long,
-            Schemas.clean_ct_repetition_schema,
-            orient="row",
-        )
-        expected_lf = pl.LazyFrame(
-            Data.expected_micro_location_repeats_after_too_long,
-            Schemas.clean_ct_repetition_schema,
-            orient="row",
-        )
-        returned_lf = job.null_values_exceeding_repetition_limit(
-            test_lf,
-            IndCQC.ct_non_res_care_workers_employed_cleaned,
-            False,
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_when_small_location_repeats_after_too_long_returns_nulled_value(self):
-        test_lf = pl.LazyFrame(
-            Data.small_location_repeats_after_too_long,
-            Schemas.clean_ct_repetition_schema,
-            orient="row",
-        )
-        expected_lf = pl.LazyFrame(
-            Data.expected_small_location_repeats_after_too_long,
-            Schemas.clean_ct_repetition_schema,
-            orient="row",
-        )
-        returned_lf = job.null_values_exceeding_repetition_limit(
-            test_lf,
-            IndCQC.ct_non_res_care_workers_employed_cleaned,
-            False,
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_when_medium_location_repeats_after_too_long_returns_nulled_value(self):
-        test_lf = pl.LazyFrame(
-            Data.medium_location_repeats_after_too_long,
-            Schemas.clean_ct_repetition_schema,
-            orient="row",
-        )
-        expected_lf = pl.LazyFrame(
-            Data.expected_medium_location_repeats_after_too_long,
-            Schemas.clean_ct_repetition_schema,
-            orient="row",
-        )
-        returned_lf = job.null_values_exceeding_repetition_limit(
-            test_lf,
-            IndCQC.ct_non_res_care_workers_employed_cleaned,
-            False,
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_when_large_location_repeats_after_too_long_returns_nulled_value(self):
-        test_lf = pl.LazyFrame(
-            Data.large_location_repeats_after_too_long,
-            Schemas.clean_ct_repetition_schema,
-            orient="row",
-        )
-        expected_lf = pl.LazyFrame(
-            Data.expected_large_location_repeats_after_too_long,
-            Schemas.clean_ct_repetition_schema,
-            orient="row",
-        )
-        returned_lf = job.null_values_exceeding_repetition_limit(
-            test_lf,
-            IndCQC.ct_non_res_care_workers_employed_cleaned,
-            False,
-        )
-
+        print(returned_lf.collect())
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
