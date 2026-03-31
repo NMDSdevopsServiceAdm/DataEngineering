@@ -45,10 +45,10 @@ def compute_global_ratio(lf: pl.LazyFrame) -> float:
         - have non-null and greater than zero values for both PIR people and
           ASC-WDS filled posts
         - have a ratio of filled posts to PIR people greater than or equal to
-          0.75. The number of people should be greater than or equal to the
-          number of filled posts, so we filter out rows where this ratio is less
-          than 0.75 to exclude potentially poor quality data whilst allowing for
-          some variance in the relationship.
+          0.75. In theory, the number of filled posts should always be greater
+          than or equal to the number of people. We filter out rows where this
+          ratio is less than 0.75 to exclude potentially poor quality data
+          whilst allowing for some variance in the relationship.
     """
     quality_filter_expr = posts_col.truediv(people_col) >= 0.75
 
