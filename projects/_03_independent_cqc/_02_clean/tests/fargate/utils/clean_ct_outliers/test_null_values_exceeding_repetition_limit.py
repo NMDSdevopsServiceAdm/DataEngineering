@@ -5,21 +5,21 @@ import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-import projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_repetition as job
+import projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.null_values_exceeding_repetition_limit as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
-    CleanCtRepetitionData as Data,
+    NullValuesExceedingRepetitionLimitData as Data,
 )
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
-    CleanCtRepetition as Schemas,
+    NullValuesExceedingRepetitionLimitSchema as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH: str = (
-    "projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_repetition"
+    "projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.null_values_exceeding_repetition_limit"
 )
 
 
-class CleanCTValuesAfterConsecutiveRepetitionTests(unittest.TestCase):
+class NullValuesExceedingRepetitionLimitTests(unittest.TestCase):
     def setUp(self):
         self.test_lf = Mock(name="ind_cqc_df")
 

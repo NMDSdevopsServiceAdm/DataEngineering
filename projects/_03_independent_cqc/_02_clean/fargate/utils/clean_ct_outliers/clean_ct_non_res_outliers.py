@@ -3,7 +3,7 @@ import polars as pl
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_longitudinal_outliers import (
     clean_longitudinal_outliers,
 )
-from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_repetition import (
+from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.null_values_exceeding_repetition_limit import (
     null_values_exceeding_repetition_limit,
 )
 from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (

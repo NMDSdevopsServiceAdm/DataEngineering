@@ -1634,7 +1634,7 @@ class NullCtPostsToBedsOutliers:
 
 
 @dataclass
-class CleanCtRepetitionData:
+class NullValuesExceedingRepetitionLimitData:
     values_repeat_after_a_missing_value = [
         ("1-001", date(2025, 1, 1), 1, CTFilteringRule.populated),
         ("1-001", date(2025, 2, 1), 2, CTFilteringRule.populated),
