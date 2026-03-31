@@ -157,8 +157,7 @@
                         "JobName": "${impute_ind_cqc_ascwds_and_pir_job_name}",
                         "Arguments": {
                           "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
-                          "--imputed_ind_cqc_ascwds_and_pir_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
-                          "--linear_regression_model_source": "${pipeline_resources_bucket_uri}/models/non_res_pir_linear_regression_prediction/2.0.1/"
+                          "--imputed_ind_cqc_ascwds_and_pir_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
                         }
                       },
                       "End": true
@@ -530,7 +529,7 @@
                                                 "validate_model_01_features.py",
                                                 "--bucket_name", "${dataset_bucket_name}",
                                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_without_dormancy_model/",
-                                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_04_features_non_res_without_dormancy_model/",
+                                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_04_features_non_res_without_dormancy_model/",
                                                 "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
                                                 "--model", "non_res_without_dormancy_model"
                                               ]
