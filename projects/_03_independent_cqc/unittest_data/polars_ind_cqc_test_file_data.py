@@ -876,6 +876,23 @@ class CleanIndCQCData:
 
 
 @dataclass
+class ImputeIndCqcAscwdsAndPirData:
+    test_rolling_average_period = "3d"
+
+    expected_rolling_average_rows = [
+        ("1-001", date(2023, 1, 1), 1.1, 1.1),
+        ("1-001", date(2023, 1, 2), 1.2, 1.15),
+        ("1-001", date(2023, 1, 3), 1.3, 1.2),
+        ("1-001", date(2023, 1, 4), 1.4, 1.3),
+        ("1-001", date(2023, 1, 5), 1.4, 1.35),
+        ("1-001", date(2023, 1, 5), 1.3, 1.35),
+        ("1-002", date(2023, 1, 1), 10.0, 10.0),
+        ("1-002", date(2023, 1, 3), 20.0, 15.0),
+        ("1-002", date(2023, 1, 5), 30.0, 25.0),
+    ]
+
+
+@dataclass
 class ArchiveFilledPostsEstimates:
     estimate_filled_posts_rows = [("loc 1", date(2024, 1, 1))]
 

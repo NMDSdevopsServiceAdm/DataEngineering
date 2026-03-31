@@ -760,6 +760,18 @@ class CleanIndCQCSchema:
 
 
 @dataclass
+class ImputeIndCqcAscwdsAndPirSchema:
+    expected_rolling_average_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.posts_rolling_average_model, pl.Float64()),
+        ]
+    )
+
+
+@dataclass
 class ArchiveFilledPostsEstimates:
     estimate_filled_posts_schema = pl.Schema(
         [

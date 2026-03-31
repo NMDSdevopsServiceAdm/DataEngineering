@@ -14,6 +14,11 @@ All notable changes to this project will be documented in this file.
 
 - Converted combine_non_res_with_and_without_dormancy_models utils function to Polars and converted the tests for the same.
 
+- Converted combine_non_res_with_and_without_dormancy_models utils function to Polars and converted the tests for the same.
+
+- Converted Spark util model_calculate_rolling_average to Polars as calculate_rolling_average. Moved the function
+  from a util script to imputation job script because it was only called in that job.
+
 ### Changed
 - Added la permissions to columns imported in merge_coverage_data job.
 
