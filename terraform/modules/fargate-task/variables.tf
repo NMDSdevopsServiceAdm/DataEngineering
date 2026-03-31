@@ -36,9 +36,10 @@ variable "ram_size" {
   default = 61440
 }
 
+# Expects ephemeral_storage.0.size_in_gib to be in the range (21 - 200)
 variable "ephemeral_storage_size" {
   type    = number
-  default = 20
+  default = 21
 }
 
 variable "environment" {

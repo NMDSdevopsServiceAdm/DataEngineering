@@ -6,9 +6,11 @@ resource "aws_ecs_task_definition" "ecs_task" {
   memory                   = var.ram_size
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_task_role.arn
-  ephemeral_storage {
-    size_in_gib = var.ephemeral_storage_size
-  }
+
+  # LEAVE commented for easy future adjustment, default should be 20
+  # ephemeral_storage {
+  #   size_in_gib = var.ephemeral_storage_size
+  # }
 
   volume {
     name = "polars_temp_storage"
