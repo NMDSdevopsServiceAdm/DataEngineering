@@ -12,8 +12,8 @@ module "datasets_bucket" {
 }
 
 resource "aws_s3_bucket_policy" "cross_account_access_read_only" {
-  count  = local.workspace_prefix == "main" ? 1 : 0
-  region = var.region
+  count = local.workspace_prefix == "main" ? 1 : 0
+
   bucket = module.datasets_bucket.bucket_name
   policy = file("policy-documents/sfc-main-datasets.cross-account-access.json")
 }
