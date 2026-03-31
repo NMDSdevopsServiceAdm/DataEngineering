@@ -584,7 +584,6 @@ module "impute_ind_cqc_ascwds_and_pir_job" {
   job_parameters = {
     "--cleaned_ind_cqc_source"                     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
     "--imputed_ind_cqc_ascwds_and_pir_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
-    "--linear_regression_model_source"             = "${module.pipeline_resources.bucket_uri}/models/non_res_pir_linear_regression_prediction/2.0.1/"
   }
 }
 

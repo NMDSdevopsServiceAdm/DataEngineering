@@ -1,4 +1,7 @@
 from polars_utils import utils
+from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.non_res_with_and_without_dormancy_combined import (
+    combine_non_res_with_and_without_dormancy_models,
+)
 from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.utils import (
     enrich_with_model_predictions,
 )
@@ -91,7 +94,7 @@ def main(
         lf, bucket_name, IndCQC.non_res_without_dormancy_model
     )
 
-    # combine_non_res_with_and_without_dormancy_models
+    lf = combine_non_res_with_and_without_dormancy_models(lf)
 
     # model_imputation_with_extrapolation_and_interpolation - imputed_posts_care_home_model
 
