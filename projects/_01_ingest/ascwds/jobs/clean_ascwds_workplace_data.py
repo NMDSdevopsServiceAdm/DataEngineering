@@ -13,16 +13,11 @@ from utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.raw_data_files.ascwds_workplace_columns import (
-    PartitionKeys as Keys,
-)
 from utils.raw_data_adjustments import remove_duplicate_workplaces_in_raw_workplace_data
 from utils.scale_variable_limits import AscwdsScaleVariableLimits
 from utils.value_labels.ascwds_workplace.workplace_label_dictionary import (
     ascwds_workplace_labels_dict,
 )
-
-partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 DATE_COLUMN_IDENTIFIER = "date"
 COLUMNS_TO_BOUND = [AWPClean.total_staff, AWPClean.worker_records]
@@ -58,10 +53,7 @@ ascwds_workplace_columns_to_import = [
     AWPClean.total_vacancies,
     AWPClean.main_service_id,
     AWPClean.version,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
+    AWPClean.import_date,
 ]
 
 cols_required_for_reconciliation_df = [
@@ -85,10 +77,6 @@ cols_required_for_reconciliation_df = [
     AWPClean.worker_records,
     AWPClean.last_logged_in_date,
     AWPClean.la_permission,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
 ]
 
 
@@ -119,9 +107,9 @@ def main(
 
     ascwds_workplace_df = cUtils.column_to_date(
         ascwds_workplace_df,
-        Keys.import_date,
+        AWPClean.import_date,
         AWPClean.ascwds_workplace_import_date,
-    )
+    ).drop(AWPClean.import_date)
 
     ascwds_workplace_df = cUtils.apply_categorical_labels(
         ascwds_workplace_df,
@@ -164,7 +152,6 @@ def main(
         reconciliation_df,
         workplace_for_reconciliation_destination,
         mode="overwrite",
-        partitionKeys=partition_keys,
     )
 
     print(
@@ -174,7 +161,6 @@ def main(
         ascwds_workplace_df,
         cleaned_ascwds_workplace_destination,
         mode="overwrite",
-        partitionKeys=partition_keys,
     )
 
 
@@ -229,7 +215,7 @@ def remove_workplaces_with_duplicate_location_ids(df: DataFrame) -> DataFrame:
     locations_with_location_id_df = df.where(F.col(AWPClean.location_id).isNotNull())
 
     loc_id_import_date_window = Window.partitionBy(
-        AWPClean.location_id, Keys.import_date
+        AWPClean.location_id, AWPClean.ascwds_workplace_import_date
     )
     count_of_location_id_df = locations_with_location_id_df.withColumn(
         location_id_count, F.count(AWPClean.location_id).over(loc_id_import_date_window)

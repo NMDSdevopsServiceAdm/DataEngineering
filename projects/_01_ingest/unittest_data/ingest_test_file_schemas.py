@@ -114,7 +114,7 @@ class ASCWDSWorkplaceSchemas:
     location_schema = StructType(
         [
             StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.import_date, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
             StructField(AWP.organisation_id, StringType(), True),
         ]
     )

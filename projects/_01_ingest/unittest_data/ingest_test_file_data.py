@@ -190,32 +190,32 @@ class ASCWDSWorkplaceData:
     ]
 
     small_location_rows = [
-        ("loc-1", "2020-01-01", "1"),
-        ("loc-2", "2020-01-01", "2"),
-        ("loc-3", "2020-01-01", "3"),
-        ("loc-4", "2021-01-01", "4"),
-        (None, "2021-01-01", "5"),
-        (None, "2021-01-01", "6"),
-    ]
+        ("loc-1", date(2020, 1, 1), "1"),
+        ("loc-2", date(2020, 1, 1), "2"),
+        ("loc-3", date(2020, 1, 1), "3"),
+        ("loc-4", date(2021, 1, 1), "4"),
+        (None,    date(2021, 1, 1), "5"),
+        (None,    date(2021, 1, 1), "6"),
+    ] # fmt: skip
 
     location_rows_with_duplicates = [
         *small_location_rows,
-        ("loc-3", "2020-01-01", "7"),
-        ("loc-4", "2021-01-01", "8"),
+        ("loc-3", date(2020, 1, 1), "7"),
+        ("loc-4", date(2021, 1, 1), "8"),
     ]
 
     location_rows_with_different_import_dates = [
         *small_location_rows,
-        ("loc-3", "2021-01-01", "3"),
-        ("loc-4", "2022-01-01", "4"),
+        ("loc-3", date(2021, 1, 1), "3"),
+        ("loc-4", date(2022, 1, 1), "4"),
     ]
 
     expected_filtered_location_rows = [
-        ("loc-1", "2020-01-01", "1"),
-        ("loc-2", "2020-01-01", "2"),
-        (None, "2021-01-01", "5"),
-        (None, "2021-01-01", "6"),
-    ]
+        ("loc-1", date(2020, 1, 1), "1"),
+        ("loc-2", date(2020, 1, 1), "2"),
+        (None,    date(2021, 1, 1), "5"),
+        (None,    date(2021, 1, 1), "6"),
+    ] # fmt: skip
 
     mupddate_for_org_rows = [
         ("1", date(2024, 3, 1), "1", date(2024, 1, 10)),

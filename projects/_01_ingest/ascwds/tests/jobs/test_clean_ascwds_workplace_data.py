@@ -18,7 +18,6 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
-from utils.column_names.raw_data_files.ascwds_workplace_columns import PartitionKeys
 
 PATCH_PATH = "projects._01_ingest.ascwds.jobs.clean_ascwds_workplace_data"
 
@@ -27,12 +26,6 @@ class CleanASCWDSWorkplaceDatasetTests(SparkBaseTest):
     TEST_SOURCE = "s3://some_bucket/some_source_key"
     TEST_CLEANED_DESTINATION = "s3://some_bucket/some_destination_key"
     TEST_RECONCILIATION_DESTINATION = "s3://some_other_destination_key"
-    partition_keys = [
-        PartitionKeys.year,
-        PartitionKeys.month,
-        PartitionKeys.day,
-        PartitionKeys.import_date,
-    ]
 
     def setUp(self) -> None:
         self.test_ascwds_workplace_df = self.spark.createDataFrame(
@@ -342,7 +335,7 @@ class RemoveWorkplacesWithDuplicateLocationIdsTests(CleanASCWDSWorkplaceDatasetT
             self.returned_df.columns,
             [
                 AWP.location_id,
-                AWP.import_date,
+                AWPClean.ascwds_workplace_import_date,
                 AWP.organisation_id,
             ],
         )
