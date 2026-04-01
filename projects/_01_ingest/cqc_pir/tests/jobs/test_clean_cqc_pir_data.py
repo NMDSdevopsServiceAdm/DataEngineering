@@ -44,16 +44,12 @@ class CleanCQCpirDatasetTests(SparkBaseTest):
     @patch(f"{PATCH_PATH}.null_people_directly_employed_outliers")
     @patch(f"{PATCH_PATH}.filter_latest_submission_date")
     @patch(f"{PATCH_PATH}.add_care_home_column")
-    @patch(f"{PATCH_PATH}.remove_unused_pir_types")
     @patch(f"{PATCH_PATH}.cUtils.column_to_date")
-    @patch(f"{PATCH_PATH}.remove_rows_without_pir_people_directly_employed")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_patch: Mock,
-        remove_rows_without_pir_people_directly_employed_patch: Mock,
         column_to_date_patch: Mock,
-        remove_unused_pir_types_patch: Mock,
         add_care_home_column_patch: Mock,
         filter_latest_submission_date_patch: Mock,
         null_people_directly_employed_outliers_patch: Mock,
@@ -62,9 +58,7 @@ class CleanCQCpirDatasetTests(SparkBaseTest):
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
         read_from_parquet_patch.assert_called_once_with(self.TEST_SOURCE)
-        remove_rows_without_pir_people_directly_employed_patch.assert_called_once()
         self.assertTrue(column_to_date_patch.call_count, 2)
-        remove_unused_pir_types_patch.assert_called_once()
         add_care_home_column_patch.assert_called_once()
         filter_latest_submission_date_patch.assert_called_once()
         null_people_directly_employed_outliers_patch.assert_called_once()
@@ -74,34 +68,6 @@ class CleanCQCpirDatasetTests(SparkBaseTest):
             mode="overwrite",
             partitionKeys=self.partition_keys,
         )
-
-    def test_remove_rows_without_pir_people_directly_employed_removes_null_and_zero_values(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.remove_rows_missing_pir_people_directly_employed,
-            Schemas.remove_rows_missing_pir_people_directly_employed_schema,
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_remove_rows_missing_pir_people_directly_employed,
-            Schemas.remove_rows_missing_pir_people_directly_employed_schema,
-        )
-        returned_df = job.remove_rows_without_pir_people_directly_employed(test_df)
-
-        self.assertEqual(expected_df.collect(), returned_df.collect())
-
-    def test_remove_unused_pir_type_rows_removes_correct_rows(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.remove_unused_pir_types_rows, Schemas.remove_unused_pir_types_schema
-        )
-        returned_df = job.remove_unused_pir_types(test_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_remove_unused_pir_types_rows,
-            Schemas.remove_unused_pir_types_schema,
-        )
-        self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_add_care_home_column_adds_a_column(self):
         returned_df = job.add_care_home_column(self.test_add_care_home_column_df)

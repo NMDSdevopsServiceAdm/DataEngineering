@@ -15,13 +15,8 @@ from utils.validation.validation_utils import (
 )
 
 
-def main(
-    raw_cqc_pir_source: str,
-    report_destination: str,
-):
-    raw_cqc_pir_df = utils.read_from_parquet(
-        raw_cqc_pir_source,
-    )
+def main(raw_cqc_pir_source: str, report_destination: str):
+    raw_cqc_pir_df = utils.read_from_parquet(raw_cqc_pir_source)
     rules = Rules.rules_to_check
 
     check_result_df = validate_dataset(raw_cqc_pir_df, rules)
@@ -36,10 +31,7 @@ if __name__ == "__main__":
     print("Spark job 'validate_pir_api_raw_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    (
-        raw_cqc_pir_source,
-        report_destination,
-    ) = utils.collect_arguments(
+    (raw_cqc_pir_source, report_destination) = utils.collect_arguments(
         (
             "--raw_cqc_pir_source",
             "Source s3 directory for parquet pir api raw dataset",
@@ -50,10 +42,7 @@ if __name__ == "__main__":
         ),
     )
     try:
-        main(
-            raw_cqc_pir_source,
-            report_destination,
-        )
+        main(raw_cqc_pir_source, report_destination)
     finally:
         spark = utils.get_spark()
         if spark.sparkContext._gateway:
