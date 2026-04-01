@@ -143,5 +143,3 @@ if __name__ == "__main__":
     )
 
     print("Finished Estimate Ind CQC job")
-
-    print("Finished Estimate Ind CQC job")
