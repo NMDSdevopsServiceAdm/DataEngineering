@@ -49,7 +49,7 @@ class TestNullValuesExceedingRepetitionLimitValues:
         ],
         ids=[case.id for case in null_values_exceeding_repetition_limit_test_cases],
     )
-    def test_funciton_returns_expected_values(
+    def test_function_returns_expected_values(
         self, input_case_data, expected_case_data
     ):
         input_lf = pl.LazyFrame(
@@ -63,6 +63,4 @@ class TestNullValuesExceedingRepetitionLimitValues:
             column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
             care_home=False,
         )
-
-        print(returned_lf.collect())
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
