@@ -61,10 +61,6 @@ cleaned_cqc_locations_columns_to_import = [
     ONSClean.current_icb,
     ONSClean.current_region,
     ONSClean.current_rural_urban_ind_11,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
 ]
 
 cleaned_ascwds_workplace_columns_to_import = [
@@ -169,10 +165,7 @@ def main(
         merged_coverage_df, cqc_providers_df
     )
     utils.write_to_parquet(
-        merged_coverage_df,
-        merged_coverage_destination,
-        mode="overwrite",
-        partitionKeys=PartitionKeys,
+        merged_coverage_df, merged_coverage_destination, mode="overwrite"
     )
 
     reduced_coverage_df = utils.filter_df_to_maximum_value_in_column(
@@ -180,10 +173,7 @@ def main(
     )
 
     utils.write_to_parquet(
-        reduced_coverage_df,
-        reduced_coverage_destination,
-        mode="overwrite",
-        partitionKeys=PartitionKeys,
+        reduced_coverage_df, reduced_coverage_destination, mode="overwrite"
     )
 
 
