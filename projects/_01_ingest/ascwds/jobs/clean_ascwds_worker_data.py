@@ -36,13 +36,9 @@ WORKPLACE_COLUMNS = [
 def main(
     worker_source: str, cleaned_workplace_source: str, cleaned_worker_destination: str
 ):
-    ascwds_worker_df = utils.read_from_parquet(
-        worker_source,
-        WORKER_COLUMNS,
-    )
+    ascwds_worker_df = utils.read_from_parquet(worker_source, WORKER_COLUMNS)
     ascwds_workplace_cleaned_df = utils.read_from_parquet(
-        cleaned_workplace_source,
-        WORKPLACE_COLUMNS,
+        cleaned_workplace_source, WORKPLACE_COLUMNS
     )
 
     ascwds_worker_df = cUtils.column_to_date(

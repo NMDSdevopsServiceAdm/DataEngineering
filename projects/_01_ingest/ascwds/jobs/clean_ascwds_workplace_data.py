@@ -109,7 +109,7 @@ def main(
         ascwds_workplace_df,
         AWPClean.import_date,
         AWPClean.ascwds_workplace_import_date,
-    ).drop(AWPClean.import_date)
+    )
 
     ascwds_workplace_df = cUtils.apply_categorical_labels(
         ascwds_workplace_df,
