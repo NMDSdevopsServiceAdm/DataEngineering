@@ -421,6 +421,7 @@ class ValidateCqcLocations4FullCleanTest:
     validation_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
+            (Keys.import_date, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.name, pl.String()),
             (CQCLClean.type, pl.String()),

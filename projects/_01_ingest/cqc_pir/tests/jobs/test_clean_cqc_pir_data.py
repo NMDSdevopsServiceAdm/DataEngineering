@@ -22,7 +22,6 @@ class CleanCQCpirDatasetTests(SparkBaseTest):
     TEST_SOURCE = "some/directory"
     TEST_DESTINATION = "some/other/directory"
     SCHEMA_LENGTH = len(Schemas.sample_schema)
-    partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
 
@@ -63,10 +62,7 @@ class CleanCQCpirDatasetTests(SparkBaseTest):
         filter_latest_submission_date_patch.assert_called_once()
         null_people_directly_employed_outliers_patch.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
-            ANY,
-            self.TEST_DESTINATION,
-            mode="overwrite",
-            partitionKeys=self.partition_keys,
+            ANY, self.TEST_DESTINATION, mode="overwrite"
         )
 
     def test_add_care_home_column_adds_a_column(self):
