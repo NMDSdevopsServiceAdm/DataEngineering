@@ -5647,11 +5647,7 @@ class OutlierCleaningData:
         ("1-003", 40, CTFilteringRule.populated),
         ("1-003", 45, CTFilteringRule.populated),
         ("1-003", 50, CTFilteringRule.populated),
-        (
-            "1-004",
-            5,
-            CTFilteringRule.populated,
-        ),
+        ("1-004", 5, CTFilteringRule.populated),
         ("1-004", 10, CTFilteringRule.populated),
         ("1-004", 15, CTFilteringRule.populated),
         ("1-004", 80, CTFilteringRule.populated),
@@ -5661,6 +5657,9 @@ class OutlierCleaningData:
         ("1-004", 40, CTFilteringRule.populated),
         ("1-004", 45, CTFilteringRule.populated),
         ("1-004", 50, CTFilteringRule.populated),
+        ("1-005", 1000, "any/other/rule"),
+        ("1-005", 1000, "any/other/rule"),
+        ("1-005", 1000, "any/other/rule"),
     ]
 
     expected_clean_longitudinal_outliers_remove_value_only_rows = [
@@ -5674,11 +5673,7 @@ class OutlierCleaningData:
         ("1-003", 40, CTFilteringRule.populated),
         ("1-003", 45, CTFilteringRule.populated),
         ("1-003", 50, CTFilteringRule.populated),
-        (
-            "1-004",
-            5,
-            CTFilteringRule.populated,
-        ),
+        ("1-004", 5, CTFilteringRule.populated),
         ("1-004", 10, CTFilteringRule.populated),
         ("1-004", 15, CTFilteringRule.populated),
         ("1-004", 80, CTFilteringRule.populated),
@@ -5688,6 +5683,9 @@ class OutlierCleaningData:
         ("1-004", 40, CTFilteringRule.populated),
         ("1-004", 45, CTFilteringRule.populated),
         ("1-004", 50, CTFilteringRule.populated),
+        ("1-005", None, "any/other/rule"),
+        ("1-005", None, "any/other/rule"),
+        ("1-005", None, "any/other/rule"),
     ]
 
     compute_group_median_rows = [
@@ -5731,21 +5729,21 @@ class OutlierCleaningData:
     ]
 
     apply_outlier_cleaning_input_rows = [
-        ("1-001", 10, 15, 51),
-        ("1-001", 20, 5, 51),
-        ("1-001", 30, 5, 51),
-        ("1-001", 100, 75, 51),
-        ("1-002", 100, 0, 51),
-        ("1-002", None, None, 51),
-        ("1-003", None, None, 51),
+        ("1-001", 10, 15, 51, CTFilteringRule.populated),
+        ("1-001", 20, 5, 51, CTFilteringRule.populated),
+        ("1-001", 30, 5, 51, CTFilteringRule.populated),
+        ("1-001", 100, 75, 51, CTFilteringRule.populated),
+        ("1-002", 100, 0, 51, CTFilteringRule.populated),
+        ("1-002", None, None, 51, CTFilteringRule.missing_data),
+        ("1-003", None, None, 51, CTFilteringRule.missing_data),
     ]
 
     expected_apply_outlier_cleaning_input_rows = [
-        ("1-001", 10, 15, 51),
-        ("1-001", 20, 5, 51),
-        ("1-001", 30, 5, 51),
-        ("1-001", None, 75, 51),
-        ("1-002", 100, 0, 51),
-        ("1-002", None, None, 51),
-        ("1-003", None, None, 51),
+        ("1-001", 10, 15, 51, CTFilteringRule.populated),
+        ("1-001", 20, 5, 51, CTFilteringRule.populated),
+        ("1-001", 30, 5, 51, CTFilteringRule.populated),
+        ("1-001", None, 75, 51, CTFilteringRule.populated),
+        ("1-002", 100, 0, 51, CTFilteringRule.populated),
+        ("1-002", None, None, 51, CTFilteringRule.missing_data),
+        ("1-003", None, None, 51, CTFilteringRule.missing_data),
     ]

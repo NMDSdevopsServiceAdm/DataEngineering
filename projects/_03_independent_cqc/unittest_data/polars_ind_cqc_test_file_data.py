@@ -1634,58 +1634,101 @@ class NullCtPostsToBedsOutliers:
 
 
 @dataclass
-class CleanCtRepetitionTestCase:
+class NullValuesExceedingRepetitionLimitTestCase:
     id: str
-    data: list[Any]
+    input_data: list[tuple]
+    expected_data: list[tuple]
 
 
-clean_ct_repetition_values_test_cases = [
-    CleanCtRepetitionTestCase(
-        id="basic_streaks_with_nulls",
-        data=[
-            ("1-001",date(2025, 1, 1),1,1,CTFilteringRule.populated,),
-            ("1-001",date(2025, 2, 1),2,2,CTFilteringRule.populated,),
-            ("1-001",date(2025, 3, 1),2,2,CTFilteringRule.populated,),
-            ("1-001",date(2025, 4, 1),None,None,CTFilteringRule.missing_data,),
-            ("1-001",date(2025, 11, 7),2,None,CTFilteringRule.location_repeats_total_posts,),
-            ("1-001",date(2025, 12, 1),3,3,CTFilteringRule.populated,),
-            ("1-001", date(2026, 1, 1), 4, 4, "some_other_rule", "some_other_rule"),
+null_values_exceeding_repetition_limit_test_cases = [
+    NullValuesExceedingRepetitionLimitTestCase(
+        id="values_repeat_after_a_missing_value",
+        input_data=[
+            ("1-001", date(2025, 1, 1), 1, CTFilteringRule.populated),
+            ("1-001", date(2025, 2, 1), 2, CTFilteringRule.populated),
+            ("1-001", date(2025, 3, 1), 2, CTFilteringRule.populated),
+            ("1-001", date(2025, 4, 1), None, CTFilteringRule.missing_data),
+            ("1-001", date(2025, 11, 7), 2, CTFilteringRule.populated),
+            ("1-001", date(2025, 12, 1), 3, CTFilteringRule.populated),
+        ],
+        expected_data=[
+            ("1-001", date(2025, 1, 1), 1, CTFilteringRule.populated),
+            ("1-001", date(2025, 2, 1), 2, CTFilteringRule.populated),
+            ("1-001", date(2025, 3, 1), 2, CTFilteringRule.populated),
+            ("1-001", date(2025, 4, 1), None, CTFilteringRule.missing_data),
+            ("1-001", date(2025, 11, 7), None, CTFilteringRule.location_repeats_total_posts),
+            ("1-001", date(2025, 12, 1), 3, CTFilteringRule.populated),
         ],
     ),
-    CleanCtRepetitionTestCase(
-        id="micro_location_streaks",
-        data=[
-            ("1-001",date(2025, 1, 1),1,1,CTFilteringRule.populated,),
-            ("1-001",date(2026, 10, 1),1,None,CTFilteringRule.location_repeats_total_posts,),
+    NullValuesExceedingRepetitionLimitTestCase(
+        id="values_repeat_but_not_consecutively",
+        input_data=[
+            ("1-001", date(2025, 1, 1), 1, CTFilteringRule.populated),
+            ("1-001", date(2025, 2, 1), 2, CTFilteringRule.populated),
+            ("1-001", date(2025, 3, 1), 2, CTFilteringRule.populated),
+            ("1-001", date(2025, 4, 1), 500, CTFilteringRule.populated),
+            ("1-001", date(2025, 5, 1), 500, CTFilteringRule.populated),
+            ("1-001", date(2025, 12, 1), 2, CTFilteringRule.populated),
+        ],
+        expected_data=[
+            ("1-001", date(2025, 1, 1), 1, CTFilteringRule.populated),
+            ("1-001", date(2025, 2, 1), 2, CTFilteringRule.populated),
+            ("1-001", date(2025, 3, 1), 2, CTFilteringRule.populated),
+            ("1-001", date(2025, 4, 1), 500, CTFilteringRule.populated),
+            ("1-001", date(2025, 5, 1), 500, CTFilteringRule.populated),
+            ("1-001", date(2025, 12, 1), 2, CTFilteringRule.populated),
         ],
     ),
-    CleanCtRepetitionTestCase(
-        id="small_location_streaks",
-        data=[
-            ("1-002",date(2025, 2, 1),10,10,CTFilteringRule.populated,),
-            ("1-002",date(2025, 7, 1),10,None,CTFilteringRule.location_repeats_total_posts,),
+    NullValuesExceedingRepetitionLimitTestCase(
+        id="micro_location_repeats_after_too_long",
+        input_data=[
+            ("1-001", date(2025, 1, 1), 1, CTFilteringRule.populated),
+            ("1-001", date(2026, 10, 1), 1, CTFilteringRule.populated),
+        ],
+        expected_data=[
+            ("1-001", date(2025, 1, 1), 1, CTFilteringRule.populated),
+            ("1-001", date(2026, 10, 1), None, CTFilteringRule.location_repeats_total_posts),
         ],
     ),
-    CleanCtRepetitionTestCase(
-        id="medium_location_streaks",
-        data=[
-            ("1-003",date(2025, 3, 1),50,50,CTFilteringRule.populated,),
-            ("1-003",date(2025, 7, 1),50,None,CTFilteringRule.location_repeats_total_posts,),
+    NullValuesExceedingRepetitionLimitTestCase(
+        id="small_location_repeats_after_too_long",
+        input_data=[
+            ("1-001", date(2025, 1, 1), 10, CTFilteringRule.populated),
+            ("1-001", date(2026, 10, 1), 10, CTFilteringRule.populated),
+        ],
+        expected_data=[
+            ("1-001", date(2025, 1, 1), 10, CTFilteringRule.populated),
+            ("1-001", date(2026, 10, 1), None, CTFilteringRule.location_repeats_total_posts),
         ],
     ),
-    CleanCtRepetitionTestCase(
-        id="large_location_streaks",
-        data=[
-            ("1-004",date(2025, 4, 1),250,250,CTFilteringRule.populated,),
-            ("1-004",date(2025, 7, 1),250,None,CTFilteringRule.location_repeats_total_posts,),
+    NullValuesExceedingRepetitionLimitTestCase(
+        id="medium_location_repeats_after_too_long",
+        input_data=[
+            ("1-001", date(2025, 1, 1), 50, CTFilteringRule.populated),
+            ("1-001", date(2026, 10, 1), 50, CTFilteringRule.populated),
+        ],
+        expected_data=[
+            ("1-001", date(2025, 1, 1), 50, CTFilteringRule.populated),
+            ("1-001", date(2026, 10, 1), None, CTFilteringRule.location_repeats_total_posts),
+        ],
+    ),
+    NullValuesExceedingRepetitionLimitTestCase(
+        id="large_location_repeats_after_too_long",
+        input_data=[
+            ("1-001", date(2025, 1, 1), 250, CTFilteringRule.populated),
+            ("1-001", date(2026, 10, 1), 250, CTFilteringRule.populated),
+        ],
+        expected_data=[
+            ("1-001", date(2025, 1, 1), 250, CTFilteringRule.populated),
+            ("1-001", date(2026, 10, 1), None, CTFilteringRule.location_repeats_total_posts),
         ],
     ),
 ] # fmt: skip
 
 
 @dataclass
-class OutlierCleaningData:
-    clean_longitudinal_outliers_input_rows = [
+class NullLongitudinalOutliersData:
+    null_longitudinal_outliers_input_rows = [
         ("1-001", 5, CTFilteringRule.populated),
         ("1-001", 10, CTFilteringRule.populated),
         ("1-001", 15, CTFilteringRule.populated),
@@ -1708,7 +1751,7 @@ class OutlierCleaningData:
         ("1-004", 50, CTFilteringRule.populated),
     ]
 
-    expected_clean_longitudinal_outliers_remove_value_only_rows = [
+    expected_null_longitudinal_outliers_remove_value_only_rows = [
         ("1-001", 5, CTFilteringRule.populated),
         ("1-001", 10, CTFilteringRule.populated),
         ("1-001", 15, CTFilteringRule.populated),
@@ -1729,51 +1772,6 @@ class OutlierCleaningData:
         ("1-004", 40, CTFilteringRule.populated),
         ("1-004", 45, CTFilteringRule.populated),
         ("1-004", 50, CTFilteringRule.populated),
-    ]
-
-    compute_outlier_cutoff_and_clean_input_rows = [
-        ("1-001", 5),
-        ("1-001", 10),
-        ("1-001", 15),
-        ("1-001", 80),
-        ("1-002", 95),
-        ("1-002", 20),
-        ("1-002", 90),
-        ("1-003", 40),
-        ("1-003", 45),
-        ("1-003", 50),
-        ("1-004", 5),
-        ("1-004", 10),
-        ("1-004", 15),
-        ("1-004", 80),
-        ("1-004", 94),
-        ("1-004", 20),
-        ("1-004", 90),
-        ("1-004", 40),
-        ("1-004", 45),
-        ("1-004", 50),
-    ]
-    expected_compute_outlier_cutoff_and_clean_rows = [
-        ("1-001", 5),
-        ("1-001", 10),
-        ("1-001", 15),
-        ("1-001", None),
-        ("1-002", 95),
-        ("1-002", None),
-        ("1-002", 90),
-        ("1-003", 40),
-        ("1-003", 45),
-        ("1-003", 50),
-        ("1-004", 5),
-        ("1-004", 10),
-        ("1-004", 15),
-        ("1-004", 80),
-        ("1-004", 94),
-        ("1-004", 20),
-        ("1-004", 90),
-        ("1-004", 40),
-        ("1-004", 45),
-        ("1-004", 50),
     ]
 
 

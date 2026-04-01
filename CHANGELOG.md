@@ -30,6 +30,10 @@ All notable changes to this project will be documented in this file.
 
 - Finished converting the ind cqc cleaning validation from Spark to Polars.
 
+- Refactored the cleaning of capacity tracker outliers so that repeated values are nulled first then
+  outliers are nulled from the remaining data. These changes are in the Spark and Polars scripts.
+
+
 ### Fixed
 
 
