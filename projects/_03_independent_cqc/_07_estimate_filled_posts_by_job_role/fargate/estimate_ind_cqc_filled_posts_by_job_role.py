@@ -116,7 +116,17 @@ def main(
         ascwds_job_role_counts_source (str): path to the prepared ascwds job role counts data
         estimates_by_job_role_destination (str): destination for output
     """
+
+    # Shall we split this script into separate scripts and create a new paralel state in the estimates pipeline,
+    # in paralel with validate estimate filled posts.
+    # So we can work on different parts of the script without using LiveShare.
+
+    # Remove time_it.
     with time_it("scan_and_join"):
+
+        # Read in estimates dataset, split into cols to transform and everything else, then
+        # read in aggreagated worker data and join to estimates (the selected cols version).
+
         combined_schema = transformation_columns | metadata_columns
         full_estimates_lf = (
             pl.scan_parquet(estimates_source, low_memory=True)
@@ -147,6 +157,9 @@ def main(
             ascwds_job_role_counts_lf,
         )
 
+        # Start of cleaning jobs.
+        # Null job role counts when we've not used ASC-WDS for estimated posts.
+
         estimated_job_role_posts_lf = nullify_job_role_count_when_source_not_ascwds(
             estimated_job_role_posts_lf
         ).drop(
@@ -154,11 +167,17 @@ def main(
             IndCQC.ascwds_filled_posts_dedup_clean,
         )
 
+        # TODO - Filter ASC-WDS worker data.
+
         estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
             EXPANDED_ID
         )
 
+        # Remove log_polars_plan.
         log_polars_plan(estimated_job_role_posts_lf, "Post Join")
+
+        # If we're splitting this into separate scripts then we will be saving outputs to S3,
+        # so we dont need this part.
         checkpoint_filepath = CHECKPOINT_PATH / "checkpoint1.parquet"
         estimated_job_role_posts_lf.sink_parquet(
             checkpoint_filepath,
@@ -166,6 +185,8 @@ def main(
             engine="streaming",
         )
 
+    # Start of imputation job.
+    # Remove time_it
     with time_it("Impute ratios"):
         estimated_job_role_posts_lf = pl.scan_parquet(
             checkpoint_filepath,
@@ -179,6 +200,8 @@ def main(
             output_col=IndCQC.ascwds_job_role_ratios,
         )
 
+        # Rename impute_ratios to be more descriptive. E.g. create_imputed_ascwds_job_role_counts or something similar.
+        # Add the multiplication below this function into "impute_ratios".
         estimated_job_role_posts_lf = impute_ratios(estimated_job_role_posts_lf)
 
         # Multiply imputed ratios by estimate filled posts
@@ -188,6 +211,7 @@ def main(
             .alias(IndCQC.imputed_ascwds_job_role_counts)
         )
 
+        # Combine the count rolling sum and get_percent_share_ratio into one function that returns ascwds_job_role_rolling_ratio.
         estimated_job_role_posts_lf = get_job_counts_rolling_sum(
             estimated_job_role_posts_lf
         )
@@ -197,6 +221,11 @@ def main(
             output_col=IndCQC.ascwds_job_role_rolling_ratio,
         )
 
+        # Start of making the estimates by job role using ASC-WDS data only.
+        # This will coalesce the job role percentage breakdowns, multiply by filled posts number, then
+        # adjust that to account for registered managers from CQC.
+
+        # Abstract this into a defined function. So that main is calling a series of steps.
         estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
             utils.coalesce_with_source_labels(
                 cols=[
@@ -215,6 +244,7 @@ def main(
             ).alias(IndCQC.estimate_filled_posts_by_job_role)
         )
 
+        # Remove log_polars_plan.
         log_polars_plan(estimated_job_role_posts_lf, "Impute and rolling")
         checkpoint_filepath = CHECKPOINT_PATH / "checkpoint2.parquet"
         estimated_job_role_posts_lf.sink_parquet(
@@ -223,11 +253,18 @@ def main(
             engine="streaming",
         )
 
+    # Remove time_it.
+    # Try to refactor the pipe(apply_manager_adjustments) so it's readable sequence of expressions without class methods.
     with time_it("Manager adjustments"):
         estimated_job_role_posts_lf = pl.scan_parquet(
             checkpoint_filepath,
             low_memory=True,
         ).pipe(apply_manager_adjustments)
+
+        # Start of preparing columns for validation. Move these to the validation script.
+
+        # Creating the overall estimated filled posts per location from the job role split.
+        # We expecting this to be different
 
         sum_all_job_roles = pl.sum(
             IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
@@ -243,11 +280,18 @@ def main(
             on=pct_share_groups,
             how="left",
         )
+
+        # Move this to before validation preparation starts. So it's the last function in the
+        # estimates script.
+        # Think about validation failing because DataFrame is too big. Read in estimates by job role
+        # as lazyframe, select only columns required for validation, then collect into dataframe.
         # Join back original metadata.
         estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
             metadata_lf,
             on="id",
         )
+
+        # Remove log_polars_plan.
         log_polars_plan(estimated_job_role_posts_lf, "Final Transformation")
 
         utils.sink_to_parquet(
