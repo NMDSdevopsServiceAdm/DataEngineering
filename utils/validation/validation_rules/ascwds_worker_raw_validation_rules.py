@@ -3,9 +3,6 @@ from dataclasses import dataclass
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
-from utils.column_names.raw_data_files.ascwds_worker_columns import (
-    PartitionKeys as Keys,
-)
 from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkerCleanedCategoricalValues as CatValues,
 )
@@ -19,7 +16,7 @@ class ASCWDSWorkerRawValidationRules:
             AWK.establishment_id,
             AWK.worker_id,
             AWK.main_job_role_id,
-            Keys.import_date,
+            AWK.import_date,
         ],
         RuleName.categorical_values_in_columns: {
             AWK.main_job_role_id: CatValues.main_job_role_id_column_values.categorical_values,

@@ -16,7 +16,6 @@ from tests.base_test import SparkBaseTest
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKeys
 
 PATCH_PATH: str = "projects._01_ingest.ascwds.jobs.clean_ascwds_worker_data"
 
@@ -25,12 +24,6 @@ class IngestASCWDSWorkerDatasetTests(SparkBaseTest):
     TEST_WORKER_SOURCE = "s3://some_bucket/some_worker_source_key"
     TEST_WORKPLACE_SOURCE = "s3://some_bucket/some_workplace_source_key"
     TEST_DESTINATION = "s3://some_bucket/some_destination_key"
-    partition_keys = [
-        PartitionKeys.year,
-        PartitionKeys.month,
-        PartitionKeys.day,
-        PartitionKeys.import_date,
-    ]
 
     def setUp(self) -> None:
         self.test_ascwds_worker_df = self.spark.createDataFrame(
@@ -61,7 +54,6 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
             ANY,
             self.TEST_DESTINATION,
             mode="overwrite",
-            partitionKeys=self.partition_keys,
         )
 
 

@@ -14,7 +14,6 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKeys
 from utils.raw_data_adjustments import remove_duplicate_worker_in_raw_worker_data
 from utils.value_labels.ascwds_worker.worker_label_dictionary import (
     ascwds_worker_labels_dict,
@@ -26,9 +25,6 @@ WORKER_COLUMNS = [
     AWKClean.import_date,
     AWKClean.establishment_id,
     AWKClean.main_job_role_id,
-    AWKClean.year,
-    AWKClean.month,
-    AWKClean.day,
 ]
 
 WORKPLACE_COLUMNS = [
@@ -50,14 +46,14 @@ def main(
     )
 
     ascwds_worker_df = cUtils.column_to_date(
-        ascwds_worker_df, PartitionKeys.import_date, AWKClean.ascwds_worker_import_date
+        ascwds_worker_df, AWKClean.import_date, AWKClean.ascwds_worker_import_date
     )
 
     ascwds_worker_df = remove_duplicate_worker_in_raw_worker_data(ascwds_worker_df)
 
     ascwds_worker_df = remove_workers_without_workplaces(
         ascwds_worker_df, ascwds_workplace_cleaned_df
-    )
+    ).drop(AWKClean.import_date)
 
     ascwds_worker_df = create_clean_main_job_role_column(ascwds_worker_df)
 
@@ -66,12 +62,6 @@ def main(
         ascwds_worker_df,
         cleaned_worker_destination,
         mode="overwrite",
-        partitionKeys=[
-            PartitionKeys.year,
-            PartitionKeys.month,
-            PartitionKeys.day,
-            PartitionKeys.import_date,
-        ],
     )
 
 
