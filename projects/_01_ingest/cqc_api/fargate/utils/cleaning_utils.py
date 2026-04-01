@@ -87,17 +87,24 @@ def impute_missing_values(
         pl.LazyFrame: Dataframe with imputed columns
     """
     schema = cqc_lf.collect_schema()
-    for col in schema:
-        if isinstance(schema[col], pl.datatypes.List):
-            cqc_lf = cqc_lf.with_columns(
+
+    list_cleanup_cols = [
+        col for col in cols_to_impute if isinstance(schema[col], pl.List)
+    ]
+
+    if list_cleanup_cols:
+        cqc_lf = cqc_lf.with_columns(
+            [
                 pl.when(pl.col(col).list.len() == 0)
                 .then(None)
                 .otherwise(pl.col(col))
                 .alias(col)
-            )
+                for col in list_cleanup_cols
+            ]
+        )
 
-    for col in cols_to_impute:
-        cqc_lf = cqc_lf.with_columns(
+    cqc_lf = cqc_lf.with_columns(
+        [
             pl.col(col)
             .forward_fill()
             .backward_fill()
@@ -105,7 +112,10 @@ def impute_missing_values(
                 partition_by=CQCLClean.location_id,
                 order_by=CQCLClean.cqc_location_import_date,
             )
-        )
+            .alias(col)
+            for col in cols_to_impute
+        ]
+    )
 
     return cqc_lf
 
