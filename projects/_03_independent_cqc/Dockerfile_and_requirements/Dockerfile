@@ -1,15 +1,14 @@
 FROM python:3.11-slim
 
-RUN mkdir -p /tmp/polars
 WORKDIR /app
 
-ENV POLARS_TEMP_DIR=/tmp/polars
+RUN mkdir -p /polars_scratch && chmod 777 /polars_scratch
+ENV POLARS_TEMP_DIR=/polars_scratch
 ENV PYTHONPATH=/app
 
 # Dependencies
 COPY projects/_03_independent_cqc/_01_merge/fargate/utils /app/projects/_03_independent_cqc/_01_merge/fargate/utils
 COPY projects/_03_independent_cqc/_02_clean/fargate/utils /app/projects/_03_independent_cqc/_02_clean/fargate/utils
-COPY projects/_03_independent_cqc/_03_impute/fargate/utils /app/projects/_03_independent_cqc/_03_impute/fargate/utils
 COPY projects/_03_independent_cqc/_04_model/utils /app/projects/_03_independent_cqc/_04_model/utils
 COPY projects/_03_independent_cqc/_06_estimate_filled_posts/fargate/utils /app/projects/_03_independent_cqc/_06_estimate_filled_posts/fargate/utils
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/utils /app/projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/utils

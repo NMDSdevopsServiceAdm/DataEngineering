@@ -92,7 +92,7 @@ def main(
     bucket_name: str,
     imputed_ind_cqc_data_source: str,
     estimated_ind_cqc_destination: str,
-) -> DataFrame:
+) -> None:
     print("Estimating independent CQC filled posts...")
 
     spark = utils.get_spark()

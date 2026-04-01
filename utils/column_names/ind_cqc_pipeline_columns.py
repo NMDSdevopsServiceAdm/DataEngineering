@@ -181,8 +181,8 @@ class IndCqcColumns:
     )
     estimate_filled_posts_source: str = "estimate_filled_posts_source"
     estimate_filled_posts_by_job_role: str = "estimate_filled_posts_by_job_role"
-    estimate_filled_posts_manager_adjusted: str = (
-        "estimate_filled_posts_manager_adjusted"
+    estimate_filled_posts_by_job_role_manager_adjusted: str = (
+        "estimate_filled_posts_by_job_role_manager_adjusted"
     )
     estimate_source: str = "estimate_source"
     estimate_value: str = "estimate_value"
