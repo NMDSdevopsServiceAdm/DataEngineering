@@ -531,10 +531,7 @@ class CleanONSData:
 @dataclass
 class ValidatePostcodeDirectoryCleanedData:
     raw_postcode_directory_schema = StructType(
-        [
-            StructField(ONS.import_date, StringType(), True),
-            StructField(ONS.postcode, StringType(), True),
-        ]
+        [StructField(ONS.postcode, StringType(), True)]
     )
     cleaned_postcode_directory_schema = StructType(
         [
@@ -548,8 +545,6 @@ class ValidatePostcodeDirectoryCleanedData:
             StructField(ONSClean.current_rural_urban_ind_11, StringType(), True),
         ]
     )
-
-    calculate_expected_size_schema = raw_postcode_directory_schema
 
 
 @dataclass
