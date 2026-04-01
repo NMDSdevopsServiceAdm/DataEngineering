@@ -6,7 +6,6 @@ os.environ["SPARK_VERSION"] = "3.5"
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.validation.validation_rules.ascwds_workplace_cleaned_validation_rules import (
     ASCWDSWorkplaceCleanedValidationRules as Rules,
 )
@@ -15,13 +14,8 @@ from utils.validation.validation_utils import (
     validate_dataset,
 )
 
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
-
-def main(
-    cleaned_ascwds_workplace_source: str,
-    report_destination: str,
-):
+def main(cleaned_ascwds_workplace_source: str, report_destination: str):
     cleaned_ascwds_workplace_df = utils.read_from_parquet(
         cleaned_ascwds_workplace_source,
     )
@@ -39,10 +33,7 @@ if __name__ == "__main__":
     print("Spark job 'validate_ascwds_workplace_cleaned_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    (
-        cleaned_ascwds_workplace_source,
-        report_destination,
-    ) = utils.collect_arguments(
+    (cleaned_ascwds_workplace_source, report_destination) = utils.collect_arguments(
         (
             "--cleaned_ascwds_workplace_source",
             "Source s3 directory for parquet ascwds workplace cleaned dataset",
@@ -53,10 +44,7 @@ if __name__ == "__main__":
         ),
     )
     try:
-        main(
-            cleaned_ascwds_workplace_source,
-            report_destination,
-        )
+        main(cleaned_ascwds_workplace_source, report_destination)
     finally:
         spark = utils.get_spark()
         if spark.sparkContext._gateway:
