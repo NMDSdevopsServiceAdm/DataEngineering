@@ -10,12 +10,10 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedColumns as CQCPClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.validation_table_columns import Validation
 from utils.column_values.categorical_column_values import RegistrationStatus
 
 compare_columns_to_import = [
-    Keys.import_date,
     CQCPClean.provider_id,
     CQCPClean.registration_status,
 ]
@@ -64,20 +62,13 @@ def main(
         .col_vals_not_null(
             [
                 CQCPClean.provider_id,
-                Keys.import_date,
                 CQCPClean.cqc_provider_import_date,
                 CQCPClean.name,
                 CQCPClean.registration_status,
             ]
         )
         # index columns
-        .rows_distinct(
-            [
-                CQCPClean.provider_id,
-                CQCPClean.cqc_provider_import_date,
-                Keys.import_date,
-            ]
-        )
+        .rows_distinct([CQCPClean.provider_id, CQCPClean.cqc_provider_import_date])
         # categorical column values match expected set
         .col_vals_in_set(CQCPClean.registration_status, [RegistrationStatus.registered])
         # numeric column values are between (inclusive)

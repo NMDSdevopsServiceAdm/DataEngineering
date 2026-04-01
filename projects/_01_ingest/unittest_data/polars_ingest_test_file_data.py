@@ -1506,7 +1506,6 @@ class PostcodeMatcherTest:
 class ValidateCqcLocations4FullCleanTest:
     validation_rows = [
         ("1-001",),
-        ("20250101",),
         (date(2025, 1, 1),),
         ("name",),
         (LocationType.social_care_identifier,),

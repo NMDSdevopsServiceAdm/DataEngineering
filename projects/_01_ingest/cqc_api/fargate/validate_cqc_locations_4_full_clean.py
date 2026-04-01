@@ -16,7 +16,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedNewValidationColumns as CQCLVal,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.validation_table_columns import Validation
 from utils.column_values.categorical_column_values import (
     LocationType,
@@ -28,7 +27,7 @@ from utils.column_values.categorical_columns_by_dataset import (
 )
 
 compare_columns_to_import = [
-    Keys.import_date,
+    CQCLClean.import_date,
     CQCLClean.location_id,
     CQCLClean.provider_id,
     CQCLClean.type,
@@ -88,7 +87,6 @@ def main(
         .col_vals_not_null(
             [
                 CQCLClean.location_id,
-                Keys.import_date,
                 CQCLClean.cqc_location_import_date,
                 CQCLClean.name,
                 CQCLClean.type,
@@ -113,13 +111,7 @@ def main(
             ]
         )
         # index columns
-        .rows_distinct(
-            [
-                CQCLClean.location_id,
-                CQCLClean.cqc_location_import_date,
-                Keys.import_date,
-            ]
-        )
+        .rows_distinct([CQCLClean.location_id, CQCLClean.cqc_location_import_date])
         # Complex column validation for completeness
         .col_vals_in_set(CQCLVal.services_offered_is_not_null, [NumericTrueFalse.true])
         .col_vals_in_set(

@@ -10,9 +10,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.validation_table_columns import Validation
-from utils.column_values.categorical_column_values import (
-    RegistrationStatus,
-)
+from utils.column_values.categorical_column_values import RegistrationStatus
 
 
 def main(bucket_name: str, source_path: str, reports_path: str) -> None:
@@ -47,12 +45,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             ]
         )
         # index columns
-        .rows_distinct(
-            [
-                CQCLClean.location_id,
-                CQCLClean.cqc_location_import_date,
-            ]
-        )
+        .rows_distinct([CQCLClean.location_id, CQCLClean.cqc_location_import_date])
         # categorical column values match expected set
         .col_vals_in_set(
             CQCLClean.registration_status,
