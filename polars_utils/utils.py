@@ -439,7 +439,7 @@ def coalesce_with_source_labels(cols: list[str], name: str) -> tuple[pl.Expr, pl
     return (val_expr, label_expr.alias(f"{name}_source"))
 
 
-def nullify_ct_values_previous_to_first_submission(columns: list) -> pl.Expr:
+def nullify_ct_values_previous_to_first_submission(columns: list) -> list[pl.Expr]:
     """
     Nullifies Capacity Tracker (CT) values for all import dates prior to 2021-5-1.
 
@@ -450,12 +450,12 @@ def nullify_ct_values_previous_to_first_submission(columns: list) -> pl.Expr:
         columns (list): A list of column names to nullify when .
 
     Returns:
-        pl.Expr: An expression to null values in given columns when import date
+        list[pl.Expr]: A list of expressions that null values in given columns when import date
         is prior to collecting CT data.
     """
     cutoff_condition = pl.col(IndCQC.cqc_location_import_date) < date(2021, 5, 1)
 
-    return (
-        [pl.when(cutoff_condition).then(None).otherwise(pl.col(col)).alias(col)]
+    return [
+        pl.when(cutoff_condition).then(None).otherwise(pl.col(col)).alias(col)
         for col in columns
-    )
+    ]
