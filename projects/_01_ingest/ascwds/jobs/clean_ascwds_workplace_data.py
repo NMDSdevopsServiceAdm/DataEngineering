@@ -143,7 +143,7 @@ def main(
         AscwdsScaleVariableLimits.worker_records_lower_limit,
     )
 
-    reconciliation_df = select_columns_required_for_reconciliation_df(reconciliation_df)
+    reconciliation_df = reconciliation_df.select(cols_required_for_reconciliation_df)
 
     print(
         f"Exporting ascwds workplace reconciliation data as parquet to {workplace_for_reconciliation_destination}"
@@ -252,11 +252,11 @@ def create_purged_dfs_for_reconciliation_and_data(
     df = create_workplace_last_active_date_column(df)
     df = create_date_column_for_purging_data(df)
 
-    ascwds_workplace_df = keep_workplaces_active_on_or_after_purge_date(
-        df, AWPClean.data_last_amended_date, AWPClean.purge_date
+    ascwds_workplace_df = df.where(
+        F.col(AWPClean.data_last_amended_date) >= F.col(AWPClean.purge_date)
     )
-    reconciliation_df = keep_workplaces_active_on_or_after_purge_date(
-        df, AWPClean.workplace_last_active_date, AWPClean.purge_date
+    reconciliation_df = df.where(
+        F.col(AWPClean.workplace_last_active_date) >= F.col(AWPClean.purge_date)
     )
 
     return ascwds_workplace_df, reconciliation_df
@@ -304,16 +304,6 @@ def create_date_column_for_purging_data(df: DataFrame) -> DataFrame:
         ),
     )
     return df
-
-
-def keep_workplaces_active_on_or_after_purge_date(
-    df: DataFrame, last_active_date_col: str, purge_date_col: str
-) -> DataFrame:
-    return df.where(F.col(last_active_date_col) >= F.col(purge_date_col))
-
-
-def select_columns_required_for_reconciliation_df(df: DataFrame) -> DataFrame:
-    return df.select(cols_required_for_reconciliation_df)
 
 
 if __name__ == "__main__":

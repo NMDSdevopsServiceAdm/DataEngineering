@@ -176,14 +176,6 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
-    workplace_last_active_schema = StructType(
-        [
-            StructField(AWP.establishment_id, StringType(), True),
-            StructField("last_active", DateType(), True),
-            StructField(AWPClean.purge_date, DateType(), True),
-        ]
-    )
-
 
 @dataclass
 class ASCWDSWorkerSchemas:
