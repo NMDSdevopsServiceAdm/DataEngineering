@@ -42,10 +42,7 @@ class MainTests(CleanONSDatasetTests):
         read_from_parquet_patch.return_value = self.test_ons_parquet
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
         write_to_parquet_patch.assert_called_once_with(
-            ANY,
-            self.TEST_DESTINATION,
-            mode="overwrite",
-            partitionKeys=self.onsPartitionKeys,
+            ANY, self.TEST_DESTINATION, mode="overwrite"
         )
 
 
