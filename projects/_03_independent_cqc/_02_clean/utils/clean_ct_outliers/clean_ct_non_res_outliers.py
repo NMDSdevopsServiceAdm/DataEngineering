@@ -45,21 +45,20 @@ def clean_capacity_tracker_non_res_outliers(df: DataFrame) -> DataFrame:
 
     df = aggregate_values_to_provider_level(df, IndCQC.ct_non_res_care_workers_employed)
 
-    df = clean_longitudinal_outliers(
-        df=df,
-        group_by_col=IndCQC.location_id,
-        col_to_clean=IndCQC.ct_non_res_care_workers_employed,
-        cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
-        proportion_to_filter=0.001,
-        care_home=False,
-    )
-
     df = clean_ct_values_after_consecutive_repetition(
         df=df,
         column_to_clean=IndCQC.ct_non_res_care_workers_employed,
         cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
         care_home=False,
         partitioning_column=IndCQC.location_id,
+    )
+
+    df = clean_longitudinal_outliers(
+        df=df,
+        col_to_clean=IndCQC.ct_non_res_care_workers_employed,
+        cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
+        proportion_to_filter=0.001,
+        care_home=False,
     )
 
     return df
