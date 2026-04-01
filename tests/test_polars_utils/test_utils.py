@@ -19,6 +19,7 @@ from moto import mock_aws, sns
 from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
 
 from polars_utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 SRC_PATH = "polars_utils.validation.actions"
 PATCH_PATH = "polars_utils.utils"
@@ -642,5 +643,29 @@ class TestCoalesceWithSourceLabels:
         input_lf = expected_lf.drop("values", "values_source")
         returned_lf = input_lf.with_columns(
             utils.coalesce_with_source_labels(["a", "b", "c"], name="values")
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestNullifyCtValuesPreviousToFirstSubmission:
+    def test_function_only_nulls_given_columns_when_import_date_before_cutoff(self):
+        test_lf = pl.LazyFrame(
+            {
+                IndCQC.cqc_location_import_date: [date(2026, 1, 1), date(2021, 4, 1)],
+                "col_1": ["string", "string"],
+                "col_2": [1, 1],
+                "col_3": [2, 2],
+            }
+        )
+        returned_lf = test_lf.with_columns(
+            utils.nullify_ct_values_previous_to_first_submission(["col_1", "col_2"])
+        )
+        expected_lf = pl.LazyFrame(
+            {
+                IndCQC.cqc_location_import_date: [date(2026, 1, 1), date(2021, 4, 1)],
+                "col_1": ["string", None],
+                "col_2": [1, None],
+                "col_3": [2, 2],
+            }
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
