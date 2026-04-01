@@ -1,3 +1,5 @@
+from datetime import date
+
 import polars as pl
 
 from polars_utils import utils
@@ -22,6 +24,9 @@ def estimate_non_res_capacity_tracker_filled_posts(lf: pl.LazyFrame) -> pl.LazyF
         - if they've never submitted capacity trackers, the Skills for Care
           estimate.
 
+    Values in the new column are set to a minimum of 1.0 and nulled if the
+    import date is before 2021-5-1.
+
     Args:
         lf (pl.LazyFrame): A LazyFrame with non res capacity tracker data.
 
@@ -32,37 +37,40 @@ def estimate_non_res_capacity_tracker_filled_posts(lf: pl.LazyFrame) -> pl.LazyF
     care_worker_ratio = calculate_care_worker_ratio()
 
     lf = lf.with_columns(
-        (
-            pl.when(pl.col(IndCQC.care_home) == CareHome.not_care_home)
-            .then(
-                pl.col(IndCQC.ct_non_res_care_workers_employed_imputed).truediv(
-                    care_worker_ratio
-                )
+        pl.when(pl.col(IndCQC.care_home) == CareHome.not_care_home)
+        .then(
+            pl.col(IndCQC.ct_non_res_care_workers_employed_imputed).truediv(
+                care_worker_ratio
             )
-            .alias(IndCQC.ct_non_res_all_posts)
-        ),
-        (
-            utils.coalesce_with_source_labels(
-                cols=[
-                    IndCQC.ct_non_res_all_posts,
-                    IndCQC.estimate_filled_posts,
-                ],
-                name=IndCQC.ct_non_res_filled_post_estimate,
-            )
-        ),
-        (
-            pl.col(IndCQC.ct_non_res_filled_post_estimate)
-            .clip(lower_bound=1.0)
-            .alias(IndCQC.ct_non_res_filled_post_estimate)
-        ),
-        (
-            utils.nullify_ct_values_previous_to_first_submission(
-                [
-                    IndCQC.ct_non_res_filled_post_estimate,
-                    IndCQC.ct_non_res_filled_post_estimate_source,
-                ]
-            )
-        ),
+        )
+        .alias(IndCQC.ct_non_res_all_posts)
+    )
+
+    coalesce_expr = utils.coalesce_with_source_labels(
+        cols=[
+            IndCQC.ct_non_res_all_posts,
+            IndCQC.estimate_filled_posts,
+        ],
+        name=IndCQC.ct_non_res_filled_post_estimate,
+    )
+    lf = lf.with_columns(
+        [
+            pl.when(pl.col(IndCQC.care_home) == CareHome.not_care_home).then(expression)
+            for expression in coalesce_expr
+        ]
+    )
+
+    lf = lf.with_columns(
+        pl.col(IndCQC.ct_non_res_filled_post_estimate).clip(lower_bound=1.0)
+    )
+
+    lf = lf.with_columns(
+        utils.nullify_ct_values_previous_to_first_submission(
+            [
+                IndCQC.ct_non_res_filled_post_estimate,
+                IndCQC.ct_non_res_filled_post_estimate_source,
+            ]
+        )
     )
 
     return lf
@@ -95,6 +103,5 @@ def calculate_care_worker_ratio() -> pl.Expr:
         pl.col(IndCQC.estimate_filled_posts).filter(ratio_filter).sum()
     )
     care_worker_ratio = sum_ct_care_workers.truediv(sum_sfc_filled_posts)
-    print(f"The care worker ratio used is: {care_worker_ratio}.")
 
     return care_worker_ratio
