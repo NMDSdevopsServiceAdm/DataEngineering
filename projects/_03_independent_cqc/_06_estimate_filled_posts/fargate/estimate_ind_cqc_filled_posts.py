@@ -1,4 +1,7 @@
 from polars_utils import utils
+from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.estimate_non_res_ct_filled_posts import (
+    estimate_non_res_capacity_tracker_filled_posts,
+)
 from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.non_res_with_and_without_dormancy_combined import (
     combine_non_res_with_and_without_dormancy_models,
 )
@@ -106,7 +109,7 @@ def main(
 
     # set_min_value
 
-    # estimate_non_res_capacity_tracker_filled_posts
+    lf = estimate_non_res_capacity_tracker_filled_posts(lf)
 
     utils.sink_to_parquet(
         lf,
@@ -138,5 +141,7 @@ if __name__ == "__main__":
         imputed_ind_cqc_data_source=args.imputed_ind_cqc_data_source,
         destination=args.destination,
     )
+
+    print("Finished Estimate Ind CQC job")
 
     print("Finished Estimate Ind CQC job")

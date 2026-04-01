@@ -14,6 +14,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     mock_data = Mock(name="data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.estimate_non_res_capacity_tracker_filled_posts")
     @patch(f"{PATCH_PATH}.combine_non_res_with_and_without_dormancy_models")
     @patch(f"{PATCH_PATH}.enrich_with_model_predictions")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_data)
@@ -22,6 +23,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         scan_parquet_mock: Mock,
         enrich_with_model_predictions_mock: Mock,
         combine_non_res_with_and_without_dormancy_models_mcok: Mock,
+        estimate_non_res_capacity_tracker_filled_posts_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
 
@@ -37,6 +39,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         )
         self.assertEqual(enrich_with_model_predictions_mock.call_count, 3)
         combine_non_res_with_and_without_dormancy_models_mcok.assert_called_once()
+        estimate_non_res_capacity_tracker_filled_posts_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
