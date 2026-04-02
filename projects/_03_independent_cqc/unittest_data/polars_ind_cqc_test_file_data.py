@@ -1910,5 +1910,5 @@ class EstimateNonResCapacityTrackerFilledPostsData:
         ("1-006", date(2026, 1, 1), CareHome.not_care_home, None, None, None, None, None), # Nulled because no CT value or estimate filled posts.
         ("1-007", date(2026, 1, 1), CareHome.care_home, 100.0, 100.0, None, None, None), # Nulled because care home.
         ("1-008", date(2026, 1, 1), CareHome.not_care_home, 0.49, 0.98, 0.98, 1.0, IndCQC.ct_non_res_all_posts), # ct_non_res_filled_post_estimate is 1.0 because of clip.
-        ("1-009", date(2021, 4, 1), CareHome.not_care_home, 1.0, 2.0, 2.0, None, None), # Nulled because import date prior to 2021-5-1
+        ("1-009", date(2021, 4, 30), CareHome.not_care_home, 1.0, 2.0, 2.0, None, None), # Nulled because import date prior to 2021-5-1
     ] # fmt: skip
