@@ -34,6 +34,8 @@ All notable changes to this project will be documented in this file.
   outliers are nulled from the remaining data. These changes are in the Spark and Polars scripts.
 
 
+- Reduced worker job role data to CQC locations only.
+
 ### Fixed
 
 
