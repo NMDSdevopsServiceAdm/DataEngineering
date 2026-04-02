@@ -5,7 +5,6 @@ from unittest.mock import ANY, Mock, patch
 from pyspark.sql.dataframe import DataFrame
 
 import projects._01_ingest.ons_pd.jobs.clean_ons_data as job
-import utils.cleaning_utils as cUtils
 from projects._01_ingest.unittest_data.ingest_test_file_data import CleanONSData as Data
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CleanONSData as Schema,
@@ -22,25 +21,30 @@ PATCH_PATH = "projects._01_ingest.ons_pd.jobs.clean_ons_data"
 class CleanONSDatasetTests(SparkBaseTest):
     TEST_SOURCE = "some/directory"
     TEST_DESTINATION = "some/other/directory"
-    onsPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
-        self.test_ons_parquet = self.spark.createDataFrame(
+        self.test_ons_df = self.spark.createDataFrame(
             Data.ons_sample_rows_full, schema=Schema.full_schema
-        )
-        self.test_ons_postcode_directory_with_date_df = cUtils.column_to_date(
-            self.test_ons_parquet,
-            Keys.import_date,
-            ONSClean.contemporary_ons_import_date,
         )
 
 
 class MainTests(CleanONSDatasetTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.cUtils.column_to_date")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
-    def test_main(self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock):
-        read_from_parquet_patch.return_value = self.test_ons_parquet
+    def test_main(
+        self,
+        read_from_parquet_patch: Mock,
+        column_to_date: Mock,
+        write_to_parquet_patch: Mock,
+    ):
+        read_from_parquet_patch.return_value = self.test_ons_df
+        column_to_date.return_value = self.test_ons_df
+
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
+
+        read_from_parquet_patch.assert_called_once_with(self.TEST_SOURCE)
+        column_to_date.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
             ANY, self.TEST_DESTINATION, mode="overwrite"
         )
@@ -49,9 +53,7 @@ class MainTests(CleanONSDatasetTests):
 class PrepareContemporaryOnsDataTests(CleanONSDatasetTests):
     def setUp(self):
         super().setUp()
-        self.returned_df = job.prepare_contemporary_ons_data(
-            self.test_ons_postcode_directory_with_date_df
-        )
+        self.returned_df = job.prepare_contemporary_ons_data(self.test_ons_df)
 
     def test_prepare_contemporary_ons_data_returns_df_with_correct_number_of_rows(
         self,
@@ -71,9 +73,7 @@ class PrepareContemporaryOnsDataTests(CleanONSDatasetTests):
 class PrepareCurrentOnsDataTests(CleanONSDatasetTests):
     def setUp(self):
         super().setUp()
-        self.returned_df = job.prepare_current_ons_data(
-            self.test_ons_postcode_directory_with_date_df
-        )
+        self.returned_df = job.prepare_current_ons_data(self.test_ons_df)
 
     def test_only_most_recent_rows_for_max_date_are_kept(self):
         returned_data = self.returned_df.collect()
