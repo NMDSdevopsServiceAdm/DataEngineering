@@ -63,7 +63,7 @@ class CalculateCareWorkerRatioTest(EstimateNonResCapacityTrackerFilledPostsTests
         expected_lf = pl.LazyFrame({returned_ratio: [0.8]})
         returned_ratio = (
             self.test_lf.with_columns(
-                job.calculate_care_worker_ratio().alias("returned_ratio")
+                job.calculate_care_worker_ratio().alias(returned_ratio)
             )
             .select(returned_ratio)
             .unique()
