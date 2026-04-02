@@ -265,12 +265,6 @@ class ASCWDSWorkplaceData:
         ("2", date(2024, 4, 4), date(2022, 4, 4)),
     ]
 
-    workplace_last_active_rows = [
-        ("1", date(2024, 4, 4), date(2024, 5, 5)),
-        ("2", date(2024, 4, 4), date(2024, 4, 4)),
-        ("3", date(2024, 4, 4), date(2024, 3, 3)),
-    ]
-
 
 @dataclass
 class ASCWDSWorkerData:
