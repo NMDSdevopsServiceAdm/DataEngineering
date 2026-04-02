@@ -1,3 +1,5 @@
+import polars as pl
+
 import projects._03_independent_cqc._01_merge.fargate.utils.utils as JRUtils
 from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
@@ -11,6 +13,8 @@ cleaned_ascwds_worker_columns_to_import = [
     IndCQC.main_job_role_clean_labelled,
     AWKClean.location_id,
 ]
+
+is_cqc_location: bool = pl.col(AWKClean.location_id).str.len_chars() > 0
 
 
 def main(
@@ -27,7 +31,7 @@ def main(
     cleaned_ascwds_worker_lf = utils.scan_parquet(
         source=cleaned_ascwds_worker_source,
         selected_columns=cleaned_ascwds_worker_columns_to_import,
-    )
+    ).filter(is_cqc_location)
 
     columns_to_aggregate_on = [
         IndCQC.establishment_id,
@@ -35,10 +39,8 @@ def main(
         IndCQC.main_job_role_clean_labelled,
     ]
 
-    cqc_worker_lf = JRUtils.filter_to_cqc_locations(cleaned_ascwds_worker_lf)
-
     aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
-        cqc_worker_lf,
+        cleaned_ascwds_worker_lf,
         JRUtils.LIST_OF_JOB_ROLES_SORTED,
         columns_to_aggregate_on,
     )
