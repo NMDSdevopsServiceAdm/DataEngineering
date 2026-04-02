@@ -338,9 +338,6 @@ class CleanCapacityTrackerCareHomeSchema:
             StructField(CTCH.agency_nurses_employed, StringType(), True),
             StructField(CTCH.agency_care_workers_employed, StringType(), True),
             StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
             StructField("other column", StringType(), True),
         ]
@@ -384,9 +381,6 @@ class CleanCapacityTrackerNonResSchema:
             StructField(CTNR.cqc_id, StringType(), True),
             StructField(CTNR.cqc_care_workers_employed, StringType(), True),
             StructField(CTNR.service_user_count, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
             StructField("other column", StringType(), True),
         ]
@@ -404,9 +398,7 @@ class ValidateCleanedCapacityTrackerCareHomeData:
             StructField(CTCH.agency_nurses_employed, StringType(), True),
             StructField(CTCH.agency_care_workers_employed, StringType(), True),
             StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
     cleaned_ct_care_home_schema = StructType(
@@ -428,9 +420,7 @@ class ValidateCleanedCapacityTrackerNonResData:
             StructField(CTNR.cqc_id, StringType(), True),
             StructField(CTNR.cqc_care_workers_employed, StringType(), True),
             StructField(CTNR.service_user_count, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
     cleaned_ct_non_res_schema = StructType(
@@ -438,9 +428,6 @@ class ValidateCleanedCapacityTrackerNonResData:
             StructField(CTNRClean.cqc_id, StringType(), True),
             StructField(CTNRClean.cqc_care_workers_employed, StringType(), True),
             StructField(CTNRClean.service_user_count, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
             StructField(CTNRClean.ct_non_res_import_date, DateType(), True),
         ]
     )
