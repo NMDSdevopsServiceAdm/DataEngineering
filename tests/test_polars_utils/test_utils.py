@@ -651,7 +651,7 @@ class TestNullifyCtValuesPreviousToFirstSubmission:
     def test_function_only_nulls_given_columns_when_import_date_before_cutoff(self):
         test_lf = pl.LazyFrame(
             {
-                IndCQC.cqc_location_import_date: [date(2026, 1, 1), date(2021, 4, 1)],
+                IndCQC.cqc_location_import_date: [date(2026, 1, 1), date(2021, 4, 30)],
                 "col_1": ["string", "string"],
                 "col_2": [1, 1],
                 "col_3": [2, 2],
@@ -662,7 +662,7 @@ class TestNullifyCtValuesPreviousToFirstSubmission:
         )
         expected_lf = pl.LazyFrame(
             {
-                IndCQC.cqc_location_import_date: [date(2026, 1, 1), date(2021, 4, 1)],
+                IndCQC.cqc_location_import_date: [date(2026, 1, 1), date(2021, 4, 30)],
                 "col_1": ["string", None],
                 "col_2": [1, None],
                 "col_3": [2, 2],
