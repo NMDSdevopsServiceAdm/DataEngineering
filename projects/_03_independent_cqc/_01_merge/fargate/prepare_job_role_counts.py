@@ -38,7 +38,6 @@ def main(
         IndCQC.ascwds_worker_import_date,
         IndCQC.main_job_role_clean_labelled,
     ]
-
     aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
         cleaned_ascwds_worker_lf,
         JRUtils.LIST_OF_JOB_ROLES_SORTED,

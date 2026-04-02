@@ -7,20 +7,10 @@
       "Next": "Run validation crawler when success",
       "Branches": [
         {
-          "StartAt": "Estimate filled posts by job role (pyspark)",
+          "StartAt": "Success (1)",
           "States": {
-            "Estimate filled posts by job role (pyspark)": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${estimate_ind_cqc_filled_posts_by_job_role_job_name}",
-                "Arguments": {
-                  "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_06_estimated_filled_posts/",
-                  "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                  "--estimated_ind_cqc_filled_posts_by_job_role_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_estimated_filled_posts_by_job_role/"
-                }
-              },
-              "End": true
+            "Success (1)": {
+              "Type": "Succeed"
             }
           }
         },

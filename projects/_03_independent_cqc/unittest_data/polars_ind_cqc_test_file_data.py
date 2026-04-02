@@ -311,30 +311,6 @@ class ValidateModel01FeaturesData:
 
 
 @dataclass
-class EstimateIndCqcFilledPostsByJobRoleUtilsData:
-    estimates_df_before_join_rows = [
-        ("1-001", "1-001", "1-002"),
-        ("1001", "1001", "1002"),
-        (date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 1)),
-    ]
-
-    worker_df_before_join_rows = [
-        ("1001", "1001", "1002"),
-        (date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 1)),
-        (MainJobRoleLabels.care_worker, MainJobRoleLabels.senior_management, MainJobRoleLabels.care_worker),
-        (10, 5, 20),
-    ] # fmt: skip
-
-    expected_join_worker_to_estimates_dataframe_rows = [
-        ("1-001", "1-001", "1-001", "1-002"),
-        ("1001", "1001", "1001", "1002"),
-        (date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 1)),
-        (MainJobRoleLabels.care_worker, MainJobRoleLabels.senior_management, None, MainJobRoleLabels.care_worker),
-        (10, 5, None, 20),
-    ] # fmt: skip
-
-
-@dataclass
 class MergeIndCQCData:
     cqc_location_data = [
         ("1-001", date(2024, 1, 1), "Y", Sector.independent),
@@ -470,14 +446,14 @@ class ValidateImputedIndCqcAscwdsAndPir:
         ("1-000000002", date(2024, 1, 1),),
         ("1-000000001", date(2024, 2, 1),),
         ("1-000000002", date(2024, 2, 1),),
-    ] # fmt: skip
+    ]  # fmt: skip
 
     imputed_ind_cqc_ascwds_and_pir_rows = [
         ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
         ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
         ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
-    ] # fmt: skip
+    ]  # fmt: skip
 
 
 @dataclass
@@ -494,7 +470,7 @@ class ValidateEstimatedIndCQCFilledPostsData:
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
         ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
         ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
-    ] # fmt: skip
+    ]  # fmt: skip
 
 
 @dataclass
@@ -1727,7 +1703,7 @@ null_values_exceeding_repetition_limit_test_cases = [
             ("1-001", date(2026, 10, 1), None, CTFilteringRule.location_repeats_total_posts),
         ],
     ),
-] # fmt: skip
+]  # fmt: skip
 
 
 @dataclass
@@ -1798,7 +1774,7 @@ class EstimateFilledPostsModelsUtils:
         ("1-002", date(2025, 1, 1), CareHome.not_care_home, None, None, None),  # no prediction expected
         ("1-003", date(2025, 1, 1), CareHome.care_home, 2, -1.0, "v1_r1"),  # prediction (converted to posts) joined in (maintains negative)
         ("1-004", date(2025, 1, 1), CareHome.care_home, 2, 5.0, "v1_r1"),  # prediction (converted to posts) joined in
-    ] # fmt: skip
+    ]  # fmt: skip
 
     enrich_model_predictions_non_res_rows = [
         ("1-001", date(2025, 1, 1), 2, -5.0, "v1_r1"),
@@ -1810,7 +1786,7 @@ class EstimateFilledPostsModelsUtils:
         ("1-002", date(2025, 1, 1), CareHome.not_care_home, None, 2.5, "v1_r1"),  # prediction joined in
         ("1-003", date(2025, 1, 1), CareHome.care_home, 2, None, None),  # no prediction expected
         ("1-004", date(2025, 1, 1), CareHome.care_home, 2, None, None),  # no prediction expected
-    ] # fmt: skip
+    ]  # fmt: skip
     join_ind_cqc_rows = [
         ("1-001", Region.london, 67, date(2022, 2, 20)),
         ("1-001", Region.london, 67, date(2022, 3, 29)),
