@@ -60,7 +60,7 @@ class CalculateCareWorkerRatioTest(EstimateNonResCapacityTrackerFilledPostsTests
 
     def test_function_returns_expected_value(self):
         returned_ratio = "returned_ratio"
-        expected_lf = pl.LazyFrame({returned_ratio: [0.8]})
+        expected_lf = pl.LazyFrame({returned_ratio: [0.5]})
         returned_ratio = (
             self.test_lf.with_columns(
                 job.calculate_care_worker_ratio().alias(returned_ratio)

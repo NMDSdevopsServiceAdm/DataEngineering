@@ -1902,13 +1902,13 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
 @dataclass
 class EstimateNonResCapacityTrackerFilledPostsData:
     expected_estimate_non_res_capacity_tracker_filled_posts_rows = [
-        ("1-001", date(2026, 1, 1), CareHome.not_care_home, 8.0, 10.0, 10.0, 10.0, IndCQC.ct_non_res_all_posts),
-        ("1-002", date(2026, 1, 1), CareHome.not_care_home, 16.0, 20.0, 20.0, 20.0, IndCQC.ct_non_res_all_posts),
-        ("1-003", date(2026, 1, 1), CareHome.not_care_home, 24.0, 30.0, 30.0, 30.0, IndCQC.ct_non_res_all_posts),
-        ("1-004", date(2026, 1, 1), CareHome.not_care_home, None, 40.0, None, 40.0, IndCQC.estimate_filled_posts),
-        ("1-005", date(2026, 1, 1), CareHome.not_care_home, 40.0, None, 50.0, 50.0, IndCQC.ct_non_res_all_posts),
+        ("1-001", date(2026, 1, 1), CareHome.not_care_home, 1.0, 2.0, 2.0, 2.0, IndCQC.ct_non_res_all_posts),
+        ("1-002", date(2026, 1, 1), CareHome.not_care_home, 2.0, 4.0, 4.0, 4.0, IndCQC.ct_non_res_all_posts),
+        ("1-003", date(2026, 1, 1), CareHome.not_care_home, 3.0, 6.0, 6.0, 6.0, IndCQC.ct_non_res_all_posts),
+        ("1-004", date(2026, 1, 1), CareHome.not_care_home, None, 100.0, None, 100.0, IndCQC.estimate_filled_posts), # Value derived from filled posts since CT is null.
+        ("1-005", date(2026, 1, 1), CareHome.not_care_home, 100.0, None, 200.0, 200.0, IndCQC.ct_non_res_all_posts), # Value derived from CT and adjusted.
         ("1-006", date(2026, 1, 1), CareHome.not_care_home, None, None, None, None, None), # Nulled because no CT value or estimate filled posts.
         ("1-007", date(2026, 1, 1), CareHome.care_home, 100.0, 100.0, None, None, None), # Nulled because care home.
-        ("1-008", date(2026, 1, 1), CareHome.not_care_home, 0.08, 0.1, 0.1, 1.0, IndCQC.ct_non_res_all_posts), # ct_non_res_filled_post_estimate is 1.0 because of clip.
-        ("1-009", date(2021, 4, 1), CareHome.not_care_home, 8.0, 10.0, 10.0, None, None), # Nulled because import date prior to 2021-5-1
+        ("1-008", date(2026, 1, 1), CareHome.not_care_home, 0.49, 0.98, 0.98, 1.0, IndCQC.ct_non_res_all_posts), # ct_non_res_filled_post_estimate is 1.0 because of clip.
+        ("1-009", date(2021, 4, 1), CareHome.not_care_home, 1.0, 2.0, 2.0, None, None), # Nulled because import date prior to 2021-5-1
     ] # fmt: skip
