@@ -6,7 +6,6 @@ os.environ["SPARK_VERSION"] = "3.5"
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.validation.validation_rules.ascwds_workplace_raw_validation_rules import (
     ASCWDSWorkplaceRawValidationRules as Rules,
 )
@@ -15,16 +14,10 @@ from utils.validation.validation_utils import (
     validate_dataset,
 )
 
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
+def main(raw_ascwds_workplace_source: str, report_destination: str):
+    raw_ascwds_workplace_df = utils.read_from_parquet(raw_ascwds_workplace_source)
 
-def main(
-    raw_ascwds_workplace_source: str,
-    report_destination: str,
-):
-    raw_ascwds_workplace_df = utils.read_from_parquet(
-        raw_ascwds_workplace_source,
-    )
     rules = Rules.rules_to_check
 
     check_result_df = validate_dataset(raw_ascwds_workplace_df, rules)
@@ -39,10 +32,7 @@ if __name__ == "__main__":
     print("Spark job 'validate_ascwds_workplace_raw_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    (
-        raw_ascwds_workplace_source,
-        report_destination,
-    ) = utils.collect_arguments(
+    (raw_ascwds_workplace_source, report_destination) = utils.collect_arguments(
         (
             "--raw_ascwds_workplace_source",
             "Source s3 directory for parquet ascwds workplace raw dataset",
@@ -53,10 +43,7 @@ if __name__ == "__main__":
         ),
     )
     try:
-        main(
-            raw_ascwds_workplace_source,
-            report_destination,
-        )
+        main(raw_ascwds_workplace_source, report_destination)
     finally:
         spark = utils.get_spark()
         if spark.sparkContext._gateway:

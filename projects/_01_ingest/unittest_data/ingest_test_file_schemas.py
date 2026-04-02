@@ -114,7 +114,7 @@ class ASCWDSWorkplaceSchemas:
     location_schema = StructType(
         [
             StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.import_date, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
             StructField(AWP.organisation_id, StringType(), True),
         ]
     )
@@ -176,14 +176,6 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
-    workplace_last_active_schema = StructType(
-        [
-            StructField(AWP.establishment_id, StringType(), True),
-            StructField("last_active", DateType(), True),
-            StructField(AWPClean.purge_date, DateType(), True),
-        ]
-    )
-
 
 @dataclass
 class ASCWDSWorkerSchemas:
@@ -194,9 +186,6 @@ class ASCWDSWorkerSchemas:
             StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.main_job_role_id, StringType(), True),
             StructField(AWK.import_date, StringType(), True),
-            StructField(AWK.year, StringType(), True),
-            StructField(AWK.month, StringType(), True),
-            StructField(AWK.day, StringType(), True),
         ]
     )
 
@@ -223,14 +212,6 @@ class ASCWDSWorkerSchemas:
     )
 
     impute_not_known_job_roles_schema = StructType(
-        [
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-        ]
-    )
-
-    remove_workers_with_not_known_job_role_schema = StructType(
         [
             StructField(AWKClean.worker_id, StringType(), True),
             StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
