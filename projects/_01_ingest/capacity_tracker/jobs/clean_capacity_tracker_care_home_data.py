@@ -25,9 +25,6 @@ CAPACITY_TRACKER_CARE_HOME_COLUMNS = [
     CTCH.agency_nurses_employed,
     CTCH.agency_care_workers_employed,
     CTCH.agency_non_care_workers_employed,
-    Keys.year,
-    Keys.month,
-    Keys.day,
     Keys.import_date,
 ]
 MAX_BOUND_DIRECTLY_EMPLOYED: int = 1000
@@ -39,7 +36,8 @@ def main(
 ):
     capacity_tracker_care_home_df = utils.read_from_parquet(
         capacity_tracker_care_home_source, CAPACITY_TRACKER_CARE_HOME_COLUMNS
-    )
+    ).withColumn(CTCHClean.care_home, F.lit(CareHome.care_home))
+
     columns_to_cast_to_integers = [
         CTCH.nurses_employed,
         CTCH.care_workers_employed,
@@ -51,16 +49,19 @@ def main(
     capacity_tracker_care_home_df = cUtils.cast_to_int(
         capacity_tracker_care_home_df, columns_to_cast_to_integers
     )
+
     capacity_tracker_care_home_df = cUtils.column_to_date(
         capacity_tracker_care_home_df,
         Keys.import_date,
         CTCHClean.ct_care_home_import_date,
-    )
+    ).drop(Keys.import_date)
+
     capacity_tracker_care_home_df = (
         remove_rows_where_agency_and_non_agency_values_match(
             capacity_tracker_care_home_df
         )
     )
+
     columns_to_bound = [
         CTCH.nurses_employed,
         CTCH.care_workers_employed,
@@ -72,11 +73,9 @@ def main(
         columns_to_bound,
         upper_limit=MAX_BOUND_DIRECTLY_EMPLOYED,
     )
+
     capacity_tracker_care_home_df = create_new_columns_with_totals(
         capacity_tracker_care_home_df
-    )
-    capacity_tracker_care_home_df = capacity_tracker_care_home_df.withColumn(
-        CTCHClean.care_home, F.lit(CareHome.care_home)
     )
 
     print(f"Exporting as parquet to {cleaned_capacity_tracker_care_home_destination}")
@@ -84,12 +83,6 @@ def main(
         capacity_tracker_care_home_df,
         cleaned_capacity_tracker_care_home_destination,
         mode="overwrite",
-        partitionKeys=[
-            Keys.year,
-            Keys.month,
-            Keys.day,
-            Keys.import_date,
-        ],
     )
 
 

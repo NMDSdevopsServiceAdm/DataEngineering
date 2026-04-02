@@ -71,6 +71,10 @@ class PrepareJobRoleCountsUtilsData:
         (1, 0, 1, 0),
     ]
 
+    filter_to_cqc_locations_rows = [("1", "", None)]
+
+    expected_filter_to_cqc_locations_rows = ["1"]
+
 
 @dataclass
 class FeaturesEngineeringUtilsData:

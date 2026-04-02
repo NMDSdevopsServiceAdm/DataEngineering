@@ -8,6 +8,9 @@ from utils.column_names.capacity_tracker_columns import (
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -47,6 +50,12 @@ class PrepareJobRoleCountsUtilsSchemas:
             (IndCQC.ascwds_worker_import_date, pl.Date()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.ascwds_job_role_counts, pl.UInt32()),
+        ]
+    )
+
+    filter_to_cqc_locations_schema = pl.Schema(
+        [
+            (AWKClean.location_id, pl.String()),
         ]
     )
 
