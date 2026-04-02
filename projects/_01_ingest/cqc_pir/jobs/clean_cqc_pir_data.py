@@ -18,17 +18,20 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as PIRCols
 from utils.column_values.categorical_column_values import CareHome, PIRType
 
-pirPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
-
 
 def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
-    cqc_pir_df = utils.read_from_parquet(cqc_pir_source)
-
-    cqc_pir_df = remove_rows_without_pir_people_directly_employed(cqc_pir_df)
+    cqc_pir_df = utils.read_from_parquet(cqc_pir_source).where(
+        (F.col(PIRCols.pir_people_directly_employed) > 0)
+        & (
+            (F.col(PIRCols.pir_type) == PIRType.residential)
+            | (F.col(PIRCols.pir_type) == PIRType.community)
+        )
+    )
 
     cqc_pir_df = cUtils.column_to_date(
         cqc_pir_df, Keys.import_date, PIRCleanCols.cqc_pir_import_date
-    )
+    ).drop(Keys.year, Keys.month, Keys.day, Keys.import_date)
+
     cqc_pir_df = cUtils.column_to_date(
         cqc_pir_df,
         PIRCleanCols.pir_submission_date,
@@ -36,33 +39,13 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
         cUtils.pir_submission_date_uri_format,
     )
 
-    cqc_pir_df = remove_unused_pir_types(cqc_pir_df)
-
     cqc_pir_df = add_care_home_column(cqc_pir_df)
 
     cqc_pir_df = filter_latest_submission_date(cqc_pir_df)
 
     cqc_pir_df = null_people_directly_employed_outliers(cqc_pir_df)
 
-    utils.write_to_parquet(
-        cqc_pir_df,
-        cleaned_cqc_pir_destination,
-        mode="overwrite",
-        partitionKeys=pirPartitionKeys,
-    )
-
-
-def remove_rows_without_pir_people_directly_employed(df: DataFrame) -> DataFrame:
-    df = df.where((df[PIRCols.pir_people_directly_employed] > 0))
-    return df
-
-
-def remove_unused_pir_types(df: DataFrame) -> DataFrame:
-    df = df.where(
-        (df[PIRCols.pir_type] == PIRType.residential)
-        | (df[PIRCols.pir_type] == PIRType.community)
-    )
-    return df
+    utils.write_to_parquet(cqc_pir_df, cleaned_cqc_pir_destination, mode="overwrite")
 
 
 def add_care_home_column(df: DataFrame) -> DataFrame:

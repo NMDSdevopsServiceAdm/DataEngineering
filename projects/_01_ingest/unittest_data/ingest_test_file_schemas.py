@@ -653,15 +653,6 @@ class CleanCQCPIRSchema:
         ]
     )
 
-    remove_rows_missing_pir_people_directly_employed_schema = StructType(
-        [
-            StructField(CQCPIR.location_id, StringType(), True),
-            StructField(CQCPIR.pir_people_directly_employed, IntegerType(), True),
-        ]
-    )
-
-    remove_unused_pir_types_schema = add_care_home_column_schema
-
     filter_latest_submission_date_schema = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), True),

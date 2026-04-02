@@ -871,21 +871,6 @@ class CleanCQCPIRData:
         ("loc 3", None, None),
         ("loc 4", "Community", "N"),
     ]
-    remove_unused_pir_types_rows = add_care_home_column_rows
-    expected_remove_unused_pir_types_rows = [
-        ("loc 1", "Residential"),
-        ("loc 4", "Community"),
-    ]
-
-    remove_rows_missing_pir_people_directly_employed = [
-        ("loc_1", 1),
-        ("loc_1", 0),
-        ("loc_1", None),
-    ]
-
-    expected_remove_rows_missing_pir_people_directly_employed = [
-        ("loc_1", 1),
-    ]
 
     subset_for_latest_submission_date_before_filter = [
         ("1-1199876096", "Y", date(2022, 2, 1), date(2021, 5, 7)),
