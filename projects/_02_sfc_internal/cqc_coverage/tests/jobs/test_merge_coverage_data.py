@@ -17,7 +17,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import (
     CQCCurrentOrHistoricValues,
     CQCLatestRating,
@@ -33,7 +32,6 @@ class SetupForTests(SparkBaseTest):
     TEST_CQC_PROVIDERS_SOURCE = "some/other/directory"
     TEST_MERGED_DESTINATION = "some/other/directory"
     TEST_REDUCED_DESTINATION = "some/other/directory"
-    partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
         self.test_clean_cqc_location_df = self.spark.createDataFrame(
@@ -107,19 +105,13 @@ class MainTests(SetupForTests):
         join_provider_name_into_merged_coverage_df_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_with(
-            ANY,
-            self.TEST_MERGED_DESTINATION,
-            mode="overwrite",
-            partitionKeys=self.partition_keys,
+            ANY, self.TEST_MERGED_DESTINATION, mode="overwrite"
         )
 
         filter_df_to_maximum_value_in_column_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_with(
-            ANY,
-            self.TEST_REDUCED_DESTINATION,
-            mode="overwrite",
-            partitionKeys=self.partition_keys,
+            ANY, self.TEST_REDUCED_DESTINATION, mode="overwrite"
         )
 
 
