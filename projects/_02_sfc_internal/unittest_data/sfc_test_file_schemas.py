@@ -1623,7 +1623,7 @@ class LmEngagementUtilsSchemas:
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.current_cssr, StringType(), True),
             StructField(CoverageColumns.in_ascwds, IntegerType(), True),
-            StructField(Keys.year, StringType(), True),
+            StructField("_year", IntegerType(), True),
         ]
     )
     expected_add_columns_for_locality_manager_dashboard_schema = StructType(
