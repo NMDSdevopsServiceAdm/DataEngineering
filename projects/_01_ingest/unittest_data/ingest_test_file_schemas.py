@@ -114,7 +114,7 @@ class ASCWDSWorkplaceSchemas:
     location_schema = StructType(
         [
             StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.import_date, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
             StructField(AWP.organisation_id, StringType(), True),
         ]
     )
@@ -176,14 +176,6 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
-    workplace_last_active_schema = StructType(
-        [
-            StructField(AWP.establishment_id, StringType(), True),
-            StructField("last_active", DateType(), True),
-            StructField(AWPClean.purge_date, DateType(), True),
-        ]
-    )
-
 
 @dataclass
 class ASCWDSWorkerSchemas:
@@ -194,9 +186,6 @@ class ASCWDSWorkerSchemas:
             StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.main_job_role_id, StringType(), True),
             StructField(AWK.import_date, StringType(), True),
-            StructField(AWK.year, StringType(), True),
-            StructField(AWK.month, StringType(), True),
-            StructField(AWK.day, StringType(), True),
         ]
     )
 
@@ -223,14 +212,6 @@ class ASCWDSWorkerSchemas:
     )
 
     impute_not_known_job_roles_schema = StructType(
-        [
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-        ]
-    )
-
-    remove_workers_with_not_known_job_role_schema = StructType(
         [
             StructField(AWKClean.worker_id, StringType(), True),
             StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
@@ -338,9 +319,6 @@ class CleanCapacityTrackerCareHomeSchema:
             StructField(CTCH.agency_nurses_employed, StringType(), True),
             StructField(CTCH.agency_care_workers_employed, StringType(), True),
             StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
             StructField("other column", StringType(), True),
         ]
@@ -384,9 +362,6 @@ class CleanCapacityTrackerNonResSchema:
             StructField(CTNR.cqc_id, StringType(), True),
             StructField(CTNR.cqc_care_workers_employed, StringType(), True),
             StructField(CTNR.service_user_count, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
             StructField("other column", StringType(), True),
         ]
@@ -404,14 +379,18 @@ class ValidateCleanedCapacityTrackerCareHomeData:
             StructField(CTCH.agency_nurses_employed, StringType(), True),
             StructField(CTCH.agency_care_workers_employed, StringType(), True),
             StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
     cleaned_ct_care_home_schema = StructType(
         [
-            *ct_care_home_schema,
+            StructField(CTCH.cqc_id, StringType(), True),
+            StructField(CTCH.nurses_employed, StringType(), True),
+            StructField(CTCH.care_workers_employed, StringType(), True),
+            StructField(CTCH.non_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_nurses_employed, StringType(), True),
+            StructField(CTCH.agency_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
             StructField(CTCHClean.ct_care_home_import_date, DateType(), True),
             StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
             StructField(CTCHClean.agency_total_employed, IntegerType(), True),
@@ -428,9 +407,7 @@ class ValidateCleanedCapacityTrackerNonResData:
             StructField(CTNR.cqc_id, StringType(), True),
             StructField(CTNR.cqc_care_workers_employed, StringType(), True),
             StructField(CTNR.service_user_count, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
     cleaned_ct_non_res_schema = StructType(
@@ -438,9 +415,6 @@ class ValidateCleanedCapacityTrackerNonResData:
             StructField(CTNRClean.cqc_id, StringType(), True),
             StructField(CTNRClean.cqc_care_workers_employed, StringType(), True),
             StructField(CTNRClean.service_user_count, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
             StructField(CTNRClean.ct_non_res_import_date, DateType(), True),
         ]
     )
@@ -490,10 +464,7 @@ class CleanONSData:
             StructField(ONS.lower_super_output_area_2021, StringType(), True),
             StructField(ONS.middle_super_output_area_2021, StringType(), True),
             StructField(ONS.parliamentary_constituency, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
         ]
     )
 
@@ -515,10 +486,6 @@ class CleanONSData:
             StructField(ONSClean.contemporary_lsoa21, StringType(), True),
             StructField(ONSClean.contemporary_msoa21, StringType(), True),
             StructField(ONSClean.contemporary_constituency, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
         ]
     )
 
@@ -547,10 +514,7 @@ class CleanONSData:
 @dataclass
 class ValidatePostcodeDirectoryCleanedData:
     raw_postcode_directory_schema = StructType(
-        [
-            StructField(ONS.import_date, StringType(), True),
-            StructField(ONS.postcode, StringType(), True),
-        ]
+        [StructField(ONS.postcode, StringType(), True)]
     )
     cleaned_postcode_directory_schema = StructType(
         [
@@ -564,8 +528,6 @@ class ValidatePostcodeDirectoryCleanedData:
             StructField(ONSClean.current_rural_urban_ind_11, StringType(), True),
         ]
     )
-
-    calculate_expected_size_schema = raw_postcode_directory_schema
 
 
 @dataclass

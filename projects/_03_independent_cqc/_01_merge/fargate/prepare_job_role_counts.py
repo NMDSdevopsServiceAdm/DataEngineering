@@ -1,13 +1,20 @@
+import polars as pl
+
 import projects._03_independent_cqc._01_merge.fargate.utils.utils as JRUtils
 from polars_utils import utils
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-
 
 cleaned_ascwds_worker_columns_to_import = [
     IndCQC.establishment_id,
     IndCQC.ascwds_worker_import_date,
     IndCQC.main_job_role_clean_labelled,
+    AWKClean.location_id,
 ]
+
+is_cqc_location: bool = pl.col(AWKClean.location_id).str.len_chars() > 0
 
 
 def main(
@@ -24,7 +31,7 @@ def main(
     cleaned_ascwds_worker_lf = utils.scan_parquet(
         source=cleaned_ascwds_worker_source,
         selected_columns=cleaned_ascwds_worker_columns_to_import,
-    )
+    ).filter(is_cqc_location)
 
     columns_to_aggregate_on = [
         IndCQC.establishment_id,
