@@ -12,10 +12,27 @@ All notable changes to this project will be documented in this file.
 
 - Converted enrich_with_model_predictions utils function to Polars and converted the tests for the same.
 
+- Converted combine_non_res_with_and_without_dormancy_models utils function to Polars and converted the tests for the same.
+
+- Converted combine_non_res_with_and_without_dormancy_models utils function to Polars and converted the tests for the same.
+
+- Converted Spark util model_calculate_rolling_average to Polars as calculate_rolling_average. Moved the function
+  from a util script to imputation job script because it was only called in that job.
+
 ### Changed
 - Added la permissions to columns imported in merge_coverage_data job.
 
+- Updated jobs in config.yml to use role-arn to authenticate instead of AWS keys.
+
 - Removed partitioning from the IND CQC pipeline when saving data. Parquet files are now written without partitions.
+
+- In PySpark, a linear regression model was used to convert the original PIR (people) values to filled posts. As part of the conversion to Polars, the filtering for which locations are included has been tightened and the linear regression model has been replaced with a simple ratio multiplier.
+
+- Finished converting the ind cqc cleaning validation from Spark to Polars.
+
+- Refactored the cleaning of capacity tracker outliers so that repeated values are nulled first then
+  outliers are nulled from the remaining data. These changes are in the Spark and Polars scripts.
+
 
 - Reduced worker job role data to CQC locations only.
 

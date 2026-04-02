@@ -3,9 +3,6 @@ import polars as pl
 from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
     update_filtering_rule,
 )
-from projects._03_independent_cqc._02_clean.fargate.utils.utils import (
-    create_column_with_repeated_values_removed,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CTFilteringRule
 
@@ -23,10 +20,9 @@ DICT_OF_MINIMUM_POSTS_AND_MAX_REPETITION_DAYS_LOCATIONS_CARE_HOMES = {
 }
 
 
-def clean_ct_values_after_consecutive_repetition(
+def null_values_exceeding_repetition_limit(
     lf: pl.LazyFrame,
     column_to_clean: str,
-    cleaned_column_name: str,
     care_home: bool,
 ) -> pl.LazyFrame:
     """
@@ -42,7 +38,6 @@ def clean_ct_values_after_consecutive_repetition(
     Args:
         lf (pl.LazyFrame): A LazyFrame with consecutive import dates.
         column_to_clean (str): A column with repeated values.
-        cleaned_column_name (str): A column with cleaned values.
         care_home (bool): True when cleaning care home values, False when cleaning
             non-residential values.
 
@@ -82,18 +77,18 @@ def clean_ct_values_after_consecutive_repetition(
         .otherwise(None)
     )
 
-    lf = lf.with_columns(cleaned_expr.alias(cleaned_column_name))
+    lf = lf.with_columns(cleaned_expr.alias(column_to_clean))
 
-    lf_cleaned = update_filtering_rule(
+    lf = update_filtering_rule(
         lf=lf,
         filter_rule_col_name=filter_rule_column_name,
         raw_col_name=column_to_clean,
-        clean_col_name=cleaned_column_name,
+        clean_col_name=column_to_clean,
         populated_rule=CTFilteringRule.populated,
         new_rule_name=CTFilteringRule.location_repeats_total_posts,
     )
 
-    return lf_cleaned
+    return lf
 
 
 def repetition_limit_expr(
