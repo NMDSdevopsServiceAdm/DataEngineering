@@ -115,10 +115,11 @@ def calculate_locations_monthly_change(
         DataFrame: The same dataframe with the locations monthly change column
             and in ascwds last month column added.
     """
-    df = df.withColumn(
-        CoverageColumns.in_ascwds_last_month,
+    previous = F.coalesce(
         F.lag(CoverageColumns.in_ascwds).over(w),
-    ).na.fill(InAscwds.not_in_ascwds, CoverageColumns.in_ascwds_last_month)
+        F.lit(InAscwds.not_in_ascwds),
+    )
+    df = df.withColumn(CoverageColumns.in_ascwds_last_month, previous)
 
     df = df.withColumn(
         CoverageColumns.in_ascwds_change,
