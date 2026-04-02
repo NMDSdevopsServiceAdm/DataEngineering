@@ -1,4 +1,4 @@
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
@@ -52,29 +52,30 @@ def null_large_single_submission_locations(df: DataFrame) -> DataFrame:
         DataFrame: The input DataFrame with large, single submission values
         removed.
     """
+    w = Window.partitionBy(PIRCleanCols.location_id)
+
     two_submissions: int = 2
     submission_count: str = "submission_count"
     max_people_employed: str = "max_value"
     large_location_identifier: int = 100
 
-    location_stats = df.groupBy(PIRCleanCols.location_id).agg(
-        F.count(PIRCleanCols.pir_people_directly_employed_cleaned).alias(
-            submission_count
-        ),
-        F.max(PIRCleanCols.pir_people_directly_employed_cleaned).alias(
-            max_people_employed
-        ),
+    df = df.withColumn(
+        submission_count,
+        F.count(PIRCleanCols.pir_people_directly_employed_cleaned).over(w),
+    )
+    df = df.withColumn(
+        max_people_employed,
+        F.max(PIRCleanCols.pir_people_directly_employed_cleaned).over(w),
     )
 
-    return (
-        df.join(location_stats, on=PIRCleanCols.location_id, how="left")
-        .withColumn(
-            PIRCleanCols.pir_people_directly_employed_cleaned,
-            F.when(
-                (F.col(max_people_employed) >= large_location_identifier)
-                & (F.col(submission_count) < two_submissions),
-                F.lit(None),
-            ).otherwise(F.col(PIRCleanCols.pir_people_directly_employed_cleaned)),
-        )
-        .drop(submission_count, max_people_employed)
+    df = df.withColumn(
+        PIRCleanCols.pir_people_directly_employed_cleaned,
+        F.when(
+            (F.col(max_people_employed) >= large_location_identifier)
+            & (F.col(submission_count) < two_submissions),
+            F.lit(None),
+        ).otherwise(F.col(PIRCleanCols.pir_people_directly_employed_cleaned)),
     )
+    df = df.drop(max_people_employed, submission_count)
+
+    return df
