@@ -447,11 +447,11 @@ def nullify_ct_values_previous_to_first_submission(columns: list) -> list[pl.Exp
     data.
 
     Args:
-        columns (list): A list of column names to nullify when .
+        columns (list): A list of column names to nullify.
 
     Returns:
         list[pl.Expr]: A list of expressions that null values in given columns when import date
-        is prior to collecting CT data.
+        is prior to 2021-5-1.
     """
     cutoff_condition = pl.col(IndCQC.cqc_location_import_date) < date(2021, 5, 1)
 
