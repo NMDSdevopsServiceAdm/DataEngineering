@@ -18,7 +18,6 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
-from utils.column_names.raw_data_files.ascwds_workplace_columns import PartitionKeys
 
 PATCH_PATH = "projects._01_ingest.ascwds.jobs.clean_ascwds_workplace_data"
 
@@ -27,12 +26,6 @@ class CleanASCWDSWorkplaceDatasetTests(SparkBaseTest):
     TEST_SOURCE = "s3://some_bucket/some_source_key"
     TEST_CLEANED_DESTINATION = "s3://some_bucket/some_destination_key"
     TEST_RECONCILIATION_DESTINATION = "s3://some_other_destination_key"
-    partition_keys = [
-        PartitionKeys.year,
-        PartitionKeys.month,
-        PartitionKeys.day,
-        PartitionKeys.import_date,
-    ]
 
     def setUp(self) -> None:
         self.test_ascwds_workplace_df = self.spark.createDataFrame(
@@ -44,7 +37,6 @@ class CleanASCWDSWorkplaceDatasetTests(SparkBaseTest):
 
 class MainTests(CleanASCWDSWorkplaceDatasetTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.select_columns_required_for_reconciliation_df")
     @patch(f"{PATCH_PATH}.cUtils.set_column_bounds")
     @patch(f"{PATCH_PATH}.cUtils.cast_to_int")
     @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
@@ -61,7 +53,6 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         apply_categorical_labels_mock: Mock,
         cast_to_int_mock: Mock,
         set_column_bounds_mock: Mock,
-        select_columns_required_for_reconciliation_df_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_ascwds_workplace_df
@@ -81,7 +72,6 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         apply_categorical_labels_mock.assert_called_once()
         cast_to_int_mock.assert_called_once()
         self.assertEqual(set_column_bounds_mock.call_count, 2)
-        select_columns_required_for_reconciliation_df_mock.assert_called_once()
         self.assertEqual(write_to_parquet_mock.call_count, 2)
 
 
@@ -291,33 +281,6 @@ class CreateDateColumnForPurgingDataTests(CleanASCWDSWorkplaceDatasetTests):
         )
 
 
-class KeepWorkplacesActiveOnOrAfterPurgeDate(CleanASCWDSWorkplaceDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.test_workplace_last_active_df = self.spark.createDataFrame(
-            Data.workplace_last_active_rows,
-            Schemas.workplace_last_active_schema,
-        )
-        self.returned_df = job.keep_workplaces_active_on_or_after_purge_date(
-            self.test_workplace_last_active_df, "last_active", AWPClean.purge_date
-        )
-        self.returned_locations = (
-            self.returned_df.select(AWP.establishment_id)
-            .rdd.flatMap(lambda x: x)
-            .collect()
-        )
-
-    def test_remove_workplace_when_last_active_before_purge_date(self):
-        self.assertFalse("1" in self.returned_locations)
-
-    def test_keep_workplace_when_last_active_on_purge_date(self):
-        self.assertTrue("2" in self.returned_locations)
-
-    def test_keep_workplace_when_last_active_after_purge_date(self):
-        self.assertTrue("3" in self.returned_locations)
-
-
 class RemoveWorkplacesWithDuplicateLocationIdsTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
@@ -342,7 +305,7 @@ class RemoveWorkplacesWithDuplicateLocationIdsTests(CleanASCWDSWorkplaceDatasetT
             self.returned_df.columns,
             [
                 AWP.location_id,
-                AWP.import_date,
+                AWPClean.ascwds_workplace_import_date,
                 AWP.organisation_id,
             ],
         )
