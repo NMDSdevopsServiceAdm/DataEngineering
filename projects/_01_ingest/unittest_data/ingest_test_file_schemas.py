@@ -490,10 +490,7 @@ class CleanONSData:
             StructField(ONS.lower_super_output_area_2021, StringType(), True),
             StructField(ONS.middle_super_output_area_2021, StringType(), True),
             StructField(ONS.parliamentary_constituency, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
         ]
     )
 
@@ -547,10 +544,7 @@ class CleanONSData:
 @dataclass
 class ValidatePostcodeDirectoryCleanedData:
     raw_postcode_directory_schema = StructType(
-        [
-            StructField(ONS.import_date, StringType(), True),
-            StructField(ONS.postcode, StringType(), True),
-        ]
+        [StructField(ONS.postcode, StringType(), True)]
     )
     cleaned_postcode_directory_schema = StructType(
         [
@@ -564,8 +558,6 @@ class ValidatePostcodeDirectoryCleanedData:
             StructField(ONSClean.current_rural_urban_ind_11, StringType(), True),
         ]
     )
-
-    calculate_expected_size_schema = raw_postcode_directory_schema
 
 
 @dataclass
