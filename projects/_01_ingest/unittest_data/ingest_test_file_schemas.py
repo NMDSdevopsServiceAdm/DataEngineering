@@ -512,10 +512,6 @@ class CleanONSData:
             StructField(ONSClean.contemporary_lsoa21, StringType(), True),
             StructField(ONSClean.contemporary_msoa21, StringType(), True),
             StructField(ONSClean.contemporary_constituency, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
         ]
     )
 

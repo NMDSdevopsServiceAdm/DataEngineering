@@ -5,7 +5,6 @@ from unittest.mock import ANY, Mock, patch
 from pyspark.sql.dataframe import DataFrame
 
 import projects._01_ingest.ons_pd.jobs.clean_ons_data as job
-import utils.cleaning_utils as cUtils
 from projects._01_ingest.unittest_data.ingest_test_file_data import CleanONSData as Data
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CleanONSData as Schema,
@@ -31,10 +30,21 @@ class CleanONSDatasetTests(SparkBaseTest):
 
 class MainTests(CleanONSDatasetTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.cUtils.column_to_date")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
-    def test_main(self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock):
+    def test_main(
+        self,
+        read_from_parquet_patch: Mock,
+        column_to_date: Mock,
+        write_to_parquet_patch: Mock,
+    ):
         read_from_parquet_patch.return_value = self.test_ons_df
+        column_to_date.return_value = self.test_ons_df
+
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
+
+        read_from_parquet_patch.assert_called_once_with(self.TEST_SOURCE)
+        column_to_date.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
             ANY, self.TEST_DESTINATION, mode="overwrite"
         )
