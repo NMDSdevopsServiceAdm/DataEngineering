@@ -248,25 +248,21 @@ def join_ascwds_data_into_cqc_location_df(
     Returns:
         DataFrame: The clean CQC locations dataframe with all columns from the ASC-WDS reconciliation dataframe added to it.
     """
-    merged_coverage_ascwds_df_with_ascwds_workplace_import_date = (
-        cUtils.add_aligned_date_column(
-            cqc_location_df,
-            ascwds_workplace_df,
-            cqc_location_import_date_column,
-            ascwds_workplace_import_date_column,
-        )
+    cqc_with_ascwds_import_date_df = cUtils.add_aligned_date_column(
+        cqc_location_df,
+        ascwds_workplace_df,
+        cqc_location_import_date_column,
+        ascwds_workplace_import_date_column,
     )
 
     formatted_ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
         AWPClean.location_id, CQCLClean.location_id
     )
 
-    merged_coverage_df = (
-        merged_coverage_ascwds_df_with_ascwds_workplace_import_date.join(
-            formatted_ascwds_workplace_df,
-            [CQCLClean.location_id, AWPClean.ascwds_workplace_import_date],
-            how="left",
-        )
+    merged_coverage_df = cqc_with_ascwds_import_date_df.join(
+        formatted_ascwds_workplace_df,
+        [CQCLClean.location_id, AWPClean.ascwds_workplace_import_date],
+        how="left",
     )
 
     return merged_coverage_df
