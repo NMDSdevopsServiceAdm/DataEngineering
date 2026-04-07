@@ -1,7 +1,6 @@
 import polars as pl
 
 from polars_utils import utils
-from polars_utils.pipeline_utils import time_it
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     ManagerialFilledPostAdjustmentExpr,
 )
@@ -25,58 +24,54 @@ def main(
         metadata_source (str): path to the metadata created in clean step
         estimated_data_destination (str): destination for output
     """
+    print("Estimates Job Started...")
 
-    # Remove time_it.
-    with time_it("Estimate"):
+    estimated_job_role_posts_lf = utils.scan_parquet(imputed_data_source)
+    print("Imputed LazyFrame read in")
 
-        print("Estimates Job Started...")
+    metadata_lf = utils.scan_parquet(metadata_source)
+    print("Metadata LazyFrame read in")
 
-        estimated_job_role_posts_lf = utils.scan_parquet(imputed_data_source)
-        print("Imputed LazyFrame read in")
+    # Start of making the estimates by job role using ASC-WDS data only.
+    # This will coalesce the job role percentage breakdowns, multiply by filled posts number, then
+    # adjust that to account for registered managers from CQC.
 
-        metadata_lf = utils.scan_parquet(metadata_source)
-        print("Metadata LazyFrame read in")
+    # Abstract this into a defined function. So that main is calling a series of steps.
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        utils.coalesce_with_source_labels(
+            cols=[
+                # IndCQC.ascwds_job_role_ratios_filtered,
+                IndCQC.imputed_ascwds_job_role_ratios,
+                IndCQC.ascwds_job_role_rolling_ratio,
+            ],
+            name=IndCQC.ascwds_job_role_ratios_merged,
+        ),
+    )
 
-        # Start of making the estimates by job role using ASC-WDS data only.
-        # This will coalesce the job role percentage breakdowns, multiply by filled posts number, then
-        # adjust that to account for registered managers from CQC.
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        (
+            pl.col(IndCQC.estimate_filled_posts)
+            * pl.col(IndCQC.ascwds_job_role_ratios_merged)
+        ).alias(IndCQC.estimate_filled_posts_by_job_role)
+    )
 
-        # Abstract this into a defined function. So that main is calling a series of steps.
-        estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-            utils.coalesce_with_source_labels(
-                cols=[
-                    # IndCQC.ascwds_job_role_ratios_filtered,
-                    IndCQC.imputed_ascwds_job_role_ratios,
-                    IndCQC.ascwds_job_role_rolling_ratio,
-                ],
-                name=IndCQC.ascwds_job_role_ratios_merged,
-            ),
-        )
+    # Try to refactor the pipe(apply_manager_adjustments) so it's readable sequence of expressions without class methods.
 
-        estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-            (
-                pl.col(IndCQC.estimate_filled_posts)
-                * pl.col(IndCQC.ascwds_job_role_ratios_merged)
-            ).alias(IndCQC.estimate_filled_posts_by_job_role)
-        )
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.pipe(
+        apply_manager_adjustments
+    )
 
-        # Try to refactor the pipe(apply_manager_adjustments) so it's readable sequence of expressions without class methods.
+    # Join back original metadata.
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
+        metadata_lf,
+        on="id",
+    )
 
-        estimated_job_role_posts_lf = estimated_job_role_posts_lf.pipe(
-            apply_manager_adjustments
-        )
-
-        # Join back original metadata.
-        estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
-            metadata_lf,
-            on="id",
-        )
-
-        utils.sink_to_parquet(
-            lazy_df=estimated_job_role_posts_lf,
-            output_path=estimated_data_destination,
-            append=False,
-        )
+    utils.sink_to_parquet(
+        lazy_df=estimated_job_role_posts_lf,
+        output_path=estimated_data_destination,
+        append=False,
+    )
 
 
 def apply_manager_adjustments(
