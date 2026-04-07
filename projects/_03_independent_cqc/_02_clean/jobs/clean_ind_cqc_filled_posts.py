@@ -43,60 +43,60 @@ def main(
 
     locations_df = cUtils.reduce_dataset_to_earliest_file_per_month(locations_df)
 
-    locations_df = calculate_time_registered_for(locations_df)
-    locations_df = calculate_time_since_dormant(locations_df)
+    # locations_df = calculate_time_registered_for(locations_df)
+    # locations_df = calculate_time_since_dormant(locations_df)
 
     locations_df = remove_dual_registration_cqc_care_homes(locations_df)
 
     locations_df = replace_zero_beds_with_null(locations_df)
     locations_df = populate_missing_care_home_number_of_beds(locations_df)
 
-    locations_df = calculate_ascwds_filled_posts(
-        locations_df,
-        IndCQC.total_staff_bounded,
-        IndCQC.worker_records_bounded,
-        IndCQC.ascwds_filled_posts,
-        IndCQC.ascwds_filled_posts_source,
-    )
+    # locations_df = calculate_ascwds_filled_posts(
+    #     locations_df,
+    #     IndCQC.total_staff_bounded,
+    #     IndCQC.worker_records_bounded,
+    #     IndCQC.ascwds_filled_posts,
+    #     IndCQC.ascwds_filled_posts_source,
+    # )
 
-    locations_df = create_column_with_repeated_values_removed(
-        locations_df,
-        IndCQC.ascwds_filled_posts,
-        IndCQC.ascwds_filled_posts_dedup,
-    )
-    locations_df = create_column_with_repeated_values_removed(
-        locations_df,
-        IndCQC.pir_people_directly_employed_cleaned,
-        IndCQC.pir_people_directly_employed_dedup,
-    )
+    # locations_df = create_column_with_repeated_values_removed(
+    #     locations_df,
+    #     IndCQC.ascwds_filled_posts,
+    #     IndCQC.ascwds_filled_posts_dedup,
+    # )
+    # locations_df = create_column_with_repeated_values_removed(
+    #     locations_df,
+    #     IndCQC.pir_people_directly_employed_cleaned,
+    #     IndCQC.pir_people_directly_employed_dedup,
+    # )
 
-    locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
-        locations_df,
-        IndCQC.ascwds_filled_posts_dedup,
-        IndCQC.filled_posts_per_bed_ratio,
-    )
+    # locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
+    #     locations_df,
+    #     IndCQC.ascwds_filled_posts_dedup,
+    #     IndCQC.filled_posts_per_bed_ratio,
+    # )
 
-    locations_df = cUtils.create_banded_bed_count_column(
-        locations_df,
-        IndCQC.number_of_beds_banded,
-        [0, 1, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
-    )
+    # locations_df = cUtils.create_banded_bed_count_column(
+    #     locations_df,
+    #     IndCQC.number_of_beds_banded,
+    #     [0, 1, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
+    # )
 
-    locations_df = clean_ascwds_filled_post_outliers(locations_df)
+    # locations_df = clean_ascwds_filled_post_outliers(locations_df)
 
-    locations_df = forward_fill_latest_known_value(
-        locations_df, IndCQC.ascwds_filled_posts_dedup_clean
-    )
+    # locations_df = forward_fill_latest_known_value(
+    #     locations_df, IndCQC.ascwds_filled_posts_dedup_clean
+    # )
 
-    locations_df = forward_fill_latest_known_value(
-        locations_df, IndCQC.pir_people_directly_employed_dedup
-    )
+    # locations_df = forward_fill_latest_known_value(
+    #     locations_df, IndCQC.pir_people_directly_employed_dedup
+    # )
 
-    locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
-        locations_df,
-        IndCQC.ascwds_filled_posts_dedup_clean,
-        IndCQC.filled_posts_per_bed_ratio,
-    )
+    # locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
+    #     locations_df,
+    #     IndCQC.ascwds_filled_posts_dedup_clean,
+    #     IndCQC.filled_posts_per_bed_ratio,
+    # )
 
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
         locations_df,
