@@ -108,7 +108,7 @@ def main(
     print("Step 1")
     cqc_location_df.select(
         CQCLClean.location_id, CQCLClean.cqc_location_import_date
-    ).where(F.col(CQCLClean.cqc_location_import_date) == "1-10190519203").sort(
+    ).where(F.col(CQCLClean.location_id) == "1-10190519203").sort(
         CQCLClean.cqc_location_import_date
     ).show(
         50
@@ -131,7 +131,7 @@ def main(
     print("Step 2")
     cqc_location_df.select(
         CQCLClean.location_id, CQCLClean.cqc_location_import_date
-    ).where(F.col(CQCLClean.cqc_location_import_date) == "1-10190519203").sort(
+    ).where(F.col(CQCLClean.location_id) == "1-10190519203").sort(
         CQCLClean.cqc_location_import_date
     ).show(
         50
@@ -153,7 +153,7 @@ def main(
     print("Step 3")
     merged_coverage_df.select(
         CQCLClean.location_id, CQCLClean.cqc_location_import_date
-    ).where(F.col(CQCLClean.cqc_location_import_date) == "1-10190519203").sort(
+    ).where(F.col(CQCLClean.location_id) == "1-10190519203").sort(
         CQCLClean.cqc_location_import_date
     ).show(
         50
@@ -175,7 +175,7 @@ def main(
     print("Step 4")
     merged_coverage_df.select(
         CQCLClean.location_id, CQCLClean.cqc_location_import_date
-    ).where(F.col(CQCLClean.cqc_location_import_date) == "1-10190519203").sort(
+    ).where(F.col(CQCLClean.location_id) == "1-10190519203").sort(
         CQCLClean.cqc_location_import_date
     ).show(
         50
@@ -196,7 +196,7 @@ def main(
     print("Step 5")
     merged_coverage_df.select(
         CQCLClean.location_id, CQCLClean.cqc_location_import_date
-    ).where(F.col(CQCLClean.cqc_location_import_date) == "1-10190519203").sort(
+    ).where(F.col(CQCLClean.location_id) == "1-10190519203").sort(
         CQCLClean.cqc_location_import_date
     ).sort(
         CQCLClean.cqc_location_import_date
