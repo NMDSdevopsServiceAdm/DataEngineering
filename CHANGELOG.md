@@ -31,8 +31,9 @@ All notable changes to this project will be documented in this file.
 - Refactored the cleaning of capacity tracker outliers so that repeated values are nulled first then
   outliers are nulled from the remaining data. These changes are in the Spark and Polars scripts.
 
-
 - Reduced worker job role data to CQC locations only.
+
+- Set up cleaning step for job role breakdown.
 
 ### Fixed
 
