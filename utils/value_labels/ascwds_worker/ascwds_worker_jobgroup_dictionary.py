@@ -66,3 +66,8 @@ class AscwdsWorkerValueLabelsJobGroup:
     def manager_roles(cls) -> list[str]:
         """Return a list of roles in the "managers" job group."""
         return cls.filter_roles(JobGroupLabels.managers)
+
+    @classmethod
+    def all_roles(cls) -> list[str]:
+        """Return all job roles."""
+        return list(cls.job_role_to_job_group_dict)

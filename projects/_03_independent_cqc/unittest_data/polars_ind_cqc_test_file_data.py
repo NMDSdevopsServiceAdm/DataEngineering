@@ -72,6 +72,10 @@ class PrepareJobRoleCountsUtilsData:
         (1, 0, 1, 0),
     ]
 
+    filter_to_cqc_locations_rows = [("1", "", None)]
+
+    expected_filter_to_cqc_locations_rows = ["1"]
+
 
 @dataclass
 class FeaturesEngineeringUtilsData:
@@ -305,30 +309,6 @@ class ValidateModel01FeaturesData:
         ("1-001", date(2025, 1, 1), "Y", "Y", "feature", "feature", None),
     ]
     expected_get_expected_row_count_rows = 2
-
-
-@dataclass
-class EstimateIndCqcFilledPostsByJobRoleUtilsData:
-    estimates_df_before_join_rows = [
-        ("1-001", "1-001", "1-002"),
-        ("1001", "1001", "1002"),
-        (date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 1)),
-    ]
-
-    worker_df_before_join_rows = [
-        ("1001", "1001", "1002"),
-        (date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 1)),
-        (MainJobRoleLabels.care_worker, MainJobRoleLabels.senior_management, MainJobRoleLabels.care_worker),
-        (10, 5, 20),
-    ] # fmt: skip
-
-    expected_join_worker_to_estimates_dataframe_rows = [
-        ("1-001", "1-001", "1-001", "1-002"),
-        ("1001", "1001", "1001", "1002"),
-        (date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 1)),
-        (MainJobRoleLabels.care_worker, MainJobRoleLabels.senior_management, None, MainJobRoleLabels.care_worker),
-        (10, 5, None, 20),
-    ] # fmt: skip
 
 
 @dataclass

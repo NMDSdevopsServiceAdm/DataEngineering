@@ -13,8 +13,6 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.value_labels.ons_pd.label_dictionaries import onspd_labels_dict
 
-onsPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
-
 
 def main(ons_source: str, cleaned_ons_destination: str):
     ons_df = utils.read_from_parquet(ons_source)
@@ -38,12 +36,7 @@ def main(ons_source: str, cleaned_ons_destination: str):
         current_ons_df, ONSClean.postcode, "left"
     )
 
-    utils.write_to_parquet(
-        combined_ons_df,
-        cleaned_ons_destination,
-        mode="overwrite",
-        partitionKeys=onsPartitionKeys,
-    )
+    utils.write_to_parquet(combined_ons_df, cleaned_ons_destination, mode="overwrite")
 
 
 def prepare_current_ons_data(df: DataFrame) -> DataFrame:
@@ -98,10 +91,6 @@ def prepare_contemporary_ons_data(df: DataFrame) -> DataFrame:
         df[ONSClean.parliamentary_constituency].alias(
             ONSClean.contemporary_constituency
         ),
-        df[Keys.year],
-        df[Keys.month],
-        df[Keys.day],
-        df[Keys.import_date],
     )
     return df
 

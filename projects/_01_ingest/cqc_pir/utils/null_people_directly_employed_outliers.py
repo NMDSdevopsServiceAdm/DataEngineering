@@ -11,14 +11,16 @@ def null_people_directly_employed_outliers(df: DataFrame) -> DataFrame:
     """
     Creates a clean version of the'pir_people_directly_employed' column.
 
-    This function step duplicates 'pir_people_directly_employed' as 'pir_people_directly_employed_cleaned'
-    and then runs various functions designed to remove outliers.
+    This function step duplicates 'pir_people_directly_employed' as
+    'pir_people_directly_employed_cleaned' and then runs various functions
+    designed to remove outliers.
 
     Args:
         df (DataFrame): A dataframe containing 'pir_people_directly_employed'.
 
     Returns:
-        DataFrame: A dataframe containing 'pir_people_directly_employed_cleaned'.
+        DataFrame: A dataframe containing
+        'pir_people_directly_employed_cleaned'.
     """
     print("Cleaning pir_people_directly_employed...")
 
@@ -34,18 +36,21 @@ def null_people_directly_employed_outliers(df: DataFrame) -> DataFrame:
 
 def null_large_single_submission_locations(df: DataFrame) -> DataFrame:
     """
-    Excludes CQC PIR data for locations who submitted a large employee figure and only submitted once.
+    Excludes CQC PIR data for locations who submitted a large employee figure
+    and only submitted once.
 
-    Large locations can have a big impact in localised data. In order to help identify data quality
-    issues, we only want to keep data for larger locations who have submitted more than once. This
-    is so we have multiple submissions to verify that the location are consistently large as opposed
-    to a data input error.
+    Large locations can have a big impact in localised data. In order to help
+    identify data quality issues, we only want to keep data for larger locations
+    who have submitted more than once. This is so we have multiple submissions
+    to verify that the location are consistently large as opposed to a data
+    input error.
 
     Args:
-        df (DataFrame): The input DataFrame containing pir_people_directly_employed_cleaned.
+        df (DataFrame): The input DataFrame.
 
     Returns:
-        DataFrame: The input DataFrame with large, single submission values removed.
+        DataFrame: The input DataFrame with large, single submission values
+        removed.
     """
     w = Window.partitionBy(PIRCleanCols.location_id)
 
