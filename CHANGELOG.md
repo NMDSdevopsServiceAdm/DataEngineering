@@ -17,6 +17,9 @@ All notable changes to this project will be documented in this file.
 - Converted Spark util model_calculate_rolling_average to Polars as calculate_rolling_average. Moved the function
   from a util script to imputation job script because it was only called in that job.
 
+- Converted util function estimate_non_res_capacity_tracker_filled_posts from Pyspark to Polars. The function is not
+  being called in the estimates job yet because functions that create estimate_filled_posts column are not converted yet.
+
 ### Changed
 - Added la permissions to columns imported in merge_coverage_data job.
 
