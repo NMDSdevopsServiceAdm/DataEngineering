@@ -121,6 +121,49 @@ def main(
 
     df = combine_care_home_and_non_res_values_into_single_column(
         df,
+        IndCQC.ct_care_home_total_employed,
+        IndCQC.ct_non_res_care_workers_employed,
+        "ct_combined_care_home_and_non_res",
+    )
+
+    df = model_primary_service_rate_of_change_trendline(
+        df,
+        "ct_combined_care_home_and_non_res",
+        NumericalValues.number_of_days_in_window,
+        "ct_combined_care_home_and_non_res_rate_of_change_trendline",
+        NumericalValues.max_number_of_days_to_interpolate_between,
+    )
+
+    df = model_imputation_with_extrapolation_and_interpolation(
+        df,
+        IndCQC.ct_care_home_total_employed_cleaned,
+        "ct_combined_care_home_and_non_res_rate_of_change_trendline",
+        "ct_care_home_total_employed_imputed",
+        care_home=True,
+        extrapolation_method="ratio",
+    )
+
+    df = model_imputation_with_extrapolation_and_interpolation(
+        df,
+        IndCQC.ct_non_res_care_workers_employed_cleaned,
+        "ct_combined_care_home_and_non_res_rate_of_change_trendline",
+        "cqccareworkersemployed_imputed",
+        care_home=False,
+        extrapolation_method="ratio",
+    )
+
+    df = nullify_ct_values_previous_to_first_submission(
+        df,
+        [
+            "ct_care_home_total_employed_imputed",
+            "cqccareworkersemployed_imputed",
+        ],
+    )
+
+    df = df.persist()
+
+    df = combine_care_home_and_non_res_values_into_single_column(
+        df,
         IndCQC.ct_care_home_total_employed_cleaned,
         IndCQC.ct_non_res_care_workers_employed_cleaned,
         "ct_combined_care_home_and_non_res_cleaned",
