@@ -105,6 +105,14 @@ def main(
         cleaned_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,
     )
+    print("Step 1")
+    cqc_location_df.select(
+        CQCLClean.location_id, CQCLClean.cqc_location_import_date
+    ).where(F.col(CQCLClean.cqc_location_import_date) == "1-10190519203").sort(
+        CQCLClean.cqc_location_import_date
+    ).show(
+        50
+    )
 
     ascwds_workplace_df = utils.read_from_parquet(
         workplace_for_reconciliation_source,
@@ -120,6 +128,14 @@ def main(
         selected_columns=cleaned_cqc_providers_columns_to_import,
     )
     cqc_location_df = cUtils.reduce_dataset_to_earliest_file_per_month(cqc_location_df)
+    print("Step 2")
+    cqc_location_df.select(
+        CQCLClean.location_id, CQCLClean.cqc_location_import_date
+    ).where(F.col(CQCLClean.cqc_location_import_date) == "1-10190519203").sort(
+        CQCLClean.cqc_location_import_date
+    ).show(
+        50
+    )
 
     ascwds_workplace_df = cUtils.remove_duplicates_based_on_column_order(
         ascwds_workplace_df,
@@ -133,6 +149,14 @@ def main(
         ascwds_workplace_df,
         CQCLClean.cqc_location_import_date,
         AWPClean.ascwds_workplace_import_date,
+    )
+    print("Step 3")
+    merged_coverage_df.select(
+        CQCLClean.location_id, CQCLClean.cqc_location_import_date
+    ).where(F.col(CQCLClean.cqc_location_import_date) == "1-10190519203").sort(
+        CQCLClean.cqc_location_import_date
+    ).show(
+        50
     )
 
     merged_coverage_df = add_flag_for_in_ascwds(merged_coverage_df)
@@ -148,6 +172,14 @@ def main(
         CoverageColumns.in_ascwds,
         sort_ascending=False,
     )
+    print("Step 4")
+    merged_coverage_df.select(
+        CQCLClean.location_id, CQCLClean.cqc_location_import_date
+    ).where(F.col(CQCLClean.cqc_location_import_date) == "1-10190519203").sort(
+        CQCLClean.cqc_location_import_date
+    ).show(
+        50
+    )
 
     merged_coverage_df = rUtils.add_parents_or_singles_and_subs_col_to_df(
         merged_coverage_df
@@ -160,6 +192,16 @@ def main(
     merged_coverage_df = add_columns_for_locality_manager_dashboard(merged_coverage_df)
     merged_coverage_df = join_provider_name_into_merged_coverage_df(
         merged_coverage_df, cqc_providers_df
+    )
+    print("Step 5")
+    merged_coverage_df.select(
+        CQCLClean.location_id, CQCLClean.cqc_location_import_date
+    ).where(F.col(CQCLClean.cqc_location_import_date) == "1-10190519203").sort(
+        CQCLClean.cqc_location_import_date
+    ).sort(
+        CQCLClean.cqc_location_import_date
+    ).show(
+        50
     )
     utils.write_to_parquet(
         merged_coverage_df, merged_coverage_destination, mode="overwrite"
