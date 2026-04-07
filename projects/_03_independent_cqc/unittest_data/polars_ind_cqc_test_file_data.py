@@ -11,6 +11,7 @@ from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_ca
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records import (
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     CareHome,
@@ -1876,3 +1877,14 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-004", date(2025, 2, 1), None, 15.0, None, 15.0),  # doesn't pass filter, no residual, keep original model value
         ("1-005", date(2025, 2, 1), None, None, None, None),  # doesn't pass filter, no residual, keep original model value
     ] # fmt: skip
+
+
+@dataclass
+class EstimateFilledPostsByJobRole04EstimateData:
+    calculate_estimated_filled_posts_by_job_role_rows = [
+        (10.0, 0.4, 0.6, IndCQC.imputed_ascwds_job_role_ratios, 0.4, 4.0),
+        (10.0, None, 0.6, IndCQC.ascwds_job_role_rolling_ratio, 0.6, 6.0),
+        (10.0, 0.4, None, IndCQC.imputed_ascwds_job_role_ratios, 0.4, 4.0),
+        (None, 0.4, 0.6, IndCQC.imputed_ascwds_job_role_ratios, 0.4, None),
+        (10.0, None, None, None, None, None),
+    ]

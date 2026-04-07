@@ -1404,3 +1404,17 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied: pl.Float64,
         }
     )
+
+
+@dataclass
+class EstimateFilledPostsByJobRole04EstimateSchemas:
+    calculate_estimated_filled_posts_by_job_role_schema = pl.Schema(
+        {
+            IndCQC.estimate_filled_posts: pl.Float32,
+            IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,
+            IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,
+            IndCQC.ascwds_job_role_ratios_merged_source: pl.String,
+            IndCQC.ascwds_job_role_ratios_merged: pl.Float32,
+            IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
+        }
+    )

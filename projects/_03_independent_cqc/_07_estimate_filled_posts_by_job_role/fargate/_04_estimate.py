@@ -32,28 +32,8 @@ def main(
     metadata_lf = utils.scan_parquet(metadata_source)
     print("Metadata LazyFrame read in")
 
-    # Start of making the estimates by job role using ASC-WDS data only.
-    # This will coalesce the job role percentage breakdowns, multiply by filled posts number, then
-    # adjust that to account for registered managers from CQC.
-
     # Abstract this into a defined function. So that main is calling a series of steps.
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        utils.coalesce_with_source_labels(
-            cols=[
-                # IndCQC.ascwds_job_role_ratios_filtered,
-                IndCQC.imputed_ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_rolling_ratio,
-            ],
-            name=IndCQC.ascwds_job_role_ratios_merged,
-        ),
-    )
-
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        (
-            pl.col(IndCQC.estimate_filled_posts)
-            * pl.col(IndCQC.ascwds_job_role_ratios_merged)
-        ).alias(IndCQC.estimate_filled_posts_by_job_role)
-    )
+    lf = calculate_estimated_filled_posts_by_job_role(lf)
 
     # Try to refactor the pipe(apply_manager_adjustments) so it's readable sequence of expressions without class methods.
 
@@ -72,6 +52,42 @@ def main(
         output_path=estimated_data_destination,
         append=False,
     )
+
+
+def calculate_estimated_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Coalesce the imputed and rolling average job role ratio columns in
+    that order to create ascwds_job_role_ratios_merged and multiply that by
+    overall estimated filled posts.
+
+    TODO: uncomment ascwds_job_role_ratios_filtered and update this doc string.
+
+    Args:
+        lf (pl.LazyFrame): The input LazyFrame.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with additional columns
+            ascwds_job_role_ratios_merged and estimate_filled_posts_by_job_role
+    """
+    lf = lf.with_columns(
+        utils.coalesce_with_source_labels(
+            cols=[
+                # IndCQC.ascwds_job_role_ratios_filtered,
+                IndCQC.imputed_ascwds_job_role_ratios,
+                IndCQC.ascwds_job_role_rolling_ratio,
+            ],
+            name=IndCQC.ascwds_job_role_ratios_merged,
+        ),
+    )
+
+    lf = lf.with_columns(
+        (
+            pl.col(IndCQC.estimate_filled_posts)
+            * pl.col(IndCQC.ascwds_job_role_ratios_merged)
+        ).alias(IndCQC.estimate_filled_posts_by_job_role)
+    )
+
+    return lf
 
 
 def apply_manager_adjustments(
