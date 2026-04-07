@@ -54,9 +54,9 @@
                   ]
                 }
               },
-              "Next": "Estimate filled posts by job role (polars)"
+              "Next": "Estimate filled posts by job role - Merge(polars)"
             },
-            "Estimate filled posts by job role (polars)": {
+            "Estimate filled posts by job role - Merge(polars)": {
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
@@ -75,10 +75,99 @@
                     {
                       "Name": "_03_independent_cqc-container",
                       "Command": [
-                        "estimate_ind_cqc_filled_posts_by_job_role.py",
+                        "_01_merge.py",
                         "--estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_06_estimated_filled_posts/",
                         "--ascwds_job_role_counts_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_ascwds_prepared_job_role_counts/",
-                        "--estimates_by_job_role_destination","${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_estimated_filled_posts_by_job_role_polars/"
+                        "--merged_data_destination","${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_estimated_filled_posts_by_job_role_polars/",
+                        "--metadata_destination","${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07__01_merge_metadata_estimated_filled_posts_by_job_role_polars/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "Next": "Estimate filled posts by job role - Clean(polars)"
+            },
+            "Estimate filled posts by job role - Clean(polars)": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "_02_clean.py",
+                        "--merged_data_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_estimated_filled_posts_by_job_role_polars/",
+                        "--cleaned_data_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_estimated_filled_posts_by_job_role_polars/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "Next": "Estimate filled posts by job role - Impute(polars)"
+            },
+            "Estimate filled posts by job role - Impute(polars)": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "_03_impute.py",
+                        "--cleaned_data_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_estimated_filled_posts_by_job_role_polars/",
+                        "--imputed_data_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_03_impute_estimated_filled_posts_by_job_role_polars/"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "Next": "Estimate filled posts by job role - Estimate(polars)"
+            },
+            "Estimate filled posts by job role - Estimate(polars)": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${independent_cqc_task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "_03_independent_cqc-container",
+                      "Command": [
+                        "_04_estimate.py",
+                        "--imputed_data_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_03_impute_estimated_filled_posts_by_job_role_polars/",
+                        "--metadata_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07__01_merge_metadata_estimated_filled_posts_by_job_role_polars/",
+                        "--estimated_data_destination","${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_04_estimate_estimated_filled_posts_by_job_role_polars/"
                       ]
                     }
                   ]

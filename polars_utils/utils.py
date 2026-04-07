@@ -12,7 +12,7 @@ from botocore.exceptions import ClientError
 
 def scan_parquet(
     source: str | Path,
-    schema: pl.Schema | None = None,
+    schema: pl.Schema | dict[str, pl.DataType] | None = None,
     selected_columns: list[str] | None = None,
 ) -> pl.LazyFrame:
     """
@@ -20,7 +20,8 @@ def scan_parquet(
 
     Args:
         source (str | Path): the full path in s3 of the dataset
-        schema (pl.Schema | None, optional): Polars schema to apply to dataset read
+        schema (pl.Schema | dict[str, pl.DataType] | None, optional): Polars schema
+            to apply to dataset read.
         selected_columns (list[str] | None, optional): list of columns to return as a
             subset of the columns in the schema. Defaults to None.
 
@@ -435,3 +436,8 @@ def coalesce_with_source_labels(cols: list[str], name: str) -> tuple[pl.Expr, pl
         label_expr = label_expr.when(pl.col(c).is_not_null()).then(pl.lit(c))
 
     return (val_expr, label_expr.alias(f"{name}_source"))
+
+
+def cast_to_schema(schema: dict[str, pl.DataType]) -> list[pl.Expr]:
+    """Cast columns to given schema."""
+    return [pl.col(c).cast(dtype) for c, dtype in schema.items()]
