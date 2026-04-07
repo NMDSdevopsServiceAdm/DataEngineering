@@ -95,6 +95,7 @@ def get_selected_value(
     return df
 
 
+# converted to polars -> polars_utils.utils.nullify_ct_values_previous_to_first_submission
 def nullify_ct_values_previous_to_first_submission(
     df: DataFrame, columns: list
 ) -> DataFrame:
