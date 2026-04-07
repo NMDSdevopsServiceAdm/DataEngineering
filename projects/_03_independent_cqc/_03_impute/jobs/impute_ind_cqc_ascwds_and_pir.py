@@ -123,22 +123,22 @@ def main(
         df,
         IndCQC.ct_care_home_total_employed_cleaned,
         IndCQC.ct_non_res_care_workers_employed_cleaned,
-        IndCQC.ct_combined_care_home_and_non_res,
+        "ct_combined_care_home_and_non_res_cleaned",
     )
 
     df = model_primary_service_rate_of_change_trendline(
         df,
-        IndCQC.ct_combined_care_home_and_non_res,
+        "ct_combined_care_home_and_non_res_cleaned",
         NumericalValues.number_of_days_in_window,
-        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+        "ct_combined_care_home_and_non_res_cleaned_rate_of_change_trendline",
         NumericalValues.max_number_of_days_to_interpolate_between,
     )
 
     df = model_imputation_with_extrapolation_and_interpolation(
         df,
         IndCQC.ct_care_home_total_employed_cleaned,
-        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
-        IndCQC.ct_care_home_total_employed_imputed,
+        "ct_combined_care_home_and_non_res_cleaned_rate_of_change_trendline",
+        "ct_care_home_total_employed_cleaned_imputed",
         care_home=True,
         extrapolation_method="ratio",
     )
@@ -146,8 +146,8 @@ def main(
     df = model_imputation_with_extrapolation_and_interpolation(
         df,
         IndCQC.ct_non_res_care_workers_employed_cleaned,
-        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
-        IndCQC.ct_non_res_care_workers_employed_imputed,
+        "ct_combined_care_home_and_non_res_cleaned_rate_of_change_trendline",
+        "cqccareworkersemployed_cleaned_imputed",
         care_home=False,
         extrapolation_method="ratio",
     )
@@ -155,8 +155,8 @@ def main(
     df = nullify_ct_values_previous_to_first_submission(
         df,
         [
-            IndCQC.ct_care_home_total_employed_imputed,
-            IndCQC.ct_non_res_care_workers_employed_imputed,
+            "ct_care_home_total_employed_cleaned_imputed",
+            "cqccareworkersemployed_cleaned_imputed",
         ],
     )
 
