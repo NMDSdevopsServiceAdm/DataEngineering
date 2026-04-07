@@ -131,8 +131,7 @@ def main(
     ascwds_workplace_df = cUtils.remove_duplicates_based_on_column_order(
         ascwds_workplace_df,
         [AWPClean.ascwds_workplace_import_date, AWPClean.location_id],
-        AWPClean.master_update_date,
-        sort_ascending=False,
+        [F.desc(AWPClean.master_update_date), F.asc(AWPClean.establishment_id)],
     )
 
     merged_coverage_df = join_ascwds_data_into_cqc_location_df(
@@ -152,8 +151,11 @@ def main(
             CQCLClean.postal_code,
             CQCLClean.care_home,
         ],
-        CoverageColumns.in_ascwds,
-        sort_ascending=False,
+        [
+            F.desc(CoverageColumns.in_ascwds),
+            F.asc(CQCLClean.registration_date),
+            F.asc(CQCLClean.location_id),
+        ],
     )
 
     merged_coverage_df = rUtils.add_parents_or_singles_and_subs_col_to_df(
@@ -329,36 +331,35 @@ def join_latest_cqc_rating_into_coverage_df(
 
 
 def join_provider_name_into_merged_coverage_df(
-    merged_coverage_df: DataFrame,
-    cleaned_cqc_providers_df: DataFrame,
+    coverage_df: DataFrame, providers_df: DataFrame
 ) -> DataFrame:
     """
-    Adds provider name to merge_coverage_df via join on latest providerid.
+    Adds the latest provider name into `coverage_df`.
 
-    The cleaned_cqc_providers_df is deduplicated based on descending cqc_provider_import_date then joined to merged_coverage_df on provider_id.
+    The `providers_df` is deduplicated based on descending
+    `cqc_provider_import_date` then joined to `coverage_df` on `provider_id`.
 
     Args:
-        merged_coverage_df (DataFrame): A dataframe of CQC locations with ASC-WDS columns joined via locationid.
-        cleaned_cqc_providers_df (DataFrame): A dataframe of cqc providers cleaned.
+        coverage_df (DataFrame): The location level coverage dataframe.
+        providers_df (DataFrame): CQC Providers dataframe.
 
     Returns:
         DataFrame: The coverage dataframe with the provider name added to it.
     """
-    cleaned_cqc_providers_df = cUtils.remove_duplicates_based_on_column_order(
-        cleaned_cqc_providers_df,
+    providers_df = cUtils.remove_duplicates_based_on_column_order(
+        providers_df,
         [CQCPClean.provider_id],
-        CQCPClean.cqc_provider_import_date,
-        sort_ascending=False,
+        [F.desc(CQCPClean.cqc_provider_import_date)],
     ).select(
         CQCPClean.provider_id, F.col(CQCPClean.name).alias(CQCLClean.provider_name)
     )
-    merged_coverage_cols = merged_coverage_df.columns
-    merged_coverage_with_provider_name_df = merged_coverage_df.join(
-        cleaned_cqc_providers_df,
+
+    orig_col_order = coverage_df.columns
+    return coverage_df.join(
+        providers_df,
         on=CQCPClean.provider_id,
         how="left",
-    ).select(*merged_coverage_cols, CQCLClean.provider_name)
-    return merged_coverage_with_provider_name_df
+    ).select(*orig_col_order, CQCLClean.provider_name)
 
 
 if __name__ == "__main__":
