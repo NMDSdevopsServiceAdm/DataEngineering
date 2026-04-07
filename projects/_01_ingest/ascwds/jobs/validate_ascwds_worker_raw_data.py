@@ -11,9 +11,8 @@ from utils.validation.validation_utils import validate_dataset
 
 
 def main(raw_ascwds_worker_source: str, report_destination: str):
-    raw_ascwds_worker_df = utils.read_from_parquet(
-        raw_ascwds_worker_source,
-    )
+    raw_ascwds_worker_df = utils.read_from_parquet(raw_ascwds_worker_source)
+
     rules = Rules.rules_to_check
 
     check_result_df = validate_dataset(raw_ascwds_worker_df, rules)

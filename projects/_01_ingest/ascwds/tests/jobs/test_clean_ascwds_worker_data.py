@@ -51,9 +51,7 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
             self.TEST_WORKPLACE_SOURCE, job.WORKPLACE_COLUMNS
         )
         write_to_parquet_mock.assert_called_once_with(
-            ANY,
-            self.TEST_DESTINATION,
-            mode="overwrite",
+            ANY, self.TEST_DESTINATION, mode="overwrite"
         )
 
 
@@ -252,25 +250,6 @@ class ImputeNotKnownJobRolesTests(IngestASCWDSWorkerDatasetTests):
         expected_df = self.spark.createDataFrame(
             ASCWDSWorkerData.expected_impute_not_known_job_roles_returns_not_known_when_job_role_never_known_rows,
             ASCWDSWorkerSchemas.impute_not_known_job_roles_schema,
-        )
-
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-
-class RemoveWorkersWithNotKnownJobRoleTests(IngestASCWDSWorkerDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_remove_workers_with_not_known_job_role_returns_expected_dataframe(self):
-        test_df = self.spark.createDataFrame(
-            ASCWDSWorkerData.remove_workers_with_not_known_job_role_rows,
-            ASCWDSWorkerSchemas.remove_workers_with_not_known_job_role_schema,
-        )
-        returned_df = job.remove_workers_with_not_known_job_role(test_df)
-
-        expected_df = self.spark.createDataFrame(
-            ASCWDSWorkerData.expected_remove_workers_with_not_known_job_role_rows,
-            ASCWDSWorkerSchemas.remove_workers_with_not_known_job_role_schema,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())

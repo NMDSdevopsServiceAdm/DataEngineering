@@ -9,12 +9,6 @@ from utils.validation.validation_rule_names import RuleNames as RuleName
 @dataclass
 class ASCWDSWorkplaceRawValidationRules:
     rules_to_check = {
-        RuleName.complete_columns: [
-            AWP.establishment_id,
-            AWP.import_date,
-        ],
-        RuleName.index_columns: [
-            AWP.establishment_id,
-            AWP.import_date,
-        ],
+        RuleName.complete_columns: [AWP.establishment_id, AWP.import_date],
+        RuleName.index_columns: [AWP.establishment_id, AWP.import_date],
     }

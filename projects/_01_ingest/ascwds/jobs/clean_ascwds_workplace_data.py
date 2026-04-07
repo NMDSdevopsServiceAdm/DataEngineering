@@ -149,24 +149,21 @@ def main(
         f"Exporting ascwds workplace reconciliation data as parquet to {workplace_for_reconciliation_destination}"
     )
     utils.write_to_parquet(
-        reconciliation_df,
-        workplace_for_reconciliation_destination,
-        mode="overwrite",
+        reconciliation_df, workplace_for_reconciliation_destination, mode="overwrite"
     )
 
     print(
         f"Exporting clean ascwds workplace data as parquet to {cleaned_ascwds_workplace_destination}"
     )
     utils.write_to_parquet(
-        ascwds_workplace_df,
-        cleaned_ascwds_workplace_destination,
-        mode="overwrite",
+        ascwds_workplace_df, cleaned_ascwds_workplace_destination, mode="overwrite"
     )
 
 
 def filter_test_accounts(df: DataFrame) -> DataFrame:
     """
-    Filters out test accounts (accounts used by internal Skills for Care staff) from the DataFrame.
+    Filters out test accounts (accounts used by internal Skills for Care staff)
+    from the DataFrame.
 
     Args:
         df (DataFrame): The DataFrame to filter test accounts from.
@@ -209,6 +206,20 @@ def remove_white_space_from_nmdsid(df: DataFrame) -> DataFrame:
 
 
 def remove_workplaces_with_duplicate_location_ids(df: DataFrame) -> DataFrame:
+    """
+    Removes workplace records that share the same location ID within the same
+    import date.
+
+    Records with a null location ID are always retained. For non-null location
+    IDs, only records where the location ID appears exactly once within each
+    `(location_id, ascwds_workplace_import_date)` partition are kept.
+
+    Args:
+        df (DataFrame): Input DataFrame containing workplace records.
+
+    Returns:
+        DataFrame: Input DataFrame with duplicate non-null location IDs removed.
+    """
     location_id_count: str = "location_id_count"
 
     locations_without_location_id_df = df.where(F.col(AWPClean.location_id).isNull())
@@ -233,18 +244,24 @@ def create_purged_dfs_for_reconciliation_and_data(
     df: DataFrame,
 ) -> Tuple[DataFrame, DataFrame]:
     """
-    This process is designed to purge/remove data which is deemed too old to exist.
+    This process is designed to purge/remove data which has not been updated for
+    an extended period of time.
 
-    If the worplace is a parent account, the mupddate used to purge is the maximum of any account within that organisation.
+    If the worplace is a parent account, the mupddate used to purge is the
+    maximum of any account within that organisation.
 
-    The purge rules for workplace_last_active_date also takes last_logged_in date into account.
+    The purge rules for workplace_last_active_date also takes last_logged_in
+    date into account.
 
     Args:
         df (DataFrame): The ascwds_workplace_df to be purged
 
     Returns:
-        Tuple[DataFrame, DataFrame]: A tuple of two dataframes: ascwds_workplace_df where old data has been removed based on
-        mupddate date and reconciliation_df where old data has been removed based on the maximum of mupddate and lastloggedin date
+        Tuple[DataFrame, DataFrame]: A tuple of two dataframes: -
+        ascwds_workplace_df where old data has been removed based on mupddate
+            date
+        - reconciliation_df where old data has been removed based on the maximum
+            of mupddate and lastloggedin date
 
     """
     df = calculate_maximum_master_update_date_for_organisation(df)
@@ -263,6 +280,21 @@ def create_purged_dfs_for_reconciliation_and_data(
 
 
 def calculate_maximum_master_update_date_for_organisation(df: DataFrame) -> DataFrame:
+    """
+    Calculates the latest master update date for each organisation and import
+    date.
+
+    The maximum `master_update_date` is derived within each `(organisation_id,
+    ascwds_workplace_import_date)` group and joined back onto the original
+    DataFrame as `master_update_date_org`.
+
+    Args:
+        df (DataFrame): Input DataFrame containing workplace records.
+
+    Returns:
+        DataFrame: Input DataFrame  with the organisation-level maximum master
+            update date added.
+    """
     org_df_with_maximum_update_date = df.groupBy(
         AWPClean.organisation_id, AWPClean.ascwds_workplace_import_date
     ).agg(F.max(AWPClean.master_update_date).alias(AWPClean.master_update_date_org))
@@ -276,6 +308,18 @@ def calculate_maximum_master_update_date_for_organisation(df: DataFrame) -> Data
 
 
 def create_data_last_amended_date_column(df: DataFrame) -> DataFrame:
+    """
+    Creates the data last amended date column.
+
+    Parent workplaces use the organisation-level maximum master update date,
+    while non-parent workplaces use their own master update date.
+
+    Args:
+        df (DataFrame): Input DataFrame containing workplace records.
+
+    Returns:
+        DataFrame: Input DataFrame with `data_last_amended_date` added.
+    """
     df = df.withColumn(
         AWPClean.data_last_amended_date,
         F.when(
@@ -286,6 +330,18 @@ def create_data_last_amended_date_column(df: DataFrame) -> DataFrame:
 
 
 def create_workplace_last_active_date_column(df: DataFrame) -> DataFrame:
+    """
+    Creates the workplace last active date column.
+
+    The value is the most recent date between the data last amended date and
+    the user's last logged in date.
+
+    Args:
+        df (DataFrame): Input DataFrame containing workplace records.
+
+    Returns:
+        DataFrame: Input DataFrame with `workplace_last_active_date` added.
+    """
     df = df.withColumn(
         AWPClean.workplace_last_active_date,
         F.greatest(
@@ -296,6 +352,19 @@ def create_workplace_last_active_date_column(df: DataFrame) -> DataFrame:
 
 
 def create_date_column_for_purging_data(df: DataFrame) -> DataFrame:
+    """
+    Creates the purge comparison date column.
+
+    The purge date is calculated by subtracting
+    `MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE` months from the workplace import
+    date.
+
+    Args:
+        df (DataFrame): Input DataFrame containing workplace records.
+
+    Returns:
+        DataFrame: Input DataFrame with `purge_date` added.
+    """
     df = df.withColumn(
         AWPClean.purge_date,
         F.add_months(

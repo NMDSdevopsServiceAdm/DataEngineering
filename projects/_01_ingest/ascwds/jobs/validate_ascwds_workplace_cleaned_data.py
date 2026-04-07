@@ -17,7 +17,7 @@ from utils.validation.validation_utils import (
 
 def main(cleaned_ascwds_workplace_source: str, report_destination: str):
     cleaned_ascwds_workplace_df = utils.read_from_parquet(
-        cleaned_ascwds_workplace_source,
+        cleaned_ascwds_workplace_source
     )
     rules = Rules.rules_to_check
 

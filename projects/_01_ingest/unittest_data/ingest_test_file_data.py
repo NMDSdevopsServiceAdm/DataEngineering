@@ -362,15 +362,6 @@ class ASCWDSWorkerData:
         ("1001", date(2024, 1, 1), "-1"),
     ]
 
-    remove_workers_with_not_known_job_role_rows = [
-        ("1001", date(2024, 3, 1), "8"),
-        ("1002", date(2024, 3, 1), "-1"),
-        ("1002", date(2024, 4, 1), "-1"),
-    ]
-    expected_remove_workers_with_not_known_job_role_rows = [
-        ("1001", date(2024, 3, 1), "8"),
-    ]
-
 
 @dataclass
 class IngestCapacityTrackerCareHomeData:

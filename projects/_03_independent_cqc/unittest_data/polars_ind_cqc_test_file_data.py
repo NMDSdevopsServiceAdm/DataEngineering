@@ -11,6 +11,7 @@ from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_ca
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records import (
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     CareHome,
@@ -308,30 +309,6 @@ class ValidateModel01FeaturesData:
         ("1-001", date(2025, 1, 1), "Y", "Y", "feature", "feature", None),
     ]
     expected_get_expected_row_count_rows = 2
-
-
-@dataclass
-class EstimateIndCqcFilledPostsByJobRoleUtilsData:
-    estimates_df_before_join_rows = [
-        ("1-001", "1-001", "1-002"),
-        ("1001", "1001", "1002"),
-        (date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 1)),
-    ]
-
-    worker_df_before_join_rows = [
-        ("1001", "1001", "1002"),
-        (date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 1)),
-        (MainJobRoleLabels.care_worker, MainJobRoleLabels.senior_management, MainJobRoleLabels.care_worker),
-        (10, 5, 20),
-    ] # fmt: skip
-
-    expected_join_worker_to_estimates_dataframe_rows = [
-        ("1-001", "1-001", "1-001", "1-002"),
-        ("1001", "1001", "1001", "1002"),
-        (date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 1)),
-        (MainJobRoleLabels.care_worker, MainJobRoleLabels.senior_management, None, MainJobRoleLabels.care_worker),
-        (10, 5, None, 20),
-    ] # fmt: skip
 
 
 @dataclass
@@ -1899,4 +1876,19 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-003", date(2025, 2, 1), 30.0, None, None, None),  # doesn't pass filter, no residual, keep original model value
         ("1-004", date(2025, 2, 1), None, 15.0, None, 15.0),  # doesn't pass filter, no residual, keep original model value
         ("1-005", date(2025, 2, 1), None, None, None, None),  # doesn't pass filter, no residual, keep original model value
+    ] # fmt: skip
+
+
+@dataclass
+class EstimateNonResCapacityTrackerFilledPostsData:
+    expected_estimate_non_res_capacity_tracker_filled_posts_rows = [
+        ("1-001", date(2026, 1, 1), CareHome.not_care_home, 1.0, 2.0, 2.0, 2.0, IndCQC.ct_non_res_all_posts),
+        ("1-002", date(2026, 1, 1), CareHome.not_care_home, 2.0, 4.0, 4.0, 4.0, IndCQC.ct_non_res_all_posts),
+        ("1-003", date(2026, 1, 1), CareHome.not_care_home, 3.0, 6.0, 6.0, 6.0, IndCQC.ct_non_res_all_posts),
+        ("1-004", date(2026, 1, 1), CareHome.not_care_home, None, 100.0, None, 100.0, IndCQC.estimate_filled_posts), # Value derived from filled posts since CT is null.
+        ("1-005", date(2026, 1, 1), CareHome.not_care_home, 100.0, None, 200.0, 200.0, IndCQC.ct_non_res_all_posts), # Value derived from CT and adjusted.
+        ("1-006", date(2026, 1, 1), CareHome.not_care_home, None, None, None, None, None), # Nulled because no CT value or estimate filled posts.
+        ("1-007", date(2026, 1, 1), CareHome.care_home, 100.0, 100.0, None, None, None), # Nulled because care home.
+        ("1-008", date(2026, 1, 1), CareHome.not_care_home, 0.49, 0.98, 0.98, 1.0, IndCQC.ct_non_res_all_posts), # ct_non_res_filled_post_estimate is 1.0 because of clip.
+        ("1-009", date(2021, 4, 30), CareHome.not_care_home, 1.0, 2.0, 2.0, None, None), # Nulled because import date prior to 2021-5-1
     ] # fmt: skip

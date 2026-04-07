@@ -17,12 +17,15 @@ All notable changes to this project will be documented in this file.
 - Converted Spark util model_calculate_rolling_average to Polars as calculate_rolling_average. Moved the function
   from a util script to imputation job script because it was only called in that job.
 
+- Converted util function estimate_non_res_capacity_tracker_filled_posts from Pyspark to Polars. The function is not
+  being called in the estimates job yet because functions that create estimate_filled_posts column are not converted yet.
+
 ### Changed
 - Added la permissions to columns imported in merge_coverage_data job.
 
 - Updated jobs in config.yml to use role-arn to authenticate instead of AWS keys.
 
-- Removed partitioning from Ingestion (cleaning jobs only) and IND CQC pipeline when saving data. Parquet files are now written without partitions.
+- Removed partitioning from Ingestion (cleaning jobs only) and the `Workforce-Intelligence-Pipeline` when saving parquet files.
 
 - In PySpark, a linear regression model was used to convert the original PIR (people) values to filled posts. As part of the conversion to Polars, the filtering for which locations are included has been tightened and the linear regression model has been replaced with a simple ratio multiplier.
 
@@ -30,7 +33,6 @@ All notable changes to this project will be documented in this file.
 
 - Refactored the cleaning of capacity tracker outliers so that repeated values are nulled first then
   outliers are nulled from the remaining data. These changes are in the Spark and Polars scripts.
-
 
 - Reduced worker job role data to CQC locations only.
 
