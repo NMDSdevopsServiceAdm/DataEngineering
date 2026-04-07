@@ -124,7 +124,7 @@ def main(
     ascwds_workplace_df = cUtils.remove_duplicates_based_on_column_order(
         ascwds_workplace_df,
         [AWPClean.ascwds_workplace_import_date, AWPClean.location_id],
-        [F.desc(AWPClean.master_update_date)],
+        [F.desc(AWPClean.master_update_date), F.asc(AWPClean.establishment_id)],
     )
 
     merged_coverage_df = join_ascwds_data_into_cqc_location_df(
@@ -152,7 +152,11 @@ def main(
             CQCLClean.postal_code,
             CQCLClean.care_home,
         ],
-        [F.desc(CoverageColumns.in_ascwds), F.asc(CQCLClean.registration_date)],
+        [
+            F.desc(CoverageColumns.in_ascwds),
+            F.asc(CQCLClean.registration_date),
+            F.asc(CQCLClean.location_id),
+        ],
     )
     print("Step 2 - after remove_duplicates_based_on_column_order")
     merged_coverage_df.select(
