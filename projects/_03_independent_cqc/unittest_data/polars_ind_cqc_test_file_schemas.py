@@ -1404,10 +1404,10 @@ class EstimateNonResCapacityTrackerFilledPostsSchemas:
             IndCQC.location_id: pl.String,
             IndCQC.cqc_location_import_date: pl.Date,
             IndCQC.care_home: pl.String,
-            IndCQC.ct_non_res_care_workers_employed_imputed: pl.Float64,
-            IndCQC.estimate_filled_posts: pl.Float64,
-            IndCQC.ct_non_res_all_posts: pl.Float64,
-            IndCQC.ct_non_res_filled_post_estimate: pl.Float64,
+            IndCQC.ct_non_res_care_workers_employed_imputed: pl.Float32,
+            IndCQC.estimate_filled_posts: pl.Float32,
+            IndCQC.ct_non_res_all_posts: pl.Float32,
+            IndCQC.ct_non_res_filled_post_estimate: pl.Float32,
             IndCQC.ct_non_res_filled_post_estimate_source: pl.String,
         }
     )
