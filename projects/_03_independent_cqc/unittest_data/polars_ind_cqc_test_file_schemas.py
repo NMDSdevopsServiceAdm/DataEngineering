@@ -33,6 +33,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
 )
+from utils.column_values.categorical_column_values import MainJobRoleLabels
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
+)
 
 
 @dataclass
@@ -1416,5 +1420,46 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
             IndCQC.ascwds_job_role_ratios_merged_source: pl.String,
             IndCQC.ascwds_job_role_ratios_merged: pl.Float32,
             IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
+        }
+    )
+
+    count_cqc_rm_schema = pl.Schema(
+        {
+            IndCQC.registered_manager_names: pl.List(pl.String),
+            IndCQC.registered_manager_count: pl.UInt32,
+        }
+    )
+
+    filter_rows_and_pivot_into_columns_schema = pl.Schema(
+        {
+            "id": pl.String,
+            IndCQC.registered_manager_count: pl.UInt32,
+            IndCQC.main_job_role_clean_labelled: pl.Enum(
+                AscwdsWorkerValueLabelsJobGroup.all_roles()
+            ),
+            IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
+        }
+    )
+    expected_filter_rows_and_pivot_into_columns_schema = pl.Schema(
+        {
+            "id": pl.String,
+            IndCQC.registered_manager_count: pl.UInt32,
+            MainJobRoleLabels.supervisor: pl.Float32,
+            MainJobRoleLabels.first_line_manager: pl.Float32,
+            MainJobRoleLabels.middle_management: pl.Float32,
+            MainJobRoleLabels.registered_manager: pl.Float32,
+        }
+    )
+
+    recalculate_managerial_filled_posts_schema = (
+        expected_filter_rows_and_pivot_into_columns_schema
+    )
+    expected_recalculate_managerial_filled_posts_schema = pl.Schema(
+        {
+            "id": pl.String,
+            MainJobRoleLabels.supervisor: pl.Float32,
+            MainJobRoleLabels.first_line_manager: pl.Float32,
+            MainJobRoleLabels.middle_management: pl.Float32,
+            MainJobRoleLabels.registered_manager: pl.Float32,
         }
     )
