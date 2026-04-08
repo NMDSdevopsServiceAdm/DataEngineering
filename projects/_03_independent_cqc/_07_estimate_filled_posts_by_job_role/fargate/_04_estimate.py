@@ -22,9 +22,7 @@ ROW_ID: Final[str] = "id"
 # in a chunk of this size.
 pl.Config.set_streaming_chunk_size(50000)
 
-manager_roles_list = AscwdsWorkerValueLabelsJobGroup.filter_roles(
-    JobGroupLabels.managers
-)
+manager_roles_list = AscwdsWorkerValueLabelsJobGroup.manager_roles()
 
 
 def main(
@@ -227,12 +225,20 @@ def unpivot_job_roles_into_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Doc string goes here.
     """
-    return lf.unpivot(
+    lf = lf.unpivot(
         on=manager_roles_list,
         index=ROW_ID,
         variable_name=IndCQC.main_job_role_clean_labelled,
         value_name=IndCQC.estimate_filled_posts_by_job_role,
     )
+
+    lf = lf.with_columns(
+        pl.col(IndCQC.main_job_role_clean_labelled).cast(
+            pl.Enum(AscwdsWorkerValueLabelsJobGroup.manager_roles())
+        )
+    )
+
+    return lf
 
 
 # def apply_manager_adjustments(
