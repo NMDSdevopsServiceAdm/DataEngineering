@@ -223,12 +223,12 @@ def recalculate_managerial_filled_posts(
     )
 
 
-def unpivot_job_roles_into_rows(lf: pl.LazyFrame, list_of_roles: list) -> pl.LazyFrame:
+def unpivot_job_roles_into_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Doc string goes here.
     """
     return lf.unpivot(
-        on=list_of_roles,
+        on=manager_roles_list,
         index=ROW_ID,
         variable_name=IndCQC.main_job_role_clean_labelled,
         value_name=IndCQC.estimate_filled_posts_by_job_role,
