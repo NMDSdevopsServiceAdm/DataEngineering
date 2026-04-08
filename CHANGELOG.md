@@ -37,6 +37,7 @@ All notable changes to this project will be documented in this file.
 - Reduced worker job role data to CQC locations only.
 
 ### Fixed
+- Refactored `remove_duplicates_based_on_column_order` to give the same outputs for every run.
 
 
 ## [v2026.02.0] - 12/03/2026

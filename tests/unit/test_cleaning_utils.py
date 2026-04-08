@@ -666,52 +666,49 @@ class CalculateFilledPostsFromBedsAndRatioTests(SparkBaseTest):
 
 
 class RemoveDuplicatesBasedOnColumnOrderTests(SparkBaseTest):
-    def test_remove_duplicate_locationids_returns_expected_rows_when_descending(self):
-        test_df = self.spark.createDataFrame(
+    def setUp(self) -> None:
+
+        self.input_df = self.spark.createDataFrame(
             Data.remove_duplicate_locationids_rows,
             Schemas.remove_duplicate_locationids_schema,
         )
-        returned_df = job.remove_duplicates_based_on_column_order(
-            test_df,
-            [AWPClean.ascwds_workplace_import_date, AWPClean.location_id],
-            AWPClean.master_update_date,
-            sort_ascending=False,
-        )
 
-        expected_df = self.spark.createDataFrame(
-            Data.expected_remove_duplicate_locationids_descending_rows,
-            Schemas.remove_duplicate_locationids_schema,
+    def _assert_remove_duplicates_helper(self, col_order, expected_rows):
+        """Helper function to test rolling sum calculations with different input and expected data."""
+        returned_df = job.remove_duplicates_based_on_column_order(
+            self.input_df,
+            [AWPClean.ascwds_workplace_import_date, AWPClean.location_id],
+            col_order,
         )
-        returned_data = returned_df.sort(
-            AWPClean.ascwds_workplace_import_date, AWPClean.location_id
+        returned_data = returned_df.sort("id_for_checking").collect()
+
+        expected_data = self.spark.createDataFrame(
+            expected_rows,
+            Schemas.remove_duplicate_locationids_schema,
         ).collect()
-        expected_data = expected_df.collect()
 
         self.assertEqual(returned_data, expected_data)
 
-    def test_remove_duplicate_locationids_returns_expected_rows_when_order_not_specified(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.remove_duplicate_locationids_rows,
-            Schemas.remove_duplicate_locationids_schema,
-        )
-        returned_df = job.remove_duplicates_based_on_column_order(
-            test_df,
-            [AWPClean.ascwds_workplace_import_date, AWPClean.location_id],
-            AWPClean.master_update_date,
-        )
-
-        expected_df = self.spark.createDataFrame(
+    def test_returns_expected_rows_when_ascending(self):
+        self._assert_remove_duplicates_helper(
+            [F.asc(AWPClean.master_update_date)],
             Data.expected_remove_duplicate_locationids_ascending_rows,
-            Schemas.remove_duplicate_locationids_schema,
         )
-        returned_data = returned_df.sort(
-            AWPClean.ascwds_workplace_import_date, AWPClean.location_id
-        ).collect()
-        expected_data = expected_df.collect()
 
-        self.assertEqual(returned_data, expected_data)
+    def test_returns_expected_rows_when_descending(self):
+        self._assert_remove_duplicates_helper(
+            [F.desc(AWPClean.master_update_date)],
+            Data.expected_remove_duplicate_locationids_descending_rows,
+        )
+
+    def test_returns_expected_rows_when_mixed_ordering(self):
+        self._assert_remove_duplicates_helper(
+            [
+                F.desc("some_bool_col"),
+                F.asc(AWPClean.master_update_date),
+            ],
+            Data.expected_remove_duplicate_locationids_mixed_order_rows,
+        )
 
 
 class CreateBandedBedCountColumnTests(SparkBaseTest):
