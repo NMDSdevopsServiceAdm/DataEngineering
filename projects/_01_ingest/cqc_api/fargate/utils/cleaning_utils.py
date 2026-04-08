@@ -251,50 +251,33 @@ def clean_and_impute_registration_date(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Returns:
         pl.LazyFrame: Input LazyFrame with new column `imputed_registration_date`.
-
     """
-    min_import_date = "_min_import_date"
     valid_registration_date = "_valid_registration_date"
-    min_valid_registration_date = "_min_valid_registration_date"
 
-    min_import_lf = cqc_lf.group_by(CQCLClean.location_id).agg(
-        pl.col(CQCLClean.cqc_location_import_date).min().alias(min_import_date)
-    )
-
-    cqc_lf = cqc_lf.join(
-        min_import_lf, on=CQCLClean.location_id, how="left"
-    ).with_columns(
-        pl.when(pl.col(CQCLClean.registration_date) <= pl.col(min_import_date))
+    # Step 1: create valid registration column
+    cqc_lf = cqc_lf.with_columns(
+        pl.when(
+            pl.col(CQCLClean.registration_date)
+            <= pl.col(CQCLClean.cqc_location_import_date)
+            .min()
+            .over(CQCLClean.location_id)
+        )
         .then(pl.col(CQCLClean.registration_date))
         .otherwise(None)
         .alias(valid_registration_date)
     )
 
-    min_valid_lf = cqc_lf.group_by(CQCLClean.location_id).agg(
-        pl.col(valid_registration_date).min().alias(min_valid_registration_date)
-    )
-
-    cqc_lf = cqc_lf.join(
-        min_valid_lf,
-        on=CQCLClean.location_id,
-        how="left",
-    )
-
-    imputed_registration_expr = (
+    # Step 2: perform imputation using real column
+    cqc_lf = cqc_lf.with_columns(
         pl.col(valid_registration_date)
-        .fill_null(pl.col(min_valid_registration_date))
-        .fill_null(pl.col(min_import_date))
+        .fill_null(pl.col(valid_registration_date).min().over(CQCLClean.location_id))
+        .fill_null(
+            pl.col(CQCLClean.cqc_location_import_date).min().over(CQCLClean.location_id)
+        )
+        .alias(CQCLClean.imputed_registration_date)
     )
 
-    return cqc_lf.with_columns(
-        imputed_registration_expr.alias(CQCLClean.imputed_registration_date)
-    ).drop(
-        [
-            min_import_date,
-            valid_registration_date,
-            min_valid_registration_date,
-        ]
-    )
+    return cqc_lf.drop(valid_registration_date)
 
 
 def classify_specialisms(
