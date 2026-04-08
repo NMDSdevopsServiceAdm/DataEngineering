@@ -1407,6 +1407,22 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
 
 
 @dataclass
+class EstimateNonResCapacityTrackerFilledPostsSchemas:
+    expected_estimate_non_res_capacity_tracker_filled_posts_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.care_home: pl.String,
+            IndCQC.ct_non_res_care_workers_employed_imputed: pl.Float32,
+            IndCQC.estimate_filled_posts: pl.Float32,
+            IndCQC.ct_non_res_all_posts: pl.Float32,
+            IndCQC.ct_non_res_filled_post_estimate: pl.Float32,
+            IndCQC.ct_non_res_filled_post_estimate_source: pl.String,
+        }
+    )
+
+
+@dataclass
 class TestJoinEstimatesToAscwds:
     TEST_ROLES = ["role_a", "role_b"]
     estimates_schema = pl.Schema(
