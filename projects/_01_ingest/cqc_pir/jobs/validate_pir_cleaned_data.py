@@ -17,6 +17,7 @@ from utils.validation.validation_utils import (
 
 def main(cleaned_cqc_pir_source: str, report_destination: str):
     cleaned_cqc_pir_df = utils.read_from_parquet(cleaned_cqc_pir_source)
+
     rules = Rules.rules_to_check
     check_result_df = validate_dataset(cleaned_cqc_pir_df, rules)
 
