@@ -233,24 +233,27 @@ def add_related_location_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def clean_and_impute_registration_date(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Adds an imputed registration date per location using valid historical dates.
+    Adds a new column `imputed_registration_date` using valid historical
+    registration dates within each `location_id`.
 
-    A registration date is considered valid only if it is on or before the
+    A registration date is considered valid only when it is on or before the
     earliest `cqc_location_import_date` observed for that location.
 
     The imputed date is derived using the following priority:
-    1. Use the row's own valid `registration_date` if present.
-    2. Otherwise use the earliest valid `registration_date` observed for the same
-        `location_id` across time.
+    1. Use the row's own valid `registration_date`.
+    2. Otherwise use the earliest valid `registration_date` observed for the
+       same `location_id`.
     3. If no valid registration date exists for that `location_id`, use the
-        earliest `cqc_location_import_date`.
+       earliest `cqc_location_import_date`.
 
     Args:
-        cqc_lf (pl.LazyFrame): A LazyFrame with columns `registration_date`,
-            `cqc_location_import_date` and `location_id`.
+        cqc_lf (pl.LazyFrame): A LazyFrame containing
+            `registration_date`, `cqc_location_import_date`, and
+            `location_id`.
 
     Returns:
-        pl.LazyFrame: Input LazyFrame with new column `imputed_registration_date`.
+        pl.LazyFrame: Input LazyFrame with a new
+            `imputed_registration_date` column.
     """
     valid_registration_date = "_valid_registration_date"
 
