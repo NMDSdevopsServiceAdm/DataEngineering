@@ -326,17 +326,17 @@ def remove_duplicates_based_on_column_order(
     Returns:
         DataFrame: A DataFrame with duplicates removed.
     """
-    temp_col = "row_number"
+    row_num = "_row_number"
 
     return (
         df.withColumn(
-            temp_col,
+            row_num,
             F.row_number().over(
                 Window.partitionBy(*columns_to_identify_duplicates).orderBy(*order_by)
             ),
         )
-        .where(F.col(temp_col) == 1)
-        .drop(temp_col)
+        .where(F.col(row_num) == 1)
+        .drop(row_num)
     )
 
 
