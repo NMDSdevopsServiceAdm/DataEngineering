@@ -52,7 +52,11 @@ def main(
 
     lf = lf.with_columns(count_cqc_rm().alias(IndCQC.registered_manager_count))
 
-    lf = adjust_managerial_filled_posts(lf)
+    adjusted_lf = adjust_managerial_filled_posts(lf)
+
+    lf = lf.drop(IndCQC.main_job_role_clean_labelled)
+
+    lf = lf.join(adjusted_lf, on=ROW_ID, how="left")
 
     # Try to refactor the pipe(apply_manager_adjustments) so it's readable sequence of expressions without class methods.
     #       estimated_job_role_posts_lf = estimated_job_role_posts_lf.pipe(
@@ -141,7 +145,15 @@ def adjust_managerial_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     non_managerial_roles_lf = lf.filter(
         pl.col(IndCQC.main_job_role_clean_labelled) != manager_roles_list
-    ).drop(IndCQC.registered_manager_count)
+    ).select(
+        [
+            ROW_ID,
+            IndCQC.main_job_role_clean_labelled,
+            pl.col(IndCQC.estimate_filled_posts_by_job_role).alias(
+                IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
+            ),
+        ]
+    )
 
     managerial_roles_lf = filter_rows_and_pivot_into_columns(lf, manager_roles_list)
 
@@ -182,7 +194,14 @@ def recalculate_managerial_filled_posts(
     lf: pl.LazyFrame, list_of_roles: list
 ) -> pl.LazyFrame:
     """
-    Doc string goes here
+    Replaces the SfC estimate of registered manager filled posts with count from CQC register.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with columns per job role filled posts value.
+        list_of_roles (list): A list of job role column names to be adjusted.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with recalculated job role columns.
     """
     non_rm_managerial_roles_list = [
         role for role in list_of_roles if role != MainJobRoleLabels.registered_manager
@@ -229,7 +248,7 @@ def unpivot_job_roles_into_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
         on=manager_roles_list,
         index=ROW_ID,
         variable_name=IndCQC.main_job_role_clean_labelled,
-        value_name=IndCQC.estimate_filled_posts_by_job_role,
+        value_name=IndCQC.estimate_filled_posts_by_job_role_manager_adjusted,
     )
 
     lf = lf.with_columns(
