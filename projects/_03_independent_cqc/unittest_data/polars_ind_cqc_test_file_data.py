@@ -1876,3 +1876,61 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-004", date(2025, 2, 1), None, 15.0, None, 15.0),  # doesn't pass filter, no residual, keep original model value
         ("1-005", date(2025, 2, 1), None, None, None, None),  # doesn't pass filter, no residual, keep original model value
     ] # fmt: skip
+
+
+@dataclass
+class JoinEstimatesCase:
+    id: str
+    estimates_data: list[tuple]
+    ascwds_data: list[tuple]
+    expected_data: list[tuple]
+
+
+@dataclass
+class TestJoinEstimatesToAscwds:
+    join_estimates_test_cases = [
+        JoinEstimatesCase(
+            id="basic_match",
+            estimates_data=[
+                (1, "2024-01-01", "loc1"),
+            ],
+            ascwds_data=[
+                ("2024-01-01", "loc1", "role_a", 10.0),
+                ("2024-01-01", "loc1", "role_b", 20.0),
+            ],
+            expected_data=[
+                (1, "role_a", 10.0),
+                (1, "role_b", 20.0),
+            ],
+        ),
+        JoinEstimatesCase(
+            id="missing_role_returns_null",
+            estimates_data=[
+                (1, "2024-01-01", "loc1"),
+            ],
+            ascwds_data=[
+                ("2024-01-01", "loc1", "role_a", 10.0),
+            ],
+            expected_data=[
+                (1, "role_a", 10.0),
+                (1, "role_b", None),
+            ],
+        ),
+        JoinEstimatesCase(
+            id="multiple_rows_expand_correctly",
+            estimates_data=[
+                (1, "2024-01-01", "loc1"),
+                (2, "2024-01-01", "loc2"),
+            ],
+            ascwds_data=[
+                ("2024-01-01", "loc1", "role_a", 5.0),
+                ("2024-01-01", "loc2", "role_b", 7.0),
+            ],
+            expected_data=[
+                (1, "role_a", 5.0),
+                (1, "role_b", None),
+                (2, "role_a", None),
+                (2, "role_b", 7.0),
+            ],
+        ),
+    ] # fmt: skip

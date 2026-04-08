@@ -1404,3 +1404,29 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied: pl.Float64,
         }
     )
+
+
+@dataclass
+class TestJoinEstimatesToAscwds:
+    estimates_schema = pl.Schema(
+        {
+            "id": pl.Int32,
+            IndCQC.ascwds_workplace_import_date: pl.String,
+            IndCQC.establishment_id: pl.String,
+        }
+    )
+    ascwds_schema = pl.Schema(
+        {
+            IndCQC.ascwds_workplace_import_date: pl.String,
+            IndCQC.establishment_id: pl.String,
+            IndCQC.main_job_role_clean_labelled: pl.Categorical(),
+            "value": pl.Float64,
+        }
+    )
+    expected_schema = pl.Schema(
+        {
+            "id": pl.Int32,
+            IndCQC.main_job_role_clean_labelled: pl.Categorical(),
+            "value": pl.Float64,
+        }
+    )
