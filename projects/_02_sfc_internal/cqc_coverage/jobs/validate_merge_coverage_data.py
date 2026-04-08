@@ -58,8 +58,8 @@ def calculate_expected_size_of_merged_coverage_dataset(
         ]
     )
     df = cUtils.reduce_dataset_to_earliest_file_per_month(df)
-
-    return df.count()
+    expected_size = df.count()
+    return expected_size
 
 
 if __name__ == "__main__":
