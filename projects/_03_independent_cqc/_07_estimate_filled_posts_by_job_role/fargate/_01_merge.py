@@ -3,7 +3,6 @@ from typing import Final
 import polars as pl
 
 from polars_utils import utils
-from polars_utils.pipeline_utils import time_it
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import PrimaryServiceType
@@ -24,13 +23,13 @@ LocationCatType = pl.Categorical(pl.Categories("location", namespace="filled_pos
 JobRoleEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
 EstimatesFilledPostSourceEnumType = pl.Enum(
     [
-        "imputed_pir_filled_posts_model",
-        "ascwds_pir_merged",
-        "imputed_posts_care_home_model",
-        "care_home_model",
-        "imputed_posts_non_res_combined_model",
-        "non_res_combined_model",
-        "posts_rolling_average_model",
+        IndCQC.imputed_pir_filled_posts_model,
+        IndCQC.ascwds_pir_merged,
+        IndCQC.imputed_posts_care_home_model,
+        IndCQC.care_home_model,
+        IndCQC.imputed_posts_non_res_combined_model,
+        IndCQC.non_res_combined_model,
+        IndCQC.posts_rolling_average_model,
     ]
 )
 PrimaryServiceEnumType = pl.Enum(
