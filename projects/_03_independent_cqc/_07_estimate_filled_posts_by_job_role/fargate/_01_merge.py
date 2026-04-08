@@ -154,7 +154,7 @@ def join_estimates_to_ascwds(
     the ASCWDS data.
 
     Args:
-        estimates_lf (pl.LazyyFrame): Input LazyFrame with Estimates data.
+        estimates_lf (pl.LazyFrame): Input LazyFrame with Estimates data.
         ascwds_lf (pl.LazyFrame): Input LazyFrame with ASC-WDS job role counts.
 
     Returns:
