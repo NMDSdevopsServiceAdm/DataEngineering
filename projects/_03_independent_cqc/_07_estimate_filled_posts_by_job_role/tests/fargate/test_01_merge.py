@@ -88,6 +88,7 @@ def mock_roles(monkeypatch):
         pl.Enum(roles),
     )
 
+
 class TestJoinEstimatesToAscwds:
     @pytest.mark.parametrize(
         "case",
