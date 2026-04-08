@@ -153,7 +153,7 @@ def adjust_managerial_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     managerial_roles_lf = unpivot_job_roles_into_rows(managerial_roles_lf)
 
-    return pl.concat(non_managerial_roles_lf, managerial_roles_lf)
+    return pl.concat([non_managerial_roles_lf, managerial_roles_lf])
 
 
 def filter_rows_and_pivot_into_columns(
