@@ -28,14 +28,11 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 )
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import (
     CQCCurrentOrHistoricValues,
     CQCLatestRating,
     InAscwds,
 )
-
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 cleaned_cqc_locations_columns_to_import = [
     CQCLClean.location_id,
@@ -61,10 +58,6 @@ cleaned_cqc_locations_columns_to_import = [
     ONSClean.current_icb,
     ONSClean.current_region,
     ONSClean.current_rural_urban_ind_11,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
 ]
 
 cleaned_ascwds_workplace_columns_to_import = [
@@ -171,10 +164,7 @@ def main(
         merged_coverage_df, cqc_providers_df
     )
     utils.write_to_parquet(
-        merged_coverage_df,
-        merged_coverage_destination,
-        mode="overwrite",
-        partitionKeys=PartitionKeys,
+        merged_coverage_df, merged_coverage_destination, mode="overwrite"
     )
 
     reduced_coverage_df = utils.filter_df_to_maximum_value_in_column(
@@ -182,10 +172,7 @@ def main(
     )
 
     utils.write_to_parquet(
-        reduced_coverage_df,
-        reduced_coverage_destination,
-        mode="overwrite",
-        partitionKeys=PartitionKeys,
+        reduced_coverage_df, reduced_coverage_destination, mode="overwrite"
     )
 
 
@@ -213,20 +200,18 @@ def join_ascwds_data_into_cqc_location_df(
     Returns:
         DataFrame: The clean CQC locations dataframe with all columns from the ASC-WDS reconciliation dataframe added to it.
     """
-    merged_coverage_ascwds_df_with_ascwds_workplace_import_date = (
-        cUtils.add_aligned_date_column(
-            cqc_location_df,
-            ascwds_workplace_df,
-            cqc_location_import_date_column,
-            ascwds_workplace_import_date_column,
-        )
+    cqc_with_ascwds_import_date_df = cUtils.add_aligned_date_column(
+        cqc_location_df,
+        ascwds_workplace_df,
+        cqc_location_import_date_column,
+        ascwds_workplace_import_date_column,
     )
 
     formatted_ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
         AWPClean.location_id, CQCLClean.location_id
     )
 
-    return merged_coverage_ascwds_df_with_ascwds_workplace_import_date.join(
+    return cqc_with_ascwds_import_date_df.join(
         formatted_ascwds_workplace_df,
         [CQCLClean.location_id, AWPClean.ascwds_workplace_import_date],
         how="left",
