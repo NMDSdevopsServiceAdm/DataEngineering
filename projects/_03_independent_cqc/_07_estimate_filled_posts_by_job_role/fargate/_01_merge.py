@@ -169,8 +169,9 @@ def join_estimates_to_ascwds(
     narrow_keys_lf = estimates_lf.select(["id"] + join_keys)
 
     roles_lf = pl.LazyFrame(
-        data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
-        schema={job_role_labels: pl.Categorical},
+        data=[(role,) for role in AscwdsWorkerValueLabelsJobGroup.all_roles()],
+        schema={job_role_labels: JobRoleEnumType},
+        orient="row",
     )
 
     expanded_keys_lf = narrow_keys_lf.join(roles_lf, how="cross")

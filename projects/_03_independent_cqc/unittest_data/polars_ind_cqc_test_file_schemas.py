@@ -1408,6 +1408,7 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
 
 @dataclass
 class TestJoinEstimatesToAscwds:
+    TEST_ROLES = ["role_a", "role_b"]
     estimates_schema = pl.Schema(
         {
             "id": pl.Int32,
@@ -1419,14 +1420,14 @@ class TestJoinEstimatesToAscwds:
         {
             IndCQC.ascwds_workplace_import_date: pl.String,
             IndCQC.establishment_id: pl.String,
-            IndCQC.main_job_role_clean_labelled: pl.Categorical(),
+            IndCQC.main_job_role_clean_labelled: pl.Enum(TEST_ROLES),
             "value": pl.Float64,
         }
     )
     expected_schema = pl.Schema(
         {
             "id": pl.Int32,
-            IndCQC.main_job_role_clean_labelled: pl.Categorical(),
+            IndCQC.main_job_role_clean_labelled: pl.Enum(TEST_ROLES),
             "value": pl.Float64,
         }
     )

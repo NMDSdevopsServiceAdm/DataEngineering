@@ -74,12 +74,19 @@ class MainTests(unittest.TestCase):
 
 @pytest.fixture(autouse=True)
 def mock_roles(monkeypatch):
+    roles = ["role_a", "role_b"]
+
     monkeypatch.setattr(
         job.AscwdsWorkerValueLabelsJobGroup,
         "all_roles",
-        lambda: ["role_a", "role_b"],
+        lambda: roles,
     )
 
+    monkeypatch.setattr(
+        job,
+        "JobRoleEnumType",
+        pl.Enum(roles),
+    )
 
 class TestJoinEstimatesToAscwds:
     @pytest.mark.parametrize(
@@ -111,6 +118,7 @@ class TestJoinEstimatesToAscwds:
             result_lf,
             expected_lf,
             check_row_order=False,
+            categorical_as_str=True,
         )
 
         # Sanity check: correct expansion
