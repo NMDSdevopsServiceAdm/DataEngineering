@@ -153,7 +153,7 @@ def main(
         ],
         [
             F.desc(CoverageColumns.in_ascwds),
-            F.asc(CQCLClean.registration_date),
+            F.asc(CQCLClean.imputed_registration_date),
             F.asc(CQCLClean.location_id),
         ],
     )
@@ -226,20 +226,14 @@ def join_ascwds_data_into_cqc_location_df(
         AWPClean.location_id, CQCLClean.location_id
     )
 
-    merged_coverage_df = (
-        merged_coverage_ascwds_df_with_ascwds_workplace_import_date.join(
-            formatted_ascwds_workplace_df,
-            [CQCLClean.location_id, AWPClean.ascwds_workplace_import_date],
-            how="left",
-        )
+    return merged_coverage_ascwds_df_with_ascwds_workplace_import_date.join(
+        formatted_ascwds_workplace_df,
+        [CQCLClean.location_id, AWPClean.ascwds_workplace_import_date],
+        how="left",
     )
 
-    return merged_coverage_df
 
-
-def add_flag_for_in_ascwds(
-    merged_coverage_df: DataFrame,
-) -> DataFrame:
+def add_flag_for_in_ascwds(merged_coverage_df: DataFrame) -> DataFrame:
     """
     Add a column to the merged coverage dataframe which flags if CQC location is in ASC-WDS.
 
@@ -252,7 +246,7 @@ def add_flag_for_in_ascwds(
     Returns:
         DataFrame: A dataframe with an additional column that flags if CQC location is in ASC-WDS.
     """
-    merged_coverage_df = merged_coverage_df.withColumn(
+    return merged_coverage_df.withColumn(
         CoverageColumns.in_ascwds,
         F.when(
             F.isnull(AWPClean.establishment_id),
@@ -260,12 +254,8 @@ def add_flag_for_in_ascwds(
         ).otherwise(InAscwds.is_in_ascwds),
     )
 
-    return merged_coverage_df
 
-
-def filter_for_latest_cqc_ratings(
-    cqc_ratings_df: DataFrame,
-) -> DataFrame:
+def filter_for_latest_cqc_ratings(cqc_ratings_df: DataFrame) -> DataFrame:
     """
     Filter the CQC ratings dataframe to latest rating per location only.
 
@@ -280,7 +270,8 @@ def filter_for_latest_cqc_ratings(
         DataFrame: The cqc ratings dataframe with only the latest current rating per location.
     """
     cqc_ratings_df = cqc_ratings_df.dropDuplicates()
-    cqc_ratings_df = cqc_ratings_df.where(
+
+    return cqc_ratings_df.where(
         (
             cqc_ratings_df[CQCRatingsColumns.latest_rating_flag]
             == CQCLatestRating.is_latest_rating
@@ -290,12 +281,10 @@ def filter_for_latest_cqc_ratings(
             == CQCCurrentOrHistoricValues.current
         )
     )
-    return cqc_ratings_df
 
 
 def join_latest_cqc_rating_into_coverage_df(
-    merged_coverage_df: DataFrame,
-    cqc_ratings_df: DataFrame,
+    merged_coverage_df: DataFrame, cqc_ratings_df: DataFrame
 ) -> DataFrame:
     """
     Join latest rating to coverage dataframe using locationid as key.
@@ -315,19 +304,11 @@ def join_latest_cqc_rating_into_coverage_df(
 
     latest_cqc_ratings_df = filter_for_latest_cqc_ratings(cqc_ratings_df)
 
-    merged_coverage_with_latest_rating_df = merged_coverage_df.join(
+    return merged_coverage_df.join(
         latest_cqc_ratings_df,
         CQCLClean.location_id,
         how="left",
-    )
-
-    merged_coverage_with_latest_rating_df = merged_coverage_with_latest_rating_df.drop(
-        CQCRatingsColumns.latest_rating_flag
-    )
-    merged_coverage_with_latest_rating_df = merged_coverage_with_latest_rating_df.drop(
-        CQCRatingsColumns.current_or_historic
-    )
-    return merged_coverage_with_latest_rating_df
+    ).drop(CQCRatingsColumns.latest_rating_flag, CQCRatingsColumns.current_or_historic)
 
 
 def join_provider_name_into_merged_coverage_df(
