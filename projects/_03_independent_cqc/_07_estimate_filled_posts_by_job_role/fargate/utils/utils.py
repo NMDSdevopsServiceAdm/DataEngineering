@@ -2,6 +2,7 @@ from typing import Final
 
 import polars as pl
 
+from polars_utils.expressions import percentage_share
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
@@ -45,18 +46,6 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
         .then(IndCQC.ascwds_job_role_counts)
         .otherwise(None)
     )
-
-
-# TODO: Move this into a more centralised module of generic polars expression functions.
-def percentage_share(column: str | pl.Expr) -> pl.Expr:
-    """Calculate the percentage share of a column across all values.
-
-    Can be used in conjunction with `.group_by` and `.over` methods to get
-    proportions within groups.
-    """
-    # If it's a string, turn it into a column expression; otherwise, use as-is.
-    col = pl.col(column) if isinstance(column, str) else column
-    return col / col.sum()
 
 
 def create_imputed_ascwds_job_role_counts(
