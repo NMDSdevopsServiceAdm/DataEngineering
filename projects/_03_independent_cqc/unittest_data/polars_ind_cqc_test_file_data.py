@@ -1902,3 +1902,12 @@ class EstimateFilledPostsByJobRole04EstimateData:
         (1, MainJobRoleLabels.supervisor, 20.0, 0.0, 1.0),
         (1, MainJobRoleLabels.registered_manager, 1.0, 0.0, 1.0),
     ]
+
+    expected_get_non_rm_managerial_distribution_rows = [
+        (0, MainJobRoleLabels.supervisor, 60.0, 0.6),
+        (0, MainJobRoleLabels.first_line_manager, 40.0, 0.4),
+        (0, MainJobRoleLabels.registered_manager, 10.0, None),
+        (1, MainJobRoleLabels.supervisor, 0.0, 0.5),
+        (1, MainJobRoleLabels.first_line_manager, 0.0, 0.5),
+        (1, MainJobRoleLabels.registered_manager, 10.0, None),
+    ]

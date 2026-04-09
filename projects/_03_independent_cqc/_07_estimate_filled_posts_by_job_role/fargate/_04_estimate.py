@@ -130,30 +130,72 @@ def adjust_managerial_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
     lf = get_reg_man_difference(lf)
+    lf = get_non_rm_managerial_distribution(lf)
 
     return lf
 
 
 def get_reg_man_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
 
-    difference_expr = (
-        pl.when(
-            pl.col(IndCQC.main_job_role_clean_labelled).eq(
-                MainJobRoleLabels.registered_manager
+    return lf.with_columns(
+        (
+            (
+                pl.col(IndCQC.estimate_filled_posts_by_job_role)
+                - pl.col(IndCQC.registered_manager_count)
             )
-        )
-        .then(
-            pl.col(IndCQC.estimate_filled_posts_by_job_role).sub(
-                pl.col(IndCQC.registered_manager_count)
+            .filter(
+                pl.col(IndCQC.main_job_role_clean_labelled)
+                == MainJobRoleLabels.registered_manager
             )
+            .first(ignore_nulls=True)
+            .over(EXPANDED_ID)
+        ).alias(IndCQC.difference_between_estimate_and_cqc_registered_managers)
+    )
+
+
+def get_non_rm_managerial_distribution(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Doc string goes here.
+    """
+    sum_non_rm_managerial_posts_expr = (
+        pl.col(IndCQC.estimate_filled_posts_by_job_role)
+        .filter(
+            pl.col(IndCQC.main_job_role_clean_labelled)
+            != MainJobRoleLabels.registered_manager
         )
-        .otherwise(None)
+        .sum()
+        .over(EXPANDED_ID)
+    )
+
+    count_non_rm_managerial_roles_expr = (
+        pl.lit(1)
+        .filter(
+            pl.col(IndCQC.main_job_role_clean_labelled)
+            != MainJobRoleLabels.registered_manager
+        )
+        .sum()
+        .over(EXPANDED_ID)
     )
 
     lf = lf.with_columns(
-        difference_expr.first(ignore_nulls=True)
-        .over(EXPANDED_ID)
-        .alias(IndCQC.difference_between_estimate_and_cqc_registered_managers)
+        (
+            pl.when(
+                pl.col(IndCQC.main_job_role_clean_labelled)
+                != MainJobRoleLabels.registered_manager
+            ).then(
+                pl.when(sum_non_rm_managerial_posts_expr.eq(0.0))
+                .then(
+                    pl.lit(1)
+                    .truediv(count_non_rm_managerial_roles_expr)
+                    .cast(pl.Float32)
+                )
+                .otherwise(
+                    pl.col(IndCQC.estimate_filled_posts_by_job_role)
+                    .truediv(sum_non_rm_managerial_posts_expr)
+                    .cast(pl.Float32)
+                )
+            )
+        ).alias(IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role)
     )
 
     return lf

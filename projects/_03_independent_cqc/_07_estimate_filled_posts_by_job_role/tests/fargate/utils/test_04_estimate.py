@@ -96,3 +96,18 @@ class GetRegManDifference(unittest.TestCase):
         returned_lf = job.get_reg_man_difference(test_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class GetNonRmManagerialDistribution(unittest.TestCase):
+    def test_function_returns_expected_values(self):
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_get_non_rm_managerial_distribution_rows,
+            schema=Schemas.expected_get_non_rm_managerial_distribution_schema,
+            orient="row",
+        )
+        test_lf = expected_lf.drop(
+            IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+        )
+        returned_lf = job.get_non_rm_managerial_distribution(test_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
