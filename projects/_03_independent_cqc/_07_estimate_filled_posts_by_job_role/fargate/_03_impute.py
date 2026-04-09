@@ -36,16 +36,8 @@ def main(
         output_col=IndCQC.ascwds_job_role_ratios,
     )
 
-    # Add the multiplication below this function into "create_imputed_ascwds_job_role_counts".
     estimated_job_role_posts_lf = create_imputed_ascwds_job_role_counts(
         estimated_job_role_posts_lf
-    )
-
-    # Multiply imputed ratios by estimate filled posts
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        pl.col(IndCQC.estimate_filled_posts)
-        .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
-        .alias(IndCQC.imputed_ascwds_job_role_counts)
     )
 
     # Combine the count rolling sum and get_percent_share_ratio into one function that returns ascwds_job_role_rolling_ratio.

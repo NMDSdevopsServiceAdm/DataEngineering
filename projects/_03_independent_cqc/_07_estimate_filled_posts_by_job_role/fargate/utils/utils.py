@@ -90,7 +90,15 @@ def create_imputed_ascwds_job_role_counts(
         .drop(impute_groups)
     )
 
-    return estimated_job_role_posts_lf.join(impute_agg_lf, on=EXPANDED_ID, how="left")
+    estimated_job_role_posts_lf.join(impute_agg_lf, on=EXPANDED_ID, how="left")
+
+    # Multiply imputed ratios by estimate filled posts
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        pl.col(IndCQC.estimate_filled_posts)
+        .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
+        .alias(IndCQC.imputed_ascwds_job_role_counts)
+    )
+    return estimated_job_role_posts_lf
 
 
 def get_percent_share_ratios(
