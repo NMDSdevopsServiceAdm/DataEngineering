@@ -144,7 +144,7 @@ def adjust_managerial_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
            rows.
     """
     non_managerial_roles_lf = lf.filter(
-        pl.col(IndCQC.main_job_role_clean_labelled) != manager_roles_list
+        ~pl.col(IndCQC.main_job_role_clean_labelled).is_in(manager_roles_list)
     ).select(
         [
             ROW_ID,
@@ -253,7 +253,7 @@ def unpivot_job_roles_into_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     lf = lf.with_columns(
         pl.col(IndCQC.main_job_role_clean_labelled).cast(
-            pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
+            pl.Enum(AscwdsWorkerValueLabelsJobGroup.manager_roles())
         )
     )
 
