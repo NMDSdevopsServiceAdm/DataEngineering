@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import ANY, Mock, call, patch
 
 import projects._01_ingest.cqc_api.fargate.cqc_locations_4_full_clean as job
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._01_ingest.cqc_api.fargate.cqc_locations_4_full_clean"
 
@@ -13,7 +12,6 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
     TEST_REG_DESTINATION = "some/reg/destination"
     TEST_DEREG_DESTINATION = "some/reg/destination"
     TEST_MANUAL_POSTCODE_CORRETIONS_SOURCE = "some/ons/source"
-    partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     mock_cqc_locations_data = Mock(name="cqc_locations_data")
 
@@ -83,8 +81,5 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
         classify_specialisms_mock.assert_called_once()
         run_postcode_matching_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
-            ANY,
-            self.TEST_REG_DESTINATION,
-            partition_cols=self.partition_keys,
-            append=False,
+            ANY, self.TEST_REG_DESTINATION, append=False
         )

@@ -350,21 +350,31 @@ class CleaningUtilsData:
     ]
 
     remove_duplicate_locationids_rows = [
-        (date(2024, 1, 1), "1-001", date(2023, 1, 1)),
-        (date(2024, 1, 1), "1-001", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
-    ]
-    expected_remove_duplicate_locationids_descending_rows = [
-        (date(2024, 1, 1), "1-001", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
+        (1, date(2024, 1, 1), "1-001", date(2023, 1, 1), True),
+        (2, date(2024, 1, 1), "1-001", date(2023, 2, 1), False),
+        (3, date(2024, 2, 1), "1-001", date(2023, 2, 1), True),
+        (4, date(2024, 2, 1), "1-002", date(2023, 1, 1), False),
+        (5, date(2024, 2, 1), "1-002", date(2023, 2, 1), True),
+        (6, date(2024, 2, 1), "1-003", date(2023, 1, 1), False),
+        (7, date(2024, 2, 1), "1-003", date(2023, 2, 1), False),
     ]
     expected_remove_duplicate_locationids_ascending_rows = [
-        (date(2024, 1, 1), "1-001", date(2023, 1, 1)),
-        (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
+        (1, date(2024, 1, 1), "1-001", date(2023, 1, 1), True),
+        (3, date(2024, 2, 1), "1-001", date(2023, 2, 1), True),
+        (4, date(2024, 2, 1), "1-002", date(2023, 1, 1), False),
+        (6, date(2024, 2, 1), "1-003", date(2023, 1, 1), False),
+    ]
+    expected_remove_duplicate_locationids_descending_rows = [
+        (2, date(2024, 1, 1), "1-001", date(2023, 2, 1), False),
+        (3, date(2024, 2, 1), "1-001", date(2023, 2, 1), True),
+        (5, date(2024, 2, 1), "1-002", date(2023, 2, 1), True),
+        (7, date(2024, 2, 1), "1-003", date(2023, 2, 1), False),
+    ]
+    expected_remove_duplicate_locationids_mixed_order_rows = [
+        (1, date(2024, 1, 1), "1-001", date(2023, 1, 1), True),
+        (3, date(2024, 2, 1), "1-001", date(2023, 2, 1), True),
+        (5, date(2024, 2, 1), "1-002", date(2023, 2, 1), True),
+        (6, date(2024, 2, 1), "1-003", date(2023, 1, 1), False),
     ]
 
     create_banded_bed_count_column_rows = [

@@ -4,7 +4,6 @@
   "States": {
     "Silver to Gold Transformation Layer": {
       "Type": "Parallel",
-      "Next": "Run validation crawler when success",
       "Branches": [
         {
           "StartAt": "Merge CQC, ASC-WDS and CT data",
@@ -130,7 +129,7 @@
                                 "validate_merged_ind_cqc_data.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/",
-                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_01_merged_ind_cqc_data/",
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_01_merged_ind_cqc_data/",
                                 "--compare_path", "domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
                               ]
                             }
@@ -211,7 +210,7 @@
                         "Arguments": {
                           "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/",
                           "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_02_cleaned_data/"
+                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_ind_cqc_02_cleaned_data/"
                         }
                       },
                       "End": true
@@ -243,7 +242,7 @@
                                 "validate_cleaned_ind_cqc_data.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data_polars/",
-                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_02_cleaned_data/",
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_02_cleaned_data/",
                                 "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/"
                               ]
                             }
@@ -389,7 +388,7 @@
                                                 "validate_model_01_features.py",
                                                 "--bucket_name", "${dataset_bucket_name}",
                                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_care_home_model/",
-                                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_04_features_care_home_model/",
+                                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_04_features_care_home_model/",
                                                 "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
                                                 "--model", "care_home_model"
                                               ]
@@ -529,7 +528,7 @@
                                                 "validate_model_01_features.py",
                                                 "--bucket_name", "${dataset_bucket_name}",
                                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_without_dormancy_model/",
-                                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_04_features_non_res_without_dormancy_model/",
+                                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_04_features_non_res_without_dormancy_model/",
                                                 "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
                                                 "--model", "non_res_without_dormancy_model"
                                               ]
@@ -669,7 +668,7 @@
                                                 "validate_model_01_features.py",
                                                 "--bucket_name", "${dataset_bucket_name}",
                                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_04_features_non_res_with_dormancy_model/",
-                                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_04_features_non_res_with_dormancy_model/",
+                                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_04_features_non_res_with_dormancy_model/",
                                                 "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
                                                 "--model", "non_res_with_dormancy_model"
                                               ]
@@ -702,7 +701,7 @@
                         "Arguments": {
                           "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
                           "--imputed_ind_cqc_ascwds_and_pir_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_03_imputed_ascwds_and_pir/"
+                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_ind_cqc_03_imputed_ascwds_and_pir/"
                         }
                       },
                       "ResultPath": null,
@@ -735,7 +734,7 @@
                                 "validate_imputed_ind_cqc_ascwds_and_pir_data.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir_polars/",
-                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_03_imputed_ascwds_and_pir/",
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_03_imputed_ascwds_and_pir/",
                                 "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
                               ]
                             }
@@ -821,7 +820,7 @@
                         "Arguments": {
                           "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
                           "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_06_estimated_filled_posts/"
+                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_ind_cqc_06_estimated_filled_posts/"
                         }
                       },
                       "End": true
@@ -892,7 +891,7 @@
                                 "validate_estimated_ind_cqc_filled_posts_data.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts_polars/",
-                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_ind_cqc_06_estimated_filled_posts/",
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_06_estimated_filled_posts/",
                                 "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
                               ]
                             }
@@ -972,70 +971,84 @@
           }
         }
       ],
-      "Comment": "A state that fully encapsulates taking data from the Silver layer and performing ETL operations to move it to the Gold layer",
+      "Next": "Handle Error and Run Crawlers",
       "Catch": [
         {
-          "ErrorEquals": [
-            "States.ALL"
-          ],
-          "Next": "Publish error notification",
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Handle Error and Run Crawlers",
           "ResultPath": "$.error"
         }
       ]
     },
-    "Run validation crawler when success": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${data_validation_reports_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Run Independent CQC crawler when success"
-    },
-    "Run Independent CQC crawler when success": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${ind_cqc_filled_posts_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Success"
-    },
-    "Publish error notification": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
-      "Parameters": {
-        "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
-        "Payload": {
-          "Error.$": "$.error.Cause",
-          "ExecutionId.$": "$$.Execution.Id",
-          "StateMachineName.$": "$$.StateMachine.Name",
-          "StateMachineId.$": "$$.StateMachine.Id",
-          "ExecutionStartTime.$": "$$.Execution.StartTime",
-          "CallbackToken.$": "$$.Task.Token"
+    "Handle Error and Run Crawlers": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Check if Error Exists",
+          "States": {
+            "Check if Error Exists": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.error",
+                  "IsPresent": true,
+                  "Next": "Publish Error Notification"
+                }
+              ],
+              "Default": "No Error"
+            },
+            "Publish Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                  "Error.$": "$.error.Cause",
+                  "ExecutionId.$": "$$.Execution.Id",
+                  "StateMachineName.$": "$$.StateMachine.Name",
+                  "StateMachineId.$": "$$.StateMachine.Id",
+                  "ExecutionStartTime.$": "$$.Execution.StartTime",
+                  "CallbackToken.$": "$$.Task.Token"
+                }
+              },
+              "Next": "Fail"
+            },
+            "No Error": {
+              "Type": "Succeed"
+            },
+            "Fail": {
+              "Type": "Fail"
+            }
+          }
+        },
+        {
+          "StartAt": "Run IND CQC Crawler",
+          "States": {
+            "Run IND CQC Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${ind_cqc_filled_posts_crawler_name}"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Run Validation Crawler",
+          "States": {
+            "Run Validation Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${data_validation_reports_crawler_name}"
+              },
+              "End": true
+            }
+          }
         }
-      },
-      "Next": "Run validation crawler when failed"
-    },
-    "Run validation crawler when failed": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${data_validation_reports_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Run Independent CQC crawler when failed"
-    },
-    "Run Independent CQC crawler when failed": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${ind_cqc_filled_posts_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Fail"
-    },
-    "Fail": {
-      "Type": "Fail"
-    },
-    "Success": {
-      "Type": "Succeed"
+      ],
+      "End": true
     }
   }
 }
