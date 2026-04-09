@@ -6,9 +6,7 @@ import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import (
-    EstimateFilledPostsSource,
-)
+from utils.column_values.categorical_column_values import EstimateFilledPostsSource
 
 from .utils_test_cases import (
     managerial_adjustment_core_schema,
@@ -79,6 +77,7 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+# check test cases
 class TestPercentageShare:
     def test_over_whole_dataset(self):
         input_lf = pl.LazyFrame({"vals": [1, 2, 2]})
@@ -146,6 +145,37 @@ class TestPercentageShare:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+# Needs repointing at new function- check test cases still work
+class TestGetPercentageShareRatios:
+    @pytest.mark.parametrize(
+        "input_, expected",
+        [
+            pytest.param(
+                [5.0, 2.0, 1.0],
+                [0.625, 0.25, 0.125],
+                id="when_all_values_present",
+            ),
+            pytest.param(
+                [0, 0],
+                [0.5, 0.5],
+                id="handles_zero_sum_case_with_even_distribution",
+            ),
+            pytest.param(
+                [0, None, 0, None],
+                [0.5, None, 0.5, None],
+                id="handles_zero_sum_case_with_even_distribution_across_non_nulls",
+            ),
+        ],
+    )
+    def test_get_percent_share_ratios(self, input_, expected):
+        input_lf = pl.LazyFrame({"values": input_})
+        expected_lf = pl.LazyFrame({"pct_share": expected})
+        returned_lf = input_lf.select(
+            job.get_percent_share_ratios("values").alias("pct_share")
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
 class TestPercentageShareHandlingZeroSum:
     @pytest.mark.parametrize(
         "input_, expected",
@@ -176,7 +206,8 @@ class TestPercentageShareHandlingZeroSum:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestImputeFullTimeSeries:
+# Needs repointing at new function- check test cases still work
+class TestImputeRatios:
     @pytest.mark.parametrize(
         "input, expected",
         [
@@ -193,7 +224,7 @@ class TestImputeFullTimeSeries:
     def test_imputations(self, input, expected):
         input_lf = pl.LazyFrame({"vals": input})
         expected_lf = pl.LazyFrame({"vals": expected}).cast(pl.Float64)
-        returned_lf = input_lf.select(job.impute_full_time_series("vals"))
+        returned_lf = input_lf.select(job.impute_ratios("vals"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     def test_all_nones_returns_nones(self):
@@ -202,10 +233,10 @@ class TestImputeFullTimeSeries:
             pl.Float64
         )
         expected_lf = input_lf
-        returned_lf = input_lf.select(job.impute_full_time_series("vals"))
+        returned_lf = input_lf.select(job.impute_ratios("vals"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_imputes_time_series_over_groups_with_unordered_time_col(self):
+    def test_imputes_impute_ratios_over_groups_with_unordered_time_col(self):
         """Test that it works with `.over(groups)` ordering by a time column."""
         input_lf = pl.LazyFrame(
             schema=["group", "time_col", "vals"],
@@ -238,7 +269,7 @@ class TestImputeFullTimeSeries:
         )
         returned_lf = input_lf.with_columns(
             # Overwriting the original column with output
-            job.impute_full_time_series("vals").over("group", order_by="time_col")
+            job.impute_ratios("vals").over("group", order_by="time_col")
         )
         # `.over()` will return rows in original order, so need to sort to match expected.
         pl_testing.assert_frame_equal(
@@ -247,18 +278,19 @@ class TestImputeFullTimeSeries:
         )
 
 
-class TestRollingSum:
+# Needs repointing at new function- check test cases still work
+class TestGetJobCountsRollingSum:
     @pytest.mark.parametrize(
         "rolling_sum_data",
         [case.as_pytest_param() for case in rolling_sum_test_cases],
     )
-    def test_rolling_sum(self, rolling_sum_data):
+    def test_get_job_counts_rolling_sum(self, rolling_sum_data):
         expected_lf = pl.LazyFrame(
             rolling_sum_data, rolling_sum_expected_schema, orient="row"
         )
         input_lf = expected_lf.drop(IndCQC.ascwds_job_role_rolling_sum)
         returned_lf = input_lf.with_columns(
-            job.rolling_sum_of_job_role_counts(period="6mo").alias(
+            job.get_job_counts_rolling_sum(period="6mo").alias(
                 IndCQC.ascwds_job_role_rolling_sum
             )
         )
