@@ -16,7 +16,7 @@ from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
 )
 
 # Define constants for IDs for original length data and expanded data.
-ROW_ID: Final[str] = "id"
+EXPANDED_ID: Final[str] = "expanded_id"
 
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
@@ -53,13 +53,13 @@ def main(
     lf = lf.with_columns(count_cqc_rm().alias(IndCQC.registered_manager_count))
     print("Calculated registered manager count")
 
-    # adjusted_lf = adjust_managerial_filled_posts(lf)
-    # print("Adjusted managerial filled posts")
+    adjusted_lf = adjust_managerial_filled_posts(lf)
+    print("Adjusted managerial filled posts")
 
-    # lf = lf.drop(IndCQC.main_job_role_clean_labelled)
+    lf = lf.drop(IndCQC.main_job_role_clean_labelled)
 
-    # lf = lf.join(adjusted_lf, on=ROW_ID, how="left")
-    # print("Joined adjusted filled posts by job to original LazyFrame")
+    lf = lf.join(adjusted_lf, on=EXPANDED_ID, how="left")
+    print("Joined adjusted filled posts by job to original LazyFrame")
 
     # Try to refactor the pipe(apply_manager_adjustments) so it's readable sequence of expressions without class methods.
     #       estimated_job_role_posts_lf = estimated_job_role_posts_lf.pipe(
@@ -73,7 +73,7 @@ def main(
     #       )
 
     utils.sink_to_parquet(
-        lazy_df=lf,
+        lazy_lf=lf,
         output_path=estimated_data_destination,
         append=False,
     )
@@ -150,7 +150,7 @@ def adjust_managerial_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
         ~pl.col(IndCQC.main_job_role_clean_labelled).is_in(manager_roles_list)
     ).select(
         [
-            ROW_ID,
+            EXPANDED_ID,
             IndCQC.main_job_role_clean_labelled,
             pl.col(IndCQC.estimate_filled_posts_by_job_role).alias(
                 IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
@@ -164,7 +164,9 @@ def adjust_managerial_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
         managerial_roles_lf, manager_roles_list
     )
 
-    managerial_roles_lf = unpivot_job_roles_into_rows(managerial_roles_lf)
+    managerial_roles_lf = unpivot_job_roles_into_rows(
+        managerial_roles_lf, manager_roles_list
+    )
 
     return pl.concat([non_managerial_roles_lf, managerial_roles_lf])
 
@@ -189,7 +191,7 @@ def filter_rows_and_pivot_into_columns(
     return lf.pivot(
         on=IndCQC.main_job_role_clean_labelled,
         on_columns=list_of_roles,
-        index=[ROW_ID, IndCQC.registered_manager_count],
+        index=[EXPANDED_ID, IndCQC.registered_manager_count],
         values=IndCQC.estimate_filled_posts_by_job_role,
         aggregate_function="first",
     )
@@ -221,7 +223,7 @@ def recalculate_managerial_filled_posts(
     number_of_non_rm_managerial_roles = len(non_rm_managerial_roles_list)
 
     return lf.select(
-        ROW_ID,
+        EXPANDED_ID,
         *[
             pl.when(non_rm_managerial_roles_sum.eq(0))
             .then(
@@ -245,13 +247,13 @@ def recalculate_managerial_filled_posts(
     )
 
 
-def unpivot_job_roles_into_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
+def unpivot_job_roles_into_rows(lf: pl.LazyFrame, list_of_roles: list) -> pl.LazyFrame:
     """
     Doc string goes here.
     """
     lf = lf.unpivot(
-        on=manager_roles_list,
-        index=ROW_ID,
+        on=list_of_roles,
+        index=EXPANDED_ID,
         variable_name=IndCQC.main_job_role_clean_labelled,
         value_name=IndCQC.estimate_filled_posts_by_job_role_manager_adjusted,
     )

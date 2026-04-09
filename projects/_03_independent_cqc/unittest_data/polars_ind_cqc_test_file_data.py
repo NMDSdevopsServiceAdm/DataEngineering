@@ -1927,3 +1927,23 @@ class EstimateFilledPostsByJobRole04EstimateData:
         (2, 9.0, 0.0, 0.0, 1.0),
         (3, 13.0, 0.0, 0.0, 0.0),
     ]
+
+    unpivot_job_roles_into_rows_data = [
+        (0, 10.0, 20.0, 30.0, 40.0),
+        (1, 50.0, 60.0, 70.0, 80.0),
+        (2, 90.0, 100.0, 110.0, 120.0),
+    ]
+    expected_unpivot_job_roles_into_rows_data = [
+        (0, MainJobRoleLabels.supervisor, 10.0),
+        (0, MainJobRoleLabels.first_line_manager, 20.0),
+        (0, MainJobRoleLabels.middle_management, 30.0),
+        (0, MainJobRoleLabels.registered_manager, 40.0),
+        (1, MainJobRoleLabels.supervisor, 50.0),
+        (1, MainJobRoleLabels.first_line_manager, 60.0),
+        (1, MainJobRoleLabels.middle_management, 70.0),
+        (1, MainJobRoleLabels.registered_manager, 80.0),
+        (2, MainJobRoleLabels.supervisor, 90.0),
+        (2, MainJobRoleLabels.first_line_manager, 100.0),
+        (2, MainJobRoleLabels.middle_management, 110.0),
+        (2, MainJobRoleLabels.registered_manager, 120.0),
+    ]
