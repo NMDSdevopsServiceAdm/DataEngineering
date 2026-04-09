@@ -3,7 +3,6 @@ from typing import Final
 import polars as pl
 
 from polars_utils import utils
-from polars_utils.pipeline_utils import time_it
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     nullify_job_role_count_when_source_not_ascwds,
 )
@@ -27,35 +26,29 @@ def main(
         merged_data_source (str): path to the merged data
         cleaned_data_destination (str): destination for output
     """
-    # Remove time_it.
-    with time_it("Clean"):
+    print("Cleaning merged_ind_cqc dataset...")
 
-        print("Cleaning merged_ind_cqc dataset...")
+    estimated_job_role_posts_lf = utils.scan_parquet(merged_data_source)
+    print("Merged LazyFrame read in")
 
-        estimated_job_role_posts_lf = utils.scan_parquet(merged_data_source)
-        print("Merged LazyFrame read in")
+    estimated_job_role_posts_lf = nullify_job_role_count_when_source_not_ascwds(
+        estimated_job_role_posts_lf
+    ).drop(
+        IndCQC.estimate_filled_posts_source,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+    )
 
-        # Start of cleaning jobs.
-        # Null job role counts when we've not used ASC-WDS for estimated posts.
+    # TODO - Filter ASC-WDS worker data.
 
-        estimated_job_role_posts_lf = nullify_job_role_count_when_source_not_ascwds(
-            estimated_job_role_posts_lf
-        ).drop(
-            IndCQC.estimate_filled_posts_source,
-            IndCQC.ascwds_filled_posts_dedup_clean,
-        )
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
+        EXPANDED_ID
+    )
 
-        # TODO - Filter ASC-WDS worker data.
-
-        estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
-            EXPANDED_ID
-        )
-
-        utils.sink_to_parquet(
-            lazy_df=estimated_job_role_posts_lf,
-            output_path=cleaned_data_destination,
-            append=False,
-        )
+    utils.sink_to_parquet(
+        lazy_df=estimated_job_role_posts_lf,
+        output_path=cleaned_data_destination,
+        append=False,
+    )
 
 
 if __name__ == "__main__":

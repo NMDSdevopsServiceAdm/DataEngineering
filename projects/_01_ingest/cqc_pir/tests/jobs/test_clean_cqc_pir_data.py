@@ -22,7 +22,6 @@ class CleanCQCpirDatasetTests(SparkBaseTest):
     TEST_SOURCE = "some/directory"
     TEST_DESTINATION = "some/other/directory"
     SCHEMA_LENGTH = len(Schemas.sample_schema)
-    partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
 

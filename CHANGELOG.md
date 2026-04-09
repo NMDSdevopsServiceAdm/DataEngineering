@@ -36,6 +36,8 @@ All notable changes to this project will be documented in this file.
 
 - Reduced worker job role data to CQC locations only.
 
+- Set up cleaning step for job role breakdown.
+
 - Renamed CQC delta api data to be consistent with the rest of the CQC dataset names.
   Renamed validation datasets with suffix `validation_` for Point Blank validation and `validation_pdq_` for PyDeequ validation.
   Removed automatic copying of raw data files into branch.

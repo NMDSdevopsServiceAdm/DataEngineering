@@ -6,9 +6,7 @@ import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import (
-    EstimateFilledPostsSource,
-)
+from utils.column_values.categorical_column_values import EstimateFilledPostsSource
 
 from .utils_test_cases import (
     managerial_adjustment_core_schema,
@@ -33,10 +31,7 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
             (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 2),
         ]
 
-        self.expected_rows_that_meet_condition = [
-            (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 1),
-            (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 2),
-        ]
+        self.expected_rows_that_meet_condition = self.input_rows_that_meet_condition
 
     def _create_input_lf(self, extra_rows: list[tuple]) -> pl.LazyFrame:
         """Set the input LazyFrame up with rows that meet condition + given rows."""
