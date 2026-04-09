@@ -59,7 +59,9 @@ def percentage_share(column: str | pl.Expr) -> pl.Expr:
     return col / col.sum()
 
 
-def impute_ratios(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFrame:
+def create_imputed_ascwds_job_role_counts(
+    estimated_job_role_posts_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
     """Impute job role ratios by interpolation forward fill and backward fill.
 
     Uses groupby-agg-explode pattern to keep processing within polars streaming
