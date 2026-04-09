@@ -181,6 +181,8 @@ def filter_rows_and_pivot_into_columns(
         pl.LazyFrame: The input LazyFrame with manager roles only and pivoted on
         job role.
     """
+    lf = lf.filter(pl.col(IndCQC.main_job_role_clean_labelled).is_in(list_of_roles))
+
     return lf.pivot(
         on=IndCQC.main_job_role_clean_labelled,
         on_columns=list_of_roles,
