@@ -323,7 +323,7 @@ module "flatten_cqc_ratings_job" {
 
   job_parameters = {
     "--cqc_full_snapshot_source"       = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_locations_04_latest_snapshot/"
-    "--cqc_locations_api_delta_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=delta_locations_api/version=3.1.0/"
+    "--cqc_locations_api_delta_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_locations_01_delta_api/version=3.1.0/"
     "--ascwds_workplace_source"        = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
     "--cqc_ratings_destination"        = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
     "--benchmark_ratings_destination"  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
@@ -379,7 +379,7 @@ module "validate_pir_cleaned_data_job" {
 
   job_parameters = {
     "--cleaned_cqc_pir_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir_cleaned/"
-    "--report_destination"     = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_pir_cleaned/"
+    "--report_destination"     = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_pir_cleaned/"
   }
 }
 
@@ -394,7 +394,7 @@ module "validate_ascwds_workplace_cleaned_data_job" {
 
   job_parameters = {
     "--cleaned_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
-    "--report_destination"              = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_workplace_cleaned/"
+    "--report_destination"              = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_workplace_cleaned/"
   }
 }
 
@@ -409,7 +409,7 @@ module "validate_ascwds_worker_cleaned_data_job" {
 
   job_parameters = {
     "--cleaned_ascwds_worker_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
-    "--report_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_worker_cleaned/"
+    "--report_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_worker_cleaned/"
   }
 }
 
@@ -425,7 +425,7 @@ module "validate_postcode_directory_cleaned_data_job" {
   job_parameters = {
     "--raw_postcode_directory_source"     = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
     "--cleaned_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
-    "--report_destination"                = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_postcode_directory_cleaned/"
+    "--report_destination"                = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_postcode_directory_cleaned/"
   }
 }
 
@@ -441,7 +441,7 @@ module "validate_merge_coverage_data_job" {
   job_parameters = {
     "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
     "--merged_coverage_data_source" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/"
-    "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_sfc_merged_coverage_data/"
+    "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_sfc_merged_coverage_data/"
   }
 }
 
@@ -457,7 +457,7 @@ module "validate_cleaned_ind_cqc_data_job" {
   job_parameters = {
     "--merged_ind_cqc_source"  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/"
     "--cleaned_ind_cqc_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
-    "--report_destination"     = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_02_cleaned_data/"
+    "--report_destination"     = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_ind_cqc_02_cleaned_data/"
   }
 }
 
@@ -473,7 +473,7 @@ module "validate_imputed_ind_cqc_ascwds_and_pir_data_job" {
   job_parameters = {
     "--cleaned_ind_cqc_source"                = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
     "--imputed_ind_cqc_ascwds_and_pir_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_03_imputed_ascwds_and_pir/"
-    "--report_destination"                    = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_03_imputed_ascwds_and_pir/"
+    "--report_destination"                    = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_ind_cqc_03_imputed_ascwds_and_pir/"
   }
 }
 
@@ -490,7 +490,7 @@ module "validate_estimated_ind_cqc_filled_posts_data_job" {
   job_parameters = {
     "--cleaned_ind_cqc_source"                = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
     "--estimated_ind_cqc_filled_posts_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/"
-    "--report_destination"                    = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_06_estimated_filled_posts/"
+    "--report_destination"                    = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_ind_cqc_06_estimated_filled_posts/"
   }
 }
 
@@ -507,7 +507,7 @@ module "validate_estimated_ind_cqc_filled_posts_by_job_role_data_job" {
   job_parameters = {
     "--cleaned_ind_cqc_source"                            = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
     "--estimated_ind_cqc_filled_posts_by_job_role_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_estimated_filled_posts_by_job_role/"
-    "--report_destination"                                = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_07_estimated_filled_posts_by_job_role/"
+    "--report_destination"                                = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_ind_cqc_07_estimated_filled_posts_by_job_role/"
   }
 }
 
@@ -522,7 +522,7 @@ module "validate_ascwds_workplace_raw_data_job" {
 
   job_parameters = {
     "--raw_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_workplace_raw/"
+    "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_workplace_raw/"
   }
 }
 
@@ -537,7 +537,7 @@ module "validate_ascwds_worker_raw_data_job" {
 
   job_parameters = {
     "--raw_ascwds_worker_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
-    "--report_destination"       = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_worker_raw/"
+    "--report_destination"       = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_worker_raw/"
   }
 }
 
@@ -552,7 +552,7 @@ module "validate_pir_raw_data_job" {
 
   job_parameters = {
     "--raw_cqc_pir_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
-    "--report_destination" = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_pir_raw/"
+    "--report_destination" = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_pir_raw/"
   }
 }
 
@@ -567,7 +567,7 @@ module "validate_postcode_directory_raw_data_job" {
 
   job_parameters = {
     "--raw_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
-    "--report_destination"            = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_postcode_directory_raw/"
+    "--report_destination"            = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_postcode_directory_raw/"
   }
 }
 
@@ -670,7 +670,7 @@ module "validate_cleaned_capacity_tracker_care_home_data_job" {
   job_parameters = {
     "--capacity_tracker_care_home_source"         = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/"
     "--capacity_tracker_care_home_cleaned_source" = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
-    "--report_destination"                        = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_capacity_tracker_care_home_cleaned_data/"
+    "--report_destination"                        = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_capacity_tracker_care_home_cleaned_data/"
   }
 }
 
@@ -686,7 +686,7 @@ module "validate_cleaned_capacity_tracker_non_res_data_job" {
   job_parameters = {
     "--capacity_tracker_non_res_source"         = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/"
     "--capacity_tracker_non_res_cleaned_source" = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
-    "--report_destination"                      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_capacity_tracker_non_residential_cleaned_data/"
+    "--report_destination"                      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_capacity_tracker_non_residential_cleaned_data/"
   }
 }
 
