@@ -36,6 +36,8 @@ All notable changes to this project will be documented in this file.
 
 - Reduced worker job role data to CQC locations only.
 
+- Set up cleaning step for job role breakdown.
+
 ### Fixed
 - Refactored `remove_duplicates_based_on_column_order` to give the same outputs for every run.
 
