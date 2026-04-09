@@ -975,7 +975,7 @@
       "Catch": [
         {
           "ErrorEquals": ["States.ALL"],
-          "Next": "Publish error notification",
+          "Next": "Handle Error and Run Crawlers",
           "ResultPath": "$.error"
         }
       ]
@@ -1024,7 +1024,7 @@
         {
           "StartAt": "Run IND CQC Crawler",
           "States": {
-            "Run CQC Crawler": {
+            "Run IND CQC Crawler": {
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
