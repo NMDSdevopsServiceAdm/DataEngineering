@@ -1430,49 +1430,14 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
         }
     )
 
-    filter_rows_and_pivot_into_columns_schema = pl.Schema(
+    expected_get_reg_man_difference_schema = pl.Schema(
         {
-            "expanded_id": pl.String,
-            IndCQC.registered_manager_count: pl.UInt32,
+            "expanded_id": pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
             IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
-        }
-    )
-    expected_filter_rows_and_pivot_into_columns_schema = pl.Schema(
-        {
-            "expanded_id": pl.String,
-            IndCQC.registered_manager_count: pl.UInt32,
-            MainJobRoleLabels.supervisor: pl.Float32,
-            MainJobRoleLabels.first_line_manager: pl.Float32,
-            MainJobRoleLabels.middle_management: pl.Float32,
-            MainJobRoleLabels.registered_manager: pl.Float32,
-        }
-    )
-
-    recalculate_managerial_filled_posts_schema = (
-        expected_filter_rows_and_pivot_into_columns_schema
-    )
-    expected_recalculate_managerial_filled_posts_schema = pl.Schema(
-        {
-            "expanded_id": pl.String,
-            MainJobRoleLabels.supervisor: pl.Float32,
-            MainJobRoleLabels.first_line_manager: pl.Float32,
-            MainJobRoleLabels.middle_management: pl.Float32,
-            MainJobRoleLabels.registered_manager: pl.Float32,
-        }
-    )
-
-    unpivot_job_roles_into_rows_schema = (
-        expected_recalculate_managerial_filled_posts_schema
-    )
-    expected_unpivot_job_roles_into_rows_schema = pl.Schema(
-        {
-            "expanded_id": pl.String,
-            IndCQC.main_job_role_clean_labelled: pl.Enum(
-                AscwdsWorkerValueLabelsJobGroup.all_roles()
-            ),
-            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
+            IndCQC.registered_manager_count: pl.Float32,
+            IndCQC.difference_between_estimate_and_cqc_registered_managers: pl.Float32,
         }
     )

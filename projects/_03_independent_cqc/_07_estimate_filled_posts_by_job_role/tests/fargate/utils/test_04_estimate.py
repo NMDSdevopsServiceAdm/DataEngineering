@@ -24,7 +24,6 @@ class TestMain(unittest.TestCase):
     mock_data = Mock(name="data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.adjust_managerial_filled_posts")
     @patch(f"{PATCH_PATH}.count_cqc_rm")
     @patch(f"{PATCH_PATH}.calculate_estimated_filled_posts_by_job_role")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
@@ -33,7 +32,6 @@ class TestMain(unittest.TestCase):
         scan_parquet_mock: Mock,
         calculate_estimated_filled_posts_by_job_role_mock: Mock,
         count_cqc_rm_mock: Mock,
-        adjust_managerial_filled_posts_Mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -45,7 +43,6 @@ class TestMain(unittest.TestCase):
         scan_parquet_mock.assert_called_once()
         calculate_estimated_filled_posts_by_job_role_mock.assert_called_once()
         count_cqc_rm_mock.assert_called_once()
-        adjust_managerial_filled_posts_Mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
             output_path=self.TEST_DESTINATION,
@@ -86,61 +83,16 @@ class TestCountCqcRm(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestFilterRowsAndPivotIntoColumns(unittest.TestCase):
+class GetRegManDifference(unittest.TestCase):
     def test_function_returns_expected_values(self):
-        test_lf = pl.LazyFrame(
-            data=Data.filter_rows_and_pivot_into_columns_rows,
-            schema=Schemas.filter_rows_and_pivot_into_columns_schema,
-            orient="row",
-        )
         expected_lf = pl.LazyFrame(
-            data=Data.expected_filter_rows_and_pivot_into_columns_rows,
-            schema=Schemas.expected_filter_rows_and_pivot_into_columns_schema,
+            data=Data.expected_get_reg_man_difference_rows,
+            schema=Schemas.expected_get_reg_man_difference_schema,
             orient="row",
         )
-        returned_lf = job.filter_rows_and_pivot_into_columns(
-            test_lf,
-            Data.test_list_of_job_roles,
+        test_lf = expected_lf.drop(
+            IndCQC.difference_between_estimate_and_cqc_registered_managers
         )
+        returned_lf = job.get_reg_man_difference(test_lf)
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
-
-
-class TestRecalculateManagerialFilledPosts(unittest.TestCase):
-    def test_function_returns_expected_values(self):
-        test_lf = pl.LazyFrame(
-            data=Data.recalculate_managerial_filled_posts_rows,
-            schema=Schemas.recalculate_managerial_filled_posts_schema,
-            orient="row",
-        )
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_recalculate_managerial_filled_posts_rows,
-            schema=Schemas.expected_recalculate_managerial_filled_posts_schema,
-            orient="row",
-        )
-        returned_lf = job.recalculate_managerial_filled_posts(
-            test_lf,
-            Data.test_list_of_job_roles,
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
-
-
-class TestUnpivotJobRolesIntoRows(unittest.TestCase):
-    def test_function_returns_expected_values(self):
-        test_lf = pl.LazyFrame(
-            data=Data.unpivot_job_roles_into_rows_data,
-            schema=Schemas.unpivot_job_roles_into_rows_schema,
-            orient="row",
-        )
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_unpivot_job_roles_into_rows_data,
-            schema=Schemas.expected_unpivot_job_roles_into_rows_schema,
-            orient="row",
-        )
-        returned_lf = job.unpivot_job_roles_into_rows(
-            test_lf,
-            Data.test_list_of_job_roles,
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

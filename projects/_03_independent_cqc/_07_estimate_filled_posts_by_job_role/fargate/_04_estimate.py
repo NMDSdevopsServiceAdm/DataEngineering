@@ -53,18 +53,8 @@ def main(
     lf = lf.with_columns(count_cqc_rm().alias(IndCQC.registered_manager_count))
     print("Calculated registered manager count")
 
-    adjusted_lf = adjust_managerial_filled_posts(lf)
-    print("Adjusted managerial filled posts")
-
-    lf = lf.drop(IndCQC.main_job_role_clean_labelled)
-
-    lf = lf.join(adjusted_lf, on=EXPANDED_ID, how="left")
-    print("Joined adjusted filled posts by job to original LazyFrame")
-
-    # Try to refactor the pipe(apply_manager_adjustments) so it's readable sequence of expressions without class methods.
-    #       estimated_job_role_posts_lf = estimated_job_role_posts_lf.pipe(
-    #           apply_manager_adjustments
-    #       )
+    lf = adjust_managerial_roles(lf)
+    print("Adjusted managerial roles")
 
     # Join back original metadata.
     #       estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
@@ -131,137 +121,39 @@ def count_cqc_rm() -> pl.Expr:
     )
 
 
-def adjust_managerial_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
+def adjust_managerial_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """ "
+    A function to call steps for adjusting managerial roles.
     """
-    Runs the steps required to adjust managerial filled post estimates to
-    account for replacing SfC registered manager estimate with CQC registered
-    manager count.
-
-    The steps are:
-        1. Separate non-managerial role rows into a temp LazyFrame.
-        2. Filter the input LazyFrame to managerial role rows only and pivot
-           filled posts for each role into a column.
-        3. Calculate the adjusted managerial role filled posts.
-        4. Unpivot the adjusted managerial role filled post columns into rows.
-        5. Concatenate the adjusted managerial role rows and non-managerial role
-           rows.
-    """
-    non_managerial_roles_lf = lf.filter(
-        ~pl.col(IndCQC.main_job_role_clean_labelled).is_in(manager_roles_list)
-    ).select(
-        [
-            EXPANDED_ID,
-            IndCQC.main_job_role_clean_labelled,
-            pl.col(IndCQC.estimate_filled_posts_by_job_role).alias(
-                IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
-            ),
-        ]
+    lf = lf.filter(
+        pl.col(IndCQC.main_job_role_clean_labelled).is_in(manager_roles_list)
     )
 
-    managerial_roles_lf = filter_rows_and_pivot_into_columns(lf, manager_roles_list)
+    lf = get_reg_man_difference(lf)
 
-    managerial_roles_lf = recalculate_managerial_filled_posts(
-        managerial_roles_lf, manager_roles_list
-    )
-
-    managerial_roles_lf = unpivot_job_roles_into_rows(
-        managerial_roles_lf, manager_roles_list
-    )
-
-    return pl.concat([non_managerial_roles_lf, managerial_roles_lf])
+    return lf
 
 
-def filter_rows_and_pivot_into_columns(
-    lf: pl.LazyFrame, list_of_roles: list
-) -> pl.LazyFrame:
-    """
-    Filters LazyFrame to given list of job roles rows and pivots their filled
-    posts values into a column per role.
+def get_reg_man_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
 
-    Args:
-        lf(pl.LazyFrame): The input LazyFrame.
-        list_of_roles (list): A list of job roles to create columns from their rows.
-
-    Returns:
-        pl.LazyFrame: The input LazyFrame with manager roles only and pivoted on
-        job role.
-    """
-    lf = lf.filter(pl.col(IndCQC.main_job_role_clean_labelled).is_in(list_of_roles))
-
-    return lf.pivot(
-        on=IndCQC.main_job_role_clean_labelled,
-        on_columns=list_of_roles,
-        index=[EXPANDED_ID, IndCQC.registered_manager_count],
-        values=IndCQC.estimate_filled_posts_by_job_role,
-        aggregate_function="first",
-    )
-
-
-def recalculate_managerial_filled_posts(
-    lf: pl.LazyFrame, list_of_roles: list
-) -> pl.LazyFrame:
-    """
-    Replaces the SfC estimate of registered manager filled posts with count from CQC register.
-
-    Args:
-        lf (pl.LazyFrame): A LazyFrame with columns per job role filled posts value.
-        list_of_roles (list): A list of job role column names to be adjusted.
-
-    Returns:
-        pl.LazyFrame: The input LazyFrame with recalculated job role columns.
-    """
-    non_rm_managerial_roles_list = [
-        role for role in list_of_roles if role != MainJobRoleLabels.registered_manager
-    ]
-
-    manager_diff = pl.col(MainJobRoleLabels.registered_manager) - pl.col(
-        IndCQC.registered_manager_count
-    )
-
-    non_rm_managerial_roles_sum = pl.sum_horizontal(non_rm_managerial_roles_list)
-
-    number_of_non_rm_managerial_roles = len(non_rm_managerial_roles_list)
-
-    return lf.select(
-        EXPANDED_ID,
-        *[
-            pl.when(non_rm_managerial_roles_sum.eq(0))
-            .then(
-                pl.col(col).add(
-                    manager_diff * (pl.lit(1 / number_of_non_rm_managerial_roles))
-                )
+    difference_expr = (
+        pl.when(
+            pl.col(IndCQC.main_job_role_clean_labelled).eq(
+                MainJobRoleLabels.registered_manager
             )
-            .otherwise(
-                pl.col(col).add(
-                    manager_diff * (pl.col(col) / non_rm_managerial_roles_sum)
-                )
+        )
+        .then(
+            pl.col(IndCQC.estimate_filled_posts_by_job_role).sub(
+                pl.col(IndCQC.registered_manager_count)
             )
-            .cast(pl.Float32)
-            .clip(lower_bound=0.0)
-            .name.keep()
-            for col in non_rm_managerial_roles_list
-        ],
-        pl.col(IndCQC.registered_manager_count)
-        .alias(MainJobRoleLabels.registered_manager)
-        .cast(pl.Float32),
-    )
-
-
-def unpivot_job_roles_into_rows(lf: pl.LazyFrame, list_of_roles: list) -> pl.LazyFrame:
-    """
-    Doc string goes here.
-    """
-    lf = lf.unpivot(
-        on=list_of_roles,
-        index=EXPANDED_ID,
-        variable_name=IndCQC.main_job_role_clean_labelled,
-        value_name=IndCQC.estimate_filled_posts_by_job_role_manager_adjusted,
+        )
+        .otherwise(None)
     )
 
     lf = lf.with_columns(
-        pl.col(IndCQC.main_job_role_clean_labelled).cast(
-            pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
-        )
+        difference_expr.first(ignore_nulls=True)
+        .over(EXPANDED_ID)
+        .alias(IndCQC.difference_between_estimate_and_cqc_registered_managers)
     )
 
     return lf

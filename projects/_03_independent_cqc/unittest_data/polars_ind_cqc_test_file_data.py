@@ -1896,54 +1896,9 @@ class EstimateFilledPostsByJobRole04EstimateData:
         (None, 0),
     ]
 
-    test_list_of_job_roles = [
-        MainJobRoleLabels.supervisor,
-        MainJobRoleLabels.first_line_manager,
-        MainJobRoleLabels.middle_management,
-        MainJobRoleLabels.registered_manager,
-    ]
-    filter_rows_and_pivot_into_columns_rows = [
-        (0, 1, MainJobRoleLabels.supervisor, 10.0),
-        (0, 1, MainJobRoleLabels.first_line_manager, 20.0),
-        (0, 1, MainJobRoleLabels.middle_management, 30.0),
-        (0, 1, MainJobRoleLabels.registered_manager, 40.0),
-        (0, 1, MainJobRoleLabels.care_worker, 50.0),
-        (1, 0, MainJobRoleLabels.supervisor, 60.0),
-    ]
-    expected_filter_rows_and_pivot_into_columns_rows = [
-        (0, 1, 10.0, 20.0, 30.0, 40.0), # Care worker exists in their data but not in the list_of_job_roles, so it's not a column.
-        (1, 0, 60.0, None, None, None), # The nulls are caused by list_of_job_roles having role that isn't in data.
-    ] # fmt: skip
-
-    recalculate_managerial_filled_posts_rows = [
-        (0, 1, 0.1, 0.1, 0.1, 0.0),  # Only has CQC rm and low Sfc non-rm roles
-        (1, 0, 10.0, 0.0, 0.0, 0.0),  # Has non-rm and zero SfC rm and zero CQC rm
-        (2, 1, 10.0, 0.0, 0.0, 0.0),  # Has CQC rm and zero SfC rm
-        (3, 0, 10.0, 0.0, 0.0, 3.0),  # Has zero CQC rm and SfC rm
-    ] # fmt: skip
-    expected_recalculate_managerial_filled_posts_rows = [
-        (0, 0.0, 0.0, 0.0, 1.0),
-        (1, 10.0, 0.0, 0.0, 0.0),
-        (2, 9.0, 0.0, 0.0, 1.0),
-        (3, 13.0, 0.0, 0.0, 0.0),
-    ]
-
-    unpivot_job_roles_into_rows_data = [
-        (0, 10.0, 20.0, 30.0, 40.0),
-        (1, 50.0, 60.0, 70.0, 80.0),
-        (2, 90.0, 100.0, 110.0, 120.0),
-    ]
-    expected_unpivot_job_roles_into_rows_data = [
-        (0, MainJobRoleLabels.supervisor, 10.0),
-        (0, MainJobRoleLabels.first_line_manager, 20.0),
-        (0, MainJobRoleLabels.middle_management, 30.0),
-        (0, MainJobRoleLabels.registered_manager, 40.0),
-        (1, MainJobRoleLabels.supervisor, 50.0),
-        (1, MainJobRoleLabels.first_line_manager, 60.0),
-        (1, MainJobRoleLabels.middle_management, 70.0),
-        (1, MainJobRoleLabels.registered_manager, 80.0),
-        (2, MainJobRoleLabels.supervisor, 90.0),
-        (2, MainJobRoleLabels.first_line_manager, 100.0),
-        (2, MainJobRoleLabels.middle_management, 110.0),
-        (2, MainJobRoleLabels.registered_manager, 120.0),
+    expected_get_reg_man_difference_rows = [
+        (0, MainJobRoleLabels.supervisor, 10.0, 1.0, -1.0),
+        (0, MainJobRoleLabels.registered_manager, 0.0, 1.0, -1.0),
+        (1, MainJobRoleLabels.supervisor, 20.0, 0.0, 1.0),
+        (1, MainJobRoleLabels.registered_manager, 1.0, 0.0, 1.0),
     ]
