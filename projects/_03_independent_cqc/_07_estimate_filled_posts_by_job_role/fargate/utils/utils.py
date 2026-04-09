@@ -70,6 +70,12 @@ def create_imputed_ascwds_job_role_counts(
     impute_groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
     order_key = IndCQC.cqc_location_import_date
 
+    estimated_job_role_posts_lf = get_percent_share_ratios(
+        estimated_job_role_posts_lf,
+        input_col=IndCQC.ascwds_job_role_counts,
+        output_col=IndCQC.ascwds_job_role_ratios,
+    )
+
     imputed_ratios = (
         pl.col(IndCQC.ascwds_job_role_ratios)
         .sort_by(order_key)
@@ -127,10 +133,9 @@ def get_percent_share_ratios(
     return estimated_job_role_posts_lf.join(ratios_agg_lf, on=EXPANDED_ID, how="left")
 
 
-def get_job_counts_rolling_sum(
+def create_ascwds_job_role_rolling_ratio(
     estimated_job_role_posts_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
-    """ """
     rolling_groups = [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled]
     order_key = IndCQC.cqc_location_import_date
     monthly_groups = rolling_groups + [order_key]
@@ -149,11 +154,17 @@ def get_job_counts_rolling_sum(
     )
 
     # STEP C: Join the rolling sum back to the main 152M row table
-    return estimated_job_role_posts_lf.join(
+    estimated_job_role_posts_lf.join(
         rolling_agg_lf,
         on=monthly_groups,
         how="left",
     )
+    estimated_job_role_posts_lf = get_percent_share_ratios(
+        estimated_job_role_posts_lf,
+        input_col="rolling_sum",
+        output_col=IndCQC.ascwds_job_role_rolling_ratio,
+    )
+    return estimated_job_role_posts_lf
 
 
 def percentage_share_handling_zero_sum(column: str | pl.Expr) -> pl.Expr:

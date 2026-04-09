@@ -280,19 +280,19 @@ class TestImputeRatios:
         )
 
 
-# Needs repointing at new function- check test cases still work
-class TestGetJobCountsRollingSum:
+# Update test data and test cases
+class TestCreateASCWDSJobRoleRollingRatio:
     @pytest.mark.parametrize(
         "rolling_sum_data",
         [case.as_pytest_param() for case in rolling_sum_test_cases],
     )
-    def test_get_job_counts_rolling_sum(self, rolling_sum_data):
+    def test_create_ascwds_job_role_rolling_ratio(self, rolling_sum_data):
         expected_lf = pl.LazyFrame(
             rolling_sum_data, rolling_sum_expected_schema, orient="row"
         )
         input_lf = expected_lf.drop(IndCQC.ascwds_job_role_rolling_sum)
         returned_lf = input_lf.with_columns(
-            job.get_job_counts_rolling_sum(period="6mo").alias(
+            job.create_ascwds_job_role_rolling_ratio(period="6mo").alias(
                 IndCQC.ascwds_job_role_rolling_sum
             )
         )

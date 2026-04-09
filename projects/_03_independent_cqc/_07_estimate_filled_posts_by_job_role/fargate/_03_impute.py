@@ -2,9 +2,8 @@ import polars as pl
 
 from polars_utils import utils
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    create_ascwds_job_role_rolling_ratio,
     create_imputed_ascwds_job_role_counts,
-    get_job_counts_rolling_sum,
-    get_percent_share_ratios,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
@@ -30,24 +29,12 @@ def main(
     estimated_job_role_posts_lf = utils.scan_parquet(cleaned_data_source)
     print("Cleaned LazyFrame read in")
 
-    estimated_job_role_posts_lf = get_percent_share_ratios(
-        estimated_job_role_posts_lf,
-        input_col=IndCQC.ascwds_job_role_counts,
-        output_col=IndCQC.ascwds_job_role_ratios,
-    )
-
     estimated_job_role_posts_lf = create_imputed_ascwds_job_role_counts(
         estimated_job_role_posts_lf
     )
 
-    # Combine the count rolling sum and get_percent_share_ratio into one function that returns ascwds_job_role_rolling_ratio.
-    estimated_job_role_posts_lf = get_job_counts_rolling_sum(
-        estimated_job_role_posts_lf
-    )
-    estimated_job_role_posts_lf = get_percent_share_ratios(
+    estimated_job_role_posts_lf = create_ascwds_job_role_rolling_ratio(
         estimated_job_role_posts_lf,
-        input_col="rolling_sum",
-        output_col=IndCQC.ascwds_job_role_rolling_ratio,
     )
 
     utils.sink_to_parquet(
