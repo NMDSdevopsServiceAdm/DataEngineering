@@ -51,12 +51,15 @@ def main(
     print("Calculated estimates by job role")
 
     lf = lf.with_columns(count_cqc_rm().alias(IndCQC.registered_manager_count))
+    print("Calculated registered manager count")
 
     adjusted_lf = adjust_managerial_filled_posts(lf)
+    print("Adjusted managerial filled posts")
 
     lf = lf.drop(IndCQC.main_job_role_clean_labelled)
 
     lf = lf.join(adjusted_lf, on=ROW_ID, how="left")
+    print("Joined adjusted filled posts by job to original LazyFrame")
 
     # Try to refactor the pipe(apply_manager_adjustments) so it's readable sequence of expressions without class methods.
     #       estimated_job_role_posts_lf = estimated_job_role_posts_lf.pipe(
