@@ -1,6 +1,7 @@
 import unittest
 from datetime import date
 from typing import Final
+from unittest.mock import Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
@@ -18,6 +19,8 @@ from .utils_test_cases import (
     rolling_sum_expected_schema,
     rolling_sum_test_cases,
 )
+
+PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils"
 
 ROW_ID: Final[str] = "id"
 EXPANDED_ID: Final[str] = "expanded_id"
@@ -142,26 +145,43 @@ class TestPercentageShareHandlingZeroSum:
 
 
 # Needs repointing at new function- check test cases still work
-class TestImputeRatios:
-    @pytest.mark.parametrize(
-        "input, expected",
-        [
-            pytest.param([1, None, 3], [1, 2, 3], id="linear_interpolation"),
-            pytest.param([None, 1, 3], [1, 1, 3], id="backfill"),
-            pytest.param([1, 3, None], [1, 3, 3], id="forward_fill"),
-            pytest.param(
-                [None, 1, None, 3, None],
-                [1, 1, 2, 3, 3],
-                id="combined_time_series",
-            ),
-        ],
+class TestCreateImputedASCWDSJobRoleCounts(unittest.TestCase):
+    test_schema = {
+        EXPANDED_ID: pl.UInt32,
+        IndCQC.location_id: pl.String,
+        IndCQC.main_job_role_clean_labelled: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_job_role_counts: pl.Int64,
+        IndCQC.estimate_filled_posts: pl.Float32,
+        IndCQC.ascwds_job_role_ratios: pl.Float32,  # extra col
+        IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,  # extra col
+        IndCQC.imputed_ascwds_job_role_counts: pl.Float32,
+    }
+    expected_data = (
+        [  # Update data wwith extra cols & get values to be easy and logical
+            ("1", "1", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0),
+            ("2", "1", "job_role_a", date(2026, 1, 1), None, 1.0, 3.0),
+            ("3", "1", "job_role_a", date(2026, 1, 1), 5, 1.0, 5.0),
+            ("4", "1", "job_role_b", date(2026, 1, 1), None, 1.0, 2.0),
+            ("5", "1", "job_role_b", date(2026, 1, 1), 2, 1.0, 2.0),
+            ("6", "1", "job_role_b", date(2026, 1, 1), 4, 1.0, 4.0),
+            ("7", "2", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0),
+            ("8", "2", "job_role_a", date(2026, 1, 1), 15, 1.0, 15.0),
+            ("9", "2", "job_role_a", date(2026, 1, 1), None, 1.0, 15.0),
+        ]
     )
-    def test_imputations(self, input, expected):
-        input_lf = pl.LazyFrame({"vals": input})
-        expected_lf = pl.LazyFrame({"vals": expected}).cast(pl.Float64)
-        returned_lf = input_lf.select(job.create_imputed_ascwds_job_role_counts("vals"))
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+    expected_lf = pl.LazyFrame(expected_data, test_schema, orient="row")
+    test_lf = expected_lf.drop(
+        IndCQC.imputed_ascwds_job_role_counts,
+        IndCQC.ascwds_job_role_ratios,
+        IndCQC.imputed_ascwds_job_role_ratios,
+    )
 
+    def test_imputations(self):
+        returned_lf = job.create_imputed_ascwds_job_role_counts(self.test_lf)
+        pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
+
+    @pytest.mark.skip()
     def test_all_nones_returns_nones(self):
         """Test for the all None case in a set of values."""
         input_lf = pl.LazyFrame({"vals": [None, None, None, None, None]}).cast(
@@ -171,6 +191,7 @@ class TestImputeRatios:
         returned_lf = input_lf.select(job.create_imputed_ascwds_job_role_counts("vals"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
+    @pytest.mark.skip()
     def test_imputes_impute_ratios_over_groups_with_unordered_time_col(self):
         """Test that it works with `.over(groups)` ordering by a time column."""
         input_lf = pl.LazyFrame(

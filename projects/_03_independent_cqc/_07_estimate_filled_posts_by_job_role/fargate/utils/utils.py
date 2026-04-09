@@ -64,6 +64,7 @@ def create_imputed_ascwds_job_role_counts(
         input_col=IndCQC.ascwds_job_role_counts,
         output_col=IndCQC.ascwds_job_role_ratios,
     )
+    estimated_job_role_posts_lf.sort(EXPANDED_ID).show(9)
 
     imputed_ratios = (
         pl.col(IndCQC.ascwds_job_role_ratios)
@@ -84,8 +85,12 @@ def create_imputed_ascwds_job_role_counts(
         .explode(EXPANDED_ID, IndCQC.imputed_ascwds_job_role_ratios)
         .drop(impute_groups)
     )
+    impute_agg_lf.sort(EXPANDED_ID).show(10)
 
-    estimated_job_role_posts_lf.join(impute_agg_lf, on=EXPANDED_ID, how="left")
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
+        impute_agg_lf, on=EXPANDED_ID, how="left"
+    )  # this join is not adding the extra column - not clear why
+    estimated_job_role_posts_lf.sort(EXPANDED_ID).show(9)
 
     # Multiply imputed ratios by estimate filled posts
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
@@ -93,6 +98,7 @@ def create_imputed_ascwds_job_role_counts(
         .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
         .alias(IndCQC.imputed_ascwds_job_role_counts)
     )
+    estimated_job_role_posts_lf.sort(EXPANDED_ID).show(9)
     return estimated_job_role_posts_lf
 
 
