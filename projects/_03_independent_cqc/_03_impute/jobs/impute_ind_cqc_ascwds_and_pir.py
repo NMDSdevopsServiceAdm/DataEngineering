@@ -7,6 +7,10 @@ os.environ["SPARK_VERSION"] = "3.5"
 from pyspark.sql import DataFrame
 
 import utils.cleaning_utils as cUtils
+
+from projects._03_independent_cqc._03_impute.utils.forward_fill_latest_known_value import (
+    forward_fill_latest_known_value,
+)
 from projects._03_independent_cqc._03_impute.utils.model_and_merge_pir_filled_posts import (
     convert_pir_to_filled_posts,
     merge_ascwds_and_pir_filled_post_submissions,
@@ -44,6 +48,20 @@ def main(
     print("Imputing independent CQC ASCWDS and PIR values...")
 
     df = utils.read_from_parquet(cleaned_ind_cqc_source)
+
+    locations_df = forward_fill_latest_known_value(
+        locations_df, IndCQC.ascwds_filled_posts_dedup_clean
+    )
+
+    locations_df = forward_fill_latest_known_value(
+        locations_df, IndCQC.pir_people_directly_employed_dedup
+    )
+
+    locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
+        locations_df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.filled_posts_per_bed_ratio,
+    )
 
     df = utils.create_unix_timestamp_variable_from_date_column(
         df,
