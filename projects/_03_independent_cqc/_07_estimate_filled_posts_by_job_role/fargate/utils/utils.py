@@ -101,9 +101,18 @@ def get_percent_share_ratios(
     input_col: str,
     output_col: str,
 ) -> pl.LazyFrame:
-    """Calculate ratios over location and date using groupby-agg-explode pattern.
+    """
+    Calculate ratios over location and date using groupby-agg-explode pattern.
 
     Using groupby-agg-explode ensures it can be processed with the streaming engine.
+
+    Args:
+        estimated_job_role_posts_lf(pl.LazyFrame): dataset to calculate ratios over. Must contain location_id and cqc_location_import_date_columns for grouping
+        input_col(str): column on which to calculate percentage share
+        output_col(str): name of new column containing percentage share
+
+    Returns:
+        pl.LazyFrame: dataset with new column containing percentage share
     """
     groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
 

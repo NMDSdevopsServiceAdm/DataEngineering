@@ -1,4 +1,6 @@
 import unittest
+from datetime import date
+from typing import Final
 
 import polars as pl
 import polars.testing as pl_testing
@@ -16,6 +18,9 @@ from .utils_test_cases import (
     rolling_sum_expected_schema,
     rolling_sum_test_cases,
 )
+
+ROW_ID: Final[str] = "id"
+EXPANDED_ID: Final[str] = "expanded_id"
 
 
 class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
@@ -79,33 +84,31 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
 
 # Check test cases still work
 class TestGetPercentageShareRatios:
-    @pytest.mark.parametrize(
-        "input_, expected",
-        [
-            pytest.param(
-                [5.0, 2.0, 1.0],
-                [0.625, 0.25, 0.125],
-                id="when_all_values_present",
-            ),
-            pytest.param(
-                [0, 0],
-                [0.5, 0.5],
-                id="handles_zero_sum_case_with_even_distribution",
-            ),
-            pytest.param(
-                [0, None, 0, None],
-                [0.5, None, 0.5, None],
-                id="handles_zero_sum_case_with_even_distribution_across_non_nulls",
-            ),
-        ],
-    )
-    def test_get_percent_share_ratios(self, input_, expected):
-        input_lf = pl.LazyFrame({"values": input_})
-        expected_lf = pl.LazyFrame({"pct_share": expected})
-        returned_lf = input_lf.select(
-            job.get_percent_share_ratios("values").alias("pct_share")
+    def test_over_groups(self):
+        expected_lf = pl.LazyFrame(
+            data=[
+                (1, "1", date(2026, 1, 1), 1, 0.3333),
+                (2, "1", date(2026, 1, 1), 2, 0.6667),
+                (3, "1", date(2026, 2, 1), 2, 0.5),
+                (4, "1", date(2026, 2, 1), 2, 0.5),
+                (5, "2", date(2026, 1, 1), 2, 0.4),
+                (6, "2", date(2026, 1, 1), 3, 0.6),
+            ],
+            schema={
+                EXPANDED_ID: pl.Int64,
+                IndCQC.location_id: pl.String,
+                IndCQC.cqc_location_import_date: pl.Date,
+                "vals": pl.Int64,
+                "ratios": pl.Float32,
+            },
+            orient="row",
         )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+        input_lf = expected_lf.drop("ratios")
+        returned_lf = job.get_percent_share_ratios(
+            input_lf, input_col="vals", output_col="ratios"
+        ).sort(EXPANDED_ID)
+        returned_lf.show(limit=6)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
 
 
 class TestPercentageShareHandlingZeroSum:
