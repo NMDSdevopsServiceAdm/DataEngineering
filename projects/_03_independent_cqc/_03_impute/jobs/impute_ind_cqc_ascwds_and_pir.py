@@ -49,16 +49,12 @@ def main(
 
     df = utils.read_from_parquet(cleaned_ind_cqc_source)
 
-    locations_df = forward_fill_latest_known_value(
-        locations_df, IndCQC.ascwds_filled_posts_dedup_clean
-    )
+    df = forward_fill_latest_known_value(df, IndCQC.ascwds_filled_posts_dedup_clean)
 
-    locations_df = forward_fill_latest_known_value(
-        locations_df, IndCQC.pir_people_directly_employed_dedup
-    )
+    df = forward_fill_latest_known_value(df, IndCQC.pir_people_directly_employed_dedup)
 
-    locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
-        locations_df,
+    df = cUtils.calculate_filled_posts_per_bed_ratio(
+        df,
         IndCQC.ascwds_filled_posts_dedup_clean,
         IndCQC.filled_posts_per_bed_ratio,
     )

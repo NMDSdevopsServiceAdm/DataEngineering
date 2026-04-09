@@ -25,16 +25,12 @@ def main(
     lf = utils.scan_parquet(cleaned_ind_cqc_source)
     print("Cleaned IND CQC LazyFrame read in")
 
-    locations_lf = forward_fill_latest_known_value(
-        locations_lf, IndCQC.ascwds_filled_posts_dedup_clean
-    )
+    lf = forward_fill_latest_known_value(lf, IndCQC.ascwds_filled_posts_dedup_clean)
 
-    locations_lf = forward_fill_latest_known_value(
-        locations_lf, IndCQC.pir_people_directly_employed_dedup
-    )
+    lf = forward_fill_latest_known_value(lf, IndCQC.pir_people_directly_employed_dedup)
 
-    locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
-        locations_lf,
+    lf = cUtils.calculate_filled_posts_per_bed_ratio(
+        lf,
         IndCQC.ascwds_filled_posts_dedup_clean,
         IndCQC.filled_posts_per_bed_ratio,
     )
