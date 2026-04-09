@@ -47,7 +47,7 @@ class TestMain(unittest.TestCase):
         count_cqc_rm_mock.assert_called_once()
         adjust_managerial_filled_posts_Mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_lf=ANY,
+            lazy_df=ANY,
             output_path=self.TEST_DESTINATION,
             append=False,
         )

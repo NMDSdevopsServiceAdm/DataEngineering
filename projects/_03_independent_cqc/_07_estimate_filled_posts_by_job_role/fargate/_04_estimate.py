@@ -73,7 +73,7 @@ def main(
     #       )
 
     utils.sink_to_parquet(
-        lazy_lf=lf,
+        lazy_df=lf,
         output_path=estimated_data_destination,
         append=False,
     )
