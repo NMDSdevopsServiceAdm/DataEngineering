@@ -224,7 +224,7 @@ class TestImputeRatios:
     def test_imputations(self, input, expected):
         input_lf = pl.LazyFrame({"vals": input})
         expected_lf = pl.LazyFrame({"vals": expected}).cast(pl.Float64)
-        returned_lf = input_lf.select(job.impute_ratios("vals"))
+        returned_lf = input_lf.select(job.create_imputed_ascwds_job_role_counts("vals"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     def test_all_nones_returns_nones(self):
@@ -233,7 +233,7 @@ class TestImputeRatios:
             pl.Float64
         )
         expected_lf = input_lf
-        returned_lf = input_lf.select(job.impute_ratios("vals"))
+        returned_lf = input_lf.select(job.create_imputed_ascwds_job_role_counts("vals"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     def test_imputes_impute_ratios_over_groups_with_unordered_time_col(self):
@@ -269,7 +269,9 @@ class TestImputeRatios:
         )
         returned_lf = input_lf.with_columns(
             # Overwriting the original column with output
-            job.impute_ratios("vals").over("group", order_by="time_col")
+            job.create_imputed_ascwds_job_role_counts("vals").over(
+                "group", order_by="time_col"
+            )
         )
         # `.over()` will return rows in original order, so need to sort to match expected.
         pl_testing.assert_frame_equal(
