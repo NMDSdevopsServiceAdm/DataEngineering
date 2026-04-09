@@ -253,7 +253,7 @@ def unpivot_job_roles_into_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     lf = lf.with_columns(
         pl.col(IndCQC.main_job_role_clean_labelled).cast(
-            pl.Enum(AscwdsWorkerValueLabelsJobGroup.manager_roles())
+            pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
         )
     )
 
