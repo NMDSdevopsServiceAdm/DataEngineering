@@ -14,15 +14,12 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     contemporary_geography_columns,
     current_geography_columns,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
     Specialisms,
 )
 from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
-
-cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 ons_cols_to_import = [
     ONSClean.postcode,
@@ -45,8 +42,8 @@ def main(
     print("Full Flattened CQC Location LazyFrame read in")
 
     cqc_lf = column_to_date(
-        cqc_lf, Keys.import_date, CQCLClean.cqc_location_import_date
-    )
+        cqc_lf, CQCLClean.import_date, CQCLClean.cqc_location_import_date
+    ).drop(CQCLClean.import_date)
 
     cUtils.save_latest_full_snapshot(cqc_lf, cqc_full_snapshot_destination)
 
@@ -117,7 +114,6 @@ def main(
     utils.sink_to_parquet(
         cqc_reg_lf,
         cqc_registered_locations_cleaned_destination,
-        partition_cols=cqc_partition_keys,
         append=False,
     )
 

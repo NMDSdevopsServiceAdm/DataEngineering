@@ -15,7 +15,7 @@ from projects._01_ingest.unittest_data.polars_ingest_test_file_schema import (
 PATCH_PATH = "projects._01_ingest.cqc_api.fargate.validate_cqc_locations_4_full_clean"
 
 
-class ValidateLocationsFlattenTests(unittest.TestCase):
+class ValidateLocationsCleanTests(unittest.TestCase):
     def setUp(self) -> None:
         self.validate_df = pl.DataFrame(
             data=Data.validation_rows, schema=Schemas.validation_schema
