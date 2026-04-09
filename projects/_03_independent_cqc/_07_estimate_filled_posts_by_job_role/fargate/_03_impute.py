@@ -3,12 +3,10 @@ from typing import Final
 import polars as pl
 
 from polars_utils import utils
-from polars_utils.pipeline_utils import time_it
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     percentage_share,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-
 
 # Define constants for IDs for original length data and expanded data.
 ROW_ID: Final[str] = "id"
@@ -31,46 +29,43 @@ def main(
         imputed_data_destination (str): destination for output
     """
 
-    # Remove time_it.
-    with time_it("Impute"):
+    print("Imputing Cleaned dataset...")
 
-        print("Imputing Cleaned dataset...")
+    estimated_job_role_posts_lf = utils.scan_parquet(cleaned_data_source)
+    print("Cleaned LazyFrame read in")
 
-        estimated_job_role_posts_lf = utils.scan_parquet(cleaned_data_source)
-        print("Cleaned LazyFrame read in")
+    estimated_job_role_posts_lf = get_percent_share_ratios(
+        estimated_job_role_posts_lf,
+        input_col=IndCQC.ascwds_job_role_counts,
+        output_col=IndCQC.ascwds_job_role_ratios,
+    )
 
-        estimated_job_role_posts_lf = get_percent_share_ratios(
-            estimated_job_role_posts_lf,
-            input_col=IndCQC.ascwds_job_role_counts,
-            output_col=IndCQC.ascwds_job_role_ratios,
-        )
+    # Rename impute_ratios to be more descriptive. E.g. create_imputed_ascwds_job_role_counts or something similar.
+    # Add the multiplication below this function into "impute_ratios".
+    estimated_job_role_posts_lf = impute_ratios(estimated_job_role_posts_lf)
 
-        # Rename impute_ratios to be more descriptive. E.g. create_imputed_ascwds_job_role_counts or something similar.
-        # Add the multiplication below this function into "impute_ratios".
-        estimated_job_role_posts_lf = impute_ratios(estimated_job_role_posts_lf)
+    # Multiply imputed ratios by estimate filled posts
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        pl.col(IndCQC.estimate_filled_posts)
+        .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
+        .alias(IndCQC.imputed_ascwds_job_role_counts)
+    )
 
-        # Multiply imputed ratios by estimate filled posts
-        estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-            pl.col(IndCQC.estimate_filled_posts)
-            .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
-            .alias(IndCQC.imputed_ascwds_job_role_counts)
-        )
+    # Combine the count rolling sum and get_percent_share_ratio into one function that returns ascwds_job_role_rolling_ratio.
+    estimated_job_role_posts_lf = get_job_counts_rolling_sum(
+        estimated_job_role_posts_lf
+    )
+    estimated_job_role_posts_lf = get_percent_share_ratios(
+        estimated_job_role_posts_lf,
+        input_col="rolling_sum",
+        output_col=IndCQC.ascwds_job_role_rolling_ratio,
+    )
 
-        # Combine the count rolling sum and get_percent_share_ratio into one function that returns ascwds_job_role_rolling_ratio.
-        estimated_job_role_posts_lf = get_job_counts_rolling_sum(
-            estimated_job_role_posts_lf
-        )
-        estimated_job_role_posts_lf = get_percent_share_ratios(
-            estimated_job_role_posts_lf,
-            input_col="rolling_sum",
-            output_col=IndCQC.ascwds_job_role_rolling_ratio,
-        )
-
-        utils.sink_to_parquet(
-            lazy_df=estimated_job_role_posts_lf,
-            output_path=imputed_data_destination,
-            append=False,
-        )
+    utils.sink_to_parquet(
+        lazy_df=estimated_job_role_posts_lf,
+        output_path=imputed_data_destination,
+        append=False,
+    )
 
 
 def impute_ratios(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFrame:
