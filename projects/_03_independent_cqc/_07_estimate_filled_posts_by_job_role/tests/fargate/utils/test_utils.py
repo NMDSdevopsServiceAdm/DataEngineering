@@ -207,50 +207,6 @@ class TestCreateImputedASCWDSJobRoleCounts(unittest.TestCase):
         returned_lf = job.create_imputed_ascwds_job_role_counts(test_lf)
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    @pytest.mark.skip()
-    def test_imputes_impute_ratios_over_groups_with_unordered_time_col(self):
-        """Test that it works with `.over(groups)` ordering by a time column."""
-        input_lf = pl.LazyFrame(
-            schema=["group", "time_col", "vals"],
-            data=[
-                # Scrambled the order of time_col to test order by.
-                ("a", 4, 0.3),
-                ("a", 1, None),
-                ("a", 3, None),
-                ("a", 2, 0.1),
-                ("a", 5, None),
-                ("b", 2, None),
-                ("b", 3, 0.2),
-                ("b", 1, 0.1),
-            ],
-            orient="row",
-        )
-        expected_lf = pl.LazyFrame(
-            schema=["group", "time_col", "vals"],
-            data=[
-                ("a", 1, 0.1),
-                ("a", 2, 0.1),
-                ("a", 3, 0.2),
-                ("a", 4, 0.3),
-                ("a", 5, 0.3),
-                ("b", 1, 0.1),
-                ("b", 2, 0.15),
-                ("b", 3, 0.2),
-            ],
-            orient="row",
-        )
-        returned_lf = input_lf.with_columns(
-            # Overwriting the original column with output
-            job.create_imputed_ascwds_job_role_counts("vals").over(
-                "group", order_by="time_col"
-            )
-        )
-        # `.over()` will return rows in original order, so need to sort to match expected.
-        pl_testing.assert_frame_equal(
-            returned_lf.sort("group", "time_col"),
-            expected_lf,
-        )
-
 
 # Update test data and test cases
 class TestCreateASCWDSJobRoleRollingRatio:
