@@ -52,7 +52,7 @@
                         "JobName": "${validate_postcode_directory_raw_data_job_name}",
                         "Arguments": {
                           "--raw_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_postcode_directory_raw/"
+                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_postcode_directory_raw/"
                         }
                       },
                       "End": true
@@ -69,7 +69,7 @@
                 "Arguments": {
                   "--raw_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
                   "--cleaned_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_postcode_directory_cleaned/"
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_postcode_directory_cleaned/"
                 }
               },
               "End": true

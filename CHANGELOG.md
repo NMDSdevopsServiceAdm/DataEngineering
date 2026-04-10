@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+
+
+### Changed
+- Moved 'forward fill' process from 'clean' job to 'impute' job. Moved tests for the same.
+
+### Fixed
+
+
+## [v2026.03.0] - 09/04/2026
+
+### Added
 - Setup polars version of estimates job and validation. The job only reads and writes data, no functionality.
 
 - Setup polars version of imputation job and validation. The job only reads and writes data, no functionality.
@@ -37,6 +48,11 @@ All notable changes to this project will be documented in this file.
 - Reduced worker job role data to CQC locations only.
 
 - Set up cleaning step for job role breakdown.
+
+- Renamed CQC delta api data to be consistent with the rest of the CQC dataset names.
+  Renamed validation datasets with suffix `validation_` for Point Blank validation and `validation_pdq_` for PyDeequ validation.
+  Removed automatic copying of raw data files into branch.
+  Removed a batch of files no longer used.
 
 ### Fixed
 - Refactored `remove_duplicates_based_on_column_order` to give the same outputs for every run.
