@@ -51,10 +51,17 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
 def create_imputed_ascwds_job_role_counts(
     estimated_job_role_posts_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
-    """Impute job role ratios by interpolation forward fill and backward fill.
+    """
+    Impute job role ratios by interpolation forward fill and backward fill.
 
     Uses groupby-agg-explode pattern to keep processing within polars streaming
     engine.
+
+    Args:
+        estimated_job_role_posts_lf(pl.LazyFrame): dataset to impute
+
+    Returns:
+        pl.LazyFrame: dataset with additional columns with imputed data
     """
     impute_groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
     order_key = IndCQC.cqc_location_import_date
@@ -135,6 +142,18 @@ def get_percent_share_ratios(
 def create_ascwds_job_role_rolling_ratio(
     estimated_job_role_posts_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
+    """
+    Create the rolling ratio for ascwds job role values
+
+    Uses groupby-agg-explode pattern to keep processing within polars streaming
+    engine.
+
+    Args:
+        estimated_job_role_posts_lf(pl.LazyFrame): dataset to calutate ratio on
+
+    Returns:
+        pl.LazyFrame: dataset with additional columns with ratio and sum of ascwds job roles
+    """
     rolling_groups = [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled]
     order_key = IndCQC.cqc_location_import_date
     monthly_groups = rolling_groups + [order_key]
