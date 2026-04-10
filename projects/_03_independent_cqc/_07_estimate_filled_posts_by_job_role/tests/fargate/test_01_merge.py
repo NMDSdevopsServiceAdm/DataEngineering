@@ -28,7 +28,7 @@ class MainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.join_estimates_to_ascwds")
     @patch(
-        f"{PATCH_PATH}.pl.scan_parquet",
+        f"{PATCH_PATH}.utils.scan_parquet",
         side_effect=[mock_estimate_lf, mock_prepared_job_role_counts_lf],
     )
     def test_main_runs(
@@ -47,8 +47,8 @@ class MainTests(unittest.TestCase):
         self.assertEqual(scan_parquet_mock.call_count, 2)
         scan_parquet_mock.assert_has_calls(
             [
-                call(self.ESTIMATE_SOURCE, low_memory=True),
-                call(self.ASCWDS_JOB_ROLE_COUNT_SOURCE, low_memory=True),
+                call(self.ESTIMATE_SOURCE),
+                call(self.ASCWDS_JOB_ROLE_COUNT_SOURCE),
             ]
         )
 
