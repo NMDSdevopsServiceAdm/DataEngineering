@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+
+
+### Changed
+
+
+### Fixed
+
+
+## [v2026.03.0] - 09/04/2026
+
+### Added
 - Setup polars version of estimates job and validation. The job only reads and writes data, no functionality.
 
 - Setup polars version of imputation job and validation. The job only reads and writes data, no functionality.
