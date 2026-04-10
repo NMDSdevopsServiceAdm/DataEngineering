@@ -103,7 +103,7 @@ def main(
     """
     combined_schema = transformation_columns | metadata_columns
     full_estimates_lf = (
-        pl.scan_parquet(estimates_source, low_memory=True)
+        utils.scan_parquet(estimates_source)
         .select(list(combined_schema))
         .with_row_index(name=ROW_ID)
         .with_columns(utils.cast_to_schema(combined_schema))
@@ -118,7 +118,7 @@ def main(
         IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date
     }
     ascwds_job_role_counts_lf = (
-        pl.scan_parquet(ascwds_job_role_counts_source, low_memory=True)
+        utils.scan_parquet(ascwds_job_role_counts_source)
         .select(list(ascwds_columns_to_import))
         .with_columns(utils.cast_to_schema(ascwds_columns_to_import))
         .rename(col_name_map)
@@ -166,7 +166,7 @@ def join_estimates_to_ascwds(
     ]
     job_role_labels = IndCQC.main_job_role_clean_labelled
 
-    narrow_keys_lf = estimates_lf.select(["id"] + join_keys)
+    narrow_keys_lf = estimates_lf.select([ROW_ID] + join_keys)
 
     roles_lf = pl.LazyFrame(
         data=[(role,) for role in AscwdsWorkerValueLabelsJobGroup.all_roles()],
