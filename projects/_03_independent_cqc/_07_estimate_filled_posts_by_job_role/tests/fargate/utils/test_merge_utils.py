@@ -2,7 +2,7 @@ import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as job
+import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.merge_utils as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     TestJoinEstimatesToAscwds as Data,
 )
