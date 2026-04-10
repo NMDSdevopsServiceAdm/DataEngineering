@@ -146,7 +146,7 @@ class TestPercentageShareHandlingZeroSum:
 
 # Needs repointing at new function- check test cases still work
 class TestCreateImputedASCWDSJobRoleCounts(unittest.TestCase):
-    test_schema = {
+    schema = {
         EXPANDED_ID: pl.UInt32,
         IndCQC.location_id: pl.String,
         IndCQC.main_job_role_clean_labelled: pl.String,
@@ -157,36 +157,54 @@ class TestCreateImputedASCWDSJobRoleCounts(unittest.TestCase):
         IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,  # extra col
         IndCQC.imputed_ascwds_job_role_counts: pl.Float32,
     }
-    expected_data = [
-        ("1", "1", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0, 1.0, 1.0),
-        ("2", "1", "job_role_a", date(2026, 1, 2), None, 2.0, None, 0.7, 1.4),
-        ("3", "1", "job_role_a", date(2026, 1, 3), 4, 4.0, 0.4, 0.4, 1.6),
-        ("4", "1", "job_role_b", date(2026, 1, 1), None, 1.0, None, 1.0, 1.0),
-        ("5", "1", "job_role_b", date(2026, 1, 2), 2, 2.0, 1.0, 1.0, 2.0),
-        ("6", "1", "job_role_b", date(2026, 1, 3), 6, 6.0, 0.6, 0.6, 3.6),
-        ("7", "2", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0, 1.0, 1.0),
-        ("8", "2", "job_role_a", date(2026, 1, 2), 9, 9.0, 1.0, 1.0, 9.0),
-        ("9", "2", "job_role_a", date(2026, 1, 3), None, 1.0, None, 1.0, 1.0),
-    ]
-    expected_lf = pl.LazyFrame(expected_data, test_schema, orient="row")
-    test_lf = expected_lf.drop(
-        IndCQC.imputed_ascwds_job_role_counts,
-        IndCQC.ascwds_job_role_ratios,
-        IndCQC.imputed_ascwds_job_role_ratios,
-    )
+
+    def _create_expected_lf(
+        self, expected_data: list[tuple], schema: dict
+    ) -> pl.LazyFrame:
+        """Set the expected LazyFrame up"""
+        return pl.LazyFrame(expected_data, schema, orient="row")
+
+    def _create_test_lf(self, expected_lf: pl.LazyFrame) -> pl.LazyFrame:
+        """Set the test LazyFrame up"""
+        return expected_lf.drop(
+            IndCQC.imputed_ascwds_job_role_counts,
+            IndCQC.ascwds_job_role_ratios,
+            IndCQC.imputed_ascwds_job_role_ratios,
+        )
 
     def test_imputations(self):
-        returned_lf = job.create_imputed_ascwds_job_role_counts(self.test_lf)
-        pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
+        expected_data = [
+            ("1", "1", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0, 1.0, 1.0),
+            ("2", "1", "job_role_a", date(2026, 1, 2), None, 2.0, None, 0.7, 1.4),
+            ("3", "1", "job_role_a", date(2026, 1, 3), 4, 4.0, 0.4, 0.4, 1.6),
+            ("4", "1", "job_role_b", date(2026, 1, 1), None, 1.0, None, 1.0, 1.0),
+            ("5", "1", "job_role_b", date(2026, 1, 2), 2, 2.0, 1.0, 1.0, 2.0),
+            ("6", "1", "job_role_b", date(2026, 1, 3), 6, 6.0, 0.6, 0.6, 3.6),
+            ("7", "2", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0, 1.0, 1.0),
+            ("8", "2", "job_role_a", date(2026, 1, 2), 9, 9.0, 1.0, 1.0, 9.0),
+            ("9", "2", "job_role_a", date(2026, 1, 3), None, 1.0, None, 1.0, 1.0),
+        ]
+        expected_lf = self._create_expected_lf(expected_data, self.schema)
+        test_lf = self._create_test_lf(expected_lf)
+        returned_lf = job.create_imputed_ascwds_job_role_counts(test_lf)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    @pytest.mark.skip()
     def test_all_nones_returns_nones(self):
         """Test for the all None case in a set of values."""
-        input_lf = pl.LazyFrame({"vals": [None, None, None, None, None]}).cast(
-            pl.Float64
-        )
-        expected_lf = input_lf
-        returned_lf = input_lf.select(job.create_imputed_ascwds_job_role_counts("vals"))
+        expected_data = [
+            ("1", "1", "job_role_a", date(2026, 1, 1), None, 1.0, None, None, None),
+            ("2", "1", "job_role_a", date(2026, 1, 2), None, 2.0, None, None, None),
+            ("3", "1", "job_role_a", date(2026, 1, 3), None, 4.0, None, None, None),
+            ("4", "1", "job_role_b", date(2026, 1, 1), None, 1.0, None, None, None),
+            ("5", "1", "job_role_b", date(2026, 1, 2), None, 2.0, None, None, None),
+            ("6", "1", "job_role_b", date(2026, 1, 3), None, 6.0, None, None, None),
+            ("7", "2", "job_role_a", date(2026, 1, 1), None, 1.0, None, None, None),
+            ("8", "2", "job_role_a", date(2026, 1, 2), None, 9.0, None, None, None),
+            ("9", "2", "job_role_a", date(2026, 1, 3), None, 1.0, None, None, None),
+        ]
+        expected_lf = self._create_expected_lf(expected_data, self.schema)
+        test_lf = self._create_test_lf(expected_lf)
+        returned_lf = job.create_imputed_ascwds_job_role_counts(test_lf)
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     @pytest.mark.skip()
