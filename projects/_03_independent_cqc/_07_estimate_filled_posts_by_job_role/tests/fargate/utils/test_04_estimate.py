@@ -12,8 +12,25 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
     EstimateFilledPostsByJobRole04EstimateSchemas as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import MainJobRoleLabels
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
+)
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate._04_estimate"
+
+
+class EstimateFilledPostsByJobRole04EstimateTests(unittest.TestCase):
+    def setUp(self) -> None:
+        manager_roles = Data.test_manager_roles
+        non_rm_manager_roles = [
+            role
+            for role in manager_roles
+            if role != MainJobRoleLabels.registered_manager
+        ]
+        self.non_rm_manager_condition = pl.col(
+            IndCQC.main_job_role_clean_labelled
+        ).is_in(non_rm_manager_roles)
 
 
 class TestMain(unittest.TestCase):
@@ -98,7 +115,7 @@ class GetRegManDifference(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class GetNonRmManagerialDistribution(unittest.TestCase):
+class GetNonRmManagerialDistribution(EstimateFilledPostsByJobRole04EstimateTests):
     def test_function_returns_expected_values(self):
         expected_lf = pl.LazyFrame(
             data=Data.expected_get_non_rm_managerial_distribution_rows,
@@ -108,12 +125,14 @@ class GetNonRmManagerialDistribution(unittest.TestCase):
         test_lf = expected_lf.drop(
             IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
         )
-        returned_lf = job.get_non_rm_managerial_distribution(test_lf)
+        returned_lf = job.get_non_rm_managerial_distribution(
+            test_lf, self.non_rm_manager_condition
+        )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class RedistributeRmDifference(unittest.TestCase):
+class RedistributeRmDifference(EstimateFilledPostsByJobRole04EstimateTests):
     def test_function_returns_expected_values(self):
         expected_lf = pl.LazyFrame(
             data=Data.expected_redistribute_rm_difference_rows,
@@ -123,6 +142,8 @@ class RedistributeRmDifference(unittest.TestCase):
         test_lf = expected_lf.drop(
             IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
         )
-        returned_lf = job.redistribute_rm_difference(test_lf)
+        returned_lf = job.redistribute_rm_difference(
+            test_lf, self.non_rm_manager_condition
+        )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

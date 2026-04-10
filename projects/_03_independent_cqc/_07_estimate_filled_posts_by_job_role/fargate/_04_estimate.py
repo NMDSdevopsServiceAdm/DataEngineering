@@ -22,8 +22,6 @@ EXPANDED_ID: Final[str] = "expanded_id"
 # in a chunk of this size.
 pl.Config.set_streaming_chunk_size(50000)
 
-manager_roles_list = AscwdsWorkerValueLabelsJobGroup.manager_roles()
-
 
 def main(
     imputed_data_source: str,
@@ -125,13 +123,21 @@ def adjust_managerial_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
     """ "
     A function to call steps for adjusting managerial roles.
     """
-    lf = lf.filter(
-        pl.col(IndCQC.main_job_role_clean_labelled).is_in(manager_roles_list)
+    # lf = lf.filter(
+    #     pl.col(IndCQC.main_job_role_clean_labelled).is_in(manager_roles_list)
+    # )
+
+    manager_roles = AscwdsWorkerValueLabelsJobGroup.manager_roles()
+    non_rm_manager_roles = [
+        role for role in manager_roles if role != MainJobRoleLabels.registered_manager
+    ]
+    non_rm_manager_condition = pl.col(IndCQC.main_job_role_clean_labelled).is_in(
+        non_rm_manager_roles
     )
 
     lf = get_reg_man_difference(lf)
-    lf = get_non_rm_managerial_distribution(lf)
-    lf = redistribute_rm_difference(lf)
+    lf = get_non_rm_managerial_distribution(lf, non_rm_manager_condition)
+    lf = redistribute_rm_difference(lf, non_rm_manager_condition)
 
     return lf
 
@@ -154,36 +160,26 @@ def get_reg_man_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
-def get_non_rm_managerial_distribution(lf: pl.LazyFrame) -> pl.LazyFrame:
+def get_non_rm_managerial_distribution(
+    lf: pl.LazyFrame, non_rm_manager_condition: pl.Expr
+) -> pl.LazyFrame:
     """
     Doc string goes here.
     """
     sum_non_rm_managerial_posts_expr = (
         pl.col(IndCQC.estimate_filled_posts_by_job_role)
-        .filter(
-            pl.col(IndCQC.main_job_role_clean_labelled)
-            != MainJobRoleLabels.registered_manager
-        )
+        .filter(non_rm_manager_condition)
         .sum()
         .over(EXPANDED_ID)
     )
 
     count_non_rm_managerial_roles_expr = (
-        pl.lit(1)
-        .filter(
-            pl.col(IndCQC.main_job_role_clean_labelled)
-            != MainJobRoleLabels.registered_manager
-        )
-        .sum()
-        .over(EXPANDED_ID)
+        pl.lit(1).filter(non_rm_manager_condition).sum().over(EXPANDED_ID)
     )
 
     lf = lf.with_columns(
         (
-            pl.when(
-                pl.col(IndCQC.main_job_role_clean_labelled)
-                != MainJobRoleLabels.registered_manager
-            ).then(
+            pl.when(non_rm_manager_condition).then(
                 pl.when(sum_non_rm_managerial_posts_expr.eq(0.0))
                 .then(
                     pl.lit(1)
@@ -202,7 +198,9 @@ def get_non_rm_managerial_distribution(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf
 
 
-def redistribute_rm_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
+def redistribute_rm_difference(
+    lf: pl.LazyFrame, non_rm_manager_condition: pl.Expr
+) -> pl.LazyFrame:
     """
     Doc string here
     """
@@ -213,21 +211,20 @@ def redistribute_rm_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
     return lf.with_columns(
-        pl.when(
-            pl.col(IndCQC.main_job_role_clean_labelled)
-            != MainJobRoleLabels.registered_manager
-        )
+        pl.when(non_rm_manager_condition)
         .then(
             pl.when(redistribution_expr < 0)
             .then(IndCQC.estimate_filled_posts_by_job_role)
             .otherwise(redistribution_expr)
         )
-        .otherwise(pl.col(IndCQC.registered_manager_count).cast(pl.Float32))
+        .when(
+            pl.col(IndCQC.main_job_role_clean_labelled)
+            == MainJobRoleLabels.registered_manager
+        )
+        .then(pl.col(IndCQC.registered_manager_count).cast(pl.Float32))
+        .otherwise(pl.col(IndCQC.estimate_filled_posts_by_job_role))
         .alias(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
     )
-
-
-# Replace SfC reg mans with CQC reg mans count.
 
 
 # def apply_manager_adjustments(

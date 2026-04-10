@@ -1896,6 +1896,12 @@ class EstimateFilledPostsByJobRole04EstimateData:
         (None, 0),
     ]
 
+    test_manager_roles = [
+        MainJobRoleLabels.supervisor,
+        MainJobRoleLabels.first_line_manager,
+        MainJobRoleLabels.registered_manager,
+    ]
+
     expected_get_reg_man_difference_rows = [
         (0, MainJobRoleLabels.supervisor, 10.0, 1.0, -1.0),
         (0, MainJobRoleLabels.registered_manager, 0.0, 1.0, -1.0),
