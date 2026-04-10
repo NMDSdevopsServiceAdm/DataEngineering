@@ -222,7 +222,7 @@ def redistribute_rm_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
             .then(IndCQC.estimate_filled_posts_by_job_role)
             .otherwise(redistribution_expr)
         )
-        .otherwise(None)
+        .otherwise(pl.col(IndCQC.registered_manager_count).cast(pl.Float32))
         .alias(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
     )
 
