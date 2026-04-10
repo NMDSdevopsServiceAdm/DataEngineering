@@ -3,7 +3,7 @@ from typing import Final
 import polars as pl
 
 from polars_utils import utils
-from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.merge_utils import (
     join_estimates_to_ascwds,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
