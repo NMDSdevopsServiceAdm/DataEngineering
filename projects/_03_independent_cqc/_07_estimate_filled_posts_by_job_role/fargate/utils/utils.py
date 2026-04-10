@@ -87,9 +87,8 @@ def create_imputed_ascwds_job_role_counts(
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
         impute_agg_lf, on=EXPANDED_ID, how="left"
-    )  # this join is not adding the extra column - not clear why
+    )
 
-    # Multiply imputed ratios by estimate filled posts
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         pl.col(IndCQC.estimate_filled_posts)
         .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
@@ -144,7 +143,6 @@ def create_ascwds_job_role_rolling_ratio(
     monthly_totals_lf = estimated_job_role_posts_lf.group_by(monthly_groups).agg(
         pl.col(IndCQC.imputed_ascwds_job_role_counts).sum()
     )
-    monthly_totals_lf.show(15)
     # STEP B: Sort and roll on the small dataset.
     # This .sort() is completely safe because it's only operating on ~50k rows.
     rolling_agg_lf = (
@@ -156,7 +154,6 @@ def create_ascwds_job_role_rolling_ratio(
             .alias(IndCQC.ascwds_job_role_rolling_sum)
         )
     )
-    rolling_agg_lf.show(15)
 
     # STEP C: Join the rolling sum back to the main 152M row table
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
@@ -164,13 +161,12 @@ def create_ascwds_job_role_rolling_ratio(
         on=monthly_groups,
         how="left",
     )
-    estimated_job_role_posts_lf.show(15)
+    # STEP D: Calculate ascwds_job_role_rolling_ratio
     estimated_job_role_posts_lf = get_percent_share_ratios(
         estimated_job_role_posts_lf,
         input_col=IndCQC.ascwds_job_role_rolling_sum,
         output_col=IndCQC.ascwds_job_role_rolling_ratio,
     )
-    estimated_job_role_posts_lf.sort(EXPANDED_ID).show(15)
     return estimated_job_role_posts_lf
 
 
@@ -191,35 +187,6 @@ def percentage_share_handling_zero_sum(column: str | pl.Expr) -> pl.Expr:
         .then(1 / col.is_not_null().sum())
         .otherwise(col / total)
     )
-
-
-# # Unused - remove?
-# def impute_full_time_series(column: str) -> pl.Expr:
-#     """Impute nulls using linear interpolation, followed by back and forward fill."""
-#     return pl.col(column).interpolate().forward_fill().backward_fill()
-
-
-# # unused - remove?
-# def rolling_sum_of_job_role_counts(
-#     period: str = "6mo",
-# ) -> pl.Expr:
-#     """Compute rolling sum of job role counts within each primary service.
-
-#     Args:
-#         period (str): String language timedelta. Default "6mo". See:
-#           https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.rolling.html
-
-#     Returns:
-#         pl.Expr: Expression for rolling sum of job role counts.
-#     """
-#     return (
-#         pl.sum(IndCQC.imputed_ascwds_job_role_counts)
-#         .rolling(index_column=IndCQC.cqc_location_import_date, period=period)
-#         .over(
-#             [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled],
-#             order_by=IndCQC.cqc_location_import_date,
-#         )
-#     )
 
 
 class ManagerialFilledPostAdjustmentExpr:

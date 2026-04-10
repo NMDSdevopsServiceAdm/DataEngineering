@@ -87,7 +87,6 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-# Check test cases still work
 class TestGetPercentageShareRatios:
     def test_over_groups(self):
         expected_lf = pl.LazyFrame(
@@ -146,7 +145,6 @@ class TestPercentageShareHandlingZeroSum:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-# Needs repointing at new function- check test cases still work
 class TestCreateImputedASCWDSJobRoleCounts:
     @pytest.mark.parametrize(
         "create_imputed_ascwds_job_role_counts_data",
@@ -172,7 +170,6 @@ class TestCreateImputedASCWDSJobRoleCounts:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
 
 
-# Update test data and test cases
 class TestCreateASCWDSJobRoleRollingRatio:
     @pytest.mark.parametrize(
         "create_ascwds_job_role_rolling_ratio_data",
