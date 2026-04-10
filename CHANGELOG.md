@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Set up imputation step for job role breakdown,  add unit tests and remove functions that are no longer needed.
+
 - Refactored merge job within Estimates by Job Role Pipeline.
 
 ### Fixed

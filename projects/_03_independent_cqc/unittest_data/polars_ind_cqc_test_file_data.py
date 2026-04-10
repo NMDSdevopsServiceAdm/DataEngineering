@@ -4,6 +4,7 @@ from datetime import date
 from typing import Any
 
 import numpy as np
+import pytest
 
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.difference_within_range import (
     ascwds_filled_posts_difference_within_range_source_description,
@@ -1950,3 +1951,179 @@ class TestJoinEstimatesToAscwds:
             ],
         ),
     ] # fmt: skip
+
+
+@dataclass
+class ImputeJobRoleTestCase:
+    id: str
+    data: list[Any]
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(self.data, id=self.id)
+
+
+@dataclass
+class ImputeJobRoleData:
+    create_imputed_ascwds_job_role_counts_test_cases = [
+        ImputeJobRoleTestCase(
+            id="when_sufficient_data_present_to_impute",
+            data=[
+                ("1", "1", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0, 1.0, 1.0),
+                ("2", "1", "job_role_a", date(2026, 1, 2), None, 2.0, None, 0.7, 1.4),
+                ("3", "1", "job_role_a", date(2026, 1, 3), 4, 4.0, 0.4, 0.4, 1.6),
+                ("4", "1", "job_role_b", date(2026, 1, 1), None, 1.0, None, 1.0, 1.0),
+                ("5", "1", "job_role_b", date(2026, 1, 2), 2, 2.0, 1.0, 1.0, 2.0),
+                ("6", "1", "job_role_b", date(2026, 1, 3), 6, 6.0, 0.6, 0.6, 3.6),
+                ("7", "2", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0, 1.0, 1.0),
+                ("8", "2", "job_role_a", date(2026, 1, 2), 9, 9.0, 1.0, 1.0, 9.0),
+                ("9", "2", "job_role_a", date(2026, 1, 3), None, 1.0, None, 1.0, 1.0),
+            ],
+        ),
+        ImputeJobRoleTestCase(
+            id="when_all_nones",
+            data=[
+                ("1", "1", "job_role_a", date(2026, 1, 1), None, 1.0, None, None, None),
+                ("2", "1", "job_role_a", date(2026, 1, 2), None, 2.0, None, None, None),
+                ("3", "1", "job_role_a", date(2026, 1, 3), None, 4.0, None, None, None),
+                ("4", "1", "job_role_b", date(2026, 1, 1), None, 1.0, None, None, None),
+                ("5", "1", "job_role_b", date(2026, 1, 2), None, 2.0, None, None, None),
+                ("6", "1", "job_role_b", date(2026, 1, 3), None, 6.0, None, None, None),
+                ("7", "2", "job_role_a", date(2026, 1, 1), None, 1.0, None, None, None),
+                ("8", "2", "job_role_a", date(2026, 1, 2), None, 9.0, None, None, None),
+                ("9", "2", "job_role_a", date(2026, 1, 3), None, 1.0, None, None, None),
+            ],
+        ),
+    ]  # fmt: skip
+
+    create_ascwds_job_role_rolling_ratio_test_cases = [
+        ImputeJobRoleTestCase(
+            id="when_one_primary_service_present",
+            data=[
+                (1, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 1.0, 4.0, 0.4),
+                (2, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 2.0, 6.0, 0.6),
+                (3, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 3.0, 4.0, 0.4),
+                (4, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, 6.0, 0.6),
+                (5, "1000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, None, 4.0, 0.4),
+                (6, "1000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, None, 6.0, 0.6),
+                (7, "2000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, None, 4.0, 0.4),
+                (8, "2000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, None, 6.0, 0.6),
+                (9, "1000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 5.0, 16.0, 0.44444),
+                (10, "1000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 6.0, 20.0, 0.55556),
+                (11, "2000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 7.0, 16.0, 0.44444),
+                (12, "2000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 8.0, 20.0, 0.55556),
+            ],
+        ),
+        ImputeJobRoleTestCase(
+            id="when_multiple_primary_services_present",
+            data=[
+                (1, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 1.0, 1.0, 0.33333),
+                (2, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 2.0, 2.0, 0.66667),
+                (3, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 3.0, 3.0, 0.428571),
+                (4, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 4.0, 4.0, 0.571429),
+                (5, "1000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, None, 1.0, 0.333333),
+                (6, "1000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, None, 2.0, 0.666667),
+                (7, "2000", date(2024, 1, 2), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, None, 3.0, 0.428571),
+                (8, "2000", date(2024, 1, 2), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, None, 4.0, 0.571429),
+                (9, "1000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 5.0, 6.0, 0.428571),
+                (10, "1000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 6.0, 8.0, 0.571429),
+                (11, "2000", date(2024, 1, 3), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 7.0, 10.0, 0.454545 ),
+                (12, "2000", date(2024, 1, 3), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 8.0, 12.0, 0.545455),
+            ],
+        ),
+        ImputeJobRoleTestCase(
+            id="when_days_not_within_rolling_window",
+            data=[
+                (1, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 1.0, 1.0, 0.1),
+                (2, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 2.0, 2.0, 0.2),
+                (3, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_care_worker, 3.0, 3.0, 0.3),
+                (4, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_management, 4.0, 4.0, 0.4),
+                (5, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 5.0, 5.0, 0.192308),
+                (6, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 6.0, 6.0, 0.230769),
+                (7, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_care_worker, 7.0, 7.0, 0.269231),
+                (8, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_management, 8.0, 8.0, 0.307692),
+            ],
+        ),
+    ]  # fmt: skip
+
+    managerial_adjustment_test_cases = [
+        ImputeJobRoleTestCase(
+            id="1_rm_count_with_estimate_>_1",
+            data=[
+                ("1-001", date(2025, 1, 1), ["Sarah"], MainJobRoleLabels.care_worker,         10, 4,   None, 10),
+                ("1-001", date(2025, 1, 1), ["Sarah"], MainJobRoleLabels.senior_care_worker,  15, 4,   None, 15),
+                ("1-001", date(2025, 1, 1), ["Sarah"], MainJobRoleLabels.supervisor,          20, 4, 0.4444, 21.778),
+                ("1-001", date(2025, 1, 1), ["Sarah"], MainJobRoleLabels.team_leader,         25, 4, 0.5556, 27.222),
+                ("1-001", date(2025, 1, 1), ["Sarah"], MainJobRoleLabels.registered_manager,   5, 4,   None, 1),
+            ],
+        ),
+        ImputeJobRoleTestCase(
+            id="0_rm_count_with_estimate_>_1",
+            data=[
+                ("1-002", date(2025, 1, 1), [], MainJobRoleLabels.care_worker,        10, 5,   None, 10),
+                ("1-002", date(2025, 1, 1), [], MainJobRoleLabels.senior_care_worker, 15, 5,   None, 15),
+                ("1-002", date(2025, 1, 1), [], MainJobRoleLabels.supervisor,         20, 5, 0.4444, 22.222),
+                ("1-002", date(2025, 1, 1), [], MainJobRoleLabels.team_leader,        25, 5, 0.5556, 27.778),
+                ("1-002", date(2025, 1, 1), [], MainJobRoleLabels.registered_manager,  5, 5,   None, 0),
+            ],
+        ),
+        ImputeJobRoleTestCase(
+            id="1_rm_count_with_estimate_==_0",
+            data=[
+                ("1-001", date(2025, 2, 1), ["James"], MainJobRoleLabels.care_worker,         10, -1,   None, 10),
+                ("1-001", date(2025, 2, 1), ["James"], MainJobRoleLabels.senior_care_worker,  15, -1,   None, 15),
+                ("1-001", date(2025, 2, 1), ["James"], MainJobRoleLabels.supervisor,          20, -1, 0.4444, 19.556),
+                ("1-001", date(2025, 2, 1), ["James"], MainJobRoleLabels.team_leader,         25, -1, 0.5556, 24.444),
+                ("1-001", date(2025, 2, 1), ["James"], MainJobRoleLabels.registered_manager,   0, -1,   None, 1),
+            ],
+        ),
+        ImputeJobRoleTestCase(
+            id="1_rm_count_with_manager_roles_sum_<_1",
+            data=[
+                ("1-002", date(2025, 2, 1), ["James"], MainJobRoleLabels.care_worker,         10, -1,   None, 10.0),
+                ("1-002", date(2025, 2, 1), ["James"], MainJobRoleLabels.senior_care_worker,  15, -1,   None, 15.0),
+                ("1-002", date(2025, 2, 1), ["James"], MainJobRoleLabels.supervisor,         0.2, -1, 0.6667, 0),
+                ("1-002", date(2025, 2, 1), ["James"], MainJobRoleLabels.team_leader,        0.1, -1, 0.3333, 0),
+                ("1-002", date(2025, 2, 1), ["James"], MainJobRoleLabels.registered_manager,   0, -1,   None, 1.0),
+            ],
+        ),
+        ImputeJobRoleTestCase(
+            id="1_rm_count_with_manager_roles_sum_==_0_check_even_distribution",
+            data=[
+                ("1-005", date(2024, 1, 1), ["James"], MainJobRoleLabels.care_worker,         10, 2,   None, 10.0),
+                ("1-005", date(2024, 1, 1), ["James"], MainJobRoleLabels.senior_care_worker,  15, 2,   None, 15.0),
+                ("1-005", date(2024, 1, 1), ["James"], MainJobRoleLabels.supervisor,           0, 2,    0.5, 1.0),
+                ("1-005", date(2024, 1, 1), ["James"], MainJobRoleLabels.team_leader,          0, 2,    0.5, 1.0),
+                ("1-005", date(2024, 1, 1), ["James"], MainJobRoleLabels.registered_manager,   3, 2,   None, 1.0),
+            ],
+        ),
+        ImputeJobRoleTestCase(
+            id="1_rm_count_multiple_manager_names_with_estimate_>_1",
+            data=[
+                ("1-008", date(2025, 1, 1), ["Sarah", "James"], MainJobRoleLabels.care_worker,         10, 4,   None, 10),
+                ("1-008", date(2025, 1, 1), ["Sarah", "James"], MainJobRoleLabels.senior_care_worker,  15, 4,   None, 15),
+                ("1-008", date(2025, 1, 1), ["Sarah", "James"], MainJobRoleLabels.supervisor,          20, 4, 0.4444, 21.778),
+                ("1-008", date(2025, 1, 1), ["Sarah", "James"], MainJobRoleLabels.team_leader,         25, 4, 0.5556, 27.222),
+                ("1-008", date(2025, 1, 1), ["Sarah", "James"], MainJobRoleLabels.registered_manager,   5, 4,   None, 1),
+            ],
+        ),
+    ]  # fmt: skip
+
+    # This tests that the adjustments are applied within groups effectively.
+    managerial_adjustment_grouping_test_data = [
+        ("1-001", date(2025, 1, 1), ["Sarah"], MainJobRoleLabels.care_worker,         10, 4,    None, 10),
+        ("1-001", date(2025, 1, 1), ["Sarah"], MainJobRoleLabels.senior_care_worker,  15, 4,    None, 15),
+        ("1-001", date(2025, 1, 1), ["Sarah"], MainJobRoleLabels.supervisor,          20, 4,  0.4444, 21.778),
+        ("1-001", date(2025, 1, 1), ["Sarah"], MainJobRoleLabels.team_leader,         25, 4,  0.5556, 27.222),
+        ("1-001", date(2025, 1, 1), ["Sarah"], MainJobRoleLabels.registered_manager,   5, 4,    None, 1),
+        ("1-002", date(2025, 1, 1), [], MainJobRoleLabels.care_worker,                10, 5,    None, 10),
+        ("1-002", date(2025, 1, 1), [], MainJobRoleLabels.senior_care_worker,         15, 5,    None, 15),
+        ("1-002", date(2025, 1, 1), [], MainJobRoleLabels.supervisor,                 30, 5,  0.75, 33.75),
+        ("1-002", date(2025, 1, 1), [], MainJobRoleLabels.team_leader,                10, 5,  0.25, 11.25),
+        ("1-002", date(2025, 1, 1), [], MainJobRoleLabels.registered_manager,          5, 5,    None, 0),
+        ("1-001", date(2025, 2, 1), ["James"], MainJobRoleLabels.care_worker,         10, -1,   None, 10),
+        ("1-001", date(2025, 2, 1), ["James"], MainJobRoleLabels.senior_care_worker,  15, -1,   None, 15),
+        ("1-001", date(2025, 2, 1), ["James"], MainJobRoleLabels.supervisor,          10, -1, 0.5, 9.5),
+        ("1-001", date(2025, 2, 1), ["James"], MainJobRoleLabels.team_leader,         10, -1, 0.5, 9.5),
+        ("1-001", date(2025, 2, 1), ["James"], MainJobRoleLabels.registered_manager,   0, -1,   None, 1),
+    ]  # fmt: skip

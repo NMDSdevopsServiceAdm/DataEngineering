@@ -1,5 +1,8 @@
-import polars as pl
 from typing import Final
+
+import polars as pl
+
+from polars_utils.expressions import percentage_share
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
@@ -9,56 +12,9 @@ from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
 
+# Define constants for IDs for original length data and expanded data.
 ROW_ID: Final[str] = "id"
-
-JobRoleEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
-
-
-def join_estimates_to_ascwds(
-    estimates_lf: pl.LazyFrame,
-    ascwds_lf: pl.LazyFrame,
-) -> pl.LazyFrame:
-    """Join job role estimates to ASCWDS counts ensuring a row for every job role.
-
-    Performs a cross join on the estimates join keys first to ensure there is a row for
-    every job role across all time periods for each location. This is then joined with
-    the ASCWDS data.
-
-    Args:
-        estimates_lf (pl.LazyFrame): Input LazyFrame with Estimates data.
-        ascwds_lf (pl.LazyFrame): Input LazyFrame with ASC-WDS job role counts.
-
-    Returns:
-        pl.LazyFrame: Joined LazyFrame with a row for every job role.
-
-    """
-    join_keys = [
-        IndCQC.ascwds_workplace_import_date,
-        IndCQC.establishment_id,
-    ]
-    job_role_labels = IndCQC.main_job_role_clean_labelled
-
-    narrow_keys_lf = estimates_lf.select([ROW_ID] + join_keys)
-
-    roles_lf = pl.LazyFrame(
-        data=[(role,) for role in AscwdsWorkerValueLabelsJobGroup.all_roles()],
-        schema={job_role_labels: JobRoleEnumType},
-        orient="row",
-    )
-
-    expanded_keys_lf = narrow_keys_lf.join(roles_lf, how="cross")
-
-    expanded_counts_lf = expanded_keys_lf.join(
-        other=ascwds_lf,
-        on=join_keys + [job_role_labels],
-        how="left",
-    )
-
-    return estimates_lf.join(
-        expanded_counts_lf.drop(join_keys),
-        on=ROW_ID,
-        how="right",
-    ).drop(join_keys)
+EXPANDED_ID: Final[str] = "expanded_id"
 
 
 def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -92,16 +48,145 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
     )
 
 
-# TODO: Move this into a more centralised module of generic polars expression functions.
-def percentage_share(column: str | pl.Expr) -> pl.Expr:
-    """Calculate the percentage share of a column across all values.
-
-    Can be used in conjunction with `.group_by` and `.over` methods to get
-    proportions within groups.
+def create_imputed_ascwds_job_role_counts(
+    estimated_job_role_posts_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
     """
-    # If it's a string, turn it into a column expression; otherwise, use as-is.
-    col = pl.col(column) if isinstance(column, str) else column
-    return col / col.sum()
+    Impute job role ratios by interpolation forward fill and backward fill.
+
+    Uses groupby-agg-explode pattern to keep processing within polars streaming
+    engine.
+
+    Args:
+        estimated_job_role_posts_lf(pl.LazyFrame): dataset to impute
+
+    Returns:
+        pl.LazyFrame: dataset with additional columns with imputed data
+    """
+    impute_groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
+    order_key = IndCQC.cqc_location_import_date
+
+    estimated_job_role_posts_lf = get_percent_share_ratios(
+        estimated_job_role_posts_lf,
+        input_col=IndCQC.ascwds_job_role_counts,
+        output_col=IndCQC.ascwds_job_role_ratios,
+    )
+
+    imputed_ratios = (
+        pl.col(IndCQC.ascwds_job_role_ratios)
+        .sort_by(order_key)
+        .interpolate()
+        .forward_fill()
+        .backward_fill()
+        .alias(IndCQC.imputed_ascwds_job_role_ratios)
+    )
+
+    impute_agg_lf = (
+        estimated_job_role_posts_lf.group_by(impute_groups)
+        .agg(
+            # Sort the join key in the same manner as the imputed values.
+            pl.col(EXPANDED_ID).sort_by(order_key),
+            imputed_ratios,
+        )
+        .explode(EXPANDED_ID, IndCQC.imputed_ascwds_job_role_ratios)
+        .drop(impute_groups)
+    )
+
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
+        impute_agg_lf, on=EXPANDED_ID, how="left"
+    )
+
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        pl.col(IndCQC.estimate_filled_posts)
+        .mul(pl.col(IndCQC.imputed_ascwds_job_role_ratios))
+        .alias(IndCQC.imputed_ascwds_job_role_counts)
+    )
+    return estimated_job_role_posts_lf
+
+
+def get_percent_share_ratios(
+    estimated_job_role_posts_lf: pl.LazyFrame,
+    input_col: str,
+    output_col: str,
+) -> pl.LazyFrame:
+    """
+    Calculate ratios over location and date using groupby-agg-explode pattern.
+
+    Using groupby-agg-explode ensures it can be processed with the streaming engine.
+
+    Args:
+        estimated_job_role_posts_lf(pl.LazyFrame): dataset to calculate ratios over. Must contain location_id and cqc_location_import_date_columns for grouping
+        input_col(str): column on which to calculate percentage share
+        output_col(str): name of new column containing percentage share
+
+    Returns:
+        pl.LazyFrame: dataset with new column containing percentage share
+    """
+    groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
+
+    # Groupby-agg-explode on only necessary subset, before joining back on EXPANDED_ID.
+    ratios_agg_lf = (
+        estimated_job_role_posts_lf.group_by(groups)
+        .agg(
+            pl.col(EXPANDED_ID),  # Keep to align during explode
+            percentage_share(input_col).cast(pl.Float32).alias(output_col),
+        )
+        .explode(EXPANDED_ID, output_col)
+        # Drop groups to prevent duplicate columns after join.
+        .drop(groups)
+    )
+
+    return estimated_job_role_posts_lf.join(ratios_agg_lf, on=EXPANDED_ID, how="left")
+
+
+def create_ascwds_job_role_rolling_ratio(
+    estimated_job_role_posts_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """
+    Create the rolling ratio for ascwds job role values
+
+    Uses groupby-agg-explode pattern to keep processing within polars streaming
+    engine.
+
+    Args:
+        estimated_job_role_posts_lf(pl.LazyFrame): dataset to calutate ratio on
+
+    Returns:
+        pl.LazyFrame: dataset with additional columns with ratio and sum of ascwds job roles
+    """
+    rolling_groups = [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled]
+    order_key = IndCQC.cqc_location_import_date
+    monthly_groups = rolling_groups + [order_key]
+    # STEP A: Pre-aggregate down to monthly totals
+    # (Shrinks 152M rows -> ~50k rows instantly via Hash Aggregation)
+    monthly_totals_lf = estimated_job_role_posts_lf.group_by(monthly_groups).agg(
+        pl.col(IndCQC.imputed_ascwds_job_role_counts).sum()
+    )
+    # STEP B: Sort and roll on the small dataset.
+    # This .sort() is completely safe because it's only operating on ~50k rows.
+    rolling_agg_lf = (
+        monthly_totals_lf.sort(*rolling_groups, order_key)
+        .rolling(index_column=order_key, group_by=rolling_groups, period="6mo")
+        .agg(
+            pl.col(IndCQC.imputed_ascwds_job_role_counts)
+            .sum()
+            .alias(IndCQC.ascwds_job_role_rolling_sum)
+        )
+    )
+
+    # STEP C: Join the rolling sum back to the main 152M row table
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
+        rolling_agg_lf,
+        on=monthly_groups,
+        how="left",
+    )
+    # STEP D: Calculate ascwds_job_role_rolling_ratio
+    estimated_job_role_posts_lf = get_percent_share_ratios(
+        estimated_job_role_posts_lf,
+        input_col=IndCQC.ascwds_job_role_rolling_sum,
+        output_col=IndCQC.ascwds_job_role_rolling_ratio,
+    )
+    return estimated_job_role_posts_lf
 
 
 def percentage_share_handling_zero_sum(column: str | pl.Expr) -> pl.Expr:
@@ -120,33 +205,6 @@ def percentage_share_handling_zero_sum(column: str | pl.Expr) -> pl.Expr:
         pl.when((total == 0) & (col == 0))
         .then(1 / col.is_not_null().sum())
         .otherwise(col / total)
-    )
-
-
-def impute_full_time_series(column: str) -> pl.Expr:
-    """Impute nulls using linear interpolation, followed by back and forward fill."""
-    return pl.col(column).interpolate().forward_fill().backward_fill()
-
-
-def rolling_sum_of_job_role_counts(
-    period: str = "6mo",
-) -> pl.Expr:
-    """Compute rolling sum of job role counts within each primary service.
-
-    Args:
-        period (str): String language timedelta. Default "6mo". See:
-          https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.rolling.html
-
-    Returns:
-        pl.Expr: Expression for rolling sum of job role counts.
-    """
-    return (
-        pl.sum(IndCQC.imputed_ascwds_job_role_counts)
-        .rolling(index_column=IndCQC.cqc_location_import_date, period=period)
-        .over(
-            [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled],
-            order_by=IndCQC.cqc_location_import_date,
-        )
     )
 
 
