@@ -108,7 +108,6 @@ class TestGetPercentageShareRatios:
         returned_lf = job.get_percent_share_ratios(
             input_lf, input_col="vals", output_col="ratios"
         ).sort(EXPANDED_ID)
-        returned_lf.show(limit=6)
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
 
 
