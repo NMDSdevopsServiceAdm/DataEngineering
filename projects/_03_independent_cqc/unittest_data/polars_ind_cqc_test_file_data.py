@@ -1911,3 +1911,24 @@ class EstimateFilledPostsByJobRole04EstimateData:
         (1, MainJobRoleLabels.first_line_manager, 0.0, 0.5),
         (1, MainJobRoleLabels.registered_manager, 10.0, None),
     ]
+
+    expected_redistribute_rm_difference_rows = [
+        (0, MainJobRoleLabels.supervisor, 5.0, 1.0, 0.5, 5.5),
+        (0, MainJobRoleLabels.first_line_manager, 5.0, 1.0, 0.5, 5.5),
+        (0, MainJobRoleLabels.registered_manager, 1.0, 1.0, None, None),
+        (1, MainJobRoleLabels.supervisor, 5.0, 1.0, -0.5, 4.5),
+        (1, MainJobRoleLabels.first_line_manager, 5.0, 1.0, -0.5, 4.5),
+        (1, MainJobRoleLabels.registered_manager, 1.0, 1.0, None, None),
+        (2, MainJobRoleLabels.supervisor, 0.1, 1.0, 0.5, 0.6),
+        (2, MainJobRoleLabels.first_line_manager, 0.1, 1.0, 0.5, 0.6),
+        (2, MainJobRoleLabels.registered_manager, 1.0, 1.0, None, None),
+        (3, MainJobRoleLabels.supervisor, 0.1, -1.0, 0.5, 0.1),
+        (3, MainJobRoleLabels.first_line_manager, 0.1, -1.0, 0.5, 0.1),
+        (3, MainJobRoleLabels.registered_manager, 0.0, -1.0, None, None),
+        (4, MainJobRoleLabels.supervisor, 0.0, 0.0, 0.5, 0.0),
+        (4, MainJobRoleLabels.first_line_manager, 0.0, 0.0, 0.5, 0.0),
+        (4, MainJobRoleLabels.registered_manager, 1.0, 0.0, None, None),
+        (5, MainJobRoleLabels.supervisor, 0.0, -1.0, 0.5, 0.0),
+        (5, MainJobRoleLabels.first_line_manager, 0.0, -1.0, 0.5, 0.0),
+        (5, MainJobRoleLabels.registered_manager, 0.0, -1.0, None, None),
+    ]

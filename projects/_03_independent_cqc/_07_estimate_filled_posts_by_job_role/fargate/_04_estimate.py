@@ -131,6 +131,7 @@ def adjust_managerial_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     lf = get_reg_man_difference(lf)
     lf = get_non_rm_managerial_distribution(lf)
+    lf = redistribute_rm_difference(lf)
 
     return lf
 
@@ -199,6 +200,34 @@ def get_non_rm_managerial_distribution(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
     return lf
+
+
+def redistribute_rm_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Doc string here
+    """
+    redistribution_expr = pl.col(IndCQC.estimate_filled_posts_by_job_role).add(
+        pl.col(IndCQC.difference_between_estimate_and_cqc_registered_managers).mul(
+            IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+        )
+    )
+
+    return lf.with_columns(
+        pl.when(
+            pl.col(IndCQC.main_job_role_clean_labelled)
+            != MainJobRoleLabels.registered_manager
+        )
+        .then(
+            pl.when(redistribution_expr < 0)
+            .then(IndCQC.estimate_filled_posts_by_job_role)
+            .otherwise(redistribution_expr)
+        )
+        .otherwise(None)
+        .alias(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
+    )
+
+
+# Replace SfC reg mans with CQC reg mans count.
 
 
 # def apply_manager_adjustments(

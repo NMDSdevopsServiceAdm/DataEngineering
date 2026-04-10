@@ -111,3 +111,18 @@ class GetNonRmManagerialDistribution(unittest.TestCase):
         returned_lf = job.get_non_rm_managerial_distribution(test_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class RedistributeRmDifference(unittest.TestCase):
+    def test_function_returns_expected_values(self):
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_redistribute_rm_difference_rows,
+            schema=Schemas.expected_redistribute_rm_difference_schema,
+            orient="row",
+        )
+        test_lf = expected_lf.drop(
+            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
+        )
+        returned_lf = job.redistribute_rm_difference(test_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
