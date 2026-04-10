@@ -1430,6 +1430,27 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
         }
     )
 
+    adjust_managerial_roles_schema = pl.Schema(
+        {
+            "id": pl.Int32,
+            IndCQC.main_job_role_clean_labelled: pl.Enum(
+                AscwdsWorkerValueLabelsJobGroup.all_roles()
+            ),
+            IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
+            IndCQC.registered_manager_count: pl.Float32,
+        }
+    )
+    expected_adjust_managerial_roles_schema = pl.Schema(
+        {
+            "id": pl.Int32,
+            IndCQC.main_job_role_clean_labelled: pl.Enum(
+                AscwdsWorkerValueLabelsJobGroup.all_roles()
+            ),
+            IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
+            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
+        }
+    )
+
     expected_calculate_reg_man_difference_schema = pl.Schema(
         {
             "id": pl.Int32,

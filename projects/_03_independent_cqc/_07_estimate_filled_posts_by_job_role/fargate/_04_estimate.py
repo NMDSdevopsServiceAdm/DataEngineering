@@ -17,6 +17,12 @@ ROW_ID: Final[str] = "id"
 # in a chunk of this size.
 pl.Config.set_streaming_chunk_size(50000)
 
+# Create a list of non registered manager managerial job roles.
+manager_roles = AscwdsWorkerValueLabelsJobGroup.manager_roles()
+non_rm_manager_roles = [
+    role for role in manager_roles if role != MainJobRoleLabels.registered_manager
+]
+
 
 def main(
     imputed_data_source: str,
@@ -41,7 +47,7 @@ def main(
 
     lf = lf.with_columns(count_cqc_rm().alias(IndCQC.registered_manager_count))
 
-    lf = adjust_managerial_roles(lf)
+    lf = adjust_managerial_roles(lf, non_rm_manager_roles)
 
     lf = lf.join(
         metadata_lf,
@@ -115,7 +121,9 @@ def count_cqc_rm() -> pl.Expr:
     )
 
 
-def adjust_managerial_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
+def adjust_managerial_roles(
+    lf: pl.LazyFrame, non_rm_manager_roles: pl.List
+) -> pl.LazyFrame:
     """
     A function that calls steps for adjusting managerial roles to account for
     replacing SfC registered manager estimate with registered manager count from
@@ -131,15 +139,13 @@ def adjust_managerial_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
     Args:
         lf (pl.LazyFrame): A LazyFrame with estimated filled posts by job role
             and registered manager count from CQC.
+        non_rm_manager_roles (pl.List): A list of non registered manager
+            managerial job roles.
 
     Returns:
         pl.LazyFrame: The input LazyFrame with column
             'estimate_filled_posts_by_job_role_manager_adjusted'.
     """
-    manager_roles = AscwdsWorkerValueLabelsJobGroup.manager_roles()
-    non_rm_manager_roles = [
-        role for role in manager_roles if role != MainJobRoleLabels.registered_manager
-    ]
     non_rm_manager_condition = pl.col(IndCQC.main_job_role_clean_labelled).is_in(
         non_rm_manager_roles
     )
@@ -148,7 +154,13 @@ def adjust_managerial_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = calculate_non_rm_managerial_distribution(lf, non_rm_manager_condition)
     lf = distribute_rm_difference(lf, non_rm_manager_condition)
 
-    return lf
+    return lf.drop(
+        [
+            IndCQC.registered_manager_count,
+            IndCQC.difference_between_estimate_and_cqc_registered_managers,
+            IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+        ]
+    )
 
 
 def calculate_reg_man_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -214,7 +226,8 @@ def calculate_non_rm_managerial_distribution(
 
     lf = lf.with_columns(
         (
-            pl.when(non_rm_manager_condition).then(
+            pl.when(non_rm_manager_condition)
+            .then(
                 pl.when(sum_non_rm_managerial_posts_expr.eq(0.0))
                 .then(
                     pl.lit(1)
@@ -227,6 +240,7 @@ def calculate_non_rm_managerial_distribution(
                     .cast(pl.Float32)
                 )
             )
+            .otherwise(None)
         ).alias(IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role)
     )
 

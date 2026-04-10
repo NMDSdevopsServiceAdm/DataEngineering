@@ -1902,6 +1902,17 @@ class EstimateFilledPostsByJobRole04EstimateData:
         MainJobRoleLabels.registered_manager,
     ]
 
+    adjust_managerial_roles_rows = [
+        (0, MainJobRoleLabels.care_worker, 10.0, 1.0),
+        (0, MainJobRoleLabels.supervisor, 20.0, 1.0),
+        (0, MainJobRoleLabels.registered_manager, 0.0, 1.0),
+    ]
+    expected_adjust_managerial_roles_rows = [
+        (0, MainJobRoleLabels.care_worker, 10.0, 10.0),
+        (0, MainJobRoleLabels.supervisor, 20.0, 19.0),
+        (0, MainJobRoleLabels.registered_manager, 0.0, 1.0),
+    ]
+
     expected_calculate_reg_man_difference_rows = [
         (0, MainJobRoleLabels.supervisor, 10.0, 1.0, -1.0),
         (0, MainJobRoleLabels.registered_manager, 0.0, 1.0, -1.0),

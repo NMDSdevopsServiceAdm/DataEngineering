@@ -20,15 +20,15 @@ PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role
 
 class EstimateFilledPostsByJobRole04EstimateTests(unittest.TestCase):
     def setUp(self) -> None:
-        manager_roles = Data.test_manager_roles
-        non_rm_manager_roles = [
+        self.manager_roles = Data.test_manager_roles
+        self.non_rm_manager_roles = [
             role
-            for role in manager_roles
+            for role in self.manager_roles
             if role != MainJobRoleLabels.registered_manager
         ]
         self.test_non_rm_manager_condition = pl.col(
             IndCQC.main_job_role_clean_labelled
-        ).is_in(non_rm_manager_roles)
+        ).is_in(self.non_rm_manager_roles)
 
 
 class TestMain(unittest.TestCase):
@@ -100,6 +100,45 @@ class CountCqcRmTest(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class AdjustManagerialRolesTests(EstimateFilledPostsByJobRole04EstimateTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_lf = pl.LazyFrame(
+            data=Data.adjust_managerial_roles_rows,
+            schema=Schemas.adjust_managerial_roles_schema,
+            orient="row",
+        )
+        self.expected_lf = pl.LazyFrame(
+            data=Data.expected_adjust_managerial_roles_rows,
+            schema=Schemas.expected_adjust_managerial_roles_schema,
+            orient="row",
+        )
+
+    @patch(f"{PATCH_PATH}.calculate_reg_man_difference")
+    @patch(f"{PATCH_PATH}.calculate_non_rm_managerial_distribution")
+    @patch(f"{PATCH_PATH}.distribute_rm_difference")
+    def test_function_has_expected_calls(
+        self,
+        distribute_rm_difference: Mock,
+        calculate_non_rm_managerial_distribution: Mock,
+        calculate_reg_man_difference: Mock,
+    ):
+        job.adjust_managerial_roles(self.test_lf, self.non_rm_manager_roles)
+
+        distribute_rm_difference.assert_called_once()
+        calculate_non_rm_managerial_distribution.assert_called_once()
+        calculate_reg_man_difference.assert_called_once()
+
+    def test_function_returns_expected_values(self):
+        returned_lf = job.adjust_managerial_roles(
+            self.test_lf,
+            self.non_rm_manager_roles,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
 
 
 class CalculateRegManDifferenceTest(unittest.TestCase):
