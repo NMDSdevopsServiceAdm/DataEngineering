@@ -12,12 +12,12 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import EstimateFilledPostsSource
 
 from .utils_test_cases import (
+    create_ascwds_job_role_rolling_ratio_expected_schema,
+    create_ascwds_job_role_rolling_ratio_test_cases,
     managerial_adjustment_core_schema,
     managerial_adjustment_expected_schema,
     managerial_adjustment_grouping_test_data,
     managerial_adjustment_test_cases,
-    rolling_sum_expected_schema,
-    rolling_sum_test_cases,
 )
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils"
@@ -212,19 +212,22 @@ class TestCreateImputedASCWDSJobRoleCounts(unittest.TestCase):
 class TestCreateASCWDSJobRoleRollingRatio:
     @pytest.mark.parametrize(
         "rolling_sum_data",
-        [case.as_pytest_param() for case in rolling_sum_test_cases],
+        [
+            case.as_pytest_param()
+            for case in create_ascwds_job_role_rolling_ratio_test_cases
+        ],
     )
     def test_create_ascwds_job_role_rolling_ratio(self, rolling_sum_data):
         expected_lf = pl.LazyFrame(
-            rolling_sum_data, rolling_sum_expected_schema, orient="row"
+            rolling_sum_data,
+            create_ascwds_job_role_rolling_ratio_expected_schema,
+            orient="row",
         )
-        input_lf = expected_lf.drop(IndCQC.ascwds_job_role_rolling_sum)
-        returned_lf = input_lf.with_columns(
-            job.create_ascwds_job_role_rolling_ratio(period="6mo").alias(
-                IndCQC.ascwds_job_role_rolling_sum
-            )
+        input_lf = expected_lf.drop(
+            IndCQC.ascwds_job_role_rolling_sum, IndCQC.ascwds_job_role_rolling_ratio
         )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+        returned_lf = job.create_ascwds_job_role_rolling_ratio(input_lf)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
 
 
 class TestManagerialFilledPostAdjustmentExpr:
