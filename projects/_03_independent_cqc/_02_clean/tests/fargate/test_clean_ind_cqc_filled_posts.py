@@ -26,9 +26,8 @@ class CleanIndFilledPostsTests(unittest.TestCase):
 class MainTests(CleanIndFilledPostsTests):
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.calculate_care_home_status_count")
-    # @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
+    @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_care_home_outliers")
-    @patch(f"{PATCH_PATH}.forward_fill_latest_known_value")
     @patch(f"{PATCH_PATH}.clean_ascwds_filled_post_outliers")
     @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
     @patch(f"{PATCH_PATH}.cUtils.calculate_filled_posts_per_bed_ratio")
@@ -55,9 +54,8 @@ class MainTests(CleanIndFilledPostsTests):
         calculate_filled_posts_per_bed_ratio_mock: Mock,
         create_banded_bed_count_column_mock: Mock,
         clean_ascwds_filled_post_outliers_mock: Mock,
-        forward_fill_latest_known_value_mock: Mock,
         clean_capacity_tracker_care_home_outliers_mock: Mock,
-        # clean_capacity_tracker_non_res_outliers_mock: Mock,
+        clean_capacity_tracker_non_res_outliers_mock: Mock,
         calculate_care_home_status_count_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -76,12 +74,11 @@ class MainTests(CleanIndFilledPostsTests):
         populate_missing_care_home_number_of_beds_mock.assert_called_once()
         calculate_ascwds_filled_posts_mock.assert_called_once()
         self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
-        self.assertEqual(calculate_filled_posts_per_bed_ratio_mock.call_count, 3)
+        self.assertEqual(calculate_filled_posts_per_bed_ratio_mock.call_count, 2)
         create_banded_bed_count_column_mock.assert_called_once()
-        self.assertEqual(forward_fill_latest_known_value_mock.call_count, 2)
         clean_ascwds_filled_post_outliers_mock.assert_called_once()
         clean_capacity_tracker_care_home_outliers_mock.assert_called_once()
-        # clean_capacity_tracker_non_res_outliers_mock.assert_called_once()
+        clean_capacity_tracker_non_res_outliers_mock.assert_called_once()
         calculate_care_home_status_count_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(

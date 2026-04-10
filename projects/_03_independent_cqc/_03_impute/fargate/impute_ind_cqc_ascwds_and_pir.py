@@ -1,8 +1,12 @@
 import polars as pl
 
-from polars_utils import utils
+from polars_utils import utils, cleaning_utils as cUtils
+
 from projects._03_independent_cqc._03_impute.fargate.utils.convert_pir_people_to_filled_posts import (
     convert_pir_to_filled_posts,
+)
+from projects._03_independent_cqc._03_impute.fargate.utils.forward_fill_latest_known_value import (
+    forward_fill_latest_known_value,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
@@ -20,6 +24,16 @@ def main(
     """
     lf = utils.scan_parquet(cleaned_ind_cqc_source)
     print("Cleaned IND CQC LazyFrame read in")
+
+    lf = forward_fill_latest_known_value(lf, IndCQC.ascwds_filled_posts_dedup_clean)
+
+    lf = forward_fill_latest_known_value(lf, IndCQC.pir_people_directly_employed_dedup)
+
+    lf = cUtils.calculate_filled_posts_per_bed_ratio(
+        lf,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.filled_posts_per_bed_ratio,
+    )
 
     # create_unix_timestamp_variable_from_date_column
 
