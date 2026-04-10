@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
-
+- Refactored merge job within Estimates by Job Role Pipeline.
 
 ### Fixed
 
@@ -53,8 +53,6 @@ All notable changes to this project will be documented in this file.
   Renamed validation datasets with suffix `validation_` for Point Blank validation and `validation_pdq_` for PyDeequ validation.
   Removed automatic copying of raw data files into branch.
   Removed a batch of files no longer used.
-
-- Refactored merge job within Estimates by Job Role Pipeline.
 
 ### Fixed
 - Refactored `remove_duplicates_based_on_column_order` to give the same outputs for every run.
