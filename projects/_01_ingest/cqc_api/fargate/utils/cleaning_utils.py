@@ -87,17 +87,24 @@ def impute_missing_values(
         pl.LazyFrame: Dataframe with imputed columns
     """
     schema = cqc_lf.collect_schema()
-    for col in schema:
-        if isinstance(schema[col], pl.datatypes.List):
-            cqc_lf = cqc_lf.with_columns(
+
+    list_cleanup_cols = [
+        col for col in cols_to_impute if isinstance(schema[col], pl.List)
+    ]
+
+    if list_cleanup_cols:
+        cqc_lf = cqc_lf.with_columns(
+            [
                 pl.when(pl.col(col).list.len() == 0)
                 .then(None)
                 .otherwise(pl.col(col))
                 .alias(col)
-            )
+                for col in list_cleanup_cols
+            ]
+        )
 
-    for col in cols_to_impute:
-        cqc_lf = cqc_lf.with_columns(
+    cqc_lf = cqc_lf.with_columns(
+        [
             pl.col(col)
             .forward_fill()
             .backward_fill()
@@ -105,7 +112,10 @@ def impute_missing_values(
                 partition_by=CQCLClean.location_id,
                 order_by=CQCLClean.cqc_location_import_date,
             )
-        )
+            .alias(col)
+            for col in cols_to_impute
+        ]
+    )
 
     return cqc_lf
 
@@ -223,22 +233,31 @@ def add_related_location_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def clean_and_impute_registration_date(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Adds a new column imputed_registration_date.
+    Adds a new column `imputed_registration_date` using valid historical
+    registration dates within each `location_id`.
 
-    1. Copy registration_date into imputed_registration_date when it is prior to earliest cqc_location_import_date, otherwise null.
-    2. Fill nulls in imputed_registration_date based on:
-        - when locationid has a registration_date at any point in time, then fill with min registration_date.
-        - when locationid has no registration_date at any point in time, then fill with min cqc_location_import_date.
+    A registration date is considered valid only when it is on or before the
+    earliest `cqc_location_import_date` observed for that location.
+
+    The imputed date is derived using the following priority:
+    1. Use the row's own valid `registration_date`.
+    2. Otherwise use the earliest valid `registration_date` observed for the
+       same `location_id`.
+    3. If no valid registration date exists for that `location_id`, use the
+       earliest `cqc_location_import_date`.
 
     Args:
-        cqc_lf (pl.LazyFrame): A LazyFrame with columns registration_date and cqc_location_import_date.
+        cqc_lf (pl.LazyFrame): A LazyFrame containing
+            `registration_date`, `cqc_location_import_date`, and
+            `location_id`.
 
     Returns:
-        pl.LazyFrame: Input LazyFrame with new column imputed_registration_date.
-
+        pl.LazyFrame: Input LazyFrame with a new
+            `imputed_registration_date` column.
     """
+    valid_registration_date = "_valid_registration_date"
 
-    # 1. Copy registration_date into imputed_registration_date
+    # Step 1: create valid registration column
     cqc_lf = cqc_lf.with_columns(
         pl.when(
             pl.col(CQCLClean.registration_date)
@@ -248,27 +267,20 @@ def clean_and_impute_registration_date(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
         )
         .then(pl.col(CQCLClean.registration_date))
         .otherwise(None)
-        .alias(CQCLClean.imputed_registration_date)
+        .alias(valid_registration_date)
     )
 
-    # 2. Fill nulls in imputed_registration_date
+    # Step 2: perform imputation using real column
     cqc_lf = cqc_lf.with_columns(
-        pl.when(pl.col(CQCLClean.imputed_registration_date).is_null())
-        .then(
-            pl.col(CQCLClean.imputed_registration_date)
-            .min()
-            .over(CQCLClean.location_id)
-            .fill_null(
-                pl.col(CQCLClean.cqc_location_import_date)
-                .min()
-                .over(CQCLClean.location_id)
-            )
+        pl.col(valid_registration_date)
+        .fill_null(pl.col(valid_registration_date).min().over(CQCLClean.location_id))
+        .fill_null(
+            pl.col(CQCLClean.cqc_location_import_date).min().over(CQCLClean.location_id)
         )
-        .otherwise(pl.col(CQCLClean.imputed_registration_date))
         .alias(CQCLClean.imputed_registration_date)
     )
 
-    return cqc_lf
+    return cqc_lf.drop(valid_registration_date)
 
 
 def classify_specialisms(

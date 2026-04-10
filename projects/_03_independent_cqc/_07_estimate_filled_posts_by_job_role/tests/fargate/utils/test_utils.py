@@ -41,10 +41,7 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
             (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 2),
         ]
 
-        self.expected_rows_that_meet_condition = [
-            (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 1),
-            (10.0, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, 2),
-        ]
+        self.expected_rows_that_meet_condition = self.input_rows_that_meet_condition
 
     def _create_input_lf(self, extra_rows: list[tuple]) -> pl.LazyFrame:
         """Set the input LazyFrame up with rows that meet condition + given rows."""

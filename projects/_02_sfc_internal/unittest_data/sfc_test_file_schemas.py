@@ -434,9 +434,6 @@ class ValidateMergedCoverageData:
             StructField(CQCLClean.postal_code, StringType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
         ]
     )
     merged_coverage_schema = StructType(
@@ -457,9 +454,6 @@ class ValidateMergedCoverageData:
             StructField(CQCLClean.name, StringType(), True),
             StructField(CQCLClean.postal_code, StringType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
         ]
     )
 
@@ -1629,7 +1623,7 @@ class LmEngagementUtilsSchemas:
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.current_cssr, StringType(), True),
             StructField(CoverageColumns.in_ascwds, IntegerType(), True),
-            StructField(Keys.year, StringType(), True),
+            StructField("_year", IntegerType(), True),
         ]
     )
     expected_add_columns_for_locality_manager_dashboard_schema = StructType(
