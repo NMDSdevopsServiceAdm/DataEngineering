@@ -28,6 +28,22 @@ def has_value(df: pl.DataFrame, column: str, partition_by: str) -> pl.Expr:
     return pl.col([column]).list.len().max().cast(pl.Boolean).over(partition_by)
 
 
+def percentage_share(column: str | pl.Expr) -> pl.Expr:
+    """Calculate the percentage share of a column across all values.
+
+    If the column is a string, turn it into a column expression; otherwise, use as-is. Can be used in conjunction with `.group_by` and `.over` methods to get
+    proportions within groups.
+
+    Args:
+        column(str|pl.Expr): a string or column expression on which to calculate
+
+    Returns:
+        pl.Expr: the percentage share of the column accross all values
+    """
+    col = pl.col(column) if isinstance(column, str) else column
+    return col / col.sum()
+
+
 def str_length_cols(columns: list[str]) -> list[pl.Expr]:
     """Provides the string lengths for each value in a column as a list of column expressions.
 
