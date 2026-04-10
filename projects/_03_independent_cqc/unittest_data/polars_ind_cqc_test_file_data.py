@@ -1892,3 +1892,61 @@ class EstimateNonResCapacityTrackerFilledPostsData:
         ("1-008", date(2026, 1, 1), CareHome.not_care_home, 0.49, 0.98, 0.98, 1.0, IndCQC.ct_non_res_all_posts), # ct_non_res_filled_post_estimate is 1.0 because of clip.
         ("1-009", date(2021, 4, 30), CareHome.not_care_home, 1.0, 2.0, 2.0, None, None), # Nulled because import date prior to 2021-5-1
     ] # fmt: skip
+
+
+@dataclass
+class JoinEstimatesCase:
+    id: str
+    estimates_data: list[tuple]
+    ascwds_data: list[tuple]
+    expected_data: list[tuple]
+
+
+@dataclass
+class TestJoinEstimatesToAscwds:
+    join_estimates_test_cases = [
+        JoinEstimatesCase(
+            id="basic_match",
+            estimates_data=[
+                (1, "2024-01-01", "loc1"),
+            ],
+            ascwds_data=[
+                ("2024-01-01", "loc1", "role_a", 10.0),
+                ("2024-01-01", "loc1", "role_b", 20.0),
+            ],
+            expected_data=[
+                (1, "role_a", 10.0),
+                (1, "role_b", 20.0),
+            ],
+        ),
+        JoinEstimatesCase(
+            id="missing_role_returns_null",
+            estimates_data=[
+                (1, "2024-01-01", "loc1"),
+            ],
+            ascwds_data=[
+                ("2024-01-01", "loc1", "role_a", 10.0),
+            ],
+            expected_data=[
+                (1, "role_a", 10.0),
+                (1, "role_b", None),
+            ],
+        ),
+        JoinEstimatesCase(
+            id="multiple_rows_expand_correctly",
+            estimates_data=[
+                (1, "2024-01-01", "loc1"),
+                (2, "2024-01-01", "loc2"),
+            ],
+            ascwds_data=[
+                ("2024-01-01", "loc1", "role_a", 5.0),
+                ("2024-01-01", "loc2", "role_b", 7.0),
+            ],
+            expected_data=[
+                (1, "role_a", 5.0),
+                (1, "role_b", None),
+                (2, "role_a", None),
+                (2, "role_b", 7.0),
+            ],
+        ),
+    ] # fmt: skip
