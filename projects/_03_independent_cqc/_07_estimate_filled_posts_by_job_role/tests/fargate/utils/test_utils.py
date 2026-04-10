@@ -14,6 +14,8 @@ from utils.column_values.categorical_column_values import EstimateFilledPostsSou
 from .utils_test_cases import (
     create_ascwds_job_role_rolling_ratio_expected_schema,
     create_ascwds_job_role_rolling_ratio_test_cases,
+    create_imputed_ascwds_job_role_counts_expected_schema,
+    create_imputed_ascwds_job_role_counts_test_cases,
     managerial_adjustment_core_schema,
     managerial_adjustment_expected_schema,
     managerial_adjustment_grouping_test_data,
@@ -145,81 +147,45 @@ class TestPercentageShareHandlingZeroSum:
 
 
 # Needs repointing at new function- check test cases still work
-class TestCreateImputedASCWDSJobRoleCounts(unittest.TestCase):
-    schema = {
-        EXPANDED_ID: pl.UInt32,
-        IndCQC.location_id: pl.String,
-        IndCQC.main_job_role_clean_labelled: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_job_role_counts: pl.Int64,
-        IndCQC.estimate_filled_posts: pl.Float32,
-        IndCQC.ascwds_job_role_ratios: pl.Float32,  # extra col
-        IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,  # extra col
-        IndCQC.imputed_ascwds_job_role_counts: pl.Float32,
-    }
-
-    def _create_expected_lf(
-        self, expected_data: list[tuple], schema: dict
-    ) -> pl.LazyFrame:
-        """Set the expected LazyFrame up"""
-        return pl.LazyFrame(expected_data, schema, orient="row")
-
-    def _create_test_lf(self, expected_lf: pl.LazyFrame) -> pl.LazyFrame:
-        """Set the test LazyFrame up"""
-        return expected_lf.drop(
-            IndCQC.imputed_ascwds_job_role_counts,
+class TestCreateImputedASCWDSJobRoleCounts:
+    @pytest.mark.parametrize(
+        "create_imputed_ascwds_job_role_counts_data",
+        [
+            case.as_pytest_param()
+            for case in create_imputed_ascwds_job_role_counts_test_cases
+        ],
+    )
+    def test_create_imputed_ascwds_job_role_counts(
+        self, create_imputed_ascwds_job_role_counts_data
+    ):
+        expected_lf = pl.LazyFrame(
+            create_imputed_ascwds_job_role_counts_data,
+            create_imputed_ascwds_job_role_counts_expected_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop(
             IndCQC.ascwds_job_role_ratios,
             IndCQC.imputed_ascwds_job_role_ratios,
+            IndCQC.imputed_ascwds_job_role_counts,
         )
-
-    def test_imputations(self):
-        expected_data = [
-            ("1", "1", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0, 1.0, 1.0),
-            ("2", "1", "job_role_a", date(2026, 1, 2), None, 2.0, None, 0.7, 1.4),
-            ("3", "1", "job_role_a", date(2026, 1, 3), 4, 4.0, 0.4, 0.4, 1.6),
-            ("4", "1", "job_role_b", date(2026, 1, 1), None, 1.0, None, 1.0, 1.0),
-            ("5", "1", "job_role_b", date(2026, 1, 2), 2, 2.0, 1.0, 1.0, 2.0),
-            ("6", "1", "job_role_b", date(2026, 1, 3), 6, 6.0, 0.6, 0.6, 3.6),
-            ("7", "2", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0, 1.0, 1.0),
-            ("8", "2", "job_role_a", date(2026, 1, 2), 9, 9.0, 1.0, 1.0, 9.0),
-            ("9", "2", "job_role_a", date(2026, 1, 3), None, 1.0, None, 1.0, 1.0),
-        ]
-        expected_lf = self._create_expected_lf(expected_data, self.schema)
-        test_lf = self._create_test_lf(expected_lf)
-        returned_lf = job.create_imputed_ascwds_job_role_counts(test_lf)
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_all_nones_returns_nones(self):
-        """Test for the all None case in a set of values."""
-        expected_data = [
-            ("1", "1", "job_role_a", date(2026, 1, 1), None, 1.0, None, None, None),
-            ("2", "1", "job_role_a", date(2026, 1, 2), None, 2.0, None, None, None),
-            ("3", "1", "job_role_a", date(2026, 1, 3), None, 4.0, None, None, None),
-            ("4", "1", "job_role_b", date(2026, 1, 1), None, 1.0, None, None, None),
-            ("5", "1", "job_role_b", date(2026, 1, 2), None, 2.0, None, None, None),
-            ("6", "1", "job_role_b", date(2026, 1, 3), None, 6.0, None, None, None),
-            ("7", "2", "job_role_a", date(2026, 1, 1), None, 1.0, None, None, None),
-            ("8", "2", "job_role_a", date(2026, 1, 2), None, 9.0, None, None, None),
-            ("9", "2", "job_role_a", date(2026, 1, 3), None, 1.0, None, None, None),
-        ]
-        expected_lf = self._create_expected_lf(expected_data, self.schema)
-        test_lf = self._create_test_lf(expected_lf)
-        returned_lf = job.create_imputed_ascwds_job_role_counts(test_lf)
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+        returned_lf = job.create_imputed_ascwds_job_role_counts(input_lf)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
 
 
 # Update test data and test cases
 class TestCreateASCWDSJobRoleRollingRatio:
     @pytest.mark.parametrize(
-        "rolling_sum_data",
+        "create_ascwds_job_role_rolling_ratio_data",
         [
             case.as_pytest_param()
             for case in create_ascwds_job_role_rolling_ratio_test_cases
         ],
     )
-    def test_create_ascwds_job_role_rolling_ratio(self, rolling_sum_data):
+    def test_create_ascwds_job_role_rolling_ratio(
+        self, create_ascwds_job_role_rolling_ratio_data
+    ):
         expected_lf = pl.LazyFrame(
-            rolling_sum_data,
+            create_ascwds_job_role_rolling_ratio_data,
             create_ascwds_job_role_rolling_ratio_expected_schema,
             orient="row",
         )

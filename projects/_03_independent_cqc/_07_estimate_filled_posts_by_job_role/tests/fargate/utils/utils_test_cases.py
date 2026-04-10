@@ -23,6 +23,50 @@ class TestCase:
         return pytest.param(self.data, id=self.id)
 
 
+create_imputed_ascwds_job_role_counts_expected_schema = {
+    EXPANDED_ID: pl.UInt32,
+    IndCQC.location_id: pl.String,
+    IndCQC.main_job_role_clean_labelled: pl.String,
+    IndCQC.cqc_location_import_date: pl.Date,
+    IndCQC.ascwds_job_role_counts: pl.Int64,
+    IndCQC.estimate_filled_posts: pl.Float32,
+    IndCQC.ascwds_job_role_ratios: pl.Float32,  # extra col
+    IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,  # extra col
+    IndCQC.imputed_ascwds_job_role_counts: pl.Float32,  # extra col
+}
+
+
+create_imputed_ascwds_job_role_counts_test_cases = [
+    TestCase(
+        id="when_sufficient_data_present_to_impute",
+        data=[
+            ("1", "1", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0, 1.0, 1.0),
+            ("2", "1", "job_role_a", date(2026, 1, 2), None, 2.0, None, 0.7, 1.4),
+            ("3", "1", "job_role_a", date(2026, 1, 3), 4, 4.0, 0.4, 0.4, 1.6),
+            ("4", "1", "job_role_b", date(2026, 1, 1), None, 1.0, None, 1.0, 1.0),
+            ("5", "1", "job_role_b", date(2026, 1, 2), 2, 2.0, 1.0, 1.0, 2.0),
+            ("6", "1", "job_role_b", date(2026, 1, 3), 6, 6.0, 0.6, 0.6, 3.6),
+            ("7", "2", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0, 1.0, 1.0),
+            ("8", "2", "job_role_a", date(2026, 1, 2), 9, 9.0, 1.0, 1.0, 9.0),
+            ("9", "2", "job_role_a", date(2026, 1, 3), None, 1.0, None, 1.0, 1.0),
+        ],
+    ),
+    TestCase(
+        id="when_all_nones",
+        data=[
+            ("1", "1", "job_role_a", date(2026, 1, 1), None, 1.0, None, None, None),
+            ("2", "1", "job_role_a", date(2026, 1, 2), None, 2.0, None, None, None),
+            ("3", "1", "job_role_a", date(2026, 1, 3), None, 4.0, None, None, None),
+            ("4", "1", "job_role_b", date(2026, 1, 1), None, 1.0, None, None, None),
+            ("5", "1", "job_role_b", date(2026, 1, 2), None, 2.0, None, None, None),
+            ("6", "1", "job_role_b", date(2026, 1, 3), None, 6.0, None, None, None),
+            ("7", "2", "job_role_a", date(2026, 1, 1), None, 1.0, None, None, None),
+            ("8", "2", "job_role_a", date(2026, 1, 2), None, 9.0, None, None, None),
+            ("9", "2", "job_role_a", date(2026, 1, 3), None, 1.0, None, None, None),
+        ],
+    ),
+]  # fmt: skip
+
 create_ascwds_job_role_rolling_ratio_expected_schema = {
     EXPANDED_ID: pl.UInt16,
     IndCQC.location_id: pl.String,
