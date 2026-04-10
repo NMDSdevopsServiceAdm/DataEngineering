@@ -1426,6 +1426,33 @@ class EstimateNonResCapacityTrackerFilledPostsSchemas:
 
 
 @dataclass
+class TestJoinEstimatesToAscwds:
+    TEST_ROLES = ["role_a", "role_b"]
+    estimates_schema = pl.Schema(
+        {
+            "id": pl.Int32,
+            IndCQC.ascwds_workplace_import_date: pl.String,
+            IndCQC.establishment_id: pl.String,
+        }
+    )
+    ascwds_schema = pl.Schema(
+        {
+            IndCQC.ascwds_workplace_import_date: pl.String,
+            IndCQC.establishment_id: pl.String,
+            IndCQC.main_job_role_clean_labelled: pl.Enum(TEST_ROLES),
+            "value": pl.Float64,
+        }
+    )
+    expected_schema = pl.Schema(
+        {
+            "id": pl.Int32,
+            IndCQC.main_job_role_clean_labelled: pl.Enum(TEST_ROLES),
+            "value": pl.Float64,
+        }
+    )
+
+
+@dataclass
 class ImputeJobRoleSchemas:
 
     create_imputed_ascwds_job_role_counts_expected_schema = {
