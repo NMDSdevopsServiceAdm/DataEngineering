@@ -1432,7 +1432,7 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
 
     expected_get_reg_man_difference_schema = pl.Schema(
         {
-            "expanded_id": pl.Int32,
+            "id": pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
@@ -1444,7 +1444,7 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
 
     expected_get_non_rm_managerial_distribution_schema = pl.Schema(
         {
-            "expanded_id": pl.Int32,
+            "id": pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
@@ -1455,7 +1455,7 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
 
     expected_redistribute_rm_difference_schema = pl.Schema(
         {
-            "expanded_id": pl.Int32,
+            "id": pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),

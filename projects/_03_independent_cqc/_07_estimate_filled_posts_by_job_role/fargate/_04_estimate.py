@@ -15,8 +15,8 @@ from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
 
-# Define constants for IDs for original length data and expanded data.
-EXPANDED_ID: Final[str] = "expanded_id"
+# Define constants for IDs for original length data.
+ROW_ID: Final[str] = "id"
 
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
@@ -155,7 +155,7 @@ def get_reg_man_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
                 == MainJobRoleLabels.registered_manager
             )
             .first(ignore_nulls=True)
-            .over(EXPANDED_ID)
+            .over(ROW_ID)
         ).alias(IndCQC.difference_between_estimate_and_cqc_registered_managers)
     )
 
@@ -170,11 +170,11 @@ def get_non_rm_managerial_distribution(
         pl.col(IndCQC.estimate_filled_posts_by_job_role)
         .filter(non_rm_manager_condition)
         .sum()
-        .over(EXPANDED_ID)
+        .over(ROW_ID)
     )
 
     count_non_rm_managerial_roles_expr = (
-        pl.lit(1).filter(non_rm_manager_condition).sum().over(EXPANDED_ID)
+        pl.lit(1).filter(non_rm_manager_condition).sum().over(ROW_ID)
     )
 
     lf = lf.with_columns(
