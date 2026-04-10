@@ -9,11 +9,6 @@ import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargat
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     EstimateFilledPostsByJobRole04EstimateData as Data,
 )
-from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
-    calculate_non_rm_managerial_distribution_test_cases,
-    calculate_reg_man_difference_test_cases,
-    distribute_rm_difference_test_cases,
-)
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     EstimateFilledPostsByJobRole04EstimateSchemas as Schemas,
 )
@@ -142,15 +137,18 @@ class AdjustManagerialRolesTests(unittest.TestCase):
 
 
 class TestCalculateRegManDifference:
-    calculate_reg_man_difference_test_cases = [
-        pytest.param(case, id=case.id)
-        for case in calculate_reg_man_difference_test_cases
-    ]
-
-    @pytest.mark.parametrize("case", calculate_reg_man_difference_test_cases)
-    def test_function_returns_expected_values(self, case):
+    @pytest.mark.parametrize(
+        "calculate_reg_man_difference_test_data",
+        [
+            case.as_pytest_param()
+            for case in Data.calculate_reg_man_difference_test_cases
+        ],
+    )
+    def test_function_returns_expected_values(
+        self, calculate_reg_man_difference_test_data
+    ):
         expected_lf = pl.LazyFrame(
-            case.expected_data,
+            calculate_reg_man_difference_test_data,
             Schemas.expected_calculate_reg_man_difference_schema,
             orient="row",
         )
@@ -163,17 +161,18 @@ class TestCalculateRegManDifference:
 
 
 class TestCalculateNonRmManagerialDistribution:
-    calculate_non_rm_managerial_distribution_test_cases = [
-        pytest.param(case, id=case.id)
-        for case in calculate_non_rm_managerial_distribution_test_cases
-    ]
-
     @pytest.mark.parametrize(
-        "case", calculate_non_rm_managerial_distribution_test_cases
+        "calculate_non_rm_managerial_distribution_test_data",
+        [
+            case.as_pytest_param()
+            for case in Data.calculate_non_rm_managerial_distribution_test_cases
+        ],
     )
-    def test_function_returns_expected_values(self, case):
+    def test_function_returns_expected_values(
+        self, calculate_non_rm_managerial_distribution_test_data
+    ):
         expected_lf = pl.LazyFrame(
-            case.expected_data,
+            calculate_non_rm_managerial_distribution_test_data,
             Schemas.expected_calculate_non_rm_managerial_distribution_schema,
             orient="row",
         )
@@ -189,14 +188,13 @@ class TestCalculateNonRmManagerialDistribution:
 
 
 class TestDistributeRmDifference:
-    distribute_rm_difference_test_cases = [
-        pytest.param(case, id=case.id) for case in distribute_rm_difference_test_cases
-    ]
-
-    @pytest.mark.parametrize("case", distribute_rm_difference_test_cases)
-    def test_function_returns_expected_values(self, case):
+    @pytest.mark.parametrize(
+        "distribute_rm_difference_test_data",
+        [case.as_pytest_param() for case in Data.distribute_rm_difference_test_cases],
+    )
+    def test_function_returns_expected_values(self, distribute_rm_difference_test_data):
         expected_lf = pl.LazyFrame(
-            case.expected_data,
+            distribute_rm_difference_test_data,
             Schemas.expected_distribute_rm_difference_schema,
             orient="row",
         )

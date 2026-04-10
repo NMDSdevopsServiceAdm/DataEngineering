@@ -2130,6 +2130,16 @@ class ImputeJobRoleData:
 
 
 @dataclass
+class AdjustManagerialRolesSubFunctionTestCases:
+    id: str
+    expected_data: list[tuple]
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(self.expected_data, id=self.id)
+
+
+@dataclass
 class EstimateFilledPostsByJobRole04EstimateData:
     calculate_estimated_filled_posts_by_job_role_rows = [
         (0, 10.0, 0.4, 0.6, IndCQC.imputed_ascwds_job_role_ratios, 0.4, 4.0),
@@ -2163,97 +2173,89 @@ class EstimateFilledPostsByJobRole04EstimateData:
         (0, MainJobRoleLabels.registered_manager, 0.0, 1.0),
     ]
 
+    calculate_reg_man_difference_test_cases = [
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="estimated_rm_is_zero_and_cqc_count_rm_is_one",
+            expected_data=[
+                (0, MainJobRoleLabels.supervisor, 10.0, 1.0, -1.0),
+                (0, MainJobRoleLabels.registered_manager, 0.0, 1.0, -1.0),
+            ],
+        ),
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="estimated_rm_is_one_and_cqc_count_rm_is_zero",
+            expected_data=[
+                (0, MainJobRoleLabels.supervisor, 20.0, 0.0, 1.0),
+                (0, MainJobRoleLabels.registered_manager, 1.0, 0.0, 1.0),
+            ],
+        ),
+    ]
 
-@dataclass
-class AdjustManagerialRolesSubFunctionTestCases:
-    id: str
-    expected_data: list[tuple]
+    calculate_non_rm_managerial_distribution_test_cases = [
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="non_rm_manager_filled_post_sum_is_above_zero",
+            expected_data=[
+                (0, MainJobRoleLabels.supervisor, 60.0, 0.6),
+                (0, MainJobRoleLabels.first_line_manager, 40.0, 0.4),
+                (0, MainJobRoleLabels.registered_manager, 10.0, None),
+            ],
+        ),
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="non_rm_manager_filled_post_sum_is_zero",
+            expected_data=[
+                (0, MainJobRoleLabels.supervisor, 0.0, 0.5),
+                (0, MainJobRoleLabels.first_line_manager, 0.0, 0.5),
+                (0, MainJobRoleLabels.registered_manager, 10.0, None),
+            ],
+        ),
+    ]
 
-
-calculate_reg_man_difference_test_cases = [
-    AdjustManagerialRolesSubFunctionTestCases(
-        id="estimated_rm_is_zero_and_cqc_count_rm_is_one",
-        expected_data=[
-            (0, MainJobRoleLabels.supervisor, 10.0, 1.0, -1.0),
-            (0, MainJobRoleLabels.registered_manager, 0.0, 1.0, -1.0),
-        ],
-    ),
-    AdjustManagerialRolesSubFunctionTestCases(
-        id="estimated_rm_is_one_and_cqc_count_rm_is_zero",
-        expected_data=[
-            (0, MainJobRoleLabels.supervisor, 20.0, 0.0, 1.0),
-            (0, MainJobRoleLabels.registered_manager, 1.0, 0.0, 1.0),
-        ],
-    ),
-]
-
-
-calculate_non_rm_managerial_distribution_test_cases = [
-    AdjustManagerialRolesSubFunctionTestCases(
-        id="non_rm_manager_filled_post_sum_is_above_zero",
-        expected_data=[
-            (0, MainJobRoleLabels.supervisor, 60.0, 0.6),
-            (0, MainJobRoleLabels.first_line_manager, 40.0, 0.4),
-            (0, MainJobRoleLabels.registered_manager, 10.0, None),
-        ],
-    ),
-    AdjustManagerialRolesSubFunctionTestCases(
-        id="non_rm_manager_filled_post_sum_is_zero",
-        expected_data=[
-            (0, MainJobRoleLabels.supervisor, 0.0, 0.5),
-            (0, MainJobRoleLabels.first_line_manager, 0.0, 0.5),
-            (0, MainJobRoleLabels.registered_manager, 10.0, None),
-        ],
-    ),
-]
-
-distribute_rm_difference_test_cases = [
-    AdjustManagerialRolesSubFunctionTestCases(
-        id="reg_man_filled_posts_is_one_and_cqc_count_is_zero",
-        expected_data=[
-            (0, MainJobRoleLabels.supervisor, 5.0, 0, 1.0, 0.5, 5.5),
-            (0, MainJobRoleLabels.first_line_manager, 5.0, 0, 1.0, 0.5, 5.5),
-            (0, MainJobRoleLabels.registered_manager, 1.0, 0, 1.0, None, 0.0),
-        ],
-    ),
-    AdjustManagerialRolesSubFunctionTestCases(
-        id="reg_man_filled_posts_is_zero_and_cqc_count_is_one",
-        expected_data=[
-            (0, MainJobRoleLabels.supervisor, 5.0, 1, -1.0, 0.5, 4.5),
-            (0, MainJobRoleLabels.first_line_manager, 5.0, 1, -1.0, 0.5, 4.5),
-            (0, MainJobRoleLabels.registered_manager, 0.0, 1, -1.0, None, 1.0),
-        ],
-    ),
-    AdjustManagerialRolesSubFunctionTestCases(
-        id="reg_man_filled_posts_is_one_and_cqc_count_is_zero_and_non_rm_manager_filled_posts_is_very_low",
-        expected_data=[
-            (0, MainJobRoleLabels.supervisor, 0.1, 0, 1.0, 0.5, 0.6),
-            (0, MainJobRoleLabels.first_line_manager, 0.1, 0, 1.0, 0.5, 0.6),
-            (0, MainJobRoleLabels.registered_manager, 1.0, 0, 1.0, None, 0.0),
-        ],
-    ),
-    AdjustManagerialRolesSubFunctionTestCases(
-        id="reg_man_filled_posts_is_zero_and_cqc_count_is_one_and_non_rm_manager_filled_posts_is_very_low",
-        expected_data=[
-            (0, MainJobRoleLabels.supervisor, 0.1, 1, -1.0, 0.5, 0.1),
-            (0, MainJobRoleLabels.first_line_manager, 0.1, 1, -1.0, 0.5, 0.1),
-            (0, MainJobRoleLabels.registered_manager, 0.0, 1, -1.0, None, 1.0),
-        ],
-    ),
-    AdjustManagerialRolesSubFunctionTestCases(
-        id="reg_man_filled_posts_is_one_and_cqc_count_is_one_and_non_rm_manager_filled_posts_is_zero",
-        expected_data=[
-            (0, MainJobRoleLabels.supervisor, 0.0, 1, 0.0, 0.5, 0.0),
-            (0, MainJobRoleLabels.first_line_manager, 0.0, 1, 0.0, 0.5, 0.0),
-            (0, MainJobRoleLabels.registered_manager, 1.0, 1, 0.0, None, 1.0),
-        ],
-    ),
-    AdjustManagerialRolesSubFunctionTestCases(
-        id="reg_man_filled_posts_is_zero_and_cqc_count_is_one_and_and_non_rm_manager_filled_posts_is_zero",
-        expected_data=[
-            (0, MainJobRoleLabels.supervisor, 0.0, 1, -1.0, 0.5, 0.0),
-            (0, MainJobRoleLabels.first_line_manager, 0.0, 1, -1.0, 0.5, 0.0),
-            (0, MainJobRoleLabels.registered_manager, 0.0, 1, -1.0, None, 1.0),
-        ],
-    ),
-]
+    distribute_rm_difference_test_cases = [
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="reg_man_filled_posts_is_one_and_cqc_count_is_zero",
+            expected_data=[
+                (0, MainJobRoleLabels.supervisor, 5.0, 0, 1.0, 0.5, 5.5),
+                (0, MainJobRoleLabels.first_line_manager, 5.0, 0, 1.0, 0.5, 5.5),
+                (0, MainJobRoleLabels.registered_manager, 1.0, 0, 1.0, None, 0.0),
+            ],
+        ),
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="reg_man_filled_posts_is_zero_and_cqc_count_is_one",
+            expected_data=[
+                (0, MainJobRoleLabels.supervisor, 5.0, 1, -1.0, 0.5, 4.5),
+                (0, MainJobRoleLabels.first_line_manager, 5.0, 1, -1.0, 0.5, 4.5),
+                (0, MainJobRoleLabels.registered_manager, 0.0, 1, -1.0, None, 1.0),
+            ],
+        ),
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="reg_man_filled_posts_is_one_and_cqc_count_is_zero_and_non_rm_manager_filled_posts_is_very_low",
+            expected_data=[
+                (0, MainJobRoleLabels.supervisor, 0.1, 0, 1.0, 0.5, 0.6),
+                (0, MainJobRoleLabels.first_line_manager, 0.1, 0, 1.0, 0.5, 0.6),
+                (0, MainJobRoleLabels.registered_manager, 1.0, 0, 1.0, None, 0.0),
+            ],
+        ),
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="reg_man_filled_posts_is_zero_and_cqc_count_is_one_and_non_rm_manager_filled_posts_is_very_low",
+            expected_data=[
+                (0, MainJobRoleLabels.supervisor, 0.1, 1, -1.0, 0.5, 0.1),
+                (0, MainJobRoleLabels.first_line_manager, 0.1, 1, -1.0, 0.5, 0.1),
+                (0, MainJobRoleLabels.registered_manager, 0.0, 1, -1.0, None, 1.0),
+            ],
+        ),
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="reg_man_filled_posts_is_one_and_cqc_count_is_one_and_non_rm_manager_filled_posts_is_zero",
+            expected_data=[
+                (0, MainJobRoleLabels.supervisor, 0.0, 1, 0.0, 0.5, 0.0),
+                (0, MainJobRoleLabels.first_line_manager, 0.0, 1, 0.0, 0.5, 0.0),
+                (0, MainJobRoleLabels.registered_manager, 1.0, 1, 0.0, None, 1.0),
+            ],
+        ),
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="reg_man_filled_posts_is_zero_and_cqc_count_is_one_and_and_non_rm_manager_filled_posts_is_zero",
+            expected_data=[
+                (0, MainJobRoleLabels.supervisor, 0.0, 1, -1.0, 0.5, 0.0),
+                (0, MainJobRoleLabels.first_line_manager, 0.0, 1, -1.0, 0.5, 0.0),
+                (0, MainJobRoleLabels.registered_manager, 0.0, 1, -1.0, None, 1.0),
+            ],
+        ),
+    ]
