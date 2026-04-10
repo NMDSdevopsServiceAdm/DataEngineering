@@ -1,26 +1,20 @@
 import unittest
 from datetime import date
 from typing import Final
-from unittest.mock import Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
 import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as job
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    ImputeJobRoleData as Data,
+)
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
+    ImputeJobRoleSchemas as Schemas,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import EstimateFilledPostsSource
-
-from .utils_test_cases import (
-    create_ascwds_job_role_rolling_ratio_expected_schema,
-    create_ascwds_job_role_rolling_ratio_test_cases,
-    create_imputed_ascwds_job_role_counts_expected_schema,
-    create_imputed_ascwds_job_role_counts_test_cases,
-    managerial_adjustment_core_schema,
-    managerial_adjustment_expected_schema,
-    managerial_adjustment_grouping_test_data,
-    managerial_adjustment_test_cases,
-)
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils"
 
@@ -146,7 +140,7 @@ class TestCreateImputedASCWDSJobRoleCounts:
         "create_imputed_ascwds_job_role_counts_data",
         [
             case.as_pytest_param()
-            for case in create_imputed_ascwds_job_role_counts_test_cases
+            for case in Data.create_imputed_ascwds_job_role_counts_test_cases
         ],
     )
     def test_create_imputed_ascwds_job_role_counts(
@@ -154,7 +148,7 @@ class TestCreateImputedASCWDSJobRoleCounts:
     ):
         expected_lf = pl.LazyFrame(
             create_imputed_ascwds_job_role_counts_data,
-            create_imputed_ascwds_job_role_counts_expected_schema,
+            Schemas.create_imputed_ascwds_job_role_counts_expected_schema,
             orient="row",
         )
         input_lf = expected_lf.drop(
@@ -171,7 +165,7 @@ class TestCreateASCWDSJobRoleRollingRatio:
         "create_ascwds_job_role_rolling_ratio_data",
         [
             case.as_pytest_param()
-            for case in create_ascwds_job_role_rolling_ratio_test_cases
+            for case in Data.create_ascwds_job_role_rolling_ratio_test_cases
         ],
     )
     def test_create_ascwds_job_role_rolling_ratio(
@@ -179,7 +173,7 @@ class TestCreateASCWDSJobRoleRollingRatio:
     ):
         expected_lf = pl.LazyFrame(
             create_ascwds_job_role_rolling_ratio_data,
-            create_ascwds_job_role_rolling_ratio_expected_schema,
+            Schemas.create_ascwds_job_role_rolling_ratio_expected_schema,
             orient="row",
         )
         input_lf = expected_lf.drop(
@@ -191,7 +185,9 @@ class TestCreateASCWDSJobRoleRollingRatio:
 
 class TestManagerialFilledPostAdjustmentExpr:
     @pytest.fixture(
-        params=[case.as_pytest_param() for case in managerial_adjustment_test_cases]
+        params=[
+            case.as_pytest_param() for case in Data.managerial_adjustment_test_cases
+        ]
     )
     def input_data(self, request):
         """Provides 4 different test cases to put through the managerial adjustment tests.
@@ -210,9 +206,9 @@ class TestManagerialFilledPostAdjustmentExpr:
         def inner(output_col: str) -> pl.LazyFrame:
             return pl.LazyFrame(
                 data=input_data,
-                schema=managerial_adjustment_expected_schema,
+                schema=Schemas.managerial_adjustment_expected_schema,
                 orient="row",
-            ).select(*managerial_adjustment_core_schema.keys(), output_col)
+            ).select(*Schemas.managerial_adjustment_core_schema.keys(), output_col)
 
         return inner
 
@@ -263,10 +259,10 @@ class TestManagerialFilledPostAdjustmentExpr:
         """Test by grouping over location_id and cqc_location_import_date."""
         output_col = "adjusted_estimates"
         expected_lf = pl.LazyFrame(
-            data=managerial_adjustment_grouping_test_data,
-            schema=managerial_adjustment_expected_schema,
+            data=Data.managerial_adjustment_grouping_test_data,
+            schema=Schemas.managerial_adjustment_expected_schema,
             orient="row",
-        ).select(*managerial_adjustment_core_schema.keys(), output_col)
+        ).select(*Schemas.managerial_adjustment_core_schema.keys(), output_col)
 
         input_lf = expected_lf.drop(output_col)
         returned_lf = input_lf.with_columns(
