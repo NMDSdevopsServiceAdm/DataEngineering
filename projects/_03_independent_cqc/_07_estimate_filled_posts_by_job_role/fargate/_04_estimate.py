@@ -49,7 +49,10 @@ def main(
     )
 
     lf = lf.with_columns(
-        pl.col(IndCQC.cqc_location_import_date).dt.year().cast(pl.String)
+        pl.col(IndCQC.cqc_location_import_date)
+        .dt.year()
+        .cast(pl.String)
+        .alias(Keys.year)
     )
 
     utils.sink_to_parquet(
