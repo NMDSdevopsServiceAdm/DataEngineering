@@ -157,19 +157,17 @@ class TestCreateImputedASCWDSJobRoleCounts(unittest.TestCase):
         IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,  # extra col
         IndCQC.imputed_ascwds_job_role_counts: pl.Float32,
     }
-    expected_data = (
-        [  # Update data wwith extra cols & get values to be easy and logical
-            ("1", "1", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0),
-            ("2", "1", "job_role_a", date(2026, 1, 1), None, 1.0, 3.0),
-            ("3", "1", "job_role_a", date(2026, 1, 1), 5, 1.0, 5.0),
-            ("4", "1", "job_role_b", date(2026, 1, 1), None, 1.0, 2.0),
-            ("5", "1", "job_role_b", date(2026, 1, 1), 2, 1.0, 2.0),
-            ("6", "1", "job_role_b", date(2026, 1, 1), 4, 1.0, 4.0),
-            ("7", "2", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0),
-            ("8", "2", "job_role_a", date(2026, 1, 1), 15, 1.0, 15.0),
-            ("9", "2", "job_role_a", date(2026, 1, 1), None, 1.0, 15.0),
-        ]
-    )
+    expected_data = [
+        ("1", "1", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0, 1.0, 1.0),
+        ("2", "1", "job_role_a", date(2026, 1, 2), None, 2.0, None, 0.7, 1.4),
+        ("3", "1", "job_role_a", date(2026, 1, 3), 4, 4.0, 0.4, 0.4, 1.6),
+        ("4", "1", "job_role_b", date(2026, 1, 1), None, 1.0, None, 1.0, 1.0),
+        ("5", "1", "job_role_b", date(2026, 1, 2), 2, 2.0, 1.0, 1.0, 2.0),
+        ("6", "1", "job_role_b", date(2026, 1, 3), 6, 6.0, 0.6, 0.6, 3.6),
+        ("7", "2", "job_role_a", date(2026, 1, 1), 1, 1.0, 1.0, 1.0, 1.0),
+        ("8", "2", "job_role_a", date(2026, 1, 2), 9, 9.0, 1.0, 1.0, 9.0),
+        ("9", "2", "job_role_a", date(2026, 1, 3), None, 1.0, None, 1.0, 1.0),
+    ]
     expected_lf = pl.LazyFrame(expected_data, test_schema, orient="row")
     test_lf = expected_lf.drop(
         IndCQC.imputed_ascwds_job_role_counts,
