@@ -3,10 +3,16 @@ from unittest.mock import ANY, Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate._04_estimate as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     EstimateFilledPostsByJobRole04EstimateData as Data,
+)
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    calculate_non_rm_managerial_distribution_test_cases,
+    calculate_reg_man_difference_test_cases,
+    distribute_rm_difference_test_cases,
 )
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     EstimateFilledPostsByJobRole04EstimateSchemas as Schemas,
@@ -18,17 +24,13 @@ from utils.column_values.categorical_column_values import MainJobRoleLabels
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate._04_estimate"
 
 
-class EstimateFilledPostsByJobRole04EstimateTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.manager_roles = Data.test_manager_roles
-        self.non_rm_manager_roles = [
-            role
-            for role in self.manager_roles
-            if role != MainJobRoleLabels.registered_manager
-        ]
-        self.test_non_rm_manager_condition = pl.col(
-            IndCQC.main_job_role_clean_labelled
-        ).is_in(self.non_rm_manager_roles)
+manager_roles = Data.test_manager_roles
+non_rm_manager_roles = [
+    role for role in manager_roles if role != MainJobRoleLabels.registered_manager
+]
+test_non_rm_manager_condition = pl.col(IndCQC.main_job_role_clean_labelled).is_in(
+    non_rm_manager_roles
+)
 
 
 class TestMain(unittest.TestCase):
@@ -102,10 +104,8 @@ class CountCqcRmTest(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class AdjustManagerialRolesTests(EstimateFilledPostsByJobRole04EstimateTests):
+class AdjustManagerialRolesTests(unittest.TestCase):
     def setUp(self) -> None:
-        super().setUp()
-
         self.test_lf = pl.LazyFrame(
             data=Data.adjust_managerial_roles_rows,
             schema=Schemas.adjust_managerial_roles_schema,
@@ -126,7 +126,7 @@ class AdjustManagerialRolesTests(EstimateFilledPostsByJobRole04EstimateTests):
         calculate_non_rm_managerial_distribution: Mock,
         calculate_reg_man_difference: Mock,
     ):
-        job.adjust_managerial_roles(self.test_lf, self.non_rm_manager_roles)
+        job.adjust_managerial_roles(self.test_lf, non_rm_manager_roles)
 
         distribute_rm_difference.assert_called_once()
         calculate_non_rm_managerial_distribution.assert_called_once()
@@ -135,58 +135,77 @@ class AdjustManagerialRolesTests(EstimateFilledPostsByJobRole04EstimateTests):
     def test_function_returns_expected_values(self):
         returned_lf = job.adjust_managerial_roles(
             self.test_lf,
-            self.non_rm_manager_roles,
+            non_rm_manager_roles,
         )
 
         pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
 
 
-class CalculateRegManDifferenceTest(unittest.TestCase):
-    def test_function_returns_expected_values(self):
+class TestCalculateRegManDifference:
+    calculate_reg_man_difference_test_cases = [
+        pytest.param(case, id=case.id)
+        for case in calculate_reg_man_difference_test_cases
+    ]
+
+    @pytest.mark.parametrize("case", calculate_reg_man_difference_test_cases)
+    def test_function_returns_expected_values(self, case):
         expected_lf = pl.LazyFrame(
-            data=Data.expected_calculate_reg_man_difference_rows,
-            schema=Schemas.expected_calculate_reg_man_difference_schema,
+            case.expected_data,
+            Schemas.expected_calculate_reg_man_difference_schema,
             orient="row",
         )
-        test_lf = expected_lf.drop(
+        input_lf = expected_lf.drop(
             IndCQC.difference_between_estimate_and_cqc_registered_managers
         )
-        returned_lf = job.calculate_reg_man_difference(test_lf)
+        returned_lf = job.calculate_reg_man_difference(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class CalculateNonRmManagerialDistributionTest(
-    EstimateFilledPostsByJobRole04EstimateTests
-):
-    def test_function_returns_expected_values(self):
+class TestCalculateNonRmManagerialDistribution:
+    calculate_non_rm_managerial_distribution_test_cases = [
+        pytest.param(case, id=case.id)
+        for case in calculate_non_rm_managerial_distribution_test_cases
+    ]
+
+    @pytest.mark.parametrize(
+        "case", calculate_non_rm_managerial_distribution_test_cases
+    )
+    def test_function_returns_expected_values(self, case):
         expected_lf = pl.LazyFrame(
-            data=Data.expected_calculate_non_rm_managerial_distribution_rows,
-            schema=Schemas.expected_calculate_non_rm_managerial_distribution_schema,
+            case.expected_data,
+            Schemas.expected_calculate_non_rm_managerial_distribution_schema,
             orient="row",
         )
-        test_lf = expected_lf.drop(
+        input_lf = expected_lf.drop(
             IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
         )
         returned_lf = job.calculate_non_rm_managerial_distribution(
-            test_lf, self.test_non_rm_manager_condition
+            input_lf,
+            test_non_rm_manager_condition,
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class DistributeRmDifferenceTest(EstimateFilledPostsByJobRole04EstimateTests):
-    def test_function_returns_expected_values(self):
+class TestDistributeRmDifference:
+    distribute_rm_difference_test_cases = [
+        pytest.param(case, id=case.id) for case in distribute_rm_difference_test_cases
+    ]
+
+    @pytest.mark.parametrize("case", distribute_rm_difference_test_cases)
+    def test_function_returns_expected_values(self, case):
         expected_lf = pl.LazyFrame(
-            data=Data.expected_distribute_rm_difference_rows,
-            schema=Schemas.expected_distribute_rm_difference_schema,
+            case.expected_data,
+            Schemas.expected_distribute_rm_difference_schema,
             orient="row",
         )
-        test_lf = expected_lf.drop(
+        input_lf = expected_lf.drop(
             IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
         )
         returned_lf = job.distribute_rm_difference(
-            test_lf, self.test_non_rm_manager_condition
+            input_lf,
+            test_non_rm_manager_condition,
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
