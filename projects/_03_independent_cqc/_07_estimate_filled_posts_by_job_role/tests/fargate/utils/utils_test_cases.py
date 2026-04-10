@@ -8,7 +8,10 @@ import polars as pl
 import pytest
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import MainJobRoleLabels
+from utils.column_values.categorical_column_values import (
+    MainJobRoleLabels,
+    PrimaryServiceType,
+)
 
 EXPANDED_ID: Final[str] = "expanded_id"
 
@@ -83,48 +86,48 @@ create_ascwds_job_role_rolling_ratio_test_cases = [
     TestCase(
         id="when_one_primary_service_present",
         data=[
-            (1, "1000", date(2024, 1, 1), "care_home_with_nursing", "care_worker", 1.0, 4.0, 0.4),
-            (2, "1000", date(2024, 1, 1), "care_home_with_nursing", "registered_nurse", 2.0, 6.0, 0.6),
-            (3, "2000", date(2024, 1, 1), "care_home_with_nursing", "care_worker", 3.0, 4.0, 0.4),
-            (4, "2000", date(2024, 1, 1), "care_home_with_nursing", "registered_nurse", 4.0, 6.0, 0.6),
-            (5, "1000", date(2024, 1, 2), "care_home_with_nursing", "care_worker", None, 4.0, 0.4),
-            (6, "1000", date(2024, 1, 2), "care_home_with_nursing", "registered_nurse", None, 6.0, 0.6),
-            (7, "2000", date(2024, 1, 2), "care_home_with_nursing", "care_worker", None, 4.0, 0.4),
-            (8, "2000", date(2024, 1, 2), "care_home_with_nursing", "registered_nurse", None, 6.0, 0.6),
-            (9, "1000", date(2024, 1, 3), "care_home_with_nursing", "care_worker", 5.0, 16.0, 0.44444),
-            (10, "1000", date(2024, 1, 3), "care_home_with_nursing", "registered_nurse", 6.0, 20.0, 0.55556),
-            (11, "2000", date(2024, 1, 3), "care_home_with_nursing", "care_worker", 7.0, 16.0, 0.44444),
-            (12, "2000", date(2024, 1, 3), "care_home_with_nursing", "registered_nurse", 8.0, 20.0, 0.55556),
+            (1, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 1.0, 4.0, 0.4),
+            (2, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 2.0, 6.0, 0.6),
+            (3, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 3.0, 4.0, 0.4),
+            (4, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, 6.0, 0.6),
+            (5, "1000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, None, 4.0, 0.4),
+            (6, "1000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, None, 6.0, 0.6),
+            (7, "2000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, None, 4.0, 0.4),
+            (8, "2000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, None, 6.0, 0.6),
+            (9, "1000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 5.0, 16.0, 0.44444),
+            (10, "1000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 6.0, 20.0, 0.55556),
+            (11, "2000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 7.0, 16.0, 0.44444),
+            (12, "2000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 8.0, 20.0, 0.55556),
         ],
     ),
     TestCase(
         id="when_multiple_primary_services_present",
         data=[
-            (1, "1000", date(2024, 1, 1), "care_home_with_nursing", "care_worker", 1.0, 1.0, 0.33333),
-            (2, "1000", date(2024, 1, 1), "care_home_with_nursing", "registered_nurse", 2.0, 2.0, 0.66667),
-            (3, "2000", date(2024, 1, 1), "care_home_only", "care_worker", 3.0, 3.0, 0.428571),
-            (4, "2000", date(2024, 1, 1), "care_home_only", "registered_nurse", 4.0, 4.0, 0.571429),
-            (5, "1000", date(2024, 1, 2), "care_home_with_nursing", "care_worker", None, 1.0, 0.333333),
-            (6, "1000", date(2024, 1, 2), "care_home_with_nursing", "registered_nurse", None, 2.0, 0.666667),
-            (7, "2000", date(2024, 1, 2), "care_home_only", "care_worker", None, 3.0, 0.428571),
-            (8, "2000", date(2024, 1, 2), "care_home_only", "registered_nurse", None, 4.0, 0.571429),
-            (9, "1000", date(2024, 1, 3), "care_home_with_nursing", "care_worker", 5.0, 6.0, 0.428571),
-            (10, "1000", date(2024, 1, 3), "care_home_with_nursing", "registered_nurse", 6.0, 8.0, 0.571429),
-            (11, "2000", date(2024, 1, 3), "care_home_only", "care_worker", 7.0, 10.0, 0.454545 ),
-            (12, "2000", date(2024, 1, 3), "care_home_only", "registered_nurse", 8.0, 12.0, 0.545455),
+            (1, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 1.0, 1.0, 0.33333),
+            (2, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 2.0, 2.0, 0.66667),
+            (3, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 3.0, 3.0, 0.428571),
+            (4, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 4.0, 4.0, 0.571429),
+            (5, "1000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, None, 1.0, 0.333333),
+            (6, "1000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, None, 2.0, 0.666667),
+            (7, "2000", date(2024, 1, 2), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, None, 3.0, 0.428571),
+            (8, "2000", date(2024, 1, 2), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, None, 4.0, 0.571429),
+            (9, "1000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 5.0, 6.0, 0.428571),
+            (10, "1000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 6.0, 8.0, 0.571429),
+            (11, "2000", date(2024, 1, 3), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 7.0, 10.0, 0.454545 ),
+            (12, "2000", date(2024, 1, 3), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 8.0, 12.0, 0.545455),
         ],
     ),
     TestCase(
         id="when_days_not_within_rolling_window",
         data=[
-            (1, "1000", date(2024, 1, 1), "care_home_with_nursing", "care_worker", 1.0, 1.0, 0.1),
-            (2, "1000", date(2024, 1, 1), "care_home_with_nursing", "registered_nurse", 2.0, 2.0, 0.2),
-            (3, "1000", date(2024, 1, 1), "care_home_with_nursing", "senior_care_worker", 3.0, 3.0, 0.3),
-            (4, "1000", date(2024, 1, 1), "care_home_with_nursing", "senior_management", 4.0, 4.0, 0.4),
-            (5, "1000", date(2024, 7, 5), "care_home_with_nursing", "care_worker", 5.0, 5.0, 0.192308),
-            (6, "1000", date(2024, 7, 5), "care_home_with_nursing", "registered_nurse", 6.0, 6.0, 0.230769),
-            (7, "1000", date(2024, 7, 5), "care_home_with_nursing", "senior_care_worker", 7.0, 7.0, 0.269231),
-            (8, "1000", date(2024, 7, 5), "care_home_with_nursing", "senior_management", 8.0, 8.0, 0.307692),
+            (1, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 1.0, 1.0, 0.1),
+            (2, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 2.0, 2.0, 0.2),
+            (3, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_care_worker, 3.0, 3.0, 0.3),
+            (4, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_management, 4.0, 4.0, 0.4),
+            (5, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 5.0, 5.0, 0.192308),
+            (6, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 6.0, 6.0, 0.230769),
+            (7, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_care_worker, 7.0, 7.0, 0.269231),
+            (8, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_management, 8.0, 8.0, 0.307692),
         ],
     ),
 ]  # fmt: skip
