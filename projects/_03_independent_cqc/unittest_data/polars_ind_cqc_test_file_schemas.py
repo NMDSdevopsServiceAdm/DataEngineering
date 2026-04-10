@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Final
 
 import polars as pl
 
@@ -33,6 +34,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
 )
+
+EXPANDED_ID: Final[str] = "expanded_id"
 from utils.column_values.categorical_column_values import MainJobRoleLabels
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
@@ -1408,6 +1411,91 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied: pl.Float64,
         }
     )
+
+
+@dataclass
+class EstimateNonResCapacityTrackerFilledPostsSchemas:
+    expected_estimate_non_res_capacity_tracker_filled_posts_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.care_home: pl.String,
+            IndCQC.ct_non_res_care_workers_employed_imputed: pl.Float32,
+            IndCQC.estimate_filled_posts: pl.Float32,
+            IndCQC.ct_non_res_all_posts: pl.Float32,
+            IndCQC.ct_non_res_filled_post_estimate: pl.Float32,
+            IndCQC.ct_non_res_filled_post_estimate_source: pl.String,
+        }
+    )
+
+
+@dataclass
+class TestJoinEstimatesToAscwds:
+    TEST_ROLES = ["role_a", "role_b"]
+    estimates_schema = pl.Schema(
+        {
+            "id": pl.Int32,
+            IndCQC.ascwds_workplace_import_date: pl.String,
+            IndCQC.establishment_id: pl.String,
+        }
+    )
+    ascwds_schema = pl.Schema(
+        {
+            IndCQC.ascwds_workplace_import_date: pl.String,
+            IndCQC.establishment_id: pl.String,
+            IndCQC.main_job_role_clean_labelled: pl.Enum(TEST_ROLES),
+            "value": pl.Float64,
+        }
+    )
+    expected_schema = pl.Schema(
+        {
+            "id": pl.Int32,
+            IndCQC.main_job_role_clean_labelled: pl.Enum(TEST_ROLES),
+            "value": pl.Float64,
+        }
+    )
+
+
+@dataclass
+class ImputeJobRoleSchemas:
+
+    create_imputed_ascwds_job_role_counts_expected_schema = {
+        EXPANDED_ID: pl.UInt32,
+        IndCQC.location_id: pl.String,
+        IndCQC.main_job_role_clean_labelled: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_job_role_counts: pl.Int64,
+        IndCQC.estimate_filled_posts: pl.Float32,
+        IndCQC.ascwds_job_role_ratios: pl.Float32,  # extra col
+        IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,  # extra col
+        IndCQC.imputed_ascwds_job_role_counts: pl.Float32,  # extra col
+    }
+
+    create_ascwds_job_role_rolling_ratio_expected_schema = {
+        EXPANDED_ID: pl.UInt16,
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.primary_service_type: pl.String,
+        IndCQC.main_job_role_clean_labelled: pl.String,
+        IndCQC.imputed_ascwds_job_role_counts: pl.Float32,
+        IndCQC.ascwds_job_role_rolling_sum: pl.Float32,
+        IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,
+    }
+
+    managerial_adjustment_core_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.registered_manager_names: pl.List,
+        IndCQC.main_job_role_clean_labelled: pl.String,
+        IndCQC.estimate_filled_posts_by_job_role: pl.Float64,
+    }
+
+    managerial_adjustment_expected_schema = managerial_adjustment_core_schema | {
+        # These output columns will be used by different tests.
+        "diff": pl.Float64,
+        "proportions": pl.Float64,
+        "adjusted_estimates": pl.Float64,
+    }
 
 
 @dataclass

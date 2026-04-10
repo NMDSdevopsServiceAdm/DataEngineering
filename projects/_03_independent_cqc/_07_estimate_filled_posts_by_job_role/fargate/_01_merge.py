@@ -3,21 +3,15 @@ from typing import Final
 import polars as pl
 
 from polars_utils import utils
-from polars_utils.pipeline_utils import time_it
-
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.merge_utils import (
+    join_estimates_to_ascwds,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import PrimaryServiceType
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
 
-# logger = logging.getLogger(__name__)
-
-# polars_temp_dir = os.getenv("POLARS_TEMP_DIR", tempfile.gettempdir())
-# logging.info(f"Polars temp dir set at: {polars_temp_dir}")
-# CHECKPOINT_PATH = Path(polars_temp_dir) / "checkpoints"
-
-# Define constants for IDs for original length data and expanded data.
 ROW_ID: Final[str] = "id"
 
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
@@ -31,13 +25,13 @@ LocationCatType = pl.Categorical(pl.Categories("location", namespace="filled_pos
 JobRoleEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
 EstimatesFilledPostSourceEnumType = pl.Enum(
     [
-        "imputed_pir_filled_posts_model",
-        "ascwds_pir_merged",
-        "imputed_posts_care_home_model",
-        "care_home_model",
-        "imputed_posts_non_res_combined_model",
-        "non_res_combined_model",
-        "posts_rolling_average_model",
+        IndCQC.imputed_pir_filled_posts_model,
+        IndCQC.ascwds_pir_merged,
+        IndCQC.imputed_posts_care_home_model,
+        IndCQC.care_home_model,
+        IndCQC.imputed_posts_non_res_combined_model,
+        IndCQC.non_res_combined_model,
+        IndCQC.posts_rolling_average_model,
     ]
 )
 PrimaryServiceEnumType = pl.Enum(
@@ -109,96 +103,45 @@ def main(
         merged_data_destination (str): destination for merged output
         metadata_destination (str): destination for metadata
     """
-    # Remove time_it.
-    with time_it("scan_and_join"):
-
-        # Read in estimates dataset, split into cols to transform and everything else, then
-        # read in aggreagated worker data and join to estimates (the selected cols version).
-
-        combined_schema = transformation_columns | metadata_columns
-        full_estimates_lf = (
-            pl.scan_parquet(estimates_source, low_memory=True)
-            .select(list(combined_schema))
-            # Add row id index for single-key joining.
-            .with_row_index(name=ROW_ID)
-            .with_columns(utils.cast_to_schema(combined_schema))
-        )
-        estimated_posts_base_lf = full_estimates_lf.select(
-            ROW_ID, *list(transformation_columns)
-        )
-        # This will be joined on at the end.
-        metadata_lf = full_estimates_lf.select(ROW_ID, *list(metadata_columns))
-
-        col_name_map = {
-            IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date
-        }
-        ascwds_job_role_counts_lf = (
-            pl.scan_parquet(ascwds_job_role_counts_source, low_memory=True)
-            .select(list(ascwds_columns_to_import))
-            .with_columns(utils.cast_to_schema(ascwds_columns_to_import))
-            # Rename to avoid providing left + right "on" in subsequent join.
-            .rename(col_name_map)
-        )
-
-        estimated_job_role_posts_lf = join_estimates_to_ascwds(
-            estimated_posts_base_lf,
-            ascwds_job_role_counts_lf,
-        )
-
-        utils.sink_to_parquet(
-            lazy_df=estimated_job_role_posts_lf,
-            output_path=merged_data_destination,
-            append=False,
-        )
-
-        utils.sink_to_parquet(
-            lazy_df=metadata_lf,
-            output_path=metadata_destination,
-            append=False,
-        )
-
-
-def join_estimates_to_ascwds(
-    estimates_lf: pl.LazyFrame,
-    ascwds_lf: pl.LazyFrame,
-) -> pl.LazyFrame:
-    """Join job role estimates to ASCWDS counts ensuring a row for every job role.
-
-    Performs a cross join on the estimates join keys first to ensure there is a row for
-    every job role across all time periods for each location. This is then joined with
-    the ASCWDS data.
-    """
-    join_keys = [
-        IndCQC.ascwds_workplace_import_date,
-        IndCQC.establishment_id,
-    ]
-    job_role_labels = IndCQC.main_job_role_clean_labelled
-
-    # Narrow select "id" and join keys first to improve memory performance of
-    # cross join. From this we get the full amount of rows expected.
-    narrow_keys_lf = estimates_lf.select(["id"] + join_keys)
-    # This is just a single column df with a row for each job role (~38).
-    roles_lf = pl.LazyFrame(
-        data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
-        schema={job_role_labels: JobRoleEnumType},
+    combined_schema = transformation_columns | metadata_columns
+    full_estimates_lf = (
+        utils.scan_parquet(estimates_source)
+        .select(list(combined_schema))
+        .with_row_index(name=ROW_ID)
+        .with_columns(utils.cast_to_schema(combined_schema))
     )
-    # This will be the length of estimates dataset x number of job roles.
-    expanded_keys_lf = narrow_keys_lf.join(roles_lf, how="cross")
+    estimated_posts_base_lf = full_estimates_lf.select(
+        ROW_ID, *list(transformation_columns)
+    )
+    # This will be joined on at the end.
+    metadata_lf = full_estimates_lf.select(ROW_ID, *list(metadata_columns))
 
-    expanded_counts_lf = expanded_keys_lf.join(
-        other=ascwds_lf,
-        on=join_keys + [job_role_labels],
-        how="left",
+    col_name_map = {
+        IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date
+    }
+    ascwds_job_role_counts_lf = (
+        utils.scan_parquet(ascwds_job_role_counts_source)
+        .select(list(ascwds_columns_to_import))
+        .with_columns(utils.cast_to_schema(ascwds_columns_to_import))
+        .rename(col_name_map)
     )
 
-    # Re-attach the wide base data - The streaming engine easily handles this
-    # 1-to-many join via the 'id' column. Drop the join keys (used earlier) from
-    # both sides as they are not relevant to the rest of the pipeline.
-    return estimates_lf.join(
-        expanded_counts_lf.drop(join_keys),
-        on=ROW_ID,
-        how="right",
-    ).drop(join_keys)
+    estimated_job_role_posts_lf = join_estimates_to_ascwds(
+        estimated_posts_base_lf,
+        ascwds_job_role_counts_lf,
+    )
+
+    utils.sink_to_parquet(
+        lazy_df=estimated_job_role_posts_lf,
+        output_path=merged_data_destination,
+        append=False,
+    )
+
+    utils.sink_to_parquet(
+        lazy_df=metadata_lf,
+        output_path=metadata_destination,
+        append=False,
+    )
 
 
 if __name__ == "__main__":

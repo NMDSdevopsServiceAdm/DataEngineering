@@ -290,95 +290,53 @@ class AddColumnRelatedLocationTests(unittest.TestCase):
 
 
 class CleanAndImputeRegistrationDateColumnTests(unittest.TestCase):
-    def test_clean_and_impute_registration_date_returns_reg_date_when_reg_date_before_or_equal_to_import_date(
-        self,
-    ):
-        test_lf = pl.LazyFrame(
-            data=Data.clean_and_impute_registration_date_when_reg_date_before_or_equal_to_import_date_rows,
-            schema=Schemas.clean_and_impute_registration_date_schema,
-        )
-        returned_lf = job.clean_and_impute_registration_date(test_lf)
+    def _assert_expected_lazyframe(self, expected_data: pl.LazyFrame) -> None:
+        """Helper to assert registration date imputation matches expected output."""
         expected_lf = pl.LazyFrame(
-            data=Data.expected_clean_and_impute_registration_date_when_reg_date_before_or_equal_to_import_date_rows,
+            data=expected_data,
             schema=Schemas.expected_clean_and_impute_registration_date_schema,
         )
+        test_lf = expected_lf.drop(CQCLClean.imputed_registration_date)
+
+        returned_lf = job.clean_and_impute_registration_date(test_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_clean_and_impute_registration_date_returns_import_date_when_reg_date_null(
+    def test_returns_reg_date_when_reg_date_before_or_equal_to_import_date(self):
+        self._assert_expected_lazyframe(
+            Data.expected_clean_and_impute_registration_date_when_reg_date_before_or_equal_to_import_date_rows
+        )
+
+    def test_returns_import_date_when_reg_date_null(self):
+        self._assert_expected_lazyframe(
+            Data.expected_clean_and_impute_registration_date_when_reg_date_null_rows
+        )
+
+    def test_returns_import_date_when_reg_date_after_import_date_and_only_one_reg_date(
         self,
     ):
-        test_lf = pl.LazyFrame(
-            data=Data.clean_and_impute_registration_date_when_reg_date_null_rows,
-            schema=Schemas.clean_and_impute_registration_date_schema,
-        )
-        returned_lf = job.clean_and_impute_registration_date(test_lf)
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_clean_and_impute_registration_date_when_reg_date_null_rows,
-            schema=Schemas.expected_clean_and_impute_registration_date_schema,
+        self._assert_expected_lazyframe(
+            Data.expected_clean_and_impute_registration_date_when_reg_date_after_import_date_and_only_one_reg_date_rows
         )
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_clean_and_impute_registration_date_returns_import_date_when_reg_date_after_import_date_and_only_one_reg_date(
+    def test_returns_earliest_reg_date_when_reg_date_after_import_date_and_has_other_acceptable_reg_date(
         self,
     ):
-        test_lf = pl.LazyFrame(
-            data=Data.clean_and_impute_registration_date_when_reg_date_after_import_date_and_only_one_reg_date_rows,
-            schema=Schemas.clean_and_impute_registration_date_schema,
-        )
-        returned_lf = job.clean_and_impute_registration_date(test_lf)
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_clean_and_impute_registration_date_when_reg_date_after_import_date_and_only_one_reg_date_rows,
-            schema=Schemas.expected_clean_and_impute_registration_date_schema,
+        self._assert_expected_lazyframe(
+            Data.expected_clean_and_impute_registration_date_when_reg_date_after_import_date_and_has_other_acceptable_reg_date_rows
         )
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_clean_and_impute_registration_date_returns_earliest_reg_date_when_reg_date_after_import_date_and_has_other_acceptable_reg_date(
+    def test_returns_earliest_import_date_when_reg_date_after_import_date_and_import_date_out_of_order(
         self,
     ):
-        test_lf = pl.LazyFrame(
-            data=Data.clean_and_impute_registration_date_when_reg_date_after_import_date_and_has_other_acceptable_reg_date_rows,
-            schema=Schemas.clean_and_impute_registration_date_schema,
-        )
-        returned_lf = job.clean_and_impute_registration_date(test_lf)
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_clean_and_impute_registration_date_when_reg_date_after_import_date_and_has_other_acceptable_reg_date_rows,
-            schema=Schemas.expected_clean_and_impute_registration_date_schema,
+        self._assert_expected_lazyframe(
+            Data.expected_clean_and_impute_registration_date_when_reg_date_after_import_date_and_import_date_out_of_order_rows
         )
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_clean_and_impute_registration_date_returns_earliest_import_date_when_reg_date_after_import_date_and_import_date_out_of_order(
-        self,
-    ):
-        test_lf = pl.LazyFrame(
-            data=Data.clean_and_impute_registration_date_when_reg_date_after_import_date_and_import_date_out_of_order_rows,
-            schema=Schemas.clean_and_impute_registration_date_schema,
+    def test_returns_expected_data_when_given_mixed_scenarios(self):
+        self._assert_expected_lazyframe(
+            Data.expected_clean_and_impute_registration_date_when_given_mixed_scenarios_rows
         )
-        returned_lf = job.clean_and_impute_registration_date(test_lf)
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_clean_and_impute_registration_date_when_reg_date_after_import_date_and_import_date_out_of_order_rows,
-            schema=Schemas.expected_clean_and_impute_registration_date_schema,
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_clean_and_impute_registration_date_returns_expected_data_when_given_mixed_scenarios(
-        self,
-    ):
-        test_lf = pl.LazyFrame(
-            data=Data.clean_and_impute_registration_date_when_given_mixed_scenarios_rows,
-            schema=Schemas.clean_and_impute_registration_date_schema,
-        )
-        returned_lf = job.clean_and_impute_registration_date(test_lf)
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_clean_and_impute_registration_date_when_given_mixed_scenarios_rows,
-            schema=Schemas.expected_clean_and_impute_registration_date_schema,
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class ClassifySpecialismsTests(unittest.TestCase):
