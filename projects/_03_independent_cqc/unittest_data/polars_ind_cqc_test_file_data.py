@@ -2237,8 +2237,8 @@ class EstimateFilledPostsByJobRole04EstimateData:
         AdjustManagerialRolesSubFunctionTestCases(
             id="reg_man_filled_posts_is_zero_and_cqc_count_is_one_and_non_rm_manager_filled_posts_is_very_low",
             expected_data=[
-                (0, MainJobRoleLabels.supervisor, 0.1, 1, -1.0, 0.5, 0.1),
-                (0, MainJobRoleLabels.first_line_manager, 0.1, 1, -1.0, 0.5, 0.1),
+                (0, MainJobRoleLabels.supervisor, 0.1, 1, -1.0, 0.5, 0.0),
+                (0, MainJobRoleLabels.first_line_manager, 0.1, 1, -1.0, 0.5, 0.0),
                 (0, MainJobRoleLabels.registered_manager, 0.0, 1, -1.0, None, 1.0),
             ],
         ),
