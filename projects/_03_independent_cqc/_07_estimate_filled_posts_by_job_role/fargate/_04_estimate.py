@@ -154,13 +154,14 @@ def adjust_managerial_roles(
     lf = calculate_non_rm_managerial_distribution(lf, non_rm_manager_condition)
     lf = distribute_rm_difference(lf, non_rm_manager_condition)
 
-    return lf.drop(
-        [
-            IndCQC.registered_manager_count,
-            IndCQC.difference_between_estimate_and_cqc_registered_managers,
-            IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
-        ]
-    )
+    return lf
+    # .drop(
+    #     [
+    #         IndCQC.registered_manager_count,
+    #         IndCQC.difference_between_estimate_and_cqc_registered_managers,
+    #         IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+    #     ]
+    # )
 
 
 def calculate_reg_man_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -273,7 +274,9 @@ def distribute_rm_difference(
     """
     redistribution_expr = pl.col(IndCQC.estimate_filled_posts_by_job_role).add(
         pl.col(IndCQC.difference_between_estimate_and_cqc_registered_managers).mul(
-            IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+            pl.col(
+                IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+            )
         )
     )
 
@@ -281,7 +284,7 @@ def distribute_rm_difference(
         pl.when(non_rm_manager_condition)
         .then(
             pl.when(redistribution_expr < 0)
-            .then(IndCQC.estimate_filled_posts_by_job_role)
+            .then(pl.col(IndCQC.estimate_filled_posts_by_job_role))
             .otherwise(redistribution_expr)
         )
         .when(
