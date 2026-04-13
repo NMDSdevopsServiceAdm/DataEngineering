@@ -576,18 +576,23 @@ def get_selected_value(
     if dynamic_every is None:
         raise ValueError("dynamic_every must be provided when use_dynamic=True")
 
-    grouped = lf.group_by_dynamic(
-        index_column=order_by,
-        every=dynamic_every,
-        period=dynamic_period,
-        group_by=partition_by,
-        closed="left",
-    ).agg(
-        (
-            pl.col(column_with_data).first()
-            if selection == "first"
-            else pl.col(column_with_data).last()
-        ).alias(new_column)
+    lf = lf.with_columns(base_expr.alias("_base"))
+    grouped = (
+        lf.group_by_dynamic(
+            index_column=order_by,
+            every=dynamic_every,
+            period=dynamic_period,
+            group_by=partition_by,
+            closed="left",
+        )
+        .agg(
+            (
+                pl.col("_base").first()
+                if selection == "first"
+                else pl.col("_base").last()
+            ).alias(new_column)
+        )
+        .drop("_base")
     )
 
     return lf.join(grouped, on=partition_by + [order_by], how="left")
