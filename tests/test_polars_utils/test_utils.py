@@ -673,7 +673,7 @@ class TestNullifyCtValuesPreviousToFirstSubmission:
 
 
 # TODO: group_by_dynamic is currently untested
-class TestSelectedValueFunction:
+class TestGetSelectedValueFunction:
     get_selected_value_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
