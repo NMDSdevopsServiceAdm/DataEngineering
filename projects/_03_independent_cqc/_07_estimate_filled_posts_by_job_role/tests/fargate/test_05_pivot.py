@@ -61,6 +61,4 @@ class TestPivotJobRoleRowsToColumns(unittest.TestCase):
             test_lf, Data.test_job_roles_to_become_columns
         )
 
-        print(returned_lf.collect())
-
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
