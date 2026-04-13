@@ -26,10 +26,14 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.convert_pir_to_filled_posts")
+    @patch(f"{PATCH_PATH}.cUtils.calculate_filled_posts_per_bed_ratio")
+    @patch(f"{PATCH_PATH}.forward_fill_latest_known_value")
     @patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_data)
     def test_main_runs_successfully(
         self,
         scan_parquet_mock: Mock,
+        forward_fill_latest_known_value_mock: Mock,
+        calculate_filled_posts_per_bed_ratio_mock: Mock,
         convert_pir_to_filled_posts_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -40,6 +44,8 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
         )
 
         scan_parquet_mock.assert_called_once()
+        self.assertEqual(forward_fill_latest_known_value_mock.call_count, 2)
+        calculate_filled_posts_per_bed_ratio_mock.assert_called_once()
         convert_pir_to_filled_posts_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             ANY,

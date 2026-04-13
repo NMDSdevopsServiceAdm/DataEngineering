@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
 
 - Refactored merge job within Estimates by Job Role Pipeline.
 
+- Moved 'forward fill' process from 'clean' job to 'impute' job. Moved tests for the same.
+
 - Set up estimates step for job role breakdown.
 
 ### Fixed
