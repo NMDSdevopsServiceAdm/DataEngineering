@@ -1,6 +1,6 @@
 from unittest.mock import Mock, patch
 
-import projects._03_independent_cqc._02_clean.utils.forward_fill_latest_known_value as job
+import projects._03_independent_cqc._03_impute.utils.forward_fill_latest_known_value as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     ForwardFillLatestKnownValue as Data,
 )
@@ -10,7 +10,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
 from tests.base_test import SparkBaseTest
 
 PATCH_PATH = (
-    "projects._03_independent_cqc._02_clean.utils.forward_fill_latest_known_value"
+    "projects._03_independent_cqc._03_impute.utils.forward_fill_latest_known_value"
 )
 
 

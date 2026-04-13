@@ -20,9 +20,6 @@ from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_car
 from projects._03_independent_cqc._02_clean.utils.clean_ct_outliers.clean_ct_non_res_outliers import (
     clean_capacity_tracker_non_res_outliers,
 )
-from projects._03_independent_cqc._02_clean.utils.forward_fill_latest_known_value import (
-    forward_fill_latest_known_value,
-)
 from projects._03_independent_cqc._02_clean.utils.utils import (
     create_column_with_repeated_values_removed,
 )
@@ -83,20 +80,6 @@ def main(
     )
 
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
-
-    locations_df = forward_fill_latest_known_value(
-        locations_df, IndCQC.ascwds_filled_posts_dedup_clean
-    )
-
-    locations_df = forward_fill_latest_known_value(
-        locations_df, IndCQC.pir_people_directly_employed_dedup
-    )
-
-    locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
-        locations_df,
-        IndCQC.ascwds_filled_posts_dedup_clean,
-        IndCQC.filled_posts_per_bed_ratio,
-    )
 
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
         locations_df,
