@@ -467,7 +467,7 @@ def nullify_ct_values_previous_to_first_submission(columns: list) -> list[pl.Exp
     ]
 
 
-def get_selected_value(
+def _get_selected_value(
     lf: pl.LazyFrame,
     partition_by: list[str],
     order_by: str,
@@ -540,3 +540,59 @@ def get_selected_value(
     )
 
     return lf
+
+
+def get_selected_value(
+    lf: pl.LazyFrame,
+    partition_by: list[str],
+    order_by: str,
+    column_with_null_values: str,
+    column_with_data: str,
+    new_column: str,
+    selection: str,
+    use_dynamic: bool = False,
+    dynamic_every: str | None = None,
+    dynamic_period: str | None = None,
+) -> pl.DataFrame:
+
+    if selection not in {"first", "last"}:
+        raise ValueError("selection must be 'first' or 'last'")
+
+    lf = lf.sort(partition_by + [order_by])
+
+    valid_expr = pl.when(pl.col(column_with_null_values).is_not_null()).then(
+        pl.col(column_with_data)
+    )
+
+    base_expr = (
+        valid_expr.forward_fill()
+        if selection == "first"
+        else valid_expr.backward_fill()
+    )
+
+    if not use_dynamic:
+        return lf.with_columns(base_expr.over(partition_by).alias(new_column))
+
+    if dynamic_every is None:
+        raise ValueError("dynamic_every must be provided when use_dynamic=True")
+
+    lf = lf.with_columns(base_expr.alias("_base"))
+    grouped = (
+        lf.group_by_dynamic(
+            index_column=order_by,
+            every=dynamic_every,
+            period=dynamic_period,
+            group_by=partition_by,
+            closed="left",
+        )
+        .agg(
+            (
+                pl.col("_base").first()
+                if selection == "first"
+                else pl.col("_base").last()
+            ).alias(new_column)
+        )
+        .drop("_base")
+    )
+
+    return lf.join(grouped, on=partition_by + [order_by], how="left")
