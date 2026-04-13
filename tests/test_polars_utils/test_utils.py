@@ -673,7 +673,7 @@ class TestNullifyCtValuesPreviousToFirstSubmission:
 
 
 # TODO: group_by_dynamic is currently untested
-class GetSelectedValueFunctionTests:
+class TestSelectedValueFunction:
     get_selected_value_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
@@ -684,7 +684,7 @@ class GetSelectedValueFunctionTests:
     error_message = "Error: The selection parameter 'other' was not found. Please use 'first' or 'last'."
 
     @pytest.mark.parametrize(
-        "expected" "selection_type",
+        "expected, selection_type",
         [
             pytest.param(
                 [
@@ -703,15 +703,6 @@ class GetSelectedValueFunctionTests:
                 ],
                 "last",
                 id="when_selection_equals_last",
-            ),
-            pytest.param(
-                [
-                    ("loc 1", 1, 1.0, 100.0, 50.0),
-                    ("loc 1", 2, 2.0, 50.0, 50.0),
-                    ("loc 1", 3, None, 25.0, 50.0),
-                ],
-                "invalid_value",
-                id="when_selection_is_not_permitted",
             ),
         ],
     )
