@@ -59,7 +59,7 @@ def model_extrapolation(
 
 # def define_window_specs() -> Tuple[Window, Window]:
 #     """
-#     Defines two window specifications, partitioned by 'location_id' and ordered by 'unix_time'.
+#     Defines two window specifications, partitioned by 'location_id' and ordered by 'cqc_location_import_date'.
 
 #     The first window specification ('window_spec_all_rows') includes all rows in the partition.
 #     The second window specification ('window_spec_lagged') includes all rows from the start of the partition up to the
@@ -68,7 +68,7 @@ def model_extrapolation(
 #     Returns:
 #         Tuple[Window, Window]: A tuple containing the two window specifications.
 #     """
-#     window_spec = Window.partitionBy(IndCqc.location_id).orderBy(IndCqc.unix_time)
+#     window_spec = Window.partitionBy(IndCqc.location_id).orderBy(IndCqc.cqc_location_import_date)
 
 #     window_spec_all_rows = window_spec.rowsBetween(
 #         Window.unboundedPreceding, Window.unboundedFollowing
@@ -99,7 +99,7 @@ def calculate_first_and_final_submission_dates(
         df,
         window_spec,
         column_with_null_values,
-        IndCqc.unix_time,
+        IndCqc.cqc_location_import_date,
         IndCqc.first_submission_time,
         "first",
     )
@@ -107,7 +107,7 @@ def calculate_first_and_final_submission_dates(
         df,
         window_spec,
         column_with_null_values,
-        IndCqc.unix_time,
+        IndCqc.cqc_location_import_date,
         IndCqc.final_submission_time,
         "last",
     )
@@ -237,7 +237,8 @@ def extrapolation_backwards(
         df = df.withColumn(
             IndCqc.extrapolation_backwards,
             F.when(
-                F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
+                F.col(IndCqc.cqc_location_import_date)
+                < F.col(IndCqc.first_submission_time),
                 F.col(IndCqc.first_non_null_value)
                 * F.col(model_to_extrapolate_from)
                 / F.col(IndCqc.first_model_value),
@@ -248,7 +249,8 @@ def extrapolation_backwards(
         df = df.withColumn(
             IndCqc.extrapolation_backwards,
             F.when(
-                F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
+                F.col(IndCqc.cqc_location_import_date)
+                < F.col(IndCqc.first_submission_time),
                 F.col(IndCqc.first_non_null_value)
                 + F.col(model_to_extrapolate_from)
                 - F.col(IndCqc.first_model_value),
@@ -268,11 +270,11 @@ def combine_extrapolation(df: pl.LazyFrame) -> pl.LazyFrame:
     Combines forward and backward extrapolation values into a single column based on the specified model.
 
     This function creates a new column named 'extrapolation_model' which contains:
-    - Forward extrapolation values if 'unix_time' is greater than the 'final_submission_time'.
-    - Backward extrapolation values if 'unix_time' is less than the 'first_submission_time'.
+    - Forward extrapolation values if 'cqc_location_import_date' is greater than the 'final_submission_time'.
+    - Backward extrapolation values if 'cqc_location_import_date' is less than the 'first_submission_time'.
 
     Args:
-        df (pl.LazyFrame): The input LazyFrame containing the columns 'unix_time', 'first_submission_time',
+        df (pl.LazyFrame): The input LazyFrame containing the columns 'cqc_location_import_date', 'first_submission_time',
             'final_submission_time', 'extrapolation_forwards', and 'extrapolation_backwards'.
 
     Returns:
@@ -281,10 +283,12 @@ def combine_extrapolation(df: pl.LazyFrame) -> pl.LazyFrame:
     df = df.withColumn(
         IndCqc.extrapolation_model,
         F.when(
-            F.col(IndCqc.unix_time) > F.col(IndCqc.final_submission_time),
+            F.col(IndCqc.cqc_location_import_date)
+            > F.col(IndCqc.final_submission_time),
             F.col(IndCqc.extrapolation_forwards),
         ).when(
-            F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
+            F.col(IndCqc.cqc_location_import_date)
+            < F.col(IndCqc.first_submission_time),
             F.col(IndCqc.extrapolation_backwards),
         ),
     )
