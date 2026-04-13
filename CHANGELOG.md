@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
 
 - Refactored merge job within Estimates by Job Role Pipeline.
 
+- Set up estimates step for job role breakdown.
+
 ### Fixed
 
 
