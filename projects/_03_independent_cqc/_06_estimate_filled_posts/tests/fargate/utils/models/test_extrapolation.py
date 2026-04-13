@@ -68,7 +68,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
         self.column_with_null_values = IndCqc.ascwds_pir_merged
         self.window_spec_all_rows = (
             Window.partitionBy(IndCqc.location_id)
-            .orderBy(IndCqc.unix_time)
+            .orderBy(IndCqc.cqc_location_import_date)
             .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
         )
         self.returned_df = job.calculate_first_and_final_submission_dates(
@@ -82,7 +82,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
         )
 
         self.returned_data = self.returned_df.sort(
-            IndCqc.location_id, IndCqc.unix_time
+            IndCqc.location_id, IndCqc.cqc_location_import_date
         ).collect()
         self.expected_data = self.expected_df.collect()
 
@@ -105,7 +105,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
             self.input_df,
             self.window_spec_all_rows,
             self.column_with_null_values,
-            IndCqc.unix_time,
+            IndCqc.cqc_location_import_date,
             IndCqc.first_submission_time,
             "first",
         )
@@ -113,7 +113,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
             self.input_df,
             self.window_spec_all_rows,
             self.column_with_null_values,
-            IndCqc.unix_time,
+            IndCqc.cqc_location_import_date,
             IndCqc.final_submission_time,
             "last",
         )
@@ -143,7 +143,7 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
         self.model_to_extrapolate_from = IndCqc.posts_rolling_average_model
         self.window_spec_lagged = (
             Window.partitionBy(IndCqc.location_id)
-            .orderBy(IndCqc.unix_time)
+            .orderBy(IndCqc.cqc_location_import_date)
             .rowsBetween(Window.unboundedPreceding, -1)
         )
         self.mock_df = self.spark.createDataFrame(
@@ -205,7 +205,7 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
         )
 
         self.returned_data = self.returned_nominal_df.sort(
-            IndCqc.location_id, IndCqc.unix_time
+            IndCqc.location_id, IndCqc.cqc_location_import_date
         ).collect()
 
         self.assertEqual(self.returned_data, expected_df.collect())
@@ -224,7 +224,9 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
             Schemas.expected_extrapolation_forwards_schema,
         )
 
-        returned_data = returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
+        returned_data = returned_df.sort(
+            IndCqc.location_id, IndCqc.cqc_location_import_date
+        ).collect()
 
         self.assertEqual(returned_data, expected_df.collect())
 
@@ -256,7 +258,7 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
         self.model_to_extrapolate_from = IndCqc.posts_rolling_average_model
         self.window_spec_all_rows = (
             Window.partitionBy(IndCqc.location_id)
-            .orderBy(IndCqc.unix_time)
+            .orderBy(IndCqc.cqc_location_import_date)
             .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
         )
         self.mock_df = self.spark.createDataFrame(
@@ -318,7 +320,7 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
         )
 
         self.returned_data = self.returned_nominal_df.sort(
-            IndCqc.location_id, IndCqc.unix_time
+            IndCqc.location_id, IndCqc.cqc_location_import_date
         ).collect()
 
         self.assertEqual(self.returned_data, expected_df.collect())
@@ -337,7 +339,9 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
             Schemas.expected_extrapolation_backwards_schema,
         )
 
-        returned_data = returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
+        returned_data = returned_df.sort(
+            IndCqc.location_id, IndCqc.cqc_location_import_date
+        ).collect()
 
         self.assertEqual(returned_data, expected_df.collect())
 
@@ -371,7 +375,7 @@ class CombineExtrapolationTests(ModelExtrapolationTests):
             Schemas.expected_combine_extrapolation_schema,
         )
         self.returned_data = self.returned_df.sort(
-            IndCqc.location_id, IndCqc.unix_time
+            IndCqc.location_id, IndCqc.cqc_location_import_date
         ).collect()
         self.expected_data = self.expected_df.collect()
 
