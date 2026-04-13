@@ -672,6 +672,7 @@ class TestNullifyCtValuesPreviousToFirstSubmission:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
+# TODO: group_by_dynamic is currently untested
 class GetSelectedValueFunctionTests:
     get_selected_value_schema = {
         IndCQC.location_id: pl.String,
