@@ -465,3 +465,78 @@ def nullify_ct_values_previous_to_first_submission(columns: list) -> list[pl.Exp
         pl.when(cutoff_condition).then(None).otherwise(pl.col(col)).alias(col)
         for col in columns
     ]
+
+
+def get_selected_value(
+    lf: pl.LazyFrame,
+    partition_by: list[str],
+    order_by: str,
+    column_with_null_values: str,
+    column_with_data: str,
+    new_column: str,
+    selection: str,
+) -> pl.LazyFrame:
+    selection_methods = {"first": pl.first, "last": pl.last}
+
+    if selection not in {"first", "last"}:
+        raise ValueError("selection must be 'first' or 'last'")
+
+    method = selection_methods[selection]
+
+    # I have added sort here so it is always in order and if needed we dont
+    # need to add extra oderby
+    lf = lf.sort(partition_by + [order_by])
+
+    # created a temp column so that we only perform any aggregations/calculation on
+    # this new column and original column value is as is
+    # not sure if this is the best way but for now kept it in new temp column
+    lf = lf.with_columns(
+        pl.when(pl.col(column_with_null_values).is_not_null())
+        .then(pl.col(column_with_data))
+        .alias("_valid_value")
+    )
+
+    # Do this only for lagged window spec
+    lf = lf.with_columns(
+        pl.col("_valid_value").shift(1).over(partition_by).alias(new_column)
+    )
+
+    # for simple partitionby and orderby window
+    # Needs a condition
+    lf = lf.with_columns(
+        method(
+            pl.when(
+                pl.col(column_with_null_values).is_not_null(), pl.col(column_with_data)
+            )
+        ).over(partition_by=partition_by, order_by=order_by)
+    )
+
+    # window expression for previous submission
+    get_previous_submission_expr = (
+        # backward window + last()
+        pl.when(pl.col(column_with_null_values).is_not_null())
+        .then(pl.col(column_with_data))
+        .otherwise(None)
+        .forward_fill()
+        .over(partition_by)
+        .alias(new_column)
+    )
+
+    # window expression for next submission
+    get_next_submission_expr = (
+        # forward window + first()
+        pl.when(pl.col(column_with_null_values).is_not_null())
+        .then(pl.col(column_with_data))
+        .otherwise(None)
+        .backward_fill()
+        .over(partition_by=partition_by)
+        .alias(new_column)
+    )
+
+    # Need consition when to call this
+    lf = lf.sort([partition_by, column_with_data]).with_columns(
+        get_previous_submission_expr,
+        get_next_submission_expr,
+    )
+
+    return lf
