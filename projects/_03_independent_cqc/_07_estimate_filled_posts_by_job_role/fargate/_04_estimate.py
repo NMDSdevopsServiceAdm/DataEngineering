@@ -282,11 +282,7 @@ def distribute_rm_difference(
 
     return lf.with_columns(
         pl.when(non_rm_manager_condition)
-        .then(
-            pl.when(redistribution_expr < 0)
-            .then(pl.col(IndCQC.estimate_filled_posts_by_job_role))
-            .otherwise(redistribution_expr)
-        )
+        .then(redistribution_expr.clip(lower_bound=0.0))
         .when(
             pl.col(IndCQC.main_job_role_clean_labelled)
             == MainJobRoleLabels.registered_manager
