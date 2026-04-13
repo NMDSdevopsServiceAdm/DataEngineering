@@ -34,6 +34,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
 )
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 EXPANDED_ID: Final[str] = "expanded_id"
 from utils.column_values.categorical_column_values import MainJobRoleLabels
@@ -1574,5 +1575,47 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
             IndCQC.difference_between_estimate_and_cqc_registered_managers: pl.Float32,
             IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role: pl.Float32,
             IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
+        }
+    )
+
+
+@dataclass
+class EstimateFilledPostsByJobRole04EstimatePivotSchemas:
+    input_schema = pl.Schema(
+        {
+            "id": pl.Int32,
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.primary_service_type: pl.String,
+            IndCQC.primary_service_type_second_level: pl.String,
+            IndCQC.current_cssr: pl.String,
+            IndCQC.current_region: pl.String,
+            IndCQC.contemporary_cssr: pl.String,
+            IndCQC.contemporary_region: pl.String,
+            IndCQC.estimate_filled_posts: pl.Float32,
+            IndCQC.estimate_filled_posts_source: pl.String,
+            IndCQC.main_job_role_clean_labelled: pl.String,
+            IndCQC.ascwds_job_role_ratios_merged_source: pl.String,
+            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
+            Keys.year: pl.String,
+        }
+    )
+    expected_schema = pl.Schema(
+        {
+            "id": pl.Int32,
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.primary_service_type: pl.String,
+            IndCQC.primary_service_type_second_level: pl.String,
+            IndCQC.current_cssr: pl.String,
+            IndCQC.current_region: pl.String,
+            IndCQC.contemporary_cssr: pl.String,
+            IndCQC.contemporary_region: pl.String,
+            IndCQC.estimate_filled_posts: pl.Float32,
+            IndCQC.estimate_filled_posts_source: pl.String,
+            IndCQC.ascwds_job_role_ratios_merged_source: pl.String,
+            Keys.year: pl.String,
+            MainJobRoleLabels.admin_staff: pl.Float32,
+            MainJobRoleLabels.care_worker: pl.Float32,
         }
     )
