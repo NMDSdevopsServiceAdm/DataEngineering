@@ -14,6 +14,7 @@ from unittest.mock import MagicMock, Mock, patch
 import boto3
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 from botocore.exceptions import ClientError
 from moto import mock_aws, sns
 from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
@@ -669,3 +670,90 @@ class TestNullifyCtValuesPreviousToFirstSubmission:
             }
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class GetSelectedValueFunctionTests:
+    get_selected_value_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
+        IndCQC.posts_rolling_average_model: pl.Float32,
+        "new_column": pl.Float32,
+    }
+    error_message = "Error: The selection parameter 'other' was not found. Please use 'first' or 'last'."
+
+    @pytest.mark.parametrize(
+        "expected" "selection_type",
+        [
+            pytest.param(
+                [
+                    ("loc 1", date(2026, 1, 1), None, 100.0, 50.0),
+                    ("loc 1", date(2026, 2, 1), 2.0, 50.0, 50.0),
+                    ("loc 1", date(2026, 3, 1), 3.0, 25.0, 50.0),
+                ],
+                "first",
+                id="when_selection_equals_first",
+            ),
+            pytest.param(
+                [
+                    ("loc 1", 1, 1.0, 100.0, 50.0),
+                    ("loc 1", 2, 2.0, 50.0, 50.0),
+                    ("loc 1", 3, None, 25.0, 50.0),
+                ],
+                "last",
+                id="when_selection_equals_last",
+            ),
+            pytest.param(
+                [
+                    ("loc 1", 1, 1.0, 100.0, 50.0),
+                    ("loc 1", 2, 2.0, 50.0, 50.0),
+                    ("loc 1", 3, None, 25.0, 50.0),
+                ],
+                "invalid_value",
+                id="when_selection_is_not_permitted",
+            ),
+        ],
+    )
+    def test_get_selected_value_returns_correct_values(self, expected, selection_type):
+        expected_lf = pl.LazyFrame(
+            expected,
+            self.get_selected_value_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop("new_column")
+        returned_lf = utils.get_selected_value(
+            lf=input_lf,
+            partition_by=IndCQC.location_id,
+            order_by=IndCQC.cqc_location_import_date,
+            column_with_null_values=IndCQC.ascwds_filled_posts_dedup_clean,
+            column_with_data=IndCQC.posts_rolling_average_model,
+            new_column="new_column",
+            selection=selection_type,
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
+
+    def test_get_selected_value_raises_error_when_selection_is_not_permitted(self):
+        data = (
+            [
+                ("loc 1", 1, 1.0, 100.0, 50.0),
+                ("loc 1", 2, 2.0, 50.0, 50.0),
+                ("loc 1", 3, None, 25.0, 50.0),
+            ],
+        )
+        expected_lf = pl.LazyFrame(
+            data,
+            self.get_selected_value_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop("new_column")
+
+        with pytest.raises(ValueError, match=self.error_message):
+            utils.get_selected_value(
+                lf=input_lf,
+                partition_by=IndCQC.location_id,
+                order_by=IndCQC.cqc_location_import_date,
+                column_with_null_values=IndCQC.ascwds_filled_posts_dedup_clean,
+                column_with_data=IndCQC.posts_rolling_average_model,
+                new_column="new_column",
+                selection="other",  # invalid type passed
+            )
