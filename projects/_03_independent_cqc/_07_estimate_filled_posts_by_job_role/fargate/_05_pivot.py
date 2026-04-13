@@ -57,8 +57,6 @@ def pivot_job_role_rows_to_columns(
             IndCQC.primary_service_type_second_level,
             IndCQC.current_cssr,
             IndCQC.current_region,
-            IndCQC.contemporary_cssr,
-            IndCQC.contemporary_region,
             IndCQC.estimate_filled_posts,
             IndCQC.estimate_filled_posts_source,
             IndCQC.main_job_role_clean_labelled,
