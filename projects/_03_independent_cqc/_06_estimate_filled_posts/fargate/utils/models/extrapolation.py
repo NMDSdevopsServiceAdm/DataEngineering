@@ -1,18 +1,17 @@
 from typing import Tuple
 
-from pyspark.sql import DataFrame, Window
-from pyspark.sql import functions as F
+import polars as pl
 
 from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
 def model_extrapolation(
-    df: DataFrame,
+    df: pl.LazyFrame,
     column_with_null_values: str,
     model_to_extrapolate_from: str,
     extrapolation_method: str,
-) -> DataFrame:
+) -> pl.LazyFrame:
     """
     Perform extrapolation on a column with null values using specified models.
 
@@ -25,13 +24,13 @@ def model_extrapolation(
     The nominal method is based on adding/subtracting the nominal change of the '<model_column_name>' to the known value.
 
     Args:
-        df (DataFrame): The input DataFrame containing the data.
+        df (pl.LazyFrame): The input LazyFrame containing the data.
         column_with_null_values (str): The name of the column that contains null values to be extrapolated.
         model_to_extrapolate_from (str): The model used for extrapolation.
         extrapolation_method (str): The choice of method. Must be either 'nominal' or 'ratio'.
 
     Returns:
-        DataFrame: The DataFrame with the extrapolated values in the 'extrapolation_model' column.
+        pl.LazyFrame: The LazyFrame with the extrapolated values in the 'extrapolation_model' column.
     """
     window_spec_all_rows, window_spec_lagged = define_window_specs()
 
@@ -58,30 +57,30 @@ def model_extrapolation(
     return df
 
 
-def define_window_specs() -> Tuple[Window, Window]:
-    """
-    Defines two window specifications, partitioned by 'location_id' and ordered by 'unix_time'.
+# def define_window_specs() -> Tuple[Window, Window]:
+#     """
+#     Defines two window specifications, partitioned by 'location_id' and ordered by 'unix_time'.
 
-    The first window specification ('window_spec_all_rows') includes all rows in the partition.
-    The second window specification ('window_spec_lagged') includes all rows from the start of the partition up to the
-    current row, excluding the current row.
+#     The first window specification ('window_spec_all_rows') includes all rows in the partition.
+#     The second window specification ('window_spec_lagged') includes all rows from the start of the partition up to the
+#     current row, excluding the current row.
 
-    Returns:
-        Tuple[Window, Window]: A tuple containing the two window specifications.
-    """
-    window_spec = Window.partitionBy(IndCqc.location_id).orderBy(IndCqc.unix_time)
+#     Returns:
+#         Tuple[Window, Window]: A tuple containing the two window specifications.
+#     """
+#     window_spec = Window.partitionBy(IndCqc.location_id).orderBy(IndCqc.unix_time)
 
-    window_spec_all_rows = window_spec.rowsBetween(
-        Window.unboundedPreceding, Window.unboundedFollowing
-    )
-    window_spec_lagged = window_spec.rowsBetween(Window.unboundedPreceding, -1)
+#     window_spec_all_rows = window_spec.rowsBetween(
+#         Window.unboundedPreceding, Window.unboundedFollowing
+#     )
+#     window_spec_lagged = window_spec.rowsBetween(Window.unboundedPreceding, -1)
 
-    return window_spec_all_rows, window_spec_lagged
+#     return window_spec_all_rows, window_spec_lagged
 
 
 def calculate_first_and_final_submission_dates(
-    df: DataFrame, column_with_null_values: str, window_spec: Window
-) -> DataFrame:
+    df: pl.LazyFrame, column_with_null_values: str, window_spec: Window
+) -> pl.LazyFrame:
     """
     Calculates the first and final submission dates based on the '<column_with_null_values>' column.
 
@@ -89,12 +88,12 @@ def calculate_first_and_final_submission_dates(
     and adds them as new columns 'first_submission_time' and 'final_submission_time'.
 
     Args:
-        df (DataFrame): The input DataFrame.
+        df (pl.LazyFrame): The input LazyFrame.
         column_with_null_values (str): The name of the column with null values in.
         window_spec (Window): The window specification to use for the calculation.
 
     Returns:
-        DataFrame: The DataFrame with the added 'first_submission_time' and 'final_submission_time' columns.
+        pl.LazyFrame: The LazyFrame with the added 'first_submission_time' and 'final_submission_time' columns.
     """
     df = get_selected_value(
         df,
@@ -116,12 +115,12 @@ def calculate_first_and_final_submission_dates(
 
 
 def extrapolation_forwards(
-    df: DataFrame,
+    df: pl.LazyFrame,
     column_with_null_values: str,
     model_to_extrapolate_from: str,
     window_spec: Window,
     extrapolation_method: str,
-) -> DataFrame:
+) -> pl.LazyFrame:
     """
     Calculates the forward extrapolation and adds it as a new column 'extrapolation_forwards'.
 
@@ -133,14 +132,14 @@ def extrapolation_forwards(
     The nominal method is based on adding/subtracting the difference between those two modelled values.
 
     Args:
-        df (DataFrame): A dataframe with a column to extrapolate forwards.
+        df (pl.LazyFrame): A LazyFrame with a column to extrapolate forwards.
         column_with_null_values (str): The name of the column with null values in.
         model_to_extrapolate_from (str): The model used for extrapolation.
         window_spec (Window): The window specification to use for the calculation.
         extrapolation_method (str): The choice of method. Must be either 'nominal' or 'ratio'.
 
     Returns:
-        DataFrame: A dataframe with a new column containing forward extrapolated values.
+        pl.LazyFrame: A LazyFrame with a new column containing forward extrapolated values.
 
     Raises:
         ValueError: If chosen extrapolation_method does not match 'nominal' or 'ratio'.
@@ -187,12 +186,12 @@ def extrapolation_forwards(
 
 
 def extrapolation_backwards(
-    df: DataFrame,
+    df: pl.LazyFrame,
     column_with_null_values: str,
     model_to_extrapolate_from: str,
     window_spec: Window,
     extrapolation_method: str,
-) -> DataFrame:
+) -> pl.LazyFrame:
     """
     Calculates the backward extrapolation and adds it as a new column 'extrapolation_backwards'.
 
@@ -204,14 +203,14 @@ def extrapolation_backwards(
     The nominal method is based on adding/subtracting the difference between those two modelled values.
 
     Args:
-        df (DataFrame): The input DataFrame.
+        df (pl.LazyFrame): The input LazyFrame.
         column_with_null_values (str): The name of the column with null values in.
         model_to_extrapolate_from (str): The name of the column representing the model to extrapolate from.
         window_spec (Window): The window specification to use for the calculation.
         extrapolation_method (str): The choice of method. Must be either 'nominal' or 'ratio'.
 
     Returns:
-        DataFrame: The DataFrame with the added 'extrapolation_backwards' column.
+        pl.LazyFrame: The LazyFrame with the added 'extrapolation_backwards' column.
 
     Raises:
         ValueError: If chosen extrapolation_method does not match 'nominal' or 'ratio'.
@@ -264,7 +263,7 @@ def extrapolation_backwards(
     return df
 
 
-def combine_extrapolation(df: DataFrame) -> DataFrame:
+def combine_extrapolation(df: pl.LazyFrame) -> pl.LazyFrame:
     """
     Combines forward and backward extrapolation values into a single column based on the specified model.
 
@@ -273,11 +272,11 @@ def combine_extrapolation(df: DataFrame) -> DataFrame:
     - Backward extrapolation values if 'unix_time' is less than the 'first_submission_time'.
 
     Args:
-        df (DataFrame): The input DataFrame containing the columns 'unix_time', 'first_submission_time',
+        df (pl.LazyFrame): The input LazyFrame containing the columns 'unix_time', 'first_submission_time',
             'final_submission_time', 'extrapolation_forwards', and 'extrapolation_backwards'.
 
     Returns:
-        DataFrame: The DataFrame with the added combined extrapolation column.
+        pl.LazyFrame: The LazyFrame with the added combined extrapolation column.
     """
     df = df.withColumn(
         IndCqc.extrapolation_model,
