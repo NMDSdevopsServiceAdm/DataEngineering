@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 
+# Note - also saved in `x_non_pipeline_utils\cqc_metadata.py`
 @dataclass
 class LocalAuthorityProviderIds:
     known_ids = [
