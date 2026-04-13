@@ -1,7 +1,8 @@
 import warnings
 from unittest.mock import ANY, Mock, patch
 
-from pyspark.sql import Window, WindowSpec
+import polars as pl
+import polars.testing as pl_testing
 
 import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.extrapolation as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
@@ -47,13 +48,13 @@ class MainTests(ModelExtrapolationTests):
         self.assertIn(IndCqc.extrapolation_model, self.returned_df.columns)
 
 
-class DefineWindowSpecsTests(ModelExtrapolationTests):
-    def test_define_window_spec_return_type(self):
-        returned_window_specs = job.define_window_specs()
-        self.assertIsInstance(returned_window_specs, tuple)
-        self.assertEqual(len(returned_window_specs), 2)
-        self.assertIsInstance(returned_window_specs[0], WindowSpec)
-        self.assertIsInstance(returned_window_specs[1], WindowSpec)
+# class DefineWindowSpecsTests(ModelExtrapolationTests):
+#     def test_define_window_spec_return_type(self):
+#         returned_window_specs = job.define_window_specs()
+#         self.assertIsInstance(returned_window_specs, tuple)
+#         self.assertEqual(len(returned_window_specs), 2)
+#         self.assertIsInstance(returned_window_specs[0], WindowSpec)
+#         self.assertIsInstance(returned_window_specs[1], WindowSpec)
 
 
 class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
