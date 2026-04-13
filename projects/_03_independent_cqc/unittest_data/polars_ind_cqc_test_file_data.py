@@ -2268,9 +2268,9 @@ class EstimateFilledPostsByJobRole04EstimatePivotData:
         MainJobRoleLabels.care_worker,
     ]
     input_data = [
-        (0, "1-001", date(2026, 1, 1), "service", "service", "cur_cssr", "cur_region", "con_cssr", "con_region", 10, "estimate_source", MainJobRoleLabels.admin_staff, "ratio_source", 5, "2026"),
-        (0, "1-001", date(2026, 1, 1), "service", "service", "cur_cssr", "cur_region", "con_cssr", "con_region", 10, "estimate_source", MainJobRoleLabels.care_worker, "ratio_source", 5, "2026"),
+        (0, "1-001", date(2026, 1, 1), "service", "service", "cur_cssr", "cur_region", 10, "estimate_source", MainJobRoleLabels.admin_staff, "ratio_source", 5, "2026"),
+        (0, "1-001", date(2026, 1, 1), "service", "service", "cur_cssr", "cur_region", 10, "estimate_source", MainJobRoleLabels.care_worker, "ratio_source", 5, "2026"),
     ] # fmt: skip
     expected_data = [
-        (0, "1-001", date(2026, 1, 1), "service", "service", "cur_cssr", "cur_region", "con_cssr", "con_region", 10, "estimate_source", "ratio_source", "2026", 5, 5),
+        (0, "1-001", date(2026, 1, 1), "service", "service", "cur_cssr", "cur_region", 10, "estimate_source", "ratio_source", "2026", 5, 5),
     ] # fmt: skip
