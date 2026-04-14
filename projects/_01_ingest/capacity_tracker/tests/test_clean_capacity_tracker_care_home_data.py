@@ -12,7 +12,6 @@ from tests.base_test import SparkBaseTest
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH: str = (
     "projects._01_ingest.capacity_tracker.jobs.clean_capacity_tracker_care_home_data"
@@ -22,12 +21,6 @@ PATCH_PATH: str = (
 class CapacityTrackerCareHomeTests(SparkBaseTest):
     TEST_CAPACITY_TRACKER_SOURCE = "some/dir/source"
     TEST_CAPACITY_TRACKER_DESTINATION = "some/dir/destination"
-    partition_keys = [
-        Keys.year,
-        Keys.month,
-        Keys.day,
-        Keys.import_date,
-    ]
 
 
 class MainTests(CapacityTrackerCareHomeTests):
@@ -50,10 +43,7 @@ class MainTests(CapacityTrackerCareHomeTests):
             self.TEST_CAPACITY_TRACKER_SOURCE, job.CAPACITY_TRACKER_CARE_HOME_COLUMNS
         )
         write_to_parquet_mock.assert_called_once_with(
-            ANY,
-            self.TEST_CAPACITY_TRACKER_DESTINATION,
-            mode="overwrite",
-            partitionKeys=self.partition_keys,
+            ANY, self.TEST_CAPACITY_TRACKER_DESTINATION, mode="overwrite"
         )
 
 

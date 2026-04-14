@@ -10,7 +10,6 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     ImputeIndCqcAscwdsAndPirSchemas as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH: str = (
     "projects._03_independent_cqc._03_impute.jobs.impute_ind_cqc_ascwds_and_pir"
@@ -20,15 +19,6 @@ PATCH_PATH: str = (
 class ImputeIndCqcAscwdsAndPirTests(SparkBaseTest):
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
     ESTIMATES_DESTINATION = "estimates destination"
-    NON_RES_PIR_MODEL = (
-        "tests/test_models/non_res_pir_linear_regression_prediction/1.0.0/"
-    )
-    partition_keys = [
-        Keys.year,
-        Keys.month,
-        Keys.day,
-        Keys.import_date,
-    ]
 
     def setUp(self):
         self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(
@@ -46,18 +36,22 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
     @patch(f"{PATCH_PATH}.model_calculate_rolling_average")
     @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
     @patch(f"{PATCH_PATH}.merge_ascwds_and_pir_filled_post_submissions")
-    @patch(f"{PATCH_PATH}.model_pir_filled_posts")
+    @patch(f"{PATCH_PATH}.convert_pir_to_filled_posts")
     @patch(f"{PATCH_PATH}.model_primary_service_rate_of_change_trendline")
     @patch(f"{PATCH_PATH}.combine_care_home_and_non_res_values_into_single_column")
     @patch(f"{PATCH_PATH}.utils.create_unix_timestamp_variable_from_date_column")
+    @patch(f"{PATCH_PATH}.cUtils.calculate_filled_posts_per_bed_ratio")
+    @patch(f"{PATCH_PATH}.forward_fill_latest_known_value")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
+        forward_fill_latest_known_value_mock: Mock,
+        calculate_filled_posts_per_bed_ratio_mock: Mock,
         create_unix_timestamp_variable_from_date_column_mock: Mock,
         combine_care_home_and_non_res_values_into_single_column_mock: Mock,
         model_primary_service_rate_of_change_trendline_mock: Mock,
-        model_pir_filled_posts_mock: Mock,
+        convert_pir_to_filled_posts_mock: Mock,
         merge_ascwds_and_pir_filled_post_submissions_mock: Mock,
         model_imputation_with_extrapolation_and_interpolation_mock: Mock,
         model_calculate_rolling_average_mock: Mock,
@@ -71,10 +65,11 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         job.main(
             self.CLEANED_IND_CQC_TEST_DATA,
             self.ESTIMATES_DESTINATION,
-            self.NON_RES_PIR_MODEL,
         )
 
         read_from_parquet_patch.assert_called_once()
+        self.assertEqual(forward_fill_latest_known_value_mock.call_count, 2)
+        calculate_filled_posts_per_bed_ratio_mock.assert_called_once()
         create_unix_timestamp_variable_from_date_column_mock.assert_called_once()
         self.assertEqual(
             combine_care_home_and_non_res_values_into_single_column_mock.call_count, 2
@@ -82,7 +77,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         self.assertEqual(
             model_primary_service_rate_of_change_trendline_mock.call_count, 2
         )
-        model_pir_filled_posts_mock.assert_called_once()
+        convert_pir_to_filled_posts_mock.assert_called_once()
         merge_ascwds_and_pir_filled_post_submissions_mock.assert_called_once()
         self.assertEqual(
             model_imputation_with_extrapolation_and_interpolation_mock.call_count, 4
@@ -95,7 +90,6 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
             ANY,
             self.ESTIMATES_DESTINATION,
             mode="overwrite",
-            partitionKeys=self.partition_keys,
         )
 
 

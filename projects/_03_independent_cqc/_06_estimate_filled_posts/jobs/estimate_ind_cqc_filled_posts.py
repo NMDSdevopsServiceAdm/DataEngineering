@@ -3,7 +3,6 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.5"
 
-
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.estimate_non_res_ct_filled_posts import (
     estimate_non_res_capacity_tracker_filled_posts,
 )
@@ -20,7 +19,6 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils i
 from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 ind_cqc_columns = [
     IndCQC.cqc_location_import_date,
@@ -85,13 +83,7 @@ ind_cqc_columns = [
     IndCQC.imputed_filled_posts_per_bed_ratio_model,
     IndCQC.posts_rolling_average_model,
     IndCQC.unix_time,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
 ]
-
-PartitionKeys = [Keys.year]
 
 
 def main(
@@ -184,7 +176,6 @@ def main(
         estimate_filled_posts_df,
         estimated_ind_cqc_destination,
         mode="overwrite",
-        partitionKeys=PartitionKeys,
     )
 
     print("Completed estimate independent CQC filled posts")

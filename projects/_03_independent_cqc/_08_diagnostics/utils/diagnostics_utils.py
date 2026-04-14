@@ -5,7 +5,6 @@ from pyspark.sql.types import DateType, FloatType, StringType, StructField, Stru
 from projects.utils.utils.utils import calculate_windowed_column
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_columns_by_dataset import (
     DiagnosticOnKnownFilledPostsCategoricalValues as CatValues,
 )
@@ -53,10 +52,6 @@ def restructure_dataframe_to_column_wise(
             IndCQC.primary_service_type,
             column_for_comparison,
             model,
-            Keys.year,
-            Keys.month,
-            Keys.day,
-            Keys.import_date,
         )
         model_df = model_df.withColumn(IndCQC.estimate_source, F.lit(model))
         model_df = model_df.withColumnRenamed(model, IndCQC.estimate_value)
@@ -110,10 +105,6 @@ def create_empty_reshaped_dataframe(column_for_comparison: str) -> DataFrame:
                 FloatType(),
                 True,
             ),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
         ]
     )
     reshaped_df = spark.createDataFrame([], reshaped_df_schema)

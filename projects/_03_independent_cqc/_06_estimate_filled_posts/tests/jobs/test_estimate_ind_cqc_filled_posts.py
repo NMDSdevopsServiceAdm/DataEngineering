@@ -60,7 +60,6 @@ class EstimateIndCQCFilledPostsTests(SparkBaseTest):
             ANY,
             self.ESTIMATES_DESTINATION,
             mode="overwrite",
-            partitionKeys=job.PartitionKeys,
         )
 
 

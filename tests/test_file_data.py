@@ -235,18 +235,18 @@ class CleaningUtilsData:
         ("19081205", date(1908, 12, 5)),
     ]
     reduce_dataset_to_earliest_file_per_month_rows = [
-        ("loc 1", "20220101", "2022", "01", "01"),
-        ("loc 2", "20220105", "2022", "01", "05"),
-        ("loc 3", "20220205", "2022", "02", "05"),
-        ("loc 4", "20220207", "2022", "02", "07"),
-        ("loc 5", "20220301", "2022", "03", "01"),
-        ("loc 6", "20220402", "2022", "04", "02"),
+        ("loc 1", date(2022, 1, 1)),
+        ("loc 2", date(2022, 1, 5)),
+        ("loc 3", date(2022, 2, 5)),
+        ("loc 4", date(2022, 2, 7)),
+        ("loc 5", date(2022, 3, 1)),
+        ("loc 6", date(2022, 4, 2)),
     ]
     expected_reduce_dataset_to_earliest_file_per_month_rows = [
-        ("loc 1", "20220101", "2022", "01", "01"),
-        ("loc 3", "20220205", "2022", "02", "05"),
-        ("loc 5", "20220301", "2022", "03", "01"),
-        ("loc 6", "20220402", "2022", "04", "02"),
+        ("loc 1", date(2022, 1, 1)),
+        ("loc 3", date(2022, 2, 5)),
+        ("loc 5", date(2022, 3, 1)),
+        ("loc 6", date(2022, 4, 2)),
     ]
 
     cast_to_int_rows = [
@@ -350,21 +350,31 @@ class CleaningUtilsData:
     ]
 
     remove_duplicate_locationids_rows = [
-        (date(2024, 1, 1), "1-001", date(2023, 1, 1)),
-        (date(2024, 1, 1), "1-001", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
-    ]
-    expected_remove_duplicate_locationids_descending_rows = [
-        (date(2024, 1, 1), "1-001", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
+        (1, date(2024, 1, 1), "1-001", date(2023, 1, 1), True),
+        (2, date(2024, 1, 1), "1-001", date(2023, 2, 1), False),
+        (3, date(2024, 2, 1), "1-001", date(2023, 2, 1), True),
+        (4, date(2024, 2, 1), "1-002", date(2023, 1, 1), False),
+        (5, date(2024, 2, 1), "1-002", date(2023, 2, 1), True),
+        (6, date(2024, 2, 1), "1-003", date(2023, 1, 1), False),
+        (7, date(2024, 2, 1), "1-003", date(2023, 2, 1), False),
     ]
     expected_remove_duplicate_locationids_ascending_rows = [
-        (date(2024, 1, 1), "1-001", date(2023, 1, 1)),
-        (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
+        (1, date(2024, 1, 1), "1-001", date(2023, 1, 1), True),
+        (3, date(2024, 2, 1), "1-001", date(2023, 2, 1), True),
+        (4, date(2024, 2, 1), "1-002", date(2023, 1, 1), False),
+        (6, date(2024, 2, 1), "1-003", date(2023, 1, 1), False),
+    ]
+    expected_remove_duplicate_locationids_descending_rows = [
+        (2, date(2024, 1, 1), "1-001", date(2023, 2, 1), False),
+        (3, date(2024, 2, 1), "1-001", date(2023, 2, 1), True),
+        (5, date(2024, 2, 1), "1-002", date(2023, 2, 1), True),
+        (7, date(2024, 2, 1), "1-003", date(2023, 2, 1), False),
+    ]
+    expected_remove_duplicate_locationids_mixed_order_rows = [
+        (1, date(2024, 1, 1), "1-001", date(2023, 1, 1), True),
+        (3, date(2024, 2, 1), "1-001", date(2023, 2, 1), True),
+        (5, date(2024, 2, 1), "1-002", date(2023, 2, 1), True),
+        (6, date(2024, 2, 1), "1-003", date(2023, 1, 1), False),
     ]
 
     create_banded_bed_count_column_rows = [

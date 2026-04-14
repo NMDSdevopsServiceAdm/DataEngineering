@@ -137,7 +137,7 @@ if __name__ == "__main__":
     destination = utils.generate_s3_dir(
         destination_prefix=args.destination_prefix,
         domain="CQC",
-        dataset="delta_providers_api",
+        dataset="cqc_providers_01_delta_api",
         date=todays_date,
         version="3.0.0",
     )

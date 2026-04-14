@@ -1,13 +1,12 @@
 from typing import List, Optional, Union
 
 from pyspark.ml.feature import Bucketizer
-from pyspark.sql import DataFrame, Window
+from pyspark.sql import Column, DataFrame, Window
 from pyspark.sql import functions as F
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome
 
 key: str = "key"
@@ -222,6 +221,7 @@ def add_aligned_date_column(
     return primary_df_with_aligned_dates
 
 
+# converted to polars -> polars_utils.cleaning_utils.reduce_dataset_to_earliest_file_per_month
 def reduce_dataset_to_earliest_file_per_month(df: DataFrame) -> DataFrame:
     """
     Reduce the dataset to the first file of every month.
@@ -234,10 +234,22 @@ def reduce_dataset_to_earliest_file_per_month(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with only the first import date of each month.
     """
-    earliest_day_in_month = "first_day_in_month"
-    w = Window.partitionBy(Keys.year, Keys.month).orderBy(Keys.day)
-    df = df.withColumn(earliest_day_in_month, F.first(Keys.day).over(w))
-    df = df.where(df[earliest_day_in_month] == df[Keys.day]).drop(earliest_day_in_month)
+    earliest_date_in_month = "earliest_date_in_month"
+
+    w = Window.partitionBy(
+        F.year(IndCQC.cqc_location_import_date),
+        F.month(IndCQC.cqc_location_import_date),
+    )
+
+    df = (
+        df.withColumn(
+            earliest_date_in_month,
+            F.min(F.col(IndCQC.cqc_location_import_date)).over(w),
+        )
+        .where(F.col(IndCQC.cqc_location_import_date) == F.col(earliest_date_in_month))
+        .drop(earliest_date_in_month)
+    )
+
     return df
 
 
@@ -298,44 +310,37 @@ def calculate_filled_posts_from_beds_and_ratio(
 def remove_duplicates_based_on_column_order(
     df: DataFrame,
     columns_to_identify_duplicates: List[str],
-    column_to_sort_on: str,
-    sort_ascending: bool = True,
+    order_by: List[Column],
 ) -> DataFrame:
     """
-    Remove duplicate rows once columns are sorted.
+    Remove duplicate rows using custom window ordering.
+
+    Keeps the first row within each duplicate group according to the
+    provided ordering expressions.
 
     Args:
         df (DataFrame): The DataFrame to remove duplicates from.
-        columns_to_identify_duplicates (List[str]): List of column names used to highlight duplicates.
-        column_to_sort_on (str): The name of the column to sort on (sorted in descending order).
-        sort_ascending (bool): If true, the column to sort on is sorted ascending, otherwise descending.
+        columns_to_identify_duplicates (List[str]): Columns defining duplicate groups.
+        order_by (List[Column]): List of PySpark column expressions defining sort priority.
 
     Returns:
-        DataFrame: A DataFrame with duplicate location_ids in the same import date removed.
+        DataFrame: A DataFrame with duplicates removed.
     """
-    temp_col = "row_number"
-    if sort_ascending == True:
-        df = df.withColumn(
-            temp_col,
+    row_num = "_row_number"
+
+    return (
+        df.withColumn(
+            row_num,
             F.row_number().over(
-                Window.partitionBy(columns_to_identify_duplicates).orderBy(
-                    column_to_sort_on
-                )
+                Window.partitionBy(*columns_to_identify_duplicates).orderBy(*order_by)
             ),
         )
-    else:
-        df = df.withColumn(
-            temp_col,
-            F.row_number().over(
-                Window.partitionBy(columns_to_identify_duplicates).orderBy(
-                    F.desc(column_to_sort_on)
-                )
-            ),
-        )
-    df = df.where(F.col(temp_col) == 1).drop(temp_col)
-    return df
+        .where(F.col(row_num) == 1)
+        .drop(row_num)
+    )
 
 
+# converted to polars -> polars_utils.cleaning_utils.create_banded_bed_count_column
 def create_banded_bed_count_column(
     input_df: DataFrame, new_col: str, splits: List[float]
 ) -> DataFrame:

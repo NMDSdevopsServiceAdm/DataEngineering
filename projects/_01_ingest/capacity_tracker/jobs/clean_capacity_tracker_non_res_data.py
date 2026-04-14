@@ -20,9 +20,6 @@ CAPACITY_TRACKER_NON_RES_COLUMNS = [
     CTNR.cqc_id,
     CTNR.cqc_care_workers_employed,
     CTNR.service_user_count,
-    Keys.year,
-    Keys.month,
-    Keys.day,
     Keys.import_date,
 ]
 MAX_BOUND: int = 3000
@@ -35,7 +32,8 @@ def main(
 ):
     capacity_tracker_non_res_df = utils.read_from_parquet(
         capacity_tracker_non_res_source, CAPACITY_TRACKER_NON_RES_COLUMNS
-    )
+    ).withColumn(CTNRClean.care_home, F.lit(CareHome.not_care_home))
+
     columns_to_cast_to_integers = [
         CTNR.cqc_care_workers_employed,
         CTNR.service_user_count,
@@ -43,11 +41,13 @@ def main(
     capacity_tracker_non_res_df = cUtils.cast_to_int(
         capacity_tracker_non_res_df, columns_to_cast_to_integers
     )
+
     capacity_tracker_non_res_df = cUtils.column_to_date(
         capacity_tracker_non_res_df,
         Keys.import_date,
         CTNRClean.ct_non_res_import_date,
-    )
+    ).drop(Keys.import_date)
+
     columns_to_bound = [CTNR.cqc_care_workers_employed, CTNR.service_user_count]
     capacity_tracker_non_res_df = cUtils.set_bounds_for_columns(
         capacity_tracker_non_res_df,
@@ -56,21 +56,12 @@ def main(
         lower_limit=MIN_BOUND,
         upper_limit=MAX_BOUND,
     )
-    capacity_tracker_non_res_df = capacity_tracker_non_res_df.withColumn(
-        CTNRClean.care_home, F.lit(CareHome.not_care_home)
-    )
 
     print(f"Exporting as parquet to {cleaned_capacity_tracker_non_res_destination}")
     utils.write_to_parquet(
         capacity_tracker_non_res_df,
         cleaned_capacity_tracker_non_res_destination,
         mode="overwrite",
-        partitionKeys=[
-            Keys.year,
-            Keys.month,
-            Keys.day,
-            Keys.import_date,
-        ],
     )
 
 

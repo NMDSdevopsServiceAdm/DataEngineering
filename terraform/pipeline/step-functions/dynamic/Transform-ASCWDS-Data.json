@@ -48,7 +48,7 @@
                         "JobName": "${validate_ascwds_worker_cleaned_data_job_name}",
                         "Arguments": {
                           "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_worker_cleaned/"
+                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_worker_cleaned/"
                         }
                       },
                       "End": true
@@ -65,7 +65,7 @@
                         "JobName": "${validate_ascwds_workplace_cleaned_data_job_name}",
                         "Arguments": {
                           "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_workplace_cleaned/"
+                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_workplace_cleaned/"
                         }
                       },
                       "End": true
@@ -86,7 +86,7 @@
                 "JobName": "${validate_ascwds_workplace_raw_data_job_name}",
                 "Arguments": {
                   "--raw_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_workplace_raw/"
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_workplace_raw/"
                 }
               },
               "End": true
@@ -103,7 +103,7 @@
                 "JobName": "${validate_ascwds_worker_raw_data_job_name}",
                 "Arguments": {
                   "--raw_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_worker_raw/"
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_worker_raw/"
                 }
               },
               "End": true

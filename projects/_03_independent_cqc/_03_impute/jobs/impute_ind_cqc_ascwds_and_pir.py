@@ -7,9 +7,13 @@ os.environ["SPARK_VERSION"] = "3.5"
 from pyspark.sql import DataFrame
 
 import utils.cleaning_utils as cUtils
+
+from projects._03_independent_cqc._03_impute.utils.forward_fill_latest_known_value import (
+    forward_fill_latest_known_value,
+)
 from projects._03_independent_cqc._03_impute.utils.model_and_merge_pir_filled_posts import (
+    convert_pir_to_filled_posts,
     merge_ascwds_and_pir_filled_post_submissions,
-    model_pir_filled_posts,
 )
 from projects._03_independent_cqc._03_impute.utils.utils import (
     combine_care_home_and_non_res_values_into_single_column,
@@ -29,9 +33,6 @@ from projects._03_independent_cqc.utils.utils.utils import (
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 @dataclass
@@ -43,11 +44,20 @@ class NumericalValues:
 def main(
     cleaned_ind_cqc_source: str,
     imputed_ind_cqc_ascwds_and_pir_destination: str,
-    linear_regression_model_source: str,
 ) -> DataFrame:
     print("Imputing independent CQC ASCWDS and PIR values...")
 
     df = utils.read_from_parquet(cleaned_ind_cqc_source)
+
+    df = forward_fill_latest_known_value(df, IndCQC.ascwds_filled_posts_dedup_clean)
+
+    df = forward_fill_latest_known_value(df, IndCQC.pir_people_directly_employed_dedup)
+
+    df = cUtils.calculate_filled_posts_per_bed_ratio(
+        df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.filled_posts_per_bed_ratio,
+    )
 
     df = utils.create_unix_timestamp_variable_from_date_column(
         df,
@@ -71,7 +81,7 @@ def main(
         max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
     )
 
-    df = model_pir_filled_posts(df, linear_regression_model_source)
+    df = convert_pir_to_filled_posts(df)
 
     df = merge_ascwds_and_pir_filled_post_submissions(df)
 
@@ -170,7 +180,6 @@ def main(
         df,
         imputed_ind_cqc_ascwds_and_pir_destination,
         mode="overwrite",
-        partitionKeys=PartitionKeys,
     )
 
     print("Completed imputing independent CQC ASCWDS and PIR")
@@ -183,7 +192,6 @@ if __name__ == "__main__":
     (
         cleaned_ind_cqc_source,
         imputed_ind_cqc_ascwds_and_pir_destination,
-        linear_regression_model_source,
     ) = utils.collect_arguments(
         (
             "--cleaned_ind_cqc_source",
@@ -193,14 +201,9 @@ if __name__ == "__main__":
             "--imputed_ind_cqc_ascwds_and_pir_destination",
             "Destination s3 directory for outputting imputed ind cqc ascwds and pir data",
         ),
-        (
-            "--linear_regression_model_source",
-            "The location of the linear regression model in s3",
-        ),
     )
 
     main(
         cleaned_ind_cqc_source,
         imputed_ind_cqc_ascwds_and_pir_destination,
-        linear_regression_model_source,
     )

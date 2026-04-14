@@ -8,6 +8,10 @@ ENV PYTHONPATH=/app
 
 # Dependencies
 COPY projects/_03_independent_cqc/_01_merge/fargate/utils /app/projects/_03_independent_cqc/_01_merge/fargate/utils
+COPY projects/_03_independent_cqc/_02_clean/fargate/utils /app/projects/_03_independent_cqc/_02_clean/fargate/utils
+COPY projects/_03_independent_cqc/_03_impute/fargate/utils /app/projects/_03_independent_cqc/_03_impute/fargate/utils
+COPY projects/_03_independent_cqc/_04_model/utils /app/projects/_03_independent_cqc/_04_model/utils
+COPY projects/_03_independent_cqc/_06_estimate_filled_posts/fargate/utils /app/projects/_03_independent_cqc/_06_estimate_filled_posts/fargate/utils
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/utils /app/projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/utils
 COPY projects/_03_independent_cqc/_09_archive_estimates/fargate/utils /app/projects/_03_independent_cqc/_09_archive_estimates/fargate/utils
 COPY polars_utils /app/polars_utils
@@ -25,6 +29,10 @@ COPY projects/_03_independent_cqc/_03_impute/fargate/impute_ind_cqc_ascwds_and_p
 COPY projects/_03_independent_cqc/_03_impute/fargate/validate_imputed_ind_cqc_ascwds_and_pir_data.py /app/validate_imputed_ind_cqc_ascwds_and_pir_data.py
 COPY projects/_03_independent_cqc/_06_estimate_filled_posts/fargate/estimate_ind_cqc_filled_posts.py /app/estimate_ind_cqc_filled_posts.py
 COPY projects/_03_independent_cqc/_06_estimate_filled_posts/fargate/validate_estimated_ind_cqc_filled_posts_data.py /app/validate_estimated_ind_cqc_filled_posts_data.py
+COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/_01_merge.py /app/_01_merge.py
+COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/_02_clean.py /app/_02_clean.py
+COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/_03_impute.py /app/_03_impute.py
+COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/_04_estimate.py /app/_04_estimate.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/estimate_ind_cqc_filled_posts_by_job_role.py /app/estimate_ind_cqc_filled_posts_by_job_role.py
 COPY projects/_03_independent_cqc/_09_archive_estimates/fargate/archive_filled_posts_estimates.py /app/archive_filled_posts_estimates.py
 

@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import ANY, Mock, call, patch
 
 import polars as pl
-import polars.testing as pl_testing
 import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role as job
@@ -98,7 +97,6 @@ class MainTests(unittest.TestCase):
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
             output_path=self.ESTIMATES_DESTINATION,
-            partition_cols=job.partition_keys,
             append=False,
         )
 

@@ -15,6 +15,16 @@ resource "aws_ecs_task_definition" "ecs_task" {
     # For Fargate, leaving this empty uses the ephemeral storage
   }
 
+  # LEAVE commented for easy future adjustment, default should be 20
+  # ephemeral_storage {
+  #   size_in_gib = var.ephemeral_storage_size
+  # }
+
+  volume {
+    name = "polars_temp_storage"
+    # For Fargate, leaving this empty uses the ephemeral storage
+  }
+
   runtime_platform {
     operating_system_family = "LINUX"
     cpu_architecture        = "X86_64"

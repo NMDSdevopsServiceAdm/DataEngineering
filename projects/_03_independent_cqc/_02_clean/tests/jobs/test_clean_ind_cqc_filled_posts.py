@@ -14,7 +14,6 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
 )
 from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_posts"
 
@@ -22,12 +21,6 @@ PATCH_PATH = "projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_p
 class CleanIndFilledPostsTests(SparkBaseTest):
     MERGE_IND_CQC_SOURCE = "input_dir"
     CLEANED_IND_CQC_DESTINATION = "output_dir"
-    partition_keys = [
-        Keys.year,
-        Keys.month,
-        Keys.day,
-        Keys.import_date,
-    ]
 
     def setUp(self):
         self.merge_ind_cqc_test_df = self.spark.createDataFrame(
@@ -42,7 +35,6 @@ class MainTests(CleanIndFilledPostsTests):
     @patch(f"{PATCH_PATH}.calculate_care_home_status_count")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_non_res_outliers")
     @patch(f"{PATCH_PATH}.clean_capacity_tracker_care_home_outliers")
-    @patch(f"{PATCH_PATH}.forward_fill_latest_known_value")
     @patch(f"{PATCH_PATH}.clean_ascwds_filled_post_outliers")
     @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
     @patch(f"{PATCH_PATH}.cUtils.calculate_filled_posts_per_bed_ratio")
@@ -69,7 +61,6 @@ class MainTests(CleanIndFilledPostsTests):
         calculate_filled_posts_per_bed_ratio_mock: Mock,
         create_banded_bed_count_column_mock: Mock,
         clean_ascwds_filled_post_outliers_mock: Mock,
-        forward_fill_latest_known_value_mock: Mock,
         clean_capacity_tracker_care_home_outliers_mock: Mock,
         clean_capacity_tracker_non_res_outliers_mock: Mock,
         calculate_care_home_status_count_mock: Mock,
@@ -90,9 +81,8 @@ class MainTests(CleanIndFilledPostsTests):
         populate_missing_care_home_number_of_beds_mock.assert_called_once()
         calculate_ascwds_filled_posts_mock.assert_called_once()
         self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
-        self.assertEqual(calculate_filled_posts_per_bed_ratio_mock.call_count, 3)
+        self.assertEqual(calculate_filled_posts_per_bed_ratio_mock.call_count, 2)
         create_banded_bed_count_column_mock.assert_called_once()
-        self.assertEqual(forward_fill_latest_known_value_mock.call_count, 2)
         clean_ascwds_filled_post_outliers_mock.assert_called_once()
         clean_capacity_tracker_care_home_outliers_mock.assert_called_once()
         clean_capacity_tracker_non_res_outliers_mock.assert_called_once()
@@ -102,7 +92,6 @@ class MainTests(CleanIndFilledPostsTests):
             ANY,
             self.CLEANED_IND_CQC_DESTINATION,
             mode=ANY,
-            partitionKeys=self.partition_keys,
         )
 
     def test_replace_zero_beds_with_null(self):

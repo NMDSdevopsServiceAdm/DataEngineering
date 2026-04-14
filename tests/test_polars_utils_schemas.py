@@ -9,6 +9,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
 @dataclass
@@ -51,6 +52,27 @@ class CleaningUtilsSchemas:
         list(filled_posts_per_bed_ratio_schema.items())
         + [
             (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
+        ]
+    )
+
+    reduce_dataset_to_earliest_file_per_month_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    create_banded_bed_count_column_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
+        ]
+    )
+    expected_create_banded_bed_count_column_schema = pl.Schema(
+        [
+            *create_banded_bed_count_column_schema.items(),
+            (IndCQC.number_of_beds_banded, pl.Float64()),
         ]
     )
 

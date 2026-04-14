@@ -40,7 +40,7 @@
                 "Arguments": {
                   "--capacity_tracker_care_home_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/",
                   "--capacity_tracker_care_home_cleaned_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_capacity_tracker_care_home_cleaned_data/"
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_capacity_tracker_care_home_cleaned_data/"
                 }
               },
               "End": true

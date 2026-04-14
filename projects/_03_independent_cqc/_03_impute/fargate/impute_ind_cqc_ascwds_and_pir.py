@@ -1,7 +1,14 @@
-from polars_utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+import polars as pl
 
-cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+from polars_utils import utils, cleaning_utils as cUtils
+
+from projects._03_independent_cqc._03_impute.fargate.utils.convert_pir_people_to_filled_posts import (
+    convert_pir_to_filled_posts,
+)
+from projects._03_independent_cqc._03_impute.fargate.utils.forward_fill_latest_known_value import (
+    forward_fill_latest_known_value,
+)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 def main(
@@ -18,13 +25,23 @@ def main(
     lf = utils.scan_parquet(cleaned_ind_cqc_source)
     print("Cleaned IND CQC LazyFrame read in")
 
+    lf = forward_fill_latest_known_value(lf, IndCQC.ascwds_filled_posts_dedup_clean)
+
+    lf = forward_fill_latest_known_value(lf, IndCQC.pir_people_directly_employed_dedup)
+
+    lf = cUtils.calculate_filled_posts_per_bed_ratio(
+        lf,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.filled_posts_per_bed_ratio,
+    )
+
     # create_unix_timestamp_variable_from_date_column
 
     # combine_care_home_and_non_res_values_into_single_column - combined_ratio_and_filled_posts
 
     # model_primary_service_rate_of_change_trendline - ascwds_rate_of_change_trendline_model
 
-    # model_pir_filled_posts
+    lf = convert_pir_to_filled_posts(lf)
 
     # merge_ascwds_and_pir_filled_post_submissions
 
@@ -55,11 +72,39 @@ def main(
     utils.sink_to_parquet(
         lf,
         destination,
-        partition_cols=cqc_partition_keys,
         append=False,
     )
 
     print("Completed imputing independent CQC ASCWDS and PIR")
+
+
+def calculate_rolling_average(
+    column_to_average: str,
+    period: str,
+    columns_to_partition_by: list,
+) -> pl.Expr:
+    """
+    Calculate the rolling mean of the "column_to_average" over a given period
+    and partition.
+
+    This function calculates the rolling mean of a column based on a given
+    number of days and a column to partition by. For example, a 3-day rolling
+    average includes the current day plus the two preceding days.
+
+    Args:
+        column_to_average (str): The name of the column with the values to average.
+        period (str): period (str): String language timedelta. See:
+          https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.rolling.html
+        columns_to_partition_by (list): The name of the column to partition the window by.
+
+    Returns:
+        pl.Expr: Expression for rolling mean of column_to_average.
+    """
+    return (
+        pl.mean(column_to_average)
+        .rolling(index_column=IndCQC.cqc_location_import_date, period=period)
+        .over(columns_to_partition_by)
+    )
 
 
 if __name__ == "__main__":

@@ -11,14 +11,12 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ASCWDSWorkplaceSchemas as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
-from utils.column_names.raw_data_files.ascwds_workplace_columns import PartitionKeys
 
 PATCH_PATH = "projects._01_ingest.ascwds.jobs.clean_ascwds_workplace_data"
 
@@ -27,44 +25,42 @@ class CleanASCWDSWorkplaceDatasetTests(SparkBaseTest):
     TEST_SOURCE = "s3://some_bucket/some_source_key"
     TEST_CLEANED_DESTINATION = "s3://some_bucket/some_destination_key"
     TEST_RECONCILIATION_DESTINATION = "s3://some_other_destination_key"
-    partition_keys = [
-        PartitionKeys.year,
-        PartitionKeys.month,
-        PartitionKeys.day,
-        PartitionKeys.import_date,
-    ]
 
     def setUp(self) -> None:
-        self.test_ascwds_workplace_df = self.spark.createDataFrame(
-            Data.workplace_rows, Schemas.workplace_schema
-        )
-
-        self.filled_posts_columns = [AWP.total_staff, AWP.worker_records]
+        self.input_df = Mock(spec=DataFrame, name="input_df")
+        self.recon_df = Mock(spec=DataFrame, name="recon_df")
 
 
 class MainTests(CleanASCWDSWorkplaceDatasetTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.select_columns_required_for_reconciliation_df")
     @patch(f"{PATCH_PATH}.cUtils.set_column_bounds")
     @patch(f"{PATCH_PATH}.cUtils.cast_to_int")
+    @patch(f"{PATCH_PATH}.remove_workplaces_with_duplicate_location_ids")
+    @patch(f"{PATCH_PATH}.create_purged_dfs_for_reconciliation_and_data")
     @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
     @patch(f"{PATCH_PATH}.cUtils.column_to_date")
-    @patch(f"{PATCH_PATH}.utils.format_date_fields", wraps=utils.format_date_fields)
+    @patch(f"{PATCH_PATH}.utils.format_date_fields")
+    @patch(f"{PATCH_PATH}.remove_white_space_from_nmdsid")
     @patch(f"{PATCH_PATH}.remove_duplicate_workplaces_in_raw_workplace_data")
+    @patch(f"{PATCH_PATH}.filter_test_accounts")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
-        remove_duplicate_workplaces_in_raw_workplace_data: Mock,
+        filter_test_accounts_mock: Mock,
+        remove_duplicate_workplaces_mock: Mock,
+        remove_white_space_from_nmdsid_mock: Mock,
         format_date_fields_mock: Mock,
         column_to_date_mock: Mock,
         apply_categorical_labels_mock: Mock,
+        create_purged_dfs_mock: Mock,
+        remove_workplaces_with_duplicate_ids_mock: Mock,
         cast_to_int_mock: Mock,
         set_column_bounds_mock: Mock,
-        select_columns_required_for_reconciliation_df_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
-        read_from_parquet_mock.return_value = self.test_ascwds_workplace_df
+        read_from_parquet_mock.return_value = self.input_df
+        create_purged_dfs_mock.return_value = (self.input_df, self.recon_df)
 
         job.main(
             self.TEST_SOURCE,
@@ -75,13 +71,16 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         read_from_parquet_mock.assert_called_once_with(
             self.TEST_SOURCE, selected_columns=job.ascwds_workplace_columns_to_import
         )
-        remove_duplicate_workplaces_in_raw_workplace_data.assert_called_once()
+        filter_test_accounts_mock.assert_called_once()
+        remove_duplicate_workplaces_mock.assert_called_once()
+        remove_white_space_from_nmdsid_mock.assert_called_once()
         format_date_fields_mock.assert_called_once()
         column_to_date_mock.assert_called_once()
         apply_categorical_labels_mock.assert_called_once()
+        create_purged_dfs_mock.assert_called_once()
+        remove_workplaces_with_duplicate_ids_mock.assert_called_once()
         cast_to_int_mock.assert_called_once()
         self.assertEqual(set_column_bounds_mock.call_count, 2)
-        select_columns_required_for_reconciliation_df_mock.assert_called_once()
         self.assertEqual(write_to_parquet_mock.call_count, 2)
 
 
@@ -153,7 +152,11 @@ class CreatePurgedDfsForReconciliationAndDataTests(CleanASCWDSWorkplaceDatasetTe
         create_workplace_last_active_date_column_patch: Mock,
         create_date_column_for_purging_data_patch: Mock,
     ):
-        job.create_purged_dfs_for_reconciliation_and_data(self.test_ascwds_workplace_df)
+        test_df = self.spark.createDataFrame(
+            Data.workplace_rows, Schemas.workplace_schema
+        )
+
+        job.create_purged_dfs_for_reconciliation_and_data(test_df)
 
         self.assertEqual(
             calculate_maximum_master_update_date_for_organisation_patch.call_count, 1
@@ -291,33 +294,6 @@ class CreateDateColumnForPurgingDataTests(CleanASCWDSWorkplaceDatasetTests):
         )
 
 
-class KeepWorkplacesActiveOnOrAfterPurgeDate(CleanASCWDSWorkplaceDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.test_workplace_last_active_df = self.spark.createDataFrame(
-            Data.workplace_last_active_rows,
-            Schemas.workplace_last_active_schema,
-        )
-        self.returned_df = job.keep_workplaces_active_on_or_after_purge_date(
-            self.test_workplace_last_active_df, "last_active", AWPClean.purge_date
-        )
-        self.returned_locations = (
-            self.returned_df.select(AWP.establishment_id)
-            .rdd.flatMap(lambda x: x)
-            .collect()
-        )
-
-    def test_remove_workplace_when_last_active_before_purge_date(self):
-        self.assertFalse("1" in self.returned_locations)
-
-    def test_keep_workplace_when_last_active_on_purge_date(self):
-        self.assertTrue("2" in self.returned_locations)
-
-    def test_keep_workplace_when_last_active_after_purge_date(self):
-        self.assertTrue("3" in self.returned_locations)
-
-
 class RemoveWorkplacesWithDuplicateLocationIdsTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
@@ -342,7 +318,7 @@ class RemoveWorkplacesWithDuplicateLocationIdsTests(CleanASCWDSWorkplaceDatasetT
             self.returned_df.columns,
             [
                 AWP.location_id,
-                AWP.import_date,
+                AWPClean.ascwds_workplace_import_date,
                 AWP.organisation_id,
             ],
         )

@@ -47,27 +47,15 @@ class ImputeIndCqcAscwdsAndPirData:
 
 @dataclass
 class ModelAndMergePirData:
-    model_pir_filled_posts_rows = [
-        ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10),
-        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, None),
-        ("loc 3", date(2024, 1, 1), CareHome.care_home, 10),
-        ("loc 4", date(2024, 1, 1), CareHome.care_home, None),
-    ]
-    expected_model_pir_filled_posts_rows = [
-        ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10, 10.64384),
-        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, None, None),
-        ("loc 3", date(2024, 1, 1), CareHome.care_home, 10, None),
-        ("loc 4", date(2024, 1, 1), CareHome.care_home, None, None),
-    ]
-
-    vectorise_input_rows = [
-        ("1-0001", 12.0, 0, 1, date(2024, 1, 1)),
-        ("1-0002", 50.0, 1, 1, date(2024, 1, 1)),
-    ]
-    expected_vectorised_feature_rows = [
-        ("1-0001", Vectors.dense([12.0, 0.0, 1.0])),
-        ("1-0002", Vectors.dense([50.0, 1.0, 1.0])),
-    ]
+    expected_convert_pir_to_filled_posts_rows = [
+        ("loc 1", date(2024, 1, 1), CareHome.not_care_home,   10, 14.0,  15.0),
+        ("loc 2", date(2024, 1, 1), CareHome.not_care_home,   10, 16.0,  15.0),
+        ("loc 3", date(2024, 1, 1), CareHome.not_care_home, None, 10.0,  None),
+        ("loc 4", date(2024, 1, 1), CareHome.not_care_home,    1,  0.0,  1.5),
+        ("loc 5", date(2024, 1, 1), CareHome.not_care_home,    0,  1.0,  None),
+        ("loc 5", date(2024, 1, 1), CareHome.not_care_home,   10,  7.0,  15.0),
+        ("loc 6", date(2024, 1, 1), CareHome.care_home,       10, None,  None),
+    ]  # fmt: skip
 
     blend_pir_and_ascwds_rows = [
         ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10.0, 20.0),
@@ -2966,15 +2954,119 @@ class ValidateEstimatedIndCqcFilledPostsByJobRoleData:
 
 @dataclass
 class CleanIndCQCData:
-    # fmt: off
     merged_rows_for_cleaning_job = [
-        ("1-1000001", "20220201", date(2020, 2, 1), "South East", "Surrey", "Rural", "Y", 0, 5, 82, None, "Care home without nursing", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
-        ("1-1000001", "20220101", date(2022, 1, 1), "South East", "Surrey", "Rural", "Y", 5, 5, None, 67, "Care home without nursing", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
-        ("1-1000002", "20220101", date(2022, 1, 1), "South East", "Surrey", "Rural", "N", 0, 17, None, None, "non-residential", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
-        ("1-1000002", "20220201", date(2022, 2, 1), "South East", "Surrey", "Rural", "N", 0, 34, None, None, "non-residential", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
-        ("1-1000003", "20220301", date(2022, 3, 1), "North West", "Bolton", "Urban", "N", 0, 34, None, None, "non-residential", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
-        ("1-1000003", "20220308", date(2022, 3, 8), "North West", "Bolton", "Rural", "N", 0, 15, None, None, "non-residential", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
-        ("1-1000004", "20220308", date(2022, 3, 8), "South West", "Dorset", "Urban", "Y", 9, 0, 25, 25, "Care home with nursing", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
+        (
+            "1-1000001",
+            date(2020, 2, 1),
+            "South East",
+            "Surrey",
+            "Rural",
+            "Y",
+            0,
+            5,
+            82,
+            None,
+            "Care home without nursing",
+            "name",
+            "postcode",
+            date(2022, 1, 1),
+        ),
+        (
+            "1-1000001",
+            date(2022, 1, 1),
+            "South East",
+            "Surrey",
+            "Rural",
+            "Y",
+            5,
+            5,
+            None,
+            67,
+            "Care home without nursing",
+            "name",
+            "postcode",
+            date(2022, 1, 1),
+        ),
+        (
+            "1-1000002",
+            date(2022, 1, 1),
+            "South East",
+            "Surrey",
+            "Rural",
+            "N",
+            0,
+            17,
+            None,
+            None,
+            "non-residential",
+            "name",
+            "postcode",
+            date(2022, 1, 1),
+        ),
+        (
+            "1-1000002",
+            date(2022, 2, 1),
+            "South East",
+            "Surrey",
+            "Rural",
+            "N",
+            0,
+            34,
+            None,
+            None,
+            "non-residential",
+            "name",
+            "postcode",
+            date(2022, 1, 1),
+        ),
+        (
+            "1-1000003",
+            date(2022, 3, 1),
+            "North West",
+            "Bolton",
+            "Urban",
+            "N",
+            0,
+            34,
+            None,
+            None,
+            "non-residential",
+            "name",
+            "postcode",
+            date(2022, 1, 1),
+        ),
+        (
+            "1-1000003",
+            date(2022, 3, 8),
+            "North West",
+            "Bolton",
+            "Rural",
+            "N",
+            0,
+            15,
+            None,
+            None,
+            "non-residential",
+            "name",
+            "postcode",
+            date(2022, 1, 1),
+        ),
+        (
+            "1-1000004",
+            date(2022, 3, 8),
+            "South West",
+            "Dorset",
+            "Urban",
+            "Y",
+            9,
+            0,
+            25,
+            25,
+            "Care home with nursing",
+            "name",
+            "postcode",
+            date(2022, 1, 1),
+        ),
     ]
     # fmt: on
     calculate_time_since_dormant_rows = [
@@ -4047,17 +4139,17 @@ class NullCtPostsToBedsOutliers:
 class ValidateCleanedIndCqcData:
     # fmt: off
     merged_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.care_home, "name", "postcode", "2024", "01", "01"),
-        ("1-000000002", date(2024, 1, 1), CareHome.not_care_home, "name", "postcode", "2024", "01", "01"),
-        ("1-000000001", date(2024, 2, 1), CareHome.care_home, "name", "postcode", "2024", "02", "01"),
-        ("1-000000002", date(2024, 2, 1), CareHome.not_care_home, "name", "postcode", "2024", "02", "01"),
+        ("1-000000001", date(2024, 1, 1), CareHome.care_home, "name", "postcode"),
+        ("1-000000002", date(2024, 1, 1), CareHome.not_care_home, "name", "postcode"),
+        ("1-000000001", date(2024, 2, 1), CareHome.care_home, "name", "postcode"),
+        ("1-000000002", date(2024, 2, 1), CareHome.not_care_home, "name", "postcode"),
     ]
 
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "01"),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "01"),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "09"),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5, "2024", "01", "09"),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
     ]
     # fmt: on
 
@@ -4068,9 +4160,6 @@ class ValidateCleanedIndCqcData:
             CareHome.care_home,
             "name",
             "postcode",
-            "2024",
-            "01",
-            "01",
         ),
     ]
 
@@ -5031,10 +5120,6 @@ class DiagnosticsOnKnownFilledPostsData:
             None,
             None,
             10.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
         ),
     ]
 
@@ -5059,10 +5144,6 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             11.0,
             None,
-            "2024",
-            "01",
-            "01",
-            "20240101",
         ),
         (
             "loc 1",
@@ -5081,10 +5162,6 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             11.0,
             None,
-            "2024",
-            "01",
-            "01",
-            "20240101",
         ),
         (
             "loc 2",
@@ -5103,10 +5180,6 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             None,
             10.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
         ),
     ]
 
@@ -5136,10 +5209,6 @@ class DiagnosticsUtilsData:
             PrimaryServiceType.care_home_only,
             13.0,
             12.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
         ),
     ]
     expected_restructure_dataframe_rows = [
@@ -5150,10 +5219,6 @@ class DiagnosticsUtilsData:
             10.0,
             "model_type_one",
             13.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
         ),
         (
             "loc 1",
@@ -5162,10 +5227,6 @@ class DiagnosticsUtilsData:
             10.0,
             "model_type_two",
             12.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
         ),
     ]
     # fmt: off
@@ -5264,12 +5325,12 @@ class DiagnosticsUtilsData:
 
     # fmt: off
     create_summary_dataframe_rows = [
-        ("loc 1", date(2024, 1, 1), PrimaryServiceType.care_home_only, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0),
-        ("loc 2", date(2024, 1, 1), PrimaryServiceType.care_home_only, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0),
-        ("loc 3", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0),
-        ("loc 4", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0),
-        ("loc 5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.imputed_posts_care_home_model, 100.0, "2024", "01", "01", "20240101", 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
-        ("loc 6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.imputed_posts_care_home_model, 100.0, "2024", "01", "01", "20240101", 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
+        ("loc 1", date(2024, 1, 1), PrimaryServiceType.care_home_only, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0),
+        ("loc 2", date(2024, 1, 1), PrimaryServiceType.care_home_only, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0),
+        ("loc 3", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0),
+        ("loc 4", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0),
+        ("loc 5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.imputed_posts_care_home_model, 100.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
+        ("loc 6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.imputed_posts_care_home_model, 100.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
     ]
     expected_create_summary_dataframe_rows = [
         (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 1.0, 2.0, 3.0, 4.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0),
@@ -5586,11 +5647,7 @@ class OutlierCleaningData:
         ("1-003", 40, CTFilteringRule.populated),
         ("1-003", 45, CTFilteringRule.populated),
         ("1-003", 50, CTFilteringRule.populated),
-        (
-            "1-004",
-            5,
-            CTFilteringRule.populated,
-        ),
+        ("1-004", 5, CTFilteringRule.populated),
         ("1-004", 10, CTFilteringRule.populated),
         ("1-004", 15, CTFilteringRule.populated),
         ("1-004", 80, CTFilteringRule.populated),
@@ -5600,6 +5657,9 @@ class OutlierCleaningData:
         ("1-004", 40, CTFilteringRule.populated),
         ("1-004", 45, CTFilteringRule.populated),
         ("1-004", 50, CTFilteringRule.populated),
+        ("1-005", 1000, "any/other/rule"),
+        ("1-005", 1000, "any/other/rule"),
+        ("1-005", 1000, "any/other/rule"),
     ]
 
     expected_clean_longitudinal_outliers_remove_value_only_rows = [
@@ -5613,11 +5673,7 @@ class OutlierCleaningData:
         ("1-003", 40, CTFilteringRule.populated),
         ("1-003", 45, CTFilteringRule.populated),
         ("1-003", 50, CTFilteringRule.populated),
-        (
-            "1-004",
-            5,
-            CTFilteringRule.populated,
-        ),
+        ("1-004", 5, CTFilteringRule.populated),
         ("1-004", 10, CTFilteringRule.populated),
         ("1-004", 15, CTFilteringRule.populated),
         ("1-004", 80, CTFilteringRule.populated),
@@ -5627,6 +5683,9 @@ class OutlierCleaningData:
         ("1-004", 40, CTFilteringRule.populated),
         ("1-004", 45, CTFilteringRule.populated),
         ("1-004", 50, CTFilteringRule.populated),
+        ("1-005", None, "any/other/rule"),
+        ("1-005", None, "any/other/rule"),
+        ("1-005", None, "any/other/rule"),
     ]
 
     compute_group_median_rows = [
@@ -5670,21 +5729,21 @@ class OutlierCleaningData:
     ]
 
     apply_outlier_cleaning_input_rows = [
-        ("1-001", 10, 15, 51),
-        ("1-001", 20, 5, 51),
-        ("1-001", 30, 5, 51),
-        ("1-001", 100, 75, 51),
-        ("1-002", 100, 0, 51),
-        ("1-002", None, None, 51),
-        ("1-003", None, None, 51),
+        ("1-001", 10, 15, 51, CTFilteringRule.populated),
+        ("1-001", 20, 5, 51, CTFilteringRule.populated),
+        ("1-001", 30, 5, 51, CTFilteringRule.populated),
+        ("1-001", 100, 75, 51, CTFilteringRule.populated),
+        ("1-002", 100, 0, 51, CTFilteringRule.populated),
+        ("1-002", None, None, 51, CTFilteringRule.missing_data),
+        ("1-003", None, None, 51, CTFilteringRule.missing_data),
     ]
 
     expected_apply_outlier_cleaning_input_rows = [
-        ("1-001", 10, 15, 51),
-        ("1-001", 20, 5, 51),
-        ("1-001", 30, 5, 51),
-        ("1-001", None, 75, 51),
-        ("1-002", 100, 0, 51),
-        ("1-002", None, None, 51),
-        ("1-003", None, None, 51),
+        ("1-001", 10, 15, 51, CTFilteringRule.populated),
+        ("1-001", 20, 5, 51, CTFilteringRule.populated),
+        ("1-001", 30, 5, 51, CTFilteringRule.populated),
+        ("1-001", None, 75, 51, CTFilteringRule.populated),
+        ("1-002", 100, 0, 51, CTFilteringRule.populated),
+        ("1-002", None, None, 51, CTFilteringRule.missing_data),
+        ("1-003", None, None, 51, CTFilteringRule.missing_data),
     ]

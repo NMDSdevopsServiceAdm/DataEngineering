@@ -38,7 +38,6 @@ class TestFunctionsAreCalled(TestCleanCtLongitudinalOutliers):
     ):
         job.clean_longitudinal_outliers(
             self.test_df,
-            IndCQC.location_id,
             IndCQC.ct_care_home_total_employed_cleaned,
             IndCQC.ct_care_home_total_employed_cleaned,
             0.10,
@@ -63,7 +62,6 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
 
         returned_df = job.clean_longitudinal_outliers(
             df=test_df,
-            group_by_col=IndCQC.location_id,
             col_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
             cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
             proportion_to_filter=0.10,
@@ -81,7 +79,6 @@ class TestRemoveCTValueOutliers(TestCleanCtLongitudinalOutliers):
 
         returned_df = job.clean_longitudinal_outliers(
             test_df,
-            IndCQC.location_id,
             IndCQC.ct_non_res_care_workers_employed_cleaned,
             IndCQC.ct_non_res_care_workers_employed_cleaned,
             0.10,
@@ -160,8 +157,9 @@ class TestApplyOutlierCleaning(TestCleanCtLongitudinalOutliers):
 
         returned_df = job.apply_outlier_cleaning(
             df,
-            IndCQC.ct_non_res_care_workers_employed_cleaned,
-            IndCQC.ct_non_res_care_workers_employed_cleaned,
+            filter_rule_column_name=IndCQC.ct_non_res_filtering_rule,
+            col_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
+            cleaned_column_name=IndCQC.ct_non_res_care_workers_employed_cleaned,
         )
 
         expected_df = self.spark.createDataFrame(

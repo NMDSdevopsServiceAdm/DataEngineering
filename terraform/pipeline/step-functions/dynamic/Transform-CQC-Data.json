@@ -29,7 +29,7 @@
                       "Name": "cqc-api-container",
                       "Command": [
                         "cqc_providers_2_delta_flatten.py",
-                        "--delta_api_source", "${dataset_bucket_uri}/domain=CQC/dataset=delta_providers_api/version=3.0.0/",
+                        "--delta_api_source", "${dataset_bucket_uri}/domain=CQC/dataset=cqc_providers_01_delta_api/version=3.0.0/",
                         "--flattened_destination", "${dataset_bucket_uri}/domain=CQC/dataset=cqc_providers_02_delta_flattened/"
                       ]
                     }
@@ -102,8 +102,8 @@
                                 "validate_cqc_providers_2_delta_flatten.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=CQC/dataset=cqc_providers_02_delta_flattened/",
-                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_providers_02_delta_flattened/",
-                                "--compare_path", "domain=CQC/dataset=delta_providers_api/version=3.0.0/"
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_cqc_providers_02_delta_flattened/",
+                                "--compare_path", "domain=CQC/dataset=cqc_providers_01_delta_api/version=3.0.0/"
                               ]
                             }
                           ]
@@ -180,7 +180,7 @@
                                 "validate_cqc_providers_3_full_flattened.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=CQC/dataset=cqc_providers_03_full_flattened/",
-                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_providers_03_full_flattened/"
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_cqc_providers_03_full_flattened/"
                               ]
                             }
                           ]
@@ -217,7 +217,7 @@
                         "validate_cqc_providers_4_full_clean.py",
                         "--bucket_name", "${dataset_bucket_name}",
                         "--source_path", "domain=CQC/dataset=cqc_providers_04_full_cleaned/",
-                        "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_providers_04_full_cleaned/",
+                        "--reports_path", "domain=data_validation_reports/dataset=validation_cqc_providers_04_full_cleaned/",
                         "--compare_path", "domain=CQC/dataset=cqc_providers_03_full_flattened/"
                       ]
                     }
@@ -251,7 +251,7 @@
                       "Name": "cqc-api-container",
                       "Command": [
                         "cqc_locations_2_delta_flatten.py",
-                        "--cqc_locations_api_delta_source", "${dataset_bucket_uri}/domain=CQC/dataset=delta_locations_api/version=3.1.0/",
+                        "--cqc_locations_api_delta_source", "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_01_delta_api/version=3.1.0/",
                         "--cqc_locations_flattened_destination", "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_02_delta_flattened/"
                       ]
                     }
@@ -324,8 +324,8 @@
                                 "validate_cqc_locations_2_delta_flatten.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=CQC/dataset=cqc_locations_02_delta_flattened/",
-                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_02_delta_flattened/",
-                                "--compare_path", "domain=CQC/dataset=delta_locations_api/version=3.1.0/"
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_cqc_locations_02_delta_flattened/",
+                                "--compare_path", "domain=CQC/dataset=cqc_locations_01_delta_api/version=3.1.0/"
                               ]
                             }
                           ]
@@ -403,7 +403,7 @@
                                 "validate_cqc_locations_3_full_flattened.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=CQC/dataset=cqc_locations_03_full_flattened/",
-                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_03_full_flattened/"
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_cqc_locations_03_full_flattened/"
                               ]
                             }
                           ]
@@ -446,7 +446,7 @@
                                 "validate_cqc_locations_4_full_clean.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/",
-                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_04_full_cleaned_registered/",
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_cqc_locations_04_full_cleaned_registered/",
                                 "--compare_path", "domain=CQC/dataset=cqc_locations_03_full_flattened/"
                               ]
                             }
@@ -484,7 +484,7 @@
                                 "validate_cqc_locations_4_full_latest_snapshot.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=CQC/dataset=cqc_locations_04_latest_snapshot/",
-                                "--reports_path", "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_04_latest_snapshot/"
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_cqc_locations_04_latest_snapshot/"
                               ]
                             }
                           ]

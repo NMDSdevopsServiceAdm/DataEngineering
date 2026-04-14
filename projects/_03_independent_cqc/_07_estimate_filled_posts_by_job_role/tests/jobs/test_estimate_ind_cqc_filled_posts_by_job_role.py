@@ -8,9 +8,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     EstimateIndCQCFilledPostsByJobRoleSchemas as Schemas,
 )
 from tests.base_test import SparkBaseTest
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.jobs.estimate_ind_cqc_filled_posts_by_job_role"
 
 
@@ -142,6 +140,4 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_mock.assert_called_once()
         (create_estimate_filled_posts_job_group_columns_mock.assert_called_once(),)
         (create_job_role_estimates_data_validation_columns_mock.assert_called_once(),)
-        write_to_parquet_mock.assert_called_once_with(
-            ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys
-        )
+        write_to_parquet_mock.assert_called_once_with(ANY, self.OUTPUT_DIR, "overwrite")

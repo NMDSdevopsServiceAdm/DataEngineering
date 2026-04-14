@@ -20,9 +20,6 @@ PATCH_PATH: str = (
 
 class ModelAndMergePirTests(SparkBaseTest):
     def setUp(self):
-        self.NON_RES_PIR_MODEL = (
-            "tests/test_models/non_res_pir_linear_regression_prediction/1.0.0/"
-        )
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
@@ -30,64 +27,32 @@ class ThresholdValuesTests(ModelAndMergePirTests):
     def setUp(self):
         super().setUp()
 
-    def test_threshold_values_are_as_expected(
-        self,
-    ):
+    def test_threshold_values_are_as_expected(self):
         self.assertEqual(job.ThresholdValues.max_absolute_difference, 100)
         self.assertEqual(job.ThresholdValues.max_percentage_difference, 0.5)
         self.assertEqual(job.ThresholdValues.months_in_two_years, 24)
 
 
-class ModelPirFilledPostsTests(ModelAndMergePirTests):
+class ConvertPirToFilledPostsTests(ModelAndMergePirTests):
     def setUp(self):
         super().setUp()
-        test_df = self.spark.createDataFrame(
-            Data.model_pir_filled_posts_rows,
-            Schemas.model_pir_filled_posts_schema,
+        expected_df = self.spark.createDataFrame(
+            Data.expected_convert_pir_to_filled_posts_rows,
+            Schemas.expected_convert_pir_to_filled_posts_schema,
         )
-        self.expected_data = self.spark.createDataFrame(
-            Data.expected_model_pir_filled_posts_rows,
-            Schemas.expected_model_pir_filled_posts_schema,
-        ).collect()
+        self.expected_data = expected_df.collect()
+
+        test_df = expected_df.drop(IndCQC.pir_filled_posts_model)
         self.returned_data = (
-            job.model_pir_filled_posts(test_df, self.NON_RES_PIR_MODEL)
-            .sort(IndCQC.location_id)
-            .collect()
+            job.convert_pir_to_filled_posts(test_df).sort(IndCQC.location_id).collect()
         )
 
-    def test_model_pir_filled_posts_returns_correct_values(self):
+    def test_convert_pir_to_filled_posts_returns_correct_values(self):
         for i in range(len(self.expected_data)):
-            self.assertAlmostEqual(
+            self.assertEqual(
                 self.returned_data[i][IndCQC.pir_filled_posts_model],
                 self.expected_data[i][IndCQC.pir_filled_posts_model],
-                places=3,
             )
-
-
-class VectoriseDataframeTests(ModelAndMergePirTests):
-    def test_vectorise_dataframe(self):
-        list_for_vectorisation = ["col_1", "col_2", "col_3"]
-
-        df = self.spark.createDataFrame(
-            Data.vectorise_input_rows, Schemas.vectorise_schema
-        )
-
-        output_df = job.vectorise_dataframe(
-            df=df, list_for_vectorisation=list_for_vectorisation
-        )
-        output_data = (
-            output_df.sort(IndCQC.location_id).select(IndCQC.features).collect()
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_vectorised_feature_rows,
-            Schemas.expected_vectorised_feature_schema,
-        )
-        expected_data = (
-            expected_df.sort(IndCQC.location_id).select(IndCQC.features).collect()
-        )
-
-        self.assertEqual(output_data, expected_data)
 
 
 class MergeAscwdsAndPirFilledPostSubmissionsTests(ModelAndMergePirTests):

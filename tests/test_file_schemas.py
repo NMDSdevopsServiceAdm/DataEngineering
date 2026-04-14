@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from pyspark.sql.types import (
-    ArrayType,
+    BooleanType,
     DateType,
     DoubleType,
     FloatType,
@@ -141,10 +141,7 @@ class CleaningUtilsSchemas:
     reduce_dataset_to_earliest_file_per_month_schema = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.import_date, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
         ]
     )
 
@@ -195,9 +192,11 @@ class CleaningUtilsSchemas:
 
     remove_duplicate_locationids_schema = StructType(
         [
+            StructField("id_for_checking", IntegerType(), True),
             StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
             StructField(AWPClean.location_id, StringType(), True),
             StructField(AWPClean.master_update_date, DateType(), True),
+            StructField("some_bool_col", BooleanType(), True),
         ]
     )
 

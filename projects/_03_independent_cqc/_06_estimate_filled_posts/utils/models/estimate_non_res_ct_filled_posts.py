@@ -12,6 +12,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CareHome
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\estimate_non_res_ct_filled_posts
 def estimate_non_res_capacity_tracker_filled_posts(df: DataFrame) -> DataFrame:
     """
     Estimate the total number of filled posts for non-residential care providers in the capacity tracker.
@@ -53,6 +54,7 @@ def estimate_non_res_capacity_tracker_filled_posts(df: DataFrame) -> DataFrame:
     )
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\estimate_non_res_ct_filled_posts
 def calculate_care_worker_ratio(df: DataFrame) -> float:
     """
     Calculate the overall ratio of Capacity Tracker (CT) care workers to all estimated filled posts.
@@ -82,6 +84,7 @@ def calculate_care_worker_ratio(df: DataFrame) -> float:
     return care_worker_ratio
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\estimate_non_res_ct_filled_posts
 def convert_to_all_posts_using_ratio(
     df: DataFrame, care_worker_ratio: float
 ) -> DataFrame:

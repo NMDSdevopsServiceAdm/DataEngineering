@@ -1,6 +1,8 @@
 import polars as pl
+from typing import List
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome
 
 
@@ -105,3 +107,59 @@ def calculate_filled_posts_per_bed_ratio(
     )
 
     return lf
+
+
+def reduce_dataset_to_earliest_file_per_month(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Reduce the dataset to the first file of every month.
+
+    This function identifies the date of the first import date in each month and then filters the dataset to those import dates only.
+
+    Args:
+        lf (pl.LazyFrame): A lazyframe containing the partition keys year, month and day.
+
+    Returns:
+        pl.LazyFrame: A lazyframe with only the first import date of each month.
+    """
+    date_col = pl.col(IndCQC.cqc_location_import_date)
+
+    expr = date_col.min().over(date_col.dt.year(), date_col.dt.month())
+
+    return lf.filter(date_col == expr)
+
+
+def create_banded_bed_count_column(
+    input_lf: pl.LazyFrame, new_col: str, splits: List[float]
+) -> pl.LazyFrame:
+    """
+    Creates a new column in the input Lazyframe that categorises the number of beds into defined bands.
+
+    This function uses a Bucketizer to categorise the number of beds into specified bands.
+    The banded bed counts are joined into the original Lazyframe.
+
+    If the location is non-res then zero is returned.
+
+    Args:
+        input_lf (pl.LazyFrame): The Lazyframe containing the column 'number_of_beds' to be banded.
+        new_col (str): The name of the output column with the banded values.
+        splits (List[float]): The list of split points for bucketing (must be strictly increasing).
+
+    Returns:
+        pl.LazyFrame: A new Lazyframe that includes the original data along with a new column 'number_of_beds_banded'.
+    """
+    zero: float = 0.0
+
+    labels = [str(i) for i in range(len(splits[1:-1]) + 1)]
+    expr = (
+        pl.col(IndCQC.number_of_beds)
+        .cut(breaks=splits[1:-1], labels=labels, left_closed=True)
+        .cast(pl.String)
+        .cast(pl.Float64)
+    )
+
+    return input_lf.with_columns(
+        pl.when(pl.col(IndCQC.care_home) == CareHome.not_care_home)
+        .then(zero)
+        .otherwise(expr)
+        .alias(new_col)
+    )

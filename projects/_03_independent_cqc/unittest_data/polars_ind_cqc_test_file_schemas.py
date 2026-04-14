@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Final
 
 import polars as pl
 
@@ -7,6 +8,9 @@ from utils.column_names.capacity_tracker_columns import (
 )
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResCleanColumns as CTNRClean,
+)
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -17,14 +21,21 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
+    NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+
+EXPANDED_ID: Final[str] = "expanded_id"
 
 
 @dataclass
@@ -34,22 +45,20 @@ class PrepareJobRoleCountsUtilsSchemas:
             (IndCQC.establishment_id, pl.String()),
             (IndCQC.ascwds_worker_import_date, pl.Date()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
-            (Keys.year, pl.String()),
-            (Keys.month, pl.String()),
-            (Keys.day, pl.String()),
-            (Keys.import_date, pl.String()),
         ]
     )
     expected_aggregate_ascwds_worker_job_roles_per_establishment_schema = pl.Schema(
         [
             (IndCQC.establishment_id, pl.String()),
             (IndCQC.ascwds_worker_import_date, pl.Date()),
-            (Keys.year, pl.String()),
-            (Keys.month, pl.String()),
-            (Keys.day, pl.String()),
-            (Keys.import_date, pl.String()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
             (IndCQC.ascwds_job_role_counts, pl.UInt32()),
+        ]
+    )
+
+    filter_to_cqc_locations_schema = pl.Schema(
+        [
+            (AWKClean.location_id, pl.String()),
         ]
     )
 
@@ -147,7 +156,6 @@ class FeaturesEngineeringUtilsSchemas:
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.DataType()),
-            ("import_date", pl.String()),
             ("other_col", pl.String()),
             ("feature_1", pl.UInt32()),
             ("feature_2", pl.UInt32()),
@@ -165,7 +173,6 @@ class FeaturesEngineeringUtilsSchemas:
             ("feature_1", pl.Int32()),
             ("feature_2", pl.Int32()),
             ("feature_3", pl.Int32()),
-            ("import_date", pl.String()),
         ]
     )
 
@@ -241,7 +248,6 @@ class ValidateModel01FeaturesSchemas:
             (IndCQC.cqc_location_import_date, pl.DataType()),
             (IndCQC.care_home, pl.String()),
             (IndCQC.dormancy, pl.String()),
-            (Keys.import_date, pl.String()),
             ("feature 1", pl.String()),
             ("feature 2", pl.String()),
             (IndCQC.imputed_filled_post_model, pl.Float32),
@@ -460,6 +466,13 @@ class ValidateCleanIndCQCSchemas:
             (IndCQC.total_staff_bounded, pl.Int64()),
             (IndCQC.worker_records_bounded, pl.Int64()),
             (IndCQC.related_location, pl.String()),
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+            (IndCQC.specialism_dementia, pl.String()),
+            (IndCQC.specialism_learning_disabilities, pl.String()),
+            (IndCQC.specialism_mental_health, pl.String()),
+            (IndCQC.time_registered, pl.Int32()),
+            (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_source, pl.String()),
         ]
     )
 
@@ -470,6 +483,19 @@ class ValidateCleanIndCQCSchemas:
             (CQCLClean.cqc_sector, pl.String()),
             (CQCLClean.care_home, pl.String()),
             (CQCLClean.number_of_beds, pl.Int64()),
+        ]
+    )
+
+    expected_size_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.name, pl.String()),
+            (IndCQC.postcode, pl.String()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.imputed_registration_date, pl.Date()),
+            (IndCQC.total_staff_bounded, pl.Int64()),
+            (IndCQC.worker_records_bounded, pl.Int64()),
         ]
     )
 
@@ -714,6 +740,65 @@ class CleanIndCQCSchema:
             (AWPClean.total_staff_bounded, pl.Int64()),
             (AWPClean.worker_records_bounded, pl.Int64()),
             (IndCQC.imputed_registration_date, pl.Date()),
+        ]
+    )
+
+    repeated_value_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.provider_id, pl.String()),
+            ("integer_column", pl.Int64()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    expected_without_repeated_values_schema = pl.Schema(
+        [
+            *repeated_value_schema.items(),
+            ("integer_column_deduplicated", pl.Int64()),
+        ]
+    )
+
+    calculate_care_home_status_count_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.care_home, pl.String()),
+        ]
+    )
+    expected_calculate_care_home_status_count_schema = pl.Schema(
+        [
+            *calculate_care_home_status_count_schema.items(),
+            (IndCQC.care_home_status_count, pl.UInt32()),
+        ]
+    )
+    merged_schema_for_cleaning_job = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (ONSClean.current_region, pl.String()),
+            (CQCLClean.current_cssr, pl.String()),
+            (CQCLClean.current_rural_urban_ind_11, pl.String()),
+            (CQCLClean.care_home, pl.String()),
+            (CQCLClean.number_of_beds, pl.Int64()),
+            (CQCPIRClean.pir_people_directly_employed_cleaned, pl.Int64()),
+            (AWPClean.total_staff_bounded, pl.Int64()),
+            (AWPClean.worker_records_bounded, pl.Int64()),
+            (CQCLClean.primary_service_type, pl.String()),
+            (IndCQC.name, pl.String()),
+            (IndCQC.postcode, pl.String()),
+            (IndCQC.imputed_registration_date, pl.Date()),
+        ]
+    )
+
+
+@dataclass
+class ImputeIndCqcAscwdsAndPirSchema:
+    expected_rolling_average_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.posts_rolling_average_model, pl.Float64()),
         ]
     )
 
@@ -1149,6 +1234,20 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
 
 
 @dataclass
+class ConvertPirPeopleToFilledPostsSchema:
+    input_schema = pl.Schema(
+        [
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.pir_people_directly_employed_dedup, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+        ]
+    )
+    output_schema = pl.Schema(
+        list(input_schema.items()) + [(IndCQC.pir_filled_posts_model, pl.Float64())]
+    )
+
+
+@dataclass
 class NullCtPostsToBedsOutliers:
     null_ct_posts_to_beds_outliers_schema = pl.Schema(
         [
@@ -1162,30 +1261,22 @@ class NullCtPostsToBedsOutliers:
 
 
 @dataclass
-class CleanCtRepetition:
-    clean_ct_values_schema = {
+class NullValuesExceedingRepetitionLimitSchema:
+    input_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ct_non_res_care_workers_employed: pl.Int64,
         IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,
         IndCQC.ct_non_res_filtering_rule: pl.String,
     }
 
 
 @dataclass
-class OutlierCleaningSchemas:
+class NullLongitudinalOutliersSchema:
     input_schema = pl.Schema(
         {
             IndCQC.location_id: pl.String,
             IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,
             IndCQC.ct_non_res_filtering_rule: pl.String,
-        }
-    )
-
-    compute_outlier_cutoff_and_clean_schema = pl.Schema(
-        {
-            IndCQC.location_id: pl.String,
-            IndCQC.ct_non_res_care_workers_employed_cleaned: pl.Int64,
         }
     )
 
@@ -1271,24 +1362,133 @@ class EstimateFilledPostsModelsUtils:
 
 
 @dataclass
-class EstimateIndCqcFilledPostsByJobRoleSchemas:
-    expected_get_percent_share_ratios_schema = pl.Schema(
-        [
-            ("long_id", pl.String()),
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.cqc_location_import_date, pl.Date()),
-            (IndCQC.imputed_ascwds_job_role_counts, pl.Int64()),
-            (IndCQC.ascwds_job_role_ratios, pl.Float32()),
-        ]
+class ModelNonResWithAndWithoutDormancyCombinedSchemas:
+    estimated_posts_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.care_home: pl.String,
+            IndCQC.related_location: pl.String,
+            IndCQC.time_registered: pl.Int64,
+            IndCQC.non_res_without_dormancy_model: pl.Float64,
+            IndCQC.non_res_with_dormancy_model: pl.Float64,
+            IndCQC.non_res_combined_model: pl.Float64,
+        }
     )
 
-    expected_get_job_counts_rolling_sum_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.cqc_location_import_date, pl.Date()),
-            (IndCQC.primary_service_type, pl.String()),
-            (IndCQC.main_job_role_clean_labelled, pl.String()),
-            (IndCQC.imputed_ascwds_job_role_counts, pl.Int64()),
-            ("rolling_sum", pl.Int64()),
-        ]
+    group_time_registered_to_six_month_bands_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.time_registered: pl.Int64,
+            NRModel_TempCol.time_registered_banded_and_capped: pl.Float64,
+        }
     )
+
+    calculate_and_apply_model_ratios_schema = pl.Schema(
+        {
+            IndCQC.related_location: pl.String,
+            NRModel_TempCol.time_registered_banded_and_capped: pl.Int64,
+            IndCQC.non_res_without_dormancy_model: pl.Float64,
+            IndCQC.non_res_with_dormancy_model: pl.Float64,
+            NRModel_TempCol.avg_with_dormancy: pl.Float64,
+            NRModel_TempCol.avg_without_dormancy: pl.Float64,
+            NRModel_TempCol.adjustment_ratio: pl.Float64,
+            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float64,
+        }
+    )
+
+    calculate_and_apply_residuals_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.non_res_with_dormancy_model: pl.Float64,
+            NRModel_TempCol.non_res_without_dormancy_model_adjusted: pl.Float64,
+            NRModel_TempCol.residual_at_overlap: pl.Float64,
+            NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied: pl.Float64,
+        }
+    )
+
+
+@dataclass
+class EstimateNonResCapacityTrackerFilledPostsSchemas:
+    expected_estimate_non_res_capacity_tracker_filled_posts_schema = pl.Schema(
+        {
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.care_home: pl.String,
+            IndCQC.ct_non_res_care_workers_employed_imputed: pl.Float32,
+            IndCQC.estimate_filled_posts: pl.Float32,
+            IndCQC.ct_non_res_all_posts: pl.Float32,
+            IndCQC.ct_non_res_filled_post_estimate: pl.Float32,
+            IndCQC.ct_non_res_filled_post_estimate_source: pl.String,
+        }
+    )
+
+
+@dataclass
+class TestJoinEstimatesToAscwds:
+    TEST_ROLES = ["role_a", "role_b"]
+    estimates_schema = pl.Schema(
+        {
+            "id": pl.Int32,
+            IndCQC.ascwds_workplace_import_date: pl.String,
+            IndCQC.establishment_id: pl.String,
+        }
+    )
+    ascwds_schema = pl.Schema(
+        {
+            IndCQC.ascwds_workplace_import_date: pl.String,
+            IndCQC.establishment_id: pl.String,
+            IndCQC.main_job_role_clean_labelled: pl.Enum(TEST_ROLES),
+            "value": pl.Float64,
+        }
+    )
+    expected_schema = pl.Schema(
+        {
+            "id": pl.Int32,
+            IndCQC.main_job_role_clean_labelled: pl.Enum(TEST_ROLES),
+            "value": pl.Float64,
+        }
+    )
+
+
+@dataclass
+class ImputeJobRoleSchemas:
+
+    create_imputed_ascwds_job_role_counts_expected_schema = {
+        EXPANDED_ID: pl.UInt32,
+        IndCQC.location_id: pl.String,
+        IndCQC.main_job_role_clean_labelled: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_job_role_counts: pl.Int64,
+        IndCQC.estimate_filled_posts: pl.Float32,
+        IndCQC.ascwds_job_role_ratios: pl.Float32,  # extra col
+        IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,  # extra col
+        IndCQC.imputed_ascwds_job_role_counts: pl.Float32,  # extra col
+    }
+
+    create_ascwds_job_role_rolling_ratio_expected_schema = {
+        EXPANDED_ID: pl.UInt16,
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.primary_service_type: pl.String,
+        IndCQC.main_job_role_clean_labelled: pl.String,
+        IndCQC.imputed_ascwds_job_role_counts: pl.Float32,
+        IndCQC.ascwds_job_role_rolling_sum: pl.Float32,
+        IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,
+    }
+
+    managerial_adjustment_core_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.registered_manager_names: pl.List,
+        IndCQC.main_job_role_clean_labelled: pl.String,
+        IndCQC.estimate_filled_posts_by_job_role: pl.Float64,
+    }
+
+    managerial_adjustment_expected_schema = managerial_adjustment_core_schema | {
+        # These output columns will be used by different tests.
+        "diff": pl.Float64,
+        "proportions": pl.Float64,
+        "adjusted_estimates": pl.Float64,
+    }

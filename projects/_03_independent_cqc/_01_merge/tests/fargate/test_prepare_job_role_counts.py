@@ -1,7 +1,16 @@
 import unittest
 from unittest.mock import ANY, Mock, patch
 
+import polars as pl
+import polars.testing as pl_testing
+
 import projects._03_independent_cqc._01_merge.fargate.prepare_job_role_counts as job
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    PrepareJobRoleCountsUtilsData as Data,
+)
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
+    PrepareJobRoleCountsUtilsSchemas as Schemas,
+)
 
 PATCH_PATH = "projects._03_independent_cqc._01_merge.fargate.prepare_job_role_counts"
 
@@ -36,6 +45,24 @@ class MainTests(unittest.TestCase):
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
             output_path=self.PREPARED_JOB_ROLE_COUNTS_DESTINATION,
-            partition_cols=None,
             append=False,
+        )
+
+
+class IsCQCLocationTests(unittest.TestCase):
+    def test_is_cqc_location_correctly_identifies_only_cqc_locations(
+        self,
+    ):
+        test_lf = pl.LazyFrame(
+            data=Data.filter_to_cqc_locations_rows,
+            schema=Schemas.filter_to_cqc_locations_schema,
+        )
+        returned_lf = test_lf.filter(job.is_cqc_location)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_filter_to_cqc_locations_rows,
+            schema=Schemas.filter_to_cqc_locations_schema,
+        )
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
         )

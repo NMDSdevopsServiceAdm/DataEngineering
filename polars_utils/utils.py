@@ -9,6 +9,8 @@ import polars as pl
 import polars.selectors as cs
 from botocore.exceptions import ClientError
 
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+
 
 def scan_parquet(
     source: str | Path,
@@ -436,3 +438,30 @@ def coalesce_with_source_labels(cols: list[str], name: str) -> tuple[pl.Expr, pl
         label_expr = label_expr.when(pl.col(c).is_not_null()).then(pl.lit(c))
 
     return (val_expr, label_expr.alias(f"{name}_source"))
+
+
+def cast_to_schema(schema: dict[str, pl.DataType]) -> list[pl.Expr]:
+    """Cast columns to given schema."""
+    return [pl.col(c).cast(dtype) for c, dtype in schema.items()]
+
+
+def nullify_ct_values_previous_to_first_submission(columns: list) -> list[pl.Expr]:
+    """
+    Nullifies Capacity Tracker (CT) values for all import dates prior to 2021-5-1.
+
+    This is to ensure that we do not impute filled posts prior to collecting CT
+    data.
+
+    Args:
+        columns (list): A list of column names to nullify.
+
+    Returns:
+        list[pl.Expr]: A list of expressions that null values in given columns when import date
+        is prior to 2021-5-1.
+    """
+    cutoff_condition = pl.col(IndCQC.cqc_location_import_date) < date(2021, 5, 1)
+
+    return [
+        pl.when(cutoff_condition).then(None).otherwise(pl.col(col)).alias(col)
+        for col in columns
+    ]
