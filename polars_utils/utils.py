@@ -721,3 +721,51 @@ def get_selected_value_v3(
     )
 
     return lf
+
+
+def get_selected_value_mh(
+    lf: pl.LazyFrame,
+    partition_by: str,
+    order_by: str,
+    column_with_null_values: str,
+    column_with_data: str,
+    new_column: str,
+    # selection: str,
+) -> pl.LazyFrame:
+    """
+    Creates a new column with the selected value (first or last) from a given column.
+
+    This function creates a new column by selecting a specified value over a given window on a given dataframe. It will
+    only select values in the column with data that have null values in the original column.
+
+    Args:
+        df (DataFrame): A dataframe containing the supplied columns.
+        window_spec (Window): A window describing how to prepare the dataframe.
+        column_with_null_values (str): A column with missing data.
+        column_with_data (str): A column with data for all the rows that column_with_null_values has data. This can be column_with_null_values itself.
+        new_column (str): The name of the new column containing the resulting selected values.
+        selection (str): One of 'first' or 'last'. This determines which pyspark window function will be used.
+
+    Returns:
+        DataFrame: A dataframe containing a new column with the selected value populated through each window.
+
+    Raises:
+        ValueError: If 'selection' is not one of the two permitted pyspark window functions.
+    """
+    rolling_agg_lf = (
+        lf.drop_nulls(column_with_null_values)
+        .sort([partition_by, order_by])
+        .group_by(partition_by)
+        .agg(pl.col(column_with_data).min_by(order_by).alias(new_column))
+    )
+    lf.show(10)
+    rolling_agg_lf.show(10)
+
+    lf = lf.join(
+        rolling_agg_lf,
+        on=partition_by,
+        how="left",
+    )
+    lf.show(10)
+
+    return lf
