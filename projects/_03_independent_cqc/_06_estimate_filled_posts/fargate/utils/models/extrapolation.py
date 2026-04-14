@@ -78,7 +78,7 @@ def model_extrapolation(
 
 # TODO
 def calculate_first_and_final_submission_dates(
-    df: pl.LazyFrame, column_with_null_values: str
+    lf: pl.LazyFrame, column_with_null_values: str
 ) -> pl.LazyFrame:
     """
     Calculates the first and final submission dates based on the '<column_with_null_values>' column.
@@ -87,27 +87,39 @@ def calculate_first_and_final_submission_dates(
     and adds them as new columns 'first_submission_time' and 'final_submission_time'.
 
     Args:
-        df (pl.LazyFrame): The input LazyFrame.
+        lf (pl.LazyFrame): The input LazyFrame.
         column_with_null_values (str): The name of the column with null values in.
 
     Returns:
         pl.LazyFrame: The LazyFrame with the added 'first_submission_time' and 'final_submission_time' columns.
     """
-    df = get_selected_value(
-        df,
-        column_with_null_values,
-        IndCqc.cqc_location_import_date,
-        IndCqc.first_submission_time,
-        "first",
+    first_submission_expr = (
+        pl.col(IndCqc.cqc_location_import_date)
+        .min()
+        .alias(IndCqc.first_submission_time)
     )
-    df = get_selected_value(
-        df,
-        column_with_null_values,
-        IndCqc.cqc_location_import_date,
-        IndCqc.final_submission_time,
-        "last",
+    final_submission_expr = (
+        pl.col(IndCqc.cqc_location_import_date)
+        .max()
+        .alias(IndCqc.final_submission_time)
     )
-    return df
+
+    dates_needed = [first_submission_expr, final_submission_expr]
+
+    for date_expr in dates_needed:
+        date_expr_lf = (
+            lf.drop_nulls(column_with_null_values)
+            .sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
+            .group_by(IndCqc.location_id)
+            .agg(date_expr)
+        )
+
+        lf = lf.join(
+            date_expr_lf,
+            on=IndCqc.location_id,
+            how="left",
+        )
+    return lf
 
 
 # TODO
