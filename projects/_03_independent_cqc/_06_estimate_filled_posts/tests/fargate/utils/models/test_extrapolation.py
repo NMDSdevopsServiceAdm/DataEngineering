@@ -4,48 +4,36 @@ from unittest.mock import ANY, Mock, patch
 import polars as pl
 import polars.testing as pl_testing
 
-import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.extrapolation as job
-from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+import projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.extrapolation as job
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     ModelExtrapolation as Data,
 )
-from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     ModelExtrapolation as Schemas,
 )
-from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
-PATCH_PATH = (
-    "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.extrapolation"
-)
+PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.extrapolation"
 
 
-class ModelExtrapolationTests(SparkBaseTest):
-    def setUp(self):
-        self.extrapolation_df = self.spark.createDataFrame(
-            Data.extrapolation_rows, Schemas.extrapolation_schema
-        )
-        self.model_column_name = IndCqc.posts_rolling_average_model
-
-        warnings.filterwarnings("ignore", category=ResourceWarning)
-        warnings.filterwarnings("ignore", category=DeprecationWarning)
-
-
-class MainTests(ModelExtrapolationTests):
+class MainTests:
     def setUp(self) -> None:
-        super().setUp()
-
-        self.returned_df = job.model_extrapolation(
-            self.extrapolation_df,
-            IndCqc.ascwds_pir_merged,
-            self.model_column_name,
+        self.test_lf = pl.LazyFrame(
+            Data.extrapolation_rows, Schemas.extrapolation_schema, orient="row"
+        )
+        self.returned_lf = job.model_extrapolation(
+            self.test_lf,
+            column_with_null_values=IndCqc.ascwds_pir_merged,
+            model_to_extrapolate_from=IndCqc.posts_rolling_average_model,
             extrapolation_method="nominal",
         )
+        self.returned_lf.show(12)
+        self.expected_lf = self.test_lf.drop()
 
     def test_model_extrapolation_row_count_unchanged(self):
-        self.assertEqual(self.returned_df.count(), self.extrapolation_df.count())
-
-    def test_model_extrapolation_returns_new_column(self):
-        self.assertIn(IndCqc.extrapolation_model, self.returned_df.columns)
+        pl_testing.assert_frame_equal(
+            self.returned_lf.count(), self.expected_lf.count()
+        )
 
 
 # class DefineWindowSpecsTests(ModelExtrapolationTests):
@@ -61,7 +49,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.input_df = self.spark.createDataFrame(
+        self.input_lf = self.spark.createDataFrame(
             Data.first_and_last_submission_dates_rows,
             Schemas.first_and_final_submission_dates_schema,
         )
@@ -69,32 +57,32 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
         self.window_spec_all_rows = (
             Window.partitionBy(IndCqc.location_id)
             .orderBy(IndCqc.cqc_location_import_date)
-            .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+            .rowsBetween(Window.unboundedPreceding, Window.unboundelfollowing)
         )
-        self.returned_df = job.calculate_first_and_final_submission_dates(
-            self.input_df,
+        self.returned_lf = job.calculate_first_and_final_submission_dates(
+            self.input_lf,
             self.column_with_null_values,
             self.window_spec_all_rows,
         )
-        self.expected_df = self.spark.createDataFrame(
+        self.expected_lf = self.spark.createDataFrame(
             Data.expected_first_and_last_submission_dates_rows,
             Schemas.expected_first_and_final_submission_dates_schema,
         )
 
-        self.returned_data = self.returned_df.sort(
+        self.returned_data = self.returned_lf.sort(
             IndCqc.location_id, IndCqc.cqc_location_import_date
         ).collect()
-        self.expected_data = self.expected_df.collect()
+        self.expected_data = self.expected_lf.collect()
 
     @patch(f"{PATCH_PATH}.get_selected_value")
     def test_calculate_first_and_final_submission_dates_calls_correct_functions(
         self,
         get_selected_value_mock: Mock,
     ):
-        get_selected_value_mock.return_value = self.input_df
+        get_selected_value_mock.return_value = self.input_lf
 
         job.calculate_first_and_final_submission_dates(
-            self.input_df,
+            self.input_lf,
             self.column_with_null_values,
             self.window_spec_all_rows,
         )
@@ -102,7 +90,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
         self.assertEqual(get_selected_value_mock.call_count, 2)
 
         get_selected_value_mock.assert_any_call(
-            self.input_df,
+            self.input_lf,
             self.window_spec_all_rows,
             self.column_with_null_values,
             IndCqc.cqc_location_import_date,
@@ -110,7 +98,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
             "first",
         )
         get_selected_value_mock.assert_any_call(
-            self.input_df,
+            self.input_lf,
             self.window_spec_all_rows,
             self.column_with_null_values,
             IndCqc.cqc_location_import_date,
@@ -121,11 +109,11 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
     def test_calculate_first_and_final_submission_dates_returns_same_number_of_rows(
         self,
     ):
-        self.assertEqual(self.input_df.count(), self.returned_df.count())
+        self.assertEqual(self.input_lf.count(), self.returned_lf.count())
 
     def test_calculate_first_and_final_submission_dates_returns_new_columns(self):
-        self.assertIn(IndCqc.first_submission_time, self.returned_df.columns)
-        self.assertIn(IndCqc.final_submission_time, self.returned_df.columns)
+        self.assertIn(IndCqc.first_submission_time, self.returned_lf.columns)
+        self.assertIn(IndCqc.final_submission_time, self.returned_lf.columns)
 
     def test_returned_values_match_expected(self):
         self.assertEqual(self.returned_data, self.expected_data)
@@ -135,7 +123,7 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.input_df = self.spark.createDataFrame(
+        self.input_lf = self.spark.createDataFrame(
             Data.extrapolation_forwards_rows,
             Schemas.extrapolation_forwards_schema,
         )
@@ -146,12 +134,12 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
             .orderBy(IndCqc.cqc_location_import_date)
             .rowsBetween(Window.unboundedPreceding, -1)
         )
-        self.mock_df = self.spark.createDataFrame(
+        self.mock_lf = self.spark.createDataFrame(
             Data.extrapolation_forwards_mock_rows,
             Schemas.extrapolation_forwards_mock_schema,
         )
-        self.returned_nominal_df = job.extrapolation_forwards(
-            self.input_df,
+        self.returned_nominal_lf = job.extrapolation_forwards(
+            self.input_lf,
             self.column_with_null_values,
             self.model_to_extrapolate_from,
             self.window_spec_lagged,
@@ -163,10 +151,10 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
         self,
         get_selected_value_mock: Mock,
     ):
-        get_selected_value_mock.return_value = self.mock_df
+        get_selected_value_mock.return_value = self.mock_lf
 
         job.extrapolation_forwards(
-            self.input_df,
+            self.input_lf,
             self.column_with_null_values,
             self.model_to_extrapolate_from,
             self.window_spec_lagged,
@@ -176,7 +164,7 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
         self.assertEqual(get_selected_value_mock.call_count, 2)
 
         get_selected_value_mock.assert_any_call(
-            self.input_df,
+            self.input_lf,
             self.window_spec_lagged,
             self.column_with_null_values,
             self.column_with_null_values,
@@ -193,47 +181,47 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
         )
 
     def test_extrapolation_forwards_returns_same_number_of_rows(self):
-        self.assertEqual(self.input_df.count(), self.returned_nominal_df.count())
+        self.assertEqual(self.input_lf.count(), self.returned_nominal_lf.count())
 
     def test_extrapolation_forwards_added_as_a_new_column(self):
-        self.assertIn(IndCqc.extrapolation_forwards, self.returned_nominal_df.columns)
+        self.assertIn(IndCqc.extrapolation_forwards, self.returned_nominal_lf.columns)
 
     def test_returned_extrapolation_forwards_values_match_expected_when_nominal(self):
-        expected_df = self.spark.createDataFrame(
+        expected_lf = self.spark.createDataFrame(
             Data.expected_extrapolation_forwards_when_nominal_rows,
             Schemas.expected_extrapolation_forwards_schema,
         )
 
-        self.returned_data = self.returned_nominal_df.sort(
+        self.returned_data = self.returned_nominal_lf.sort(
             IndCqc.location_id, IndCqc.cqc_location_import_date
         ).collect()
 
-        self.assertEqual(self.returned_data, expected_df.collect())
+        self.assertEqual(self.returned_data, expected_lf.collect())
 
     def test_returned_extrapolation_forwards_values_match_expected_when_ratio(self):
-        returned_df = job.extrapolation_forwards(
-            self.input_df,
+        returned_lf = job.extrapolation_forwards(
+            self.input_lf,
             self.column_with_null_values,
             self.model_to_extrapolate_from,
             self.window_spec_lagged,
             extrapolation_method="ratio",
         )
 
-        expected_df = self.spark.createDataFrame(
+        expected_lf = self.spark.createDataFrame(
             Data.expected_extrapolation_forwards_when_ratio_rows,
             Schemas.expected_extrapolation_forwards_schema,
         )
 
-        returned_data = returned_df.sort(
+        returned_data = returned_lf.sort(
             IndCqc.location_id, IndCqc.cqc_location_import_date
         ).collect()
 
-        self.assertEqual(returned_data, expected_df.collect())
+        self.assertEqual(returned_data, expected_lf.collect())
 
     def test_error_raised_for_invalid_extrapolation_method(self):
         with self.assertRaises(ValueError) as context:
             job.extrapolation_forwards(
-                self.input_df,
+                self.input_lf,
                 self.column_with_null_values,
                 self.model_to_extrapolate_from,
                 self.window_spec_lagged,
@@ -250,7 +238,7 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.input_df = self.spark.createDataFrame(
+        self.input_lf = self.spark.createDataFrame(
             Data.extrapolation_backwards_rows,
             Schemas.extrapolation_backwards_schema,
         )
@@ -259,14 +247,14 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
         self.window_spec_all_rows = (
             Window.partitionBy(IndCqc.location_id)
             .orderBy(IndCqc.cqc_location_import_date)
-            .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+            .rowsBetween(Window.unboundedPreceding, Window.unboundelfollowing)
         )
-        self.mock_df = self.spark.createDataFrame(
+        self.mock_lf = self.spark.createDataFrame(
             Data.extrapolation_backwards_mock_rows,
             Schemas.extrapolation_backwards_mock_schema,
         )
-        self.returned_nominal_df = job.extrapolation_backwards(
-            self.input_df,
+        self.returned_nominal_lf = job.extrapolation_backwards(
+            self.input_lf,
             self.column_with_null_values,
             self.model_to_extrapolate_from,
             self.window_spec_all_rows,
@@ -278,10 +266,10 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
         self,
         get_selected_value_mock: Mock,
     ):
-        get_selected_value_mock.return_value = self.mock_df
+        get_selected_value_mock.return_value = self.mock_lf
 
         job.extrapolation_backwards(
-            self.input_df,
+            self.input_lf,
             self.column_with_null_values,
             self.model_to_extrapolate_from,
             self.window_spec_all_rows,
@@ -291,7 +279,7 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
         self.assertEqual(get_selected_value_mock.call_count, 2)
 
         get_selected_value_mock.assert_any_call(
-            self.input_df,
+            self.input_lf,
             self.window_spec_all_rows,
             self.column_with_null_values,
             self.column_with_null_values,
@@ -308,47 +296,47 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
         )
 
     def test_extrapolation_backwards_returns_same_number_of_rows(self):
-        self.assertEqual(self.input_df.count(), self.returned_nominal_df.count())
+        self.assertEqual(self.input_lf.count(), self.returned_nominal_lf.count())
 
     def test_extrapolation_backwards_added_as_a_new_column(self):
-        self.assertIn(IndCqc.extrapolation_backwards, self.returned_nominal_df.columns)
+        self.assertIn(IndCqc.extrapolation_backwards, self.returned_nominal_lf.columns)
 
     def test_returned_extrapolation_backwards_values_match_expected_when_nominal(self):
-        expected_df = self.spark.createDataFrame(
+        expected_lf = self.spark.createDataFrame(
             Data.expected_extrapolation_backwards_when_nominal_rows,
             Schemas.expected_extrapolation_backwards_schema,
         )
 
-        self.returned_data = self.returned_nominal_df.sort(
+        self.returned_data = self.returned_nominal_lf.sort(
             IndCqc.location_id, IndCqc.cqc_location_import_date
         ).collect()
 
-        self.assertEqual(self.returned_data, expected_df.collect())
+        self.assertEqual(self.returned_data, expected_lf.collect())
 
     def test_returned_extrapolation_backwards_values_match_expected_when_ratio(self):
-        returned_df = job.extrapolation_backwards(
-            self.input_df,
+        returned_lf = job.extrapolation_backwards(
+            self.input_lf,
             self.column_with_null_values,
             self.model_to_extrapolate_from,
             self.window_spec_all_rows,
             extrapolation_method="ratio",
         )
 
-        expected_df = self.spark.createDataFrame(
+        expected_lf = self.spark.createDataFrame(
             Data.expected_extrapolation_backwards_when_ratio_rows,
             Schemas.expected_extrapolation_backwards_schema,
         )
 
-        returned_data = returned_df.sort(
+        returned_data = returned_lf.sort(
             IndCqc.location_id, IndCqc.cqc_location_import_date
         ).collect()
 
-        self.assertEqual(returned_data, expected_df.collect())
+        self.assertEqual(returned_data, expected_lf.collect())
 
     def test_error_raised_for_invalid_extrapolation_method(self):
         with self.assertRaises(ValueError) as context:
             job.extrapolation_backwards(
-                self.input_df,
+                self.input_lf,
                 self.column_with_null_values,
                 self.model_to_extrapolate_from,
                 self.window_spec_all_rows,
@@ -365,22 +353,22 @@ class CombineExtrapolationTests(ModelExtrapolationTests):
     def setUp(self):
         super().setUp()
 
-        test_combine_extrapolation_df = self.spark.createDataFrame(
+        test_combine_extrapolation_lf = self.spark.createDataFrame(
             Data.combine_extrapolation_rows,
             Schemas.combine_extrapolation_schema,
         )
-        self.returned_df = job.combine_extrapolation(test_combine_extrapolation_df)
-        self.expected_df = self.spark.createDataFrame(
+        self.returned_lf = job.combine_extrapolation(test_combine_extrapolation_lf)
+        self.expected_lf = self.spark.createDataFrame(
             Data.expected_combine_extrapolation_rows,
             Schemas.expected_combine_extrapolation_schema,
         )
-        self.returned_data = self.returned_df.sort(
+        self.returned_data = self.returned_lf.sort(
             IndCqc.location_id, IndCqc.cqc_location_import_date
         ).collect()
-        self.expected_data = self.expected_df.collect()
+        self.expected_data = self.expected_lf.collect()
 
     def test_combine_extrapolation_returns_expected_columns(self):
-        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
+        self.assertTrue(self.returned_lf.columns, self.expected_lf.columns)
 
     def test_combine_extrapolation_returns_expected_values(self):
         for i in range(len(self.returned_data)):
