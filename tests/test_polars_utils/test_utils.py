@@ -681,7 +681,7 @@ class TestGetSelectedValueFunction:
         IndCQC.posts_rolling_average_model: pl.Float32,
         "new_column": pl.Float32,
     }
-    error_message = "Error: The selection parameter 'other' was not found. Please use 'first' or 'last'."
+    error_message = "selection must be 'first' or 'last'"
 
     @pytest.mark.parametrize(
         "expected, selection_type",
@@ -697,9 +697,9 @@ class TestGetSelectedValueFunction:
             ),
             pytest.param(
                 [
-                    ("loc 1", 1, 1.0, 100.0, 50.0),
-                    ("loc 1", 2, 2.0, 50.0, 50.0),
-                    ("loc 1", 3, None, 25.0, 50.0),
+                    ("loc 1", date(2026, 1, 1), 1.0, 100.0, 50.0),
+                    ("loc 1", date(2026, 2, 1), 2.0, 50.0, 50.0),
+                    ("loc 1", date(2026, 3, 1), None, 25.0, 50.0),
                 ],
                 "last",
                 id="when_selection_equals_last",
@@ -713,7 +713,7 @@ class TestGetSelectedValueFunction:
             orient="row",
         )
         input_lf = expected_lf.drop("new_column")
-        returned_lf = utils.get_selected_value(
+        returned_lf = utils.get_selected_value_v3(
             lf=input_lf,
             partition_by=IndCQC.location_id,
             order_by=IndCQC.cqc_location_import_date,
@@ -725,16 +725,14 @@ class TestGetSelectedValueFunction:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
 
     def test_get_selected_value_raises_error_when_selection_is_not_permitted(self):
-        data = (
-            [
-                ("loc 1", 1, 1.0, 100.0, 50.0),
-                ("loc 1", 2, 2.0, 50.0, 50.0),
-                ("loc 1", 3, None, 25.0, 50.0),
-            ],
-        )
+        data = [
+            ("loc 1", date(2026, 1, 1), 1.0, 100.0, 50.0),
+            ("loc 1", date(2026, 2, 1), 2.0, 50.0, 50.0),
+            ("loc 1", date(2026, 3, 1), None, 25.0, 50.0),
+        ]
         expected_lf = pl.LazyFrame(
-            data,
-            self.get_selected_value_schema,
+            data=data,
+            schema=self.get_selected_value_schema,
             orient="row",
         )
         input_lf = expected_lf.drop("new_column")

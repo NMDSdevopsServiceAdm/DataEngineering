@@ -542,7 +542,7 @@ def _get_selected_value(
     return lf
 
 
-def get_selected_value(
+def get_selected_value_v1(
     lf: pl.LazyFrame,
     partition_by: list[str],
     order_by: str,
@@ -558,20 +558,20 @@ def get_selected_value(
     if selection not in {"first", "last"}:
         raise ValueError("selection must be 'first' or 'last'")
 
-    lf = lf.sort(partition_by + [order_by])
+    lf = lf.sort([partition_by, order_by])
 
     valid_expr = pl.when(pl.col(column_with_null_values).is_not_null()).then(
         pl.col(column_with_data)
     )
 
     base_expr = (
-        valid_expr.forward_fill()
+        valid_expr.drop_nulls().first().over(partition_by)
         if selection == "first"
-        else valid_expr.backward_fill()
+        else valid_expr.drop_nulls().last().over(partition_by)
     )
 
     if not use_dynamic:
-        return lf.with_columns(base_expr.over(partition_by).alias(new_column))
+        return lf.with_columns(base_expr.alias(new_column))
 
     if dynamic_every is None:
         raise ValueError("dynamic_every must be provided when use_dynamic=True")
@@ -595,4 +595,129 @@ def get_selected_value(
         .drop("_base")
     )
 
-    return lf.join(grouped, on=partition_by + [order_by], how="left")
+    return lf.join(grouped, on=[partition_by, order_by], how="left")
+
+
+def get_selected_value_v2(
+    df: pl.DataFrame,
+    partition_columns: list[str],
+    order_column: str,
+    column_with_null_values: str,
+    column_with_data: str,
+    new_column: str,
+    selection: str,
+    window_type: str = "full",  # "backward", "forward", "lagged"
+) -> pl.DataFrame:
+
+    if selection not in {"first", "last"}:
+        raise ValueError("selection must be 'first' or 'last'")
+
+    df = df.sort(partition_columns + [order_column])
+
+    expr = (
+        pl.when(pl.col(column_with_null_values).is_not_null())
+        .then(pl.col(column_with_data))
+        .otherwise(None)
+    )
+
+    if window_type == "backward":
+        result = expr.forward_fill()
+
+    elif window_type == "forward":
+        result = expr.backward_fill()
+
+    elif window_type == "lagged":
+        result = expr.shift(1).forward_fill()
+
+    else:
+        raise ValueError("window_type must be backward, forward, or lagged")
+
+    return df.with_columns(result.over(partition_columns).alias(new_column))
+
+
+def get_selected_value_polars(
+    df: pl.DataFrame,
+    partition_columns: list[str],
+    order_column: str,
+    column_with_null_values: str,
+    column_with_data: str,
+    new_column: str,
+    selection: str,
+    window_type: str,
+) -> pl.DataFrame:
+
+    if selection not in {"first", "last"}:
+        raise ValueError("selection must be 'first' or 'last'")
+
+    if window_type not in {"full", "backward", "forward", "lagged"}:
+        raise ValueError(
+            "window_type must be 'full', 'backward', 'forward', or 'lagged'"
+        )
+
+    df = df.sort(partition_columns + [order_column])
+
+    # Base conditional expression
+    expr = (
+        pl.when(pl.col(column_with_null_values).is_not_null())
+        .then(pl.col(column_with_data))
+        .otherwise(None)
+    )
+
+    if window_type == "full":
+
+        if selection == "first":
+            result = expr.drop_nulls().first()
+
+        else:  # last
+            result = expr.drop_nulls().last()
+
+        result = result.over(partition_columns)
+
+    elif window_type == "backward":
+
+        result = expr.forward_fill()
+
+        result = result.over(partition_columns)
+
+    elif window_type == "forward":
+
+        result = expr.backward_fill()
+
+        result = result.over(partition_columns)
+
+    elif window_type == "lagged":
+
+        shifted = expr.shift(1)
+
+        result = shifted.forward_fill()
+
+        result = result.over(partition_columns)
+
+    return df.with_columns(result.alias(new_column))
+
+
+def get_selected_value_v3(
+    lf: pl.LazyFrame,
+    partition_by: str,
+    order_by: str,
+    column_with_null_values: str,
+    column_with_data: str,
+    new_column: str,
+    selection: str,
+) -> pl.LazyFrame:
+
+    if selection not in {"first", "last"}:
+        raise ValueError("selection must be 'first' or 'last'")
+
+    lf = lf.sort([partition_by, order_by])
+
+    expr = (
+        pl.when(pl.col(column_with_null_values).is_not_null())
+        .then(pl.col(column_with_data))
+        .otherwise(None)
+    )
+    lf = lf.with_columns(
+        expr.first().rolling(index_column=order_by, period="1mo").alias(new_column)
+    )
+
+    return lf
