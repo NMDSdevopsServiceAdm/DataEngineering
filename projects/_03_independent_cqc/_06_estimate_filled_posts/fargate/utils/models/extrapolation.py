@@ -6,6 +6,7 @@ from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
+# TODO
 def model_extrapolation(
     df: pl.LazyFrame,
     column_with_null_values: str,
@@ -78,6 +79,7 @@ def model_extrapolation(
 #     return window_spec_all_rows, window_spec_lagged
 
 
+# TODO
 def calculate_first_and_final_submission_dates(
     df: pl.LazyFrame, column_with_null_values: str, window_spec: Window
 ) -> pl.LazyFrame:
@@ -114,6 +116,7 @@ def calculate_first_and_final_submission_dates(
     return df
 
 
+# TODO
 def extrapolation_forwards(
     df: pl.LazyFrame,
     column_with_null_values: str,
@@ -185,6 +188,7 @@ def extrapolation_forwards(
     return df
 
 
+# TODO
 def extrapolation_backwards(
     df: pl.LazyFrame,
     column_with_null_values: str,
@@ -265,6 +269,7 @@ def extrapolation_backwards(
     return df
 
 
+# TODO
 def combine_extrapolation(df: pl.LazyFrame) -> pl.LazyFrame:
     """
     Combines forward and backward extrapolation values into a single column based on the specified model.
