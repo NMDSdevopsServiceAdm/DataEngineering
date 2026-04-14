@@ -36,6 +36,9 @@ class TestMain(unittest.TestCase):
     mock_data = Mock(name="data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(
+        f"{PATCH_PATH}.calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles"
+    )
     @patch(f"{PATCH_PATH}.adjust_managerial_roles")
     @patch(f"{PATCH_PATH}.count_cqc_rm")
     @patch(f"{PATCH_PATH}.calculate_estimated_filled_posts_by_job_role")
@@ -46,6 +49,7 @@ class TestMain(unittest.TestCase):
         calculate_estimated_filled_posts_by_job_role_mock: Mock,
         count_cqc_rm_mock: Mock,
         adjust_managerial_roles_mock: Mock,
+        calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -57,6 +61,7 @@ class TestMain(unittest.TestCase):
         calculate_estimated_filled_posts_by_job_role_mock.assert_called_once()
         count_cqc_rm_mock.assert_called_once()
         adjust_managerial_roles_mock.assert_called_once()
+        calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
             output_path=self.TEST_DESTINATION,
@@ -203,6 +208,23 @@ class TestDistributeRmDifference:
         returned_lf = job.distribute_rm_difference(
             input_lf,
             test_non_rm_manager_condition,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestCalculateDifferenceBetweenEstimateFilledPostsAndEstimateFilledPostsFromAllJobRoles:
+    def test_function_returns_expected_values(self):
+        expected_lf = pl.LazyFrame(
+            Data.expected_calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_rows,
+            Schemas.expected_calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_schema,
+            orient="row",
+        )
+        test_lf = expected_lf.drop(
+            IndCQC.difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles
+        )
+        returned_lf = job.calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles(
+            test_lf
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

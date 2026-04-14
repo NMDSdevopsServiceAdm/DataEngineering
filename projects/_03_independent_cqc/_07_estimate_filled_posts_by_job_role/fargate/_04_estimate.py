@@ -45,6 +45,10 @@ def main(
 
     lf = adjust_managerial_roles(lf, non_rm_manager_roles)
 
+    lf = calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles(
+        lf
+    )
+
     lf = lf.with_columns(
         pl.col(IndCQC.cqc_location_import_date)
         .dt.year()
@@ -280,6 +284,30 @@ def distribute_rm_difference(
         .then(pl.col(IndCQC.registered_manager_count).cast(pl.Float32))
         .otherwise(pl.col(IndCQC.estimate_filled_posts_by_job_role))
         .alias(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
+    )
+
+
+def calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles(
+    lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """
+    Doc string goes here
+    """
+    return lf.with_columns(
+        pl.when(
+            pl.col(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
+            .count()
+            .over(ROW_ID)
+            .gt(0)
+        )
+        .then(
+            pl.sum(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
+            .over(ROW_ID)
+            .sub(pl.col(IndCQC.estimate_filled_posts))
+        )
+        .alias(
+            IndCQC.difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles
+        )
     )
 
 
