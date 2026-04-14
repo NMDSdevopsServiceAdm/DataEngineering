@@ -12,7 +12,7 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     ModelExtrapolation as Schemas,
 )
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.extrapolation"
 
@@ -48,83 +48,26 @@ PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.fargate.uti
 # #         self.assertIsInstance(returned_window_specs[1], WindowSpec)
 
 
-# # TODO
-# class CalculateFirstAndLastSubmissionDatesTests:
-#     def setUp(self) -> None:
-#         super().setUp()
+class TestCalculateFirstAndLastSubmissionDates:
+    expected_lf = pl.LazyFrame(
+        Data.expected_first_and_last_submission_dates_rows,
+        Schemas.expected_first_and_final_submission_dates_schema,
+        orient="row",
+    )
+    input_lf = expected_lf.drop(
+        IndCQC.first_submission_time, IndCQC.final_submission_time
+    )
+    returned_lf = job.calculate_first_and_final_submission_dates(
+        input_lf,
+        column_with_null_values=IndCQC.ascwds_pir_merged,
+    )
 
-#         self.input_lf = self.spark.createDataFrame(
-#             Data.first_and_last_submission_dates_rows,
-#             Schemas.first_and_final_submission_dates_schema,
-#         )
-#         self.column_with_null_values = IndCqc.ascwds_pir_merged
-#         self.window_spec_all_rows = (
-#             Window.partitionBy(IndCqc.location_id)
-#             .orderBy(IndCqc.cqc_location_import_date)
-#             .rowsBetween(Window.unboundedPreceding, Window.unboundelfollowing)
-#         )
-#         self.returned_lf = job.calculate_first_and_final_submission_dates(
-#             self.input_lf,
-#             self.column_with_null_values,
-#             self.window_spec_all_rows,
-#         )
-#         self.expected_lf = self.spark.createDataFrame(
-#             Data.expected_first_and_last_submission_dates_rows,
-#             Schemas.expected_first_and_final_submission_dates_schema,
-#         )
-
-#         self.returned_data = self.returned_lf.sort(
-#             IndCqc.location_id, IndCqc.cqc_location_import_date
-#         ).collect()
-#         self.expected_data = self.expected_lf.collect()
-
-#     @pytest.mark.skip(reason="todo")
-#     @patch(f"{PATCH_PATH}.get_selected_value")
-#     def test_calculate_first_and_final_submission_dates_calls_correct_functions(
-#         self,
-#         get_selected_value_mock: Mock,
-#     ):
-#         get_selected_value_mock.return_value = self.input_lf
-
-#         job.calculate_first_and_final_submission_dates(
-#             self.input_lf,
-#             self.column_with_null_values,
-#             self.window_spec_all_rows,
-#         )
-
-#         self.assertEqual(get_selected_value_mock.call_count, 2)
-
-#         get_selected_value_mock.assert_any_call(
-#             self.input_lf,
-#             self.window_spec_all_rows,
-#             self.column_with_null_values,
-#             IndCqc.cqc_location_import_date,
-#             IndCqc.first_submission_time,
-#             "first",
-#         )
-#         get_selected_value_mock.assert_any_call(
-#             self.input_lf,
-#             self.window_spec_all_rows,
-#             self.column_with_null_values,
-#             IndCqc.cqc_location_import_date,
-#             IndCqc.final_submission_time,
-#             "last",
-#         )
-
-#     @pytest.mark.skip(reason="todo")
-#     def test_calculate_first_and_final_submission_dates_returns_same_number_of_rows(
-#         self,
-#     ):
-#         self.assertEqual(self.input_lf.count(), self.returned_lf.count())
-
-#     @pytest.mark.skip(reason="todo")
-#     def test_calculate_first_and_final_submission_dates_returns_new_columns(self):
-#         self.assertIn(IndCqc.first_submission_time, self.returned_lf.columns)
-#         self.assertIn(IndCqc.final_submission_time, self.returned_lf.columns)
-
-#     @pytest.mark.skip(reason="todo")
-#     def test_returned_values_match_expected(self):
-#         self.assertEqual(self.returned_data, self.expected_data)
+    def test_calculate_first_and_final_submission_dates_returns_expected_values(
+        self,
+    ):
+        pl_testing.assert_frame_equal(
+            self.expected_lf, self.returned_lf, abs_tol=0.00001
+        )
 
 
 # # TODO

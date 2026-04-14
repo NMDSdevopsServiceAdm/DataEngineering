@@ -1504,17 +1504,12 @@ class ModelExtrapolation:
         IndCQC.posts_rolling_average_model: pl.Float32,
     }
 
-    first_and_final_submission_dates_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.unix_time: pl.Int32,
-        IndCQC.ascwds_pir_merged: pl.Float32,
-    }
     expected_first_and_final_submission_dates_schema = {
         IndCQC.location_id: pl.String,
-        IndCQC.unix_time: pl.Int32,
+        IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.ascwds_pir_merged: pl.Float32,
-        IndCQC.first_submission_time: pl.Int32,
-        IndCQC.final_submission_time: pl.Int32,
+        IndCQC.first_submission_time: pl.Date,
+        IndCQC.final_submission_time: pl.Date,
     }
 
     extrapolation_forwards_schema = {
