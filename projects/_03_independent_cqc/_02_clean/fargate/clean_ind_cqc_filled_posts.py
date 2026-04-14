@@ -1,6 +1,6 @@
 import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
-from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
+from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
 )
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers import (
@@ -52,13 +52,7 @@ def main(
     locations_lf = replace_zero_beds_with_null(locations_lf)
     locations_lf = populate_missing_care_home_number_of_beds(locations_lf)
 
-    locations_lf = calculate_ascwds_filled_posts(
-        locations_lf,
-        IndCQC.total_staff_bounded,
-        IndCQC.worker_records_bounded,
-        IndCQC.ascwds_filled_posts,
-        IndCQC.ascwds_filled_posts_source,
-    )
+    locations_lf = calculate_ascwds_filled_posts(locations_lf)
 
     locations_lf = create_column_with_repeated_values_removed(
         locations_lf,
