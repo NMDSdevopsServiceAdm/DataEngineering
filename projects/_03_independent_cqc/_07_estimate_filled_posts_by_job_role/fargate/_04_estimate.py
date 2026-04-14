@@ -26,7 +26,6 @@ non_rm_manager_roles = [
 
 def main(
     imputed_data_source: str,
-    metadata_source: str,
     estimated_data_destination: str,
 ) -> None:
     """
@@ -34,25 +33,17 @@ def main(
 
     Args:
         imputed_data_source (str): path to the imputed data
-        metadata_source (str): path to the metadata created in clean step
         estimated_data_destination (str): destination for output
     """
     print("Estimates Job Started...")
 
     lf = utils.scan_parquet(imputed_data_source)
 
-    metadata_lf = utils.scan_parquet(metadata_source)
-
     lf = calculate_estimated_filled_posts_by_job_role(lf)
 
     lf = lf.with_columns(count_cqc_rm().alias(IndCQC.registered_manager_count))
 
     lf = adjust_managerial_roles(lf, non_rm_manager_roles)
-
-    lf = lf.join(
-        metadata_lf,
-        on=ROW_ID,
-    )
 
     lf = lf.with_columns(
         pl.col(IndCQC.cqc_location_import_date)
@@ -298,7 +289,6 @@ if __name__ == "__main__":
             "--imputed_data_source",
             "Source s3 directory for imputed data",
         ),
-        ("--metadata_source", "Destination s3 directory for estimates by job role"),
         (
             "--estimated_data_destination",
             "Destination s3 directory for estimates by job role",
@@ -306,6 +296,5 @@ if __name__ == "__main__":
     )
     main(
         imputed_data_source=args.imputed_data_source,
-        metadata_source=args.metadata_source,
         estimated_data_destination=args.estimated_data_destination,
     )

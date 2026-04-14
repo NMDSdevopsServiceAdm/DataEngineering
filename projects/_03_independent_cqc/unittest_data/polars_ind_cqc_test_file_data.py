@@ -2259,18 +2259,3 @@ class EstimateFilledPostsByJobRole04EstimateData:
             ],
         ),
     ]
-
-
-@dataclass
-class EstimateFilledPostsByJobRole04EstimatePivotData:
-    test_job_roles_to_become_columns = [
-        MainJobRoleLabels.admin_staff,
-        MainJobRoleLabels.care_worker,
-    ]
-    input_data = [
-        (0, "1-001", date(2026, 1, 1), "service", "service", "cur_cssr", "cur_region", 10, "estimate_source", MainJobRoleLabels.admin_staff, "ratio_source", 5, "2026"),
-        (0, "1-001", date(2026, 1, 1), "service", "service", "cur_cssr", "cur_region", 10, "estimate_source", MainJobRoleLabels.care_worker, "ratio_source", 5, "2026"),
-    ] # fmt: skip
-    expected_data = [
-        (0, "1-001", date(2026, 1, 1), "service", "service", "cur_cssr", "cur_region", 10, "estimate_source", "ratio_source", "2026", 5, 5),
-    ] # fmt: skip

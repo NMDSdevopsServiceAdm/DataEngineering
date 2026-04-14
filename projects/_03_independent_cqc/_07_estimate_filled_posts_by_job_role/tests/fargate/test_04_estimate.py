@@ -50,11 +50,10 @@ class TestMain(unittest.TestCase):
     ):
         job.main(
             self.TEST_IMPUTED_SOURCE,
-            self.TEST_METADATA_SOURCE,
             self.TEST_DESTINATION,
         )
 
-        self.assertEqual(scan_parquet_mock.call_count, 2)
+        scan_parquet_mock.assert_called_once()
         calculate_estimated_filled_posts_by_job_role_mock.assert_called_once()
         count_cqc_rm_mock.assert_called_once()
         adjust_managerial_roles_mock.assert_called_once()
