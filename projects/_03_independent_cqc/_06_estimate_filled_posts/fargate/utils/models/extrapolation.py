@@ -1,6 +1,7 @@
 from typing import Tuple
 
 import polars as pl
+import pyspark.sql.functions as F
 
 from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
@@ -33,23 +34,19 @@ def model_extrapolation(
     Returns:
         pl.LazyFrame: The LazyFrame with the extrapolated values in the 'extrapolation_model' column.
     """
-    window_spec_all_rows, window_spec_lagged = define_window_specs()
+    # window_spec_all_rows, window_spec_lagged = define_window_specs()
 
-    df = calculate_first_and_final_submission_dates(
-        df, column_with_null_values, window_spec_all_rows
-    )
+    df = calculate_first_and_final_submission_dates(df, column_with_null_values)
     df = extrapolation_forwards(
         df,
         column_with_null_values,
         model_to_extrapolate_from,
-        window_spec_lagged,
         extrapolation_method,
     )
     df = extrapolation_backwards(
         df,
         column_with_null_values,
         model_to_extrapolate_from,
-        window_spec_all_rows,
         extrapolation_method,
     )
     df = combine_extrapolation(df)
@@ -81,7 +78,7 @@ def model_extrapolation(
 
 # TODO
 def calculate_first_and_final_submission_dates(
-    df: pl.LazyFrame, column_with_null_values: str, window_spec: Window
+    df: pl.LazyFrame, column_with_null_values: str
 ) -> pl.LazyFrame:
     """
     Calculates the first and final submission dates based on the '<column_with_null_values>' column.
@@ -92,14 +89,12 @@ def calculate_first_and_final_submission_dates(
     Args:
         df (pl.LazyFrame): The input LazyFrame.
         column_with_null_values (str): The name of the column with null values in.
-        window_spec (Window): The window specification to use for the calculation.
 
     Returns:
         pl.LazyFrame: The LazyFrame with the added 'first_submission_time' and 'final_submission_time' columns.
     """
     df = get_selected_value(
         df,
-        window_spec,
         column_with_null_values,
         IndCqc.cqc_location_import_date,
         IndCqc.first_submission_time,
@@ -107,7 +102,6 @@ def calculate_first_and_final_submission_dates(
     )
     df = get_selected_value(
         df,
-        window_spec,
         column_with_null_values,
         IndCqc.cqc_location_import_date,
         IndCqc.final_submission_time,
@@ -121,7 +115,6 @@ def extrapolation_forwards(
     df: pl.LazyFrame,
     column_with_null_values: str,
     model_to_extrapolate_from: str,
-    window_spec: Window,
     extrapolation_method: str,
 ) -> pl.LazyFrame:
     """
@@ -138,7 +131,6 @@ def extrapolation_forwards(
         df (pl.LazyFrame): A LazyFrame with a column to extrapolate forwards.
         column_with_null_values (str): The name of the column with null values in.
         model_to_extrapolate_from (str): The model used for extrapolation.
-        window_spec (Window): The window specification to use for the calculation.
         extrapolation_method (str): The choice of method. Must be either 'nominal' or 'ratio'.
 
     Returns:
@@ -149,7 +141,6 @@ def extrapolation_forwards(
     """
     df = get_selected_value(
         df,
-        window_spec,
         column_with_null_values,
         column_with_null_values,
         IndCqc.previous_non_null_value,
@@ -157,7 +148,6 @@ def extrapolation_forwards(
     )
     df = get_selected_value(
         df,
-        window_spec,
         column_with_null_values,
         model_to_extrapolate_from,
         IndCqc.previous_model_value,
@@ -193,7 +183,6 @@ def extrapolation_backwards(
     df: pl.LazyFrame,
     column_with_null_values: str,
     model_to_extrapolate_from: str,
-    window_spec: Window,
     extrapolation_method: str,
 ) -> pl.LazyFrame:
     """
@@ -210,7 +199,6 @@ def extrapolation_backwards(
         df (pl.LazyFrame): The input LazyFrame.
         column_with_null_values (str): The name of the column with null values in.
         model_to_extrapolate_from (str): The name of the column representing the model to extrapolate from.
-        window_spec (Window): The window specification to use for the calculation.
         extrapolation_method (str): The choice of method. Must be either 'nominal' or 'ratio'.
 
     Returns:
@@ -221,7 +209,6 @@ def extrapolation_backwards(
     """
     df = get_selected_value(
         df,
-        window_spec,
         column_with_null_values,
         column_with_null_values,
         IndCqc.first_non_null_value,
@@ -230,7 +217,6 @@ def extrapolation_backwards(
 
     df = get_selected_value(
         df,
-        window_spec,
         column_with_null_values,
         model_to_extrapolate_from,
         IndCqc.first_model_value,
