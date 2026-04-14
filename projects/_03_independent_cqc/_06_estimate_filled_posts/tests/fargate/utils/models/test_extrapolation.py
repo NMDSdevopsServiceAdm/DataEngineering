@@ -25,8 +25,8 @@ PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.fargate.uti
 #         )
 #         self.returned_lf = job.model_extrapolation(
 #             self.test_lf,
-#             column_with_null_values=IndCqc.ascwds_pir_merged,
-#             model_to_extrapolate_from=IndCqc.posts_rolling_average_model,
+#             column_with_null_values=IndCQC.ascwds_pir_merged,
+#             model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
 #             extrapolation_method="nominal",
 #         )
 #         self.returned_lf.show(12)
@@ -70,126 +70,52 @@ class TestCalculateFirstAndLastSubmissionDates:
         )
 
 
-# # TODO
-# class ExtrapolationForwardsTests(ModelExtrapolationTests):
-#     def setUp(self) -> None:
-#         super().setUp()
+class TestExtrapolationForwards:
+    expected_nominal_lf = pl.LazyFrame(
+        Data.expected_extrapolation_forwards_when_nominal_rows,
+        Schemas.expected_extrapolation_forwards_schema,
+        orient="row",
+    )
+    expected_ratio_lf = pl.LazyFrame(
+        Data.expected_extrapolation_forwards_when_ratio_rows,
+        Schemas.expected_extrapolation_forwards_schema,
+        orient="row",
+    )
+    input_lf = expected_nominal_lf.drop(IndCQC.extrapolation_forwards)
+    returned_nominal_lf = job.extrapolation_forwards(
+        input_lf,
+        column_with_null_values=IndCQC.ascwds_pir_merged,
+        model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
+        extrapolation_method="nominal",
+    )
+    returned_ratio_lf = job.extrapolation_forwards(
+        input_lf,
+        column_with_null_values=IndCQC.ascwds_pir_merged,
+        model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
+        extrapolation_method="ratio",
+    )
 
-#         self.input_lf = self.spark.createDataFrame(
-#             Data.extrapolation_forwards_rows,
-#             Schemas.extrapolation_forwards_schema,
-#         )
-#         self.column_with_null_values = IndCqc.ascwds_pir_merged
-#         self.model_to_extrapolate_from = IndCqc.posts_rolling_average_model
-#         self.window_spec_lagged = (
-#             Window.partitionBy(IndCqc.location_id)
-#             .orderBy(IndCqc.cqc_location_import_date)
-#             .rowsBetween(Window.unboundedPreceding, -1)
-#         )
-#         self.mock_lf = self.spark.createDataFrame(
-#             Data.extrapolation_forwards_mock_rows,
-#             Schemas.extrapolation_forwards_mock_schema,
-#         )
-#         self.returned_nominal_lf = job.extrapolation_forwards(
-#             self.input_lf,
-#             self.column_with_null_values,
-#             self.model_to_extrapolate_from,
-#             self.window_spec_lagged,
-#             extrapolation_method="nominal",
-#         )
+    def test_returned_extrapolation_forwards_values_match_expected_when_nominal(self):
+        pl_testing.assert_frame_equal(
+            self.expected_nominal_lf, self.returned_nominal_lf, abs_tol=0.00001
+        )
 
-#     @pytest.mark.skip(reason="todo")
-#     @patch(f"{PATCH_PATH}.get_selected_value")
-#     def test_extrapolation_forwards_calls_correct_functions(
-#         self,
-#         get_selected_value_mock: Mock,
-#     ):
-#         get_selected_value_mock.return_value = self.mock_lf
+    @pytest.mark.skip(reason="todo")
+    def test_returned_extrapolation_forwards_values_match_expected_when_ratio(self):
+        pl_testing.assert_frame_equal(
+            self.expected_ratio_lf, self.returned_ratio_lf, abs_tol=0.00001
+        )
 
-#         job.extrapolation_forwards(
-#             self.input_lf,
-#             self.column_with_null_values,
-#             self.model_to_extrapolate_from,
-#             self.window_spec_lagged,
-#             extrapolation_method="nominal",
-#         )
-
-#         self.assertEqual(get_selected_value_mock.call_count, 2)
-
-#         get_selected_value_mock.assert_any_call(
-#             self.input_lf,
-#             self.window_spec_lagged,
-#             self.column_with_null_values,
-#             self.column_with_null_values,
-#             IndCqc.previous_non_null_value,
-#             "last",
-#         )
-#         get_selected_value_mock.assert_any_call(
-#             ANY,
-#             self.window_spec_lagged,
-#             self.column_with_null_values,
-#             self.model_to_extrapolate_from,
-#             IndCqc.previous_model_value,
-#             "last",
-#         )
-
-#     @pytest.mark.skip(reason="todo")
-#     def test_extrapolation_forwards_returns_same_number_of_rows(self):
-#         self.assertEqual(self.input_lf.count(), self.returned_nominal_lf.count())
-
-#     @pytest.mark.skip(reason="todo")
-#     def test_extrapolation_forwards_added_as_a_new_column(self):
-#         self.assertIn(IndCqc.extrapolation_forwards, self.returned_nominal_lf.columns)
-
-#     @pytest.mark.skip(reason="todo")
-#     def test_returned_extrapolation_forwards_values_match_expected_when_nominal(self):
-#         expected_lf = self.spark.createDataFrame(
-#             Data.expected_extrapolation_forwards_when_nominal_rows,
-#             Schemas.expected_extrapolation_forwards_schema,
-#         )
-
-#         self.returned_data = self.returned_nominal_lf.sort(
-#             IndCqc.location_id, IndCqc.cqc_location_import_date
-#         ).collect()
-
-#         self.assertEqual(self.returned_data, expected_lf.collect())
-
-#     @pytest.mark.skip(reason="todo")
-#     def test_returned_extrapolation_forwards_values_match_expected_when_ratio(self):
-#         returned_lf = job.extrapolation_forwards(
-#             self.input_lf,
-#             self.column_with_null_values,
-#             self.model_to_extrapolate_from,
-#             self.window_spec_lagged,
-#             extrapolation_method="ratio",
-#         )
-
-#         expected_lf = self.spark.createDataFrame(
-#             Data.expected_extrapolation_forwards_when_ratio_rows,
-#             Schemas.expected_extrapolation_forwards_schema,
-#         )
-
-#         returned_data = returned_lf.sort(
-#             IndCqc.location_id, IndCqc.cqc_location_import_date
-#         ).collect()
-
-#         self.assertEqual(returned_data, expected_lf.collect())
-
-#     @pytest.mark.skip(reason="todo")
-#     def test_error_raised_for_invalid_extrapolation_method(self):
-#         with self.assertRaises(ValueError) as context:
-#             job.extrapolation_forwards(
-#                 self.input_lf,
-#                 self.column_with_null_values,
-#                 self.model_to_extrapolate_from,
-#                 self.window_spec_lagged,
-#                 extrapolation_method="invalid_method",
-#             )
-
-#         self.assertEqual(
-#             str(context.exception),
-#             "Error: method must be either 'ratio' or 'nominal'.",
-#         )
+    @pytest.mark.skip(reason="todo")
+    def test_error_raised_for_invalid_extrapolation_method(self):
+        expected_error_message = "Error: method must be either 'ratio' or 'nominal'."
+        with pytest.raises(ValueError, match=expected_error_message):
+            job.extrapolation_forwards(
+                self.input_lf,
+                column_with_null_values=IndCQC.ascwds_pir_merged,
+                model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
+                extrapolation_method="other",  # Invalid method
+            )
 
 
 # # TODO
@@ -201,11 +127,11 @@ class TestCalculateFirstAndLastSubmissionDates:
 #             Data.extrapolation_backwards_rows,
 #             Schemas.extrapolation_backwards_schema,
 #         )
-#         self.column_with_null_values = IndCqc.ascwds_pir_merged
-#         self.model_to_extrapolate_from = IndCqc.posts_rolling_average_model
+#         self.column_with_null_values = IndCQC.ascwds_pir_merged
+#         self.model_to_extrapolate_from = IndCQC.posts_rolling_average_model
 #         self.window_spec_all_rows = (
-#             Window.partitionBy(IndCqc.location_id)
-#             .orderBy(IndCqc.cqc_location_import_date)
+#             Window.partitionBy(IndCQC.location_id)
+#             .orderBy(IndCQC.cqc_location_import_date)
 #             .rowsBetween(Window.unboundedPreceding, Window.unboundelfollowing)
 #         )
 #         self.mock_lf = self.spark.createDataFrame(
@@ -243,7 +169,7 @@ class TestCalculateFirstAndLastSubmissionDates:
 #             self.window_spec_all_rows,
 #             self.column_with_null_values,
 #             self.column_with_null_values,
-#             IndCqc.first_non_null_value,
+#             IndCQC.first_non_null_value,
 #             "first",
 #         )
 #         get_selected_value_mock.assert_any_call(
@@ -251,7 +177,7 @@ class TestCalculateFirstAndLastSubmissionDates:
 #             self.window_spec_all_rows,
 #             self.column_with_null_values,
 #             self.model_to_extrapolate_from,
-#             IndCqc.first_model_value,
+#             IndCQC.first_model_value,
 #             "first",
 #         )
 
@@ -261,7 +187,7 @@ class TestCalculateFirstAndLastSubmissionDates:
 
 #     @pytest.mark.skip(reason="todo")
 #     def test_extrapolation_backwards_added_as_a_new_column(self):
-#         self.assertIn(IndCqc.extrapolation_backwards, self.returned_nominal_lf.columns)
+#         self.assertIn(IndCQC.extrapolation_backwards, self.returned_nominal_lf.columns)
 
 #     @pytest.mark.skip(reason="todo")
 #     def test_returned_extrapolation_backwards_values_match_expected_when_nominal(self):
@@ -271,7 +197,7 @@ class TestCalculateFirstAndLastSubmissionDates:
 #         )
 
 #         self.returned_data = self.returned_nominal_lf.sort(
-#             IndCqc.location_id, IndCqc.cqc_location_import_date
+#             IndCQC.location_id, IndCQC.cqc_location_import_date
 #         ).collect()
 
 #         self.assertEqual(self.returned_data, expected_lf.collect())
@@ -292,7 +218,7 @@ class TestCalculateFirstAndLastSubmissionDates:
 #         )
 
 #         returned_data = returned_lf.sort(
-#             IndCqc.location_id, IndCqc.cqc_location_import_date
+#             IndCQC.location_id, IndCQC.cqc_location_import_date
 #         ).collect()
 
 #         self.assertEqual(returned_data, expected_lf.collect())
@@ -329,7 +255,7 @@ class TestCalculateFirstAndLastSubmissionDates:
 #             Schemas.expected_combine_extrapolation_schema,
 #         )
 #         self.returned_data = self.returned_lf.sort(
-#             IndCqc.location_id, IndCqc.cqc_location_import_date
+#             IndCQC.location_id, IndCQC.cqc_location_import_date
 #         ).collect()
 #         self.expected_data = self.expected_lf.collect()
 
@@ -341,7 +267,7 @@ class TestCalculateFirstAndLastSubmissionDates:
 #     def test_combine_extrapolation_returns_expected_values(self):
 #         for i in range(len(self.returned_data)):
 #             self.assertEqual(
-#                 self.returned_data[i][IndCqc.extrapolation_model],
-#                 self.expected_data[i][IndCqc.extrapolation_model],
+#                 self.returned_data[i][IndCQC.extrapolation_model],
+#                 self.expected_data[i][IndCQC.extrapolation_model],
 #                 f"Returned value in row {i} does not match expected",
 #             )
