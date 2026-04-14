@@ -1492,3 +1492,97 @@ class ImputeJobRoleSchemas:
         "proportions": pl.Float64,
         "adjusted_estimates": pl.Float64,
     }
+
+
+@dataclass
+class ModelExtrapolation:
+    extrapolation_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.unix_time: pl.Int32,
+        IndCQC.ascwds_pir_merged: pl.Float32,
+        IndCQC.posts_rolling_average_model: pl.Float32,
+    }
+
+    first_and_final_submission_dates_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.unix_time: pl.Int32,
+        IndCQC.ascwds_pir_merged: pl.Float32,
+    }
+    expected_first_and_final_submission_dates_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.unix_time: pl.Int32,
+        IndCQC.ascwds_pir_merged: pl.Float32,
+        IndCQC.first_submission_time: pl.Int32,
+        IndCQC.final_submission_time: pl.Int32,
+    }
+
+    extrapolation_forwards_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.unix_time: pl.Int32,
+        IndCQC.ascwds_pir_merged: pl.Float32,
+        IndCQC.posts_rolling_average_model: pl.Float32,
+    }
+    expected_extrapolation_forwards_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.unix_time: pl.Int32,
+        IndCQC.ascwds_pir_merged: pl.Float32,
+        IndCQC.posts_rolling_average_model: pl.Float32,
+        IndCQC.extrapolation_forwards: pl.Float32,
+    }
+    extrapolation_forwards_mock_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.unix_time: pl.Int32,
+        IndCQC.ascwds_pir_merged: pl.Float32,
+        IndCQC.posts_rolling_average_model: pl.Float32,
+        IndCQC.previous_non_null_value: pl.Float32,
+        IndCQC.previous_model_value: pl.Float32,
+    }
+
+    extrapolation_backwards_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.unix_time: pl.Int32,
+        IndCQC.ascwds_pir_merged: pl.Float32,
+        IndCQC.first_submission_time: pl.Int32,
+        IndCQC.final_submission_time: pl.Int32,
+        IndCQC.posts_rolling_average_model: pl.Float32,
+    }
+    expected_extrapolation_backwards_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.unix_time: pl.Int32,
+        IndCQC.ascwds_pir_merged: pl.Float32,
+        IndCQC.first_submission_time: pl.Int32,
+        IndCQC.final_submission_time: pl.Int32,
+        IndCQC.posts_rolling_average_model: pl.Float32,
+        IndCQC.extrapolation_backwards: pl.Float32,
+    }
+    extrapolation_backwards_mock_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.unix_time: pl.Int32,
+        IndCQC.ascwds_pir_merged: pl.Float32,
+        IndCQC.first_submission_time: pl.Int32,
+        IndCQC.final_submission_time: pl.Int32,
+        IndCQC.posts_rolling_average_model: pl.Float32,
+        IndCQC.first_non_null_value: pl.Float32,
+        IndCQC.first_model_value: pl.Float32,
+    }
+
+    combine_extrapolation_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.unix_time: pl.Int32,
+        IndCQC.ascwds_pir_merged: pl.Float32,
+        IndCQC.first_submission_time: pl.Int32,
+        IndCQC.final_submission_time: pl.Int32,
+        IndCQC.extrapolation_forwards: pl.Float32,
+        IndCQC.extrapolation_backwards: pl.Float32,
+    }
+    expected_combine_extrapolation_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.unix_time: pl.Int32,
+        IndCQC.ascwds_pir_merged: pl.Float32,
+        IndCQC.first_submission_time: pl.Int32,
+        IndCQC.final_submission_time: pl.Int32,
+        IndCQC.extrapolation_forwards: pl.Float32,
+        IndCQC.extrapolation_backwards: pl.Float32,
+        IndCQC.extrapolation_model: pl.Float32,
+    }
