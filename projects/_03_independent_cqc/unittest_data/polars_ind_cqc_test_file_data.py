@@ -2178,7 +2178,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
             id="calculates_difference_between_rm_estimate_and_cqc_count",
             expected_data=[
                 (0, MainJobRoleLabels.registered_manager, 5.0, 1.0, 4.0),
-                (0, MainJobRoleLabels.registered_manager, 0.0, 5.0, -5.0),
+                (1, MainJobRoleLabels.registered_manager, 0.0, 5.0, -5.0),
             ],
         ),
         AdjustManagerialRolesSubFunctionTestCases(
