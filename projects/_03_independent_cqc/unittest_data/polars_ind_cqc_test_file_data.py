@@ -2175,17 +2175,26 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
 
     calculate_reg_man_difference_test_cases = [
         AdjustManagerialRolesSubFunctionTestCases(
-            id="estimated_rm_is_zero_and_cqc_count_rm_is_one",
+            id="calculates_difference_between_rm_estimate_and_cqc_count",
             expected_data=[
-                (0, MainJobRoleLabels.supervisor, 10.0, 1.0, -1.0),
-                (0, MainJobRoleLabels.registered_manager, 0.0, 1.0, -1.0),
+                (0, MainJobRoleLabels.registered_manager, 5.0, 1.0, 4.0),
+                (0, MainJobRoleLabels.registered_manager, 0.0, 5.0, -5.0),
             ],
         ),
         AdjustManagerialRolesSubFunctionTestCases(
-            id="estimated_rm_is_one_and_cqc_count_rm_is_zero",
+            id="rm_difference_is_copied_to_all_rows_in_group",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 20.0, 0.0, 1.0),
                 (0, MainJobRoleLabels.registered_manager, 1.0, 0.0, 1.0),
+            ],
+        ),
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="rm_difference_is_calculated_per_group",
+            expected_data=[
+                (0, MainJobRoleLabels.supervisor, 20.0, 0.0, 1.0),
+                (0, MainJobRoleLabels.registered_manager, 1.0, 0.0, 1.0),
+                (1, MainJobRoleLabels.supervisor, 20.0, 0.0, 5.0),
+                (1, MainJobRoleLabels.registered_manager, 5.0, 0.0, 5.0),
             ],
         ),
     ]
