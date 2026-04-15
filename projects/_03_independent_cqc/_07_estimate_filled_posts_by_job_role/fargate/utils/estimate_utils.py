@@ -16,8 +16,6 @@ def calculate_estimated_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyFra
     that order to create ascwds_job_role_ratios_merged and multiply that by
     overall estimated filled posts.
 
-    TODO: uncomment ascwds_job_role_ratios_filtered and update this doc string.
-
     Args:
         lf (pl.LazyFrame): The input LazyFrame.
 
@@ -28,7 +26,7 @@ def calculate_estimated_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyFra
     lf = lf.with_columns(
         utils.coalesce_with_source_labels(
             cols=[
-                # IndCQC.ascwds_job_role_ratios_filtered,
+                IndCQC.ascwds_job_role_ratios,
                 IndCQC.imputed_ascwds_job_role_ratios,
                 IndCQC.ascwds_job_role_rolling_ratio,
             ],
