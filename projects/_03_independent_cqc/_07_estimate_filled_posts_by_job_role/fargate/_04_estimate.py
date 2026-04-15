@@ -293,22 +293,34 @@ def calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts
     """
     Doc string goes here
     """
-    return lf.with_columns(
-        pl.when(
-            pl.col(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
-            .count()
-            .over(ROW_ID)
-            .gt(0)
-        )
+    condition = (
+        pl.col(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
+        .count()
+        .over(ROW_ID)
+        .gt(0)
+    )
+
+    lf = lf.with_columns(
+        pl.when(condition)
         .then(
-            pl.sum(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
-            .over(ROW_ID)
-            .sub(pl.col(IndCQC.estimate_filled_posts))
+            pl.sum(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted).over(
+                ROW_ID
+            )
+        )
+        .alias(IndCQC.estimate_filled_posts_from_all_job_roles)
+    ).with_columns(
+        pl.when(condition)
+        .then(
+            pl.col(IndCQC.estimate_filled_posts_from_all_job_roles).sub(
+                pl.col(IndCQC.estimate_filled_posts)
+            )
         )
         .alias(
             IndCQC.difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles
         )
     )
+
+    return lf
 
 
 if __name__ == "__main__":

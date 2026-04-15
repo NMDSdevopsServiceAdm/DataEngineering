@@ -1586,6 +1586,7 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
             IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
+            IndCQC.estimate_filled_posts_from_all_job_roles: pl.Float32,
             IndCQC.difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles: pl.Float32,
         }
     )

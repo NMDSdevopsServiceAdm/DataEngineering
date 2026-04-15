@@ -2261,12 +2261,12 @@ class EstimateFilledPostsByJobRole04EstimateData:
     ]
 
     expected_calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_rows = [
-        (0, 10.0, MainJobRoleLabels.care_worker, 5.0, 0.0),
-        (0, 10.0, MainJobRoleLabels.senior_care_worker, 5.0, 0.0),
-        (1, None, MainJobRoleLabels.care_worker, 5.0, None),
-        (1, None, MainJobRoleLabels.senior_care_worker, 5.0, None),
-        (2, 10.0, MainJobRoleLabels.care_worker, None, None),
-        (2, 10.0, MainJobRoleLabels.senior_care_worker, None, None),
-        (3, None, MainJobRoleLabels.care_worker, None, None),
-        (3, None, MainJobRoleLabels.senior_care_worker, None, None),
+        (0, 10.0, MainJobRoleLabels.care_worker, 5.0, 10.0, 0.0),
+        (0, 10.0, MainJobRoleLabels.senior_care_worker, 5.0, 10.0, 0.0),
+        (1, None, MainJobRoleLabels.care_worker, 5.0, 10.0, None),
+        (1, None, MainJobRoleLabels.senior_care_worker, 5.0, 10.0, None),
+        (2, 10.0, MainJobRoleLabels.care_worker, None, None, None),
+        (2, 10.0, MainJobRoleLabels.senior_care_worker, None, None, None),
+        (3, None, MainJobRoleLabels.care_worker, None, None, None),
+        (3, None, MainJobRoleLabels.senior_care_worker, None, None, None),
     ]
