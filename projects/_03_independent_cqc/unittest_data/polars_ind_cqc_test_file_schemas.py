@@ -1500,7 +1500,7 @@ class ImputeJobRoleSchemas:
 
 
 @dataclass
-class EstimateFilledPostsByJobRole04EstimateSchemas:
+class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
     calculate_estimated_filled_posts_by_job_role_schema = pl.Schema(
         {
             "id": pl.Int32,

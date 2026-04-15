@@ -2140,7 +2140,7 @@ class AdjustManagerialRolesSubFunctionTestCases:
 
 
 @dataclass
-class EstimateFilledPostsByJobRole04EstimateData:
+class EstimateFilledPostsByJobRoleEstimateUtilsData:
     calculate_estimated_filled_posts_by_job_role_rows = [
         (0, 10.0, 0.4, 0.6, IndCQC.imputed_ascwds_job_role_ratios, 0.4, 4.0),
         (1, 10.0, 0.4, None, IndCQC.imputed_ascwds_job_role_ratios, 0.4, 4.0),
