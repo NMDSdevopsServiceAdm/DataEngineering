@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
 
 - Moved 'forward fill' process from 'clean' job to 'impute' job. Moved tests for the same.
 
+- Refactored ASC-WDS filled post calculation code into one file.
+
 ### Fixed
 
 
