@@ -76,7 +76,7 @@ def populate_from_exact_staff_match(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     lf = lf.with_columns(
         pl.when(
-            pl.col(IndCQC.ascwds_filled_posts).is_null()
+            pl.col(ASCWDS_POSTS_COL).is_null()
             & total_staff_expr.is_not_null()
             & (total_staff_expr == worker_records_expr)
             & (total_staff_expr >= CalculationConstants.MIN_PERMITTED_POSTS)
@@ -118,7 +118,7 @@ def populate_from_similar_staff_counts(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.with_columns(
         pl.when(
             (
-                pl.col(IndCQC.ascwds_filled_posts).is_null()
+                pl.col(ASCWDS_POSTS_COL).is_null()
                 & total_staff_expr.is_not_null()
                 & worker_records_expr.is_not_null()
                 & (total_staff_expr >= CalculationConstants.MIN_PERMITTED_POSTS)
