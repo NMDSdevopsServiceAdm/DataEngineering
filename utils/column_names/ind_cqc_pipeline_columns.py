@@ -290,7 +290,7 @@ class IndCqcColumns:
         CQCLClean.primary_service_type + "_second_level"
     )
     proportion_of_non_rm_managerial_estimated_filled_posts_by_role: str = (
-        "map_proportion_of_non_rm_managerial_estimated_filled_posts_by_role"
+        "proportion_of_non_rm_managerial_estimated_filled_posts_by_role"
     )
     proportion_of_time_between_submissions: str = (
         "proportion_of_time_between_submissions"
