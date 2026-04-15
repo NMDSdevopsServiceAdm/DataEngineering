@@ -52,6 +52,8 @@ def count_cqc_rm() -> pl.Expr:
     Returns an expression that produces 1 where list of register
     manager names is >= 1, otherwise 0.
 
+    TODO: Refactor this function to return actual name count.
+
     Returns:
         pl.Expr: Expression that produces register manager count.
     """
