@@ -2227,7 +2227,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
             ],
         ),
         AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_one_and_cqc_count_is_zero_and_non_rm_manager_filled_posts_is_very_low",
+            id="reg_man_filled_posts_is_one_and_cqc_count_is_zero_and_non_rm_manager_filled_posts_is_less_than_one",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 0.1, 0, 1.0, 0.5, 0.6),
                 (0, MainJobRoleLabels.first_line_manager, 0.1, 0, 1.0, 0.5, 0.6),
@@ -2235,7 +2235,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
             ],
         ),
         AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_zero_and_cqc_count_is_one_and_non_rm_manager_filled_posts_is_very_low",
+            id="reg_man_filled_posts_is_zero_and_cqc_count_is_one_and_non_rm_manager_filled_posts_is_less_than_one",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 0.1, 1, -1.0, 0.5, 0.0),
                 (0, MainJobRoleLabels.first_line_manager, 0.1, 1, -1.0, 0.5, 0.0),
