@@ -2142,11 +2142,13 @@ class AdjustManagerialRolesSubFunctionTestCases:
 @dataclass
 class EstimateFilledPostsByJobRoleEstimateUtilsData:
     calculate_estimated_filled_posts_by_job_role_rows = [
-        (0, 10.0, 0.4, 0.6, IndCQC.imputed_ascwds_job_role_ratios, 0.4, 4.0),
-        (1, 10.0, 0.4, None, IndCQC.imputed_ascwds_job_role_ratios, 0.4, 4.0),
-        (2, 10.0, None, 0.6, IndCQC.ascwds_job_role_rolling_ratio, 0.6, 6.0),
-        (3, None, 0.4, 0.6, IndCQC.imputed_ascwds_job_role_ratios, 0.4, None),
-        (4, 10.0, None, None, None, None, None),
+        (0, 10.0, 0.2, 0.4, 0.6, IndCQC.ascwds_job_role_ratios, 0.2, 2.0),
+        (1, 10.0, None, 0.4, 0.6, IndCQC.imputed_ascwds_job_role_ratios, 0.4, 4.0),
+        (2, 10.0, None, None, 0.6, IndCQC.ascwds_job_role_rolling_ratio, 0.6, 6.0),
+        (3, 10.0, 0.2, 0.4, None, IndCQC.ascwds_job_role_ratios, 0.2, 2.0),
+        (4, 10.0, 0.2, None, 0.6, IndCQC.ascwds_job_role_ratios, 0.2, 2.0),
+        (6, None, 0.2, 0.4, 0.6, IndCQC.ascwds_job_role_ratios, 0.2, None),
+        (7, 10.0, None, None, None, None, None, None),
     ]
 
     has_rm_in_cqc_rm_name_list_flag_rows = [

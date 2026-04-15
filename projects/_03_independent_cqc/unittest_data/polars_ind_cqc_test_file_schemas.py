@@ -1505,6 +1505,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
         {
             "id": pl.Int32,
             IndCQC.estimate_filled_posts: pl.Float32,
+            IndCQC.ascwds_job_role_ratios: pl.Float32,
             IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,
             IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,
             IndCQC.ascwds_job_role_ratios_merged_source: pl.String,
