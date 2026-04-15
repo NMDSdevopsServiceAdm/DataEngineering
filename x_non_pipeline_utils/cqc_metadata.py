@@ -174,11 +174,11 @@ class LocalAuthorityProviderIds:
         "1-101646567",    # North East Lincolnshire
         "1-101668016",    # North Lincolnshire
         "1-10200144758",  # North Northamptonshire
-        "1-4812882922",   # North Northamptonshire
         "1-101677388",    # North Somerset
         "1-101674314",    # North Tyneside
         "1-101668998",    # North Yorkshire
         "1-101649972",    # Northamptonshire
+        "1-4812882922",   # Northamptonshire
         "1-101675085",    # Northumberland
         "1-101660217",    # Nottingham
         "1-101668287",    # Nottinghamshire
