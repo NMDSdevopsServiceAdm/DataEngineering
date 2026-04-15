@@ -19,9 +19,10 @@ ROW_ID: Final[str] = "id"
 pl.Config.set_streaming_chunk_size(50000)
 
 # Create a list of non registered manager managerial job roles.
-manager_roles = AscwdsWorkerValueLabelsJobGroup.manager_roles()
 non_rm_manager_roles = [
-    role for role in manager_roles if role != MainJobRoleLabels.registered_manager
+    role
+    for role in AscwdsWorkerValueLabelsJobGroup.manager_roles()
+    if role != MainJobRoleLabels.registered_manager
 ]
 
 

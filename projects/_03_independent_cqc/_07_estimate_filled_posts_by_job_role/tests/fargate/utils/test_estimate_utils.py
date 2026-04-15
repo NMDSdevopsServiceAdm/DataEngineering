@@ -18,9 +18,10 @@ from utils.column_values.categorical_column_values import MainJobRoleLabels
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.estimate_utils"
 
 
-manager_roles = Data.test_manager_roles
 non_rm_manager_roles = [
-    role for role in manager_roles if role != MainJobRoleLabels.registered_manager
+    role
+    for role in Data.test_manager_roles
+    if role != MainJobRoleLabels.registered_manager
 ]
 test_non_rm_manager_condition = pl.col(IndCQC.main_job_role_clean_labelled).is_in(
     non_rm_manager_roles
