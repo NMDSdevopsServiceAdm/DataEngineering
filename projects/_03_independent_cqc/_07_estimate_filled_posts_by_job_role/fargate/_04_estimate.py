@@ -50,10 +50,7 @@ def main(
     lf = eUtils.adjust_managerial_roles(lf, non_rm_manager_roles)
 
     lf = lf.with_columns(
-        pl.col(IndCQC.cqc_location_import_date)
-        .dt.year()
-        .cast(pl.String)
-        .alias(Keys.year)
+        pl.col(IndCQC.cqc_location_import_date).dt.year().alias(Keys.year)
     )
 
     utils.sink_to_parquet(
