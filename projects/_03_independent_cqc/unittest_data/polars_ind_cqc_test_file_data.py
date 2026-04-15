@@ -2211,7 +2211,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
 
     distribute_rm_difference_test_cases = [
         AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_one_and_cqc_count_is_zero",
+            id="reg_man_filled_posts_is_one_and_cqc_count_is_zero_and_non_rm_manager_filled_posts_is_above_one",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 5.0, 0, 1.0, 0.5, 5.5),
                 (0, MainJobRoleLabels.first_line_manager, 5.0, 0, 1.0, 0.5, 5.5),
@@ -2219,7 +2219,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
             ],
         ),
         AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_zero_and_cqc_count_is_one",
+            id="reg_man_filled_posts_is_zero_and_cqc_count_is_one_and_non_rm_manager_filled_posts_is_above_one",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 5.0, 1, -1.0, 0.5, 4.5),
                 (0, MainJobRoleLabels.first_line_manager, 5.0, 1, -1.0, 0.5, 4.5),
