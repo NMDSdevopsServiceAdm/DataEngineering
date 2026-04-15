@@ -1500,11 +1500,12 @@ class ImputeJobRoleSchemas:
 
 
 @dataclass
-class EstimateFilledPostsByJobRole04EstimateSchemas:
+class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
     calculate_estimated_filled_posts_by_job_role_schema = pl.Schema(
         {
             "id": pl.Int32,
             IndCQC.estimate_filled_posts: pl.Float32,
+            IndCQC.ascwds_job_role_ratios: pl.Float32,
             IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,
             IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,
             IndCQC.ascwds_job_role_ratios_merged_source: pl.String,
@@ -1513,7 +1514,7 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
         }
     )
 
-    count_cqc_rm_schema = pl.Schema(
+    has_rm_in_cqc_rm_name_list_flag_schema = pl.Schema(
         {
             IndCQC.registered_manager_names: pl.List(pl.String),
             IndCQC.registered_manager_count: pl.UInt32,
