@@ -2201,7 +2201,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
 
     calculate_non_rm_managerial_distribution_test_cases = [
         AdjustManagerialRolesSubFunctionTestCases(
-            id="non_rm_manager_filled_post_sum_is_above_zero",
+            id="calculates_non_rm_managerial_proportions_from_estimated_posts",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 60.0, 0.6),
                 (0, MainJobRoleLabels.first_line_manager, 40.0, 0.4),
@@ -2209,11 +2209,22 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
             ],
         ),
         AdjustManagerialRolesSubFunctionTestCases(
-            id="non_rm_manager_filled_post_sum_is_zero",
+            id="distributes_evenly_when_non_rm_managerial_total_is_zero",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 0.0, 0.5),
                 (0, MainJobRoleLabels.first_line_manager, 0.0, 0.5),
                 (0, MainJobRoleLabels.registered_manager, 10.0, None),
+            ],
+        ),
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="calculates_non_rm_managerial_proportions_per_group",
+            expected_data=[
+                (0, MainJobRoleLabels.supervisor, 60.0, 0.6),
+                (0, MainJobRoleLabels.first_line_manager, 40.0, 0.4),
+                (0, MainJobRoleLabels.registered_manager, 10.0, None),
+                (1, MainJobRoleLabels.supervisor, 0.0, 0.5),
+                (1, MainJobRoleLabels.first_line_manager, 0.0, 0.5),
+                (1, MainJobRoleLabels.registered_manager, 10.0, None),
             ],
         ),
     ]
