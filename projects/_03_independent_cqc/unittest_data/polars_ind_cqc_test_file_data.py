@@ -2149,7 +2149,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
         (4, 10.0, None, None, None, None, None),
     ]
 
-    count_cqc_rm_rows = [
+    has_rm_in_cqc_rm_name_list_flag_rows = [
         (["name_1"], 1),
         (["name_1", "name_2"], 1),
         ([], 0),

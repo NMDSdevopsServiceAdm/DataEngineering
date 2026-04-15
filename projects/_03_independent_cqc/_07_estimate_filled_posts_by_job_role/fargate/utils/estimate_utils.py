@@ -47,12 +47,10 @@ def calculate_estimated_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyFra
     return lf
 
 
-def count_cqc_rm() -> pl.Expr:
+def has_rm_in_cqc_rm_name_list_flag() -> pl.Expr:
     """
     Returns an expression that produces 1 where list of register
     manager names is >= 1, otherwise 0.
-
-    TODO: Refactor this function to return actual name count.
 
     Returns:
         pl.Expr: Expression that produces register manager count.

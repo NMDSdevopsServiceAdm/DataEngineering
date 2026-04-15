@@ -16,14 +16,14 @@ class TestMain(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.eUtils.adjust_managerial_roles")
-    @patch(f"{PATCH_PATH}.eUtils.count_cqc_rm")
+    @patch(f"{PATCH_PATH}.eUtils.has_rm_in_cqc_rm_name_list_flag")
     @patch(f"{PATCH_PATH}.eUtils.calculate_estimated_filled_posts_by_job_role")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_succeeds(
         self,
         scan_parquet_mock: Mock,
         calculate_estimated_filled_posts_by_job_role_mock: Mock,
-        count_cqc_rm_mock: Mock,
+        has_rm_in_cqc_rm_name_list_flag_mock: Mock,
         adjust_managerial_roles_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -34,7 +34,7 @@ class TestMain(unittest.TestCase):
 
         scan_parquet_mock.assert_called_once()
         calculate_estimated_filled_posts_by_job_role_mock.assert_called_once()
-        count_cqc_rm_mock.assert_called_once()
+        has_rm_in_cqc_rm_name_list_flag_mock.assert_called_once()
         adjust_managerial_roles_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,

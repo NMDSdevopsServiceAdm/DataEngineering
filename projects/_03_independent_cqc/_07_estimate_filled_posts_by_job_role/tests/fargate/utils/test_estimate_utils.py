@@ -45,16 +45,16 @@ class TestCalculateEstimatedFilledPostsByJobRole(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class CountCqcRmTest(unittest.TestCase):
+class TestHasRmInCqcRmNameListFlag(unittest.TestCase):
     def test_function_returns_expected_values(self):
         expected_lf = pl.LazyFrame(
-            data=Data.count_cqc_rm_rows,
-            schema=Schemas.count_cqc_rm_schema,
+            data=Data.has_rm_in_cqc_rm_name_list_flag_rows,
+            schema=Schemas.has_rm_in_cqc_rm_name_list_flag_schema,
             orient="row",
         )
         test_lf = expected_lf.drop(IndCQC.registered_manager_count)
         returned_lf = test_lf.with_columns(
-            job.count_cqc_rm().alias(IndCQC.registered_manager_count)
+            job.has_rm_in_cqc_rm_name_list_flag().alias(IndCQC.registered_manager_count)
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

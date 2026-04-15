@@ -1513,7 +1513,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
         }
     )
 
-    count_cqc_rm_schema = pl.Schema(
+    has_rm_in_cqc_rm_name_list_flag_schema = pl.Schema(
         {
             IndCQC.registered_manager_names: pl.List(pl.String),
             IndCQC.registered_manager_count: pl.UInt32,
