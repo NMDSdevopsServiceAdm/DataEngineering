@@ -2211,31 +2211,23 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
 
     distribute_rm_difference_test_cases = [
         AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_one_and_cqc_count_is_zero_and_non_rm_manager_filled_posts_is_above_one",
+            id="overides_estimated_rm_posts_with_cqc_count",
             expected_data=[
-                (0, MainJobRoleLabels.supervisor, 5.0, 0, 1.0, 0.5, 5.5),
-                (0, MainJobRoleLabels.first_line_manager, 5.0, 0, 1.0, 0.5, 5.5),
+                (0, MainJobRoleLabels.registered_manager, 0.0, 4, 4.0, None, 4.0),
+                (1, MainJobRoleLabels.registered_manager, None, 0, -4.0, None, 0.0),
+                (2, MainJobRoleLabels.registered_manager, 4.0, None, None, None, None),
+            ],
+        ),
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="redistributes_rm_difference_across_other_manager_roles",
+            expected_data=[
+                (0, MainJobRoleLabels.supervisor, 1.0, 0, 1.0, 0.5, 1.5),
+                (0, MainJobRoleLabels.first_line_manager, 1.0, 0, 1.0, 0.5, 1.5),
                 (0, MainJobRoleLabels.registered_manager, 1.0, 0, 1.0, None, 0.0),
             ],
         ),
         AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_zero_and_cqc_count_is_one_and_non_rm_manager_filled_posts_is_above_one",
-            expected_data=[
-                (0, MainJobRoleLabels.supervisor, 5.0, 1, -1.0, 0.5, 4.5),
-                (0, MainJobRoleLabels.first_line_manager, 5.0, 1, -1.0, 0.5, 4.5),
-                (0, MainJobRoleLabels.registered_manager, 0.0, 1, -1.0, None, 1.0),
-            ],
-        ),
-        AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_one_and_cqc_count_is_zero_and_non_rm_manager_filled_posts_is_less_than_one",
-            expected_data=[
-                (0, MainJobRoleLabels.supervisor, 0.1, 0, 1.0, 0.5, 0.6),
-                (0, MainJobRoleLabels.first_line_manager, 0.1, 0, 1.0, 0.5, 0.6),
-                (0, MainJobRoleLabels.registered_manager, 1.0, 0, 1.0, None, 0.0),
-            ],
-        ),
-        AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_zero_and_cqc_count_is_one_and_non_rm_manager_filled_posts_is_less_than_one",
+            id="does_not_reduce_other_manager_roles_below_zero",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 0.1, 1, -1.0, 0.5, 0.0),
                 (0, MainJobRoleLabels.first_line_manager, 0.1, 1, -1.0, 0.5, 0.0),
@@ -2243,19 +2235,19 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
             ],
         ),
         AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_one_and_cqc_count_is_one_and_non_rm_manager_filled_posts_is_zero",
+            id="allows_total_manager_posts_mismatch_when_cqc_override_exceeds_available_posts",
             expected_data=[
-                (0, MainJobRoleLabels.supervisor, 0.0, 1, 0.0, 0.5, 0.0),
-                (0, MainJobRoleLabels.first_line_manager, 0.0, 1, 0.0, 0.5, 0.0),
-                (0, MainJobRoleLabels.registered_manager, 1.0, 1, 0.0, None, 1.0),
+                (0, MainJobRoleLabels.supervisor, 0.0, 5, -5.0, 0.5, 0.0),
+                (0, MainJobRoleLabels.first_line_manager, 0.0, 5, -5.0, 0.5, 0.0),
+                (0, MainJobRoleLabels.registered_manager, 0.0, 5, -5.0, None, 5.0),
             ],
         ),
         AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_zero_and_cqc_count_is_one_and_and_non_rm_manager_filled_posts_is_zero",
+            id="leaves_values_unchanged_when_prediction_matches_cqc",
             expected_data=[
-                (0, MainJobRoleLabels.supervisor, 0.0, 1, -1.0, 0.5, 0.0),
-                (0, MainJobRoleLabels.first_line_manager, 0.0, 1, -1.0, 0.5, 0.0),
-                (0, MainJobRoleLabels.registered_manager, 0.0, 1, -1.0, None, 1.0),
+                (0, MainJobRoleLabels.supervisor, 10.0, 1, 0.0, 0.5, 10.0),
+                (0, MainJobRoleLabels.first_line_manager, 10.0, 1, 0.0, 0.5, 10.0),
+                (0, MainJobRoleLabels.registered_manager, 1.0, 1, 0.0, None, 1.0),
             ],
         ),
     ]
