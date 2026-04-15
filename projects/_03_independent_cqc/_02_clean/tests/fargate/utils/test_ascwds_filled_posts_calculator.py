@@ -51,7 +51,7 @@ class TestAscwdsFilledPostsCalculator(unittest.TestCase):
 class TestPopulateFromExactStaffMatch(unittest.TestCase):
     def test_returns_expected_lazyframe(self):
         input_lf = pl.LazyFrame(
-            Data.totalstaff_equal_wkrrecs_rows,
+            Data.calculate_ascwds_filled_posts_rows,
             Schemas.calculate_ascwds_filled_posts_schema,
             orient="row",
         )
@@ -68,7 +68,7 @@ class TestPopulateFromExactStaffMatch(unittest.TestCase):
 class TestPopulateFromSimilarStaffCounts(unittest.TestCase):
     def test_returns_expected_lazyframe(self):
         input_lf = pl.LazyFrame(
-            Data.difference_within_range_rows,
+            Data.calculate_ascwds_filled_posts_rows,
             Schemas.calculate_ascwds_filled_posts_schema,
             orient="row",
         )

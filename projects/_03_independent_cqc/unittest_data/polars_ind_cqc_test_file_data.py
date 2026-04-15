@@ -494,18 +494,6 @@ class CalculateAscwdsFilledPostsData:
         ("1-000008", 500,  475,  487.5, ASCWDSFilledPostsSource.average_of_total_staff_and_worker_records),
         ("1-000009", 10,   10,   10.0,  ASCWDSFilledPostsSource.worker_records_and_total_staff),
     ] # fmt: skip
-
-    totalstaff_equal_wkrrecs_rows = [
-        ("1-000001", 0,    None, None, None),                # Both 0: Return None
-        ("1-000002", 500,  500,  None, None),                # Both 500: Return 500
-        ("1-000003", 10,   None, None, None),                # Only know total_staff: Return None
-        ("1-000004", 23,   1,    None, None),                # worker_record_count below min permitted: return None
-        ("1-000005", None, 100,  None, None),                # Only know worker_records: None
-        ("1-000006", 900,  600,  None, None),                # None of the rules apply: Return None
-        ("1-000007", 12,   11,   None, None),                # Absolute difference is within absolute bounds: Return Average
-        ("1-000008", 500,  475,  None, None),                # Absolute difference is within percentage bounds: Return Average
-        ("1-000009", 10,   10,   8.0,  "already populated"), # Already populated, shouldn't change it
-    ] # fmt: skip
     expected_totalstaff_equal_wkrrecs_rows = [
         ("1-000001", 0,    None, None,  None),
         ("1-000002", 500,  500,  500.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
@@ -516,18 +504,6 @@ class CalculateAscwdsFilledPostsData:
         ("1-000007", 12,   11,   None,  None),
         ("1-000008", 500,  475,  None,  None),
         ("1-000009", 10,   10,   8.0,   "already populated"),
-    ] # fmt: skip
-
-    difference_within_range_rows = [
-        ("1-000001", 0,    None, None, None),                # Both 0: Return None
-        ("1-000002", 500,  500,  None, None),                # Both 500: Return 500
-        ("1-000003", 10,   None, None, None),                # Only know total_staff: Return None
-        ("1-000004", 23,   1,    None, None),                # worker_record_count below min permitted: return None
-        ("1-000005", None, 100,  None, None),                # Only know worker_records: None
-        ("1-000006", 900,  600,  None, None),                # None of the rules apply: Return None
-        ("1-000007", 12,   11,   None, None),                # Absolute difference is within absolute bounds: Return Average
-        ("1-000008", 500,  475,  None, None),                # Absolute difference is within percentage bounds: Return Average
-        ("1-000009", 10,   10,   8.0,  "already populated"), # Already populated, shouldn't change it
     ] # fmt: skip
     expected_difference_within_range_rows = [
         ("1-000001", 0,    None, None,  None),
