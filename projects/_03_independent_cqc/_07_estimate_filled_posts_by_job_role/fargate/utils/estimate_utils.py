@@ -38,8 +38,9 @@ def calculate_estimated_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyFra
 
     lf = lf.with_columns(
         (
-            pl.col(IndCQC.estimate_filled_posts)
-            * pl.col(IndCQC.ascwds_job_role_ratios_merged)
+            pl.col(IndCQC.estimate_filled_posts).mul(
+                pl.col(IndCQC.ascwds_job_role_ratios_merged)
+            )
         ).alias(IndCQC.estimate_filled_posts_by_job_role)
     )
 
@@ -123,8 +124,9 @@ def calculate_reg_man_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf.with_columns(
         (
             (
-                pl.col(IndCQC.estimate_filled_posts_by_job_role)
-                - pl.col(IndCQC.registered_manager_count)
+                pl.col(IndCQC.estimate_filled_posts_by_job_role).sub(
+                    pl.col(IndCQC.registered_manager_count)
+                )
             )
             .filter(
                 pl.col(IndCQC.main_job_role_clean_labelled)
