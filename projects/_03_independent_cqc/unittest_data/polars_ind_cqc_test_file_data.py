@@ -2203,6 +2203,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
         AdjustManagerialRolesSubFunctionTestCases(
             id="calculates_non_rm_managerial_proportions_from_estimated_posts",
             expected_data=[
+                (0, MainJobRoleLabels.care_worker, 10.0, None),
                 (0, MainJobRoleLabels.supervisor, 60.0, 0.6),
                 (0, MainJobRoleLabels.first_line_manager, 40.0, 0.4),
                 (0, MainJobRoleLabels.registered_manager, 10.0, None),
@@ -2241,6 +2242,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
         AdjustManagerialRolesSubFunctionTestCases(
             id="redistributes_rm_difference_across_other_manager_roles",
             expected_data=[
+                (0, MainJobRoleLabels.care_worker, 1.0, 0, 1.0, None, 1.0),
                 (0, MainJobRoleLabels.supervisor, 1.0, 0, 1.0, 0.5, 1.5),
                 (0, MainJobRoleLabels.first_line_manager, 1.0, 0, 1.0, 0.5, 1.5),
                 (0, MainJobRoleLabels.registered_manager, 1.0, 0, 1.0, None, 0.0),
