@@ -206,6 +206,7 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
         self.returned_data = self.returned_nominal_df.sort(
             IndCqc.location_id, IndCqc.unix_time
         ).collect()
+        self.returned_nominal_df.show()
 
         self.assertEqual(self.returned_data, expected_df.collect())
 

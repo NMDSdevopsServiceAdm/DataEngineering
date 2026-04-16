@@ -151,16 +151,25 @@ def extrapolation_forwards(
     Raises:
         ValueError: If chosen extrapolation_method does not match 'nominal' or 'ratio'.
     """
+    ### Add column with rank
+    lf = lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
+    lf = lf.with_columns(
+        pl.when(pl.col(column_with_null_values).is_not_null())
+        .then(pl.col(IndCqc.cqc_location_import_date).rank().over(IndCqc.location_id))
+        .otherwise(None)
+        .alias("rank")
+    )
+    lf.show()
     previous_non_null_lf = (
         lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
         .group_by(IndCqc.location_id)
         .agg(
             pl.col(column_with_null_values)
-            .min_by(IndCqc.cqc_location_import_date)
+            .min_by("rank")
             .alias(IndCqc.previous_non_null_value)
         )
     )
-    # # previous_non_null_lf.show()
+    previous_non_null_lf.show()
 
     lf = lf.join(
         previous_non_null_lf,
@@ -168,16 +177,26 @@ def extrapolation_forwards(
         how="left",
     )
 
+    # # lf = lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
+
+    # # lf = lf.with_columns(
+    # #     pl.col(column_with_null_values)
+    # #     .forward_fill()
+    # #     .shift(1)
+    # #     .over(IndCqc.location_id)
+    # #     .alias(IndCqc.previous_non_null_value)
+    # # )
+
     previous_model_lf = (
         lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
         .group_by(IndCqc.location_id)
         .agg(
             pl.col(model_to_extrapolate_from)
-            .min_by(IndCqc.cqc_location_import_date)
+            .min_by("rank")
             .alias(IndCqc.previous_model_value)
         )
     )
-    # previous_model_lf.show()
+    previous_model_lf.show()
 
     lf = lf.join(
         previous_model_lf,
@@ -185,6 +204,13 @@ def extrapolation_forwards(
         how="left",
     )
 
+    # # lf = lf.with_columns(
+    # #     pl.col(model_to_extrapolate_from)
+    # #     .forward_fill()
+    # #     .shift(1)
+    # #     .over(IndCqc.location_id)
+    # #     .alias(IndCqc.previous_model_value)
+    # # )
     ### CALCULATE EXTRAPOLATION ###
 
     ratio_expr = (
@@ -206,9 +232,9 @@ def extrapolation_forwards(
 
     else:
         raise ValueError("Error: method must be either 'ratio' or 'nominal'.")
-    # lf.show(10)
+    lf.sort(IndCqc.cqc_location_import_date).show(10)
 
-    lf = lf.drop(IndCqc.previous_non_null_value, IndCqc.previous_model_value)
+    lf = lf.drop("rank", IndCqc.previous_non_null_value, IndCqc.previous_model_value)
 
     return lf
 

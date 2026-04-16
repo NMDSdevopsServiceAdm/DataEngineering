@@ -2170,14 +2170,14 @@ class ModelExtrapolation:
         ExtrapolationTestCase(
             id="when_one_later_data_point_is_missing",
             data=[
-                ("1-001", date(2026, 1, 1), 20.0, 100.0, 20.0),
+                ("1-001", date(2026, 1, 1), 20.0, 100.0, 20.0), #20
                 ("1-001", date(2026, 2, 1), None, 20.0, -60.0),
             ]
         ),
         ExtrapolationTestCase(
             id="when_multiple_later_data_points_are_missing",
             data=[
-                ("1-001", date(2026, 1, 1), 10.0, 20.0, 10.0), # This estimate was originally null - not sure it's ever touched, so value should be fine
+                ("1-001", date(2026, 1, 1), 10.0, 20.0, 10.0), #10.0 This estimate was originally null - not sure it's ever touched, so value should be fine
                 ("1-001", date(2026, 2, 1), None, 30.0, 20.0),
                 ("1-001", date(2026, 3, 1), None, 100.0, 90.0),
             ],
@@ -2185,22 +2185,22 @@ class ModelExtrapolation:
         ExtrapolationTestCase(
             id="when_one_earlier_data_point_is_missing",
             data=[
-                ("1-001", date(2026, 1, 1), None, 10.0, None),
-                ("1-001", date(2026, 2, 1), 10.0, 20.0, None),
+                ("1-001", date(2026, 1, 1), None, 10.0, 0.0),
+                ("1-001", date(2026, 2, 1), 10.0, 20.0, 10.0), # Previously none, but value not used
             ],
         ),
         ExtrapolationTestCase(
             id="when_multiple_earlier_data_points_are_missing",
             data=[
-                ("1-001", date(2026, 1, 1), None, 10.0, None),# added row
-                ("1-001", date(2026, 1, 1), None, 10.0, None),
-                ("1-001", date(2026, 2, 1), 10.0, 20.0, None),
+                ("1-001", date(2026, 1, 1), None, 10.0, 0.0),# added row
+                ("1-001", date(2026, 1, 1), None, 10.0, 0.0),
+                ("1-001", date(2026, 2, 1), 10.0, 20.0, 10.0), # Previously none, but value not used
             ],
         ),
         ExtrapolationTestCase(
             id="when_one_imtermediate_data_point_is_missing",
             data=[
-                ("1-001", date(2026, 1, 1), 15.0, 10.0, 15.0), # This estimate was originally null - not sure it's ever touched, so value should be fine
+                ("1-001", date(2026, 1, 1), 15.0, 10.0, 15.0), # 15 This estimate was originally null - not sure it's ever touched, so value should be fine
                 ("1-001", date(2026, 2, 1), None, 20.0, 25.0),
                 ("1-001", date(2026, 3, 1), 30.0, 30.0, 35.0),
             ],
@@ -2208,8 +2208,8 @@ class ModelExtrapolation:
         ExtrapolationTestCase(
             id="when_earlier_and_later_data_points_are_missing",
             data=[
-                ("1-001", date(2026, 1, 1), None, 10.0, None),
-                ("1-001", date(2026, 2, 1), 10.0, 20.0, 10.0),# This estimate was originally null - not sure it's ever touched, so value should be fine
+                ("1-001", date(2026, 1, 1), None, 10.0, 0.0),# 0 This estimate was originally null - not sure it's ever touched, so value should be fine
+                ("1-001", date(2026, 2, 1), 10.0, 20.0, 10.0),# 10 This estimate was originally null - not sure it's ever touched, so value should be fine
                 ("1-001", date(2026, 3, 1), None, 30.0, 20.0),
                 ("1-001", date(2026, 4, 1), None, 100.0, 90.0),
             ],
@@ -2217,11 +2217,11 @@ class ModelExtrapolation:
         ExtrapolationTestCase(
             id="when_more_than_one_location_needs_extrapolating",
             data=[
-                ("1-001", date(2026, 1, 1), None, 10.0, None),
-                ("1-001", date(2026, 2, 1), 10.0, 20.0, 10.0),# This estimate was originally null - not sure it's ever touched, so value should be fine
+                ("1-001", date(2026, 1, 1), None, 10.0, 0.0),
+                ("1-001", date(2026, 2, 1), 10.0, 20.0, 10.0),# 10 This estimate was originally null - not sure it's ever touched, so value should be fine
                 ("1-001", date(2026, 3, 1), None, 30.0, 20.0),
                 ("1-001", date(2026, 4, 1), None, 100.0, 90.0),
-                ("1-002", date(2026, 1, 1), 20.0, 100.0, 20.0),# This estimate was originally null - not sure it's ever touched, so value should be fine
+                ("1-002", date(2026, 1, 1), 20.0, 100.0, 20.0),# 20 This estimate was originally null - not sure it's ever touched, so value should be fine
                 ("1-002", date(2026, 2, 1), None, 20.0, -60.0),
             ],
         ),
