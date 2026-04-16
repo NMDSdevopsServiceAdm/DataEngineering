@@ -1,4 +1,5 @@
 import warnings
+from datetime import date
 from unittest.mock import ANY, Mock, patch
 
 import polars as pl
@@ -71,51 +72,97 @@ class TestCalculateFirstAndLastSubmissionDates:
 
 
 class TestExtrapolationForwards:
-    expected_nominal_lf = pl.LazyFrame(
-        Data.expected_extrapolation_forwards_when_nominal_rows,
-        Schemas.expected_extrapolation_forwards_schema,
-        orient="row",
+    @pytest.mark.parametrize(
+        "extrapolation_forwards_when_nominal_data",
+        [
+            case.as_pytest_param()
+            for case in Data.extrapolation_forwards_when_nominal_test_cases
+        ],
     )
-    expected_ratio_lf = pl.LazyFrame(
-        Data.expected_extrapolation_forwards_when_ratio_rows,
-        Schemas.expected_extrapolation_forwards_schema,
-        orient="row",
-    )
-    input_lf = expected_nominal_lf.drop(IndCQC.extrapolation_forwards)
-    returned_nominal_lf = job.extrapolation_forwards(
-        input_lf,
-        column_with_null_values=IndCQC.ascwds_pir_merged,
-        model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
-        extrapolation_method="nominal",
-    )
-    returned_ratio_lf = job.extrapolation_forwards(
-        input_lf,
-        column_with_null_values=IndCQC.ascwds_pir_merged,
-        model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
-        extrapolation_method="ratio",
-    )
+    def test_returned_extrapolation_forwards_values_match_expected_when_nominal(
+        self, extrapolation_forwards_when_nominal_data
+    ):
+        # temp_data = [
+        #     ("1-001", date(2026, 1, 1), 20.0, 100.0, 20.0, 100.0, 20.0),
+        #     ("1-001", date(2026, 2, 1), None, 20.0, 20.0, 100.0, -60.0),
+        # ]
+        # temp_schema = {
+        #     IndCQC.location_id: pl.String,
+        #     IndCQC.cqc_location_import_date: pl.Date,
+        #     IndCQC.ascwds_pir_merged: pl.Float32,
+        #     IndCQC.posts_rolling_average_model: pl.Float32,
+        #     IndCQC.previous_non_null_value: pl.Float32,
+        #     IndCQC.previous_model_value: pl.Float32,
+        #     IndCQC.extrapolation_forwards: pl.Float32,
+        # }
+        # temp_ex_data = [
+        #     ("1-001", 100.0),
+        # ]
+        # temp_ex_schema = {
+        #     IndCQC.location_id: pl.String,
+        #     IndCQC.previous_model_value: pl.Float32,
+        # }
 
-    def test_returned_extrapolation_forwards_values_match_expected_when_nominal(self):
+        expected_nominal_lf = pl.LazyFrame(
+            extrapolation_forwards_when_nominal_data,
+            Schemas.expected_extrapolation_forwards_schema,
+            orient="row",
+        )
+        input_lf = expected_nominal_lf.drop(
+            IndCQC.extrapolation_forwards,
+            # IndCQC.previous_non_null_value,
+            # IndCQC.previous_model_value,
+        )
+        returned_nominal_lf = job.extrapolation_forwards(
+            input_lf,
+            column_with_null_values=IndCQC.ascwds_pir_merged,
+            model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
+            extrapolation_method="nominal",
+        )
+        returned_nominal_lf.show(10)
+        expected_nominal_lf.show(10)
+
         pl_testing.assert_frame_equal(
-            self.expected_nominal_lf, self.returned_nominal_lf, abs_tol=0.00001
+            returned_nominal_lf,
+            expected_nominal_lf,
+            abs_tol=0.00001,
+            check_row_order=False,
         )
 
-    @pytest.mark.skip(reason="todo")
-    def test_returned_extrapolation_forwards_values_match_expected_when_ratio(self):
-        pl_testing.assert_frame_equal(
-            self.expected_ratio_lf, self.returned_ratio_lf, abs_tol=0.00001
-        )
+    # @pytest.mark.skip(reason="todo")
+    # def test_returned_extrapolation_forwards_values_match_expected_when_ratio(self):
+    #     expected_ratio_lf = pl.LazyFrame(
+    #         Data.expected_extrapolation_forwards_when_ratio_rows,  # TODO
+    #         Schemas.expected_extrapolation_forwards_schema,
+    #         orient="row",
+    #     )
+    #     input_lf = expected_ratio_lf.drop(IndCQC.extrapolation_forwards)
+    #     returned_ratio_lf = job.extrapolation_forwards(
+    #         input_lf,
+    #         column_with_null_values=IndCQC.ascwds_pir_merged,
+    #         model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
+    #         extrapolation_method="ratio",
+    #     )
+    #     pl_testing.assert_frame_equal(
+    #         expected_ratio_lf, returned_ratio_lf, abs_tol=0.00001
+    #     )
 
-    @pytest.mark.skip(reason="todo")
-    def test_error_raised_for_invalid_extrapolation_method(self):
-        expected_error_message = "Error: method must be either 'ratio' or 'nominal'."
-        with pytest.raises(ValueError, match=expected_error_message):
-            job.extrapolation_forwards(
-                self.input_lf,
-                column_with_null_values=IndCQC.ascwds_pir_merged,
-                model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
-                extrapolation_method="other",  # Invalid method
-            )
+    # @pytest.mark.skip(reason="todo")
+    # def test_error_raised_for_invalid_extrapolation_method(self):
+    #     expected_ratio_lf = pl.LazyFrame(
+    #         Data.expected_extrapolation_forwards_when_ratio_rows,
+    #         Schemas.expected_extrapolation_forwards_schema,
+    #         orient="row",
+    #     )
+    #     input_lf = expected_ratio_lf.drop(IndCQC.extrapolation_forwards)  # TODO
+    #     expected_error_message = "Error: method must be either 'ratio' or 'nominal'."
+    #     with pytest.raises(ValueError, match=expected_error_message):
+    #         job.extrapolation_forwards(
+    #             input_lf,
+    #             column_with_null_values=IndCQC.ascwds_pir_merged,
+    #             model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
+    #             extrapolation_method="other",  # Invalid method
+    #         )
 
 
 # # TODO

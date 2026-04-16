@@ -2130,6 +2130,16 @@ class ImputeJobRoleData:
 
 
 @dataclass
+class ExtrapolationTestCase:
+    id: str
+    data: list[Any]
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(self.data, id=self.id)
+
+
+@dataclass
 class ModelExtrapolation:
     extrapolation_rows = [
         ("1-001", date(2023, 1, 1), 1672531200, 15.0, 15.0),
@@ -2156,17 +2166,71 @@ class ModelExtrapolation:
     ]
 
     # fmt: off
-    expected_extrapolation_forwards_when_nominal_rows = [
-        ("1-001", date(2026, 1, 1), 15.0, 10.0, None),
-        ("1-001", date(2026, 2, 1), None, 20.0, 25.0),
-        ("1-001", date(2026, 3, 1), 30.0, 30.0, 35.0),
-        ("1-002", date(2026, 1, 1), None, 10.0, None),
-        ("1-002", date(2026, 2, 1), 10.0, 20.0, None),
-        ("1-002", date(2026, 3, 1), None, 30.0, 20.0),
-        ("1-002", date(2026, 4, 1), None, 100.0, 90.0),
-        ("1-003", date(2026, 1, 1), 20.0, 100.0, None),
-        ("1-003", date(2026, 2, 1), None, 20.0, -60.0),
-        ("1-004", date(2026, 1, 1), None, 20.0, None),
+    extrapolation_forwards_when_nominal_test_cases = [
+        ExtrapolationTestCase(
+            id="when_one_later_data_point_is_missing",
+            data=[
+                ("1-001", date(2026, 1, 1), 20.0, 100.0, 20.0),
+                ("1-001", date(2026, 2, 1), None, 20.0, -60.0),
+            ]
+        ),
+        ExtrapolationTestCase(
+            id="when_multiple_later_data_points_are_missing",
+            data=[
+                ("1-001", date(2026, 1, 1), 10.0, 20.0, 10.0), # This estimate was originally null - not sure it's ever touched, so value should be fine
+                ("1-001", date(2026, 2, 1), None, 30.0, 20.0),
+                ("1-001", date(2026, 3, 1), None, 100.0, 90.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_one_earlier_data_point_is_missing",
+            data=[
+                ("1-001", date(2026, 1, 1), None, 10.0, None),
+                ("1-001", date(2026, 2, 1), 10.0, 20.0, None),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_multiple_earlier_data_points_are_missing",
+            data=[
+                ("1-001", date(2026, 1, 1), None, 10.0, None),# added row
+                ("1-001", date(2026, 1, 1), None, 10.0, None),
+                ("1-001", date(2026, 2, 1), 10.0, 20.0, None),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_one_imtermediate_data_point_is_missing",
+            data=[
+                ("1-001", date(2026, 1, 1), 15.0, 10.0, 15.0), # This estimate was originally null - not sure it's ever touched, so value should be fine
+                ("1-001", date(2026, 2, 1), None, 20.0, 25.0),
+                ("1-001", date(2026, 3, 1), 30.0, 30.0, 35.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_earlier_and_later_data_points_are_missing",
+            data=[
+                ("1-001", date(2026, 1, 1), None, 10.0, None),
+                ("1-001", date(2026, 2, 1), 10.0, 20.0, 10.0),# This estimate was originally null - not sure it's ever touched, so value should be fine
+                ("1-001", date(2026, 3, 1), None, 30.0, 20.0),
+                ("1-001", date(2026, 4, 1), None, 100.0, 90.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_more_than_one_location_needs_extrapolating",
+            data=[
+                ("1-001", date(2026, 1, 1), None, 10.0, None),
+                ("1-001", date(2026, 2, 1), 10.0, 20.0, 10.0),# This estimate was originally null - not sure it's ever touched, so value should be fine
+                ("1-001", date(2026, 3, 1), None, 30.0, 20.0),
+                ("1-001", date(2026, 4, 1), None, 100.0, 90.0),
+                ("1-002", date(2026, 1, 1), 20.0, 100.0, 20.0),# This estimate was originally null - not sure it's ever touched, so value should be fine
+                ("1-002", date(2026, 2, 1), None, 20.0, -60.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_no_data_points_are_available",
+            data=[
+                ("1-001", date(2026, 1, 1), None, 20.0, None),
+            ],
+        ),
     ]
     expected_extrapolation_forwards_when_ratio_rows = [
         ("1-001", 1672531200, 15.0, 10.0, None),

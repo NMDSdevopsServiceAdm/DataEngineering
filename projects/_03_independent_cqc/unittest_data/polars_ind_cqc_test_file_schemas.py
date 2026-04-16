@@ -1517,6 +1517,8 @@ class ModelExtrapolation:
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.ascwds_pir_merged: pl.Float32,
         IndCQC.posts_rolling_average_model: pl.Float32,
+        # IndCQC.previous_non_null_value: pl.Float32,
+        # IndCQC.previous_model_value: pl.Float32,
         IndCQC.extrapolation_forwards: pl.Float32,
     }
 

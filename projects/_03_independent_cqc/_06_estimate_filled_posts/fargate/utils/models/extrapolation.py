@@ -124,7 +124,7 @@ def calculate_first_and_final_submission_dates(
 
 # TODO
 def extrapolation_forwards(
-    df: pl.LazyFrame,
+    lf: pl.LazyFrame,
     column_with_null_values: str,
     model_to_extrapolate_from: str,
     extrapolation_method: str,
@@ -140,7 +140,7 @@ def extrapolation_forwards(
     The nominal method is based on adding/subtracting the difference between those two modelled values.
 
     Args:
-        df (pl.LazyFrame): A LazyFrame with a column to extrapolate forwards.
+        lf (pl.LazyFrame): A LazyFrame with a column to extrapolate forwards.
         column_with_null_values (str): The name of the column with null values in.
         model_to_extrapolate_from (str): The model used for extrapolation.
         extrapolation_method (str): The choice of method. Must be either 'nominal' or 'ratio'.
@@ -151,43 +151,66 @@ def extrapolation_forwards(
     Raises:
         ValueError: If chosen extrapolation_method does not match 'nominal' or 'ratio'.
     """
-    df = get_selected_value(
-        df,
-        column_with_null_values,
-        column_with_null_values,
-        IndCqc.previous_non_null_value,
-        "last",
+    previous_non_null_lf = (
+        lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
+        .group_by(IndCqc.location_id)
+        .agg(
+            pl.col(column_with_null_values)
+            .min_by(IndCqc.cqc_location_import_date)
+            .alias(IndCqc.previous_non_null_value)
+        )
     )
-    df = get_selected_value(
-        df,
-        column_with_null_values,
-        model_to_extrapolate_from,
-        IndCqc.previous_model_value,
-        "last",
+    # # previous_non_null_lf.show()
+
+    lf = lf.join(
+        previous_non_null_lf,
+        on=IndCqc.location_id,
+        how="left",
+    )
+
+    previous_model_lf = (
+        lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
+        .group_by(IndCqc.location_id)
+        .agg(
+            pl.col(model_to_extrapolate_from)
+            .min_by(IndCqc.cqc_location_import_date)
+            .alias(IndCqc.previous_model_value)
+        )
+    )
+    # previous_model_lf.show()
+
+    lf = lf.join(
+        previous_model_lf,
+        on=IndCqc.location_id,
+        how="left",
+    )
+
+    ### CALCULATE EXTRAPOLATION ###
+
+    ratio_expr = (
+        pl.col(IndCqc.previous_non_null_value)
+        .mul(pl.col(model_to_extrapolate_from))
+        .truediv(pl.col(IndCqc.previous_model_value))
+    )
+    nominal_expr = (
+        pl.col(IndCqc.previous_non_null_value)
+        .add(pl.col(model_to_extrapolate_from))
+        .sub(pl.col(IndCqc.previous_model_value))
     )
 
     if extrapolation_method == "ratio":
-        df = df.withColumn(
-            IndCqc.extrapolation_forwards,
-            F.col(IndCqc.previous_non_null_value)
-            * F.col(model_to_extrapolate_from)
-            / F.col(IndCqc.previous_model_value),
-        )
+        lf = lf.with_columns(ratio_expr.alias(IndCqc.extrapolation_forwards))
 
     elif extrapolation_method == "nominal":
-        df = df.withColumn(
-            IndCqc.extrapolation_forwards,
-            F.col(IndCqc.previous_non_null_value)
-            + F.col(model_to_extrapolate_from)
-            - F.col(IndCqc.previous_model_value),
-        )
+        lf = lf.with_columns(nominal_expr.alias(IndCqc.extrapolation_forwards))
 
     else:
         raise ValueError("Error: method must be either 'ratio' or 'nominal'.")
+    # lf.show(10)
 
-    df = df.drop(IndCqc.previous_non_null_value, IndCqc.previous_model_value)
+    lf = lf.drop(IndCqc.previous_non_null_value, IndCqc.previous_model_value)
 
-    return df
+    return lf
 
 
 # TODO
