@@ -82,27 +82,6 @@ class TestExtrapolationForwards:
     def test_returned_extrapolation_forwards_values_match_expected_when_nominal(
         self, extrapolation_forwards_when_nominal_data
     ):
-        # temp_data = [
-        #     ("1-001", date(2026, 1, 1), 20.0, 100.0, 20.0, 100.0, 20.0),
-        #     ("1-001", date(2026, 2, 1), None, 20.0, 20.0, 100.0, -60.0),
-        # ]
-        # temp_schema = {
-        #     IndCQC.location_id: pl.String,
-        #     IndCQC.cqc_location_import_date: pl.Date,
-        #     IndCQC.ascwds_pir_merged: pl.Float32,
-        #     IndCQC.posts_rolling_average_model: pl.Float32,
-        #     IndCQC.previous_non_null_value: pl.Float32,
-        #     IndCQC.previous_model_value: pl.Float32,
-        #     IndCQC.extrapolation_forwards: pl.Float32,
-        # }
-        # temp_ex_data = [
-        #     ("1-001", 100.0),
-        # ]
-        # temp_ex_schema = {
-        #     IndCQC.location_id: pl.String,
-        #     IndCQC.previous_model_value: pl.Float32,
-        # }
-
         expected_nominal_lf = pl.LazyFrame(
             extrapolation_forwards_when_nominal_data,
             Schemas.expected_extrapolation_forwards_schema,
@@ -110,8 +89,6 @@ class TestExtrapolationForwards:
         )
         input_lf = expected_nominal_lf.drop(
             IndCQC.extrapolation_forwards,
-            # IndCQC.previous_non_null_value,
-            # IndCQC.previous_model_value,
         )
         returned_nominal_lf = job.extrapolation_forwards(
             input_lf,
