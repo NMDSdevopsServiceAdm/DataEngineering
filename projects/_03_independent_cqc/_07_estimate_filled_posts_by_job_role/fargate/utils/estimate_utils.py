@@ -260,7 +260,9 @@ def calc_diff_estimate_filled_posts_and_from_all_job_roles(
         .alias(IndCQC.estimate_filled_posts_from_all_job_roles)
     ).with_columns(
         (
-            pl.col(IndCQC.estimate_filled_posts_from_all_job_roles)
-            - pl.col(IndCQC.estimate_filled_posts)
+            (
+                pl.col(IndCQC.estimate_filled_posts_from_all_job_roles)
+                - pl.col(IndCQC.estimate_filled_posts)
+            ).round(4)
         ).alias(IndCQC.difference_estimate_filled_posts_and_from_all_job_roles)
     )
