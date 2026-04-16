@@ -17,6 +17,8 @@ All notable changes to this project will be documented in this file.
 
 - Set up estimates step for job role breakdown.
 
+- Refactored ASC-WDS filled post calculation code into one file.
+
 ### Fixed
 
 
