@@ -151,7 +151,7 @@ def extrapolation_forwards(
     Raises:
         ValueError: If chosen extrapolation_method does not match 'nominal' or 'ratio'.
     """
-    ### Add column with rank ###
+    ### ADD RANK COLUMN ###
     lf = lf.with_columns(
         pl.when(pl.col(column_with_null_values).is_not_null())
         .then(pl.col(IndCqc.cqc_location_import_date).rank().over(IndCqc.location_id))
@@ -159,7 +159,7 @@ def extrapolation_forwards(
         .alias("rank")
     )
 
-    ### Populate previous non null value ###
+    ### POPULATE previous_non_null_value ###
     previous_non_null_lf = (
         lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
         .group_by(IndCqc.location_id)
@@ -176,7 +176,7 @@ def extrapolation_forwards(
         how="left",
     )
 
-    ### Populate previous model value ###
+    ### POPULATE previous_model_value ###
     previous_model_lf = (
         lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
         .group_by(IndCqc.location_id)
