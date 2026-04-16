@@ -16,7 +16,7 @@ class TestMain(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(
-        f"{PATCH_PATH}.eUtils.calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles"
+        f"{PATCH_PATH}.eUtils.calc_diff_estimate_filled_posts_and_from_all_job_roles"
     )
     @patch(f"{PATCH_PATH}.eUtils.adjust_managerial_roles")
     @patch(f"{PATCH_PATH}.eUtils.has_rm_in_cqc_rm_name_list_flag")
@@ -28,7 +28,7 @@ class TestMain(unittest.TestCase):
         calculate_estimated_filled_posts_by_job_role_mock: Mock,
         has_rm_in_cqc_rm_name_list_flag_mock: Mock,
         adjust_managerial_roles_mock: Mock,
-        calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_mock: Mock,
+        calc_diff_estimate_filled_posts_and_from_all_job_roles_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -40,7 +40,7 @@ class TestMain(unittest.TestCase):
         calculate_estimated_filled_posts_by_job_role_mock.assert_called_once()
         has_rm_in_cqc_rm_name_list_flag_mock.assert_called_once()
         adjust_managerial_roles_mock.assert_called_once()
-        calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_mock.assert_called_once()
+        calc_diff_estimate_filled_posts_and_from_all_job_roles_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
             output_path=self.TEST_DESTINATION,

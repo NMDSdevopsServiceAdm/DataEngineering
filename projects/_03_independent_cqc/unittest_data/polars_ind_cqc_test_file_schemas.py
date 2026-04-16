@@ -1579,7 +1579,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
         }
     )
 
-    expected_calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_schema = pl.Schema(
+    expected_calc_diff_estimate_filled_posts_and_from_all_job_roles_schema = pl.Schema(
         {
             "id": pl.Int32,
             IndCQC.estimate_filled_posts: pl.Float32,
@@ -1588,6 +1588,6 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
             ),
             IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
             IndCQC.estimate_filled_posts_from_all_job_roles: pl.Float32,
-            IndCQC.difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles: pl.Float32,
+            IndCQC.difference_estimate_filled_posts_and_from_all_job_roles: pl.Float32,
         }
     )

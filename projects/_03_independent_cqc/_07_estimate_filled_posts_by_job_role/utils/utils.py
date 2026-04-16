@@ -888,7 +888,7 @@ def calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts
     """
 
     df = df.withColumn(
-        IndCQC.difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles,
+        IndCQC.difference_estimate_filled_posts_and_from_all_job_roles,
         F.round(
             (
                 F.col(IndCQC.estimate_filled_posts_from_all_job_roles)

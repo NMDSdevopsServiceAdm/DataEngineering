@@ -233,37 +233,34 @@ def distribute_rm_difference(
     )
 
 
-def calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles(
+def calc_diff_estimate_filled_posts_and_from_all_job_roles(
     lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
     """
-    Doc string goes here
-    """
-    condition = (
-        pl.col(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
-        .count()
-        .over(ROW_ID)
-        .gt(0)
-    )
+    Calculates the difference between estimated filled posts and the sum of
+    filled posts by job role.
 
-    lf = lf.with_columns(
-        pl.when(condition)
-        .then(
-            pl.sum(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted).over(
-                ROW_ID
-            )
-        )
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with 'estimate_filled_posts' and
+            'estimate_filled_posts_by_job_role_manager_adjusted'.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with new columns
+            'estimate_filled_posts_from_all_job_roles' and
+            'difference_estimate_filled_posts_and_from_all_job_roles'.
+    """
+    posts_by_job_role_col = IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
+    not_null_count_expr = pl.col(posts_by_job_role_col).count().over(ROW_ID)
+    sum_expr = pl.sum(posts_by_job_role_col).over(ROW_ID)
+
+    return lf.with_columns(
+        pl.when(not_null_count_expr == 0)
+        .then(None)
+        .otherwise(sum_expr)
         .alias(IndCQC.estimate_filled_posts_from_all_job_roles)
     ).with_columns(
-        pl.when(condition)
-        .then(
-            pl.col(IndCQC.estimate_filled_posts_from_all_job_roles).sub(
-                pl.col(IndCQC.estimate_filled_posts)
-            )
-        )
-        .alias(
-            IndCQC.difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles
-        )
+        (
+            pl.col(IndCQC.estimate_filled_posts_from_all_job_roles)
+            - pl.col(IndCQC.estimate_filled_posts)
+        ).alias(IndCQC.difference_estimate_filled_posts_and_from_all_job_roles)
     )
-
-    return lf

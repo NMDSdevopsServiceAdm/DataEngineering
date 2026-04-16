@@ -49,9 +49,7 @@ def main(
 
     lf = eUtils.adjust_managerial_roles(lf, non_rm_manager_roles)
 
-    lf = eUtils.calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles(
-        lf
-    )
+    lf = eUtils.calc_diff_estimate_filled_posts_and_from_all_job_roles(lf)
 
     lf = lf.with_columns(
         pl.col(IndCQC.cqc_location_import_date).dt.year().alias(Keys.year)

@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added function to calculate difference between estimate filled posts and sum of job role estimates.
 
 
 ### Changed
