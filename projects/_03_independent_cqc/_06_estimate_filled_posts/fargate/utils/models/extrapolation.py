@@ -122,7 +122,6 @@ def calculate_first_and_final_submission_dates(
     return lf
 
 
-# TODO
 def extrapolation_forwards(
     lf: pl.LazyFrame,
     column_with_null_values: str,
@@ -222,7 +221,7 @@ def extrapolation_forwards(
 
 # TODO
 def extrapolation_backwards(
-    df: pl.LazyFrame,
+    lf: pl.LazyFrame,
     column_with_null_values: str,
     model_to_extrapolate_from: str,
     extrapolation_method: str,
@@ -249,52 +248,78 @@ def extrapolation_backwards(
     Raises:
         ValueError: If chosen extrapolation_method does not match 'nominal' or 'ratio'.
     """
-    df = get_selected_value(
-        df,
-        column_with_null_values,
-        column_with_null_values,
-        IndCqc.first_non_null_value,
-        "first",
+    ### ADD RANK COLUMN ###
+    lf = lf.with_columns(
+        pl.when(pl.col(column_with_null_values).is_not_null())
+        .then(pl.col(IndCqc.cqc_location_import_date).rank().over(IndCqc.location_id))
+        .otherwise(None)
+        .alias("rank")
     )
 
-    df = get_selected_value(
-        df,
-        column_with_null_values,
-        model_to_extrapolate_from,
-        IndCqc.first_model_value,
-        "first",
+    ### POPULATE first_non_null_value ###
+    first_non_null_lf = (
+        lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
+        .group_by(IndCqc.location_id)
+        .agg(
+            pl.col(column_with_null_values)
+            .max_by("rank")
+            .alias(IndCqc.first_non_null_value)
+        )
+    )
+
+    lf = lf.join(
+        first_non_null_lf,
+        on=IndCqc.location_id,
+        how="left",
+    )
+
+    ### POPULATE first_model_value ###
+    first_model_lf = (
+        lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
+        .group_by(IndCqc.location_id)
+        .agg(
+            pl.col(model_to_extrapolate_from)
+            .max_by("rank")
+            .alias(IndCqc.first_model_value)
+        )
+    )
+
+    lf = lf.join(
+        first_model_lf,
+        on=IndCqc.location_id,
+        how="left",
+    )
+
+    ### CALCULATE EXTRAPOLATION ###
+
+    ratio_expr = pl.when(
+        pl.col(IndCqc.cqc_location_import_date) < pl.col(IndCqc.first_submission_time)
+    ).then(
+        pl.col(IndCqc.first_non_null_value)
+        .mul(pl.col(model_to_extrapolate_from))
+        .truediv(pl.col(IndCqc.first_model_value))
+    )
+
+    nominal_expr = pl.when(
+        pl.col(IndCqc.cqc_location_import_date) < pl.col(IndCqc.first_submission_time)
+    ).then(
+        pl.col(IndCqc.first_non_null_value)
+        .add(pl.col(model_to_extrapolate_from))
+        .sub(pl.col(IndCqc.first_model_value))
     )
 
     if extrapolation_method == "ratio":
-        df = df.withColumn(
-            IndCqc.extrapolation_backwards,
-            F.when(
-                F.col(IndCqc.cqc_location_import_date)
-                < F.col(IndCqc.first_submission_time),
-                F.col(IndCqc.first_non_null_value)
-                * F.col(model_to_extrapolate_from)
-                / F.col(IndCqc.first_model_value),
-            ),
-        )
+        lf = lf.with_columns(ratio_expr.alias(IndCqc.extrapolation_backwards))
 
     elif extrapolation_method == "nominal":
-        df = df.withColumn(
-            IndCqc.extrapolation_backwards,
-            F.when(
-                F.col(IndCqc.cqc_location_import_date)
-                < F.col(IndCqc.first_submission_time),
-                F.col(IndCqc.first_non_null_value)
-                + F.col(model_to_extrapolate_from)
-                - F.col(IndCqc.first_model_value),
-            ),
-        )
+        lf = lf.with_columns(nominal_expr.alias(IndCqc.extrapolation_backwards))
 
     else:
         raise ValueError("Error: method must be either 'ratio' or 'nominal'.")
+    lf.show()
+    lf = lf.drop("rank", IndCqc.first_non_null_value, IndCqc.first_model_value)
 
-    df = df.drop(IndCqc.first_non_null_value, IndCqc.first_model_value)
-
-    return df
+    return lf
 
 
 # TODO

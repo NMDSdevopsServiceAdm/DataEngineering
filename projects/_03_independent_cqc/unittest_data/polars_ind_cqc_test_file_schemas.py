@@ -1524,6 +1524,8 @@ class ModelExtrapolation:
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.ascwds_pir_merged: pl.Float32,
         IndCQC.posts_rolling_average_model: pl.Float32,
+        IndCQC.first_submission_time: pl.Date,
+        IndCQC.final_submission_time: pl.Date,
         IndCQC.extrapolation_backwards: pl.Float32,
     }
 
