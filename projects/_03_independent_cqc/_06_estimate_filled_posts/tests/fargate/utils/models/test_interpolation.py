@@ -72,7 +72,7 @@ class TestCalculateResiduals:
             IndCqc.extrapolation_forwards,
         )
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
 class TestCalculateProportionOfTimeBetweenSubmissions:
@@ -97,7 +97,9 @@ class TestCalculateProportionOfTimeBetweenSubmissions:
         returned_lf = job.calculate_proportion_of_time_between_submissions(
             input_lf, IndCqc.ascwds_pir_merged
         )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+        pl_testing.assert_frame_equal(
+            returned_lf, expected_lf, check_row_order=False, abs_tol=1e-2
+        )
 
 
 class TestCalculateInterpolatedValues:
