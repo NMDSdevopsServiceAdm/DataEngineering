@@ -121,8 +121,7 @@ def calculate_residuals(
 
 
 def calculate_proportion_of_time_between_submissions(
-    lf: pl.LazyFrame,
-    column_with_null_values: str,
+    lf: pl.LazyFrame, column_with_null_values: str
 ) -> pl.LazyFrame:
     """
     Calculates the proportion of time, based on unix_time of each row, between
@@ -131,7 +130,7 @@ def calculate_proportion_of_time_between_submissions(
     Args:
         lf (pl.LazyFrame): The input LazyFrame containing the data.
         column_with_null_values (str): The name of the column that contains null
-        values.
+            values.
 
     Returns:
         pl.LazyFrame: The LazyFrame with the new column added.
