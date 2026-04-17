@@ -48,18 +48,10 @@ def main(
     direct_payments_df = calculate_remaining_variables(direct_payments_df)
     summary_direct_payments_df = create_summary_table(direct_payments_df)
 
-    utils.write_to_parquet(
-        direct_payments_df,
-        destination,
-        mode="overwrite",
-        partitionKeys=[DP.YEAR],
-    )
+    utils.write_to_parquet(direct_payments_df, destination, mode="overwrite")
 
     utils.write_to_parquet(
-        summary_direct_payments_df,
-        summary_destination,
-        mode="overwrite",
-        partitionKeys=[DP.YEAR],
+        summary_direct_payments_df, summary_destination, mode="overwrite"
     )
 
 

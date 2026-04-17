@@ -18,12 +18,7 @@ def main(survey_data_source, destination):
 
     pa_ratio_df = calculate_pa_ratio(survey_df)
 
-    utils.write_to_parquet(
-        pa_ratio_df,
-        destination,
-        mode="overwrite",
-        partitionKeys=[DP.YEAR_AS_INTEGER],
-    )
+    utils.write_to_parquet(pa_ratio_df, destination, mode="overwrite")
 
 
 if __name__ == "__main__":
