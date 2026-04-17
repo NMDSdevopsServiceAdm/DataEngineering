@@ -231,3 +231,38 @@ def distribute_rm_difference(
         .otherwise(pl.col(IndCQC.estimate_filled_posts_by_job_role))
         .alias(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
     )
+
+
+def calc_diff_estimate_filled_posts_and_from_all_job_roles(
+    lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """
+    Calculates the sum of estimated filled posts from job roles per
+    locationid and import_date and then its difference to the origianal
+    estimated filled posts.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with 'estimate_filled_posts' and
+            'estimate_filled_posts_by_job_role_manager_adjusted'.
+
+    Returns:
+        pl.LazyFrame: A LazyFrame with new columns
+            'estimate_filled_posts_from_all_job_roles' and
+            'difference_estimate_filled_posts_and_from_all_job_roles'.
+    """
+    posts_by_job_role_col = IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
+
+    sum_expr = (
+        pl.when(pl.col(posts_by_job_role_col).count().over(ROW_ID) == 0)
+        .then(None)
+        .otherwise(pl.col(posts_by_job_role_col).sum().over(ROW_ID))
+    )
+
+    return lf.with_columns(
+        [
+            sum_expr.alias(IndCQC.estimate_filled_posts_from_all_job_roles),
+            sum_expr.sub(pl.col(IndCQC.estimate_filled_posts))
+            .round(4)
+            .alias(IndCQC.difference_estimate_filled_posts_and_from_all_job_roles),
+        ]
+    )

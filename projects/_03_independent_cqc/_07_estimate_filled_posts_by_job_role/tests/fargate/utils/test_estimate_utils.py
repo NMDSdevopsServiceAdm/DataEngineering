@@ -169,3 +169,23 @@ class TestDistributeRmDifference:
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestCalcDiffEstimateFilledPostsAndFromAllJobRoles:
+    def test_function_returns_expected_values(self):
+        expected_lf = pl.LazyFrame(
+            Data.expected_calc_diff_estimate_filled_posts_and_from_all_job_roles_rows,
+            Schemas.expected_calc_diff_estimate_filled_posts_and_from_all_job_roles_schema,
+            orient="row",
+        )
+        test_lf = expected_lf.drop(
+            [
+                IndCQC.estimate_filled_posts_from_all_job_roles,
+                IndCQC.difference_estimate_filled_posts_and_from_all_job_roles,
+            ]
+        )
+        returned_lf = job.calc_diff_estimate_filled_posts_and_from_all_job_roles(
+            test_lf
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
