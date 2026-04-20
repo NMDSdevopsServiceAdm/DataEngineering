@@ -1394,7 +1394,7 @@ class TestJoinEstimatesToAscwds:
     TEST_ROLES = ["role_a", "role_b"]
     estimates_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.ROW_ID: pl.Int32,
             IndCQC.ascwds_workplace_import_date: pl.String,
             IndCQC.establishment_id: pl.String,
         }
@@ -1409,7 +1409,7 @@ class TestJoinEstimatesToAscwds:
     )
     expected_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.ROW_ID: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(TEST_ROLES),
             "value": pl.Float64,
         }
@@ -1462,7 +1462,7 @@ class ImputeJobRoleSchemas:
 class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
     calculate_estimated_filled_posts_by_job_role_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.ROW_ID: pl.Int32,
             IndCQC.estimate_filled_posts: pl.Float32,
             IndCQC.ascwds_job_role_ratios: pl.Float32,
             IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,
@@ -1482,7 +1482,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
 
     adjust_managerial_roles_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.ROW_ID: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
@@ -1492,7 +1492,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
     )
     expected_adjust_managerial_roles_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.ROW_ID: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
@@ -1503,7 +1503,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
 
     expected_calculate_reg_man_difference_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.ROW_ID: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
@@ -1515,7 +1515,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
 
     expected_calculate_non_rm_managerial_distribution_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.ROW_ID: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
@@ -1526,7 +1526,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
 
     expected_distribute_rm_difference_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.ROW_ID: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
@@ -1540,7 +1540,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
 
     expected_calc_diff_estimate_filled_posts_and_from_all_job_roles_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.ROW_ID: pl.Int32,
             IndCQC.estimate_filled_posts: pl.Float32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
