@@ -1,5 +1,3 @@
-from typing import Final
-
 import polars as pl
 
 from polars_utils import utils
@@ -7,9 +5,6 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.
     nullify_job_role_count_when_source_not_ascwds,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import EstimateFilledPostsSource
-
-EXPANDED_ID: Final[str] = "expanded_id"
 
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
@@ -42,7 +37,7 @@ def main(
     # TODO - Filter ASC-WDS worker data.
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
-        EXPANDED_ID
+        IndCQC.EXPANDED_ID
     )
 
     utils.sink_to_parquet(

@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 
 - Moved job role utils for cleaning and imputation into their own scripts.
 
+- Added ROW_ID and EXPANDED_ID to the ind cqc columns class and updated references to the objects.
+
 ### Fixed
 
 

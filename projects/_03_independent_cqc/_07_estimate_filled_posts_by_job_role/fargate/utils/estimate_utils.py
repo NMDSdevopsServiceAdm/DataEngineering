@@ -1,13 +1,8 @@
-from typing import Final
-
 import polars as pl
 
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import MainJobRoleLabels
-
-# Define constants for IDs for original length data.
-ROW_ID: Final[str] = "id"
 
 
 def calculate_estimated_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -131,7 +126,7 @@ def calculate_reg_man_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
                 == MainJobRoleLabels.registered_manager
             )
             .first(ignore_nulls=True)
-            .over(ROW_ID)
+            .over(IndCQC.ROW_ID)
         ).alias(IndCQC.difference_between_estimate_and_cqc_registered_managers)
     )
 
@@ -158,11 +153,11 @@ def calculate_non_rm_managerial_distribution(
         pl.col(IndCQC.estimate_filled_posts_by_job_role)
         .filter(non_rm_manager_condition)
         .sum()
-        .over(ROW_ID)
+        .over(IndCQC.ROW_ID)
     )
 
     count_non_rm_managerial_roles_expr = (
-        pl.lit(1).filter(non_rm_manager_condition).sum().over(ROW_ID)
+        pl.lit(1).filter(non_rm_manager_condition).sum().over(IndCQC.ROW_ID)
     )
 
     lf = lf.with_columns(
@@ -253,9 +248,9 @@ def calc_diff_estimate_filled_posts_and_from_all_job_roles(
     posts_by_job_role_col = IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
 
     sum_expr = (
-        pl.when(pl.col(posts_by_job_role_col).count().over(ROW_ID) == 0)
+        pl.when(pl.col(posts_by_job_role_col).count().over(IndCQC.ROW_ID) == 0)
         .then(None)
-        .otherwise(pl.col(posts_by_job_role_col).sum().over(ROW_ID))
+        .otherwise(pl.col(posts_by_job_role_col).sum().over(IndCQC.ROW_ID))
     )
 
     return lf.with_columns(

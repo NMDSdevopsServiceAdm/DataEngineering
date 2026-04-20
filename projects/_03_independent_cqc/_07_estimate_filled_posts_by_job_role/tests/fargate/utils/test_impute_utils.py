@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Final
 
 import polars as pl
 import polars.testing as pl_testing
@@ -13,8 +12,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
     ImputeJobRoleSchemas as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-
-EXPANDED_ID: Final[str] = "expanded_id"
 
 
 class TestCreateImputedASCWDSJobRoleCounts:
@@ -54,7 +51,7 @@ class TestGetPercentageShareRatios:
                 (6, "2", date(2026, 1, 1), 3, 0.6),
             ],
             schema={
-                EXPANDED_ID: pl.Int64,
+                IndCQC.EXPANDED_ID: pl.Int64,
                 IndCQC.location_id: pl.String,
                 IndCQC.cqc_location_import_date: pl.Date,
                 "vals": pl.Int64,
@@ -65,7 +62,7 @@ class TestGetPercentageShareRatios:
         input_lf = expected_lf.drop("ratios")
         returned_lf = job.get_percent_share_ratios(
             input_lf, input_col="vals", output_col="ratios"
-        ).sort(EXPANDED_ID)
+        ).sort(IndCQC.EXPANDED_ID)
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
 
 

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Final
 
 import polars as pl
 
@@ -35,8 +34,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-
-EXPANDED_ID: Final[str] = "expanded_id"
 from utils.column_values.categorical_column_values import MainJobRoleLabels
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
@@ -1423,7 +1420,7 @@ class TestJoinEstimatesToAscwds:
 class ImputeJobRoleSchemas:
 
     create_imputed_ascwds_job_role_counts_expected_schema = {
-        EXPANDED_ID: pl.UInt32,
+        IndCQC.EXPANDED_ID: pl.UInt32,
         IndCQC.location_id: pl.String,
         IndCQC.main_job_role_clean_labelled: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
@@ -1435,7 +1432,7 @@ class ImputeJobRoleSchemas:
     }
 
     create_ascwds_job_role_rolling_ratio_expected_schema = {
-        EXPANDED_ID: pl.UInt16,
+        IndCQC.EXPANDED_ID: pl.UInt16,
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: pl.String,

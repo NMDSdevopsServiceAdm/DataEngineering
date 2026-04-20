@@ -2,7 +2,6 @@ import logging
 import os
 import tempfile
 from pathlib import Path
-from typing import Final
 
 import polars as pl
 
@@ -26,10 +25,6 @@ logger = logging.getLogger(__name__)
 polars_temp_dir = os.getenv("POLARS_TEMP_DIR", tempfile.gettempdir())
 logging.info(f"Polars temp dir set at: {polars_temp_dir}")
 CHECKPOINT_PATH = Path(polars_temp_dir) / "checkpoints"
-
-# Define constants for IDs for original length data and expanded data.
-ROW_ID: Final[str] = "id"
-EXPANDED_ID: Final[str] = "expanded_id"
 
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
@@ -134,14 +129,14 @@ def main(
             pl.scan_parquet(estimates_source, low_memory=True)
             .select(list(combined_schema))
             # Add row id index for single-key joining.
-            .with_row_index(name=ROW_ID)
+            .with_row_index(name=IndCQC.ROW_ID)
             .with_columns(utils.cast_to_schema(combined_schema))
         )
         estimated_posts_base_lf = full_estimates_lf.select(
-            ROW_ID, *list(transformation_columns)
+            IndCQC.ROW_ID, *list(transformation_columns)
         )
         # This will be joined on at the end.
-        metadata_lf = full_estimates_lf.select(ROW_ID, *list(metadata_columns))
+        metadata_lf = full_estimates_lf.select(IndCQC.ROW_ID, *list(metadata_columns))
 
         col_name_map = {
             IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date
@@ -172,7 +167,7 @@ def main(
         # TODO - Filter ASC-WDS worker data.
 
         estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
-            EXPANDED_ID
+            IndCQC.EXPANDED_ID
         )
 
         # Remove log_polars_plan.
@@ -341,7 +336,7 @@ def join_estimates_to_ascwds(
     # both sides as they are not relevant to the rest of the pipeline.
     return estimates_lf.join(
         expanded_counts_lf.drop(join_keys),
-        on=ROW_ID,
+        on=IndCQC.ROW_ID,
         how="right",
     ).drop(join_keys)
 
@@ -368,14 +363,16 @@ def impute_ratios(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFrame:
         estimated_job_role_posts_lf.group_by(impute_groups)
         .agg(
             # Sort the join key in the same manner as the imputed values.
-            pl.col(EXPANDED_ID).sort_by(order_key),
+            pl.col(IndCQC.EXPANDED_ID).sort_by(order_key),
             imputed_ratios,
         )
-        .explode(EXPANDED_ID, IndCQC.imputed_ascwds_job_role_ratios)
+        .explode(IndCQC.EXPANDED_ID, IndCQC.imputed_ascwds_job_role_ratios)
         .drop(impute_groups)
     )
 
-    return estimated_job_role_posts_lf.join(impute_agg_lf, on=EXPANDED_ID, how="left")
+    return estimated_job_role_posts_lf.join(
+        impute_agg_lf, on=IndCQC.EXPANDED_ID, how="left"
+    )
 
 
 def get_percent_share_ratios(
@@ -393,15 +390,17 @@ def get_percent_share_ratios(
     ratios_agg_lf = (
         estimated_job_role_posts_lf.group_by(groups)
         .agg(
-            pl.col(EXPANDED_ID),  # Keep to align during explode
+            pl.col(IndCQC.EXPANDED_ID),  # Keep to align during explode
             percentage_share(input_col).cast(pl.Float32).alias(output_col),
         )
-        .explode(EXPANDED_ID, output_col)
+        .explode(IndCQC.EXPANDED_ID, output_col)
         # Drop groups to prevent duplicate columns after join.
         .drop(groups)
     )
 
-    return estimated_job_role_posts_lf.join(ratios_agg_lf, on=EXPANDED_ID, how="left")
+    return estimated_job_role_posts_lf.join(
+        ratios_agg_lf, on=IndCQC.EXPANDED_ID, how="left"
+    )
 
 
 def get_job_counts_rolling_sum(
