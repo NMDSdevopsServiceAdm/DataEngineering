@@ -285,7 +285,7 @@ def main(
         # Join back original metadata.
         estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
             metadata_lf,
-            on="id",
+            on=IndCQC.ROW_ID,
         )
 
         # Remove log_polars_plan.
@@ -316,7 +316,7 @@ def join_estimates_to_ascwds(
 
     # Narrow select "id" and join keys first to improve memory performance of
     # cross join. From this we get the full amount of rows expected.
-    narrow_keys_lf = estimates_lf.select(["id"] + join_keys)
+    narrow_keys_lf = estimates_lf.select([IndCQC.ROW_ID] + join_keys)
     # This is just a single column df with a row for each job role (~38).
     roles_lf = pl.LazyFrame(
         data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],

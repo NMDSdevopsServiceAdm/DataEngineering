@@ -104,7 +104,7 @@ def calculate_reg_man_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
     posts and count of registered managers from CQC.
 
     The difference is calculated on registered manager rows, and the result is
-    copied to all rows, per locationid/import_date ("id").
+    copied to all rows, per locationid and cqc_location_import_date.
 
     Args:
         lf (pl.LazyFrame): A LazyFrame with columns
