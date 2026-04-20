@@ -8,6 +8,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.utils import convert_days_to_unix_time
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\interpolation.py
 def model_interpolation(
     df: DataFrame,
     column_with_null_values: str,
@@ -93,6 +94,7 @@ def model_interpolation(
     return df
 
 
+# Not converted to polars -> Use Polars expressions and Polars functions instead
 def define_window_specs(
     partition_columns: Optional[List[str]] = [IndCqc.location_id],
 ) -> Tuple[Window, Window, Window]:
@@ -122,6 +124,7 @@ def define_window_specs(
     return window_spec_backwards, window_spec_forward, window_spec_lagged
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\interpolation.py
 def calculate_residuals(
     df: DataFrame, first_column: str, second_column: str, window_spec_forward: Window
 ) -> DataFrame:
@@ -161,6 +164,7 @@ def calculate_residuals(
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\interpolation.py
 def calculate_proportion_of_time_between_submissions(
     df: DataFrame,
     column_with_null_values: str,
@@ -223,6 +227,7 @@ def calculate_proportion_of_time_between_submissions(
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\_06_estimate_filled_posts\fargate\utils\models\interpolation.py
 def calculate_interpolated_values(
     df: DataFrame,
     column_to_interpolate_from: str,
