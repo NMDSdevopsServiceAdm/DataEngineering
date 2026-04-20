@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added function to calculate difference between estimate filled posts and sum of job role estimates.
 
 
 ### Changed
@@ -14,6 +15,10 @@ All notable changes to this project will be documented in this file.
 - Refactored merge job within Estimates by Job Role Pipeline.
 
 - Moved 'forward fill' process from 'clean' job to 'impute' job. Moved tests for the same.
+
+- Set up estimates step for job role breakdown.
+
+- Refactored ASC-WDS filled post calculation code into one file.
 
 ### Fixed
 
@@ -34,6 +39,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted util function estimate_non_res_capacity_tracker_filled_posts from Pyspark to Polars. The function is not
   being called in the estimates job yet because functions that create estimate_filled_posts column are not converted yet.
+
+- Converted Interpolation utils functions within IND CQC pipeline to Polars. Updated tests for the same.
 
 ### Changed
 - Added la permissions to columns imported in merge_coverage_data job.
