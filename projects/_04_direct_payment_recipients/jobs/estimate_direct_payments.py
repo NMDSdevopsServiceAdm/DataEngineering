@@ -29,6 +29,8 @@ def main(
 ):
     spark = utils.get_spark()
 
+    spark.conf.set("spark.sql.shuffle.partitions", 1)
+
     direct_payments_df: DataFrame = spark.read.parquet(
         direct_payments_merged_source
     ).select(
