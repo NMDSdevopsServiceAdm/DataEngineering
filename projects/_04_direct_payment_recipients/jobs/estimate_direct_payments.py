@@ -63,13 +63,22 @@ def main(
 
     print("create_summary_table completed")
 
+    print(direct_payments_df.rdd.getNumPartitions())
+    print(summary_direct_payments_df.rdd.getNumPartitions())
+    direct_payments_df = direct_payments_df.coalesce(1)
+    summary_direct_payments_df = summary_direct_payments_df.coalesce(1)
+    print(direct_payments_df.rdd.getNumPartitions())
+    print(summary_direct_payments_df.rdd.getNumPartitions())
+
     utils.write_to_parquet(direct_payments_df, destination, mode="overwrite")
+
+    print("etimates have been written to parquet")
 
     utils.write_to_parquet(
         summary_direct_payments_df, summary_destination, mode="overwrite"
     )
 
-    print("output datasets written to parquet")
+    print("summary dataset has been written to parquet")
 
 
 if __name__ == "__main__":
