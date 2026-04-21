@@ -20,6 +20,8 @@ All notable changes to this project will be documented in this file.
 
 - Refactored ASC-WDS filled post calculation code into one file.
 
+- Removed the PySpark version of IND CQC Clean and Validation jobs.
+
 ### Fixed
 
 
