@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
 ### Fixed
+- Update setup instructions with pre-commit hooks setup
 
 
 ## [v2026.03.1] - 21/04/2026
