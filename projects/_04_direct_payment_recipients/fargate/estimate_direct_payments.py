@@ -39,15 +39,15 @@ if __name__ == "__main__":
     args = utils.get_args(
         (
             "--direct_payments_merged_source",
-            "The bucket (name only) in which to source the model predictions dataset from",
+            "S3 URI to read merged dpr data from",
         ),
         (
             "--destination",
-            "S3 URI to read imputed ASC-WDS and PIR data from",
+            "S3 URI to save estimated dpr data to",
         ),
         (
             "--summary_destination",
-            "S3 URI to save estimated filled posts data to",
+            "S3 URI to save summary of estimated dpr data to",
         ),
     )
 
