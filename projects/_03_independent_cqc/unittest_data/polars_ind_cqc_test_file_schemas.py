@@ -1519,6 +1519,7 @@ class ModelExtrapolation:
         IndCQC.posts_rolling_average_model: pl.Float32,
         IndCQC.extrapolation_forwards: pl.Float32,
     }
+
     expected_extrapolation_backwards_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
@@ -1528,6 +1529,7 @@ class ModelExtrapolation:
         IndCQC.final_submission_time: pl.Date,
         IndCQC.extrapolation_backwards: pl.Float32,
     }
+
     expected_combine_extrapolation_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
