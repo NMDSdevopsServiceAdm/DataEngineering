@@ -2,20 +2,10 @@ import math
 from dataclasses import dataclass
 from datetime import date
 
-from pyspark.ml.linalg import Vectors
 
-from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.difference_within_range import (
-    ascwds_filled_posts_difference_within_range_source_description,
-)
-from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records import (
-    ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
-    AscwdsFilteringRule,
     CareHome,
-    CTFilteringRule,
-    Dormancy,
     EstimateFilledPostsSource,
     JobGroupLabels,
     MainJobRoleLabels,

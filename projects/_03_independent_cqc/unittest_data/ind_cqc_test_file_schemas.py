@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from pyspark.ml.linalg import VectorUDT
 from pyspark.sql.types import (
     ArrayType,
     BooleanType,
@@ -15,24 +14,9 @@ from pyspark.sql.types import (
     StructType,
 )
 
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
-)
-from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
-    CqcPIRCleanedColumns as CQCPIRClean,
-)
-from utils.column_names.cleaned_data_files.ons_cleaned import (
-    OnsCleanedColumns as ONSClean,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
-    NullGroupedProviderColumns as NGPcol,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PrimaryServiceRateOfChangeColumns as RoC_TempCol,
