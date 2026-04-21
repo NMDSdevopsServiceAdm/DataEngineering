@@ -1,13 +1,8 @@
-from typing import Tuple
-
 import polars as pl
-import pyspark.sql.functions as F
 
-from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
-# TODO
 def model_extrapolation(
     lf: pl.LazyFrame,
     column_with_null_values: str,
@@ -26,7 +21,7 @@ def model_extrapolation(
     The nominal method is based on adding/subtracting the nominal change of the '<model_column_name>' to the known value.
 
     Args:
-        df (pl.LazyFrame): The input LazyFrame containing the data.
+        lf (pl.LazyFrame): The input LazyFrame containing the data.
         column_with_null_values (str): The name of the column that contains null values to be extrapolated.
         model_to_extrapolate_from (str): The model used for extrapolation.
         extrapolation_method (str): The choice of method. Must be either 'nominal' or 'ratio'.
@@ -34,8 +29,6 @@ def model_extrapolation(
     Returns:
         pl.LazyFrame: The LazyFrame with the extrapolated values in the 'extrapolation_model' column.
     """
-    # window_spec_all_rows, window_spec_lagged = define_window_specs()
-
     lf = calculate_first_and_final_submission_dates(lf, column_with_null_values)
     lf = extrapolation_forwards(
         lf,
@@ -53,27 +46,6 @@ def model_extrapolation(
     lf = lf.drop(IndCqc.first_submission_time, IndCqc.final_submission_time)
 
     return lf
-
-
-# def define_window_specs() -> Tuple[Window, Window]:
-#     """
-#     Defines two window specifications, partitioned by 'location_id' and ordered by 'cqc_location_import_date'.
-
-#     The first window specification ('window_spec_all_rows') includes all rows in the partition.
-#     The second window specification ('window_spec_lagged') includes all rows from the start of the partition up to the
-#     current row, excluding the current row.
-
-#     Returns:
-#         Tuple[Window, Window]: A tuple containing the two window specifications.
-#     """
-#     window_spec = Window.partitionBy(IndCqc.location_id).orderBy(IndCqc.cqc_location_import_date)
-
-#     window_spec_all_rows = window_spec.rowsBetween(
-#         Window.unboundedPreceding, Window.unboundedFollowing
-#     )
-#     window_spec_lagged = window_spec.rowsBetween(Window.unboundedPreceding, -1)
-
-#     return window_spec_all_rows, window_spec_lagged
 
 
 def calculate_first_and_final_submission_dates(

@@ -1,6 +1,4 @@
-import warnings
-from datetime import date
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
@@ -59,7 +57,6 @@ class TestModelExtrapolation:
             model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
             extrapolation_method="nominal",
         ).drop(IndCQC.extrapolation_forwards, IndCQC.extrapolation_backwards)
-        returned_lf.show(20)
         pl_testing.assert_frame_equal(expected_lf, returned_lf, abs_tol=0.00001)
 
 
@@ -111,8 +108,6 @@ class TestExtrapolationForwardsWhenNominal:
             model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
             extrapolation_method="nominal",
         )
-        returned_nominal_lf.show(10)
-        expected_nominal_lf.show(10)
 
         pl_testing.assert_frame_equal(
             returned_nominal_lf,
@@ -148,8 +143,6 @@ class TestExtrapolationForwardsWhenRatio:
             model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
             extrapolation_method="ratio",
         )
-        returned_ratio_lf.show(10)
-        expected_ratio_lf.show(10)
 
         pl_testing.assert_frame_equal(
             returned_ratio_lf,
@@ -202,8 +195,6 @@ class TestExtrapolationBackwardsWhenNominal:
             model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
             extrapolation_method="nominal",
         )
-        returned_nominal_lf.show(10)
-        expected_nominal_lf.show(10)
 
         pl_testing.assert_frame_equal(
             returned_nominal_lf,
@@ -239,8 +230,6 @@ class TestExtrapolationBackwardsWhenRatio:
             model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
             extrapolation_method="ratio",
         )
-        returned_ratio_lf.show(10)
-        expected_ratio_lf.show(10)
 
         pl_testing.assert_frame_equal(
             returned_ratio_lf,
@@ -284,6 +273,4 @@ class TestCombineExtrapolation:
         returned_lf = job.combine_extrapolation(
             input_lf,
         )
-        expected_lf.show(10)
-        returned_lf.show(10)
         pl_testing.assert_frame_equal(expected_lf, returned_lf, abs_tol=0.00001)
