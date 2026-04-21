@@ -6,10 +6,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-
+- Setup scripts and terraform required for converting direct payment estimates to polars.
 
 ### Changed
-
+- Removed partitioning from direct payments pipeline outputs.
 
 ### Fixed
 
