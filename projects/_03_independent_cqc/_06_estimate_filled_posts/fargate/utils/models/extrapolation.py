@@ -336,18 +336,6 @@ def combine_extrapolation(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: The LazyFrame with the added combined extrapolation column.
     """
-    # df = df.withColumn(
-    #     IndCqc.extrapolation_model,
-    #     F.when(
-    #         F.col(IndCqc.cqc_location_import_date)
-    #         > F.col(IndCqc.final_submission_time),
-    #         F.col(IndCqc.extrapolation_forwards),
-    #     ).when(
-    #         F.col(IndCqc.cqc_location_import_date)
-    #         < F.col(IndCqc.first_submission_time),
-    #         F.col(IndCqc.extrapolation_backwards),
-    #     ),
-    # )
     combine_extrapolation_expr = (
         pl.when(
             pl.col(IndCqc.cqc_location_import_date)
