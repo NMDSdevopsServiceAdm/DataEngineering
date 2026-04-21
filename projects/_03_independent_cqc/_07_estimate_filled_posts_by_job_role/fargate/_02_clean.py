@@ -37,7 +37,7 @@ def main(
     # TODO - Filter ASC-WDS worker data.
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
-        IndCQC.EXPANDED_ID
+        IndCQC.expanded_id
     )
 
     utils.sink_to_parquet(

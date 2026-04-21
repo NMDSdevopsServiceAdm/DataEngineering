@@ -51,7 +51,7 @@ class TestGetPercentageShareRatios:
                 (6, "2", date(2026, 1, 1), 3, 0.6),
             ],
             schema={
-                IndCQC.EXPANDED_ID: pl.Int64,
+                IndCQC.expanded_id: pl.Int64,
                 IndCQC.location_id: pl.String,
                 IndCQC.cqc_location_import_date: pl.Date,
                 "vals": pl.Int64,
@@ -62,7 +62,7 @@ class TestGetPercentageShareRatios:
         input_lf = expected_lf.drop("ratios")
         returned_lf = job.get_percent_share_ratios(
             input_lf, input_col="vals", output_col="ratios"
-        ).sort(IndCQC.EXPANDED_ID)
+        ).sort(IndCQC.expanded_id)
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
 
 

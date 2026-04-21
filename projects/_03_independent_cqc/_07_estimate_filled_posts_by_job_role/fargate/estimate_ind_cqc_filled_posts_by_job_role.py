@@ -129,14 +129,14 @@ def main(
             pl.scan_parquet(estimates_source, low_memory=True)
             .select(list(combined_schema))
             # Add row id index for single-key joining.
-            .with_row_index(name=IndCQC.ROW_ID)
+            .with_row_index(name=IndCQC.row_id)
             .with_columns(utils.cast_to_schema(combined_schema))
         )
         estimated_posts_base_lf = full_estimates_lf.select(
-            IndCQC.ROW_ID, *list(transformation_columns)
+            IndCQC.row_id, *list(transformation_columns)
         )
         # This will be joined on at the end.
-        metadata_lf = full_estimates_lf.select(IndCQC.ROW_ID, *list(metadata_columns))
+        metadata_lf = full_estimates_lf.select(IndCQC.row_id, *list(metadata_columns))
 
         col_name_map = {
             IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date
@@ -167,7 +167,7 @@ def main(
         # TODO - Filter ASC-WDS worker data.
 
         estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
-            IndCQC.EXPANDED_ID
+            IndCQC.expanded_id
         )
 
         # Remove log_polars_plan.
@@ -285,7 +285,7 @@ def main(
         # Join back original metadata.
         estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
             metadata_lf,
-            on=IndCQC.ROW_ID,
+            on=IndCQC.row_id,
         )
 
         # Remove log_polars_plan.
@@ -316,7 +316,7 @@ def join_estimates_to_ascwds(
 
     # Narrow select "id" and join keys first to improve memory performance of
     # cross join. From this we get the full amount of rows expected.
-    narrow_keys_lf = estimates_lf.select([IndCQC.ROW_ID] + join_keys)
+    narrow_keys_lf = estimates_lf.select([IndCQC.row_id] + join_keys)
     # This is just a single column df with a row for each job role (~38).
     roles_lf = pl.LazyFrame(
         data=[AscwdsWorkerValueLabelsJobGroup.all_roles()],
@@ -336,7 +336,7 @@ def join_estimates_to_ascwds(
     # both sides as they are not relevant to the rest of the pipeline.
     return estimates_lf.join(
         expanded_counts_lf.drop(join_keys),
-        on=IndCQC.ROW_ID,
+        on=IndCQC.row_id,
         how="right",
     ).drop(join_keys)
 
@@ -363,15 +363,15 @@ def impute_ratios(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFrame:
         estimated_job_role_posts_lf.group_by(impute_groups)
         .agg(
             # Sort the join key in the same manner as the imputed values.
-            pl.col(IndCQC.EXPANDED_ID).sort_by(order_key),
+            pl.col(IndCQC.expanded_id).sort_by(order_key),
             imputed_ratios,
         )
-        .explode(IndCQC.EXPANDED_ID, IndCQC.imputed_ascwds_job_role_ratios)
+        .explode(IndCQC.expanded_id, IndCQC.imputed_ascwds_job_role_ratios)
         .drop(impute_groups)
     )
 
     return estimated_job_role_posts_lf.join(
-        impute_agg_lf, on=IndCQC.EXPANDED_ID, how="left"
+        impute_agg_lf, on=IndCQC.expanded_id, how="left"
     )
 
 
@@ -386,20 +386,20 @@ def get_percent_share_ratios(
     """
     groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
 
-    # Groupby-agg-explode on only necessary subset, before joining back on EXPANDED_ID.
+    # Groupby-agg-explode on only necessary subset, before joining back on expanded_id.
     ratios_agg_lf = (
         estimated_job_role_posts_lf.group_by(groups)
         .agg(
-            pl.col(IndCQC.EXPANDED_ID),  # Keep to align during explode
+            pl.col(IndCQC.expanded_id),  # Keep to align during explode
             percentage_share(input_col).cast(pl.Float32).alias(output_col),
         )
-        .explode(IndCQC.EXPANDED_ID, output_col)
+        .explode(IndCQC.expanded_id, output_col)
         # Drop groups to prevent duplicate columns after join.
         .drop(groups)
     )
 
     return estimated_job_role_posts_lf.join(
-        ratios_agg_lf, on=IndCQC.EXPANDED_ID, how="left"
+        ratios_agg_lf, on=IndCQC.expanded_id, how="left"
     )
 
 
