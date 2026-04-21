@@ -289,6 +289,10 @@ class IndCqcColumns:
     primary_service_type_second_level: str = (
         CQCLClean.primary_service_type + "_second_level"
     )
+    proportion_of_model_values_within_ten: str = "proportion_of_model_values_within_ten"
+    proportion_of_model_values_within_twenty_five: str = (
+        "proportion_of_model_values_within_twenty_five"
+    )
     proportion_of_non_rm_managerial_estimated_filled_posts_by_role: str = (
         "proportion_of_non_rm_managerial_estimated_filled_posts_by_role"
     )

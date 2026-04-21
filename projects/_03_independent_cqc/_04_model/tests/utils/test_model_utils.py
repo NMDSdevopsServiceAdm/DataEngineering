@@ -105,6 +105,17 @@ class MetricsTests(unittest.TestCase):
         self.assertIsInstance(metrics[IndCQC.r2], float)
         self.assertIsInstance(metrics[IndCQC.rmse], float)
 
+    def test_calculate_metrics_proportion_within_keys(self):
+        y_known = np.array([10, 20, 30, 40, 50])
+        y_predicted = np.array([8, 22, 20, 65, 1])
+
+        metrics = job.calculate_metrics(y_known, y_predicted)
+        print(metrics)
+        self.assertEqual(metrics[IndCQC.proportion_of_model_values_within_ten], 2.0)
+        self.assertEqual(
+            metrics[IndCQC.proportion_of_model_values_within_twenty_five], 3.0
+        )
+
 
 class AddPredictionsIntoDataFrameTests(unittest.TestCase):
     def setUp(self) -> None:
