@@ -253,34 +253,18 @@ class TestExtrapolationBackwardsWhenInvalidMethod:
             )
 
 
-# # TODO
-# class CombineExtrapolationTests(ModelExtrapolationTests):
-#     def setUp(self):
-#         super().setUp()
+class TestCombineExtrapolation:
+    expected_lf = pl.LazyFrame(
+        Data.expected_combine_extrapolation_rows,
+        Schemas.expected_combine_extrapolation_schema,
+        orient="row",
+    )
+    input_lf = expected_lf.drop(IndCQC.extrapolation_model)
+    returned_lf = job.combine_extrapolation(
+        input_lf,
+    )
 
-#         test_combine_extrapolation_lf = self.spark.createDataFrame(
-#             Data.combine_extrapolation_rows,
-#             Schemas.combine_extrapolation_schema,
-#         )
-#         self.returned_lf = job.combine_extrapolation(test_combine_extrapolation_lf)
-#         self.expected_lf = self.spark.createDataFrame(
-#             Data.expected_combine_extrapolation_rows,
-#             Schemas.expected_combine_extrapolation_schema,
-#         )
-#         self.returned_data = self.returned_lf.sort(
-#             IndCQC.location_id, IndCQC.cqc_location_import_date
-#         ).collect()
-#         self.expected_data = self.expected_lf.collect()
-
-#     @pytest.mark.skip(reason="todo")
-#     def test_combine_extrapolation_returns_expected_columns(self):
-#         self.assertTrue(self.returned_lf.columns, self.expected_lf.columns)
-
-#     @pytest.mark.skip(reason="todo")
-#     def test_combine_extrapolation_returns_expected_values(self):
-#         for i in range(len(self.returned_data)):
-#             self.assertEqual(
-#                 self.returned_data[i][IndCQC.extrapolation_model],
-#                 self.expected_data[i][IndCQC.extrapolation_model],
-#                 f"Returned value in row {i} does not match expected",
-#             )
+    def test_combine_extrapolation_returns_expected_data(self):
+        pl_testing.assert_frame_equal(
+            self.expected_lf, self.returned_lf, abs_tol=0.00001
+        )
