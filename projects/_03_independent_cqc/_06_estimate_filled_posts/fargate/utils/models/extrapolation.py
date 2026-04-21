@@ -207,7 +207,7 @@ def extrapolation_backwards(
     The nominal method is based on adding/subtracting the difference between those two modelled values.
 
     Args:
-        df (pl.LazyFrame): The input LazyFrame.
+        lf (pl.LazyFrame): The input LazyFrame.
         column_with_null_values (str): The name of the column with null values in.
         model_to_extrapolate_from (str): The name of the column representing the model to extrapolate from.
         extrapolation_method (str): The choice of method. Must be either 'nominal' or 'ratio'.
@@ -301,7 +301,7 @@ def combine_extrapolation(lf: pl.LazyFrame) -> pl.LazyFrame:
     - Backward extrapolation values if 'cqc_location_import_date' is less than the 'first_submission_time'.
 
     Args:
-        df (pl.LazyFrame): The input LazyFrame containing the columns 'cqc_location_import_date', 'first_submission_time',
+        lf (pl.LazyFrame): The input LazyFrame containing the columns 'cqc_location_import_date', 'first_submission_time',
             'final_submission_time', 'extrapolation_forwards', and 'extrapolation_backwards'.
 
     Returns:
