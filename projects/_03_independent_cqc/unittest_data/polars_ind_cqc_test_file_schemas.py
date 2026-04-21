@@ -597,56 +597,18 @@ class CalculateAscwdsFilledPostsSchemas:
     calculate_ascwds_filled_posts_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
-            (IndCQC.total_staff_bounded, pl.Int64()),
-            (IndCQC.worker_records_bounded, pl.Int64()),
+            (IndCQC.total_staff_bounded, pl.Int32()),
+            (IndCQC.worker_records_bounded, pl.Int32()),
             (IndCQC.ascwds_filled_posts, pl.Float64()),
             (IndCQC.ascwds_filled_posts_source, pl.String()),
         ]
     )
 
-
-@dataclass
-class CalculateAscwdsFilledPostsDifferenceInRangeSchemas:
-    test_difference_within_range_schema = pl.Schema(
+    source_description_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
-            (IndCQC.total_staff_bounded, pl.Int64()),
-            (IndCQC.worker_records_bounded, pl.Int64()),
-            (IndCQC.ascwds_filled_posts, pl.Float64()),
+            (IndCQC.ascwds_filled_posts, pl.Float32()),
             (IndCQC.ascwds_filled_posts_source, pl.String()),
-        ]
-    )
-
-
-@dataclass
-class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas:
-    calculate_ascwds_filled_posts_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.total_staff_bounded, pl.Int64()),
-            (IndCQC.worker_records_bounded, pl.Int64()),
-            (IndCQC.ascwds_filled_posts, pl.Float64()),
-            (IndCQC.ascwds_filled_posts_source, pl.String()),
-        ]
-    )
-
-
-@dataclass
-class CalculateAscwdsFilledPostsUtilsSchemas:
-    estimated_source_description_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.estimate_filled_posts, pl.Float64()),
-            (IndCQC.estimate_filled_posts_source, pl.String()),
-        ]
-    )
-
-    common_checks_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.total_staff_bounded, pl.Int64()),
-            (IndCQC.worker_records_bounded, pl.Int64()),
-            (IndCQC.ascwds_filled_posts, pl.Float64()),
         ]
     )
 
@@ -1576,5 +1538,18 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
             IndCQC.difference_between_estimate_and_cqc_registered_managers: pl.Float32,
             IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role: pl.Float32,
             IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
+        }
+    )
+
+    expected_calc_diff_estimate_filled_posts_and_from_all_job_roles_schema = pl.Schema(
+        {
+            "id": pl.Int32,
+            IndCQC.estimate_filled_posts: pl.Float32,
+            IndCQC.main_job_role_clean_labelled: pl.Enum(
+                AscwdsWorkerValueLabelsJobGroup.all_roles()
+            ),
+            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
+            IndCQC.estimate_filled_posts_from_all_job_roles: pl.Float32,
+            IndCQC.difference_estimate_filled_posts_and_from_all_job_roles: pl.Float32,
         }
     )

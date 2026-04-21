@@ -6,14 +6,9 @@ from typing import Any
 import numpy as np
 import pytest
 
-from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.difference_within_range import (
-    ascwds_filled_posts_difference_within_range_source_description,
-)
-from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records import (
-    ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
+    ASCWDSFilledPostsSource,
     AscwdsFilteringRule,
     CareHome,
     CTFilteringRule,
@@ -477,134 +472,60 @@ class ValidateEstimatedIndCQCFilledPostsData:
 
 @dataclass
 class CalculateAscwdsFilledPostsData:
-
     calculate_ascwds_filled_posts_rows = [
-        # Both 0: Return None
-        ("1-000001", 0, None, None, None,),
-        # Both 500: Return 500
-        ("1-000002", 500, 500, None, None,),
-        # Only know total_staff: Return None
-        ("1-000003", 10, None, None, None,),
-        # worker_record_count below min permitted: return None
-        ("1-000004", 23, 1, None, None,),
-        # Only know worker_records: None
-        ("1-000005", None, 100, None, None,),
-        # None of the rules apply: Return None
-        ("1-000006", 900, 600, None, None,),
-        # Absolute difference is within absolute bounds: Return Average
-        ("1-000007", 12, 11, None, None,),
-        # Absolute difference is within percentage bounds: Return Average
-        ("1-000008", 500, 475, None, None,),
-        # Already populated, shouldn't change it
-        ("1-000009", 10, 10, 8.0, "already populated"),
+        ("1-000001", 0,    None, None, None),                # Both 0: Return None
+        ("1-000002", 500,  500,  None, None),                # Both 500: Return 500
+        ("1-000003", 10,   None, None, None),                # Only know total_staff: Return None
+        ("1-000004", 23,   1,    None, None),                # worker_record_count below min permitted: return None
+        ("1-000005", None, 100,  None, None),                # Only know worker_records: None
+        ("1-000006", 900,  600,  None, None),                # None of the rules apply: Return None
+        ("1-000007", 12,   11,   None, None),                # Absolute difference is within absolute bounds: Return Average
+        ("1-000008", 500,  475,  None, None),                # Absolute difference is within percentage bounds: Return Average
+        ("1-000009", 10,   10,   8.0,  "already populated"), # Already populated, shouldn't change it
     ] # fmt: skip
-
     expected_ascwds_filled_posts_rows = [
-        # Both 0: Return None
-        ("1-000001", 0, None, None, None,),
-        # Both 500: Return 500
-        ("1-000002", 500, 500, 500.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,),
-        # Only know total_staff: Return None
-        ("1-000003", 10, None, None, None,),
-        # worker_record_count below min permitted: return None
-        ("1-000004", 23, 1, None, None,),
-        # Only know worker_records: Return None
-        ("1-000005", None, 100, None, None,),
-        # None of the rules apply: Return None
-        ("1-000006", 900, 600, None, None,),
-        # Absolute difference is within absolute bounds: Return Average
-        ("1-000007", 12, 11, 11.5, ascwds_filled_posts_difference_within_range_source_description,),
-        # Absolute difference is within percentage bounds: Return Average
-        ("1-000008", 500, 475, 487.5, ascwds_filled_posts_difference_within_range_source_description,),
-        # Already populated, shouldn't change it
-        ("1-000009", 10, 10, 10.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description),
+        ("1-000001", 0,    None, None,  None),
+        ("1-000002", 500,  500,  500.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
+        ("1-000003", 10,   None, None,  None),
+        ("1-000004", 23,   1,    None,  None),
+        ("1-000005", None, 100,  None,  None),
+        ("1-000006", 900,  600,  None,  None),
+        ("1-000007", 12,   11,   11.5,  ASCWDSFilledPostsSource.average_of_total_staff_and_worker_records),
+        ("1-000008", 500,  475,  487.5, ASCWDSFilledPostsSource.average_of_total_staff_and_worker_records),
+        ("1-000009", 10,   10,   10.0,  ASCWDSFilledPostsSource.worker_records_and_total_staff),
+    ] # fmt: skip
+    expected_totalstaff_equal_wkrrecs_rows = [
+        ("1-000001", 0,    None, None,  None),
+        ("1-000002", 500,  500,  500.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
+        ("1-000003", 10,   None, None,  None),
+        ("1-000004", 23,   1,    None,  None),
+        ("1-000005", None, 100,  None,  None),
+        ("1-000006", 900,  600,  None,  None),
+        ("1-000007", 12,   11,   None,  None),
+        ("1-000008", 500,  475,  None,  None),
+        ("1-000009", 10,   10,   8.0,   "already populated"),
+    ] # fmt: skip
+    expected_difference_within_range_rows = [
+        ("1-000001", 0,    None, None,  None),
+        ("1-000002", 500,  500,  500.0, ASCWDSFilledPostsSource.average_of_total_staff_and_worker_records),
+        ("1-000003", 10,   None, None,  None),
+        ("1-000004", 23,   1,    None,  None),
+        ("1-000005", None, 100,  None,  None),
+        ("1-000006", 900,  600,  None,  None),
+        ("1-000007", 12,   11,   11.5,  ASCWDSFilledPostsSource.average_of_total_staff_and_worker_records),
+        ("1-000008", 500,  475,  487.5, ASCWDSFilledPostsSource.average_of_total_staff_and_worker_records),
+        ("1-000009", 10,   10,   8.0,   "already populated"),
     ] # fmt: skip
 
-
-@dataclass
-class CalculateAscwdsFilledPostsDifferenceInRangeData:
-
-    test_difference_within_range_rows = [
-        # Both 0: Return None
-        ("1-000001", 0, None, None, None,),
-        # Both 500: Return 500
-        ("1-000002", 500, 500, None, None,),
-        # Only know total_staff: Return None
-        ("1-000003", 10, None, None, None,),
-        # worker_record_count below min permitted: return None
-        ("1-000004", 23, 1, None, None,),
-        # Only know worker_records: None
-        ("1-000005", None, 100, None, None,),
-        # None of the rules apply: Return None
-        ("1-000006", 900, 600, None, None,),
-        # Absolute difference is within absolute bounds: Return Average
-        ("1-000007", 12, 11, None, None,),
-        # Absolute difference is within percentage bounds: Return Average
-        ("1-000008", 500, 475, None, None,),
-        # Already populated, shouldn't change it
-        ("1-000009", 10, 10, 8.0, "already populated"),
-    ] # fmt: skip
-
-
-@dataclass
-class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsData:
-
-    calculate_ascwds_filled_posts_rows = [
-        # Both 0: Return None
-        ("1-000001", 0, None, None, None,),
-        # Both 500: Return 500
-        ("1-000002", 500, 500, None, None,),
-        # Only know total_staff: Return None
-        ("1-000003", 10, None, None, None,),
-        # worker_record_count below min permitted: return None
-        ("1-000004", 23, 1, None, None,),
-        # Only know worker_records: None
-        ("1-000005", None, 100, None, None,),
-        # None of the rules apply: Return None
-        ("1-000006", 900, 600, None, None,),
-        # Absolute difference is within absolute bounds: Return Average
-        ("1-000007", 12, 11, None, None,),
-        # Absolute difference is within percentage bounds: Return Average
-        ("1-000008", 500, 475, None, None,),
-        # Already populated, shouldn't change it
-        ("1-000009", 10, 10, 8.0, "already populated"),
-    ] # fmt: skip
-
-    expected_ascwds_filled_posts_rows = [
-        ("1-000001", 0, None, None, None),
-        ("1-000002", 500, 500, 500.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description),
-        ("1-000003", 10, None, None, None),
-        ("1-000004", 23, 1, None, None),
-        ("1-000005", None, 100, None, None),
-        ("1-000006", 900, 600, None, None),
-        ("1-000007", 12, 11, None, None),
-        ("1-000008", 500, 475, None, None),
-        ("1-000009", 10, 10, 8.0, "already populated"),
-    ] # fmt: skip
-
-
-@dataclass
-class CalculateAscwdsFilledPostsUtilsData:
-    common_checks_rows = [
-        ("1-000000001", 9, 2, None),
-        ("1-000000002", 2, 2, 2.0),
-    ]
     source_missing_rows = [
         ("1-000001", 8.0, None),
         ("1-000002", None, None),
         ("1-000003", 4.0, "already_populated"),
     ]
-
     expected_source_added_rows = [
         ("1-000001", 8.0, "model_name"),
         ("1-000002", None, None),
         ("1-000003", 4.0, "already_populated"),
-    ]
-
-    test_two_cols_are_equal_rows = [
-        ("1-000000001", 9, 2, None),
-        ("1-000000002", 2, 2, 2.0),
-        ("1-000000003", 8, 8, 8.0),
     ]
 
 
@@ -2275,3 +2196,12 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
             ],
         ),
     ]
+
+    expected_calc_diff_estimate_filled_posts_and_from_all_job_roles_rows = [
+        (0, 10.0, MainJobRoleLabels.care_worker, 5.0, 10.0, 0.0), # All job roles have filled posts.
+        (0, 10.0, MainJobRoleLabels.senior_care_worker, 5.0, 10.0, 0.0),
+        (1, 10.0, MainJobRoleLabels.care_worker, 5.0, 5.0, -5.0), # Job roles have mix of value and null.
+        (1, 10.0, MainJobRoleLabels.senior_care_worker, None, 5.0, -5.0),
+        (2, 10.0, MainJobRoleLabels.care_worker, None, None, None), # All job role posts are null.
+        (2, 10.0, MainJobRoleLabels.senior_care_worker, None, None, None),
+    ]  # fmt: skip
