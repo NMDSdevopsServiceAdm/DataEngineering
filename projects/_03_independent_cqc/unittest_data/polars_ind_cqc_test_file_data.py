@@ -2314,7 +2314,7 @@ class InterpolationData:
             ],
         ),
     ]  # fmt: skip
-    calculate_time_between_submissions_test_cases = [
+    calculate_days_between_submissions_test_cases = [
         ModelInterpolationTestCase(
             id="one_location_data",
             data=[
@@ -2344,9 +2344,9 @@ class InterpolationData:
                 ("1-001", date(2024, 1, 1), 10.0, None, None),
                 ("1-002", date(2024, 1, 2), 10.0, None, None),
                 ("1-001", date(2024, 2, 1), None, 60, 0.51),
-                ("1-002", date(2024, 2, 2), None, 60, 0.51),
+                ("1-002", date(2024, 3, 2), None, 90, 0.66),
                 ("1-001", date(2024, 3, 1), 7.0, None, None),
-                ("1-002", date(2024, 3, 2), 7.0, None, None),
+                ("1-002", date(2024, 4, 1), 7.0, None, None),
             ],
         ),
     ]  # fmt: skip

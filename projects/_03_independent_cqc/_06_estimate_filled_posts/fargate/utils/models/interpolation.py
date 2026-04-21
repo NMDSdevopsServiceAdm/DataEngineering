@@ -40,7 +40,7 @@ def model_interpolation(
     Raises:
         ValueError: If chosen method does not match 'straight' or 'trend'.
     """
-    lf = calculate_proportion_of_time_between_submissions(lf, column_with_null_values)
+    lf = calculate_proportion_of_days_between_submissions(lf, column_with_null_values)
 
     if method == "trend":
         lf = calculate_residuals(
@@ -82,8 +82,8 @@ def model_interpolation(
         raise ValueError("Error: method must be either 'straight' or 'trend'")
 
     lf = lf.drop(
-        IndCqc.time_between_submissions,
-        IndCqc.proportion_of_time_between_submissions,
+        IndCqc.days_between_submissions,
+        IndCqc.proportion_of_days_between_submissions,
         IndCqc.residual,
     )
 
@@ -97,10 +97,9 @@ def calculate_residuals(
     Calculate the residual between two non-null values (first_column minus
     second_column).
 
-    This function computes the residuals between two non-null values in the
-    specified columns. It creates a temporary column to store the difference
-    between the non-null values, then duplicates the first non-null residual
-    over a specified window and assigns it to a new column called 'residual'.
+    This function computes the residual between two non-null values in the
+    specified columns, then backward fills the residual into rows where
+    either of the specified columns are null.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame containing the data.
@@ -113,28 +112,22 @@ def calculate_residuals(
     """
     lf = lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
 
-    residual_expr = (
-        pl.when(
-            pl.col(first_column).is_not_null() & pl.col(second_column).is_not_null()
-        )
-        .then(pl.col(first_column) - pl.col(second_column))
-        .otherwise(None)
-    )
+    residual_expr = pl.when(
+        pl.col(first_column).is_not_null() & pl.col(second_column).is_not_null()
+    ).then(pl.col(first_column) - pl.col(second_column))
 
     lf = lf.with_columns(
-        pl.when(pl.col(second_column).is_not_null())
-        .then(residual_expr.backward_fill().over(IndCqc.location_id))
-        .alias(IndCqc.residual)
+        residual_expr.backward_fill().over(IndCqc.location_id).alias(IndCqc.residual)
     )
     return lf
 
 
-def calculate_proportion_of_time_between_submissions(
+def calculate_proportion_of_days_between_submissions(
     lf: pl.LazyFrame, column_with_null_values: str
 ) -> pl.LazyFrame:
     """
-    Calculates the proportion of time, based on cqc_location_import_date of
-    each row, between two non-null submission times.
+    Calculates the proportion of days between consecutive non-null values
+    based on cqc_location_import_date.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame containing the data.
@@ -142,59 +135,37 @@ def calculate_proportion_of_time_between_submissions(
             null values.
 
     Returns:
-        pl.LazyFrame: The LazyFrame with the new column added.
+        pl.LazyFrame: The LazyFrame with the new columns
+            (days_between_submissions and proportion_of_days_between_submissions)
+            added.
     """
-    lf = (
-        lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
-        .with_columns(
-            # Create conditional column: cqc_location_import_date where column_with_null_values is not null
-            pl.when(pl.col(column_with_null_values).is_not_null())
-            .then(pl.col(IndCqc.cqc_location_import_date))
-            .alias("_temp_time")
-        )
-        .with_columns(
-            # Previous: forward fill within partition (last non-null up to current row)
-            pl.col("_temp_time")
-            .forward_fill()
-            .over(IndCqc.location_id)
-            .alias(IndCqc.previous_submission_time),
-            # Next: backward fill within partition (first non-null from current row onward)
-            pl.col("_temp_time")
-            .backward_fill()
-            .over(IndCqc.location_id)
-            .alias(IndCqc.next_submission_time),
-        )
-        .drop("_temp_time")
+    lf = lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
+    val_not_null_date = pl.when(pl.col(column_with_null_values).is_not_null()).then(
+        pl.col(IndCqc.cqc_location_import_date)
     )
+    previous_submission_date = val_not_null_date.forward_fill().over(IndCqc.location_id)
+    next_submission_date = val_not_null_date.backward_fill().over(IndCqc.location_id)
 
-    current_import_date_is_between_known_submissions = (
-        pl.col(IndCqc.previous_submission_time)
-        < pl.col(IndCqc.cqc_location_import_date)
-    ) & (pl.col(IndCqc.next_submission_time) > pl.col(IndCqc.cqc_location_import_date))
+    condition = pl.col(IndCqc.cqc_location_import_date).is_between(
+        previous_submission_date, next_submission_date, "none"
+    )
+    days_between_values = (
+        next_submission_date - previous_submission_date
+    ).dt.total_days()
 
     lf = lf.with_columns(
-        pl.when(current_import_date_is_between_known_submissions)
+        pl.when(condition)
+        .then(days_between_values)
+        .alias(IndCqc.days_between_submissions),
+        pl.when(condition)
         .then(
             (
-                pl.col(IndCqc.next_submission_time)
-                - pl.col(IndCqc.previous_submission_time)
+                pl.col(IndCqc.cqc_location_import_date) - previous_submission_date
             ).dt.total_days()
+            / days_between_values
         )
-        .alias(IndCqc.time_between_submissions)
+        .alias(IndCqc.proportion_of_days_between_submissions),
     )
-
-    lf = lf.with_columns(
-        pl.when(current_import_date_is_between_known_submissions)
-        .then(
-            (
-                pl.col(IndCqc.cqc_location_import_date)
-                - pl.col(IndCqc.previous_submission_time)
-            ).dt.total_days()
-            / pl.col(IndCqc.time_between_submissions)
-        )
-        .alias(IndCqc.proportion_of_time_between_submissions)
-    ).drop(IndCqc.previous_submission_time, IndCqc.next_submission_time)
-
     return lf
 
 
@@ -227,14 +198,14 @@ def calculate_interpolated_values(
             new column.
     """
     if max_days_between_submissions is not None:
-        condition_is_true = pl.col(IndCqc.time_between_submissions) <= pl.lit(
+        condition_is_true = pl.col(IndCqc.days_between_submissions) <= pl.lit(
             max_days_between_submissions
         )
     else:
         condition_is_true = pl.lit(True)
 
     interpolated_value = pl.col(column_to_interpolate_from) + (
-        pl.col(IndCqc.residual) * pl.col(IndCqc.proportion_of_time_between_submissions)
+        pl.col(IndCqc.residual) * pl.col(IndCqc.proportion_of_days_between_submissions)
     )
 
     lf = lf.with_columns(

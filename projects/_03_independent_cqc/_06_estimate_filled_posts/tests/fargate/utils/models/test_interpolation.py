@@ -80,21 +80,21 @@ class TestCalculateProportionOfTimeBetweenSubmissions:
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.calculate_time_between_submissions_test_cases
+            for case in Data.calculate_days_between_submissions_test_cases
         ],
     )
     def test_function_returns_expected_values(self, case):
         expected_lf = pl.LazyFrame(
             case.data,
-            schema=Schemas.time_between_submissions_schema,
+            schema=Schemas.days_between_submissions_schema,
             orient="row",
         )
 
         input_lf = expected_lf.drop(
-            IndCqc.time_between_submissions,
-            IndCqc.proportion_of_time_between_submissions,
+            IndCqc.days_between_submissions,
+            IndCqc.proportion_of_days_between_submissions,
         )
-        returned_lf = job.calculate_proportion_of_time_between_submissions(
+        returned_lf = job.calculate_proportion_of_days_between_submissions(
             input_lf, IndCqc.ascwds_pir_merged
         )
         pl_testing.assert_frame_equal(

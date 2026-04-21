@@ -1573,12 +1573,12 @@ class InterpolationSchema:
         IndCQC.residual: pl.Float64,
     }
 
-    time_between_submissions_schema = {
+    days_between_submissions_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.ascwds_pir_merged: pl.Float64,
-        IndCQC.time_between_submissions: pl.Int64,
-        IndCQC.proportion_of_time_between_submissions: pl.Float64,
+        IndCQC.days_between_submissions: pl.Int64,
+        IndCQC.proportion_of_days_between_submissions: pl.Float64,
     }
 
     calculate_interpolated_values_schema = {
@@ -1587,7 +1587,7 @@ class InterpolationSchema:
         IndCQC.ascwds_pir_merged: pl.Float64,
         IndCQC.previous_non_null_value: pl.Float64,
         IndCQC.residual: pl.Float64,
-        IndCQC.time_between_submissions: pl.Int64,
-        IndCQC.proportion_of_time_between_submissions: pl.Float64,
+        IndCQC.days_between_submissions: pl.Int64,
+        IndCQC.proportion_of_days_between_submissions: pl.Float64,
         IndCQC.interpolation_model: pl.Float64,
     }
