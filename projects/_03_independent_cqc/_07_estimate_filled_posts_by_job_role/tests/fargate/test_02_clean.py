@@ -26,17 +26,12 @@ class MainTests(unittest.TestCase):
         nullify_job_role_count_when_source_not_ascwds_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        job.main(
-            self.MERGED_DATA_SOURCE,
-            self.CLEANED_DATA_DESTINATION,
-        )
+        job.main(self.MERGED_DATA_SOURCE, self.CLEANED_DATA_DESTINATION)
 
         self.assertEqual(scan_parquet_mock.call_count, 1)
         scan_parquet_mock.assert_has_calls(
             [
-                call(
-                    self.MERGED_DATA_SOURCE,
-                ),
+                call(self.MERGED_DATA_SOURCE),
             ]
         )
 
