@@ -56,23 +56,6 @@
                   "States": {
                     "Clean IND CQC data": {
                       "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${clean_ind_cqc_filled_posts_job_name}",
-                        "Arguments": {
-                          "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/",
-                          "--cleaned_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
-                  "StartAt": "Polars Clean IND CQC data",
-                  "States": {
-                    "Polars Clean IND CQC data": {
-                      "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
@@ -94,7 +77,7 @@
                                 "--merged_ind_cqc_source",
                                 "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/",
                                 "--destination",
-                                "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data_polars/"
+                                "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
                               ]
                             }
                           ]
@@ -204,24 +187,6 @@
                   "States": {
                     "Validate cleaned data": {
                       "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${validate_cleaned_ind_cqc_data_job_name  }",
-                        "Arguments": {
-                          "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/",
-                          "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_ind_cqc_02_cleaned_data/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
-                  "StartAt": "Polars Validate cleaned data",
-                  "States": {
-                    "Polars Validate cleaned data": {
-                      "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "Cluster": "${model_cluster_arn}",
@@ -241,7 +206,7 @@
                               "Command": [
                                 "validate_cleaned_ind_cqc_data.py",
                                 "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data_polars/",
+                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
                                 "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_02_cleaned_data/",
                                 "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/"
                               ]
