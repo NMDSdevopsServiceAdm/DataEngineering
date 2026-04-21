@@ -232,7 +232,7 @@ Output: `C:\Users\.....\.pyenv\pyenv-win\versions\3.11.12\python.exe`
 
 3. To setup the pre-commit hooks, run `pipenv run pre-commit install` and then `pipenv update`
 
-3. Close Git Bash
+4. Close Git Bash
 
 
 ### Install and set up VS Code
