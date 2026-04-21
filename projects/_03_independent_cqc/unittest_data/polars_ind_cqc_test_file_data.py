@@ -2442,16 +2442,69 @@ class ModelExtrapolation:
         ("1-001", date(2026, 1, 1), None, 10.0, date(2026, 1, 1), date(2026, 1, 1), None),
     ]
     
-
-   
-
-    expected_combine_extrapolation_rows = [
-        ("1-001", date(2026, 1, 1), 15.0, date(2026, 1, 1), date(2026, 3, 1), 15.0, 15.0, None),
-        ("1-001", date(2026, 2, 1), None, date(2026, 1, 1), date(2026, 3, 1), 20.0, 25.0, None),
-        ("1-001", date(2026, 3, 1), 30.0, date(2026, 1, 1), date(2026, 3, 1), 30.0, 30.0, None),
-        ("1-002", date(2026, 1, 1), None, date(2026, 2, 1), date(2026, 2, 1), 3.0, 2.0, 2.0),
-        ("1-002", date(2026, 2, 1), 4.0, date(2026, 2, 1), date(2026, 2, 1), 4.0, 4.0, None),
-        ("1-002", date(2026, 3, 1), None, date(2026, 2, 1), date(2026, 2, 1), 5.0, 6.0, 5.0),
-        ("1-003", date(2026, 3, 1), None, None, None, None, None, None),
+    combine_extrapolation_test_cases = [
+        ExtrapolationTestCase(
+            id="when_one_later_data_point_is_missing",
+            data=[
+                ("1-002", date(2026, 2, 1), 4.0, date(2026, 2, 1), date(2026, 2, 1), 4.0, 4.0, None),
+                ("1-002", date(2026, 3, 1), None, date(2026, 2, 1), date(2026, 2, 1), 5.0, 6.0, 5.0),
+            ]
+        ),
+        ExtrapolationTestCase(
+            id="when_multiple_later_data_points_are_missing",
+            data=[
+                ("1-002", date(2026, 2, 1), 4.0, date(2026, 2, 1), date(2026, 2, 1), 4.0, 4.0, None),
+                ("1-002", date(2026, 3, 1), None, date(2026, 2, 1), date(2026, 2, 1), 5.0, 6.0, 5.0),
+                ("1-002", date(2026, 4, 1), None, date(2026, 2, 1), date(2026, 2, 1), 7.0, 8.0, 7.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_one_earlier_data_point_is_missing",
+            data=[
+                ("1-002", date(2026, 1, 1), None, date(2026, 2, 1), date(2026, 2, 1), 3.0, 2.0, 2.0),
+                ("1-002", date(2026, 2, 1), 4.0, date(2026, 2, 1), date(2026, 2, 1), 4.0, 4.0, None),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_multiple_earlier_data_points_are_missing",
+            data=[
+                ("1-002", date(2026, 1, 1), None, date(2026, 3, 1), date(2026, 3, 1), 5.0, 6.0, 6.0),
+                ("1-002", date(2026, 2, 1), None, date(2026, 3, 1), date(2026, 3, 1), 3.0, 2.0, 2.0),
+                ("1-002", date(2026, 3, 1), 4.0, date(2026, 3, 1), date(2026, 3, 1), 4.0, 4.0, None),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_one_imtermediate_data_point_is_missing",
+            data=[
+                ("1-001", date(2026, 1, 1), 15.0, date(2026, 1, 1), date(2026, 3, 1), 15.0, 15.0, None),
+                ("1-001", date(2026, 2, 1), None, date(2026, 1, 1), date(2026, 3, 1), 20.0, 25.0, None),
+                ("1-001", date(2026, 3, 1), 30.0, date(2026, 1, 1), date(2026, 3, 1), 30.0, 30.0, None),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_earlier_and_later_data_points_are_missing",
+            data=[
+                ("1-002", date(2026, 1, 1), None, date(2026, 2, 1), date(2026, 2, 1), 3.0, 2.0, 2.0),
+                ("1-002", date(2026, 2, 1), 4.0, date(2026, 2, 1), date(2026, 2, 1), 4.0, 4.0, None),
+                ("1-002", date(2026, 3, 1), None, date(2026, 2, 1), date(2026, 2, 1), 5.0, 6.0, 5.0),
+                ("1-002", date(2026, 4, 1), None, date(2026, 2, 1), date(2026, 2, 1), 7.0, 8.0, 7.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_more_than_one_location_needs_extrapolating",#TODO
+            data=[
+                ("1-001", date(2026, 2, 1), None, date(2026, 3, 1), date(2026, 3, 1), 20.0, 25.0, 25.0),
+                ("1-001", date(2026, 3, 1), 30.0, date(2026, 3, 1), date(2026, 3, 1), 30.0, 30.0, None),
+                ("1-002", date(2026, 1, 1), None, date(2026, 2, 1), date(2026, 2, 1), 3.0, 2.0, 2.0),
+                ("1-002", date(2026, 2, 1), 4.0, date(2026, 2, 1), date(2026, 2, 1), 4.0, 4.0, None),
+                ("1-002", date(2026, 3, 1), None, date(2026, 2, 1), date(2026, 2, 1), 5.0, 6.0, 5.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_no_data_points_are_available",
+            data=[
+                ("1-003", date(2026, 3, 1), None, None, None, None, None, None),
+            ],
+        ),
     ]
     # fmt: on

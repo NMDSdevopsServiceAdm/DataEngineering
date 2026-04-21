@@ -254,19 +254,22 @@ class TestExtrapolationBackwardsWhenInvalidMethod:
 
 
 class TestCombineExtrapolation:
-    expected_lf = pl.LazyFrame(
-        Data.expected_combine_extrapolation_rows,
-        Schemas.expected_combine_extrapolation_schema,
-        orient="row",
+    @pytest.mark.parametrize(
+        "combine_extrapolation_data",
+        [case.as_pytest_param() for case in Data.combine_extrapolation_test_cases],
     )
-    input_lf = expected_lf.drop(IndCQC.extrapolation_model)
-    returned_lf = job.combine_extrapolation(
-        input_lf,
-    )
-    expected_lf.show(10)
-    returned_lf.show(10)
-
-    def test_combine_extrapolation_returns_expected_data(self):
-        pl_testing.assert_frame_equal(
-            self.expected_lf, self.returned_lf, abs_tol=0.00001
+    def test_combine_extrapolation_returns_expected_data(
+        self, combine_extrapolation_data
+    ):
+        expected_lf = pl.LazyFrame(
+            combine_extrapolation_data,
+            Schemas.expected_combine_extrapolation_schema,
+            orient="row",
         )
+        input_lf = expected_lf.drop(IndCQC.extrapolation_model)
+        returned_lf = job.combine_extrapolation(
+            input_lf,
+        )
+        expected_lf.show(10)
+        returned_lf.show(10)
+        pl_testing.assert_frame_equal(expected_lf, returned_lf, abs_tol=0.00001)
