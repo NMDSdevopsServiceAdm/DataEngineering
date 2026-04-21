@@ -41,15 +41,18 @@ def create_imputed_ascwds_job_role_counts(
         estimated_job_role_posts_lf.group_by(impute_groups)
         .agg(
             # Sort the join key in the same manner as the imputed values.
-            pl.col(IndCQC.expanded_id).sort_by(order_key),
+            pl.col(IndCQC.id_per_locationid_import_date_job_role).sort_by(order_key),
             imputed_ratios,
         )
-        .explode(IndCQC.expanded_id, IndCQC.imputed_ascwds_job_role_ratios)
+        .explode(
+            IndCQC.id_per_locationid_import_date_job_role,
+            IndCQC.imputed_ascwds_job_role_ratios,
+        )
         .drop(impute_groups)
     )
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
-        impute_agg_lf, on=IndCQC.expanded_id, how="left"
+        impute_agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
     )
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
@@ -80,20 +83,22 @@ def get_percent_share_ratios(
     """
     groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
 
-    # Groupby-agg-explode on only necessary subset, before joining back on expanded_id.
+    # Groupby-agg-explode on only necessary subset, before joining back on id_per_locationid_import_date_job_role.
     ratios_agg_lf = (
         estimated_job_role_posts_lf.group_by(groups)
         .agg(
-            pl.col(IndCQC.expanded_id),  # Keep to align during explode
+            pl.col(
+                IndCQC.id_per_locationid_import_date_job_role
+            ),  # Keep to align during explode
             percentage_share(input_col).cast(pl.Float32).alias(output_col),
         )
-        .explode(IndCQC.expanded_id, output_col)
+        .explode(IndCQC.id_per_locationid_import_date_job_role, output_col)
         # Drop groups to prevent duplicate columns after join.
         .drop(groups)
     )
 
     return estimated_job_role_posts_lf.join(
-        ratios_agg_lf, on=IndCQC.expanded_id, how="left"
+        ratios_agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
     )
 
 

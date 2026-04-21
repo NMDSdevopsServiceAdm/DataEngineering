@@ -11,7 +11,9 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
-- Added row_id and expanded_id to the ind cqc columns class and updated references to the objects.
+- Added row_id and expanded_id to the ind cqc columns class as
+  id_per_locationid_import_date and id_per_locationid_import_date_job_role respectively and
+  updated references to the objects.
 
 ### Fixed
 

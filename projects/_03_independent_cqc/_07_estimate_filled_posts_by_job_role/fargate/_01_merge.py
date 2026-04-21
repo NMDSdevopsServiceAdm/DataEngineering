@@ -101,14 +101,16 @@ def main(
     full_estimates_lf = (
         utils.scan_parquet(estimates_source)
         .select(list(combined_schema))
-        .with_row_index(name=IndCQC.row_id)
+        .with_row_index(name=IndCQC.id_per_locationid_import_date)
         .with_columns(utils.cast_to_schema(combined_schema))
     )
     estimated_posts_base_lf = full_estimates_lf.select(
-        IndCQC.row_id, *list(transformation_columns)
+        IndCQC.id_per_locationid_import_date, *list(transformation_columns)
     )
     # This will be joined on at the end.
-    metadata_lf = full_estimates_lf.select(IndCQC.row_id, *list(metadata_columns))
+    metadata_lf = full_estimates_lf.select(
+        IndCQC.id_per_locationid_import_date, *list(metadata_columns)
+    )
 
     col_name_map = {
         IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date

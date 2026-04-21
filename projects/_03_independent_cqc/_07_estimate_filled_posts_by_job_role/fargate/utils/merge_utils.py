@@ -32,7 +32,9 @@ def join_estimates_to_ascwds(
     ]
     job_role_labels = IndCQC.main_job_role_clean_labelled
 
-    narrow_keys_lf = estimates_lf.select([IndCQC.row_id] + join_keys)
+    narrow_keys_lf = estimates_lf.select(
+        [IndCQC.id_per_locationid_import_date] + join_keys
+    )
 
     roles_lf = pl.LazyFrame(
         data=[(role,) for role in AscwdsWorkerValueLabelsJobGroup.all_roles()],
@@ -50,6 +52,6 @@ def join_estimates_to_ascwds(
 
     return estimates_lf.join(
         expanded_counts_lf.drop(join_keys),
-        on=IndCQC.row_id,
+        on=IndCQC.id_per_locationid_import_date,
         how="right",
     ).drop(join_keys)

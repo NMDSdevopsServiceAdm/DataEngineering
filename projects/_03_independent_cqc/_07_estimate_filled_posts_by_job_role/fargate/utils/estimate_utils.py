@@ -126,7 +126,7 @@ def calculate_reg_man_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
                 == MainJobRoleLabels.registered_manager
             )
             .first(ignore_nulls=True)
-            .over(IndCQC.row_id)
+            .over(IndCQC.id_per_locationid_import_date)
         ).alias(IndCQC.difference_between_estimate_and_cqc_registered_managers)
     )
 
@@ -153,11 +153,14 @@ def calculate_non_rm_managerial_distribution(
         pl.col(IndCQC.estimate_filled_posts_by_job_role)
         .filter(non_rm_manager_condition)
         .sum()
-        .over(IndCQC.row_id)
+        .over(IndCQC.id_per_locationid_import_date)
     )
 
     count_non_rm_managerial_roles_expr = (
-        pl.lit(1).filter(non_rm_manager_condition).sum().over(IndCQC.row_id)
+        pl.lit(1)
+        .filter(non_rm_manager_condition)
+        .sum()
+        .over(IndCQC.id_per_locationid_import_date)
     )
 
     lf = lf.with_columns(
@@ -248,9 +251,18 @@ def calc_diff_estimate_filled_posts_and_from_all_job_roles(
     posts_by_job_role_col = IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
 
     sum_expr = (
-        pl.when(pl.col(posts_by_job_role_col).count().over(IndCQC.row_id) == 0)
+        pl.when(
+            pl.col(posts_by_job_role_col)
+            .count()
+            .over(IndCQC.id_per_locationid_import_date)
+            == 0
+        )
         .then(None)
-        .otherwise(pl.col(posts_by_job_role_col).sum().over(IndCQC.row_id))
+        .otherwise(
+            pl.col(posts_by_job_role_col)
+            .sum()
+            .over(IndCQC.id_per_locationid_import_date)
+        )
     )
 
     return lf.with_columns(
