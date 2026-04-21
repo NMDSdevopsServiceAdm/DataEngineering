@@ -29,8 +29,6 @@ def main(
 ):
     spark = utils.get_spark()
 
-    spark.conf.set("spark.sql.shuffle.partitions", 1)
-
     direct_payments_df: DataFrame = spark.read.parquet(
         direct_payments_merged_source
     ).select(
@@ -45,40 +43,19 @@ def main(
         DP.FILLED_POSTS_PER_EMPLOYER,
     )
 
-    print("Merged DPR dataset has been read in")
-
     direct_payments_df = change_la_names_to_match_ons_cleaned(direct_payments_df)
-
-    print("change_la_names_to_match_ons_cleaned completed")
 
     direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
 
-    print("estimate_service_users_employing_staff completed")
-
     direct_payments_df = calculate_remaining_variables(direct_payments_df)
-
-    print("calculate_remaining_variables completed")
 
     summary_direct_payments_df = create_summary_table(direct_payments_df)
 
-    print("create_summary_table completed")
-
-    print(direct_payments_df.rdd.getNumPartitions())
-    print(summary_direct_payments_df.rdd.getNumPartitions())
-    direct_payments_df = direct_payments_df.coalesce(1)
-    summary_direct_payments_df = summary_direct_payments_df.coalesce(1)
-    print(direct_payments_df.rdd.getNumPartitions())
-    print(summary_direct_payments_df.rdd.getNumPartitions())
-
     utils.write_to_parquet(direct_payments_df, destination, mode="overwrite")
-
-    print("etimates have been written to parquet")
 
     utils.write_to_parquet(
         summary_direct_payments_df, summary_destination, mode="overwrite"
     )
-
-    print("summary dataset has been written to parquet")
 
 
 if __name__ == "__main__":
