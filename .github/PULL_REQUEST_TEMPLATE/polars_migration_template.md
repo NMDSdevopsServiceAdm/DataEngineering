@@ -7,6 +7,9 @@ Trello ticket [#number](add link)
 - [ ] Unit tests passing
 - [ ] Successful [Job / Step Function run](add link)
 - [ ] Outputs checked in Athena
+- [ ] Outputs compared using [SageMaker script](https://eu-west-2.console.aws.amazon.com/sagemaker/home?region=eu-west-2#/notebook-instances/data-engineering-notebook)
+      - Notebook name: compare_outputs.ipynb
+- [ ] Output Screenshots added to Trello ticket 
 
 [Add any additional testing information here - add screenshot if relevant]
 
