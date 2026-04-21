@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Final
 
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
@@ -188,7 +187,7 @@ class IndCqcColumns:
     estimate_source: str = "estimate_source"
     estimate_value: str = "estimate_value"
     expected_filled_posts: str = "expected_filled_posts"
-    expanded_id: Final[str] = "id_per_locationid_import_date_job_role"
+    expanded_id: str = "id_per_locationid_import_date_job_role"
     extrapolation_backwards: str = "extrapolation_backwards"
     extrapolation_forwards: str = "extrapolation_forwards"
     extrapolation_model: str = "extrapolation_model"
@@ -313,7 +312,7 @@ class IndCqcColumns:
         "residuals_estimate_filled_posts_non_res_pir"
     )
     rmse: str = "rmse"
-    row_id: Final[str] = "id_per_locationid_import_date"
+    row_id: str = "id_per_locationid_import_date"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
