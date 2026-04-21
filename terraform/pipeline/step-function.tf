@@ -310,6 +310,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module._02_sfc_internal.task_arn,
           module._03_independent_cqc.task_arn,
           module._03_independent_cqc_model.task_arn,
+          module._04_direct_payments.task_arn,
           aws_ecs_cluster.polars_cluster.arn
         ]
       },
@@ -324,7 +325,9 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module._03_independent_cqc.task_exc_role_arn,
           module._03_independent_cqc.task_role_arn,
           module._03_independent_cqc_model.task_exc_role_arn,
-          module._03_independent_cqc_model.task_role_arn
+          module._03_independent_cqc_model.task_role_arn,
+          module._04_direct_payments.task_exc_role_arn,
+          module._04_direct_payments.task_role_arn
         ],
         Condition = {
           StringLike = {
