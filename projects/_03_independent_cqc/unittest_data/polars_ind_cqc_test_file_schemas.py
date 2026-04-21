@@ -1499,9 +1499,9 @@ class ModelExtrapolation:
     extrapolation_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.unix_time: pl.Int32,
         IndCQC.ascwds_pir_merged: pl.Float32,
         IndCQC.posts_rolling_average_model: pl.Float32,
+        IndCQC.extrapolation_model: pl.Float32,
     }
 
     expected_first_and_final_submission_dates_schema = {

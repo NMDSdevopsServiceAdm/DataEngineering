@@ -9,7 +9,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 # TODO
 def model_extrapolation(
-    df: pl.LazyFrame,
+    lf: pl.LazyFrame,
     column_with_null_values: str,
     model_to_extrapolate_from: str,
     extrapolation_method: str,
@@ -36,23 +36,23 @@ def model_extrapolation(
     """
     # window_spec_all_rows, window_spec_lagged = define_window_specs()
 
-    df = calculate_first_and_final_submission_dates(df, column_with_null_values)
-    df = extrapolation_forwards(
-        df,
+    lf = calculate_first_and_final_submission_dates(lf, column_with_null_values)
+    lf = extrapolation_forwards(
+        lf,
         column_with_null_values,
         model_to_extrapolate_from,
         extrapolation_method,
     )
-    df = extrapolation_backwards(
-        df,
+    lf = extrapolation_backwards(
+        lf,
         column_with_null_values,
         model_to_extrapolate_from,
         extrapolation_method,
     )
-    df = combine_extrapolation(df)
-    df = df.drop(IndCqc.first_submission_time, IndCqc.final_submission_time)
+    lf = combine_extrapolation(lf)
+    lf = lf.drop(IndCqc.first_submission_time, IndCqc.final_submission_time)
 
-    return df
+    return lf
 
 
 # def define_window_specs() -> Tuple[Window, Window]:

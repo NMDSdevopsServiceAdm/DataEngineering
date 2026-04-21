@@ -18,35 +18,49 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.extrapolation"
 
 
-# # TODO: change to call mocking and call checks
-# class MainTests:
-#     def setUp(self) -> None:
-#         self.test_lf = pl.LazyFrame(
-#             Data.extrapolation_rows, Schemas.extrapolation_schema, orient="row"
-#         )
-#         self.returned_lf = job.model_extrapolation(
-#             self.test_lf,
-#             column_with_null_values=IndCQC.ascwds_pir_merged,
-#             model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
-#             extrapolation_method="nominal",
-#         )
-#         self.returned_lf.show(12)
-#         self.expected_lf = self.test_lf.drop()
+class TestModelExtrapolation:
+    mock_input_lf = pl.LazyFrame(schema=Schemas.extrapolation_schema)
 
-#     @pytest.mark.skip(reason="todo")
-#     def test_model_extrapolation_row_count_unchanged(self):
-#         pl_testing.assert_frame_equal(
-#             self.returned_lf.count(), self.expected_lf.count()
-#         )
+    @patch(f"{PATCH_PATH}.combine_extrapolation")
+    @patch(f"{PATCH_PATH}.extrapolation_backwards")
+    @patch(f"{PATCH_PATH}.extrapolation_forwards")
+    @patch(
+        f"{PATCH_PATH}.calculate_first_and_final_submission_dates",
+    )
+    def test_model_extrapolation_calls_required_functions(
+        self,
+        mock_calculate_first_and_final_submission_dates: Mock,
+        mock_extrapolation_forwards: Mock,
+        mock_extrapolation_backwards: Mock,
+        mock_combine_extrapolation: Mock,
+    ):
+        job.model_extrapolation(
+            self.mock_input_lf,
+            column_with_null_values=IndCQC.ascwds_pir_merged,
+            model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
+            extrapolation_method="nominal",
+        )
 
+        mock_calculate_first_and_final_submission_dates.assert_called_once()
+        mock_extrapolation_forwards.assert_called_once()
+        mock_extrapolation_backwards.assert_called_once()
+        mock_combine_extrapolation.assert_called_once()
 
-# # class DefineWindowSpecsTests(ModelExtrapolationTests):
-# #     def test_define_window_spec_return_type(self):
-# #         returned_window_specs = job.define_window_specs()
-# #         self.assertIsInstance(returned_window_specs, tuple)
-# #         self.assertEqual(len(returned_window_specs), 2)
-# #         self.assertIsInstance(returned_window_specs[0], WindowSpec)
-# #         self.assertIsInstance(returned_window_specs[1], WindowSpec)
+    def test_model_extrpolation_returns_expected_results(self):
+        expected_lf = pl.LazyFrame(
+            data=Data.extrapolation_rows,
+            schema=Schemas.extrapolation_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop(IndCQC.extrapolation_model)
+        returned_lf = job.model_extrapolation(
+            input_lf,
+            column_with_null_values=IndCQC.ascwds_pir_merged,
+            model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
+            extrapolation_method="nominal",
+        ).drop(IndCQC.extrapolation_forwards, IndCQC.extrapolation_backwards)
+        returned_lf.show(20)
+        pl_testing.assert_frame_equal(expected_lf, returned_lf, abs_tol=0.00001)
 
 
 class TestCalculateFirstAndLastSubmissionDates:
