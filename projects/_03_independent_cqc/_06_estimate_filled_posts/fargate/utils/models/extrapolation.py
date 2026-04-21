@@ -320,7 +320,6 @@ def extrapolation_backwards(
     return lf
 
 
-# TODO
 def combine_extrapolation(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Combines forward and backward extrapolation values into a single column based on the specified model.
