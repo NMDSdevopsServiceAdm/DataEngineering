@@ -76,7 +76,6 @@ def model_extrapolation(
 #     return window_spec_all_rows, window_spec_lagged
 
 
-# TODO
 def calculate_first_and_final_submission_dates(
     lf: pl.LazyFrame, column_with_null_values: str
 ) -> pl.LazyFrame:
@@ -219,7 +218,6 @@ def extrapolation_forwards(
     return lf
 
 
-# TODO
 def extrapolation_backwards(
     lf: pl.LazyFrame,
     column_with_null_values: str,
