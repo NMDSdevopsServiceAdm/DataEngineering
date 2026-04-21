@@ -92,9 +92,23 @@ class MetricsTests(unittest.TestCase):
 
         metrics = job.calculate_metrics(y_known, y_predicted)
 
-        self.assertEqual(set(metrics.keys()), {IndCQC.r2, IndCQC.rmse})
+        self.assertEqual(
+            set(metrics.keys()),
+            {
+                IndCQC.r2,
+                IndCQC.rmse,
+                IndCQC.proportion_of_model_values_within_ten,
+                IndCQC.proportion_of_model_values_within_twenty_five,
+            },
+        )
         self.assertIsInstance(metrics[IndCQC.r2], float)
         self.assertIsInstance(metrics[IndCQC.rmse], float)
+        self.assertIsInstance(
+            metrics[IndCQC.proportion_of_model_values_within_ten], np.int64
+        )
+        self.assertIsInstance(
+            metrics[IndCQC.proportion_of_model_values_within_twenty_five], np.int64
+        )
 
     def test_calculate_metrics_integer_inputs(self):
         y_known = np.array([1, 2, 3])
@@ -111,9 +125,9 @@ class MetricsTests(unittest.TestCase):
 
         metrics = job.calculate_metrics(y_known, y_predicted)
         print(metrics)
-        self.assertEqual(metrics[IndCQC.proportion_of_model_values_within_ten], 2.0)
+        self.assertEqual(metrics[IndCQC.proportion_of_model_values_within_ten], 2)
         self.assertEqual(
-            metrics[IndCQC.proportion_of_model_values_within_twenty_five], 3.0
+            metrics[IndCQC.proportion_of_model_values_within_twenty_five], 3
         )
 
 
