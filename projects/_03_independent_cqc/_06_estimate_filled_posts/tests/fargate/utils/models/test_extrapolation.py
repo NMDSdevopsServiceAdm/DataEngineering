@@ -263,6 +263,8 @@ class TestCombineExtrapolation:
     returned_lf = job.combine_extrapolation(
         input_lf,
     )
+    expected_lf.show(10)
+    returned_lf.show(10)
 
     def test_combine_extrapolation_returns_expected_data(self):
         pl_testing.assert_frame_equal(

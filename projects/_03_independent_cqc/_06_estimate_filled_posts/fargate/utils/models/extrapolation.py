@@ -321,7 +321,7 @@ def extrapolation_backwards(
 
 
 # TODO
-def combine_extrapolation(df: pl.LazyFrame) -> pl.LazyFrame:
+def combine_extrapolation(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Combines forward and backward extrapolation values into a single column based on the specified model.
 
@@ -336,16 +336,29 @@ def combine_extrapolation(df: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: The LazyFrame with the added combined extrapolation column.
     """
-    df = df.withColumn(
-        IndCqc.extrapolation_model,
-        F.when(
-            F.col(IndCqc.cqc_location_import_date)
-            > F.col(IndCqc.final_submission_time),
-            F.col(IndCqc.extrapolation_forwards),
-        ).when(
-            F.col(IndCqc.cqc_location_import_date)
-            < F.col(IndCqc.first_submission_time),
-            F.col(IndCqc.extrapolation_backwards),
-        ),
+    # df = df.withColumn(
+    #     IndCqc.extrapolation_model,
+    #     F.when(
+    #         F.col(IndCqc.cqc_location_import_date)
+    #         > F.col(IndCqc.final_submission_time),
+    #         F.col(IndCqc.extrapolation_forwards),
+    #     ).when(
+    #         F.col(IndCqc.cqc_location_import_date)
+    #         < F.col(IndCqc.first_submission_time),
+    #         F.col(IndCqc.extrapolation_backwards),
+    #     ),
+    # )
+    combine_extrapolation_expr = (
+        pl.when(
+            pl.col(IndCqc.cqc_location_import_date)
+            > pl.col(IndCqc.final_submission_time)
+        )
+        .then(pl.col(IndCqc.extrapolation_forwards))
+        .when(
+            pl.col(IndCqc.cqc_location_import_date)
+            < pl.col(IndCqc.first_submission_time)
+        )
+        .then(pl.col(IndCqc.extrapolation_backwards))
     )
-    return df
+    lf = lf.with_columns(combine_extrapolation_expr.alias(IndCqc.extrapolation_model))
+    return lf
