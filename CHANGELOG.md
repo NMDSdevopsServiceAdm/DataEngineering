@@ -9,13 +9,28 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+
+
+### Fixed
+
+
+## [v2026.03.1] - 21/04/2026
+
+### Added
+- Added function to calculate difference between estimate filled posts and sum of job role estimates.
+
+### Changed
 - Set up imputation step for job role breakdown,  add unit tests and remove functions that are no longer needed.
 
 - Refactored merge job within Estimates by Job Role Pipeline.
 
 - Moved 'forward fill' process from 'clean' job to 'impute' job. Moved tests for the same.
 
-### Fixed
+- Set up estimates step for job role breakdown.
+
+- Refactored ASC-WDS filled post calculation code into one file.
+
+- Moved job role utils for cleaning and imputation into their own scripts.
 
 
 ## [v2026.03.0] - 09/04/2026
