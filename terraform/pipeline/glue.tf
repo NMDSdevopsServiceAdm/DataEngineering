@@ -193,23 +193,6 @@ module "clean_ons_data_job" {
   }
 }
 
-module "clean_ind_cqc_filled_posts_job" {
-  source            = "../modules/glue-job"
-  script_dir        = "projects/_03_independent_cqc/_02_clean/jobs"
-  script_name       = "clean_ind_cqc_filled_posts.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-  worker_type       = "G.1X"
-  number_of_workers = 4
-
-  job_parameters = {
-    "--merged_ind_cqc_source"       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/"
-    "--cleaned_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
-  }
-}
-
-
 module "ingest_dpr_external_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_01_ingest/direct_payment_recipients/jobs"
@@ -445,21 +428,6 @@ module "validate_merge_coverage_data_job" {
   }
 }
 
-module "validate_cleaned_ind_cqc_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_03_independent_cqc/_02_clean/jobs"
-  script_name     = "validate_cleaned_ind_cqc_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--merged_ind_cqc_source"  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/"
-    "--cleaned_ind_cqc_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
-    "--report_destination"     = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_ind_cqc_02_cleaned_data/"
-  }
-}
 
 module "validate_imputed_ind_cqc_ascwds_and_pir_data_job" {
   source          = "../modules/glue-job"
