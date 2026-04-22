@@ -2239,7 +2239,7 @@ class ModelExtrapolation:
             id="when_one_earlier_data_point_is_missing",
             data=[
                 ("1-002", date(2026, 1, 1), None, 10.0, None, 0.0),
-                ("1-002", date(2026, 2, 1), 10.0, 20.0, 10.0, None),
+                ("1-002", date(2026, 2, 1), 10.0, 20.0, None, None),
             ],
         ),
         ExtrapolationTestCase(
@@ -2247,7 +2247,7 @@ class ModelExtrapolation:
             data=[
                 ("1-002", date(2026, 1, 1), None, 10.0, None, 0.0),
                 ("1-002", date(2026, 2, 1), None, 10.0, None, 0.0),
-                ("1-002", date(2026, 3, 1), 10.0, 20.0, 10.0, None),
+                ("1-002", date(2026, 3, 1), 10.0, 20.0, None, None),
             ],
         ),
         ExtrapolationTestCase(
@@ -2255,14 +2255,14 @@ class ModelExtrapolation:
             data=[
                 ("1-001", date(2026, 1, 1), 15.0, 10.0, None, None),
                 ("1-001", date(2026, 2, 1), None, 20.0, 25.0, None),
-                ("1-001", date(2026, 3, 1), 30.0, 30.0, 30.0, None),
+                ("1-001", date(2026, 3, 1), 30.0, 30.0, 35.0, None),
             ],
         ),
         ExtrapolationTestCase(
             id="when_earlier_and_later_and_intermediate_data_points_are_missing",
             data=[
                 ("1-002", date(2026, 1, 1), None, 10.0, None, 0.0),
-                ("1-002", date(2026, 2, 1), 10.0, 20.0, 10.0, None),
+                ("1-002", date(2026, 2, 1), 10.0, 20.0, None, None),
                 ("1-002", date(2026, 3, 1), None, 30.0, 20.0, 20.0),
                 ("1-002", date(2026, 4, 1), None, 100.0, 90.0, 90.0), # add extra row to test intermediate data points here
             ],
@@ -2275,7 +2275,7 @@ class ModelExtrapolation:
                 ("1-001", date(2026, 3, 1), None, 100.0, 90.0, 90.0),
                 ("1-002", date(2026, 1, 1), None, 10.0, None, 0.0),
                 ("1-002", date(2026, 2, 1), None, 10.0, None, 0.0),
-                ("1-002", date(2026, 3, 1), 10.0, 20.0, 10.0, None),
+                ("1-002", date(2026, 3, 1), 10.0, 20.0, None, None),
             ],
         ),
         ExtrapolationTestCase(
@@ -2305,7 +2305,7 @@ class ModelExtrapolation:
             id="when_one_earlier_data_point_is_missing",
             data=[
                 ("1-002", date(2026, 1, 1), None, 10.0, None, 5.0),
-                ("1-002", date(2026, 2, 1), 10.0, 20.0, 10.0, None),
+                ("1-002", date(2026, 2, 1), 10.0, 20.0, None, None),
             ],
         ),
         ExtrapolationTestCase(
@@ -2313,7 +2313,7 @@ class ModelExtrapolation:
             data=[
                 ("1-002", date(2026, 1, 1), None, 10.0, None, 5.0),
                 ("1-002", date(2026, 2, 1), None, 10.0, None, 5.0),
-                ("1-002", date(2026, 3, 1), 10.0, 20.0, 10.0, None),
+                ("1-002", date(2026, 3, 1), 10.0, 20.0, None, None),
             ],
         ),
         ExtrapolationTestCase(
@@ -2328,9 +2328,9 @@ class ModelExtrapolation:
             id="when_earlier_and_later_and_intermediate_data_points_are_missing",
             data=[
                 ("1-002", date(2026, 1, 1), None, 10.0, None, 5.0),
-                ("1-002", date(2026, 2, 1), 10.0, 20.0, 10.0, None),
-                ("1-002", date(2026, 3, 1), None, 30.0, 15.0, 20.0),
-                ("1-002", date(2026, 4, 1), None, 100.0, 50.0, 90.0), # add extra row to test intermediate data points here
+                ("1-002", date(2026, 2, 1), 10.0, 20.0, None, None),
+                ("1-002", date(2026, 3, 1), None, 30.0, 15.0, 15.0),
+                ("1-002", date(2026, 4, 1), None, 100.0, 50.0, 50.0), # add extra row to test intermediate data points here
             ],
         ),
         ExtrapolationTestCase(
@@ -2341,7 +2341,7 @@ class ModelExtrapolation:
                 ("1-001", date(2026, 3, 1), None, 100.0, 50.0, 50.0),
                 ("1-002", date(2026, 1, 1), None, 10.0, None, 5.0),
                 ("1-002", date(2026, 2, 1), None, 10.0, None, 5.0),
-                ("1-002", date(2026, 3, 1), 10.0, 20.0, 10.0, None),
+                ("1-002", date(2026, 3, 1), 10.0, 20.0, None, None),
             ],
         ),
         ExtrapolationTestCase(
