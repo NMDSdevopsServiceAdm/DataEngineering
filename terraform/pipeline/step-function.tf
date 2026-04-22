@@ -86,8 +86,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     clean_ascwds_worker_job_name                                      = module.clean_ascwds_worker_job.job_name
     validate_ascwds_workplace_cleaned_data_job_name                   = module.validate_ascwds_workplace_cleaned_data_job.job_name
     validate_ascwds_worker_cleaned_data_job_name                      = module.validate_ascwds_worker_cleaned_data_job.job_name
-    clean_ind_cqc_filled_posts_job_name                               = module.clean_ind_cqc_filled_posts_job.job_name
-    validate_cleaned_ind_cqc_data_job_name                            = module.validate_cleaned_ind_cqc_data_job.job_name
     impute_ind_cqc_ascwds_and_pir_job_name                            = module.impute_ind_cqc_ascwds_and_pir_job.job_name
     validate_imputed_ind_cqc_ascwds_and_pir_data_job_name             = module.validate_imputed_ind_cqc_ascwds_and_pir_data_job.job_name
     estimate_ind_cqc_filled_posts_job_name                            = module.estimate_ind_cqc_filled_posts_job.job_name
@@ -146,12 +144,14 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     sfc_internal_task_arn          = module._02_sfc_internal.task_arn
     independent_cqc_task_arn       = module._03_independent_cqc.task_arn
     independent_cqc_model_task_arn = module._03_independent_cqc_model.task_arn
+    direct_payments_task_arn       = module._04_direct_payments.task_arn
 
     # ecs task security groups
     cqc_api_security_group_id               = module.cqc-api.security_group_id
     sfc_internal_security_group_id          = module._02_sfc_internal.security_group_id
     independent_cqc_security_group_id       = module._03_independent_cqc.security_group_id
     independent_cqc_model_security_group_id = module._03_independent_cqc_model.security_group_id
+    direct_payments_security_group_id       = module._04_direct_payments.security_group_id
 
     # models
     preprocessor_name = "preprocess_non_res_pir"
@@ -308,6 +308,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module._02_sfc_internal.task_arn,
           module._03_independent_cqc.task_arn,
           module._03_independent_cqc_model.task_arn,
+          module._04_direct_payments.task_arn,
           aws_ecs_cluster.polars_cluster.arn
         ]
       },
@@ -322,7 +323,9 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module._03_independent_cqc.task_exc_role_arn,
           module._03_independent_cqc.task_role_arn,
           module._03_independent_cqc_model.task_exc_role_arn,
-          module._03_independent_cqc_model.task_role_arn
+          module._03_independent_cqc_model.task_role_arn,
+          module._04_direct_payments.task_exc_role_arn,
+          module._04_direct_payments.task_role_arn
         ],
         Condition = {
           StringLike = {

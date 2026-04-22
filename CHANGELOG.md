@@ -7,11 +7,15 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Converted Spark util model_extrapolation to Polars as model_extrapolation. Added additional test data to cover corner cases.
+- Setup scripts and terraform required for converting direct payment estimates to polars.
 
 ### Changed
+- Removed the PySpark version of IND CQC Clean and Validation jobs.
 
+- Removed partitioning from direct payments pipeline outputs.
 
 ### Fixed
+- Update setup instructions with pre-commit hooks setup
 
 
 ## [v2026.03.1] - 21/04/2026
