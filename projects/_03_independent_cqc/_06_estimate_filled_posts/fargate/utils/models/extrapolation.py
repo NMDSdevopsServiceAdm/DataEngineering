@@ -79,7 +79,6 @@ def model_extrapolation(
     ]
 
     agg_lf = (
-        # lf.drop_nulls(column_with_null_values)
         lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
         .group_by(IndCqc.location_id)
         .agg(aggregations_needed)
