@@ -4,9 +4,6 @@ os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
 
-from projects._04_direct_payment_recipients.direct_payments_column_names import (
-    DirectPaymentColumnNames as DP,
-)
 from projects._04_direct_payment_recipients.utils._01_prepare_dpr_utils.calculate_pa_ratio import (
     calculate_pa_ratio,
 )
@@ -18,12 +15,7 @@ def main(survey_data_source, destination):
 
     pa_ratio_df = calculate_pa_ratio(survey_df)
 
-    utils.write_to_parquet(
-        pa_ratio_df,
-        destination,
-        mode="overwrite",
-        partitionKeys=[DP.YEAR_AS_INTEGER],
-    )
+    utils.write_to_parquet(pa_ratio_df, destination, mode="overwrite")
 
 
 if __name__ == "__main__":
