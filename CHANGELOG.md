@@ -6,12 +6,15 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-
+- Setup scripts and terraform required for converting direct payment estimates to polars.
 
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
+- Removed partitioning from direct payments pipeline outputs.
+
 ### Fixed
+- Update setup instructions with pre-commit hooks setup
 
 
 ## [v2026.03.1] - 21/04/2026
