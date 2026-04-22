@@ -104,10 +104,10 @@ class MetricsTests(unittest.TestCase):
         self.assertIsInstance(metrics[IndCQC.r2], float)
         self.assertIsInstance(metrics[IndCQC.rmse], float)
         self.assertIsInstance(
-            metrics[IndCQC.proportion_of_model_values_within_ten], np.int64
+            metrics[IndCQC.proportion_of_model_values_within_ten], int
         )
         self.assertIsInstance(
-            metrics[IndCQC.proportion_of_model_values_within_twenty_five], np.int64
+            metrics[IndCQC.proportion_of_model_values_within_twenty_five], int
         )
 
     def test_calculate_metrics_integer_inputs(self):
