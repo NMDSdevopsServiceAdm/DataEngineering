@@ -43,7 +43,6 @@ def model_extrapolation(
     lf = lf.with_columns(
         pl.when(pl.col(column_with_null_values).is_not_null())
         .then(pl.col(IndCqc.cqc_location_import_date).rank().over(IndCqc.location_id))
-        .otherwise(None)
         .alias(rank_col)
     )
     ### AGGREGATE COLUMNS ###
@@ -178,29 +177,29 @@ class PolarsExpressionsForExtrapolationBusinessLogic:
         # The formula for calculating forwards ratio extrapolation and the conditions in which to apply it
         self.ratio_forwards = pl.when(self.after_first_submission).then(
             pl.col(IndCqc.previous_non_null_value)
-            .mul(pl.col(model_to_extrapolate_from))
-            .truediv(pl.col(IndCqc.previous_model_value))
+            * (pl.col(model_to_extrapolate_from))
+            / (pl.col(IndCqc.previous_model_value))
         )
 
         # The formula for calculating forwards nominal extrapolation and the conditions in which to apply it
         self.nominal_forwards = pl.when(self.after_first_submission).then(
             pl.col(IndCqc.previous_non_null_value)
-            .add(pl.col(model_to_extrapolate_from))
-            .sub(pl.col(IndCqc.previous_model_value))
+            + (pl.col(model_to_extrapolate_from))
+            - (pl.col(IndCqc.previous_model_value))
         )
 
         # The formula for calculating backwards ratio extrapolation and the conditions in which to apply it
         self.ratio_backwards = pl.when(self.before_first_submission).then(
             pl.col(IndCqc.first_non_null_value)
-            .mul(pl.col(model_to_extrapolate_from))
-            .truediv(pl.col(IndCqc.first_model_value))
+            * (pl.col(model_to_extrapolate_from))
+            / (pl.col(IndCqc.first_model_value))
         )
 
         # The formula for calculating backwards nominal extrapolation and the conditions in which to apply it
         self.nominal_backwards = pl.when(self.before_first_submission).then(
             pl.col(IndCqc.first_non_null_value)
-            .add(pl.col(model_to_extrapolate_from))
-            .sub(pl.col(IndCqc.first_model_value))
+            + (pl.col(model_to_extrapolate_from))
+            - (pl.col(IndCqc.first_model_value))
         )
 
         # The logic for applying ratio extrapolation
