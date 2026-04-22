@@ -1557,47 +1557,11 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
 
 @dataclass
 class ModelExtrapolation:
-    extrapolation_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_pir_merged: pl.Float32,
-        IndCQC.posts_rolling_average_model: pl.Float32,
-        IndCQC.extrapolation_model: pl.Float32,
-    }
-
-    expected_first_and_final_submission_dates_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_pir_merged: pl.Float32,
-        IndCQC.first_submission_time: pl.Date,
-        IndCQC.final_submission_time: pl.Date,
-    }
-
-    expected_extrapolation_forwards_schema = {
+    model_extrapolation_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.ascwds_pir_merged: pl.Float32,
         IndCQC.posts_rolling_average_model: pl.Float32,
         IndCQC.extrapolation_forwards: pl.Float32,
-    }
-
-    expected_extrapolation_backwards_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_pir_merged: pl.Float32,
-        IndCQC.posts_rolling_average_model: pl.Float32,
-        IndCQC.first_submission_time: pl.Date,
-        IndCQC.final_submission_time: pl.Date,
-        IndCQC.extrapolation_backwards: pl.Float32,
-    }
-
-    expected_combine_extrapolation_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_pir_merged: pl.Float32,
-        IndCQC.first_submission_time: pl.Date,
-        IndCQC.final_submission_time: pl.Date,
-        IndCQC.extrapolation_forwards: pl.Float32,
-        IndCQC.extrapolation_backwards: pl.Float32,
         IndCQC.extrapolation_model: pl.Float32,
     }
