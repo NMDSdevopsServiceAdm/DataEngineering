@@ -14,6 +14,8 @@ DEFAULT_PAGE_SIZE = 500
 CQC_API_BASE_URL = "https://api.service.cqc.org.uk"
 USER_AGENT = "SkillsForCare"
 
+days_to_rollback_start_timestamp = 15
+
 
 class NoProviderOrLocationException(Exception):
     pass

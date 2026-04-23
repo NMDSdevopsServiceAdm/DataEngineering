@@ -605,5 +605,10 @@ class BuildDataframeFromApi(CqcApiTests):
         self.assertEqual(output.count("other_new"), 1)
 
 
+class DaysToRollbackStartTimestampTest(unittest.TestCase):
+    def test_expected_value(self):
+        self.assertEqual(cqc.days_to_rollback_start_timestamp, 15)
+
+
 if __name__ == "__main__":
     unittest.main()

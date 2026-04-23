@@ -32,7 +32,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
     """Orchestrates the retrieval of updated CQC provider data and writes it to Parquet.
 
     This function performs the following steps:
-    1. Subtracts 15 days from input start_timestamp.
+    1. Subtracts set number of days from input start_timestamp.
     2. Validates the provided start and end timestamps
     3. Retrieves the CQC API subscription key from AWS Secrets Manager.
     4. Calls the CQC API to fetch updated provider objects within the specified
@@ -65,7 +65,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         destination = destination if destination[-1] == "/" else f"{destination}/"
 
         start_dt = dt.fromisoformat(start_timestamp.replace("Z", "")) - timedelta(
-            days=15
+            days=cqc.days_to_rollback_start_timestamp
         )
         end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))
 
@@ -137,9 +137,7 @@ if __name__ == "__main__":
         ("--start_timestamp", "Start timestamp for provider changes"),
         ("--end_timestamp", "End timestamp for provider changes"),
     )
-    print(
-        f"Running job from 15 days prior to {args.start_timestamp} to {args.end_timestamp}"
-    )
+    print(f"Running cqc providers delta api download job")
 
     todays_date = date.today()
     destination = utils.generate_s3_dir(
