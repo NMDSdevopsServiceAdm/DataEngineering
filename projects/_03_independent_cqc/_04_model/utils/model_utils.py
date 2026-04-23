@@ -45,14 +45,15 @@ def build_model(
 
 def calculate_metrics(y_known: np.ndarray, y_predicted: np.ndarray) -> dict:
     """
-    Calculate R2 and RMSE metrics for model evaluation.
+    Calculate R2, RMSE, and proportion within 10 and 25 metrics for model evaluation.
 
     Args:
         y_known (np.ndarray): Known target values.
         y_predicted (np.ndarray): Predicted target values from the model.
 
     Returns:
-        dict: A dictionary containing R2 and RMSE metrics.
+        dict: A dictionary containing metrics where the key is the metric name
+        and the value is the computed value of that metric.
     """
     abs_diff = np.absolute(y_known - y_predicted)
     rows_in_abs_diff = abs_diff.shape[0]
