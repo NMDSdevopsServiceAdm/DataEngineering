@@ -31,15 +31,14 @@ def main(
 ) -> None:
     """
     This function performs the following steps:
-    1. Subtracts set number of days from input start_timestamp.
-    2. Validates the provided start and end timestamps.
-    3. Retrieves the CQC API subscription key from AWS Secrets Manager.
-    4. Calls the CQC API to fetch updated location objects within the specified
+    1. Subtracts a number of days from end_timestamp to create a start date.
+    2. Retrieves the CQC API subscription key from AWS Secrets Manager.
+    3. Calls the CQC API to fetch updated location objects within the specified
        time range.
-    5. Converts the retrieved data into a Polars DataFrame, applying a predefined
+    4. Converts the retrieved data into a Polars DataFrame, applying a predefined
        schema.
-    6. Removes duplicate location entries, keeping only unique locations.
-    7. Writes the unique location data to a Parquet file at the specified
+    5. Removes duplicate location entries, keeping only unique locations.
+    6. Writes the unique location data to a Parquet file at the specified
        destination path, typically an S3 location.
 
     Args:
