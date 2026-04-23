@@ -76,7 +76,8 @@ class TestDeltaDownloadCQCProviders(unittest.TestCase):
         mock_build_dataframe_from_api.return_value = self.mock_df
         dest = os.path.join(self.temp_dir, "test.parquet")
         start = "2025-07-25T15:40:23Z"
-        end = "2025-07-20T14:23:40Z"
+        end = "2025-07-09T14:23:40Z"
+        # start minus 15 days = 2025-07-10, which is after end.
         with self.assertRaises(InvalidTimestampArgumentError):
             main(dest, start, end)
 

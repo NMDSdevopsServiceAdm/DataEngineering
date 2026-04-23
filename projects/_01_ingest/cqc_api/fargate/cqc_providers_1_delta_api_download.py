@@ -32,8 +32,8 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
     """Orchestrates the retrieval of updated CQC provider data and writes it to Parquet.
 
     This function performs the following steps:
-    1. Validates the provided start and end timestamps.
-    2. Subtracts 15 days from input start_timestamp.
+    1. Subtracts 15 days from input start_timestamp.
+    2. Validates the provided start and end timestamps
     3. Retrieves the CQC API subscription key from AWS Secrets Manager.
     4. Calls the CQC API to fetch updated provider objects within the specified
        time range.
@@ -64,7 +64,9 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
     try:
         destination = destination if destination[-1] == "/" else f"{destination}/"
 
-        start_dt = dt.fromisoformat(start_timestamp.replace("Z", ""))
+        start_dt = dt.fromisoformat(start_timestamp.replace("Z", "")) - timedelta(
+            days=15
+        )
         end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))
 
         if start_dt > end_dt:
@@ -72,13 +74,13 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
                 "Start timestamp is after end timestamp"
             )
 
-        start_dt = start_dt - timedelta(days=15)
-
         print(f'Getting SecretID "{SECRET_ID}"')
         secret = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
         cqc_api_primary_key_value: str = json.loads(secret)["Ocp-Apim-Subscription-Key"]
 
-        print("Collecting providers with changes from API")
+        print(
+            f"Collecting providers with changes from API between {start_dt} and {end_dt}"
+        )
 
         api_generator: Generator[dict, None, None] = cqc.get_updated_objects(
             object_type=CQC_OBJECT_TYPE,
@@ -135,7 +137,9 @@ if __name__ == "__main__":
         ("--start_timestamp", "Start timestamp for provider changes"),
         ("--end_timestamp", "End timestamp for provider changes"),
     )
-    print(f"Running job from {args.start_timestamp} to {args.end_timestamp}")
+    print(
+        f"Running job from 15 days prior to {args.start_timestamp} to {args.end_timestamp}"
+    )
 
     todays_date = date.today()
     destination = utils.generate_s3_dir(
