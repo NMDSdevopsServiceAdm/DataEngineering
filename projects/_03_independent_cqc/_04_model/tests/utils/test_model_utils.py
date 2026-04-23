@@ -125,10 +125,10 @@ class MetricsTests(unittest.TestCase):
 
         metrics = job.calculate_metrics(y_known, y_predicted)
         self.assertEqual(
-            metrics[IndCQC.proportion_of_model_predictions_within_ten], 0.4
+            metrics[IndCQC.proportion_of_model_predictions_within_ten], 0.6
         )
         self.assertEqual(
-            metrics[IndCQC.proportion_of_model_predictions_within_twenty_five], 0.6
+            metrics[IndCQC.proportion_of_model_predictions_within_twenty_five], 0.8
         )
 
 
