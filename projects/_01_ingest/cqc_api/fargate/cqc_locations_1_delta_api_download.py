@@ -5,6 +5,7 @@ import os
 import sys
 from datetime import date
 from datetime import datetime as dt
+from datetime import timedelta
 from typing import Generator
 
 import polars as pl
@@ -62,7 +63,10 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
     try:
         destination = destination if destination[-1] == "/" else f"{destination}/"
 
-        start_dt = dt.fromisoformat(start_timestamp.replace("Z", ""))
+        start_dt = dt.fromisoformat(start_timestamp.replace("Z", "")) - timedelta(
+            days=15
+        )
+
         end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))
 
         if start_dt > end_dt:
@@ -138,4 +142,5 @@ if __name__ == "__main__":
         date=date_today,
         version="3.1.0",
     )
+    main(destination, args.start_timestamp, args.end_timestamp)
     main(destination, args.start_timestamp, args.end_timestamp)
