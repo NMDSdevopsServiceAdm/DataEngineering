@@ -17,6 +17,8 @@ All notable changes to this project will be documented in this file.
   id_per_locationid_import_date and id_per_locationid_import_date_job_role respectively and
   updated references to the objects.
 
+- Converted DPR estimates util function model_using_mean from pyspark to polars.
+
 ### Fixed
 - Update setup instructions with pre-commit hooks setup
 
