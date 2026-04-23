@@ -7,10 +7,7 @@ from unittest.mock import patch
 
 import polars as pl
 
-from projects._01_ingest.cqc_api.fargate.cqc_locations_1_delta_api_download import (
-    InvalidTimestampArgumentError,
-    main,
-)
+from projects._01_ingest.cqc_api.fargate.cqc_locations_1_delta_api_download import main
 
 PATCH_PATH = "projects._01_ingest.cqc_api.fargate.cqc_locations_1_delta_api_download"
 
@@ -55,29 +52,11 @@ class TestDeltaDownloadCQCLocations(unittest.TestCase):
             {"locationId": 3},
         ]
         mock_build_dataframe_from_api.return_value = self.mock_df
-        start = "2025-07-20T15:40:23Z"
         end = "2025-07-25T14:23:40Z"
-        main(self.temp_dir + "/", start, end)
+        main(self.temp_dir + "/", end_timestamp=end)
         mock_get_secret.assert_called_once_with(
             secret_name="cqc-secret-name", region_name="us-east-1"
         )
-
-    @patch(f"{PATCH_PATH}.get_secret")
-    @patch(f"{PATCH_PATH}.cqc.build_dataframe_from_api")
-    @patch(f"{PATCH_PATH}.cqc.get_updated_objects")
-    @patch(f"{PATCH_PATH}.SECRET_ID", new="cqc-secret-name")
-    @patch(f"{PATCH_PATH}.AWS_REGION", new="us-east-1")
-    def test_main_traps_timestamp_error(
-        self, mock_objects, mockbuild_dataframe_from_api, mock_get_secret
-    ):
-        mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
-        mock_objects.return_value = {}
-        dest = os.path.join(self.temp_dir, "test.parquet")
-        start = "2025-07-25T15:40:23Z"
-        end = "2025-07-09T14:23:40Z"
-        # start minus 15 days = 2025-07-10, which is after end.
-        with self.assertRaises(InvalidTimestampArgumentError):
-            main(dest, start, end)
 
     @patch(f"{PATCH_PATH}.utils.uuid")
     @patch(f"{PATCH_PATH}.get_secret")
@@ -98,9 +77,8 @@ class TestDeltaDownloadCQCLocations(unittest.TestCase):
         file_name = "abc"
         mock_uuid.uuid4.return_value = file_name
         dest = f"{self.temp_dir}/{file_name}.parquet"
-        start = "2025-07-20T15:40:23Z"
         end = "2025-07-25T14:23:40Z"
-        main(self.temp_dir + "/", start, end)
+        main(self.temp_dir + "/", end_timestamp=end)
         mock_objects.assert_called_once()
         self.assertTrue(pathlib.Path(dest).exists())
         self.assertTrue(pathlib.Path(dest).is_file())
@@ -128,11 +106,10 @@ class TestDeltaDownloadCQCLocations(unittest.TestCase):
         mock_uuid.uuid4.return_value = file_name
 
         dest = f"{self.temp_dir}/new_path/{file_name}.parquet"
-        start = "2025-07-20T15:40:23Z"
         end = "2025-07-25T14:23:40Z"
         new_path = f"{self.temp_dir}/new_path"
         os.mkdir(new_path)
-        main(new_path, start, end)
+        main(new_path, end_timestamp=end)
         self.assertTrue(pathlib.Path(dest).exists())
         self.assertTrue(pathlib.Path(dest).is_file())
         self.assertTrue(pathlib.Path(dest).suffix == ".parquet")
@@ -167,12 +144,11 @@ class TestDeltaDownloadCQCLocations(unittest.TestCase):
 
         # WHEN
         #   we run main twice with timepoints on the same day
-        start = "2025-07-20T09:40:23Z"
-        middle = "2025-07-20T12:23:40Z"
-        end = "2025-07-20T19:40:23Z"
+        end_1 = "2025-07-20T12:23:40Z"
+        end_2 = "2025-07-20T19:40:23Z"
 
-        main(self.temp_dir + "/", start, middle)
-        main(self.temp_dir + "/", middle, end)
+        main(self.temp_dir + "/", end_timestamp=end_1)
+        main(self.temp_dir + "/", end_timestamp=end_2)
 
         # THEN
         expected_paths = [f"{self.temp_dir}/{uuid}.parquet" for uuid in uuids]
@@ -204,9 +180,8 @@ class TestDeltaDownloadCQCLocations(unittest.TestCase):
         file_name = "abc"
         mock_uuid.uuid4.return_value = file_name
         dest = f"{self.temp_dir}/{file_name}.parquet"
-        start = "2025-07-20T15:40:23Z"
         end = "2025-07-25T14:23:40Z"
-        main(self.temp_dir + "/", start, end)
+        main(self.temp_dir + "/", end_timestamp=end)
         returned_result_schema = pl.read_parquet(dest).collect_schema()
 
         self.assertTrue(

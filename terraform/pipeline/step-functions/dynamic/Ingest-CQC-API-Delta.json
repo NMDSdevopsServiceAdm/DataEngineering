@@ -21,8 +21,6 @@
                 "script": "cqc_providers_1_delta_api_download.py",
                 "dest_arg": "--destination_prefix",
                 "dest_value": "${dataset_bucket_uri}",
-                "start_arg": "--start_timestamp",
-                "start_value.$": "$.Parameter.Value",
                 "end_arg": "--end_timestamp",
                 "end_value.$": "$$.State.EnteredTime"
               },
@@ -49,7 +47,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command.$": "States.Array($.script, $.dest_arg, $.dest_value, $.start_arg, $.start_value, $.end_arg, $.end_value)"
+                      "Command.$": "States.Array($.script, $.dest_arg, $.dest_value, $.end_arg, $.end_value)"
                     }
                   ]
                 }
@@ -118,8 +116,6 @@
                 "script": "cqc_locations_1_delta_api_download.py",
                 "dest_arg": "--destination_prefix",
                 "dest_value": "${dataset_bucket_uri}",
-                "start_arg": "--start_timestamp",
-                "start_value.$": "$.Parameter.Value",
                 "end_arg": "--end_timestamp",
                 "end_value.$": "$$.State.EnteredTime"
               },
@@ -146,7 +142,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command.$": "States.Array($.script, $.dest_arg, $.dest_value, $.start_arg, $.start_value, $.end_arg, $.end_value)"
+                      "Command.$": "States.Array($.script, $.dest_arg, $.dest_value, $.end_arg, $.end_value)"
                     }
                   ]
                 }

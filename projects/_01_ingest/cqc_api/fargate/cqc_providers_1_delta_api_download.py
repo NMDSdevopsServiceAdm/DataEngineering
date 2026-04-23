@@ -24,38 +24,35 @@ CQC_OBJECT_TYPE = "providers"
 CQC_ORG_TYPE = "provider"
 
 
-class InvalidTimestampArgumentError(Exception):
-    pass
-
-
-def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
+def main(
+    destination: str,
+    end_timestamp: str = None,
+    previous_days_to_capture: int = cqc.days_to_rollback_start_timestamp,
+) -> None:
     """Orchestrates the retrieval of updated CQC provider data and writes it to Parquet.
 
     This function performs the following steps:
-    1. Subtracts set number of days from input start_timestamp.
-    2. Validates the provided start and end timestamps
-    3. Retrieves the CQC API subscription key from AWS Secrets Manager.
-    4. Calls the CQC API to fetch updated provider objects within the specified
+    1. Subtracts a number of days from end_timestamp to create a start date.
+    2. Retrieves the CQC API subscription key from AWS Secrets Manager.
+    3. Calls the CQC API to fetch updated provider objects within the specified
        time range.
-    5. Converts the retrieved data into a Polars DataFrame, applying a predefined
+    4. Converts the retrieved data into a Polars DataFrame, applying a predefined
        schema.
-    6. Removes duplicate provider entries, keeping only unique providers.
-    7. Writes the unique provider data to a Parquet file at the specified
+    5. Removes duplicate provider entries, keeping only unique providers.
+    6. Writes the unique provider data to a Parquet file at the specified
        destination path, typically an S3 location.
 
     Args:
         destination (str): The S3 path or local file path where the processed
             Parquet file will be written.
-        start_timestamp (str): The ISO 8601 formatted string representing the
-            start of the data retrieval period (e.g., '2023-01-01T00:00:00Z').
         end_timestamp (str): The ISO 8601 formatted string representing the
             end of the data retrieval period (e.g., '2023-01-31T23:59:59Z').
+        previous_days_to_capture (int): Number of days before end_timestamp (default 15).
 
     Return:
         None.
 
     Raises:
-        InvalidTimestampArgumentError: If `start_timestamp` is after `end_timestamp`.
         FileNotFoundError: If the function is unable to write the Parquet
             file to the specified `destination`.
         Exception: For any other unspecified errors that occur during API
@@ -64,15 +61,8 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
     try:
         destination = destination if destination[-1] == "/" else f"{destination}/"
 
-        start_dt = dt.fromisoformat(start_timestamp.replace("Z", "")) - timedelta(
-            days=cqc.days_to_rollback_start_timestamp
-        )
         end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))
-
-        if start_dt > end_dt:
-            raise InvalidTimestampArgumentError(
-                "Start timestamp is after end timestamp"
-            )
+        start_dt = end_dt - timedelta(days=previous_days_to_capture)
 
         print(f'Getting SecretID "{SECRET_ID}"')
         secret = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
@@ -112,9 +102,6 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         utils.write_to_parquet(df_unique, destination)
         return None
 
-    except InvalidTimestampArgumentError:
-        print(f"ERROR: Start timestamp is after end timestamp: Args: {sys.argv}")
-        raise
     except FileNotFoundError:
         print(
             f"ERROR: {sys.argv[0]} was unable to write to destination. Args: {sys.argv}"
@@ -134,8 +121,10 @@ if __name__ == "__main__":
             "--destination_prefix",
             "Source s3 directory for parquet CQC providers dataset",
         ),
-        ("--start_timestamp", "Start timestamp for provider changes"),
-        ("--end_timestamp", "End timestamp for provider changes"),
+        (
+            "--end_timestamp",
+            "End timestamp for provider changes",
+        ),
     )
     print(f"Running cqc providers delta api download job")
 
@@ -147,4 +136,4 @@ if __name__ == "__main__":
         date=todays_date,
         version="3.0.0",
     )
-    main(destination, args.start_timestamp, args.end_timestamp)
+    main(destination, end_timestamp=args.end_timestamp)
