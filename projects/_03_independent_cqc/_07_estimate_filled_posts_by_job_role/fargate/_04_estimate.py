@@ -1,5 +1,3 @@
-from typing import Final
-
 import polars as pl
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.estimate_utils as eUtils
@@ -10,9 +8,6 @@ from utils.column_values.categorical_column_values import MainJobRoleLabels
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
-
-# Define constants for IDs for original length data.
-ROW_ID: Final[str] = "id"
 
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
