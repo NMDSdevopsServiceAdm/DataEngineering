@@ -69,8 +69,8 @@ def calculate_metrics(y_known: np.ndarray, y_predicted: np.ndarray) -> dict:
     return {
         IndCQC.r2: r2_metric,
         IndCQC.rmse: rmse_metric,
-        IndCQC.proportion_of_model_values_within_ten: proportion_within_ten_metric,
-        IndCQC.proportion_of_model_values_within_twenty_five: proportion_within_twenty_five_metric,
+        IndCQC.proportion_of_model_predictions_within_ten: proportion_within_ten_metric,
+        IndCQC.proportion_of_model_predictions_within_twenty_five: proportion_within_twenty_five_metric,
     }
 
 
