@@ -187,9 +187,6 @@ class IndCqcColumns:
     estimate_source: str = "estimate_source"
     estimate_value: str = "estimate_value"
     expected_filled_posts: str = "expected_filled_posts"
-    id_per_locationid_import_date_job_role: str = (
-        "id_per_locationid_import_date_job_role"
-    )
     extrapolation_backwards: str = "extrapolation_backwards"
     extrapolation_forwards: str = "extrapolation_forwards"
     extrapolation_model: str = "extrapolation_model"
@@ -206,6 +203,10 @@ class IndCqcColumns:
     first_rolling_average: str = "first_rolling_average"
     first_submission_time: str = "first_submission_time"
     has_non_null_value: str = "has_non_null_value"
+    id_per_locationid_import_date: str = "id_per_locationid_import_date"
+    id_per_locationid_import_date_job_role: str = (
+        "id_per_locationid_import_date_job_role"
+    )
     imputed_ascwds_job_role_counts: str = "imputed_ascwds_job_role_counts"
     imputed_ascwds_job_role_ratios: str = "imputed_ascwds_job_role_ratios"
     imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
@@ -314,7 +315,6 @@ class IndCqcColumns:
         "residuals_estimate_filled_posts_non_res_pir"
     )
     rmse: str = "rmse"
-    id_per_locationid_import_date: str = "id_per_locationid_import_date"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
