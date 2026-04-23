@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed partitioning from direct payments pipeline outputs.
 
+- Changed cqc api delta download to get changes from 15 days prior to start time up to end time.
+
 ### Fixed
 - Update setup instructions with pre-commit hooks setup
 
