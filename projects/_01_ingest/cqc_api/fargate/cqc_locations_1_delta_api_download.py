@@ -33,13 +33,14 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
     """
     This function performs the following steps:
     1. Validates the provided start and end timestamps.
-    2. Retrieves the CQC API subscription key from AWS Secrets Manager.
-    3. Calls the CQC API to fetch updated location objects within the specified
+    2. Subtracts 15 days from input start_timestamp.
+    3. Retrieves the CQC API subscription key from AWS Secrets Manager.
+    4. Calls the CQC API to fetch updated location objects within the specified
        time range.
-    4. Converts the retrieved data into a Polars DataFrame, applying a predefined
+    5. Converts the retrieved data into a Polars DataFrame, applying a predefined
        schema.
-    5. Removes duplicate location entries, keeping only unique locations.
-    6. Writes the unique location data to a Parquet file at the specified
+    6. Removes duplicate location entries, keeping only unique locations.
+    7. Writes the unique location data to a Parquet file at the specified
        destination path, typically an S3 location.
 
     Args:
@@ -63,16 +64,15 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
     try:
         destination = destination if destination[-1] == "/" else f"{destination}/"
 
-        start_dt = dt.fromisoformat(start_timestamp.replace("Z", "")) - timedelta(
-            days=15
-        )
-
+        start_dt = dt.fromisoformat(start_timestamp.replace("Z", ""))
         end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))
 
         if start_dt > end_dt:
             raise InvalidTimestampArgumentError(
                 "start_timestamp is after end_timestamp"
             )
+
+        start_dt = start_dt - timedelta(days=15)
 
         print(f'Getting SecretID "{SECRET_ID}"')
         secret = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
@@ -142,5 +142,4 @@ if __name__ == "__main__":
         date=date_today,
         version="3.1.0",
     )
-    main(destination, args.start_timestamp, args.end_timestamp)
     main(destination, args.start_timestamp, args.end_timestamp)
