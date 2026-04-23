@@ -124,7 +124,6 @@ class MetricsTests(unittest.TestCase):
         y_predicted = np.array([8, 22, 20, 65, 1])
 
         metrics = job.calculate_metrics(y_known, y_predicted)
-        print(metrics)
         self.assertEqual(metrics[IndCQC.proportion_of_model_values_within_ten], 0.4)
         self.assertEqual(
             metrics[IndCQC.proportion_of_model_values_within_twenty_five], 0.6
