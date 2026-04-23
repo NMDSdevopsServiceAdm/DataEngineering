@@ -104,10 +104,10 @@ class MetricsTests(unittest.TestCase):
         self.assertIsInstance(metrics[IndCQC.r2], float)
         self.assertIsInstance(metrics[IndCQC.rmse], float)
         self.assertIsInstance(
-            metrics[IndCQC.proportion_of_model_values_within_ten], int
+            metrics[IndCQC.proportion_of_model_values_within_ten], float
         )
         self.assertIsInstance(
-            metrics[IndCQC.proportion_of_model_values_within_twenty_five], int
+            metrics[IndCQC.proportion_of_model_values_within_twenty_five], float
         )
 
     def test_calculate_metrics_integer_inputs(self):
@@ -125,9 +125,9 @@ class MetricsTests(unittest.TestCase):
 
         metrics = job.calculate_metrics(y_known, y_predicted)
         print(metrics)
-        self.assertEqual(metrics[IndCQC.proportion_of_model_values_within_ten], 2)
+        self.assertEqual(metrics[IndCQC.proportion_of_model_values_within_ten], 0.4)
         self.assertEqual(
-            metrics[IndCQC.proportion_of_model_values_within_twenty_five], 3
+            metrics[IndCQC.proportion_of_model_values_within_twenty_five], 0.6
         )
 
 

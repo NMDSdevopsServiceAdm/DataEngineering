@@ -55,8 +55,13 @@ def calculate_metrics(y_known: np.ndarray, y_predicted: np.ndarray) -> dict:
         dict: A dictionary containing R2 and RMSE metrics.
     """
     abs_diff = np.absolute(y_known - y_predicted)
-    proportion_within_ten_metric = int(np.count_nonzero(abs_diff < 10))
-    proportion_within_twenty_five_metric = int(np.count_nonzero(abs_diff < 25))
+    rows_in_abs_diff = abs_diff.shape[0]
+    proportion_within_ten_metric = float(
+        np.count_nonzero(abs_diff < 10) / rows_in_abs_diff
+    )
+    proportion_within_twenty_five_metric = float(
+        np.count_nonzero(abs_diff < 25) / rows_in_abs_diff
+    )
     r2_metric = float(r2_score(y_known, y_predicted))
     rmse_metric = float(root_mean_squared_error(y_known, y_predicted))
 
