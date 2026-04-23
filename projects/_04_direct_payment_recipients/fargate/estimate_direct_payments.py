@@ -1,6 +1,11 @@
+import polars as pl
+
 from polars_utils import utils
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
+)
+from projects._04_direct_payment_recipients.direct_payments_configuration import (
+    DirectPaymentsMisspelledLaNames,
 )
 
 direct_payments_columns = [
@@ -24,6 +29,12 @@ def main(
     lf = utils.scan_parquet(
         source=direct_payments_merged_source,
         selected_columns=direct_payments_columns,
+    )
+
+    lf.with_columns(
+        pl.col(DP.LA_AREA).replace(
+            DirectPaymentsMisspelledLaNames.DICT_TO_CORRECT_LA_NAMES
+        )
     )
 
     utils.sink_to_parquet(
