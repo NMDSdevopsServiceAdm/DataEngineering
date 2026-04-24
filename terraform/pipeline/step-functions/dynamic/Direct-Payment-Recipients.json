@@ -96,6 +96,37 @@
           "--destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_estimates_by_icb/version=2026.01/"
         }
       },
+      "Next": "Validate estimate direct payments polars"
+    },
+    "Validate estimate direct payments polars": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${direct_payments_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${direct_payments_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_04_direct_payments-container",
+              "Command": [
+                "validate_estimate_direct_payments.py",
+                "--bucket_name", "${dataset_bucket_name}",
+                "--source_path", "domain=DPR/dataset=direct_payments_estimates/version=2026.01/",
+                "--reports_path", "domain=data_validation_reports/dataset=direct_payments_estimates/version=2026.01/",
+                "--compare_path", "domain=DPR/dataset=direct_payments_merged/version=2026.01/"
+              ]
+            }
+          ]
+        }
+      },
       "Next": "Run DPR crawler"
     },
     "Run DPR crawler": {
