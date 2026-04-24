@@ -4,9 +4,7 @@ from polars_utils import utils
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
-from projects._04_direct_payment_recipients.direct_payments_configuration import (
-    DirectPaymentsMisspelledLaNames,
-)
+from utils.column_values.categorical_column_values import ContemporaryCSSR
 
 direct_payments_columns = [
     DP.LA_AREA,
@@ -20,6 +18,17 @@ direct_payments_columns = [
     DP.FILLED_POSTS_PER_EMPLOYER,
 ]
 
+la_name_replacements = {
+    "Bath & N E Somerset": ContemporaryCSSR.bath_and_north_east_somerset,
+    "Blackburn": ContemporaryCSSR.blackburn_with_darwen,
+    "Bournemouth, Christchurch and Poole": ContemporaryCSSR.bournemouth_christchurch_and_poole,
+    "Cornwall": ContemporaryCSSR.cornwall_and_isles_of_scilly,
+    "East Riding": ContemporaryCSSR.east_riding_of_yorkshire,
+    "Isles of Scilly": ContemporaryCSSR.cornwall_and_isles_of_scilly,
+    "Medway Towns": ContemporaryCSSR.medway,
+    "Southend": ContemporaryCSSR.southend_on_sea,
+}
+
 
 def main(
     direct_payments_merged_source: str,
@@ -31,11 +40,7 @@ def main(
         selected_columns=direct_payments_columns,
     )
 
-    lf.with_columns(
-        pl.col(DP.LA_AREA).replace(
-            DirectPaymentsMisspelledLaNames.DICT_TO_CORRECT_LA_NAMES
-        )
-    )
+    lf.with_columns(pl.col(DP.LA_AREA).replace(la_name_replacements))
 
     utils.sink_to_parquet(
         lf,
