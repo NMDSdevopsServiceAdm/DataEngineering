@@ -1579,3 +1579,10 @@ class ModelExtrapolation:
         ExtrapCol.first_value: pl.Float32,
         ExtrapCol.first_model: pl.Float32,
     }
+
+    get_previous_value_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_pir_merged: pl.Float32,
+        ExtrapCol.previous_value: pl.Float32,
+    }

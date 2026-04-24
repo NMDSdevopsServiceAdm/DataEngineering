@@ -9,6 +9,9 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     ModelExtrapolation as Schemas,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ExtrapolationColumns as ExtrapCol,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH = "projects._03_independent_cqc.utils.utils.imputation.extrapolation"
@@ -117,8 +120,28 @@ class TestBuildExtrapolationAggregates:
 
 
 class TestGetPreviousValue:
-    # TODO
-    pass
+    @pytest.mark.parametrize(
+        "get_previous_value_data",
+        [case.as_pytest_param() for case in Data.get_previous_value_test_cases],
+    )
+    def test_returned_previous_values_match_expected(self, get_previous_value_data):
+        expected_lf = pl.LazyFrame(
+            get_previous_value_data,
+            Schemas.get_previous_value_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop(ExtrapCol.previous_value)
+        returned_lf = input_lf.with_columns(
+            job.get_previous_value(IndCQC.ascwds_pir_merged).alias(
+                ExtrapCol.previous_value
+            )
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_row_order=False,
+        )
 
 
 class TestExtrapolationExpressions:

@@ -2369,3 +2369,55 @@ class ModelExtrapolation:
         ("1-001", date(2026, 2, 1), date(2026, 3, 1), 10.0, 20.0),
         ("1-002", date(2026, 1, 1), date(2026, 1, 1), 15.0, 40.0),
     ]
+
+    get_previous_value_test_cases = [
+        ExtrapolationTestCase(
+            id="when_values_are_sequential_no_nulls",
+            data=[
+                ("1-001", date(2026, 1, 1), 10.0, None),
+                ("1-001", date(2026, 2, 1), 20.0, 10.0),
+                ("1-001", date(2026, 3, 1), 30.0, 20.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_values_have_null_gap",
+            data=[
+                ("1-001", date(2026, 1, 1), 10.0, None),
+                ("1-001", date(2026, 2, 1), None, 10.0),
+                ("1-001", date(2026, 3, 1), None, 10.0),
+                ("1-001", date(2026, 4, 1), 40.0, 10.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_values_have_leading_nulls",
+            data=[
+                ("1-001", date(2026, 1, 1), None, None),
+                ("1-001", date(2026, 2, 1), None, None),
+                ("1-001", date(2026, 3, 1), 30.0, None),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_multiple_groups_are_present",
+            data=[
+                ("1-001", date(2026, 1, 1), 10.0, None),
+                ("1-001", date(2026, 2, 1), None, 10.0),
+                ("1-002", date(2026, 1, 1), 5.0, None),
+                ("1-002", date(2026, 2, 1), None, 5.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_input_is_unsorted_within_group",
+            data=[
+                ("1-001", date(2026, 2, 1), None, 10.0),
+                ("1-001", date(2026, 1, 1), 10.0, None),
+                ("1-001", date(2026, 3, 1), 30.0, 10.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_all_values_are_null",
+            data=[
+                ("1-001", date(2026, 1, 1), None, None),
+                ("1-001", date(2026, 2, 1), None, None),
+            ],
+        ),
+    ]

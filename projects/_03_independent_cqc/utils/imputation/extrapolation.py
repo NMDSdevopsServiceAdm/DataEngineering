@@ -157,7 +157,13 @@ def get_previous_value(col: str) -> pl.Expr:
         pl.Expr: Polars expression representing the previous observed value
         within each `location_id` group.
     """
-    return pl.col(col).fill_null(strategy="forward").shift(1).over(IndCqc.location_id)
+    return (
+        pl.col(col)
+        .sort_by(IMPORT_DATE)
+        .fill_null(strategy="forward")
+        .shift(1)
+        .over(IndCqc.location_id, order_by=IMPORT_DATE)
+    )
 
 
 class ExtrapolationExpressions:
