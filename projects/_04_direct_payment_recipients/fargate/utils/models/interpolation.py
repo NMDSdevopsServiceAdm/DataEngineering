@@ -22,12 +22,12 @@ def model_interpolation(
     7. Joins interpolated results back to the original dataset.
 
     Args:
-    direct_payments_lf (pl.LazyFrame): Input LazyFrame with columns LA_AREA,
-        YEAR_AS_INTEGER and ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+        direct_payments_lf (pl.LazyFrame): Input LazyFrame with columns LA_AREA,
+            YEAR_AS_INTEGER and ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
 
     Returns:
-    pl.LazyFrame: Original LazyFrame with an additional column
-        ESTIMATE_USING_INTERPOLATION
+        pl.LazyFrame: Original LazyFrame with an additional column
+            ESTIMATE_USING_INTERPOLATION
     """
     known_service_users_employing_staff_lf = direct_payments_lf.select(
         [
@@ -101,13 +101,13 @@ def interpolate_values_for_all_dates(lf: pl.LazyFrame) -> pl.LazyFrame:
     - Linear interpolation using surrounding known data points.
 
     Args:
-    lf (pl.LazyFrame): Input LazyFrame with columns LA_AREA, YEAR_AS_INTEGER,
-        ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF and
-        ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED
+        lf (pl.LazyFrame): Input LazyFrame with columns LA_AREA, YEAR_AS_INTEGER,
+            ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF and
+            ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED
 
     Returns:
-    pl.LazyFrame: LazyFrame containing LA_AREA, YEAR_AS_INTEGER and
-        ESTIMATE_USING_INTERPOLATION
+        pl.LazyFrame: LazyFrame containing LA_AREA, YEAR_AS_INTEGER and
+            ESTIMATE_USING_INTERPOLATION
     """
     lf = get_previous_value_in_column(
         lf,
@@ -143,13 +143,13 @@ def get_previous_value_in_column(
     within each LA_AREA, based on ascending year order.
 
     Args:
-    lf (pl.LazyFrame): Input LazyFrame.
-    column_name (str): Name of the column to compute previous values for.
-    new_column_name (str): Name of the output column to store the result.
+        lf (pl.LazyFrame): Input LazyFrame.
+        column_name (str): Name of the column to compute previous values for.
+        new_column_name (str): Name of the output column to store the result.
 
     Returns:
-    pl.LazyFrame: LazyFrame with an additional column containing the previous
-        non-null value.
+        pl.LazyFrame: LazyFrame with an additional column containing the previous
+            non-null value.
     """
     return lf.sort([DP.LA_AREA, DP.YEAR_AS_INTEGER]).with_columns(
         pl.col(column_name).forward_fill().over(DP.LA_AREA).alias(new_column_name)
@@ -164,13 +164,13 @@ def get_next_value_in_new_column(
     within each LA_AREA, based on ascending year order.
 
     Args:
-    lf (pl.LazyFrame): Input LazyFrame.
-    column_name (str): Name of the column to compute next values for.
-    new_column_name (str): Name of the output column to store the result.
+        lf (pl.LazyFrame): Input LazyFrame.
+        column_name (str): Name of the column to compute next values for.
+        new_column_name (str): Name of the output column to store the result.
 
     Returns:
-    pl.LazyFrame: LazyFrame with an additional column containing the next
-        non-null value.
+        pl.LazyFrame: LazyFrame with an additional column containing the next
+            non-null value.
     """
     return lf.sort([DP.LA_AREA, DP.YEAR_AS_INTEGER]).with_columns(
         pl.col(column_name).backward_fill().over(DP.LA_AREA).alias(new_column_name)
@@ -198,14 +198,14 @@ def calculated_interpolated_values_in_new_column(
     If x_prev == x_next, the function returns the current observed value.
 
     Args:
-    lf (pl.LazyFrame): Input LazyFrame with columns YEAR_AS_INTEGER, PREVIOUS_* columns,
-        NEXT_* columns and ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-
-    new_column_name (str): Name of the column to store interpolated values.
+        lf (pl.LazyFrame): Input LazyFrame with columns YEAR_AS_INTEGER,
+            PREVIOUS_* columns, NEXT_* columns and
+            ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+        new_column_name (str): Name of the column to store interpolated values.
 
     Returns:
-    pl.LazyFrame: LazyFrame with columns LA_AREA, YEAR_AS_INTEGER and
-        new_column_name (interpolated values)
+        pl.LazyFrame: LazyFrame with columns LA_AREA, YEAR_AS_INTEGER and
+            new_column_name (interpolated values)
 
     """
     current_year = pl.col(DP.YEAR_AS_INTEGER)
