@@ -55,7 +55,7 @@ def main(
         # categorical
         .col_vals_in_set(
             DP.LA_AREA,
-            [CatValues.contemporary_cssr_column_values.categorical_values],
+            CatValues.contemporary_cssr_column_values.categorical_values,
         )
         # distinct values
         .specially(
