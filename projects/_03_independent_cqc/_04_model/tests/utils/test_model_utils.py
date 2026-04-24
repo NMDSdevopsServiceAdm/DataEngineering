@@ -69,7 +69,7 @@ class MetricsTests(unittest.TestCase):
         y_known = np.array([1.0, 2.0, 3.0])
         y_predicted = np.array([1.0, 2.0, 3.0])
 
-        metrics = job.calculate_metrics(y_known, y_predicted)
+        metrics = job.calculate_metrics(y_known, y_predicted, model_name="other")
 
         self.assertEqual(metrics[IndCQC.r2], 1.0)
         self.assertEqual(metrics[IndCQC.rmse], 0.0)
@@ -78,7 +78,7 @@ class MetricsTests(unittest.TestCase):
         y_known = np.array([0.0, 1.0, 2.0])
         y_predicted = np.array([0.0, 2.0, 1.0])
 
-        metrics = job.calculate_metrics(y_known, y_predicted)
+        metrics = job.calculate_metrics(y_known, y_predicted, model_name="other")
 
         # R2 should be less than 1 for imperfect predictions
         self.assertLess(metrics[IndCQC.r2], 1.0)
@@ -86,13 +86,49 @@ class MetricsTests(unittest.TestCase):
         # RMSE should be positive
         self.assertGreater(metrics[IndCQC.rmse], 0.0)
 
-    def test_calculate_metrics_output_schema(self):
+    def test_calculate_metrics_output_schema_when_care_home_model(self):
+        y_known = np.array([1, 2, 3])
+        y_predicted = np.array([1, 2, 4])
+        number_of_beds = np.array([2, 3, 5])
+
+        metrics = job.calculate_metrics(
+            y_known,
+            y_predicted,
+            model_name="care_home_model",
+            number_of_beds=number_of_beds,
+        )
+
+        self.assertEqual(
+            set(metrics.keys()),
+            {
+                IndCQC.r2,
+                IndCQC.rmse,
+                IndCQC.proportion_of_model_predictions_within_ten,
+                IndCQC.proportion_of_model_predictions_within_twenty_five,
+            },
+        )
+        self.assertIsInstance(metrics[IndCQC.r2], float)
+        self.assertIsInstance(metrics[IndCQC.rmse], float)
+        self.assertIsInstance(
+            metrics[IndCQC.proportion_of_model_predictions_within_ten], float
+        )
+        self.assertIsInstance(
+            metrics[IndCQC.proportion_of_model_predictions_within_twenty_five], float
+        )
+
+    def test_calculate_metrics_output_schema_when_other_model(self):
         y_known = np.array([1, 2, 3])
         y_predicted = np.array([1, 2, 4])
 
-        metrics = job.calculate_metrics(y_known, y_predicted)
+        metrics = job.calculate_metrics(y_known, y_predicted, model_name="other")
 
-        self.assertEqual(set(metrics.keys()), {IndCQC.r2, IndCQC.rmse})
+        self.assertEqual(
+            set(metrics.keys()),
+            {
+                IndCQC.r2,
+                IndCQC.rmse,
+            },
+        )
         self.assertIsInstance(metrics[IndCQC.r2], float)
         self.assertIsInstance(metrics[IndCQC.rmse], float)
 
@@ -100,10 +136,28 @@ class MetricsTests(unittest.TestCase):
         y_known = np.array([1, 2, 3])
         y_predicted = np.array([2, 2, 2])
 
-        metrics = job.calculate_metrics(y_known, y_predicted)
+        metrics = job.calculate_metrics(y_known, y_predicted, model_name="other")
 
         self.assertIsInstance(metrics[IndCQC.r2], float)
         self.assertIsInstance(metrics[IndCQC.rmse], float)
+
+    def test_calculate_metrics_proportion_within_keys(self):
+        y_known = np.array([10, 20, 6, 8, 50])
+        y_predicted = np.array([8, 22, 4, 13, 1])
+        number_of_beds = np.array([2, 3, 5, 5, 10])
+
+        metrics = job.calculate_metrics(
+            y_known,
+            y_predicted,
+            model_name="care_home_model",
+            number_of_beds=number_of_beds,
+        )
+        self.assertEqual(
+            metrics[IndCQC.proportion_of_model_predictions_within_ten], 0.6
+        )
+        self.assertEqual(
+            metrics[IndCQC.proportion_of_model_predictions_within_twenty_five], 0.8
+        )
 
 
 class AddPredictionsIntoDataFrameTests(unittest.TestCase):

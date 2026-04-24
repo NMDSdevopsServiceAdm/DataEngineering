@@ -90,7 +90,14 @@ def main(bucket_name: str, model_name: str) -> None:
 
     predictions = model.predict(X_test)
 
-    metrics = mUtils.calculate_metrics(y_test, predictions)
+    if model_name == "care_home_model":
+        number_of_beds = df.select(IndCQC.number_of_beds).to_numpy()
+        metrics = mUtils.calculate_metrics(
+            y_test, predictions, model_name, number_of_beds
+        )
+
+    else:
+        metrics = mUtils.calculate_metrics(y_test, predictions, model_name)
 
     metadata = {
         "name": model_name,

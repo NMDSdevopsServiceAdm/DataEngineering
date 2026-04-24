@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 import polars as pl
 from sklearn.linear_model import Lasso, LinearRegression
@@ -43,21 +45,52 @@ def build_model(
         raise ValueError(f"Unknown model type: {model_type}")
 
 
-def calculate_metrics(y_known: np.ndarray, y_predicted: np.ndarray) -> dict:
+def calculate_metrics(
+    y_known: np.ndarray,
+    y_predicted: np.ndarray,
+    model_name: str,
+    number_of_beds: Optional[np.ndarray] = None,
+) -> dict:
     """
-    Calculate R2 and RMSE metrics for model evaluation.
+    Calculate R2, RMSE, and proportion within 10 and 25 metrics for model evaluation.
 
     Args:
         y_known (np.ndarray): Known target values.
         y_predicted (np.ndarray): Predicted target values from the model.
+        model_name (str): The name of the model being trained.
+        number_of_beds (Optional[np.ndarray]): Number of beds at each datapoint.
 
     Returns:
-        dict: A dictionary containing R2 and RMSE metrics.
+        dict: A dictionary containing metrics where the key is the metric name
+        and the value is the computed value of that metric.
     """
     r2_metric = float(r2_score(y_known, y_predicted))
     rmse_metric = float(root_mean_squared_error(y_known, y_predicted))
 
-    return {IndCQC.r2: r2_metric, IndCQC.rmse: rmse_metric}
+    if model_name == "care_home_model":
+        abs_diff = np.absolute(
+            (y_known * number_of_beds) - (y_predicted * number_of_beds)
+        )
+        rows_in_abs_diff = abs_diff.shape[0]
+        proportion_within_ten_metric = float(
+            np.count_nonzero(abs_diff <= 10) / rows_in_abs_diff
+        )
+        proportion_within_twenty_five_metric = float(
+            np.count_nonzero(abs_diff <= 25) / rows_in_abs_diff
+        )
+
+        return {
+            IndCQC.r2: r2_metric,
+            IndCQC.rmse: rmse_metric,
+            IndCQC.proportion_of_model_predictions_within_ten: proportion_within_ten_metric,
+            IndCQC.proportion_of_model_predictions_within_twenty_five: proportion_within_twenty_five_metric,
+        }
+
+    else:
+        return {
+            IndCQC.r2: r2_metric,
+            IndCQC.rmse: rmse_metric,
+        }
 
 
 def add_predictions_into_df(
