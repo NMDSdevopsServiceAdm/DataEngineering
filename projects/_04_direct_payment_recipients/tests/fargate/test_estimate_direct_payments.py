@@ -39,6 +39,3 @@ class EstimateDirectPaymentsTests(unittest.TestCase):
             self.SOME_DESTINATION,
             append=False,
         )
-
-    def test_main_returns_expected_values(self):
-        """"""
