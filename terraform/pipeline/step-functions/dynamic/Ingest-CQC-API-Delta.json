@@ -2,6 +2,13 @@
   "Comment": "State machine for CQC API ingestion data pipeline",
   "StartAt": "CQC API Ingestion",
   "States": {
+    "Set number of days to capture": {
+      "Type": "Pass",
+      "Next": "CQC API Ingestion",
+      "Assign": {
+        "days_value": "15"
+      }
+    },
     "CQC API Ingestion": {
       "Type": "Parallel",
       "Branches": [
@@ -22,7 +29,9 @@
                 "dest_arg": "--destination_prefix",
                 "dest_value": "${dataset_bucket_uri}",
                 "end_arg": "--end_timestamp",
-                "end_value.$": "$$.State.EnteredTime"
+                "end_value.$": "$$.State.EnteredTime",
+                "days_arg": "--previous_days_to_capture",
+                "days_value.$": "$days_value"
               },
               "Next": "Run Delta CQC Providers Download"
             },
@@ -47,7 +56,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command.$": "States.Array($.script, $.dest_arg, $.dest_value, $.end_arg, $.end_value)"
+                      "Command.$": "States.Array($.script, $.dest_arg, $.dest_value, $.end_arg, $.end_value, $.days_arg, $.days_value)"
                     }
                   ]
                 }
@@ -117,7 +126,9 @@
                 "dest_arg": "--destination_prefix",
                 "dest_value": "${dataset_bucket_uri}",
                 "end_arg": "--end_timestamp",
-                "end_value.$": "$$.State.EnteredTime"
+                "end_value.$": "$$.State.EnteredTime",
+                "days_arg": "--previous_days_to_capture",
+                "days_value.$": "$days_value"
               },
               "Next": "Run Delta CQC Locations Download"
             },
@@ -142,7 +153,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command.$": "States.Array($.script, $.dest_arg, $.dest_value, $.end_arg, $.end_value)"
+                      "Command.$": "States.Array($.script, $.dest_arg, $.dest_value, $.end_arg, $.end_value, $.days_arg, $.days_value)"
                     }
                   ]
                 }
