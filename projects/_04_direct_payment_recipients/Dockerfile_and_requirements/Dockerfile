@@ -9,6 +9,7 @@ ENV PYTHONPATH=/app
 # Dependencies
 COPY projects/_04_direct_payment_recipients/fargate/utils /app/projects/_04_direct_payment_recipients/fargate/utils
 COPY projects/_04_direct_payment_recipients/direct_payments_column_names.py /app/projects/_04_direct_payment_recipients/direct_payments_column_names.py
+COPY projects/_04_direct_payment_recipients/direct_payments_configuration.py /app/projects/_04_direct_payment_recipients/direct_payments_configuration.py
 COPY polars_utils /app/polars_utils
 COPY utils/column_names /app/utils/column_names/
 COPY utils/column_values /app/utils/column_values/
