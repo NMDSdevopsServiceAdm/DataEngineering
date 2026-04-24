@@ -2238,20 +2238,20 @@ class ModelExtrapolation:
         ExtrapolationTestCase(
             id="when_one_earlier_data_point_is_missing",
             data=[
-                ("1-002", date(2026, 1, 1), None, 10.0, None, 0.0),
-                ("1-002", date(2026, 2, 1), 10.0, 20.0, None, None),
+                ("1-001", date(2026, 1, 1), None, 10.0, None, 0.0),
+                ("1-001", date(2026, 2, 1), 10.0, 20.0, None, None),
             ],
         ),
         ExtrapolationTestCase(
             id="when_multiple_earlier_data_points_are_missing",
             data=[
-                ("1-002", date(2026, 1, 1), None, 10.0, None, 0.0),
-                ("1-002", date(2026, 2, 1), None, 10.0, None, 0.0),
-                ("1-002", date(2026, 3, 1), 10.0, 20.0, None, None),
+                ("1-001", date(2026, 1, 1), None, 10.0, None, 0.0),
+                ("1-001", date(2026, 2, 1), None, 10.0, None, 0.0),
+                ("1-001", date(2026, 3, 1), 10.0, 20.0, None, None),
             ],
         ),
         ExtrapolationTestCase(
-            id="when_one_imtermediate_data_point_is_missing",
+            id="when_one_intermediate_data_point_is_missing",
             data=[
                 ("1-001", date(2026, 1, 1), 15.0, 10.0, None, None),
                 ("1-001", date(2026, 2, 1), None, 20.0, 25.0, None),
@@ -2259,13 +2259,30 @@ class ModelExtrapolation:
             ],
         ),
         ExtrapolationTestCase(
-            id="when_earlier_and_later_and_intermediate_data_points_are_missing",
+            id="when_only_one_observed_value_exists",
             data=[
-                ("1-002", date(2026, 1, 1), None, 10.0, None, 0.0),
-                ("1-002", date(2026, 2, 1), 10.0, 20.0, None, None),
-                ("1-002", date(2026, 3, 1), None, 30.0, 20.0, None),
-                ("1-002", date(2026, 4, 1), 20.0, 80.0, 70.0, None),
-                ("1-002", date(2026, 5, 1), None, 100.0, 40.0, 40.0),
+                ("1-001", date(2026, 1, 1), None, 10.0, None, 0.0),
+                ("1-001", date(2026, 2, 1), 10.0, 20.0, None, None),
+                ("1-001", date(2026, 3, 1), None, 30.0, 20.0, 20.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_model_extrapolation_only_applies_after_last_submission",
+            data=[
+                ("1-001", date(2026, 1, 1), 10.0, 20.0, None, None),
+                ("1-001", date(2026, 2, 1), None, 30.0, 20.0, None),
+                ("1-001", date(2026, 3, 1), 50.0, 40.0, 30.0, None),
+                ("1-001", date(2026, 3, 1), None, 50.0, 60.0, 60.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_multiple_gaps_exist_across_full_time_series",
+            data=[
+                ("1-001", date(2026, 1, 1), None, 10.0, None, 0.0),
+                ("1-001", date(2026, 2, 1), 10.0, 20.0, None, None),
+                ("1-001", date(2026, 3, 1), None, 30.0, 20.0, None),
+                ("1-001", date(2026, 4, 1), 20.0, 80.0, 70.0, None),
+                ("1-001", date(2026, 5, 1), None, 100.0, 40.0, 40.0),
             ],
         ),
         ExtrapolationTestCase(
@@ -2282,9 +2299,17 @@ class ModelExtrapolation:
         ExtrapolationTestCase(
             id="when_no_data_points_are_available",
             data=[
-                ("1-003", date(2026, 3, 1), None, None, None, None),
+                ("1-001", date(2026, 3, 1), None, None, None, None),
             ],
         ),
+        ExtrapolationTestCase(
+            id="when_dates_are_not_sorted_within_group",
+            data=[
+                ("1-001", date(2026, 2, 1), None, 30.0, 20.0, 20.0),
+                ("1-001", date(2026, 1, 1), 10.0, 20.0, None, None),
+                ("1-001", date(2026, 3, 1), None, 100.0, 90.0, 90.0),
+            ],
+)
     ] # fmt: skip
     extrapolation_when_ratio_test_cases = [
         ExtrapolationTestCase(
@@ -2318,7 +2343,7 @@ class ModelExtrapolation:
             ],
         ),
         ExtrapolationTestCase(
-            id="when_one_imtermediate_data_point_is_missing",
+            id="when_one_intermediate_data_point_is_missing",
             data=[
                 ("1-001", date(2026, 1, 1), 15.0, 10.0, None, None),
                 ("1-001", date(2026, 2, 1), None, 20.0, 30.0, None),
@@ -2326,7 +2351,24 @@ class ModelExtrapolation:
             ],
         ),
         ExtrapolationTestCase(
-            id="when_earlier_and_later_and_intermediate_data_points_are_missing",
+            id="when_only_one_observed_value_exists",
+            data=[
+                ("1-001", date(2026, 1, 1), None, 10.0, None, 5.0),
+                ("1-001", date(2026, 2, 1), 10.0, 20.0, None, None),
+                ("1-001", date(2026, 3, 1), None, 30.0, 15.0, 15.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_model_extrapolation_only_applies_after_last_submission",
+            data=[
+                ("1-001", date(2026, 1, 1), 10.0, 20.0, None, None),
+                ("1-001", date(2026, 2, 1), None, 30.0, 15.0, None),
+                ("1-001", date(2026, 3, 1), 50.0, 40.0, 20.0, None),
+                ("1-001", date(2026, 3, 1), None, 20.0, 25.0, 25.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_multiple_gaps_exist_across_full_time_series",
             data=[
                 ("1-002", date(2026, 1, 1), None, 10.0, None, 5.0),
                 ("1-002", date(2026, 2, 1), 10.0, 20.0, None, None),
@@ -2350,6 +2392,14 @@ class ModelExtrapolation:
             id="when_no_data_points_are_available",
             data=[
                 ("1-003", date(2026, 3, 1), None, None, None, None),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_dates_are_not_sorted_within_group",
+            data=[
+                ("1-001", date(2026, 2, 1), None, 30.0, 15.0, 15.0),
+                ("1-001", date(2026, 1, 1), 10.0, 20.0, None, None),
+                ("1-001", date(2026, 3, 1), None, 100.0, 50.0, 50.0),
             ],
         ),
     ] # fmt: skip
