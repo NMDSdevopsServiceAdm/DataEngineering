@@ -4,7 +4,7 @@ import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-import projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.interpolation as job
+import projects._03_independent_cqc.utils.imputation.interpolation as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     InterpolationData as Data,
 )
