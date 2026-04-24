@@ -55,19 +55,13 @@ def main(
         # categorical
         .col_vals_in_set(
             DP.LA_AREA,
-            [
-                *CatValues.contemporary_cssr_column_values.categorical_values,
-                *CatValues.current_cssr_column_values.categorical_values,
-            ],
+            [CatValues.contemporary_cssr_column_values.categorical_values],
         )
         # distinct values
         .specially(
             vl.is_unique_count_equal(
                 DP.LA_AREA,
-                (
-                    CatValues.contemporary_cssr_column_values.count_of_categorical_values
-                    + CatValues.current_cssr_column_values.count_of_categorical_values
-                ),
+                CatValues.contemporary_cssr_column_values.count_of_categorical_values,
             ),
             brief=f"{DP.LA_AREA} needs to be one of {CatValues.contemporary_cssr_column_values.categorical_values} or {CatValues.current_cssr_column_values.categorical_values}",
         ).interrogate()
