@@ -6,6 +6,7 @@ from projects._04_direct_payment_recipients.direct_payments_column_names import 
 )
 
 
+# converted to polars -> projects\_04_direct_payment_recipients\fargate\utils\models\mean_imputation.py
 def model_using_mean(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
@@ -49,4 +50,5 @@ def calculate_mean_per_year(
             / F.col(DP.COUNT_OF_SERVICE_USER_DPRS_DURING_YEAR)
         ),
     )
+    return mean_df
     return mean_df
