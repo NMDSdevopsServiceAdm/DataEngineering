@@ -26,7 +26,7 @@ CQC_ORG_TYPE = "location"
 
 def main(
     destination: str,
-    end_timestamp: str = None,
+    end_timestamp: str,
     previous_days_to_capture: int = cqc.days_to_rollback_start_timestamp,
 ) -> None:
     """
