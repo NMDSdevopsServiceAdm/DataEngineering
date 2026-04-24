@@ -164,7 +164,6 @@ class FeaturesEngineeringUtilsSchemas:
             ("feature_3", pl.UInt32()),
             ("dependent", pl.Float64()),
             (IndCQC.care_home_status_count, pl.Int32()),
-            (IndCQC.number_of_beds, pl.Int32()),
         ]
     )
     expected_select_and_filter_features_schema = pl.Schema(
@@ -172,7 +171,6 @@ class FeaturesEngineeringUtilsSchemas:
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.DataType()),
             (IndCQC.care_home_status_count, pl.Int32()),
-            (IndCQC.number_of_beds, pl.Int32()),
             ("dependent", pl.Float64()),
             ("feature_1", pl.Int32()),
             ("feature_2", pl.Int32()),
