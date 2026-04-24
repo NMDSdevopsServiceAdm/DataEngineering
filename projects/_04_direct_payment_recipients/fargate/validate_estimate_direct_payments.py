@@ -57,7 +57,7 @@ def main(
             DP.LA_AREA,
             [
                 *CatValues.contemporary_cssr_column_values.categorical_values,
-                *CatValues.current_cssr_column_values,
+                *CatValues.current_cssr_column_values.categorical_values,
             ],
         )
         # distinct values
