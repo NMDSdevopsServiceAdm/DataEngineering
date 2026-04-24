@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted DPR Interpolation script to Polars and added tests for the same.
 
+- Converted DPR estimates util function model_using_mean from pyspark to polars.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
