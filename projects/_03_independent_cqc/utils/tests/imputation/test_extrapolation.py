@@ -166,8 +166,8 @@ class TestExtrapolationExpressions:
     def test_backward_ratio(self):
         lf = pl.LazyFrame(
             {
-                job.TEMP.first_value: [10.0],
-                job.TEMP.first_model: [20.0],
+                ExtrapCol.first_value: [10.0],
+                ExtrapCol.first_model: [20.0],
                 self.MODEL: [10.0],
             }
         )
@@ -181,8 +181,8 @@ class TestExtrapolationExpressions:
     def test_forward_nominal(self):
         lf = pl.LazyFrame(
             {
-                job.TEMP.previous_value: [10.0],
-                job.TEMP.previous_model: [20.0],
+                ExtrapCol.previous_value: [10.0],
+                ExtrapCol.previous_model: [20.0],
                 self.MODEL: [30.0],
             }
         )
@@ -196,8 +196,8 @@ class TestExtrapolationExpressions:
     def test_backward_nominal(self):
         lf = pl.LazyFrame(
             {
-                job.TEMP.first_value: [10.0],
-                job.TEMP.first_model: [20.0],
+                ExtrapCol.first_value: [10.0],
+                ExtrapCol.first_model: [20.0],
                 self.MODEL: [5.0],
             }
         )
