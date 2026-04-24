@@ -14,6 +14,10 @@ All notable changes to this project will be documented in this file.
 
 - Removed partitioning from direct payments pipeline outputs.
 
+- Added row_id and expanded_id to the ind cqc columns class as
+  id_per_locationid_import_date and id_per_locationid_import_date_job_role respectively and
+  updated references to the objects.
+
 ### Fixed
 - Update setup instructions with pre-commit hooks setup
 
