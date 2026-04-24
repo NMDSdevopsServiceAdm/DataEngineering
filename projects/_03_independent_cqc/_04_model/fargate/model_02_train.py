@@ -83,7 +83,6 @@ def main(bucket_name: str, model_name: str) -> None:
     X_test, y_test = tUtils.convert_dataframe_to_numpy(
         test_df, feature_cols, dependent_col
     )
-    number_of_beds = df.select(IndCQC.number_of_beds).to_numpy()
 
     model = mUtils.build_model(model_type, model_params)
 
@@ -91,7 +90,14 @@ def main(bucket_name: str, model_name: str) -> None:
 
     predictions = model.predict(X_test)
 
-    metrics = mUtils.calculate_metrics(y_test, predictions, number_of_beds)
+    if model_name == "care_home_model":
+        number_of_beds = df.select(IndCQC.number_of_beds).to_numpy()
+        metrics = mUtils.calculate_metrics(
+            y_test, predictions, model_name, number_of_beds
+        )
+
+    else:
+        metrics = mUtils.calculate_metrics(y_test, predictions, model_name)
 
     metadata = {
         "name": model_name,
