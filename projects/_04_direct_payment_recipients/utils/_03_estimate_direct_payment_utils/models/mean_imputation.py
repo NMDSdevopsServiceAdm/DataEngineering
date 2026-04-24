@@ -51,4 +51,3 @@ def calculate_mean_per_year(
         ),
     )
     return mean_df
-    return mean_df
