@@ -20,8 +20,7 @@ class TestExtrapolationWhenNominal:
         [case.as_pytest_param() for case in Data.extrapolation_when_nominal_test_cases],
     )
     def test_returned_extrapolation_values_match_expected_when_nominal(
-        self,
-        extrapolation_when_nominal_data,
+        self, extrapolation_when_nominal_data
     ):
         expected_nominal_lf = pl.LazyFrame(
             extrapolation_when_nominal_data,
@@ -52,8 +51,7 @@ class TestExtrapolationWhenRatio:
         [case.as_pytest_param() for case in Data.extrapolation_when_ratio_test_cases],
     )
     def test_returned_extrapolation_values_match_expected_when_ratio(
-        self,
-        extrapolation_when_ratio_data,
+        self, extrapolation_when_ratio_data
     ):
         expected_ratio_lf = pl.LazyFrame(
             extrapolation_when_ratio_data,
@@ -85,7 +83,9 @@ class TestExtrapolationWhenInvalidMethod:
             Schemas.model_extrapolation_schema,
             orient="row",
         ).drop(IndCQC.extrapolation_forwards, IndCQC.extrapolation_model)
+
         expected_error_message = "Error: method must be either 'ratio' or 'nominal'."
+
         with pytest.raises(ValueError, match=expected_error_message):
             job.model_extrapolation(
                 input_lf,
@@ -93,3 +93,34 @@ class TestExtrapolationWhenInvalidMethod:
                 model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
                 extrapolation_method="other",  # Invalid method
             )
+
+
+class TestBuildExtrapolationAggregates:
+    def test_returns_correct_aggregates_per_location(self):
+        input_lf = pl.LazyFrame(
+            Data.extrapolation_aggregates_rows,
+            Schemas.extrapolation_aggregates_schema,
+            orient="row",
+        )
+
+        returned_lf = job.build_extrapolation_aggregates(
+            input_lf, IndCQC.ascwds_pir_merged, IndCQC.posts_rolling_average_model
+        )
+
+        expected_lf = pl.LazyFrame(
+            Data.expected_extrapolation_aggregates_rows,
+            Schemas.expected_extrapolation_aggregates_schema,
+            orient="row",
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestGetPreviousValue:
+    # TODO
+    pass
+
+
+class TestExtrapolationExpressions:
+    # TODO
+    pass

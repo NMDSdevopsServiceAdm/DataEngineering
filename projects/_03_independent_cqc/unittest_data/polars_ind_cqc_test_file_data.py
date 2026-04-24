@@ -2356,3 +2356,16 @@ class ModelExtrapolation:
     expected_extrapolation_when_error_rows = [
         ("1-001", date(2026, 1, 1), None, 10.0, None, None),
     ]
+
+    extrapolation_aggregates_rows = [
+        ("1-001", date(2026, 1, 1), None, 10.0),
+        ("1-001", date(2026, 2, 1), 10.0, 20.0),
+        ("1-001", date(2026, 3, 1), 20.0, 30.0),
+        ("1-002", date(2026, 1, 1), 15.0, 40.0),
+        ("1-002", date(2026, 2, 1), None, 50.0),
+        ("1-003", date(2026, 1, 1), None, None),
+    ]
+    expected_extrapolation_aggregates_rows = [
+        ("1-001", date(2026, 2, 1), date(2026, 3, 1), 10.0, 20.0),
+        ("1-002", date(2026, 1, 1), date(2026, 1, 1), 15.0, 40.0),
+    ]

@@ -26,6 +26,9 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ExtrapolationColumns as ExtrapCol,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
@@ -1561,4 +1564,18 @@ class ModelExtrapolation:
         IndCQC.posts_rolling_average_model: pl.Float32,
         IndCQC.extrapolation_forwards: pl.Float32,
         IndCQC.extrapolation_model: pl.Float32,
+    }
+
+    extrapolation_aggregates_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_pir_merged: pl.Float32,
+        IndCQC.posts_rolling_average_model: pl.Float32,
+    }
+    expected_extrapolation_aggregates_schema = {
+        IndCQC.location_id: pl.String,
+        ExtrapCol.first_submission_time: pl.Date,
+        ExtrapCol.final_submission_time: pl.Date,
+        ExtrapCol.first_value: pl.Float32,
+        ExtrapCol.first_model: pl.Float32,
     }
