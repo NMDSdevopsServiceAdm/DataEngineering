@@ -394,13 +394,13 @@ class NullGroupedProviderColumns:
 class ExtrapolationColumns:
     """The names of the temporary columns created during the extrapolation process."""
 
-    first_model_value: str = "_first_model_value"
-    first_non_null_value: str = "_first_non_null_value"
+    first_model: str = "_first_model"
+    first_value: str = "_first_value"
     final_submission_time: str = "_final_submission_time"
     first_submission_time: str = "_first_submission_time"
-    model_with_null_values: str = "_model_with_null_values"
-    previous_model_value: str = "_previous_model_value"
-    previous_non_null_value: str = "_previous_non_null_value"
+    model_with_nulls: str = "_model_with_nulls"
+    previous_model: str = "_previous_model"
+    previous_value: str = "_previous_value"
 
 
 @dataclass
