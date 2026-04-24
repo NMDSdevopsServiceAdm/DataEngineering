@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Setup scripts and terraform required for converting direct payment estimates to polars.
 
+- Converted `model_extrapolation` to Polars and added additional test data to cover corner cases.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 

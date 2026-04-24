@@ -14,6 +14,7 @@ COPY projects/_03_independent_cqc/_04_model/utils /app/projects/_03_independent_
 COPY projects/_03_independent_cqc/_06_estimate_filled_posts/fargate/utils /app/projects/_03_independent_cqc/_06_estimate_filled_posts/fargate/utils
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/utils /app/projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/utils
 COPY projects/_03_independent_cqc/_09_archive_estimates/fargate/utils /app/projects/_03_independent_cqc/_09_archive_estimates/fargate/utils
+COPY projects/_03_independent_cqc/utils /app/projects/_03_independent_cqc/utils
 COPY polars_utils /app/polars_utils
 COPY utils/column_names /app/utils/column_names/
 COPY utils/column_values /app/utils/column_values/

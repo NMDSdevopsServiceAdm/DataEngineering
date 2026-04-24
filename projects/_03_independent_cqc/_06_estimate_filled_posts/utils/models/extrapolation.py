@@ -7,6 +7,7 @@ from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
+# converted to polars -> projects\_03_independent_cqc\utils\imputation\extrapolation.py
 def model_extrapolation(
     df: DataFrame,
     column_with_null_values: str,
@@ -58,6 +59,7 @@ def model_extrapolation(
     return df
 
 
+# not needed after polars conversion
 def define_window_specs() -> Tuple[Window, Window]:
     """
     Defines two window specifications, partitioned by 'location_id' and ordered by 'unix_time'.
@@ -79,6 +81,7 @@ def define_window_specs() -> Tuple[Window, Window]:
     return window_spec_all_rows, window_spec_lagged
 
 
+# converted to polars -> projects\_03_independent_cqc\utils\imputation\extrapolation.py
 def calculate_first_and_final_submission_dates(
     df: DataFrame, column_with_null_values: str, window_spec: Window
 ) -> DataFrame:
@@ -115,6 +118,7 @@ def calculate_first_and_final_submission_dates(
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\utils\imputation\extrapolation.py
 def extrapolation_forwards(
     df: DataFrame,
     column_with_null_values: str,
@@ -186,6 +190,7 @@ def extrapolation_forwards(
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\utils\imputation\extrapolation.py
 def extrapolation_backwards(
     df: DataFrame,
     column_with_null_values: str,
@@ -264,6 +269,7 @@ def extrapolation_backwards(
     return df
 
 
+# converted to polars -> projects\_03_independent_cqc\utils\imputation\extrapolation.py
 def combine_extrapolation(df: DataFrame) -> DataFrame:
     """
     Combines forward and backward extrapolation values into a single column based on the specified model.
