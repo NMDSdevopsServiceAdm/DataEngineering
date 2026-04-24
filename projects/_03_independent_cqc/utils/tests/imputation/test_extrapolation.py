@@ -145,5 +145,65 @@ class TestGetPreviousValue:
 
 
 class TestExtrapolationExpressions:
-    # TODO
-    pass
+    MODEL = "model"
+    OUTPUT = "output"
+
+    def test_forward_ratio(self):
+        lf = pl.LazyFrame(
+            {
+                ExtrapCol.previous_value: [10.0],
+                ExtrapCol.previous_model: [20.0],
+                self.MODEL: [40.0],
+            }
+        )
+
+        expr = job.ExtrapolationExpressions(self.MODEL)
+
+        result = lf.select(expr.forward_ratio.alias(self.OUTPUT)).collect()
+
+        assert result[self.OUTPUT][0] == 20.0  # 10 * 40 / 20
+
+    def test_backward_ratio(self):
+        lf = pl.LazyFrame(
+            {
+                job.TEMP.first_value: [10.0],
+                job.TEMP.first_model: [20.0],
+                self.MODEL: [10.0],
+            }
+        )
+
+        expr = job.ExtrapolationExpressions(self.MODEL)
+
+        result = lf.select(expr.backward_ratio.alias(self.OUTPUT)).collect()
+
+        assert result[self.OUTPUT][0] == 5.0
+
+    def test_forward_nominal(self):
+        lf = pl.LazyFrame(
+            {
+                job.TEMP.previous_value: [10.0],
+                job.TEMP.previous_model: [20.0],
+                self.MODEL: [30.0],
+            }
+        )
+
+        expr = job.ExtrapolationExpressions(self.MODEL)
+
+        result = lf.select(expr.forward_nominal.alias(self.OUTPUT)).collect()
+
+        assert result[self.OUTPUT][0] == 20.0  # 10 + (30 - 20)
+
+    def test_backward_nominal(self):
+        lf = pl.LazyFrame(
+            {
+                job.TEMP.first_value: [10.0],
+                job.TEMP.first_model: [20.0],
+                self.MODEL: [5.0],
+            }
+        )
+
+        expr = job.ExtrapolationExpressions(self.MODEL)
+
+        result = lf.select(expr.backward_nominal.alias(self.OUTPUT)).collect()
+
+        assert result[self.OUTPUT][0] == -5.0  # 10 - (20 - 5)
