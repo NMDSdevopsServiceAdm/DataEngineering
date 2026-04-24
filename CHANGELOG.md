@@ -6,8 +6,9 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Converted Spark util model_extrapolation to Polars as model_extrapolation. Added additional test data to cover corner cases.
 - Setup scripts and terraform required for converting direct payment estimates to polars.
+
+- Converted `model_extrapolation` to Polars and added additional test data to cover corner cases.
 
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
@@ -39,7 +40,6 @@ All notable changes to this project will be documented in this file.
 - Refactored ASC-WDS filled post calculation code into one file.
 
 - Moved job role utils for cleaning and imputation into their own scripts.
-
 
 
 ## [v2026.03.0] - 09/04/2026
