@@ -40,7 +40,7 @@ def main(
         selected_columns=direct_payments_columns,
     )
 
-    lf.with_columns(pl.col(DP.LA_AREA).replace(la_name_replacements))
+    lf = lf.with_columns(pl.col(DP.LA_AREA).replace(la_name_replacements))
 
     utils.sink_to_parquet(
         lf,
