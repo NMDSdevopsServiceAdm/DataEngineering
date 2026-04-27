@@ -1,12 +1,9 @@
 import polars as pl
-from typing import Final
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
-
-ROW_ID: Final[str] = "id"
 
 JobRoleEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
 
@@ -35,7 +32,9 @@ def join_estimates_to_ascwds(
     ]
     job_role_labels = IndCQC.main_job_role_clean_labelled
 
-    narrow_keys_lf = estimates_lf.select([ROW_ID] + join_keys)
+    narrow_keys_lf = estimates_lf.select(
+        [IndCQC.id_per_locationid_import_date] + join_keys
+    )
 
     roles_lf = pl.LazyFrame(
         data=[(role,) for role in AscwdsWorkerValueLabelsJobGroup.all_roles()],
@@ -53,6 +52,6 @@ def join_estimates_to_ascwds(
 
     return estimates_lf.join(
         expanded_counts_lf.drop(join_keys),
-        on=ROW_ID,
+        on=IndCQC.id_per_locationid_import_date,
         how="right",
     ).drop(join_keys)

@@ -8,12 +8,20 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Setup scripts and terraform required for converting direct payment estimates to polars.
 
+- Converted DPR Interpolation script to Polars and added tests for the same.
+
+- Converted DPR estimates util function model_using_mean from pyspark to polars.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
 - Removed partitioning from direct payments pipeline outputs.
 
-- Changed cqc api delta download to get changes from 15 days prior to start time up to end time.
+- Added row_id and expanded_id to the ind cqc columns class as
+  id_per_locationid_import_date and id_per_locationid_import_date_job_role respectively and
+  updated references to the objects.
+
+- Changed cqc api delta download to get changes from 30 days prior to start time up to end time.
 
 ### Fixed
 - Update setup instructions with pre-commit hooks setup

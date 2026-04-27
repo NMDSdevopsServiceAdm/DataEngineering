@@ -1,5 +1,3 @@
-from typing import Final
-
 import polars as pl
 
 from polars_utils import utils
@@ -11,8 +9,6 @@ from utils.column_values.categorical_column_values import PrimaryServiceType
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
-
-ROW_ID: Final[str] = "id"
 
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
@@ -105,14 +101,16 @@ def main(
     full_estimates_lf = (
         utils.scan_parquet(estimates_source)
         .select(list(combined_schema))
-        .with_row_index(name=ROW_ID)
+        .with_row_index(name=IndCQC.id_per_locationid_import_date)
         .with_columns(utils.cast_to_schema(combined_schema))
     )
     estimated_posts_base_lf = full_estimates_lf.select(
-        ROW_ID, *list(transformation_columns)
+        IndCQC.id_per_locationid_import_date, *list(transformation_columns)
     )
     # This will be joined on at the end.
-    metadata_lf = full_estimates_lf.select(ROW_ID, *list(metadata_columns))
+    metadata_lf = full_estimates_lf.select(
+        IndCQC.id_per_locationid_import_date, *list(metadata_columns)
+    )
 
     col_name_map = {
         IndCQC.ascwds_worker_import_date: IndCQC.ascwds_workplace_import_date

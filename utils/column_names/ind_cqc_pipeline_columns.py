@@ -203,6 +203,10 @@ class IndCqcColumns:
     first_rolling_average: str = "first_rolling_average"
     first_submission_time: str = "first_submission_time"
     has_non_null_value: str = "has_non_null_value"
+    id_per_locationid_import_date: str = "id_per_locationid_import_date"
+    id_per_locationid_import_date_job_role: str = (
+        "id_per_locationid_import_date_job_role"
+    )
     imputed_ascwds_job_role_counts: str = "imputed_ascwds_job_role_counts"
     imputed_ascwds_job_role_ratios: str = "imputed_ascwds_job_role_ratios"
     imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
