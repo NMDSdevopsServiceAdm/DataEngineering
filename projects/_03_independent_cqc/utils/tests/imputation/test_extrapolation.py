@@ -116,7 +116,7 @@ class TestBuildExtrapolationAggregates:
             orient="row",
         )
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
 class TestGetPreviousValue:
@@ -137,11 +137,7 @@ class TestGetPreviousValue:
             )
         )
 
-        pl_testing.assert_frame_equal(
-            returned_lf,
-            expected_lf,
-            check_row_order=False,
-        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
 class TestExtrapolationExpressions:

@@ -2272,7 +2272,7 @@ class ModelExtrapolation:
                 ("1-001", date(2026, 1, 1), 10.0, 20.0, None, None),
                 ("1-001", date(2026, 2, 1), None, 30.0, 20.0, None),
                 ("1-001", date(2026, 3, 1), 50.0, 40.0, 30.0, None),
-                ("1-001", date(2026, 3, 1), None, 50.0, 60.0, 60.0),
+                ("1-001", date(2026, 4, 1), None, 50.0, 60.0, 60.0),
             ],
         ),
         ExtrapolationTestCase(
@@ -2364,7 +2364,7 @@ class ModelExtrapolation:
                 ("1-001", date(2026, 1, 1), 10.0, 20.0, None, None),
                 ("1-001", date(2026, 2, 1), None, 30.0, 15.0, None),
                 ("1-001", date(2026, 3, 1), 50.0, 40.0, 20.0, None),
-                ("1-001", date(2026, 3, 1), None, 20.0, 25.0, 25.0),
+                ("1-001", date(2026, 4, 1), None, 20.0, 25.0, 25.0),
             ],
         ),
         ExtrapolationTestCase(
