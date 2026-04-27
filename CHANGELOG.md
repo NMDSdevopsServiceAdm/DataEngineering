@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted DPR estimates util function model_using_mean from pyspark to polars.
 
+- Converted DPR local authority name fix util to polars.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
