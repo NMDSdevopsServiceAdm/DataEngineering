@@ -6,7 +6,8 @@ from projects._04_direct_payment_recipients.direct_payments_column_names import 
 
 def model_extrapolation(direct_payments_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Extrapolates proportion of service users employing staff for years outside the known data range.
+    Extrapolates proportion of service users employing staff for years outside the known
+    data range.
 
     For each LA area, identifies the first and last years with known data. For years
     before the first known year or after the last known year, estimates the proportion
@@ -14,11 +15,10 @@ def model_extrapolation(direct_payments_lf: pl.LazyFrame) -> pl.LazyFrame:
     to the mean at that boundary year (ratio extrapolation).
 
     Args:
-        direct_payments_lf: Polars LazyFrame containing direct payments data with columns for
-            LA area, year, proportion of service users employing staff, and mean estimates.
+        direct_payments_lf (pl.LazyFrame): Input Polars LazyFrame
 
     Returns:
-        The input LazyFrame with the following additional columns:
+        pl.LazyFrame: The input LazyFrame with the following additional columns:
             - first_year_with_data: earliest year with known data per LA area.
             - last_year_with_data: latest year with known data per LA area.
             - estimate_using_extrapolation_ratio: extrapolated proportion for years
@@ -84,11 +84,11 @@ def value_at_boundary_year(value_col: str, boundary_year_col: str) -> pl.Expr:
     Returns the value of a column at the boundary year, broadcast across the LA area group.
 
     Args:
-        value_col: Name of the column to retrieve the value from.
-        boundary_year_col: Name of the column holding the boundary year to match against.
+        value_col (str): Name of the column to retrieve the value from.
+        boundary_year_col (str): Name of the column holding the boundary year to match against.
 
     Returns:
-        A Polars expression resolving to the value of `value_col` at the boundary year
+        pl.Expr: A Polars expression resolving to the value of `value_col` at the boundary year
         for each row in the LA area group.
     """
     return (
