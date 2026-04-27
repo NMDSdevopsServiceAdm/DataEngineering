@@ -9,6 +9,7 @@ from projects._04_direct_payment_recipients.direct_payments_configuration import
 )
 
 
+# converted to polars -> projects\_04_direct_payment_recipients\fargate\utils\estimate_direct_payments_utils\calculate_rolling_mean.py
 def apply_rolling_average(direct_payments_df: DataFrame) -> DataFrame:
     aggregated_df = calculate_aggregates_per_year(direct_payments_df)
     rolling_average_df = create_rolling_average_column(aggregated_df)
