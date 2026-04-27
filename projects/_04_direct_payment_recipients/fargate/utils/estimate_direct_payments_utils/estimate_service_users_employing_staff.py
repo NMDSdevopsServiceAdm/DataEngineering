@@ -1,7 +1,11 @@
 import polars as pl
 
+from polars_utils.utils import coalesce_with_source_labels
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
+)
+from projects._04_direct_payment_recipients.fargate.utils.models.extrapolation_ratio import (
+    model_extrapolation,
 )
 from projects._04_direct_payment_recipients.fargate.utils.models.interpolation import (
     model_interpolation,
@@ -16,44 +20,47 @@ def calculate_estimated_service_users_employing_staff(lf: pl.LazyFrame) -> pl.La
     Doc string here
     """
 
-    lf = lf.with_columns(
-        pl.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).alias(
-            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-        )
-    )
-
-    # lf = expolation_function(lf)
-
-    lf = model_interpolation(lf)
-
-    lf = lf.with_columns(
-        pl.coalesce(
-            [
-                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-                DP.ESTIMATE_USING_EXTRAPOLATION_RATIO,
-                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-            ]
-        ).alias(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
-    )
-
     lf = model_using_mean(lf)
-
     lf = lf.with_columns(
         pl.coalesce(
             [DP.ESTIMATE_USING_MEAN, DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE]
         ).alias(DP.ESTIMATE_USING_MEAN)
     )
 
+    lf = model_extrapolation(lf)
+
+    lf = model_interpolation(lf)
+
+    lf = lf.with_columns(
+        coalesce_with_source_labels(
+            cols=[
+                DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+                DP.ESTIMATE_USING_EXTRAPOLATION_RATIO,
+                DP.ESTIMATE_USING_INTERPOLATION,
+                DP.ESTIMATE_USING_MEAN,
+            ],
+            name=DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        )
+    )
+
+    lf = lf.drop(DP.ESTIMATE_USING_INTERPOLATION)
+    lf = model_interpolation(lf)
+
     lf = lf.with_columns(
         pl.coalesce(
             [
                 DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-                DP.ESTIMATE_USING_MEAN,
+                DP.ESTIMATE_USING_INTERPOLATION,
             ]
         ).alias(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+    ).with_columns(
+        pl.when(
+            pl.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).is_null()
+        )
+        .then(pl.lit(DP.ESTIMATE_USING_INTERPOLATION))
+        .alias("estimated_proportion_of_service_users_employing_staff_source")
     )
 
-    # Why does the interpolation happen again after the mean is applied?
-    # Area with 1 known value gets extrpolated, area with more than 1 gets interpolated, then no known values gets the mean.
+    # lf = calculate_rolling_mean(lf)
 
     return lf
