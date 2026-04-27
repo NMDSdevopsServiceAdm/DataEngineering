@@ -2,13 +2,6 @@
   "Comment": "State machine for CQC API ingestion data pipeline",
   "StartAt": "Set number of days to capture",
   "States": {
-    "Set number of days to capture": {
-      "Type": "Pass",
-      "Next": "CQC API Ingestion",
-      "Assign": {
-        "days_value": "15"
-      }
-    },
     "CQC API Ingestion": {
       "Type": "Parallel",
       "Branches": [
@@ -36,7 +29,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command.$": "States.Array('cqc_providers_1_delta_api_download.py', '--destination_prefix', '${dataset_bucket_uri}', '--end_timestamp', $$.State.EnteredTime, '--previous_days_to_capture', $.days_value)"
+                      "Command.$": "States.Array('cqc_providers_1_delta_api_download.py', '--destination_prefix', '${dataset_bucket_uri}', '--end_timestamp', $$.State.EnteredTime, '--previous_days_to_capture', '15)"
                     }
                   ]
                 }
@@ -102,7 +95,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command.$": "States.Array('cqc_locations_1_delta_api_download.py', '--destination_prefix', '${dataset_bucket_uri}', '--end_timestamp', $$.State.EnteredTime, '--previous_days_to_capture', $days_value)"
+                      "Command.$": "States.Array('cqc_locations_1_delta_api_download.py', '--destination_prefix', '${dataset_bucket_uri}', '--end_timestamp', $$.State.EnteredTime, '--previous_days_to_capture', '15')"
                     }
                   ]
                 }
