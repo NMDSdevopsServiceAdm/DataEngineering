@@ -7,8 +7,18 @@ from projects._04_direct_payment_recipients.direct_payments_column_names import 
 
 def calculate_rolling_mean(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Calculated the rolling mean of 'ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF'
-    over a three year period from current year and two previous years.
+    Calculates the rolling mean of
+    'ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF' over a three year
+    period from current year and two previous years.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with columns
+            'LA_AREA', 'YEAR_AS_INTEGER' and
+            'ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF'.
+
+    Returns:
+        pl.LazyFrame: A LazyFrame with new column
+            'ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF'.
     """
     grouping_cols = [DP.LA_AREA, DP.YEAR_AS_INTEGER]
 
