@@ -1,6 +1,6 @@
 {
   "Comment": "State machine for CQC API ingestion data pipeline",
-  "StartAt": "Set number of days to capture",
+  "StartAt": "CQC API Ingestion",
   "States": {
     "CQC API Ingestion": {
       "Type": "Parallel",
