@@ -21,7 +21,7 @@ class CalculateRollingMeanTestCase:
         return pytest.param(self.data, id=self.id)
 
 
-create_imputed_ascwds_job_role_counts_test_cases = [
+rolling_mean_test_cases = [
     CalculateRollingMeanTestCase(
         id="all_values_are_populated_in_one_area",
         data=[
@@ -82,10 +82,7 @@ create_imputed_ascwds_job_role_counts_test_cases = [
 class TestCalculateRollingMean:
     @pytest.mark.parametrize(
         "test_data",
-        [
-            case.as_pytest_param()
-            for case in create_imputed_ascwds_job_role_counts_test_cases
-        ],
+        [case.as_pytest_param() for case in rolling_mean_test_cases],
     )
     def test_function_returns_expected_values(self, test_data):
         expected_lf = pl.LazyFrame(
