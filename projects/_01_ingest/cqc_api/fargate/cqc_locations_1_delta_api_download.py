@@ -136,4 +136,4 @@ if __name__ == "__main__":
         version="3.1.0",
     )
     previous_days_to_capture = int(args.previous_days_to_capture)
-    main(destination, args.end_timestamp, args.previous_days_to_capture)
+    main(destination, args.end_timestamp, previous_days_to_capture)
