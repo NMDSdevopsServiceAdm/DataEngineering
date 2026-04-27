@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Setup scripts and terraform required for converting direct payment estimates to polars.
 
+- Converted DPR Interpolation script to Polars and added tests for the same.
+
+- Converted DPR estimates util function model_using_mean from pyspark to polars.
+
 - Converted `model_extrapolation` to Polars and added additional test data to cover corner cases.
 
 ### Changed
