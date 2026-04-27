@@ -9,6 +9,7 @@ from projects._04_direct_payment_recipients.direct_payments_column_names import 
 )
 
 
+# converted to polars -> projects\_04_direct_payment_recipients\fargate\utils\models\interpolation.py
 def model_interpolation(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
@@ -36,6 +37,7 @@ def model_interpolation(
     return direct_payments_df
 
 
+# Not converted this function in Polars. Used Polars interpolate_by function to interpolate
 def filter_to_locations_with_known_service_users_employing_staff(
     df: DataFrame,
 ) -> DataFrame:
@@ -50,6 +52,7 @@ def filter_to_locations_with_known_service_users_employing_staff(
     return df
 
 
+# Not converted this function in Polars. Used Polars interpolate_by function to interpolate
 def calculate_first_and_last_submission_year_per_la_area(
     df: DataFrame,
 ) -> DataFrame:
@@ -60,6 +63,7 @@ def calculate_first_and_last_submission_year_per_la_area(
     return df
 
 
+# Not converted this function in Polars. Used Polars interpolate_by function to interpolate
 def convert_first_and_last_known_years_into_exploded_df(
     df: DataFrame,
 ) -> DataFrame:
@@ -80,6 +84,7 @@ def convert_first_and_last_known_years_into_exploded_df(
     return df
 
 
+# Not converted this function in Polars. Used Polars interpolate_by function to interpolate
 def create_list_of_equally_spaced_points_between_start_and_finish_years(
     start_year: int, finish_year: int
 ) -> int:
@@ -89,6 +94,7 @@ def create_list_of_equally_spaced_points_between_start_and_finish_years(
     return array_of_years
 
 
+# Not converted this function in Polars. Used Polars interpolate_by function to interpolate
 def merge_known_values_with_exploded_dates(
     all_dates_df: DataFrame, known_service_users_employing_staff_df: DataFrame
 ) -> DataFrame:
@@ -103,6 +109,7 @@ def merge_known_values_with_exploded_dates(
     return merged_df
 
 
+# Not converted this function in Polars. Used Polars interpolate_by function to interpolate
 def add_year_with_data_for_known_service_users_employing_staff(
     df: DataFrame,
 ) -> DataFrame:
@@ -120,6 +127,7 @@ def add_year_with_data_for_known_service_users_employing_staff(
     return df
 
 
+# Not converted this function in Polars. Used Polars interpolate_by function to interpolate
 def interpolate_values_for_all_dates(df: DataFrame) -> DataFrame:
     df = input_previous_and_next_values_into_df(df)
     df = calculated_interpolated_values_in_new_column(
@@ -128,6 +136,7 @@ def interpolate_values_for_all_dates(df: DataFrame) -> DataFrame:
     return df
 
 
+# Not converted this function in Polars. Used Polars interpolate_by function to interpolate
 def input_previous_and_next_values_into_df(df: DataFrame) -> DataFrame:
     df = get_previous_value_in_column(
         df,
@@ -152,6 +161,7 @@ def input_previous_and_next_values_into_df(df: DataFrame) -> DataFrame:
     return df
 
 
+# Not converted this function in Polars. Used Polars interpolate_by function to interpolate
 def create_window_for_previous_value() -> Window:
     window = (
         Window.partitionBy(DP.LA_AREA)
@@ -161,6 +171,7 @@ def create_window_for_previous_value() -> Window:
     return window
 
 
+# Not converted this function in Polars. Used Polars interpolate_by function to interpolate
 def get_previous_value_in_column(
     df: DataFrame, column_name: str, new_column_name: str
 ) -> DataFrame:
@@ -173,6 +184,7 @@ def get_previous_value_in_column(
     return df
 
 
+# Not converted this function in Polars. Used Polars interpolate_by function to interpolate
 def create_window_for_next_value() -> Window:
     window = (
         Window.partitionBy(DP.LA_AREA)
@@ -182,6 +194,7 @@ def create_window_for_next_value() -> Window:
     return window
 
 
+# Not converted this function in Polars. Used Polars interpolate_by function to interpolate
 def get_next_value_in_new_column(
     df: DataFrame, column_name: str, new_column_name: str
 ) -> DataFrame:
@@ -194,6 +207,7 @@ def get_next_value_in_new_column(
     return df
 
 
+# Not converted this function in Polars. Used Polars interpolate_by function to interpolate
 def calculated_interpolated_values_in_new_column(
     df: DataFrame, new_column_name: str
 ) -> DataFrame:
@@ -214,6 +228,7 @@ def calculated_interpolated_values_in_new_column(
     return df
 
 
+# Not converted this function in Polars. Used Polars interpolate_by function to interpolate
 def interpolation_calculation(
     x: str, x_prev: str, x_next: str, y: str, y_prev: str, y_next: str
 ) -> float:
@@ -224,6 +239,7 @@ def interpolation_calculation(
         return y_prev + m * (x - x_prev)
 
 
+# Not converted this function in Polars. Used Polars interpolate_by function to interpolate
 def join_interpolation_into_df(
     direct_payments_df: DataFrame,
     interpolation_df: DataFrame,
