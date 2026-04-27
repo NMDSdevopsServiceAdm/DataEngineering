@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted DPR Extrapolation script to Polars and added tests for the same.
 
+- Converted DPR utils function create_summary_table to Polars and added tests for the same.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
