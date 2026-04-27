@@ -325,7 +325,7 @@
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=CQC/dataset=cqc_locations_02_delta_flattened/",
                                 "--reports_path", "domain=data_validation_reports/dataset=validation_cqc_locations_02_delta_flattened/",
-                                "--compare_path", "domain=CQC/dataset=cqc_locations_01_delta_api/version=3.1.0/"
+                                "--compare_path", "domain=CQC/dataset=cqc_locations_01_delta_api/version=3.1.1/"
                               ]
                             }
                           ]
