@@ -27,7 +27,7 @@ CQC_ORG_TYPE = "location"
 def main(
     destination: str,
     end_timestamp: str,
-    previous_days_to_capture: str = cqc.days_to_rollback_start_timestamp,
+    previous_days_to_capture: int = cqc.days_to_rollback_start_timestamp,
 ) -> None:
     """
     This function performs the following steps:
@@ -46,8 +46,7 @@ def main(
             Parquet file will be written.
         end_timestamp (str): The ISO 8601 formatted string representing the
             end of the data retrieval period (e.g., '2023-01-31T23:59:59Z').
-        previous_days_to_capture (str): Number of days before end_timestamp as a
-            string (default "15").
+        previous_days_to_capture (int): Integer of days before end_timestamp.
 
     Return:
         None
@@ -62,7 +61,7 @@ def main(
         destination = destination if destination[-1] == "/" else f"{destination}/"
 
         end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))
-        start_dt = end_dt - timedelta(days=float(previous_days_to_capture))
+        start_dt = end_dt - timedelta(days=previous_days_to_capture)
 
         print(f'Getting SecretID "{SECRET_ID}"')
         secret = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
@@ -136,4 +135,5 @@ if __name__ == "__main__":
         date=date_today,
         version="3.1.0",
     )
-    main(destination, end_timestamp=args.end_timestamp)
+    previous_days_to_capture = int(args.previous_days_to_capture)
+    main(destination, args.end_timestamp, args.previous_days_to_capture)
