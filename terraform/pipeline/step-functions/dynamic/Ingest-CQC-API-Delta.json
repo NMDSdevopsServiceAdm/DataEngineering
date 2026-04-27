@@ -29,7 +29,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command.$": "States.Array('cqc_providers_1_delta_api_download.py', '--destination_prefix', '${dataset_bucket_uri}', '--end_timestamp', $$.State.EnteredTime, '--previous_days_to_capture', '15)"
+                      "Command.$": "States.Array('cqc_providers_1_delta_api_download.py', '--destination_prefix', '${dataset_bucket_uri}', '--end_timestamp', $$.State.EnteredTime, '--previous_days_to_capture', '15')"
                     }
                   ]
                 }
