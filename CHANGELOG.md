@@ -28,6 +28,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Update setup instructions with pre-commit hooks setup
 
+- Added missing CQC locations delta data in s3 and updated pipeline to version 3.1.1 of locations delta data.
+
 
 ## [v2026.03.1] - 21/04/2026
 
