@@ -16,6 +16,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted DPR local authority name fix util to polars.
 
+- Converted DPR utils function calculate_remaining_variables to Polars and added tests for the same.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
