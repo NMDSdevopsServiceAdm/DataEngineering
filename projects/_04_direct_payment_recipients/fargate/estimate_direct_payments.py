@@ -4,6 +4,9 @@ from polars_utils import utils
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.calculate_remaining_variables import (
+    calculate_remaining_variables,
+)
 from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.estimate_service_users_employing_staff import (
     calculate_estimated_service_users_employing_staff,
 )
@@ -47,6 +50,8 @@ def main(
 
     lf = calculate_estimated_service_users_employing_staff(lf)
 
+    lf = calculate_remaining_variables(lf)
+
     utils.sink_to_parquet(
         lf,
         destination,
@@ -78,5 +83,7 @@ if __name__ == "__main__":
         summary_destination=args.summary_destination,
     )
 
+    print("Finished estimate direct payments job")
+    print("Finished estimate direct payments job")
     print("Finished estimate direct payments job")
     print("Finished estimate direct payments job")
