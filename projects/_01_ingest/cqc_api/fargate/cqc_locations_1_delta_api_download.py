@@ -136,6 +136,6 @@ if __name__ == "__main__":
         domain="CQC",
         dataset="cqc_locations_01_delta_api",
         date=date_today,
-        version="3.1.0",
+        version="3.1.1",
     )
     main(destination, args.start_timestamp, args.end_timestamp)
