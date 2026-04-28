@@ -7,9 +7,12 @@ from projects._04_direct_payment_recipients.direct_payments_column_names import 
 
 def calculate_rolling_mean(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Calculates the rolling mean of
-    'ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF' over a three year
-    period from current year and two previous years.
+    Calculates a rolling mean over the current row and previous two rows within
+    each local authority. Years are ordered by YEAR_AS_INTEGER, but do not need
+    to be consecutive.
+
+    All years in all areas are assumed to be populated in the column
+    'ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF'.
 
     Args:
         lf (pl.LazyFrame): A LazyFrame with columns
@@ -22,14 +25,13 @@ def calculate_rolling_mean(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     grouping_cols = [DP.LA_AREA, DP.YEAR_AS_INTEGER]
 
-    rolling_mean_lf = (
-        lf.sort(grouping_cols)
-        .rolling(index_column=DP.YEAR_AS_INTEGER, group_by=DP.LA_AREA, period="3i")
-        .agg(
-            pl.mean(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).alias(
-                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-            )
-        )
+    lf = lf.sort(grouping_cols)
+
+    lf = lf.with_columns(
+        pl.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+        .rolling_mean(window_size=3, min_samples=1)
+        .over(DP.LA_AREA)
+        .alias(DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
     )
 
-    return lf.join(rolling_mean_lf, on=grouping_cols, how="left")
+    return lf
