@@ -51,7 +51,7 @@ rolling_mean_test_cases = [
         ],
     ),
     CalculateRollingMeanTestCase(
-        id="an_area_has_null_values",
+        id="handles_nulls_in_rolling_window",
         data=[
             ("area_1", 2021, None, None),
             ("area_1", 2020, None, 0.3),
@@ -62,9 +62,9 @@ rolling_mean_test_cases = [
         ],
     ),
     CalculateRollingMeanTestCase(
-        id="years_are_not_consecutive",
+        id="rolling_handles_non_consecutive_years",
         data=[
-            ("area_3", 2019, 0.3, 0.25),
+            ("area_3", 2019, 0.3, 0.2),
             ("area_3", 2018, 0.2, 0.15),
             ("area_3", 2016, 0.1, 0.1),
         ],
@@ -89,9 +89,9 @@ class TestCalculateRollingMean:
             test_data,
             schema={
                 DP.LA_AREA: pl.String,
-                DP.YEAR_AS_INTEGER: pl.Int64,
-                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float64,
-                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float64,
+                DP.YEAR_AS_INTEGER: pl.Int32,
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float32,
+                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float32,
             },
             orient="row",
         )
@@ -99,4 +99,5 @@ class TestCalculateRollingMean:
             DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
         )
         returned_lf = job.calculate_rolling_mean(test_lf)
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+        expected_lf = expected_lf.sort([DP.LA_AREA, DP.YEAR_AS_INTEGER])
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
