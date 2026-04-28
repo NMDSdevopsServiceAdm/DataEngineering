@@ -4,6 +4,9 @@ from polars_utils.utils import coalesce_with_source_labels
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.calculate_rolling_mean import (
+    calculate_rolling_mean,
+)
 from projects._04_direct_payment_recipients.fargate.utils.models.extrapolation_ratio import (
     model_extrapolation,
 )
@@ -43,24 +46,33 @@ def calculate_estimated_service_users_employing_staff(lf: pl.LazyFrame) -> pl.La
         )
     )
 
-    lf = lf.drop(DP.ESTIMATE_USING_INTERPOLATION)
-    lf = model_interpolation(lf)
+    # lf = lf.drop(DP.ESTIMATE_USING_INTERPOLATION)
+    # lf = model_interpolation(lf)
+
+    # lf = lf.with_columns(
+    #     pl.coalesce(
+    #         [
+    #             DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+    #             DP.ESTIMATE_USING_INTERPOLATION,
+    #         ]
+    #     ).alias(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+    # ).with_columns(
+    #     pl.when(
+    #         pl.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).is_null()
+    #     )
+    #     .then(pl.lit(DP.ESTIMATE_USING_INTERPOLATION))
+    #     .alias("estimated_proportion_of_service_users_employing_staff_source")
+    # )
+
+    lf = calculate_rolling_mean(lf)
 
     lf = lf.with_columns(
-        pl.coalesce(
-            [
-                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-                DP.ESTIMATE_USING_INTERPOLATION,
-            ]
-        ).alias(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
-    ).with_columns(
-        pl.when(
-            pl.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).is_null()
-        )
-        .then(pl.lit(DP.ESTIMATE_USING_INTERPOLATION))
-        .alias("estimated_proportion_of_service_users_employing_staff_source")
+        (
+            pl.col(DP.SERVICE_USER_DPRS_DURING_YEAR)
+            * pl.col(
+                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+            )
+        ).alias(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF)
     )
-
-    # lf = calculate_rolling_mean(lf)
 
     return lf
