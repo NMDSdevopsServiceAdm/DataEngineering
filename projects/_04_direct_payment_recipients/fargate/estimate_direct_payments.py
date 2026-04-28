@@ -4,6 +4,9 @@ from polars_utils import utils
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.estimate_service_users_employing_staff import (
+    calculate_estimated_service_users_employing_staff,
+)
 from utils.column_values.categorical_column_values import ContemporaryCSSR
 
 direct_payments_columns = [
@@ -42,6 +45,8 @@ def main(
 
     lf = lf.with_columns(pl.col(DP.LA_AREA).replace(la_name_replacements))
 
+    lf = calculate_estimated_service_users_employing_staff(lf)
+
     utils.sink_to_parquet(
         lf,
         destination,
@@ -73,4 +78,5 @@ if __name__ == "__main__":
         summary_destination=args.summary_destination,
     )
 
+    print("Finished estimate direct payments job")
     print("Finished estimate direct payments job")
