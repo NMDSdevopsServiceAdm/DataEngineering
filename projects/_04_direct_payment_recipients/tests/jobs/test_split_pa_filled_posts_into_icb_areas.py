@@ -47,10 +47,7 @@ class MainTests(SplitPAFilledPostsIntoIcbAreas):
         job.main(self.TEST_ONS_SOURCE, self.TEST_PA_SOURCE, self.TEST_DESTINATION)
         self.assertEqual(read_from_parquet_mock.call_count, 2)
         write_to_parquet_mock.assert_called_once_with(
-            ANY,
-            self.TEST_DESTINATION,
-            mode="overwrite",
-            partitionKeys=[DPColNames.YEAR],
+            ANY, self.TEST_DESTINATION, mode="overwrite"
         )
 
 

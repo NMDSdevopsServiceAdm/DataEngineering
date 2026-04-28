@@ -1,5 +1,8 @@
 import argparse
+import os
 import sys
+
+os.environ["SPARK_VERSION"] = "3.5"
 
 from schemas.direct_payment_data_schema import SURVEY_DATA
 from utils import utils

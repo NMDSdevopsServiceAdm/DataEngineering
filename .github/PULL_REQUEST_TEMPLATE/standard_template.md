@@ -14,4 +14,5 @@ Trello ticket [#number](add link)
 - [ ] Unit tests added/amended
 - [ ] Docstrings added/updated
 - [ ] Updated CHANGELOG
+- [ ] Code reviewed by AI
 - [ ] Moved Trello ticket to PR column

@@ -15,8 +15,8 @@ class MainTests(unittest.TestCase):
     mock_estimated_job_role_posts_lf = pl.LazyFrame()
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.create_ascwds_job_role_rolling_ratio")
-    @patch(f"{PATCH_PATH}.create_imputed_ascwds_job_role_counts")
+    @patch(f"{PATCH_PATH}.iUtils.create_ascwds_job_role_rolling_ratio")
+    @patch(f"{PATCH_PATH}.iUtils.create_imputed_ascwds_job_role_counts")
     @patch(
         f"{PATCH_PATH}.utils.scan_parquet",
         side_effect=[mock_estimated_job_role_posts_lf],
@@ -28,17 +28,12 @@ class MainTests(unittest.TestCase):
         create_ascwds_job_role_rolling_ratio_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        job.main(
-            self.CLEANED_DATA_SOURCE,
-            self.IMPUTED_DATA_DESTINATION,
-        )
+        job.main(self.CLEANED_DATA_SOURCE, self.IMPUTED_DATA_DESTINATION)
 
         self.assertEqual(scan_parquet_mock.call_count, 1)
         scan_parquet_mock.assert_has_calls(
             [
-                call(
-                    self.CLEANED_DATA_SOURCE,
-                ),
+                call(self.CLEANED_DATA_SOURCE),
             ]
         )
 

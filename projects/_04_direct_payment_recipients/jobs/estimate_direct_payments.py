@@ -44,22 +44,17 @@ def main(
     )
 
     direct_payments_df = change_la_names_to_match_ons_cleaned(direct_payments_df)
+
     direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
+
     direct_payments_df = calculate_remaining_variables(direct_payments_df)
+
     summary_direct_payments_df = create_summary_table(direct_payments_df)
 
-    utils.write_to_parquet(
-        direct_payments_df,
-        destination,
-        mode="overwrite",
-        partitionKeys=[DP.YEAR],
-    )
+    utils.write_to_parquet(direct_payments_df, destination, mode="overwrite")
 
     utils.write_to_parquet(
-        summary_direct_payments_df,
-        summary_destination,
-        mode="overwrite",
-        partitionKeys=[DP.YEAR],
+        summary_direct_payments_df, summary_destination, mode="overwrite"
     )
 
 
