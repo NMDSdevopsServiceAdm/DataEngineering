@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted DPR Extrapolation script to Polars and added tests for the same.
 
+- Converted DPR local authority name fix util to polars.
+
 - Converted DPR utils function calculate_remaining_variables to Polars and added tests for the same.
 
 ### Changed
