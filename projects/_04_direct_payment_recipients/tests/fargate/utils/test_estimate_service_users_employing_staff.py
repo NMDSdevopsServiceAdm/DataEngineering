@@ -43,7 +43,7 @@ estimated_service_users_employing_staff_test_cases = [
             ("area_2", 2021, 10.0, 0.5, None),
         ], # fmt: skip
         expected_data=[
-            ("area_1", 2020, 10.0, None, None, 0.3, 2021, 2021, 0.3, None, 0.3, "estimate_using_extrapolation_ratio", 0.3, 3.0),
+            ("area_1", 2020, 10.0, None, None, 0.3, 2021, 2021, 0.3, 0.3, 0.3, "estimate_using_extrapolation_ratio", 0.3, 3.0),
             ("area_1", 2021, 10.0, 0.5, None, 0.5, 2021, 2021, None, 0.5, 0.5, "proportion_su_only_employing_staff", 0.4, 4.0),
             ("area_2", 2020, 10.0, 0.3, None, 0.3, 2020, 2021, None, 0.3, 0.3, "proportion_su_only_employing_staff", 0.3, 3.0),
             ("area_2", 2021, 10.0, 0.5, None, 0.5, 2020, 2021, None, 0.5, 0.5, "proportion_su_only_employing_staff", 0.4, 4.0),
@@ -69,8 +69,8 @@ estimated_service_users_employing_staff_test_cases = [
             ("area_1", 2021, 10.0, None, 0.4),
         ], # fmt: skip
         expected_data=[
-            ("area_1", 2020, 10.0, None, 0.5, 0.5, None, None, None, None, 0.5, "estimate_using_mean", 0.5, 5.0),
-            ("area_1", 2021, 10.0, None, 0.4, 0.4, None, None, None, None, 0.4, "estimate_using_mean", 0.45, 4.5),
+            ("area_1", 2020, 10.0, None, 0.5, 0.5, None, None, None, 0.5, 0.5, "estimate_using_mean", 0.5, 5.0),
+            ("area_1", 2021, 10.0, None, 0.4, 0.4, None, None, None, 0.4, 0.4, "estimate_using_mean", 0.45, 4.5),
         ] # fmt: skip
     ),
 ]

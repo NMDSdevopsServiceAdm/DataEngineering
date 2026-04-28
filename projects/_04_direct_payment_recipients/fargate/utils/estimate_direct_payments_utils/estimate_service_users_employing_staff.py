@@ -63,6 +63,9 @@ def calculate_estimated_service_users_employing_staff(lf: pl.LazyFrame) -> pl.La
             pl.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).is_null()
         )
         .then(pl.lit(DP.ESTIMATE_USING_INTERPOLATION))
+        .otherwise(
+            pl.col("estimated_proportion_of_service_users_employing_staff_source")
+        )
         .alias("estimated_proportion_of_service_users_employing_staff_source")
     )
 
