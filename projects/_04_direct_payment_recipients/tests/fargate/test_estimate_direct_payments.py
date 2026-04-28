@@ -1,9 +1,6 @@
 import unittest
 from unittest.mock import ANY, Mock, patch
 
-import polars as pl
-import polars.testing as pl_testing
-
 import projects._04_direct_payment_recipients.fargate.estimate_direct_payments as job
 
 PATCH_PATH: str = (
