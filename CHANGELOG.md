@@ -12,6 +12,10 @@ All notable changes to this project will be documented in this file.
 
 - Converted DPR estimates util function model_using_mean from pyspark to polars.
 
+- Converted DPR Extrapolation script to Polars and added tests for the same.
+
+- Converted DPR local authority name fix util to polars.
+
 - Converted DPR estimates util for calculating rolling mean of proportion DPR employing staff.
 
 ### Changed
