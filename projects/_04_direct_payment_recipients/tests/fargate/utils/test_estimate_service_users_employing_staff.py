@@ -35,7 +35,7 @@ estimated_service_users_employing_staff_test_cases = [
         ] # fmt: skip
     ),
     EstimateServiceUsersEmployingStaffTestCase(
-        id="an_area_is_missing_single_year",
+        id="null_proportion_in_earliest_year",
         input_data=[
             ("area_1", 2020, 10.0, None, None),
             ("area_1", 2021, 10.0, 0.5, None),
@@ -50,7 +50,7 @@ estimated_service_users_employing_staff_test_cases = [
         ] # fmt: skip
     ),
     EstimateServiceUsersEmployingStaffTestCase(
-        id="an_area_is_missing_middle_year",
+        id="null_proportion_between_known_years",
         input_data=[
             ("area_1", 2020, 10.0, 0.5, None),
             ("area_1", 2021, 10.0, None, None),
@@ -63,7 +63,7 @@ estimated_service_users_employing_staff_test_cases = [
         ] # fmt: skip
     ),
     EstimateServiceUsersEmployingStaffTestCase(
-        id="only_historic_data",
+        id="only_historic_data_is_known",
         input_data=[
             ("area_1", 2020, 10.0, None, 0.5),
             ("area_1", 2021, 10.0, None, 0.4),
