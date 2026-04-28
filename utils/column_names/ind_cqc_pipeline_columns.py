@@ -158,6 +158,7 @@ class IndCqcColumns:
         ONSClean.current_rural_urban_ind_11 + "_for_non_res_model"
     )
     current_sub_icb: str = ONSClean.current_sub_icb
+    days_between_submissions: str = "days_between_submissions"
     difference_between_estimate_and_cqc_registered_managers: str = (
         "difference_between_estimate_and_cqc_registered_managers"
     )
@@ -292,6 +293,9 @@ class IndCqcColumns:
     primary_service_type: str = CQCLClean.primary_service_type
     primary_service_type_second_level: str = (
         CQCLClean.primary_service_type + "_second_level"
+    )
+    proportion_of_days_between_submissions: str = (
+        "proportion_of_days_between_submissions"
     )
     proportion_of_non_rm_managerial_estimated_filled_posts_by_role: str = (
         "proportion_of_non_rm_managerial_estimated_filled_posts_by_role"
