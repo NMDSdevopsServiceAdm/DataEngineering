@@ -211,7 +211,6 @@ def calculate_interpolated_values(
     lf = lf.with_columns(
         pl.when(condition_is_true)
         .then(interpolated_value)
-        .otherwise(None)
         .alias(new_column_name)
     )
     return lf
