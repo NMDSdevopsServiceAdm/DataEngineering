@@ -1,9 +1,10 @@
 import unittest
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import ANY, MagicMock, Mock, patch
 
 import numpy as np
 
 import projects._03_independent_cqc._04_model.fargate.model_02_train as job
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 
 PATCH_PATH = "projects._03_independent_cqc._04_model.fargate.model_02_train"
@@ -20,7 +21,7 @@ class ModelTrainTests(unittest.TestCase):
             MRKeys.model_type: "lasso",
             MRKeys.model_params: {"alpha": 0.1},
             MRKeys.dependent: "dependent_col",
-            MRKeys.features: ["feat1", "feat2"],
+            MRKeys.features: ["feat1", IndCQC.number_of_beds],
         }
     }
     TEST_MODEL_REGISTRY_RETRAIN_OTHER = {
@@ -47,11 +48,8 @@ class ModelTrainTests(unittest.TestCase):
     mock_feature_data = Mock(name="feature_data")
     mock_train_data = Mock(name="train_data")
     mock_test_data = Mock(name="test_data")
-    mock_X = Mock(name="X_data")
+    mock_X = MagicMock(return_value=np.array([[2, 3], [4, 5]]), name="X_data")
     mock_y = Mock(name="y_data")
-    mock_number_of_beds = Mock(
-        return_value=np.array([2, 3, 5, 5, 10]), name="number_of_beds"
-    )
 
     @patch(f"{PATCH_PATH}.vUtils.save_model_and_metadata")
     @patch(f"{PATCH_PATH}.vUtils.get_run_number", return_value=3)
