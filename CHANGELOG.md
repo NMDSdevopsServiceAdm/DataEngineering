@@ -16,6 +16,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted DPR local authority name fix util to polars.
 
+- Converted DPR utils function calculate_remaining_variables to Polars and added tests for the same.
+
 - Converted DPR estimates util for calculating rolling mean of proportion DPR employing staff.
 
 ### Changed
@@ -29,6 +31,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Update setup instructions with pre-commit hooks setup
+
+- Added missing CQC locations delta data in s3 and updated pipeline to version 3.1.1 of locations delta data.
 
 
 ## [v2026.03.1] - 21/04/2026
