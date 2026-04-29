@@ -90,10 +90,12 @@ def main(bucket_name: str, model_name: str) -> None:
 
     predictions = model.predict(X_test)
 
-    if model_name == "care_home_model":
+    if model_name == IndCQC.care_home_model:
         feature_index_for_number_of_beds = model_registry[IndCQC.care_home_model][
             MRKeys.features
-        ].index(IndCQC.number_of_beds)
+        ].index(
+            IndCQC.number_of_beds
+        )  # This index depends on the sorted list of features in the model registry.
         number_of_beds = X_test[:, feature_index_for_number_of_beds]
         metrics = mUtils.calculate_metrics(
             y_test, predictions, model_name, number_of_beds

@@ -94,7 +94,7 @@ class MetricsTests(unittest.TestCase):
         metrics = job.calculate_metrics(
             y_known,
             y_predicted,
-            model_name="care_home_model",
+            model_name=IndCQC.care_home_model,
             number_of_beds=number_of_beds,
         )
 
@@ -163,7 +163,7 @@ class MetricsTests(unittest.TestCase):
         metrics = job.calculate_metrics(
             y_known,
             y_predicted,
-            model_name="care_home_model",
+            model_name=IndCQC.care_home_model,
             number_of_beds=number_of_beds,
         )
         self.assertEqual(

@@ -13,9 +13,9 @@ PATCH_PATH = "projects._03_independent_cqc._04_model.fargate.model_02_train"
 class ModelTrainTests(unittest.TestCase):
     TEST_BUCKET_NAME = "some_bucket"
     TEST_MODEL_NAME = "my_model"
-    TEST_CARE_HOME_NAME = "care_home_model"
+    TEST_CARE_HOME_NAME = IndCQC.care_home_model
     TEST_MODEL_REGISTRY_RETRAIN_CH = {
-        "care_home_model": {
+        IndCQC.care_home_model: {
             MRKeys.version: "1.0.0",
             MRKeys.auto_retrain: True,
             MRKeys.model_type: "lasso",

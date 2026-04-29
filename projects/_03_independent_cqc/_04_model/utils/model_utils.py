@@ -67,7 +67,7 @@ def calculate_metrics(
     r2_metric = float(r2_score(y_known, y_predicted))
     rmse_metric = float(root_mean_squared_error(y_known, y_predicted))
 
-    if model_name == "care_home_model":
+    if model_name == IndCQC.care_home_model:
         abs_diff = np.absolute(
             (y_known * number_of_beds) - (y_predicted * number_of_beds)
         )
