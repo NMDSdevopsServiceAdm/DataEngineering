@@ -71,26 +71,22 @@ def calculate_metrics(
         abs_diff = np.absolute(
             (y_known * number_of_beds) - (y_predicted * number_of_beds)
         )
-        rows_in_abs_diff = abs_diff.shape[0]
-        proportion_within_ten_metric = float(
-            np.count_nonzero(abs_diff <= 10) / rows_in_abs_diff
-        )
-        proportion_within_twenty_five_metric = float(
-            np.count_nonzero(abs_diff <= 25) / rows_in_abs_diff
-        )
-
-        return {
-            IndCQC.r2: r2_metric,
-            IndCQC.rmse: rmse_metric,
-            IndCQC.proportion_of_model_predictions_within_ten: proportion_within_ten_metric,
-            IndCQC.proportion_of_model_predictions_within_twenty_five: proportion_within_twenty_five_metric,
-        }
-
     else:
-        return {
-            IndCQC.r2: r2_metric,
-            IndCQC.rmse: rmse_metric,
-        }
+        abs_diff = np.absolute(y_known - y_predicted)
+    rows_in_abs_diff = abs_diff.shape[0]
+    proportion_within_ten_metric = float(
+        np.count_nonzero(abs_diff <= 10) / rows_in_abs_diff
+    )
+    proportion_within_twenty_five_metric = float(
+        np.count_nonzero(abs_diff <= 25) / rows_in_abs_diff
+    )
+
+    return {
+        IndCQC.r2: r2_metric,
+        IndCQC.rmse: rmse_metric,
+        IndCQC.proportion_of_model_predictions_within_ten: proportion_within_ten_metric,
+        IndCQC.proportion_of_model_predictions_within_twenty_five: proportion_within_twenty_five_metric,
+    }
 
 
 def add_predictions_into_df(
