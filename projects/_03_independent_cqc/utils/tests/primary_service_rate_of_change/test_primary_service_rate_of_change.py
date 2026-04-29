@@ -1,4 +1,4 @@
-from datetime import date
+import math
 
 import polars as pl
 import polars.testing as pl_testing
@@ -12,9 +12,11 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
     ModelRateOfChangeSchemas as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PrimaryServiceRateOfChangeColumns as TempCol,
-)
+
+
+class TestModelPrimaryServiceRateOfChangeTrendline:
+    def test_banded_bed_threshold_match_expected_values(self):
+        assert (job.BANDED_BED_THRESHOLDS == [0, 1, 15, 25, math.inf],)
 
 
 class TestModelPrimaryServiceRateOfChangeTrendline:
@@ -22,9 +24,7 @@ class TestModelPrimaryServiceRateOfChangeTrendline:
         "input_data, expected_data",
         [case.as_pytest_param() for case in Data.model_roc_trendline_test_cases],
     )
-    def test_returned_extrapolation_values_match_expected_when_nominal(
-        self, input_data, expected_data
-    ):
+    def test_trendline_matches_expected(self, input_data, expected_data):
         expected_lf = pl.LazyFrame(
             expected_data,
             Schemas.expected_model_roc_trendline_schema,

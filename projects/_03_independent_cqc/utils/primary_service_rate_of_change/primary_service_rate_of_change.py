@@ -23,16 +23,51 @@ def model_primary_service_rate_of_change_trendline(
     max_days_between_submissions: int | None = None,
 ) -> pl.LazyFrame:
     """
-    Compute rate-of-change trendline for primary service types.
+    Calculates a trendline of the rate of change of a column split by primary
+    service.
 
-    Pipeline:
-        prepare → filter → interpolate → lag → clean → aggregate → calculate → trend
+    The steps in this function are:
+    1. Create a banded bed count column for grouping.
+    2. Prepare the data by selecting relevant columns and calculating
+        submission counts.
+    3. Filter to eligible rows (care homes with at least 2 submissions).
+    4. Apply interpolation to the current period values where needed.
+    5. Calculate the previous period values using a lag.
+    6. Clean the rate of change values for non-residential locations using
+        percentile-based thresholds.
+    7. Calculate rolling sums of current and previous values over the specified
+        number of days, grouped by service type and bed band.
+    8. Compute the single period rate of change as the ratio of rolling current
+        sum to rolling previous sum.
+    9. Calculate the trendline by taking the cumulative product of the single
+        period rate of change values, grouped by service type and bed band.
+
+    Example:
+        Given a rate of change sequence:
+            - Period 2: 1.01 (1.0% increase from period 1 to 2)
+            - Period 3: 1.02 (2.0% increase from period 2 to 3)
+            - Period 4: 0.99 (1.0% decrease from period 3 to 4)
+        The computed trendline:
+            - Period 1: 1.0 (no change)
+            - Period 2: 1.01 (1.0% increase from period 1 to 2)
+            - Period 3: 1.01 * 1.02 = 1.0301 (3.0% increase from period 1 to 3)
+            - Period 4: 1.01 * 1.02 * 0.99 = 1.02 (2.0% increase from period 1 to 4)
+
+    Args:
+        lf (pl.LazyFrame): The input LazyFrame.
+        value_col (str): The column containing the values for which to compute the rate of change.
+        days (int): The number of days over which to compute the rolling sum.
+        out_col (str): The column name for the output trendline values.
+        max_days_between_submissions (int | None): The maximum number of days between submissions for interpolation.
+
+    Returns:
+        pl.LazyFrame: The LazyFrame with the computed trendline values.
     """
     lf = create_banded_bed_count_column(
         lf, new_col=IndCqc.number_of_beds_banded_roc, splits=BANDED_BED_THRESHOLDS
     )
 
-    group_cols = [
+    roc_group_cols = [
         IndCqc.primary_service_type,
         IndCqc.number_of_beds_banded_roc,
     ]
@@ -101,7 +136,7 @@ def model_primary_service_rate_of_change_trendline(
     # --------------------------------------------------------
     # Rolling aggregation (core logic)
     # --------------------------------------------------------
-    roc_lf = calculate_rolling_sums(roc_lf, days, group_cols)
+    roc_lf = calculate_rolling_sums(roc_lf, days, roc_group_cols)
 
     # --------------------------------------------------------
     # Rate of change
@@ -118,7 +153,7 @@ def model_primary_service_rate_of_change_trendline(
     # --------------------------------------------------------
     # Trendline (log-sum-exp)
     # --------------------------------------------------------
-    roc_lf = calculate_trendline(roc_lf, out_col, group_cols)
+    roc_lf = calculate_trendline(roc_lf, out_col, roc_group_cols)
 
     # --------------------------------------------------------
     # Final shape
@@ -147,8 +182,35 @@ def calculate_rolling_sums(
     group_cols: list[str],
 ) -> pl.LazyFrame:
     """
-    Compute rolling sums of current and previous values
-    grouped by service type and bed band.
+    Calculates the rolling sum of the current and previous period values
+    partitioned by primary service type.
+
+    The rolling sum is calculated over a specified number of days, and the input
+    rows are sorted by the grouping columns and import date to ensure stable and
+    deterministic results even when input rows arrive out of order.
+
+    The function first filters the input LazyFrame to include only rows where
+    both the current and previous period interpolated values are known
+    (non-null). It then computes the rolling sum of the current and previous
+    period values over the defined period. Finally, it drops duplicate rows
+    based on the partitioning columns and import date to ensure one row per
+    primary service type, number of beds band, and time period, and drops
+    non-aggregated columns that are no longer needed for subsequent
+    calculations.
+
+    Rolling returns one row per contributing source row so `.unique()` is used
+    to deduplicate to one row per group and import date.
+
+    Args:
+        lf (pl.LazyFrame): The input LazyFrame containing the current and
+            previous period values.
+        days (int): The number of days over which to compute the rolling sum.
+        group_cols (list[str]): The columns to group by for the rolling sum
+            calculation.
+
+    Returns:
+        pl.LazyFrame: The LazyFrame with the rolling sums of current and
+            previous period values added.
     """
     return (
         lf.filter(
@@ -250,12 +312,16 @@ def clean_non_residential_rate_of_change(
         & (pl.col(curr) <= 10)
     )
 
-    is_valid_non_res = (
-        (pl.col(IndCqc.care_home) == CareHome.not_care_home)
-        & (pl.col(TempCol.abs_change) <= abs_upper)
-        & (pl.col(TempCol.perc_change) <= perc_upper)
-        & (pl.col(TempCol.perc_change) >= perc_lower)
-    )
+    if abs_upper is None or perc_upper is None:
+        is_valid_non_res = pl.lit(False)
+    else:
+        perc_lower = 1 / perc_upper
+        is_valid_non_res = (
+            (pl.col(IndCqc.care_home) == CareHome.not_care_home)
+            & (pl.col(TempCol.abs_change) <= abs_upper)
+            & (pl.col(TempCol.perc_change) <= perc_upper)
+            & (pl.col(TempCol.perc_change) >= perc_lower)
+        )
 
     keep = is_care_home | is_small_non_res | is_valid_non_res
 
