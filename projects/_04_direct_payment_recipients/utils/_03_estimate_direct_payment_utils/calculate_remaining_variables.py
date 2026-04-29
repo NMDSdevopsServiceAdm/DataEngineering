@@ -9,6 +9,7 @@ from projects._04_direct_payment_recipients.direct_payments_configuration import
 )
 
 
+# converted to polars -> projects\_04_direct_payment_recipients\fargate\utils\estimate_direct_payments_utils\calculate_remaining_variables.py
 def calculate_remaining_variables(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
@@ -27,6 +28,7 @@ def calculate_remaining_variables(
     return direct_payments_df
 
 
+# Not converted this function in Polars. Used Polars Expressions
 def calculate_service_users_with_self_employed_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
@@ -38,6 +40,7 @@ def calculate_service_users_with_self_employed_staff(
     return direct_payments_df
 
 
+# Not converted this function in Polars. Used Polars Expressions
 def calculate_carers_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
@@ -48,6 +51,7 @@ def calculate_carers_employing_staff(
     return direct_payments_df
 
 
+# Not converted this function in Polars. Used Polars Expressions
 def calculate_total_dpr_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
@@ -60,6 +64,7 @@ def calculate_total_dpr_employing_staff(
     return direct_payments_df
 
 
+# Not converted this function in Polars. Used Polars Expressions
 def calculate_total_personal_assistant_filled_posts(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
@@ -71,6 +76,7 @@ def calculate_total_personal_assistant_filled_posts(
     return direct_payments_df
 
 
+# Not converted this function in Polars. Used Polars Expressions
 def calculate_proportion_of_dpr_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
@@ -82,6 +88,7 @@ def calculate_proportion_of_dpr_employing_staff(
     return direct_payments_df
 
 
+# Not converted this function in Polars. Used Polars Expressions
 def calculate_proportion_of_dpr_who_are_service_users(
     direct_payments_df: DataFrame,
 ) -> DataFrame:

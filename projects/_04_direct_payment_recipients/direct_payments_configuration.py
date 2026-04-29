@@ -59,6 +59,7 @@ class EstimatePeriodAsDate:
     DAY: str = "31"
 
 
+# TODO: Remove this dict after signing off DPR estimates in polars.
 @dataclass
 class DirectPaymentsMisspelledLaNames:
     DICT_TO_CORRECT_LA_NAMES = {
