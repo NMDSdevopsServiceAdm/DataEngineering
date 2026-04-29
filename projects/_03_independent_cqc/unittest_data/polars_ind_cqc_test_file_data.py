@@ -2419,9 +2419,9 @@ class ModelExtrapolation:
             data=[
                 ("1-001", date(2026, 1, 1), None, 10.0, None, 0.0),
                 ("1-001", date(2026, 2, 1), 10.0, 20.0, None, None),
-                ("1-001", date(2026, 3, 1), None, 30.0, 20.0, None),
-                ("1-001", date(2026, 4, 1), 20.0, 80.0, 70.0, None),
-                ("1-001", date(2026, 5, 1), None, 100.0, 40.0, 40.0),
+                ("1-001", date(2026, 3, 1), None, 30.0, 20.0, None), # Forwards extrapolation from previously known value (10.0)
+                ("1-001", date(2026, 4, 1), 20.0, 80.0, 70.0, None), # Forwards extrapolation from previously known value (10.0)
+                ("1-001", date(2026, 5, 1), None, 100.0, 40.0, 40.0), # Forwards extrapolation from previously known value (20.0)
             ],
         ),
         ExtrapolationTestCase(
@@ -2511,9 +2511,9 @@ class ModelExtrapolation:
             data=[
                 ("1-002", date(2026, 1, 1), None, 10.0, None, 5.0),
                 ("1-002", date(2026, 2, 1), 10.0, 20.0, None, None),
-                ("1-002", date(2026, 3, 1), None, 30.0, 15.0, None),
-                ("1-002", date(2026, 4, 1), 20.0, 80.0, 40.0, None),
-                ("1-002", date(2026, 5, 1), None, 100.0, 25.0, 25.0),
+                ("1-002", date(2026, 3, 1), None, 30.0, 15.0, None), # Forwards extrapolation from previously known value (10.0)
+                ("1-002", date(2026, 4, 1), 20.0, 80.0, 40.0, None), # Forwards extrapolation from previously known value (10.0)
+                ("1-002", date(2026, 5, 1), None, 100.0, 25.0, 25.0), # Forwards extrapolation from previously known value (20.0)
             ],
         ),
         ExtrapolationTestCase(
