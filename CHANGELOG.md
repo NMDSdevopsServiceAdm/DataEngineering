@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted DPR estimates util for calculating rolling mean of proportion DPR employing staff.
 
+- Converted DPR estimates util estimate_service_users_employing_staff to polars.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
