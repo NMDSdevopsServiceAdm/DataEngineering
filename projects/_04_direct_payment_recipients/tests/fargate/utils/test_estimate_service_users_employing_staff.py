@@ -14,88 +14,103 @@ from projects._04_direct_payment_recipients.direct_payments_column_names import 
 @dataclass
 class EstimateServiceUsersEmployingStaffTestCase:
     id: str
-    input_data: list[Any]
     expected_data: list[Any]
 
     def as_pytest_param(self):
         """Return test case as pytest ParameterSet."""
-        return pytest.param(self.input_data, self.expected_data, id=self.id)
+        return pytest.param(self.expected_data, id=self.id)
 
 
 estimated_service_users_employing_staff_test_cases = [
     EstimateServiceUsersEmployingStaffTestCase(
-        id="known_proportions_in_all_years",
-        input_data=[
-            ("area_1", 2020, 10.0, 0.5, None),
-            ("area_1", 2021, 10.0, 0.5, None),
-        ], # fmt: skip
-        expected_data=[
-            ("area_1", 2020, 10.0, 0.5, None, 0.5, 2020, 2021, None, 0.5, 0.5, "proportion_su_only_employing_staff", 0.5, 5.0),
-            ("area_1", 2021, 10.0, 0.5, None, 0.5, 2020, 2021, None, 0.5, 0.5, "proportion_su_only_employing_staff", 0.5, 5.0),
-        ] # fmt: skip
+        id="known_proportions_in_all_years_gives_known_proportions",
+        expected_data=
+            {
+                DP.LA_AREA: ["area_1", "area_1"],
+                DP.YEAR_AS_INTEGER: [2020, 2021],
+                DP.SERVICE_USER_DPRS_DURING_YEAR: [10.0, 10.0],
+                DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [0.5, 0.5],
+                DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE: [None, None],
+                DP.ESTIMATE_USING_MEAN: [0.5, 0.5],
+                DP.FIRST_YEAR_WITH_DATA: [2020, 2020],
+                DP.LAST_YEAR_WITH_DATA: [2021, 2021],
+                DP.ESTIMATE_USING_EXTRAPOLATION_RATIO: [None, None],
+                DP.ESTIMATE_USING_INTERPOLATION: [0.5, 0.5],
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [0.5, 0.5],
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE: ["proportion_su_only_employing_staff", "proportion_su_only_employing_staff"],
+                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [0.5, 0.5],
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF: [5.0, 5.0],
+            }, # fmt: skip
     ),
     EstimateServiceUsersEmployingStaffTestCase(
-        id="null_proportion_in_earliest_year",
-        input_data=[
-            ("area_1", 2020, 10.0, None, None),
-            ("area_1", 2021, 10.0, 0.5, None),
-            ("area_2", 2020, 10.0, 0.3, None),
-            ("area_2", 2021, 10.0, 0.5, None),
-        ], # fmt: skip
-        expected_data=[
-            ("area_1", 2020, 10.0, None, None, 0.3, 2021, 2021, 0.3, 0.3, 0.3, "estimate_using_extrapolation_ratio", 0.3, 3.0),
-            ("area_1", 2021, 10.0, 0.5, None, 0.5, 2021, 2021, None, 0.5, 0.5, "proportion_su_only_employing_staff", 0.4, 4.0),
-            ("area_2", 2020, 10.0, 0.3, None, 0.3, 2020, 2021, None, 0.3, 0.3, "proportion_su_only_employing_staff", 0.3, 3.0),
-            ("area_2", 2021, 10.0, 0.5, None, 0.5, 2020, 2021, None, 0.5, 0.5, "proportion_su_only_employing_staff", 0.4, 4.0),
-        ] # fmt: skip
+        id="null_proportion_in_earliest_year_gives_extrapolated_proportion_from_mean_of_known_proportions",
+        expected_data={
+                DP.LA_AREA: ["area_1", "area_1", "area_2", "area_2"],
+                DP.YEAR_AS_INTEGER: [2020, 2021, 2020, 2021],
+                DP.SERVICE_USER_DPRS_DURING_YEAR: [10.0, 10.0, 10.0, 10.0],
+                DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [None, 0.5, 0.3, 0.5],
+                DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE: [None, None, None, None],
+                DP.ESTIMATE_USING_MEAN: [0.3, 0.5, 0.3, 0.5],
+                DP.FIRST_YEAR_WITH_DATA: [2021, 2021, 2020, 2020],
+                DP.LAST_YEAR_WITH_DATA: [2021, 2021, 2021, 2021],
+                DP.ESTIMATE_USING_EXTRAPOLATION_RATIO: [0.3, None, None, None],
+                DP.ESTIMATE_USING_INTERPOLATION: [0.3, 0.5, 0.3, 0.5],
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [0.3, 0.5, 0.3, 0.5],
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE: [DP.ESTIMATE_USING_EXTRAPOLATION_RATIO, DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [0.3, 0.4, 0.3, 0.4],
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF: [3.0, 4.0, 3.0, 4.0],
+            }, # fmt: skip
     ),
     EstimateServiceUsersEmployingStaffTestCase(
-        id="null_proportion_between_known_years",
-        input_data=[
-            ("area_1", 2020, 10.0, 0.5, None),
-            ("area_1", 2021, 10.0, None, None),
-            ("area_1", 2022, 10.0, 0.3, None),
-        ], # fmt: skip
-        expected_data=[
-            ("area_1", 2020, 10.0, 0.5, None, 0.5, 2020, 2022, None, 0.5, 0.5, "proportion_su_only_employing_staff", 0.5, 5.0),
-            ("area_1", 2021, 10.0, None, None, None, 2020, 2022, None, 0.4, 0.4, "estimate_using_interpolation", 0.45, 4.5),
-            ("area_1", 2022, 10.0, 0.3, None, 0.3, 2020, 2022, None, 0.3, 0.3, "proportion_su_only_employing_staff", 0.4, 4.0),
-        ] # fmt: skip
+        id="null_proportion_between_known_years_gives_interpolated_proportion",
+        expected_data={
+            DP.LA_AREA: ["area_1", "area_1", "area_1"],
+            DP.YEAR_AS_INTEGER: [2020, 2021, 2022],
+            DP.SERVICE_USER_DPRS_DURING_YEAR: [10.0, 10.0, 10.0],
+            DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [0.5, None, 0.3],
+            DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE: [None, None, None],
+            DP.ESTIMATE_USING_MEAN: [0.5, None, 0.3],
+            DP.FIRST_YEAR_WITH_DATA: [2020, 2020, 2020],
+            DP.LAST_YEAR_WITH_DATA: [2022, 2022, 2022],
+            DP.ESTIMATE_USING_EXTRAPOLATION_RATIO: [None, None, None],
+            DP.ESTIMATE_USING_INTERPOLATION: [0.5, 0.4, 0.3],
+            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [0.5, 0.4, 0.3],
+            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE: [DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, DP.ESTIMATE_USING_INTERPOLATION, DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [0.5, 0.45, 0.4],
+            DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF: [5.0, 4.5, 4.0],
+        } # fmt: skip
     ),
     EstimateServiceUsersEmployingStaffTestCase(
-        id="only_historic_data_is_known",
-        input_data=[
-            ("area_1", 2020, 10.0, None, 0.5),
-            ("area_1", 2021, 10.0, None, 0.4),
-        ], # fmt: skip
-        expected_data=[
-            ("area_1", 2020, 10.0, None, 0.5, 0.5, None, None, None, 0.5, 0.5, "estimate_using_mean", 0.5, 5.0),
-            ("area_1", 2021, 10.0, None, 0.4, 0.4, None, None, None, 0.4, 0.4, "estimate_using_mean", 0.45, 4.5),
-        ] # fmt: skip
+        id="only_historic_data_is_known_gives_mean_proportion",
+        expected_data={
+            DP.LA_AREA: ["area_1", "area_1"],
+            DP.YEAR_AS_INTEGER: [2020, 2021],
+            DP.SERVICE_USER_DPRS_DURING_YEAR: [10.0, 10.0],
+            DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [None, None],
+            DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE: [0.5, 0.4],
+            DP.ESTIMATE_USING_MEAN: [0.5, 0.4],
+            DP.FIRST_YEAR_WITH_DATA: [None, None],
+            DP.LAST_YEAR_WITH_DATA: [None, None],
+            DP.ESTIMATE_USING_EXTRAPOLATION_RATIO: [None, None],
+            DP.ESTIMATE_USING_INTERPOLATION: [0.5, 0.4],
+            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [0.5, 0.4],
+            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE: [DP.ESTIMATE_USING_MEAN, DP.ESTIMATE_USING_MEAN],
+            DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [0.5, 0.45],
+            DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF: [5.0, 4.5],
+        } # fmt: skip
     ),
 ]
 
 
 class TestEstimateServiceUsersEmployingStaff:
     @pytest.mark.parametrize(
-        ("input_data", "expected_data"),
+        "expected_data",
         [
             case.as_pytest_param()
             for case in estimated_service_users_employing_staff_test_cases
         ],
     )
-    def test_function_returns_expected_values(self, input_data, expected_data):
-        input_lf = pl.LazyFrame(
-            input_data,
-            schema={
-                DP.LA_AREA: pl.String,
-                DP.YEAR_AS_INTEGER: pl.Int64,
-                DP.SERVICE_USER_DPRS_DURING_YEAR: pl.Float32,
-                DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float32,
-                DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE: pl.Float32,
-            },
-            orient="row",
-        )
+    def test_function_returns_expected_values(self, expected_data):
         expected_lf = pl.LazyFrame(
             expected_data,
             schema={
@@ -115,6 +130,19 @@ class TestEstimateServiceUsersEmployingStaff:
                 DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF: pl.Float32,
             },
             orient="row",
+        )
+        input_lf = expected_lf.drop(
+            [
+                DP.ESTIMATE_USING_MEAN,
+                DP.FIRST_YEAR_WITH_DATA,
+                DP.LAST_YEAR_WITH_DATA,
+                DP.ESTIMATE_USING_EXTRAPOLATION_RATIO,
+                DP.ESTIMATE_USING_INTERPOLATION,
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE,
+                DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
+            ]
         )
         returned_lf = job.calculate_estimated_service_users_employing_staff(input_lf)
 
