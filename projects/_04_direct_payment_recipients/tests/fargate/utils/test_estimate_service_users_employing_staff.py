@@ -110,7 +110,7 @@ class TestEstimateServiceUsersEmployingStaff:
                 DP.ESTIMATE_USING_EXTRAPOLATION_RATIO: pl.Float32,
                 DP.ESTIMATE_USING_INTERPOLATION: pl.Float32,
                 DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float32,
-                "estimated_proportion_of_service_users_employing_staff_source": pl.String,
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE: pl.String,
                 DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float32,
                 DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF: pl.Float32,
             },

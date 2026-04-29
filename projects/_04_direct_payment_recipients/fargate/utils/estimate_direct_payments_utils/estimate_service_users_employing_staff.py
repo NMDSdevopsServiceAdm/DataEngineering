@@ -20,7 +20,35 @@ from projects._04_direct_payment_recipients.fargate.utils.models.mean_imputation
 
 def calculate_estimated_service_users_employing_staff(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Doc string here
+    Calculate estimated service users employing staff using a hierarchy of
+    methods:
+        1. Use known proportions where available.
+        2. Use extrapolation ratio to estimate missing proportions in earliest
+           year with data.
+        3. Use interpolation to estimate missing proportions between known data
+           points.
+        4. Use mean imputation to estimate any remaining missing proportions
+        5. Use interpolation to estimate any remaining missing proportions after
+           mean imputation, as mean imputation may create new known data points
+           which can be used for interpolation.
+        6. Calculate rolling average to smooth final estimates.
+        7. Calculate estimated service users employing staff by applying the
+           estimated proportion to the count of service user DPRS during the year.
+
+    Args:
+        lf (pl.LazyFrame): LazyFrame containing direct payments data with columns:
+            - SERVICE_USER_DPRS_DURING_YEAR
+            - PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+
+    Returns:
+        pl.LazyFrame: LazyFrame with additional columns:
+            - ESTIMATE_USING_MEAN
+            - ESTIMATE_USING_EXTRAPOLATION_RATIO
+            - ESTIMATE_USING_INTERPOLATION
+            - ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+            - ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE
+            - ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+            - ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
     """
 
     lf = model_using_mean(lf)
@@ -64,9 +92,9 @@ def calculate_estimated_service_users_employing_staff(lf: pl.LazyFrame) -> pl.La
         )
         .then(pl.lit(DP.ESTIMATE_USING_INTERPOLATION))
         .otherwise(
-            pl.col("estimated_proportion_of_service_users_employing_staff_source")
+            pl.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE)
         )
-        .alias("estimated_proportion_of_service_users_employing_staff_source")
+        .alias(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE)
     )
 
     lf = calculate_rolling_mean(lf)
