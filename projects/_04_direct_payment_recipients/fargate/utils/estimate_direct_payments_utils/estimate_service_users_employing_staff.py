@@ -23,20 +23,19 @@ def calculate_estimated_service_users_employing_staff(lf: pl.LazyFrame) -> pl.La
     Calculate estimated service users employing staff using a hierarchy of
     methods:
         1. Use known proportions where available.
-        2. Use extrapolation ratio to estimate missing proportions in earliest
-           year with data.
-        3. Use interpolation to estimate missing proportions between known data
-           points.
-        4. Use mean imputation to estimate any remaining missing proportions
+        2. Use extrapolated and interpolated proportions from known proportions.
+        4. Use mean imputation to estimate any remaining missing proportions.
         5. Use interpolation to estimate any remaining missing proportions after
-           mean imputation, as mean imputation may create new known data points
+           mean imputation, as mean imputation creates new known data points
            which can be used for interpolation.
         6. Calculate rolling average to smooth final estimates.
-        7. Calculate estimated service users employing staff by applying the
-           estimated proportion to the count of service user DPRS during the year.
+        7. Calculate estimated service users employing staff by applying the rolling
+           average proportions to the count of service user DPRS during the year.
 
     Args:
         lf (pl.LazyFrame): LazyFrame containing direct payments data with columns:
+            - LA_AREA
+            - YEAR_AS_INTEGER
             - SERVICE_USER_DPRS_DURING_YEAR
             - PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
 
