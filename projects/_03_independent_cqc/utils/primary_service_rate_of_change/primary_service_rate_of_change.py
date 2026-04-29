@@ -43,7 +43,6 @@ def model_primary_service_rate_of_change_trendline(
             value_col,
         )
         .rename({value_col: TempCol.current_period})
-        .sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
         .with_columns(
             pl.count()
             .over([IndCqc.location_id, IndCqc.care_home])
@@ -80,6 +79,7 @@ def model_primary_service_rate_of_change_trendline(
     # --------------------------------------------------------
     lf = lf.with_columns(
         pl.col(TempCol.current_period_interpolated)
+        .sort_by(IndCqc.cqc_location_import_date)
         .shift(1)
         .over(IndCqc.location_id)
         .alias(TempCol.previous_period_interpolated)
@@ -93,7 +93,48 @@ def model_primary_service_rate_of_change_trendline(
     # --------------------------------------------------------
     # Rolling aggregation (core logic)
     # --------------------------------------------------------
-    lf = (
+    lf = calculate_rolling_sums(lf, days, group_cols)
+
+    # --------------------------------------------------------
+    # Rate of change
+    # --------------------------------------------------------
+    lf = lf.with_columns(
+        pl.when(pl.col(TempCol.rolling_previous_sum) != 0)
+        .then(
+            pl.col(TempCol.rolling_current_sum) / pl.col(TempCol.rolling_previous_sum)
+        )
+        .otherwise(None)
+        .alias(IndCqc.single_period_rate_of_change)
+    )
+
+    # --------------------------------------------------------
+    # Trendline (log-sum-exp)
+    # --------------------------------------------------------
+    lf = calculate_trendline(lf, out_col, group_cols)
+
+    # --------------------------------------------------------
+    # Final shape
+    # --------------------------------------------------------
+    return lf.drop(IndCqc.number_of_beds_banded_roc).with_columns(
+        pl.col(out_col).fill_null(1.0)
+    )
+
+
+# ============================================================
+# Complex business logic — keep separate
+# ============================================================
+
+
+def calculate_rolling_sums(
+    lf: pl.LazyFrame,
+    days: int,
+    group_cols: list[str],
+) -> pl.LazyFrame:
+    """
+    Compute rolling sums of current and previous values
+    grouped by service type and bed band.
+    """
+    return (
         lf.filter(
             pl.col(TempCol.current_period_cleaned).is_not_null()
             & pl.col(TempCol.previous_period_cleaned).is_not_null()
@@ -114,39 +155,6 @@ def model_primary_service_rate_of_change_trendline(
             ]
         )
     )
-
-    # --------------------------------------------------------
-    # Rate of change
-    # --------------------------------------------------------
-    lf = lf.with_columns(
-        pl.when(pl.col(TempCol.rolling_previous_sum) != 0)
-        .then(
-            pl.col(TempCol.rolling_current_sum) / pl.col(TempCol.rolling_previous_sum)
-        )
-        .otherwise(None)
-        .alias(TempCol.single_period_rate_of_change)
-    )
-
-    # --------------------------------------------------------
-    # Trendline (log-sum-exp)
-    # --------------------------------------------------------
-    lf = lf.with_columns(
-        pl.exp(
-            pl.col(TempCol.single_period_rate_of_change).log().cumsum().over(group_cols)
-        ).alias(out_col)
-    ).drop(TempCol.single_period_rate_of_change)
-
-    # --------------------------------------------------------
-    # Final shape
-    # --------------------------------------------------------
-    return lf.drop(IndCqc.number_of_beds_banded_roc).with_columns(
-        pl.col(out_col).fill_null(1.0)
-    )
-
-
-# ============================================================
-# Complex business logic — keep separate
-# ============================================================
 
 
 def clean_non_residential_rate_of_change(
@@ -229,3 +237,33 @@ def clean_non_residential_rate_of_change(
             .alias(TempCol.current_period_cleaned),
         ]
     ).drop(TempCol.abs_change, TempCol.perc_change)
+
+
+def calculate_trendline(
+    lf: pl.LazyFrame, out_col: str, group_cols: list[str]
+) -> pl.LazyFrame:
+    """
+    Computes a trendline from a sequence of single-period rate of change values, starting at 1.0 in the first period.
+
+    The trendline is then derived by iteratively multiplying each rate of change value, resulting in a cumulative
+    measure of change over time.
+    This is calculated by taking the exponential of the sum of the logarithms of the values.
+    This approach avoids issues in pyspark with direct multiplication of many numbers.
+
+    Args:
+        lf (pl.LazyFrame): The input LazyFrame.
+        out_col (str): The name of the output column for the trendline.
+        group_cols (list[str]): The columns to group by.
+
+    Returns:
+        pl.LazyFrame: The LazyFrame with the trendline column added.
+    """
+    return lf.with_columns(
+        pl.exp(
+            pl.col(IndCqc.single_period_rate_of_change)
+            .log()
+            .sort_by(IndCqc.cqc_location_import_date)
+            .cumsum()
+            .over(group_cols)
+        ).alias(out_col)
+    ).drop(IndCqc.single_period_rate_of_change)
