@@ -1,6 +1,8 @@
 import polars as pl
 
-from projects._03_independent_cqc.utils.imputation.interpolation import interpolation
+from projects._03_independent_cqc.utils.imputation.interpolation import (
+    model_interpolation,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.ind_cqc_pipeline_columns import (
     PrimaryServiceRateOfChangeColumns as TempCol,
