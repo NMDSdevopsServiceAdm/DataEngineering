@@ -24,6 +24,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted `model_extrapolation` to Polars.
 
+- Converted DPR estimates util for calculating rolling mean of proportion DPR employing staff.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
