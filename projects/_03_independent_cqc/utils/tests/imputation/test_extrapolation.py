@@ -14,8 +14,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
-PATCH_PATH = "projects._03_independent_cqc.utils.utils.imputation.extrapolation"
-
 
 class TestExtrapolationWhenNominal:
     @pytest.mark.parametrize(
