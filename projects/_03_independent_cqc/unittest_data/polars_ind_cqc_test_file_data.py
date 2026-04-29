@@ -2207,6 +2207,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
     ]  # fmt: skip
 
 
+@dataclass
 class ModelInterpolationTestCase:
     id: str
     data: list[Any]
