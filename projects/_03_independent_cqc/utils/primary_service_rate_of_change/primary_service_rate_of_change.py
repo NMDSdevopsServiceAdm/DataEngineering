@@ -1,5 +1,8 @@
+import math
+
 import polars as pl
 
+from polars_utils.cleaning_utils import create_banded_bed_count_column
 from projects._03_independent_cqc.utils.imputation.interpolation import (
     model_interpolation,
 )
@@ -8,6 +11,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PrimaryServiceRateOfChangeColumns as TempCol,
 )
 from utils.column_values.categorical_column_values import CareHome
+
+BANDED_BED_THRESHOLDS: list = [0, 1, 15, 25, math.inf]
 
 
 def model_primary_service_rate_of_change_trendline(
@@ -23,6 +28,9 @@ def model_primary_service_rate_of_change_trendline(
     Pipeline:
         prepare → filter → interpolate → lag → clean → aggregate → calculate → trend
     """
+    lf = create_banded_bed_count_column(
+        lf, new_col=IndCqc.number_of_beds_banded_roc, splits=BANDED_BED_THRESHOLDS
+    )
 
     group_cols = [
         IndCqc.primary_service_type,
@@ -32,7 +40,7 @@ def model_primary_service_rate_of_change_trendline(
     # --------------------------------------------------------
     # Prepare
     # --------------------------------------------------------
-    lf = (
+    roc_lf = (
         lf.select(
             IndCqc.location_id,
             IndCqc.care_home,
@@ -44,7 +52,7 @@ def model_primary_service_rate_of_change_trendline(
         )
         .rename({value_col: TempCol.current_period})
         .with_columns(
-            pl.count()
+            pl.len()
             .over([IndCqc.location_id, IndCqc.care_home])
             .alias(TempCol.submission_count)
         )
@@ -53,7 +61,7 @@ def model_primary_service_rate_of_change_trendline(
     # --------------------------------------------------------
     # Eligibility filter (inline — simple + obvious)
     # --------------------------------------------------------
-    lf = lf.filter(
+    roc_lf = roc_lf.filter(
         (pl.col(IndCqc.care_home_status_count) == 1)
         & (pl.col(TempCol.submission_count) >= 2)
     )
@@ -61,8 +69,8 @@ def model_primary_service_rate_of_change_trendline(
     # --------------------------------------------------------
     # Interpolation
     # --------------------------------------------------------
-    lf = model_interpolation(
-        lf,
+    roc_lf = model_interpolation(
+        roc_lf,
         TempCol.current_period,
         method="straight",
         new_column_name=TempCol.current_period_interpolated,
@@ -77,7 +85,7 @@ def model_primary_service_rate_of_change_trendline(
     # --------------------------------------------------------
     # Previous value (lag)
     # --------------------------------------------------------
-    lf = lf.with_columns(
+    roc_lf = roc_lf.with_columns(
         pl.col(TempCol.current_period_interpolated)
         .sort_by(IndCqc.cqc_location_import_date)
         .shift(1)
@@ -88,36 +96,44 @@ def model_primary_service_rate_of_change_trendline(
     # --------------------------------------------------------
     # Cleaning (kept as function — real logic)
     # --------------------------------------------------------
-    lf = clean_non_residential_rate_of_change(lf)
+    roc_lf = clean_non_residential_rate_of_change(roc_lf)
 
     # --------------------------------------------------------
     # Rolling aggregation (core logic)
     # --------------------------------------------------------
-    lf = calculate_rolling_sums(lf, days, group_cols)
+    roc_lf = calculate_rolling_sums(roc_lf, days, group_cols)
 
     # --------------------------------------------------------
     # Rate of change
     # --------------------------------------------------------
-    lf = lf.with_columns(
+    roc_lf = roc_lf.with_columns(
         pl.when(pl.col(TempCol.rolling_previous_sum) != 0)
         .then(
             pl.col(TempCol.rolling_current_sum) / pl.col(TempCol.rolling_previous_sum)
         )
         .otherwise(None)
         .alias(IndCqc.single_period_rate_of_change)
-    )
+    ).drop(TempCol.rolling_current_sum, TempCol.rolling_previous_sum)
 
     # --------------------------------------------------------
     # Trendline (log-sum-exp)
     # --------------------------------------------------------
-    lf = calculate_trendline(lf, out_col, group_cols)
+    roc_lf = calculate_trendline(roc_lf, out_col, group_cols)
 
     # --------------------------------------------------------
     # Final shape
     # --------------------------------------------------------
-    return lf.drop(IndCqc.number_of_beds_banded_roc).with_columns(
-        pl.col(out_col).fill_null(1.0)
-    )
+    lf = lf.join(
+        roc_lf,
+        [
+            IndCqc.primary_service_type,
+            IndCqc.number_of_beds_banded_roc,
+            IndCqc.cqc_location_import_date,
+        ],
+        "left",
+    ).drop(IndCqc.number_of_beds_banded_roc)
+
+    return lf.with_columns(pl.col(out_col).fill_null(1.0))
 
 
 # ============================================================
@@ -139,10 +155,11 @@ def calculate_rolling_sums(
             pl.col(TempCol.current_period_cleaned).is_not_null()
             & pl.col(TempCol.previous_period_cleaned).is_not_null()
         )
-        .groupby_rolling(
+        .sort(group_cols + [IndCqc.cqc_location_import_date])
+        .rolling(
             index_column=IndCqc.cqc_location_import_date,
             period=f"{days}d",
-            by=group_cols,
+            group_by=group_cols,
         )
         .agg(
             [
@@ -154,7 +171,7 @@ def calculate_rolling_sums(
                 ),
             ]
         )
-    )
+    ).unique(group_cols + [IndCqc.cqc_location_import_date])
 
 
 def clean_non_residential_rate_of_change(
@@ -163,7 +180,27 @@ def clean_non_residential_rate_of_change(
     perc_percentile: float = 0.99,
 ) -> pl.LazyFrame:
     """
-    Apply percentile-based cleaning for non-residential rows.
+    Cleans the rate of change values for non-residential locations by applying
+    percentile-based thresholds.
+
+    For non-residential rows, the function calculates the absolute and
+    percentage change between the current and previous period values. It then
+    computes upper thresholds for both absolute and percentage change based on
+    specified percentiles of the distribution of changes in non-residential
+    rows. A lower threshold for percentage change is also calculated as the
+    reciprocal of the upper percentage change threshold.
+
+    Args:
+        lf (pl.LazyFrame): The input DataFrame containing the current and
+            previous values.
+        abs_percentile (float): The percentile to use for the absolute change
+            threshold.
+        perc_percentile (float): The percentile to use for the percentage change
+            threshold.
+
+    Returns:
+        pl.LazyFrame: The DataFrame with cleaned current and previous period
+            columns.
     """
 
     prev = TempCol.previous_period_interpolated
@@ -250,6 +287,9 @@ def calculate_trendline(
     This is calculated by taking the exponential of the sum of the logarithms of the values.
     This approach avoids issues in pyspark with direct multiplication of many numbers.
 
+    The input rows are sorted by the grouping columns and import date before the cumulative sum is computed.
+    This ensures stable and deterministic trendline values even when input rows arrive out of order.
+
     Args:
         lf (pl.LazyFrame): The input LazyFrame.
         out_col (str): The name of the output column for the trendline.
@@ -258,12 +298,15 @@ def calculate_trendline(
     Returns:
         pl.LazyFrame: The LazyFrame with the trendline column added.
     """
-    return lf.with_columns(
-        pl.exp(
+    return (
+        lf.sort(group_cols + [IndCqc.cqc_location_import_date])
+        .with_columns(
             pl.col(IndCqc.single_period_rate_of_change)
             .log()
-            .sort_by(IndCqc.cqc_location_import_date)
-            .cumsum()
+            .cum_sum()
             .over(group_cols)
-        ).alias(out_col)
-    ).drop(IndCqc.single_period_rate_of_change)
+            .exp()
+            .alias(out_col)
+        )
+        .drop(IndCqc.single_period_rate_of_change)
+    )
