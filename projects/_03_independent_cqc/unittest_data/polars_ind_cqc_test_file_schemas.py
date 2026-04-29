@@ -37,6 +37,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PrimaryServiceRateOfChangeColumns as TempCol,
+)
 from utils.column_values.categorical_column_values import MainJobRoleLabels
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
@@ -1627,7 +1630,7 @@ class ModelExtrapolation:
 
 @dataclass
 class ModelRateOfChangeSchemas:
-    model_schema = {
+    model_roc_trendline_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.care_home: pl.String,
@@ -1635,5 +1638,61 @@ class ModelRateOfChangeSchemas:
         IndCQC.primary_service_type: pl.String,
         IndCQC.combined_ratio_and_filled_posts: pl.Float64,
         IndCQC.care_home_status_count: pl.Int32,
+    }
+    expected_model_roc_trendline_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.care_home: pl.String,
+        IndCQC.number_of_beds: pl.Int32,
+        IndCQC.primary_service_type: pl.String,
+        IndCQC.combined_ratio_and_filled_posts: pl.Float64,
+        IndCQC.care_home_status_count: pl.Int32,
+        IndCQC.ascwds_rate_of_change_trendline_model: pl.Float64,
+    }
+
+    calculate_rolling_sums_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.primary_service_type: pl.String,
+        IndCQC.number_of_beds_banded_roc: pl.Int32,
+        IndCQC.cqc_location_import_date: pl.Date,
+        TempCol.current_period_cleaned: pl.Float64,
+        TempCol.previous_period_cleaned: pl.Float64,
+    }
+    expected_calculate_rolling_sums_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.primary_service_type: pl.String,
+        IndCQC.number_of_beds_banded_roc: pl.Int32,
+        IndCQC.cqc_location_import_date: pl.Date,
+        TempCol.rolling_current_sum: pl.Float64,
+        TempCol.rolling_previous_sum: pl.Float64,
+    }
+
+    clean_non_residential_rate_of_change_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.care_home: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        TempCol.previous_period_interpolated: pl.Float64,
+        TempCol.current_period_interpolated: pl.Float64,
+    }
+    expected_clean_non_residential_rate_of_change_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.care_home: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        TempCol.previous_period_interpolated: pl.Float64,
+        TempCol.current_period_interpolated: pl.Float64,
+        TempCol.previous_period_cleaned: pl.Float64,
+        TempCol.current_period_cleaned: pl.Float64,
+    }
+
+    calculate_trendline_schema = {
+        IndCQC.primary_service_type: pl.String,
+        IndCQC.number_of_beds_banded_roc: pl.Int32,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.single_period_rate_of_change: pl.Float64,
+    }
+    expected_calculate_trendline_schema = {
+        IndCQC.primary_service_type: pl.String,
+        IndCQC.number_of_beds_banded_roc: pl.Int32,
+        IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.ascwds_rate_of_change_trendline_model: pl.Float64,
     }

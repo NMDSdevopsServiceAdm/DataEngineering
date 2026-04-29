@@ -7,6 +7,9 @@ import numpy as np
 import pytest
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PrimaryServiceRateOfChangeColumns as TempCol,
+)
 from utils.column_values.categorical_column_values import (
     ASCWDSFilledPostsSource,
     AscwdsFilteringRule,
@@ -2615,13 +2618,204 @@ class ModelExtrapolation:
 @dataclass
 class ModelRateOfChangeTestCase:
     id: str
-    data: list[Any]
+    input_data: list[Any]
+    expected_data: list[Any]
 
     def as_pytest_param(self):
         """Return test case as pytest ParameterSet."""
-        return pytest.param(self.data, id=self.id)
+        return pytest.param(self.input_data, self.expected_data, id=self.id)
 
 
 @dataclass
 class ModelRateOfChangeData:
-    pass
+    model_roc_trendline_test_cases = [
+        ModelRateOfChangeTestCase(
+            id="happy_path_single_group",
+            input_data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 2.7, 1),
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.3, 1),
+            ],
+            expected_data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 2.7, 1, 0.9),
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.3, 1, 0.947),
+            ],
+        ),
+        ModelRateOfChangeTestCase(
+            id="happy_path_multiple_group_cols",
+            input_data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home,     10, "CHO", 3.0,  1),
+                ("1-001", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 2.8,  1),
+                ("1-001", date(2026, 1, 3), CareHome.care_home,     10, "CHO", 3.4,  1),
+                ("1-002", date(2026, 1, 1), CareHome.care_home,     10, "CHO", 2.0,  1),
+                ("1-002", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 2.4,  1),
+                ("1-002", date(2026, 1, 3), CareHome.care_home,     10, "CHO", 2.8,  1),
+                ("1-003", date(2026, 1, 1), CareHome.not_care_home, 10, "NR",  40.0, 1),
+                ("1-003", date(2026, 1, 2), CareHome.not_care_home, 10, "NR",  50.0, 1),
+            ],
+            expected_data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home,     10, "CHO", 3.0,  1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 2.8,  1, 1.04),
+                ("1-001", date(2026, 1, 3), CareHome.care_home,     10, "CHO", 3.4,  1, 1.162),
+                ("1-002", date(2026, 1, 1), CareHome.care_home,     10, "CHO", 2.0,  1, 1.0),
+                ("1-002", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 2.4,  1, 1.04),
+                ("1-002", date(2026, 1, 3), CareHome.care_home,     10, "CHO", 2.8,  1, 1.162),
+                ("1-003", date(2026, 1, 1), CareHome.not_care_home, 10, "NR",  40.0, 1, 1.0),
+                ("1-003", date(2026, 1, 2), CareHome.not_care_home, 10, "NR",  50.0, 1, 1.25),
+            ],
+        ),
+        ModelRateOfChangeTestCase(
+            id="when_input_is_unsorted_within_group",
+            input_data=[
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.3, 1),
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 2.7, 1),
+            ],
+            expected_data=[
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.3, 1, 0.947),
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 2.7, 1, 0.9),
+            ],
+        ),
+        ModelRateOfChangeTestCase(
+            id="handles_missing_values_with_interpolation",
+            input_data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0,  1),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", None, 1),
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.6,  1),
+            ],
+            expected_data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0,  1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", None, 1, 1.1),
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.6,  1, 1.205),
+            ],
+        ),
+        ModelRateOfChangeTestCase(
+            id="filters_single_submission_locations",
+            input_data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 2.7, 1),
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.3, 1),
+                ("1-002", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 9.9, 1), # single submission - shouldn't contribute
+            ],
+            expected_data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 2.7, 1, 0.9),
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.3, 1, 0.947),
+                ("1-002", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 9.9, 1, 0.9), # single submission - shouldn't contribute
+            ],
+        ),
+        ModelRateOfChangeTestCase(
+            id="filters_inconsistent_care_home_status",
+            input_data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home,     10, "CHO", 3.0, 1),
+                ("1-001", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 2.7, 1),
+                ("1-001", date(2026, 1, 3), CareHome.care_home,     10, "CHO", 3.3, 1),
+                ("1-002", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 9.9, 2), # main service changed - shouldn't contribute
+                ("1-002", date(2026, 1, 3), CareHome.not_care_home, 10, "NR",  9.9, 2), # main service changed - shouldn't contribute
+            ],
+            expected_data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home,     10, "CHO", 3.0, 1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 2.7, 1, 0.9),
+                ("1-001", date(2026, 1, 3), CareHome.care_home,     10, "CHO", 3.3, 1, 0.947),
+                ("1-002", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 9.9, 2, 0.9), # main service changed - shouldn't contribute
+                ("1-002", date(2026, 1, 3), CareHome.not_care_home, 10, "NR",  9.9, 2, 1.0), # main service changed - shouldn't contribute
+            ],
+        ),
+    ] # fmt: skip
+
+    calculate_rolling_sums_test_cases = [
+        ModelRateOfChangeTestCase(
+            id="happy_path_single_group",
+            input_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 2.7, 3.0),
+                ("1-001", "CHO", 10, date(2026, 1, 3), 3.3, 2.7),
+            ],
+            expected_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 5.7, 5.0),
+                ("1-001", "CHO", 10, date(2026, 1, 3), 9.0, 7.7),
+            ],
+        ),
+        ModelRateOfChangeTestCase(
+            id="multiple_groups",
+            input_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 2.7, 3.0),
+                ("1-002", "NR",  20, date(2026, 1, 1), 1.0, 1.5),
+                ("1-002", "NR",  20, date(2026, 1, 2), 1.2, 1.0),
+            ],
+            expected_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 5.7, 5.0),
+                ("1-002", "NR",  20, date(2026, 1, 1), 1.0, 1.5),
+                ("1-002", "NR",  20, date(2026, 1, 2), 2.2, 2.5),
+            ],
+        ),
+    ] # fmt: skip
+
+    clean_non_residential_rate_of_change_test_cases = [
+        ModelRateOfChangeTestCase(
+            id="happy_path",
+            input_data=[
+                ("1-001", CareHome.not_care_home, date(2026, 1, 1), 2.0, 3.0),
+                ("1-001", CareHome.not_care_home, date(2026, 1, 2), 3.0, 2.7),
+                ("1-002", CareHome.care_home,     date(2026, 1, 1), 1.0, 1.5),
+            ],
+            expected_data=[
+                ("1-001", CareHome.not_care_home, date(2026, 1, 1), 2.0, 3.0, 2.0, 3.0),
+                ("1-001", CareHome.not_care_home, date(2026, 1, 2), 3.0, 2.7, 3.0, 2.7),
+                ("1-002", CareHome.care_home,     date(2026, 1, 1), 1.0, 1.5, 1.0, 1.5),
+            ],
+        ),
+        ModelRateOfChangeTestCase(
+            id="handles_nulls",
+            input_data=[
+                ("1-001", CareHome.not_care_home, date(2026, 1, 1), None, 3.0),
+                ("1-001", CareHome.not_care_home, date(2026, 1, 2), 3.0, None),
+            ],
+            expected_data=[
+                ("1-001", CareHome.not_care_home, date(2026, 1, 1), None, 3.0, None, None),
+                ("1-001", CareHome.not_care_home, date(2026, 1, 2), 3.0, None, None, None),
+            ],
+        ),
+    ] # fmt: skip
+
+    calculate_trendline_test_cases = [
+        ModelRateOfChangeTestCase(
+            id="single_group",
+            input_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), 1.2),
+                ("CHO", 1, date(2026, 1, 3), 1.0),
+                ("CHO", 1, date(2026, 1, 4), 0.8),
+            ],
+            expected_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), 1.2),
+                ("CHO", 1, date(2026, 1, 3), 1.2),
+                ("CHO", 1, date(2026, 1, 4), 0.96),
+            ],
+        ),
+        ModelRateOfChangeTestCase(
+            id="multiple_groups",
+            input_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), 1.2),
+                ("CHO", 2, date(2026, 1, 1), 1.0),
+                ("CHO", 2, date(2026, 1, 2), 1.1),
+                ("NR", 1, date(2026, 1, 1), 1.0),
+                ("NR", 1, date(2026, 1, 2), 0.8),
+            ],
+            expected_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), 1.2),
+                ("CHO", 2, date(2026, 1, 1), 1.0),
+                ("CHO", 2, date(2026, 1, 2), 1.1),
+                ("NR", 1, date(2026, 1, 1), 1.0),
+                ("NR", 1, date(2026, 1, 2), 0.8),
+            ],
+        ),
+    ]
