@@ -9,7 +9,7 @@ Trello ticket [#number](add link)
 - [ ] Outputs checked in Athena
 - [ ] Outputs compared using [SageMaker script](https://eu-west-2.console.aws.amazon.com/sagemaker/home?region=eu-west-2#/notebook-instances/data-engineering-notebook)
       - Notebook name: compare_outputs.ipynb
-- [ ] Output Screenshots added to Trello ticket 
+- [ ] Output Screenshots added to Trello ticket
 
 [Add any additional testing information here - add screenshot if relevant]
 
@@ -24,4 +24,5 @@ Trello ticket [#number](add link)
 - [ ] Use new file structure when saving to S3
       `{dataset}_{sub_dataset_if_relevant}_{order_of_process_if_relevant}_{very_brief_description}`
 - [ ] Updated CHANGELOG
+- [ ] Code reviewed by AI
 - [ ] Moved Trello ticket to PR column
