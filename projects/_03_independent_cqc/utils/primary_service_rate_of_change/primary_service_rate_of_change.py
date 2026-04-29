@@ -72,9 +72,6 @@ def model_primary_service_rate_of_change_trendline(
         IndCqc.number_of_beds_banded_roc,
     ]
 
-    # --------------------------------------------------------
-    # Prepare
-    # --------------------------------------------------------
     roc_lf = (
         lf.select(
             IndCqc.location_id,
@@ -93,17 +90,11 @@ def model_primary_service_rate_of_change_trendline(
         )
     )
 
-    # --------------------------------------------------------
-    # Eligibility filter (inline — simple + obvious)
-    # --------------------------------------------------------
     roc_lf = roc_lf.filter(
         (pl.col(IndCqc.care_home_status_count) == 1)
         & (pl.col(TempCol.submission_count) >= 2)
     )
 
-    # --------------------------------------------------------
-    # Interpolation
-    # --------------------------------------------------------
     roc_lf = model_interpolation(
         roc_lf,
         TempCol.current_period,
@@ -117,9 +108,6 @@ def model_primary_service_rate_of_change_trendline(
         ).alias(TempCol.current_period_interpolated)
     )
 
-    # --------------------------------------------------------
-    # Previous value (lag)
-    # --------------------------------------------------------
     roc_lf = roc_lf.with_columns(
         pl.col(TempCol.current_period_interpolated)
         .sort_by(IndCqc.cqc_location_import_date)
@@ -128,19 +116,10 @@ def model_primary_service_rate_of_change_trendline(
         .alias(TempCol.previous_period_interpolated)
     )
 
-    # --------------------------------------------------------
-    # Cleaning (kept as function — real logic)
-    # --------------------------------------------------------
     roc_lf = clean_non_residential_rate_of_change(roc_lf)
 
-    # --------------------------------------------------------
-    # Rolling aggregation (core logic)
-    # --------------------------------------------------------
     roc_lf = calculate_rolling_sums(roc_lf, days, roc_group_cols)
 
-    # --------------------------------------------------------
-    # Rate of change
-    # --------------------------------------------------------
     roc_lf = roc_lf.with_columns(
         pl.when(pl.col(TempCol.rolling_previous_sum) != 0)
         .then(
@@ -150,14 +129,8 @@ def model_primary_service_rate_of_change_trendline(
         .alias(IndCqc.single_period_rate_of_change)
     ).drop(TempCol.rolling_current_sum, TempCol.rolling_previous_sum)
 
-    # --------------------------------------------------------
-    # Trendline (log-sum-exp)
-    # --------------------------------------------------------
     roc_lf = calculate_trendline(roc_lf, out_col, roc_group_cols)
 
-    # --------------------------------------------------------
-    # Final shape
-    # --------------------------------------------------------
     lf = lf.join(
         roc_lf,
         [
@@ -169,11 +142,6 @@ def model_primary_service_rate_of_change_trendline(
     ).drop(IndCqc.number_of_beds_banded_roc)
 
     return lf.with_columns(pl.col(out_col).fill_null(1.0))
-
-
-# ============================================================
-# Complex business logic — keep separate
-# ============================================================
 
 
 def calculate_rolling_sums(
@@ -268,9 +236,6 @@ def clean_non_residential_rate_of_change(
     prev = TempCol.previous_period_interpolated
     curr = TempCol.current_period_interpolated
 
-    # --------------------------------------------------------
-    # Compute changes
-    # --------------------------------------------------------
     lf = lf.with_columns(
         [
             (pl.col(curr) - pl.col(prev)).abs().alias(TempCol.abs_change),
@@ -278,9 +243,6 @@ def clean_non_residential_rate_of_change(
         ]
     )
 
-    # --------------------------------------------------------
-    # Thresholds (eager — intentional)
-    # --------------------------------------------------------
     abs_upper, perc_upper = (
         lf.filter(
             (pl.col(IndCqc.care_home) == CareHome.not_care_home)
@@ -301,9 +263,6 @@ def clean_non_residential_rate_of_change(
 
     perc_lower = 1 / perc_upper if perc_upper else None
 
-    # --------------------------------------------------------
-    # Conditions
-    # --------------------------------------------------------
     is_care_home = pl.col(IndCqc.care_home) == CareHome.care_home
 
     is_small_non_res = (
@@ -325,9 +284,6 @@ def clean_non_residential_rate_of_change(
 
     keep = is_care_home | is_small_non_res | is_valid_non_res
 
-    # --------------------------------------------------------
-    # Apply cleaning
-    # --------------------------------------------------------
     return lf.with_columns(
         [
             pl.when(keep)
