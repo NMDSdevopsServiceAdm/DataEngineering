@@ -2758,20 +2758,24 @@ class ModelRateOfChangeData:
 
     clean_non_residential_rate_of_change_test_cases = [
         ModelRateOfChangeTestCase(
-            id="happy_path",
+            id="no_threshold_population_filters_non_residential_rows",
             input_data=[
+                # all <= 10 → threshold dataset empty
                 ("1-001", CareHome.not_care_home, date(2026, 1, 1), 2.0, 3.0),
-                ("1-001", CareHome.not_care_home, date(2026, 1, 2), 3.0, 2.7),
-                ("1-002", CareHome.care_home,     date(2026, 1, 1), 1.0, 1.5),
+                ("1-001", CareHome.not_care_home, date(2026, 1, 2), 3.0, 2.0),
+                # care home should always pass
+                ("1-002", CareHome.care_home,     date(2026, 1, 1), 2.0, 3.0),
             ],
             expected_data=[
+                # non-residential → falls into "small" condition → kept
                 ("1-001", CareHome.not_care_home, date(2026, 1, 1), 2.0, 3.0, 2.0, 3.0),
-                ("1-001", CareHome.not_care_home, date(2026, 1, 2), 3.0, 2.7, 3.0, 2.7),
-                ("1-002", CareHome.care_home,     date(2026, 1, 1), 1.0, 1.5, 1.0, 1.5),
+                ("1-001", CareHome.not_care_home, date(2026, 1, 2), 3.0, 2.0, 3.0, 2.0),
+                # care home always kept
+                ("1-002", CareHome.care_home,     date(2026, 1, 1), 2.0, 3.0, 2.0, 3.0),
             ],
         ),
         ModelRateOfChangeTestCase(
-            id="handles_nulls",
+            id="null_inputs_produce_null_outputs",
             input_data=[
                 ("1-001", CareHome.not_care_home, date(2026, 1, 1), None, 3.0),
                 ("1-001", CareHome.not_care_home, date(2026, 1, 2), 3.0, None),
@@ -2779,6 +2783,16 @@ class ModelRateOfChangeData:
             expected_data=[
                 ("1-001", CareHome.not_care_home, date(2026, 1, 1), None, 3.0, None, None),
                 ("1-001", CareHome.not_care_home, date(2026, 1, 2), 3.0, None, None, None),
+            ],
+        ),
+        ModelRateOfChangeTestCase(
+            id="care_home_rows_bypass_cleaning_rules",
+            input_data=[
+                # extreme values but care home
+                ("1-001", CareHome.care_home, date(2026, 1, 1), 10.0, 1000.0),
+            ],
+            expected_data=[
+                ("1-001", CareHome.care_home, date(2026, 1, 1), 10.0, 1000.0, 10.0, 1000.0),
             ],
         ),
     ] # fmt: skip
