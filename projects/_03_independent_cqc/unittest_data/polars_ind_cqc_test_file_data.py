@@ -2344,3 +2344,13 @@ class InterpolationData:
             max_days_between_submissions=2,
         ),
     ]  # fmt: skip
+
+
+@dataclass
+class ExtrapolationTestCase:
+    pass
+
+
+@dataclass
+class ModelRateOfChangeData:
+    pass

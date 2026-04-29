@@ -1588,3 +1588,22 @@ class InterpolationSchema:
         IndCQC.proportion_of_days_between_submissions: pl.Float64,
         IndCQC.interpolation_model: pl.Float64,
     }
+
+
+@dataclass
+class ModelExtrapolation:
+    pass
+
+
+@dataclass
+class ModelRateOfChangeSchemas:
+    model_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.care_home: pl.String,
+        IndCQC.number_of_beds: pl.Int32,
+        IndCQC.primary_service_type: pl.String,
+        IndCQC.combined_ratio_and_filled_posts: pl.Float64,
+        IndCQC.care_home_status_count: pl.Int32,
+        IndCQC.ascwds_rate_of_change_trendline_model: pl.Float64,
+    }
