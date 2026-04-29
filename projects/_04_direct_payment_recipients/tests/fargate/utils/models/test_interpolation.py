@@ -36,4 +36,3 @@ class TestDPRModelInterpolation(unittest.TestCase):
             test_lf, DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)

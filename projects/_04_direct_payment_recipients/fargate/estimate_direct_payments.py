@@ -77,8 +77,3 @@ if __name__ == "__main__":
     )
 
     print("Finished estimate direct payments job")
-    print("Finished estimate direct payments job")
-    print("Finished estimate direct payments job")
-    print("Finished estimate direct payments job")
-    print("Finished estimate direct payments job")
-    print("Finished estimate direct payments job")
