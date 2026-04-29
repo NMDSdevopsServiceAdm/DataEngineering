@@ -157,7 +157,7 @@ class TestExtrapolationCalculationExpressions:
 
         result = lf.select(expr.forward_ratio.alias(self.OUTPUT)).collect()
 
-        assert result[self.OUTPUT][0] == 20.0  # 10 * 40 / 20
+        assert result[self.OUTPUT][0] == 20.0  # (10 * 40) / 20
 
     def test_backward_ratio(self):
         lf = pl.LazyFrame(
@@ -172,7 +172,7 @@ class TestExtrapolationCalculationExpressions:
 
         result = lf.select(expr.backward_ratio.alias(self.OUTPUT)).collect()
 
-        assert result[self.OUTPUT][0] == 5.0
+        assert result[self.OUTPUT][0] == 5.0  # (10 * 10) / 20
 
     def test_forward_nominal(self):
         lf = pl.LazyFrame(
@@ -187,7 +187,7 @@ class TestExtrapolationCalculationExpressions:
 
         result = lf.select(expr.forward_nominal.alias(self.OUTPUT)).collect()
 
-        assert result[self.OUTPUT][0] == 20.0  # 10 + (30 - 20)
+        assert result[self.OUTPUT][0] == 20.0  # 10 + 30 - 20
 
     def test_backward_nominal(self):
         lf = pl.LazyFrame(
@@ -202,4 +202,4 @@ class TestExtrapolationCalculationExpressions:
 
         result = lf.select(expr.backward_nominal.alias(self.OUTPUT)).collect()
 
-        assert result[self.OUTPUT][0] == -5.0  # 10 - (20 - 5)
+        assert result[self.OUTPUT][0] == -5.0  # 10 - 20 - 5
