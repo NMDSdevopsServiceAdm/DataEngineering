@@ -62,6 +62,14 @@ rolling_mean_test_cases = [
         ],
     ),
     CalculateRollingMeanTestCase(
+        id="all_values_are_null_in_one_area",
+        data=[
+            ("area_1", 2018, None, None),
+            ("area_1", 2017, None, None),
+            ("area_1", 2016, None, None),
+        ],
+    ),
+    CalculateRollingMeanTestCase(
         id="rolling_handles_non_consecutive_years",
         data=[
             ("area_3", 2019, 0.3, 0.2),
@@ -74,6 +82,17 @@ rolling_mean_test_cases = [
         data=[
             ("area_3", 2017, 0.2, 0.15),
             ("area_3", 2016, 0.1, 0.1),
+        ],
+    ),
+    CalculateRollingMeanTestCase(
+        id="years_are_not_in_order",
+        data=[
+            ("area_1", 2020, 0.5, 0.4),
+            ("area_1", 2021, 0.6, 0.5),
+            ("area_1", 2018, 0.3, 0.2),
+            ("area_1", 2019, 0.4, 0.3),
+            ("area_1", 2016, 0.1, 0.1),
+            ("area_1", 2017, 0.2, 0.15),
         ],
     ),
 ]
