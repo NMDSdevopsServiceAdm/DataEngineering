@@ -18,6 +18,10 @@ All notable changes to this project will be documented in this file.
 
 - Converted DPR utils function calculate_remaining_variables to Polars and added tests for the same.
 
+- Converted DPR utils function create_summary_table to Polars and added tests for the same.
+
+- Converted Interpolation utils functions within IND CQC pipeline to Polars. Updated tests for the same.
+
 - Converted DPR estimates util for calculating rolling mean of proportion DPR employing staff.
 
 ### Changed
