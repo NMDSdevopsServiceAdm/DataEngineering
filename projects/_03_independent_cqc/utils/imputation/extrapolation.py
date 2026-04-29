@@ -32,11 +32,12 @@ def model_extrapolation(
           values
 
     The 'extrapolation_forwards' column is required for the
-    'interpolation_model' computation.
+    'interpolation_model' computation and applies forward extrapolation to all
+    values after the first submission.
 
-    Extrapolation is applied as follows: - Forward extrapolation: for dates
-    after the last submitted value - Backward extrapolation: for dates before
-    the first observed value
+    Extrapolation is applied as follows:
+        - Forward extrapolation: for dates after the last submitted value
+        - Backward extrapolation: for dates before the first observed value
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame containing time series data.
