@@ -140,7 +140,7 @@ class TestGetPreviousValue:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
-class TestExtrapolationExpressions:
+class TestExtrapolationCalculationExpressions:
     MODEL = "model"
     OUTPUT = "output"
 
@@ -153,7 +153,7 @@ class TestExtrapolationExpressions:
             }
         )
 
-        expr = job.ExtrapolationExpressions(self.MODEL)
+        expr = job.ExtrapolationCalculationExpressions(self.MODEL)
 
         result = lf.select(expr.forward_ratio.alias(self.OUTPUT)).collect()
 
@@ -168,7 +168,7 @@ class TestExtrapolationExpressions:
             }
         )
 
-        expr = job.ExtrapolationExpressions(self.MODEL)
+        expr = job.ExtrapolationCalculationExpressions(self.MODEL)
 
         result = lf.select(expr.backward_ratio.alias(self.OUTPUT)).collect()
 
@@ -183,7 +183,7 @@ class TestExtrapolationExpressions:
             }
         )
 
-        expr = job.ExtrapolationExpressions(self.MODEL)
+        expr = job.ExtrapolationCalculationExpressions(self.MODEL)
 
         result = lf.select(expr.forward_nominal.alias(self.OUTPUT)).collect()
 
@@ -198,7 +198,7 @@ class TestExtrapolationExpressions:
             }
         )
 
-        expr = job.ExtrapolationExpressions(self.MODEL)
+        expr = job.ExtrapolationCalculationExpressions(self.MODEL)
 
         result = lf.select(expr.backward_nominal.alias(self.OUTPUT)).collect()
 

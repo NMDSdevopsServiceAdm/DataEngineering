@@ -76,7 +76,7 @@ def model_extrapolation(
         ]
     )
 
-    expr = ExtrapolationExpressions(model_to_extrapolate_from)
+    expr = ExtrapolationCalculationExpressions(model_to_extrapolate_from)
 
     method_map = {
         "ratio": (expr.forward_ratio, expr.backward_ratio),
@@ -172,7 +172,7 @@ def get_previous_value(col: str) -> pl.Expr:
     )
 
 
-class ExtrapolationExpressions:
+class ExtrapolationCalculationExpressions:
     """
     Collection of Polars expressions for forward and backward extrapolation.
 
