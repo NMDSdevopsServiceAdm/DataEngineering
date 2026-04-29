@@ -6,6 +6,7 @@ from projects._04_direct_payment_recipients.direct_payments_column_names import 
 )
 
 
+# converted to polars -> projects\_04_direct_payment_recipients\fargate\utils\models\extrapolation_ratio.py
 def model_extrapolation(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
@@ -46,6 +47,7 @@ def model_extrapolation(
     return direct_payments_df
 
 
+# Not converted this function in Polars. Used Polars Expressions
 def add_columns_with_first_and_last_years_of_data(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
@@ -63,6 +65,7 @@ def add_columns_with_first_and_last_years_of_data(
     return direct_payments_df
 
 
+# Not converted this function in Polars. Used Polars Expressions
 def add_data_point_from_given_year_of_data(
     direct_payments_df: DataFrame,
     year_of_data_to_add: str,
@@ -80,6 +83,7 @@ def add_data_point_from_given_year_of_data(
     return direct_payments_df
 
 
+# Not converted this function in Polars. Used Polars Expressions
 def calculate_extrapolation_ratios(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
@@ -101,6 +105,7 @@ def calculate_extrapolation_ratios(
     return ratio_df
 
 
+# Not converted this function in Polars. Used Polars Expressions
 def calculate_extrapolation_estimates(
     ratio_df: DataFrame,
 ) -> DataFrame:
@@ -117,6 +122,7 @@ def calculate_extrapolation_estimates(
     return extrapolation_df
 
 
+# Not converted this function in Polars. Used Polars Expressions
 def filter_to_locations_with_known_service_users_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
@@ -136,6 +142,7 @@ def determine_first_and_last_years_with_data(
     return first_and_last_submission_date_df
 
 
+# Not converted this function in Polars. Used Polars Expressions
 def join_extrapolation_into_df(
     direct_payments_df: DataFrame,
     extrapolation_df: DataFrame,
