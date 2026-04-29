@@ -8,13 +8,20 @@ average_number_of_beds: str = "avg_beds"
 
 def calculate_time_registered_for(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Adds a new column called time_registered which is the number of months the location has been registered with CQC for (rounded up).
-    This function adds a new integer column to the given data frame which represents the number of months (rounded up) between the
-    imputed registration date and the cqc location import date.
+    Adds a new column called time_registered which is the number of months the
+    location has been registered with CQC for (rounded up).
+
+    This function adds a new integer column to the given data frame which
+    represents the number of months (rounded up) between the imputed
+    registration date and the cqc location import date.
+
     Args:
-        lf (pl.LazyFrame): A polars LazyFrame containing the columns: imputed_registration_date and cqc_location_import_date.
+        lf (pl.LazyFrame): A polars LazyFrame containing the columns
+            imputed_registration_date and cqc_location_import_date.
+
     Returns:
-        pl.LazyFrame: A polars lazyFrame with the new time_registered column added.
+        pl.LazyFrame: A polars lazyFrame with the new time_registered column
+            added.
     """
     lf = lf.with_columns(
         (
@@ -33,16 +40,23 @@ def calculate_time_registered_for(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def calculate_time_since_dormant(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Adds a column to show the number of months since the location was last dormant.
-    This function calculates the number of months since the last time a location was marked as dormant.
-    It tracks the most recent date when dormancy was marked as "Y" and calculates
-    the number of months since that date for each location.
-    'time_since_dormant' values before the first instance of dormancy are null.
-    If the location has never been dormant then 'time_since_dormant' is null.
+    Adds a column to show the number of months since the location was last
+    dormant.
+
+    This function calculates the number of months since the last time a location
+    was marked as dormant. It tracks the most recent date when dormancy was
+    marked as "Y" and calculates the number of months since that date for each
+    location. 'time_since_dormant' values before the first instance of dormancy
+    are null. If the location has never been dormant then 'time_since_dormant'
+    is null.
+
     Args:
-        lf (pl.LazyFrame): A polars LazyFrame with columns: cqc_location_import_date, dormancy, and location_id.
+        lf (pl.LazyFrame): A polars LazyFrame with columns
+            cqc_location_import_date, dormancy, and location_id.
+
     Returns:
-        pl.LazyFrame: A polars LazyFrame with an additional column 'time_since_dormant'.
+        pl.LazyFrame: A polars LazyFrame with an additional column
+            'time_since_dormant'.
     """
     lf = lf.sort([IndCQC.location_id, IndCQC.cqc_location_import_date])
     lf = lf.with_columns(
@@ -92,19 +106,29 @@ def calculate_time_since_dormant(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def remove_dual_registration_cqc_care_homes(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Removes cqc care home locations with dual registration and ensures no loss of ascwds data.
-    This function removes one instance of cqc care home locations with dual registration. These
-    are identified using cqc_location_import_date, name, postcode, and carehome. Any ASCWDS data in either
-    location is shared to the other and then the location with the newer registration date is removed.
-    The CQC locations dataset includes instances of 'dual registration', where two providers have evidenced to
-    CQC that they are both responsible for managing the regulated activities at a single location.
-    In this data, these instances appear as two separate lines, with different Location IDs, but with the same
-    names and addresses of services. To understand care provision in England accurately, one of these 'dual registered'
-    location pairs should be removed.
+    Removes cqc care home locations with dual registration and ensures no loss
+    of ASC-WDS data.
+
+    The CQC locations dataset includes instances of 'dual registration', where
+    two providers have evidenced to CQC that they are both responsible for
+    managing the regulated activities at a single location. In this data, these
+    instances appear as two separate lines, with different Location IDs, but
+    with the same names and addresses of services. To understand care provision
+    in England accurately, one of these 'dual registered' location pairs should
+    be removed.
+
+    This function removes one instance of cqc care home locations with dual
+    registration. These are identified using cqc_location_import_date, name,
+    postcode, and carehome. Any ASC-WDS data in either location is shared to the
+    other and then the location with the newer registration date is removed.
+
     Args:
-        lf (pl.LazyFrame): A polars LazyFrame containing cqc location data and ascwds data
+        lf (pl.LazyFrame): A polars LazyFrame containing cqc location data and
+            ASC-WDS data
+
     Returns:
-        pl.LazyFrame: A polars LazyFrame with dual regestrations deduplicated and ascwds data retained.
+        pl.LazyFrame: A polars LazyFrame with dual regestrations deduplicated
+            and ASC-WDS data retained.
     """
     duplicate_columns = [
         IndCQC.cqc_location_import_date,
@@ -122,12 +146,18 @@ def deduplicate_care_homes(
     lf: pl.LazyFrame, duplicate_columns: list[str], distinguishing_columns: list[str]
 ) -> pl.LazyFrame:
     """
-    Removes cqc locations with dual registration.
-    This function removes the more recently registered instance of cqc care home locations with dual registration.
+    Removes CQC care home locations with dual registration.
+
+    This function removes the more recently registered instance of CQC care home
+    locations with dual registration.
+
     Args:
-        lf (pl.LazyFrame): A polars LazyFrame containing cqc location data and ascwds data.
+        lf (pl.LazyFrame): A polars LazyFrame containing CQC location data and
+            ASC-WDS data.
         duplicate_columns (list[str]): A list of column names to identify duplicates.
-        distinguishing_columns (list[str]): A list of the columns which will decide which of the duplicates to keep.
+        distinguishing_columns (list[str]): A list of the columns which will decide
+            which of the duplicates to keep.
+
     Returns:
         pl.LazyFrame: A polars LazyFrame with dual regestrations deduplicated.
     """
@@ -147,11 +177,15 @@ def copy_ascwds_data_across_duplicate_rows(
 ) -> pl.LazyFrame:
     """
     Copies total_staff_bounded and worker_records_bounded across duplicate rows.
+
     Args:
-        lf (pl.LazyFrame): A polars LazyFrame containing cqc location data and ascwds data.
+        lf (pl.LazyFrame): A polars LazyFrame containing cqc location data and
+            ASC-WDS data.
         duplicate_columns (list): A list of column names to identify duplicates.
+
     Returns:
-        pl.LazyFrame: A polars LazyFrame with total_staff_bounded and worker_records_bounded copied across duplicate rows.
+        pl.LazyFrame: A polars LazyFrame with total_staff_bounded and
+            worker_records_bounded copied across duplicate rows.
     """
     lf = lf.with_columns(
         [
@@ -190,10 +224,13 @@ def copy_ascwds_data_across_duplicate_rows(
 def replace_zero_beds_with_null(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Replaces Zero (0) values with Null for number_of_beds column.
+
     Args:
         lf (pl.LazyFrame): A polars LazyFrame containing number_of_beds column.
+
     Returns:
-        pl.LazyFrame: A polars LazyFrame with number_of_beds column replaced with Null if value was 0.
+        pl.LazyFrame: A polars LazyFrame with number_of_beds column replaced
+            with Null if value was 0.
     """
     return lf.with_columns(
         pl.when(pl.col(IndCQC.number_of_beds) == 0)
@@ -203,14 +240,14 @@ def replace_zero_beds_with_null(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
-def populate_missing_care_home_number_of_beds(
-    lf: pl.LazyFrame,
-) -> pl.LazyFrame:
+def populate_missing_care_home_number_of_beds(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Calculates average beds per location and uses this value to replace the null values within the data
-    for missing number of beds.
+    Calculates average beds per location and uses this value to replace the null
+    values within the data for missing number of beds.
+
     Args:
         lf (pl.LazyFrame): A polars LazyFrame containing number_of_beds column.
+
     Returns:
         pl.LazyFrame: A polars LazyFrame.
     """
@@ -221,15 +258,17 @@ def populate_missing_care_home_number_of_beds(
     return lf
 
 
-def filter_to_care_homes_with_known_beds(
-    lf: pl.LazyFrame,
-) -> pl.LazyFrame:
+def filter_to_care_homes_with_known_beds(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Filters the LazyFrame where number_of_beds column is not null to get average value per location.
+    Filters the LazyFrame to care homes where the number_of_beds value is not
+    null.
+
     Args:
         lf (pl.LazyFrame): A polars LazyFrame containing number_of_beds column.
+
     Returns:
-        pl.LazyFrame: A polars LazyFrame.
+        pl.LazyFrame: A polars LazyFrame containing only care homes with
+        non-null number_of_beds values.
     """
     return lf.filter(pl.col(IndCQC.care_home) == CareHome.care_home).filter(
         pl.col(IndCQC.number_of_beds).is_not_null()
@@ -239,8 +278,10 @@ def filter_to_care_homes_with_known_beds(
 def average_beds_per_location(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Calculates average beds per location.
+
     Args:
         lf (pl.LazyFrame): A polars LazyFrame containing number_of_beds column.
+
     Returns:
         pl.LazyFrame: A polars LazyFrame with average beds per location.
     """
@@ -257,11 +298,16 @@ def average_beds_per_location(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def replace_null_beds_with_average(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Replaces value of number_of_beds with average value per location for the records where number_of_beds is null.
+    Replaces value of number_of_beds with average value per location for the
+    records where number_of_beds is null.
+
     Args:
-        lf (pl.LazyFrame): A polars LazyFrame containing number_of_beds and average_number_of_beds columns.
+        lf (pl.LazyFrame): A polars LazyFrame containing number_of_beds and
+            average_number_of_beds columns.
+
     Returns:
-        pl.LazyFrame: A polars LazyFrame with number_of_beds replaced with average_number_of_beds per location when number_of_beds is Null.
+        pl.LazyFrame: A polars LazyFrame with number_of_beds column replaced
+            with average_number_of_beds if value was null.
     """
     return lf.with_columns(
         pl.coalesce(
@@ -274,10 +320,13 @@ def replace_null_beds_with_average(lf: pl.LazyFrame) -> pl.LazyFrame:
 def calculate_care_home_status_count(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Calculate how many care home statuses each location has had.
+
     Args:
         lf (pl.LazyFrame): A polars LazyFrame containing care_home column.
+
     Returns:
-         pl.LazyFrame: A polars LazyFrame with a column containing count of care home statuses per location
+         pl.LazyFrame: A polars LazyFrame with a column containing count of care
+            home statuses per location
     """
     return lf.with_columns(
         pl.col(IndCQC.care_home)

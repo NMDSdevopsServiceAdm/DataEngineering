@@ -158,12 +158,13 @@ class IndCqcColumns:
         ONSClean.current_rural_urban_ind_11 + "_for_non_res_model"
     )
     current_sub_icb: str = ONSClean.current_sub_icb
+    days_between_submissions: str = "days_between_submissions"
     difference_between_estimate_and_cqc_registered_managers: str = (
         "difference_between_estimate_and_cqc_registered_managers"
     )
-    difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles: (
-        str
-    ) = "difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles"
+    difference_estimate_filled_posts_and_from_all_job_roles: str = (
+        "difference_estimate_filled_posts_and_from_all_job_roles"
+    )
     distribution_mean: str = "distribution_mean"
     distribution_standard_deviation: str = "distribution_standard_deviation"
     distribution_kurtosis: str = "distribution_kurtosis"
@@ -203,6 +204,10 @@ class IndCqcColumns:
     first_rolling_average: str = "first_rolling_average"
     first_submission_time: str = "first_submission_time"
     has_non_null_value: str = "has_non_null_value"
+    id_per_locationid_import_date: str = "id_per_locationid_import_date"
+    id_per_locationid_import_date_job_role: str = (
+        "id_per_locationid_import_date_job_role"
+    )
     imputed_ascwds_job_role_counts: str = "imputed_ascwds_job_role_counts"
     imputed_ascwds_job_role_ratios: str = "imputed_ascwds_job_role_ratios"
     imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
@@ -288,6 +293,9 @@ class IndCqcColumns:
     primary_service_type: str = CQCLClean.primary_service_type
     primary_service_type_second_level: str = (
         CQCLClean.primary_service_type + "_second_level"
+    )
+    proportion_of_days_between_submissions: str = (
+        "proportion_of_days_between_submissions"
     )
     proportion_of_non_rm_managerial_estimated_filled_posts_by_role: str = (
         "proportion_of_non_rm_managerial_estimated_filled_posts_by_role"

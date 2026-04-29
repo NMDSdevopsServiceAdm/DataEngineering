@@ -1,11 +1,12 @@
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from cqc_metadata import ColumnNames as Columns
 from cqc_metadata import ColumnValues as Values
-from cqc_metadata import CqcCategories, CqcConfig
+from cqc_metadata import CqcCategories, CqcConfig, LocalAuthorityProviderIds
 
-YEAR_AND_FILE_NAME = Path("2025/12. CQC 051225 (from CQC website)")
+YEAR_AND_FILE_NAME = Path("2026/04. CQC 050426 (from CQC website)")
 
 
 def main():
@@ -34,16 +35,10 @@ def remove_non_social_care_data(data):
 
 def add_sector_data(data):
     print("adding sector")
-    data[Columns.sector] = data[Columns.provider_name].str.contains(
-        CqcCategories.la_keywords,
-        case=False,
-        regex=True,
-    ) & ~data[Columns.provider_name].str.contains(
-        CqcCategories.non_la_keywords, case=False, regex=True
-    )
-
-    data[Columns.sector] = data[Columns.sector].map(
-        {True: Values.local_authority, False: Values.independent}
+    data[Columns.sector] = np.where(
+        data[Columns.provider_id].isin(LocalAuthorityProviderIds.known_ids),
+        Values.local_authority,
+        Values.independent,
     )
     return data
 

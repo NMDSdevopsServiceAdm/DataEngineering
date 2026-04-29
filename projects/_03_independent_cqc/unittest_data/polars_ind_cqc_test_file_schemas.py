@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Final
 
 import polars as pl
 
@@ -35,8 +34,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-
-EXPANDED_ID: Final[str] = "expanded_id"
 from utils.column_values.categorical_column_values import MainJobRoleLabels
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
@@ -597,56 +594,18 @@ class CalculateAscwdsFilledPostsSchemas:
     calculate_ascwds_filled_posts_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
-            (IndCQC.total_staff_bounded, pl.Int64()),
-            (IndCQC.worker_records_bounded, pl.Int64()),
+            (IndCQC.total_staff_bounded, pl.Int32()),
+            (IndCQC.worker_records_bounded, pl.Int32()),
             (IndCQC.ascwds_filled_posts, pl.Float64()),
             (IndCQC.ascwds_filled_posts_source, pl.String()),
         ]
     )
 
-
-@dataclass
-class CalculateAscwdsFilledPostsDifferenceInRangeSchemas:
-    test_difference_within_range_schema = pl.Schema(
+    source_description_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
-            (IndCQC.total_staff_bounded, pl.Int64()),
-            (IndCQC.worker_records_bounded, pl.Int64()),
-            (IndCQC.ascwds_filled_posts, pl.Float64()),
+            (IndCQC.ascwds_filled_posts, pl.Float32()),
             (IndCQC.ascwds_filled_posts_source, pl.String()),
-        ]
-    )
-
-
-@dataclass
-class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas:
-    calculate_ascwds_filled_posts_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.total_staff_bounded, pl.Int64()),
-            (IndCQC.worker_records_bounded, pl.Int64()),
-            (IndCQC.ascwds_filled_posts, pl.Float64()),
-            (IndCQC.ascwds_filled_posts_source, pl.String()),
-        ]
-    )
-
-
-@dataclass
-class CalculateAscwdsFilledPostsUtilsSchemas:
-    estimated_source_description_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.estimate_filled_posts, pl.Float64()),
-            (IndCQC.estimate_filled_posts_source, pl.String()),
-        ]
-    )
-
-    common_checks_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.total_staff_bounded, pl.Int64()),
-            (IndCQC.worker_records_bounded, pl.Int64()),
-            (IndCQC.ascwds_filled_posts, pl.Float64()),
         ]
     )
 
@@ -1435,7 +1394,7 @@ class TestJoinEstimatesToAscwds:
     TEST_ROLES = ["role_a", "role_b"]
     estimates_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.ascwds_workplace_import_date: pl.String,
             IndCQC.establishment_id: pl.String,
         }
@@ -1450,7 +1409,7 @@ class TestJoinEstimatesToAscwds:
     )
     expected_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(TEST_ROLES),
             "value": pl.Float64,
         }
@@ -1461,7 +1420,7 @@ class TestJoinEstimatesToAscwds:
 class ImputeJobRoleSchemas:
 
     create_imputed_ascwds_job_role_counts_expected_schema = {
-        EXPANDED_ID: pl.UInt32,
+        IndCQC.id_per_locationid_import_date_job_role: pl.UInt32,
         IndCQC.location_id: pl.String,
         IndCQC.main_job_role_clean_labelled: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
@@ -1473,7 +1432,7 @@ class ImputeJobRoleSchemas:
     }
 
     create_ascwds_job_role_rolling_ratio_expected_schema = {
-        EXPANDED_ID: pl.UInt16,
+        IndCQC.id_per_locationid_import_date_job_role: pl.UInt16,
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: pl.String,
@@ -1500,11 +1459,12 @@ class ImputeJobRoleSchemas:
 
 
 @dataclass
-class EstimateFilledPostsByJobRole04EstimateSchemas:
+class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
     calculate_estimated_filled_posts_by_job_role_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.estimate_filled_posts: pl.Float32,
+            IndCQC.ascwds_job_role_ratios: pl.Float32,
             IndCQC.imputed_ascwds_job_role_ratios: pl.Float32,
             IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,
             IndCQC.ascwds_job_role_ratios_merged_source: pl.String,
@@ -1513,7 +1473,7 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
         }
     )
 
-    count_cqc_rm_schema = pl.Schema(
+    has_rm_in_cqc_rm_name_list_flag_schema = pl.Schema(
         {
             IndCQC.registered_manager_names: pl.List(pl.String),
             IndCQC.registered_manager_count: pl.UInt32,
@@ -1522,7 +1482,7 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
 
     adjust_managerial_roles_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
@@ -1532,7 +1492,7 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
     )
     expected_adjust_managerial_roles_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
@@ -1543,7 +1503,7 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
 
     expected_calculate_reg_man_difference_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
@@ -1555,7 +1515,7 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
 
     expected_calculate_non_rm_managerial_distribution_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
@@ -1566,7 +1526,7 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
 
     expected_distribute_rm_difference_schema = pl.Schema(
         {
-            "id": pl.Int32,
+            IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
@@ -1577,3 +1537,54 @@ class EstimateFilledPostsByJobRole04EstimateSchemas:
             IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
         }
     )
+
+    expected_calc_diff_estimate_filled_posts_and_from_all_job_roles_schema = pl.Schema(
+        {
+            IndCQC.id_per_locationid_import_date: pl.Int32,
+            IndCQC.estimate_filled_posts: pl.Float32,
+            IndCQC.main_job_role_clean_labelled: pl.Enum(
+                AscwdsWorkerValueLabelsJobGroup.all_roles()
+            ),
+            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
+            IndCQC.estimate_filled_posts_from_all_job_roles: pl.Float32,
+            IndCQC.difference_estimate_filled_posts_and_from_all_job_roles: pl.Float32,
+        }
+    )
+
+
+@dataclass
+class InterpolationSchema:
+    interpolation_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_pir_merged: pl.Float64,
+        IndCQC.extrapolation_forwards: pl.Float64,
+        IndCQC.interpolation_model: pl.Float64,
+    }
+
+    calculate_residual_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_pir_merged: pl.Float64,
+        IndCQC.extrapolation_forwards: pl.Float64,
+        IndCQC.residual: pl.Float64,
+    }
+
+    days_between_submissions_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_pir_merged: pl.Float64,
+        IndCQC.days_between_submissions: pl.Int64,
+        IndCQC.proportion_of_days_between_submissions: pl.Float64,
+    }
+
+    calculate_interpolated_values_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_pir_merged: pl.Float64,
+        IndCQC.previous_non_null_value: pl.Float64,
+        IndCQC.residual: pl.Float64,
+        IndCQC.days_between_submissions: pl.Int64,
+        IndCQC.proportion_of_days_between_submissions: pl.Float64,
+        IndCQC.interpolation_model: pl.Float64,
+    }

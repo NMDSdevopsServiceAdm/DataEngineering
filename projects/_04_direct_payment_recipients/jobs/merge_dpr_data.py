@@ -38,12 +38,7 @@ def main(
         DP.RATIO_ROLLING_AVERAGE, DP.FILLED_POSTS_PER_EMPLOYER
     )
 
-    utils.write_to_parquet(
-        direct_payments_df,
-        destination,
-        mode="overwrite",
-        partitionKeys=[DP.YEAR],
-    )
+    utils.write_to_parquet(direct_payments_df, destination, mode="overwrite")
 
 
 if __name__ == "__main__":

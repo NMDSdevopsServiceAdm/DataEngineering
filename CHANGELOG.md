@@ -6,7 +6,43 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Setup scripts and terraform required for converting direct payment estimates to polars.
 
+- Converted DPR Interpolation script to Polars and added tests for the same.
+
+- Converted DPR estimates util function model_using_mean from pyspark to polars.
+
+- Converted DPR Extrapolation script to Polars and added tests for the same.
+
+- Converted DPR local authority name fix util to polars.
+
+- Converted DPR utils function calculate_remaining_variables to Polars and added tests for the same.
+
+- Converted DPR utils function create_summary_table to Polars and added tests for the same.
+
+- Converted Interpolation utils functions within IND CQC pipeline to Polars. Updated tests for the same.
+
+- Added Polars estimates by job role job to IND CQC estimates step function.
+
+### Changed
+- Removed the PySpark version of IND CQC Clean and Validation jobs.
+
+- Removed partitioning from direct payments pipeline outputs.
+
+- Added row_id and expanded_id to the ind cqc columns class as
+  id_per_locationid_import_date and id_per_locationid_import_date_job_role respectively and
+  updated references to the objects.
+
+### Fixed
+- Update setup instructions with pre-commit hooks setup
+
+- Added missing CQC locations delta data in s3 and updated pipeline to version 3.1.1 of locations delta data.
+
+
+## [v2026.03.1] - 21/04/2026
+
+### Added
+- Added function to calculate difference between estimate filled posts and sum of job role estimates.
 
 ### Changed
 - Set up imputation step for job role breakdown,  add unit tests and remove functions that are no longer needed.
@@ -17,7 +53,9 @@ All notable changes to this project will be documented in this file.
 
 - Set up estimates step for job role breakdown.
 
-### Fixed
+- Refactored ASC-WDS filled post calculation code into one file.
+
+- Moved job role utils for cleaning and imputation into their own scripts.
 
 
 ## [v2026.03.0] - 09/04/2026

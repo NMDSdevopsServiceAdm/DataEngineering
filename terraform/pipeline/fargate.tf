@@ -62,3 +62,14 @@ module "_03_independent_cqc_model" {
     { "name" : "AWS_REGION", "value" : "eu-west-2" }
   ]
 }
+
+module "_04_direct_payments" {
+  source        = "../modules/fargate-task"
+  task_name     = "_04_direct_payments"
+  ecr_repo_name = "fargate/04_direct_payments"
+  cluster_arn   = aws_ecs_cluster.polars_cluster.arn
+  environment = [
+    { "name" : "AWS_REGION", "value" : "eu-west-2" }
+  ]
+  tag_name = terraform.workspace
+}

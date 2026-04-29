@@ -6,14 +6,9 @@ from typing import Any
 import numpy as np
 import pytest
 
-from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.difference_within_range import (
-    ascwds_filled_posts_difference_within_range_source_description,
-)
-from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records import (
-    ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
+    ASCWDSFilledPostsSource,
     AscwdsFilteringRule,
     CareHome,
     CTFilteringRule,
@@ -477,134 +472,60 @@ class ValidateEstimatedIndCQCFilledPostsData:
 
 @dataclass
 class CalculateAscwdsFilledPostsData:
-
     calculate_ascwds_filled_posts_rows = [
-        # Both 0: Return None
-        ("1-000001", 0, None, None, None,),
-        # Both 500: Return 500
-        ("1-000002", 500, 500, None, None,),
-        # Only know total_staff: Return None
-        ("1-000003", 10, None, None, None,),
-        # worker_record_count below min permitted: return None
-        ("1-000004", 23, 1, None, None,),
-        # Only know worker_records: None
-        ("1-000005", None, 100, None, None,),
-        # None of the rules apply: Return None
-        ("1-000006", 900, 600, None, None,),
-        # Absolute difference is within absolute bounds: Return Average
-        ("1-000007", 12, 11, None, None,),
-        # Absolute difference is within percentage bounds: Return Average
-        ("1-000008", 500, 475, None, None,),
-        # Already populated, shouldn't change it
-        ("1-000009", 10, 10, 8.0, "already populated"),
+        ("1-000001", 0,    None, None, None),                # Both 0: Return None
+        ("1-000002", 500,  500,  None, None),                # Both 500: Return 500
+        ("1-000003", 10,   None, None, None),                # Only know total_staff: Return None
+        ("1-000004", 23,   1,    None, None),                # worker_record_count below min permitted: return None
+        ("1-000005", None, 100,  None, None),                # Only know worker_records: None
+        ("1-000006", 900,  600,  None, None),                # None of the rules apply: Return None
+        ("1-000007", 12,   11,   None, None),                # Absolute difference is within absolute bounds: Return Average
+        ("1-000008", 500,  475,  None, None),                # Absolute difference is within percentage bounds: Return Average
+        ("1-000009", 10,   10,   8.0,  "already populated"), # Already populated, shouldn't change it
     ] # fmt: skip
-
     expected_ascwds_filled_posts_rows = [
-        # Both 0: Return None
-        ("1-000001", 0, None, None, None,),
-        # Both 500: Return 500
-        ("1-000002", 500, 500, 500.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,),
-        # Only know total_staff: Return None
-        ("1-000003", 10, None, None, None,),
-        # worker_record_count below min permitted: return None
-        ("1-000004", 23, 1, None, None,),
-        # Only know worker_records: Return None
-        ("1-000005", None, 100, None, None,),
-        # None of the rules apply: Return None
-        ("1-000006", 900, 600, None, None,),
-        # Absolute difference is within absolute bounds: Return Average
-        ("1-000007", 12, 11, 11.5, ascwds_filled_posts_difference_within_range_source_description,),
-        # Absolute difference is within percentage bounds: Return Average
-        ("1-000008", 500, 475, 487.5, ascwds_filled_posts_difference_within_range_source_description,),
-        # Already populated, shouldn't change it
-        ("1-000009", 10, 10, 10.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description),
+        ("1-000001", 0,    None, None,  None),
+        ("1-000002", 500,  500,  500.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
+        ("1-000003", 10,   None, None,  None),
+        ("1-000004", 23,   1,    None,  None),
+        ("1-000005", None, 100,  None,  None),
+        ("1-000006", 900,  600,  None,  None),
+        ("1-000007", 12,   11,   11.5,  ASCWDSFilledPostsSource.average_of_total_staff_and_worker_records),
+        ("1-000008", 500,  475,  487.5, ASCWDSFilledPostsSource.average_of_total_staff_and_worker_records),
+        ("1-000009", 10,   10,   10.0,  ASCWDSFilledPostsSource.worker_records_and_total_staff),
+    ] # fmt: skip
+    expected_totalstaff_equal_wkrrecs_rows = [
+        ("1-000001", 0,    None, None,  None),
+        ("1-000002", 500,  500,  500.0, ASCWDSFilledPostsSource.worker_records_and_total_staff),
+        ("1-000003", 10,   None, None,  None),
+        ("1-000004", 23,   1,    None,  None),
+        ("1-000005", None, 100,  None,  None),
+        ("1-000006", 900,  600,  None,  None),
+        ("1-000007", 12,   11,   None,  None),
+        ("1-000008", 500,  475,  None,  None),
+        ("1-000009", 10,   10,   8.0,   "already populated"),
+    ] # fmt: skip
+    expected_difference_within_range_rows = [
+        ("1-000001", 0,    None, None,  None),
+        ("1-000002", 500,  500,  500.0, ASCWDSFilledPostsSource.average_of_total_staff_and_worker_records),
+        ("1-000003", 10,   None, None,  None),
+        ("1-000004", 23,   1,    None,  None),
+        ("1-000005", None, 100,  None,  None),
+        ("1-000006", 900,  600,  None,  None),
+        ("1-000007", 12,   11,   11.5,  ASCWDSFilledPostsSource.average_of_total_staff_and_worker_records),
+        ("1-000008", 500,  475,  487.5, ASCWDSFilledPostsSource.average_of_total_staff_and_worker_records),
+        ("1-000009", 10,   10,   8.0,   "already populated"),
     ] # fmt: skip
 
-
-@dataclass
-class CalculateAscwdsFilledPostsDifferenceInRangeData:
-
-    test_difference_within_range_rows = [
-        # Both 0: Return None
-        ("1-000001", 0, None, None, None,),
-        # Both 500: Return 500
-        ("1-000002", 500, 500, None, None,),
-        # Only know total_staff: Return None
-        ("1-000003", 10, None, None, None,),
-        # worker_record_count below min permitted: return None
-        ("1-000004", 23, 1, None, None,),
-        # Only know worker_records: None
-        ("1-000005", None, 100, None, None,),
-        # None of the rules apply: Return None
-        ("1-000006", 900, 600, None, None,),
-        # Absolute difference is within absolute bounds: Return Average
-        ("1-000007", 12, 11, None, None,),
-        # Absolute difference is within percentage bounds: Return Average
-        ("1-000008", 500, 475, None, None,),
-        # Already populated, shouldn't change it
-        ("1-000009", 10, 10, 8.0, "already populated"),
-    ] # fmt: skip
-
-
-@dataclass
-class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsData:
-
-    calculate_ascwds_filled_posts_rows = [
-        # Both 0: Return None
-        ("1-000001", 0, None, None, None,),
-        # Both 500: Return 500
-        ("1-000002", 500, 500, None, None,),
-        # Only know total_staff: Return None
-        ("1-000003", 10, None, None, None,),
-        # worker_record_count below min permitted: return None
-        ("1-000004", 23, 1, None, None,),
-        # Only know worker_records: None
-        ("1-000005", None, 100, None, None,),
-        # None of the rules apply: Return None
-        ("1-000006", 900, 600, None, None,),
-        # Absolute difference is within absolute bounds: Return Average
-        ("1-000007", 12, 11, None, None,),
-        # Absolute difference is within percentage bounds: Return Average
-        ("1-000008", 500, 475, None, None,),
-        # Already populated, shouldn't change it
-        ("1-000009", 10, 10, 8.0, "already populated"),
-    ] # fmt: skip
-
-    expected_ascwds_filled_posts_rows = [
-        ("1-000001", 0, None, None, None),
-        ("1-000002", 500, 500, 500.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description),
-        ("1-000003", 10, None, None, None),
-        ("1-000004", 23, 1, None, None),
-        ("1-000005", None, 100, None, None),
-        ("1-000006", 900, 600, None, None),
-        ("1-000007", 12, 11, None, None),
-        ("1-000008", 500, 475, None, None),
-        ("1-000009", 10, 10, 8.0, "already populated"),
-    ] # fmt: skip
-
-
-@dataclass
-class CalculateAscwdsFilledPostsUtilsData:
-    common_checks_rows = [
-        ("1-000000001", 9, 2, None),
-        ("1-000000002", 2, 2, 2.0),
-    ]
     source_missing_rows = [
         ("1-000001", 8.0, None),
         ("1-000002", None, None),
         ("1-000003", 4.0, "already_populated"),
     ]
-
     expected_source_added_rows = [
         ("1-000001", 8.0, "model_name"),
         ("1-000002", None, None),
         ("1-000003", 4.0, "already_populated"),
-    ]
-
-    test_two_cols_are_equal_rows = [
-        ("1-000000001", 9, 2, None),
-        ("1-000000002", 2, 2, 2.0),
-        ("1-000000003", 8, 8, 8.0),
     ]
 
 
@@ -2140,16 +2061,18 @@ class AdjustManagerialRolesSubFunctionTestCases:
 
 
 @dataclass
-class EstimateFilledPostsByJobRole04EstimateData:
+class EstimateFilledPostsByJobRoleEstimateUtilsData:
     calculate_estimated_filled_posts_by_job_role_rows = [
-        (0, 10.0, 0.4, 0.6, IndCQC.imputed_ascwds_job_role_ratios, 0.4, 4.0),
-        (1, 10.0, 0.4, None, IndCQC.imputed_ascwds_job_role_ratios, 0.4, 4.0),
-        (2, 10.0, None, 0.6, IndCQC.ascwds_job_role_rolling_ratio, 0.6, 6.0),
-        (3, None, 0.4, 0.6, IndCQC.imputed_ascwds_job_role_ratios, 0.4, None),
-        (4, 10.0, None, None, None, None, None),
+        (0, 10.0, 0.2, 0.4, 0.6, IndCQC.ascwds_job_role_ratios, 0.2, 2.0),
+        (1, 10.0, None, 0.4, 0.6, IndCQC.imputed_ascwds_job_role_ratios, 0.4, 4.0),
+        (2, 10.0, None, None, 0.6, IndCQC.ascwds_job_role_rolling_ratio, 0.6, 6.0),
+        (3, 10.0, 0.2, 0.4, None, IndCQC.ascwds_job_role_ratios, 0.2, 2.0),
+        (4, 10.0, 0.2, None, 0.6, IndCQC.ascwds_job_role_ratios, 0.2, 2.0),
+        (6, None, 0.2, 0.4, 0.6, IndCQC.ascwds_job_role_ratios, 0.2, None),
+        (7, 10.0, None, None, None, None, None, None),
     ]
 
-    count_cqc_rm_rows = [
+    has_rm_in_cqc_rm_name_list_flag_rows = [
         (["name_1"], 1),
         (["name_1", "name_2"], 1),
         ([], 0),
@@ -2175,67 +2098,81 @@ class EstimateFilledPostsByJobRole04EstimateData:
 
     calculate_reg_man_difference_test_cases = [
         AdjustManagerialRolesSubFunctionTestCases(
-            id="estimated_rm_is_zero_and_cqc_count_rm_is_one",
+            id="calculates_difference_between_rm_estimate_and_cqc_count",
             expected_data=[
-                (0, MainJobRoleLabels.supervisor, 10.0, 1.0, -1.0),
-                (0, MainJobRoleLabels.registered_manager, 0.0, 1.0, -1.0),
+                (0, MainJobRoleLabels.registered_manager, 5.0, 1.0, 4.0),
+                (1, MainJobRoleLabels.registered_manager, 0.0, 5.0, -5.0),
             ],
         ),
         AdjustManagerialRolesSubFunctionTestCases(
-            id="estimated_rm_is_one_and_cqc_count_rm_is_zero",
+            id="rm_difference_is_copied_to_all_rows_in_group",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 20.0, 0.0, 1.0),
                 (0, MainJobRoleLabels.registered_manager, 1.0, 0.0, 1.0),
+            ],
+        ),
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="rm_difference_is_calculated_per_group",
+            expected_data=[
+                (0, MainJobRoleLabels.supervisor, 20.0, 0.0, 1.0),
+                (0, MainJobRoleLabels.registered_manager, 1.0, 0.0, 1.0),
+                (1, MainJobRoleLabels.supervisor, 20.0, 0.0, 5.0),
+                (1, MainJobRoleLabels.registered_manager, 5.0, 0.0, 5.0),
             ],
         ),
     ]
 
     calculate_non_rm_managerial_distribution_test_cases = [
         AdjustManagerialRolesSubFunctionTestCases(
-            id="non_rm_manager_filled_post_sum_is_above_zero",
+            id="calculates_non_rm_managerial_proportions_from_estimated_posts",
             expected_data=[
+                (0, MainJobRoleLabels.care_worker, 10.0, None),
                 (0, MainJobRoleLabels.supervisor, 60.0, 0.6),
                 (0, MainJobRoleLabels.first_line_manager, 40.0, 0.4),
                 (0, MainJobRoleLabels.registered_manager, 10.0, None),
             ],
         ),
         AdjustManagerialRolesSubFunctionTestCases(
-            id="non_rm_manager_filled_post_sum_is_zero",
+            id="distributes_evenly_when_non_rm_managerial_total_is_zero",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 0.0, 0.5),
                 (0, MainJobRoleLabels.first_line_manager, 0.0, 0.5),
                 (0, MainJobRoleLabels.registered_manager, 10.0, None),
             ],
         ),
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="calculates_non_rm_managerial_proportions_per_group",
+            expected_data=[
+                (0, MainJobRoleLabels.supervisor, 60.0, 0.6),
+                (0, MainJobRoleLabels.first_line_manager, 40.0, 0.4),
+                (0, MainJobRoleLabels.registered_manager, 10.0, None),
+                (1, MainJobRoleLabels.supervisor, 0.0, 0.5),
+                (1, MainJobRoleLabels.first_line_manager, 0.0, 0.5),
+                (1, MainJobRoleLabels.registered_manager, 10.0, None),
+            ],
+        ),
     ]
 
     distribute_rm_difference_test_cases = [
         AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_one_and_cqc_count_is_zero",
+            id="overides_estimated_rm_posts_with_cqc_count",
             expected_data=[
-                (0, MainJobRoleLabels.supervisor, 5.0, 0, 1.0, 0.5, 5.5),
-                (0, MainJobRoleLabels.first_line_manager, 5.0, 0, 1.0, 0.5, 5.5),
+                (0, MainJobRoleLabels.registered_manager, 0.0, 4, 4.0, None, 4.0),
+                (1, MainJobRoleLabels.registered_manager, None, 0, -4.0, None, 0.0),
+                (2, MainJobRoleLabels.registered_manager, 4.0, None, None, None, None),
+            ],
+        ),
+        AdjustManagerialRolesSubFunctionTestCases(
+            id="redistributes_rm_difference_across_other_manager_roles",
+            expected_data=[
+                (0, MainJobRoleLabels.care_worker, 1.0, 0, 1.0, None, 1.0),
+                (0, MainJobRoleLabels.supervisor, 1.0, 0, 1.0, 0.5, 1.5),
+                (0, MainJobRoleLabels.first_line_manager, 1.0, 0, 1.0, 0.5, 1.5),
                 (0, MainJobRoleLabels.registered_manager, 1.0, 0, 1.0, None, 0.0),
             ],
         ),
         AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_zero_and_cqc_count_is_one",
-            expected_data=[
-                (0, MainJobRoleLabels.supervisor, 5.0, 1, -1.0, 0.5, 4.5),
-                (0, MainJobRoleLabels.first_line_manager, 5.0, 1, -1.0, 0.5, 4.5),
-                (0, MainJobRoleLabels.registered_manager, 0.0, 1, -1.0, None, 1.0),
-            ],
-        ),
-        AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_one_and_cqc_count_is_zero_and_non_rm_manager_filled_posts_is_very_low",
-            expected_data=[
-                (0, MainJobRoleLabels.supervisor, 0.1, 0, 1.0, 0.5, 0.6),
-                (0, MainJobRoleLabels.first_line_manager, 0.1, 0, 1.0, 0.5, 0.6),
-                (0, MainJobRoleLabels.registered_manager, 1.0, 0, 1.0, None, 0.0),
-            ],
-        ),
-        AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_zero_and_cqc_count_is_one_and_non_rm_manager_filled_posts_is_very_low",
+            id="does_not_reduce_other_manager_roles_below_zero",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 0.1, 1, -1.0, 0.5, 0.0),
                 (0, MainJobRoleLabels.first_line_manager, 0.1, 1, -1.0, 0.5, 0.0),
@@ -2243,19 +2180,167 @@ class EstimateFilledPostsByJobRole04EstimateData:
             ],
         ),
         AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_one_and_cqc_count_is_one_and_non_rm_manager_filled_posts_is_zero",
+            id="allows_total_manager_posts_mismatch_when_cqc_override_exceeds_available_posts",
             expected_data=[
-                (0, MainJobRoleLabels.supervisor, 0.0, 1, 0.0, 0.5, 0.0),
-                (0, MainJobRoleLabels.first_line_manager, 0.0, 1, 0.0, 0.5, 0.0),
-                (0, MainJobRoleLabels.registered_manager, 1.0, 1, 0.0, None, 1.0),
+                (0, MainJobRoleLabels.supervisor, 0.0, 5, -5.0, 0.5, 0.0),
+                (0, MainJobRoleLabels.first_line_manager, 0.0, 5, -5.0, 0.5, 0.0),
+                (0, MainJobRoleLabels.registered_manager, 0.0, 5, -5.0, None, 5.0),
             ],
         ),
         AdjustManagerialRolesSubFunctionTestCases(
-            id="reg_man_filled_posts_is_zero_and_cqc_count_is_one_and_and_non_rm_manager_filled_posts_is_zero",
+            id="leaves_values_unchanged_when_prediction_matches_cqc",
             expected_data=[
-                (0, MainJobRoleLabels.supervisor, 0.0, 1, -1.0, 0.5, 0.0),
-                (0, MainJobRoleLabels.first_line_manager, 0.0, 1, -1.0, 0.5, 0.0),
-                (0, MainJobRoleLabels.registered_manager, 0.0, 1, -1.0, None, 1.0),
+                (0, MainJobRoleLabels.supervisor, 10.0, 1, 0.0, 0.5, 10.0),
+                (0, MainJobRoleLabels.first_line_manager, 10.0, 1, 0.0, 0.5, 10.0),
+                (0, MainJobRoleLabels.registered_manager, 1.0, 1, 0.0, None, 1.0),
             ],
         ),
     ]
+
+    expected_calc_diff_estimate_filled_posts_and_from_all_job_roles_rows = [
+        (0, 10.0, MainJobRoleLabels.care_worker, 5.0, 10.0, 0.0), # All job roles have filled posts.
+        (0, 10.0, MainJobRoleLabels.senior_care_worker, 5.0, 10.0, 0.0),
+        (1, 10.0, MainJobRoleLabels.care_worker, 5.0, 5.0, -5.0), # Job roles have mix of value and null.
+        (1, 10.0, MainJobRoleLabels.senior_care_worker, None, 5.0, -5.0),
+        (2, 10.0, MainJobRoleLabels.care_worker, None, None, None), # All job role posts are null.
+        (2, 10.0, MainJobRoleLabels.senior_care_worker, None, None, None),
+    ]  # fmt: skip
+
+
+@dataclass
+class ModelInterpolationTestCase:
+    id: str
+    data: list[Any]
+    method: str = None
+    max_days_between_submissions: int = None
+
+
+@dataclass
+class InterpolationData:
+    interpolation_test_cases = [
+        ModelInterpolationTestCase(
+            id="trend_interpolation_single_gap",
+            data=[
+                ("1-001", date(2023, 3, 1), 40.0, None, None),
+                ("1-001", date(2023, 6, 1), None, 46.0, 34.185792),
+                ("1-001", date(2024, 3, 1), 5.0, 52.0, None),
+            ],
+            method="trend",
+        ),
+        ModelInterpolationTestCase(
+            id="trend_interpolation_not_possible_with_single_point",
+            data=[
+                ("1-001", date(2023, 1, 1), None, None, None),
+                ("1-001", date(2023, 2, 1), 10.0, None, None),
+                ("1-001", date(2023, 3, 1), None, None, None),
+            ],
+            method="trend",
+        ),
+        ModelInterpolationTestCase(
+            id="straight_interpolation_single_gap",
+            data=[
+                ("1-001", date(2023, 3, 1), 40.0, None, None),
+                ("1-001", date(2023, 4, 1), None, 42.0, 37.035519),
+                ("1-001", date(2024, 3, 1), 5.0, 52.0, None),
+            ],
+            method="straight",
+        ),
+        ModelInterpolationTestCase(
+            id="straight_interpolation_not_possible_with_single_point",
+            data=[
+                ("1-001", date(2023, 1, 1), None, None, None),
+                ("1-001", date(2023, 2, 1), 10.0, None, None),
+                ("1-001", date(2023, 3, 1), None, None, None),
+            ],
+            method="straight",
+        ),
+    ]  # fmt: skip
+
+    calculate_residual_test_cases = [
+        ModelInterpolationTestCase(
+            id="extrapolation_forwards_is_known_rows",
+            data=[
+                ("1-001", date(2023, 5, 1), None, 44.0, -47.0),
+                ("1-001", date(2023, 4, 1), None, 42.0, -47.0),
+                ("1-001", date(2024, 3, 1), 5.0, 52.0, -47.0),
+                ("1-001", date(2024, 4, 1), None, 5.1, 9.8),
+                ("1-001", date(2024, 5, 1), 15.0, 5.2, 9.8),
+            ],
+        ),
+        ModelInterpolationTestCase(
+            id="extrapolation_forwards_is_none_rows",
+            data=[
+                ("1-001", date(2023, 1, 1), None, None, None),
+                ("1-001", date(2023, 3, 1), 40.0, None, None),
+            ],
+        ),
+        ModelInterpolationTestCase(
+            id="returns_none_date_after_final_non_null_submission_rows",
+            data=[
+                ("1-001", date(2024, 5, 1), 15.0, 5.2, 9.8),
+                ("1-001", date(2024, 6, 1), None, 15.3, None),
+            ],
+        ),
+    ]  # fmt: skip
+    calculate_days_between_submissions_test_cases = [
+        ModelInterpolationTestCase(
+            id="one_location_data",
+            data=[
+                ("1-001", date(2024, 2, 1), None, None, None),
+                ("1-001", date(2024, 3, 1), 5.0, None, None),
+                ("1-001", date(2024, 4, 1), None, 122, 0.25),
+                ("1-001", date(2024, 5, 1), None, 122, 0.5),
+                ("1-001", date(2024, 6, 1), None, 122, 0.75),
+                ("1-001", date(2024, 7, 1), 15.0, None, None),
+                ("1-001", date(2023, 8, 1), None, None, None),
+            ],
+        ),
+        ModelInterpolationTestCase(
+            id="multiple_locations_single_submission_each",
+            data=[
+                ("1-001", date(2024, 1, 1), 5.0, None, None),
+                ("1-001", date(2024, 2, 1), None, None, None),
+                ("1-002", date(2024, 1, 5), 3.0, None, None),
+                ("1-002", date(2024, 2, 5), None, None, None),
+                ("1-003", date(2024, 3, 1), 8.0, None, None),
+                ("1-003", date(2024, 4, 1), None, None, None),
+            ],
+        ),
+        ModelInterpolationTestCase(
+            id="two_locations_interleaved",
+            data=[
+                ("1-001", date(2024, 1, 1), 10.0, None, None),
+                ("1-002", date(2024, 1, 2), 10.0, None, None),
+                ("1-001", date(2024, 2, 1), None, 60, 0.51),
+                ("1-002", date(2024, 3, 2), None, 90, 0.66),
+                ("1-001", date(2024, 3, 1), 7.0, None, None),
+                ("1-002", date(2024, 4, 1), 7.0, None, None),
+            ],
+        ),
+    ]  # fmt: skip
+    calculate_interpolated_values_test_cases = [
+        ModelInterpolationTestCase(
+            id="test_function_returns_expected_values_when_within_max_days",
+            data=[
+                ("1-001", date(2025, 1, 3), 20.0, None, None, None, None, None),
+                ("1-001", date(2025, 1, 4), None, 20.0, 10.0, 4, 0.25, 22.5),
+                ("1-001", date(2025, 1, 5), None, 20.0, 10.0, 4, 0.5, 25.0),
+                ("1-001", date(2025, 1, 6), None, 20.0, 10.0, 4, 0.75, 27.5),
+                ("1-001", date(2025, 1, 7), 30.0, 20.0, 10.0, None, None, None),
+                ("1-001", date(2025, 1, 8), None, None, None, None, None, None),
+            ],
+            max_days_between_submissions=4,
+        ),
+        ModelInterpolationTestCase(
+            id="test_function_returns_expected_values_when_outside_max_days",
+            data=[
+                ("1-001", date(2025, 1, 3), 20.0, None, None, None, None, None),
+                ("1-001", date(2025, 1, 4), None, 20.0, 10.0, 3, 0.25, None),
+                ("1-001", date(2025, 1, 5), None, 20.0, 10.0, 3, 0.5, None),
+                ("1-001", date(2025, 1, 6), None, 20.0, 10.0, 3, 0.75, None),
+                ("1-001", date(2025, 1, 7), 30.0, 20.0, 10.0, None, None, None),
+                ("1-001", date(2025, 1, 8), None, None, None, None, None, None),
+            ],
+            max_days_between_submissions=2,
+        ),
+    ]  # fmt: skip
