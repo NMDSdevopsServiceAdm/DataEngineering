@@ -23,7 +23,7 @@ class EstimateServiceUsersEmployingStaffTestCase:
 
 estimated_service_users_employing_staff_test_cases = [
     EstimateServiceUsersEmployingStaffTestCase(
-        id="known_proportions_in_all_years_gives_known_proportions",
+        id="known_proportions_used_when_known",
         expected_data=
             {
                 DP.LA_AREA: ["area_1", "area_1"],
@@ -43,7 +43,7 @@ estimated_service_users_employing_staff_test_cases = [
             }, # fmt: skip
     ),
     EstimateServiceUsersEmployingStaffTestCase(
-        id="null_proportion_in_earliest_year_gives_extrapolated_proportion_from_mean_of_known_proportions",
+        id="extrapolation_used_when_first_year_missing",
         expected_data={
                 DP.LA_AREA: ["area_1", "area_1", "area_2", "area_2"],
                 DP.YEAR_AS_INTEGER: [2020, 2021, 2020, 2021],
@@ -62,7 +62,7 @@ estimated_service_users_employing_staff_test_cases = [
             }, # fmt: skip
     ),
     EstimateServiceUsersEmployingStaffTestCase(
-        id="null_proportion_between_known_years_gives_interpolated_proportion",
+        id="interpolation_used_to_populate_missing_value_between_known",
         expected_data={
             DP.LA_AREA: ["area_1", "area_1", "area_1"],
             DP.YEAR_AS_INTEGER: [2020, 2021, 2022],
@@ -81,7 +81,7 @@ estimated_service_users_employing_staff_test_cases = [
         } # fmt: skip
     ),
     EstimateServiceUsersEmployingStaffTestCase(
-        id="only_historic_data_is_known_gives_mean_proportion",
+        id="mean_used_only_historic_estimate_available",
         expected_data={
             DP.LA_AREA: ["area_1", "area_1"],
             DP.YEAR_AS_INTEGER: [2020, 2021],
@@ -97,6 +97,25 @@ estimated_service_users_employing_staff_test_cases = [
             DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE: [DP.ESTIMATE_USING_MEAN, DP.ESTIMATE_USING_MEAN],
             DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [0.5, 0.45],
             DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF: [5.0, 4.5],
+        } # fmt: skip
+    ),
+    EstimateServiceUsersEmployingStaffTestCase(
+        id="no_known_proportions_or_historic_proportions",
+        expected_data={
+            DP.LA_AREA: ["area_1", "area_1"],
+            DP.YEAR_AS_INTEGER: [2020, 2021],
+            DP.SERVICE_USER_DPRS_DURING_YEAR: [10.0, 10.0],
+            DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [None, None],
+            DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE: [None, None],
+            DP.ESTIMATE_USING_MEAN: [None, None],
+            DP.FIRST_YEAR_WITH_DATA: [None, None],
+            DP.LAST_YEAR_WITH_DATA: [None, None],
+            DP.ESTIMATE_USING_EXTRAPOLATION_RATIO: [None, None],
+            DP.ESTIMATE_USING_INTERPOLATION: [None, None],
+            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [None, None],
+            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE: [None, None],
+            DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: [None, None],
+            DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF: [None, None],
         } # fmt: skip
     ),
 ]
