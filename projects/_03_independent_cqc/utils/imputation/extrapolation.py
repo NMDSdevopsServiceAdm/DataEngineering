@@ -14,31 +14,37 @@ def model_extrapolation(
     extrapolation_method: str,
 ) -> pl.LazyFrame:
     """
-    Extrapolate missing values in a column using a reference model.
+    Perform extrapolation on a column with null values using specified models.
 
-    This function performs forward and backward extrapolation for values that
-    fall outside the observed range of `column_with_null_values`, using a
-    specified model column and extrapolation method.
+    Values before the first known submission in 'column_with_null_values' and
+    after the last known submission are extrapolated, either by nominal or ratio
+    method as specified in 'extrapolation_method'.
 
-    The process consists of:
-    - Computing per-group (location_id) aggregates such as first/last submission
-      dates and first observed values
-    - Deriving previous observed values within each group
+    The process consists of: - Computing per-group (location_id) aggregates such
+    as first/last submission
+      dates and first submitted values
+    - Deriving previous submitted values within each group
     - Applying either ratio-based or nominal extrapolation logic
     - Producing two output columns:
-        - `extrapolation_forwards`: values extrapolated after the first observation
-        - `extrapolation_model`: combined forward and backward extrapolated values
+        - `extrapolation_forwards`: values extrapolated after the first
+          observation
+        - `extrapolation_model`: combined forward and backward extrapolated
+          values
 
-    Extrapolation is applied as follows:
-    - Forward extrapolation: for dates after the last observed value
-    - Backward extrapolation: for dates before the first observed value
+    The 'extrapolation_forwards' column is required for the
+    'interpolation_model' computation.
+
+    Extrapolation is applied as follows: - Forward extrapolation: for dates
+    after the last submitted value - Backward extrapolation: for dates before
+    the first observed value
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame containing time series data.
-        column_with_null_values (str): Column containing observed values with nulls.
+        column_with_null_values (str): Column containing observed values with
+            nulls.
         model_to_extrapolate_from (str): Column providing the model values used
             to guide extrapolation.
-        extrapolation_method (str): Method used for extrapolation. Must be one of:
+        extrapolation_method (str): Method used for extrapolation, either:
             - "ratio": scales values based on proportional change in the model
             - "nominal": adjusts values based on absolute change in the model
 
