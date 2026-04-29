@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted Interpolation utils functions within IND CQC pipeline to Polars. Updated tests for the same.
 
+- Converted `model_extrapolation` to Polars.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
