@@ -28,6 +28,8 @@ All notable changes to this project will be documented in this file.
 
 - Added Polars estimates by job role job to IND CQC estimates step function.
 
+- Coverted `model_primary_service_rate_of_change_trendline` to Polars.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
