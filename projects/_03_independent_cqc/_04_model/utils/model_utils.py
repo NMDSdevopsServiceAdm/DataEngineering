@@ -54,6 +54,11 @@ def calculate_metrics(
     """
     Calculate R2, RMSE, and proportion within 10 and 25 metrics for model evaluation.
 
+    Care home proportions are calculated based on the absolute difference between the
+    predicted and known values multiplied by the number of beds, as the model produces
+    a beds to filled posts ratio. For other models, the proportions are calculated based
+    on the absolute difference between predicted and known values directly.
+
     Args:
         y_known (np.ndarray): Known target values.
         y_predicted (np.ndarray): Predicted target values from the model.
