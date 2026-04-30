@@ -67,7 +67,7 @@ def model_primary_service_rate_of_change_trendline(
         lf, new_col=IndCqc.number_of_beds_banded_roc, splits=BANDED_BED_THRESHOLDS
     )
 
-    roc_group_cols = [
+    aggregation_group_cols = [
         IndCqc.primary_service_type,
         IndCqc.number_of_beds_banded_roc,
     ]
@@ -121,7 +121,7 @@ def model_primary_service_rate_of_change_trendline(
 
     roc_lf = clean_non_residential_rate_of_change(roc_lf)
 
-    roc_lf = calculate_rolling_sums(roc_lf, days, roc_group_cols)
+    roc_lf = calculate_rolling_sums(roc_lf, days, aggregation_group_cols)
 
     roc_lf = roc_lf.with_columns(
         pl.when(pl.col(TempCol.rolling_previous_sum) != 0)
@@ -132,7 +132,7 @@ def model_primary_service_rate_of_change_trendline(
         .alias(IndCqc.single_period_rate_of_change)
     ).drop(TempCol.rolling_current_sum, TempCol.rolling_previous_sum)
 
-    roc_lf = calculate_trendline(roc_lf, out_col, roc_group_cols)
+    roc_lf = calculate_trendline(roc_lf, out_col, aggregation_group_cols)
 
     lf = lf.join(
         roc_lf,
@@ -223,6 +223,11 @@ def clean_non_residential_rate_of_change(
     rows. A lower threshold for percentage change is also calculated as the
     reciprocal of the upper percentage change threshold.
 
+    Although calculations begin at location level, the trendline is ultimately
+    aggregated into a small fixed number of primary service and bed band groups
+    (~10-15 groups in total). This design favours stability over location-level
+    volatility.
+
     Args:
         lf (pl.LazyFrame): The input DataFrame containing the current and
             previous values.
@@ -246,7 +251,7 @@ def clean_non_residential_rate_of_change(
         ]
     )
 
-    abs_upper, perc_upper = (
+    abs_change_upper_threshold, perc_change_upper_threshold = (
         lf.filter(
             (pl.col(IndCqc.care_home) == CareHome.not_care_home)
             & pl.col(prev).is_not_null()
@@ -264,7 +269,9 @@ def clean_non_residential_rate_of_change(
         .row(0)
     )
 
-    perc_lower = 1 / perc_upper if perc_upper else None
+    perc_change_lower_threshold = (
+        1 / perc_change_upper_threshold if perc_change_upper_threshold else None
+    )
 
     is_care_home = pl.col(IndCqc.care_home) == CareHome.care_home
 
@@ -274,15 +281,15 @@ def clean_non_residential_rate_of_change(
         & (pl.col(curr) <= 10)
     )
 
-    if abs_upper is None or perc_upper is None:
+    if abs_change_upper_threshold is None or perc_change_upper_threshold is None:
         is_valid_non_res = pl.lit(False)
     else:
-        perc_lower = 1 / perc_upper
+        perc_change_lower_threshold = 1 / perc_change_upper_threshold
         is_valid_non_res = (
             (pl.col(IndCqc.care_home) == CareHome.not_care_home)
-            & (pl.col(TempCol.abs_change) <= abs_upper)
-            & (pl.col(TempCol.perc_change) <= perc_upper)
-            & (pl.col(TempCol.perc_change) >= perc_lower)
+            & (pl.col(TempCol.abs_change) <= abs_change_upper_threshold)
+            & (pl.col(TempCol.perc_change) <= perc_change_upper_threshold)
+            & (pl.col(TempCol.perc_change) >= perc_change_lower_threshold)
         )
 
     keep = is_care_home | is_small_non_res | is_valid_non_res
