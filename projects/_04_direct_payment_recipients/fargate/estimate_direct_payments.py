@@ -10,6 +10,9 @@ from projects._04_direct_payment_recipients.direct_payments_config_polars import
 from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.calculate_remaining_variables import (
     calculate_remaining_variables,
 )
+from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.create_summary_table import (
+    create_summary_table,
+)
 from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.estimate_service_users_employing_staff import (
     calculate_estimated_service_users_employing_staff,
 )
@@ -45,9 +48,17 @@ def main(
 
     lf = calculate_remaining_variables(lf)
 
+    summary_lf = create_summary_table(lf)
+
     utils.sink_to_parquet(
         lf,
         destination,
+        append=False,
+    )
+
+    utils.sink_to_parquet(
+        summary_lf,
+        summary_destination,
         append=False,
     )
 
