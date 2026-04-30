@@ -28,6 +28,8 @@ All notable changes to this project will be documented in this file.
 
 - Added Polars estimates by job role job to IND CQC estimates step function.
 
+- Converted DPR estimates util estimate_service_users_employing_staff to polars.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 

@@ -62,6 +62,9 @@ class DirectPaymentColumnNames:
     ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = (
         "estimated_proportion_of_service_users_employing_staff"
     )
+    ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE: str = (
+        "estimated_proportion_of_service_users_employing_staff_source"
+    )
 
     # Model extrapolation
     EXTRAPOLATION_RATIO: str = "extrapolation_ratio"
