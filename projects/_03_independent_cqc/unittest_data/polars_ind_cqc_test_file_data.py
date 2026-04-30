@@ -2723,6 +2723,15 @@ class ModelRateOfChangeData:
                 ("1-002", date(2026, 1, 3), CareHome.not_care_home, 10, "NR",  9.9, 2, 1.0), # main service changed - shouldn't contribute
             ],
         ),
+        ModelRateOfChangeTestCase(
+            id="first_time_period_is_always_1",
+            input_data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1),
+            ],
+            expected_data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1, 1.0),
+            ],
+        ),
     ] # fmt: skip
 
     calculate_rolling_sums_test_cases = [
@@ -2848,10 +2857,5 @@ class ModelRateOfChangeData:
                 ("NR", 1, date(2026, 1, 1), 1.0),
                 ("NR", 1, date(2026, 1, 2), 0.8),
             ],
-        ),
-        ModelRateOfChangeTestCase(
-            id="missing_trendline_defaults_to_one",
-            input_data=[("CHO", 1, date(2026, 1, 1), None)],
-            expected_data=[("CHO", 1, date(2026, 1, 1), 1.0)],
         ),
     ]
