@@ -28,6 +28,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted DPR estimates util estimate_service_users_employing_staff to polars.
 
+- Added a function to DPR estimates to group Cornwall and Isles of Scilly.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
