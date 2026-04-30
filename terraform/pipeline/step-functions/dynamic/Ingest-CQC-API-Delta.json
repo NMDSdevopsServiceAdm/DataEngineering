@@ -6,28 +6,8 @@
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "Read Last Providers Run",
+          "StartAt": "Run Delta CQC Providers Download",
           "States": {
-            "Read Last Providers Run": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameter",
-              "Parameters": {
-                "Name": "${last_providers_run_param_name}"
-              },
-              "Assign": {
-                "endDate.$": "$$.State.EnteredTime"
-              },
-              "ResultSelector": {
-                "script": "cqc_providers_1_delta_api_download.py",
-                "dest_arg": "--destination_prefix",
-                "dest_value": "${dataset_bucket_uri}",
-                "start_arg": "--start_timestamp",
-                "start_value.$": "$.Parameter.Value",
-                "end_arg": "--end_timestamp",
-                "end_value.$": "$$.State.EnteredTime"
-              },
-              "Next": "Run Delta CQC Providers Download"
-            },
             "Run Delta CQC Providers Download": {
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
@@ -49,23 +29,12 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command.$": "States.Array($.script, $.dest_arg, $.dest_value, $.start_arg, $.start_value, $.end_arg, $.end_value)"
+                      "Command.$": "States.Array('cqc_providers_1_delta_api_download.py', '--destination_prefix', '${dataset_bucket_uri}', '--end_timestamp', $$.State.EnteredTime, '--previous_days_to_capture', '30')"
                     }
                   ]
                 }
               },
               "ResultPath": "$.providerResult",
-              "Next": "Write Last Providers Run"
-            },
-            "Write Last Providers Run": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
-              "Parameters": {
-                "Name": "${last_providers_run_param_name}",
-                "Value.$": "$endDate",
-                "Overwrite": true,
-                "Type": "String"
-              },
               "Next": "Validate Providers API Raw"
             },
             "Validate Providers API Raw": {
@@ -103,28 +72,8 @@
           }
         },
         {
-          "StartAt": "Read Last Locations Run",
+          "StartAt": "Run Delta CQC Locations Download",
           "States": {
-            "Read Last Locations Run": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameter",
-              "Parameters": {
-                "Name": "${last_locations_run_param_name}"
-              },
-              "Assign": {
-                "endDate.$": "$$.State.EnteredTime"
-              },
-              "ResultSelector": {
-                "script": "cqc_locations_1_delta_api_download.py",
-                "dest_arg": "--destination_prefix",
-                "dest_value": "${dataset_bucket_uri}",
-                "start_arg": "--start_timestamp",
-                "start_value.$": "$.Parameter.Value",
-                "end_arg": "--end_timestamp",
-                "end_value.$": "$$.State.EnteredTime"
-              },
-              "Next": "Run Delta CQC Locations Download"
-            },
             "Run Delta CQC Locations Download": {
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
@@ -146,32 +95,12 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command.$": "States.Array($.script, $.dest_arg, $.dest_value, $.start_arg, $.start_value, $.end_arg, $.end_value)"
+                      "Command.$": "States.Array('cqc_locations_1_delta_api_download.py', '--destination_prefix', '${dataset_bucket_uri}', '--end_timestamp', $$.State.EnteredTime, '--previous_days_to_capture', '30')"
                     }
                   ]
                 }
               },
               "ResultPath": "$.locationResult",
-              "Next": "Write Last Locations Run"
-            },
-            "Write Last Locations Run": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
-              "Parameters": {
-                "Name": "${last_locations_run_param_name}",
-                "Value.$": "$endDate",
-                "Overwrite": true,
-                "Type": "String"
-              },
-              "ResultSelector": {
-                "script": "validate_cqc_locations_1_delta_api_download.py",
-                "bucket_name_arg": "--bucket_name",
-                "bucket_name": "${dataset_bucket_name}",
-                "source_path_arg": "--source_path",
-                "source_path": "domain=CQC/dataset=cqc_locations_01_delta_api/version=3.1.1/",
-                "reports_path_arg": "--reports_path",
-                "reports_path": "domain=data_validation_reports/dataset=validation_cqc_locations_01_delta_api/"
-              },
               "Next": "Validate Locations Api Raw"
             },
             "Validate Locations Api Raw": {
@@ -195,7 +124,12 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path)"
+                      "Command": [
+                        "validate_cqc_locations_1_delta_api_download.py",
+                        "--bucket_name", "${dataset_bucket_name}",
+                        "--source_path", "domain=CQC/dataset=cqc_locations_01_delta_api/version=3.1.1/",
+                        "--reports_path", "domain=data_validation_reports/dataset=validation_cqc_locations_01_delta_api/"
+                      ]
                     }
                   ]
                 }
