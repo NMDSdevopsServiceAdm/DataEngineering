@@ -19,7 +19,6 @@ from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_paymen
 
 direct_payments_columns = [
     DP.LA_AREA,
-    DP.YEAR,
     DP.YEAR_AS_INTEGER,
     DP.SERVICE_USER_DPRS_DURING_YEAR,
     DP.CARER_DPRS_DURING_YEAR,
