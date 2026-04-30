@@ -543,7 +543,7 @@ class ValidateImputedIndCqcAscwdsAndPir:
             (IndCQC.ascwds_filled_posts_source, pl.String()),
             (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
             (IndCQC.pir_people_directly_employed_dedup, pl.Int64()),
-            (IndCQC.unix_time, pl.Int64()),
+            (IndCQC.ascwds_rate_of_change_trendline_model, pl.Float32()),
             (IndCQC.pir_people_directly_employed_cleaned, pl.Int64()),
             (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
         ]
