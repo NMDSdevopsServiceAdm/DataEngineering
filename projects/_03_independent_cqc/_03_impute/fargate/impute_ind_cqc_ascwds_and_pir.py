@@ -1,7 +1,11 @@
+from dataclasses import dataclass
+
 import polars as pl
 
 from polars_utils import utils, cleaning_utils as cUtils
-
+from projects._03_independent_cqc.utils.primary_service_rate_of_change.primary_service_rate_of_change import (
+    model_primary_service_rate_of_change_trendline,
+)
 from projects._03_independent_cqc._03_impute.fargate.utils.convert_pir_people_to_filled_posts import (
     convert_pir_to_filled_posts,
 )
@@ -9,12 +13,16 @@ from projects._03_independent_cqc._03_impute.fargate.utils.forward_fill_latest_k
     forward_fill_latest_known_value,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import CareHome
 
 
-def main(
-    cleaned_ind_cqc_source: str,
-    destination: str,
-) -> None:
+@dataclass
+class NumericalValues:
+    number_of_days_in_window: int = 95  # Note: using 95 as a proxy for 3 months
+    max_number_of_days_to_interpolate_between: int = 185  # proxy for 6 months
+
+
+def main(cleaned_ind_cqc_source: str, destination: str) -> None:
     """
     Impute values into ASC-WDS, PIR and Capacity Tracker data.
 
@@ -35,9 +43,21 @@ def main(
         IndCQC.filled_posts_per_bed_ratio,
     )
 
-    # combine_care_home_and_non_res_values_into_single_column - combined_ratio_and_filled_posts
+    lf = lf.with_columns(
+        pl.when(pl.col(IndCQC.care_home) == CareHome.care_home)
+        .then(pl.col(IndCQC.filled_posts_per_bed_ratio))
+        .otherwise(pl.col(IndCQC.ascwds_filled_posts_dedup_clean))
+        .cast(pl.Float32)
+        .alias(IndCQC.combined_ratio_and_filled_posts)
+    )
 
-    # model_primary_service_rate_of_change_trendline - ascwds_rate_of_change_trendline_model
+    lf = model_primary_service_rate_of_change_trendline(
+        lf,
+        IndCQC.combined_ratio_and_filled_posts,
+        NumericalValues.number_of_days_in_window,
+        IndCQC.ascwds_rate_of_change_trendline_model,
+        max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
+    )
 
     lf = convert_pir_to_filled_posts(lf)
 
