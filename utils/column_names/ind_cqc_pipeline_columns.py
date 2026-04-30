@@ -297,6 +297,12 @@ class IndCqcColumns:
     proportion_of_days_between_submissions: str = (
         "proportion_of_days_between_submissions"
     )
+    proportion_of_model_predictions_within_ten: str = (
+        "proportion_of_model_predictions_within_ten"
+    )
+    proportion_of_model_predictions_within_twenty_five: str = (
+        "proportion_of_model_predictions_within_twenty_five"
+    )
     proportion_of_non_rm_managerial_estimated_filled_posts_by_role: str = (
         "proportion_of_non_rm_managerial_estimated_filled_posts_by_role"
     )
