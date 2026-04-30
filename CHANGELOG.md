@@ -22,14 +22,28 @@ All notable changes to this project will be documented in this file.
 
 - Converted Interpolation utils functions within IND CQC pipeline to Polars. Updated tests for the same.
 
+- Converted `model_extrapolation` to Polars.
+
+- Converted DPR estimates util for calculating rolling mean of proportion DPR employing staff.
+
+- Added Polars estimates by job role job to IND CQC estimates step function.
+
+- Converted DPR estimates util estimate_service_users_employing_staff to polars.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
 - Removed partitioning from direct payments pipeline outputs.
 
+- Calculate metrics function to now include proportion of estimates within 10 and 25 filled posts of the model value.
+
 - Added row_id and expanded_id to the ind cqc columns class as
   id_per_locationid_import_date and id_per_locationid_import_date_job_role respectively and
   updated references to the objects.
+
+- Changed cqc api delta download to get changes from 30 days prior to start time up to end time.
+
+- Updated clean_capacity_tracker_care_home_data job so that agencynoncareworkersemployed is nulled when above 1,000.
 
 ### Fixed
 - Update setup instructions with pre-commit hooks setup

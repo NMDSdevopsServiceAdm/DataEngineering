@@ -1,17 +1,8 @@
-import os
 from dataclasses import dataclass
 
-os.environ["SPARK_VERSION"] = "3.5"
-
-from pyspark.sql.types import FloatType, IntegerType, StructField, StructType
-
-from projects._04_direct_payment_recipients.direct_payments_column_names import (
-    DirectPaymentColumnNames as DP,
-)
 from utils.column_values.categorical_column_values import ContemporaryCSSR
 
 
-# converted to polars -> projects\_04_direct_payment_recipients\direct_payments_config_polars.py
 @dataclass
 class DirectPaymentConfiguration:
     # The carer's employing percentage was calculated from a question in older surveys. As this is so close to zero it was removed as a question from more recent surveys and we use the most recent value.
@@ -23,44 +14,6 @@ class DirectPaymentConfiguration:
     FIRST_YEAR: int = 2011
 
 
-@dataclass
-class DirectPaymentsOutlierThresholds:
-    ONE_HUNDRED_PERCENT: float = 1.0
-    ZERO_PERCENT: float = 0.0
-
-    MAX_PAS: float = 9.0
-    MIN_PAS: float = 1.0
-
-
-@dataclass
-class DirectPaymentsMissingPARatios:
-    ratios = [
-        (2011, 1.98),
-        (2012, 1.98),
-        (2013, 1.98),
-        (2015, 2.00),
-        (2016, 2.01),
-        (2018, 1.96),
-    ]
-    schema = StructType(
-        [
-            StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-            StructField(
-                DP.HISTORIC_RATIO,
-                FloatType(),
-                True,
-            ),
-        ]
-    )
-
-
-@dataclass
-class EstimatePeriodAsDate:
-    MONTH: str = "03"
-    DAY: str = "31"
-
-
-# converted to polars -> projects\_04_direct_payment_recipients\direct_payments_config_polars.py
 @dataclass
 class DirectPaymentsMisspelledLaNames:
     DICT_TO_CORRECT_LA_NAMES = {

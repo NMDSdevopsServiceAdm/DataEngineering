@@ -297,6 +297,12 @@ class IndCqcColumns:
     proportion_of_days_between_submissions: str = (
         "proportion_of_days_between_submissions"
     )
+    proportion_of_model_predictions_within_ten: str = (
+        "proportion_of_model_predictions_within_ten"
+    )
+    proportion_of_model_predictions_within_twenty_five: str = (
+        "proportion_of_model_predictions_within_twenty_five"
+    )
     proportion_of_non_rm_managerial_estimated_filled_posts_by_role: str = (
         "proportion_of_non_rm_managerial_estimated_filled_posts_by_role"
     )
@@ -392,6 +398,19 @@ class NullGroupedProviderColumns:
     potential_grouped_provider: str = "potential_grouped_provider"
     provider_pir_count: str = "provider_pir_count"
     provider_pir_sum: str = "provider_pir_sum"
+
+
+@dataclass
+class ExtrapolationColumns:
+    """The names of the temporary columns created during the extrapolation process."""
+
+    first_model: str = "_first_model"
+    first_value: str = "_first_value"
+    final_submission_time: str = "_final_submission_time"
+    first_submission_time: str = "_first_submission_time"
+    model_with_nulls: str = "_model_with_nulls"
+    previous_model: str = "_previous_model"
+    previous_value: str = "_previous_value"
 
 
 @dataclass
