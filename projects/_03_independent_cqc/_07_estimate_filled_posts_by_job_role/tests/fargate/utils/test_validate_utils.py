@@ -15,12 +15,9 @@ class TestCreateJobRoleEstimatesDataValidationColumns(unittest.TestCase):
     def test_function_returns_expected_values(self):
         expected_schema = {
             IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.main_job_role_clean_labelled: pl.String,
+            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
             IndCQC.estimate_filled_posts_from_all_job_roles: pl.Float32,
-            MainJobRoleLabels.care_worker: pl.Float32,
-            JobGroupLabels.direct_care: pl.Float32,
-            JobGroupLabels.managers: pl.Float32,
-            JobGroupLabels.regulated_professions: pl.Float32,
-            JobGroupLabels.other: pl.Float32,
             IndCQC.national_percentage_care_worker_filled_posts: pl.Float32,
             IndCQC.national_percentage_direct_care_filled_posts: pl.Float32,
             IndCQC.national_percentage_managers_filled_posts: pl.Float32,
@@ -28,9 +25,15 @@ class TestCreateJobRoleEstimatesDataValidationColumns(unittest.TestCase):
             IndCQC.national_percentage_other_filled_posts: pl.Float32,
         }
         expected_rows = [
-            (date(2020, 1, 1), 100.0, 50.0, 30.0, 10.0, 5.0, 5.0, 0.5, 0.3, 0.1, 0.05, 0.05),
-            (date(2020, 1, 1), 200.0, 100.0, 60.0, 20.0, 10.0, 10.0, 0.5, 0.3, 0.1, 0.05, 0.05),
-            (date(2021, 1, 1), 150.0, 75.0, 45.0, 15.0, 7.5, 7.5, 0.5, 0.3, 0.1, 0.05, 0.05),
+            # date,         job_role,               filled_posts, est_all,  %cw, %dc, %mgr, %reg, %other
+            (date(2026, 1, 1), "care_worker",        40.0, 100.0, 0.4, 0.7, 0.2, 0.1, 0.0),
+            (date(2026, 1, 1), "support_worker",     30.0, 100.0, 0.4, 0.7, 0.2, 0.1, 0.0),
+            (date(2026, 1, 1), "registered_manager", 20.0, 100.0, 0.4, 0.7, 0.2, 0.1, 0.0),
+            (date(2026, 1, 1), "registered_nurse",   10.0, 100.0, 0.4, 0.7, 0.2, 0.1, 0.0),
+            (date(2026, 2, 1), "care_worker",        60.0, 200.0, 0.3, 0.5, 0.3, 0.2, 0.0),
+            (date(2026, 2, 1), "support_worker",     40.0, 200.0, 0.3, 0.5, 0.3, 0.2, 0.0),
+            (date(2026, 2, 1), "registered_manager", 60.0, 200.0, 0.3, 0.5, 0.3, 0.2, 0.0),
+            (date(2026, 2, 1), "registered_nurse",   40.0, 200.0, 0.3, 0.5, 0.3, 0.2, 0.0),
         ] # fmt: skip
         expected_lf = pl.LazyFrame(expected_rows, schema=expected_schema, orient="row")
         test_lf = expected_lf.drop(

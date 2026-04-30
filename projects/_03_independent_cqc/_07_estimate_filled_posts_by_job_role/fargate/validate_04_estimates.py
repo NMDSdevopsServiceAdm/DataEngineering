@@ -1,26 +1,40 @@
 import sys
-import time
 
 import pointblank as pb
 
 from polars_utils import utils
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.validate_utils import (
+    create_job_role_estimates_data_validation_columns,
+)
 from polars_utils.expressions import str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
-from utils.column_values.categorical_columns_by_dataset import (
-    EstimatedIndCQCFilledPostsCategoricalValues as CatValues,
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup as jobGroupDict,
 )
 
-imputed_ind_cqc_cols_to_import = [
-    IndCqcColumns.cqc_location_import_date,
+ind_cqc_job_role_cols_to_import = [
+    IndCqcColumns.id_per_locationid_import_date,
     IndCqcColumns.location_id,
+    IndCqcColumns.ascwds_workplace_import_date,
+    IndCqcColumns.cqc_location_import_date,
+    IndCqcColumns.care_home,
+    IndCqcColumns.primary_service_type,
+    IndCqcColumns.current_ons_import_date,
+    IndCqcColumns.current_cssr,
+    IndCqcColumns.current_region,
+    IndCqcColumns.unix_time,
+    IndCqcColumns.estimate_filled_posts,
+    IndCqcColumns.estimate_filled_posts_source,
+    IndCqcColumns.ascwds_job_role_ratios_merged_source,
+    IndCqcColumns.main_job_role_clean_labelled,
+    IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted,
+    IndCqcColumns.estimate_filled_posts_from_all_job_roles,
 ]
 
 
-def main(
-    bucket_name: str, source_path: str, reports_path: str, compare_path: str
-) -> None:
+def main(bucket_name: str, source_path: str, reports_path: str) -> None:
     """Validates a dataset according to a set of provided rules and produces a
         summary report as well as failure outputs.
 
@@ -30,19 +44,16 @@ def main(
             branch name)
         source_path (str): the source dataset path to be validated
         reports_path (str): the output path to write reports to
-        compare_path (str): path to a dataset to compare against for expected size
     """
-
-    source_df = utils.read_parquet(
-        f"s3://{bucket_name}/{source_path}", exclude_complex_types=True
-    ).with_columns(
-        str_length_cols([IndCqcColumns.location_id]),
+    source_lf = utils.scan_parquet(
+        source=f"s3://{bucket_name}/{source_path}",
+        selected_columns=ind_cqc_job_role_cols_to_import,
     )
-    compare_df = utils.read_parquet(
-        f"s3://{bucket_name}/{compare_path}",
-        selected_columns=imputed_ind_cqc_cols_to_import,
+    source_with_validation_columns_lf = (
+        create_job_role_estimates_data_validation_columns(source_lf)
     )
-    expected_row_count = compare_df.height
+    source_df = source_with_validation_columns_lf.collect()
+    expected_row_count = source_df.height * len(jobGroupDict.all_roles())
 
     validation = (
         pb.Validate(
@@ -60,136 +71,50 @@ def main(
         # complete columns
         .col_vals_not_null(
             [
+                IndCqcColumns.id_per_locationid_import_date,
                 IndCqcColumns.location_id,
                 IndCqcColumns.ascwds_workplace_import_date,
                 IndCqcColumns.cqc_location_import_date,
                 IndCqcColumns.care_home,
                 IndCqcColumns.primary_service_type,
-                IndCqcColumns.primary_service_type_second_level,
                 IndCqcColumns.current_ons_import_date,
                 IndCqcColumns.current_cssr,
                 IndCqcColumns.current_region,
                 IndCqcColumns.unix_time,
-                #         IndCqcColumns.estimate_filled_posts,
-                #         IndCqcColumns.estimate_filled_posts_source,
+                IndCqcColumns.estimate_filled_posts,
+                IndCqcColumns.estimate_filled_posts_source,
+                IndCqcColumns.ascwds_job_role_ratios_merged_source,
             ]
         )
         # index columns
         .rows_distinct(
             [
-                IndCqcColumns.location_id,
-                IndCqcColumns.cqc_location_import_date,
+                IndCqcColumns.id_per_locationid_import_date,
             ],
         )
         # between (inclusive)
-        .col_vals_between(IndCqcColumns.ascwds_filled_posts, 1.0, 3000.0, na_pass=True)
-        .col_vals_between(IndCqcColumns.ascwds_pir_merged, 1.0, 3000.0, na_pass=True)
-        # .col_vals_between(IndCqcColumns.care_home_model, -100.0, 3000.0)
-        # .col_vals_between(
-        #     IndCqcColumns.imputed_posts_non_res_combined_model, -100.0, 3000.0
-        # )
-        # .col_vals_between(IndCqcColumns.estimate_filled_posts, 1.0, 3000.0)
         .col_vals_between(
-            IndCqcColumns.non_res_with_dormancy_model, -100.0, 3000.0, na_pass=True
+            IndCqcColumns.national_percentage_care_worker_filled_posts, 0.59, 0.69
         )
         .col_vals_between(
-            IndCqcColumns.non_res_without_dormancy_model, -100.0, 3000.0, na_pass=True
+            IndCqcColumns.national_percentage_direct_care_filled_posts, 0.71, 0.81
         )
-        .col_vals_between(IndCqcColumns.number_of_beds, 1, 500, na_pass=True)
         .col_vals_between(
-            IndCqcColumns.pir_people_directly_employed_dedup, 1, 3000, na_pass=True
+            IndCqcColumns.national_percentage_managers_filled_posts, 0.03, 0.1
         )
-        # .col_vals_between(IndCqcColumns.imputed_pir_filled_posts_model, -100.0, 3000.0)
-        .col_vals_between(IndCqcColumns.posts_rolling_average_model, 1.0, 3000.0)
         .col_vals_between(
-            IndCqcColumns.unix_time, 1262304000, int(time.time())
-        )  # 1st Jan 2010 in unix time and current unix time
-        # categorical
-        .col_vals_in_set(
-            IndCqcColumns.care_home,
-            CatValues.care_home_column_values.categorical_values,
+            IndCqcColumns.national_percentage_regulated_professions_filled_posts,
+            0.02,
+            0.06,
         )
-        .col_vals_in_set(
-            IndCqcColumns.primary_service_type,
-            CatValues.primary_service_type_column_values.categorical_values,
+        .col_vals_between(
+            IndCqcColumns.national_percentage_other_filled_posts, 0.07, 0.21
         )
-        .col_vals_in_set(
-            IndCqcColumns.primary_service_type_second_level,
-            CatValues.primary_service_type_second_level_column_values.categorical_values,
+        .col_vals_between(
+            IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
+            0.0,
+            1.0,
         )
-        .col_vals_in_set(
-            IndCqcColumns.current_cssr,
-            CatValues.current_cssr_column_values.categorical_values,
-        )
-        .col_vals_in_set(
-            IndCqcColumns.current_region,
-            CatValues.current_region_column_values.categorical_values,
-        )
-        .col_vals_in_set(
-            IndCqcColumns.ascwds_filled_posts_source,
-            [
-                *CatValues.ascwds_filled_posts_source_column_values.categorical_values,
-                None,
-            ],
-        )
-        # .col_vals_in_set(
-        #     IndCqcColumns.estimate_filled_posts_source,
-        #     CatValues.estimate_filled_posts_source_column_values.categorical_values,
-        # )
-        # distinct values
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.care_home,
-                CatValues.care_home_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.care_home} needs to be one of {CatValues.care_home_column_values.categorical_values}",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.primary_service_type,
-                CatValues.primary_service_type_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.primary_service_type} needs to be one of {CatValues.primary_service_type_column_values.categorical_values}",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.primary_service_type_second_level,
-                CatValues.primary_service_type_second_level_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.primary_service_type_second_level} needs to be one of {CatValues.primary_service_type_second_level_column_values.categorical_values}",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.current_cssr,
-                CatValues.current_cssr_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.current_cssr} needs to be one of {CatValues.current_cssr_column_values.categorical_values}",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.current_region,
-                CatValues.current_region_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.current_region} needs to be one of {CatValues.current_region_column_values.categorical_values}",
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.ascwds_filled_posts_source,
-                CatValues.ascwds_filled_posts_source_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.ascwds_filled_posts_source} needs to be one of {CatValues.ascwds_filled_posts_source_column_values.categorical_values}",
-        )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.estimate_filled_posts_source,
-        #         CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.estimate_filled_posts_source} needs to be one of {CatValues.estimate_filled_posts_source_column_values.categorical_values}",
-        # )
-        # TODO - Add custom validation rule that the data in carehome and primary_service_type should be related.
-        # TODO - Add custom validation rule that primary_service_type_second_level correctly allocates shared lives.
-        # TODO - Add custom validation rule that primary_service_type_second_level correctly allocates care homes with nursing.
-        # TODO - Add custom validation rule that primary_service_type_second_level correctly allocates care homes without nursing.
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
@@ -202,12 +127,8 @@ if __name__ == "__main__":
         ("--bucket_name", "S3 bucket for source dataset and validation report"),
         ("--source_path", "The filepath of the dataset to validate"),
         ("--reports_path", "The filepath to output reports"),
-        (
-            "--compare_path",
-            "The filepath to a dataset to compare against for expected size",
-        ),
     )
     print(f"Starting validation for {args.source_path}")
 
-    main(args.bucket_name, args.source_path, args.reports_path, args.compare_path)
+    main(args.bucket_name, args.source_path, args.reports_path)
     print(f"Validation of {args.source_path} complete")
