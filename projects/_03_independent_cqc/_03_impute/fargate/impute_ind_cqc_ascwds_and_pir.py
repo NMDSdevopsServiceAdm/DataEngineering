@@ -35,8 +35,6 @@ def main(
         IndCQC.filled_posts_per_bed_ratio,
     )
 
-    # create_unix_timestamp_variable_from_date_column
-
     # combine_care_home_and_non_res_values_into_single_column - combined_ratio_and_filled_posts
 
     # model_primary_service_rate_of_change_trendline - ascwds_rate_of_change_trendline_model
