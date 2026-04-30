@@ -39,6 +39,8 @@ All notable changes to this project will be documented in this file.
 
 - Changed cqc api delta download to get changes from 30 days prior to start time up to end time.
 
+- Updated clean_capacity_tracker_care_home_data job so that agencynoncareworkersemployed is nulled when above 1,000.
+
 ### Fixed
 - Update setup instructions with pre-commit hooks setup
 
