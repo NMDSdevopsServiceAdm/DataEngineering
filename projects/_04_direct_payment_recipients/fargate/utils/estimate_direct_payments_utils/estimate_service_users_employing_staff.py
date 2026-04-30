@@ -75,13 +75,13 @@ def calculate_estimated_service_users_employing_staff(lf: pl.LazyFrame) -> pl.La
 
     # Drop the interpolation column and re-run interpolation to fill any remaining nulls.
     # This is to populate year = 2014 where there are no values for proportion of service users employing staff.
-    # Mean imputaiton populates 2013, proportions are known in 2015 and later, so interpolation is being used to estimate 2014.
+    # Mean imputation populates 2013, proportions are known in 2015 and later, so interpolation is being used to estimate 2014.
     lf = lf.drop(DP.ESTIMATE_USING_INTERPOLATION)
     lf = model_interpolation(
         lf, DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
     )
 
-    lf = lf.with_columns(
+    source_update_exprs = (
         pl.when(
             (
                 pl.col(
@@ -95,14 +95,14 @@ def calculate_estimated_service_users_employing_staff(lf: pl.LazyFrame) -> pl.La
             pl.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE)
         )
         .alias(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_SOURCE)
-    ).with_columns(
-        pl.coalesce(
-            [
-                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-                DP.ESTIMATE_USING_INTERPOLATION,
-            ]
-        ).alias(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
     )
+    estimate_update_expr = pl.coalesce(
+        [
+            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+            DP.ESTIMATE_USING_INTERPOLATION,
+        ]
+    ).alias(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+    lf = lf.with_columns(estimate_update_expr, source_update_exprs)
 
     lf = calculate_rolling_mean(lf)
 
