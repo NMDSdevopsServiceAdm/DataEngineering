@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted DPR estimates util for calculating rolling mean of proportion DPR employing staff.
 
+- Added Polars estimates by job role job to IND CQC estimates step function.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
