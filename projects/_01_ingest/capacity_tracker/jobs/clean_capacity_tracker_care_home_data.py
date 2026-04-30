@@ -66,6 +66,7 @@ def main(
         CTCH.nurses_employed,
         CTCH.care_workers_employed,
         CTCH.non_care_workers_employed,
+        CTCH.agency_non_care_workers_employed,
     ]
     capacity_tracker_care_home_df = cUtils.set_bounds_for_columns(
         capacity_tracker_care_home_df,
