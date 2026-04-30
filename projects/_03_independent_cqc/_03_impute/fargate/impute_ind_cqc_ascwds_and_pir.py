@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import polars as pl
 
 from polars_utils import utils, cleaning_utils as cUtils
-from projects._03_independent_cqc.utils.primary_service_rate_of_change.primary_service_rate_of_change import (
+from projects._03_independent_cqc._03_impute.fargate.utils.primary_service_rate_of_change import (
     model_primary_service_rate_of_change_trendline,
 )
 from projects._03_independent_cqc._03_impute.fargate.utils.convert_pir_people_to_filled_posts import (
