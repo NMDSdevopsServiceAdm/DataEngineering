@@ -35,6 +35,8 @@ All notable changes to this project will be documented in this file.
   id_per_locationid_import_date and id_per_locationid_import_date_job_role respectively and
   updated references to the objects.
 
+- Changed cqc api delta download to get changes from 30 days prior to start time up to end time.
+
 ### Fixed
 - Update setup instructions with pre-commit hooks setup
 
