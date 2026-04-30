@@ -2630,7 +2630,7 @@ class ModelRateOfChangeTestCase:
 class ModelRateOfChangeData:
     model_roc_trendline_test_cases = [
         ModelRateOfChangeTestCase(
-            id="happy_path_single_group",
+            id="single_group_produces_expected_trendline",
             input_data=[
                 ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1),
                 ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 2.7, 1),
@@ -2643,7 +2643,7 @@ class ModelRateOfChangeData:
             ],
         ),
         ModelRateOfChangeTestCase(
-            id="happy_path_multiple_group_cols",
+            id="multiple_groups_aggregate_independently",
             input_data=[
                 ("1-001", date(2026, 1, 1), CareHome.care_home,     10, "CHO", 3.0,  1),
                 ("1-001", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 2.8,  1),
@@ -2666,7 +2666,7 @@ class ModelRateOfChangeData:
             ],
         ),
         ModelRateOfChangeTestCase(
-            id="when_input_is_unsorted_within_group",
+            id="unsorted_input_produces_correct_trendline",
             input_data=[
                 ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.3, 1),
                 ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1),
@@ -2679,7 +2679,7 @@ class ModelRateOfChangeData:
             ],
         ),
         ModelRateOfChangeTestCase(
-            id="handles_missing_values_with_interpolation",
+            id="missing_values_are_interpolated_before_trendline",
             input_data=[
                 ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0,  1),
                 ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", None, 1),
@@ -2692,7 +2692,7 @@ class ModelRateOfChangeData:
             ],
         ),
         ModelRateOfChangeTestCase(
-            id="filters_single_submission_locations",
+            id="locations_with_single_submission_do_not_influence_aggregate",
             input_data=[
                 ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1),
                 ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 2.7, 1),
@@ -2707,7 +2707,7 @@ class ModelRateOfChangeData:
             ],
         ),
         ModelRateOfChangeTestCase(
-            id="filters_inconsistent_care_home_status",
+            id="locations_with_inconsistent_status_do_not_influence_aggregate",
             input_data=[
                 ("1-001", date(2026, 1, 1), CareHome.care_home,     10, "CHO", 3.0, 1),
                 ("1-001", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 2.7, 1),
@@ -2727,7 +2727,7 @@ class ModelRateOfChangeData:
 
     calculate_rolling_sums_test_cases = [
         ModelRateOfChangeTestCase(
-            id="happy_path_single_group",
+            id="single_group_within_time_window",
             input_data=[
                 ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
                 ("1-001", "CHO", 10, date(2026, 1, 2), 2.7, 3.0),
@@ -2740,7 +2740,7 @@ class ModelRateOfChangeData:
             ],
         ),
         ModelRateOfChangeTestCase(
-            id="multiple_groups",
+            id="multiple_groups_within_time_window",
             input_data=[
                 ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
                 ("1-001", "CHO", 10, date(2026, 1, 2), 2.7, 3.0),
@@ -2752,6 +2752,23 @@ class ModelRateOfChangeData:
                 ("1-001", "CHO", 10, date(2026, 1, 2), 5.7, 5.0),
                 ("1-002", "NR",  20, date(2026, 1, 1), 1.0, 1.5),
                 ("1-002", "NR",  20, date(2026, 1, 2), 2.2, 2.5),
+            ],
+        ),
+        ModelRateOfChangeTestCase(
+            id="time_window_taken_into_account",
+            input_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 2.9, 3.0),
+                ("1-001", "CHO", 10, date(2026, 1, 3), 2.8, 4.0),
+                ("1-001", "CHO", 10, date(2026, 1, 4), 2.7, 5.0),
+                ("1-001", "CHO", 10, date(2026, 1, 5), 2.6, 6.0),
+            ],
+            expected_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0,  2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 5.9,  5.0), # sum of 1st - 2nd Jan (tests based on a 3 day window)
+                ("1-001", "CHO", 10, date(2026, 1, 3), 8.7,  9.0), # sum of 1st - 3rd Jan
+                ("1-001", "CHO", 10, date(2026, 1, 4), 8.4, 12.0), # sum of 2nd - 4th Jan
+                ("1-001", "CHO", 10, date(2026, 1, 5), 8.1, 15.0), # sum of 3rd - 5th Jan
             ],
         ),
     ] # fmt: skip
@@ -2799,7 +2816,7 @@ class ModelRateOfChangeData:
 
     calculate_trendline_test_cases = [
         ModelRateOfChangeTestCase(
-            id="single_group",
+            id="trendline_with_single_group",
             input_data=[
                 ("CHO", 1, date(2026, 1, 1), 1.0),
                 ("CHO", 1, date(2026, 1, 2), 1.2),
@@ -2814,7 +2831,7 @@ class ModelRateOfChangeData:
             ],
         ),
         ModelRateOfChangeTestCase(
-            id="multiple_groups",
+            id="trendline_with_multiple_groups",
             input_data=[
                 ("CHO", 1, date(2026, 1, 1), 1.0),
                 ("CHO", 1, date(2026, 1, 2), 1.2),
@@ -2831,5 +2848,10 @@ class ModelRateOfChangeData:
                 ("NR", 1, date(2026, 1, 1), 1.0),
                 ("NR", 1, date(2026, 1, 2), 0.8),
             ],
+        ),
+        ModelRateOfChangeTestCase(
+            id="missing_trendline_defaults_to_one",
+            input_data=[("CHO", 1, date(2026, 1, 1), None)],
+            expected_data=[("CHO", 1, date(2026, 1, 1), 1.0)],
         ),
     ]
