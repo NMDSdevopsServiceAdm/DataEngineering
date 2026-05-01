@@ -92,6 +92,7 @@ def model_primary_service_rate_of_change_trendline(
 
     roc_lf = roc_lf.filter(
         (pl.col(IndCqc.care_home_status_count) == 1)
+        # At least two submissions are required to measure change
         & (pl.col(TempCol.submission_count) >= 2)
     )
 
