@@ -224,11 +224,6 @@ def clean_non_residential_rate_of_change(
     rows. A lower threshold for percentage change is also calculated as the
     reciprocal of the upper percentage change threshold.
 
-    Although calculations begin at location level, the trendline is ultimately
-    aggregated into a small fixed number of primary service and bed band groups
-    (~10-15 groups in total). This design favours stability over location-level
-    volatility.
-
     Args:
         lf (pl.LazyFrame): The input DataFrame containing the current and
             previous values.
