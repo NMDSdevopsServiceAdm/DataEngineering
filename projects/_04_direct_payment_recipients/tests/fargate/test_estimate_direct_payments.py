@@ -17,6 +17,7 @@ class EstimateDirectPaymentsTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.create_summary_table")
     @patch(f"{PATCH_PATH}.calculate_remaining_variables")
     @patch(f"{PATCH_PATH}.calculate_estimated_service_users_employing_staff")
+    @patch(f"{PATCH_PATH}.merge_cornwall_and_isles_of_scilly")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_succeeds(
         self,
@@ -24,6 +25,7 @@ class EstimateDirectPaymentsTests(unittest.TestCase):
         calculate_estimated_service_users_employing_staff_mock: Mock,
         calculate_remaining_variables_mock: Mock,
         create_summary_table_mock: Mock,
+        merge_cornwall_and_isles_of_scilly_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -37,6 +39,7 @@ class EstimateDirectPaymentsTests(unittest.TestCase):
             selected_columns=job.direct_payments_columns,
         )
 
+        merge_cornwall_and_isles_of_scilly_mock.assert_called_once()
         calculate_estimated_service_users_employing_staff_mock.assert_called_once()
         calculate_remaining_variables_mock.assert_called_once()
         create_summary_table_mock.assert_called_once()
