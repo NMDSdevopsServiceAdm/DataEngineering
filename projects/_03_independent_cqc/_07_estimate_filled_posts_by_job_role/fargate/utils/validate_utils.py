@@ -31,8 +31,6 @@ def create_job_role_estimates_data_validation_columns(lf: pl.LazyFrame) -> pl.La
     job_role_col = IndCQC.main_job_role_clean_labelled
     value_col = IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
 
-    total_filled_posts = pl.col(IndCQC.estimate_filled_posts_from_all_job_roles).first()
-
     job_group_to_roles = {}
     for (
         role,
@@ -71,7 +69,7 @@ def create_job_role_estimates_data_validation_columns(lf: pl.LazyFrame) -> pl.La
                 .then(pl.col(value_col))
                 .otherwise(0)
                 .sum()
-                / total_filled_posts
+                / pl.sum(value_col)
             )
             .cast(pl.Float32)
             .alias(new_col)
