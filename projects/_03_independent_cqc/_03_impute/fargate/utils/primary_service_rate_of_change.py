@@ -317,15 +317,17 @@ def calculate_trendline(
     lf: pl.LazyFrame, out_col: str, group_cols: list[str]
 ) -> pl.LazyFrame:
     """
-    Computes a trendline from a sequence of single-period rate of change values, starting at 1.0 in the first period.
+    Computes a trendline from a sequence of single-period rate of change values,
+    starting at 1.0 in the first period.
 
-    The trendline is then derived by iteratively multiplying each rate of change value, resulting in a cumulative
-    measure of change over time.
-    This is calculated by taking the exponential of the sum of the logarithms of the values.
-    This approach avoids issues in pyspark with direct multiplication of many numbers.
+    The trendline is then derived by iteratively multiplying each rate of change
+    value, resulting in a cumulative measure of change over time. This is
+    calculated by taking the exponential of the sum of the logarithms of the
+    values.
 
-    The input rows are sorted by the grouping columns and import date before the cumulative sum is computed.
-    This ensures stable and deterministic trendline values even when input rows arrive out of order.
+    The input rows are sorted by the grouping columns and import date before the
+    cumulative sum is computed. This ensures stable and deterministic trendline
+    values even when input rows arrive out of order.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame.
@@ -335,15 +337,12 @@ def calculate_trendline(
     Returns:
         pl.LazyFrame: The LazyFrame with the trendline column added.
     """
+    rate_col = IndCqc.single_period_rate_of_change
+
+    rolling_product = pl.col(rate_col).log().cum_sum().over(group_cols).exp()
+
     return (
         lf.sort(group_cols + [IndCqc.cqc_location_import_date])
-        .with_columns(
-            pl.col(IndCqc.single_period_rate_of_change)
-            .log()
-            .cum_sum()
-            .over(group_cols)
-            .exp()
-            .alias(out_col)
-        )
-        .drop(IndCqc.single_period_rate_of_change)
+        .with_columns(rolling_product.alias(out_col))
+        .drop(rate_col)
     )
