@@ -26,13 +26,12 @@ def create_job_role_estimates_data_validation_columns(lf: pl.LazyFrame) -> pl.La
     Returns:
         pl.LazyFrame: The LazyFrame with the new validation columns.
     """
+    total_job_role_records = "total_job_role_records"
     partition = IndCQC.cqc_location_import_date
     job_role_col = IndCQC.main_job_role_clean_labelled
     value_col = IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
 
-    denominator = (
-        pl.col(IndCQC.estimate_filled_posts_from_all_job_roles).max().over(partition)
-    )
+    total_filled_posts = pl.col(IndCQC.estimate_filled_posts_from_all_job_roles).first()
 
     job_group_to_roles = {}
     for (
@@ -64,16 +63,19 @@ def create_job_role_estimates_data_validation_columns(lf: pl.LazyFrame) -> pl.La
         ),
     ]
 
-    return lf.with_columns(
-        (
-            pl.when(pl.col(job_role_col).is_in(roles))
-            .then(pl.col(value_col))
-            .otherwise(0)
-            .sum()
-            .over(partition)
-            / denominator
-        )
-        .cast(pl.Float32)
-        .alias(new_col)
-        for new_col, roles in percentage_columns
+    total_records = lf.select(pl.len()).collect().item()
+    return lf.group_by(partition).agg(
+        *(
+            (
+                pl.when(pl.col(job_role_col).is_in(roles))
+                .then(pl.col(value_col))
+                .otherwise(0)
+                .sum()
+                / total_filled_posts
+            )
+            .cast(pl.Float32)
+            .alias(new_col)
+            for new_col, roles in percentage_columns
+        ),
+        pl.lit(total_records).alias(total_job_role_records),
     )
