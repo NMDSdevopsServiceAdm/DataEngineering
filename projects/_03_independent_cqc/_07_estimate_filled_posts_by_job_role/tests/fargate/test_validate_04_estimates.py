@@ -15,15 +15,9 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
         expected_schema = {
             IndCqcColumns.id_per_locationid_import_date: pl.String,
             IndCqcColumns.location_id: pl.String,
-            IndCqcColumns.ascwds_workplace_import_date: pl.Date,
             IndCqcColumns.cqc_location_import_date: pl.Date,
-            IndCqcColumns.care_home: pl.String,
             IndCqcColumns.primary_service_type: pl.String,
-            IndCqcColumns.current_ons_import_date: pl.Date,
-            IndCqcColumns.current_cssr: pl.String,
-            IndCqcColumns.current_region: pl.String,
             IndCqcColumns.estimate_filled_posts: pl.Float32,
-            IndCqcColumns.estimate_filled_posts_source: pl.String,
             IndCqcColumns.ascwds_job_role_ratios_merged_source: pl.String,
             IndCqcColumns.main_job_role_clean_labelled: pl.String,
             IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
@@ -31,8 +25,8 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: pl.Float32,
         }
         expected_rows = [
-            ("1", "1-001", date(2026, 1, 1), date(2026, 1, 1), "Y", "primary_service_type", date(2026, 1, 1), "current_cssr", "current_region", 100.0, "source", "imputed_ascwds_job_role_ratios", "care_worker", 40.0, 100.0, 0.0),
-            ("2", "1-002", date(2026, 1, 1), date(2026, 1, 1), "Y", "primary_service_type", date(2026, 1, 1), "current_cssr", "current_region", 100.0, "source", "imputed_ascwds_job_role_ratios", "support_worker", 30.0, 100.0, 0.0),
+            ("1", "1-001", date(2026, 1, 1), "primary_service_type", 100.0, "source", "care_worker", 40.0, 100.0, 0.0),
+            ("2", "1-002", date(2026, 1, 1), "primary_service_type", 100.0, "source", "support_worker", 30.0, 100.0, 0.0),
         ] # fmt: skip
         self.source_lf = pl.LazyFrame(
             expected_rows, schema=expected_schema, orient="row"

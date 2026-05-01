@@ -16,15 +16,9 @@ from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
 ind_cqc_job_role_cols_to_import = [
     IndCqcColumns.id_per_locationid_import_date,
     IndCqcColumns.location_id,
-    IndCqcColumns.ascwds_workplace_import_date,
     IndCqcColumns.cqc_location_import_date,
-    IndCqcColumns.care_home,
     IndCqcColumns.primary_service_type,
-    IndCqcColumns.current_ons_import_date,
-    IndCqcColumns.current_cssr,
-    IndCqcColumns.current_region,
     IndCqcColumns.estimate_filled_posts,
-    IndCqcColumns.estimate_filled_posts_source,
     IndCqcColumns.ascwds_job_role_ratios_merged_source,
     IndCqcColumns.main_job_role_clean_labelled,
     IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted,
@@ -72,15 +66,9 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             [
                 IndCqcColumns.id_per_locationid_import_date,
                 IndCqcColumns.location_id,
-                IndCqcColumns.ascwds_workplace_import_date,
                 IndCqcColumns.cqc_location_import_date,
-                IndCqcColumns.care_home,
                 IndCqcColumns.primary_service_type,
-                IndCqcColumns.current_ons_import_date,
-                IndCqcColumns.current_cssr,
-                IndCqcColumns.current_region,
                 IndCqcColumns.estimate_filled_posts,
-                IndCqcColumns.estimate_filled_posts_source,
                 IndCqcColumns.ascwds_job_role_ratios_merged_source,
             ]
         )
