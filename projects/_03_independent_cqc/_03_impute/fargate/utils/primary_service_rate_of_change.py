@@ -226,6 +226,12 @@ def clean_non_residential_rate_of_change(
     rows. A lower threshold for percentage change is also calculated as the
     reciprocal of the upper percentage change threshold.
 
+    Small locations are removed from the threshold calculations as minor changes
+    in these locations can result in large percentage changes which would widen
+    the thresholds and reduce the effectiveness of the cleaning. However, small
+    locations are retained in the final output regardless of their rate of
+    change values as they will have a minimal impact on the overall trendline.
+
     Args:
         lf (pl.LazyFrame): The input DataFrame containing the current and
             previous values.
@@ -254,9 +260,6 @@ def clean_non_residential_rate_of_change(
         ]
     )
 
-    # Small values can have extreme percentage changes that are not indicative
-    # of typical variation in larger non-residential locations, so these are
-    # excluded from the calculations.
     abs_change_upper_threshold, perc_change_upper_threshold = (
         lf.filter(
             is_non_res
