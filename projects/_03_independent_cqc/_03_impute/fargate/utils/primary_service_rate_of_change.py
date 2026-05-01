@@ -30,7 +30,8 @@ def model_primary_service_rate_of_change_trendline(
     1. Create a banded bed count column for grouping.
     2. Prepare the data by selecting relevant columns and calculating
         submission counts.
-    3. Filter to eligible rows (care homes with at least 2 submissions).
+    3. Filter to eligible rows (consistent care home status with at least two
+        submissions).
     4. Apply interpolation to the current period values where needed.
     5. Calculate the previous period values using a lag.
     6. Clean the rate of change values for non-residential locations using
