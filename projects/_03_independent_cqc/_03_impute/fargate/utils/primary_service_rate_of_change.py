@@ -90,9 +90,11 @@ def model_primary_service_rate_of_change_trendline(
         )
     )
 
+    # The measurements differ for care home vs non-residential so only locations
+    # with a single care home status are included.
+    # At least two submissions are required to measure change.
     roc_lf = roc_lf.filter(
         (pl.col(IndCqc.care_home_status_count) == 1)
-        # At least two submissions are required to measure change
         & (pl.col(TempCol.submission_count) >= 2)
     )
 
@@ -236,9 +238,14 @@ def clean_non_residential_rate_of_change(
         pl.LazyFrame: The DataFrame with cleaned current and previous period
             columns.
     """
-
+    # Aliases for readability in calculations
     prev = TempCol.previous_period_interpolated
     curr = TempCol.current_period_interpolated
+
+    is_care_home = pl.col(IndCqc.care_home) == CareHome.care_home
+    is_non_res = pl.col(IndCqc.care_home) == CareHome.not_care_home
+
+    SMALL_NON_RES_THRESHOLD = 10
 
     lf = lf.with_columns(
         [
@@ -247,12 +254,18 @@ def clean_non_residential_rate_of_change(
         ]
     )
 
+    # Small values can have extreme percentage changes that are not indicative
+    # of typical variation in larger non-residential locations, so these are
+    # excluded from the calculations.
     abs_change_upper_threshold, perc_change_upper_threshold = (
         lf.filter(
-            (pl.col(IndCqc.care_home) == CareHome.not_care_home)
+            is_non_res
             & pl.col(prev).is_not_null()
             & pl.col(curr).is_not_null()
-            & ((pl.col(prev) > 10) | (pl.col(curr) > 10))
+            & (
+                (pl.col(prev) > SMALL_NON_RES_THRESHOLD)
+                | (pl.col(curr) > SMALL_NON_RES_THRESHOLD)
+            )
             & (pl.col(prev) != pl.col(curr))
         )
         .select(
@@ -265,16 +278,10 @@ def clean_non_residential_rate_of_change(
         .row(0)
     )
 
-    perc_change_lower_threshold = (
-        1 / perc_change_upper_threshold if perc_change_upper_threshold else None
-    )
-
-    is_care_home = pl.col(IndCqc.care_home) == CareHome.care_home
-
     is_small_non_res = (
-        (pl.col(IndCqc.care_home) == CareHome.not_care_home)
-        & (pl.col(prev) <= 10)
-        & (pl.col(curr) <= 10)
+        is_non_res
+        & (pl.col(prev) <= SMALL_NON_RES_THRESHOLD)
+        & (pl.col(curr) <= SMALL_NON_RES_THRESHOLD)
     )
 
     if abs_change_upper_threshold is None or perc_change_upper_threshold is None:
@@ -282,7 +289,7 @@ def clean_non_residential_rate_of_change(
     else:
         perc_change_lower_threshold = 1 / perc_change_upper_threshold
         is_valid_non_res = (
-            (pl.col(IndCqc.care_home) == CareHome.not_care_home)
+            is_non_res
             & (pl.col(TempCol.abs_change) <= abs_change_upper_threshold)
             & (pl.col(TempCol.perc_change) <= perc_change_upper_threshold)
             & (pl.col(TempCol.perc_change) >= perc_change_lower_threshold)
