@@ -4,11 +4,24 @@ from polars_utils import utils
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
-from utils.column_values.categorical_column_values import ContemporaryCSSR
+from projects._04_direct_payment_recipients.direct_payments_config_polars import (
+    DirectPaymentsMisspelledLaNames as LANameCorrections,
+)
+from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.calculate_remaining_variables import (
+    calculate_remaining_variables,
+)
+from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.create_summary_table import (
+    create_summary_table,
+)
+from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.estimate_service_users_employing_staff import (
+    calculate_estimated_service_users_employing_staff,
+)
+from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.merge_cornwall_and_isles_of_scilly import (
+    merge_cornwall_and_isles_of_scilly,
+)
 
 direct_payments_columns = [
     DP.LA_AREA,
-    DP.YEAR,
     DP.YEAR_AS_INTEGER,
     DP.SERVICE_USER_DPRS_DURING_YEAR,
     DP.CARER_DPRS_DURING_YEAR,
@@ -17,17 +30,6 @@ direct_payments_columns = [
     DP.TOTAL_DPRS_DURING_YEAR,
     DP.FILLED_POSTS_PER_EMPLOYER,
 ]
-
-la_name_replacements = {
-    "Bath & N E Somerset": ContemporaryCSSR.bath_and_north_east_somerset,
-    "Blackburn": ContemporaryCSSR.blackburn_with_darwen,
-    "Bournemouth, Christchurch and Poole": ContemporaryCSSR.bournemouth_christchurch_and_poole,
-    "Cornwall": ContemporaryCSSR.cornwall_and_isles_of_scilly,
-    "East Riding": ContemporaryCSSR.east_riding_of_yorkshire,
-    "Isles of Scilly": ContemporaryCSSR.cornwall_and_isles_of_scilly,
-    "Medway Towns": ContemporaryCSSR.medway,
-    "Southend": ContemporaryCSSR.southend_on_sea,
-}
 
 
 def main(
@@ -40,11 +42,27 @@ def main(
         selected_columns=direct_payments_columns,
     )
 
-    lf = lf.with_columns(pl.col(DP.LA_AREA).replace(la_name_replacements))
+    lf = merge_cornwall_and_isles_of_scilly(lf)
+
+    lf = lf.with_columns(
+        pl.col(DP.LA_AREA).replace(LANameCorrections.DICT_TO_CORRECT_LA_NAMES)
+    )
+
+    lf = calculate_estimated_service_users_employing_staff(lf)
+
+    lf = calculate_remaining_variables(lf)
+
+    summary_lf = create_summary_table(lf)
 
     utils.sink_to_parquet(
         lf,
         destination,
+        append=False,
+    )
+
+    utils.sink_to_parquet(
+        summary_lf,
+        summary_destination,
         append=False,
     )
 

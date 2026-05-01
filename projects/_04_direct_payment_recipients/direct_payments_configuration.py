@@ -11,6 +11,7 @@ from projects._04_direct_payment_recipients.direct_payments_column_names import 
 from utils.column_values.categorical_column_values import ContemporaryCSSR
 
 
+# converted to polars -> projects\_04_direct_payment_recipients\direct_payments_config_polars.py
 @dataclass
 class DirectPaymentConfiguration:
     # The carer's employing percentage was calculated from a question in older surveys. As this is so close to zero it was removed as a question from more recent surveys and we use the most recent value.
@@ -59,7 +60,7 @@ class EstimatePeriodAsDate:
     DAY: str = "31"
 
 
-# TODO: Remove this dict after signing off DPR estimates in polars.
+# converted to polars -> projects\_04_direct_payment_recipients\direct_payments_config_polars.py
 @dataclass
 class DirectPaymentsMisspelledLaNames:
     DICT_TO_CORRECT_LA_NAMES = {

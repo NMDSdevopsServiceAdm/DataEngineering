@@ -1,4 +1,5 @@
 import unittest
+
 import polars as pl
 import polars.testing as pl_testing
 
@@ -26,10 +27,12 @@ class TestDPRModelInterpolation(unittest.TestCase):
         test_schema = {
             DP.LA_AREA: pl.String,
             DP.YEAR_AS_INTEGER: pl.Int64,
-            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float64,
+            DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: pl.Float64,
             DP.ESTIMATE_USING_INTERPOLATION: pl.Float64,
         }
         expected_lf = pl.LazyFrame(rows, schema=test_schema, orient="row")
         test_lf = expected_lf.drop(DP.ESTIMATE_USING_INTERPOLATION)
-        returned_lf = job.model_interpolation(test_lf)
+        returned_lf = job.model_interpolation(
+            test_lf, DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+        )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)

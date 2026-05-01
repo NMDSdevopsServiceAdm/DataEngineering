@@ -1,4 +1,5 @@
 import polars as pl
+
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
@@ -24,7 +25,7 @@ def create_summary_table(
             - total_dprs_employing_staff
             - total_personal_assistant_filled_posts
     """
-    summary_direct_payments_lf = lf.group_by(DP.YEAR).agg(
+    summary_direct_payments_lf = lf.group_by(DP.YEAR_AS_INTEGER).agg(
         pl.sum(DP.TOTAL_DPRS_DURING_YEAR).cast(pl.Float32).alias(DP.TOTAL_DPRS),
         pl.sum(DP.SERVICE_USER_DPRS_DURING_YEAR)
         .cast(pl.Float32)
