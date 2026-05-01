@@ -16,10 +16,12 @@ from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_paymen
 from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.estimate_service_users_employing_staff import (
     calculate_estimated_service_users_employing_staff,
 )
+from projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.merge_cornwall_and_isles_of_scilly import (
+    merge_cornwall_and_isles_of_scilly,
+)
 
 direct_payments_columns = [
     DP.LA_AREA,
-    DP.YEAR,
     DP.YEAR_AS_INTEGER,
     DP.SERVICE_USER_DPRS_DURING_YEAR,
     DP.CARER_DPRS_DURING_YEAR,
@@ -39,6 +41,8 @@ def main(
         source=direct_payments_merged_source,
         selected_columns=direct_payments_columns,
     )
+
+    lf = merge_cornwall_and_isles_of_scilly(lf)
 
     lf = lf.with_columns(
         pl.col(DP.LA_AREA).replace(LANameCorrections.DICT_TO_CORRECT_LA_NAMES)
