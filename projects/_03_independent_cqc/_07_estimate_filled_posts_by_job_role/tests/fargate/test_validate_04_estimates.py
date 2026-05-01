@@ -1,0 +1,91 @@
+import json
+import unittest
+from unittest.mock import ANY, Mock, call, patch
+from datetime import date
+
+import polars as pl
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_04_estimates as job
+
+PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_04_estimates"
+
+
+class ValidateJobRoleEstimatesTests(unittest.TestCase):
+    def setUp(self) -> None:
+        expected_schema = {
+            IndCqcColumns.id_per_locationid_import_date: pl.String,
+            IndCqcColumns.location_id: pl.String,
+            IndCqcColumns.ascwds_workplace_import_date: pl.Date,
+            IndCqcColumns.cqc_location_import_date: pl.Date,
+            IndCqcColumns.care_home: pl.String,
+            IndCqcColumns.primary_service_type: pl.String,
+            IndCqcColumns.current_ons_import_date: pl.Date,
+            IndCqcColumns.current_cssr: pl.String,
+            IndCqcColumns.current_region: pl.String,
+            IndCqcColumns.estimate_filled_posts: pl.Float32,
+            IndCqcColumns.estimate_filled_posts_source: pl.String,
+            IndCqcColumns.ascwds_job_role_ratios_merged_source: pl.String,
+            IndCqcColumns.main_job_role_clean_labelled: pl.String,
+            IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
+            IndCqcColumns.estimate_filled_posts_from_all_job_roles: pl.Float32,
+            IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: pl.Float32,
+        }
+        expected_rows = [
+            ("1", "1-001", date(2026, 1, 1), date(2026, 1, 1), "Y", "primary_service_type", date(2026, 1, 1), "current_cssr", "current_region", 100.0, "source", "imputed_ascwds_job_role_ratios", "care_worker", 40.0, 100.0, 0.0),
+            ("2", "1-002", date(2026, 1, 1), date(2026, 1, 1), "Y", "primary_service_type", date(2026, 1, 1), "current_cssr", "current_region", 100.0, "source", "imputed_ascwds_job_role_ratios", "support_worker", 30.0, 100.0, 0.0),
+        ] # fmt: skip
+        self.source_lf = pl.LazyFrame(
+            expected_rows, schema=expected_schema, orient="row"
+        )
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_validation_runs(
+        self,
+        mock_scan_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_scan_parquet.side_effect = [self.source_lf]
+        job.main("bucket", "my/dataset/", "my/reports/")
+
+        mock_scan_parquet.assert_called_once_with(
+            source="s3://bucket/my/dataset/",
+            selected_columns=list(self.source_lf.collect_schema().keys()),
+        )
+        mock_write_reports.assert_called_once()
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_validation_report_includes_expected_validations(
+        self,
+        mock_scan_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_scan_parquet.side_effect = [self.source_lf]
+
+        job.main("bucket", "my/dataset/", "my/reports/")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+
+        # Extract all assertion types present in the report
+        assertion_types_present = {item["assertion_type"] for item in report_json}
+
+        # Check that key validations were run
+        expected_assertions = {
+            "row_count_match",
+            "col_vals_not_null",
+            "rows_distinct",
+            "col_vals_between",
+        }
+
+        for assertion in expected_assertions:
+            self.assertIn(
+                assertion,
+                assertion_types_present,
+                f"{assertion} not found in validation report",
+            )
+
+
+if __name__ == "__main__":
+    unittest.main(warnings="ignore")

@@ -6,7 +6,6 @@ from polars_utils import utils
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.validate_utils import (
     create_job_role_estimates_data_validation_columns,
 )
-from polars_utils.expressions import str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
@@ -24,13 +23,13 @@ ind_cqc_job_role_cols_to_import = [
     IndCqcColumns.current_ons_import_date,
     IndCqcColumns.current_cssr,
     IndCqcColumns.current_region,
-    IndCqcColumns.unix_time,
     IndCqcColumns.estimate_filled_posts,
     IndCqcColumns.estimate_filled_posts_source,
     IndCqcColumns.ascwds_job_role_ratios_merged_source,
     IndCqcColumns.main_job_role_clean_labelled,
     IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted,
     IndCqcColumns.estimate_filled_posts_from_all_job_roles,
+    IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
 ]
 
 
@@ -80,7 +79,6 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
                 IndCqcColumns.current_ons_import_date,
                 IndCqcColumns.current_cssr,
                 IndCqcColumns.current_region,
-                IndCqcColumns.unix_time,
                 IndCqcColumns.estimate_filled_posts,
                 IndCqcColumns.estimate_filled_posts_source,
                 IndCqcColumns.ascwds_job_role_ratios_merged_source,
