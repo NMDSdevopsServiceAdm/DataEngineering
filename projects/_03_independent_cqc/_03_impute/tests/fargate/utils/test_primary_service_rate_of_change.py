@@ -21,20 +21,16 @@ class TestModelPrimaryServiceRateOfChangeTrendline:
 
 class TestModelPrimaryServiceRateOfChangeTrendline:
     @pytest.mark.parametrize(
-        "input_data, expected_data",
+        "expected_data",
         [case.as_pytest_param() for case in Data.model_roc_trendline_test_cases],
     )
-    def test_trendline_matches_expected(self, input_data, expected_data):
+    def test_trendline_matches_expected(self, expected_data):
         expected_lf = pl.LazyFrame(
             expected_data,
             Schemas.expected_model_roc_trendline_schema,
             orient="row",
         )
-        input_lf = pl.LazyFrame(
-            input_data,
-            Schemas.model_roc_trendline_schema,
-            orient="row",
-        )
+        input_lf = expected_lf.drop(IndCQC.ascwds_rate_of_change_trendline_model)
         returned_lf = job.model_primary_service_rate_of_change_trendline(
             input_lf,
             value_col=IndCQC.combined_ratio_and_filled_posts,
@@ -85,24 +81,22 @@ class TestCalculateRollingSums:
 
 class TestCleanNonResidentialRateOfChange:
     @pytest.mark.parametrize(
-        "input_data, expected_data",
+        "expected_data",
         [
             case.as_pytest_param()
             for case in Data.clean_non_residential_rate_of_change_test_cases
         ],
     )
     def test_clean_non_residential_rate_of_change_returns_expected_output(
-        self, input_data, expected_data
+        self, expected_data
     ):
         expected_lf = pl.LazyFrame(
             expected_data,
             Schemas.expected_clean_non_residential_rate_of_change_schema,
             orient="row",
         )
-        input_lf = pl.LazyFrame(
-            input_data,
-            Schemas.clean_non_residential_rate_of_change_schema,
-            orient="row",
+        input_lf = expected_lf.drop(
+            job.TempCol.previous_period_cleaned, job.TempCol.current_period_cleaned
         )
         returned_lf = job.clean_non_residential_rate_of_change(input_lf)
         pl_testing.assert_frame_equal(

@@ -1628,15 +1628,6 @@ class ModelExtrapolation:
 
 @dataclass
 class ModelRateOfChangeSchemas:
-    model_roc_trendline_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.care_home: pl.String,
-        IndCQC.number_of_beds: pl.Int32,
-        IndCQC.primary_service_type: pl.String,
-        IndCQC.combined_ratio_and_filled_posts: pl.Float32,
-        IndCQC.care_home_status_count: pl.Int32,
-    }
     expected_model_roc_trendline_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
@@ -1665,13 +1656,6 @@ class ModelRateOfChangeSchemas:
         ROC_TempCol.rolling_previous_sum: pl.Float32,
     }
 
-    clean_non_residential_rate_of_change_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.care_home: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        ROC_TempCol.previous_period_interpolated: pl.Float32,
-        ROC_TempCol.current_period_interpolated: pl.Float32,
-    }
     expected_clean_non_residential_rate_of_change_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.care_home: pl.String,
