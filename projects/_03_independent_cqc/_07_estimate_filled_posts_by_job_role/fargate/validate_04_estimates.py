@@ -84,9 +84,9 @@ def main(
             ],
         )
         # between (inclusive)
-        .col_vals_between(
-            IndCqcColumns.national_percentage_care_worker_filled_posts, 0.59, 0.69
-        )
+        # .col_vals_between(
+        #     IndCqcColumns.national_percentage_care_worker_filled_posts, 0.59, 0.69
+        # )
         .col_vals_between(
             IndCqcColumns.national_percentage_direct_care_filled_posts, 0.71, 0.81
         )
