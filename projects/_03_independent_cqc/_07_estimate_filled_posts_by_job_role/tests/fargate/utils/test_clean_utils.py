@@ -5,7 +5,11 @@ import polars.testing as pl_testing
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import EstimateFilledPostsSource
+from utils.column_values.categorical_column_values import (
+    EstimateFilledPostsSource,
+    PrimaryServiceType,
+    MainJobRoleLabels,
+)
 
 
 class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
@@ -62,3 +66,172 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
         )
         returned_lf = job.nullify_job_role_count_when_source_not_ascwds(input_lf)
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds(
+    unittest.TestCase
+):
+    test_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.primary_service_type: pl.String,
+        IndCQC.main_job_role_clean_labelled: pl.String,
+        IndCQC.ascwds_job_role_counts: pl.Int64,
+    }
+
+    test_data = [
+        # Placeholder test data - to be implemented when function is implemented.
+        (
+            "loc1",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.care_worker,
+            20,
+        ),
+        (
+            "loc1",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.registered_nurse,
+            1,
+        ),
+        (
+            "loc1",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.registered_manager,
+            1,
+        ),
+        (
+            "loc1",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.other_non_care_related_staff,
+            1,
+        ),
+        (
+            "loc2",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.care_worker,
+            1,
+        ),
+        (
+            "loc2",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.registered_nurse,
+            1,
+        ),
+        (
+            "loc2",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.registered_manager,
+            1,
+        ),
+        (
+            "loc2",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.other_non_care_related_staff,
+            1,
+        ),
+        (
+            "loc3",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.care_worker,
+            1,
+        ),
+        (
+            "loc3",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.registered_nurse,
+            1,
+        ),
+        (
+            "loc3",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.registered_manager,
+            1,
+        ),
+        (
+            "loc3",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.other_non_care_related_staff,
+            1,
+        ),
+    ]
+
+    test_lf = pl.LazyFrame(test_data, test_schema, orient="row")
+    expected_schema = test_schema
+
+    expected_data = [
+        # Placeholder test data - to be implemented when function is implemented.
+        (
+            "loc2",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.care_worker,
+            1,
+        ),
+        (
+            "loc2",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.registered_nurse,
+            1,
+        ),
+        (
+            "loc2",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.registered_manager,
+            1,
+        ),
+        (
+            "loc2",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.other_non_care_related_staff,
+            1,
+        ),
+        (
+            "loc3",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.care_worker,
+            1,
+        ),
+        (
+            "loc3",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.registered_nurse,
+            1,
+        ),
+        (
+            "loc3",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.registered_manager,
+            1,
+        ),
+        (
+            "loc3",
+            "2024-01-01",
+            PrimaryServiceType.care_home_only,
+            MainJobRoleLabels.other_non_care_related_staff,
+            1,
+        ),
+    ]
+    expected_lf = pl.LazyFrame(expected_data, expected_schema, orient="row")
+
+    def test_placeholder(self):
+        # Placeholder test - to be implemented when function is implemented.
+        returned_lf = job.placeholder_function(self.test_lf)
+        pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
