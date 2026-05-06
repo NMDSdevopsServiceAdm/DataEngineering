@@ -6,6 +6,7 @@ import polars.testing as pl_testing
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.validate_utils as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import MainJobRoleLabels
+from utils.column_names.validation_table_columns import Validation as validationColumns
 
 
 class TestCreateJobRoleEstimatesDataValidationColumns(unittest.TestCase):
@@ -34,7 +35,7 @@ class TestCreateJobRoleEstimatesDataValidationColumns(unittest.TestCase):
             IndCQC.national_percentage_managers_filled_posts: pl.Float32,
             IndCQC.national_percentage_regulated_professions_filled_posts: pl.Float32,
             IndCQC.national_percentage_other_filled_posts: pl.Float32,
-            "total_job_role_records": pl.Int32,
+            validationColumns.total_job_role_records: pl.Int32,
         }
         expected_rows = [
             (date(2026, 1, 1), 0.4, 0.7, 0.2, 0.1, 0.0, 8),

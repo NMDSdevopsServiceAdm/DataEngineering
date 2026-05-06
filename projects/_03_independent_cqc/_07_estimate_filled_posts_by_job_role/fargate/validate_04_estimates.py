@@ -9,6 +9,7 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_names.validation_table_columns import Validation as validationColumns
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup as jobGroupDict,
 )
@@ -59,7 +60,6 @@ def main(
         create_job_role_estimates_data_validation_columns(source_lf)
     )
     source_df = source_with_validation_columns_lf.collect()
-    total_job_role_records = "total_job_role_records"
 
     validation = (
         pb.Validate(
@@ -70,7 +70,7 @@ def main(
             actions=GLOBAL_ACTIONS,
         )
         # dataset size
-        .col_vals_eq(total_job_role_records, expected_row_count)
+        .col_vals_eq(validationColumns.total_job_role_records, expected_row_count)
         # complete columns
         .col_vals_not_null(
             [

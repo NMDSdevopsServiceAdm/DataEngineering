@@ -8,6 +8,7 @@ from utils.column_values.categorical_column_values import (
     MainJobRoleLabels,
     JobGroupLabels,
 )
+from utils.column_names.validation_table_columns import Validation as validationColumns
 
 
 def create_job_role_estimates_data_validation_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -26,7 +27,6 @@ def create_job_role_estimates_data_validation_columns(lf: pl.LazyFrame) -> pl.La
     Returns:
         pl.LazyFrame: The LazyFrame with the new validation columns.
     """
-    total_job_role_records = "total_job_role_records"
     partition = IndCQC.cqc_location_import_date
     job_role_col = IndCQC.main_job_role_clean_labelled
     value_col = IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
@@ -75,5 +75,5 @@ def create_job_role_estimates_data_validation_columns(lf: pl.LazyFrame) -> pl.La
             .alias(new_col)
             for new_col, roles in percentage_columns
         ),
-        pl.lit(total_records).alias(total_job_role_records),
+        pl.lit(total_records).alias(validationColumns.total_job_role_records),
     )
