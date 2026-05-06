@@ -3,9 +3,9 @@ import polars as pl
 from polars_utils import utils
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils import (
     nullify_job_role_count_when_source_not_ascwds,
+    filter_placeholder,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.clean_utils import filter_placeholder
 
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.

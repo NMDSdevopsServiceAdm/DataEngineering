@@ -1,5 +1,5 @@
 import unittest
-
+from datetime import date
 import polars as pl
 import polars.testing as pl_testing
 
@@ -82,18 +82,18 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds(
 
     test_data = [
         # Placeholder test data - to be implemented when function is implemented.
-        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20, 20),
-        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
-        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
-        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
-        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
-        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
-        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
-        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
-        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
-        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
-        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
-        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
+        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20, 20),
+        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
+        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
+        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
+        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
+        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
+        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
+        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
+        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
+        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
+        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
+        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
     ] # fmt:skip
 
     test_lf = pl.LazyFrame(test_data, test_schema, orient="row")
@@ -101,18 +101,18 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds(
 
     expected_data = [
         # Placeholder test data - to be implemented when function is implemented.
-        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20, None),
-        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , None),
-        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, None),
-        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, None),
-        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
-        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
-        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
-        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
-        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
-        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
-        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
-        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
+        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20, None),
+        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , None),
+        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, None),
+        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, None),
+        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
+        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
+        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
+        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
+        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
+        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
+        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
+        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
     ] # fmt:skip
     expected_lf = pl.LazyFrame(expected_data, expected_schema, orient="row")
     upper_percentile_bound = 0.8
