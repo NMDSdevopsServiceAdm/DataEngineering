@@ -32,7 +32,9 @@ All notable changes to this project will be documented in this file.
 
 - Added a function to DPR estimates to group Cornwall and Isles of Scilly.
 
-- Created job role estimates data validation columns in Polars and added validation and test validation scripts for the Estimates job. 
+- Created job role estimates data validation columns in Polars and added validation and test validation scripts for the Estimates job.
+
+- Added `brand_id` from raw CQC data into the IND CQC pipeline.
 
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
