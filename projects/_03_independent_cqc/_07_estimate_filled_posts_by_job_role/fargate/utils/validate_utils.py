@@ -30,6 +30,8 @@ def create_job_role_estimates_data_validation_columns(lf: pl.LazyFrame) -> pl.La
     partition = IndCQC.cqc_location_import_date
     job_role_col = IndCQC.main_job_role_clean_labelled
     value_col = IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
+    new_col = "new_col"
+    roles = "roles"
 
     job_group_to_roles = {}
     for (
@@ -39,41 +41,41 @@ def create_job_role_estimates_data_validation_columns(lf: pl.LazyFrame) -> pl.La
         job_group_to_roles.setdefault(group, []).append(role)
 
     percentage_columns = [
-        (
-            IndCQC.national_percentage_care_worker_filled_posts,
-            [MainJobRoleLabels.care_worker],
-        ),
-        (
-            IndCQC.national_percentage_direct_care_filled_posts,
-            job_group_to_roles[JobGroupLabels.direct_care],
-        ),
-        (
-            IndCQC.national_percentage_managers_filled_posts,
-            job_group_to_roles[JobGroupLabels.managers],
-        ),
-        (
-            IndCQC.national_percentage_regulated_professions_filled_posts,
-            job_group_to_roles[JobGroupLabels.regulated_professions],
-        ),
-        (
-            IndCQC.national_percentage_other_filled_posts,
-            job_group_to_roles[JobGroupLabels.other],
-        ),
+        {
+            new_col: IndCQC.national_percentage_care_worker_filled_posts,
+            roles: [MainJobRoleLabels.care_worker],
+        },
+        {
+            new_col: IndCQC.national_percentage_direct_care_filled_posts,
+            roles: job_group_to_roles[JobGroupLabels.direct_care],
+        },
+        {
+            new_col: IndCQC.national_percentage_managers_filled_posts,
+            roles: job_group_to_roles[JobGroupLabels.managers],
+        },
+        {
+            new_col: IndCQC.national_percentage_regulated_professions_filled_posts,
+            roles: job_group_to_roles[JobGroupLabels.regulated_professions],
+        },
+        {
+            new_col: IndCQC.national_percentage_other_filled_posts,
+            roles: job_group_to_roles[JobGroupLabels.other],
+        },
     ]
 
     total_records = lf.select(pl.len()).collect().item()
     return lf.group_by(partition).agg(
         *(
             (
-                pl.when(pl.col(job_role_col).is_in(roles))
+                pl.when(pl.col(job_role_col).is_in(entry[roles]))
                 .then(pl.col(value_col))
                 .otherwise(0)
                 .sum()
                 / pl.sum(value_col)
             )
             .cast(pl.Float32)
-            .alias(new_col)
-            for new_col, roles in percentage_columns
+            .alias(entry[new_col])
+            for entry in percentage_columns
         ),
         pl.lit(total_records).alias(validationColumns.total_job_role_records),
     )
