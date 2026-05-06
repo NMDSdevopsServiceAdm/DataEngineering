@@ -67,15 +67,15 @@ def create_job_role_estimates_data_validation_columns(lf: pl.LazyFrame) -> pl.La
     return lf.group_by(partition).agg(
         *(
             (
-                pl.when(pl.col(job_role_col).is_in(entry[roles]))
+                pl.when(pl.col(job_role_col).is_in(col[roles]))
                 .then(pl.col(value_col))
                 .otherwise(0)
                 .sum()
                 / pl.sum(value_col)
             )
             .cast(pl.Float32)
-            .alias(entry[new_col])
-            for entry in percentage_columns
+            .alias(col[new_col])
+            for col in percentage_columns
         ),
         pl.lit(total_records).alias(validationColumns.total_job_role_records),
     )
