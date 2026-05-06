@@ -113,5 +113,5 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds(
 
     def test_placeholder(self):
         # Placeholder test - to be implemented when function is implemented.
-        returned_lf = job.placeholder_function(self.test_lf)
+        returned_lf = job.filter_placeholder(self.test_lf)
         pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
