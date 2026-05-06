@@ -40,14 +40,23 @@ def null_longitudinal_outliers(
     abs_diff_expr = (pl.col(column_to_clean) - median_expr).abs()
 
     cutoff_expr = abs_diff_expr.quantile(percentile, interpolation="linear").first()
+    cutoff_expr_01 = abs_diff_expr.quantile(0.99, interpolation="linear").first()
+    cutoff_expr_025 = abs_diff_expr.quantile(0.975, interpolation="linear").first()
+    cutoff_expr_005 = abs_diff_expr.quantile(0.995, interpolation="linear").first()
 
     lf = lf.with_columns(
+        median_expr.alias(f"{column_to_clean}_median"),
+        abs_diff_expr.alias(f"{column_to_clean}_abs_diff_from_median"),
+        cutoff_expr.alias(f"{column_to_clean}_001_cutoff"),
+        cutoff_expr_01.alias(f"{column_to_clean}_01_cutoff"),
+        cutoff_expr_025.alias(f"{column_to_clean}_025_cutoff"),
+        cutoff_expr_005.alias(f"{column_to_clean}_005_cutoff"),
         pl.when(
             (pl.col(column_to_clean).is_not_null()) & (abs_diff_expr <= cutoff_expr)
         )
         .then(pl.col(column_to_clean))
         .otherwise(None)
-        .alias(column_to_clean)
+        .alias(column_to_clean),
     )
 
     lf = update_filtering_rule(
