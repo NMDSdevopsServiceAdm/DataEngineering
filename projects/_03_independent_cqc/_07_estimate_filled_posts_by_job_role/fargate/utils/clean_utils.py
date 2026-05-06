@@ -33,3 +33,17 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
         .then(IndCQC.ascwds_job_role_counts)
         .otherwise(None)
     )
+
+
+def filter_placeholder(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Placeholder function for filtering ASC-WDS worker data.
+
+    Args:
+        lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
+
+    Returns:
+        pl.LazyFrame: Transformed LazyFrame.
+    """
+    # TODO: Implement actual filtering logic for ASC-WDS worker data
+    return lf
