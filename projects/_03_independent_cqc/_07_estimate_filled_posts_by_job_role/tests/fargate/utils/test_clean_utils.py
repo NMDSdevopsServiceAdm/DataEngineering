@@ -2,6 +2,7 @@ import unittest
 from datetime import date
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -9,6 +10,9 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     PrimaryServiceType,
     MainJobRoleLabels,
+)
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    EstimateFilledPostsByJobRoleCleanUtilsData as Data,
 )
 
 
@@ -68,60 +72,30 @@ class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds(
-    unittest.TestCase
-):
-    test_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.primary_service_type: pl.String,
-        IndCQC.main_job_role_clean_labelled: pl.String,
-        IndCQC.ascwds_job_role_counts: pl.Int64,
-        IndCQC.ascwds_job_role_counts_cleaned: pl.Int64,
-    }
-
-    test_data = [
-        # Placeholder test data - to be implemented when function is implemented.
-        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20, 20),
-        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
-        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
-        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
-        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
-        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
-        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
-        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
-        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
-        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
-        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
-        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
-    ] # fmt:skip
-
-    test_lf = pl.LazyFrame(test_data, test_schema, orient="row")
-    expected_schema = test_schema
-
-    expected_data = [
-        # Placeholder test data - to be implemented when function is implemented.
-        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20, None),
-        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , None),
-        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, None),
-        ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, None),
-        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
-        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
-        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
-        ("loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
-        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
-        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
-        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
-        ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
-    ] # fmt:skip
-    expected_lf = pl.LazyFrame(expected_data, expected_schema, orient="row")
-    upper_percentile_bound = 0.8
-    lower_percentile_bound = 0.2
-
-    def test_placeholder(self):
+class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.filter_when_job_group_ratio_outside_percentile_bounds_test_cases
+        ],
+    )
+    def test_filter_when_job_group_ratio_outside_percentile_bounds(self, case):
         # Placeholder test - to be implemented when function is implemented.
-        returned_lf = job.filter_placeholder(self.test_lf)
-        pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
+        schema = {
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.primary_service_type: pl.String,
+            IndCQC.main_job_role_clean_labelled: pl.String,
+            IndCQC.ascwds_job_role_counts: pl.Int64,
+            IndCQC.ascwds_job_role_counts_cleaned: pl.Int64,
+        }
+        test_lf = pl.LazyFrame(case.test_data, schema, orient="row")
+        expected_lf = pl.LazyFrame(case.expected_data, schema, orient="row")
+        returned_lf = job.filter_placeholder(
+            test_lf, case.upper_bound, case.lower_bound
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     # Possible test cases needed:
     # - Job role group ratios above upper bound (counts nullified)

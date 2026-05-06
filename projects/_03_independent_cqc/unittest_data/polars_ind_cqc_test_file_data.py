@@ -2610,3 +2610,328 @@ class ModelExtrapolation:
             ],
         ),
     ]
+
+
+@dataclass
+class EstimateFilledPostsByJobRoleCleanUtilsTestCase:
+    id: str
+    test_data: list[Any]
+    expected_data: list[Any]
+    upper_bound: float
+    lower_bound: float
+    marks: pytest.Mark = None
+
+
+@dataclass
+class EstimateFilledPostsByJobRoleCleanUtilsData:
+    filter_when_job_group_ratio_outside_percentile_bounds_test_cases = [
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_job_role_group_ratios_above_upper_bound",
+            test_data=[
+                (
+                    "loc1",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.care_worker,
+                    20,
+                    20,
+                ),
+                (
+                    "loc1",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.registered_nurse,
+                    1,
+                    1,
+                ),
+                (
+                    "loc1",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.registered_manager,
+                    1,
+                    1,
+                ),
+                (
+                    "loc1",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.other_non_care_related_staff,
+                    1,
+                    1,
+                ),
+                (
+                    "loc2",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.care_worker,
+                    1,
+                    1,
+                ),
+                (
+                    "loc2",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.registered_nurse,
+                    1,
+                    1,
+                ),
+                (
+                    "loc2",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.registered_manager,
+                    1,
+                    1,
+                ),
+                (
+                    "loc2",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.other_non_care_related_staff,
+                    1,
+                    1,
+                ),
+                (
+                    "loc3",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.care_worker,
+                    1,
+                    1,
+                ),
+                (
+                    "loc3",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.registered_nurse,
+                    1,
+                    1,
+                ),
+                (
+                    "loc3",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.registered_manager,
+                    1,
+                    1,
+                ),
+                (
+                    "loc3",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.other_non_care_related_staff,
+                    1,
+                    1,
+                ),
+            ],  # fmt:skip
+            expected_data=[
+                (
+                    "loc1",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.care_worker,
+                    20,
+                    None,
+                ),
+                (
+                    "loc1",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.registered_nurse,
+                    1,
+                    None,
+                ),
+                (
+                    "loc1",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.registered_manager,
+                    1,
+                    None,
+                ),
+                (
+                    "loc1",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.other_non_care_related_staff,
+                    1,
+                    None,
+                ),
+                (
+                    "loc2",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.care_worker,
+                    1,
+                    1,
+                ),
+                (
+                    "loc2",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.registered_nurse,
+                    1,
+                    1,
+                ),
+                (
+                    "loc2",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.registered_manager,
+                    1,
+                    1,
+                ),
+                (
+                    "loc2",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.other_non_care_related_staff,
+                    1,
+                    1,
+                ),
+                (
+                    "loc3",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.care_worker,
+                    1,
+                    1,
+                ),
+                (
+                    "loc3",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.registered_nurse,
+                    1,
+                    1,
+                ),
+                (
+                    "loc3",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.registered_manager,
+                    1,
+                    1,
+                ),
+                (
+                    "loc3",
+                    date(2024, 1, 1),
+                    PrimaryServiceType.care_home_only,
+                    MainJobRoleLabels.other_non_care_related_staff,
+                    1,
+                    1,
+                ),
+            ],  # fmt:skip
+            upper_bound=0.8,
+            lower_bound=0.2,
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_job_role_group_ratios_below_lower_bound",
+            test_data=[
+                # TODO
+            ],
+            expected_data=[
+                # TODO
+            ],
+            upper_bound=0.8,
+            lower_bound=0.2,
+            marks=pytest.mark.skip(reason="Test case not yet implemented"),
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_job_role_group_ratios_within_bounds",
+            test_data=[
+                # TODO
+            ],
+            expected_data=[
+                # TODO
+            ],
+            upper_bound=0.8,
+            lower_bound=0.2,
+            marks=pytest.mark.skip(reason="Test case not yet implemented"),
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_ratio_is exactly_on_bound",
+            test_data=[
+                # TODO
+            ],
+            expected_data=[
+                # TODO
+            ],
+            upper_bound=0.8,
+            lower_bound=0.2,
+            marks=pytest.mark.skip(reason="Test case not yet implemented"),
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_ratio_bounds_are_not_defined",
+            test_data=[
+                # TODO
+            ],
+            expected_data=[
+                # TODO
+            ],
+            upper_bound=None,
+            lower_bound=None,
+            marks=pytest.mark.skip(reason="Test case not yet implemented"),
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_multiple_primary_service_types_present",
+            test_data=[
+                # TODO
+            ],
+            expected_data=[
+                # TODO
+            ],
+            upper_bound=0.8,
+            lower_bound=0.2,
+            marks=pytest.mark.skip(reason="Test case not yet implemented"),
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_multiple_locations_and_dates_present",
+            test_data=[
+                # TODO
+            ],
+            expected_data=[
+                # TODO
+            ],
+            upper_bound=0.8,
+            lower_bound=0.2,
+            marks=pytest.mark.skip(reason="Test case not yet implemented"),
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_null_values_present",
+            test_data=[
+                # TODO
+            ],
+            expected_data=[
+                # TODO
+            ],
+            upper_bound=0.8,
+            lower_bound=0.2,
+            marks=pytest.mark.skip(reason="Test case not yet implemented"),
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_no_rows_outside_bounds",
+            test_data=[
+                # TODO
+            ],
+            expected_data=[
+                # TODO
+            ],
+            upper_bound=0.8,
+            lower_bound=0.2,
+            marks=pytest.mark.skip(reason="Test case not yet implemented"),
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_dataset_is_large",
+            test_data=[
+                # TODO
+            ],
+            expected_data=[
+                # TODO
+            ],
+            upper_bound=0.8,
+            lower_bound=0.2,
+            marks=pytest.mark.skip(reason="Test case not yet implemented"),
+        ),
+    ]
