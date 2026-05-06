@@ -248,7 +248,8 @@ jobs:
       - run:
           name: Copy main datasets to non-prod dataset bucket
           command: |
-            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_01_delta_api/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_locations_01_delta_api/"
+            aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_providers_01_delta_api/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_providers_01_delta_api/"
             aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=postcode_corrections/"
             aws s3 sync "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=ONS/dataset=postcode_directory_cleaned/"
             aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=workplace_cleaned/"
