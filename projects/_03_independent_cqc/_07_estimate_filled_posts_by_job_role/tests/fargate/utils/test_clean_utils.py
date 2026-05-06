@@ -81,154 +81,34 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds(
 
     test_data = [
         # Placeholder test data - to be implemented when function is implemented.
-        (
-            "loc1",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.care_worker,
-            20,
-        ),
-        (
-            "loc1",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.registered_nurse,
-            1,
-        ),
-        (
-            "loc1",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.registered_manager,
-            1,
-        ),
-        (
-            "loc1",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.other_non_care_related_staff,
-            1,
-        ),
-        (
-            "loc2",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.care_worker,
-            1,
-        ),
-        (
-            "loc2",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.registered_nurse,
-            1,
-        ),
-        (
-            "loc2",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.registered_manager,
-            1,
-        ),
-        (
-            "loc2",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.other_non_care_related_staff,
-            1,
-        ),
-        (
-            "loc3",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.care_worker,
-            1,
-        ),
-        (
-            "loc3",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.registered_nurse,
-            1,
-        ),
-        (
-            "loc3",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.registered_manager,
-            1,
-        ),
-        (
-            "loc3",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.other_non_care_related_staff,
-            1,
-        ),
-    ]
+        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20),
+        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 ),
+        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1),
+        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1),
+        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1),
+        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 ),
+        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1),
+        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1),
+        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1),
+        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 ),
+        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1),
+        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1),
+    ] # fmt:skip
 
     test_lf = pl.LazyFrame(test_data, test_schema, orient="row")
     expected_schema = test_schema
 
     expected_data = [
         # Placeholder test data - to be implemented when function is implemented.
-        (
-            "loc2",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.care_worker,
-            1,
-        ),
-        (
-            "loc2",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.registered_nurse,
-            1,
-        ),
-        (
-            "loc2",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.registered_manager,
-            1,
-        ),
-        (
-            "loc2",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.other_non_care_related_staff,
-            1,
-        ),
-        (
-            "loc3",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.care_worker,
-            1,
-        ),
-        (
-            "loc3",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.registered_nurse,
-            1,
-        ),
-        (
-            "loc3",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.registered_manager,
-            1,
-        ),
-        (
-            "loc3",
-            "2024-01-01",
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.other_non_care_related_staff,
-            1,
-        ),
-    ]
+        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1),
+        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 ),
+        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1),
+        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1),
+        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1),
+        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 ),
+        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1),
+        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1),
+    ] # fmt:skip
     expected_lf = pl.LazyFrame(expected_data, expected_schema, orient="row")
 
     def test_placeholder(self):
