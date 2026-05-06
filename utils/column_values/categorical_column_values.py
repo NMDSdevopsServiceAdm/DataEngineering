@@ -566,6 +566,7 @@ class AscwdsFilteringRule(ColumnValues):
     )
     non_res_location_was_grouped_provider: str = "non_res_location_was_grouped_provider"
     winsorized_beds_ratio_outlier: str = "winsorized_beds_ratio_outlier"
+    longitudinal_outliers: str = "longitudinal_outliers"
 
 
 @dataclass
