@@ -12,6 +12,7 @@ ind_cqc_columns = [
     IndCQC.location_id,
     IndCQC.name,
     IndCQC.provider_id,
+    IndCQC.brand_id,
     IndCQC.services_offered,
     IndCQC.primary_service_type,
     IndCQC.primary_service_type_second_level,

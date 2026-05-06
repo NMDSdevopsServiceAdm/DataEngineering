@@ -17,6 +17,7 @@ cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cqc_location_cols_to_import = [
     CQCLClean.location_id,
     CQCLClean.provider_id,
+    CQCLClean.brand_id,
     CQCLClean.name,
     CQCLClean.postal_address_line1,
     CQCLClean.postal_code,

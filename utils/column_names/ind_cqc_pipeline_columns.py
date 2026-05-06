@@ -78,6 +78,7 @@ class IndCqcColumns:
     banded_bed_ratio_rolling_average_model: str = (
         "banded_bed_ratio_rolling_average_model"
     )
+    brand_id: str = CQCLClean.brand_id
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
     care_home_status_count: str = "care_home_status_count"
