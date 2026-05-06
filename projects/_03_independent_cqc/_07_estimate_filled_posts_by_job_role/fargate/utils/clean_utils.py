@@ -43,6 +43,13 @@ def filter_placeholder(
     """
     Placeholder function for filtering ASC-WDS worker data.
 
+    Steps to be implemented:
+     1. Assign job role group per row
+     2. Aggregate ascwds count by job role, location and date
+     3. Calculate job group ratio on aggregate data
+     4. Calculate percentile bounds per job group and primary service type on the aggregate data
+     5. Filter out rows outside of bounds in _cleaned column
+
     Args:
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
         upper_percentile_bound (float): Upper bound for percentile filtering. Defaults to 0.999.
