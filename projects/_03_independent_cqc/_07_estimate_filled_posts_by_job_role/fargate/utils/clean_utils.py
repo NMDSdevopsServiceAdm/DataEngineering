@@ -35,12 +35,18 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
     )
 
 
-def filter_placeholder(lf: pl.LazyFrame) -> pl.LazyFrame:
+def filter_placeholder(
+    lf: pl.LazyFrame,
+    upper_percentile_bound: float = 0.999,
+    lower_percentile_bound: float = 0.001,
+) -> pl.LazyFrame:
     """
     Placeholder function for filtering ASC-WDS worker data.
 
     Args:
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
+        upper_percentile_bound (float): Upper bound for percentile filtering. Defaults to 0.999.
+        lower_percentile_bound (float): Lower bound for percentile filtering. Defaults to 0.001.
 
     Returns:
         pl.LazyFrame: Transformed LazyFrame.

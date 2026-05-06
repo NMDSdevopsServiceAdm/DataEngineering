@@ -110,6 +110,8 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds(
         ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1),
     ] # fmt:skip
     expected_lf = pl.LazyFrame(expected_data, expected_schema, orient="row")
+    upper_percentile_bound = 0.8
+    lower_percentile_bound = 0.2
 
     def test_placeholder(self):
         # Placeholder test - to be implemented when function is implemented.
