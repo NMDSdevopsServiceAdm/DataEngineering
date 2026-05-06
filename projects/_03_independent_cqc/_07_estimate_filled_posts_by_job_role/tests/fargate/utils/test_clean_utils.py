@@ -77,33 +77,27 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds(
         IndCQC.primary_service_type: pl.String,
         IndCQC.main_job_role_clean_labelled: pl.String,
         IndCQC.ascwds_job_role_counts: pl.Int64,
+        IndCQC.ascwds_job_role_counts_cleaned: pl.Int64,
     }
 
     test_data = [
         # Placeholder test data - to be implemented when function is implemented.
-        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20),
-        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 ),
-        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1),
-        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1),
-        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1),
-        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 ),
-        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1),
-        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1),
-        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1),
-        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 ),
-        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1),
-        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1),
+        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20, 20),
+        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
+        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
+        ("loc1", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
+        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
+        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
+        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
+        ("loc2", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
+        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, 1),
+        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1 , 1),
+        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, 1),
+        ("loc3", "2024-01-01", PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, 1),
     ] # fmt:skip
 
     test_lf = pl.LazyFrame(test_data, test_schema, orient="row")
-    expected_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.primary_service_type: pl.String,
-        IndCQC.main_job_role_clean_labelled: pl.String,
-        IndCQC.ascwds_job_role_counts: pl.Int64,
-        IndCQC.ascwds_job_role_counts_cleaned: pl.Int64,
-    }
+    expected_schema = test_schema
 
     expected_data = [
         # Placeholder test data - to be implemented when function is implemented.
