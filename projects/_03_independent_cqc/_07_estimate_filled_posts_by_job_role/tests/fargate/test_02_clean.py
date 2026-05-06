@@ -15,6 +15,7 @@ class MainTests(unittest.TestCase):
     mock_estimated_job_role_posts_lf = pl.LazyFrame()
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.filter_placeholder")
     @patch(f"{PATCH_PATH}.nullify_job_role_count_when_source_not_ascwds")
     @patch(
         f"{PATCH_PATH}.utils.scan_parquet",
@@ -24,6 +25,7 @@ class MainTests(unittest.TestCase):
         self,
         scan_parquet_mock: Mock,
         nullify_job_role_count_when_source_not_ascwds_mock: Mock,
+        filter_placeholder_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(self.MERGED_DATA_SOURCE, self.CLEANED_DATA_DESTINATION)
@@ -36,6 +38,7 @@ class MainTests(unittest.TestCase):
         )
 
         nullify_job_role_count_when_source_not_ascwds_mock.assert_called_once()
+        filter_placeholder_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
