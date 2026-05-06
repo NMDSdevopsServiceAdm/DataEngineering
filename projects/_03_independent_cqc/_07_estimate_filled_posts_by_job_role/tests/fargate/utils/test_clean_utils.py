@@ -81,7 +81,6 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
         ],
     )
     def test_filter_when_job_group_ratio_outside_percentile_bounds(self, case):
-        # Placeholder test - to be implemented when function is implemented.
         schema = {
             IndCQC.location_id: pl.String,
             IndCQC.cqc_location_import_date: pl.Date,
@@ -96,16 +95,3 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
             test_lf, case.upper_bound, case.lower_bound
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    # Possible test cases needed:
-    # - Job role group ratios above upper bound (counts nullified)
-    # - Job role group ratios below lower bound (counts nullified)
-    # - Job role group ratios within bounds (counts not nullified)
-    # - Edge case where ratio is exactly on the bound (counts not nullified)
-    # - Different bounds (e.g. upper bound of 0.9 and lower bound of 0.1)
-    # - Test with different primary service types (e.g. domiciliary care, supported living)
-    # - Test with different job roles (e.g. care worker, registered nurse, registered manager, other non-care related staff)
-    # - Test with different locations and dates to ensure grouping is working correctly
-    # - Test with larger dataset to ensure function works at scale
-    # - Test with missing or null values in relevant columns to ensure function handles appropriately
-    # - Test where no rows are outside of bounds to ensure no counts are nullified
