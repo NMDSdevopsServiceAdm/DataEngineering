@@ -176,7 +176,7 @@ def join_pa_filled_posts_to_hybrid_area_proportions(
     pa_filled_posts_df = pa_filled_posts_df.select(
         DPColNames.LA_AREA,
         DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
-        DPColNames.YEAR,
+        DPColNames.YEAR_AS_INTEGER,
         ONSClean.contemporary_ons_import_date,
     )
 
