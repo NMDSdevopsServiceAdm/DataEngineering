@@ -25,6 +25,7 @@ ind_cqc_columns = [
     IndCQC.location_id,
     IndCQC.name,
     IndCQC.provider_id,
+    IndCQC.brand_id,
     IndCQC.services_offered,
     IndCQC.primary_service_type,
     IndCQC.primary_service_type_second_level,
@@ -185,7 +186,7 @@ if __name__ == "__main__":
     print("Spark job 'estimate_ind_cqc_filled_posts' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    (bucket_name, imputed_ind_cqc_data_source, estimated_ind_cqc_destination) = (
+    bucket_name, imputed_ind_cqc_data_source, estimated_ind_cqc_destination = (
         utils.collect_arguments(
             ("--bucket_name", "The s3 bucket name to source and save the datasets to"),
             (

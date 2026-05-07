@@ -15,6 +15,7 @@ MONTHLY_ARCHIVE_COLUMNS = [
     IndCQC.ascwds_filled_posts_source,
     IndCQC.ascwds_filtering_rule,
     IndCQC.ascwds_workplace_import_date,
+    IndCQC.brand_id,
     IndCQC.care_home,
     IndCQC.care_home_model,
     IndCQC.contemporary_cssr,
