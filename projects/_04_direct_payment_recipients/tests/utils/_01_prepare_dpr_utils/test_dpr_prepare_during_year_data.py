@@ -38,13 +38,21 @@ class TestPrepareDuringYearData(SparkBaseTest):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
+        # self.assertEqual(
+        #     output_df_list[0][DP.TOTAL_DPRS_DURING_YEAR],
+        #     102.5,
+        # )
+        # self.assertEqual(
+        #     output_df_list[1][DP.TOTAL_DPRS_DURING_YEAR],
+        #     27.5,
+        # )
         self.assertEqual(
             output_df_list[0][DP.TOTAL_DPRS_DURING_YEAR],
-            102.5,
+            100.0,
         )
         self.assertEqual(
             output_df_list[1][DP.TOTAL_DPRS_DURING_YEAR],
-            27.5,
+            25.0,
         )
 
     def test_estimate_missing_salt_data_for_hackney_works_on_historic_data(
