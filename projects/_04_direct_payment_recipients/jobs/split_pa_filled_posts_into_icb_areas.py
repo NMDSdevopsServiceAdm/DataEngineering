@@ -34,7 +34,6 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
         [
             DPColNames.LA_AREA,
             DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
-            DPColNames.YEAR,
             DPColNames.YEAR_AS_INTEGER,
         ],
     )
