@@ -266,21 +266,6 @@ module "merge_dpr_data_job" {
   }
 }
 
-module "estimate_direct_payments_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_04_direct_payment_recipients/jobs"
-  script_name     = "estimate_direct_payments.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-  job_parameters = {
-    "--direct_payments_merged_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_merged/version=2026.02/"
-    "--destination"                   = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_estimates/version=2026.02/"
-    "--summary_destination"           = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_estimates_summary/version=2026.02/"
-  }
-}
-
 module "split_pa_filled_posts_into_icb_areas_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_04_direct_payment_recipients/jobs"
