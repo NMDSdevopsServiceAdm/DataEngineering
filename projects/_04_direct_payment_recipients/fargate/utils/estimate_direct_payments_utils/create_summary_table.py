@@ -21,7 +21,6 @@ def create_summary_table(
             - service_user_dprs
             - service_users_employing_staff
             - service_users_with_self_employed_staff
-            #- carers_employing_staff
             - total_dprs_employing_staff
             - total_personal_assistant_filled_posts
     """

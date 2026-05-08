@@ -20,7 +20,6 @@ def calculate_remaining_variables(
 
     The following derived columns are added:
         - estimated_service_users_with_self_employed_staff
-        #- estimated_carers_employing_staff
         - estimated_total_dpr_employing_staff
         - estimated_total_personal_assistant_filled_posts
         - estimated_proportion_of_total_dpr_employing_staff
