@@ -45,24 +45,24 @@ def estimate_missing_salt_data_for_hackney(df: DataFrame) -> DataFrame:
         ),
     )
 
-    df = df.withColumn(
-        DP.CARER_DPRS_DURING_YEAR,
-        F.when(
-            F.col(DP.CARER_DPRS_DURING_YEAR).isNotNull(),
-            F.col(DP.CARER_DPRS_DURING_YEAR),
-        )
-        .when(
-            (F.col(DP.CARER_DPRS_DURING_YEAR).isNull())
-            & (F.col(DP.LA_AREA) == "Hackney")
-            & (F.col(DP.YEAR_AS_INTEGER) == 2022),
-            F.lit(missing_carer_dprs["2022"]),
-        )
-        .when(
-            (F.col(DP.CARER_DPRS_DURING_YEAR).isNull())
-            & (F.col(DP.LA_AREA) == "Hackney")
-            & (F.col(DP.YEAR_AS_INTEGER) == 2023),
-            F.lit(missing_carer_dprs["2023"]),
-        ),
-    )
+    # df = df.withColumn(
+    #     DP.CARER_DPRS_DURING_YEAR,
+    #     F.when(
+    #         F.col(DP.CARER_DPRS_DURING_YEAR).isNotNull(),
+    #         F.col(DP.CARER_DPRS_DURING_YEAR),
+    #     )
+    #     .when(
+    #         (F.col(DP.CARER_DPRS_DURING_YEAR).isNull())
+    #         & (F.col(DP.LA_AREA) == "Hackney")
+    #         & (F.col(DP.YEAR_AS_INTEGER) == 2022),
+    #         F.lit(missing_carer_dprs["2022"]),
+    #     )
+    #     .when(
+    #         (F.col(DP.CARER_DPRS_DURING_YEAR).isNull())
+    #         & (F.col(DP.LA_AREA) == "Hackney")
+    #         & (F.col(DP.YEAR_AS_INTEGER) == 2023),
+    #         F.lit(missing_carer_dprs["2023"]),
+    #     ),
+    # )
 
     return df

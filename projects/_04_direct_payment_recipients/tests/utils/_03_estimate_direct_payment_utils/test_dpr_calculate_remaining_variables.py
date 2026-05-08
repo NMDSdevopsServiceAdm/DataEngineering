@@ -38,7 +38,7 @@ class TestCalculateRemainingVariables(SparkBaseTest):
                     FloatType(),
                     True,
                 ),
-                StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
+                # StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.TOTAL_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(
                     DP.SERVICE_USER_DPRS_DURING_YEAR,
@@ -78,7 +78,7 @@ class TestCalculateRemainingVariables(SparkBaseTest):
                     FloatType(),
                     True,
                 ),
-                StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
+                # StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.TOTAL_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(
                     DP.SERVICE_USER_DPRS_DURING_YEAR,
@@ -120,7 +120,7 @@ class TestCalculateRemainingVariables(SparkBaseTest):
                     FloatType(),
                     True,
                 ),
-                StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
+                # StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.TOTAL_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(
                     DP.SERVICE_USER_DPRS_DURING_YEAR,

@@ -7,7 +7,7 @@ class DirectPaymentColumnNames:
     LA_AREA: str = "la_area_aws"
     YEAR: str = "year"
     SERVICE_USER_DPRS_DURING_YEAR: str = "number_su_dpr_salt"
-    CARER_DPRS_DURING_YEAR: str = "number_carer_dpr_salt"
+    # CARER_DPRS_DURING_YEAR: str = "number_carer_dpr_salt"
     SERVICE_USER_DPRS_AT_YEAR_END: str = "number_su_dpr_year_end_ascof"
     CARER_DPRS_AT_YEAR_END: str = "number_carer_dpr_year_end_ascof"
     DPRS_ADASS: str = "number_of_dprs_adass"
