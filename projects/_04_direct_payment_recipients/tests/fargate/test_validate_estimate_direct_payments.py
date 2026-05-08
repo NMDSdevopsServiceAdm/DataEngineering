@@ -35,7 +35,7 @@ class Schemas:
 
 @dataclass
 class Data:
-    merged_rows = [("area", "2020", 2020, 10.0, 10.0, 0.5, 0.5, 20.0, 1.9)]
+    merged_rows = [("area", "2020", 2020, 10.0, 0.5, 0.5, 20.0, 1.9)]
     estimates_rows = merged_rows
 
 

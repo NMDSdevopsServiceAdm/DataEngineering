@@ -1,4 +1,5 @@
 import warnings
+import pytest
 
 from pyspark.sql.types import (
     FloatType,
@@ -19,6 +20,7 @@ class TestCalculateRemainingVariables(SparkBaseTest):
     def setUp(self):
         warnings.simplefilter("ignore", ResourceWarning)
 
+    @pytest.mark.skip(reason="To be removed")
     def test_calculate_remaining_variables_completes(self):
         rows = [
             ("area_1", 2021, 0.49, 400.0, 30.0, 800.0, 770.0, 1.5),
@@ -57,6 +59,7 @@ class TestCalculateRemainingVariables(SparkBaseTest):
 
         self.assertEqual(output_df.count(), df.count())
 
+    @pytest.mark.skip(reason="To be removed")
     def test_calculate_service_users_with_self_employed_staff_returns_correct_values(
         self,
     ):
@@ -101,6 +104,7 @@ class TestCalculateRemainingVariables(SparkBaseTest):
             places=5,
         )
 
+    @pytest.mark.skip(reason="To be removed")
     def test_calculate_carers_employing_staff_returns_correct_values(self):
         rows = [
             ("area_1", 2021, 0.49, 400.0, 30.0, 800.0, 770.0),

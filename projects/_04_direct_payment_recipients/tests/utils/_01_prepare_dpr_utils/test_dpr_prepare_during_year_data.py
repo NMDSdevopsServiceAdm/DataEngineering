@@ -23,8 +23,8 @@ class TestPrepareDuringYearData(SparkBaseTest):
         self,
     ):
         rows = [
-            ("area_1", 100.0, 2.5),
-            ("area_2", 25.0, 2.5),
+            ("area_1", 100.0),
+            ("area_2", 25.0),
         ]
         test_schema = StructType(
             [
@@ -59,10 +59,10 @@ class TestPrepareDuringYearData(SparkBaseTest):
         self,
     ):
         rows = [
-            ("area_1", 2021, 100.0, 21.0),
-            ("area_1", 2022, 25.0, 2.0),
-            ("Hackney", 2021, 100.0, 4.5),
-            ("Hackney", 2022, None, None),
+            ("area_1", 2021, 100.0),
+            ("area_1", 2022, 25.0),
+            ("Hackney", 2021, 100.0),
+            ("Hackney", 2022, None),
         ]
         test_schema = StructType(
             [
