@@ -127,7 +127,7 @@
                       "Command": [
                         "validate_cqc_locations_1_delta_api_download.py",
                         "--bucket_name", "${dataset_bucket_name}",
-                        "--source_path", "domain=CQC/dataset=cqc_locations_01_delta_api/version=3.1.1/",
+                        "--source_path", "domain=CQC/dataset=cqc_locations_01_delta_api/version=3.1.7/",
                         "--reports_path", "domain=data_validation_reports/dataset=validation_cqc_locations_01_delta_api/"
                       ]
                     }

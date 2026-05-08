@@ -15,3 +15,4 @@ class Validation:
     constraint_message: str = "constraint_message"
     location_id_length: str = CQCLCLean.location_id + "_length"
     provider_id_length: str = CQCLCLean.provider_id + "_length"
+    total_job_role_records: str = "total_job_role_records"

@@ -15,7 +15,7 @@
                 "JobName": "${flatten_cqc_ratings_job_name}",
                 "Arguments": {
                   "--cqc_full_snapshot_source": "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_04_latest_snapshot/",
-                  "--cqc_locations_api_delta_source": "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_01_delta_api/version=3.1.1/",
+                  "--cqc_locations_api_delta_source": "${dataset_bucket_uri}/domain=CQC/dataset=cqc_locations_01_delta_api/version=3.1.7/",
                   "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
                   "--cqc_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/",
                   "--benchmark_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"

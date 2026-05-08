@@ -32,8 +32,14 @@ All notable changes to this project will be documented in this file.
 
 - Added a function to DPR estimates to group Cornwall and Isles of Scilly.
 
+- Created job role estimates data validation columns in Polars and added validation and test validation scripts for the Estimates job.
+
+- Added `brand_id` from raw CQC data into the IND CQC pipeline.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
+
+- Removed the PySpark version of DPR estimates job.
 
 - Removed partitioning from direct payments pipeline outputs.
 
@@ -47,10 +53,12 @@ All notable changes to this project will be documented in this file.
 
 - Updated clean_capacity_tracker_care_home_data job so that agencynoncareworkersemployed is nulled when above 1,000.
 
+- Comment out carers from DPR pipeline outputs. Follow up work will be to remove cleanly.
+
 ### Fixed
 - Update setup instructions with pre-commit hooks setup
 
-- Added missing CQC locations delta data in s3 and updated pipeline to version 3.1.1 of locations delta data.
+- Added missing CQC locations delta data in s3 and updated pipeline to version 3.1.7 of locations delta data.
 
 
 ## [v2026.03.1] - 21/04/2026
