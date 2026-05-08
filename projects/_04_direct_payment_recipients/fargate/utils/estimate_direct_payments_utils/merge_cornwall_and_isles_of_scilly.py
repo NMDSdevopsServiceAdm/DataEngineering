@@ -35,9 +35,6 @@ def merge_cornwall_and_isles_of_scilly(lf: pl.LazyFrame) -> pl.LazyFrame:
             pl.when(pl.col(DP.SERVICE_USER_DPRS_DURING_YEAR).count() > 0).then(
                 pl.sum(DP.SERVICE_USER_DPRS_DURING_YEAR)
             ),
-            # pl.when(pl.col(DP.CARER_DPRS_DURING_YEAR).count() > 0).then(
-            #    pl.sum(DP.CARER_DPRS_DURING_YEAR)
-            # ),
             pl.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
             .filter(pl.col(DP.LA_AREA) == cornwall)
             .first()

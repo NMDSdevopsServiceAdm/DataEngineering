@@ -36,9 +36,6 @@ def create_summary_table(
         pl.sum(DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF)
         .cast(pl.Float32)
         .alias(DP.SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF),
-        # pl.sum(DP.ESTIMATED_CARERS_EMPLOYING_STAFF)
-        # .cast(pl.Float32)
-        # .alias(DP.CARERS_EMPLOYING_STAFF),
         pl.sum(DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF)
         .cast(pl.Float32)
         .alias(DP.TOTAL_DPRS_EMPLOYING_STAFF),

@@ -30,7 +30,6 @@ class TestPrepareDuringYearData(SparkBaseTest):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                # StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -38,14 +37,6 @@ class TestPrepareDuringYearData(SparkBaseTest):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        # self.assertEqual(
-        #     output_df_list[0][DP.TOTAL_DPRS_DURING_YEAR],
-        #     102.5,
-        # )
-        # self.assertEqual(
-        #     output_df_list[1][DP.TOTAL_DPRS_DURING_YEAR],
-        #     27.5,
-        # )
         self.assertEqual(
             output_df_list[0][DP.TOTAL_DPRS_DURING_YEAR],
             100.0,
@@ -69,7 +60,6 @@ class TestPrepareDuringYearData(SparkBaseTest):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), False),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                # StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -92,19 +82,3 @@ class TestPrepareDuringYearData(SparkBaseTest):
             output_df_list[3][DP.SERVICE_USER_DPRS_DURING_YEAR],
             25.0,
         )
-        # self.assertEqual(
-        #     output_df_list[0][DP.CARER_DPRS_DURING_YEAR],
-        #     4.5,
-        # )
-        # self.assertEqual(
-        #     output_df_list[1][DP.CARER_DPRS_DURING_YEAR],
-        #     140.85,
-        # )
-        # self.assertEqual(
-        #     output_df_list[2][DP.CARER_DPRS_DURING_YEAR],
-        #     21.0,
-        # )
-        # self.assertEqual(
-        #     output_df_list[3][DP.CARER_DPRS_DURING_YEAR],
-        #     2.0,
-        # )

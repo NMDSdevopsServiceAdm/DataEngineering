@@ -37,14 +37,9 @@ def calculate_remaining_variables(
         * Config.SELF_EMPLOYED_STAFF_PER_SERVICE_USER
     )
 
-    # carers_employing_staff_expr = (
-    #    pl.col(DP.CARER_DPRS_DURING_YEAR) * Config.CARERS_EMPLOYING_PERCENTAGE
-    # )
-
     total_dpr_employing_staff_expr = (
         pl.col(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF)
         + service_users_with_self_employed_staff_expr
-        # + carers_employing_staff_expr
     )
 
     total_personal_assistant_filled_posts_expr = (
@@ -63,7 +58,6 @@ def calculate_remaining_variables(
         service_users_with_self_employed_staff_expr.alias(
             DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF
         ),
-        # carers_employing_staff_expr.alias(DP.ESTIMATED_CARERS_EMPLOYING_STAFF),
         total_dpr_employing_staff_expr.alias(DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF),
         total_personal_assistant_filled_posts_expr.alias(
             DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS
