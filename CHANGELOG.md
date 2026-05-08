@@ -51,7 +51,7 @@ All notable changes to this project will be documented in this file.
 
 - Updated clean_capacity_tracker_care_home_data job so that agencynoncareworkersemployed is nulled when above 1,000.
 
-- Comment out carers from DPR pipeline outputs. Follow up work will be to remove cleanly.
+- Remove carers from DPR pipeline outputs and carer during year figures from whole DPR pipeline.
 
 ### Fixed
 - Update setup instructions with pre-commit hooks setup
