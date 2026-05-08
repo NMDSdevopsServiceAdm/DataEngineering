@@ -13,6 +13,7 @@ module "csv_to_parquet_job" {
   glue_version    = "5.0"
 
   job_parameters = {
+    "--source"      = ""
     "--destination" = ""
     "--delimiter"   = ","
   }
