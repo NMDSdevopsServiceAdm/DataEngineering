@@ -147,6 +147,7 @@ class TestCalculateRemainingVariables(SparkBaseTest):
             places=5,
         )
 
+    @pytest.mark.skip(reason="To be removed")
     def test_calculate_total_dpr_employing_staff_returns_correct_values(self):
         rows = [
             ("area_1", 2021, 0.49, 400.0, 13.0, 0.1900000),

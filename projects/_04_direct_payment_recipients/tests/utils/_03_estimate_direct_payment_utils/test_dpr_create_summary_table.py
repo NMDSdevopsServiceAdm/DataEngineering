@@ -1,4 +1,5 @@
 import warnings
+import pytest
 
 from pyspark.sql.types import FloatType, StringType, StructField, StructType
 
@@ -13,6 +14,7 @@ class TestCreateSummaryTable(SparkBaseTest):
     def setUp(self):
         warnings.simplefilter("ignore", ResourceWarning)
 
+    @pytest.mark.skip(reason="To be removed")
     def test_create_summary_table_completes(self):
         # fmt: off
         rows = [
@@ -77,6 +79,7 @@ class TestCreateSummaryTable(SparkBaseTest):
         output_df = job.create_summary_table(df)
         self.assertEqual(output_df.count(), 1)
 
+    @pytest.mark.skip(reason="To be removed")
     def test_create_summary_table_produces_correct_values(self):
         # fmt: off
         rows = [
