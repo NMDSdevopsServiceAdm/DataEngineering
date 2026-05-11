@@ -9,7 +9,6 @@ from pyspark.sql.types import (
 EXTERNAL_DATA = StructType(
     fields=[
         StructField("number_su_dpr_salt", FloatType(), True),
-        # StructField("number_carer_dpr_salt", FloatType(), True),
         StructField("number_su_dpr_year_end_ascof", FloatType(), True),
         StructField("number_carer_dpr_year_end_ascof", FloatType(), True),
         StructField("la_area_aws", StringType(), False),

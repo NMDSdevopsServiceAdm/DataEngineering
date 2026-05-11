@@ -23,7 +23,6 @@ class Schemas:
             (DP.YEAR, pl.String),
             (DP.YEAR_AS_INTEGER, pl.Int64),
             (DP.SERVICE_USER_DPRS_DURING_YEAR, pl.Float32),
-            # (DP.CARER_DPRS_DURING_YEAR, pl.Float32),
             (DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, pl.Float32),
             (DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE, pl.Float32),
             (DP.TOTAL_DPRS_DURING_YEAR, pl.Float32),
