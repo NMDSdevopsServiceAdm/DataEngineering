@@ -39,6 +39,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
+- Removed the PySpark version of DPR estimates job.
+
 - Removed partitioning from direct payments pipeline outputs.
 
 - Calculate metrics function to now include proportion of estimates within 10 and 25 filled posts of the model value.
