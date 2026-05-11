@@ -84,56 +84,39 @@ def filter_job_role_group_outliers(
     )
 
     job_role_percentage_expr = pl.col(IndCQC.ascwds_job_role_counts) / location_sum_expr
+
+    lf = lf.with_columns(job_role_percentage_expr.alias("job_role_percentage"))
     splits_for_bounds = [
         IndCQC.main_job_group_labelled,
         IndCQC.cqc_location_import_date,
         IndCQC.primary_service_type,
     ]
 
-    upper_bound_lf = (
-        lf.select(
-            *splits_for_bounds,
-            job_role_percentage_expr.alias("job_role_percentage_for_upper_bound"),
-        )
-        .group_by(splits_for_bounds)
+    job_role_percentage_for_upper_bound_expr = (
+        pl.col("job_role_percentage")
         .quantile(upper_percentile_bound, interpolation="linear")
+        .over(splits_for_bounds)
     )
-
-    lf = lf.join(
-        upper_bound_lf,
-        on=splits_for_bounds,
-        how="left",
-    )
-    lower_bound_lf = (
-        lf.select(
-            *splits_for_bounds,
-            job_role_percentage_expr.alias("job_role_percentage_for_lower_bound"),
-        )
-        .group_by(splits_for_bounds)
+    job_role_percentage_for_lower_bound_expr = (
+        pl.col("job_role_percentage")
         .quantile(lower_percentile_bound, interpolation="linear")
-    )
-
-    lf = lf.join(
-        lower_bound_lf,
-        on=splits_for_bounds,
-        how="left",
+        .over(splits_for_bounds)
     )
 
     lf = lf.with_columns(
         pl.when(
-            (job_role_percentage_expr > pl.col("job_role_percentage_for_upper_bound"))
-            | (job_role_percentage_expr < pl.col("job_role_percentage_for_lower_bound"))
+            (job_role_percentage_expr > job_role_percentage_for_upper_bound_expr)
+            | (job_role_percentage_expr < job_role_percentage_for_lower_bound_expr)
         )
         .then(pl.lit(None))
         .otherwise(pl.col(IndCQC.ascwds_job_role_counts_cleaned))
         .alias(IndCQC.ascwds_job_role_counts_cleaned),
-        job_role_percentage_expr.alias("job_role_percentage"),
     )
 
     lf = lf.drop(
         IndCQC.main_job_group_labelled,
-        "job_role_percentage_for_upper_bound",
-        "job_role_percentage_for_lower_bound",
+        # "job_role_percentage_for_upper_bound",
+        # "job_role_percentage_for_lower_bound",
         "job_role_percentage",
     )  # Drop job group column as it's no longer needed after filtering
     return lf
