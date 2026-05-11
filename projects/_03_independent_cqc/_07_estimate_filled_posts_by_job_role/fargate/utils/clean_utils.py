@@ -48,14 +48,19 @@ def filter_job_role_group_outliers(
     lower_percentile_bound: float = 0.001,
 ) -> pl.LazyFrame:
     """
-    Placeholder function for filtering ASC-WDS worker data.
+    Filter out top and bottom percentiles of job role counts per job role group.
 
-    Steps to be implemented:
-     1. Assign job role group per row
-     2. Aggregate ascwds count by job role, location and date
-     3. Calculate job group ratio on aggregate data
-     4. Calculate percentile bounds per job group and primary service type on the aggregate data
-     5. Filter out rows outside of bounds in _cleaned column
+    This is to remove outliers from the distribution of job role counts within each job group, which
+    may be caused by data quality issues in ASCWDS. If a job role's percentage of total ASCWDS counts
+    for a particular location and date is above the upper percentile bound or below the lower percentile
+    bound (as passed to the function), then we set the ASCWDS job role count cleaned to NULL.
+
+    The steps are as follows:
+    1. Map job roles to job groups using the provided dictionary.
+    2. Calculate the percentage of total ASCWDS counts for each job role within each location and date.
+    3. Calculate the upper and lower percentile bounds of these percentages for each job group, date and primary service type.
+    4. Nullify ASCWDS job role counts where the job role percentage is above the upper bound or below the lower bound.
+
 
     Args:
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
@@ -65,44 +70,50 @@ def filter_job_role_group_outliers(
     Returns:
         pl.LazyFrame: Transformed LazyFrame.
     """
-    lf = lf.with_columns(
-        pl.col(IndCQC.main_job_role_clean_labelled)
-        .replace_strict(job_group_dict)
-        .alias(IndCQC.main_job_group_labelled)
-    )
-
-    location_sum_expr = (
-        pl.col(IndCQC.ascwds_job_role_counts)
-        .sum()
-        .over(
-            [
-                IndCQC.location_id,
-                IndCQC.cqc_location_import_date,
-                IndCQC.primary_service_type,
-            ]
-        )
-    )
-
-    job_role_percentage_expr = pl.col(IndCQC.ascwds_job_role_counts) / location_sum_expr
-
-    lf = lf.with_columns(job_role_percentage_expr.alias("job_role_percentage"))
+    temp_job_group_column = "job_group"
+    temp_job_role_percentage_column = "job_role_percentage"
+    splits_for_location_sum = [
+        IndCQC.location_id,
+        IndCQC.cqc_location_import_date,
+        IndCQC.primary_service_type,
+    ]
     splits_for_bounds = [
-        IndCQC.main_job_group_labelled,
+        temp_job_group_column,
         IndCQC.cqc_location_import_date,
         IndCQC.primary_service_type,
     ]
 
+    # 1. Map job roles to job groups
+    lf = lf.with_columns(
+        pl.col(IndCQC.main_job_role_clean_labelled)
+        .replace_strict(job_group_dict)
+        .alias(temp_job_group_column)
+    )
+
+    # 2. Calculate job role percentage of total ASCWDS count for location and date.
+    location_sum_expr = (
+        pl.col(IndCQC.ascwds_job_role_counts).sum().over(splits_for_location_sum)
+    )
+
+    job_role_percentage_expr = pl.col(IndCQC.ascwds_job_role_counts) / location_sum_expr
+
+    lf = lf.with_columns(
+        job_role_percentage_expr.alias(temp_job_role_percentage_column)
+    )
+
+    # 3. Calculate upper and lower percentile bounds of job role percentages for each job group, date and primary service type.
     job_role_percentage_for_upper_bound_expr = (
-        pl.col("job_role_percentage")
+        pl.col(temp_job_role_percentage_column)
         .quantile(upper_percentile_bound, interpolation="linear")
         .over(splits_for_bounds)
     )
     job_role_percentage_for_lower_bound_expr = (
-        pl.col("job_role_percentage")
+        pl.col(temp_job_role_percentage_column)
         .quantile(lower_percentile_bound, interpolation="linear")
         .over(splits_for_bounds)
     )
 
+    # 4. Nullify ASCWDS job role counts where job role percentage is above upper bound or below lower bound.
     lf = lf.with_columns(
         pl.when(
             (job_role_percentage_expr > job_role_percentage_for_upper_bound_expr)
@@ -114,9 +125,7 @@ def filter_job_role_group_outliers(
     )
 
     lf = lf.drop(
-        IndCQC.main_job_group_labelled,
-        # "job_role_percentage_for_upper_bound",
-        # "job_role_percentage_for_lower_bound",
-        "job_role_percentage",
-    )  # Drop job group column as it's no longer needed after filtering
+        temp_job_group_column,
+        temp_job_role_percentage_column,
+    )
     return lf
