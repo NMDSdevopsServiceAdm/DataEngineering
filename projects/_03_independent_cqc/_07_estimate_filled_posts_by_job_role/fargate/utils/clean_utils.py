@@ -65,44 +65,75 @@ def filter_job_role_group_outliers(
     Returns:
         pl.LazyFrame: Transformed LazyFrame.
     """
-    # 1) Assign job role group per row
     lf = lf.with_columns(
         pl.col(IndCQC.main_job_role_clean_labelled)
-        .map_dict(job_group_dict)
+        .replace_strict(job_group_dict)
         .alias(IndCQC.main_job_group_labelled)
     )
 
-    # 2) Aggregate ascwds count by job role, location and date
-    agg_lf = lf.groupby(
-        [
-            IndCQC.location_id,
-            IndCQC.cqc_location_import_date,
-            IndCQC.main_job_role_clean_labelled,
-        ]
-    ).agg(pl.sum(IndCQC.ascwds_job_role_counts).alias(IndCQC.ascwds_job_role_counts))
-
-    # 3) Calculate job group ratio on aggregate data
     location_sum_expr = (
         pl.col(IndCQC.ascwds_job_role_counts)
         .sum()
-        .over([IndCQC.location_id, IndCQC.cqc_location_import_date])
+        .over(
+            [
+                IndCQC.location_id,
+                IndCQC.cqc_location_import_date,
+                IndCQC.primary_service_type,
+            ]
+        )
     )
 
     job_role_percentage_expr = pl.col(IndCQC.ascwds_job_role_counts) / location_sum_expr
+    splits_for_bounds = [
+        IndCQC.main_job_group_labelled,
+        IndCQC.cqc_location_import_date,
+        IndCQC.primary_service_type,
+    ]
 
-    # 4) Calculate percentile bounds per job group and primary service type on the aggregate data
-    percentile_rank_expr = (pl.col(job_role_percentage_expr).rank() / pl.count()).over(
-        [IndCQC.primary_service_type, IndCQC.main_job_group_labelled]
+    upper_bound_lf = (
+        lf.select(
+            *splits_for_bounds,
+            job_role_percentage_expr.alias("job_role_percentage_for_upper_bound"),
+        )
+        .group_by(splits_for_bounds)
+        .quantile(upper_percentile_bound, interpolation="linear")
     )
 
-    # 5) Filter out rows outside of bounds in _cleaned column
+    lf = lf.join(
+        upper_bound_lf,
+        on=splits_for_bounds,
+        how="left",
+    )
+    lower_bound_lf = (
+        lf.select(
+            *splits_for_bounds,
+            job_role_percentage_expr.alias("job_role_percentage_for_lower_bound"),
+        )
+        .group_by(splits_for_bounds)
+        .quantile(lower_percentile_bound, interpolation="linear")
+    )
+
+    lf = lf.join(
+        lower_bound_lf,
+        on=splits_for_bounds,
+        how="left",
+    )
+
     lf = lf.with_columns(
         pl.when(
-            (percentile_rank_expr < pl.lit(upper_percentile_bound))
-            | (percentile_rank_expr > pl.lit(lower_percentile_bound))
+            (job_role_percentage_expr > pl.col("job_role_percentage_for_upper_bound"))
+            | (job_role_percentage_expr < pl.col("job_role_percentage_for_lower_bound"))
         )
-        .then(pl.col(IndCQC.ascwds_job_role_counts))
-        .otherwise(None)
-        .alias(IndCQC.ascwds_job_role_counts_cleaned)
-    ).over()
+        .then(pl.lit(None))
+        .otherwise(pl.col(IndCQC.ascwds_job_role_counts_cleaned))
+        .alias(IndCQC.ascwds_job_role_counts_cleaned),
+        job_role_percentage_expr.alias("job_role_percentage"),
+    )
+
+    lf = lf.drop(
+        IndCQC.main_job_group_labelled,
+        "job_role_percentage_for_upper_bound",
+        "job_role_percentage_for_lower_bound",
+        "job_role_percentage",
+    )  # Drop job group column as it's no longer needed after filtering
     return lf
