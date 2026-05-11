@@ -2,6 +2,13 @@ import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import EstimateFilledPostsSource
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
+)
+
+job_group_dict: dict[str, str] = (
+    AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict
+)
 
 
 def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -58,5 +65,44 @@ def filter_job_role_group_outliers(
     Returns:
         pl.LazyFrame: Transformed LazyFrame.
     """
-    # TODO: Implement actual filtering logic for ASC-WDS worker data
+    # 1) Assign job role group per row
+    lf = lf.with_columns(
+        pl.col(IndCQC.main_job_role_clean_labelled)
+        .map_dict(job_group_dict)
+        .alias(IndCQC.main_job_group_labelled)
+    )
+
+    # 2) Aggregate ascwds count by job role, location and date
+    agg_lf = lf.groupby(
+        [
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+            IndCQC.main_job_role_clean_labelled,
+        ]
+    ).agg(pl.sum(IndCQC.ascwds_job_role_counts).alias(IndCQC.ascwds_job_role_counts))
+
+    # 3) Calculate job group ratio on aggregate data
+    location_sum_expr = (
+        pl.col(IndCQC.ascwds_job_role_counts)
+        .sum()
+        .over([IndCQC.location_id, IndCQC.cqc_location_import_date])
+    )
+
+    job_role_percentage_expr = pl.col(IndCQC.ascwds_job_role_counts) / location_sum_expr
+
+    # 4) Calculate percentile bounds per job group and primary service type on the aggregate data
+    percentile_rank_expr = (pl.col(job_role_percentage_expr).rank() / pl.count()).over(
+        [IndCQC.primary_service_type, IndCQC.main_job_group_labelled]
+    )
+
+    # 5) Filter out rows outside of bounds in _cleaned column
+    lf = lf.with_columns(
+        pl.when(
+            (percentile_rank_expr < pl.lit(upper_percentile_bound))
+            | (percentile_rank_expr > pl.lit(lower_percentile_bound))
+        )
+        .then(pl.col(IndCQC.ascwds_job_role_counts))
+        .otherwise(None)
+        .alias(IndCQC.ascwds_job_role_counts_cleaned)
+    ).over()
     return lf
