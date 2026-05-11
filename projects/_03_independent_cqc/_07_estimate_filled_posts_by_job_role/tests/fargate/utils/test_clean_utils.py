@@ -91,7 +91,7 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
         }
         test_lf = pl.LazyFrame(case.test_data, schema, orient="row")
         expected_lf = pl.LazyFrame(case.expected_data, schema, orient="row")
-        returned_lf = job.filter_placeholder(
+        returned_lf = job.filter_job_role_group_outliers(
             test_lf, case.upper_bound, case.lower_bound
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
