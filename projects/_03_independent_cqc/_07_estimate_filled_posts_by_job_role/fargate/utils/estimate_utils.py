@@ -124,7 +124,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
                 )
             )
         )
-        .then(None)
+        .then(pl.lit(0.0))
         .otherwise(
             pl.col(IndCQC.estimate_filled_posts_by_job_role_historically_reallocated)
         )

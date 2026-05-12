@@ -2210,28 +2210,28 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
         EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="reallocates_specific_roles_entirely_into_other_managerial_staff",
             expected_data=[
-                (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.data_governance_manager, 1.0, None),
-                (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.it_manager, 1.0, None),
-                (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.it_service_desk_manager, 1.0, None),
+                (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.data_governance_manager, 1.0, 0.0),
+                (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.it_manager, 1.0, 0.0),
+                (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.it_service_desk_manager, 1.0, 0.0),
                 (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.other_managerial_staff, 1.0, 4.0),
             ], # fmt: skip
         ),
         EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="reallocates_specific_roles_entirely_into_other_non_care_related_staff",
             expected_data=[
-                (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.learning_and_development_lead, 1.0, None),
-                (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.data_analyst, 1.0, None),
-                (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.it_and_digital_support, 1.0, None),
-                (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.software_developer, 1.0, None),
+                (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.learning_and_development_lead, 1.0, 0.0),
+                (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.data_analyst, 1.0, 0.0),
+                (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.it_and_digital_support, 1.0, 0.0),
+                (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.software_developer, 1.0, 0.0),
                 (1, "1-001", date(2024, 3, 31), MainJobRoleLabels.other_non_care_related_staff, 1.0, 5.0),
             ], # fmt: skip
         ),
         EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="reallocates_specific_roles_proportionally_into_defined_roles",
             expected_data=[
-                (1,"1-001", date(2024, 3, 31), MainJobRoleLabels.support_worker, 1.0, None),
-                (1,"1-001", date(2024, 3, 31), MainJobRoleLabels.team_leader, 1.0, None),
-                (1,"1-001", date(2024, 3, 31), MainJobRoleLabels.deputy_manager, 1.0, None),
+                (1,"1-001", date(2024, 3, 31), MainJobRoleLabels.support_worker, 1.0, 0.0),
+                (1,"1-001", date(2024, 3, 31), MainJobRoleLabels.team_leader, 1.0, 0.0),
+                (1,"1-001", date(2024, 3, 31), MainJobRoleLabels.deputy_manager, 1.0, 0.0),
                 (1,"1-001", date(2024, 3, 31), MainJobRoleLabels.activites_worker, 1.0, 1.0078),
                 (1,"1-001", date(2024, 3, 31), MainJobRoleLabels.care_worker, 1.0, 2.2914),
                 (1,"1-001", date(2024, 3, 31), MainJobRoleLabels.community_support_and_outreach, 1.0, 1.2537),
