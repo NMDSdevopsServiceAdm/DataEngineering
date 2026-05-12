@@ -35,6 +35,9 @@ def main(
         IndCQC.ascwds_filled_posts_dedup_clean,
     )
 
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
+        IndCQC.id_per_locationid_import_date_job_role
+    )
     # TODO - Filter ASC-WDS worker data.
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
@@ -44,10 +47,6 @@ def main(
     )
     estimated_job_role_posts_lf = filter_job_role_group_outliers(
         estimated_job_role_posts_lf
-    )
-
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
-        IndCQC.id_per_locationid_import_date_job_role
     )
 
     utils.sink_to_parquet(
