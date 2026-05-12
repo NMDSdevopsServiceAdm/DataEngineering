@@ -60,16 +60,20 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
             - data_analyst
             - it_and_digital_support
             - software_developer
-        - Reallocate the following roles using fixed ratios:
+        - Reallocate the following roles into specific roles using fixed ratios:
             - support_worker
             - team_leader
             - deputy_manager
 
+    The estimated filled posts for all job roles listed above is then set to 0.0.
+
     Args:
-        lf (pl.LazyFrame): The input LazyFrame.
+        lf (pl.LazyFrame): The input LazyFrame with column
+            'estimate_filled_posts_by_job_role'.
 
     Returns:
-        pl.LazyFrame: The input LazyFrame with adjusted estimated filled posts by job role.
+        pl.LazyFrame: The input LazyFrame with new column
+            'estimate_filled_posts_by_job_role_historically_reallocated'.
     """
     date_condition = pl.col(IndCQC.cqc_location_import_date) < date(2024, 4, 1)
 
