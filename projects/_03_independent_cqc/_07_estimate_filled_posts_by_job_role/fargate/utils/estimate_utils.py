@@ -4,7 +4,7 @@ import polars as pl
 
 from polars_utils import utils
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
-    HistoricJobRoleAdjustmentDict as Dict,
+    HistoricJobRoleAdjustmentConfig as Config,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import MainJobRoleLabels
@@ -80,13 +80,17 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
         values=IndCQC.estimate_filled_posts_by_job_role,
     )
 
-    for role, adjustments in Dict.historic_adjustment_dict.items():
-        expr = None
-        for inner_role, ratio in adjustments.items():
-            expr = (pl.col(inner_role) + (pl.col(role) * pl.lit(ratio))).alias(
-                inner_role
-            )
-            lf_adjusted = lf_adjusted.with_columns(pl.when(date_condition).then(expr))
+    adjustment_expr = []
+    for receiving_role, amounts_to_give in Config.historic_adjustment_dict.items():
+        total_adjustment = sum(amounts_to_give)
+        adjustment_expr.append(
+            pl.when(date_condition)
+            .then(pl.col(receiving_role) + total_adjustment)
+            .otherwise(pl.col(receiving_role))
+            .alias(receiving_role)
+        )
+
+    lf_adjusted = lf_adjusted.with_columns(adjustment_expr)
 
     lf_adjusted = lf_adjusted.unpivot(
         on=AscwdsWorkerValueLabelsJobGroup.all_roles(),
@@ -116,7 +120,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
             (date_condition)
             & (
                 pl.col(IndCQC.main_job_role_clean_labelled).is_in(
-                    Dict.historic_adjustment_dict.keys()
+                    Config.job_roles_removed_historically
                 )
             )
         )

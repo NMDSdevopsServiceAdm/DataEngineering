@@ -117,44 +117,53 @@ class ManagerialFilledPostAdjustmentExpr:
         ).clip(lower_bound=0)
 
 
-class HistoricJobRoleAdjustmentDict:
+class HistoricJobRoleAdjustmentConfig:
     historic_adjustment_dict = {
-        MainJobRoleLabels.data_governance_manager: {
-            MainJobRoleLabels.other_managerial_staff: 1.0,
-        },
-        MainJobRoleLabels.it_manager: {
-            MainJobRoleLabels.other_managerial_staff: 1.0,
-        },
-        MainJobRoleLabels.it_service_desk_manager: {
-            MainJobRoleLabels.other_managerial_staff: 1.0,
-        },
-        MainJobRoleLabels.learning_and_development_lead: {
-            MainJobRoleLabels.other_non_care_related_staff: 1.0,
-        },
-        MainJobRoleLabels.data_analyst: {
-            MainJobRoleLabels.other_non_care_related_staff: 1.0,
-        },
-        MainJobRoleLabels.it_and_digital_support: {
-            MainJobRoleLabels.other_non_care_related_staff: 1.0,
-        },
-        MainJobRoleLabels.software_developer: {
-            MainJobRoleLabels.other_non_care_related_staff: 1.0,
-        },
-        MainJobRoleLabels.support_worker: {
-            MainJobRoleLabels.activites_worker: 0.0078,
-            MainJobRoleLabels.care_worker: 0.7219,
-            MainJobRoleLabels.community_support_and_outreach: 0.2537,
-            MainJobRoleLabels.senior_care_worker: 0.0166,
-        },
-        MainJobRoleLabels.team_leader: {
-            MainJobRoleLabels.care_worker: 0.3446,
-            MainJobRoleLabels.first_line_manager: 0.1350,
-            MainJobRoleLabels.senior_care_worker: 0.1749,
-            MainJobRoleLabels.supervisor: 0.3455,
-        },
-        MainJobRoleLabels.deputy_manager: {
-            MainJobRoleLabels.care_worker: 0.2249,
-            MainJobRoleLabels.first_line_manager: 0.4689,
-            MainJobRoleLabels.senior_care_worker: 0.3062,
-        },
+        MainJobRoleLabels.other_managerial_staff: [
+            pl.col(MainJobRoleLabels.data_governance_manager) * pl.lit(1.0),
+            pl.col(MainJobRoleLabels.it_manager) * pl.lit(1.0),
+            pl.col(MainJobRoleLabels.it_service_desk_manager) * pl.lit(1.0),
+        ],
+        MainJobRoleLabels.other_non_care_related_staff: [
+            pl.col(MainJobRoleLabels.learning_and_development_lead) * pl.lit(1.0),
+            pl.col(MainJobRoleLabels.data_analyst) * pl.lit(1.0),
+            pl.col(MainJobRoleLabels.it_and_digital_support) * pl.lit(1.0),
+            pl.col(MainJobRoleLabels.software_developer) * pl.lit(1.0),
+        ],
+        MainJobRoleLabels.activites_worker: [
+            pl.col(MainJobRoleLabels.support_worker) * pl.lit(0.0078),
+        ],
+        MainJobRoleLabels.care_worker: [
+            pl.col(MainJobRoleLabels.support_worker) * pl.lit(0.7219),
+            pl.col(MainJobRoleLabels.team_leader) * pl.lit(0.3446),
+            pl.col(MainJobRoleLabels.deputy_manager) * pl.lit(0.2249),
+        ],
+        MainJobRoleLabels.community_support_and_outreach: [
+            pl.col(MainJobRoleLabels.support_worker) * pl.lit(0.2537),
+        ],
+        MainJobRoleLabels.senior_care_worker: [
+            pl.col(MainJobRoleLabels.support_worker) * pl.lit(0.0166),
+            pl.col(MainJobRoleLabels.team_leader) * pl.lit(0.1749),
+            pl.col(MainJobRoleLabels.deputy_manager) * pl.lit(0.3062),
+        ],
+        MainJobRoleLabels.first_line_manager: [
+            pl.col(MainJobRoleLabels.team_leader) * pl.lit(0.1350),
+            pl.col(MainJobRoleLabels.deputy_manager) * pl.lit(0.4689),
+        ],
+        MainJobRoleLabels.supervisor: [
+            pl.col(MainJobRoleLabels.team_leader) * pl.lit(0.3455),
+        ],
     }
+
+    job_roles_removed_historically = [
+        MainJobRoleLabels.data_governance_manager,
+        MainJobRoleLabels.it_manager,
+        MainJobRoleLabels.it_service_desk_manager,
+        MainJobRoleLabels.learning_and_development_lead,
+        MainJobRoleLabels.data_analyst,
+        MainJobRoleLabels.it_and_digital_support,
+        MainJobRoleLabels.software_developer,
+        MainJobRoleLabels.support_worker,
+        MainJobRoleLabels.team_leader,
+        MainJobRoleLabels.deputy_manager,
+    ]
