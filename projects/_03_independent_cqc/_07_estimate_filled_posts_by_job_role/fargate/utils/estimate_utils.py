@@ -45,8 +45,6 @@ def calculate_estimated_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyFra
         ).alias(IndCQC.estimate_filled_posts_by_job_role)
     )
 
-    lf = reallocate_historical_filled_posts_by_job_role(lf)
-
     return lf
 
 
