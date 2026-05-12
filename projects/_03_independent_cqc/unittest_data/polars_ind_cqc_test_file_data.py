@@ -2240,6 +2240,40 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
                 (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.supervisor, 1.0, 1.3455),
             ], # fmt: skip
         ),
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
+            id="does_not_change_values_for_roles_not_involved_in_reallocation",
+            expected_data=[
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.senior_management, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.middle_management, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.registered_manager, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.social_worker, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.employment_support, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.advocacy, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.occupational_therapist, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.registered_nurse, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.allied_health_professional, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.technician, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.other_care_role, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.admin_staff, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.ancillary_staff, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.safeguarding_officer, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.occupational_therapist_assistant, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.registered_nursing_associate, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.nursing_assistant, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.assessment_officer, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.care_coordinator, 1.0, 1.0),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.childrens_roles, 1.0, 1.0),
+            ], # fmt: skip
+        ),
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
+            id="does_not_change_values_when_date_is_after_reallocation_cutoff",
+            expected_data=[
+                (1, "1-001", date(2024, 4, 1), MainJobRoleLabels.data_governance_manager, 1.0, 1.0),
+                (1, "1-001", date(2024, 4, 1), MainJobRoleLabels.it_manager, 1.0, 1.0),
+                (1, "1-001", date(2024, 4, 1), MainJobRoleLabels.it_service_desk_manager, 1.0, 1.0),
+                (1, "1-001", date(2024, 4, 1), MainJobRoleLabels.other_managerial_staff, 1.0, 1.0),
+            ], # fmt: skip
+        ),
     ]
 
 

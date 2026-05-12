@@ -93,7 +93,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
 
     lf_adjusted = lf_adjusted.unpivot(
         on=AscwdsWorkerValueLabelsJobGroup.all_roles(),
-        index=IndCQC.id_per_locationid_import_date,
+        index=[IndCQC.id_per_locationid_import_date, IndCQC.cqc_location_import_date],
         variable_name=IndCQC.main_job_role_clean_labelled,
         value_name=IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
     )
@@ -104,34 +104,30 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
         )
     )
 
-    lf_adjusted = lf_adjusted.with_columns(
-        pl.when(
-            pl.col(IndCQC.main_job_role_clean_labelled).is_in(
-                [
-                    MainJobRoleLabels.support_worker,
-                    MainJobRoleLabels.deputy_manager,
-                    MainJobRoleLabels.team_leader,
-                    MainJobRoleLabels.data_governance_manager,
-                    MainJobRoleLabels.it_manager,
-                    MainJobRoleLabels.it_service_desk_manager,
-                    MainJobRoleLabels.learning_and_development_lead,
-                    MainJobRoleLabels.data_analyst,
-                    MainJobRoleLabels.it_and_digital_support,
-                    MainJobRoleLabels.software_developer,
-                ]
+    lf_adjusted = lf_adjusted.drop(IndCQC.cqc_location_import_date)
+
+    lf = lf.join(
+        lf_adjusted,
+        on=[IndCQC.id_per_locationid_import_date, IndCQC.main_job_role_clean_labelled],
+        how="left",
+    )
+
+    lf = lf.with_columns(
+        pl.when(date_condition == False)
+        .then(pl.col(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted))
+        .when(
+            (date_condition)
+            & (
+                pl.col(IndCQC.main_job_role_clean_labelled).is_in(
+                    historic_adjustment_dict.keys()
+                )
             )
         )
         .then(None)
         .otherwise(
             pl.col(IndCQC.estimate_filled_posts_by_job_role_historically_reallocated)
         )
-        .alias(IndCQC.estimate_filled_posts_by_job_role_historically_reallocated)
-    )
-
-    lf = lf.join(
-        lf_adjusted,
-        on=[IndCQC.id_per_locationid_import_date, IndCQC.main_job_role_clean_labelled],
-        how="left",
+        .alias(IndCQC.estimate_filled_posts_by_job_role_historically_reallocated),
     )
 
     return lf
