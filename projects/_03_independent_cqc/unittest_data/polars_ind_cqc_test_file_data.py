@@ -2051,7 +2051,7 @@ class ImputeJobRoleData:
 
 
 @dataclass
-class AdjustManagerialRolesSubFunctionTestCases:
+class EstimateFilledPostsByJobRoleEstimateUtilsTestCases:
     id: str
     expected_data: list[tuple]
 
@@ -2097,21 +2097,21 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
     ]
 
     calculate_reg_man_difference_test_cases = [
-        AdjustManagerialRolesSubFunctionTestCases(
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="calculates_difference_between_rm_estimate_and_cqc_count",
             expected_data=[
                 (0, MainJobRoleLabels.registered_manager, 5.0, 1.0, 4.0),
                 (1, MainJobRoleLabels.registered_manager, 0.0, 5.0, -5.0),
             ],
         ),
-        AdjustManagerialRolesSubFunctionTestCases(
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="rm_difference_is_copied_to_all_rows_in_group",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 20.0, 0.0, 1.0),
                 (0, MainJobRoleLabels.registered_manager, 1.0, 0.0, 1.0),
             ],
         ),
-        AdjustManagerialRolesSubFunctionTestCases(
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="rm_difference_is_calculated_per_group",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 20.0, 0.0, 1.0),
@@ -2123,7 +2123,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
     ]
 
     calculate_non_rm_managerial_distribution_test_cases = [
-        AdjustManagerialRolesSubFunctionTestCases(
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="calculates_non_rm_managerial_proportions_from_estimated_posts",
             expected_data=[
                 (0, MainJobRoleLabels.care_worker, 10.0, None),
@@ -2132,7 +2132,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
                 (0, MainJobRoleLabels.registered_manager, 10.0, None),
             ],
         ),
-        AdjustManagerialRolesSubFunctionTestCases(
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="distributes_evenly_when_non_rm_managerial_total_is_zero",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 0.0, 0.5),
@@ -2140,7 +2140,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
                 (0, MainJobRoleLabels.registered_manager, 10.0, None),
             ],
         ),
-        AdjustManagerialRolesSubFunctionTestCases(
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="calculates_non_rm_managerial_proportions_per_group",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 60.0, 0.6),
@@ -2154,7 +2154,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
     ]
 
     distribute_rm_difference_test_cases = [
-        AdjustManagerialRolesSubFunctionTestCases(
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="overides_estimated_rm_posts_with_cqc_count",
             expected_data=[
                 (0, MainJobRoleLabels.registered_manager, 0.0, 4, 4.0, None, 4.0),
@@ -2162,7 +2162,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
                 (2, MainJobRoleLabels.registered_manager, 4.0, None, None, None, None),
             ],
         ),
-        AdjustManagerialRolesSubFunctionTestCases(
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="redistributes_rm_difference_across_other_manager_roles",
             expected_data=[
                 (0, MainJobRoleLabels.care_worker, 1.0, 0, 1.0, None, 1.0),
@@ -2171,7 +2171,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
                 (0, MainJobRoleLabels.registered_manager, 1.0, 0, 1.0, None, 0.0),
             ],
         ),
-        AdjustManagerialRolesSubFunctionTestCases(
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="does_not_reduce_other_manager_roles_below_zero",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 0.1, 1, -1.0, 0.5, 0.0),
@@ -2179,7 +2179,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
                 (0, MainJobRoleLabels.registered_manager, 0.0, 1, -1.0, None, 1.0),
             ],
         ),
-        AdjustManagerialRolesSubFunctionTestCases(
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="allows_total_manager_posts_mismatch_when_cqc_override_exceeds_available_posts",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 0.0, 5, -5.0, 0.5, 0.0),
@@ -2187,7 +2187,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
                 (0, MainJobRoleLabels.registered_manager, 0.0, 5, -5.0, None, 5.0),
             ],
         ),
-        AdjustManagerialRolesSubFunctionTestCases(
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
             id="leaves_values_unchanged_when_prediction_matches_cqc",
             expected_data=[
                 (0, MainJobRoleLabels.supervisor, 10.0, 1, 0.0, 0.5, 10.0),
@@ -2205,6 +2205,42 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
         (2, 10.0, MainJobRoleLabels.care_worker, None, None, None), # All job role posts are null.
         (2, 10.0, MainJobRoleLabels.senior_care_worker, None, None, None),
     ]  # fmt: skip
+
+    reallocate_historical_filled_posts_by_job_role_test_cases = [
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
+            id="reallocates_specific_roles_into_other_managerial_staff",
+            expected_data=[
+                (1, "1-001", date(2023, 4, 1), MainJobRoleLabels.data_governance_manager, 1.0, None),
+                (1, "1-001", date(2023, 4, 1), MainJobRoleLabels.it_manager, 1.0, None),
+                (1, "1-001", date(2023, 4, 1), MainJobRoleLabels.it_service_desk_manager, 1.0, None),
+                (1, "1-001", date(2023, 4, 1), MainJobRoleLabels.other_managerial_staff, 1.0, 4.0),
+            ], # fmt: skip
+        ),
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
+            id="reallocates_specific_roles_into_other_non_care_related_staff",
+            expected_data=[
+                (1, "1-001", date(2023, 4, 1), MainJobRoleLabels.learning_and_development_lead, 1.0, None),
+                (1, "1-001", date(2023, 4, 1), MainJobRoleLabels.data_analyst, 1.0, None),
+                (1, "1-001", date(2023, 4, 1), MainJobRoleLabels.it_and_digital_support, 1.0, None),
+                (1, "1-001", date(2023, 4, 1), MainJobRoleLabels.software_developer, 1.0, None),
+                (1, "1-001", date(2023, 4, 1), MainJobRoleLabels.other_non_care_related_staff, 1.0, 5.0),
+            ], # fmt: skip
+        ),
+        EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
+            id="reallocates_support_worker_into_specific_roles",
+            expected_data=[
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.support_worker, 1.0, None),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.team_leader, 1.0, None),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.deputy_manager, 1.0, None),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.activites_worker, 1.0, 1.0078),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.care_worker, 1.0, 2.2914),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.community_support_and_outreach, 1.0, 1.2537),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.first_line_manager, 1.0, 1.6039),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.senior_care_worker, 1.0, 1.4977),
+                (1,"1-001", date(2023, 4, 1), MainJobRoleLabels.supervisor, 1.0, 1.3455),
+            ], # fmt: skip
+        ),
+    ]
 
 
 @dataclass

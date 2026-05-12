@@ -189,3 +189,27 @@ class TestCalcDiffEstimateFilledPostsAndFromAllJobRoles:
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestReallocateHistoricalFilledPostsByJobRole:
+    @pytest.mark.parametrize(
+        "reallocate_historical_filled_posts_by_job_role_test_data",
+        [
+            case.as_pytest_param()
+            for case in Data.reallocate_historical_filled_posts_by_job_role_test_cases
+        ],
+    )
+    def test_function_returns_expected_values(
+        self, reallocate_historical_filled_posts_by_job_role_test_data
+    ):
+        expected_lf = pl.LazyFrame(
+            reallocate_historical_filled_posts_by_job_role_test_data,
+            Schemas.expected_reallocate_historical_filled_posts_by_job_role_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop(
+            IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
+        )
+        returned_lf = job.reallocate_historical_filled_posts_by_job_role(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

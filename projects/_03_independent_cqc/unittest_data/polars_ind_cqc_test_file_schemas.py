@@ -1554,6 +1554,19 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
         }
     )
 
+    expected_reallocate_historical_filled_posts_by_job_role_schema = pl.Schema(
+        {
+            IndCQC.id_per_locationid_import_date: pl.Int32,
+            IndCQC.location_id: pl.String,
+            IndCQC.cqc_location_import_date: pl.Date,
+            IndCQC.main_job_role_clean_labelled: pl.Enum(
+                AscwdsWorkerValueLabelsJobGroup.all_roles()
+            ),
+            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
+            IndCQC.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
+        }
+    )
+
 
 class InterpolationSchema:
     interpolation_schema = {
