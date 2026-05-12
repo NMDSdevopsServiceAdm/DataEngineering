@@ -42,7 +42,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
         on=IndCQC.main_job_role_clean_labelled,
         on_columns=AscwdsWorkerValueLabelsJobGroup.all_roles(),
         index=[IndCQC.id_per_locationid_import_date, IndCQC.cqc_location_import_date],
-        values=IndCQC.estimate_filled_posts_by_job_role_manager_adjusted,
+        values=IndCQC.estimate_filled_posts_by_job_role,
     )
 
     for role, adjustments in Dict.historic_adjustment_dict.items():
@@ -76,7 +76,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
 
     lf = lf.with_columns(
         pl.when(date_condition == False)
-        .then(pl.col(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted))
+        .then(pl.col(IndCQC.estimate_filled_posts_by_job_role))
         .when(
             (date_condition)
             & (
