@@ -1,6 +1,5 @@
 import polars as pl
-
-import polars_utils.cleaning_utils as pUtils
+from datetime import date
 from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
     update_filtering_rule,
 )
@@ -29,8 +28,8 @@ def non_res_brand_id_filter(lf: pl.LazyFrame) -> pl.LazyFrame:
             rules.
     """
     target_brand_id = "BD214"
-    start_date = pl.Date("2024-03-01")
-    end_date = pl.Date("2026-05-01")
+    start_date = date(2024, 3, 1)
+    end_date = date(2026, 5, 1)
 
     lf = lf.with_columns(
         pl.when(
