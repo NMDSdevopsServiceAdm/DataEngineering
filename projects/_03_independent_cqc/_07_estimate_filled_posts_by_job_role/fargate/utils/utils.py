@@ -115,3 +115,46 @@ class ManagerialFilledPostAdjustmentExpr:
         return cls.filled_post_estimates.add(
             cls._rm_manager_diff().mul(cls._non_rm_manager_proportions())
         ).clip(lower_bound=0)
+
+
+class HistoricJobRoleAdjustmentDict:
+    historic_adjustment_dict = {
+        MainJobRoleLabels.data_governance_manager: {
+            MainJobRoleLabels.other_managerial_staff: 1.0,
+        },
+        MainJobRoleLabels.it_manager: {
+            MainJobRoleLabels.other_managerial_staff: 1.0,
+        },
+        MainJobRoleLabels.it_service_desk_manager: {
+            MainJobRoleLabels.other_managerial_staff: 1.0,
+        },
+        MainJobRoleLabels.learning_and_development_lead: {
+            MainJobRoleLabels.other_non_care_related_staff: 1.0,
+        },
+        MainJobRoleLabels.data_analyst: {
+            MainJobRoleLabels.other_non_care_related_staff: 1.0,
+        },
+        MainJobRoleLabels.it_and_digital_support: {
+            MainJobRoleLabels.other_non_care_related_staff: 1.0,
+        },
+        MainJobRoleLabels.software_developer: {
+            MainJobRoleLabels.other_non_care_related_staff: 1.0,
+        },
+        MainJobRoleLabels.support_worker: {
+            MainJobRoleLabels.activites_worker: 0.0078,
+            MainJobRoleLabels.care_worker: 0.7219,
+            MainJobRoleLabels.community_support_and_outreach: 0.2537,
+            MainJobRoleLabels.senior_care_worker: 0.0166,
+        },
+        MainJobRoleLabels.team_leader: {
+            MainJobRoleLabels.care_worker: 0.3446,
+            MainJobRoleLabels.first_line_manager: 0.1350,
+            MainJobRoleLabels.senior_care_worker: 0.1749,
+            MainJobRoleLabels.supervisor: 0.3455,
+        },
+        MainJobRoleLabels.deputy_manager: {
+            MainJobRoleLabels.care_worker: 0.2249,
+            MainJobRoleLabels.first_line_manager: 0.4689,
+            MainJobRoleLabels.senior_care_worker: 0.3062,
+        },
+    }

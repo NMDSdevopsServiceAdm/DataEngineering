@@ -3,6 +3,9 @@ from datetime import date
 import polars as pl
 
 from polars_utils import utils
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    HistoricJobRoleAdjustmentDict as Dict,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import MainJobRoleLabels
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
@@ -35,47 +38,6 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
     """
     date_condition = pl.col(IndCQC.cqc_location_import_date) < date(2024, 4, 1)
 
-    historic_adjustment_dict = {
-        MainJobRoleLabels.data_governance_manager: {
-            MainJobRoleLabels.other_managerial_staff: 1.0,
-        },
-        MainJobRoleLabels.it_manager: {
-            MainJobRoleLabels.other_managerial_staff: 1.0,
-        },
-        MainJobRoleLabels.it_service_desk_manager: {
-            MainJobRoleLabels.other_managerial_staff: 1.0,
-        },
-        MainJobRoleLabels.learning_and_development_lead: {
-            MainJobRoleLabels.other_non_care_related_staff: 1.0,
-        },
-        MainJobRoleLabels.data_analyst: {
-            MainJobRoleLabels.other_non_care_related_staff: 1.0,
-        },
-        MainJobRoleLabels.it_and_digital_support: {
-            MainJobRoleLabels.other_non_care_related_staff: 1.0,
-        },
-        MainJobRoleLabels.software_developer: {
-            MainJobRoleLabels.other_non_care_related_staff: 1.0,
-        },
-        MainJobRoleLabels.support_worker: {
-            MainJobRoleLabels.activites_worker: 0.0078,
-            MainJobRoleLabels.care_worker: 0.7219,
-            MainJobRoleLabels.community_support_and_outreach: 0.2537,
-            MainJobRoleLabels.senior_care_worker: 0.0166,
-        },
-        MainJobRoleLabels.team_leader: {
-            MainJobRoleLabels.care_worker: 0.3446,
-            MainJobRoleLabels.first_line_manager: 0.1350,
-            MainJobRoleLabels.senior_care_worker: 0.1749,
-            MainJobRoleLabels.supervisor: 0.3455,
-        },
-        MainJobRoleLabels.deputy_manager: {
-            MainJobRoleLabels.care_worker: 0.2249,
-            MainJobRoleLabels.first_line_manager: 0.4689,
-            MainJobRoleLabels.senior_care_worker: 0.3062,
-        },
-    }
-
     lf_adjusted = lf.pivot(
         on=IndCQC.main_job_role_clean_labelled,
         on_columns=AscwdsWorkerValueLabelsJobGroup.all_roles(),
@@ -83,7 +45,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
         values=IndCQC.estimate_filled_posts_by_job_role_manager_adjusted,
     )
 
-    for role, adjustments in historic_adjustment_dict.items():
+    for role, adjustments in Dict.historic_adjustment_dict.items():
         expr = None
         for inner_role, ratio in adjustments.items():
             expr = (pl.col(inner_role) + (pl.col(role) * pl.lit(ratio))).alias(
@@ -119,7 +81,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
             (date_condition)
             & (
                 pl.col(IndCQC.main_job_role_clean_labelled).is_in(
-                    historic_adjustment_dict.keys()
+                    Dict.historic_adjustment_dict.keys()
                 )
             )
         )
