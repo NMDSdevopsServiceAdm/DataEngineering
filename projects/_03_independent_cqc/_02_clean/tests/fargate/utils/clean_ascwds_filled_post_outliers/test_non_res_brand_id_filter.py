@@ -23,12 +23,12 @@ class TestNonResBrandIdFilter(unittest.TestCase):
         }
 
         input_rows = [
-            (date(2024, 4, 1), "N", "BD214", 5.0),
-            (date(2025, 4, 1), "N", "BD214", 5.0),
-            (date(2024, 2, 1), "N", "BD214", 5.0),
-            (date(2024, 4, 1), "N", "OTHER_BRAND", 5.0),
-            (date(2024, 4, 1), "Y", "BD214", 5.0),
-        ]
+            (date(2024, 4, 1), "N", "BD214", 5.0), # After start_date, before end_date, BrandId match and non res location - should be nullified
+            (date(2025, 4, 1), "N", "BD214", 5.0), # After start_date, before end_date, BrandId match and non res location - should be nullified
+            (date(2024, 2, 1), "N", "BD214", 5.0), # Before start_date - should not be nullified
+            (date(2024, 4, 1), "N", "OTHER_BRAND", 5.0), # Other Brand Id - should not be nullified
+            (date(2024, 4, 1), "Y", "BD214", 5.0), # Care Home - should not be nullified
+        ] # fmt: skip
         expected_rows = [
             (date(2024, 4, 1), "N", "BD214", None),
             (date(2025, 4, 1), "N", "BD214", None),
