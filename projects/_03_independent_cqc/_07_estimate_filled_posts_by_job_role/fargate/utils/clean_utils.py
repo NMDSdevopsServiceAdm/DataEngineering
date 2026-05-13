@@ -195,6 +195,7 @@ def filter_job_role_group_outliers(
     lf = lf.join(
         filter_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
     )
+
     # 5. Nullify ASCWDS job role counts where job role percentage is above upper bound or below lower bound.
     lf = lf.with_columns(
         pl.when(

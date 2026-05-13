@@ -56,7 +56,6 @@ class IndCqcColumns:
     ascwds_job_group_counts: str = "ascwds_job_group_counts"
     ascwds_job_group_ratios: str = "ascwds_job_group_ratios"
     ascwds_job_role_counts: str = "ascwds_job_role_counts"
-    ascwds_job_role_counts_cleaned: str = ascwds_job_role_counts + "_cleaned"
     ascwds_job_role_counts_filtered: str = ascwds_job_role_counts + "_filtered"
     ascwds_job_role_counts_temporary: str = "ascwds_job_role_counts_temporary"
     ascwds_job_role_counts_exploded: str = "ascwds_job_role_counts_exploded"

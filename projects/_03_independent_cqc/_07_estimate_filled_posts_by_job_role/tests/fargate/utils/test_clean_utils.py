@@ -90,7 +90,6 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
             IndCQC.ascwds_job_role_counts: pl.Int64,
-            IndCQC.ascwds_job_role_counts_cleaned: pl.Int64,
         }
         test_lf = pl.LazyFrame(case.test_data, schema, orient="row")
         expected_lf = pl.LazyFrame(case.expected_data, schema, orient="row")
