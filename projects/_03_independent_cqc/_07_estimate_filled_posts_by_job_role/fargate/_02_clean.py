@@ -15,9 +15,6 @@ from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
 # in a chunk of this size.
 pl.Config.set_streaming_chunk_size(50000)
 
-EstablishmentCatType = pl.Categorical(
-    pl.Categories("establishment", namespace="filled_posts")
-)
 LocationCatType = pl.Categorical(pl.Categories("location", namespace="filled_posts"))
 JobRoleEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
 EstimatesFilledPostSourceEnumType = pl.Enum(
@@ -43,7 +40,6 @@ estimates_by_job_role_schema = {
     IndCQC.id_per_locationid_import_date: pl.UInt32,
     IndCQC.location_id: LocationCatType,
     IndCQC.cqc_location_import_date: pl.Date,
-    IndCQC.establishment_id: EstablishmentCatType,
     IndCQC.estimate_filled_posts: pl.Float32,
     IndCQC.estimate_filled_posts_source: EstimatesFilledPostSourceEnumType,
     IndCQC.primary_service_type: PrimaryServiceEnumType,
@@ -72,16 +68,34 @@ def main(
     )
     print("Merged LazyFrame read in")
 
-    estimated_job_role_posts_lf = nullify_job_role_count_when_source_not_ascwds(
-        estimated_job_role_posts_lf
-    ).drop(
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
+        IndCQC.id_per_locationid_import_date_job_role
+    )
+
+    cleaning_lf = estimated_job_role_posts_lf.select(
+        IndCQC.id_per_locationid_import_date,
+        IndCQC.id_per_locationid_import_date_job_role,
+        IndCQC.location_id,
+        IndCQC.cqc_location_import_date,
+        IndCQC.primary_service_type,
+        IndCQC.main_job_role_clean_labelled,
+        IndCQC.ascwds_job_role_counts,
         IndCQC.estimate_filled_posts_source,
         IndCQC.ascwds_filled_posts_dedup_clean,
     )
 
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
-        IndCQC.id_per_locationid_import_date_job_role
+    temp_lf = estimated_job_role_posts_lf.select(
+        IndCQC.id_per_locationid_import_date_job_role,
+        IndCQC.establishment_id,
+        IndCQC.estimate_filled_posts,
+        IndCQC.registered_manager_names,
     )
+
+    cleaning_lf = nullify_job_role_count_when_source_not_ascwds(cleaning_lf).drop(
+        IndCQC.estimate_filled_posts_source,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+    )
+
     # TODO - Filter ASC-WDS worker data.
 
     # estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
@@ -89,12 +103,16 @@ def main(
     #         IndCQC.ascwds_job_role_counts_cleaned
     #     )
     # )
-    estimated_job_role_posts_lf = filter_job_role_group_outliers(
-        estimated_job_role_posts_lf
+    cleaning_lf = filter_job_role_group_outliers(cleaning_lf)
+
+    output_lf = cleaning_lf.join(
+        temp_lf,
+        on=IndCQC.id_per_locationid_import_date_job_role,
+        how="left",
     )
 
     utils.sink_to_parquet(
-        lazy_df=estimated_job_role_posts_lf,
+        lazy_df=output_lf,
         output_path=cleaned_data_destination,
         append=False,
     )
