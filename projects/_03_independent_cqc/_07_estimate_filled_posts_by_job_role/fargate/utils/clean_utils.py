@@ -70,17 +70,18 @@ def filter_job_role_group_outliers(
     Returns:
         pl.LazyFrame: Transformed LazyFrame.
     """
-
+    # Define temporary column names
     temp_job_group_column = "job_group"
     temp_ascwds_job_group_count_column = "ascwds_job_group_count"
     temp_job_group_percentage_column = "job_group_percentage"
     temp_upper_bound_column = "upper_bound"
     temp_lower_bound_column = "lower_bound"
-    temp_cols = [
+    temp_cols_to_drop = [
         temp_job_group_percentage_column,
         temp_upper_bound_column,
         temp_lower_bound_column,
     ]
+    # Define splits for groupby operations
     splits_for_location_sum = [
         IndCQC.location_id,
         IndCQC.cqc_location_import_date,
@@ -92,7 +93,6 @@ def filter_job_role_group_outliers(
         IndCQC.cqc_location_import_date,
         IndCQC.primary_service_type,
     ]
-
     splits_for_bounds = [
         IndCQC.cqc_location_import_date,
         IndCQC.primary_service_type,
@@ -123,7 +123,7 @@ def filter_job_role_group_outliers(
     filter_lf = filter_lf.join(
         job_role_group_lf, on=IndCQC.main_job_role_clean_labelled, how="left"
     )
-
+    # 2. Calculate job group ASCWDS count for location, service type and date.
     agg_lf = (
         filter_lf.group_by(splits_for_location_sum)
         .agg(
@@ -141,7 +141,7 @@ def filter_job_role_group_outliers(
         agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
     )
 
-    # 2. Calculate job group percentage of total ASCWDS count for location and date.
+    # 3. Calculate job group percentage of total ASCWDS count for location, service type and date.
     job_group_percentage_expr = (pl.col(temp_ascwds_job_group_count_column)) / (
         pl.col(IndCQC.ascwds_job_role_counts_cleaned).sum()
     )
@@ -162,9 +162,6 @@ def filter_job_role_group_outliers(
     filter_lf = filter_lf.join(
         percent_agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
     )
-    lf = lf.join(
-        percent_agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
-    )
 
     # 3. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type.
 
@@ -180,14 +177,16 @@ def filter_job_role_group_outliers(
         filter_lf.group_by(splits_for_bounds)
         .agg(
             pl.col(IndCQC.id_per_locationid_import_date_job_role),
+            temp_job_group_percentage_column,
             job_group_percentage_for_upper_bound_expr.alias(temp_upper_bound_column),
             job_group_percentage_for_lower_bound_expr.alias(temp_lower_bound_column),
         )
         .explode(
             IndCQC.id_per_locationid_import_date_job_role,
+            temp_job_group_percentage_column,
         )
         .drop(splits_for_bounds)
-    )  # Drop groups and temp percentage column to prevent duplicate columns after join.
+    )  # Drop groups to prevent duplicate columns after join.
 
     lf = lf.join(
         filter_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
@@ -204,6 +203,6 @@ def filter_job_role_group_outliers(
         .then(pl.lit(None))
         .otherwise(pl.col(IndCQC.ascwds_job_role_counts_cleaned))
         .alias(IndCQC.ascwds_job_role_counts_cleaned),
-    ).drop(temp_cols)
+    ).drop(temp_cols_to_drop)
 
     return lf
