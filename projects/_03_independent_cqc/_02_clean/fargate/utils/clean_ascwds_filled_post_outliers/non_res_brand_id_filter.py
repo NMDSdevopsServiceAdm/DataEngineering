@@ -14,16 +14,14 @@ def non_res_brand_id_filter(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     This function identifies non-residential locations with the target brand ID
     (BD214) and nulls their 'ascwds_filled_posts_dedup_clean' values if they
-    fall within the specified date range (after 1st March 2024 and before 1st
-    May 2026). The filtering rule is updated to 'brand_id_filter' for affected
-    rows.
+    fall within the specified date range (between 1st March 2024 and 1st
+    May 2026, exclusive). The filtering rule is updated to 'brand_id_filter'
+    for affected rows.
 
-    This is done because the data submitted by the provider BD214 has weird
-    jumps from March 2024 to May 2026, which we suspect are not valid. To avoid
-    these potentially incorrect values skewing our analysis, we apply this
-    filter to nullify the 'ascwds_filled_posts_dedup_clean' values for
-    non-residential locations with the target brand ID within the specified date
-    range.
+    This is done because the data submitted by BD214 roughly halved in size in
+    their 2024 submissions then returned to their original size in their 2026
+    submission. This large drop off in filled posts didn't occur in their CQC, PIR
+    or CT data so we have identified it as being a DQ issue.
 
     Args:
         lf (pl.LazyFrame): A polars LazyFrame containing
