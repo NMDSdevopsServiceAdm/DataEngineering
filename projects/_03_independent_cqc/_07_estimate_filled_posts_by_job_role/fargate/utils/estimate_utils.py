@@ -97,29 +97,38 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
         values=IndCQC.estimate_filled_posts_by_job_role,
     )
 
+    # empty dict
+    exprs: dict[str, pl.Expr] = {}
+    for role in all_job_roles:
+        # make a key: value pair as role: pl.col(role)
+        exprs[role] = pl.col(role)
+
     for cutoff_date, historic_adjustments in Config.adjustment_dict.items():
         date_condition = pl.col(IndCQC.cqc_location_import_date) < cutoff_date
 
         for historic_role, adjustments in historic_adjustments.items():
 
-            for receiving_role, amount_to_give in adjustments.items():
-                lf_adjusted = lf_adjusted.with_columns(
+            for receiving_role, amount in adjustments.items():
+                # at the key for each receiving role, replace the value with the when/then/otherwise.
+                exprs[receiving_role] = (
                     pl.when(date_condition)
                     .then(
-                        (
-                            pl.col(receiving_role)
-                            + (pl.col(historic_role) * pl.lit(amount_to_give))
-                        ).alias(receiving_role)
+                        exprs[receiving_role] + pl.col(historic_role) * pl.lit(amount)
                     )
-                    .otherwise(receiving_role)
+                    .otherwise(exprs[receiving_role])
                 )
 
-            lf_adjusted = lf_adjusted.with_columns(
+            # at the key for each historic role, replace the value with this when/then/otherwise.
+            exprs[historic_role] = (
                 pl.when(date_condition)
                 .then(pl.lit(0.0).cast(pl.Float32))
-                .otherwise(historic_role)
-                .alias(historic_role)
+                .otherwise(exprs[historic_role])
             )
+
+    # apply each each expression the job role columns.
+    lf_adjusted = lf_adjusted.with_columns(
+        [expr.alias(col_name) for col_name, expr in exprs.items()]
+    )
 
     lf_adjusted = lf_adjusted.unpivot(
         on=AscwdsWorkerValueLabelsJobGroup.all_roles(),
