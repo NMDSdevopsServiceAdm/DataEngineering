@@ -87,11 +87,7 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
             IndCQC.cqc_location_import_date: pl.Date,
             IndCQC.primary_service_type: pl.String,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
-                list(
-                    set(
-                        AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.keys()
-                    )
-                )
+                AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
             IndCQC.ascwds_job_role_counts: pl.Int64,
             IndCQC.ascwds_job_role_counts_cleaned: pl.Int64,
