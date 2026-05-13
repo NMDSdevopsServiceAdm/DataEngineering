@@ -163,53 +163,50 @@ def filter_job_role_group_outliers(
         .drop(splits_for_job_group_percentage)
     )  # Drop groups to prevent duplicate columns after join.
 
-    # filter_lf = filter_lf.join(
-    #     percent_agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
-    # )
-    lf = filter_lf.join(
+    filter_lf = filter_lf.join(
         percent_agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
     )
 
-    # # 4. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type.
+    # 4. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type.
 
-    # job_group_percentage_for_upper_bound_expr = pl.col(
-    #     temp_job_group_percentage_column
-    # ).quantile(
-    #     upper_percentile_bound, interpolation="linear"
-    # )  # Not in streaming engine
-    # job_group_percentage_for_lower_bound_expr = pl.col(
-    #     temp_job_group_percentage_column
-    # ).quantile(lower_percentile_bound, interpolation="linear")
-    # filter_lf = (
-    #     filter_lf.group_by(splits_for_bounds)
-    #     .agg(
-    #         pl.col(IndCQC.id_per_locationid_import_date_job_role),
-    #         temp_job_group_percentage_column,
-    #         job_group_percentage_for_upper_bound_expr.alias(temp_upper_bound_column),
-    #         job_group_percentage_for_lower_bound_expr.alias(temp_lower_bound_column),
-    #     )
-    #     .explode(
-    #         IndCQC.id_per_locationid_import_date_job_role,
-    #         temp_job_group_percentage_column,
-    #     )
-    #     .drop(splits_for_bounds)
-    # )  # Drop groups to prevent duplicate columns after join.
+    job_group_percentage_for_upper_bound_expr = pl.col(
+        temp_job_group_percentage_column
+    ).quantile(
+        upper_percentile_bound, interpolation="linear"
+    )  # Not in streaming engine
+    job_group_percentage_for_lower_bound_expr = pl.col(
+        temp_job_group_percentage_column
+    ).quantile(lower_percentile_bound, interpolation="linear")
+    filter_lf = (
+        filter_lf.group_by(splits_for_bounds)
+        .agg(
+            pl.col(IndCQC.id_per_locationid_import_date_job_role),
+            temp_job_group_percentage_column,
+            job_group_percentage_for_upper_bound_expr.alias(temp_upper_bound_column),
+            job_group_percentage_for_lower_bound_expr.alias(temp_lower_bound_column),
+        )
+        .explode(
+            IndCQC.id_per_locationid_import_date_job_role,
+            temp_job_group_percentage_column,
+        )
+        .drop(splits_for_bounds)
+    )  # Drop groups to prevent duplicate columns after join.
 
-    # lf = lf.join(
-    #     filter_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
-    # )
-    # # 5. Nullify ASCWDS job role counts where job role percentage is above upper bound or below lower bound.
-    # lf = lf.with_columns(
-    #     pl.when(
-    #         (pl.col(temp_job_group_percentage_column) > pl.col(temp_upper_bound_column))
-    #         | (
-    #             pl.col(temp_job_group_percentage_column)
-    #             < pl.col(temp_lower_bound_column)
-    #         )
-    #     )
-    #     .then(pl.lit(None))
-    #     .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
-    #     .alias(IndCQC.ascwds_job_role_counts),
-    # ).drop(temp_cols_to_drop)
+    lf = lf.join(
+        filter_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
+    )
+    # 5. Nullify ASCWDS job role counts where job role percentage is above upper bound or below lower bound.
+    lf = lf.with_columns(
+        pl.when(
+            (pl.col(temp_job_group_percentage_column) > pl.col(temp_upper_bound_column))
+            | (
+                pl.col(temp_job_group_percentage_column)
+                < pl.col(temp_lower_bound_column)
+            )
+        )
+        .then(pl.lit(None))
+        .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
+        .alias(IndCQC.ascwds_job_role_counts),
+    ).drop(temp_cols_to_drop)
 
     return lf
