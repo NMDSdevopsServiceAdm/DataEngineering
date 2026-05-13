@@ -72,26 +72,28 @@ def main(
         IndCQC.id_per_locationid_import_date_job_role
     )
 
-    cleaning_lf = estimated_job_role_posts_lf.select(
-        IndCQC.id_per_locationid_import_date,
-        IndCQC.id_per_locationid_import_date_job_role,
-        IndCQC.location_id,
-        IndCQC.cqc_location_import_date,
-        IndCQC.primary_service_type,
-        IndCQC.main_job_role_clean_labelled,
-        IndCQC.ascwds_job_role_counts,
-        IndCQC.estimate_filled_posts_source,
-        IndCQC.ascwds_filled_posts_dedup_clean,
-    )
+    # cleaning_lf = estimated_job_role_posts_lf.select(
+    #     IndCQC.id_per_locationid_import_date,
+    #     IndCQC.id_per_locationid_import_date_job_role,
+    #     IndCQC.location_id,
+    #     IndCQC.cqc_location_import_date,
+    #     IndCQC.primary_service_type,
+    #     IndCQC.main_job_role_clean_labelled,
+    #     IndCQC.ascwds_job_role_counts,
+    #     IndCQC.estimate_filled_posts_source,
+    #     IndCQC.ascwds_filled_posts_dedup_clean,
+    # )
 
-    temp_lf = estimated_job_role_posts_lf.select(
-        IndCQC.id_per_locationid_import_date_job_role,
-        IndCQC.establishment_id,
-        IndCQC.estimate_filled_posts,
-        IndCQC.registered_manager_names,
-    )
+    # temp_lf = estimated_job_role_posts_lf.select(
+    #     IndCQC.id_per_locationid_import_date_job_role,
+    #     IndCQC.establishment_id,
+    #     IndCQC.estimate_filled_posts,
+    #     IndCQC.registered_manager_names,
+    # )
 
-    cleaning_lf = nullify_job_role_count_when_source_not_ascwds(cleaning_lf).drop(
+    estimated_job_role_posts_lf = nullify_job_role_count_when_source_not_ascwds(
+        estimated_job_role_posts_lf
+    ).drop(
         IndCQC.estimate_filled_posts_source,
         IndCQC.ascwds_filled_posts_dedup_clean,
     )
@@ -103,16 +105,18 @@ def main(
     #         IndCQC.ascwds_job_role_counts_cleaned
     #     )
     # )
-    cleaning_lf = filter_job_role_group_outliers(cleaning_lf)
-
-    output_lf = cleaning_lf.join(
-        temp_lf,
-        on=IndCQC.id_per_locationid_import_date_job_role,
-        how="left",
+    estimated_job_role_posts_lf = filter_job_role_group_outliers(
+        estimated_job_role_posts_lf
     )
 
+    # output_lf = cleaning_lf.join(
+    #     temp_lf,
+    #     on=IndCQC.id_per_locationid_import_date_job_role,
+    #     how="left",
+    # )
+
     utils.sink_to_parquet(
-        lazy_df=output_lf,
+        lazy_df=estimated_job_role_posts_lf,
         output_path=cleaned_data_destination,
         append=False,
     )
