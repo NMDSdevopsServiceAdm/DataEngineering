@@ -191,7 +191,7 @@ class TestCalcDiffEstimateFilledPostsAndFromAllJobRoles:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class TestReallocateHistoricalFilledPostsByJobRole:
+class TestReallocateHistoricalFilledPostsByJobRoleReturnsExpectedValues:
     @pytest.mark.parametrize(
         "reallocate_historical_filled_posts_by_job_role_test_data",
         [
@@ -213,3 +213,20 @@ class TestReallocateHistoricalFilledPostsByJobRole:
         returned_lf = job.reallocate_historical_filled_posts_by_job_role(input_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestReallocateHistoricalFilledPostsByJobRoleRaisesError(unittest.TestCase):
+    def test_function_raises_error_when_job_estimates_has_null(self):
+        test_lf = pl.LazyFrame(
+            Data.reallocate_historical_filled_posts_by_job_role_raise_error_rows,
+            Schemas.expected_reallocate_historical_filled_posts_by_job_role_schema,
+            orient="row",
+        )
+
+        with self.assertRaises(ValueError) as context:
+            job.reallocate_historical_filled_posts_by_job_role(test_lf)
+
+        self.assertTrue(
+            "Error: Estimate filled posts by job role column has nulls"
+            in str(context.exception)
+        )

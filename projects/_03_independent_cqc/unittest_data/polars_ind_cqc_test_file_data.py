@@ -2275,6 +2275,12 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
             ], # fmt: skip
         ),
     ]
+    reallocate_historical_filled_posts_by_job_role_raise_error_rows = [
+        (1, "1-001", date(2024, 4, 1), MainJobRoleLabels.data_governance_manager, None, 1.0),
+        (1, "1-001", date(2024, 4, 1), MainJobRoleLabels.it_manager, 1.0, 1.0),
+        (1, "1-001", date(2024, 4, 1), MainJobRoleLabels.it_service_desk_manager, 1.0, 1.0),
+        (1, "1-001", date(2024, 4, 1), MainJobRoleLabels.other_managerial_staff, 1.0, 1.0),
+    ] # fmt: skip
 
 
 @dataclass

@@ -120,15 +120,15 @@ class ManagerialFilledPostAdjustmentExpr:
 class HistoricJobRoleAdjustmentConfig:
     historic_adjustment_dict = {
         MainJobRoleLabels.other_managerial_staff: [
-            pl.col(MainJobRoleLabels.data_governance_manager) * pl.lit(1.0),
-            pl.col(MainJobRoleLabels.it_manager) * pl.lit(1.0),
-            pl.col(MainJobRoleLabels.it_service_desk_manager) * pl.lit(1.0),
+            pl.col(MainJobRoleLabels.data_governance_manager),
+            pl.col(MainJobRoleLabels.it_manager),
+            pl.col(MainJobRoleLabels.it_service_desk_manager),
         ],
         MainJobRoleLabels.other_non_care_related_staff: [
-            pl.col(MainJobRoleLabels.learning_and_development_lead) * pl.lit(1.0),
-            pl.col(MainJobRoleLabels.data_analyst) * pl.lit(1.0),
-            pl.col(MainJobRoleLabels.it_and_digital_support) * pl.lit(1.0),
-            pl.col(MainJobRoleLabels.software_developer) * pl.lit(1.0),
+            pl.col(MainJobRoleLabels.learning_and_development_lead),
+            pl.col(MainJobRoleLabels.data_analyst),
+            pl.col(MainJobRoleLabels.it_and_digital_support),
+            pl.col(MainJobRoleLabels.software_developer),
         ],
         MainJobRoleLabels.activites_worker: [
             pl.col(MainJobRoleLabels.support_worker) * pl.lit(0.0078),

@@ -74,19 +74,33 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
     Returns:
         pl.LazyFrame: The input LazyFrame with new column
             'estimate_filled_posts_by_job_role_historically_reallocated'.
-    """
-    date_condition = pl.col(IndCQC.cqc_location_import_date) < date(2024, 4, 1)
 
+    Raises:
+        ValueError: If estimate filled posts by job role column has nulls.
+    """
+
+    # Raise error if there are nulls in job role filled post columns.
+    has_null_lf = lf.filter(
+        pl.col(IndCQC.estimate_filled_posts_by_job_role).is_null()
+    ).unique(IndCQC.estimate_filled_posts_by_job_role)
+
+    null_count = has_null_lf.collect().height
+
+    if null_count > 0:
+        raise ValueError("Error: Estimate filled posts by job role column has nulls")
+
+    all_job_roles = AscwdsWorkerValueLabelsJobGroup.all_roles()
     lf_adjusted = lf.pivot(
         on=IndCQC.main_job_role_clean_labelled,
-        on_columns=AscwdsWorkerValueLabelsJobGroup.all_roles(),
+        on_columns=all_job_roles,
         index=[IndCQC.id_per_locationid_import_date, IndCQC.cqc_location_import_date],
         values=IndCQC.estimate_filled_posts_by_job_role,
     )
 
+    date_condition = pl.col(IndCQC.cqc_location_import_date) < date(2024, 4, 1)
     adjustment_expr = []
     for receiving_role, amounts_to_give in Config.historic_adjustment_dict.items():
-        total_adjustment = sum(amounts_to_give)
+        total_adjustment = pl.sum_horizontal(amounts_to_give)
         adjustment_expr.append(
             pl.when(date_condition)
             .then(pl.col(receiving_role) + total_adjustment)
@@ -110,7 +124,6 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
     )
 
     lf_adjusted = lf_adjusted.drop(IndCQC.cqc_location_import_date)
-
     lf = lf.join(
         lf_adjusted,
         on=[IndCQC.id_per_locationid_import_date, IndCQC.main_job_role_clean_labelled],
@@ -121,7 +134,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
         pl.when(date_condition == False)
         .then(pl.col(IndCQC.estimate_filled_posts_by_job_role))
         .when(
-            (date_condition)
+            (date_condition == True)
             & (
                 pl.col(IndCQC.main_job_role_clean_labelled).is_in(
                     Config.job_roles_removed_historically
