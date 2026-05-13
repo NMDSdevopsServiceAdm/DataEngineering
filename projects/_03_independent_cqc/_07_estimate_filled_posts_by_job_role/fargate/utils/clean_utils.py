@@ -70,13 +70,14 @@ def filter_job_role_group_outliers(
     Returns:
         pl.LazyFrame: Transformed LazyFrame.
     """
+
     temp_job_group_column = "job_group"
-    temp_job_role_percentage_column = "job_role_percentage"
+    temp_ascwds_job_group_count_column = "ascwds_job_group_count"
+    temp_job_group_percentage_column = "job_group_percentage"
     temp_upper_bound_column = "upper_bound"
     temp_lower_bound_column = "lower_bound"
     temp_cols = [
-        temp_job_group_column,
-        temp_job_role_percentage_column,
+        temp_job_group_percentage_column,
         temp_upper_bound_column,
         temp_lower_bound_column,
     ]
@@ -84,77 +85,125 @@ def filter_job_role_group_outliers(
         IndCQC.location_id,
         IndCQC.cqc_location_import_date,
         IndCQC.primary_service_type,
-    ]
-    splits_for_bounds = [
         temp_job_group_column,
+    ]
+    splits_for_job_group_percentage = [
+        IndCQC.location_id,
         IndCQC.cqc_location_import_date,
         IndCQC.primary_service_type,
     ]
 
-    # 1. Map job roles to job groups
-    lf = lf.with_columns(
-        pl.col(IndCQC.main_job_role_clean_labelled)
-        .replace_strict(job_group_dict)
-        .alias(temp_job_group_column)
+    splits_for_bounds = [
+        IndCQC.cqc_location_import_date,
+        IndCQC.primary_service_type,
+        temp_job_group_column,
+    ]
+
+    # Reduce dataset for processing
+    filter_lf = lf.select(
+        IndCQC.id_per_locationid_import_date_job_role,
+        IndCQC.location_id,
+        IndCQC.cqc_location_import_date,
+        IndCQC.primary_service_type,
+        IndCQC.main_job_role_clean_labelled,
+        IndCQC.ascwds_job_role_counts_cleaned,
     )
 
-    # 2. Calculate job role percentage of total ASCWDS count for location and date.
-    job_role_percentage_expr = (pl.col(IndCQC.ascwds_job_role_counts)) / (
-        pl.col(IndCQC.ascwds_job_role_counts).sum()
+    # 1. Map job roles to job groups
+    job_role_group_data = {
+        IndCQC.main_job_role_clean_labelled: list(job_group_dict.keys()),
+        temp_job_group_column: list(job_group_dict.values()),
+    }
+    job_role_group_schema = {
+        IndCQC.main_job_role_clean_labelled: pl.String,
+        temp_job_group_column: pl.Enum(list(set(job_group_dict.values()))),
+    }
+    job_role_group_lf = pl.LazyFrame(job_role_group_data, schema=job_role_group_schema)
+
+    filter_lf = filter_lf.join(
+        job_role_group_lf, on=IndCQC.main_job_role_clean_labelled, how="left"
     )
 
     agg_lf = (
-        lf.group_by(splits_for_location_sum)
+        filter_lf.group_by(splits_for_location_sum)
         .agg(
             pl.col(IndCQC.id_per_locationid_import_date_job_role),
-            job_role_percentage_expr.alias(temp_job_role_percentage_column),
+            pl.col(IndCQC.ascwds_job_role_counts_cleaned)
+            .sum()
+            .alias(temp_ascwds_job_group_count_column),
         )
         .explode(
             IndCQC.id_per_locationid_import_date_job_role,
-            temp_job_role_percentage_column,
         )
         .drop(splits_for_location_sum)
     )  # Drop groups to prevent duplicate columns after join.
+    filter_lf = filter_lf.join(
+        agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
+    )
 
-    lf = lf.join(agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left")
+    # 2. Calculate job group percentage of total ASCWDS count for location and date.
+    job_group_percentage_expr = (pl.col(temp_ascwds_job_group_count_column)) / (
+        pl.col(IndCQC.ascwds_job_role_counts_cleaned).sum()
+    )
 
-    # 3. Calculate upper and lower percentile bounds of job role percentages for each job group, date and primary service type.
-    job_role_percentage_for_upper_bound_expr = pl.col(
-        temp_job_role_percentage_column
-    ).quantile(upper_percentile_bound, interpolation="linear")
-    job_role_percentage_for_lower_bound_expr = pl.col(
-        temp_job_role_percentage_column
-    ).quantile(lower_percentile_bound, interpolation="linear")
-    bounds_agg_lf = (
-        lf.group_by(splits_for_bounds)
+    percent_agg_lf = (
+        filter_lf.group_by(splits_for_job_group_percentage)
         .agg(
             pl.col(IndCQC.id_per_locationid_import_date_job_role),
-            job_role_percentage_for_upper_bound_expr.alias(temp_upper_bound_column),
-            job_role_percentage_for_lower_bound_expr.alias(temp_lower_bound_column),
+            job_group_percentage_expr.alias(temp_job_group_percentage_column),
+        )
+        .explode(
+            IndCQC.id_per_locationid_import_date_job_role,
+            temp_job_group_percentage_column,
+        )
+        .drop(splits_for_job_group_percentage)
+    )  # Drop groups to prevent duplicate columns after join.
+
+    filter_lf = filter_lf.join(
+        percent_agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
+    )
+    lf = lf.join(
+        percent_agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
+    )
+
+    # 3. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type.
+
+    job_group_percentage_for_upper_bound_expr = pl.col(
+        temp_job_group_percentage_column
+    ).quantile(
+        upper_percentile_bound, interpolation="linear"
+    )  # Not in streaming engine
+    job_group_percentage_for_lower_bound_expr = pl.col(
+        temp_job_group_percentage_column
+    ).quantile(lower_percentile_bound, interpolation="linear")
+    filter_lf = (
+        filter_lf.group_by(splits_for_bounds)
+        .agg(
+            pl.col(IndCQC.id_per_locationid_import_date_job_role),
+            job_group_percentage_for_upper_bound_expr.alias(temp_upper_bound_column),
+            job_group_percentage_for_lower_bound_expr.alias(temp_lower_bound_column),
         )
         .explode(
             IndCQC.id_per_locationid_import_date_job_role,
         )
         .drop(splits_for_bounds)
-    )
-    lf = lf.join(
-        bounds_agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
-    )
+    )  # Drop groups and temp percentage column to prevent duplicate columns after join.
 
+    lf = lf.join(
+        filter_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
+    )
     # 4. Nullify ASCWDS job role counts where job role percentage is above upper bound or below lower bound.
     lf = lf.with_columns(
         pl.when(
-            (pl.col(temp_job_role_percentage_column) > pl.col(temp_upper_bound_column))
+            (pl.col(temp_job_group_percentage_column) > pl.col(temp_upper_bound_column))
             | (
-                pl.col(temp_job_role_percentage_column)
+                pl.col(temp_job_group_percentage_column)
                 < pl.col(temp_lower_bound_column)
             )
         )
         .then(pl.lit(None))
         .otherwise(pl.col(IndCQC.ascwds_job_role_counts_cleaned))
         .alias(IndCQC.ascwds_job_role_counts_cleaned),
-    )
-
-    lf = lf.drop(temp_cols)
+    ).drop(temp_cols)
 
     return lf
