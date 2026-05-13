@@ -11,7 +11,7 @@ def null_longitudinal_outliers(
     lf: pl.LazyFrame,
     column_to_clean: str,
     proportion_to_filter: float,
-    filter_rule_column_name: str,
+    care_home: bool,
 ) -> pl.LazyFrame:
     """
     Cleans longitudinal outliers from a numerical column in a LazyFrame.
@@ -27,12 +27,18 @@ def null_longitudinal_outliers(
         column_to_clean (str): Column name containing numerical values to clean.
         proportion_to_filter (float): Proportion of extreme values to consider as
             outliers.
-        filter_rule_column_name (str): Column name for the filtering rule.
+        care_home (bool): If True, applies care home-specific filtering rules;
+            otherwise, applies non-residential filtering rules.
 
     Returns:
         pl.LazyFrame: A new LazyFrame with outliers cleaned, updated filtering rules,
             and helper columns removed.
     """
+    if care_home:
+        filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
+    else:
+        filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
+        
     percentile = 1 - proportion_to_filter
 
     median_expr = pl.col(column_to_clean).median().over([IndCQC.location_id])

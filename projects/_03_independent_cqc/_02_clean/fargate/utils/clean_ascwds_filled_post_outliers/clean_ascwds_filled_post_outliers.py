@@ -12,9 +12,6 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_po
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.winsorize_care_home_filled_posts_per_bed_ratio_outliers import (
     winsorize_care_home_filled_posts_per_bed_ratio_outliers,
 )
-from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.null_longitudinal_outliers import (
-    null_longitudinal_outliers,
-)
 from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
     add_filtering_rule_column,
 )
