@@ -54,14 +54,6 @@ def clean_ascwds_filled_post_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = null_filled_posts_where_locations_use_invalid_missing_data_code(lf)
     lf = null_grouped_providers(lf)
     lf = winsorize_care_home_filled_posts_per_bed_ratio_outliers(lf)
-    # non res specific brandid filter: (Target BD214 for now) remove ASCWDS filled Post dedupe clean column value from fist drop to first increase(aftyer 1st March 2024 and before 1st may 2026)
-    # update filtering rule to something like brandid filter
     lf = non_res_brand_id_filter(lf)
-    # lf = null_longitudinal_outliers(
-    #     lf=lf,
-    #     column_to_clean=IndCQC.ascwds_filled_posts_dedup_clean,
-    #     proportion_to_filter=0.005,
-    #     filter_rule_column_name=IndCQC.ascwds_filtering_rule,
-    # )
-
+    
     return lf
