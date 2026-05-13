@@ -61,7 +61,7 @@ def clean_capacity_tracker_care_home_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
         lf=lf,
         column_to_clean=IndCQC.ct_care_home_total_employed_cleaned,
         proportion_to_filter=0.001,
-        filter_rule_column_name=IndCQC.ct_care_home_filtering_rule,
+        care_home=True,
     )
 
     return lf

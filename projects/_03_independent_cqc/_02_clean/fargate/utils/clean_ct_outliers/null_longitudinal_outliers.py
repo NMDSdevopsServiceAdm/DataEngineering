@@ -38,7 +38,7 @@ def null_longitudinal_outliers(
         filter_rule_column_name = IndCQC.ct_care_home_filtering_rule
     else:
         filter_rule_column_name = IndCQC.ct_non_res_filtering_rule
-        
+
     percentile = 1 - proportion_to_filter
 
     median_expr = pl.col(column_to_clean).median().over([IndCQC.location_id])

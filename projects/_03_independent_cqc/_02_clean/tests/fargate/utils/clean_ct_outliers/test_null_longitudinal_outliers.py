@@ -35,7 +35,7 @@ class NullLongitudinalOutliersTests(unittest.TestCase):
             lf=self.test_lf,
             column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
             proportion_to_filter=0.10,
-            filter_rule_column_name=IndCQC.ct_non_res_filtering_rule,
+            care_home=False,
         )
         update_filtering_rule_mock.assert_called_once()
 
@@ -44,7 +44,7 @@ class NullLongitudinalOutliersTests(unittest.TestCase):
             lf=self.test_lf,
             column_to_clean=IndCQC.ct_non_res_care_workers_employed_cleaned,
             proportion_to_filter=0.10,
-            filter_rule_column_name=IndCQC.ct_non_res_filtering_rule,
+            care_home=False,
         )
         expected_lf = pl.LazyFrame(
             Data.expected_null_longitudinal_outliers_remove_value_only_rows,

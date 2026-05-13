@@ -52,5 +52,5 @@ def clean_ascwds_filled_post_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = null_grouped_providers(lf)
     lf = winsorize_care_home_filled_posts_per_bed_ratio_outliers(lf)
     lf = non_res_brand_id_filter(lf)
-    
+
     return lf

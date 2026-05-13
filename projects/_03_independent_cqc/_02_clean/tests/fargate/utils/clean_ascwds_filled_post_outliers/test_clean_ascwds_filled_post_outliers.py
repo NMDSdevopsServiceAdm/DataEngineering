@@ -30,10 +30,10 @@ class CleanAscwdsFilledPostOutliersTests(unittest.TestCase):
     )
     @patch(f"{PATCH_PATH}.null_grouped_providers")
     @patch(f"{PATCH_PATH}.winsorize_care_home_filled_posts_per_bed_ratio_outliers")
-    @patch(f"{PATCH_PATH}.null_longitudinal_outliers")
+    @patch(f"{PATCH_PATH}.non_res_brand_id_filter")
     def test_functions_are_called(
         self,
-        null_longitudinal_outliers_mock: Mock,
+        non_res_brand_id_filter_mock: Mock,
         winsorize_care_home_filled_posts_per_bed_ratio_outliers_mock: Mock,
         null_grouped_provders_mock: Mock,
         null_filled_posts_where_locations_use_invalid_missing_data_code_mock: Mock,
@@ -44,4 +44,4 @@ class CleanAscwdsFilledPostOutliersTests(unittest.TestCase):
         null_grouped_provders_mock.assert_called_once()
         null_filled_posts_where_locations_use_invalid_missing_data_code_mock.assert_called_once()
         add_filtering_rule_column_mock.assert_called_once()
-        null_longitudinal_outliers_mock.assert_called_once()
+        non_res_brand_id_filter_mock.assert_called_once()
