@@ -50,17 +50,18 @@ def filter_job_role_group_outliers(
     """
     Filter out top and bottom percentiles of job role counts per job role group.
 
-    This is to remove outliers from the distribution of job role counts within each job group, which
-    may be caused by data quality issues in ASCWDS. If a job role's percentage of total ASCWDS counts
-    for a particular location and date is above the upper percentile bound or below the lower percentile
-    bound (as passed to the function), then we set the ASCWDS job role count cleaned to NULL.
+    This is to remove outliers from the distribution of filled posts within each job group, which
+    may be caused by data quality issues in ASCWDS. If a job group's percentage of total ASCWDS counts
+    for a particular location, service type and date is above the upper percentile bound or below the
+    lower percentile bound (as passed to the function), then we set the ASCWDS job role count cleaned
+    to NULL.
 
     The steps are as follows:
     1. Map job roles to job groups using the provided dictionary.
-    2. Calculate the percentage of total ASCWDS counts for each job role within each location and date.
-    3. Calculate the upper and lower percentile bounds of these percentages for each job group, date and primary service type.
-    4. Nullify ASCWDS job role counts where the job role percentage is above the upper bound or below the lower bound.
-
+    2. Calculate job group ASCWDS count for location, service type and date.
+    3. Calculate job group percentage of total ASCWDS count for location, service type and date.
+    4. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type.
+    5. Nullify ASCWDS job role counts where job role percentage is above upper bound or below lower bound.
 
     Args:
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
@@ -68,7 +69,7 @@ def filter_job_role_group_outliers(
         lower_percentile_bound (float): Lower bound for percentile filtering. Defaults to 0.001.
 
     Returns:
-        pl.LazyFrame: Transformed LazyFrame.
+        pl.LazyFrame: LazyFrame with outliers in job role groups filtered.
     """
     # Define temporary column names
     temp_job_group_column = "job_group"
@@ -163,7 +164,7 @@ def filter_job_role_group_outliers(
         percent_agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
     )
 
-    # 3. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type.
+    # 4. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type.
 
     job_group_percentage_for_upper_bound_expr = pl.col(
         temp_job_group_percentage_column
@@ -191,7 +192,7 @@ def filter_job_role_group_outliers(
     lf = lf.join(
         filter_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
     )
-    # 4. Nullify ASCWDS job role counts where job role percentage is above upper bound or below lower bound.
+    # 5. Nullify ASCWDS job role counts where job role percentage is above upper bound or below lower bound.
     lf = lf.with_columns(
         pl.when(
             (pl.col(temp_job_group_percentage_column) > pl.col(temp_upper_bound_column))
