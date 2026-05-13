@@ -97,18 +97,29 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
         values=IndCQC.estimate_filled_posts_by_job_role,
     )
 
-    date_condition = pl.col(IndCQC.cqc_location_import_date) < date(2024, 4, 1)
-    adjustment_expr = []
-    for receiving_role, amounts_to_give in Config.historic_adjustment_dict.items():
-        total_adjustment = pl.sum_horizontal(amounts_to_give)
-        adjustment_expr.append(
-            pl.when(date_condition)
-            .then(pl.col(receiving_role) + total_adjustment)
-            .otherwise(pl.col(receiving_role))
-            .alias(receiving_role)
-        )
+    for cutoff_date, historic_adjustments in Config.adjustment_dict.items():
+        date_condition = pl.col(IndCQC.cqc_location_import_date) < cutoff_date
 
-    lf_adjusted = lf_adjusted.with_columns(adjustment_expr)
+        for historic_role, adjustments in historic_adjustments.items():
+
+            for receiving_role, amount_to_give in adjustments.items():
+                lf_adjusted = lf_adjusted.with_columns(
+                    pl.when(date_condition)
+                    .then(
+                        (
+                            pl.col(receiving_role)
+                            + (pl.col(historic_role) * pl.lit(amount_to_give))
+                        ).alias(receiving_role)
+                    )
+                    .otherwise(receiving_role)
+                )
+
+            lf_adjusted = lf_adjusted.with_columns(
+                pl.when(date_condition)
+                .then(pl.lit(0.0).cast(pl.Float32))
+                .otherwise(historic_role)
+                .alias(historic_role)
+            )
 
     lf_adjusted = lf_adjusted.unpivot(
         on=AscwdsWorkerValueLabelsJobGroup.all_roles(),
@@ -128,24 +139,6 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
         lf_adjusted,
         on=[IndCQC.id_per_locationid_import_date, IndCQC.main_job_role_clean_labelled],
         how="left",
-    )
-
-    lf = lf.with_columns(
-        pl.when(date_condition == False)
-        .then(pl.col(IndCQC.estimate_filled_posts_by_job_role))
-        .when(
-            (date_condition == True)
-            & (
-                pl.col(IndCQC.main_job_role_clean_labelled).is_in(
-                    Config.job_roles_removed_historically
-                )
-            )
-        )
-        .then(pl.lit(0.0))
-        .otherwise(
-            pl.col(IndCQC.estimate_filled_posts_by_job_role_historically_reallocated)
-        )
-        .alias(IndCQC.estimate_filled_posts_by_job_role_historically_reallocated),
     )
 
     return lf
