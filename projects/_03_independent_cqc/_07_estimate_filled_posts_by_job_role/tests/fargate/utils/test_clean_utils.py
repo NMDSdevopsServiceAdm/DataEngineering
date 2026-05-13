@@ -1,5 +1,4 @@
 import unittest
-from datetime import date
 import polars as pl
 import polars.testing as pl_testing
 import pytest
@@ -8,11 +7,12 @@ import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargat
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
-    PrimaryServiceType,
-    MainJobRoleLabels,
 )
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     EstimateFilledPostsByJobRoleCleanUtilsData as Data,
+)
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
 )
 
 
@@ -86,7 +86,13 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
             IndCQC.location_id: pl.String,
             IndCQC.cqc_location_import_date: pl.Date,
             IndCQC.primary_service_type: pl.String,
-            IndCQC.main_job_role_clean_labelled: pl.String,
+            IndCQC.main_job_role_clean_labelled: pl.Enum(
+                list(
+                    set(
+                        AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.keys()
+                    )
+                )
+            ),
             IndCQC.ascwds_job_role_counts: pl.Int64,
             IndCQC.ascwds_job_role_counts_cleaned: pl.Int64,
         }

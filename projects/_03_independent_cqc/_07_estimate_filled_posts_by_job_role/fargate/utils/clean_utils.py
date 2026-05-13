@@ -116,7 +116,7 @@ def filter_job_role_group_outliers(
         temp_job_group_column: list(job_group_dict.values()),
     }
     job_role_group_schema = {
-        IndCQC.main_job_role_clean_labelled: pl.String,
+        IndCQC.main_job_role_clean_labelled: pl.Enum(list(set(job_group_dict.keys()))),
         temp_job_group_column: pl.Enum(list(set(job_group_dict.values()))),
     }
     job_role_group_lf = pl.LazyFrame(job_role_group_data, schema=job_role_group_schema)
