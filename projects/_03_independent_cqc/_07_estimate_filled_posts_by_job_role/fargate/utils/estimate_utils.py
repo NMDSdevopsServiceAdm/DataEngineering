@@ -109,7 +109,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
         for historic_role, adjustments in historic_adjustments.items():
 
             for receiving_role, amount in adjustments.items():
-                # at the key for each receiving role, replace the value with the when/then/otherwise.
+                # at the key for each receiving role, replace the value with this when/then/otherwise.
                 exprs[receiving_role] = (
                     pl.when(date_condition)
                     .then(
@@ -127,7 +127,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
 
     # apply each each expression the job role columns.
     lf_adjusted = lf_adjusted.with_columns(
-        [expr.alias(col_name) for col_name, expr in exprs.items()]
+        [expr.alias(role) for role, expr in exprs.items()]
     )
 
     lf_adjusted = lf_adjusted.unpivot(
