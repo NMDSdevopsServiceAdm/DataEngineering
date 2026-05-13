@@ -40,11 +40,11 @@ def main(
     )
     # TODO - Filter ASC-WDS worker data.
 
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        pl.col(IndCQC.ascwds_job_role_counts).alias(
-            IndCQC.ascwds_job_role_counts_cleaned
-        )
-    )
+    # estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+    #     pl.col(IndCQC.ascwds_job_role_counts).alias(
+    #         IndCQC.ascwds_job_role_counts_cleaned
+    #     )
+    # )
     estimated_job_role_posts_lf = filter_job_role_group_outliers(
         estimated_job_role_posts_lf
     )

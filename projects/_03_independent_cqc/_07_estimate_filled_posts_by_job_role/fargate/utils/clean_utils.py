@@ -107,7 +107,7 @@ def filter_job_role_group_outliers(
         IndCQC.cqc_location_import_date,
         IndCQC.primary_service_type,
         IndCQC.main_job_role_clean_labelled,
-        IndCQC.ascwds_job_role_counts_cleaned,
+        IndCQC.ascwds_job_role_counts,
     )
 
     # 1. Map job roles to job groups
@@ -134,7 +134,7 @@ def filter_job_role_group_outliers(
     #     filter_lf.group_by(splits_for_location_sum)
     #     .agg(
     #         pl.col(IndCQC.id_per_locationid_import_date_job_role),
-    #         pl.col(IndCQC.ascwds_job_role_counts_cleaned)
+    #         pl.col(IndCQC.ascwds_job_role_counts)
     #         .sum()
     #         .alias(temp_ascwds_job_group_count_column),
     #     )
@@ -149,7 +149,7 @@ def filter_job_role_group_outliers(
 
     # 3. Calculate job group percentage of total ASCWDS count for location, service type and date.
     # job_group_percentage_expr = (pl.col(temp_ascwds_job_group_count_column)) / (
-    #     pl.col(IndCQC.ascwds_job_role_counts_cleaned).sum()
+    #     pl.col(IndCQC.ascwds_job_role_counts).sum()
     # )
 
     # percent_agg_lf = (
@@ -207,8 +207,8 @@ def filter_job_role_group_outliers(
     #         )
     #     )
     #     .then(pl.lit(None))
-    #     .otherwise(pl.col(IndCQC.ascwds_job_role_counts_cleaned))
-    #     .alias(IndCQC.ascwds_job_role_counts_cleaned),
+    #     .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
+    #     .alias(IndCQC.ascwds_job_role_counts),
     # ).drop(temp_cols_to_drop)
 
     return lf
