@@ -2279,7 +2279,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsData:
             ], # fmt: skip
         ),
         EstimateFilledPostsByJobRoleEstimateUtilsTestCases(
-            id="does_not_change_values_when_date_is_after_reallocation_cutoff",
+            id="duplicates_filled_posts_when_date_is_after_reallocation_cutoff",
             expected_data=[
                 (1, "1-001", date(2024, 6, 1), MainJobRoleLabels.deputy_manager, 1.0, 1.0),
                 (1, "1-001", date(2024, 6, 1), MainJobRoleLabels.learning_and_development_lead, 1.0, 1.0),

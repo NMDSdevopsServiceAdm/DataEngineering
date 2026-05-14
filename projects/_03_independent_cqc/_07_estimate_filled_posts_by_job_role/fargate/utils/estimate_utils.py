@@ -80,12 +80,11 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
     """
 
     # Raise error if there are nulls in job role filled post columns.
-    has_null_lf = lf.filter(
-        pl.col(IndCQC.estimate_filled_posts_by_job_role).is_null()
-    ).unique(IndCQC.estimate_filled_posts_by_job_role)
-
-    null_count = has_null_lf.collect().height
-
+    null_count = (
+        lf.select(pl.col(IndCQC.estimate_filled_posts_by_job_role).null_count())
+        .collect()
+        .item()
+    )
     if null_count > 0:
         raise ValueError("Error: Estimate filled posts by job role column has nulls")
 
@@ -95,13 +94,11 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
         on_columns=all_job_roles,
         index=[IndCQC.id_per_locationid_import_date, IndCQC.cqc_location_import_date],
         values=IndCQC.estimate_filled_posts_by_job_role,
+        aggregate_function="sum",
     )
 
-    # empty dict
-    exprs: dict[str, pl.Expr] = {}
-    for role in all_job_roles:
-        # make a key: value pair as role: pl.col(role)
-        exprs[role] = pl.col(role)
+    # make a key: value pair as role: pl.col(role)
+    exprs = {role: pl.col(role) for role in all_job_roles}
 
     for cutoff_date, historic_adjustments in Config.adjustment_dict.items():
         date_condition = pl.col(IndCQC.cqc_location_import_date) < cutoff_date
@@ -113,7 +110,8 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
                 exprs[receiving_role] = (
                     pl.when(date_condition)
                     .then(
-                        exprs[receiving_role] + pl.col(historic_role) * pl.lit(amount)
+                        exprs[receiving_role]
+                        + pl.col(historic_role) * pl.lit(amount, dtype=pl.Float32)
                     )
                     .otherwise(exprs[receiving_role])
                 )
@@ -131,16 +129,14 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
     )
 
     lf_adjusted = lf_adjusted.unpivot(
-        on=AscwdsWorkerValueLabelsJobGroup.all_roles(),
+        on=all_job_roles,
         index=[IndCQC.id_per_locationid_import_date, IndCQC.cqc_location_import_date],
         variable_name=IndCQC.main_job_role_clean_labelled,
         value_name=IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
     )
 
     lf_adjusted = lf_adjusted.with_columns(
-        pl.col(IndCQC.main_job_role_clean_labelled).cast(
-            pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
-        )
+        pl.col(IndCQC.main_job_role_clean_labelled).cast(pl.Enum(all_job_roles))
     )
 
     lf_adjusted = lf_adjusted.drop(IndCQC.cqc_location_import_date)
