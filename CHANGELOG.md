@@ -36,6 +36,8 @@ All notable changes to this project will be documented in this file.
 
 - Added `brand_id` from raw CQC data into the IND CQC pipeline.
 
+- Added function to reallocate filled posts from job roles that didn't exist in the past.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
