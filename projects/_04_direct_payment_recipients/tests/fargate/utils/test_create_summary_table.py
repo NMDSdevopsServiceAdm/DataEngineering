@@ -18,16 +18,10 @@ class TestCreateSummaryTable(unittest.TestCase):
             DP.SERVICE_USER_DPRS_DURING_YEAR: pl.Float64,
             DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF: pl.Float64,
             DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF: pl.Float64,
-            # DP.ESTIMATED_CARERS_EMPLOYING_STAFF: pl.Float64,
             DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF: pl.Float64,
             DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: pl.Float64,
         }
-        # input_rows = [
-        #     (2020, "area_1", 100.0, 80.0, 40.0, 10.0, 5.0, 45.0, 50.0),
-        #     (2020, "area_2", 200.0, 160.0, 80.0, 20.0, 10.0, 90.0, 100.0),
-        #     (2021, "area_1", 110.0, 90.0, 45.0, 11.0, 6.0, 51.0, 55.0),
-        #     (2021, "area_2", 210.0, 170.0, 85.0, 21.0, 11.0, 96.0, 105.0),
-        # ]
+
         input_rows = [
             (2020, "area_1", 100.0, 80.0, 40.0, 10.0, 45.0, 50.0),
             (2020, "area_2", 200.0, 160.0, 80.0, 20.0, 90.0, 100.0),
@@ -41,14 +35,10 @@ class TestCreateSummaryTable(unittest.TestCase):
             DP.SERVICE_USER_DPRS: pl.Float32,
             DP.SERVICE_USERS_EMPLOYING_STAFF: pl.Float32,
             DP.SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF: pl.Float32,
-            # DP.CARERS_EMPLOYING_STAFF: pl.Float32,
             DP.TOTAL_DPRS_EMPLOYING_STAFF: pl.Float32,
             DP.TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: pl.Float32,
         }
-        # expected_rows = [
-        #     (2020, 300.0, 240.0, 120.0, 30.0, 15.0, 135.0, 150.0),
-        #     (2021, 320.0, 260.0, 130.0, 32.0, 17.0, 147.0, 160.0),
-        # ]
+
         expected_rows = [
             (2020, 300.0, 240.0, 120.0, 30.0, 135.0, 150.0),
             (2021, 320.0, 260.0, 130.0, 32.0, 147.0, 160.0),

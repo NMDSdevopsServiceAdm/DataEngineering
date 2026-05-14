@@ -26,3 +26,13 @@ Trello ticket [#number](add link)
 - [ ] Updated CHANGELOG
 - [ ] Code reviewed by AI
 - [ ] Moved Trello ticket to PR column
+
+## Reviewer checklist
+- [ ] PR solves the Trello ticket requirements
+- [ ] Outputs appear reasonable and understandable
+- [ ] The overall approach is appropriate and not over-engineered
+- [ ] No obvious scalability, performance or interdependency concerns
+- [ ] Tests appropriately cover the main behaviour/edge cases
+- [ ] Naming and structure are broadly understandable and consistent
+- [ ] Docstrings are sufficient for future maintenance
+- [ ] Docstrings cover non-obvious behaviour

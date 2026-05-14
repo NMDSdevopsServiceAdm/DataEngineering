@@ -20,11 +20,9 @@ def calculate_remaining_variables(
 
     The following derived columns are added:
         - estimated_service_users_with_self_employed_staff
-        #- estimated_carers_employing_staff
         - estimated_total_dpr_employing_staff
         - estimated_total_personal_assistant_filled_posts
         - estimated_proportion_of_total_dpr_employing_staff
-        - estimated_proportion_of_dpr_who_are_service_users
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame.
@@ -37,14 +35,9 @@ def calculate_remaining_variables(
         * Config.SELF_EMPLOYED_STAFF_PER_SERVICE_USER
     )
 
-    # carers_employing_staff_expr = (
-    #    pl.col(DP.CARER_DPRS_DURING_YEAR) * Config.CARERS_EMPLOYING_PERCENTAGE
-    # )
-
     total_dpr_employing_staff_expr = (
         pl.col(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF)
         + service_users_with_self_employed_staff_expr
-        # + carers_employing_staff_expr
     )
 
     total_personal_assistant_filled_posts_expr = (
@@ -55,23 +48,15 @@ def calculate_remaining_variables(
         DP.TOTAL_DPRS_DURING_YEAR
     )
 
-    proportion_of_dpr_who_are_service_users_expr = pl.col(
-        DP.SERVICE_USER_DPRS_DURING_YEAR
-    ) / pl.col(DP.TOTAL_DPRS_DURING_YEAR)
-
     return lf.with_columns(
         service_users_with_self_employed_staff_expr.alias(
             DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF
         ),
-        # carers_employing_staff_expr.alias(DP.ESTIMATED_CARERS_EMPLOYING_STAFF),
         total_dpr_employing_staff_expr.alias(DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF),
         total_personal_assistant_filled_posts_expr.alias(
             DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS
         ),
         proportion_of_dpr_employing_staff_expr.alias(
             DP.ESTIMATED_PROPORTION_OF_TOTAL_DPR_EMPLOYING_STAFF
-        ),
-        proportion_of_dpr_who_are_service_users_expr.alias(
-            DP.ESTIMATED_PROPORTION_OF_DPR_WHO_ARE_SERVICE_USERS
         ),
     )
