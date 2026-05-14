@@ -117,12 +117,12 @@ def backdate_job_role_changes(df: DataFrame) -> DataFrame:
     """
     Replaces 'Care Navigator' ("41") with 'Care Co-ordinator' ("40") in the main
     job role column and 'Technician' ("22") with
-    'Other non-care-providing job roles' ("27") in the main job role column.
+    'Other non-care Related Staff' ("27") in the main job role column.
 
     In May 2024, the job role 'Care Navigator' was removed from ASC-WDS and all
     workers in ASC-WDS in that role at the time were moved to the 'Care
     Co-ordinator' role. Similar thing happened with 'technician' ("22") which was
-    moved to 'Other non-care-providing job roles' ("27"). This function backdates
+    moved to 'Other non-care Related Staff' ("27"). This function backdates
     these change to the start of the dataset for consistency.
 
     Args:
