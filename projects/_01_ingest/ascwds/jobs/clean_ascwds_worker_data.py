@@ -99,7 +99,7 @@ def create_clean_main_job_role_column(df: DataFrame) -> DataFrame:
     """
     df = df.withColumn(AWKClean.main_job_role_clean, F.col(AWKClean.main_job_role_id))
 
-    df = replace_care_navigator_with_care_coordinator(df)
+    df = backdate_job_role_changes(df)
     df = impute_not_known_job_roles(df)
 
     unknown_job_role = F.col(AWKClean.main_job_role_clean) != "-1"
@@ -113,15 +113,17 @@ def create_clean_main_job_role_column(df: DataFrame) -> DataFrame:
     )
 
 
-def replace_care_navigator_with_care_coordinator(df: DataFrame) -> DataFrame:
+def backdate_job_role_changes(df: DataFrame) -> DataFrame:
     """
     Replaces 'Care Navigator' ("41") with 'Care Co-ordinator' ("40") in the main
-    job role column.
+    job role column and 'Technician' ("22") with
+    'Other non-care-providing job roles' ("27") in the main job role column.
 
     In May 2024, the job role 'Care Navigator' was removed from ASC-WDS and all
     workers in ASC-WDS in that role at the time were moved to the 'Care
-    Co-ordinator' role. This function backdates this change to the start of the
-    dataset for consistency.
+    Co-ordinator' role. Similar thing happened with 'technician' ("22") which was
+    moved to 'Other non-care-providing job roles' ("27"). This function backdates
+    these change to the start of the dataset for consistency.
 
     Args:
         df (DataFrame): The DataFrame containing the main job role column.
@@ -129,7 +131,8 @@ def replace_care_navigator_with_care_coordinator(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: The DataFrame with the replaced value.
     """
-    return df.replace("41", "40", AWKClean.main_job_role_clean)
+    replacements = {"41": "40", "22": "27"}
+    return df.replace(replacements, subset=[AWKClean.main_job_role_clean])
 
 
 def impute_not_known_job_roles(df: DataFrame) -> DataFrame:

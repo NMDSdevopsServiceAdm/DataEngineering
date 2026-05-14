@@ -301,17 +301,19 @@ class ASCWDSWorkerData:
         ("141", date(2025, 1, 1), "41", "40", MainJobRoleLabels.care_coordinator),
     ]
 
-    replace_care_navigator_with_care_coordinator_values_updated_when_care_navigator_is_present_rows = [
+    backdate_job_role_changes_mapped_codes_rows = [
         ("41", "41"),
+        ("22", "22"),
     ]
-    expected_replace_care_navigator_with_care_coordinator_values_updated_when_care_navigator_is_present_rows = [
+    expected_backdate_job_role_changes_mapped_codes_rows = [
         ("41", "40"),
+        ("22", "27"),
     ]
-    replace_care_navigator_with_care_coordinator_values_remain_unchanged_when_care_navigator_not_present_rows = [
+    backdate_job_role_changes_unmapped_codes_rows = [
         ("25", "25"),
         ("40", "40"),
     ]
-    expected_replace_care_navigator_with_care_coordinator_values_remain_unchanged_when_care_navigator_not_present_rows = [
+    expected_backdate_job_role_changes_unmapped_codes_rows = [
         ("25", "25"),
         ("40", "40"),
     ]

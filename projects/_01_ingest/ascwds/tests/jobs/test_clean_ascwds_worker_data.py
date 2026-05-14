@@ -124,35 +124,30 @@ class CreateCleanMainJobRoleColumnTests(IngestASCWDSWorkerDatasetTests):
             )
 
 
-class ReplaceCareNavigatorWithCareCoordinatorTests(IngestASCWDSWorkerDatasetTests):
+class BackdateJobRoleChangesTests(IngestASCWDSWorkerDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
         test_df_with_care_navigator = self.spark.createDataFrame(
-            ASCWDSWorkerData.replace_care_navigator_with_care_coordinator_values_updated_when_care_navigator_is_present_rows,
-            ASCWDSWorkerSchemas.replace_care_navigator_with_care_coordinator_schema,
+            ASCWDSWorkerData.backdate_job_role_changes_mapped_codes_rows,
+            ASCWDSWorkerSchemas.backdate_job_role_changes_schema,
         )
-        returned_df_with_care_navigator = (
-            job.replace_care_navigator_with_care_coordinator(
-                test_df_with_care_navigator
-            )
+        returned_df_with_care_navigator = job.backdate_job_role_changes(
+            test_df_with_care_navigator
         )
         expected_df_with_care_navigator = self.spark.createDataFrame(
-            ASCWDSWorkerData.expected_replace_care_navigator_with_care_coordinator_values_updated_when_care_navigator_is_present_rows,
-            ASCWDSWorkerSchemas.replace_care_navigator_with_care_coordinator_schema,
+            ASCWDSWorkerData.expected_backdate_job_role_changes_mapped_codes_rows,
+            ASCWDSWorkerSchemas.backdate_job_role_changes_schema,
         )
         self.returned_data = returned_df_with_care_navigator.collect()
         self.expected_data = expected_df_with_care_navigator.collect()
 
-    def test_care_navigator_is_replaced_with_care_coordinator_in_main_job_role_clean_column(
+    def test_function_maps_correctly(
         self,
     ):
-        self.assertEqual(
-            self.returned_data[0][AWKClean.main_job_role_clean],
-            self.expected_data[0][AWKClean.main_job_role_clean],
-        )
+        self.assertEqual(self.returned_data, self.expected_data)
 
-    def test_replace_care_navigator_with_care_coordinator_doesnt_replace_the_value_in_other_columns_in_df(
+    def test_function_doesnt_replace_the_value_in_other_columns_in_df(
         self,
     ):
         self.assertEqual(
@@ -160,17 +155,17 @@ class ReplaceCareNavigatorWithCareCoordinatorTests(IngestASCWDSWorkerDatasetTest
             self.expected_data[0][AWKClean.worker_id],
         )
 
-    def test_replace_care_navigator_with_care_coordinator_doesnt_change_data_when_care_navigator_value_not_present(
+    def test_function_doesnt_change_data_when_unmapped_codes_present(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            ASCWDSWorkerData.replace_care_navigator_with_care_coordinator_values_remain_unchanged_when_care_navigator_not_present_rows,
-            ASCWDSWorkerSchemas.replace_care_navigator_with_care_coordinator_schema,
+            ASCWDSWorkerData.backdate_job_role_changes_unmapped_codes_rows,
+            ASCWDSWorkerSchemas.backdate_job_role_changes_schema,
         )
-        returned_df = job.replace_care_navigator_with_care_coordinator(test_df)
+        returned_df = job.backdate_job_role_changes(test_df)
         expected_df = self.spark.createDataFrame(
-            ASCWDSWorkerData.expected_replace_care_navigator_with_care_coordinator_values_remain_unchanged_when_care_navigator_not_present_rows,
-            ASCWDSWorkerSchemas.replace_care_navigator_with_care_coordinator_schema,
+            ASCWDSWorkerData.expected_backdate_job_role_changes_unmapped_codes_rows,
+            ASCWDSWorkerSchemas.backdate_job_role_changes_schema,
         )
         returned_data = returned_df.sort(AWKClean.worker_id).collect()
         expected_data = expected_df.collect()

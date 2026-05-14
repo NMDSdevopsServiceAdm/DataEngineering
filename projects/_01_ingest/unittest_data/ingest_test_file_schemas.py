@@ -204,7 +204,7 @@ class ASCWDSWorkerSchemas:
         ]
     )
 
-    replace_care_navigator_with_care_coordinator_schema = StructType(
+    backdate_job_role_changes_schema = StructType(
         [
             StructField(AWKClean.worker_id, StringType(), True),
             StructField(AWKClean.main_job_role_clean, StringType(), True),
