@@ -44,8 +44,8 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
 
 def filter_job_role_group_outliers(
     lf: pl.LazyFrame,
-    upper_percentile_bound: float = 0.999,
-    lower_percentile_bound: float = 0.001,
+    upper_percentile_bound: float = 0.995,
+    lower_percentile_bound: float = 0.005,
 ) -> pl.LazyFrame:
     """
     Filter out top and bottom percentiles of job role counts per job role group.
@@ -65,8 +65,8 @@ def filter_job_role_group_outliers(
 
     Args:
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
-        upper_percentile_bound (float): Upper bound for percentile filtering. Defaults to 0.999.
-        lower_percentile_bound (float): Lower bound for percentile filtering. Defaults to 0.001.
+        upper_percentile_bound (float): Upper bound for percentile filtering. Defaults to 0.995.
+        lower_percentile_bound (float): Lower bound for percentile filtering. Defaults to 0.005.
 
     Returns:
         pl.LazyFrame: LazyFrame with outliers in job role groups filtered.
@@ -189,17 +189,51 @@ def filter_job_role_group_outliers(
     lf = lf.join(agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left")
 
     # 5. Nullify ASCWDS job role counts where job role percentage is above upper bound or below lower bound.
+    # TODO -need to fail as location - fail if DC is outside of upper or lower bounds or other group is above upper bound. This is because if the distribution is very skewed and one group is above the upper bound, then it's likely that the other groups are underreported rather than the one group being an outlier.
+    direct_care_expr = (
+        pl.col(temp_job_group_percentage_column) > pl.col(temp_upper_bound_column)
+    ) | (pl.col(temp_job_group_percentage_column) < pl.col(temp_lower_bound_column))
+    non_direct_care_expr = pl.col(temp_job_group_percentage_column) > pl.col(
+        temp_upper_bound_column
+    )
     lf = lf.with_columns(
         pl.when(
-            (pl.col(temp_job_group_percentage_column) > pl.col(temp_upper_bound_column))
+            ((pl.col(temp_job_group_column) == "Direct Care") & (direct_care_expr))
             | (
-                pl.col(temp_job_group_percentage_column)
-                < pl.col(temp_lower_bound_column)
+                (pl.col(temp_job_group_column) != "Direct Care")
+                & (non_direct_care_expr)
             )
         )
-        .then(pl.lit(None))
+        .then(pl.lit(True))
+        .otherwise(pl.lit(False))
+        .alias("drop_location"),
+    )
+    agg_lf = (
+        lf.group_by(
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+            IndCQC.primary_service_type,
+        )
+        .agg(
+            pl.col("drop_location").any().alias("drop_location"),
+            pl.col(IndCQC.id_per_locationid_import_date_job_role),
+        )
+        .explode(IndCQC.id_per_locationid_import_date_job_role)
+        .drop(
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+            IndCQC.primary_service_type,
+        )
+    )
+
+    lf = lf.drop("drop_location")
+    lf = lf.join(agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left")
+    lf = lf.with_columns(
+        pl.when(pl.col("drop_location") == True)
+        .then(None)
         .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
-        .alias(IndCQC.ascwds_job_role_counts),
-    ).drop(temp_cols_to_drop)
+        .alias(IndCQC.ascwds_job_role_counts)
+    ).drop("drop_location")
+    lf = lf.drop(temp_cols_to_drop)
 
     return lf

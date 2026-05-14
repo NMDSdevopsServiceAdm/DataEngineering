@@ -2814,3 +2814,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
             lower_bound=0.2,
         ),
     ] # fmt: skip
+
+
+# TODO: Add test case to check whole location is removed when only one job group is flagged
+# TODO: add test for which bounds are applied to which job roles
