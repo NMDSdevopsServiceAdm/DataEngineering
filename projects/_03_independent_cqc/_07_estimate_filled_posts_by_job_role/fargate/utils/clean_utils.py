@@ -200,6 +200,6 @@ def filter_job_role_group_outliers(
         .then(pl.lit(None))
         .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
         .alias(IndCQC.ascwds_job_role_counts),
-    ).drop(temp_cols_to_drop)
+    )  # .drop(temp_cols_to_drop)
 
     return lf
