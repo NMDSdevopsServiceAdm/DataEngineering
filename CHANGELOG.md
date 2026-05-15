@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+
+
+### Changed
+
+
+### Fixed
+
+
+## [v2026.04.0] - 15/05/2026
+
+### Added
 - Setup scripts and terraform required for converting direct payment estimates to polars.
 
 - Converted DPR Interpolation script to Polars and added tests for the same.
