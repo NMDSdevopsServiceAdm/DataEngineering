@@ -1,7 +1,6 @@
 import polars as pl
-from polars_utils.expressions import is_care_home, is_not_care_home
+from polars_utils.expressions import is_care_home, is_not_care_home, is_dormant
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import Dormancy
 
 average_number_of_beds: str = "avg_beds"
 
@@ -60,7 +59,7 @@ def calculate_time_since_dormant(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     lf = lf.sort([IndCQC.location_id, IndCQC.cqc_location_import_date])
     lf = lf.with_columns(
-        pl.when(pl.col(IndCQC.dormancy) == Dormancy.dormant)
+        pl.when(is_dormant())
         .then(pl.col(IndCQC.cqc_location_import_date))
         .otherwise(None)
         .alias(IndCQC.dormant_date)
@@ -76,7 +75,7 @@ def calculate_time_since_dormant(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.with_columns(
         pl.when(pl.col(IndCQC.last_dormant_date).is_not_null())
         .then(
-            pl.when(pl.col(IndCQC.dormancy) == Dormancy.dormant)
+            pl.when(is_dormant())
             .then(1)
             .otherwise(
                 (

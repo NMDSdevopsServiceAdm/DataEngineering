@@ -1,6 +1,6 @@
 import polars as pl
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import CareHome
+from utils.column_values.categorical_column_values import CareHome, Dormancy
 
 
 def has_value(df: pl.DataFrame, column: str, partition_by: str) -> pl.Expr:
@@ -68,3 +68,8 @@ def is_care_home() -> pl.Expr:
 def is_not_care_home() -> pl.Expr:
     """Expression to identify non-care home records."""
     return pl.col(IndCQC.care_home) == CareHome.not_care_home
+
+
+def is_dormant() -> pl.Expr:
+    """Expression to identify dormant records."""
+    return pl.col(IndCQC.dormancy) == Dormancy.dormant
