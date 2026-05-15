@@ -1,8 +1,14 @@
 import polars as pl
 
 from polars_utils import utils
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    HistoricJobRoleAdjustmentConfig as Config,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import MainJobRoleLabels
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
+)
 
 
 def calculate_estimated_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -35,6 +41,111 @@ def calculate_estimated_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyFra
                 pl.col(IndCQC.ascwds_job_role_ratios_merged)
             )
         ).alias(IndCQC.estimate_filled_posts_by_job_role)
+    )
+
+    return lf
+
+
+def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Prior to April 2024, adjust job role estimates as follows:
+        - Reallocate the following roles entirely into other_managerial_staff:
+            - data_governance_manager
+            - it_manager
+            - it_service_desk_manager
+        - Reallocate the following roles entirely into other_non_care_related_staff:
+            - learning_and_development_lead
+            - data_analyst
+            - it_and_digital_support
+            - software_developer
+        - Reallocate the following roles into specific roles using fixed ratios:
+            - support_worker
+            - team_leader
+            - deputy_manager
+
+    The estimated filled posts for all job roles listed above is then set to 0.0.
+
+    We cannot have a filled post estimate before a job role is collected in the ASC-WDS.
+    This is because we would have extrapolated backwards in time, and the longer this
+    happens the less accurate the estimate would be.
+
+    Args:
+        lf (pl.LazyFrame): The input LazyFrame with column
+            'estimate_filled_posts_by_job_role'.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with new column
+            'estimate_filled_posts_by_job_role_historically_reallocated'.
+
+    Raises:
+        ValueError: If estimate filled posts by job role column has nulls.
+    """
+
+    # Raise error if there are nulls in job role filled post columns.
+    null_count = (
+        lf.select(pl.col(IndCQC.estimate_filled_posts_by_job_role).null_count())
+        .collect()
+        .item()
+    )
+    if null_count > 0:
+        raise ValueError("Error: Estimate filled posts by job role column has nulls")
+
+    all_job_roles = AscwdsWorkerValueLabelsJobGroup.all_roles()
+    lf_adjusted = lf.pivot(
+        on=IndCQC.main_job_role_clean_labelled,
+        on_columns=all_job_roles,
+        index=[IndCQC.id_per_locationid_import_date, IndCQC.cqc_location_import_date],
+        values=IndCQC.estimate_filled_posts_by_job_role,
+        aggregate_function="sum",
+    )
+
+    # Make a key: value pair as role: pl.col(role)
+    exprs = {role: pl.col(role) for role in all_job_roles}
+
+    for cutoff_date, historic_adjustments in Config.adjustment_dict.items():
+        date_condition = pl.col(IndCQC.cqc_location_import_date) < cutoff_date
+
+        for historic_role, adjustments in historic_adjustments.items():
+
+            for receiving_role, amount in adjustments.items():
+                # At the key for each receiving role, replace the value with this when/then/otherwise.
+                exprs[receiving_role] = (
+                    pl.when(date_condition)
+                    .then(
+                        exprs[receiving_role]
+                        + pl.col(historic_role) * pl.lit(amount, dtype=pl.Float32)
+                    )
+                    .otherwise(exprs[receiving_role])
+                )
+
+            # At the key for each historic role, replace the value with this when/then/otherwise.
+            exprs[historic_role] = (
+                pl.when(date_condition)
+                .then(pl.lit(0.0, dtype=pl.Float32))
+                .otherwise(exprs[historic_role])
+            )
+
+    # Apply each expression the job role columns.
+    lf_adjusted = lf_adjusted.with_columns(
+        [expr.alias(role) for role, expr in exprs.items()]
+    )
+
+    lf_adjusted = lf_adjusted.unpivot(
+        on=all_job_roles,
+        index=[IndCQC.id_per_locationid_import_date, IndCQC.cqc_location_import_date],
+        variable_name=IndCQC.main_job_role_clean_labelled,
+        value_name=IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
+    )
+
+    lf_adjusted = lf_adjusted.with_columns(
+        pl.col(IndCQC.main_job_role_clean_labelled).cast(pl.Enum(all_job_roles))
+    )
+
+    lf_adjusted = lf_adjusted.drop(IndCQC.cqc_location_import_date)
+    lf = lf.join(
+        lf_adjusted,
+        on=[IndCQC.id_per_locationid_import_date, IndCQC.main_job_role_clean_labelled],
+        how="left",
     )
 
     return lf
@@ -117,9 +228,9 @@ def calculate_reg_man_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf.with_columns(
         (
             (
-                pl.col(IndCQC.estimate_filled_posts_by_job_role).sub(
-                    pl.col(IndCQC.registered_manager_count)
-                )
+                pl.col(
+                    IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
+                ).sub(pl.col(IndCQC.registered_manager_count))
             )
             .filter(
                 pl.col(IndCQC.main_job_role_clean_labelled)
@@ -150,7 +261,7 @@ def calculate_non_rm_managerial_distribution(
             'proportion_of_non_rm_managerial_estimated_filled_posts_by_role'.
     """
     sum_non_rm_managerial_posts_expr = (
-        pl.col(IndCQC.estimate_filled_posts_by_job_role)
+        pl.col(IndCQC.estimate_filled_posts_by_job_role_historically_reallocated)
         .filter(non_rm_manager_condition)
         .sum()
         .over(IndCQC.id_per_locationid_import_date)
@@ -174,7 +285,9 @@ def calculate_non_rm_managerial_distribution(
                     .cast(pl.Float32)
                 )
                 .otherwise(
-                    pl.col(IndCQC.estimate_filled_posts_by_job_role)
+                    pl.col(
+                        IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
+                    )
                     .truediv(sum_non_rm_managerial_posts_expr)
                     .cast(pl.Float32)
                 )
@@ -210,7 +323,9 @@ def distribute_rm_difference(
         pl.LazyFrame: The input LazyFrame with column
             'estimate_filled_posts_by_job_role_manager_adjusted'.
     """
-    redistribution_expr = pl.col(IndCQC.estimate_filled_posts_by_job_role).add(
+    redistribution_expr = pl.col(
+        IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
+    ).add(
         pl.col(IndCQC.difference_between_estimate_and_cqc_registered_managers).mul(
             pl.col(
                 IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
@@ -226,7 +341,9 @@ def distribute_rm_difference(
             == MainJobRoleLabels.registered_manager
         )
         .then(pl.col(IndCQC.registered_manager_count).cast(pl.Float32))
-        .otherwise(pl.col(IndCQC.estimate_filled_posts_by_job_role))
+        .otherwise(
+            pl.col(IndCQC.estimate_filled_posts_by_job_role_historically_reallocated)
+        )
         .alias(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
     )
 

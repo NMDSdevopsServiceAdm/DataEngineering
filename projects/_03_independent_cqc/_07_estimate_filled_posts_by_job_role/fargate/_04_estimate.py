@@ -38,6 +38,8 @@ def main(
 
     lf = eUtils.calculate_estimated_filled_posts_by_job_role(lf)
 
+    lf = eUtils.reallocate_historical_filled_posts_by_job_role(lf)
+
     lf = lf.with_columns(
         eUtils.has_rm_in_cqc_rm_name_list_flag().alias(IndCQC.registered_manager_count)
     )
