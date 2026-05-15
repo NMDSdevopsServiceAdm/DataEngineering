@@ -4,7 +4,14 @@ import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-from polars_utils.expressions import has_value, percentage_share, str_length_cols
+from polars_utils.expressions import (
+    has_value,
+    percentage_share,
+    str_length_cols,
+    is_care_home,
+    is_not_care_home,
+    is_dormant,
+)
 
 
 class TestExpressions(unittest.TestCase):
@@ -149,6 +156,30 @@ class TestStrLengthCols(TestExpressions):
         df = pl.DataFrame({"num_col": [1, 2, 3]})
         with self.assertRaises(pl.exceptions.SchemaError):
             df.with_columns(str_length_cols(["num_col"]))
+
+
+class TestIsCareHome(TestExpressions):
+    def test_is_care_home(self):
+        df = pl.DataFrame({"careHome": ["Y", "N", "Y"]}).with_columns(
+            is_care_home().alias("is_care_home")
+        )
+        self.assertEqual(df["is_care_home"].to_list(), [True, False, True])
+
+
+class TestIsNotCareHome(TestExpressions):
+    def test_is_not_care_home(self):
+        df = pl.DataFrame({"careHome": ["Y", "N", "Y"]}).with_columns(
+            is_not_care_home().alias("is_not_care_home")
+        )
+        self.assertEqual(df["is_not_care_home"].to_list(), [False, True, False])
+
+
+class TestIsDormant(TestExpressions):
+    def test_is_dormant(self):
+        df = pl.DataFrame({"dormancy": ["Y", "N", "Y"]}).with_columns(
+            is_dormant().alias("is_dormant")
+        )
+        self.assertEqual(df["is_dormant"].to_list(), [True, False, True])
 
 
 if __name__ == "__main__":
