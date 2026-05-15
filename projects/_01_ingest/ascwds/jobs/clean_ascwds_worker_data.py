@@ -99,7 +99,7 @@ def create_clean_main_job_role_column(df: DataFrame) -> DataFrame:
     """
     df = df.withColumn(AWKClean.main_job_role_clean, F.col(AWKClean.main_job_role_id))
 
-    df = backdate_job_role_changes(df)
+    df = remap_mainjrid_codes(df)
     df = impute_not_known_job_roles(df)
 
     unknown_job_role = F.col(AWKClean.main_job_role_clean) != "-1"
@@ -113,17 +113,16 @@ def create_clean_main_job_role_column(df: DataFrame) -> DataFrame:
     )
 
 
-def backdate_job_role_changes(df: DataFrame) -> DataFrame:
+def remap_mainjrid_codes(df: DataFrame) -> DataFrame:
     """
-    Replaces 'Care Navigator' ("41") with 'Care Co-ordinator' ("40") in the main
-    job role column and 'Technician' ("22") with
-    'Other non-care Related Staff' ("27") in the main job role column.
+    This function recodes job roles by replacing raw mainjrid codes.
 
-    In May 2024, the job role 'Care Navigator' was removed from ASC-WDS and all
-    workers in ASC-WDS in that role at the time were moved to the 'Care
-    Co-ordinator' role. Similar thing happened with 'technician' ("22") which was
-    moved to 'Other non-care Related Staff' ("27"). This function backdates
-    these change to the start of the dataset for consistency.
+    Over time, some job roles have stopped being collected by the ASC-WDS.
+    Worker records with these roles were recoded into different roles. For
+    consistency across all periods, this function applies that mapping across
+    all periods. The notes below show the date at which roles were removed from
+    the ASC-WDS:
+        - May 2024: 'Care navigator', 'Technician'
 
     Args:
         df (DataFrame): The DataFrame containing the main job role column.

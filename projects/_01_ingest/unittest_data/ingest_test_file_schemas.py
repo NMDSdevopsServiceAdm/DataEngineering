@@ -204,7 +204,7 @@ class ASCWDSWorkerSchemas:
         ]
     )
 
-    backdate_job_role_changes_schema = StructType(
+    remap_mainjrid_codes_schema = StructType(
         [
             StructField(AWKClean.worker_id, StringType(), True),
             StructField(AWKClean.main_job_role_clean, StringType(), True),

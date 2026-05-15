@@ -124,20 +124,20 @@ class CreateCleanMainJobRoleColumnTests(IngestASCWDSWorkerDatasetTests):
             )
 
 
-class BackdateJobRoleChangesTests(IngestASCWDSWorkerDatasetTests):
+class RemapMainjridCodesTests(IngestASCWDSWorkerDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
         test_df_with_care_navigator = self.spark.createDataFrame(
-            ASCWDSWorkerData.backdate_job_role_changes_mapped_codes_rows,
-            ASCWDSWorkerSchemas.backdate_job_role_changes_schema,
+            ASCWDSWorkerData.remap_mainjrid_codes_mapped_codes_rows,
+            ASCWDSWorkerSchemas.remap_mainjrid_codes_schema,
         )
-        returned_df_with_care_navigator = job.backdate_job_role_changes(
+        returned_df_with_care_navigator = job.remap_mainjrid_codes(
             test_df_with_care_navigator
         )
         expected_df_with_care_navigator = self.spark.createDataFrame(
-            ASCWDSWorkerData.expected_backdate_job_role_changes_mapped_codes_rows,
-            ASCWDSWorkerSchemas.backdate_job_role_changes_schema,
+            ASCWDSWorkerData.expected_remap_mainjrid_codes_mapped_codes_rows,
+            ASCWDSWorkerSchemas.remap_mainjrid_codes_schema,
         )
         self.returned_data = returned_df_with_care_navigator.collect()
         self.expected_data = expected_df_with_care_navigator.collect()
@@ -154,18 +154,22 @@ class BackdateJobRoleChangesTests(IngestASCWDSWorkerDatasetTests):
             self.returned_data[0][AWKClean.worker_id],
             self.expected_data[0][AWKClean.worker_id],
         )
+        self.assertEqual(
+            self.returned_data[1][AWKClean.worker_id],
+            self.expected_data[1][AWKClean.worker_id],
+        )
 
     def test_function_doesnt_change_data_when_unmapped_codes_present(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            ASCWDSWorkerData.backdate_job_role_changes_unmapped_codes_rows,
-            ASCWDSWorkerSchemas.backdate_job_role_changes_schema,
+            ASCWDSWorkerData.remap_mainjrid_codes_unmapped_codes_rows,
+            ASCWDSWorkerSchemas.remap_mainjrid_codes_schema,
         )
-        returned_df = job.backdate_job_role_changes(test_df)
+        returned_df = job.remap_mainjrid_codes(test_df)
         expected_df = self.spark.createDataFrame(
-            ASCWDSWorkerData.expected_backdate_job_role_changes_unmapped_codes_rows,
-            ASCWDSWorkerSchemas.backdate_job_role_changes_schema,
+            ASCWDSWorkerData.expected_remap_mainjrid_codes_unmapped_codes_rows,
+            ASCWDSWorkerSchemas.remap_mainjrid_codes_schema,
         )
         returned_data = returned_df.sort(AWKClean.worker_id).collect()
         expected_data = expected_df.collect()
