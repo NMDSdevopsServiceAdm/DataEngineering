@@ -238,80 +238,49 @@ class TestReallocateHistoricalFilledPostsByJobRoleRaisesError(unittest.TestCase)
 
 class TestReallocateHistoricalFilledPostsByJobRoleConfig(unittest.TestCase):
     def test_config_has_expected_values(self):
-        expected_adjustment_dates = [
-            date(2023, 8, 1),
-            date(2024, 6, 1),
-        ]
-        expected_historic_roles = [
-            MainJobRoleLabels.deputy_manager,
-            MainJobRoleLabels.learning_and_development_lead,
-            MainJobRoleLabels.team_leader,
-            MainJobRoleLabels.data_analyst,
-            MainJobRoleLabels.data_governance_manager,
-            MainJobRoleLabels.it_and_digital_support,
-            MainJobRoleLabels.it_manager,
-            MainJobRoleLabels.it_service_desk_manager,
-            MainJobRoleLabels.software_developer,
-            MainJobRoleLabels.support_worker,
-        ]
-        expected_receiving_roles = [
-            MainJobRoleLabels.care_worker,
-            MainJobRoleLabels.first_line_manager,
-            MainJobRoleLabels.senior_care_worker,
-            MainJobRoleLabels.other_non_care_related_staff,
-            MainJobRoleLabels.care_worker,
-            MainJobRoleLabels.first_line_manager,
-            MainJobRoleLabels.senior_care_worker,
-            MainJobRoleLabels.supervisor,
-            MainJobRoleLabels.other_non_care_related_staff,
-            MainJobRoleLabels.other_managerial_staff,
-            MainJobRoleLabels.other_non_care_related_staff,
-            MainJobRoleLabels.other_managerial_staff,
-            MainJobRoleLabels.other_managerial_staff,
-            MainJobRoleLabels.other_non_care_related_staff,
-            MainJobRoleLabels.care_worker,
-            MainJobRoleLabels.community_support_and_outreach,
-            MainJobRoleLabels.senior_care_worker,
-            MainJobRoleLabels.activites_worker,
-        ]
-        expected_amounts = [
-            0.2249,
-            0.4689,
-            0.3062,
-            1.0,
-            0.3446,
-            0.135,
-            0.1749,
-            0.3455,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            0.7219,
-            0.2537,
-            0.0166,
-            0.0078,
-        ]
+        expected_adjustment_dict = {
+            date(2023, 8, 1): {
+                MainJobRoleLabels.deputy_manager: {
+                    MainJobRoleLabels.care_worker: 0.2249,
+                    MainJobRoleLabels.first_line_manager: 0.4689,
+                    MainJobRoleLabels.senior_care_worker: 0.3062,
+                },
+                MainJobRoleLabels.learning_and_development_lead: {
+                    MainJobRoleLabels.other_non_care_related_staff: 1.0,
+                },
+                MainJobRoleLabels.team_leader: {
+                    MainJobRoleLabels.care_worker: 0.3446,
+                    MainJobRoleLabels.first_line_manager: 0.1350,
+                    MainJobRoleLabels.senior_care_worker: 0.1749,
+                    MainJobRoleLabels.supervisor: 0.3455,
+                },
+            },
+            date(2024, 6, 1): {
+                MainJobRoleLabels.data_analyst: {
+                    MainJobRoleLabels.other_non_care_related_staff: 1.0,
+                },
+                MainJobRoleLabels.data_governance_manager: {
+                    MainJobRoleLabels.other_managerial_staff: 1.0,
+                },
+                MainJobRoleLabels.it_and_digital_support: {
+                    MainJobRoleLabels.other_non_care_related_staff: 1.0,
+                },
+                MainJobRoleLabels.it_manager: {
+                    MainJobRoleLabels.other_managerial_staff: 1.0,
+                },
+                MainJobRoleLabels.it_service_desk_manager: {
+                    MainJobRoleLabels.other_managerial_staff: 1.0,
+                },
+                MainJobRoleLabels.software_developer: {
+                    MainJobRoleLabels.other_non_care_related_staff: 1.0,
+                },
+                MainJobRoleLabels.support_worker: {
+                    MainJobRoleLabels.care_worker: 0.7219,
+                    MainJobRoleLabels.community_support_and_outreach: 0.2537,
+                    MainJobRoleLabels.senior_care_worker: 0.0166,
+                    MainJobRoleLabels.activites_worker: 0.0078,
+                },
+            },
+        }
 
-        adjustment_dates = []
-        historic_roles = []
-        receiving_roles = []
-        amounts = []
-
-        adjustment_dates.extend(Config.adjustment_dict.keys())
-
-        for cutoff_date, historic_adjustments in Config.adjustment_dict.items():
-            historic_roles.extend(historic_adjustments.keys())
-
-            for historic_role, adjustment in historic_adjustments.items():
-                receiving_roles.extend(adjustment.keys())
-
-                for receiving_role, amount in adjustment.items():
-                    amounts.append(amount)
-
-        self.assertEqual(adjustment_dates, expected_adjustment_dates)
-        self.assertEqual(historic_roles, expected_historic_roles)
-        self.assertEqual(receiving_roles, expected_receiving_roles)
-        self.assertEqual(amounts, expected_amounts)
+        self.assertEqual(Config.adjustment_dict, expected_adjustment_dict)
