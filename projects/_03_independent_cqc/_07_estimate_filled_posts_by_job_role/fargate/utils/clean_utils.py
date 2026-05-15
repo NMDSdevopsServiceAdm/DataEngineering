@@ -92,7 +92,6 @@ def filter_job_role_group_outliers(
         IndCQC.primary_service_type,
         IndCQC.id_per_locationid_import_date,
     ]
-    splits_for_bounds = [IndCQC.cqc_location_import_date, IndCQC.primary_service_type]
 
     # 1. Map job roles to job groups
     job_role_group_data = {
@@ -132,6 +131,7 @@ def filter_job_role_group_outliers(
     piv_lf = piv_lf.with_columns(job_group_percentage_expr)
 
     # 4. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type.
+
     job_group_percentage_for_upper_bound_expr = (
         pl.col(job_group_cols)
         .quantile(  # Not in streaming engine
@@ -148,15 +148,9 @@ def filter_job_role_group_outliers(
         .cast(pl.Float32)
         .name.suffix("_lower_bound")
     )
-    agg_lf = piv_lf.group_by(splits_for_bounds).agg(
+    piv_lf = piv_lf.with_columns(
         job_group_percentage_for_upper_bound_expr,
         job_group_percentage_for_lower_bound_expr,
-    )
-
-    piv_lf = piv_lf.join(
-        agg_lf,
-        on=splits_for_bounds,
-        how="left",
     )
 
     # # 5. Flag where job role percentage is outside bounds.
