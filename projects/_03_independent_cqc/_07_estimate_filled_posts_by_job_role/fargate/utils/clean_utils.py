@@ -152,7 +152,9 @@ def filter_job_role_group_outliers(
         lf.group_by(splits_for_job_group_percentage)
         .agg(
             pl.col(IndCQC.id_per_locationid_import_date_job_role),
-            job_group_percentage_expr.alias(temp_job_group_percentage_column),
+            job_group_percentage_expr.cast(pl.Float32).alias(
+                temp_job_group_percentage_column
+            ),
         )
         .explode(
             IndCQC.id_per_locationid_import_date_job_role,
@@ -177,8 +179,12 @@ def filter_job_role_group_outliers(
         lf.group_by(splits_for_bounds)
         .agg(
             pl.col(IndCQC.id_per_locationid_import_date_job_role),
-            job_group_percentage_for_upper_bound_expr.alias(temp_upper_bound_column),
-            job_group_percentage_for_lower_bound_expr.alias(temp_lower_bound_column),
+            job_group_percentage_for_upper_bound_expr.cast(pl.Float32).alias(
+                temp_upper_bound_column
+            ),
+            job_group_percentage_for_lower_bound_expr.cast(pl.Float32).alias(
+                temp_lower_bound_column
+            ),
         )
         .explode(
             IndCQC.id_per_locationid_import_date_job_role,
