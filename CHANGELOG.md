@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added function to reallocate filled posts from job roles that didn't exist in the past.
 
 
 ### Changed
@@ -48,8 +49,6 @@ All notable changes to this project will be documented in this file.
 - Added `brand_id` from raw CQC data into the IND CQC pipeline.
 
 - Added brandid filter to non res locations within Clean ASC-WDS step. Currently it targets BD214 brandid only.
-
-- Added function to reallocate filled posts from job roles that didn't exist in the past.
 
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
