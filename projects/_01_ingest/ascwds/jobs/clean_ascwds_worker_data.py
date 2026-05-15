@@ -122,7 +122,8 @@ def remap_mainjrid_codes(df: DataFrame) -> DataFrame:
     consistency across all periods, this function applies that mapping across
     all periods. The notes below show the date at which roles were removed from
     the ASC-WDS:
-        - May 2024: 'Care navigator', 'Technician'
+        - May 2024: 'Care navigator': 'Care co-ordinator'
+        - May 2024: 'Technician': 'Other non-care related staff'
 
     Args:
         df (DataFrame): The DataFrame containing the main job role column.
