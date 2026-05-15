@@ -44,8 +44,8 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
 
 def filter_job_role_group_outliers(
     lf: pl.LazyFrame,
-    upper_percentile_bound: float = 0.995,
-    lower_percentile_bound: float = 0.005,
+    upper_percentile_bound: float = 0.99,
+    lower_percentile_bound: float = 0.01,
 ) -> pl.LazyFrame:
     """
     Filter out top and bottom percentiles of job role counts per job role group.
@@ -65,8 +65,8 @@ def filter_job_role_group_outliers(
 
     Args:
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
-        upper_percentile_bound (float): Upper bound for percentile filtering. Defaults to 0.995.
-        lower_percentile_bound (float): Lower bound for percentile filtering. Defaults to 0.005.
+        upper_percentile_bound (float): Upper bound for percentile filtering. Defaults to 0.99.
+        lower_percentile_bound (float): Lower bound for percentile filtering. Defaults to 0.01.
 
     Returns:
         pl.LazyFrame: LazyFrame with outliers in job role groups filtered.
