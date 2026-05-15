@@ -165,16 +165,3 @@ class HistoricJobRoleAdjustmentConfig:
             },
         },
     }
-
-    job_roles_removed_historically = [
-        MainJobRoleLabels.data_governance_manager,
-        MainJobRoleLabels.it_manager,
-        MainJobRoleLabels.it_service_desk_manager,
-        MainJobRoleLabels.learning_and_development_lead,
-        MainJobRoleLabels.data_analyst,
-        MainJobRoleLabels.it_and_digital_support,
-        MainJobRoleLabels.software_developer,
-        MainJobRoleLabels.support_worker,
-        MainJobRoleLabels.team_leader,
-        MainJobRoleLabels.deputy_manager,
-    ]
