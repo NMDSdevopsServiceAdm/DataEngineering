@@ -33,6 +33,10 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
             Data.expected_rows_with_new_columns,
             Schemas.expected_schema_with_new_columns,
         )
+        self.expected_df_with_new_code_columns = self.spark.createDataFrame(
+            Data.expected_rows_with_new_code_columns,
+            Schemas.expected_schema_with_new_code_columns,
+        )
         self.expected_df_without_new_columns = self.spark.createDataFrame(
             Data.expected_rows_without_new_columns, Schemas.worker_schema
         )
@@ -101,6 +105,52 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
         ).collect()
 
         expected_columns = len(self.test_worker_df.columns)
+
+        self.assertEqual(len(returned_df.columns), expected_columns)
+        self.assertEqual(returned_data, expected_data)
+
+    def test_reverse_label_strings_into_code_strings_when_new_column_is_set_to_false(
+        self,
+    ):
+        returned_df = job.apply_categorical_labels(
+            self.expected_df_without_new_columns,
+            self.label_dict,
+            [AWK.gender, AWK.nationality],
+            add_as_new_column=False,
+            reversed=True,
+        )
+        returned_data = (
+            returned_df.select(self.test_worker_df.columns)
+            .sort(AWK.worker_id)
+            .collect()
+        )
+        expected_data = self.test_worker_df.sort(AWK.worker_id).collect()
+
+        expected_columns = len(self.test_worker_df.columns)
+
+        self.assertEqual(len(returned_df.columns), expected_columns)
+        self.assertEqual(returned_data, expected_data)
+
+    def test_reverse_label_strings_into_code_strings_when_new_column_is_set_to_true(
+        self,
+    ):
+        returned_df = job.apply_categorical_labels(
+            self.expected_df_without_new_columns,
+            self.label_dict,
+            [AWK.gender, AWK.nationality],
+            add_as_new_column=True,
+            reversed=True,
+        )
+        returned_data = (
+            returned_df.select(self.expected_df_with_new_code_columns.columns)
+            .sort(AWK.worker_id)
+            .collect()
+        )
+        expected_data = self.expected_df_with_new_code_columns.sort(
+            AWK.worker_id
+        ).collect()
+
+        expected_columns = len(self.test_worker_df.columns) + 2
 
         self.assertEqual(len(returned_df.columns), expected_columns)
         self.assertEqual(returned_data, expected_data)

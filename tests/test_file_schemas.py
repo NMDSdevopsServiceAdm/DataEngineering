@@ -74,6 +74,16 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    expected_schema_with_new_code_columns = StructType(
+        [
+            StructField(AWK.worker_id, StringType(), True),
+            StructField(AWK.gender, StringType(), True),
+            StructField(AWK.nationality, StringType(), True),
+            StructField("gender_codes", StringType(), True),
+            StructField("nationality_codes", StringType(), True),
+        ]
+    )
+
     scale_schema = StructType(
         [
             StructField("int", IntegerType(), True),

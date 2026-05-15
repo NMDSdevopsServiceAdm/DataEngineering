@@ -77,6 +77,15 @@ class CleaningUtilsData:
         ("6", "female", None),
     ]
 
+    expected_rows_with_new_code_columns = [
+        ("1", "male", "British", "1", "100"),
+        ("2", "male", "French", "1", "101"),
+        ("3", "female", "Spanish", "2", "102"),
+        ("4", "female", "Portuguese", "2", "103"),
+        ("5", None, "Portuguese", None, "103"),
+        ("6", "female", None, "2", None),
+    ]
+
     worker_rows_with_unmatched_labels = [
         ("1", "0", "100"),
         ("2", "1", "104"),

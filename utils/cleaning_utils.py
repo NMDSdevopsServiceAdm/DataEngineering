@@ -16,7 +16,11 @@ pir_submission_date_uri_format = "dd-MMM-yy"
 
 
 def apply_categorical_labels(
-    df: DataFrame, labels: dict, column_names: list, add_as_new_column: bool = True
+    df: DataFrame,
+    labels: dict,
+    column_names: list,
+    add_as_new_column: bool = True,
+    reversed: bool = False,
 ) -> DataFrame:
     """
     Apply categorical label mappings to one or more columns using a join-based lookup.
@@ -27,6 +31,10 @@ def apply_categorical_labels(
 
     Labels can either be added as new columns or replace the original columns.
 
+    An optional argument is to reverse the mapping from a label string to a code string.
+    Warning: the values in 'labels' passed in must be unique, otherwise only last of
+    duplicates will be used in the mapping.
+
     Args:
         df (DataFrame): Input Spark DataFrame.
         labels (dict): Dictionary of column-to-mapping dictionaries.
@@ -34,6 +42,7 @@ def apply_categorical_labels(
         add_as_new_column (bool, optional): If True, adds a new column with
             "_labels" suffix. If False, replaces the original column.
             Defaults to True.
+        reversed (bool, optional): If True, reverts labels to codes.
 
     Returns:
         DataFrame: DataFrame with categorical labels applied. Unmapped values
@@ -48,16 +57,26 @@ def apply_categorical_labels(
                 StructField(f"{column_name}_labels", StringType(), True),
             ]
         )
-        mapping_df = spark.createDataFrame(
-            labels[column_name].items(), schema=mapping_schema
-        )
+
+        if reversed == True:
+            mapping_dict = {v: k for k, v in labels[column_name].items()}
+            mapping_dict = mapping_dict.items()
+        else:
+            mapping_dict = labels[column_name].items()
+
+        mapping_df = spark.createDataFrame(mapping_dict, schema=mapping_schema)
 
         df = df.join(mapping_df, on=column_name, how="left")
 
         merged_col = F.coalesce(F.col(f"{column_name}_labels"), F.col(column_name))
 
         if add_as_new_column:
-            df = df.withColumn(f"{column_name}_labels", merged_col)
+            if reversed == True:
+                df = df.withColumn(f"{column_name}_codes", merged_col).drop(
+                    f"{column_name}_labels"
+                )
+            else:
+                df = df.withColumn(f"{column_name}_labels", merged_col)
         else:
             df = df.withColumn(column_name, merged_col).drop(f"{column_name}_labels")
 
