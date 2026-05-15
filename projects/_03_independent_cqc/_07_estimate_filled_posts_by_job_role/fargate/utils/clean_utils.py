@@ -75,12 +75,10 @@ def filter_job_role_group_outliers(
     temp_job_group_column = "job_group"
     temp_ascwds_job_group_count_column = "ascwds_job_group_count"
     temp_job_group_percentage_column = "job_group_percentage"
-    temp_mean_percentage_column = "mean_percentage"
-    temp_std_percentage_column = "std_percentage"
     temp_upper_bound_column = "upper_bound"
     temp_lower_bound_column = "lower_bound"
     temp_cols_to_drop = [
-        temp_job_group_column,
+        # temp_job_group_column,
         temp_ascwds_job_group_count_column,
         temp_job_group_percentage_column,
         temp_upper_bound_column,
@@ -104,6 +102,16 @@ def filter_job_role_group_outliers(
         temp_job_group_column,
     ]
 
+    # Reduce dataset for processing
+    # filter_lf = lf.select(
+    #     IndCQC.id_per_locationid_import_date_job_role,
+    #     IndCQC.location_id,
+    #     IndCQC.cqc_location_import_date,
+    #     IndCQC.primary_service_type,
+    #     IndCQC.main_job_role_clean_labelled,
+    #     IndCQC.ascwds_job_role_counts,
+    # )
+
     # 1. Map job roles to job groups
     job_role_group_data = {
         IndCQC.main_job_role_clean_labelled: list(job_group_dict.keys()),
@@ -119,97 +127,113 @@ def filter_job_role_group_outliers(
 
     lf = lf.join(job_role_group_lf, on=IndCQC.main_job_role_clean_labelled, how="left")
 
-    # 2. Calculate job group ASCWDS count using window function
-    lf = lf.with_columns(
-        pl.col(IndCQC.ascwds_job_role_counts)
-        .sum()
-        .over(splits_for_location_sum)
-        .alias(temp_ascwds_job_group_count_column)
+    # 2. Calculate job group ASCWDS count for location, service type and date.
+    agg_lf = (
+        lf.group_by(splits_for_location_sum)
+        .agg(
+            pl.col(IndCQC.id_per_locationid_import_date_job_role),
+            pl.col(IndCQC.ascwds_job_role_counts)
+            .sum()
+            .alias(temp_ascwds_job_group_count_column),
+        )
+        .explode(
+            IndCQC.id_per_locationid_import_date_job_role,
+        )
+        .drop(splits_for_location_sum)
+    )  # Drop groups to prevent duplicate columns after join.
+    lf = lf.join(agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left")
+
+    # 3. Calculate job group percentage of total ASCWDS count for location, service type and date.
+    job_group_percentage_expr = (pl.col(temp_ascwds_job_group_count_column)) / (
+        pl.col(IndCQC.ascwds_job_role_counts).sum()
     )
 
-    # 3. Calculate total ASCWDS count and job group percentage using window functions
-    lf = lf.with_columns(
-        pl.col(IndCQC.ascwds_job_role_counts)
-        .sum()
-        .over(splits_for_job_group_percentage)
-        .alias("total_ascwds_count")
-    )
-    lf = lf.with_columns(
-        (
-            pl.col(temp_ascwds_job_group_count_column) / pl.col("total_ascwds_count")
-        ).alias(temp_job_group_percentage_column)
-    )
-    lf = lf.drop("total_ascwds_count")
+    agg_lf = (
+        lf.group_by(splits_for_job_group_percentage)
+        .agg(
+            pl.col(IndCQC.id_per_locationid_import_date_job_role),
+            job_group_percentage_expr.alias(temp_job_group_percentage_column),
+        )
+        .explode(
+            IndCQC.id_per_locationid_import_date_job_role,
+            temp_job_group_percentage_column,
+        )
+        .drop(splits_for_job_group_percentage)
+    )  # Drop groups to prevent duplicate columns after join.
 
-    # 4. Calculate upper and lower bounds using quantile
+    lf = lf.join(agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left")
+
+    # 4. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type.
+
+    job_group_percentage_for_upper_bound_expr = pl.col(
+        temp_job_group_percentage_column
+    ).quantile(
+        upper_percentile_bound, interpolation="linear"
+    )  # Not in streaming engine
+    job_group_percentage_for_lower_bound_expr = pl.col(
+        temp_job_group_percentage_column
+    ).quantile(lower_percentile_bound, interpolation="linear")
     agg_lf = (
         lf.group_by(splits_for_bounds)
         .agg(
             pl.col(IndCQC.id_per_locationid_import_date_job_role),
-            pl.col(temp_job_group_percentage_column)
-            .quantile(upper_percentile_bound, interpolation="linear")
-            .alias(temp_upper_bound_column),
-            pl.col(temp_job_group_percentage_column)
-            .quantile(lower_percentile_bound, interpolation="linear")
-            .alias(temp_lower_bound_column),
+            job_group_percentage_for_upper_bound_expr.alias(temp_upper_bound_column),
+            job_group_percentage_for_lower_bound_expr.alias(temp_lower_bound_column),
         )
-        .explode(IndCQC.id_per_locationid_import_date_job_role)
+        .explode(
+            IndCQC.id_per_locationid_import_date_job_role,
+        )
         .drop(splits_for_bounds)
-    )
+    )  # Drop groups to prevent duplicate columns after join.
+
     lf = lf.join(agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left")
 
-    # 5. Determine drop condition and aggregate to location level
+    # 5. Nullify ASCWDS job role counts where job role percentage is above upper bound or below lower bound.
+    # TODO -need to fail as location - fail if DC is outside of upper or lower bounds or other group is above upper bound. This is because if the distribution is very skewed and one group is above the upper bound, then it's likely that the other groups are underreported rather than the one group being an outlier.
+    direct_care_expr = (
+        pl.col(temp_job_group_percentage_column) > pl.col(temp_upper_bound_column)
+    ) | (pl.col(temp_job_group_percentage_column) < pl.col(temp_lower_bound_column))
+    non_direct_care_expr = pl.col(temp_job_group_percentage_column) > pl.col(
+        temp_upper_bound_column
+    )
     lf = lf.with_columns(
         pl.when(
-            (
-                (pl.col(temp_job_group_column) == "Direct Care")
-                & (
-                    (
-                        pl.col(temp_job_group_percentage_column)
-                        > pl.col(temp_upper_bound_column)
-                    )
-                    | (
-                        pl.col(temp_job_group_percentage_column)
-                        < pl.col(temp_lower_bound_column)
-                    )
-                )
-            )
+            ((pl.col(temp_job_group_column) == "Direct Care") & (direct_care_expr))
             | (
                 (pl.col(temp_job_group_column) != "Direct Care")
-                & (
-                    pl.col(temp_job_group_percentage_column)
-                    > pl.col(temp_upper_bound_column)
-                )
+                & (non_direct_care_expr)
             )
         )
         .then(pl.lit(True))
         .otherwise(pl.lit(False))
         .alias("drop_location"),
     )
-
-    # Aggregate to check if any job role in the location should trigger drop
-    lf = lf.with_columns(
-        pl.col("drop_location")
-        .any()
-        .over(
-            [
-                IndCQC.location_id,
-                IndCQC.cqc_location_import_date,
-                IndCQC.primary_service_type,
-            ]
+    agg_lf = (
+        lf.group_by(
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+            IndCQC.primary_service_type,
         )
-        .alias("drop_location_any")
+        .agg(
+            pl.col("drop_location").any().alias("drop_location"),
+            pl.col(IndCQC.id_per_locationid_import_date_job_role),
+        )
+        .explode(IndCQC.id_per_locationid_import_date_job_role)
+        .drop(
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+            IndCQC.primary_service_type,
+        )
     )
 
-    # Nullify counts for locations to drop
+    lf = lf.drop("drop_location")
+    lf = lf.join(agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left")
     lf = lf.with_columns(
-        pl.when(pl.col("drop_location_any"))
+        pl.when(pl.col("drop_location") == True)
         .then(None)
         .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
         .alias(IndCQC.ascwds_job_role_counts)
-    )
-
-    # Drop temporary columns
-    lf = lf.drop(temp_cols_to_drop + ["drop_location", "drop_location_any"])
+    ).drop("drop_location")
+    lf = lf.drop(temp_cols_to_drop)
 
     return lf
