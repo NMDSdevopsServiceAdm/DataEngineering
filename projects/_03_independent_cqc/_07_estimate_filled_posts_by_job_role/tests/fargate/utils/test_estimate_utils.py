@@ -1,4 +1,5 @@
 import unittest
+from datetime import date
 from unittest.mock import Mock, patch
 
 import polars as pl
@@ -6,6 +7,9 @@ import polars.testing as pl_testing
 import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.estimate_utils as job
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    HistoricJobRoleAdjustmentConfig as Config,
+)
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     EstimateFilledPostsByJobRoleEstimateUtilsData as Data,
 )
@@ -230,3 +234,84 @@ class TestReallocateHistoricalFilledPostsByJobRoleRaisesError(unittest.TestCase)
             "Error: Estimate filled posts by job role column has nulls"
             in str(context.exception)
         )
+
+
+class TestReallocateHistoricalFilledPostsByJobRoleConfig(unittest.TestCase):
+    def test_config_has_expected_values(self):
+        expected_adjustment_dates = [
+            date(2023, 8, 1),
+            date(2024, 6, 1),
+        ]
+        expected_historic_roles = [
+            MainJobRoleLabels.deputy_manager,
+            MainJobRoleLabels.learning_and_development_lead,
+            MainJobRoleLabels.team_leader,
+            MainJobRoleLabels.data_analyst,
+            MainJobRoleLabels.data_governance_manager,
+            MainJobRoleLabels.it_and_digital_support,
+            MainJobRoleLabels.it_manager,
+            MainJobRoleLabels.it_service_desk_manager,
+            MainJobRoleLabels.software_developer,
+            MainJobRoleLabels.support_worker,
+        ]
+        expected_receiving_roles = [
+            MainJobRoleLabels.care_worker,
+            MainJobRoleLabels.first_line_manager,
+            MainJobRoleLabels.senior_care_worker,
+            MainJobRoleLabels.other_non_care_related_staff,
+            MainJobRoleLabels.care_worker,
+            MainJobRoleLabels.first_line_manager,
+            MainJobRoleLabels.senior_care_worker,
+            MainJobRoleLabels.supervisor,
+            MainJobRoleLabels.other_non_care_related_staff,
+            MainJobRoleLabels.other_managerial_staff,
+            MainJobRoleLabels.other_non_care_related_staff,
+            MainJobRoleLabels.other_managerial_staff,
+            MainJobRoleLabels.other_managerial_staff,
+            MainJobRoleLabels.other_non_care_related_staff,
+            MainJobRoleLabels.care_worker,
+            MainJobRoleLabels.community_support_and_outreach,
+            MainJobRoleLabels.senior_care_worker,
+            MainJobRoleLabels.activites_worker,
+        ]
+        expected_amounts = [
+            0.2249,
+            0.4689,
+            0.3062,
+            1.0,
+            0.3446,
+            0.135,
+            0.1749,
+            0.3455,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.7219,
+            0.2537,
+            0.0166,
+            0.0078,
+        ]
+
+        adjustment_dates = []
+        historic_roles = []
+        receiving_roles = []
+        amounts = []
+
+        adjustment_dates.extend(Config.adjustment_dict.keys())
+
+        for cutoff_date, historic_adjustments in Config.adjustment_dict.items():
+            historic_roles.extend(historic_adjustments.keys())
+
+            for historic_role, adjustment in historic_adjustments.items():
+                receiving_roles.extend(adjustment.keys())
+
+                for receiving_role, amount in adjustment.items():
+                    amounts.append(amount)
+
+        self.assertEqual(adjustment_dates, expected_adjustment_dates)
+        self.assertEqual(historic_roles, expected_historic_roles)
+        self.assertEqual(receiving_roles, expected_receiving_roles)
+        self.assertEqual(amounts, expected_amounts)
