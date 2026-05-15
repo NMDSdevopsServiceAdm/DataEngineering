@@ -87,17 +87,17 @@ def filter_job_role_group_outliers(
     # Define splits for groupby operations
     splits_for_location_sum = [
         IndCQC.location_id,
-        IndCQC.cqc_location_import_date,
+        # IndCQC.cqc_location_import_date,
         IndCQC.primary_service_type,
         temp_job_group_column,
     ]
     splits_for_job_group_percentage = [
         IndCQC.location_id,
-        IndCQC.cqc_location_import_date,
+        # IndCQC.cqc_location_import_date,
         IndCQC.primary_service_type,
     ]
     splits_for_bounds = [
-        IndCQC.cqc_location_import_date,
+        # IndCQC.cqc_location_import_date,
         IndCQC.primary_service_type,
         temp_job_group_column,
     ]
@@ -217,7 +217,7 @@ def filter_job_role_group_outliers(
     agg_lf = (
         lf.group_by(
             IndCQC.location_id,
-            IndCQC.cqc_location_import_date,
+            # IndCQC.cqc_location_import_date,
             IndCQC.primary_service_type,
         )
         .agg(
@@ -227,7 +227,7 @@ def filter_job_role_group_outliers(
         .explode(IndCQC.id_per_locationid_import_date_job_role)
         .drop(
             IndCQC.location_id,
-            IndCQC.cqc_location_import_date,
+            # IndCQC.cqc_location_import_date,
             IndCQC.primary_service_type,
         )
     )
