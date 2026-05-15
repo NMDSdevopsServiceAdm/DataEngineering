@@ -82,7 +82,7 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
     )
     def test_filter_when_job_group_ratio_outside_percentile_bounds(self, case):
         schema = {
-            IndCQC.id_per_locationid_import_date_job_role: pl.Int64,
+            IndCQC.id_per_locationid_import_date: pl.Int64,
             IndCQC.location_id: pl.String,
             IndCQC.cqc_location_import_date: pl.Date,
             IndCQC.primary_service_type: pl.String,
