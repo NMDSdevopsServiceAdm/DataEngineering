@@ -67,6 +67,10 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
 
     The estimated filled posts for all job roles listed above is then set to 0.0.
 
+    We cannot have a filled post estimate before a job role is collected in the ASC-WDS.
+    This is because we would have extrapolated backwards in time, and the longer this
+    happens the less accurate the estimate would be.
+
     Args:
         lf (pl.LazyFrame): The input LazyFrame with column
             'estimate_filled_posts_by_job_role'.
@@ -97,7 +101,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
         aggregate_function="sum",
     )
 
-    # make a key: value pair as role: pl.col(role)
+    # Make a key: value pair as role: pl.col(role)
     exprs = {role: pl.col(role) for role in all_job_roles}
 
     for cutoff_date, historic_adjustments in Config.adjustment_dict.items():
@@ -106,7 +110,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
         for historic_role, adjustments in historic_adjustments.items():
 
             for receiving_role, amount in adjustments.items():
-                # at the key for each receiving role, replace the value with this when/then/otherwise.
+                # At the key for each receiving role, replace the value with this when/then/otherwise.
                 exprs[receiving_role] = (
                     pl.when(date_condition)
                     .then(
@@ -116,14 +120,14 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
                     .otherwise(exprs[receiving_role])
                 )
 
-            # at the key for each historic role, replace the value with this when/then/otherwise.
+            # At the key for each historic role, replace the value with this when/then/otherwise.
             exprs[historic_role] = (
                 pl.when(date_condition)
-                .then(pl.lit(0.0).cast(pl.Float32))
+                .then(pl.lit(0.0, dtype=pl.Float32))
                 .otherwise(exprs[historic_role])
             )
 
-    # apply each each expression the job role columns.
+    # Apply each expression the job role columns.
     lf_adjusted = lf_adjusted.with_columns(
         [expr.alias(role) for role, expr in exprs.items()]
     )
