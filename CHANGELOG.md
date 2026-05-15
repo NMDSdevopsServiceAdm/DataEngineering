@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-
+- Added reusable Polars expression helper functions in `polars_utils/expressions.py` for `is_care_home()`, `is_not_care_home()`, and `is_dormant()`.
 
 ### Changed
 
