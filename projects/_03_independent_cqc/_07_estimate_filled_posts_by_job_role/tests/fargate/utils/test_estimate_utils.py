@@ -1,4 +1,5 @@
 import unittest
+from datetime import date
 from unittest.mock import Mock, patch
 
 import polars as pl
@@ -6,6 +7,9 @@ import polars.testing as pl_testing
 import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.estimate_utils as job
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    HistoricJobRoleAdjustmentConfig as Config,
+)
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     EstimateFilledPostsByJobRoleEstimateUtilsData as Data,
 )
@@ -189,3 +193,94 @@ class TestCalcDiffEstimateFilledPostsAndFromAllJobRoles:
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestReallocateHistoricalFilledPostsByJobRoleReturnsExpectedValues:
+    @pytest.mark.parametrize(
+        "reallocate_historical_filled_posts_by_job_role_test_data",
+        [
+            case.as_pytest_param()
+            for case in Data.reallocate_historical_filled_posts_by_job_role_test_cases
+        ],
+    )
+    def test_function_returns_expected_values(
+        self, reallocate_historical_filled_posts_by_job_role_test_data
+    ):
+        expected_lf = pl.LazyFrame(
+            reallocate_historical_filled_posts_by_job_role_test_data,
+            Schemas.expected_reallocate_historical_filled_posts_by_job_role_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop(
+            IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
+        )
+        returned_lf = job.reallocate_historical_filled_posts_by_job_role(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestReallocateHistoricalFilledPostsByJobRoleRaisesError(unittest.TestCase):
+    def test_function_raises_error_when_job_estimates_has_null(self):
+        test_lf = pl.LazyFrame(
+            Data.reallocate_historical_filled_posts_by_job_role_raise_error_rows,
+            Schemas.expected_reallocate_historical_filled_posts_by_job_role_schema,
+            orient="row",
+        )
+
+        with self.assertRaises(ValueError) as context:
+            job.reallocate_historical_filled_posts_by_job_role(test_lf)
+
+        self.assertTrue(
+            "Error: Estimate filled posts by job role column has nulls"
+            in str(context.exception)
+        )
+
+
+class TestReallocateHistoricalFilledPostsByJobRoleConfig(unittest.TestCase):
+    def test_config_has_expected_values(self):
+        expected_adjustment_dict = {
+            date(2023, 8, 1): {
+                MainJobRoleLabels.deputy_manager: {
+                    MainJobRoleLabels.care_worker: 0.2249,
+                    MainJobRoleLabels.first_line_manager: 0.4689,
+                    MainJobRoleLabels.senior_care_worker: 0.3062,
+                },
+                MainJobRoleLabels.learning_and_development_lead: {
+                    MainJobRoleLabels.other_non_care_related_staff: 1.0,
+                },
+                MainJobRoleLabels.team_leader: {
+                    MainJobRoleLabels.care_worker: 0.3446,
+                    MainJobRoleLabels.first_line_manager: 0.1350,
+                    MainJobRoleLabels.senior_care_worker: 0.1749,
+                    MainJobRoleLabels.supervisor: 0.3455,
+                },
+            },
+            date(2024, 6, 1): {
+                MainJobRoleLabels.data_analyst: {
+                    MainJobRoleLabels.other_non_care_related_staff: 1.0,
+                },
+                MainJobRoleLabels.data_governance_manager: {
+                    MainJobRoleLabels.other_managerial_staff: 1.0,
+                },
+                MainJobRoleLabels.it_and_digital_support: {
+                    MainJobRoleLabels.other_non_care_related_staff: 1.0,
+                },
+                MainJobRoleLabels.it_manager: {
+                    MainJobRoleLabels.other_managerial_staff: 1.0,
+                },
+                MainJobRoleLabels.it_service_desk_manager: {
+                    MainJobRoleLabels.other_managerial_staff: 1.0,
+                },
+                MainJobRoleLabels.software_developer: {
+                    MainJobRoleLabels.other_non_care_related_staff: 1.0,
+                },
+                MainJobRoleLabels.support_worker: {
+                    MainJobRoleLabels.care_worker: 0.7219,
+                    MainJobRoleLabels.community_support_and_outreach: 0.2537,
+                    MainJobRoleLabels.senior_care_worker: 0.0166,
+                    MainJobRoleLabels.activites_worker: 0.0078,
+                },
+            },
+        }
+
+        self.assertEqual(Config.adjustment_dict, expected_adjustment_dict)

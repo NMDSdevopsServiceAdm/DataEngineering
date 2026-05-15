@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added function to reallocate filled posts from job roles that didn't exist in the past.
 
 
 ### Changed
