@@ -6,12 +6,12 @@ import polars_utils.cleaning_utils as pUtils
 from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
     update_filtering_rule,
 )
-
+from polars_utils.expressions import is_not_care_home, is_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
 )
-from utils.column_values.categorical_column_values import AscwdsFilteringRule, CareHome
+from utils.column_values.categorical_column_values import AscwdsFilteringRule
 
 
 @dataclass
@@ -170,7 +170,7 @@ def null_care_home_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: A polars LazyFrame with grouped providers' care home data nulled.
     """
-    location_is_a_care_home = pl.col(IndCQC.care_home) == CareHome.care_home
+    location_is_a_care_home = is_care_home()
     location_identified_as_a_potential_grouped_provider = (
         pl.col(NGPcol.potential_grouped_provider) == True
     )
@@ -243,7 +243,7 @@ def null_non_residential_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: A polars LazyFrame with grouped providers' non-residential
             data nulled.
     """
-    location_is_not_a_care_home = pl.col(IndCQC.care_home) == CareHome.not_care_home
+    location_is_not_a_care_home = is_not_care_home()
     location_identified_as_a_potential_grouped_provider = (
         pl.col(NGPcol.potential_grouped_provider) == True
     )

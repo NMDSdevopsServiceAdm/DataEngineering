@@ -3,8 +3,9 @@ from datetime import date
 from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
     update_filtering_rule,
 )
+from polars_utils.expressions import is_not_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import AscwdsFilteringRule, CareHome
+from utils.column_values.categorical_column_values import AscwdsFilteringRule
 
 
 def non_res_brand_id_filter(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -38,7 +39,7 @@ def non_res_brand_id_filter(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     lf = lf.with_columns(
         pl.when(
-            (pl.col(IndCQC.care_home) == CareHome.not_care_home)
+            is_not_care_home()
             & (pl.col(IndCQC.brand_id) == target_brand_id)
             & (pl.col(IndCQC.cqc_location_import_date) > start_date)
             & (pl.col(IndCQC.cqc_location_import_date) < end_date)

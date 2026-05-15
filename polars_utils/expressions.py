@@ -1,4 +1,6 @@
 import polars as pl
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import CareHome
 
 
 def has_value(df: pl.DataFrame, column: str, partition_by: str) -> pl.Expr:
@@ -56,3 +58,13 @@ def str_length_cols(columns: list[str]) -> list[pl.Expr]:
     return [
         pl.col(column).str.len_chars().alias(f"{column}_length") for column in columns
     ]
+
+
+def is_care_home() -> pl.Expr:
+    """Expression to identify care home records."""
+    return pl.col(IndCQC.care_home) == CareHome.care_home
+
+
+def is_not_care_home() -> pl.Expr:
+    """Expression to identify non-care home records."""
+    return pl.col(IndCQC.care_home) == CareHome.not_care_home

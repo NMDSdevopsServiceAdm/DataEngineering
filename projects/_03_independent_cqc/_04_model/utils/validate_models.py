@@ -1,9 +1,8 @@
 from datetime import date
 
 import polars as pl
-
+from polars_utils.expressions import is_care_home, is_not_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import CareHome
 
 non_res_with_dormancy_cols_for_features = [
     IndCQC.dormancy,
@@ -61,7 +60,7 @@ def get_expected_row_count_for_model_features(df: pl.DataFrame, model: str) -> i
     if model == "non_res_with_dormancy_model":
         df = df.with_columns(pl.col(IndCQC.time_since_dormant).fill_null(999))
         df = df.filter(
-            pl.col(IndCQC.care_home) == CareHome.not_care_home,
+            is_not_care_home(),
             pl.all_horizontal(
                 [
                     pl.col(col_for_features).is_not_null()
@@ -71,7 +70,7 @@ def get_expected_row_count_for_model_features(df: pl.DataFrame, model: str) -> i
         )
     elif model == "non_res_without_dormancy_model":
         df = df.filter(
-            pl.col(IndCQC.care_home) == CareHome.not_care_home,
+            is_not_care_home(),
             pl.col(IndCQC.cqc_location_import_date) < date(2025, 1, 1),
             pl.all_horizontal(
                 [
@@ -82,7 +81,7 @@ def get_expected_row_count_for_model_features(df: pl.DataFrame, model: str) -> i
         )
     elif model == "care_home_model":
         df = df.filter(
-            pl.col(IndCQC.care_home) == CareHome.care_home,
+            is_care_home(),
             pl.all_horizontal(
                 [
                     pl.col(col_for_features).is_not_null()
