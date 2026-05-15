@@ -1,5 +1,3 @@
-from datetime import date
-
 import polars as pl
 
 from polars_utils import utils
