@@ -78,7 +78,7 @@ def filter_job_role_group_outliers(
     temp_upper_bound_column = "upper_bound"
     temp_lower_bound_column = "lower_bound"
     temp_cols_to_drop = [
-        # temp_job_group_column,
+        temp_job_group_column,
         temp_ascwds_job_group_count_column,
         temp_job_group_percentage_column,
         temp_upper_bound_column,
