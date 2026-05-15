@@ -47,8 +47,8 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
 
 def filter_job_role_group_outliers(
     lf: pl.LazyFrame,
-    upper_percentile_bound: float = 0.995,
-    lower_percentile_bound: float = 0.005,
+    upper_percentile_bound: float = 0.99,
+    lower_percentile_bound: float = 0.01,
 ) -> pl.LazyFrame:
     """
     Filter out top and bottom percentiles of job role counts per job role group.
@@ -78,7 +78,10 @@ def filter_job_role_group_outliers(
     temp_job_group_column = "job_group"
     temp_location_sum = "location_sum"
     temp_location_out_of_bounds = "location_out_of_bounds"
-    temp_cols_to_drop = [temp_job_group_column, temp_location_out_of_bounds]
+    temp_cols_to_drop = [
+        # temp_job_group_column,
+        temp_location_out_of_bounds
+    ]
     job_group_cols = [
         JobGroupLabels.direct_care,
         JobGroupLabels.managers,
