@@ -85,16 +85,6 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
         ],
     )
     def test_filter_when_job_group_ratio_outside_percentile_bounds(self, case):
-        schema = {
-            IndCQC.id_per_locationid_import_date: pl.Int64,
-            IndCQC.location_id: pl.String,
-            IndCQC.cqc_location_import_date: pl.Date,
-            IndCQC.primary_service_type: pl.String,
-            IndCQC.main_job_role_clean_labelled: pl.Enum(
-                AscwdsWorkerValueLabelsJobGroup.all_roles()
-            ),
-            IndCQC.ascwds_job_role_counts: pl.Int64,
-        }
         test_lf = pl.LazyFrame(case.test_data, Schemas.test_filter_schema, orient="row")
         expected_lf = pl.LazyFrame(
             case.expected_data, Schemas.test_filter_schema, orient="row"
