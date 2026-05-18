@@ -5,6 +5,7 @@ from datetime import date
 import polars as pl
 import polars.testing as pltesting
 
+import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.LocationCatType
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate._02_clean as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import PrimaryServiceType
@@ -47,7 +48,7 @@ class MainTests(unittest.TestCase):
         schema={
             IndCQC.id_per_locationid_import_date: pl.UInt32,
             IndCQC.id_per_locationid_import_date_job_role: pl.UInt32,
-            IndCQC.location_id: job.LocationCatType,
+            IndCQC.location_id: projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.LocationCatType.LocationCatType,
             IndCQC.cqc_location_import_date: pl.Date,
             IndCQC.primary_service_type: job.PrimaryServiceEnumType,
             IndCQC.estimate_filled_posts: pl.Float32,

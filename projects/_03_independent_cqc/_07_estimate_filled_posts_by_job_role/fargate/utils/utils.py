@@ -1,7 +1,12 @@
 import polars as pl
+from dataclasses import dataclass
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import MainJobRoleLabels
+from utils.column_values.categorical_column_values import (
+    MainJobRoleLabels,
+    EstimateFilledPostsSource,
+    PrimaryServiceType,
+)
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
@@ -115,3 +120,32 @@ class ManagerialFilledPostAdjustmentExpr:
         return cls.filled_post_estimates.add(
             cls._rm_manager_diff().mul(cls._non_rm_manager_proportions())
         ).clip(lower_bound=0)
+
+
+@dataclass
+class CatagoricalColumnTypes:
+    LocationCatType = pl.Categorical(
+        pl.Categories("location", namespace="filled_posts")
+    )
+    EstablishmentCatType = pl.Categorical(
+        pl.Categories("establishment", namespace="filled_posts")
+    )
+    JobRoleEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
+    EstimatesFilledPostSourceEnumType = pl.Enum(
+        [
+            EstimateFilledPostsSource.imputed_pir_filled_posts_model,
+            EstimateFilledPostsSource.ascwds_pir_merged,
+            EstimateFilledPostsSource.imputed_posts_care_home_model,
+            EstimateFilledPostsSource.care_home_model,
+            EstimateFilledPostsSource.imputed_posts_non_res_combined_model,
+            EstimateFilledPostsSource.non_res_combined_model,
+            EstimateFilledPostsSource.posts_rolling_average_model,
+        ]
+    )
+    PrimaryServiceEnumType = pl.Enum(
+        [
+            PrimaryServiceType.care_home_only,
+            PrimaryServiceType.care_home_with_nursing,
+            PrimaryServiceType.non_residential,
+        ]
+    )
