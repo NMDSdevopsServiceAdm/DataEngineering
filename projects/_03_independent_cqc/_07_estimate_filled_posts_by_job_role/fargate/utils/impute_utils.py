@@ -137,7 +137,7 @@ def _estimate_filled_posts_size_group_expression() -> pl.Expr:
             if upper is None:
                 condition = estimate_col >= lower
             else:
-                condition = estimate_col.is_between(lower, upper, closed="both")
+                condition = (estimate_col >= lower) & (estimate_col < upper + 1)
             if bucket_expr is None:
                 bucket_expr = pl.when(condition).then(pl.lit(label))
             else:
