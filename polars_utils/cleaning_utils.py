@@ -1,9 +1,7 @@
 import polars as pl
 from typing import List
-
+from polars_utils.expressions import is_care_home, is_not_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.column_values.categorical_column_values import CareHome
 
 
 def add_aligned_date_column(
@@ -97,7 +95,7 @@ def calculate_filled_posts_per_bed_ratio(
     """
     lf = input_lf.with_columns(
         pl.when(
-            (pl.col(IndCQC.care_home) == CareHome.care_home)
+            is_care_home()
             & pl.col(IndCQC.number_of_beds).is_not_null()
             & (pl.col(IndCQC.number_of_beds) != 0)
         )
@@ -158,8 +156,5 @@ def create_banded_bed_count_column(
     )
 
     return input_lf.with_columns(
-        pl.when(pl.col(IndCQC.care_home) == CareHome.not_care_home)
-        .then(zero)
-        .otherwise(expr)
-        .alias(new_col)
+        pl.when(is_not_care_home()).then(zero).otherwise(expr).alias(new_col)
     )

@@ -6,8 +6,9 @@ import polars_utils.cleaning_utils as pUtils
 from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
     update_filtering_rule,
 )
+from polars_utils.expressions import is_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import AscwdsFilteringRule, CareHome
+from utils.column_values.categorical_column_values import AscwdsFilteringRule
 
 
 @dataclass
@@ -131,7 +132,7 @@ def filter_lf_to_care_homes_with_known_beds_and_filled_posts(
             filled posts.
     """
     lf = lf.filter(
-        (pl.col(IndCQC.care_home) == CareHome.care_home)
+        is_care_home()
         & pl.col(IndCQC.number_of_beds).is_not_null()
         & (pl.col(IndCQC.number_of_beds) > 0)
         & pl.col(IndCQC.ascwds_filled_posts_dedup_clean).is_not_null()
