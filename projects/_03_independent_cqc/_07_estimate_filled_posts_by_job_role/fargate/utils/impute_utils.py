@@ -1,7 +1,31 @@
+from typing import Optional
+
 import polars as pl
 
 from polars_utils.expressions import percentage_share
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import PrimaryServiceType
+
+ESTIMATE_FILLED_POSTS_SIZE_GROUPS = {
+    PrimaryServiceType.care_home_only: [
+        ((1, 9), "COH 1 to 9"),
+        ((10, 19), "COH 10 to 19"),
+        ((20, 29), "COH 20 to 29"),
+        ((30, None), "COH 30 plus"),
+    ],
+    PrimaryServiceType.care_home_with_nursing: [
+        ((1, 19), "CHWN 1 to 19"),
+        ((20, 29), "CHWN 20 to 29"),
+        ((30, None), "CHWN 30 plus"),
+    ],
+    PrimaryServiceType.non_residential: [
+        ((1, 24), "NR 1 to 24"),
+        ((25, 49), "NR 25 to 49"),
+        ((50, 74), "NR 50 to 74"),
+        ((75, 99), "NR 75 to 99"),
+        ((100, None), "NR 100+"),
+    ],
+}
 
 
 def create_imputed_ascwds_job_role_counts(
@@ -102,6 +126,36 @@ def get_percent_share_ratios(
     )
 
 
+def _estimate_filled_posts_size_group_expression() -> pl.Expr:
+    estimate_col = pl.col(IndCQC.estimate_filled_posts)
+    primary_col = pl.col(IndCQC.primary_service_type)
+
+    size_group_expr: Optional[pl.Expr] = None
+    for service_type, buckets in ESTIMATE_FILLED_POSTS_SIZE_GROUPS.items():
+        bucket_expr: Optional[pl.Expr] = None
+        for (lower, upper), label in buckets:
+            if upper is None:
+                condition = estimate_col >= lower
+            else:
+                condition = estimate_col.is_between(lower, upper, closed="both")
+            if bucket_expr is None:
+                bucket_expr = pl.when(condition).then(pl.lit(label))
+            else:
+                bucket_expr = bucket_expr.when(condition).then(pl.lit(label))
+        bucket_expr = bucket_expr.otherwise(None)
+
+        if size_group_expr is None:
+            size_group_expr = pl.when(primary_col == service_type).then(bucket_expr)
+        else:
+            size_group_expr = size_group_expr.when(primary_col == service_type).then(
+                bucket_expr
+            )
+
+    return size_group_expr.otherwise(None).alias(
+        IndCQC.estimate_filled_posts_size_group
+    )
+
+
 def create_ascwds_job_role_rolling_ratio(
     estimated_job_role_posts_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
@@ -117,7 +171,15 @@ def create_ascwds_job_role_rolling_ratio(
     Returns:
         pl.LazyFrame: dataset with additional columns with ratio and sum of ascwds job roles
     """
-    rolling_groups = [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled]
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        _estimate_filled_posts_size_group_expression()
+    )
+
+    rolling_groups = [
+        IndCQC.primary_service_type,
+        IndCQC.estimate_filled_posts_size_group,
+        IndCQC.main_job_role_clean_labelled,
+    ]
     order_key = IndCQC.cqc_location_import_date
     monthly_groups = rolling_groups + [order_key]
     # STEP A: Pre-aggregate down to monthly totals

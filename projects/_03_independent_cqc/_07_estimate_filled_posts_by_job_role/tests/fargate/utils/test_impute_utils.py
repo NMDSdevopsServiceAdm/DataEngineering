@@ -83,9 +83,11 @@ class TestCreateASCWDSJobRoleRollingRatio:
             orient="row",
         )
         input_lf = expected_lf.drop(
-            IndCQC.ascwds_job_role_rolling_sum, IndCQC.ascwds_job_role_rolling_ratio
+            IndCQC.ascwds_job_role_rolling_sum,
+            IndCQC.ascwds_job_role_rolling_ratio,
+            IndCQC.estimate_filled_posts_size_group,
         )
         returned_lf = job.create_ascwds_job_role_rolling_ratio(input_lf)
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
+        pl_testing.assert_frame_equal(
+            returned_lf, expected_lf, check_column_order=False, rel_tol=0.0001
+        )
