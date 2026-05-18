@@ -24,11 +24,8 @@ onspd_labels_dict = {
 estimate_filled_posts_labels_dict = {
     IndCQC.current_cssr: OnspdCssr.labels_dict,
     IndCQC.current_icb: OnspdIcb.labels_dict,
-    IndCQC.current_icb_region: OnspdIcbRegion.labels_dict,
     IndCQC.current_lsoa21: OnspdLsoa21.labels_dict,
     IndCQC.current_msoa21: OnspdMsoa21.labels_dict,
-    IndCQC.current_constituency: OnspdPcon.labels_dict,
     IndCQC.current_region: OnspdRegion.labels_dict,
     IndCQC.current_rural_urban_indicator_2011: OnspdRuralUrbanIndicator2011.labels_dict,
-    IndCQC.current_sub_icb: OnspdSubIcb.labels_dict,
 }
