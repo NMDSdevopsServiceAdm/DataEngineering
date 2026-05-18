@@ -5,10 +5,11 @@ from datetime import date
 import polars as pl
 import polars.testing as pltesting
 
-import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.LocationCatType
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate._02_clean as job
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    CatagoricalColumnTypes as CatColType,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import PrimaryServiceType
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate._02_clean"
 
@@ -48,12 +49,12 @@ class MainTests(unittest.TestCase):
         schema={
             IndCQC.id_per_locationid_import_date: pl.UInt32,
             IndCQC.id_per_locationid_import_date_job_role: pl.UInt32,
-            IndCQC.location_id: projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.LocationCatType.LocationCatType,
+            IndCQC.location_id: CatColType.LocationCatType,
             IndCQC.cqc_location_import_date: pl.Date,
-            IndCQC.primary_service_type: job.PrimaryServiceEnumType,
+            IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
             IndCQC.estimate_filled_posts: pl.Float32,
             IndCQC.ascwds_job_role_counts: pl.Int16,
-            IndCQC.main_job_role_clean_labelled: job.JobRoleEnumType,
+            IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
             IndCQC.registered_manager_names: pl.List(str),
         },
     )

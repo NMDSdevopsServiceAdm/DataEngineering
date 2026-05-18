@@ -198,7 +198,8 @@ class FilterJobRoleGroupExpressions:
         )
 
     def bounds_expressions(self, bounds, job_group_cols, suffixes):
-        for b, s in bounds, suffixes:
+        for b, s in zip(bounds, suffixes):
+            print(f"bound = {b}, suffix = {s}")
             yield (
                 pl.col(job_group_cols)
                 .quantile(b, interpolation="linear")  # Not in streaming engine
