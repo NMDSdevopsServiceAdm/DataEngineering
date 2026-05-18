@@ -2815,6 +2815,28 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
         ),
     ] # fmt: skip
 
+    test_location_sum_expr_rows = [
+        (1, 3, 5, 7, 16),
+        (2, 4, 6, 8, 20),
+    ]
+    test_job_group_percentage_rows = [
+        (0.0625, 0.1875, 0.3125, 0.4375, 16),
+        (0.1,    0.2,    0.3,    0.4,    20),
+    ] # fmt: skip
+    test_evaluation_expr_rows = [
+        (0.1, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, False), # All within bounds
+        (0.3, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Direct care above upper bound
+        (0.1, 0.3, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Managers above upper bound
+        (0.1, 0.1, 0.3, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Regulated professionals above upper bound
+        (0.1, 0.1, 0.1, 0.3, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Other above upper bound
+        (0.01, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Direct care below lower bound
+        (0.01, 0.3, 0.3, 0.3, 0.2, 0.2, 0.2, 0.2, 0.05, True), # All out of bounds
+    ] # fmt: skip
+    test_bounds_expressions_rows = [
+        (0.0625, 0.1875, 0.3125, 0.4375, 0.0925, 0.1975, 0.31, 0.43, 0.07, 0.19, 0.3025, 0.4075),
+        (0.1,    0.2,    0.3,    0.4,    0.0925, 0.1975, 0.31, 0.43, 0.07, 0.19, 0.3025, 0.4075),
+    ] # fmt: skip
+
 
 # TODO: Add test case to check whole location is removed when only one job group is flagged
 # TODO: add test for which bounds are applied to which job roles

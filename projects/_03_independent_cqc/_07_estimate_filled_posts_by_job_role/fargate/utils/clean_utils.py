@@ -125,7 +125,7 @@ def filter_job_role_group_outliers(
 
     # 5. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type.
     piv_lf = piv_lf.with_columns(
-        Exprs.bounds_expressions(Exprs.bounds, Exprs.job_group_cols, Exprs.suffixes),
+        Exprs.bounds_expressions(),
     )
 
     # 6. Flag where job role percentage is outside bounds.
@@ -155,7 +155,7 @@ def filter_job_role_group_outliers(
 
 class FilterJobRoleGroupExpressions:
 
-    def __init__(self, upper, lower):
+    def __init__(self, upper=0.999, lower=0.001):
         self.temp_location_sum = "location_sum"
         self.job_group_cols = [
             JobGroupLabels.direct_care,
@@ -197,11 +197,11 @@ class FilterJobRoleGroupExpressions:
             )
         )
 
-    def bounds_expressions(self, bounds, job_group_cols, suffixes):
-        for b, s in zip(bounds, suffixes):
+    def bounds_expressions(self):
+        for b, s in zip(self.bounds, self.suffixes):
             print(f"bound = {b}, suffix = {s}")
             yield (
-                pl.col(job_group_cols)
+                pl.col(self.job_group_cols)
                 .quantile(b, interpolation="linear")  # Not in streaming engine
                 .cast(pl.Float32)
                 .name.suffix(s)
