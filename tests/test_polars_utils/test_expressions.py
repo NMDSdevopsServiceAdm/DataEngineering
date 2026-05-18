@@ -160,26 +160,26 @@ class TestStrLengthCols(TestExpressions):
 
 class TestIsCareHome(TestExpressions):
     def test_is_care_home(self):
-        df = pl.DataFrame({"careHome": ["Y", "N", "Y"]}).with_columns(
+        df = pl.DataFrame({"careHome": ["Y", "N", "Y", None]}).with_columns(
             is_care_home().alias("is_care_home")
         )
-        self.assertEqual(df["is_care_home"].to_list(), [True, False, True])
+        self.assertEqual(df["is_care_home"].to_list(), [True, False, True, None])
 
 
 class TestIsNotCareHome(TestExpressions):
     def test_is_not_care_home(self):
-        df = pl.DataFrame({"careHome": ["Y", "N", "Y"]}).with_columns(
+        df = pl.DataFrame({"careHome": ["Y", "N", "Y", None]}).with_columns(
             is_not_care_home().alias("is_not_care_home")
         )
-        self.assertEqual(df["is_not_care_home"].to_list(), [False, True, False])
+        self.assertEqual(df["is_not_care_home"].to_list(), [False, True, False, None])
 
 
 class TestIsDormant(TestExpressions):
     def test_is_dormant(self):
-        df = pl.DataFrame({"dormancy": ["Y", "N", "Y"]}).with_columns(
+        df = pl.DataFrame({"dormancy": ["Y", "N", "Y", None]}).with_columns(
             is_dormant().alias("is_dormant")
         )
-        self.assertEqual(df["is_dormant"].to_list(), [True, False, True])
+        self.assertEqual(df["is_dormant"].to_list(), [True, False, True, None])
 
 
 if __name__ == "__main__":
