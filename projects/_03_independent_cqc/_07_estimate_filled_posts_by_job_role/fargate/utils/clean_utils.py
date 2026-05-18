@@ -60,11 +60,13 @@ def filter_job_role_group_outliers(
     to NULL.
 
     The steps are as follows:
-    1. Map job roles to job groups using the provided dictionary.
-    2. Calculate job group ASCWDS count for location, service type and date.
-    3. Calculate job group percentage of total ASCWDS count for location, service type and date.
-    4. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type.
-    5. Nullify ASCWDS job role counts where job role percentage is above upper bound or below lower bound.
+    1. Map job roles to job groups
+    2. Pivot table and aggregate to job group
+    3. Calculate total ASCWDS count for location, service type and date
+    4. Calculate job group percentage of total ASCWDS count for location, service type and date
+    5. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type
+    6. Flag where job role percentage is outside bounds
+    7. Null ascwds_job_role_counts_column
 
     Args:
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
@@ -76,18 +78,13 @@ def filter_job_role_group_outliers(
     """
     # Define temporary column names
     temp_job_group_column = "job_group"
-    temp_location_sum = "location_sum"
     temp_location_out_of_bounds = "location_out_of_bounds"
-    temp_cols_to_drop = [
-        # temp_job_group_column,
-        temp_location_out_of_bounds
-    ]
-    job_group_cols = [
-        JobGroupLabels.direct_care,
-        JobGroupLabels.managers,
-        JobGroupLabels.regulated_professions,
-        JobGroupLabels.other,
-    ]
+    temp_cols_to_drop = [temp_job_group_column, temp_location_out_of_bounds]
+
+    Exprs = FilterJobRoleGroupExpressions(
+        upper_percentile_bound, lower_percentile_bound
+    )
+
     # Define splits for groupby operations
     splits_for_pivot = [
         IndCQC.location_id,
@@ -121,64 +118,19 @@ def filter_job_role_group_outliers(
     )
 
     # 3. Calculate total ASCWDS count for location, service type and date.
-    location_sum_expr = (
-        pl.col(JobGroupLabels.direct_care)
-        + pl.col(JobGroupLabels.managers)
-        + pl.col(JobGroupLabels.regulated_professions)
-        + pl.col(JobGroupLabels.other)
-    )
-    piv_lf = piv_lf.with_columns(location_sum_expr.alias(temp_location_sum))
+    piv_lf = piv_lf.with_columns(Exprs.location_sum_expr)
 
-    # 3. Calculate job group percentage of total ASCWDS count for location, service type and date.
-    job_group_percentage_expr = pl.col(job_group_cols) / pl.col(temp_location_sum)
-    piv_lf = piv_lf.with_columns(job_group_percentage_expr)
+    # 4. Calculate job group percentage of total ASCWDS count for location, service type and date.
+    piv_lf = piv_lf.with_columns(Exprs.job_group_percentage_expr)
 
-    # 4. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type.
-
-    job_group_percentage_for_upper_bound_expr = (
-        pl.col(job_group_cols)
-        .quantile(  # Not in streaming engine
-            upper_percentile_bound, interpolation="linear"
-        )
-        .cast(pl.Float32)
-        .name.suffix("_upper_bound")
-    )
-    job_group_percentage_for_lower_bound_expr = (
-        pl.col(job_group_cols)
-        .quantile(  # Not in streaming engine
-            lower_percentile_bound, interpolation="linear"
-        )
-        .cast(pl.Float32)
-        .name.suffix("_lower_bound")
-    )
+    # 5. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type.
     piv_lf = piv_lf.with_columns(
-        job_group_percentage_for_upper_bound_expr,
-        job_group_percentage_for_lower_bound_expr,
+        Exprs.bounds_expressions(Exprs.bounds, Exprs.job_group_cols, Exprs.suffixes),
     )
 
-    # # 5. Flag where job role percentage is outside bounds.
-    evaluation_expr = (
-        (
-            pl.col(JobGroupLabels.direct_care)
-            > pl.col(JobGroupLabels.direct_care + "_upper_bound")
-        )
-        | (
-            pl.col(JobGroupLabels.direct_care)
-            < pl.col(JobGroupLabels.direct_care + "_lower_bound")
-        )
-        | (
-            pl.col(JobGroupLabels.managers)
-            > pl.col(JobGroupLabels.managers + "_upper_bound")
-        )
-        | (
-            pl.col(JobGroupLabels.regulated_professions)
-            > pl.col(JobGroupLabels.regulated_professions + "_upper_bound")
-        )
-        | (pl.col(JobGroupLabels.other) > pl.col(JobGroupLabels.other + "_upper_bound"))
-    )
-
+    # 6. Flag where job role percentage is outside bounds.
     piv_lf = piv_lf.with_columns(
-        pl.when(evaluation_expr)
+        pl.when(Exprs.evaluation_expr)
         .then(pl.lit(True))
         .otherwise(pl.lit(False))
         .cast(pl.Boolean)
@@ -191,7 +143,7 @@ def filter_job_role_group_outliers(
 
     lf = lf.join(piv_lf, on=IndCQC.id_per_locationid_import_date, how="left")
 
-    # 6. Null ascwds_job_role_counts_column
+    # 7. Null ascwds_job_role_counts_column
     lf = lf.with_columns(
         pl.when(pl.col(temp_location_out_of_bounds) == True)
         .then(None)
@@ -199,3 +151,57 @@ def filter_job_role_group_outliers(
         .alias(IndCQC.ascwds_job_role_counts)
     ).drop(temp_cols_to_drop)
     return lf
+
+
+class FilterJobRoleGroupExpressions:
+
+    def __init__(self, upper, lower):
+        self.temp_location_sum = "location_sum"
+        self.job_group_cols = [
+            JobGroupLabels.direct_care,
+            JobGroupLabels.managers,
+            JobGroupLabels.regulated_professions,
+            JobGroupLabels.other,
+        ]
+        self.upper_bound_suffix = "_upper_bound"
+        self.lower_bound_suffix = "_lower_bound"
+        self.bounds = [upper, lower]
+        self.suffixes = [self.upper_bound_suffix, self.lower_bound_suffix]
+
+        self.location_sum_expr = pl.sum_horizontal(self.job_group_cols).alias(
+            self.temp_location_sum
+        )
+        self.job_group_percentage_expr = pl.col(self.job_group_cols) / pl.col(
+            self.temp_location_sum
+        )
+        self.evaluation_expr = (
+            (
+                pl.col(JobGroupLabels.direct_care)
+                > pl.col(JobGroupLabels.direct_care + self.upper_bound_suffix)
+            )
+            | (
+                pl.col(JobGroupLabels.direct_care)
+                < pl.col(JobGroupLabels.direct_care + self.lower_bound_suffix)
+            )
+            | (
+                pl.col(JobGroupLabels.managers)
+                > pl.col(JobGroupLabels.managers + self.upper_bound_suffix)
+            )
+            | (
+                pl.col(JobGroupLabels.regulated_professions)
+                > pl.col(JobGroupLabels.regulated_professions + self.upper_bound_suffix)
+            )
+            | (
+                pl.col(JobGroupLabels.other)
+                > pl.col(JobGroupLabels.other + self.upper_bound_suffix)
+            )
+        )
+
+    def bounds_expressions(self, bounds, job_group_cols, suffixes):
+        for b, s in bounds, suffixes:
+            yield (
+                pl.col(job_group_cols)
+                .quantile(b, interpolation="linear")  # Not in streaming engine
+                .cast(pl.Float32)
+                .name.suffix(s)
+            )
