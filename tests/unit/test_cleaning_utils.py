@@ -28,7 +28,11 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
         self.test_worker_df = self.spark.createDataFrame(
             Data.worker_rows, schema=Schemas.worker_schema
         )
-        self.label_dict = {AWK.gender: Data.gender, AWK.nationality: Data.nationality}
+        self.label_dict = {
+            AWK.gender: Data.gender,
+            AWK.nationality: Data.nationality,
+            IndCQC.current_cssr: Data.current_cssr,
+        }
         self.expected_df_with_new_columns = self.spark.createDataFrame(
             Data.expected_rows_with_new_columns,
             Schemas.expected_schema_with_new_columns,
@@ -39,6 +43,14 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
         )
         self.expected_df_without_new_columns = self.spark.createDataFrame(
             Data.expected_rows_without_new_columns, Schemas.worker_schema
+        )
+        self.test_worker_df_for_testing_label_dict_with_duplicate_values = self.spark.createDataFrame(
+            Data.worker_rows_for_testing_label_dict_with_duplicate_values,
+            schema=Schemas.worker_schema_for_testing_label_dict_with_duplicate_values,
+        )
+        self.expected_df_for_testing_label_dict_with_duplicate_values = self.spark.createDataFrame(
+            Data.expected_worker_rows_for_testing_label_dict_with_duplicate_values,
+            schema=Schemas.expected_worker_schema_for_testing_label_dict_with_duplicate_values,
         )
 
     def test_apply_categorical_labels_completes(self):
@@ -151,6 +163,39 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
         ).collect()
 
         expected_columns = len(self.test_worker_df.columns) + 2
+
+        self.assertEqual(len(returned_df.columns), expected_columns)
+        self.assertEqual(returned_data, expected_data)
+
+    def test_reverse_label_strings_into_code_strings_when_label_dict_has_duplicate_values(
+        self,
+    ):
+        returned_df = job.apply_categorical_labels(
+            self.test_worker_df_for_testing_label_dict_with_duplicate_values,
+            self.label_dict,
+            [IndCQC.current_cssr],
+            add_as_new_column=True,
+            reversed=True,
+        )
+        returned_data = (
+            returned_df.select(
+                self.expected_df_for_testing_label_dict_with_duplicate_values.columns
+            )
+            .sort(AWK.worker_id)
+            .collect()
+        )
+        expected_data = (
+            self.expected_df_for_testing_label_dict_with_duplicate_values.sort(
+                AWK.worker_id
+            ).collect()
+        )
+
+        expected_columns = (
+            len(
+                self.test_worker_df_for_testing_label_dict_with_duplicate_values.columns
+            )
+            + 1
+        )
 
         self.assertEqual(len(returned_df.columns), expected_columns)
         self.assertEqual(returned_data, expected_data)
