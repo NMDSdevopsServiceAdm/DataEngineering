@@ -1,4 +1,5 @@
 import polars as pl
+from typing import Generator
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
@@ -47,8 +48,8 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
 
 def filter_job_role_group_outliers(
     lf: pl.LazyFrame,
-    upper_percentile_bound: float = 0.99,
-    lower_percentile_bound: float = 0.01,
+    upper_percentile_bound: float = 0.999,
+    lower_percentile_bound: float = 0.001,
 ) -> pl.LazyFrame:
     """
     Filter out top and bottom percentiles of job role counts per job role group.
@@ -70,8 +71,8 @@ def filter_job_role_group_outliers(
 
     Args:
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
-        upper_percentile_bound (float): Upper bound for percentile filtering. Defaults to 0.995.
-        lower_percentile_bound (float): Lower bound for percentile filtering. Defaults to 0.005.
+        upper_percentile_bound (float): Upper bound for percentile filtering. Defaults to 0.999.
+        lower_percentile_bound (float): Lower bound for percentile filtering. Defaults to 0.001.
 
     Returns:
         pl.LazyFrame: LazyFrame with outliers in job role groups filtered.
@@ -154,8 +155,40 @@ def filter_job_role_group_outliers(
 
 
 class FilterJobRoleGroupExpressions:
+    """
+    Collection of polars expressions for filtering job group outliers.
 
-    def __init__(self, upper=0.999, lower=0.001):
+    This class defines reusable expressions for filtering locations
+    with outlying job role group distributions. It also defines column names
+    used by these expressions.
+
+    Attributes:
+        temp_location_sum (str): Temporary column name for the total number of job roles at a location.
+        job_group_cols (list[str]): List of job group column names.
+        upper_bound_suffix (str): A column suffix for denoting upper bounds.
+        lower_bound_suffix (str): A column suffix for denoting lower bounds.
+        bounds (list[float]): Bounds passed in at initialisation. Defaults to 0.999 and 0.001.
+        suffixes (list[str]): Suffixes as list for iteration.
+        location_sum_expr (pl.Expr): Expression to calculate the total job roles at a location.
+        job_group_percentage_expr (pl.Expr): Expression to calculate the percentage of job roles.
+        evaluation_expr (pl.Expr): Expression to evaluate whether a value is out of bounds.
+
+    Args:
+        upper (float): The percentile to use as an upper bound.
+        lower(float): The percentile to use as a lower bound.
+    """
+
+    temp_location_sum: str
+    job_group_cols: list[str]
+    upper_bound_suffix: str
+    lower_bound_suffix: str
+    bounds: list[float]
+    suffixes: list[str]
+    location_sum_expr: pl.Expr
+    job_group_percentage_expr: pl.Expr
+    evaluation_expr: pl.Expr
+
+    def __init__(self, upper: float = 0.999, lower: float = 0.001):
         self.temp_location_sum = "location_sum"
         self.job_group_cols = [
             JobGroupLabels.direct_care,
@@ -167,7 +200,6 @@ class FilterJobRoleGroupExpressions:
         self.lower_bound_suffix = "_lower_bound"
         self.bounds = [upper, lower]
         self.suffixes = [self.upper_bound_suffix, self.lower_bound_suffix]
-
         self.location_sum_expr = pl.sum_horizontal(self.job_group_cols).alias(
             self.temp_location_sum
         )
@@ -197,7 +229,14 @@ class FilterJobRoleGroupExpressions:
             )
         )
 
-    def bounds_expressions(self):
+    def bounds_expressions(self) -> Generator[pl.Expr, None, None]:
+        """
+        Generate polars expressions for calculating the upper and lower percentages
+        that match the percentile bounds given.
+
+        Yeilds:
+            Generator (pl.Expr, None, None): Polars expressions for given bounds.
+        """
         for b, s in zip(self.bounds, self.suffixes):
             print(f"bound = {b}, suffix = {s}")
             yield (
