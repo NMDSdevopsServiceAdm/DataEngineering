@@ -217,6 +217,7 @@ def create_ascwds_job_role_rolling_ratio(
             IndCQC.location_id,
             IndCQC.cqc_location_import_date,
             IndCQC.estimate_filled_posts_size_group,
+            IndCQC.main_job_role_clean_labelled,
         ],
     )
     return estimated_job_role_posts_lf
