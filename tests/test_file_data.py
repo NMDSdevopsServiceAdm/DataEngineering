@@ -115,8 +115,8 @@ class CleaningUtilsData:
         ("3", CurrentCSSR.coventry),
     ]
     expected_worker_rows_for_testing_label_dict_with_duplicate_values = [
-        ("1", CurrentCSSR.cornwall_and_isles_of_scilly, "906"),
-        ("2", CurrentCSSR.cornwall_and_isles_of_scilly, "906"),
+        ("1", CurrentCSSR.cornwall_and_isles_of_scilly, "902"),
+        ("2", CurrentCSSR.cornwall_and_isles_of_scilly, "902"),
         ("3", CurrentCSSR.coventry, "407"),
     ]
 

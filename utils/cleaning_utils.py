@@ -32,8 +32,8 @@ def apply_categorical_labels(
     Labels can either be added as new columns or replace the original columns.
 
     An optional argument is to reverse the mapping from a label string to a code string.
-    Warning: the values in 'labels' passed in must be unique, otherwise only last of
-    duplicates will be used in the mapping.
+    Warning: the values in 'labels' dict should be unique, otherwise only first key of
+    duplicate values will be used in the mapping.
 
     Args:
         df (DataFrame): Input Spark DataFrame.
@@ -59,7 +59,10 @@ def apply_categorical_labels(
         )
 
         if reversed == True:
-            mapping_dict = {v: k for k, v in labels[column_name].items()}
+            mapping_dict = {}
+            for k, v in labels[column_name].items():
+                if v not in mapping_dict:
+                    mapping_dict[v] = k
             mapping_dict = mapping_dict.items()
         else:
             mapping_dict = labels[column_name].items()
