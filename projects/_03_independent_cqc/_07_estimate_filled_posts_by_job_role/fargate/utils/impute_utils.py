@@ -102,7 +102,7 @@ def get_percent_share_ratios(
         estimated_job_role_posts_lf(pl.LazyFrame): dataset to calculate ratios over. Must contain location_id and cqc_location_import_date_columns for grouping
         input_col(str): column on which to calculate percentage share
         output_col(str): name of new column containing percentage share
-        groups(list[str]): list of columns to group by
+        groups(Optional[list[str]]): list of columns to group by
 
     Returns:
         pl.LazyFrame: dataset with new column containing percentage share
