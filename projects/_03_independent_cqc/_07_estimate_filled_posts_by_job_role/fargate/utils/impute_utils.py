@@ -91,6 +91,7 @@ def get_percent_share_ratios(
     estimated_job_role_posts_lf: pl.LazyFrame,
     input_col: str,
     output_col: str,
+    groups: Optional[list[str]] = None,
 ) -> pl.LazyFrame:
     """
     Calculate ratios over location and date using groupby-agg-explode pattern.
@@ -101,15 +102,13 @@ def get_percent_share_ratios(
         estimated_job_role_posts_lf(pl.LazyFrame): dataset to calculate ratios over. Must contain location_id and cqc_location_import_date_columns for grouping
         input_col(str): column on which to calculate percentage share
         output_col(str): name of new column containing percentage share
+        groups(list[str]): list of columns to group by
 
     Returns:
         pl.LazyFrame: dataset with new column containing percentage share
     """
-    groups = [
-        IndCQC.location_id,
-        IndCQC.cqc_location_import_date,
-        IndCQC.estimate_filled_posts_size_group,
-    ]
+    if groups is None:
+        groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
 
     # Groupby-agg-explode on only necessary subset, before joining back on id_per_locationid_import_date_job_role.
     ratios_agg_lf = (
@@ -214,5 +213,10 @@ def create_ascwds_job_role_rolling_ratio(
         estimated_job_role_posts_lf,
         input_col=IndCQC.ascwds_job_role_rolling_sum,
         output_col=IndCQC.ascwds_job_role_rolling_ratio,
+        groups=[
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+            IndCQC.estimate_filled_posts_size_group,
+        ],
     )
     return estimated_job_role_posts_lf
