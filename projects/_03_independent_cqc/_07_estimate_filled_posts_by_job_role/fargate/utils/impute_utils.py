@@ -105,7 +105,11 @@ def get_percent_share_ratios(
     Returns:
         pl.LazyFrame: dataset with new column containing percentage share
     """
-    groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
+    groups = [
+        IndCQC.location_id,
+        IndCQC.cqc_location_import_date,
+        IndCQC.estimate_filled_posts_size_group,
+    ]
 
     # Groupby-agg-explode on only necessary subset, before joining back on id_per_locationid_import_date_job_role.
     ratios_agg_lf = (
