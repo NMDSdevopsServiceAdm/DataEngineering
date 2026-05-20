@@ -78,6 +78,7 @@ class IndCqcColumns:
     banded_bed_ratio_rolling_average_model: str = (
         "banded_bed_ratio_rolling_average_model"
     )
+    brand_id: str = CQCLClean.brand_id
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
     care_home_status_count: str = "care_home_status_count"
@@ -184,6 +185,9 @@ class IndCqcColumns:
     estimate_filled_posts_by_job_role: str = "estimate_filled_posts_by_job_role"
     estimate_filled_posts_by_job_role_manager_adjusted: str = (
         "estimate_filled_posts_by_job_role_manager_adjusted"
+    )
+    estimate_filled_posts_by_job_role_historically_reallocated: str = (
+        "estimate_filled_posts_by_job_role_historically_reallocated"
     )
     estimate_source: str = "estimate_source"
     estimate_value: str = "estimate_value"

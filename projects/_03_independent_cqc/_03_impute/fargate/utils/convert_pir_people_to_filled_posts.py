@@ -1,7 +1,6 @@
 import polars as pl
-
+from polars_utils.expressions import is_not_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import CareHome
 
 posts_col = pl.col(IndCQC.ascwds_filled_posts_dedup_clean)
 people_col = pl.col(IndCQC.pir_people_directly_employed_dedup)
@@ -25,11 +24,7 @@ def convert_pir_to_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
     print(f"PIR people to filled posts ratio: {ratio:.4f}")
 
     return lf.with_columns(
-        pl.when(
-            (pl.col(IndCQC.care_home) == CareHome.not_care_home)
-            & people_col.is_not_null()
-            & (people_col > 0)
-        )
+        pl.when(is_not_care_home() & people_col.is_not_null() & (people_col > 0))
         .then(people_col * ratio)
         .alias(IndCQC.pir_filled_posts_model)
     )
@@ -54,7 +49,7 @@ def compute_global_ratio(lf: pl.LazyFrame) -> float:
 
     return (
         lf.filter(
-            (pl.col(IndCQC.care_home) == CareHome.not_care_home)
+            is_not_care_home()
             & people_col.is_not_null()
             & (people_col > 0)
             & posts_col.is_not_null()

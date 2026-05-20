@@ -301,19 +301,21 @@ class ASCWDSWorkerData:
         ("141", date(2025, 1, 1), "41", "40", MainJobRoleLabels.care_coordinator),
     ]
 
-    replace_care_navigator_with_care_coordinator_values_updated_when_care_navigator_is_present_rows = [
-        ("41", "41"),
+    remap_mainjrid_codes_mapped_codes_rows = [
+        ("1000", "41"),
+        ("1001", "22"),
     ]
-    expected_replace_care_navigator_with_care_coordinator_values_updated_when_care_navigator_is_present_rows = [
-        ("41", "40"),
+    expected_remap_mainjrid_codes_mapped_codes_rows = [
+        ("1000", "40"),
+        ("1001", "27"),
     ]
-    replace_care_navigator_with_care_coordinator_values_remain_unchanged_when_care_navigator_not_present_rows = [
-        ("25", "25"),
-        ("40", "40"),
+    remap_mainjrid_codes_unmapped_codes_rows = [
+        ("1002", "25"),
+        ("1003", "40"),
     ]
-    expected_replace_care_navigator_with_care_coordinator_values_remain_unchanged_when_care_navigator_not_present_rows = [
-        ("25", "25"),
-        ("40", "40"),
+    expected_remap_mainjrid_codes_unmapped_codes_rows = [
+        ("1002", "25"),
+        ("1003", "40"),
     ]
 
     impute_not_known_job_roles_returns_next_known_value_when_before_first_known_value_rows = [

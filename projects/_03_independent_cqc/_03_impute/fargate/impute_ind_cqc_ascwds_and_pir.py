@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import polars as pl
 
 from polars_utils import utils, cleaning_utils as cUtils
+from polars_utils.expressions import is_care_home
 from projects._03_independent_cqc._03_impute.fargate.utils.primary_service_rate_of_change import (
     model_primary_service_rate_of_change_trendline,
 )
@@ -44,7 +45,7 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
     )
 
     lf = lf.with_columns(
-        pl.when(pl.col(IndCQC.care_home) == CareHome.care_home)
+        pl.when(is_care_home())
         .then(pl.col(IndCQC.filled_posts_per_bed_ratio))
         .otherwise(pl.col(IndCQC.ascwds_filled_posts_dedup_clean))
         .cast(pl.Float32)
@@ -73,9 +74,25 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
 
     # model_calculate_rolling_average - banded_bed_ratio_rolling_average_model
 
-    # convert_care_home_ratios_to_posts
+    # convert_care_home_ratios_to_posts - unhash after `model_calculate_rolling_average` converted
+    # lf = lf.with_columns(
+    #     pl.when(is_care_home())
+    #     .then(
+    #         pl.col(IndCQC.banded_bed_ratio_rolling_average_model)
+    #         * pl.col(IndCQC.number_of_beds)
+    #     )
+    #     .otherwise(pl.col(IndCQC.posts_rolling_average_model))
+    #     .cast(pl.Float32)
+    #     .alias(IndCQC.posts_rolling_average_model)
+    # )
 
-    # combine_care_home_and_non_res_values_into_single_column - ct_combined_care_home_and_non_res
+    lf = lf.with_columns(
+        pl.when(is_care_home())
+        .then(pl.col(IndCQC.ct_care_home_total_employed_cleaned))
+        .otherwise(pl.col(IndCQC.ct_non_res_care_workers_employed_cleaned))
+        .cast(pl.Float32)
+        .alias(IndCQC.ct_combined_care_home_and_non_res)
+    )
 
     # model_primary_service_rate_of_change_trendline - ct_combined_care_home_and_non_res_rate_of_change_trendline
 

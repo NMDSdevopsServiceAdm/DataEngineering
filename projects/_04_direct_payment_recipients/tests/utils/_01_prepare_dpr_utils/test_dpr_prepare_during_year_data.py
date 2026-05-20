@@ -23,14 +23,13 @@ class TestPrepareDuringYearData(SparkBaseTest):
         self,
     ):
         rows = [
-            ("area_1", 100.0, 2.5),
-            ("area_2", 25.0, 2.5),
+            ("area_1", 100.0),
+            ("area_2", 25.0),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -40,28 +39,27 @@ class TestPrepareDuringYearData(SparkBaseTest):
 
         self.assertEqual(
             output_df_list[0][DP.TOTAL_DPRS_DURING_YEAR],
-            102.5,
+            100.0,
         )
         self.assertEqual(
             output_df_list[1][DP.TOTAL_DPRS_DURING_YEAR],
-            27.5,
+            25.0,
         )
 
     def test_estimate_missing_salt_data_for_hackney_works_on_historic_data(
         self,
     ):
         rows = [
-            ("area_1", 2021, 100.0, 21.0),
-            ("area_1", 2022, 25.0, 2.0),
-            ("Hackney", 2021, 100.0, 4.5),
-            ("Hackney", 2022, None, None),
+            ("area_1", 2021, 100.0),
+            ("area_1", 2022, 25.0),
+            ("Hackney", 2021, 100.0),
+            ("Hackney", 2022, None),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), False),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -83,20 +81,4 @@ class TestPrepareDuringYearData(SparkBaseTest):
         self.assertEqual(
             output_df_list[3][DP.SERVICE_USER_DPRS_DURING_YEAR],
             25.0,
-        )
-        self.assertEqual(
-            output_df_list[0][DP.CARER_DPRS_DURING_YEAR],
-            4.5,
-        )
-        self.assertEqual(
-            output_df_list[1][DP.CARER_DPRS_DURING_YEAR],
-            140.85,
-        )
-        self.assertEqual(
-            output_df_list[2][DP.CARER_DPRS_DURING_YEAR],
-            21.0,
-        )
-        self.assertEqual(
-            output_df_list[3][DP.CARER_DPRS_DURING_YEAR],
-            2.0,
         )

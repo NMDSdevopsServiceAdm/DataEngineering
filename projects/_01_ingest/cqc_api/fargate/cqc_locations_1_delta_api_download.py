@@ -133,7 +133,7 @@ if __name__ == "__main__":
         domain="CQC",
         dataset="cqc_locations_01_delta_api",
         date=date_today,
-        version="3.1.1",
+        version="3.1.7",
     )
     previous_days_to_capture = int(args.previous_days_to_capture)
     main(destination, args.end_timestamp, previous_days_to_capture)

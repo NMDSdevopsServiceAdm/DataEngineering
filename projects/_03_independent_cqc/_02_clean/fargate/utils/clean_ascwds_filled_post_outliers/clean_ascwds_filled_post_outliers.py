@@ -1,5 +1,8 @@
 import polars as pl
 
+from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.non_res_brand_id_filter import (
+    non_res_brand_id_filter,
+)
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.null_filled_posts_where_locations_use_invalid_missing_data_code import (
     null_filled_posts_where_locations_use_invalid_missing_data_code,
 )
@@ -48,5 +51,6 @@ def clean_ascwds_filled_post_outliers(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = null_filled_posts_where_locations_use_invalid_missing_data_code(lf)
     lf = null_grouped_providers(lf)
     lf = winsorize_care_home_filled_posts_per_bed_ratio_outliers(lf)
+    lf = non_res_brand_id_filter(lf)
 
     return lf

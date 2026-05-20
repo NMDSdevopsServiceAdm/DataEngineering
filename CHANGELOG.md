@@ -6,6 +6,23 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added function to reallocate filled posts from job roles that didn't exist in the past.
+
+- Added reusable Polars expression helper functions in `polars_utils/expressions.py` for `is_care_home()`, `is_not_care_home()`, and `is_dormant()`.
+
+- In line Polars conversions into the Impute job for the PySpark functions `combine_care_home_and_non_res_values_into_single_column` and `convert_care_home_ratios_to_posts`.
+
+- Converted `model_primary_service_rate_of_change_trendline` to Polars.
+
+### Changed
+- Renamed replace_care_navigator_with_care_coordinator to remap_mainjrid_codes for clarity and optimised implementation to use dictionary-based replacements targeting the main_job_role_clean column and updated corresponding test data names. Added Technician Job Role('22') in the dictionary to replace it with Other non-care-providing job roles ('27').
+
+### Fixed
+
+
+## [v2026.04.0] - 15/05/2026
+
+### Added
 - Setup scripts and terraform required for converting direct payment estimates to polars.
 
 - Converted DPR Interpolation script to Polars and added tests for the same.
@@ -32,10 +49,16 @@ All notable changes to this project will be documented in this file.
 
 - Added a function to DPR estimates to group Cornwall and Isles of Scilly.
 
-- Coverted `model_primary_service_rate_of_change_trendline` to Polars.
+- Created job role estimates data validation columns in Polars and added validation and test validation scripts for the Estimates job.
+
+- Added `brand_id` from raw CQC data into the IND CQC pipeline.
+
+- Added brandid filter to non res locations within Clean ASC-WDS step. Currently it targets BD214 brandid only.
 
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
+
+- Removed the PySpark version of DPR estimates job.
 
 - Removed partitioning from direct payments pipeline outputs.
 
@@ -49,10 +72,12 @@ All notable changes to this project will be documented in this file.
 
 - Updated clean_capacity_tracker_care_home_data job so that agencynoncareworkersemployed is nulled when above 1,000.
 
+- Remove carers from DPR pipeline outputs and carer during year figures from whole DPR pipeline.
+
 ### Fixed
 - Update setup instructions with pre-commit hooks setup
 
-- Added missing CQC locations delta data in s3 and updated pipeline to version 3.1.1 of locations delta data.
+- Added missing CQC locations delta data in s3 and updated pipeline to version 3.1.7 of locations delta data.
 
 
 ## [v2026.03.1] - 21/04/2026

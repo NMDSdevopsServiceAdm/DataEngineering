@@ -11,7 +11,7 @@ def merge_cornwall_and_isles_of_scilly(lf: pl.LazyFrame) -> pl.LazyFrame:
     Merge Cornwall and Isles of Scilly into one area.
 
     Both areas are merged into cornwall_and_isles_of_scilly whereby:
-        - service user and carer DPR values are summed.
+        - service user values are summed.
         - proportion of DPR employing staff, historic proportion and filled
           posts per employer are taken from Cornwall only.
 
@@ -34,9 +34,6 @@ def merge_cornwall_and_isles_of_scilly(lf: pl.LazyFrame) -> pl.LazyFrame:
         .agg(
             pl.when(pl.col(DP.SERVICE_USER_DPRS_DURING_YEAR).count() > 0).then(
                 pl.sum(DP.SERVICE_USER_DPRS_DURING_YEAR)
-            ),
-            pl.when(pl.col(DP.CARER_DPRS_DURING_YEAR).count() > 0).then(
-                pl.sum(DP.CARER_DPRS_DURING_YEAR)
             ),
             pl.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
             .filter(pl.col(DP.LA_AREA) == cornwall)

@@ -15,8 +15,8 @@
               "Parameters": {
                 "JobName": "${prepare_dpr_survey_job_name}",
                 "Arguments": {
-                  "--survey_data_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=2026.01/",
-                  "--destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_survey_prepared/version=2026.01/"
+                  "--survey_data_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=2026.02/",
+                  "--destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_survey_prepared/version=2026.02/"
                 }
               },
               "End": true
@@ -32,8 +32,8 @@
               "Parameters": {
                 "JobName": "${prepare_dpr_external_job_name}",
                 "Arguments": {
-                  "--direct_payments_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_external/version=2026.01/",
-                  "--destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_external_prepared/version=2026.01/"
+                  "--direct_payments_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_external/version=2026.02/",
+                  "--destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_external_prepared/version=2026.02/"
                 }
               },
               "End": true
@@ -48,9 +48,9 @@
       "Parameters": {
         "JobName": "${merge_dpr_data_job_name}",
         "Arguments": {
-          "--direct_payments_external_data_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_external_prepared/version=2026.01/",
-          "--direct_payments_survey_data_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_survey_prepared/version=2026.01/",
-          "--destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_merged/version=2026.01/"
+          "--direct_payments_external_data_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_external_prepared/version=2026.02/",
+          "--direct_payments_survey_data_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_survey_prepared/version=2026.02/",
+          "--destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_merged/version=2026.02/"
         }
       },
       "Next": "Estimate direct payments polars"
@@ -75,9 +75,9 @@
               "Name": "_04_direct_payments-container",
               "Command": [
                 "estimate_direct_payments.py",
-                "--direct_payments_merged_source", "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_merged/version=2026.01/",
-                "--destination", "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_estimates/version=2026.01/",
-                "--summary_destination", "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_estimates_summary/version=2026.01/"
+                "--direct_payments_merged_source", "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_merged/version=2026.02/",
+                "--destination", "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_estimates/version=2026.02/",
+                "--summary_destination", "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_estimates_summary/version=2026.02/"
               ]
             }
           ]
@@ -106,9 +106,9 @@
               "Command": [
                 "validate_estimate_direct_payments.py",
                 "--bucket_name", "${dataset_bucket_name}",
-                "--source_path", "domain=DPR/dataset=direct_payments_estimates/version=2026.01/",
-                "--reports_path", "domain=data_validation_reports/dataset=direct_payments_estimates/version=2026.01/",
-                "--compare_path", "domain=DPR/dataset=direct_payments_merged/version=2026.01/"
+                "--source_path", "domain=DPR/dataset=direct_payments_estimates/version=2026.02/",
+                "--reports_path", "domain=data_validation_reports/dataset=direct_payments_estimates/version=2026.02/",
+                "--compare_path", "domain=DPR/dataset=direct_payments_merged/version=2026.02/"
               ]
             }
           ]
@@ -123,8 +123,8 @@
         "JobName": "${split_pa_filled_posts_into_icb_areas_job_name}",
         "Arguments":{
           "--postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-          "--pa_filled_posts_souce": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_estimates/version=2026.01/",
-          "--destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_estimates_by_icb/version=2026.01/"
+          "--pa_filled_posts_souce": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_estimates/version=2026.02/",
+          "--destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_estimates_by_icb/version=2026.02/"
         }
       },
       "Next": "Run DPR crawler"

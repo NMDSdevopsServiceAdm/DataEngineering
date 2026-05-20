@@ -1,6 +1,7 @@
 import sys
 
 import pointblank as pb
+import polars as pl
 
 from polars_utils import utils
 from polars_utils.validation import actions as vl
@@ -25,12 +26,12 @@ def main(
         reports_path (str): the output path to write reports to
         compare_path (str): path to a dataset to compare against for expected size
     """
-
+    isles_of_scilly = "Isles of Scilly"
     source_df = utils.read_parquet(
         f"s3://{bucket_name}/{source_path}", exclude_complex_types=True
     )
     compare_df = utils.read_parquet(f"s3://{bucket_name}/{compare_path}")
-    expected_row_count = compare_df.height
+    expected_row_count = compare_df.filter(pl.col(DP.LA_AREA) != isles_of_scilly).height
 
     validation = (
         pb.Validate(

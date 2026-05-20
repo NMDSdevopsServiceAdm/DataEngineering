@@ -24,7 +24,6 @@ class AscwdsWorkerValueLabelsJobGroup:
         MainJobRoleLabels.other_care_role: JobGroupLabels.direct_care,
         MainJobRoleLabels.senior_care_worker: JobGroupLabels.direct_care,
         MainJobRoleLabels.support_worker: JobGroupLabels.direct_care,
-        MainJobRoleLabels.technician: JobGroupLabels.direct_care,
         MainJobRoleLabels.data_governance_manager: JobGroupLabels.managers,
         MainJobRoleLabels.deputy_manager: JobGroupLabels.managers,
         MainJobRoleLabels.first_line_manager: JobGroupLabels.managers,
