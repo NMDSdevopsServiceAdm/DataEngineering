@@ -4,7 +4,7 @@ from datetime import date
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     CareHome,
-    CurrentCSSR,
+    ContemporaryCSSR,
     PrimaryServiceType,
     Sector,
 )
@@ -60,10 +60,10 @@ class CleaningUtilsData:
         "103": "Portuguese",
     }
 
-    current_cssr = {
-        "902": CurrentCSSR.cornwall_and_isles_of_scilly,
-        "906": CurrentCSSR.cornwall_and_isles_of_scilly,
-        "407": CurrentCSSR.coventry,
+    contemporary_cssr = {
+        "902": ContemporaryCSSR.cornwall_and_isles_of_scilly,
+        "906": ContemporaryCSSR.cornwall_and_isles_of_scilly,
+        "407": ContemporaryCSSR.coventry,
     }
 
     expected_rows_with_new_columns = [
@@ -110,14 +110,14 @@ class CleaningUtilsData:
     ]
 
     worker_rows_for_testing_label_dict_with_duplicate_values = [
-        ("1", CurrentCSSR.cornwall_and_isles_of_scilly),
-        ("2", CurrentCSSR.cornwall_and_isles_of_scilly),
-        ("3", CurrentCSSR.coventry),
+        ("1", ContemporaryCSSR.cornwall_and_isles_of_scilly),
+        ("2", ContemporaryCSSR.cornwall_and_isles_of_scilly),
+        ("3", ContemporaryCSSR.coventry),
     ]
     expected_worker_rows_for_testing_label_dict_with_duplicate_values = [
-        ("1", CurrentCSSR.cornwall_and_isles_of_scilly, "902"),
-        ("2", CurrentCSSR.cornwall_and_isles_of_scilly, "902"),
-        ("3", CurrentCSSR.coventry, "407"),
+        ("1", ContemporaryCSSR.cornwall_and_isles_of_scilly, "902"),
+        ("2", ContemporaryCSSR.cornwall_and_isles_of_scilly, "902"),
+        ("3", ContemporaryCSSR.coventry, "407"),
     ]
 
     scale_data = [

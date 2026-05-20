@@ -21,7 +21,7 @@ from utils import utils
 from utils.cleaning_utils import apply_categorical_labels
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.value_labels.ons_pd.label_dictionaries import (
-    estimate_filled_posts_labels_dict,
+    estimate_filled_posts_geography_labels_dict as geog_dict,
 )
 
 ind_cqc_columns = [
@@ -177,10 +177,10 @@ def main(
 
     estimate_filled_posts_df = apply_categorical_labels(
         df=estimate_filled_posts_df,
-        labels=estimate_filled_posts_labels_dict,
-        column_names=estimate_filled_posts_labels_dict.keys(),
+        labels=geog_dict,
+        column_names=geog_dict.keys(),
         add_as_new_column=True,
-        reversed=True,
+        reverse_mapping=True,
     )
 
     print(f"Exporting as parquet to {estimated_ind_cqc_destination}")

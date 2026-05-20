@@ -31,7 +31,7 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
         self.label_dict = {
             AWK.gender: Data.gender,
             AWK.nationality: Data.nationality,
-            IndCQC.current_cssr: Data.current_cssr,
+            IndCQC.contemporary_cssr: Data.contemporary_cssr,
         }
         self.expected_df_with_new_columns = self.spark.createDataFrame(
             Data.expected_rows_with_new_columns,
@@ -44,11 +44,11 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
         self.expected_df_without_new_columns = self.spark.createDataFrame(
             Data.expected_rows_without_new_columns, Schemas.worker_schema
         )
-        self.test_worker_df_for_testing_label_dict_with_duplicate_values = self.spark.createDataFrame(
+        self.test_df_when_duplicate_values_in_label_dict = self.spark.createDataFrame(
             Data.worker_rows_for_testing_label_dict_with_duplicate_values,
             schema=Schemas.worker_schema_for_testing_label_dict_with_duplicate_values,
         )
-        self.expected_df_for_testing_label_dict_with_duplicate_values = self.spark.createDataFrame(
+        self.expected_df_when_duplicate_values_in_label_dict = self.spark.createDataFrame(
             Data.expected_worker_rows_for_testing_label_dict_with_duplicate_values,
             schema=Schemas.expected_worker_schema_for_testing_label_dict_with_duplicate_values,
         )
@@ -129,7 +129,7 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
             self.label_dict,
             [AWK.gender, AWK.nationality],
             add_as_new_column=False,
-            reversed=True,
+            reverse_mapping=True,
         )
         returned_data = (
             returned_df.select(self.test_worker_df.columns)
@@ -151,7 +151,7 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
             self.label_dict,
             [AWK.gender, AWK.nationality],
             add_as_new_column=True,
-            reversed=True,
+            reverse_mapping=True,
         )
         returned_data = (
             returned_df.select(self.expected_df_with_new_code_columns.columns)
@@ -171,30 +171,25 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
         self,
     ):
         returned_df = job.apply_categorical_labels(
-            self.test_worker_df_for_testing_label_dict_with_duplicate_values,
+            self.test_df_when_duplicate_values_in_label_dict,
             self.label_dict,
-            [IndCQC.current_cssr],
+            [IndCQC.contemporary_cssr],
             add_as_new_column=True,
-            reversed=True,
+            reverse_mapping=True,
         )
         returned_data = (
             returned_df.select(
-                self.expected_df_for_testing_label_dict_with_duplicate_values.columns
+                self.expected_df_when_duplicate_values_in_label_dict.columns
             )
             .sort(AWK.worker_id)
             .collect()
         )
-        expected_data = (
-            self.expected_df_for_testing_label_dict_with_duplicate_values.sort(
-                AWK.worker_id
-            ).collect()
-        )
+        expected_data = self.expected_df_when_duplicate_values_in_label_dict.sort(
+            AWK.worker_id
+        ).collect()
 
         expected_columns = (
-            len(
-                self.test_worker_df_for_testing_label_dict_with_duplicate_values.columns
-            )
-            + 1
+            len(self.test_df_when_duplicate_values_in_label_dict.columns) + 1
         )
 
         self.assertEqual(len(returned_df.columns), expected_columns)

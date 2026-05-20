@@ -20,7 +20,7 @@ def apply_categorical_labels(
     labels: dict,
     column_names: list,
     add_as_new_column: bool = True,
-    reversed: bool = False,
+    reverse_mapping: bool = False,
 ) -> DataFrame:
     """
     Apply categorical label mappings to one or more columns using a join-based lookup.
@@ -31,7 +31,7 @@ def apply_categorical_labels(
 
     Labels can either be added as new columns or replace the original columns.
 
-    An optional argument is to reverse the mapping from a label string to a code string.
+    reverse_mapping is an optional argument to revert columns from a label string to a code string.
     Warning: the values in 'labels' dict should be unique, otherwise only first key of
     duplicate values will be used in the mapping.
 
@@ -42,7 +42,7 @@ def apply_categorical_labels(
         add_as_new_column (bool, optional): If True, adds a new column with
             "_labels" suffix. If False, replaces the original column.
             Defaults to True.
-        reversed (bool, optional): If True, reverts labels to codes.
+        reverse_mapping (bool, optional): If True, reverts labels to codes.
 
     Returns:
         DataFrame: DataFrame with categorical labels applied. Unmapped values
@@ -58,7 +58,7 @@ def apply_categorical_labels(
             ]
         )
 
-        if reversed == True:
+        if reverse_mapping:
             mapping_dict = {}
             for k, v in labels[column_name].items():
                 if v not in mapping_dict:
@@ -74,7 +74,7 @@ def apply_categorical_labels(
         merged_col = F.coalesce(F.col(f"{column_name}_labels"), F.col(column_name))
 
         if add_as_new_column:
-            if reversed == True:
+            if reverse_mapping:
                 df = df.withColumn(f"{column_name}_codes", merged_col).drop(
                     f"{column_name}_labels"
                 )

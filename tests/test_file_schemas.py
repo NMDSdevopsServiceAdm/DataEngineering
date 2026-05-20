@@ -87,14 +87,14 @@ class CleaningUtilsSchemas:
     worker_schema_for_testing_label_dict_with_duplicate_values = StructType(
         [
             StructField(AWK.worker_id, StringType(), True),
-            StructField(IndCQC.current_cssr, StringType(), True),
+            StructField(IndCQC.contemporary_cssr, StringType(), True),
         ]
     )
     expected_worker_schema_for_testing_label_dict_with_duplicate_values = StructType(
         [
             StructField(AWK.worker_id, StringType(), True),
-            StructField(IndCQC.current_cssr, StringType(), True),
-            StructField(IndCQC.current_cssr + "_codes", StringType(), True),
+            StructField(IndCQC.contemporary_cssr, StringType(), True),
+            StructField(IndCQC.contemporary_cssr + "_codes", StringType(), True),
         ]
     )
 
