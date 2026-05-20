@@ -15,9 +15,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     EstimateFilledPostsByJobRoleCleanUtilsSchemas as Schemas,
 )
-from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
-    AscwdsWorkerValueLabelsJobGroup,
-)
 
 
 class NullifyJobRoleCountWhenSourceNotAscwds(unittest.TestCase):
@@ -93,7 +90,21 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
         returned_lf = job.filter_job_role_group_outliers(
             test_lf, case.upper_bound, case.lower_bound
         )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+        joined_lf = returned_lf.join(
+            expected_lf,
+            on=[
+                IndCQC.main_job_role_clean_labelled,
+                IndCQC.cqc_location_import_date,
+                IndCQC.location_id,
+            ],
+            how="left",
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_row_order=False,
+        )
 
 
 class TestFilterJobRoleGroupExpressions:
@@ -110,7 +121,7 @@ class TestFilterJobRoleGroupExpressions:
             JobGroupLabels.other,
         ]
         assert self.TestExprs.bounds == [self.test_upper_bound, self.test_lower_bound]
-        assert self.TestExprs.suffixes == ["_upper_bound", "_lower_bound"]
+        assert self.TestExprs.suffixes == ["_upper", "_lower"]
 
     def test_location_sum_expression(self):
         expected_lf = pl.LazyFrame(
@@ -155,21 +166,17 @@ class TestFilterJobRoleGroupExpressions:
 
     def test_bounds_expressions(self):
         expected_lf = pl.LazyFrame(
+            Data.expected_bounds_expressions_rows,
+            Schemas.expected_bounds_expressions_schema,
+            orient="row",
+        )
+        test_lf = pl.LazyFrame(
             Data.test_bounds_expressions_rows,
             Schemas.test_bounds_expressions_schema,
             orient="row",
         )
-        test_lf = expected_lf.drop(
-            JobGroupLabels.direct_care + self.TestExprs.upper_bound_suffix,
-            JobGroupLabels.managers + self.TestExprs.upper_bound_suffix,
-            JobGroupLabels.regulated_professions + self.TestExprs.upper_bound_suffix,
-            JobGroupLabels.other + self.TestExprs.upper_bound_suffix,
-            JobGroupLabels.direct_care + self.TestExprs.lower_bound_suffix,
-            JobGroupLabels.managers + self.TestExprs.lower_bound_suffix,
-            JobGroupLabels.regulated_professions + self.TestExprs.lower_bound_suffix,
-            JobGroupLabels.other + self.TestExprs.lower_bound_suffix,
+        returned_lf = self.TestExprs.create_bounds(
+            test_lf, self.test_upper_bound, self.TestExprs.upper_bound_suffix
         )
-        returned_lf = test_lf.with_columns(
-            self.TestExprs.bounds_expressions(),
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)

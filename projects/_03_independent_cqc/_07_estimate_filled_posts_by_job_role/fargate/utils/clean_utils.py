@@ -108,7 +108,6 @@ def filter_job_role_group_outliers(
     job_role_group_lf = pl.LazyFrame(job_role_group_data, schema=job_role_group_schema)
 
     lf = lf.join(job_role_group_lf, on=IndCQC.main_job_role_clean_labelled, how="left")
-
     # 2. Pivot table and aggregate to job group
     piv_lf = lf.pivot(
         on=temp_job_group_column,
@@ -117,17 +116,17 @@ def filter_job_role_group_outliers(
         values=IndCQC.ascwds_job_role_counts,
         aggregate_function="sum",
     )
-
     # 3. Calculate total ASCWDS count for location, service type and date.
     piv_lf = piv_lf.with_columns(Exprs.location_sum_expr)
-
     # 4. Calculate job group percentage of total ASCWDS count for location, service type and date.
     piv_lf = piv_lf.with_columns(Exprs.job_group_percentage_expr)
-
     # 5. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type.
-    piv_lf = piv_lf.with_columns(
-        Exprs.bounds_expressions(),
-    )
+
+    upper_agg_lf = Exprs.create_bounds(piv_lf, upper_percentile_bound, "_upper")
+    lower_agg_lf = Exprs.create_bounds(piv_lf, lower_percentile_bound, "_lower")
+
+    piv_lf = piv_lf.join(upper_agg_lf, on=IndCQC.primary_service_type, how="left")
+    piv_lf = piv_lf.join(lower_agg_lf, on=IndCQC.primary_service_type, how="left")
 
     # 6. Flag where job role percentage is outside bounds.
     piv_lf = piv_lf.with_columns(
@@ -143,7 +142,6 @@ def filter_job_role_group_outliers(
     )
 
     lf = lf.join(piv_lf, on=IndCQC.id_per_locationid_import_date, how="left")
-
     # 7. Null ascwds_job_role_counts_column
     lf = lf.with_columns(
         pl.when(pl.col(temp_location_out_of_bounds) == True)
@@ -196,8 +194,8 @@ class FilterJobRoleGroupExpressions:
             JobGroupLabels.regulated_professions,
             JobGroupLabels.other,
         ]
-        self.upper_bound_suffix = "_upper_bound"
-        self.lower_bound_suffix = "_lower_bound"
+        self.upper_bound_suffix = "_upper"
+        self.lower_bound_suffix = "_lower"
         self.bounds = [upper, lower]
         self.suffixes = [self.upper_bound_suffix, self.lower_bound_suffix]
         self.location_sum_expr = pl.sum_horizontal(self.job_group_cols).alias(
@@ -229,19 +227,27 @@ class FilterJobRoleGroupExpressions:
             )
         )
 
-    def bounds_expressions(self) -> Generator[pl.Expr, None, None]:
+    def create_bounds(
+        self, lf: pl.LazyFrame, bound: float, suffix: str
+    ) -> pl.LazyFrame:
         """
-        Generate polars expressions for calculating the upper and lower percentages
-        that match the percentile bounds given.
+        Creates table of upper or lower percentages that match the percentile bounds given.
 
         Yeilds:
-            Generator (pl.Expr, None, None): Polars expressions for given bounds.
+            pl.LazyFrame: A lazyframe with the requested percentages.
         """
-        for b, s in zip(self.bounds, self.suffixes):
-            print(f"bound = {b}, suffix = {s}")
-            yield (
-                pl.col(self.job_group_cols)
-                .quantile(b, interpolation="linear")  # Not in streaming engine
-                .cast(pl.Float32)
-                .name.suffix(s)
+        return (
+            lf.group_by(IndCQC.primary_service_type)
+            .quantile(bound, interpolation="linear")
+            .select(
+                pl.col(IndCQC.primary_service_type),
+                pl.col(JobGroupLabels.direct_care).alias(
+                    JobGroupLabels.direct_care + suffix
+                ),
+                pl.col(JobGroupLabels.managers).alias(JobGroupLabels.managers + suffix),
+                pl.col(JobGroupLabels.regulated_professions).alias(
+                    JobGroupLabels.regulated_professions + suffix
+                ),
+                pl.col(JobGroupLabels.other).alias(JobGroupLabels.other + suffix),
             )
+        )
