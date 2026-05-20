@@ -1,17 +1,12 @@
 import polars as pl
-from typing import Generator
 
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    add_job_role_groups_column,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     JobGroupLabels,
-)
-from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
-    AscwdsWorkerValueLabelsJobGroup,
-)
-
-job_group_dict: dict[str, str] = (
-    AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict
 )
 
 
@@ -92,25 +87,13 @@ def filter_job_role_group_outliers(
     ]
 
     # 1. Map job roles to job groups
-    job_role_group_data = {
-        IndCQC.main_job_role_clean_labelled: list(job_group_dict.keys()),
-        temp_job_group_column: list(job_group_dict.values()),
-    }
-    job_role_group_schema = {
-        IndCQC.main_job_role_clean_labelled: pl.Enum(
-            AscwdsWorkerValueLabelsJobGroup.all_roles()
-        ),
-        temp_job_group_column: pl.Enum(list(set(job_group_dict.values()))),
-    }
-    job_role_group_lf = pl.LazyFrame(job_role_group_data, schema=job_role_group_schema)
-
-    lf = lf.join(job_role_group_lf, on=IndCQC.main_job_role_clean_labelled, how="left")
+    lf = add_job_role_groups_column(lf, temp_job_group_column)
 
     # 2. Pivot table and aggregate to job group
     piv_lf = (
         lf.pivot(
             on=temp_job_group_column,
-            on_columns=list(set(job_group_dict.values())),
+            on_columns=list(set(Exprs.job_group_cols)),
             index=splits_for_pivot,
             values=IndCQC.ascwds_job_role_counts,
             aggregate_function="sum",

@@ -31,6 +31,46 @@ def percentage_share_handling_zero_sum(column: str | pl.Expr) -> pl.Expr:
     )
 
 
+def add_job_role_groups_column(
+    lf: pl.LazyFrame, job_group_column_name: str
+) -> pl.LazyFrame:
+    """
+    Adds a new column with job role groups.
+
+    Using an Enumerated column of job roles, this function creates a new column which assigns
+    the job role group for each row to a new column.
+
+    Args:
+        lf(pl.LazyFrame): A lazy frame with the column main_job_role_clean_labelled.
+        job_group_column_name(str): The name for the new job group column.
+
+    Returns:
+        pl.LazyFrame: A lazy frame with the job group column added.
+    """
+    job_role_group_data = {
+        IndCQC.main_job_role_clean_labelled: list(
+            AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.keys()
+        ),
+        job_group_column_name: list(
+            AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values()
+        ),
+    }
+    job_role_group_schema = {
+        IndCQC.main_job_role_clean_labelled: pl.Enum(
+            AscwdsWorkerValueLabelsJobGroup.all_roles()
+        ),
+        job_group_column_name: pl.Enum(
+            list(
+                set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values())
+            )
+        ),
+    }
+    job_role_group_lf = pl.LazyFrame(job_role_group_data, schema=job_role_group_schema)
+
+    lf = lf.join(job_role_group_lf, on=IndCQC.main_job_role_clean_labelled, how="left")
+    return lf
+
+
 class ManagerialFilledPostAdjustmentExpr:
     """Polars expression factory for redistributing managerial filled posts.
 
