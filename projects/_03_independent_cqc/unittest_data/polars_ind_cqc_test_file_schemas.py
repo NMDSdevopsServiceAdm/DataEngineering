@@ -1643,7 +1643,7 @@ class ModelExtrapolation:
 
 @dataclass
 class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
-    Cols = TempCols()
+    Cols = TempCols(None, None)
     test_filter_schema = {
         IndCQC.id_per_locationid_import_date: pl.Int64,
         IndCQC.location_id: pl.String,
@@ -1680,17 +1680,17 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         (JobGroupLabels.direct_care + Cols.lower_bound_suffix): pl.Float32,
         "location_out_of_bounds": pl.Boolean,
     }
-    test_bounds_expressions_schema = {
-        IndCQC.primary_service_type: pl.String,
+    expected_bounds_expressions_schema = {
         JobGroupLabels.direct_care: pl.Float32,
         JobGroupLabels.managers: pl.Float32,
         JobGroupLabels.regulated_professions: pl.Float32,
         JobGroupLabels.other: pl.Float32,
-    }
-    expected_bounds_expressions_schema = {
-        IndCQC.primary_service_type: pl.String,
         JobGroupLabels.direct_care + Cols.upper_bound_suffix: pl.Float32,
         JobGroupLabels.managers + Cols.upper_bound_suffix: pl.Float32,
         JobGroupLabels.regulated_professions + Cols.upper_bound_suffix: pl.Float32,
         JobGroupLabels.other + Cols.upper_bound_suffix: pl.Float32,
+        JobGroupLabels.direct_care + Cols.lower_bound_suffix: pl.Float32,
+        JobGroupLabels.managers + Cols.lower_bound_suffix: pl.Float32,
+        JobGroupLabels.regulated_professions + Cols.lower_bound_suffix: pl.Float32,
+        JobGroupLabels.other + Cols.lower_bound_suffix: pl.Float32,
     }

@@ -2953,13 +2953,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
         (0.01, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Direct care below lower bound
         (0.01, 0.3, 0.3, 0.3, 0.2, 0.2, 0.2, 0.2, 0.05, True), # All out of bounds
     ] # fmt: skip
-    test_bounds_expressions_rows = [
-        (PrimaryServiceType.care_home_only, 0.0625, 0.1875, 0.3125, 0.4375),
-        (PrimaryServiceType.care_home_only, 0.1,    0.2,    0.3,    0.4),
-        (PrimaryServiceType.care_home_with_nursing, 0.0725, 0.2875, 0.4125, 0.5375),
-        (PrimaryServiceType.care_home_with_nursing, 0.2,    0.3,    0.4,    0.5),
-    ] # fmt: skip
     expected_bounds_expressions_rows = [
-        (PrimaryServiceType.care_home_only, 0.0925, 0.1975, 0.31, 0.43),
-        (PrimaryServiceType.care_home_with_nursing, 0.1745, 0.2975, 0.41, 0.53),
+        (0.0625, 0.1875, 0.3125, 0.4375, 0.0925, 0.1975, 0.31, 0.43, 0.07, 0.19, 0.3025, 0.4075),
+        (0.1,    0.2,    0.3,    0.4,    0.0925, 0.1975, 0.31, 0.43, 0.07, 0.19, 0.3025, 0.4075),
     ] # fmt: skip
