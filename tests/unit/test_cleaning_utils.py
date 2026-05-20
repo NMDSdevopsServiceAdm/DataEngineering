@@ -33,6 +33,10 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
             AWK.nationality: Data.nationality,
             IndCQC.contemporary_cssr: Data.contemporary_cssr,
         }
+        self.label_dict_missing_gender = {
+            AWK.nationality: Data.nationality,
+            IndCQC.contemporary_cssr: Data.contemporary_cssr,
+        }
         self.expected_df_with_new_columns = self.spark.createDataFrame(
             Data.expected_rows_with_new_columns,
             Schemas.expected_schema_with_new_columns,
@@ -254,6 +258,38 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
         expected_data = expected_df.sort(AWK.worker_id).collect()
 
         self.assertEqual(returned_data, expected_data)
+
+    def test_raises_value_error_when_column_not_in_dataframe(
+        self,
+    ):
+        with self.assertRaises(ValueError) as context:
+            job.apply_categorical_labels(
+                self.test_worker_df,
+                self.label_dict,
+                [AWK.age],
+                add_as_new_column=True,
+            )
+
+        self.assertEqual(
+            str(context.exception),
+            "Column age not found in DataFrame.",
+        )
+
+    def test_raises_key_error_when_column_not_in_labels_dict(
+        self,
+    ):
+        with self.assertRaises(ValueError) as context:
+            job.apply_categorical_labels(
+                self.test_worker_df,
+                self.label_dict_missing_gender,
+                [AWK.gender],
+                add_as_new_column=True,
+            )
+
+        self.assertEqual(
+            str(context.exception),
+            "No label mapping found for gender.",
+        )
 
 
 class TestCleaningUtilsScale(SparkBaseTest):

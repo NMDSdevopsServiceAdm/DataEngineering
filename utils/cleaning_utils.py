@@ -47,8 +47,19 @@ def apply_categorical_labels(
     Returns:
         DataFrame: DataFrame with categorical labels applied. Unmapped values
         are preserved.
+
+    Raises:
+        ValueError: If column to apply labels is not in DataFrame or has no
+            mapping in labels dict.
+
     """
     spark = utils.get_spark()
+
+    for column_name in column_names:
+        if column_name not in df.columns:
+            raise ValueError(f"Column {column_name} not found in DataFrame.")
+        if column_name not in labels:
+            raise ValueError(f"No label mapping found for {column_name}.")
 
     for column_name in column_names:
         mapping_schema = StructType(
