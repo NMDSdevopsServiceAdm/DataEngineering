@@ -2963,7 +2963,3 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
         (PrimaryServiceType.care_home_only, 0.0925, 0.1975, 0.31, 0.43),
         (PrimaryServiceType.care_home_with_nursing, 0.1745, 0.2975, 0.41, 0.53),
     ] # fmt: skip
-
-
-# TODO: Add test case to check whole location is removed when only one job group is flagged
-# TODO: add test for which bounds are applied to which job roles
