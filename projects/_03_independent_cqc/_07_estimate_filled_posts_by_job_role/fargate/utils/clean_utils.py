@@ -81,10 +81,7 @@ def filter_job_role_group_outliers(
     temp_job_group_column = "job_group"
     temp_location_out_of_bounds = "location_out_of_bounds"
     temp_cols_to_drop = [temp_job_group_column, temp_location_out_of_bounds]
-
-    Exprs = FilterJobRoleGroupExpressions(
-        upper_percentile_bound, lower_percentile_bound
-    )
+    Exprs = FilterJobRoleGroupExpressions()
 
     # Define splits for groupby operations
     splits_for_pivot = [
@@ -108,47 +105,58 @@ def filter_job_role_group_outliers(
     job_role_group_lf = pl.LazyFrame(job_role_group_data, schema=job_role_group_schema)
 
     lf = lf.join(job_role_group_lf, on=IndCQC.main_job_role_clean_labelled, how="left")
+
     # 2. Pivot table and aggregate to job group
-    piv_lf = lf.pivot(
-        on=temp_job_group_column,
-        on_columns=list(set(job_group_dict.values())),
-        index=splits_for_pivot,
-        values=IndCQC.ascwds_job_role_counts,
-        aggregate_function="sum",
+    piv_lf = (
+        lf.pivot(
+            on=temp_job_group_column,
+            on_columns=list(set(job_group_dict.values())),
+            index=splits_for_pivot,
+            values=IndCQC.ascwds_job_role_counts,
+            aggregate_function="sum",
+        )
+        .with_columns(  # 3. Calculate total ASCWDS count for location, service type and date.
+            Exprs.location_sum_expr
+        )
+        .with_columns(  # 4. Calculate job group percentage of total ASCWDS count for location, service type and date.
+            Exprs.job_group_percentage_expr
+        )
     )
-    # 3. Calculate total ASCWDS count for location, service type and date.
-    piv_lf = piv_lf.with_columns(Exprs.location_sum_expr)
-    # 4. Calculate job group percentage of total ASCWDS count for location, service type and date.
-    piv_lf = piv_lf.with_columns(Exprs.job_group_percentage_expr)
-    # 5. Calculate upper and lower percentile bounds of job group percentages for each job group, date and primary service type.
-
-    upper_agg_lf = Exprs.create_bounds(piv_lf, upper_percentile_bound, "_upper")
-    lower_agg_lf = Exprs.create_bounds(piv_lf, lower_percentile_bound, "_lower")
-
-    piv_lf = piv_lf.join(upper_agg_lf, on=IndCQC.primary_service_type, how="left")
-    piv_lf = piv_lf.join(lower_agg_lf, on=IndCQC.primary_service_type, how="left")
-
-    # 6. Flag where job role percentage is outside bounds.
-    piv_lf = piv_lf.with_columns(
-        pl.when(Exprs.evaluation_expr)
-        .then(pl.lit(True))
-        .otherwise(pl.lit(False))
-        .cast(pl.Boolean)
-        .alias(temp_location_out_of_bounds)
+    piv_lf = (
+        piv_lf.join(  # 5. Calculate upper and lower percentile bounds of job group percentages for each job group and primary service type.
+            Exprs.create_bounds(
+                piv_lf, upper_percentile_bound, Exprs.upper_bound_suffix
+            ),
+            on=IndCQC.primary_service_type,
+            how="left",
+        )
+        .join(
+            Exprs.create_bounds(
+                piv_lf, lower_percentile_bound, Exprs.lower_bound_suffix
+            ),
+            on=IndCQC.primary_service_type,
+            how="left",
+        )
+        .with_columns(  # 6. Flag where job role percentage is outside bounds.
+            pl.when(Exprs.evaluation_expr)
+            .then(pl.lit(True))
+            .otherwise(pl.lit(False))
+            .cast(pl.Boolean)
+            .alias(temp_location_out_of_bounds)
+        )
+        .select(IndCQC.id_per_locationid_import_date, temp_location_out_of_bounds)
     )
 
-    piv_lf = piv_lf.select(
-        IndCQC.id_per_locationid_import_date, temp_location_out_of_bounds
+    lf = (
+        lf.join(piv_lf, on=IndCQC.id_per_locationid_import_date, how="left")
+        .with_columns(  # 7. Null ascwds_job_role_counts_column
+            pl.when(pl.col(temp_location_out_of_bounds) == True)
+            .then(None)
+            .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
+            .alias(IndCQC.ascwds_job_role_counts)
+        )
+        .drop(temp_cols_to_drop)
     )
-
-    lf = lf.join(piv_lf, on=IndCQC.id_per_locationid_import_date, how="left")
-    # 7. Null ascwds_job_role_counts_column
-    lf = lf.with_columns(
-        pl.when(pl.col(temp_location_out_of_bounds) == True)
-        .then(None)
-        .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
-        .alias(IndCQC.ascwds_job_role_counts)
-    ).drop(temp_cols_to_drop)
     return lf
 
 
@@ -165,28 +173,20 @@ class FilterJobRoleGroupExpressions:
         job_group_cols (list[str]): List of job group column names.
         upper_bound_suffix (str): A column suffix for denoting upper bounds.
         lower_bound_suffix (str): A column suffix for denoting lower bounds.
-        bounds (list[float]): Bounds passed in at initialisation. Defaults to 0.999 and 0.001.
-        suffixes (list[str]): Suffixes as list for iteration.
         location_sum_expr (pl.Expr): Expression to calculate the total job roles at a location.
         job_group_percentage_expr (pl.Expr): Expression to calculate the percentage of job roles.
         evaluation_expr (pl.Expr): Expression to evaluate whether a value is out of bounds.
-
-    Args:
-        upper (float): The percentile to use as an upper bound.
-        lower(float): The percentile to use as a lower bound.
     """
 
     temp_location_sum: str
     job_group_cols: list[str]
     upper_bound_suffix: str
     lower_bound_suffix: str
-    bounds: list[float]
-    suffixes: list[str]
     location_sum_expr: pl.Expr
     job_group_percentage_expr: pl.Expr
     evaluation_expr: pl.Expr
 
-    def __init__(self, upper: float = 0.999, lower: float = 0.001):
+    def __init__(self):
         self.temp_location_sum = "location_sum"
         self.job_group_cols = [
             JobGroupLabels.direct_care,
@@ -196,8 +196,6 @@ class FilterJobRoleGroupExpressions:
         ]
         self.upper_bound_suffix = "_upper"
         self.lower_bound_suffix = "_lower"
-        self.bounds = [upper, lower]
-        self.suffixes = [self.upper_bound_suffix, self.lower_bound_suffix]
         self.location_sum_expr = pl.sum_horizontal(self.job_group_cols).alias(
             self.temp_location_sum
         )
