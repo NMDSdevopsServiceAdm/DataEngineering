@@ -16,9 +16,9 @@ from projects._03_independent_cqc._04_model.utils.value_labels import (
     ServicesLabels,
     SpecialismsLabels,
 )
+from polars_utils.expressions import is_not_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
-from utils.column_values.categorical_column_values import CareHome
 
 
 def main(bucket_name: str, model_name: str) -> None:
@@ -54,7 +54,7 @@ def main(bucket_name: str, model_name: str) -> None:
     feature_cols = model_registry[model_name][MRKeys.features]
 
     lf = utils.scan_parquet(source).filter(
-        (pl.col(IndCQC.care_home) == CareHome.not_care_home)
+        is_not_care_home()
         & (pl.col(IndCQC.cqc_location_import_date) < date(2025, 1, 1))
     )
     lf = fUtils.add_date_index_column(lf)

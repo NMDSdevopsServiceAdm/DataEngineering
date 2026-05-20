@@ -6,6 +6,19 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added function to reallocate filled posts from job roles that didn't exist in the past.
+
+- Added reusable Polars expression helper functions in `polars_utils/expressions.py` for `is_care_home()`, `is_not_care_home()`, and `is_dormant()`.
+
+### Changed
+- Renamed replace_care_navigator_with_care_coordinator to remap_mainjrid_codes for clarity and optimised implementation to use dictionary-based replacements targeting the main_job_role_clean column and updated corresponding test data names. Added Technician Job Role('22') in the dictionary to replace it with Other non-care-providing job roles ('27').
+
+### Fixed
+
+
+## [v2026.04.0] - 15/05/2026
+
+### Added
 - Setup scripts and terraform required for converting direct payment estimates to polars.
 
 - Converted DPR Interpolation script to Polars and added tests for the same.
@@ -36,6 +49,8 @@ All notable changes to this project will be documented in this file.
 
 - Added `brand_id` from raw CQC data into the IND CQC pipeline.
 
+- Added brandid filter to non res locations within Clean ASC-WDS step. Currently it targets BD214 brandid only.
+
 ### Changed
 - Removed the PySpark version of IND CQC Clean and Validation jobs.
 
@@ -53,7 +68,7 @@ All notable changes to this project will be documented in this file.
 
 - Updated clean_capacity_tracker_care_home_data job so that agencynoncareworkersemployed is nulled when above 1,000.
 
-- Comment out carers from DPR pipeline outputs. Follow up work will be to remove cleanly.
+- Remove carers from DPR pipeline outputs and carer during year figures from whole DPR pipeline.
 
 ### Fixed
 - Update setup instructions with pre-commit hooks setup

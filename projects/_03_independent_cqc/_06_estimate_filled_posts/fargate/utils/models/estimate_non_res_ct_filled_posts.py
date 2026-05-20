@@ -1,10 +1,8 @@
-from datetime import date
-
 import polars as pl
 
 from polars_utils import utils
+from polars_utils.expressions import is_not_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import CareHome
 
 
 def estimate_non_res_capacity_tracker_filled_posts(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -37,7 +35,7 @@ def estimate_non_res_capacity_tracker_filled_posts(lf: pl.LazyFrame) -> pl.LazyF
     care_worker_ratio = calculate_care_worker_ratio()
 
     lf = lf.with_columns(
-        pl.when(pl.col(IndCQC.care_home) == CareHome.not_care_home)
+        pl.when(is_not_care_home())
         .then(
             pl.col(IndCQC.ct_non_res_care_workers_employed_imputed).truediv(
                 care_worker_ratio
@@ -54,10 +52,7 @@ def estimate_non_res_capacity_tracker_filled_posts(lf: pl.LazyFrame) -> pl.LazyF
         name=IndCQC.ct_non_res_filled_post_estimate,
     )
     lf = lf.with_columns(
-        [
-            pl.when(pl.col(IndCQC.care_home) == CareHome.not_care_home).then(expression)
-            for expression in coalesce_expr
-        ]
+        [pl.when(is_not_care_home()).then(expression) for expression in coalesce_expr]
     )
 
     lf = lf.with_columns(
@@ -90,7 +85,7 @@ def calculate_care_worker_ratio() -> pl.Expr:
         and all filled posts at non-residential services.
     """
     ratio_filter = (
-        (pl.col(IndCQC.care_home) == CareHome.not_care_home)
+        is_not_care_home()
         & (pl.col(IndCQC.ct_non_res_care_workers_employed_imputed).is_not_null())
         & (pl.col(IndCQC.estimate_filled_posts).is_not_null())
     )

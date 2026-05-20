@@ -186,6 +186,9 @@ class IndCqcColumns:
     estimate_filled_posts_by_job_role_manager_adjusted: str = (
         "estimate_filled_posts_by_job_role_manager_adjusted"
     )
+    estimate_filled_posts_by_job_role_historically_reallocated: str = (
+        "estimate_filled_posts_by_job_role_historically_reallocated"
+    )
     estimate_source: str = "estimate_source"
     estimate_value: str = "estimate_value"
     expected_filled_posts: str = "expected_filled_posts"

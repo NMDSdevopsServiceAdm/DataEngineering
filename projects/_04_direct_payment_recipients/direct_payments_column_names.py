@@ -7,7 +7,6 @@ class DirectPaymentColumnNames:
     LA_AREA: str = "la_area_aws"
     YEAR: str = "year"
     SERVICE_USER_DPRS_DURING_YEAR: str = "number_su_dpr_salt"
-    CARER_DPRS_DURING_YEAR: str = "number_carer_dpr_salt"
     SERVICE_USER_DPRS_AT_YEAR_END: str = "number_su_dpr_year_end_ascof"
     CARER_DPRS_AT_YEAR_END: str = "number_carer_dpr_year_end_ascof"
     DPRS_ADASS: str = "number_of_dprs_adass"
@@ -120,7 +119,6 @@ class DirectPaymentColumnNames:
     ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF: str = (
         "estimated_service_users_with_self_employed_staff"
     )
-    ESTIMATED_CARERS_EMPLOYING_STAFF: str = "estimated_carers_employing_staff"
     ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF: str = "estimated_total_dpr_employing_staff"
     ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: str = (
         "estimated_total_personal_assistant_filled_posts"
@@ -143,7 +141,6 @@ class DirectPaymentColumnNames:
     SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF: str = (
         "service_users_with_self_employed_staff"
     )
-    CARERS_EMPLOYING_STAFF: str = "carers_employing_staff"
     TOTAL_DPRS_EMPLOYING_STAFF: str = "total_dprs_employing_staff"
     TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: str = "total_personal_assistant_filled_posts"
     PROPORTION_OF_TOTAL_DPRS_EMPLOYING_STAFF: str = (
