@@ -27,7 +27,6 @@ class AscwdsWorkerValueLabelsMainjrid:
         "15": MainJobRoleLabels.occupational_therapist,
         "16": MainJobRoleLabels.registered_nurse,
         "17": MainJobRoleLabels.allied_health_professional,
-        "22": MainJobRoleLabels.technician,
         "23": MainJobRoleLabels.other_care_role,
         "24": MainJobRoleLabels.other_managerial_staff,
         "25": MainJobRoleLabels.admin_staff,

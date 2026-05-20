@@ -23,7 +23,6 @@ class Schemas:
             (DP.YEAR, pl.String),
             (DP.YEAR_AS_INTEGER, pl.Int64),
             (DP.SERVICE_USER_DPRS_DURING_YEAR, pl.Float32),
-            (DP.CARER_DPRS_DURING_YEAR, pl.Float32),
             (DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, pl.Float32),
             (DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE, pl.Float32),
             (DP.TOTAL_DPRS_DURING_YEAR, pl.Float32),
@@ -35,7 +34,7 @@ class Schemas:
 
 @dataclass
 class Data:
-    merged_rows = [("area", "2020", 2020, 10.0, 10.0, 0.5, 0.5, 20.0, 1.9)]
+    merged_rows = [("area", "2020", 2020, 10.0, 0.5, 0.5, 20.0, 1.9)]
     estimates_rows = merged_rows
 
 
