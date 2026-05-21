@@ -91,3 +91,27 @@ class TestCreateASCWDSJobRoleRollingRatio:
         pl_testing.assert_frame_equal(
             returned_lf, expected_lf, check_column_order=False, rel_tol=0.0001
         )
+
+
+class TestEstimateFilledPostsSizeGroupExpression:
+    def test_estimate_filled_posts_size_group_expression(self):
+        expected_lf = pl.LazyFrame(
+            data=[
+                (22.0, "non-residential", "NR 1 to 24"),
+                (31.2, "non-residential", "NR 25 to 49"),
+                (62.0, "non-residential", "NR 50 to 74"),
+                (87.0, "non-residential", "NR 75 to 99"),
+                (150.0, "non-residential", "NR 100 plus"),
+            ],
+            schema={
+                IndCQC.estimate_filled_posts: pl.Float32,
+                IndCQC.primary_service_type: pl.String,
+                IndCQC.estimate_filled_posts_size_group: pl.String,
+            },
+            orient="row",
+        )
+        input_lf = expected_lf.drop(IndCQC.estimate_filled_posts_size_group)
+        returned_lf = input_lf.with_columns(
+            job.estimate_filled_posts_size_group_expression()
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)

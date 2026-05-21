@@ -23,7 +23,7 @@ ESTIMATE_FILLED_POSTS_SIZE_GROUPS = {
         ((25, 49), "NR 25 to 49"),
         ((50, 74), "NR 50 to 74"),
         ((75, 99), "NR 75 to 99"),
-        ((100, None), "NR 100+"),
+        ((100, None), "NR 100 plus"),
     ],
 }
 
@@ -129,7 +129,8 @@ def get_percent_share_ratios(
     )
 
 
-def _estimate_filled_posts_size_group_expression() -> pl.Expr:
+def estimate_filled_posts_size_group_expression() -> pl.Expr:
+    """Create the expression to calculate the size group for estimated filled posts."""
     estimate_col = pl.col(IndCQC.estimate_filled_posts)
     primary_col = pl.col(IndCQC.primary_service_type)
 
@@ -175,7 +176,7 @@ def create_ascwds_job_role_rolling_ratio(
         pl.LazyFrame: dataset with additional columns with ratio and sum of ascwds job roles
     """
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        _estimate_filled_posts_size_group_expression()
+        estimate_filled_posts_size_group_expression()
     )
 
     rolling_groups = [
