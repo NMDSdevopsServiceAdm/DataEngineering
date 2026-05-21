@@ -1,10 +1,7 @@
 import polars as pl
 
+import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils as cUtils
 from polars_utils import utils
-from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils import (
-    nullify_job_role_count_when_source_not_ascwds,
-    filter_job_role_group_outliers,
-)
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     CatagoricalColumnTypes as CatColType,
 )
@@ -50,14 +47,18 @@ def main(
         IndCQC.id_per_locationid_import_date_job_role
     )
 
-    estimated_job_role_posts_lf = nullify_job_role_count_when_source_not_ascwds(
+    estimated_job_role_posts_lf = cUtils.nullify_job_role_count_when_source_not_ascwds(
         estimated_job_role_posts_lf
     ).drop(
         IndCQC.estimate_filled_posts_source,
         IndCQC.ascwds_filled_posts_dedup_clean,
     )
 
-    estimated_job_role_posts_lf = filter_job_role_group_outliers(
+    estimated_job_role_posts_lf = cUtils.filter_job_role_groups_equal_zero(
+        estimated_job_role_posts_lf
+    )
+
+    estimated_job_role_posts_lf = cUtils.filter_job_role_group_outliers(
         estimated_job_role_posts_lf
     )
 

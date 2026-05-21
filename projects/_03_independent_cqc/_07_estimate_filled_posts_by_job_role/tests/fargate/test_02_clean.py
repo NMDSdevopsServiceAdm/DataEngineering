@@ -1,6 +1,6 @@
 import unittest
-from unittest.mock import ANY, Mock, call, patch
 from datetime import date
+from unittest.mock import ANY, Mock, call, patch
 
 import polars as pl
 import polars.testing as pltesting
@@ -46,6 +46,7 @@ class MainTests(unittest.TestCase):
             IndCQC.main_job_role_clean_labelled: ["care_worker"],
             IndCQC.registered_manager_names: [["Manager 1", "Manager 2"]],
             IndCQC.job_group_dist_out_of_bounds: False,
+            IndCQC.job_group_equal_zero: False,
         },
         schema={
             IndCQC.id_per_locationid_import_date: pl.UInt32,
@@ -58,12 +59,14 @@ class MainTests(unittest.TestCase):
             IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
             IndCQC.registered_manager_names: pl.List(str),
             IndCQC.job_group_dist_out_of_bounds: pl.Boolean,
+            IndCQC.job_group_equal_zero: pl.Boolean,
         },
     )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.filter_job_role_group_outliers")
-    @patch(f"{PATCH_PATH}.nullify_job_role_count_when_source_not_ascwds")
+    @patch(f"{PATCH_PATH}.cUtils.filter_job_role_group_outliers")
+    @patch(f"{PATCH_PATH}.cUtils.filter_job_role_groups_equal_zero")
+    @patch(f"{PATCH_PATH}.cUtils.nullify_job_role_count_when_source_not_ascwds")
     @patch(
         f"{PATCH_PATH}.utils.scan_parquet",
         side_effect=[mock_estimated_job_role_posts_lf],
@@ -72,6 +75,7 @@ class MainTests(unittest.TestCase):
         self,
         scan_parquet_mock: Mock,
         nullify_job_role_count_when_source_not_ascwds_mock: Mock,
+        filter_job_role_groups_equal_zero_mock: Mock,
         filter_job_role_group_outliers_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -85,6 +89,7 @@ class MainTests(unittest.TestCase):
         )
 
         nullify_job_role_count_when_source_not_ascwds_mock.assert_called_once()
+        filter_job_role_groups_equal_zero_mock.assert_called_once()
         filter_job_role_group_outliers_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
