@@ -2,6 +2,10 @@ from dataclasses import dataclass
 
 import polars as pl
 
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils import (
+    FilterJobRoleGroupExpressions as TempCols,
+)
+
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
 )
@@ -36,8 +40,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.column_values.categorical_column_values import MainJobRoleLabels
+from utils.column_values.categorical_column_values import JobGroupLabels
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
@@ -542,7 +545,6 @@ class ValidateImputedIndCqcAscwdsAndPir:
             (IndCQC.ascwds_filled_posts_source, pl.String()),
             (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
             (IndCQC.pir_people_directly_employed_dedup, pl.Int64()),
-            (IndCQC.unix_time, pl.Int64()),
             (IndCQC.pir_people_directly_employed_cleaned, pl.Int64()),
             (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
         ]
@@ -579,7 +581,6 @@ class ValidateEstimatedIndCQCFilledPostsSchemas:
             (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
             (IndCQC.pir_people_directly_employed_dedup, pl.Int64()),
             (IndCQC.ascwds_pir_merged, pl.Float64()),
-            (IndCQC.unix_time, pl.Int64()),
             (IndCQC.estimate_filled_posts, pl.Float64()),
             (IndCQC.estimate_filled_posts_source, pl.String()),
             (IndCQC.posts_rolling_average_model, pl.Float64()),
@@ -1635,4 +1636,70 @@ class ModelExtrapolation:
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.ascwds_pir_merged: pl.Float32,
         ExtrapCol.previous_value: pl.Float32,
+    }
+
+
+@dataclass
+class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
+    Cols = TempCols(None, None)
+    test_filter_schema = {
+        IndCQC.id_per_locationid_import_date: pl.Int64,
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.primary_service_type: pl.String,
+        IndCQC.main_job_role_clean_labelled: pl.Enum(
+            AscwdsWorkerValueLabelsJobGroup.all_roles()
+        ),
+        IndCQC.ascwds_job_role_counts: pl.Int64,
+    }
+    expected_filter_schema = {
+        IndCQC.id_per_locationid_import_date: pl.Int64,
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.primary_service_type: pl.String,
+        IndCQC.main_job_role_clean_labelled: pl.Enum(
+            AscwdsWorkerValueLabelsJobGroup.all_roles()
+        ),
+        IndCQC.ascwds_job_role_counts: pl.Int64,
+        IndCQC.job_group_dist_out_of_bounds: pl.Boolean,
+    }
+    test_location_sum_schema = {
+        JobGroupLabels.direct_care: pl.Int64,
+        JobGroupLabels.managers: pl.Int64,
+        JobGroupLabels.regulated_professions: pl.Int64,
+        JobGroupLabels.other: pl.Int64,
+        Cols.temp_location_sum: pl.Int64,
+    }
+    test_job_group_percentage_schema = {
+        JobGroupLabels.direct_care: pl.Float64,
+        JobGroupLabels.managers: pl.Float64,
+        JobGroupLabels.regulated_professions: pl.Float64,
+        JobGroupLabels.other: pl.Float64,
+        Cols.temp_location_sum: pl.Int64,
+    }
+    test_evaluation_expr_schema = {
+        JobGroupLabels.direct_care: pl.Float32,
+        JobGroupLabels.managers: pl.Float32,
+        JobGroupLabels.regulated_professions: pl.Float32,
+        JobGroupLabels.other: pl.Float32,
+        (JobGroupLabels.direct_care + Cols.upper_bound_suffix): pl.Float32,
+        (JobGroupLabels.managers + Cols.upper_bound_suffix): pl.Float32,
+        (JobGroupLabels.regulated_professions + Cols.upper_bound_suffix): pl.Float32,
+        (JobGroupLabels.other + Cols.upper_bound_suffix): pl.Float32,
+        (JobGroupLabels.direct_care + Cols.lower_bound_suffix): pl.Float32,
+        "location_out_of_bounds": pl.Boolean,
+    }
+    expected_bounds_expressions_schema = {
+        JobGroupLabels.direct_care: pl.Float32,
+        JobGroupLabels.managers: pl.Float32,
+        JobGroupLabels.regulated_professions: pl.Float32,
+        JobGroupLabels.other: pl.Float32,
+        JobGroupLabels.direct_care + Cols.upper_bound_suffix: pl.Float32,
+        JobGroupLabels.managers + Cols.upper_bound_suffix: pl.Float32,
+        JobGroupLabels.regulated_professions + Cols.upper_bound_suffix: pl.Float32,
+        JobGroupLabels.other + Cols.upper_bound_suffix: pl.Float32,
+        JobGroupLabels.direct_care + Cols.lower_bound_suffix: pl.Float32,
+        JobGroupLabels.managers + Cols.lower_bound_suffix: pl.Float32,
+        JobGroupLabels.regulated_professions + Cols.lower_bound_suffix: pl.Float32,
+        JobGroupLabels.other + Cols.lower_bound_suffix: pl.Float32,
     }

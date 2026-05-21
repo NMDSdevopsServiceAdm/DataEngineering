@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 
 - Added reusable Polars expression helper functions in `polars_utils/expressions.py` for `is_care_home()`, `is_not_care_home()`, and `is_dormant()`.
 
+- Converted filter for job group outliers to polars.
+
+- In line Polars conversions into the Impute job for the PySpark functions `combine_care_home_and_non_res_values_into_single_column` and `convert_care_home_ratios_to_posts`.
+
 - Added base validation scripts and test validation scripts for all stages of the Estimates by Job Role pipeline. Also added validation job calls to the Terraform definition for the Estimates by Job Role pipeline.
 
 ### Changed
