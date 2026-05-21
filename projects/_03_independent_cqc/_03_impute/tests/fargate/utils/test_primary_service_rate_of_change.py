@@ -16,7 +16,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 class TestModelPrimaryServiceRateOfChangeTrendline:
     def test_banded_bed_threshold_match_expected_values(self):
-        assert (job.BANDED_BED_THRESHOLDS == [0, 1, 15, 25, math.inf],)
+        assert job.BANDED_BED_THRESHOLDS == [0, 1, 15, 25, math.inf]
 
 
 class TestModelPrimaryServiceRateOfChangeTrendline:
