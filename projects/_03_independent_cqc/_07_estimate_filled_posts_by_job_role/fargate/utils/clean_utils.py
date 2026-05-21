@@ -47,13 +47,15 @@ def filter_job_role_group_outliers(
     lower_percentile_bound: float = 0.001,
 ) -> pl.LazyFrame:
     """
-    Filter out top and bottom percentiles of job role counts per job role group.
+    Null job role counts at locations where job group distribution is out of bounds.
 
-    This is to remove outliers from the distribution of filled posts within each job group, which
-    may be caused by data quality issues in ASCWDS. If a job group's percentage of total ASCWDS counts
-    for a particular location, service type and date is above the upper percentile bound or below the
-    lower percentile bound (as passed to the function), then we set the ASCWDS job role count cleaned
-    to NULL.
+    This function nulls outliers based on a locations job group distribution. Their
+    distribution is calculated per location and import date, then upper/lower percentile
+    bounds are calculated per service type for each job group across all periods. Values
+    are nulled where:
+
+    - direct care outside upper or lower percentile
+    - managers/regulated professions/other outside upper percentile
 
     The steps are as follows:
     1. Map job roles to job groups
@@ -74,8 +76,6 @@ def filter_job_role_group_outliers(
     """
     # Define temporary column names
     temp_job_group_column = "job_group"
-    temp_location_out_of_bounds = "location_out_of_bounds"
-    temp_cols_to_drop = [temp_job_group_column, temp_location_out_of_bounds]
     Exprs = FilterJobRoleGroupExpressions(
         upper_percentile_bound, lower_percentile_bound
     )
@@ -110,12 +110,8 @@ def filter_job_role_group_outliers(
 
     # 5. Calculate upper and lower percentile bounds of job group percentages for each job group and primary service type.
     bounds_lf = piv_lf.group_by(IndCQC.primary_service_type).agg(
-        pl.col(Exprs.job_group_cols)
-        .quantile(upper_percentile_bound, interpolation="linear")
-        .name.suffix(Exprs.upper_bound_suffix),
-        pl.col(Exprs.job_group_cols)
-        .quantile(lower_percentile_bound, interpolation="linear")
-        .name.suffix(Exprs.lower_bound_suffix),
+        Exprs.upper_bounds_expr,
+        Exprs.lower_bounds_expr,
     )
 
     piv_lf = (
@@ -129,20 +125,22 @@ def filter_job_role_group_outliers(
             .then(pl.lit(True))
             .otherwise(pl.lit(False))
             .cast(pl.Boolean)
-            .alias(temp_location_out_of_bounds)
+            .alias(IndCQC.job_group_dist_out_of_bounds)
         )
-        .select(IndCQC.id_per_locationid_import_date, temp_location_out_of_bounds)
+        .select(
+            IndCQC.id_per_locationid_import_date, IndCQC.job_group_dist_out_of_bounds
+        )
     )
 
     lf = (
         lf.join(piv_lf, on=IndCQC.id_per_locationid_import_date, how="left")
         .with_columns(  # 7. Null ascwds_job_role_counts_column
-            pl.when(pl.col(temp_location_out_of_bounds))
+            pl.when(pl.col(IndCQC.job_group_dist_out_of_bounds))
             .then(None)
             .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
             .alias(IndCQC.ascwds_job_role_counts)
         )
-        .drop(temp_cols_to_drop)
+        .drop(temp_job_group_column)
     )
     return lf
 
@@ -156,11 +154,11 @@ class FilterJobRoleGroupExpressions:
     used by these expressions.
 
     Attributes:
-        temp_location_sum (str): Temporary column name for the total number of job roles at a location.
+        temp_location_sum (str): Temporary column name for the total number of workers at a location.
         job_group_cols (list[str]): List of job group column names.
         upper_bound_suffix (str): A column suffix for denoting upper bounds.
         lower_bound_suffix (str): A column suffix for denoting lower bounds.
-        location_sum_expr (pl.Expr): Expression to calculate the total job roles at a location.
+        location_sum_expr (pl.Expr): Expression to calculate the total workers at a location.
         job_group_percentage_expr (pl.Expr): Expression to calculate the percentage of job roles.
         evaluation_expr (pl.Expr): Expression to evaluate whether a value is out of bounds.
         upper_bounds_expr (pl.Expr): Expression to calulate upper percentage bounds.
@@ -197,7 +195,7 @@ class FilterJobRoleGroupExpressions:
         )
         self.job_group_percentage_expr = pl.col(self.job_group_cols) / pl.col(
             self.temp_location_sum
-        )
+        ).cast(pl.Float32)
         self.evaluation_expr = (
             (
                 pl.col(JobGroupLabels.direct_care)

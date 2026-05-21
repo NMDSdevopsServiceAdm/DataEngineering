@@ -1654,6 +1654,17 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
     }
+    expected_filter_schema = {
+        IndCQC.id_per_locationid_import_date: pl.Int64,
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.primary_service_type: pl.String,
+        IndCQC.main_job_role_clean_labelled: pl.Enum(
+            AscwdsWorkerValueLabelsJobGroup.all_roles()
+        ),
+        IndCQC.ascwds_job_role_counts: pl.Int64,
+        IndCQC.job_group_dist_out_of_bounds: pl.Boolean,
+    }
     test_location_sum_schema = {
         JobGroupLabels.direct_care: pl.Int64,
         JobGroupLabels.managers: pl.Int64,
