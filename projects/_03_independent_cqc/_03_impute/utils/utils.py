@@ -5,6 +5,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CareHome
 
 
+# Not converting to polars
 def convert_care_home_ratios_to_posts(
     df: DataFrame, ratio_column: str, posts_column: str
 ) -> DataFrame:
@@ -31,6 +32,7 @@ def convert_care_home_ratios_to_posts(
     return df
 
 
+# Not converting to polars
 def combine_care_home_and_non_res_values_into_single_column(
     df: DataFrame, care_home_column: str, non_res_column: str, new_column_name: str
 ) -> DataFrame:

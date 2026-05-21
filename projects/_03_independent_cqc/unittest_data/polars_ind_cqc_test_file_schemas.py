@@ -545,7 +545,6 @@ class ValidateImputedIndCqcAscwdsAndPir:
             (IndCQC.ascwds_filled_posts_source, pl.String()),
             (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
             (IndCQC.pir_people_directly_employed_dedup, pl.Int64()),
-            (IndCQC.unix_time, pl.Int64()),
             (IndCQC.pir_people_directly_employed_cleaned, pl.Int64()),
             (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
         ]
@@ -582,7 +581,6 @@ class ValidateEstimatedIndCQCFilledPostsSchemas:
             (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
             (IndCQC.pir_people_directly_employed_dedup, pl.Int64()),
             (IndCQC.ascwds_pir_merged, pl.Float64()),
-            (IndCQC.unix_time, pl.Int64()),
             (IndCQC.estimate_filled_posts, pl.Float64()),
             (IndCQC.estimate_filled_posts_source, pl.String()),
             (IndCQC.posts_rolling_average_model, pl.Float64()),
