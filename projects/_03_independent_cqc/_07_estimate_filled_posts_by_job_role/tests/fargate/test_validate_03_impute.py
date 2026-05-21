@@ -16,10 +16,11 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.id_per_locationid_import_date: pl.String,
             IndCqcColumns.location_id: pl.String,
             IndCqcColumns.cqc_location_import_date: pl.Date,
+            IndCqcColumns.id_per_locationid_import_date_job_role: pl.String,
         }
         source_rows = [
-            ("1", "1-001", date(2026, 1, 1)),
-            ("2", "1-002", date(2026, 1, 1)),
+            ("1", "1-001", date(2026, 1, 1), "1-001-JobRoleA"),
+            ("2", "1-002", date(2026, 1, 1), "1-002-JobRoleB"),
         ]  # fmt: skip
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
 

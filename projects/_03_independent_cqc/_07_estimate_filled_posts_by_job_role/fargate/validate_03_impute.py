@@ -10,6 +10,7 @@ ind_cqc_impute_job_role_cols_to_import = [
     IndCqcColumns.id_per_locationid_import_date,
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
+    IndCqcColumns.id_per_locationid_import_date_job_role,
 ]
 
 
@@ -48,7 +49,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         # index columns
         .rows_distinct(
             [
-                IndCqcColumns.id_per_locationid_import_date,
+                IndCqcColumns.id_per_locationid_import_date_job_role,
             ],
         ).interrogate()
     )
