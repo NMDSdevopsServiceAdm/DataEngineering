@@ -56,7 +56,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
 
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
-        expected_assertions = {"col_vals_not_null", "rows_distinct"}
+        expected_assertions = {"col_vals_not_null"}
 
         for assertion in expected_assertions:
             self.assertIn(

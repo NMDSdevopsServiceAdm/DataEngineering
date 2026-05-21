@@ -903,9 +903,9 @@
               "Type": "Parallel",
               "Branches": [
                 {
-                  "StartAt": "Merge",
+                  "StartAt": "Merge data",
                   "States": {
-                    "Merge": {
+                    "Merge data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {

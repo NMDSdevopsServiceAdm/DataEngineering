@@ -53,9 +53,9 @@
                   ]
                 }
               },
-              "Next": "Merge"
+              "Next": "Merge data"
             },
-            "Merge": {
+            "Merge data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {

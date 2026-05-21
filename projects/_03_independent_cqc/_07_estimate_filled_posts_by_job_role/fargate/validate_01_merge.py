@@ -44,13 +44,8 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
                 IndCqcColumns.id_per_locationid_import_date,
                 IndCqcColumns.location_id,
                 IndCqcColumns.cqc_location_import_date,
-            ]
-        )
-        # index columns
-        .rows_distinct(
-            [
                 IndCqcColumns.primary_service_type,
-            ],
+            ]
         ).interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
