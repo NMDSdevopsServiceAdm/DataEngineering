@@ -257,6 +257,8 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
             aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=pir_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=pir_cleaned/"
             aws s3 sync "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/" "s3://$BRANCH_DATASET_BUCKET/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_06_estimated_filled_posts/"
+            aws s3 sync "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_04_estimate_job_roles/" "s3://$BRANCH_DATASET_BUCKET/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_07_04_estimate_job_roles/"
+            aws s3 sync "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_metadata_job_roles/" "s3://$BRANCH_DATASET_BUCKET/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_07_01_merge_metadata_job_roles/"
       - run:
           name: Copy models to non-prod dataset
           command: |

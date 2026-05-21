@@ -14,7 +14,6 @@ from projects._03_independent_cqc._03_impute.fargate.utils.forward_fill_latest_k
     forward_fill_latest_known_value,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import CareHome
 
 
 @dataclass
@@ -94,7 +93,13 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         .alias(IndCQC.ct_combined_care_home_and_non_res)
     )
 
-    # model_primary_service_rate_of_change_trendline - ct_combined_care_home_and_non_res_rate_of_change_trendline
+    lf = model_primary_service_rate_of_change_trendline(
+        lf,
+        IndCQC.ct_combined_care_home_and_non_res,
+        NumericalValues.number_of_days_in_window,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+        max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
+    )
 
     # model_imputation_with_extrapolation_and_interpolation - ct_care_home_total_employed_imputed
 

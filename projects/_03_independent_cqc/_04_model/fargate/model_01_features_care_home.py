@@ -1,9 +1,8 @@
-import polars as pl
-
 import projects._03_independent_cqc._04_model.utils.feature_utils as fUtils
 import projects._03_independent_cqc._04_model.utils.paths as pUtils
 import projects._03_independent_cqc._04_model.utils.validate_model_definitions as vUtils
 from polars_utils import utils
+from polars_utils.expressions import is_care_home
 from projects._03_independent_cqc._04_model.registry.model_registry import (
     model_registry,
 )
@@ -13,7 +12,6 @@ from projects._03_independent_cqc._04_model.utils.value_labels import (
     ServicesLabels,
     SpecialismsLabels,
 )
-from polars_utils.expressions import is_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import ModelRegistryKeys as MRKeys
 

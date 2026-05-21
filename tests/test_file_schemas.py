@@ -74,6 +74,30 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    expected_schema_with_new_code_columns = StructType(
+        [
+            StructField(AWK.worker_id, StringType(), True),
+            StructField(AWK.gender, StringType(), True),
+            StructField(AWK.nationality, StringType(), True),
+            StructField("gender_codes", StringType(), True),
+            StructField("nationality_codes", StringType(), True),
+        ]
+    )
+
+    worker_schema_for_testing_label_dict_with_duplicate_values = StructType(
+        [
+            StructField(AWK.worker_id, StringType(), True),
+            StructField(IndCQC.contemporary_cssr, StringType(), True),
+        ]
+    )
+    expected_worker_schema_for_testing_label_dict_with_duplicate_values = StructType(
+        [
+            StructField(AWK.worker_id, StringType(), True),
+            StructField(IndCQC.contemporary_cssr, StringType(), True),
+            StructField(IndCQC.contemporary_cssr + "_codes", StringType(), True),
+        ]
+    )
+
     scale_schema = StructType(
         [
             StructField("int", IntegerType(), True),

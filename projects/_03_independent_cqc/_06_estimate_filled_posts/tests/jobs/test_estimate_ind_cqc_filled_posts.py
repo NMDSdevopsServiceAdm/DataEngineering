@@ -17,6 +17,7 @@ class EstimateIndCQCFilledPostsTests(SparkBaseTest):
         self.mock_ind_cqc_df = Mock(name="ind_cqc_df")
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.apply_categorical_labels")
     @patch(f"{PATCH_PATH}.estimate_non_res_capacity_tracker_filled_posts")
     @patch(f"{PATCH_PATH}.set_min_value")
     @patch(f"{PATCH_PATH}.merge_columns_in_order")
@@ -33,6 +34,7 @@ class EstimateIndCQCFilledPostsTests(SparkBaseTest):
         merge_columns_in_order_mock: Mock,
         set_min_value_mock: Mock,
         estimate_non_res_capacity_tracker_filled_posts_mock: Mock,
+        apply_categorical_labels_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.return_value = self.mock_ind_cqc_df
@@ -56,6 +58,7 @@ class EstimateIndCQCFilledPostsTests(SparkBaseTest):
             ANY, IndCQC.estimate_filled_posts, 1.0
         )
         estimate_non_res_capacity_tracker_filled_posts_mock.assert_called_once()
+        apply_categorical_labels_mock.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.ESTIMATES_DESTINATION,

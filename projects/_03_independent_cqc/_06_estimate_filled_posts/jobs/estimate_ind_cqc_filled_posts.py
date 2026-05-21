@@ -18,7 +18,11 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils i
 )
 from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
 from utils import utils
+from utils.cleaning_utils import apply_categorical_labels
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.value_labels.ons_pd.label_dictionaries import (
+    estimate_filled_posts_geography_labels_dict as geog_dict,
+)
 
 ind_cqc_columns = [
     IndCQC.cqc_location_import_date,
@@ -169,6 +173,14 @@ def main(
 
     estimate_filled_posts_df = estimate_non_res_capacity_tracker_filled_posts(
         estimate_filled_posts_df
+    )
+
+    estimate_filled_posts_df = apply_categorical_labels(
+        df=estimate_filled_posts_df,
+        labels=geog_dict,
+        column_names=geog_dict.keys(),
+        add_as_new_column=True,
+        reverse_mapping=True,
     )
 
     print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
