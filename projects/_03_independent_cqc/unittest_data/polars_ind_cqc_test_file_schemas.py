@@ -1706,14 +1706,14 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
     }
 
     test_job_role_group_equal_zero_schema = {
-        IndCQC.id_per_locationid_import_date: pl.Int64,
+        IndCQC.id_per_locationid_import_date: pl.UInt32,
         IndCQC.main_job_role_clean_labelled: pl.Enum(
             AscwdsWorkerValueLabelsJobGroup.all_roles()
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
     }
     expected_job_role_group_equal_zero_schema = {
-        IndCQC.id_per_locationid_import_date: pl.Int64,
+        IndCQC.id_per_locationid_import_date: pl.UInt32,
         IndCQC.main_job_role_clean_labelled: pl.Enum(
             AscwdsWorkerValueLabelsJobGroup.all_roles()
         ),

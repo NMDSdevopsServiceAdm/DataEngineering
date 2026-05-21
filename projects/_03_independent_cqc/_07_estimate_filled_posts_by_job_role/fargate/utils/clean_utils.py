@@ -279,6 +279,9 @@ def filter_job_role_group_equal_zero(lf: pl.LazyFrame) -> pl.LazyFrame:
     aggregated_lf = aggregated_lf.group_by(IndCQC.id_per_locationid_import_date).agg(
         pl.max("is_zero_target").alias(IndCQC.job_group_equal_zero)
     )
+    aggregated_lf = aggregated_lf.with_columns(
+        pl.col(IndCQC.id_per_locationid_import_date).cast(pl.UInt32)
+    )
 
     lf = (
         lf.join(aggregated_lf, on=IndCQC.id_per_locationid_import_date, how="left")
