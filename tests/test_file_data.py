@@ -4,6 +4,7 @@ from datetime import date
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     CareHome,
+    ContemporaryCSSR,
     PrimaryServiceType,
     Sector,
 )
@@ -59,6 +60,12 @@ class CleaningUtilsData:
         "103": "Portuguese",
     }
 
+    contemporary_cssr = {
+        "902": ContemporaryCSSR.cornwall_and_isles_of_scilly,
+        "906": ContemporaryCSSR.cornwall_and_isles_of_scilly,
+        "407": ContemporaryCSSR.coventry,
+    }
+
     expected_rows_with_new_columns = [
         ("1", "1", "100", "male", "British"),
         ("2", "1", "101", "male", "French"),
@@ -77,6 +84,15 @@ class CleaningUtilsData:
         ("6", "female", None),
     ]
 
+    expected_rows_with_new_code_columns = [
+        ("1", "male", "British", "1", "100"),
+        ("2", "male", "French", "1", "101"),
+        ("3", "female", "Spanish", "2", "102"),
+        ("4", "female", "Portuguese", "2", "103"),
+        ("5", None, "Portuguese", None, "103"),
+        ("6", "female", None, "2", None),
+    ]
+
     worker_rows_with_unmatched_labels = [
         ("1", "0", "100"),
         ("2", "1", "104"),
@@ -91,6 +107,17 @@ class CleaningUtilsData:
         ("1", "0", "British"),
         ("2", "male", "104"),
         ("3", None, None),
+    ]
+
+    worker_rows_for_testing_label_dict_with_duplicate_values = [
+        ("1", ContemporaryCSSR.cornwall_and_isles_of_scilly),
+        ("2", ContemporaryCSSR.cornwall_and_isles_of_scilly),
+        ("3", ContemporaryCSSR.coventry),
+    ]
+    expected_worker_rows_for_testing_label_dict_with_duplicate_values = [
+        ("1", ContemporaryCSSR.cornwall_and_isles_of_scilly, "902"),
+        ("2", ContemporaryCSSR.cornwall_and_isles_of_scilly, "902"),
+        ("3", ContemporaryCSSR.coventry, "407"),
     ]
 
     scale_data = [

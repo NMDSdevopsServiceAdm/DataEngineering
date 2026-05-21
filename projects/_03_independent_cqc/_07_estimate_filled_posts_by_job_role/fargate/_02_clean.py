@@ -3,12 +3,29 @@ import polars as pl
 from polars_utils import utils
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils import (
     nullify_job_role_count_when_source_not_ascwds,
+    filter_job_role_group_outliers,
+)
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    CatagoricalColumnTypes as CatColType,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
 pl.Config.set_streaming_chunk_size(50000)
+
+estimates_by_job_role_schema = {
+    IndCQC.id_per_locationid_import_date: pl.UInt32,
+    IndCQC.location_id: CatColType.LocationCatType,
+    IndCQC.cqc_location_import_date: pl.Date,
+    IndCQC.estimate_filled_posts: pl.Float32,
+    IndCQC.estimate_filled_posts_source: CatColType.EstimatesFilledPostSourceEnumType,
+    IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
+    IndCQC.registered_manager_names: pl.List(str),
+    IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
+    IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
+    IndCQC.ascwds_job_role_counts: pl.Int16,
+}
 
 
 def main(
@@ -24,8 +41,14 @@ def main(
     """
     print("Cleaning merged_ind_cqc dataset...")
 
-    estimated_job_role_posts_lf = utils.scan_parquet(merged_data_source)
+    estimated_job_role_posts_lf = utils.scan_parquet(merged_data_source).with_columns(
+        utils.cast_to_schema(estimates_by_job_role_schema)
+    )
     print("Merged LazyFrame read in")
+
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
+        IndCQC.id_per_locationid_import_date_job_role
+    )
 
     estimated_job_role_posts_lf = nullify_job_role_count_when_source_not_ascwds(
         estimated_job_role_posts_lf
@@ -34,10 +57,8 @@ def main(
         IndCQC.ascwds_filled_posts_dedup_clean,
     )
 
-    # TODO - Filter ASC-WDS worker data.
-
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
-        IndCQC.id_per_locationid_import_date_job_role
+    estimated_job_role_posts_lf = filter_job_role_group_outliers(
+        estimated_job_role_posts_lf
     )
 
     utils.sink_to_parquet(
