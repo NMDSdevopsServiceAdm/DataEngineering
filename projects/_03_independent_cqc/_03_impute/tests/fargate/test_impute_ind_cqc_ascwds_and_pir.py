@@ -48,7 +48,7 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
         scan_parquet_mock.assert_called_once()
         self.assertEqual(forward_fill_latest_known_value_mock.call_count, 2)
         calculate_filled_posts_per_bed_ratio_mock.assert_called_once()
-        model_roc_trendline_mock.assert_called_once()
+        self.assertEqual(model_roc_trendline_mock.call_count, 2)
         convert_pir_to_filled_posts_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
