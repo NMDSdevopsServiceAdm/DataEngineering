@@ -1,7 +1,7 @@
 import math
 from dataclasses import dataclass
 from datetime import date
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 import pytest
@@ -2763,8 +2763,8 @@ class EstimateFilledPostsByJobRoleCleanUtilsTestCase:
     id: str
     test_data: list[Any]
     expected_data: list[Any]
-    upper_bound: float
-    lower_bound: float
+    upper_bound: Optional[float] = None
+    lower_bound: Optional[float] = None
 
 
 @dataclass
@@ -2957,3 +2957,74 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
         (0.0625, 0.1875, 0.3125, 0.4375, 0.0925, 0.1975, 0.31, 0.43, 0.07, 0.19, 0.3025, 0.4075),
         (0.1,    0.2,    0.3,    0.4,    0.0925, 0.1975, 0.31, 0.43, 0.07, 0.19, 0.3025, 0.4075),
     ] # fmt: skip
+
+    filter_job_role_groups_equal_zero_test_cases = [
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_direct_care_sum_equal_zero",
+            test_data=[
+                (1, MainJobRoleLabels.care_worker, 0),
+                (1, MainJobRoleLabels.senior_care_worker, 0),
+                (1, MainJobRoleLabels.first_line_manager, 1),
+                (1, MainJobRoleLabels.registered_nurse, 1),
+            ],
+            expected_data=[
+                (1, MainJobRoleLabels.care_worker, None, True),
+                (1, MainJobRoleLabels.senior_care_worker, None, True),
+                (1, MainJobRoleLabels.first_line_manager, None, True),
+                (1, MainJobRoleLabels.registered_nurse, None, True),
+            ],
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_man_and_reg_prof_sum_equal_zero",
+            test_data=[
+                (1, MainJobRoleLabels.care_worker, 1),
+                (1, MainJobRoleLabels.senior_care_worker, 1),
+                (1, MainJobRoleLabels.first_line_manager, 0),
+                (1, MainJobRoleLabels.registered_nurse, 0),
+            ],
+            expected_data=[
+                (1, MainJobRoleLabels.care_worker, None, True),
+                (1, MainJobRoleLabels.senior_care_worker, None, True),
+                (1, MainJobRoleLabels.first_line_manager, None, True),
+                (1, MainJobRoleLabels.registered_nurse, None, True),
+            ],
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_location_has_null_worker_count",
+            test_data=[
+                (1, MainJobRoleLabels.care_worker, None),
+                (1, MainJobRoleLabels.senior_care_worker, None),
+                (1, MainJobRoleLabels.first_line_manager, None),
+                (1, MainJobRoleLabels.registered_nurse, None),
+            ],
+            expected_data=[
+                (1, MainJobRoleLabels.care_worker, None, None),
+                (1, MainJobRoleLabels.senior_care_worker, None, None),
+                (1, MainJobRoleLabels.first_line_manager, None, None),
+                (1, MainJobRoleLabels.registered_nurse, None, None),
+            ],
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="handles_multiple_locations",
+            test_data=[
+                (1, MainJobRoleLabels.care_worker, 1),
+                (1, MainJobRoleLabels.senior_care_worker, 1),
+                (1, MainJobRoleLabels.first_line_manager, 0),
+                (1, MainJobRoleLabels.registered_nurse, 0),
+                (2, MainJobRoleLabels.care_worker, 1),
+                (2, MainJobRoleLabels.senior_care_worker, 1),
+                (2, MainJobRoleLabels.first_line_manager, 1),
+                (2, MainJobRoleLabels.registered_nurse, 1),
+            ],
+            expected_data=[
+                (1, MainJobRoleLabels.care_worker, None, True),
+                (1, MainJobRoleLabels.senior_care_worker, None, True),
+                (1, MainJobRoleLabels.first_line_manager, None, True),
+                (1, MainJobRoleLabels.registered_nurse, None, True),
+                (2, MainJobRoleLabels.care_worker, 1, False),
+                (2, MainJobRoleLabels.senior_care_worker, 1, False),
+                (2, MainJobRoleLabels.first_line_manager, 1, False),
+                (2, MainJobRoleLabels.registered_nurse, 1, False),
+            ],
+        ),
+    ]

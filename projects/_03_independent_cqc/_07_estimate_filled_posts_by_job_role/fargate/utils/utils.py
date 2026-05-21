@@ -1,12 +1,12 @@
+from dataclasses import dataclass
 from datetime import date
 
 import polars as pl
-from dataclasses import dataclass
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
-    MainJobRoleLabels,
     EstimateFilledPostsSource,
+    MainJobRoleLabels,
     PrimaryServiceType,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
@@ -64,6 +64,7 @@ def add_job_role_groups_column(
         job_group_column_name: pl.Enum(
             list(
                 set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values())
+                | {"man_or_reg_prof"}
             )
         ),
     }
