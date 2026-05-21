@@ -7,9 +7,6 @@ import numpy as np
 import pytest
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PrimaryServiceRateOfChangeColumns as TempCol,
-)
 from utils.column_values.categorical_column_values import (
     ASCWDSFilledPostsSource,
     AscwdsFilteringRule,
