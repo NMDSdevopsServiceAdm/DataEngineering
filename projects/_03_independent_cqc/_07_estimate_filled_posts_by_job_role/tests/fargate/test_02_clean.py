@@ -65,7 +65,7 @@ class MainTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.cUtils.filter_job_role_group_outliers")
-    @patch(f"{PATCH_PATH}.cUtils.filter_job_role_groups_equal_zero")
+    @patch(f"{PATCH_PATH}.cUtils.filter_job_role_group_equal_zero")
     @patch(f"{PATCH_PATH}.cUtils.nullify_job_role_count_when_source_not_ascwds")
     @patch(
         f"{PATCH_PATH}.utils.scan_parquet",
@@ -75,7 +75,7 @@ class MainTests(unittest.TestCase):
         self,
         scan_parquet_mock: Mock,
         nullify_job_role_count_when_source_not_ascwds_mock: Mock,
-        filter_job_role_groups_equal_zero_mock: Mock,
+        filter_job_role_group_equal_zero_mock: Mock,
         filter_job_role_group_outliers_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -89,7 +89,7 @@ class MainTests(unittest.TestCase):
         )
 
         nullify_job_role_count_when_source_not_ascwds_mock.assert_called_once()
-        filter_job_role_groups_equal_zero_mock.assert_called_once()
+        filter_job_role_group_equal_zero_mock.assert_called_once()
         filter_job_role_group_outliers_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(

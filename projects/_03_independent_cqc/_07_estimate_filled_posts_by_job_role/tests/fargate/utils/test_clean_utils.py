@@ -176,21 +176,21 @@ class TestFilterJobRoleGroupsEqualZero:
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.filter_job_role_groups_equal_zero_test_cases
+            for case in Data.filter_job_role_group_equal_zero_test_cases
         ],
     )
     def test_function_returns_expected_values(self, case):
         test_lf = pl.LazyFrame(
             case.test_data,
-            Schemas.test_job_role_groups_equal_zero_schema,
+            Schemas.test_job_role_group_equal_zero_schema,
             orient="row",
         )
         expected_lf = pl.LazyFrame(
             case.expected_data,
-            Schemas.expected_job_role_groups_equal_zero_schema,
+            Schemas.expected_job_role_group_equal_zero_schema,
             orient="row",
         )
 
-        returned_lf = job.filter_job_role_groups_equal_zero(test_lf)
+        returned_lf = job.filter_job_role_group_equal_zero(test_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

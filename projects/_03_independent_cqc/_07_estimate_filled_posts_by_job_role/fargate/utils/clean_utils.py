@@ -230,7 +230,7 @@ class FilterJobRoleGroupExpressions:
         )
 
 
-def filter_job_role_groups_equal_zero(lf: pl.LazyFrame) -> pl.LazyFrame:
+def filter_job_role_group_equal_zero(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Null job role counts at locations with zero direct care or managers +
     regulated professions is zero.
@@ -257,7 +257,7 @@ def filter_job_role_groups_equal_zero(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
     # Sum job role count over locationid, import date and job group.
-    grouped = lf.group_by(
+    aggregated_lf = lf.group_by(
         [IndCQC.id_per_locationid_import_date, temp_job_group_column]
     ).agg(
         pl.when(pl.col(IndCQC.ascwds_job_role_counts).count() > 0)
@@ -266,7 +266,7 @@ def filter_job_role_groups_equal_zero(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
     # Apply filter.
-    grouped = grouped.with_columns(
+    aggregated_lf = aggregated_lf.with_columns(
         (
             (pl.col("count") == 0)
             & pl.col(temp_job_group_column).is_in(
@@ -276,12 +276,12 @@ def filter_job_role_groups_equal_zero(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
     # Collapse to per-id flag.
-    flags = grouped.group_by(IndCQC.id_per_locationid_import_date).agg(
+    aggregated_lf = aggregated_lf.group_by(IndCQC.id_per_locationid_import_date).agg(
         pl.max("is_zero_target").alias(IndCQC.job_group_equal_zero)
     )
 
     lf = (
-        lf.join(flags, on=IndCQC.id_per_locationid_import_date, how="left")
+        lf.join(aggregated_lf, on=IndCQC.id_per_locationid_import_date, how="left")
         .with_columns(  # Null ascwds_job_role_counts_column
             pl.when(pl.col(IndCQC.job_group_equal_zero))
             .then(None)

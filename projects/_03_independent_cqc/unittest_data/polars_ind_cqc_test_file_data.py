@@ -2958,7 +2958,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
         (0.1,    0.2,    0.3,    0.4,    0.0925, 0.1975, 0.31, 0.43, 0.07, 0.19, 0.3025, 0.4075),
     ] # fmt: skip
 
-    filter_job_role_groups_equal_zero_test_cases = [
+    filter_job_role_group_equal_zero_test_cases = [
         EstimateFilledPostsByJobRoleCleanUtilsTestCase(
             id="when_direct_care_sum_equal_zero",
             test_data=[
