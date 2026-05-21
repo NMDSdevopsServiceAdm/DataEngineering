@@ -10,11 +10,11 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
     ImputeJobRoleSchemas as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
-    AscwdsWorkerValueLabelsJobGroup,
-)
 from utils.column_values.categorical_column_values import (
     MainJobRoleLabels,
+)
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
 )
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils"
@@ -160,6 +160,7 @@ class TestAddJobRoleGroupsColumn:
                     set(
                         AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values()
                     )
+                    | {"man_or_reg_prof"}
                 )
             ),
         }
