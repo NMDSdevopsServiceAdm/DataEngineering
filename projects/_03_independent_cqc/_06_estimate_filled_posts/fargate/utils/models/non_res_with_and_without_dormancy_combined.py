@@ -3,11 +3,11 @@ import polars as pl
 from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.utils import (
     join_model_predictions,
 )
+from polars_utils.expressions import is_not_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as TempColumns,
 )
-from utils.column_values.categorical_column_values import CareHome
 
 non_res_columns_to_select = [
     IndCqc.location_id,
@@ -37,7 +37,7 @@ def combine_non_res_with_and_without_dormancy_models(
             joined in.
     """
     non_res_locations_lf = lf.select(non_res_columns_to_select).filter(
-        pl.col(IndCqc.care_home) == CareHome.not_care_home
+        is_not_care_home()
     )
 
     combined_models_lf = group_time_registered_to_six_month_bands(non_res_locations_lf)

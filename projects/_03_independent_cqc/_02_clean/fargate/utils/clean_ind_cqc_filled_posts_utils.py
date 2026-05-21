@@ -1,7 +1,6 @@
 import polars as pl
-
+from polars_utils.expressions import is_care_home, is_not_care_home, is_dormant
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import CareHome, Dormancy
 
 average_number_of_beds: str = "avg_beds"
 
@@ -60,7 +59,7 @@ def calculate_time_since_dormant(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     lf = lf.sort([IndCQC.location_id, IndCQC.cqc_location_import_date])
     lf = lf.with_columns(
-        pl.when(pl.col(IndCQC.dormancy) == Dormancy.dormant)
+        pl.when(is_dormant())
         .then(pl.col(IndCQC.cqc_location_import_date))
         .otherwise(None)
         .alias(IndCQC.dormant_date)
@@ -76,7 +75,7 @@ def calculate_time_since_dormant(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.with_columns(
         pl.when(pl.col(IndCQC.last_dormant_date).is_not_null())
         .then(
-            pl.when(pl.col(IndCQC.dormancy) == Dormancy.dormant)
+            pl.when(is_dormant())
             .then(1)
             .otherwise(
                 (
@@ -163,11 +162,11 @@ def deduplicate_care_homes(
     """
     lf = lf.sort(duplicate_columns + distinguishing_columns)
 
-    care_home_deduped = lf.filter(
-        pl.col(IndCQC.care_home) == CareHome.care_home
-    ).unique(subset=duplicate_columns, keep="first")
+    care_home_deduped = lf.filter(is_care_home()).unique(
+        subset=duplicate_columns, keep="first"
+    )
 
-    not_care_home = lf.filter(pl.col(IndCQC.care_home) == CareHome.not_care_home)
+    not_care_home = lf.filter(is_not_care_home())
 
     return pl.concat([care_home_deduped, not_care_home])
 
@@ -189,7 +188,7 @@ def copy_ascwds_data_across_duplicate_rows(
     """
     lf = lf.with_columns(
         [
-            pl.when(pl.col(IndCQC.care_home) == CareHome.care_home)
+            pl.when(is_care_home())
             .then(
                 pl.coalesce(
                     [
@@ -202,7 +201,7 @@ def copy_ascwds_data_across_duplicate_rows(
             )
             .otherwise(pl.col(IndCQC.total_staff_bounded))
             .alias(IndCQC.total_staff_bounded),
-            pl.when(pl.col(IndCQC.care_home) == CareHome.care_home)
+            pl.when(is_care_home())
             .then(
                 pl.coalesce(
                     [
@@ -270,9 +269,7 @@ def filter_to_care_homes_with_known_beds(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: A polars LazyFrame containing only care homes with
         non-null number_of_beds values.
     """
-    return lf.filter(pl.col(IndCQC.care_home) == CareHome.care_home).filter(
-        pl.col(IndCQC.number_of_beds).is_not_null()
-    )
+    return lf.filter(is_care_home()).filter(pl.col(IndCQC.number_of_beds).is_not_null())
 
 
 def average_beds_per_location(lf: pl.LazyFrame) -> pl.LazyFrame:

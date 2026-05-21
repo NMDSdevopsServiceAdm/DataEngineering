@@ -8,9 +8,12 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added function to reallocate filled posts from job roles that didn't exist in the past.
 
+- Added reusable Polars expression helper functions in `polars_utils/expressions.py` for `is_care_home()`, `is_not_care_home()`, and `is_dormant()`.
 
 ### Changed
 - Renamed replace_care_navigator_with_care_coordinator to remap_mainjrid_codes for clarity and optimised implementation to use dictionary-based replacements targeting the main_job_role_clean column and updated corresponding test data names. Added Technician Job Role('22') in the dictionary to replace it with Other non-care-providing job roles ('27').
+
+- Changed apply_categorical_labels so it can reverse labels by swapping the k:v in the label dict.
 
 Added grouped job role breakdown calculations based on location size bands and updated `create_ascwds_job_role_rolling_ratio` function to support dynamic grouping and rolling-period aggregation logic for improved base stability.
 

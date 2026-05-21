@@ -16,7 +16,11 @@ pir_submission_date_uri_format = "dd-MMM-yy"
 
 
 def apply_categorical_labels(
-    df: DataFrame, labels: dict, column_names: list, add_as_new_column: bool = True
+    df: DataFrame,
+    labels: dict,
+    column_names: list,
+    add_as_new_column: bool = True,
+    reverse_mapping: bool = False,
 ) -> DataFrame:
     """
     Apply categorical label mappings to one or more columns using a join-based lookup.
@@ -27,6 +31,10 @@ def apply_categorical_labels(
 
     Labels can either be added as new columns or replace the original columns.
 
+    reverse_mapping is an optional argument to revert columns from a label string to a code string.
+    Warning: the values in 'labels' dict should be unique, otherwise only first key of
+    duplicate values will be used in the mapping.
+
     Args:
         df (DataFrame): Input Spark DataFrame.
         labels (dict): Dictionary of column-to-mapping dictionaries.
@@ -34,12 +42,24 @@ def apply_categorical_labels(
         add_as_new_column (bool, optional): If True, adds a new column with
             "_labels" suffix. If False, replaces the original column.
             Defaults to True.
+        reverse_mapping (bool, optional): If True, reverts labels to codes.
 
     Returns:
         DataFrame: DataFrame with categorical labels applied. Unmapped values
         are preserved.
+
+    Raises:
+        ValueError: If column to apply labels is not in DataFrame or has no
+            mapping in labels dict.
+
     """
     spark = utils.get_spark()
+
+    for column_name in column_names:
+        if column_name not in df.columns:
+            raise ValueError(f"Column {column_name} not found in DataFrame.")
+        if column_name not in labels:
+            raise ValueError(f"No label mapping found for {column_name}.")
 
     for column_name in column_names:
         mapping_schema = StructType(
@@ -48,16 +68,29 @@ def apply_categorical_labels(
                 StructField(f"{column_name}_labels", StringType(), True),
             ]
         )
-        mapping_df = spark.createDataFrame(
-            labels[column_name].items(), schema=mapping_schema
-        )
+
+        if reverse_mapping:
+            mapping_dict = {}
+            for k, v in labels[column_name].items():
+                if v not in mapping_dict:
+                    mapping_dict[v] = k
+            mapping_dict = mapping_dict.items()
+        else:
+            mapping_dict = labels[column_name].items()
+
+        mapping_df = spark.createDataFrame(mapping_dict, schema=mapping_schema)
 
         df = df.join(mapping_df, on=column_name, how="left")
 
         merged_col = F.coalesce(F.col(f"{column_name}_labels"), F.col(column_name))
 
         if add_as_new_column:
-            df = df.withColumn(f"{column_name}_labels", merged_col)
+            if reverse_mapping:
+                df = df.withColumn(f"{column_name}_codes", merged_col).drop(
+                    f"{column_name}_labels"
+                )
+            else:
+                df = df.withColumn(f"{column_name}_labels", merged_col)
         else:
             df = df.withColumn(column_name, merged_col).drop(f"{column_name}_labels")
 
