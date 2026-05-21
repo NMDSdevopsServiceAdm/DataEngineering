@@ -210,20 +210,14 @@ def create_ascwds_job_role_rolling_ratio(
     )
     # STEP D: Calculate ascwds_job_role_rolling_ratio using window function
     # Each job role's ratio = its rolling sum / total rolling sum within location+date+size_group
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        (
-            pl.col(IndCQC.ascwds_job_role_rolling_sum)
-            / pl.col(IndCQC.ascwds_job_role_rolling_sum)
-            .sum()
-            .over(
-                [
-                    IndCQC.location_id,
-                    IndCQC.cqc_location_import_date,
-                    IndCQC.estimate_filled_posts_size_group,
-                ]
-            )
-        )
-        .cast(pl.Float32)
-        .alias(IndCQC.ascwds_job_role_rolling_ratio)
+    estimated_job_role_posts_lf = get_percent_share_ratios(
+        estimated_job_role_posts_lf,
+        input_col=IndCQC.ascwds_job_role_rolling_sum,
+        output_col=IndCQC.ascwds_job_role_rolling_ratio,
+        groups=[
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+            IndCQC.estimate_filled_posts_size_group,
+        ],
     )
     return estimated_job_role_posts_lf
