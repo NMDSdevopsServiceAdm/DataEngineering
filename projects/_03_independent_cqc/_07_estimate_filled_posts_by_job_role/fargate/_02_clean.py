@@ -54,13 +54,13 @@ def main(
         IndCQC.ascwds_filled_posts_dedup_clean,
     )
 
-    estimated_job_role_posts_lf = cUtils.filter_job_role_group_equal_zero(
-        estimated_job_role_posts_lf
-    )
-
-    # estimated_job_role_posts_lf = cUtils.filter_job_role_group_outliers(
+    # estimated_job_role_posts_lf = cUtils.filter_job_role_group_equal_zero(
     #     estimated_job_role_posts_lf
     # )
+
+    estimated_job_role_posts_lf = cUtils.filter_job_role_group_outliers(
+        estimated_job_role_posts_lf
+    )
 
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
