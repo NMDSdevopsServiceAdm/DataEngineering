@@ -70,7 +70,6 @@ ind_cqc_columns = [
     IndCQC.imputed_filled_post_model,
     IndCQC.imputed_filled_posts_per_bed_ratio_model,
     IndCQC.posts_rolling_average_model,
-    IndCQC.unix_time,
 ]
 
 

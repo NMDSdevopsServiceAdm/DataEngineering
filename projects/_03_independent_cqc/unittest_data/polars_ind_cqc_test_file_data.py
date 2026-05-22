@@ -439,17 +439,17 @@ class ValidateCleanIndCQCData:
 @dataclass
 class ValidateImputedIndCqcAscwdsAndPir:
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1),),
-        ("1-000000002", date(2024, 1, 1),),
-        ("1-000000001", date(2024, 2, 1),),
-        ("1-000000002", date(2024, 2, 1),),
-    ] # fmt: skip
+        ("1-000000001", date(2024, 1, 1)),
+        ("1-000000002", date(2024, 1, 1)),
+        ("1-000000001", date(2024, 2, 1)),
+        ("1-000000002", date(2024, 2, 1)),
+    ]
 
     imputed_ind_cqc_ascwds_and_pir_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
     ] # fmt: skip
 
 
@@ -463,10 +463,10 @@ class ValidateEstimatedIndCQCFilledPostsData:
     ]
 
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
     ] # fmt: skip
 
 
@@ -2753,6 +2753,204 @@ class ModelExtrapolation:
             data=[
                 ("1-001", date(2026, 1, 1), None, None),
                 ("1-001", date(2026, 2, 1), None, None),
+            ],
+        ),
+    ]
+
+
+@dataclass
+class ModelRateOfChangeInputOutputTestCase:
+    id: str
+    input_data: list[Any]
+    expected_data: list[Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self.input_data, self.expected_data, id=self.id)
+
+
+@dataclass
+class ModelRateOfChangeOutputOnlyTestCase:
+    id: str
+    data: list[Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self.data, id=self.id)
+
+
+@dataclass
+class ModelRateOfChangeData:
+    model_roc_trendline_test_cases = [
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="single_group_produces_expected_trendline",
+            data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 2.7, 1, 0.9),
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.3, 1, 0.947),
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="multiple_groups_aggregate_independently",
+            data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home,     10, "CHO", 3.0,  1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 2.8,  1, 1.04),
+                ("1-001", date(2026, 1, 3), CareHome.care_home,     10, "CHO", 3.4,  1, 1.162),
+                ("1-002", date(2026, 1, 1), CareHome.care_home,     10, "CHO", 2.0,  1, 1.0),
+                ("1-002", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 2.4,  1, 1.04),
+                ("1-002", date(2026, 1, 3), CareHome.care_home,     10, "CHO", 2.8,  1, 1.162),
+                ("1-003", date(2026, 1, 1), CareHome.not_care_home, 10, "NR",  40.0, 1, 1.0),
+                ("1-003", date(2026, 1, 2), CareHome.not_care_home, 10, "NR",  50.0, 1, 1.25),
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="unsorted_input_produces_correct_trendline",
+            data=[
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.3, 1, 0.947),
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 2.7, 1, 0.9),
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="missing_values_are_interpolated_before_trendline",
+            data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0,  1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", None, 1, 1.1),
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.6,  1, 1.205),
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="locations_with_single_submission_do_not_influence_aggregate",
+            data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 2.7, 1, 0.9),
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.3, 1, 0.947),
+                ("1-002", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 9.9, 1, 0.9), # single submission - shouldn't contribute
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="locations_with_inconsistent_status_do_not_influence_aggregate",
+            data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home,     10, "CHO", 3.0, 1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 2.7, 1, 0.9),
+                ("1-001", date(2026, 1, 3), CareHome.care_home,     10, "CHO", 3.3, 1, 0.947),
+                ("1-002", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 9.9, 2, 0.9), # main service changed - shouldn't contribute
+                ("1-002", date(2026, 1, 3), CareHome.not_care_home, 10, "NR",  9.9, 2, 1.0), # main service changed - shouldn't contribute
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="first_time_period_is_always_1",
+            data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1, 1.0),
+            ],
+        ),
+    ] # fmt: skip
+
+    calculate_rolling_sums_test_cases = [
+        ModelRateOfChangeInputOutputTestCase(
+            id="single_group_within_time_window",
+            input_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 2.7, 3.0),
+                ("1-001", "CHO", 10, date(2026, 1, 3), 3.3, 2.7),
+            ],
+            expected_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 5.7, 5.0),
+                ("1-001", "CHO", 10, date(2026, 1, 3), 9.0, 7.7),
+            ],
+        ),
+        ModelRateOfChangeInputOutputTestCase(
+            id="multiple_groups_within_time_window",
+            input_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 2.7, 3.0),
+                ("1-002", "NR",  20, date(2026, 1, 1), 1.0, 1.5),
+                ("1-002", "NR",  20, date(2026, 1, 2), 1.2, 1.0),
+            ],
+            expected_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 5.7, 5.0),
+                ("1-002", "NR",  20, date(2026, 1, 1), 1.0, 1.5),
+                ("1-002", "NR",  20, date(2026, 1, 2), 2.2, 2.5),
+            ],
+        ),
+        ModelRateOfChangeInputOutputTestCase(
+            id="time_window_taken_into_account",
+            input_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 2.9, 3.0),
+                ("1-001", "CHO", 10, date(2026, 1, 3), 2.8, 4.0),
+                ("1-001", "CHO", 10, date(2026, 1, 4), 2.7, 5.0),
+                ("1-001", "CHO", 10, date(2026, 1, 5), 2.6, 6.0),
+            ],
+            expected_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0,  2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 5.9,  5.0), # sum of 1st - 2nd Jan (tests based on a 3 day window)
+                ("1-001", "CHO", 10, date(2026, 1, 3), 8.7,  9.0), # sum of 1st - 3rd Jan
+                ("1-001", "CHO", 10, date(2026, 1, 4), 8.4, 12.0), # sum of 2nd - 4th Jan
+                ("1-001", "CHO", 10, date(2026, 1, 5), 8.1, 15.0), # sum of 3rd - 5th Jan
+            ],
+        ),
+    ] # fmt: skip
+
+    clean_non_residential_rate_of_change_test_cases = [
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="no_threshold_population_filters_non_residential_rows",
+            data=[
+                # non-residential → falls into "small" condition → kept
+                ("1-001", CareHome.not_care_home, date(2026, 1, 1), 2.0, 3.0, 2.0, 3.0),
+                ("1-001", CareHome.not_care_home, date(2026, 1, 2), 3.0, 2.0, 3.0, 2.0),
+                # care home always kept
+                ("1-002", CareHome.care_home,     date(2026, 1, 1), 2.0, 3.0, 2.0, 3.0),
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="null_inputs_produce_null_outputs",
+            data=[
+                ("1-001", CareHome.not_care_home, date(2026, 1, 1), None, 3.0, None, None),
+                ("1-001", CareHome.not_care_home, date(2026, 1, 2), 3.0, None, None, None),
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="care_home_rows_bypass_cleaning_rules",
+            data=[
+                ("1-001", CareHome.care_home, date(2026, 1, 1), 10.0, 1000.0, 10.0, 1000.0),
+            ],
+        ),
+    ] # fmt: skip
+
+    calculate_trendline_test_cases = [
+        ModelRateOfChangeInputOutputTestCase(
+            id="trendline_with_single_group",
+            input_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), 1.2),
+                ("CHO", 1, date(2026, 1, 3), 1.0),
+                ("CHO", 1, date(2026, 1, 4), 0.8),
+            ],
+            expected_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), 1.2),
+                ("CHO", 1, date(2026, 1, 3), 1.2),
+                ("CHO", 1, date(2026, 1, 4), 0.96),
+            ],
+        ),
+        ModelRateOfChangeInputOutputTestCase(
+            id="trendline_with_multiple_groups",
+            input_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), 1.2),
+                ("CHO", 2, date(2026, 1, 1), 1.0),
+                ("CHO", 2, date(2026, 1, 2), 1.1),
+                ("NR", 1, date(2026, 1, 1), 1.0),
+                ("NR", 1, date(2026, 1, 2), 0.8),
+            ],
+            expected_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), 1.2),
+                ("CHO", 2, date(2026, 1, 1), 1.0),
+                ("CHO", 2, date(2026, 1, 2), 1.1),
+                ("NR", 1, date(2026, 1, 1), 1.0),
+                ("NR", 1, date(2026, 1, 2), 0.8),
             ],
         ),
     ]

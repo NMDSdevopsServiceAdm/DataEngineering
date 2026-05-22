@@ -1,7 +1,12 @@
+from dataclasses import dataclass
+
 import polars as pl
 
 from polars_utils import utils, cleaning_utils as cUtils
-
+from polars_utils.expressions import is_care_home
+from projects._03_independent_cqc._03_impute.fargate.utils.primary_service_rate_of_change import (
+    model_primary_service_rate_of_change_trendline,
+)
 from projects._03_independent_cqc._03_impute.fargate.utils.convert_pir_people_to_filled_posts import (
     convert_pir_to_filled_posts,
 )
@@ -11,10 +16,13 @@ from projects._03_independent_cqc._03_impute.fargate.utils.forward_fill_latest_k
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-def main(
-    cleaned_ind_cqc_source: str,
-    destination: str,
-) -> None:
+@dataclass
+class NumericalValues:
+    number_of_days_in_window: int = 95  # Note: using 95 as a proxy for 3 months
+    max_number_of_days_to_interpolate_between: int = 185  # proxy for 6 months
+
+
+def main(cleaned_ind_cqc_source: str, destination: str) -> None:
     """
     Impute values into ASC-WDS, PIR and Capacity Tracker data.
 
@@ -35,11 +43,21 @@ def main(
         IndCQC.filled_posts_per_bed_ratio,
     )
 
-    # create_unix_timestamp_variable_from_date_column
+    lf = lf.with_columns(
+        pl.when(is_care_home())
+        .then(pl.col(IndCQC.filled_posts_per_bed_ratio))
+        .otherwise(pl.col(IndCQC.ascwds_filled_posts_dedup_clean))
+        .cast(pl.Float32)
+        .alias(IndCQC.combined_ratio_and_filled_posts)
+    )
 
-    # combine_care_home_and_non_res_values_into_single_column - combined_ratio_and_filled_posts
-
-    # model_primary_service_rate_of_change_trendline - ascwds_rate_of_change_trendline_model
+    lf = model_primary_service_rate_of_change_trendline(
+        lf,
+        IndCQC.combined_ratio_and_filled_posts,
+        NumericalValues.number_of_days_in_window,
+        IndCQC.ascwds_rate_of_change_trendline_model,
+        max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
+    )
 
     lf = convert_pir_to_filled_posts(lf)
 
@@ -55,11 +73,33 @@ def main(
 
     # model_calculate_rolling_average - banded_bed_ratio_rolling_average_model
 
-    # convert_care_home_ratios_to_posts
+    # convert_care_home_ratios_to_posts - unhash after `model_calculate_rolling_average` converted
+    # lf = lf.with_columns(
+    #     pl.when(is_care_home())
+    #     .then(
+    #         pl.col(IndCQC.banded_bed_ratio_rolling_average_model)
+    #         * pl.col(IndCQC.number_of_beds)
+    #     )
+    #     .otherwise(pl.col(IndCQC.posts_rolling_average_model))
+    #     .cast(pl.Float32)
+    #     .alias(IndCQC.posts_rolling_average_model)
+    # )
 
-    # combine_care_home_and_non_res_values_into_single_column - ct_combined_care_home_and_non_res
+    lf = lf.with_columns(
+        pl.when(is_care_home())
+        .then(pl.col(IndCQC.ct_care_home_total_employed_cleaned))
+        .otherwise(pl.col(IndCQC.ct_non_res_care_workers_employed_cleaned))
+        .cast(pl.Float32)
+        .alias(IndCQC.ct_combined_care_home_and_non_res)
+    )
 
-    # model_primary_service_rate_of_change_trendline - ct_combined_care_home_and_non_res_rate_of_change_trendline
+    lf = model_primary_service_rate_of_change_trendline(
+        lf,
+        IndCQC.ct_combined_care_home_and_non_res,
+        NumericalValues.number_of_days_in_window,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+        max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
+    )
 
     # model_imputation_with_extrapolation_and_interpolation - ct_care_home_total_employed_imputed
 
