@@ -1,6 +1,8 @@
 import sys
-import polars as pl
+
 import pointblank as pb
+import polars as pl
+
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS

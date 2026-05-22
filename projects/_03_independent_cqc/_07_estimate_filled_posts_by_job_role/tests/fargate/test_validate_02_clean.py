@@ -1,11 +1,12 @@
 import json
 import unittest
-from unittest.mock import Mock, patch
 from datetime import date
+from unittest.mock import Mock, patch
 
 import polars as pl
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_02_clean as job
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_02_clean"
 
