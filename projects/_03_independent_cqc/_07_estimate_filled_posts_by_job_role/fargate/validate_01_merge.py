@@ -20,9 +20,9 @@ ind_cqc_merge_job_role_cols_to_import = [
     IndCqcColumns.id_per_locationid_import_date,
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
-    # IndCqcColumns.primary_service_type,
-    # IndCqcColumns.estimate_filled_posts,
-    # IndCqcColumns.estimate_filled_posts_source,
+    IndCqcColumns.primary_service_type,
+    IndCqcColumns.estimate_filled_posts,
+    IndCqcColumns.estimate_filled_posts_source,
     IndCqcColumns.main_job_role_clean_labelled,
     # IndCqcColumns.ascwds_filled_posts_dedup_clean,
     # IndCqcColumns.ascwds_job_role_counts,
@@ -107,18 +107,18 @@ def main(
             brief=f"Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
         )
         # # complete columns
-        # .col_vals_not_null(
-        #     [
-        #         IndCqcColumns.id_per_locationid_import_date,
-        #         IndCqcColumns.location_id,
-        #         IndCqcColumns.cqc_location_import_date,
-        #         IndCqcColumns.primary_service_type,
-        #         IndCqcColumns.estimate_filled_posts,
-        #         IndCqcColumns.estimate_filled_posts_source,
-        #         IndCqcColumns.main_job_role_clean_labelled,
-        #     ],
-        #     brief=f"Required columns should contain no null values",
-        # )
+        .col_vals_not_null(
+            [
+                IndCqcColumns.id_per_locationid_import_date,
+                IndCqcColumns.location_id,
+                IndCqcColumns.cqc_location_import_date,
+                IndCqcColumns.primary_service_type,
+                IndCqcColumns.estimate_filled_posts,
+                IndCqcColumns.estimate_filled_posts_source,
+                IndCqcColumns.main_job_role_clean_labelled,
+            ],
+            brief=f"Required columns should contain no null values",
+        )
         # # Numeric range — strictly positive (nulls allowed)
         # .col_vals_gt(
         #     columns=[
