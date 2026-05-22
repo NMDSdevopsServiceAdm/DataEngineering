@@ -106,15 +106,6 @@ def main(
             ],
             brief=f"Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
         )
-        # # id_per_locationid_import_date unique within each location/import-date pair
-        .rows_distinct(
-            columns_subset=[
-                IndCqcColumns.location_id,
-                IndCqcColumns.cqc_location_import_date,
-                IndCqcColumns.id_per_locationid_import_date,
-            ],
-            brief=f"id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
-        )
         # # complete columns
         # .col_vals_not_null(
         #     [
@@ -151,6 +142,21 @@ def main(
         #     value=CQC_EARLIEST_IMPORT_DATE,
         #     brief=f"cqc_location_import_date should not be before {CQC_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
         # )
+        # # id_per_locationid_import_date unique within each location/import-date pair
+        .col_vals_expr(
+            expr=(
+                pl.col(IndCqcColumns.id_per_locationid_import_date)
+                .n_unique()
+                .over(
+                    [
+                        IndCqcColumns.location_id,
+                        IndCqcColumns.cqc_location_import_date,
+                    ]
+                )
+                == 1
+            ),
+            brief="id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
+        )
         # # Cross-column numeric constraint
         # .col_vals_expr(
         #     expr=(
