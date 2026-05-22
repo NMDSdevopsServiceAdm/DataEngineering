@@ -18,12 +18,12 @@ from utils.column_values.categorical_columns_by_dataset import (
 
 ind_cqc_merge_job_role_cols_to_import = [
     IndCqcColumns.id_per_locationid_import_date,
-    # IndCqcColumns.location_id,
-    # IndCqcColumns.cqc_location_import_date,
+    IndCqcColumns.location_id,
+    IndCqcColumns.cqc_location_import_date,
     # IndCqcColumns.primary_service_type,
     # IndCqcColumns.estimate_filled_posts,
     # IndCqcColumns.estimate_filled_posts_source,
-    # IndCqcColumns.main_job_role_clean_labelled,
+    IndCqcColumns.main_job_role_clean_labelled,
     # IndCqcColumns.ascwds_filled_posts_dedup_clean,
     # IndCqcColumns.ascwds_job_role_counts,
 ]
@@ -71,12 +71,12 @@ def main(
     # source_lf = source_lf.with_columns(
     #     pl.col(IndCqcColumns.main_job_role_clean_labelled).cast(pl.String)
     # )
-    compare_df = utils.read_parquet(
-        source=f"s3://{bucket_name}/{compare_path}",
-        selected_columns=ind_cqc_estimates_cols_to_import,
-    )
+    # compare_df = utils.read_parquet(
+    #     source=f"s3://{bucket_name}/{compare_path}",
+    #     selected_columns=ind_cqc_estimates_cols_to_import,
+    # )
     # compare_row_count = compare_lf.select(pl.len()).collect().item()
-    expected_row_count = compare_df.height * len(jobGroupDict.all_roles())
+    # expected_row_count = compare_df.height * len(jobGroupDict.all_roles())
 
     validation = (
         pb.Validate(
@@ -93,28 +93,28 @@ def main(
         #     brief="All columns should have the expected data types",
         # )
         # dataset size
-        .row_count_match(
-            expected_row_count,
-            brief=f"Estimates file has {source_df.height} rows and expects {expected_row_count} rows",
-        )
+        # .row_count_match(
+        #     expected_row_count,
+        #     brief=f"Estimates file has {source_df.height} rows and expects {expected_row_count} rows",
+        # )
         # Composite primary key
-        # .rows_distinct(
-        #     columns_subset=[
-        #         IndCqcColumns.location_id,
-        #         IndCqcColumns.cqc_location_import_date,
-        #         IndCqcColumns.main_job_role_clean_labelled,
-        #     ],
-        #     brief=f"Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
-        # )
+        .rows_distinct(
+            columns_subset=[
+                IndCqcColumns.location_id,
+                IndCqcColumns.cqc_location_import_date,
+                IndCqcColumns.main_job_role_clean_labelled,
+            ],
+            brief=f"Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
+        )
         # # id_per_locationid_import_date unique within each location/import-date pair
-        # .rows_distinct(
-        #     columns_subset=[
-        #         IndCqcColumns.location_id,
-        #         IndCqcColumns.cqc_location_import_date,
-        #         IndCqcColumns.id_per_locationid_import_date,
-        #     ],
-        #     brief=f"id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
-        # )
+        .rows_distinct(
+            columns_subset=[
+                IndCqcColumns.location_id,
+                IndCqcColumns.cqc_location_import_date,
+                IndCqcColumns.id_per_locationid_import_date,
+            ],
+            brief=f"id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
+        )
         # # complete columns
         # .col_vals_not_null(
         #     [
