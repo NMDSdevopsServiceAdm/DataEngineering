@@ -5,6 +5,9 @@ from polars_utils import utils
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     CatagoricalColumnTypes as CatColType,
 )
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    add_job_role_groups_column,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
@@ -54,14 +57,22 @@ def main(
         IndCQC.ascwds_filled_posts_dedup_clean,
     )
 
+    estimated_job_role_posts_lf = add_job_role_groups_column(
+        estimated_job_role_posts_lf, IndCQC.main_job_group_labelled
+    )
+
     estimated_job_role_posts_lf = cUtils.filter_job_role_group_equal_zero(
         estimated_job_role_posts_lf
     )
 
-    # estimated_job_role_posts_lf = cUtils.filter_job_role_group_outliers(
-    #     estimated_job_role_posts_lf
-    # )
+    estimated_job_role_posts_lf = cUtils.filter_job_role_group_outliers(
+        estimated_job_role_posts_lf
+    )
 
+    # Drop job role group as this will be reallocated in later job
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.drop(
+        IndCQC.main_job_group_labelled
+    )
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
         output_path=cleaned_data_destination,

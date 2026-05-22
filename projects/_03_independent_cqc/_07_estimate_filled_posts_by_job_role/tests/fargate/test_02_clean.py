@@ -46,7 +46,6 @@ class MainTests(unittest.TestCase):
             IndCQC.main_job_role_clean_labelled: ["care_worker"],
             IndCQC.registered_manager_names: [["Manager 1", "Manager 2"]],
             IndCQC.job_group_dist_out_of_bounds: False,
-            IndCQC.job_group_equal_zero: False,
         },
         schema={
             IndCQC.id_per_locationid_import_date: pl.UInt32,
@@ -59,7 +58,6 @@ class MainTests(unittest.TestCase):
             IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
             IndCQC.registered_manager_names: pl.List(str),
             IndCQC.job_group_dist_out_of_bounds: pl.Boolean,
-            IndCQC.job_group_equal_zero: pl.Boolean,
         },
     )
 

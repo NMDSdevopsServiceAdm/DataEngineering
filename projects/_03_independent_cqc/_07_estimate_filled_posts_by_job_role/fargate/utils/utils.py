@@ -64,7 +64,6 @@ def add_job_role_groups_column(
         job_group_column_name: pl.Enum(
             list(
                 set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values())
-                | {"man_or_reg_prof"}
             )
         ),
     }
