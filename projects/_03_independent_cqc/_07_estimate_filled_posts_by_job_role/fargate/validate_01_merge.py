@@ -68,6 +68,9 @@ def main(
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=ind_cqc_merge_job_role_cols_to_import,
     )
+    source_df = source_df.with_columns(
+        pl.col(IndCqcColumns.main_job_role_clean_labelled).cast(pl.String)
+    )
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=ind_cqc_estimates_cols_to_import,
