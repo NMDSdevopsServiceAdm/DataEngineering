@@ -70,7 +70,7 @@ def filter_job_role_group_outliers(
     Returns:
         pl.LazyFrame: LazyFrame with outliers in job role groups filtered.
     """
-    # Define temporary column names
+
     Exprs = FilterJobRoleGroupExpressions(
         upper_percentile_bound, lower_percentile_bound
     )
@@ -117,17 +117,15 @@ def filter_job_role_group_outliers(
             .then(pl.lit(True))
             .otherwise(pl.lit(False))
             .cast(pl.Boolean)
-            .alias(IndCQC.job_group_dist_out_of_bounds)
+            .alias(IndCQC.job_role_filtering_rule)
         )
-        .select(
-            IndCQC.id_per_locationid_import_date, IndCQC.job_group_dist_out_of_bounds
-        )
+        .select(IndCQC.id_per_locationid_import_date, IndCQC.job_role_filtering_rule)
     )
 
     lf = lf.join(
         piv_lf, on=IndCQC.id_per_locationid_import_date, how="left"
     ).with_columns(  # 6. Null ascwds_job_role_counts_column
-        pl.when(pl.col(IndCQC.job_group_dist_out_of_bounds))
+        pl.when(pl.col(IndCQC.job_role_filtering_rule))
         .then(None)
         .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
         .alias(IndCQC.ascwds_job_role_counts)

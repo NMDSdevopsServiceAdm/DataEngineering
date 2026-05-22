@@ -1,6 +1,8 @@
-import polars as pl
 from datetime import date
-from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
+
+import polars as pl
+
+from polars_utils.filtering_utils import (
     update_filtering_rule,
 )
 from polars_utils.expressions import is_not_care_home

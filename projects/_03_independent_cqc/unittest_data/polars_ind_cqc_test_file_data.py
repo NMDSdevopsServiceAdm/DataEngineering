@@ -14,6 +14,7 @@ from utils.column_values.categorical_column_values import (
     CTFilteringRule,
     Dormancy,
     JobGroupLabels,
+    JobRoleFilteringRule,
     MainJobRoleLabels,
     PrimaryServiceType,
     Region,
@@ -849,46 +850,6 @@ class ArchiveFilledPostsEstimates:
 
 @dataclass
 class CleanFilteringUtilsData:
-    add_filtering_column_rows = [
-        ("loc 1", 10.0),
-        ("loc 2", None),
-    ]
-    expected_add_filtering_column_rows = [
-        ("loc 1", 10.0, AscwdsFilteringRule.populated),
-        ("loc 2", None, AscwdsFilteringRule.missing_data),
-    ]
-
-    update_filtering_rule_populated_to_nulled_rows = [
-        ("loc 1", 10.0, 10.0, AscwdsFilteringRule.populated),
-        ("loc 2", 10.0, None, AscwdsFilteringRule.populated),
-        ("loc 3", 10.0, None, AscwdsFilteringRule.missing_data),
-    ]
-    expected_update_filtering_rule_populated_to_nulled_rows = [
-        ("loc 1", 10.0, 10.0, AscwdsFilteringRule.populated),
-        ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
-        ("loc 3", 10.0, None, AscwdsFilteringRule.missing_data),
-    ] # fmt: skip
-
-    update_filtering_rule_populated_to_winsorized_rows = [
-        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.populated),
-        ("loc 2", 10.0, 11.0, AscwdsFilteringRule.populated),
-        ("loc 3", 10.0, 10.0, AscwdsFilteringRule.populated),
-    ]
-    expected_update_filtering_rule_populated_to_winsorized_rows = [
-        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
-        ("loc 2", 10.0, 11.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
-        ("loc 3", 10.0, 10.0, AscwdsFilteringRule.populated),
-    ] # fmt: skip
-
-    update_filtering_rule_winsorized_to_nulled_rows = [
-        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
-        ("loc 2", 10.0, None, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
-    ]
-    expected_update_filtering_rule_winsorized_to_nulled_rows = [
-        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
-        ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
-    ] # fmt: skip
-
     aggregate_values_to_provider_level_rows = [
         ("1-001", "1-0001", 1, date(2025, 1, 1)),
         ("1-002", "1-0001", 1, date(2025, 1, 1)),
@@ -2986,18 +2947,18 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
                 (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, JobGroupLabels.other, 1),
             ],
             expected_data=[
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, True),
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, True),
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, JobGroupLabels.managers, None, True),
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, JobGroupLabels.other, None, True),
-                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 20, False),
-                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 2, False),
-                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, JobGroupLabels.managers, 1, False),
-                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, JobGroupLabels.other, 1, False),
-                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, True),
-                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, True),
-                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, JobGroupLabels.managers, None, True),
-                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, JobGroupLabels.other, None, True),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, JobGroupLabels.managers, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, JobGroupLabels.other, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 20, JobRoleFilteringRule.populated),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 2, JobRoleFilteringRule.populated),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, JobGroupLabels.managers, 1, JobRoleFilteringRule.populated),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, JobGroupLabels.other, 1, JobRoleFilteringRule.populated),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, JobGroupLabels.managers, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, JobGroupLabels.other, None, JobRoleFilteringRule.job_role_group_is_outlier),
             ],
             upper_bound=0.8,
             lower_bound=0.2,
@@ -3023,22 +2984,22 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
                 (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, JobGroupLabels.other, 1),
             ],
             expected_data=[
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, True),
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, True),
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, JobGroupLabels.managers, None, True),
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, JobGroupLabels.other, None, True),
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.occupational_therapist, JobGroupLabels.regulated_professions, None, True),
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.middle_management, JobGroupLabels.managers, None, True),
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.admin_staff, JobGroupLabels.other, None, True),
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.senior_care_worker, JobGroupLabels.direct_care, None, True),
-                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 20, False),
-                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 1, False),
-                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, JobGroupLabels.managers, 2, False),
-                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, JobGroupLabels.other, 1, False),
-                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, True),
-                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, True),
-                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, JobGroupLabels.managers, None, True),
-                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, JobGroupLabels.other, None, True),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, JobGroupLabels.managers, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, JobGroupLabels.other, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.occupational_therapist, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.middle_management, JobGroupLabels.managers, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.admin_staff, JobGroupLabels.other, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.senior_care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 20, JobRoleFilteringRule.populated),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 1, JobRoleFilteringRule.populated),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, JobGroupLabels.managers, 2, JobRoleFilteringRule.populated),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, JobGroupLabels.other, 1, JobRoleFilteringRule.populated),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, JobGroupLabels.managers, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, JobGroupLabels.other, None, JobRoleFilteringRule.job_role_group_is_outlier),
             ],
             upper_bound=0.8,
             lower_bound=0.2,
@@ -3050,8 +3011,8 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
                 (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 5),
             ],
             expected_data=[
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 5, False),
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 5, False),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 5, JobRoleFilteringRule.populated),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 5, JobRoleFilteringRule.populated),
             ],
             upper_bound=0.8,
             lower_bound=0.2,
@@ -3073,18 +3034,18 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
                 (6, "loc6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 1),
             ],
             expected_data=[
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, True),
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, True),
-                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 20, False),
-                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 2, False),
-                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, True),
-                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, True),
-                (4, "loc4", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, True),
-                (4, "loc4", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, True),
-                (5, "loc5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 10, False),
-                (5, "loc5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 2, False),
-                (6, "loc6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, True),
-                (6, "loc6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, True),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 20, JobRoleFilteringRule.populated),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 2, JobRoleFilteringRule.populated),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (4, "loc4", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (4, "loc4", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (5, "loc5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 10, JobRoleFilteringRule.populated),
+                (5, "loc5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 2, JobRoleFilteringRule.populated),
+                (6, "loc6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (6, "loc6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.job_role_group_is_outlier),
             ],
             upper_bound=0.8,
             lower_bound=0.2,
@@ -3106,18 +3067,18 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
                 (6, "loc3", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 1),
             ],
             expected_data=[
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, True),
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, True),
-                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, True),
-                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, True),
-                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 1, False),
-                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 1, False),
-                (4, "loc1", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 2, False),
-                (4, "loc1", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 1, False),
-                (5, "loc2", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 1, False),
-                (5, "loc2", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 1, False),
-                (6, "loc3", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 1, False),
-                (6, "loc3", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 1, False),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.job_role_group_is_outlier),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 1, JobRoleFilteringRule.populated),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 1, JobRoleFilteringRule.populated),
+                (4, "loc1", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 2, JobRoleFilteringRule.populated),
+                (4, "loc1", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 1, JobRoleFilteringRule.populated),
+                (5, "loc2", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 1, JobRoleFilteringRule.populated),
+                (5, "loc2", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 1, JobRoleFilteringRule.populated),
+                (6, "loc3", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 1, JobRoleFilteringRule.populated),
+                (6, "loc3", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 1, JobRoleFilteringRule.populated),
             ],
             upper_bound=0.8,
             lower_bound=0.2,
@@ -3128,7 +3089,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
                 (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None),
             ],
             expected_data=[
-                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, False),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.populated),
             ],
             upper_bound=0.8,
             lower_bound=0.2,
@@ -3144,13 +3105,13 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
         (0.1,    0.2,    0.3,    0.4,    20),
     ] # fmt: skip
     test_evaluation_expr_rows = [
-        (0.1, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, False), # All within bounds
-        (0.3, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Direct care above upper bound
-        (0.1, 0.3, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Managers above upper bound
-        (0.1, 0.1, 0.3, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Regulated professionals above upper bound
-        (0.1, 0.1, 0.1, 0.3, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Other above upper bound
-        (0.01, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Direct care below lower bound
-        (0.01, 0.3, 0.3, 0.3, 0.2, 0.2, 0.2, 0.2, 0.05, True), # All out of bounds
+        (0.1, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, JobRoleFilteringRule.populated), # All within bounds
+        (0.3, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, JobRoleFilteringRule.job_role_group_is_outlier), # Direct care above upper bound
+        (0.1, 0.3, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, JobRoleFilteringRule.job_role_group_is_outlier), # Managers above upper bound
+        (0.1, 0.1, 0.3, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, JobRoleFilteringRule.job_role_group_is_outlier), # Regulated professionals above upper bound
+        (0.1, 0.1, 0.1, 0.3, 0.2, 0.2, 0.2, 0.2, 0.05, JobRoleFilteringRule.job_role_group_is_outlier), # Other above upper bound
+        (0.01, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, JobRoleFilteringRule.job_role_group_is_outlier), # Direct care below lower bound
+        (0.01, 0.3, 0.3, 0.3, 0.2, 0.2, 0.2, 0.2, 0.05, JobRoleFilteringRule.job_role_group_is_outlier), # All out of bounds
     ] # fmt: skip
     expected_bounds_expressions_rows = [
         (0.0625, 0.1875, 0.3125, 0.4375, 0.0925, 0.1975, 0.31, 0.43, 0.07, 0.19, 0.3025, 0.4075),
@@ -3167,10 +3128,30 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
                 (1, MainJobRoleLabels.registered_nurse, 1),
             ],
             expected_data=[
-                (1, MainJobRoleLabels.care_worker, None, True),
-                (1, MainJobRoleLabels.senior_care_worker, None, True),
-                (1, MainJobRoleLabels.first_line_manager, None, True),
-                (1, MainJobRoleLabels.registered_nurse, None, True),
+                (
+                    1,
+                    MainJobRoleLabels.care_worker,
+                    None,
+                    JobRoleFilteringRule.missing_direct_care_or_managers_and_profs,
+                ),
+                (
+                    1,
+                    MainJobRoleLabels.senior_care_worker,
+                    None,
+                    JobRoleFilteringRule.missing_direct_care_or_managers_and_profs,
+                ),
+                (
+                    1,
+                    MainJobRoleLabels.first_line_manager,
+                    None,
+                    JobRoleFilteringRule.missing_direct_care_or_managers_and_profs,
+                ),
+                (
+                    1,
+                    MainJobRoleLabels.registered_nurse,
+                    None,
+                    JobRoleFilteringRule.missing_direct_care_or_managers_and_profs,
+                ),
             ],
         ),
         EstimateFilledPostsByJobRoleCleanUtilsTestCase(
@@ -3182,10 +3163,30 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
                 (1, MainJobRoleLabels.registered_nurse, 0),
             ],
             expected_data=[
-                (1, MainJobRoleLabels.care_worker, None, True),
-                (1, MainJobRoleLabels.senior_care_worker, None, True),
-                (1, MainJobRoleLabels.first_line_manager, None, True),
-                (1, MainJobRoleLabels.registered_nurse, None, True),
+                (
+                    1,
+                    MainJobRoleLabels.care_worker,
+                    None,
+                    JobRoleFilteringRule.missing_direct_care_or_managers_and_profs,
+                ),
+                (
+                    1,
+                    MainJobRoleLabels.senior_care_worker,
+                    None,
+                    JobRoleFilteringRule.missing_direct_care_or_managers_and_profs,
+                ),
+                (
+                    1,
+                    MainJobRoleLabels.first_line_manager,
+                    None,
+                    JobRoleFilteringRule.missing_direct_care_or_managers_and_profs,
+                ),
+                (
+                    1,
+                    MainJobRoleLabels.registered_nurse,
+                    None,
+                    JobRoleFilteringRule.missing_direct_care_or_managers_and_profs,
+                ),
             ],
         ),
         EstimateFilledPostsByJobRoleCleanUtilsTestCase(
@@ -3216,14 +3217,49 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
                 (2, MainJobRoleLabels.registered_nurse, 1),
             ],
             expected_data=[
-                (1, MainJobRoleLabels.care_worker, None, True),
-                (1, MainJobRoleLabels.senior_care_worker, None, True),
-                (1, MainJobRoleLabels.first_line_manager, None, True),
-                (1, MainJobRoleLabels.registered_nurse, None, True),
-                (2, MainJobRoleLabels.care_worker, 1, False),
-                (2, MainJobRoleLabels.senior_care_worker, 1, False),
-                (2, MainJobRoleLabels.first_line_manager, 1, False),
-                (2, MainJobRoleLabels.registered_nurse, 1, False),
+                (
+                    1,
+                    MainJobRoleLabels.care_worker,
+                    None,
+                    JobRoleFilteringRule.missing_direct_care_or_managers_and_profs,
+                ),
+                (
+                    1,
+                    MainJobRoleLabels.senior_care_worker,
+                    None,
+                    JobRoleFilteringRule.missing_direct_care_or_managers_and_profs,
+                ),
+                (
+                    1,
+                    MainJobRoleLabels.first_line_manager,
+                    None,
+                    JobRoleFilteringRule.missing_direct_care_or_managers_and_profs,
+                ),
+                (
+                    1,
+                    MainJobRoleLabels.registered_nurse,
+                    None,
+                    JobRoleFilteringRule.missing_direct_care_or_managers_and_profs,
+                ),
+                (2, MainJobRoleLabels.care_worker, 1, JobRoleFilteringRule.populated),
+                (
+                    2,
+                    MainJobRoleLabels.senior_care_worker,
+                    1,
+                    JobRoleFilteringRule.populated,
+                ),
+                (
+                    2,
+                    MainJobRoleLabels.first_line_manager,
+                    1,
+                    JobRoleFilteringRule.populated,
+                ),
+                (
+                    2,
+                    MainJobRoleLabels.registered_nurse,
+                    1,
+                    JobRoleFilteringRule.populated,
+                ),
             ],
         ),
     ]

@@ -4,6 +4,7 @@ from datetime import date
 from pathlib import Path
 
 from utils.column_values.categorical_column_values import (
+    AscwdsFilteringRule,
     CareHome,
 )
 
@@ -158,3 +159,46 @@ class RawDataAdjustmentsData:
     ]
 
     expected_locations_data = locations_data_without_rows_to_remove
+
+
+@dataclass
+class FilteringUtilsData:
+    add_filtering_column_rows = [
+        ("loc 1", 10.0),
+        ("loc 2", None),
+    ]
+    expected_add_filtering_column_rows = [
+        ("loc 1", 10.0, AscwdsFilteringRule.populated),
+        ("loc 2", None, AscwdsFilteringRule.missing_data),
+    ]
+
+    update_filtering_rule_populated_to_nulled_rows = [
+        ("loc 1", 10.0, 10.0, AscwdsFilteringRule.populated),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.populated),
+        ("loc 3", 10.0, None, AscwdsFilteringRule.missing_data),
+    ]
+    expected_update_filtering_rule_populated_to_nulled_rows = [
+        ("loc 1", 10.0, 10.0, AscwdsFilteringRule.populated),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
+        ("loc 3", 10.0, None, AscwdsFilteringRule.missing_data),
+    ] # fmt: skip
+
+    update_filtering_rule_populated_to_winsorized_rows = [
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.populated),
+        ("loc 2", 10.0, 11.0, AscwdsFilteringRule.populated),
+        ("loc 3", 10.0, 10.0, AscwdsFilteringRule.populated),
+    ]
+    expected_update_filtering_rule_populated_to_winsorized_rows = [
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 2", 10.0, 11.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 3", 10.0, 10.0, AscwdsFilteringRule.populated),
+    ] # fmt: skip
+
+    update_filtering_rule_winsorized_to_nulled_rows = [
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+    ]
+    expected_update_filtering_rule_winsorized_to_nulled_rows = [
+        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
+        ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
+    ] # fmt: skip

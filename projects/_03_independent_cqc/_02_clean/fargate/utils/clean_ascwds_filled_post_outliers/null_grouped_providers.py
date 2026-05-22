@@ -3,7 +3,7 @@ from dataclasses import dataclass, fields
 import polars as pl
 
 import polars_utils.cleaning_utils as pUtils
-from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
+from polars_utils.filtering_utils import (
     update_filtering_rule,
 )
 from polars_utils.expressions import is_not_care_home, is_care_home

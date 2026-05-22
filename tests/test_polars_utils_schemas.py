@@ -85,3 +85,27 @@ class RawDataAdjustmentsSchemas:
             ("other_column", pl.String()),
         ]
     )
+
+
+@dataclass
+class FilteringUtilsSchemas:
+    add_filtering_column_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+        ]
+    )
+    expected_add_filtering_column_schema = pl.Schema(
+        list(add_filtering_column_schema.items())
+        + [
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+        ]
+    )
+    update_filtering_rule_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+        ]
+    )

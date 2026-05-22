@@ -42,7 +42,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     PrimaryServiceRateOfChangeColumns as ROC_TempCol,
 )
-from utils.column_values.categorical_column_values import JobGroupLabels
+from utils.column_values.categorical_column_values import (
+    JobGroupLabels,
+    JobRoleFilteringRule,
+)
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
@@ -800,27 +803,6 @@ class ArchiveFilledPostsEstimates:
 
 @dataclass
 class CleanFilteringUtilsSchemas:
-    add_filtering_column_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
-        ]
-    )
-    expected_add_filtering_column_schema = pl.Schema(
-        list(add_filtering_column_schema.items())
-        + [
-            (IndCQC.ascwds_filtering_rule, pl.String()),
-        ]
-    )
-    update_filtering_rule_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
-            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
-            (IndCQC.ascwds_filtering_rule, pl.String()),
-        ]
-    )
-
     aggregate_values_to_provider_level_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
@@ -1699,6 +1681,7 @@ class ModelRateOfChangeSchemas:
 @dataclass
 class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
     Cols = TempCols(None, None)
+    JRFR = JobRoleFilteringRule(IndCQC.job_role_filtering_rule)
     test_filter_schema = {
         IndCQC.id_per_locationid_import_date: pl.Int64,
         IndCQC.location_id: pl.String,
@@ -1728,7 +1711,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
             )
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
-        IndCQC.job_group_dist_out_of_bounds: pl.Boolean,
+        IndCQC.job_role_filtering_rule: pl.Enum(JRFR.categorical_values),
     }
     test_location_sum_schema = {
         JobGroupLabels.direct_care: pl.Int64,
@@ -1784,5 +1767,5 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
             AscwdsWorkerValueLabelsJobGroup.all_roles()
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
-        IndCQC.job_group_equal_zero: pl.Boolean,
+        IndCQC.job_role_filtering_rule: pl.Enum(JRFR.categorical_values),
     }
