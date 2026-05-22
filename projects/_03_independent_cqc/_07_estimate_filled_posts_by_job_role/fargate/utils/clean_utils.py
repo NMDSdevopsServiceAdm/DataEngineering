@@ -1,9 +1,11 @@
 import polars as pl
 
+from polars_utils.filtering_utils import update_filtering_rule
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     JobGroupLabels,
+    JobRoleFilteringRule,
 )
 
 
@@ -61,6 +63,7 @@ def filter_job_role_group_outliers(
     4. Calculate upper and lower percentile bounds of job group percentages for each job group and primary service type
     5. Flag where job role percentage is outside bounds
     6. Null ascwds_job_role_counts_column
+    7. Update filtering rule
 
     Args:
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
@@ -70,6 +73,7 @@ def filter_job_role_group_outliers(
     Returns:
         pl.LazyFrame: LazyFrame with outliers in job role groups filtered.
     """
+    temp_out_of_bounds_col: str = "location_out_of_bounds"
 
     Exprs = FilterJobRoleGroupExpressions(
         upper_percentile_bound, lower_percentile_bound
@@ -117,18 +121,29 @@ def filter_job_role_group_outliers(
             .then(pl.lit(True))
             .otherwise(pl.lit(False))
             .cast(pl.Boolean)
-            .alias(IndCQC.job_role_filtering_rule)
+            .alias(temp_out_of_bounds_col)
         )
-        .select(IndCQC.id_per_locationid_import_date, IndCQC.job_role_filtering_rule)
+        .select(IndCQC.id_per_locationid_import_date, temp_out_of_bounds_col)
     )
 
-    lf = lf.join(
-        piv_lf, on=IndCQC.id_per_locationid_import_date, how="left"
-    ).with_columns(  # 6. Null ascwds_job_role_counts_column
-        pl.when(pl.col(IndCQC.job_role_filtering_rule))
-        .then(None)
-        .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
-        .alias(IndCQC.ascwds_job_role_counts)
+    lf = (
+        lf.join(piv_lf, on=IndCQC.id_per_locationid_import_date, how="left")
+        .with_columns(  # 6. Null ascwds_job_role_counts_column
+            pl.when(pl.col(temp_out_of_bounds_col))
+            .then(None)
+            .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
+            .alias(IndCQC.ascwds_job_role_counts)
+        )
+        .drop(temp_out_of_bounds_col)
+    )
+
+    lf = update_filtering_rule(  # 7. Add filtering rule
+        lf,
+        filter_rule_col_name=IndCQC.job_role_filtering_rule,
+        raw_col_name=IndCQC.ascwds_job_role_counts,
+        clean_col_name=IndCQC.ascwds_job_role_counts,
+        populated_rule=JobRoleFilteringRule.populated,
+        new_rule_name=JobRoleFilteringRule.job_role_group_is_outlier,
     )
     return lf
 

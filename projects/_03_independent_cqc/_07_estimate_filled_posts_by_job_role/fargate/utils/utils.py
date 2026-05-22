@@ -9,6 +9,9 @@ from utils.column_values.categorical_column_values import (
     MainJobRoleLabels,
     PrimaryServiceType,
 )
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as JRValues,
+)
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
@@ -238,4 +241,7 @@ class CatagoricalColumnTypes:
             PrimaryServiceType.care_home_with_nursing,
             PrimaryServiceType.non_residential,
         ]
+    )
+    JobRoleFilteringRuleEnumType = pl.Enum(
+        JRValues.job_role_filtering_rule_column_values.categorical_values
     )

@@ -9,6 +9,7 @@ def add_filtering_rule_column(
     col_to_filter: str,
     populated_rule: str,
     missing_rule: str,
+    enum_values: list[str] = None,
 ) -> pl.LazyFrame:
     """
     Adds a column which flags if data is present or missing.
@@ -23,17 +24,28 @@ def add_filtering_rule_column(
         col_to_filter (str): The name of the column to check for nulls.
         populated_rule (str): The value to assign when data is present.
         missing_rule (str): The value to assign when data is null.
+        enum_values (list[str]): If provided, creates a pl.Enum col using the
+            list as all possible values.
 
     Returns:
         pl.LazyFrame: A LazyFrame with an additional column indicating
         whether data is present or missing.
     """
-    lf = lf.with_columns(
-        pl.when(pl.col(col_to_filter).is_not_null())
-        .then(pl.lit(populated_rule))
-        .otherwise(pl.lit(missing_rule))
-        .alias(filter_rule_col_name)
-    )
+    if enum_values:
+        lf = lf.with_columns(
+            pl.when(pl.col(col_to_filter).is_not_null())
+            .then(pl.lit(populated_rule))
+            .otherwise(pl.lit(missing_rule))
+            .cast(pl.Enum(enum_values))
+            .alias(filter_rule_col_name)
+        )
+    else:
+        lf = lf.with_columns(
+            pl.when(pl.col(col_to_filter).is_not_null())
+            .then(pl.lit(populated_rule))
+            .otherwise(pl.lit(missing_rule))
+            .alias(filter_rule_col_name)
+        )
     return lf
 
 

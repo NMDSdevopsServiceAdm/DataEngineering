@@ -604,6 +604,7 @@ class JobRoleFilteringRule(ColumnValues):
     """The possible reasons or filtering job role data"""
 
     populated: str = "populated"
+    missing_raw_data: str = "missing_raw_data"
     missing_direct_care_or_managers_and_profs: str = (
         "missing_direct_care_or_managers_and_professionals"
     )

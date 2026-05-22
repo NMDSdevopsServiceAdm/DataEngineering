@@ -140,18 +140,21 @@ class TestFilterJobRoleGroupExpressions:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     def test_evaluation_expression(self):
-        expected_lf = pl.LazyFrame(
+        test_lf = pl.LazyFrame(
             Data.test_evaluation_expr_rows,
             Schemas.test_evaluation_expr_schema,
             orient="row",
         )
-        test_lf = expected_lf.drop("location_out_of_bounds")
+        expected_lf = pl.LazyFrame(
+            Data.expected_evaluation_expr_rows,
+            Schemas.test_evaluation_expr_schema,
+            orient="row",
+        )
         returned_lf = test_lf.with_columns(
             pl.when(self.TestExprs.evaluation_expr)
-            .then(pl.lit(True))
-            .otherwise(pl.lit(False))
-            .cast(pl.Boolean)
-            .alias("location_out_of_bounds")
+            .then(None)
+            .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
+            .alias(IndCQC.ascwds_job_role_counts)
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

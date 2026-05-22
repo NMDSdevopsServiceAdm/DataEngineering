@@ -1,15 +1,16 @@
 import unittest
-from datetime import date
 from unittest.mock import ANY, Mock, call, patch
 
 import polars as pl
 import polars.testing as pltesting
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate._02_clean as job
-from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
-    CatagoricalColumnTypes as CatColType,
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    EstimateFilledPostsByJobRoleCleanData as Data,
 )
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
+    EstimateFilledPostsByJobRoleCleanSchemas as Schemas,
+)
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate._02_clean"
 
@@ -20,45 +21,10 @@ class MainTests(unittest.TestCase):
 
     mock_estimated_job_role_posts_lf = pl.LazyFrame()
 
-    test_estimated_job_role_posts_lf = pl.LazyFrame(
-        data={
-            IndCQC.id_per_locationid_import_date: [1],
-            IndCQC.location_id: ["loc1"],
-            IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
-            IndCQC.primary_service_type: ["Care home with nursing"],
-            IndCQC.ascwds_filled_posts_dedup_clean: [10.0],
-            IndCQC.estimate_filled_posts: [10.0],
-            IndCQC.estimate_filled_posts_source: ["ascwds_pir_merged"],
-            IndCQC.ascwds_job_role_counts: [1],
-            IndCQC.main_job_role_clean_labelled: ["care_worker"],
-            IndCQC.registered_manager_names: [["Manager 1", "Manager 2"]],
-        }
-    )
+    test_estimated_job_role_posts_lf = pl.LazyFrame(Data.test_data, Schemas.test_schema)
     expected_estimated_job_role_posts_lf = pl.LazyFrame(
-        data={
-            IndCQC.id_per_locationid_import_date: [1],
-            IndCQC.id_per_locationid_import_date_job_role: [0],
-            IndCQC.location_id: ["loc1"],
-            IndCQC.cqc_location_import_date: [date(2024, 1, 1)],
-            IndCQC.primary_service_type: ["Care home with nursing"],
-            IndCQC.estimate_filled_posts: [10.0],
-            IndCQC.ascwds_job_role_counts: [1],
-            IndCQC.main_job_role_clean_labelled: ["care_worker"],
-            IndCQC.registered_manager_names: [["Manager 1", "Manager 2"]],
-            IndCQC.job_role_filtering_rule: False,
-        },
-        schema={
-            IndCQC.id_per_locationid_import_date: pl.UInt32,
-            IndCQC.id_per_locationid_import_date_job_role: pl.UInt32,
-            IndCQC.location_id: CatColType.LocationCatType,
-            IndCQC.cqc_location_import_date: pl.Date,
-            IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
-            IndCQC.estimate_filled_posts: pl.Float32,
-            IndCQC.ascwds_job_role_counts: pl.Int16,
-            IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
-            IndCQC.registered_manager_names: pl.List(str),
-            IndCQC.job_role_filtering_rule: pl.Boolean,
-        },
+        Data.expected_data,
+        Schemas.expected_schema,
     )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
@@ -107,7 +73,13 @@ class MainTests(unittest.TestCase):
         sink_to_parquet_mock: Mock,
     ):
         job.main(self.MERGED_DATA_SOURCE, self.CLEANED_DATA_DESTINATION)
-
+        expected_col_order = self.expected_estimated_job_role_posts_lf.columns
+        print(
+            sink_to_parquet_mock.call_args.kwargs["lazy_df"]
+            .select(expected_col_order)
+            .dtypes
+        )
+        print(self.expected_estimated_job_role_posts_lf.dtypes)
         pltesting.assert_frame_equal(
             sink_to_parquet_mock.call_args.kwargs["lazy_df"],
             self.expected_estimated_job_role_posts_lf,

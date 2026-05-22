@@ -10,6 +10,9 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as JRValues,
+)
 
 
 @dataclass
@@ -107,5 +110,22 @@ class FilteringUtilsSchemas:
             (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
             (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
             (IndCQC.ascwds_filtering_rule, pl.String()),
+        ]
+    )
+    returns_enum_col_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_job_role_counts, pl.Float64()),
+        ]
+    )
+    expected_returns_enum_col_schema = pl.Schema(
+        list(returns_enum_col_schema.items())
+        + [
+            (
+                IndCQC.job_role_filtering_rule,
+                pl.Enum(
+                    JRValues.job_role_filtering_rule_column_values.categorical_values
+                ),
+            ),
         ]
     )

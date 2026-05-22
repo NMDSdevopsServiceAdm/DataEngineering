@@ -25,6 +25,7 @@ from utils.column_values.categorical_column_values import (
     Dormancy,
     EstimateFilledPostsSource,
     InAscwds,
+    JobRoleFilteringRule,
     MainJobRoleID,
     MainJobRoleLabels,
     PrimaryServiceType,
@@ -210,6 +211,13 @@ class EstimatedIndCQCFilledPostsCategoricalValues:
     )
     estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
         IndCQC.estimate_filled_posts_source
+    )
+
+
+@dataclass
+class EstimatedIndCQCFilledPostsByJobRoleCategoricalValues:
+    job_role_filtering_rule_column_values = JobRoleFilteringRule(
+        IndCQC.job_role_filtering_rule
     )
 
 

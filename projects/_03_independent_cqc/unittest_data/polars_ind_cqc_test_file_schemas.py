@@ -5,6 +5,9 @@ import polars as pl
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils import (
     FilterJobRoleGroupExpressions as TempCols,
 )
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    CatagoricalColumnTypes as CatColType,
+)
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
 )
@@ -1687,31 +1690,29 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: pl.String,
-        IndCQC.main_job_role_clean_labelled: pl.Enum(
-            AscwdsWorkerValueLabelsJobGroup.all_roles()
-        ),
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
         IndCQC.main_job_group_labelled: pl.Enum(
             list(
                 set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values())
             )
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleEnumType,
     }
     expected_filter_schema = {
         IndCQC.id_per_locationid_import_date: pl.Int64,
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: pl.String,
-        IndCQC.main_job_role_clean_labelled: pl.Enum(
-            AscwdsWorkerValueLabelsJobGroup.all_roles()
-        ),
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
         IndCQC.main_job_group_labelled: pl.Enum(
             list(
                 set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values())
             )
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
-        IndCQC.job_role_filtering_rule: pl.Enum(JRFR.categorical_values),
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleEnumType,
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleEnumType,
     }
     test_location_sum_schema = {
         JobGroupLabels.direct_care: pl.Int64,
@@ -1737,7 +1738,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         (JobGroupLabels.regulated_professions + Cols.upper_bound_suffix): pl.Float32,
         (JobGroupLabels.other + Cols.upper_bound_suffix): pl.Float32,
         (JobGroupLabels.direct_care + Cols.lower_bound_suffix): pl.Float32,
-        "location_out_of_bounds": pl.Boolean,
+        IndCQC.ascwds_job_role_counts: pl.Int64,
     }
     expected_bounds_expressions_schema = {
         JobGroupLabels.direct_care: pl.Float32,
@@ -1756,16 +1757,41 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
 
     test_job_role_group_equal_zero_schema = {
         IndCQC.id_per_locationid_import_date: pl.UInt32,
-        IndCQC.main_job_role_clean_labelled: pl.Enum(
-            AscwdsWorkerValueLabelsJobGroup.all_roles()
-        ),
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
     }
     expected_job_role_group_equal_zero_schema = {
         IndCQC.id_per_locationid_import_date: pl.UInt32,
-        IndCQC.main_job_role_clean_labelled: pl.Enum(
-            AscwdsWorkerValueLabelsJobGroup.all_roles()
-        ),
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
-        IndCQC.job_role_filtering_rule: pl.Enum(JRFR.categorical_values),
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleEnumType,
+    }
+
+
+@dataclass
+class EstimateFilledPostsByJobRoleCleanSchemas:
+    test_schema = {
+        IndCQC.id_per_locationid_import_date: pl.UInt32,
+        IndCQC.location_id: CatColType.LocationCatType,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
+        IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
+        IndCQC.estimate_filled_posts: pl.Float32,
+        IndCQC.estimate_filled_posts_source: CatColType.EstimatesFilledPostSourceEnumType,
+        IndCQC.ascwds_job_role_counts: pl.Int16,
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
+        IndCQC.registered_manager_names: pl.List(str),
+    }
+
+    expected_schema = {
+        IndCQC.id_per_locationid_import_date: pl.UInt32,
+        IndCQC.id_per_locationid_import_date_job_role: pl.UInt32,
+        IndCQC.location_id: CatColType.LocationCatType,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
+        IndCQC.estimate_filled_posts: pl.Float32,
+        IndCQC.ascwds_job_role_counts: pl.Int16,
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
+        IndCQC.registered_manager_names: pl.List(str),
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleEnumType,
     }

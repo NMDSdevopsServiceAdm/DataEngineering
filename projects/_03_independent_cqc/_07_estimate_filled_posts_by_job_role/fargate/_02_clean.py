@@ -1,7 +1,10 @@
 import polars as pl
 
-import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils as cUtils
 from polars_utils import utils
+from polars_utils.filtering_utils import (
+    add_filtering_rule_column,
+)
+import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils as cUtils
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     CatagoricalColumnTypes as CatColType,
 )
@@ -9,6 +12,10 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.
     add_job_role_groups_column,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import JobRoleFilteringRule
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as JRValues,
+)
 
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
@@ -59,6 +66,15 @@ def main(
 
     estimated_job_role_posts_lf = add_job_role_groups_column(
         estimated_job_role_posts_lf, IndCQC.main_job_group_labelled
+    )
+
+    estimated_job_role_posts_lf = add_filtering_rule_column(
+        estimated_job_role_posts_lf,
+        filter_rule_col_name=IndCQC.job_role_filtering_rule,
+        col_to_filter=IndCQC.ascwds_job_role_counts,
+        populated_rule=JobRoleFilteringRule.populated,
+        missing_rule=JobRoleFilteringRule.missing_raw_data,
+        enum_values=JRValues.job_role_filtering_rule_column_values.categorical_values,
     )
 
     estimated_job_role_posts_lf = cUtils.filter_job_role_group_equal_zero(

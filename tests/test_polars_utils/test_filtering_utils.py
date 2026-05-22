@@ -11,7 +11,13 @@ from tests.test_polars_utils_schemas import (
     FilteringUtilsSchemas as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import AscwdsFilteringRule
+from utils.column_values.categorical_column_values import (
+    AscwdsFilteringRule,
+    JobRoleFilteringRule,
+)
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as JRValues,
+)
 
 
 class AddFilteringRuleColumnTests(unittest.TestCase):
@@ -33,6 +39,27 @@ class AddFilteringRuleColumnTests(unittest.TestCase):
         expected_lf = pl.LazyFrame(
             Data.expected_add_filtering_column_rows,
             Schemas.expected_add_filtering_column_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_returns_enum_col_when_provided(self):
+        test_lf = pl.LazyFrame(
+            data=Data.returns_enum_col_rows,
+            schema=Schemas.returns_enum_col_schema,
+            orient="row",
+        )
+        returned_lf = job.add_filtering_rule_column(
+            test_lf,
+            filter_rule_col_name=IndCQC.job_role_filtering_rule,
+            col_to_filter=IndCQC.ascwds_job_role_counts,
+            populated_rule=JobRoleFilteringRule.populated,
+            missing_rule=JobRoleFilteringRule.missing_raw_data,
+            enum_values=JRValues.job_role_filtering_rule_column_values.categorical_values,
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_return_enum_col_rows,
+            schema=Schemas.expected_returns_enum_col_schema,
             orient="row",
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
