@@ -94,11 +94,11 @@ def main(
         compare_path (str): the path to the dataset to compare against
         reports_path (str): the output path to write reports to
     """
-    source_df = utils.read_parquet(
+    source_lf = utils.scan_parquet(
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=ind_cqc_merge_metadata_job_role_cols_to_import,
     )
-    compare_df = utils.read_parquet(
+    compare_lf = utils.scan_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=ind_cqc_estimates_cols_to_import,
     )
@@ -107,31 +107,31 @@ def main(
 
     validation = (
         pb.Validate(
-            data=source_df,
+            data=source_lf,
             label=f"Validation of {source_path}",
             thresholds=GLOBAL_THRESHOLDS,
             brief=True,
             actions=GLOBAL_ACTIONS,
         )
-        # ── Schema ──────────────────────────────────────────────────────────────
+        # Schema check
         .col_schema_match(
             EXPECTED_SCHEMA,
             brief="All columns have the expected data types",
         )
-        # ── Dataset size ─────────────────────────────────────────────────────────
+        # Dataset size
         .row_count_match(
-            count=compare_df.height,
+            count=compare_lf.select(pl.len()).collect().item(),
             brief=(
-                f"Source file has {source_df.height} rows but expecting "
-                f"{compare_df.height} rows to match estimates dataset"
+                f"Source file has {source_lf.select(pl.len()).collect().item()} rows but expecting "
+                f"{compare_lf.select(pl.len()).collect().item()} rows to match estimates dataset"
             ),
         )
-        # ── Uniqueness ───────────────────────────────────────────────────────────
+        # Uniqueness
         .rows_distinct(
             columns_subset=[IndCqcColumns.id_per_locationid_import_date],
             brief="Primary key (id_per_locationid_import_date) should be unique",
         )
-        # ── Completeness (no nulls) ───────────────────────────────────────────────
+        # Completeness (no nulls)
         .col_vals_not_null(
             columns=[
                 IndCqcColumns.name,
@@ -154,7 +154,7 @@ def main(
             ],
             brief="Required columns should contain no null values",
         )
-        # ── Numeric range — strictly positive (nulls allowed) ────────────────────
+        # Numeric range — strictly positive (nulls allowed)
         .col_vals_gt(
             columns=[
                 IndCqcColumns.ascwds_filled_posts_dedup_clean,
@@ -166,7 +166,7 @@ def main(
             na_pass=True,
             brief="ascwds_filled_posts_dedup_clean, ascwds_pir_merged, number_of_beds and wkrrecs_bounded should be > 0 where present",
         )
-        # ── Cross-column numeric constraint ──────────────────────────────────────
+        # Cross-column numeric constraint
         .col_vals_expr(
             expr=(
                 pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
@@ -178,7 +178,7 @@ def main(
             ),
             brief="ascwds_job_role_counts <= estimate_filled_posts where both are present",
         )
-        # ── Categorical values ────────────────────────────────────────────────────
+        # Categorical values
         .col_vals_in_set(
             IndCqcColumns.estimate_filled_posts_source,
             CatValues.estimate_filled_posts_source_column_values.categorical_values,
@@ -219,7 +219,7 @@ def main(
             IndCqcColumns.dormancy,
             CleanedCatValues.dormancy_column_values.categorical_values,
         )
-        # ── Distinct value counts ─────────────────────────────────────────────────
+        # Distinct value counts
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.estimate_filled_posts_source,
@@ -255,7 +255,7 @@ def main(
             ),
             brief=f"{IndCqcColumns.dormancy} should have exactly {CleanedCatValues.dormancy_column_values.count_of_categorical_values} distinct values",
         )
-        # ── Date plausibility ─────────────────────────────────────────────────────
+        # Date plausibility
         .col_vals_ge(
             columns=[IndCqcColumns.ascwds_workplace_import_date],
             value=ASCWDS_EARLIEST_IMPORT_DATE,

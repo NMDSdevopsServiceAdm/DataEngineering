@@ -64,22 +64,23 @@ def main(
         compare_path (str): the path to the dataset to compare against
         reports_path (str): the output path to write reports to
     """
-    source_df = utils.read_parquet(
+    source_lf = utils.scan_parquet(
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=ind_cqc_merge_job_role_cols_to_import,
     )
-    source_df = source_df.with_columns(
+    source_lf = source_lf.with_columns(
         pl.col(IndCqcColumns.main_job_role_clean_labelled).cast(pl.String)
     )
-    compare_df = utils.read_parquet(
+    compare_lf = utils.scan_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=ind_cqc_estimates_cols_to_import,
     )
-    expected_row_count = compare_df.height * len(jobGroupDict.all_roles())
+    compare_row_count = compare_lf.select(pl.len()).collect().item()
+    expected_row_count = compare_row_count * len(jobGroupDict.all_roles())
 
     validation = (
         pb.Validate(
-            data=source_df,
+            data=source_lf,
             label=f"Validation of {source_path}",
             thresholds=GLOBAL_THRESHOLDS,
             brief=True,
@@ -94,7 +95,7 @@ def main(
         # dataset size
         .row_count_match(
             expected_row_count,
-            brief=f"Estimates file has {source_df.height} rows but expecting {expected_row_count} rows",
+            brief=f"Estimates file has {source_lf.select(pl.len()).collect().item()} rows but expecting {expected_row_count} rows",
         )
         # Composite primary key
         .rows_distinct(
