@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file.
 
 - In line Polars conversions into the Impute job for the PySpark functions `combine_care_home_and_non_res_values_into_single_column` and `convert_care_home_ratios_to_posts`.
 
+- Converted `model_primary_service_rate_of_change_trendline` to Polars.
+
 - Added base validation scripts and test validation scripts for all stages of the Estimates by Job Role pipeline. Also added validation job calls to the Terraform definition for the Estimates by Job Role pipeline.
 
 ### Changed
