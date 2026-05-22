@@ -149,6 +149,7 @@
                                 "validate_01_merge.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_job_roles/",
+                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=main_ind_cqc_06_estimated_filled_posts/"
                                 "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_07_01_merge_job_roles/"
                               ]
                             }
