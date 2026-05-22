@@ -241,56 +241,5 @@ def filter_job_role_group_equal_zero(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: LazyFrame with 'ascwds_job_role_counts' conditionally nulled.
     """
-    temp_job_group_column = "job_group"
-    man_or_reg_prof = "man_or_reg_prof"
-
-    # Add job group column and recode managers/regulated professional into single value.
-    lf = add_job_role_groups_column(lf, temp_job_group_column).with_columns(
-        pl.when(
-            pl.col(temp_job_group_column).is_in(
-                [JobGroupLabels.managers, JobGroupLabels.regulated_professions]
-            )
-        )
-        .then(pl.lit(man_or_reg_prof))
-        .otherwise(pl.col(temp_job_group_column))
-        .alias(temp_job_group_column)
-    )
-
-    # Sum job role count over locationid, import date and job group.
-    aggregated_lf = lf.group_by(
-        [IndCQC.id_per_locationid_import_date, temp_job_group_column]
-    ).agg(
-        pl.when(pl.col(IndCQC.ascwds_job_role_counts).count() > 0)
-        .then(pl.sum(IndCQC.ascwds_job_role_counts))
-        .alias("count")
-    )
-
-    # Apply filter.
-    aggregated_lf = aggregated_lf.with_columns(
-        (
-            (pl.col("count") == 0)
-            & pl.col(temp_job_group_column).is_in(
-                [JobGroupLabels.direct_care, man_or_reg_prof]
-            )
-        ).alias("is_zero_target")
-    )
-
-    # Collapse to per-id flag.
-    aggregated_lf = aggregated_lf.group_by(IndCQC.id_per_locationid_import_date).agg(
-        pl.max("is_zero_target").alias(IndCQC.job_group_equal_zero)
-    )
-    aggregated_lf = aggregated_lf.with_columns(
-        pl.col(IndCQC.id_per_locationid_import_date).cast(pl.UInt32)
-    )
-
-    lf = (
-        lf.join(aggregated_lf, on=IndCQC.id_per_locationid_import_date, how="left")
-        .with_columns(  # Null ascwds_job_role_counts_column
-            pl.when(pl.col(IndCQC.job_group_equal_zero))
-            .then(None)
-            .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
-            .alias(IndCQC.ascwds_job_role_counts)
-        )
-        .drop(temp_job_group_column)
-    )
+    # TODO Implement function
     return lf
