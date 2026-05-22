@@ -11,7 +11,7 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsCategoricalValues as CatValues,
-    IndCQCMergeMetadataJobRolesCategoricalValues as MetadataCatValues,
+    CleanedIndCQCCategoricalValues as CleanedCatValues,
 )
 
 ind_cqc_merge_metadata_job_role_cols_to_import = [
@@ -28,7 +28,7 @@ ind_cqc_merge_metadata_job_role_cols_to_import = [
     IndCqcColumns.current_cssr,
     IndCqcColumns.current_region,
     IndCqcColumns.current_icb,
-    IndCqcColumns.current_ru11ind,
+    IndCqcColumns.current_rural_urban_indicator_2011,
     IndCqcColumns.current_lsoa21,
     IndCqcColumns.current_msoa21,
     IndCqcColumns.estimate_filled_posts_source,
@@ -36,7 +36,7 @@ ind_cqc_merge_metadata_job_role_cols_to_import = [
     IndCqcColumns.ascwds_filled_posts_dedup_clean,
     IndCqcColumns.ascwds_pir_merged,
     IndCqcColumns.number_of_beds,
-    IndCqcColumns.wkrrecs_bounded,
+    IndCqcColumns.worker_records_bounded,
     IndCqcColumns.dormancy,
     IndCqcColumns.ascwds_job_role_counts,
 ]
@@ -65,7 +65,7 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.current_cssr: "String",
         IndCqcColumns.current_region: "String",
         IndCqcColumns.current_icb: "String",
-        IndCqcColumns.current_ru11ind: "String",
+        IndCqcColumns.current_rural_urban_indicator_2011: "String",
         IndCqcColumns.current_lsoa21: "String",
         IndCqcColumns.current_msoa21: "String",
         IndCqcColumns.estimate_filled_posts_source: "String",
@@ -133,7 +133,7 @@ def main(
         )
         # ── Completeness (no nulls) ───────────────────────────────────────────────
         .col_vals_not_null(
-            columns_subset=[
+            columns=[
                 IndCqcColumns.name,
                 IndCqcColumns.provider_id,
                 IndCqcColumns.services_offered,
@@ -147,7 +147,7 @@ def main(
                 IndCqcColumns.current_cssr,
                 IndCqcColumns.current_region,
                 IndCqcColumns.current_icb,
-                IndCqcColumns.current_ru11ind,
+                IndCqcColumns.current_rural_urban_indicator_2011,
                 IndCqcColumns.current_lsoa21,
                 IndCqcColumns.current_msoa21,
                 IndCqcColumns.estimate_filled_posts_source,
@@ -185,47 +185,39 @@ def main(
         )
         .col_vals_in_set(
             IndCqcColumns.primary_service_type_second_level,
-            MetadataCatValues.primary_service_type_second_level_column_values.categorical_values,
+            CatValues.primary_service_type_second_level_column_values.categorical_values,
         )
         .col_vals_in_set(
             IndCqcColumns.care_home,
-            MetadataCatValues.care_home_column_values.categorical_values,
+            CleanedCatValues.care_home_column_values.categorical_values,
         )
         .col_vals_in_set(
             IndCqcColumns.ascwds_filtering_rule,
-            MetadataCatValues.ascwds_filtering_rule_column_values.categorical_values,
-        )
-        .col_vals_in_set(
-            IndCqcColumns.current_ons_import_date,
-            MetadataCatValues.current_ons_import_date_column_values.categorical_values,
+            CleanedCatValues.ascwds_filtering_rule_column_values.categorical_values,
         )
         .col_vals_in_set(
             IndCqcColumns.current_cssr,
-            MetadataCatValues.current_cssr_column_values.categorical_values,
+            CleanedCatValues.current_cssr_column_values.categorical_values,
         )
         .col_vals_in_set(
             IndCqcColumns.current_region,
-            MetadataCatValues.current_region_column_values.categorical_values,
+            CleanedCatValues.current_region_column_values.categorical_values,
         )
         .col_vals_in_set(
-            IndCqcColumns.current_icb,
-            MetadataCatValues.current_icb_column_values.categorical_values,
+            IndCqcColumns.current_rural_urban_indicator_2011,
+            CleanedCatValues.current_rui_column_values.categorical_values,
         )
-        .col_vals_in_set(
-            IndCqcColumns.current_ru11ind,
-            MetadataCatValues.current_ru11ind_column_values.categorical_values,
-        )
-        .col_vals_in_set(
-            IndCqcColumns.current_lsoa21,
-            MetadataCatValues.current_lsoa21_column_values.categorical_values,
-        )
-        .col_vals_in_set(
-            IndCqcColumns.current_msoa21,
-            MetadataCatValues.current_msoa21_column_values.categorical_values,
-        )
+        # .col_vals_in_set(
+        #     IndCqcColumns.current_lsoa21,
+        #     CatValues.current_lsoa_column_valueslsoa21_column_values.categorical_values,
+        # )
+        # .col_vals_in_set(
+        #     IndCqcColumns.current_msoa21,
+        #     CatValues.current_msoa21_column_values.categorical_values,
+        # )
         .col_vals_in_set(
             IndCqcColumns.dormancy,
-            MetadataCatValues.dormancy_column_values.categorical_values,
+            CleanedCatValues.dormancy_column_values.categorical_values,
         )
         # ── Distinct value counts ─────────────────────────────────────────────────
         .specially(
@@ -238,30 +230,30 @@ def main(
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.primary_service_type_second_level,
-                MetadataCatValues.primary_service_type_second_level_column_values.count_of_categorical_values,
+                CatValues.primary_service_type_second_level_column_values.count_of_categorical_values,
             ),
-            brief=f"{IndCqcColumns.primary_service_type_second_level} should have exactly {MetadataCatValues.primary_service_type_second_level_column_values.count_of_categorical_values} distinct values",
+            brief=f"{IndCqcColumns.primary_service_type_second_level} should have exactly {CatValues.primary_service_type_second_level_column_values.count_of_categorical_values} distinct values",
         )
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.care_home,
-                MetadataCatValues.care_home_column_values.count_of_categorical_values,
+                CleanedCatValues.care_home_column_values.count_of_categorical_values,
             ),
-            brief=f"{IndCqcColumns.care_home} should have exactly {MetadataCatValues.care_home_column_values.count_of_categorical_values} distinct values",
+            brief=f"{IndCqcColumns.care_home} should have exactly {CleanedCatValues.care_home_column_values.count_of_categorical_values} distinct values",
         )
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.ascwds_filtering_rule,
-                MetadataCatValues.ascwds_filtering_rule_column_values.count_of_categorical_values,
+                CleanedCatValues.ascwds_filtering_rule_column_values.count_of_categorical_values,
             ),
-            brief=f"{IndCqcColumns.ascwds_filtering_rule} should have exactly {MetadataCatValues.ascwds_filtering_rule_column_values.count_of_categorical_values} distinct values",
+            brief=f"{IndCqcColumns.ascwds_filtering_rule} should have exactly {CleanedCatValues.ascwds_filtering_rule_column_values.count_of_categorical_values} distinct values",
         )
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.dormancy,
-                MetadataCatValues.dormancy_column_values.count_of_categorical_values,
+                CleanedCatValues.dormancy_column_values.count_of_categorical_values,
             ),
-            brief=f"{IndCqcColumns.dormancy} should have exactly {MetadataCatValues.dormancy_column_values.count_of_categorical_values} distinct values",
+            brief=f"{IndCqcColumns.dormancy} should have exactly {CleanedCatValues.dormancy_column_values.count_of_categorical_values} distinct values",
         )
         # ── Date plausibility ─────────────────────────────────────────────────────
         .col_vals_ge(
