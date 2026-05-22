@@ -74,6 +74,7 @@ def main(
                 IndCQC.current_region,
                 IndCQC.current_rural_urban_indicator_2011,
                 IndCQC.ascwds_filtering_rule,
+                IndCQC.ascwds_rate_of_change_trendline_model,
             ]
         )
         # index columns

@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file.
 
 - In line Polars conversions into the Impute job for the PySpark functions `combine_care_home_and_non_res_values_into_single_column` and `convert_care_home_ratios_to_posts`.
 
+- Converted `model_primary_service_rate_of_change_trendline` to Polars.
+
 ### Changed
 - Renamed replace_care_navigator_with_care_coordinator to remap_mainjrid_codes for clarity and optimised implementation to use dictionary-based replacements targeting the main_job_role_clean column and updated corresponding test data names. Added Technician Job Role('22') in the dictionary to replace it with Other non-care-providing job roles ('27').
 

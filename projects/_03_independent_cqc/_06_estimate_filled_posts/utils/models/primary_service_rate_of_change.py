@@ -17,6 +17,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.utils import convert_days_to_unix_time
 
 
+# Converted to Polars -> projects\_03_independent_cqc\utils\primary_service_rate_of_change\primary_service_rate_of_change.py
 def model_primary_service_rate_of_change(
     df: DataFrame,
     column_with_values: str,
@@ -164,6 +165,7 @@ def add_previous_value_column(df: DataFrame) -> DataFrame:
     return df
 
 
+# Converted to Polars -> projects\_03_independent_cqc\utils\primary_service_rate_of_change\primary_service_rate_of_change.py
 def calculate_primary_service_rolling_sums(
     df: DataFrame, number_of_days: int
 ) -> DataFrame:
