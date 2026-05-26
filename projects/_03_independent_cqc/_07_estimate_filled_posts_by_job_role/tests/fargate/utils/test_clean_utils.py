@@ -190,10 +190,12 @@ class TestFilterJobRoleGroupsEqualZero:
         )
         expected_lf = pl.LazyFrame(
             case.expected_data,
-            Schemas.expected_job_role_group_equal_zero_schema,
+            Schemas.test_job_role_group_equal_zero_schema,
             orient="row",
         )
 
         returned_lf = job.filter_job_role_group_equal_zero(test_lf)
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+        pl_testing.assert_frame_equal(
+            returned_lf, expected_lf, check_column_order=False, check_row_order=False
+        )

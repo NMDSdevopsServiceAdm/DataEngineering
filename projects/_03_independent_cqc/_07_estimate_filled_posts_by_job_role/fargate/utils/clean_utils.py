@@ -1,6 +1,9 @@
 import polars as pl
 
 from polars_utils.filtering_utils import update_filtering_rule
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    CatagoricalColumnTypes as CatColType,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
@@ -144,6 +147,7 @@ def filter_job_role_group_outliers(
         clean_col_name=IndCQC.ascwds_job_role_counts,
         populated_rule=JobRoleFilteringRule.populated,
         new_rule_name=JobRoleFilteringRule.job_role_group_is_outlier,
+        categorical_type=CatColType.JobRoleFilteringRuleCatType,
     )
     return lf
 
@@ -244,5 +248,50 @@ def filter_job_role_group_equal_zero(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: LazyFrame with 'ascwds_job_role_counts' conditionally nulled.
     """
-    # TODO Implement function
+    temp_equals_zero_col = "job_role_groups_equal_zero"
+    job_group_cols = [
+        JobGroupLabels.direct_care,
+        JobGroupLabels.managers,
+        JobGroupLabels.regulated_professions,
+    ]
+    eval_expr = (pl.col(JobGroupLabels.direct_care) == 0) | (
+        (pl.col(JobGroupLabels.regulated_professions) == 0)
+        & (pl.col(JobGroupLabels.managers) == 0)
+    )
+    # 1. Pivot job roles
+    piv_lf = lf.pivot(
+        on=IndCQC.main_job_group_labelled,
+        on_columns=job_group_cols,
+        index=IndCQC.id_per_locationid_import_date,
+        values=IndCQC.ascwds_job_role_counts,
+        aggregate_function="sum",
+    )
+
+    # 2. Evaluate rows
+    piv_lf = piv_lf.with_columns(
+        pl.when(eval_expr)
+        .then(True)
+        .otherwise(False)
+        .cast(pl.Boolean)
+        .alias(temp_equals_zero_col)
+    ).select(IndCQC.id_per_locationid_import_date, temp_equals_zero_col)
+
+    lf = lf.join(piv_lf, on=IndCQC.id_per_locationid_import_date, how="left")
+    lf = lf.with_columns(
+        pl.when(pl.col(temp_equals_zero_col))
+        .then(None)
+        .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
+        .alias(IndCQC.ascwds_job_role_counts)
+    ).drop(temp_equals_zero_col)
+
+    # 3. Update rules column
+    lf = update_filtering_rule(  # 7. Add filtering rule
+        lf,
+        filter_rule_col_name=IndCQC.job_role_filtering_rule,
+        raw_col_name=IndCQC.ascwds_job_role_counts,
+        clean_col_name=IndCQC.ascwds_job_role_counts,
+        populated_rule=JobRoleFilteringRule.populated,
+        new_rule_name=JobRoleFilteringRule.missing_direct_care_or_managers_and_profs,
+        categorical_type=CatColType.JobRoleFilteringRuleCatType,
+    )
     return lf

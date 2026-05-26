@@ -52,7 +52,6 @@ def main(
         utils.cast_to_schema(estimates_by_job_role_schema)
     )
     print("Merged LazyFrame read in")
-
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
         IndCQC.id_per_locationid_import_date_job_role
     )
@@ -74,7 +73,7 @@ def main(
         col_to_filter=IndCQC.ascwds_job_role_counts,
         populated_rule=JobRoleFilteringRule.populated,
         missing_rule=JobRoleFilteringRule.missing_raw_data,
-        enum_values=JRValues.job_role_filtering_rule_column_values.categorical_values,
+        categorical_type=CatColType.JobRoleFilteringRuleCatType,
     )
 
     estimated_job_role_posts_lf = cUtils.filter_job_role_group_equal_zero(
@@ -89,6 +88,7 @@ def main(
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.drop(
         IndCQC.main_job_group_labelled
     )
+
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
         output_path=cleaned_data_destination,

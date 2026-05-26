@@ -3,6 +3,7 @@ from datetime import date
 
 import polars as pl
 
+
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
@@ -61,17 +62,10 @@ def add_job_role_groups_column(
         ),
     }
     job_role_group_schema = {
-        IndCQC.main_job_role_clean_labelled: pl.Enum(
-            AscwdsWorkerValueLabelsJobGroup.all_roles()
-        ),
-        job_group_column_name: pl.Enum(
-            list(
-                set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values())
-            )
-        ),
+        IndCQC.main_job_role_clean_labelled: CatagoricalColumnTypes.JobRoleEnumType,
+        job_group_column_name: CatagoricalColumnTypes.JobGroupEnumType,
     }
     job_role_group_lf = pl.LazyFrame(job_role_group_data, schema=job_role_group_schema)
-
     lf = lf.join(job_role_group_lf, on=IndCQC.main_job_role_clean_labelled, how="left")
     return lf
 
@@ -224,6 +218,7 @@ class CatagoricalColumnTypes:
         pl.Categories("establishment", namespace="filled_posts")
     )
     JobRoleEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
+    JobGroupEnumType = pl.Enum(JRValues.job_group_column_values.categorical_values)
     EstimatesFilledPostSourceEnumType = pl.Enum(
         [
             EstimateFilledPostsSource.imputed_pir_filled_posts_model,
@@ -242,6 +237,8 @@ class CatagoricalColumnTypes:
             PrimaryServiceType.non_residential,
         ]
     )
-    JobRoleFilteringRuleEnumType = pl.Enum(
-        JRValues.job_role_filtering_rule_column_values.categorical_values
+    JobRoleFilteringRuleCatType = pl.Categorical(
+        pl.Categories(
+            "job_role_filtering_rule", namespace="filled_posts", physical=pl.UInt8
+        )
     )

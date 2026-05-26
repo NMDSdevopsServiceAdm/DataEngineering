@@ -30,6 +30,8 @@ class MainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.cUtils.filter_job_role_group_outliers")
     @patch(f"{PATCH_PATH}.cUtils.filter_job_role_group_equal_zero")
+    @patch(f"{PATCH_PATH}.add_filtering_rule_column")
+    @patch(f"{PATCH_PATH}.add_job_role_groups_column")
     @patch(f"{PATCH_PATH}.cUtils.nullify_job_role_count_when_source_not_ascwds")
     @patch(
         f"{PATCH_PATH}.utils.scan_parquet",
@@ -39,6 +41,8 @@ class MainTests(unittest.TestCase):
         self,
         scan_parquet_mock: Mock,
         nullify_job_role_count_when_source_not_ascwds_mock: Mock,
+        add_job_roles_groups_mock: Mock,
+        add_filtering_rule_column_mock: Mock,
         filter_job_role_group_equal_zero_mock: Mock,
         filter_job_role_group_outliers_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -53,6 +57,8 @@ class MainTests(unittest.TestCase):
         )
 
         nullify_job_role_count_when_source_not_ascwds_mock.assert_called_once()
+        add_job_roles_groups_mock.assert_called_once()
+        add_filtering_rule_column_mock.assert_called_once()
         filter_job_role_group_equal_zero_mock.assert_called_once()
         filter_job_role_group_outliers_mock.assert_called_once()
 
@@ -73,13 +79,7 @@ class MainTests(unittest.TestCase):
         sink_to_parquet_mock: Mock,
     ):
         job.main(self.MERGED_DATA_SOURCE, self.CLEANED_DATA_DESTINATION)
-        expected_col_order = self.expected_estimated_job_role_posts_lf.columns
-        print(
-            sink_to_parquet_mock.call_args.kwargs["lazy_df"]
-            .select(expected_col_order)
-            .dtypes
-        )
-        print(self.expected_estimated_job_role_posts_lf.dtypes)
+
         pltesting.assert_frame_equal(
             sink_to_parquet_mock.call_args.kwargs["lazy_df"],
             self.expected_estimated_job_role_posts_lf,

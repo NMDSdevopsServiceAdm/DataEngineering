@@ -1697,7 +1697,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
             )
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
-        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleEnumType,
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
     expected_filter_schema = {
         IndCQC.id_per_locationid_import_date: pl.Int64,
@@ -1711,8 +1711,8 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
             )
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
-        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleEnumType,
-        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleEnumType,
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
     test_location_sum_schema = {
         JobGroupLabels.direct_care: pl.Int64,
@@ -1758,13 +1758,9 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
     test_job_role_group_equal_zero_schema = {
         IndCQC.id_per_locationid_import_date: pl.UInt32,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
+        IndCQC.main_job_group_labelled: CatColType.JobGroupEnumType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
-    }
-    expected_job_role_group_equal_zero_schema = {
-        IndCQC.id_per_locationid_import_date: pl.UInt32,
-        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
-        IndCQC.ascwds_job_role_counts: pl.Int64,
-        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleEnumType,
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
 
 
@@ -1793,5 +1789,5 @@ class EstimateFilledPostsByJobRoleCleanSchemas:
         IndCQC.ascwds_job_role_counts: pl.Int16,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
         IndCQC.registered_manager_names: pl.List(str),
-        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleEnumType,
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }

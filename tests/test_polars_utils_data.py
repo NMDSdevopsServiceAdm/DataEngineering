@@ -173,11 +173,11 @@ class FilteringUtilsData:
         ("loc 2", None, AscwdsFilteringRule.missing_data),
     ]
 
-    returns_enum_col_rows = [
+    returns_categorical_col_rows = [
         ("loc 1", 10.0),
         ("loc 2", None),
     ]
-    expected_return_enum_col_rows = [
+    expected_returns_categorical_col_rows = [
         ("loc 1", 10.0, JobRoleFilteringRule.populated),
         ("loc 2", None, JobRoleFilteringRule.missing_raw_data),
     ]
