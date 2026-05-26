@@ -8,22 +8,22 @@ from utils.column_values.categorical_column_values import PrimaryServiceType
 
 ESTIMATE_FILLED_POSTS_SIZE_GROUPS = {
     PrimaryServiceType.care_home_only: [
-        ((1, 9), "COH 1 to 9"),
-        ((10, 19), "COH 10 to 19"),
-        ((20, 29), "COH 20 to 29"),
-        ((30, None), "COH 30 plus"),
+        (1, "COH 1 to 9"),
+        (10, "COH 10 to 19"),
+        (20, "COH 20 to 29"),
+        (30, "COH 30 plus"),
     ],
     PrimaryServiceType.care_home_with_nursing: [
-        ((1, 19), "CHWN 1 to 19"),
-        ((20, 29), "CHWN 20 to 29"),
-        ((30, None), "CHWN 30 plus"),
+        (1, "CHWN 1 to 19"),
+        (20, "CHWN 20 to 29"),
+        (30, "CHWN 30 plus"),
     ],
     PrimaryServiceType.non_residential: [
-        ((1, 24), "NR 1 to 24"),
-        ((25, 49), "NR 25 to 49"),
-        ((50, 74), "NR 50 to 74"),
-        ((75, 99), "NR 75 to 99"),
-        ((100, None), "NR 100 plus"),
+        (1, "NR 1 to 24"),
+        (25, "NR 25 to 49"),
+        (50, "NR 50 to 74"),
+        (75, "NR 75 to 99"),
+        (100, "NR 100 plus"),
     ],
 }
 
@@ -134,30 +134,20 @@ def estimate_filled_posts_size_group_expression() -> pl.Expr:
     estimate_col = pl.col(IndCQC.estimate_filled_posts)
     primary_col = pl.col(IndCQC.primary_service_type)
 
-    size_group_expr: Optional[pl.Expr] = None
+    expr = pl.lit(None)
+
     for service_type, buckets in ESTIMATE_FILLED_POSTS_SIZE_GROUPS.items():
-        bucket_expr: Optional[pl.Expr] = None
-        for (lower, upper), label in buckets:
-            if upper is None:
-                condition = estimate_col >= lower
-            else:
-                condition = (estimate_col >= lower) & (estimate_col < upper + 1)
-            if bucket_expr is None:
-                bucket_expr = pl.when(condition).then(pl.lit(label))
-            else:
-                bucket_expr = bucket_expr.when(condition).then(pl.lit(label))
-        bucket_expr = bucket_expr.otherwise(None)
+        for i, (lower, label) in enumerate(buckets):
+            upper = buckets[i + 1][0] if i + 1 < len(buckets) else None
 
-        if size_group_expr is None:
-            size_group_expr = pl.when(primary_col == service_type).then(bucket_expr)
-        else:
-            size_group_expr = size_group_expr.when(primary_col == service_type).then(
-                bucket_expr
-            )
+            condition = (primary_col == service_type) & (estimate_col >= lower)
 
-    return size_group_expr.otherwise(None).alias(
-        IndCQC.estimate_filled_posts_size_group
-    )
+            if upper is not None:
+                condition = condition & (estimate_col < upper)
+
+            expr = pl.when(condition).then(pl.lit(label)).otherwise(expr)
+
+    return expr.alias(IndCQC.estimate_filled_posts_size_group)
 
 
 def create_ascwds_job_role_rolling_ratio(
@@ -220,4 +210,4 @@ def create_ascwds_job_role_rolling_ratio(
             IndCQC.estimate_filled_posts_size_group,
         ],
     )
-    return estimated_job_role_posts_lf
+    return estimated_job_role_posts_lf.drop(IndCQC.ascwds_job_role_rolling_sum)
