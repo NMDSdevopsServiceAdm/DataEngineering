@@ -2,6 +2,9 @@ from dataclasses import dataclass
 
 import polars as pl
 
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    CatagoricalColumnTypes as CatColType,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -9,7 +12,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
 @dataclass
@@ -83,5 +85,52 @@ class RawDataAdjustmentsSchemas:
         [
             (CQCLClean.location_id, pl.String()),
             ("other_column", pl.String()),
+        ]
+    )
+
+
+@dataclass
+class FilteringUtilsSchemas:
+    add_filtering_column_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+        ]
+    )
+    expected_add_filtering_column_schema = pl.Schema(
+        list(add_filtering_column_schema.items())
+        + [
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+        ]
+    )
+    update_filtering_rule_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.ascwds_filtering_rule, pl.String()),
+        ]
+    )
+    update_filtering_rule_schema_categorical = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.ascwds_filtering_rule, CatColType.JobRoleFilteringRuleCatType),
+        ]
+    )
+    returns_categorical_col_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.ascwds_job_role_counts, pl.Float64()),
+        ]
+    )
+    expected_returns_categorical_col_schema = pl.Schema(
+        list(returns_categorical_col_schema.items())
+        + [
+            (
+                IndCQC.job_role_filtering_rule,
+                CatColType.JobRoleFilteringRuleCatType,
+            ),
         ]
     )

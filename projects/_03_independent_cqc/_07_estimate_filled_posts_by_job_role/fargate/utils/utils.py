@@ -239,3 +239,8 @@ class CatagoricalColumnTypes:
             PrimaryServiceType.non_residential,
         ]
     )
+    JobRoleFilteringRuleCatType = pl.Categorical(
+        pl.Categories(
+            "job_role_filtering_rule", namespace="filled_posts", physical=pl.UInt8
+        )
+    )

@@ -848,46 +848,6 @@ class ArchiveFilledPostsEstimates:
 
 @dataclass
 class CleanFilteringUtilsData:
-    add_filtering_column_rows = [
-        ("loc 1", 10.0),
-        ("loc 2", None),
-    ]
-    expected_add_filtering_column_rows = [
-        ("loc 1", 10.0, AscwdsFilteringRule.populated),
-        ("loc 2", None, AscwdsFilteringRule.missing_data),
-    ]
-
-    update_filtering_rule_populated_to_nulled_rows = [
-        ("loc 1", 10.0, 10.0, AscwdsFilteringRule.populated),
-        ("loc 2", 10.0, None, AscwdsFilteringRule.populated),
-        ("loc 3", 10.0, None, AscwdsFilteringRule.missing_data),
-    ]
-    expected_update_filtering_rule_populated_to_nulled_rows = [
-        ("loc 1", 10.0, 10.0, AscwdsFilteringRule.populated),
-        ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
-        ("loc 3", 10.0, None, AscwdsFilteringRule.missing_data),
-    ] # fmt: skip
-
-    update_filtering_rule_populated_to_winsorized_rows = [
-        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.populated),
-        ("loc 2", 10.0, 11.0, AscwdsFilteringRule.populated),
-        ("loc 3", 10.0, 10.0, AscwdsFilteringRule.populated),
-    ]
-    expected_update_filtering_rule_populated_to_winsorized_rows = [
-        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
-        ("loc 2", 10.0, 11.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
-        ("loc 3", 10.0, 10.0, AscwdsFilteringRule.populated),
-    ] # fmt: skip
-
-    update_filtering_rule_winsorized_to_nulled_rows = [
-        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
-        ("loc 2", 10.0, None, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
-    ]
-    expected_update_filtering_rule_winsorized_to_nulled_rows = [
-        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
-        ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
-    ] # fmt: skip
-
     aggregate_values_to_provider_level_rows = [
         ("1-001", "1-0001", 1, date(2025, 1, 1)),
         ("1-002", "1-0001", 1, date(2025, 1, 1)),
