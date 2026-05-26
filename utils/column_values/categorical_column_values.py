@@ -597,15 +597,3 @@ class NumericTrueFalse(ColumnValues):
 
     true: int = 1
     false: int = 2
-
-
-@dataclass
-class JobRoleFilteringRule(ColumnValues):
-    """The possible reasons or filtering job role data"""
-
-    populated: str = "populated"
-    missing_raw_data: str = "missing_raw_data"
-    missing_direct_care_or_managers_and_profs: str = (
-        "missing_direct_care_or_managers_and_professionals"
-    )
-    job_role_group_is_outlier: str = "job_role_group_is_outlier"

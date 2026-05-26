@@ -111,26 +111,3 @@ class FilteringUtilsSchemas:
             (IndCQC.ascwds_filtering_rule, pl.String()),
         ]
     )
-    update_filtering_rule_schema_categorical = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
-            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
-            (IndCQC.ascwds_filtering_rule, CatColType.JobRoleFilteringRuleCatType),
-        ]
-    )
-    returns_categorical_col_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.ascwds_job_role_counts, pl.Float64()),
-        ]
-    )
-    expected_returns_categorical_col_schema = pl.Schema(
-        list(returns_categorical_col_schema.items())
-        + [
-            (
-                IndCQC.job_role_filtering_rule,
-                CatColType.JobRoleFilteringRuleCatType,
-            ),
-        ]
-    )

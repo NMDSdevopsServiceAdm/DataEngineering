@@ -6,7 +6,6 @@ from pathlib import Path
 from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     CareHome,
-    JobRoleFilteringRule,
 )
 
 
@@ -171,15 +170,6 @@ class FilteringUtilsData:
     expected_add_filtering_column_rows = [
         ("loc 1", 10.0, AscwdsFilteringRule.populated),
         ("loc 2", None, AscwdsFilteringRule.missing_data),
-    ]
-
-    returns_categorical_col_rows = [
-        ("loc 1", 10.0),
-        ("loc 2", None),
-    ]
-    expected_returns_categorical_col_rows = [
-        ("loc 1", 10.0, JobRoleFilteringRule.populated),
-        ("loc 2", None, JobRoleFilteringRule.missing_raw_data),
     ]
 
     update_filtering_rule_populated_to_nulled_rows = [
