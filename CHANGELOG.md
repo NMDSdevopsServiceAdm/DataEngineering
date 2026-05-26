@@ -23,6 +23,8 @@ All notable changes to this project will be documented in this file.
 
 - Changed apply_categorical_labels so it can reverse labels by swapping the k:v in the label dict.
 
+- Moved filtering rule functions to polars utils and added support for categorical data types.
+
 ### Fixed
 
 
