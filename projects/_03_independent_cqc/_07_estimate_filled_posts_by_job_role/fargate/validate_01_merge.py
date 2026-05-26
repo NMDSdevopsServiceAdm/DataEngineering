@@ -119,30 +119,30 @@ def main(
             ],
             brief=f"Required columns should contain no null values",
         )
-        # # Numeric range — strictly positive (nulls allowed)
-        # .col_vals_gt(
-        #     columns=[
-        #         IndCqcColumns.estimate_filled_posts,
-        #         IndCqcColumns.ascwds_filled_posts_dedup_clean,
-        #     ],
-        #     value=0,
-        #     na_pass=True,
-        #     brief=f"estimate_filled_posts and ascwds_filled_posts_deduplicated_clean should be > 0 where present",
-        # )
-        # # Numeric range — non-negative (nulls allowed)
-        # .col_vals_ge(
-        #     columns=[IndCqcColumns.ascwds_job_role_counts],
-        #     value=0,
-        #     na_pass=True,
-        #     brief=f"ascwds_job_role_counts should be >= 0 where present",
-        # )
-        # # Date plausibility
-        # .col_vals_ge(
-        #     columns=[IndCqcColumns.cqc_location_import_date],
-        #     value=CQC_EARLIEST_IMPORT_DATE,
-        #     brief=f"cqc_location_import_date should not be before {CQC_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
-        # )
-        # # id_per_locationid_import_date unique within each location/import-date pair
+        # Numeric range — strictly positive (nulls allowed)
+        .col_vals_gt(
+            columns=[
+                IndCqcColumns.estimate_filled_posts,
+                IndCqcColumns.ascwds_filled_posts_dedup_clean,
+            ],
+            value=0,
+            na_pass=True,
+            brief=f"estimate_filled_posts and ascwds_filled_posts_deduplicated_clean should be > 0 where present",
+        )
+        # Numeric range — non-negative (nulls allowed)
+        .col_vals_ge(
+            columns=[IndCqcColumns.ascwds_job_role_counts],
+            value=0,
+            na_pass=True,
+            brief=f"ascwds_job_role_counts should be >= 0 where present",
+        )
+        # Date plausibility
+        .col_vals_ge(
+            columns=[IndCqcColumns.cqc_location_import_date],
+            value=CQC_EARLIEST_IMPORT_DATE,
+            brief=f"cqc_location_import_date should not be before {CQC_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
+        )
+        # id_per_locationid_import_date unique within each location/import-date pair
         .col_vals_expr(
             expr=(
                 pl.col(IndCqcColumns.id_per_locationid_import_date)
@@ -157,19 +157,19 @@ def main(
             ),
             brief="id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
         )
-        # # Cross-column numeric constraint
-        # .col_vals_expr(
-        #     expr=(
-        #         pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
-        #         | pl.col(IndCqcColumns.estimate_filled_posts).is_null()
-        #         | (
-        #             pl.col(IndCqcColumns.ascwds_job_role_counts)
-        #             <= pl.col(IndCqcColumns.estimate_filled_posts)
-        #         )
-        #     ),
-        #     brief=f"ascwds_job_role_counts <= estimate_filled_posts where both are present",
-        # )
-        # # categorical
+        # Cross-column numeric constraint
+        .col_vals_expr(
+            expr=(
+                pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
+                | pl.col(IndCqcColumns.estimate_filled_posts).is_null()
+                | (
+                    pl.col(IndCqcColumns.ascwds_job_role_counts)
+                    <= pl.col(IndCqcColumns.estimate_filled_posts)
+                )
+            ),
+            brief=f"ascwds_job_role_counts <= estimate_filled_posts where both are present",
+        )
+        # categorical
         # .col_vals_in_set(
         #     IndCqcColumns.estimate_filled_posts_source,
         #     CatValues.estimate_filled_posts_source_column_values.categorical_values,
