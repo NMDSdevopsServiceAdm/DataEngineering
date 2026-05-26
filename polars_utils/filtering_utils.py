@@ -12,8 +12,10 @@ def add_filtering_rule_column(
 ) -> pl.LazyFrame:
     """
     Adds a column which flags if data is present or missing.
+
     This function adds a new column which identifies if the `col_to_filter`
     is "populated" or "missing data".
+
     Args:
         lf (pl.LazyFrame): A LazyFrame containing the `col_to_filter`
             before any filters have been applied to the column.
@@ -21,6 +23,7 @@ def add_filtering_rule_column(
         col_to_filter (str): The name of the column to check for nulls.
         populated_rule (str): The value to assign when data is present.
         missing_rule (str): The value to assign when data is null.
+
     Returns:
         pl.LazyFrame: A LazyFrame with an additional column indicating
         whether data is present or missing.
@@ -45,11 +48,13 @@ def update_filtering_rule(
 ) -> pl.LazyFrame:
     """
     Updates the text in the filtering rule column to reflect the change.
+
     This function updates the filtering rule in 2 cases:
     1) Where the rule is listed as "populated" but the cleaned data
        has been nulled or changed from the original value.
     2) If a winsorized process has already occurred, where the rule
        is listed as "winsorized" but the cleaned data has been nulled.
+
     Args:
         lf (pl.LazyFrame): A LazyFrame containing the raw column,
             cleaned column, and filtering rule column.
@@ -60,6 +65,7 @@ def update_filtering_rule(
         new_rule_name (str): The name of the new rule to add.
         winsorized_rule (str, optional): The rule name assigned if data
             has been winsorized (capped). Defaults to None.
+
     Returns:
         pl.LazyFrame: A LazyFrame with the filtering rule column updated.
     """
