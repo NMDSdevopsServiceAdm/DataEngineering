@@ -175,6 +175,14 @@ def main(
         #     brief=f"ascwds_job_role_counts <= estimate_filled_posts where both are present",
         # )
         # categorical
+        .col_vals_expr(
+            expr=pl.col(IndCqcColumns.main_job_role_clean_labelled)
+            .cast(pl.String)
+            .is_in(
+                ASCWDSWorkerCatValues.main_job_role_labels_column_values.categorical_values
+            ),
+            brief="main_job_role_clean_labelled should only contain recognised job role categories",
+        )
         .col_vals_in_set(
             IndCqcColumns.estimate_filled_posts_source,
             CatValues.estimate_filled_posts_source_column_values.categorical_values,
@@ -182,10 +190,6 @@ def main(
         .col_vals_in_set(
             IndCqcColumns.primary_service_type,
             CatValues.primary_service_type_column_values.categorical_values,
-        )
-        .col_vals_in_set(
-            IndCqcColumns.main_job_role_clean_labelled,
-            ASCWDSWorkerCatValues.main_job_role_labels_column_values.categorical_values,
         )
         # distinct values
         .specially(
