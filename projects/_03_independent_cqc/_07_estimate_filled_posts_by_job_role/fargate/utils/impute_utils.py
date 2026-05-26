@@ -130,7 +130,18 @@ def get_percent_share_ratios(
 
 
 def estimate_filled_posts_size_group_expression() -> pl.Expr:
-    """Create the expression to calculate the size group for estimated filled posts."""
+    """Create the expression to calculate the size group for estimated filled posts.
+    This function recursively builds a polars expression, using the
+    ESTIMATE_FILLED_POSTS_SIZE_GROUPS data structure adding a check
+    for each combination of:
+       - service type,
+       - upper size bound, and
+       - lower size bound.
+
+    Returns:
+        pl.Expr: A polars expression to calculate the size group for
+            estimated filled posts.
+    """
     estimate_col = pl.col(IndCQC.estimate_filled_posts)
     primary_col = pl.col(IndCQC.primary_service_type)
 
