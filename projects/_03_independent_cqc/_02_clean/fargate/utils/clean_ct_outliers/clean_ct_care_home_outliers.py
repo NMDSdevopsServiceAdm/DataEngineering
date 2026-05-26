@@ -1,5 +1,6 @@
 import polars as pl
 
+from polars_utils.filtering_utils import add_filtering_rule_column
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.null_longitudinal_outliers import (
     null_longitudinal_outliers,
 )
@@ -10,7 +11,6 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.null
     null_values_exceeding_repetition_limit,
 )
 from projects._03_independent_cqc._02_clean.fargate.utils.filtering_utils import (
-    add_filtering_rule_column,
     aggregate_values_to_provider_level,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
