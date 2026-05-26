@@ -5,7 +5,7 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.
     join_estimates_to_ascwds,
 )
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
-    CatagoricalColumnTypes as CatColType,
+    CategoricalColumnTypes as CatColType,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 

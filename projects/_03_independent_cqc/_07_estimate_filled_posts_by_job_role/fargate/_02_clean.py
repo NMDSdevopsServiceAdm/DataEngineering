@@ -6,7 +6,7 @@ from polars_utils.filtering_utils import (
 )
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils as cUtils
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
-    CatagoricalColumnTypes as CatColType,
+    CategoricalColumnTypes as CatColType,
 )
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     add_job_role_groups_column,

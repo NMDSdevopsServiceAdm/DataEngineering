@@ -2,7 +2,7 @@ import polars as pl
 
 from polars_utils.filtering_utils import update_filtering_rule
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
-    CatagoricalColumnTypes as CatColType,
+    CategoricalColumnTypes as CatColType,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (

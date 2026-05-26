@@ -62,8 +62,8 @@ def add_job_role_groups_column(
         ),
     }
     job_role_group_schema = {
-        IndCQC.main_job_role_clean_labelled: CatagoricalColumnTypes.JobRoleEnumType,
-        job_group_column_name: CatagoricalColumnTypes.JobGroupEnumType,
+        IndCQC.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
+        job_group_column_name: CategoricalColumnTypes.JobGroupEnumType,
     }
     job_role_group_lf = pl.LazyFrame(job_role_group_data, schema=job_role_group_schema)
     lf = lf.join(job_role_group_lf, on=IndCQC.main_job_role_clean_labelled, how="left")
@@ -210,7 +210,7 @@ class HistoricJobRoleAdjustmentConfig:
 
 
 @dataclass
-class CatagoricalColumnTypes:
+class CategoricalColumnTypes:
     LocationCatType = pl.Categorical(
         pl.Categories("location", namespace="filled_posts")
     )
