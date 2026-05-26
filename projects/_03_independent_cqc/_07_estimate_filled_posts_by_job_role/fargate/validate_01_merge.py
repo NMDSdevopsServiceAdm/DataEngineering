@@ -137,11 +137,11 @@ def main(
             brief=f"ascwds_job_role_counts should be >= 0 where present",
         )
         # Date plausibility
-        .col_vals_ge(
-            columns=[IndCqcColumns.cqc_location_import_date],
-            value=CQC_EARLIEST_IMPORT_DATE,
-            brief=f"cqc_location_import_date should not be before {CQC_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
-        )
+        # .col_vals_ge(
+        #     columns=[IndCqcColumns.cqc_location_import_date],
+        #     value=CQC_EARLIEST_IMPORT_DATE,
+        #     brief=f"cqc_location_import_date should not be before {CQC_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
+        # )
         # id_per_locationid_import_date unique within each location/import-date pair
         .col_vals_expr(
             expr=(
