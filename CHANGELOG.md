@@ -25,6 +25,8 @@ All notable changes to this project will be documented in this file.
 
 - Changed apply_categorical_labels so it can reverse labels by swapping the k:v in the label dict.
 
+- Moved filtering rule functions to polars utils.
+
 - Changed add_filtering_rule_column() and update_filtering_rule() to handle categorical columns as well as string.
 
 ### Fixed

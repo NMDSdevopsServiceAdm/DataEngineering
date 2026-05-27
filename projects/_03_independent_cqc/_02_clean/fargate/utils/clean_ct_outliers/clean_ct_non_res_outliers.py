@@ -1,8 +1,6 @@
 import polars as pl
 
-from polars_utils.filtering_utils import (
-    add_filtering_rule_column,
-)
+from polars_utils.filtering_utils import add_filtering_rule_column
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.null_longitudinal_outliers import (
     null_longitudinal_outliers,
 )

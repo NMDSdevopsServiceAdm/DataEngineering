@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import polars as pl
 
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
-    CategoricalColumnTypes as CatColType,
+    CatagoricalColumnTypes as CatColType,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
