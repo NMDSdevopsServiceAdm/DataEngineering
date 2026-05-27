@@ -168,52 +168,50 @@ def create_ascwds_job_role_rolling_ratio(
     """
     Create rolling ASC-WDS job role ratios over a 6-month period.
 
-    Rolling sums and ratios are calculated at a cohort level defined by:
-        - primary service type
-        - estimated filled posts size group
-        - cleaned main job role label
-        - import date
+    The rolling sums are calculated at an aggregated level using the combination of:
+    - primary service type
+    - estimated filled posts size group
+    - cleaned main job role label
 
-    This approach computes ratios on the aggregated rolling dataset first,
-    then joins the final ratios back to the full location-level dataset.
+    Monthly ASC-WDS job role counts are first pre-aggregated at this level to keep
+    processing within the Polars streaming engine and reduce the volume of data used
+    in the rolling calculation. The rolling ratio is then calculated on this small
+    aggregated dataset before joining back onto the original location-level dataset.
+    This is valid because all locations sharing the same primary service type, size
+    group, and import date will receive an identical ratio regardless.
+
+    Uses a groupby-aggregate-rolling-ratio-join pattern to improve performance on
+    large datasets.
 
     Args:
-        estimated_job_role_posts_lf(pl.LazyFrame): dataset to calutate ratio on
+        estimated_job_role_posts_lf(pl.LazyFrame): dataset to calculate ratio on
 
     Returns:
-        pl.LazyFrame: dataset with additional columns with ratio and sum of
-            ascwds job roles
+        pl.LazyFrame: dataset with an additional column containing the rolling
+            ASC-WDS job role ratio
     """
-    # STEP 0: feature engineering
+
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         estimate_filled_posts_size_group_expression()
     )
 
-    # Cohort definition (shared across all steps now)
     rolling_groups = [
         IndCQC.primary_service_type,
         IndCQC.estimate_filled_posts_size_group,
         IndCQC.main_job_role_clean_labelled,
     ]
-
     order_key = IndCQC.cqc_location_import_date
     monthly_groups = rolling_groups + [order_key]
 
-    # STEP A: Pre-aggregate down to monthly totals
-    # (Shrinks 152M rows -> ~50k rows instantly via Hash Aggregation)
+    # STEP A: Pre-aggregate to monthly totals (~50k rows)
     monthly_totals_lf = estimated_job_role_posts_lf.group_by(monthly_groups).agg(
         pl.col(IndCQC.imputed_ascwds_job_role_counts).sum()
     )
 
-    # STEP B: Sort and roll on the small dataset.
-    # This .sort() is completely safe because it's only operating on ~50k rows.
+    # STEP B: Sort and compute rolling 6-month sums on small dataset
     rolling_agg_lf = (
         monthly_totals_lf.sort(*rolling_groups, order_key)
-        .rolling(
-            index_column=order_key,
-            group_by=rolling_groups,
-            period="6mo",
-        )
+        .rolling(index_column=order_key, group_by=rolling_groups, period="6mo")
         .agg(
             pl.col(IndCQC.imputed_ascwds_job_role_counts)
             .sum()
@@ -221,35 +219,28 @@ def create_ascwds_job_role_rolling_ratio(
         )
     )
 
-    # STEP C: compute ratios ON aggregated rolling dataset
-    # denominator is total rolling sum per cohort + time + size/service
-    # not using get_percent_share_ratios here because we need to sum over the rolling sum column,
-    # not the original counts column.
-    ratio_groups = [
+    # STEP D: Calculate ratio on the small ~50k-row dataset before the join.
+    # All locations sharing (primary_service_type, size_group, date) get the
+    # same ratio, so this is equivalent to computing it post-join but far cheaper.
+    ratio_partition = [
         IndCQC.primary_service_type,
         IndCQC.estimate_filled_posts_size_group,
-        IndCQC.cqc_location_import_date,
+        order_key,
     ]
-
-    denominator_lf = rolling_agg_lf.group_by(ratio_groups).agg(
-        pl.col(IndCQC.ascwds_job_role_rolling_sum).sum().alias("rolling_total")
-    )
-
-    rolling_with_ratios_lf = rolling_agg_lf.join(
-        denominator_lf, on=ratio_groups, how="left"
-    ).with_columns(
-        (pl.col(IndCQC.ascwds_job_role_rolling_sum) / pl.col("rolling_total")).alias(
-            IndCQC.ascwds_job_role_rolling_ratio
+    rolling_agg_lf = rolling_agg_lf.with_columns(
+        (
+            pl.col(IndCQC.ascwds_job_role_rolling_sum)
+            / pl.col(IndCQC.ascwds_job_role_rolling_sum).sum().over(ratio_partition)
         )
-    )
+        .cast(pl.Float32)
+        .alias(IndCQC.ascwds_job_role_rolling_ratio)
+    ).drop(
+        IndCQC.ascwds_job_role_rolling_sum
+    )  # drop sum before the join
 
-    # STEP D: join ratios back to original dataset
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
-        rolling_with_ratios_lf.select(
-            monthly_groups + [IndCQC.ascwds_job_role_rolling_ratio]
-        ),
+    # STEP C: Join only the ratio (no sum) back to the 152M-row table
+    return estimated_job_role_posts_lf.join(
+        rolling_agg_lf,
         on=monthly_groups,
         how="left",
     )
-
-    return estimated_job_role_posts_lf
