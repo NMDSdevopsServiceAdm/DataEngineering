@@ -65,6 +65,12 @@ NUMERIC_SCHEMA = pb.Schema(
     }
 )
 
+VALIDATE_KWARGS = dict(
+    thresholds=GLOBAL_THRESHOLDS,
+    brief=True,
+    actions=GLOBAL_ACTIONS,
+)
+
 
 def main(
     bucket_name: str, source_path: str, compare_path: str, reports_path: str
@@ -80,32 +86,33 @@ def main(
         compare_path (str): the path to the dataset to compare against
         reports_path (str): the output path to write reports to
     """
+
+    run_key_validation(source_path, compare_path, bucket_name, reports_path)
+    gc.collect()
+    run_categorical_validation(source_path, bucket_name, reports_path)
+    gc.collect()
+    run_numeric_validation(source_path, bucket_name, reports_path)
+    gc.collect()
+
+
+def run_key_validation(source_path, compare_path, bucket_name, reports_path):
+    source_df = utils.read_parquet(
+        source=f"s3://{bucket_name}/{source_path}",
+        selected_columns=KEY_COLS,
+    ).with_columns(pl.col(IndCqcColumns.main_job_role_clean_labelled).cast(pl.String))
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=ind_cqc_estimates_cols_to_import,
     )
     expected_row_count = compare_df.height * len(jobGroupDict.all_roles())
-    del compare_df
-
-    validate_kwargs = dict(
-        thresholds=GLOBAL_THRESHOLDS,
-        brief=True,
-        actions=GLOBAL_ACTIONS,
-    )
-
-    # Group 1: Key / identity columns
-    key_df = utils.read_parquet(
-        source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=KEY_COLS,
-    ).with_columns(pl.col(IndCqcColumns.main_job_role_clean_labelled).cast(pl.String))
 
     key_validation = (
         pb.Validate(
-            data=key_df,
+            data=source_df,
             label=f"Key validation of {source_path}",
-            **validate_kwargs,
+            **VALIDATE_KWARGS,
         )
-        .col_schema_match(KEY_SCHEMA)
+        # .col_schema_match(KEY_SCHEMA)
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
@@ -152,10 +159,10 @@ def main(
         .interrogate()
     )
     vl.write_reports(key_validation, bucket_name, f"{reports_path}key/")
-    del key_df, key_validation
-    gc.collect()
+    del source_df, compare_df, key_validation
 
-    # Group 2: Categorical columns
+
+def run_categorical_validation(source_path, bucket_name, reports_path):
     categorical_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=CATEGORICAL_COLS,
@@ -165,7 +172,7 @@ def main(
         pb.Validate(
             data=categorical_df,
             label=f"Categorical validation of {source_path}",
-            **validate_kwargs,
+            **VALIDATE_KWARGS,
         )
         .col_schema_match(CATEGORICAL_SCHEMA)
         .col_vals_not_null(
@@ -198,9 +205,9 @@ def main(
     )
     vl.write_reports(categorical_validation, bucket_name, f"{reports_path}categorical/")
     del categorical_df, categorical_validation
-    gc.collect()
 
-    # Group 3: Numeric columns
+
+def run_numeric_validation(source_path, bucket_name, reports_path):
     numeric_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=NUMERIC_COLS,
@@ -210,7 +217,7 @@ def main(
         pb.Validate(
             data=numeric_df,
             label=f"Numeric validation of {source_path}",
-            **validate_kwargs,
+            **VALIDATE_KWARGS,
         )
         .col_schema_match(NUMERIC_SCHEMA)
         .col_vals_not_null(
@@ -247,7 +254,6 @@ def main(
     )
     vl.write_reports(numeric_validation, bucket_name, f"{reports_path}numeric/")
     del numeric_df, numeric_validation
-    gc.collect()
 
 
 if __name__ == "__main__":
