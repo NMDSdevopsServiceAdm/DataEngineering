@@ -131,20 +131,20 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
             columns=KEY_COLS,
             brief="Key columns should contain no null values",
         )
-        # .col_vals_expr(
-        #     expr=(
-        #         pl.col(IndCqcColumns.id_per_locationid_import_date)
-        #         .n_unique()
-        #         .over(
-        #             [
-        #                 IndCqcColumns.location_id,
-        #                 IndCqcColumns.cqc_location_import_date,
-        #             ]
-        #         )
-        #         == 1
-        #     ),
-        #     brief="id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
-        # )
+        .col_vals_expr(
+            expr=(
+                pl.col(IndCqcColumns.id_per_locationid_import_date)
+                .n_unique()
+                .over(
+                    [
+                        IndCqcColumns.location_id,
+                        IndCqcColumns.cqc_location_import_date,
+                    ]
+                )
+                == 1
+            ),
+            brief="id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
+        )
         # had to do it this way because ASCWDSWorkerCatValues.main_job_role_labels_column_values.categorical_values has extra values like technician which we dont have in data but is used elsewhere in pipeline so cant just delete it
         .col_vals_expr(
             expr=pl.col(IndCqcColumns.main_job_role_clean_labelled)
