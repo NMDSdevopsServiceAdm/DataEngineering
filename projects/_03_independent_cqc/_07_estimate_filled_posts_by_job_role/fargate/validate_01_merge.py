@@ -87,6 +87,7 @@ def main(
         reports_path (str): the output path to write reports to
     """
 
+    # can change name of this. I named it key validation initially because it started with just locartionid and import date validation
     run_key_validation(source_path, compare_path, bucket_name, reports_path)
     gc.collect()
     run_categorical_validation(source_path, bucket_name, reports_path)
@@ -143,6 +144,7 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
         #     ),
         #     brief="id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
         # )
+        # had to do it this way because ASCWDSWorkerCatValues.main_job_role_labels_column_values.categorical_values has extra values like technician which we dont have in data but is used elsewhere in pipeline so cant just delete it
         # .col_vals_expr(
         #     expr=pl.col(IndCqcColumns.main_job_role_clean_labelled)
         #     .cast(pl.String)
@@ -234,6 +236,7 @@ def run_numeric_validation(source_path, bucket_name, reports_path):
             na_pass=True,
             brief="ascwds_job_role_counts should be >= 0 where present",
         )
+        # had to do it this way as multi conditional checks are not possible directly in Pointblank
         .col_vals_expr(
             expr=(
                 pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
