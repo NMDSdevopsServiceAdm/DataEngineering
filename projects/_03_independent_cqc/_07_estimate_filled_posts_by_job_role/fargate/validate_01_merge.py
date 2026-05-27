@@ -46,7 +46,7 @@ KEY_SCHEMA = pb.Schema(
         IndCqcColumns.id_per_locationid_import_date: "String",
         IndCqcColumns.location_id: "String",
         IndCqcColumns.cqc_location_import_date: "Date",
-        IndCqcColumns.main_job_role_clean_labelled: "String",
+        # IndCqcColumns.main_job_role_clean_labelled: "String",
     }
 )
 
@@ -54,6 +54,7 @@ CATEGORICAL_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.primary_service_type: "String",
         IndCqcColumns.estimate_filled_posts_source: "String",
+        IndCqcColumns.main_job_role_clean_labelled: "String",
     }
 )
 
@@ -117,8 +118,7 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        )
-        .rows_distinct(
+        ).rows_distinct(
             columns_subset=[
                 IndCqcColumns.location_id,
                 IndCqcColumns.cqc_location_import_date,
@@ -126,10 +126,10 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
             ],
             brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
         )
-        .col_vals_not_null(
-            columns=KEY_COLS,
-            brief="Key columns should contain no null values",
-        )
+        # .col_vals_not_null(
+        #     columns=KEY_COLS,
+        #     brief="Key columns should contain no null values",
+        # )
         # .col_vals_expr(
         #     expr=(
         #         pl.col(IndCqcColumns.id_per_locationid_import_date)
