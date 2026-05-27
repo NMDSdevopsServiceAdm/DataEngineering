@@ -231,11 +231,16 @@ def create_ascwds_job_role_rolling_ratio(
         IndCQC.cqc_location_import_date,
     ]
 
-    rolling_with_ratios_lf = rolling_agg_lf.with_columns(
-        (
-            pl.col(IndCQC.ascwds_job_role_rolling_sum)
-            / pl.col(IndCQC.ascwds_job_role_rolling_sum).sum().over(ratio_groups)
-        ).alias(IndCQC.ascwds_job_role_rolling_ratio)
+    denominator_lf = rolling_agg_lf.group_by(ratio_groups).agg(
+        pl.col(IndCQC.ascwds_job_role_rolling_sum).sum().alias("rolling_total")
+    )
+
+    rolling_with_ratios_lf = rolling_agg_lf.join(
+        denominator_lf, on=ratio_groups, how="left"
+    ).with_columns(
+        (pl.col(IndCQC.ascwds_job_role_rolling_sum) / pl.col("rolling_total")).alias(
+            IndCQC.ascwds_job_role_rolling_ratio
+        )
     )
 
     # STEP D: join ratios back to original dataset
