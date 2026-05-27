@@ -13,6 +13,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 BANDED_BED_THRESHOLDS: list = [0, 1, 15, 25, math.inf]
 
 
+# Converted to Polars -> projects\_03_independent_cqc\utils\primary_service_rate_of_change\primary_service_rate_of_change.py
 def model_primary_service_rate_of_change_trendline(
     df: DataFrame,
     column_with_values: str,
@@ -88,6 +89,7 @@ def model_primary_service_rate_of_change_trendline(
     return df
 
 
+# Converted to Polars -> projects\_03_independent_cqc\utils\primary_service_rate_of_change\primary_service_rate_of_change.py
 def calculate_rate_of_change_trendline(
     single_period_rate_of_change_df: DataFrame,
     rate_of_change_trendline_column_name: str,

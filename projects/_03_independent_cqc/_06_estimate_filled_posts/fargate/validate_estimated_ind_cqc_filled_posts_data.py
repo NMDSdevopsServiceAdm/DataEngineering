@@ -1,5 +1,4 @@
 import sys
-import time
 
 import pointblank as pb
 
@@ -69,7 +68,6 @@ def main(
                 IndCqcColumns.current_ons_import_date,
                 IndCqcColumns.current_cssr,
                 IndCqcColumns.current_region,
-                IndCqcColumns.unix_time,
                 #         IndCqcColumns.estimate_filled_posts,
                 #         IndCqcColumns.estimate_filled_posts_source,
             ]
@@ -101,9 +99,6 @@ def main(
         )
         # .col_vals_between(IndCqcColumns.imputed_pir_filled_posts_model, -100.0, 3000.0)
         .col_vals_between(IndCqcColumns.posts_rolling_average_model, 1.0, 3000.0)
-        .col_vals_between(
-            IndCqcColumns.unix_time, 1262304000, int(time.time())
-        )  # 1st Jan 2010 in unix time and current unix time
         # categorical
         .col_vals_in_set(
             IndCqcColumns.care_home,

@@ -1,9 +1,14 @@
 from datetime import date
 
 import polars as pl
+from dataclasses import dataclass
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import MainJobRoleLabels
+from utils.column_values.categorical_column_values import (
+    MainJobRoleLabels,
+    EstimateFilledPostsSource,
+    PrimaryServiceType,
+)
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
@@ -26,6 +31,46 @@ def percentage_share_handling_zero_sum(column: str | pl.Expr) -> pl.Expr:
         .then(1 / col.is_not_null().sum())
         .otherwise(col / total)
     )
+
+
+def add_job_role_groups_column(
+    lf: pl.LazyFrame, job_group_column_name: str
+) -> pl.LazyFrame:
+    """
+    Adds a new column with job role groups.
+
+    Using an Enumerated column of job roles, this function creates a new column which assigns
+    the job role group for each row to a new column.
+
+    Args:
+        lf(pl.LazyFrame): A lazy frame with the column main_job_role_clean_labelled.
+        job_group_column_name(str): The name for the new job group column.
+
+    Returns:
+        pl.LazyFrame: A lazy frame with the job group column added.
+    """
+    job_role_group_data = {
+        IndCQC.main_job_role_clean_labelled: list(
+            AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.keys()
+        ),
+        job_group_column_name: list(
+            AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values()
+        ),
+    }
+    job_role_group_schema = {
+        IndCQC.main_job_role_clean_labelled: pl.Enum(
+            AscwdsWorkerValueLabelsJobGroup.all_roles()
+        ),
+        job_group_column_name: pl.Enum(
+            list(
+                set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values())
+            )
+        ),
+    }
+    job_role_group_lf = pl.LazyFrame(job_role_group_data, schema=job_role_group_schema)
+
+    lf = lf.join(job_role_group_lf, on=IndCQC.main_job_role_clean_labelled, how="left")
+    return lf
 
 
 class ManagerialFilledPostAdjustmentExpr:
@@ -165,3 +210,32 @@ class HistoricJobRoleAdjustmentConfig:
             },
         },
     }
+
+
+@dataclass
+class CatagoricalColumnTypes:
+    LocationCatType = pl.Categorical(
+        pl.Categories("location", namespace="filled_posts")
+    )
+    EstablishmentCatType = pl.Categorical(
+        pl.Categories("establishment", namespace="filled_posts")
+    )
+    JobRoleEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
+    EstimatesFilledPostSourceEnumType = pl.Enum(
+        [
+            EstimateFilledPostsSource.imputed_pir_filled_posts_model,
+            EstimateFilledPostsSource.ascwds_pir_merged,
+            EstimateFilledPostsSource.imputed_posts_care_home_model,
+            EstimateFilledPostsSource.care_home_model,
+            EstimateFilledPostsSource.imputed_posts_non_res_combined_model,
+            EstimateFilledPostsSource.non_res_combined_model,
+            EstimateFilledPostsSource.posts_rolling_average_model,
+        ]
+    )
+    PrimaryServiceEnumType = pl.Enum(
+        [
+            PrimaryServiceType.care_home_only,
+            PrimaryServiceType.care_home_with_nursing,
+            PrimaryServiceType.non_residential,
+        ]
+    )

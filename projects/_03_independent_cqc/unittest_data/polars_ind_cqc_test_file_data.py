@@ -439,17 +439,17 @@ class ValidateCleanIndCQCData:
 @dataclass
 class ValidateImputedIndCqcAscwdsAndPir:
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1),),
-        ("1-000000002", date(2024, 1, 1),),
-        ("1-000000001", date(2024, 2, 1),),
-        ("1-000000002", date(2024, 2, 1),),
-    ] # fmt: skip
+        ("1-000000001", date(2024, 1, 1)),
+        ("1-000000002", date(2024, 1, 1)),
+        ("1-000000001", date(2024, 2, 1)),
+        ("1-000000002", date(2024, 2, 1)),
+    ]
 
     imputed_ind_cqc_ascwds_and_pir_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 123456789, 5, 5.0),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
     ] # fmt: skip
 
 
@@ -463,10 +463,10 @@ class ValidateEstimatedIndCQCFilledPostsData:
     ]
 
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
     ] # fmt: skip
 
 
@@ -848,46 +848,6 @@ class ArchiveFilledPostsEstimates:
 
 @dataclass
 class CleanFilteringUtilsData:
-    add_filtering_column_rows = [
-        ("loc 1", 10.0),
-        ("loc 2", None),
-    ]
-    expected_add_filtering_column_rows = [
-        ("loc 1", 10.0, AscwdsFilteringRule.populated),
-        ("loc 2", None, AscwdsFilteringRule.missing_data),
-    ]
-
-    update_filtering_rule_populated_to_nulled_rows = [
-        ("loc 1", 10.0, 10.0, AscwdsFilteringRule.populated),
-        ("loc 2", 10.0, None, AscwdsFilteringRule.populated),
-        ("loc 3", 10.0, None, AscwdsFilteringRule.missing_data),
-    ]
-    expected_update_filtering_rule_populated_to_nulled_rows = [
-        ("loc 1", 10.0, 10.0, AscwdsFilteringRule.populated),
-        ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
-        ("loc 3", 10.0, None, AscwdsFilteringRule.missing_data),
-    ] # fmt: skip
-
-    update_filtering_rule_populated_to_winsorized_rows = [
-        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.populated),
-        ("loc 2", 10.0, 11.0, AscwdsFilteringRule.populated),
-        ("loc 3", 10.0, 10.0, AscwdsFilteringRule.populated),
-    ]
-    expected_update_filtering_rule_populated_to_winsorized_rows = [
-        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
-        ("loc 2", 10.0, 11.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
-        ("loc 3", 10.0, 10.0, AscwdsFilteringRule.populated),
-    ] # fmt: skip
-
-    update_filtering_rule_winsorized_to_nulled_rows = [
-        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
-        ("loc 2", 10.0, None, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
-    ]
-    expected_update_filtering_rule_winsorized_to_nulled_rows = [
-        ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
-        ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
-    ] # fmt: skip
-
     aggregate_values_to_provider_level_rows = [
         ("1-001", "1-0001", 1, date(2025, 1, 1)),
         ("1-002", "1-0001", 1, date(2025, 1, 1)),
@@ -2756,3 +2716,402 @@ class ModelExtrapolation:
             ],
         ),
     ]
+
+
+@dataclass
+class ModelRateOfChangeInputOutputTestCase:
+    id: str
+    input_data: list[Any]
+    expected_data: list[Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self.input_data, self.expected_data, id=self.id)
+
+
+@dataclass
+class ModelRateOfChangeOutputOnlyTestCase:
+    id: str
+    data: list[Any]
+
+    def as_pytest_param(self):
+        return pytest.param(self.data, id=self.id)
+
+
+@dataclass
+class ModelRateOfChangeData:
+    model_roc_trendline_test_cases = [
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="single_group_produces_expected_trendline",
+            data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 2.7, 1, 0.9),
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.3, 1, 0.947),
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="multiple_groups_aggregate_independently",
+            data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home,     10, "CHO", 3.0,  1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 2.8,  1, 1.04),
+                ("1-001", date(2026, 1, 3), CareHome.care_home,     10, "CHO", 3.4,  1, 1.162),
+                ("1-002", date(2026, 1, 1), CareHome.care_home,     10, "CHO", 2.0,  1, 1.0),
+                ("1-002", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 2.4,  1, 1.04),
+                ("1-002", date(2026, 1, 3), CareHome.care_home,     10, "CHO", 2.8,  1, 1.162),
+                ("1-003", date(2026, 1, 1), CareHome.not_care_home, 10, "NR",  40.0, 1, 1.0),
+                ("1-003", date(2026, 1, 2), CareHome.not_care_home, 10, "NR",  50.0, 1, 1.25),
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="unsorted_input_produces_correct_trendline",
+            data=[
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.3, 1, 0.947),
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 2.7, 1, 0.9),
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="missing_values_are_interpolated_before_trendline",
+            data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0,  1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", None, 1, 1.1),
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.6,  1, 1.205),
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="locations_with_single_submission_do_not_influence_aggregate",
+            data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 2.7, 1, 0.9),
+                ("1-001", date(2026, 1, 3), CareHome.care_home, 10, "CHO", 3.3, 1, 0.947),
+                ("1-002", date(2026, 1, 2), CareHome.care_home, 10, "CHO", 9.9, 1, 0.9), # single submission - shouldn't contribute
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="locations_with_inconsistent_status_do_not_influence_aggregate",
+            data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home,     10, "CHO", 3.0, 1, 1.0),
+                ("1-001", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 2.7, 1, 0.9),
+                ("1-001", date(2026, 1, 3), CareHome.care_home,     10, "CHO", 3.3, 1, 0.947),
+                ("1-002", date(2026, 1, 2), CareHome.care_home,     10, "CHO", 9.9, 2, 0.9), # main service changed - shouldn't contribute
+                ("1-002", date(2026, 1, 3), CareHome.not_care_home, 10, "NR",  9.9, 2, 1.0), # main service changed - shouldn't contribute
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="first_time_period_is_always_1",
+            data=[
+                ("1-001", date(2026, 1, 1), CareHome.care_home, 10, "CHO", 3.0, 1, 1.0),
+            ],
+        ),
+    ] # fmt: skip
+
+    calculate_rolling_sums_test_cases = [
+        ModelRateOfChangeInputOutputTestCase(
+            id="single_group_within_time_window",
+            input_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 2.7, 3.0),
+                ("1-001", "CHO", 10, date(2026, 1, 3), 3.3, 2.7),
+            ],
+            expected_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 5.7, 5.0),
+                ("1-001", "CHO", 10, date(2026, 1, 3), 9.0, 7.7),
+            ],
+        ),
+        ModelRateOfChangeInputOutputTestCase(
+            id="multiple_groups_within_time_window",
+            input_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 2.7, 3.0),
+                ("1-002", "NR",  20, date(2026, 1, 1), 1.0, 1.5),
+                ("1-002", "NR",  20, date(2026, 1, 2), 1.2, 1.0),
+            ],
+            expected_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 5.7, 5.0),
+                ("1-002", "NR",  20, date(2026, 1, 1), 1.0, 1.5),
+                ("1-002", "NR",  20, date(2026, 1, 2), 2.2, 2.5),
+            ],
+        ),
+        ModelRateOfChangeInputOutputTestCase(
+            id="time_window_taken_into_account",
+            input_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 2.9, 3.0),
+                ("1-001", "CHO", 10, date(2026, 1, 3), 2.8, 4.0),
+                ("1-001", "CHO", 10, date(2026, 1, 4), 2.7, 5.0),
+                ("1-001", "CHO", 10, date(2026, 1, 5), 2.6, 6.0),
+            ],
+            expected_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0,  2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 5.9,  5.0), # sum of 1st - 2nd Jan (tests based on a 3 day window)
+                ("1-001", "CHO", 10, date(2026, 1, 3), 8.7,  9.0), # sum of 1st - 3rd Jan
+                ("1-001", "CHO", 10, date(2026, 1, 4), 8.4, 12.0), # sum of 2nd - 4th Jan
+                ("1-001", "CHO", 10, date(2026, 1, 5), 8.1, 15.0), # sum of 3rd - 5th Jan
+            ],
+        ),
+    ] # fmt: skip
+
+    clean_non_residential_rate_of_change_test_cases = [
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="no_threshold_population_filters_non_residential_rows",
+            data=[
+                # non-residential → falls into "small" condition → kept
+                ("1-001", CareHome.not_care_home, date(2026, 1, 1), 2.0, 3.0, 2.0, 3.0),
+                ("1-001", CareHome.not_care_home, date(2026, 1, 2), 3.0, 2.0, 3.0, 2.0),
+                # care home always kept
+                ("1-002", CareHome.care_home,     date(2026, 1, 1), 2.0, 3.0, 2.0, 3.0),
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="null_inputs_produce_null_outputs",
+            data=[
+                ("1-001", CareHome.not_care_home, date(2026, 1, 1), None, 3.0, None, None),
+                ("1-001", CareHome.not_care_home, date(2026, 1, 2), 3.0, None, None, None),
+            ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="care_home_rows_bypass_cleaning_rules",
+            data=[
+                ("1-001", CareHome.care_home, date(2026, 1, 1), 10.0, 1000.0, 10.0, 1000.0),
+            ],
+        ),
+    ] # fmt: skip
+
+    calculate_trendline_test_cases = [
+        ModelRateOfChangeInputOutputTestCase(
+            id="trendline_with_single_group",
+            input_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), 1.2),
+                ("CHO", 1, date(2026, 1, 3), 1.0),
+                ("CHO", 1, date(2026, 1, 4), 0.8),
+            ],
+            expected_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), 1.2),
+                ("CHO", 1, date(2026, 1, 3), 1.2),
+                ("CHO", 1, date(2026, 1, 4), 0.96),
+            ],
+        ),
+        ModelRateOfChangeInputOutputTestCase(
+            id="trendline_with_multiple_groups",
+            input_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), 1.2),
+                ("CHO", 2, date(2026, 1, 1), 1.0),
+                ("CHO", 2, date(2026, 1, 2), 1.1),
+                ("NR", 1, date(2026, 1, 1), 1.0),
+                ("NR", 1, date(2026, 1, 2), 0.8),
+            ],
+            expected_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), 1.2),
+                ("CHO", 2, date(2026, 1, 1), 1.0),
+                ("CHO", 2, date(2026, 1, 2), 1.1),
+                ("NR", 1, date(2026, 1, 1), 1.0),
+                ("NR", 1, date(2026, 1, 2), 0.8),
+            ],
+        ),
+    ]
+
+
+@dataclass
+class EstimateFilledPostsByJobRoleCleanUtilsTestCase:
+    id: str
+    test_data: list[Any]
+    expected_data: list[Any]
+    upper_bound: float
+    lower_bound: float
+
+
+@dataclass
+class EstimateFilledPostsByJobRoleCleanUtilsData:
+    filter_when_job_group_ratio_outside_percentile_bounds_test_cases = [
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_one_job_role_per_job_group",
+            test_data=[
+                (1,"loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20), # Loc 1 direct care over upper bound
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20), # Loc 2 within bounds
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 2),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1), # Loc 3 direct care below lower bound, others above upper bound
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1),
+            ],
+            expected_data=[
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, None, True),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, None, True),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, None, True),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, None, True),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20, False),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 2, False),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1, False),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff,1, False),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, None, True),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, None, True),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, None, True),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, None, True),
+            ],
+            upper_bound=0.8,
+            lower_bound=0.2,
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_multiple_job_role_per_job_group",
+            test_data=[
+                (1,"loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20), # Loc 1 direct care over upper bound
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.senior_care_worker, 20),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.occupational_therapist, 1),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.middle_management, 1),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.admin_staff, 1),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20), # Loc 2 within bounds
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 2),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1), # Loc 3 direct care below lower bound, others above upper bound
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 1),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1),
+            ],
+            expected_data=[
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, None, True),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, None, True),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, None, True),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, None, True),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.occupational_therapist, None, True),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.middle_management, None, True),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.admin_staff, None, True),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.senior_care_worker, None, True),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20, False),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1, False),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, 2, False),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, 1, False),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, None, True),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, None, True),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, None, True),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.other_non_care_related_staff, None, True),
+            ],
+            upper_bound=0.8,
+            lower_bound=0.2,
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_ratio_is exactly_on_bound",
+            test_data=[
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 5),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 5),
+            ],
+            expected_data=[
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 5, False),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 5, False),
+            ],
+            upper_bound=0.8,
+            lower_bound=0.2,
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_multiple_primary_service_types_present",
+            test_data=[
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20), # Loc 1 direct care over upper bound
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20), # Loc 2 within bounds
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 2),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1), # Loc 3 direct care below lower bound and registered nurse above upper bound
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1),
+                (4, "loc4", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 40), # Loc 4 direct care over upper bound
+                (4, "loc4", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 1),
+                (5, "loc5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 10), # Loc 5 within bounds
+                (5, "loc5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 2),
+                (6, "loc6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 1), # Loc 6 direct care below lower bound and registered nurse above upper bound
+                (6, "loc6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 1),
+            ],
+            expected_data=[
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, None, True),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, None, True),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20, False),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 2, False),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, None, True),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, None, True),
+                (4, "loc4", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, None, True),
+                (4, "loc4", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, None, True),
+                (5, "loc5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 10, False),
+                (5, "loc5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 2, False),
+                (6, "loc6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, None, True),
+                (6, "loc6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, None, True),
+            ],
+            upper_bound=0.8,
+            lower_bound=0.2,
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_multiple_locations_and_dates_present",
+            test_data=[
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 20), # Loc 1 in 2024 Direct care above upper bound
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1), # Loc 2 in 2024 Direct care below lower bound, Reg prof above upper bound
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 5),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1), # Loc 3 in 2024 within bounds
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1),
+                (4, "loc1", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 2), # Loc 1 in 2025 within bounds
+                (4, "loc1", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1),
+                (5, "loc2", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1), # Loc 2 in 2025 within bounds
+                (5, "loc2", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1),
+                (6, "loc3", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1), # Loc 3 in 2025 within bounds
+                (6, "loc3", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1),
+            ],
+            expected_data=[
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, None, True),
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, None, True),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, None, True),
+                (2, "loc2", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, None, True),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, False),
+                (3, "loc3", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1, False),
+                (4, "loc1", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 2, False),
+                (4, "loc1", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1, False),
+                (5, "loc2", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, False),
+                (5, "loc2", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1, False),
+                (6, "loc3", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1, False),
+                (6, "loc3", date(2025, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 1, False),
+            ],
+            upper_bound=0.8,
+            lower_bound=0.2,
+        ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="when_null_values_present",
+            test_data=[
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, None),
+            ],
+            expected_data=[
+                (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, None, False),
+            ],
+            upper_bound=0.8,
+            lower_bound=0.2,
+        ),
+    ] # fmt: skip
+
+    test_location_sum_expr_rows = [
+        (1, 3, 5, 7, 16),
+        (2, 4, 6, 8, 20),
+    ]
+    test_job_group_percentage_rows = [
+        (0.0625, 0.1875, 0.3125, 0.4375, 16),
+        (0.1,    0.2,    0.3,    0.4,    20),
+    ] # fmt: skip
+    test_evaluation_expr_rows = [
+        (0.1, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, False), # All within bounds
+        (0.3, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Direct care above upper bound
+        (0.1, 0.3, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Managers above upper bound
+        (0.1, 0.1, 0.3, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Regulated professionals above upper bound
+        (0.1, 0.1, 0.1, 0.3, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Other above upper bound
+        (0.01, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, True), # Direct care below lower bound
+        (0.01, 0.3, 0.3, 0.3, 0.2, 0.2, 0.2, 0.2, 0.05, True), # All out of bounds
+    ] # fmt: skip
+    expected_bounds_expressions_rows = [
+        (0.0625, 0.1875, 0.3125, 0.4375, 0.0925, 0.1975, 0.31, 0.43, 0.07, 0.19, 0.3025, 0.4075),
+        (0.1,    0.2,    0.3,    0.4,    0.0925, 0.1975, 0.31, 0.43, 0.07, 0.19, 0.3025, 0.4075),
+    ] # fmt: skip
