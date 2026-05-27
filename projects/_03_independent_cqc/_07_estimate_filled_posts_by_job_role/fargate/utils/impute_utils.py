@@ -219,7 +219,7 @@ def create_ascwds_job_role_rolling_ratio(
         )
     )
 
-    # STEP D: Calculate ratio on the small ~50k-row dataset before the join.
+    # STEP C: Calculate ratio on the small ~50k-row dataset before the join.
     # All locations sharing (primary_service_type, size_group, date) get the
     # same ratio, so this is equivalent to computing it post-join but far cheaper.
     ratio_partition = [
@@ -238,7 +238,7 @@ def create_ascwds_job_role_rolling_ratio(
         IndCQC.ascwds_job_role_rolling_sum
     )  # drop sum before the join
 
-    # STEP C: Join only the ratio (no sum) back to the 152M-row table
+    # STEP D: Join only the ratio (no sum) back to the 152M-row table
     return estimated_job_role_posts_lf.join(
         rolling_agg_lf,
         on=monthly_groups,
