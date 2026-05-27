@@ -1,3 +1,4 @@
+import gc
 import sys
 from datetime import date
 
@@ -152,6 +153,7 @@ def main(
     )
     vl.write_reports(key_validation, bucket_name, f"{reports_path}key/")
     del key_df, key_validation
+    gc.collect()
 
     # Group 2: Categorical columns
     categorical_df = utils.read_parquet(
@@ -196,6 +198,7 @@ def main(
     )
     vl.write_reports(categorical_validation, bucket_name, f"{reports_path}categorical/")
     del categorical_df, categorical_validation
+    gc.collect()
 
     # Group 3: Numeric columns
     numeric_df = utils.read_parquet(
@@ -244,6 +247,7 @@ def main(
     )
     vl.write_reports(numeric_validation, bucket_name, f"{reports_path}numeric/")
     del numeric_df, numeric_validation
+    gc.collect()
 
 
 if __name__ == "__main__":
