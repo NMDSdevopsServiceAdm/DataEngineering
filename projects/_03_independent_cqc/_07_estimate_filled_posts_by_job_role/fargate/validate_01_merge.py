@@ -46,7 +46,7 @@ KEY_SCHEMA = pb.Schema(
         IndCqcColumns.id_per_locationid_import_date: "String",
         IndCqcColumns.location_id: "String",
         IndCqcColumns.cqc_location_import_date: "Date",
-        # IndCqcColumns.main_job_role_clean_labelled: "String",
+        IndCqcColumns.main_job_role_clean_labelled: "String",
     }
 )
 
@@ -146,14 +146,14 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
         #     brief="id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
         # )
         # had to do it this way because ASCWDSWorkerCatValues.main_job_role_labels_column_values.categorical_values has extra values like technician which we dont have in data but is used elsewhere in pipeline so cant just delete it
-        # .col_vals_expr(
-        #     expr=pl.col(IndCqcColumns.main_job_role_clean_labelled)
-        #     .cast(pl.String)
-        #     .is_in(
-        #         ASCWDSWorkerCatValues.main_job_role_labels_column_values.categorical_values
-        #     ),
-        #     brief="main_job_role_clean_labelled should only contain recognised job role categories",
-        # )
+        .col_vals_expr(
+            expr=pl.col(IndCqcColumns.main_job_role_clean_labelled)
+            .cast(pl.String)
+            .is_in(
+                ASCWDSWorkerCatValues.main_job_role_labels_column_values.categorical_values
+            ),
+            brief="main_job_role_clean_labelled should only contain recognised job role categories",
+        )
         .interrogate()
     )
     vl.write_reports(key_validation, bucket_name, f"{reports_path}key/")
