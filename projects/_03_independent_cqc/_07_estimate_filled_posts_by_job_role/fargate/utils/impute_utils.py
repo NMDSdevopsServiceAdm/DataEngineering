@@ -6,27 +6,6 @@ from polars_utils.expressions import percentage_share
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
-ESTIMATE_FILLED_POSTS_SIZE_GROUPS = {
-    PrimaryServiceType.care_home_only: [
-        (1, "COH 1 to 9"),
-        (10, "COH 10 to 19"),
-        (20, "COH 20 to 29"),
-        (30, "COH 30 plus"),
-    ],
-    PrimaryServiceType.care_home_with_nursing: [
-        (1, "CHWN 1 to 19"),
-        (20, "CHWN 20 to 29"),
-        (30, "CHWN 30 plus"),
-    ],
-    PrimaryServiceType.non_residential: [
-        (1, "NR 1 to 24"),
-        (25, "NR 25 to 49"),
-        (50, "NR 50 to 74"),
-        (75, "NR 75 to 99"),
-        (100, "NR 100 plus"),
-    ],
-}
-
 
 def create_imputed_ascwds_job_role_counts(
     estimated_job_role_posts_lf: pl.LazyFrame,
@@ -127,6 +106,28 @@ def get_percent_share_ratios(
     return estimated_job_role_posts_lf.join(
         ratios_agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
     )
+
+
+ESTIMATE_FILLED_POSTS_SIZE_GROUPS = {
+    PrimaryServiceType.care_home_only: [
+        (1, "COH 1 to 9"),
+        (10, "COH 10 to 19"),
+        (20, "COH 20 to 29"),
+        (30, "COH 30 plus"),
+    ],
+    PrimaryServiceType.care_home_with_nursing: [
+        (1, "CHWN 1 to 19"),
+        (20, "CHWN 20 to 29"),
+        (30, "CHWN 30 plus"),
+    ],
+    PrimaryServiceType.non_residential: [
+        (1, "NR 1 to 24"),
+        (25, "NR 25 to 49"),
+        (50, "NR 50 to 74"),
+        (75, "NR 75 to 99"),
+        (100, "NR 100 plus"),
+    ],
+}
 
 
 def estimate_filled_posts_size_group_expression() -> pl.Expr:
