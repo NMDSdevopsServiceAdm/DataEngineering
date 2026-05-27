@@ -165,16 +165,29 @@ def create_ascwds_job_role_rolling_ratio(
     estimated_job_role_posts_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
     """
-    Create the rolling ratio for ascwds job role values
+    Create rolling ASC-WDS job role ratios over a 6-month period.
 
-    Uses groupby-agg-explode pattern to keep processing within polars streaming
-    engine.
+    The rolling sums are calculated at an aggregated level using the
+    combination of:
+        - primary service type
+        - estimated filled posts size group
+        - cleaned main job role label
+
+    Monthly ASC-WDS job role counts are first pre-aggregated at this level
+    to keep processing within the Polars streaming engine and reduce the
+    volume of data used in the rolling calculation. The rolling 6-month sums
+    are then joined back onto the original location-level dataset before
+    calculating the final rolling ratio for each location and import date.
+
+    Uses a groupby-aggregate-rolling-join pattern to improve performance on
+    large datasets.
 
     Args:
         estimated_job_role_posts_lf(pl.LazyFrame): dataset to calutate ratio on
 
     Returns:
-        pl.LazyFrame: dataset with additional columns with ratio and sum of ascwds job roles
+        pl.LazyFrame: dataset with additional columns with ratio and sum of
+            ascwds job roles
     """
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         estimate_filled_posts_size_group_expression()
