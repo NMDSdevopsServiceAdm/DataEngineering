@@ -114,7 +114,7 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
             label=f"Key validation of {source_path}",
             **VALIDATE_KWARGS,
         )
-        # .col_schema_match(KEY_SCHEMA)
+        .col_schema_match(KEY_SCHEMA)
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
@@ -172,7 +172,7 @@ def run_categorical_validation(source_path, bucket_name, reports_path):
             label=f"Categorical validation of {source_path}",
             **VALIDATE_KWARGS,
         )
-        # .col_schema_match(CATEGORICAL_SCHEMA)
+        .col_schema_match(CATEGORICAL_SCHEMA)
         .col_vals_not_null(
             columns=CATEGORICAL_COLS,
             brief="Categorical columns should contain no null values",
@@ -217,7 +217,7 @@ def run_numeric_validation(source_path, bucket_name, reports_path):
             label=f"Numeric validation of {source_path}",
             **VALIDATE_KWARGS,
         )
-        # .col_schema_match(NUMERIC_SCHEMA)
+        .col_schema_match(NUMERIC_SCHEMA)
         .col_vals_not_null(
             columns=[IndCqcColumns.estimate_filled_posts],
             brief="estimate_filled_posts should contain no null values",
