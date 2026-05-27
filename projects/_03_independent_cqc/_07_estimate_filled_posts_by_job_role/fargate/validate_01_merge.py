@@ -127,10 +127,10 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
         #     ],
         #     brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
         # )
-        # .col_vals_not_null(
-        #     columns=KEY_COLS,
-        #     brief="Key columns should contain no null values",
-        # )
+        .col_vals_not_null(
+            columns=KEY_COLS,
+            brief="Key columns should contain no null values",
+        )
         # .col_vals_expr(
         #     expr=(
         #         pl.col(IndCqcColumns.id_per_locationid_import_date)
@@ -238,6 +238,7 @@ def run_numeric_validation(source_path, bucket_name, reports_path):
             brief="ascwds_job_role_counts should be >= 0 where present",
         )
         # had to do it this way as multi conditional checks are not possible directly in Pointblank
+        # Currently failing
         .col_vals_expr(
             expr=(
                 pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
