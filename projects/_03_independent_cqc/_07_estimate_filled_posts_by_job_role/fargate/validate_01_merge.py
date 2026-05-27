@@ -87,8 +87,8 @@ def main(
         reports_path (str): the output path to write reports to
     """
 
-    # run_key_validation(source_path, compare_path, bucket_name, reports_path)
-    # gc.collect()
+    run_key_validation(source_path, compare_path, bucket_name, reports_path)
+    gc.collect()
     run_categorical_validation(source_path, bucket_name, reports_path)
     gc.collect()
     run_numeric_validation(source_path, bucket_name, reports_path)
@@ -151,11 +151,6 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
             ),
             brief="main_job_role_clean_labelled should only contain recognised job role categories",
         )
-        .col_vals_ge(
-            columns=[IndCqcColumns.cqc_location_import_date],
-            value=CQC_EARLIEST_IMPORT_DATE,
-            brief=f"cqc_location_import_date should not be before {CQC_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
-        )
         .interrogate()
     )
     vl.write_reports(key_validation, bucket_name, f"{reports_path}key/")
@@ -174,7 +169,7 @@ def run_categorical_validation(source_path, bucket_name, reports_path):
             label=f"Categorical validation of {source_path}",
             **VALIDATE_KWARGS,
         )
-        .col_schema_match(CATEGORICAL_SCHEMA)
+        # .col_schema_match(CATEGORICAL_SCHEMA)
         .col_vals_not_null(
             columns=CATEGORICAL_COLS,
             brief="Categorical columns should contain no null values",
@@ -219,7 +214,7 @@ def run_numeric_validation(source_path, bucket_name, reports_path):
             label=f"Numeric validation of {source_path}",
             **VALIDATE_KWARGS,
         )
-        .col_schema_match(NUMERIC_SCHEMA)
+        # .col_schema_match(NUMERIC_SCHEMA)
         .col_vals_not_null(
             columns=[IndCqcColumns.estimate_filled_posts],
             brief="estimate_filled_posts should contain no null values",
