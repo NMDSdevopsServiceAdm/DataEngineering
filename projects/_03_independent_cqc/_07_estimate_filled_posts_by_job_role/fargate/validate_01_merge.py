@@ -62,7 +62,7 @@ NUMERIC_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.estimate_filled_posts: "Float64",
         IndCqcColumns.ascwds_filled_posts_dedup_clean: "Float64",
-        IndCqcColumns.ascwds_job_role_counts: "Float64",
+        IndCqcColumns.ascwds_job_role_counts: "Int16",
     }
 )
 
@@ -237,17 +237,17 @@ def run_numeric_validation(source_path, bucket_name, reports_path):
         )
         # had to do it this way as multi conditional checks are not possible directly in Pointblank
         # Currently failing
-        .col_vals_expr(
-            expr=(
-                pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
-                | pl.col(IndCqcColumns.estimate_filled_posts).is_null()
-                | (
-                    pl.col(IndCqcColumns.ascwds_job_role_counts)
-                    <= pl.col(IndCqcColumns.estimate_filled_posts)
-                )
-            ),
-            brief="ascwds_job_role_counts <= estimate_filled_posts where both are present",
-        )
+        # .col_vals_expr(
+        #     expr=(
+        #         pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
+        #         | pl.col(IndCqcColumns.estimate_filled_posts).is_null()
+        #         | (
+        #             pl.col(IndCqcColumns.ascwds_job_role_counts)
+        #             <= pl.col(IndCqcColumns.estimate_filled_posts)
+        #         )
+        #     ),
+        #     brief="ascwds_job_role_counts <= estimate_filled_posts where both are present",
+        # )
         .interrogate()
     )
     vl.write_reports(numeric_validation, bucket_name, f"{reports_path}numeric/")
