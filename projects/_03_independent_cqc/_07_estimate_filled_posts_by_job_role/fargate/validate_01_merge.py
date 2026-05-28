@@ -108,8 +108,6 @@ def run_other_key_validation(source_path, compare_path, bucket_name, reports_pat
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=KEY_COLS,
-    ).with_columns(
-        pl.col(IndCqcColumns.main_job_role_clean_labelled).cast(pl.String), pl.col
     )
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
