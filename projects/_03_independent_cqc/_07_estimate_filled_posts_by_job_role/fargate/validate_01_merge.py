@@ -89,7 +89,9 @@ def main(
     """
 
     # can change name of this. I named it key validation initially because it started with just locartionid and import date validation
-    run_key_validation(source_path, compare_path, bucket_name, reports_path)
+    run_distinct_key_validation(source_path, bucket_name, reports_path)
+    gc.collect()
+    run_other_key_validation(source_path, compare_path, bucket_name, reports_path)
     gc.collect()
     run_categorical_validation(source_path, bucket_name, reports_path)
     gc.collect()
@@ -97,7 +99,33 @@ def main(
     gc.collect()
 
 
-def run_key_validation(source_path, compare_path, bucket_name, reports_path):
+def run_distinct_key_validation(source_path, compare_path, bucket_name, reports_path):
+    source_df = utils.read_parquet(
+        source=f"s3://{bucket_name}/{source_path}",
+        selected_columns=KEY_COLS,
+    ).with_columns(pl.col(IndCqcColumns.main_job_role_clean_labelled).cast(pl.String))
+
+    distinct_key_validation = (
+        pb.Validate(
+            data=source_df,
+            label=f"Key validation of {source_path}",
+            **VALIDATE_KWARGS,
+        )
+        .rows_distinct(
+            columns_subset=[
+                IndCqcColumns.location_id,
+                IndCqcColumns.cqc_location_import_date,
+                IndCqcColumns.main_job_role_clean_labelled,
+            ],
+            brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
+        )
+        .interrogate()
+    )
+    vl.write_reports(distinct_key_validation, bucket_name, f"{reports_path}key/")
+    del source_df, distinct_key_validation
+
+
+def run_other_key_validation(source_path, compare_path, bucket_name, reports_path):
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=KEY_COLS,
@@ -108,7 +136,7 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
     )
     expected_row_count = compare_df.height * len(jobGroupDict.all_roles())
 
-    key_validation = (
+    other_key_validation = (
         pb.Validate(
             data=source_df,
             label=f"Key validation of {source_path}",
@@ -118,14 +146,6 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        )
-        .rows_distinct(
-            columns_subset=[
-                IndCqcColumns.location_id,
-                IndCqcColumns.cqc_location_import_date,
-                IndCqcColumns.main_job_role_clean_labelled,
-            ],
-            brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
         )
         .col_vals_not_null(
             columns=KEY_COLS,
@@ -156,8 +176,8 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
         )
         .interrogate()
     )
-    vl.write_reports(key_validation, bucket_name, f"{reports_path}key/")
-    del source_df, compare_df, key_validation
+    vl.write_reports(other_key_validation, bucket_name, f"{reports_path}key/")
+    del source_df, compare_df, other_key_validation
 
 
 def run_categorical_validation(source_path, bucket_name, reports_path):
