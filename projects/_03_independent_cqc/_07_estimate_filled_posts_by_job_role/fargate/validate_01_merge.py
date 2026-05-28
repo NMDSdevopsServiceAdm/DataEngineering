@@ -99,7 +99,7 @@ def main(
     gc.collect()
 
 
-def run_distinct_key_validation(source_path, compare_path, bucket_name, reports_path):
+def run_distinct_key_validation(source_path, bucket_name, reports_path):
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=KEY_COLS,
@@ -121,7 +121,9 @@ def run_distinct_key_validation(source_path, compare_path, bucket_name, reports_
         )
         .interrogate()
     )
-    vl.write_reports(distinct_key_validation, bucket_name, f"{reports_path}key/")
+    vl.write_reports(
+        distinct_key_validation, bucket_name, f"{reports_path}distinct_key/"
+    )
     del source_df, distinct_key_validation
 
 
@@ -176,7 +178,7 @@ def run_other_key_validation(source_path, compare_path, bucket_name, reports_pat
         )
         .interrogate()
     )
-    vl.write_reports(other_key_validation, bucket_name, f"{reports_path}key/")
+    vl.write_reports(other_key_validation, bucket_name, f"{reports_path}other_key/")
     del source_df, compare_df, other_key_validation
 
 
