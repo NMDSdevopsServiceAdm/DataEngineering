@@ -11,7 +11,6 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 
 KEY_COLS = [
-    IndCqcColumns.id_per_locationid_import_date,
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
     IndCqcColumns.main_job_role_clean_labelled,
@@ -51,7 +50,7 @@ def run_distinct_key_validation(source_path, bucket_name, reports_path):
     distinct_key_validation = (
         pb.Validate(
             data=source_df,
-            label=f"Key validation of {source_path}",
+            label=f"Distinct key validation of {source_path}",
             **VALIDATE_KWARGS,
         )
         .rows_distinct(
