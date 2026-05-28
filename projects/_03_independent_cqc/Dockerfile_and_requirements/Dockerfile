@@ -35,6 +35,7 @@ COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/_03_impute.py /app/_03_impute.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/_04_estimate.py /app/_04_estimate.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_01_merge.py /app/validate_01_merge.py
+COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_01_merge_keys.py /app/validate_01_merge_keys.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_01_merge_metadata.py /app/validate_01_merge_metadata.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_02_clean.py /app/validate_02_clean.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_03_impute.py /app/validate_03_impute.py
