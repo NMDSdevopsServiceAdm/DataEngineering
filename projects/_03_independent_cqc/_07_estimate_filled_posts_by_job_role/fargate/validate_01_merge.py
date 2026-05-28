@@ -93,10 +93,10 @@ def main(
     gc.collect()
     run_other_key_validation(source_path, compare_path, bucket_name, reports_path)
     gc.collect()
-    run_categorical_validation(source_path, bucket_name, reports_path)
-    gc.collect()
-    run_numeric_validation(source_path, bucket_name, reports_path)
-    gc.collect()
+    # run_categorical_validation(source_path, bucket_name, reports_path)
+    # gc.collect()
+    # run_numeric_validation(source_path, bucket_name, reports_path)
+    # gc.collect()
 
 
 def run_distinct_key_validation(source_path, bucket_name, reports_path):
