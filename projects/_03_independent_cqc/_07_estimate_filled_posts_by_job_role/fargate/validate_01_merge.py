@@ -119,14 +119,14 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
         )
-        # .rows_distinct(
-        #     columns_subset=[
-        #         IndCqcColumns.location_id,
-        #         IndCqcColumns.cqc_location_import_date,
-        #         IndCqcColumns.main_job_role_clean_labelled,
-        #     ],
-        #     brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
-        # )
+        .rows_distinct(
+            columns_subset=[
+                IndCqcColumns.location_id,
+                IndCqcColumns.cqc_location_import_date,
+                IndCqcColumns.main_job_role_clean_labelled,
+            ],
+            brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
+        )
         .col_vals_not_null(
             columns=KEY_COLS,
             brief="Key columns should contain no null values",
