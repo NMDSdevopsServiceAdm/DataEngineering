@@ -45,7 +45,7 @@ CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
 KEY_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.id_per_locationid_import_date: "UInt32",
-        IndCqcColumns.location_id: "String",
+        IndCqcColumns.location_id: "Categorical",
         IndCqcColumns.cqc_location_import_date: "Date",
     }
 )
@@ -120,7 +120,8 @@ def run_other_key_validation(source_path, compare_path, bucket_name, reports_pat
             label=f"Key validation of {source_path}",
             **VALIDATE_KWARGS,
         )
-        .col_schema_match(pre=cast_cols_back_to_string, schema=KEY_SCHEMA)
+        # .col_schema_match(pre=cast_cols_back_to_string, schema=KEY_SCHEMA)
+        .col_schema_match(schema=KEY_SCHEMA)
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",

@@ -52,7 +52,7 @@ CQC_EARLIEST_REGISTRATION_DATE = date(2010, 9, 13)
 
 EXPECTED_SCHEMA = pb.Schema(
     columns={
-        IndCqcColumns.id_per_locationid_import_date: "String",
+        IndCqcColumns.id_per_locationid_import_date: "UInt32",
         IndCqcColumns.name: "String",
         IndCqcColumns.provider_id: "String",
         IndCqcColumns.services_offered: "List(String)",
