@@ -4,6 +4,7 @@ from datetime import date
 
 import pointblank as pb
 import polars as pl
+import polars.selectors as cs
 
 from polars_utils import utils
 from polars_utils.validation import actions as vl
@@ -43,7 +44,7 @@ CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
 
 KEY_SCHEMA = pb.Schema(
     columns={
-        IndCqcColumns.id_per_locationid_import_date: "Int64",
+        IndCqcColumns.id_per_locationid_import_date: "UInt32",
         IndCqcColumns.location_id: "String",
         IndCqcColumns.cqc_location_import_date: "Date",
         IndCqcColumns.main_job_role_clean_labelled: "String",
@@ -98,11 +99,18 @@ def main(
     gc.collect()
 
 
+def cast_cols_back_to_string(df: pl.DataFrame) -> pl.DataFrame:
+    """Casts categorical and enums to string for validation purposes."""
+    return df.with_columns((cs.categorical() | cs.enum()).cast(pl.String))
+
+
 def run_other_key_validation(source_path, compare_path, bucket_name, reports_path):
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=KEY_COLS,
-    ).with_columns(pl.col(IndCqcColumns.main_job_role_clean_labelled).cast(pl.String))
+    ).with_columns(
+        pl.col(IndCqcColumns.main_job_role_clean_labelled).cast(pl.String), pl.col
+    )
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=ind_cqc_estimates_cols_to_import,
@@ -117,7 +125,7 @@ def run_other_key_validation(source_path, compare_path, bucket_name, reports_pat
             label=f"Key validation of {source_path}",
             **VALIDATE_KWARGS,
         )
-        .col_schema_match(KEY_SCHEMA)
+        .col_schema_match(pre=cast_cols_back_to_string, schema=KEY_SCHEMA)
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
