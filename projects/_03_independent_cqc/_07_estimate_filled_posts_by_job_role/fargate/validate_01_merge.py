@@ -93,10 +93,10 @@ def main(
     gc.collect()
     run_other_key_validation(source_path, compare_path, bucket_name, reports_path)
     gc.collect()
-    # run_categorical_validation(source_path, bucket_name, reports_path)
-    # gc.collect()
-    # run_numeric_validation(source_path, bucket_name, reports_path)
-    # gc.collect()
+    run_categorical_validation(source_path, bucket_name, reports_path)
+    gc.collect()
+    run_numeric_validation(source_path, bucket_name, reports_path)
+    gc.collect()
 
 
 def run_distinct_key_validation(source_path, bucket_name, reports_path):
@@ -112,8 +112,9 @@ def run_distinct_key_validation(source_path, bucket_name, reports_path):
             **VALIDATE_KWARGS,
         )
         .rows_distinct(
-            segments=[IndCqcColumns.id_per_locationid_import_date],
             columns_subset=[
+                IndCqcColumns.location_id,
+                IndCqcColumns.cqc_location_import_date,
                 IndCqcColumns.main_job_role_clean_labelled,
             ],
             brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
