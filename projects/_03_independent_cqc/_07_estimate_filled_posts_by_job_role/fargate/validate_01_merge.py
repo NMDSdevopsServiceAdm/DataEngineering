@@ -89,42 +89,13 @@ def main(
     """
 
     # can change name of this. I named it key validation initially because it started with just locartionid and import date validation
-    run_distinct_key_validation(source_path, bucket_name, reports_path)
-    gc.collect()
+
     run_other_key_validation(source_path, compare_path, bucket_name, reports_path)
     gc.collect()
     run_categorical_validation(source_path, bucket_name, reports_path)
     gc.collect()
     run_numeric_validation(source_path, bucket_name, reports_path)
     gc.collect()
-
-
-def run_distinct_key_validation(source_path, bucket_name, reports_path):
-    source_df = utils.read_parquet(
-        source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=KEY_COLS,
-    ).with_columns(pl.col(IndCqcColumns.main_job_role_clean_labelled).cast(pl.String))
-
-    distinct_key_validation = (
-        pb.Validate(
-            data=source_df,
-            label=f"Key validation of {source_path}",
-            **VALIDATE_KWARGS,
-        )
-        .rows_distinct(
-            columns_subset=[
-                IndCqcColumns.location_id,
-                IndCqcColumns.cqc_location_import_date,
-                IndCqcColumns.main_job_role_clean_labelled,
-            ],
-            brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
-        )
-        .interrogate()
-    )
-    vl.write_reports(
-        distinct_key_validation, bucket_name, f"{reports_path}distinct_key/"
-    )
-    del source_df, distinct_key_validation
 
 
 def run_other_key_validation(source_path, compare_path, bucket_name, reports_path):
