@@ -99,6 +99,68 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
                 f"{assertion} not found in validation report",
             )
 
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_run_categorical_validation_report_includes_expected_validations(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_read_parquet.side_effect = [self.source_df, self.compare_df]
+
+        job.run_categorical_validation("my/source/", "bucket", "my/reports/")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+
+        assertion_types_present = {item["assertion_type"] for item in report_json}
+
+        expected_assertions = {
+            "col_schema_match",
+            "col_vals_not_null",
+            "col_vals_in_set",
+            "col_vals_expr",
+            "specially",
+        }
+
+        for assertion in expected_assertions:
+            self.assertIn(
+                assertion,
+                assertion_types_present,
+                f"{assertion} not found in validation report",
+            )
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_run_numeric_validation_report_includes_expected_validations(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_read_parquet.side_effect = [self.source_df, self.compare_df]
+
+        job.run_numeric_validation("my/source/", "bucket", "my/reports/")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+
+        assertion_types_present = {item["assertion_type"] for item in report_json}
+
+        expected_assertions = {
+            "col_schema_match",
+            "col_vals_not_null",
+            "col_vals_gt",
+            "col_vals_ge",
+            "col_vals_expr",
+        }
+
+        for assertion in expected_assertions:
+            self.assertIn(
+                assertion,
+                assertion_types_present,
+                f"{assertion} not found in validation report",
+            )
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
