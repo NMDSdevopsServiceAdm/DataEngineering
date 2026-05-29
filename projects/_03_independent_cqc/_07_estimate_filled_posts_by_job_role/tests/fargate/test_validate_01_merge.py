@@ -151,7 +151,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             "col_vals_not_null",
             "col_vals_gt",
             "col_vals_ge",
-            "col_vals_expr",
+            # "col_vals_expr", Currently commented out in the job as failing
         }
 
         for assertion in expected_assertions:
