@@ -90,10 +90,10 @@ def main(
 
     # can change name of this. I named it key validation initially because it started with just locartionid and import date validation
 
-    run_other_key_validation(source_path, compare_path, bucket_name, reports_path)
-    gc.collect()
-    run_categorical_validation(source_path, bucket_name, reports_path)
-    gc.collect()
+    # run_other_key_validation(source_path, compare_path, bucket_name, reports_path)
+    # gc.collect()
+    # run_categorical_validation(source_path, bucket_name, reports_path)
+    # gc.collect()
     run_numeric_validation(source_path, bucket_name, reports_path)
     gc.collect()
 
@@ -208,6 +208,7 @@ def run_numeric_validation(source_path, bucket_name, reports_path):
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=NUMERIC_COLS,
     )
+    print(numeric_df.dtypes)
 
     numeric_validation = (
         pb.Validate(
