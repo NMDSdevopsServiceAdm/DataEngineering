@@ -245,14 +245,14 @@ def main(
                 IndCqcColumns.current_rural_urban_indicator_2011,
                 CleanedCatValues.current_rui_column_values.categorical_values,
             )
-            # .col_vals_in_set(
-            #     IndCqcColumns.current_lsoa21,
-            #     CatValues.current_lsoa_column_valueslsoa21_column_values.categorical_values,
-            # )
-            # .col_vals_in_set(
-            #     IndCqcColumns.current_msoa21,
-            #     CatValues.current_msoa21_column_values.categorical_values,
-            # )
+            .col_vals_in_set(
+                IndCqcColumns.current_lsoa21,
+                CatValues.current_lsoa_column_valueslsoa21_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_msoa21,
+                CatValues.current_msoa21_column_values.categorical_values,
+            )
             .col_vals_in_set(
                 IndCqcColumns.dormancy,
                 CleanedCatValues.dormancy_column_values.categorical_values,
@@ -314,6 +314,527 @@ def main(
 
         vl.write_reports(key_validation, bucket_name, f"{reports_path}key/")
         del source_df, compare_df, key_validation
+
+    def run_categorical_validation(source_path, bucket_name, reports_path):
+        source_df = utils.read_parquet(
+            source=f"s3://{bucket_name}/{source_path}",
+            selected_columns=CATEGORICAL_COLS,
+        )
+
+        ons_not_before = date.today() - relativedelta(months=13)
+
+        categorical_validation = (
+            pb.Validate(
+                data=source_df,
+                label=f"Categorical validation of {source_path}",
+                thresholds=GLOBAL_THRESHOLDS,
+                brief=True,
+                actions=GLOBAL_ACTIONS,
+            )
+            # Schema check
+            .col_schema_match(
+                pre=cast_cols_back_to_string,
+                schema=CATEGORICAL_SCHEMA,
+                brief="All columns have the expected data types",
+            )
+            # Uniqueness
+            .rows_distinct(
+                columns_subset=[IndCqcColumns.id_per_locationid_import_date],
+                brief="Primary key (id_per_locationid_import_date) should be unique",
+            )
+            # Completeness (no nulls)
+            .col_vals_not_null(
+                columns=[
+                    IndCqcColumns.name,
+                    IndCqcColumns.provider_id,
+                    IndCqcColumns.services_offered,
+                    IndCqcColumns.care_home,
+                    IndCqcColumns.primary_service_type_second_level,
+                    IndCqcColumns.id_per_locationid_import_date,
+                    IndCqcColumns.imputed_registration_date,
+                    IndCqcColumns.ascwds_workplace_import_date,
+                    IndCqcColumns.ascwds_filtering_rule,
+                    IndCqcColumns.current_ons_import_date,
+                    IndCqcColumns.current_cssr,
+                    IndCqcColumns.current_region,
+                    IndCqcColumns.current_icb,
+                    IndCqcColumns.current_rural_urban_indicator_2011,
+                    IndCqcColumns.current_lsoa21,
+                    IndCqcColumns.current_msoa21,
+                    IndCqcColumns.estimate_filled_posts_source,
+                ],
+                brief="Required columns should contain no null values",
+            )
+            # Numeric range — strictly positive (nulls allowed)
+            .col_vals_gt(
+                columns=[
+                    IndCqcColumns.ascwds_filled_posts_dedup_clean,
+                    IndCqcColumns.ascwds_pir_merged,
+                    IndCqcColumns.number_of_beds,
+                    IndCqcColumns.worker_records_bounded,
+                ],
+                value=0,
+                na_pass=True,
+                brief="ascwds_filled_posts_dedup_clean, ascwds_pir_merged, number_of_beds and wkrrecs_bounded should be > 0 where present",
+            )
+            # Cross-column numeric constraint
+            .col_vals_expr(
+                expr=(
+                    pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
+                    | pl.col(IndCqcColumns.estimate_filled_posts).is_null()
+                    | (
+                        pl.col(IndCqcColumns.ascwds_job_role_counts)
+                        <= pl.col(IndCqcColumns.estimate_filled_posts)
+                    )
+                ),
+                brief="ascwds_job_role_counts <= estimate_filled_posts where both are present",
+            )
+            # Categorical values
+            .col_vals_in_set(
+                IndCqcColumns.estimate_filled_posts_source,
+                CatValues.estimate_filled_posts_source_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.primary_service_type_second_level,
+                CatValues.primary_service_type_second_level_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.care_home,
+                CleanedCatValues.care_home_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.ascwds_filtering_rule,
+                CleanedCatValues.ascwds_filtering_rule_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_cssr,
+                CleanedCatValues.current_cssr_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_region,
+                CleanedCatValues.current_region_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_rural_urban_indicator_2011,
+                CleanedCatValues.current_rui_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_lsoa21,
+                CatValues.current_lsoa_column_valueslsoa21_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_msoa21,
+                CatValues.current_msoa21_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.dormancy,
+                CleanedCatValues.dormancy_column_values.categorical_values,
+            )
+            # Distinct value counts
+            .specially(
+                vl.is_unique_count_equal(
+                    IndCqcColumns.estimate_filled_posts_source,
+                    CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
+                ),
+                brief=f"{IndCqcColumns.estimate_filled_posts_source} should have exactly {CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values} distinct values",
+            )
+            .specially(
+                vl.is_unique_count_equal(
+                    IndCqcColumns.primary_service_type_second_level,
+                    CatValues.primary_service_type_second_level_column_values.count_of_categorical_values,
+                ),
+                brief=f"{IndCqcColumns.primary_service_type_second_level} should have exactly {CatValues.primary_service_type_second_level_column_values.count_of_categorical_values} distinct values",
+            )
+            .specially(
+                vl.is_unique_count_equal(
+                    IndCqcColumns.care_home,
+                    CleanedCatValues.care_home_column_values.count_of_categorical_values,
+                ),
+                brief=f"{IndCqcColumns.care_home} should have exactly {CleanedCatValues.care_home_column_values.count_of_categorical_values} distinct values",
+            )
+            .specially(
+                vl.is_unique_count_equal(
+                    IndCqcColumns.ascwds_filtering_rule,
+                    CleanedCatValues.ascwds_filtering_rule_column_values.count_of_categorical_values,
+                ),
+                brief=f"{IndCqcColumns.ascwds_filtering_rule} should have exactly {CleanedCatValues.ascwds_filtering_rule_column_values.count_of_categorical_values} distinct values",
+            )
+            .specially(
+                vl.is_unique_count_equal(
+                    IndCqcColumns.dormancy,
+                    CleanedCatValues.dormancy_column_values.count_of_categorical_values,
+                ),
+                brief=f"{IndCqcColumns.dormancy} should have exactly {CleanedCatValues.dormancy_column_values.count_of_categorical_values} distinct values",
+            )
+            # Date plausibility
+            .col_vals_ge(
+                columns=[IndCqcColumns.ascwds_workplace_import_date],
+                value=ASCWDS_EARLIEST_IMPORT_DATE,
+                brief=f"ascwds_workplace_import_date should not be before {ASCWDS_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
+            )
+            .col_vals_ge(
+                columns=[IndCqcColumns.imputed_registration_date],
+                value=CQC_EARLIEST_REGISTRATION_DATE,
+                brief=f"imputed_registration_date should not be before {CQC_EARLIEST_REGISTRATION_DATE.strftime('%d/%m/%Y')}",
+            )
+            .col_vals_ge(
+                columns=[IndCqcColumns.current_ons_import_date],
+                value=ons_not_before,
+                brief=f"current_ons_import_date should not be more than 13 months ago (not before {ons_not_before.strftime('%d/%m/%Y')})",
+            )
+            .interrogate()
+        )
+
+        vl.write_reports(
+            categorical_validation, bucket_name, f"{reports_path}categorical/"
+        )
+        del source_df, categorical_validation
+
+    def run_date_validation(source_path, bucket_name, reports_path):
+        source_df = utils.read_parquet(
+            source=f"s3://{bucket_name}/{source_path}",
+            selected_columns=DATE_COLS,
+        )
+
+        ons_not_before = date.today() - relativedelta(months=13)
+
+        date_validation = (
+            pb.Validate(
+                data=source_df,
+                label=f"Date validation of {source_path}",
+                thresholds=GLOBAL_THRESHOLDS,
+                brief=True,
+                actions=GLOBAL_ACTIONS,
+            )
+            # Schema check
+            .col_schema_match(
+                pre=cast_cols_back_to_string,
+                schema=KEY_SCHEMA,
+                brief="All columns have the expected data types",
+            )
+            # Uniqueness
+            .rows_distinct(
+                columns_subset=[IndCqcColumns.id_per_locationid_import_date],
+                brief="Primary key (id_per_locationid_import_date) should be unique",
+            )
+            # Completeness (no nulls)
+            .col_vals_not_null(
+                columns=[
+                    IndCqcColumns.name,
+                    IndCqcColumns.provider_id,
+                    IndCqcColumns.services_offered,
+                    IndCqcColumns.care_home,
+                    IndCqcColumns.primary_service_type_second_level,
+                    IndCqcColumns.id_per_locationid_import_date,
+                    IndCqcColumns.imputed_registration_date,
+                    IndCqcColumns.ascwds_workplace_import_date,
+                    IndCqcColumns.ascwds_filtering_rule,
+                    IndCqcColumns.current_ons_import_date,
+                    IndCqcColumns.current_cssr,
+                    IndCqcColumns.current_region,
+                    IndCqcColumns.current_icb,
+                    IndCqcColumns.current_rural_urban_indicator_2011,
+                    IndCqcColumns.current_lsoa21,
+                    IndCqcColumns.current_msoa21,
+                    IndCqcColumns.estimate_filled_posts_source,
+                ],
+                brief="Required columns should contain no null values",
+            )
+            # Numeric range — strictly positive (nulls allowed)
+            .col_vals_gt(
+                columns=[
+                    IndCqcColumns.ascwds_filled_posts_dedup_clean,
+                    IndCqcColumns.ascwds_pir_merged,
+                    IndCqcColumns.number_of_beds,
+                    IndCqcColumns.worker_records_bounded,
+                ],
+                value=0,
+                na_pass=True,
+                brief="ascwds_filled_posts_dedup_clean, ascwds_pir_merged, number_of_beds and wkrrecs_bounded should be > 0 where present",
+            )
+            # Cross-column numeric constraint
+            .col_vals_expr(
+                expr=(
+                    pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
+                    | pl.col(IndCqcColumns.estimate_filled_posts).is_null()
+                    | (
+                        pl.col(IndCqcColumns.ascwds_job_role_counts)
+                        <= pl.col(IndCqcColumns.estimate_filled_posts)
+                    )
+                ),
+                brief="ascwds_job_role_counts <= estimate_filled_posts where both are present",
+            )
+            # Categorical values
+            .col_vals_in_set(
+                IndCqcColumns.estimate_filled_posts_source,
+                CatValues.estimate_filled_posts_source_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.primary_service_type_second_level,
+                CatValues.primary_service_type_second_level_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.care_home,
+                CleanedCatValues.care_home_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.ascwds_filtering_rule,
+                CleanedCatValues.ascwds_filtering_rule_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_cssr,
+                CleanedCatValues.current_cssr_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_region,
+                CleanedCatValues.current_region_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_rural_urban_indicator_2011,
+                CleanedCatValues.current_rui_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_lsoa21,
+                CatValues.current_lsoa_column_valueslsoa21_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_msoa21,
+                CatValues.current_msoa21_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.dormancy,
+                CleanedCatValues.dormancy_column_values.categorical_values,
+            )
+            # Distinct value counts
+            .specially(
+                vl.is_unique_count_equal(
+                    IndCqcColumns.estimate_filled_posts_source,
+                    CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
+                ),
+                brief=f"{IndCqcColumns.estimate_filled_posts_source} should have exactly {CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values} distinct values",
+            )
+            .specially(
+                vl.is_unique_count_equal(
+                    IndCqcColumns.primary_service_type_second_level,
+                    CatValues.primary_service_type_second_level_column_values.count_of_categorical_values,
+                ),
+                brief=f"{IndCqcColumns.primary_service_type_second_level} should have exactly {CatValues.primary_service_type_second_level_column_values.count_of_categorical_values} distinct values",
+            )
+            .specially(
+                vl.is_unique_count_equal(
+                    IndCqcColumns.care_home,
+                    CleanedCatValues.care_home_column_values.count_of_categorical_values,
+                ),
+                brief=f"{IndCqcColumns.care_home} should have exactly {CleanedCatValues.care_home_column_values.count_of_categorical_values} distinct values",
+            )
+            .specially(
+                vl.is_unique_count_equal(
+                    IndCqcColumns.ascwds_filtering_rule,
+                    CleanedCatValues.ascwds_filtering_rule_column_values.count_of_categorical_values,
+                ),
+                brief=f"{IndCqcColumns.ascwds_filtering_rule} should have exactly {CleanedCatValues.ascwds_filtering_rule_column_values.count_of_categorical_values} distinct values",
+            )
+            .specially(
+                vl.is_unique_count_equal(
+                    IndCqcColumns.dormancy,
+                    CleanedCatValues.dormancy_column_values.count_of_categorical_values,
+                ),
+                brief=f"{IndCqcColumns.dormancy} should have exactly {CleanedCatValues.dormancy_column_values.count_of_categorical_values} distinct values",
+            )
+            # Date plausibility
+            .col_vals_ge(
+                columns=[IndCqcColumns.ascwds_workplace_import_date],
+                value=ASCWDS_EARLIEST_IMPORT_DATE,
+                brief=f"ascwds_workplace_import_date should not be before {ASCWDS_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
+            )
+            .col_vals_ge(
+                columns=[IndCqcColumns.imputed_registration_date],
+                value=CQC_EARLIEST_REGISTRATION_DATE,
+                brief=f"imputed_registration_date should not be before {CQC_EARLIEST_REGISTRATION_DATE.strftime('%d/%m/%Y')}",
+            )
+            .col_vals_ge(
+                columns=[IndCqcColumns.current_ons_import_date],
+                value=ons_not_before,
+                brief=f"current_ons_import_date should not be more than 13 months ago (not before {ons_not_before.strftime('%d/%m/%Y')})",
+            )
+            .interrogate()
+        )
+
+        vl.write_reports(date_validation, bucket_name, f"{reports_path}date/")
+        del source_df, date_validation
+
+    def run_numeric_validation(source_path, bucket_name, reports_path):
+        source_df = utils.read_parquet(
+            source=f"s3://{bucket_name}/{source_path}",
+            selected_columns=NUMERIC_COLS,
+        )
+
+        ons_not_before = date.today() - relativedelta(months=13)
+
+        numeric_validation = (
+            pb.Validate(
+                data=source_df,
+                label=f"Numeric validation of {source_path}",
+                thresholds=GLOBAL_THRESHOLDS,
+                brief=True,
+                actions=GLOBAL_ACTIONS,
+            )
+            # Schema check
+            .col_schema_match(
+                pre=cast_cols_back_to_string,
+                schema=NUMERIC_SCHEMA,
+                brief="All columns have the expected data types",
+            )
+            # Uniqueness
+            .rows_distinct(
+                columns_subset=[IndCqcColumns.id_per_locationid_import_date],
+                brief="Primary key (id_per_locationid_import_date) should be unique",
+            )
+            # Completeness (no nulls)
+            .col_vals_not_null(
+                columns=[
+                    IndCqcColumns.name,
+                    IndCqcColumns.provider_id,
+                    IndCqcColumns.services_offered,
+                    IndCqcColumns.care_home,
+                    IndCqcColumns.primary_service_type_second_level,
+                    IndCqcColumns.id_per_locationid_import_date,
+                    IndCqcColumns.imputed_registration_date,
+                    IndCqcColumns.ascwds_workplace_import_date,
+                    IndCqcColumns.ascwds_filtering_rule,
+                    IndCqcColumns.current_ons_import_date,
+                    IndCqcColumns.current_cssr,
+                    IndCqcColumns.current_region,
+                    IndCqcColumns.current_icb,
+                    IndCqcColumns.current_rural_urban_indicator_2011,
+                    IndCqcColumns.current_lsoa21,
+                    IndCqcColumns.current_msoa21,
+                    IndCqcColumns.estimate_filled_posts_source,
+                ],
+                brief="Required columns should contain no null values",
+            )
+            # Numeric range — strictly positive (nulls allowed)
+            .col_vals_gt(
+                columns=[
+                    IndCqcColumns.ascwds_filled_posts_dedup_clean,
+                    IndCqcColumns.ascwds_pir_merged,
+                    IndCqcColumns.number_of_beds,
+                    IndCqcColumns.worker_records_bounded,
+                ],
+                value=0,
+                na_pass=True,
+                brief="ascwds_filled_posts_dedup_clean, ascwds_pir_merged, number_of_beds and wkrrecs_bounded should be > 0 where present",
+            )
+            # Cross-column numeric constraint
+            .col_vals_expr(
+                expr=(
+                    pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
+                    | pl.col(IndCqcColumns.estimate_filled_posts).is_null()
+                    | (
+                        pl.col(IndCqcColumns.ascwds_job_role_counts)
+                        <= pl.col(IndCqcColumns.estimate_filled_posts)
+                    )
+                ),
+                brief="ascwds_job_role_counts <= estimate_filled_posts where both are present",
+            )
+            # Categorical values
+            .col_vals_in_set(
+                IndCqcColumns.estimate_filled_posts_source,
+                CatValues.estimate_filled_posts_source_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.primary_service_type_second_level,
+                CatValues.primary_service_type_second_level_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.care_home,
+                CleanedCatValues.care_home_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.ascwds_filtering_rule,
+                CleanedCatValues.ascwds_filtering_rule_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_cssr,
+                CleanedCatValues.current_cssr_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_region,
+                CleanedCatValues.current_region_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_rural_urban_indicator_2011,
+                CleanedCatValues.current_rui_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_lsoa21,
+                CatValues.current_lsoa_column_valueslsoa21_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.current_msoa21,
+                CatValues.current_msoa21_column_values.categorical_values,
+            )
+            .col_vals_in_set(
+                IndCqcColumns.dormancy,
+                CleanedCatValues.dormancy_column_values.categorical_values,
+            )
+            # Distinct value counts
+            .specially(
+                vl.is_unique_count_equal(
+                    IndCqcColumns.estimate_filled_posts_source,
+                    CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
+                ),
+                brief=f"{IndCqcColumns.estimate_filled_posts_source} should have exactly {CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values} distinct values",
+            )
+            .specially(
+                vl.is_unique_count_equal(
+                    IndCqcColumns.primary_service_type_second_level,
+                    CatValues.primary_service_type_second_level_column_values.count_of_categorical_values,
+                ),
+                brief=f"{IndCqcColumns.primary_service_type_second_level} should have exactly {CatValues.primary_service_type_second_level_column_values.count_of_categorical_values} distinct values",
+            )
+            .specially(
+                vl.is_unique_count_equal(
+                    IndCqcColumns.care_home,
+                    CleanedCatValues.care_home_column_values.count_of_categorical_values,
+                ),
+                brief=f"{IndCqcColumns.care_home} should have exactly {CleanedCatValues.care_home_column_values.count_of_categorical_values} distinct values",
+            )
+            .specially(
+                vl.is_unique_count_equal(
+                    IndCqcColumns.ascwds_filtering_rule,
+                    CleanedCatValues.ascwds_filtering_rule_column_values.count_of_categorical_values,
+                ),
+                brief=f"{IndCqcColumns.ascwds_filtering_rule} should have exactly {CleanedCatValues.ascwds_filtering_rule_column_values.count_of_categorical_values} distinct values",
+            )
+            .specially(
+                vl.is_unique_count_equal(
+                    IndCqcColumns.dormancy,
+                    CleanedCatValues.dormancy_column_values.count_of_categorical_values,
+                ),
+                brief=f"{IndCqcColumns.dormancy} should have exactly {CleanedCatValues.dormancy_column_values.count_of_categorical_values} distinct values",
+            )
+            # Date plausibility
+            .col_vals_ge(
+                columns=[IndCqcColumns.ascwds_workplace_import_date],
+                value=ASCWDS_EARLIEST_IMPORT_DATE,
+                brief=f"ascwds_workplace_import_date should not be before {ASCWDS_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
+            )
+            .col_vals_ge(
+                columns=[IndCqcColumns.imputed_registration_date],
+                value=CQC_EARLIEST_REGISTRATION_DATE,
+                brief=f"imputed_registration_date should not be before {CQC_EARLIEST_REGISTRATION_DATE.strftime('%d/%m/%Y')}",
+            )
+            .col_vals_ge(
+                columns=[IndCqcColumns.current_ons_import_date],
+                value=ons_not_before,
+                brief=f"current_ons_import_date should not be more than 13 months ago (not before {ons_not_before.strftime('%d/%m/%Y')})",
+            )
+            .interrogate()
+        )
+
+        vl.write_reports(numeric_validation, bucket_name, f"{reports_path}numeric/")
+        del source_df, numeric_validation
 
 
 if __name__ == "__main__":
