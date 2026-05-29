@@ -316,7 +316,7 @@ def run_categorical_validation(source_path, bucket_name, reports_path):
                 IndCqcColumns.current_rural_urban_indicator_2011,
                 CatValues.current_rui_column_values.count_of_categorical_values,
             ),
-            brief=f"{IndCqcColumns.current_rural_urban_indicator_2011} should have exactly {CatValues.current_rural_urban_indicator_2011_column_values.count_of_categorical_values} distinct values",
+            brief=f"{IndCqcColumns.current_rural_urban_indicator_2011} should have exactly {CatValues.current_rui_column_values.count_of_categorical_values} distinct values",
         )
         .specially(
             vl.is_unique_count_equal(
