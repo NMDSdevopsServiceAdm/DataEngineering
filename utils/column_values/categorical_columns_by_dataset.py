@@ -214,6 +214,28 @@ class EstimatedIndCQCFilledPostsCategoricalValues:
 
 
 @dataclass
+class EstimatedIndCQCFilledPostsByJobRoleCategoricalValues:
+    care_home_column_values = CareHome(IndCQC.care_home)
+    primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
+    primary_service_type_second_level_column_values = PrimaryServiceTypeSecondLevel(
+        IndCQC.primary_service_type_second_level
+    )
+    current_region_column_values = Region(IndCQC.current_region)
+    current_cssr_column_values = CurrentCSSR(IndCQC.current_cssr)
+    ascwds_filled_posts_source_column_values = ASCWDSFilledPostsSource(
+        IndCQC.ascwds_filled_posts_source, contains_null_values=True
+    )
+    estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
+        IndCQC.estimate_filled_posts_source
+    )
+    current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
+    dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
+    ascwds_filtering_rule_column_values = AscwdsFilteringRule(
+        IndCQC.ascwds_filtering_rule
+    )
+
+
+@dataclass
 class DiagnosticOnKnownFilledPostsCategoricalValues:
     estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
         IndCQC.estimate_filled_posts_source,

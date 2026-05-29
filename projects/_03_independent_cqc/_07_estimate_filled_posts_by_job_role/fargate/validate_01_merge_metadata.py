@@ -12,9 +12,11 @@ from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_columns_by_dataset import (
-    EstimatedIndCQCFilledPostsCategoricalValues as CatValues,
-    CleanedIndCQCCategoricalValues as CleanedCatValues,
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
 )
+from utils.value_labels.ons_pd.onspd_icb import OnspdIcb
+from utils.value_labels.ons_pd.onspd_lsoa21 import OnspdLsoa21
+from utils.value_labels.ons_pd.onspd_msoa21 import OnspdMsoa21
 
 KEY_COLS = [
     IndCqcColumns.id_per_locationid_import_date,
@@ -232,39 +234,39 @@ def run_categorical_validation(source_path, bucket_name, reports_path):
         )
         .col_vals_in_set(
             IndCqcColumns.care_home,
-            CleanedCatValues.care_home_column_values.categorical_values,
+            CatValues.care_home_column_values.categorical_values,
         )
         .col_vals_in_set(
             IndCqcColumns.ascwds_filtering_rule,
-            CleanedCatValues.ascwds_filtering_rule_column_values.categorical_values,
+            CatValues.ascwds_filtering_rule_column_values.categorical_values,
         )
         .col_vals_in_set(
             IndCqcColumns.current_cssr,
-            CleanedCatValues.current_cssr_column_values.categorical_values,
+            CatValues.current_cssr_column_values.categorical_values,
         )
         .col_vals_in_set(
             IndCqcColumns.current_region,
-            CleanedCatValues.current_region_column_values.categorical_values,
+            CatValues.current_region_column_values.categorical_values,
         )
-        # .col_vals_in_set(
-        #     IndCqcColumns.current_icb,
-        #     CleanedCatValues.current_icb_column_values.categorical_values,
-        # )
+        .col_vals_in_set(
+            IndCqcColumns.current_icb,
+            OnspdIcb.labels_dict.values(),
+        )
         .col_vals_in_set(
             IndCqcColumns.current_rural_urban_indicator_2011,
-            CleanedCatValues.current_rui_column_values.categorical_values,
+            CatValues.current_rui_column_values.categorical_values,
         )
-        # .col_vals_in_set(
-        #     IndCqcColumns.current_lsoa21,
-        #     CatValues.current_lsoa_column_valueslsoa21_column_values.categorical_values,
-        # )
-        # .col_vals_in_set(
-        #     IndCqcColumns.current_msoa21,
-        #     CatValues.current_msoa21_column_values.categorical_values,
-        # )
+        .col_vals_in_set(
+            IndCqcColumns.current_lsoa21,
+            OnspdLsoa21.labels_dict.values(),
+        )
+        .col_vals_in_set(
+            IndCqcColumns.current_msoa21,
+            OnspdMsoa21.labels_dict.values(),
+        )
         .col_vals_in_set(
             IndCqcColumns.dormancy,
-            CleanedCatValues.dormancy_column_values.categorical_values,
+            CatValues.dormancy_column_values.categorical_values,
         )
         # Distinct value counts
         .specially(
@@ -284,65 +286,65 @@ def run_categorical_validation(source_path, bucket_name, reports_path):
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.care_home,
-                CleanedCatValues.care_home_column_values.count_of_categorical_values,
+                CatValues.care_home_column_values.count_of_categorical_values,
             ),
-            brief=f"{IndCqcColumns.care_home} should have exactly {CleanedCatValues.care_home_column_values.count_of_categorical_values} distinct values",
+            brief=f"{IndCqcColumns.care_home} should have exactly {CatValues.care_home_column_values.count_of_categorical_values} distinct values",
         )
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.current_cssr,
-                CleanedCatValues.current_cssr_column_values.count_of_categorical_values,
+                CatValues.current_cssr_column_values.count_of_categorical_values,
             ),
-            brief=f"{IndCqcColumns.current_cssr} should have exactly {CleanedCatValues.current_cssr_column_values.count_of_categorical_values} distinct values",
+            brief=f"{IndCqcColumns.current_cssr} should have exactly {CatValues.current_cssr_column_values.count_of_categorical_values} distinct values",
         )
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.current_region,
-                CleanedCatValues.current_region_column_values.count_of_categorical_values,
+                CatValues.current_region_column_values.count_of_categorical_values,
             ),
-            brief=f"{IndCqcColumns.current_region} should have exactly {CleanedCatValues.current_region_column_values.count_of_categorical_values} distinct values",
+            brief=f"{IndCqcColumns.current_region} should have exactly {CatValues.current_region_column_values.count_of_categorical_values} distinct values",
         )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.current_icb,
-        #         CleanedCatValues.current_icb_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.current_icb} should have exactly {CleanedCatValues.current_icb_column_values.count_of_categorical_values} distinct values",
-        # )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.current_rural_urban_indicator_2011,
-        #         CleanedCatValues.current_rural_urban_indicator_2011_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.current_rural_urban_indicator_2011} should have exactly {CleanedCatValues.current_rural_urban_indicator_2011_column_values.count_of_categorical_values} distinct values",
-        # )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.current_lsoa21,
-        #         CleanedCatValues.current_lsoa21_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.current_lsoa21} should have exactly {CleanedCatValues.current_lsoa21_column_values.count_of_categorical_values} distinct values",
-        # )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.current_msoa21,
-        #         CleanedCatValues.current_msoa21_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.current_msoa21} should have exactly {CleanedCatValues.current_msoa21_column_values.count_of_categorical_values} distinct values",
-        # )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.current_icb,
+                len(OnspdIcb.labels_dict.values()),
+            ),
+            brief=f"{IndCqcColumns.current_icb} should have exactly {len(OnspdIcb.labels_dict.values())} distinct values",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.current_rural_urban_indicator_2011,
+                CatValues.current_rui_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.current_rural_urban_indicator_2011} should have exactly {CatValues.current_rural_urban_indicator_2011_column_values.count_of_categorical_values} distinct values",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.current_lsoa21,
+                len(OnspdLsoa21.labels_dict.values()),
+            ),
+            brief=f"{IndCqcColumns.current_lsoa21} should have exactly {len(OnspdLsoa21.labels_dict.values())} distinct values",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.current_msoa21,
+                len(OnspdMsoa21.labels_dict.values()),
+            ),
+            brief=f"{IndCqcColumns.current_msoa21} should have exactly {len(OnspdMsoa21.labels_dict.values())} distinct values",
+        )
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.ascwds_filtering_rule,
-                CleanedCatValues.ascwds_filtering_rule_column_values.count_of_categorical_values,
+                CatValues.ascwds_filtering_rule_column_values.count_of_categorical_values,
             ),
-            brief=f"{IndCqcColumns.ascwds_filtering_rule} should have exactly {CleanedCatValues.ascwds_filtering_rule_column_values.count_of_categorical_values} distinct values",
+            brief=f"{IndCqcColumns.ascwds_filtering_rule} should have exactly {CatValues.ascwds_filtering_rule_column_values.count_of_categorical_values} distinct values",
         )
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.dormancy,
-                CleanedCatValues.dormancy_column_values.count_of_categorical_values,
+                CatValues.dormancy_column_values.count_of_categorical_values,
             ),
-            brief=f"{IndCqcColumns.dormancy} should have exactly {CleanedCatValues.dormancy_column_values.count_of_categorical_values} distinct values",
+            brief=f"{IndCqcColumns.dormancy} should have exactly {CatValues.dormancy_column_values.count_of_categorical_values} distinct values",
         )
         .interrogate()
     )
