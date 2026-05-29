@@ -57,34 +57,48 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
     ):
-        mock_read_parquet.side_effect = [self.source_df, self.compare_df]
+        mock_read_parquet.side_effect = [
+            self.source_df,
+            self.compare_df,
+            self.source_df,
+            self.source_df,
+            self.source_df,
+        ]
         job.main("bucket", "my/source/", "my/compare/", "my/reports/")
 
-        self.assertEqual(mock_read_parquet.call_count, 2)
+        self.assertEqual(mock_read_parquet.call_count, 5)
         mock_read_parquet.assert_any_call(
             source="s3://bucket/my/source/",
-            selected_columns=list(
-                self.source_df.drop(
-                    [IndCqcColumns.location_id, IndCqcColumns.cqc_location_import_date]
-                ).columns
-            ),
+            selected_columns=job.KEY_COLS,
+        )
+        mock_read_parquet.assert_any_call(
+            source="s3://bucket/my/source/",
+            selected_columns=job.CATEGORICAL_COLS,
+        )
+        mock_read_parquet.assert_any_call(
+            source="s3://bucket/my/source/",
+            selected_columns=job.DATE_COLS,
+        )
+        mock_read_parquet.assert_any_call(
+            source="s3://bucket/my/source/",
+            selected_columns=job.NUMERIC_COLS,
         )
         mock_read_parquet.assert_any_call(
             source="s3://bucket/my/compare/",
-            selected_columns=list(self.compare_df.columns),
+            selected_columns=job.ind_cqc_estimates_cols_to_import,
         )
-        mock_write_reports.assert_called_once()
+        self.assertEqual(mock_write_reports.call_count, 4)
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_validation_report_includes_expected_validations(
+    def test_key_validation_report_includes_expected_validations(
         self,
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
     ):
         mock_read_parquet.side_effect = [self.source_df, self.compare_df]
 
-        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+        job.run_key_validation("bucket", "my/source/", "my/compare/", "my/reports/")
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
@@ -96,10 +110,95 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             "row_count_match",
             "rows_distinct",
             "col_vals_not_null",
-            "col_vals_gt",
-            "col_vals_expr",
+        }
+
+        for assertion in expected_assertions:
+            self.assertIn(
+                assertion,
+                assertion_types_present,
+                f"{assertion} not found in validation report",
+            )
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_categorical_validation_report_includes_expected_validations(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_read_parquet.side_effect = [self.source_df]
+
+        job.run_categorical_validation("bucket", "my/source/", "my/reports/")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+
+        assertion_types_present = {item["assertion_type"] for item in report_json}
+
+        expected_assertions = {
+            "col_schema_match",
+            "col_vals_not_null",
             "col_vals_in_set",
             "specially",
+        }
+
+        for assertion in expected_assertions:
+            self.assertIn(
+                assertion,
+                assertion_types_present,
+                f"{assertion} not found in validation report",
+            )
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_date_validation_report_includes_expected_validations(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_read_parquet.side_effect = [self.source_df]
+
+        job.run_date_validation("bucket", "my/source/", "my/reports/")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+
+        assertion_types_present = {item["assertion_type"] for item in report_json}
+
+        expected_assertions = {
+            "col_schema_match",
+            "col_vals_not_null",
+            "col_vals_ge",
+        }
+
+        for assertion in expected_assertions:
+            self.assertIn(
+                assertion,
+                assertion_types_present,
+                f"{assertion} not found in validation report",
+            )
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_numeric_validation_report_includes_expected_validations(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_read_parquet.side_effect = [self.source_df]
+
+        job.run_numeric_validation("bucket", "my/source/", "my/reports/")
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+
+        assertion_types_present = {item["assertion_type"] for item in report_json}
+
+        expected_assertions = {
+            "col_schema_match",
+            "col_vals_not_null",
+            "col_vals_gt",
+            "col_vals_expr",
         }
 
         for assertion in expected_assertions:
