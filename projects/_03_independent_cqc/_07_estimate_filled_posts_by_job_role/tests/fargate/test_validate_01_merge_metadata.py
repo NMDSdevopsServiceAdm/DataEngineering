@@ -16,7 +16,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
         source_schema = {
             IndCqcColumns.location_id: pl.String,
             IndCqcColumns.cqc_location_import_date: pl.Date,
-            IndCqcColumns.id_per_locationid_import_date: pl.String,
+            IndCqcColumns.id_per_locationid_import_date: pl.UInt32,
             IndCqcColumns.name: pl.String,
             IndCqcColumns.provider_id: pl.String,
             IndCqcColumns.services_offered: pl.List(pl.String),
@@ -42,12 +42,15 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.ascwds_job_role_counts: pl.Float64,
         }
         source_rows = [
-            ("1-001", date(2025, 1, 1), "0001", "name1", "1-001", "Service A", "Y", "something", date(2023, 1, 1), date(2022, 1, 1), "FilteringRule A", date(2023, 1, 2), "CSSR A", "Region A", "ICB A", "RUI A", "LSOA A", "MSOA A", "Estimate Source A", 10.0, 5.0, 7.0, 50.0, 100.0, "Not Dormant", 20.0),
-            ("2-002", date(2025, 1, 2), "0002", "name2", "2-002", "Service B", "N", "something", date(2023, 1, 2), date(2022, 1, 2), "FilteringRule B", date(2023, 1, 2), "CSSR B", "Region B", "ICB B", "RUI B", "LSOA B", "MSOA B", "Estimate Source B", 15.0, 20.0, 25.0, 60.0, 120.0, "Dormant", 25.0),
+            ("1-001", date(2025, 1, 1), 1, "name1", "1-001", ["Service A"], "Y", "something", date(2023, 1, 1), date(2022, 1, 1), "FilteringRule A", date(2023, 1, 2), "CSSR A", "Region A", "ICB A", "RUI A", "LSOA A", "MSOA A", "Estimate Source A", 10.0, 5.0, 7.0, 50.0, 100.0, "Not Dormant", 8.0),
+            ("2-002", date(2025, 1, 2), 2, "name2", "2-002", ["Service B"], "N", "something", date(2023, 1, 2), date(2022, 1, 2), "FilteringRule B", date(2023, 1, 2), "CSSR B", "Region B", "ICB B", "RUI B", "LSOA B", "MSOA B", "Estimate Source B", 15.0, 10.0, 12.0, 60.0, 120.0, "Dormant", 13.0),
         ]  # fmt: skip
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select(
-            [IndCqcColumns.location_id, IndCqcColumns.cqc_location_import_date]
+            [
+                IndCqcColumns.location_id,
+                IndCqcColumns.cqc_location_import_date,
+            ]
         )
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
@@ -58,11 +61,11 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
         mock_write_reports: Mock,
     ):
         mock_read_parquet.side_effect = [
-            self.source_df,
-            self.compare_df,
-            self.source_df,
-            self.source_df,
-            self.source_df,
+            self.source_df,  # key: source
+            self.compare_df,  # key: compare
+            self.source_df,  # categorical: source
+            self.source_df,  # date: source
+            self.source_df,  # numeric: source
         ]
         job.main("bucket", "my/source/", "my/compare/", "my/reports/")
 
@@ -70,6 +73,10 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
         mock_read_parquet.assert_any_call(
             source="s3://bucket/my/source/",
             selected_columns=job.KEY_COLS,
+        )
+        mock_read_parquet.assert_any_call(
+            source="s3://bucket/my/compare/",
+            selected_columns=job.ind_cqc_estimates_cols_to_import,
         )
         mock_read_parquet.assert_any_call(
             source="s3://bucket/my/source/",
@@ -83,10 +90,6 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             source="s3://bucket/my/source/",
             selected_columns=job.NUMERIC_COLS,
         )
-        mock_read_parquet.assert_any_call(
-            source="s3://bucket/my/compare/",
-            selected_columns=job.ind_cqc_estimates_cols_to_import,
-        )
         self.assertEqual(mock_write_reports.call_count, 4)
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
@@ -98,7 +101,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
     ):
         mock_read_parquet.side_effect = [self.source_df, self.compare_df]
 
-        job.run_key_validation("bucket", "my/source/", "my/compare/", "my/reports/")
+        job.run_key_validation("my/source/", "my/compare/", "bucket", "my/reports/")
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
@@ -128,7 +131,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
     ):
         mock_read_parquet.side_effect = [self.source_df]
 
-        job.run_categorical_validation("bucket", "my/source/", "my/reports/")
+        job.run_categorical_validation("my/source/", "bucket", "my/reports/")
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
@@ -158,7 +161,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
     ):
         mock_read_parquet.side_effect = [self.source_df]
 
-        job.run_date_validation("bucket", "my/source/", "my/reports/")
+        job.run_date_validation("my/source/", "bucket", "my/reports/")
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
@@ -187,7 +190,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
     ):
         mock_read_parquet.side_effect = [self.source_df]
 
-        job.run_numeric_validation("bucket", "my/source/", "my/reports/")
+        job.run_numeric_validation("my/source/", "bucket", "my/reports/")
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())

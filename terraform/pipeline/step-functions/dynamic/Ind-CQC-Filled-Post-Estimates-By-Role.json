@@ -125,41 +125,6 @@
                   }
                 },
                 {
-                  "StartAt": "Validate Merged Keys Data",
-                  "States": {
-                    "Validate Merged Keys Data": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask.sync",
-                      "Parameters": {
-                        "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${independent_cqc_task_arn}",
-                        "LaunchType": "FARGATE",
-                        "NetworkConfiguration": {
-                          "AwsvpcConfiguration": {
-                            "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
-                            "AssignPublicIp": "ENABLED"
-                          }
-                        },
-                        "Overrides": {
-                          "ContainerOverrides": [
-                            {
-                              "Name": "_03_independent_cqc-container",
-                              "Command": [
-                                "validate_01_merge_keys.py",
-                                "--bucket_name", "${dataset_bucket_name}",
-                                "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_job_roles/",
-                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_07_01_merge_job_roles/"
-                              ]
-                            }
-                          ]
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
                   "StartAt": "Validate Merged Data",
                   "States": {
                     "Validate Merged Data": {
