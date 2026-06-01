@@ -21,10 +21,16 @@ from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkerCleanedCategoricalValues as ASCWDSWorkerCatValues,
 )
 
-KEY_COLS = [
+DISTINCT_CHECKS_KEY_COLS = [
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
     IndCqcColumns.main_job_role_clean_labelled,
+]
+
+KEY_COLS = [
+    IndCqcColumns.id_per_locationid_import_date,
+    IndCqcColumns.location_id,
+    IndCqcColumns.cqc_location_import_date,
 ]
 
 CATEGORICAL_COLS = [
@@ -120,7 +126,7 @@ def convert_main_job_role_to_int(df: pl.DataFrame) -> pl.DataFrame:
 def run_distinct_key_validation(source_path, bucket_name, reports_path):
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=KEY_COLS,
+        selected_columns=DISTINCT_CHECKS_KEY_COLS,
     ).with_columns(pl.col(IndCqcColumns.main_job_role_clean_labelled).cast(pl.String))
 
     distinct_key_validation = (
