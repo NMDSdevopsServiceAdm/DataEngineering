@@ -46,7 +46,6 @@ DATE_COLS = [
 ]
 
 NUMERIC_COLS = [
-    IndCqcColumns.estimate_filled_posts,
     IndCqcColumns.ascwds_filled_posts_dedup_clean,
     IndCqcColumns.ascwds_pir_merged,
     IndCqcColumns.number_of_beds,
@@ -94,7 +93,6 @@ DATE_SCHEMA = pb.Schema(
 )
 NUMERIC_SCHEMA = pb.Schema(
     columns={
-        IndCqcColumns.estimate_filled_posts: "Float64",
         IndCqcColumns.ascwds_filled_posts_dedup_clean: "Float64",
         IndCqcColumns.ascwds_pir_merged: "Float64",
         IndCqcColumns.number_of_beds: "Float64",
@@ -406,13 +404,6 @@ def run_numeric_validation(source_path, bucket_name, reports_path):
             schema=NUMERIC_SCHEMA,
             brief="All columns have the expected data types",
         )
-        # Completeness (no nulls)
-        .col_vals_not_null(
-            columns=[
-                IndCqcColumns.estimate_filled_posts,
-            ],
-            brief="Required columns should contain no null values",
-        )
         # Numeric range — strictly positive (nulls allowed)
         .col_vals_gt(
             columns=[
@@ -424,18 +415,6 @@ def run_numeric_validation(source_path, bucket_name, reports_path):
             value=0,
             na_pass=True,
             brief="ascwds_filled_posts_dedup_clean, ascwds_pir_merged, number_of_beds and wkrrecs_bounded should be > 0 where present",
-        )
-        # Cross-column numeric constraint
-        .col_vals_expr(
-            expr=(
-                pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
-                | pl.col(IndCqcColumns.estimate_filled_posts).is_null()
-                | (
-                    pl.col(IndCqcColumns.ascwds_job_role_counts)
-                    <= pl.col(IndCqcColumns.estimate_filled_posts)
-                )
-            ),
-            brief="ascwds_job_role_counts <= estimate_filled_posts where both are present",
         ).interrogate()
     )
 
