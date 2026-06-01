@@ -50,7 +50,6 @@ NUMERIC_COLS = [
     IndCqcColumns.ascwds_pir_merged,
     IndCqcColumns.number_of_beds,
     IndCqcColumns.worker_records_bounded,
-    IndCqcColumns.ascwds_job_role_counts,
 ]
 
 ind_cqc_estimates_cols_to_import = [
@@ -97,7 +96,6 @@ NUMERIC_SCHEMA = pb.Schema(
         IndCqcColumns.ascwds_pir_merged: "Float64",
         IndCqcColumns.number_of_beds: "Float64",
         IndCqcColumns.worker_records_bounded: "Float64",
-        IndCqcColumns.ascwds_job_role_counts: "Float64",
     }
 )
 

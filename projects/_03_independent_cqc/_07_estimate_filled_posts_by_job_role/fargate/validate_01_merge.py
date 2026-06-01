@@ -97,7 +97,6 @@ def main(
         reports_path (str): the output path to write reports to
     """
 
-    # can change name of this. I named it key validation initially because it started with just locartionid and import date validation
     run_distinct_key_validation(source_path, bucket_name, reports_path)
     gc.collect()
     run_other_key_validation(source_path, compare_path, bucket_name, reports_path)
@@ -284,20 +283,6 @@ def run_numeric_validation(source_path, bucket_name, reports_path):
             na_pass=True,
             brief="ascwds_job_role_counts should be >= 0 where present",
         )
-        # had to do it this way as multi conditional checks are not possible directly in Pointblank
-        # Currently failing, The data does show that ascwds_job_role_counts > estimate_filled_posts for many locations
-        # Need to decide if this check is actually needed?
-        # .col_vals_expr(
-        #     expr=(
-        #         pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
-        #         | pl.col(IndCqcColumns.estimate_filled_posts).is_null()
-        #         | (
-        #             pl.col(IndCqcColumns.ascwds_job_role_counts)
-        #             <= pl.col(IndCqcColumns.estimate_filled_posts)
-        #         )
-        #     ),
-        #     brief="ascwds_job_role_counts <= estimate_filled_posts where both are present",
-        # )
         .interrogate()
     )
     vl.write_reports(numeric_validation, bucket_name, f"{reports_path}numeric/")

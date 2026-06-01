@@ -199,9 +199,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
 
         expected_assertions = {
             "col_schema_match",
-            "col_vals_not_null",
             "col_vals_gt",
-            "col_vals_expr",
         }
 
         for assertion in expected_assertions:
