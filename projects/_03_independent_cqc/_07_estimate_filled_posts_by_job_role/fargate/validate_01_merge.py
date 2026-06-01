@@ -22,9 +22,9 @@ from utils.column_values.categorical_columns_by_dataset import (
 )
 
 KEY_COLS = [
-    IndCqcColumns.id_per_locationid_import_date,
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
+    IndCqcColumns.main_job_role_clean_labelled,
 ]
 
 CATEGORICAL_COLS = [
