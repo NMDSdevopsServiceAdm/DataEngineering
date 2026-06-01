@@ -92,10 +92,10 @@ DATE_SCHEMA = pb.Schema(
 )
 NUMERIC_SCHEMA = pb.Schema(
     columns={
-        IndCqcColumns.ascwds_filled_posts_dedup_clean: "Float64",
-        IndCqcColumns.ascwds_pir_merged: "Float64",
-        IndCqcColumns.number_of_beds: "Float64",
-        IndCqcColumns.worker_records_bounded: "Float64",
+        IndCqcColumns.ascwds_filled_posts_dedup_clean: "Float32",
+        IndCqcColumns.ascwds_pir_merged: "Float32",
+        IndCqcColumns.number_of_beds: "Int16",
+        IndCqcColumns.worker_records_bounded: "Int16",
     }
 )
 
