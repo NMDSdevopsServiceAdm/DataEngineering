@@ -801,27 +801,6 @@ class ArchiveFilledPostsEstimates:
 
 @dataclass
 class CleanFilteringUtilsSchemas:
-    add_filtering_column_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
-        ]
-    )
-    expected_add_filtering_column_schema = pl.Schema(
-        list(add_filtering_column_schema.items())
-        + [
-            (IndCQC.ascwds_filtering_rule, pl.String()),
-        ]
-    )
-    update_filtering_rule_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
-            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
-            (IndCQC.ascwds_filtering_rule, pl.String()),
-        ]
-    )
-
     aggregate_values_to_provider_level_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
@@ -1445,8 +1424,9 @@ class ImputeJobRoleSchemas:
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: pl.String,
         IndCQC.main_job_role_clean_labelled: pl.String,
+        IndCQC.estimate_filled_posts: pl.Float32,
+        IndCQC.estimate_filled_posts_size_group: pl.String,
         IndCQC.imputed_ascwds_job_role_counts: pl.Float32,
-        IndCQC.ascwds_job_role_rolling_sum: pl.Float32,
         IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,
     }
 

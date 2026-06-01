@@ -12,6 +12,7 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
     ImputeJobRoleSchemas as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import PrimaryServiceType
 
 
 class TestCreateImputedASCWDSJobRoleCounts:
@@ -83,9 +84,54 @@ class TestCreateASCWDSJobRoleRollingRatio:
             orient="row",
         )
         input_lf = expected_lf.drop(
-            IndCQC.ascwds_job_role_rolling_sum, IndCQC.ascwds_job_role_rolling_ratio
+            IndCQC.ascwds_job_role_rolling_ratio,
+            IndCQC.estimate_filled_posts_size_group,
         )
         returned_lf = job.create_ascwds_job_role_rolling_ratio(input_lf)
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
+        pl_testing.assert_frame_equal(
+            returned_lf, expected_lf, check_column_order=False, rel_tol=0.0001
+        )
+
+
+class TestEstimateFilledPostsSizeGroupExpression:
+    def test_estimate_filled_posts_size_group_expression(self):
+        expected_lf = pl.LazyFrame(
+            data=[
+                # non-residential
+                (24.999, PrimaryServiceType.non_residential, "NR 1 to 24"),
+                (25.0, PrimaryServiceType.non_residential, "NR 25 to 49"),
+                (33, PrimaryServiceType.non_residential, "NR 25 to 49"),
+                (50.0, PrimaryServiceType.non_residential, "NR 50 to 74"),
+                (99.999, PrimaryServiceType.non_residential, "NR 75 to 99"),
+                (100.0, PrimaryServiceType.non_residential, "NR 100 plus"),
+                # care home only
+                (1.0, PrimaryServiceType.care_home_only, "COH 1 to 9"),
+                (9.999, PrimaryServiceType.care_home_only, "COH 1 to 9"),
+                (10.0, PrimaryServiceType.care_home_only, "COH 10 to 19"),
+                (19.999, PrimaryServiceType.care_home_only, "COH 10 to 19"),
+                (21.0, PrimaryServiceType.care_home_only, "COH 20 to 29"),
+                (30.0, PrimaryServiceType.care_home_only, "COH 30 plus"),
+                # care home with nursing
+                (1.0, PrimaryServiceType.care_home_with_nursing, "CHWN 1 to 19"),
+                (19.999, PrimaryServiceType.care_home_with_nursing, "CHWN 1 to 19"),
+                (20.0, PrimaryServiceType.care_home_with_nursing, "CHWN 20 to 29"),
+                (29.999, PrimaryServiceType.care_home_with_nursing, "CHWN 20 to 29"),
+                (30.0, PrimaryServiceType.care_home_with_nursing, "CHWN 30 plus"),
+                # unmatched
+                (0.0, PrimaryServiceType.non_residential, None),
+                (None, PrimaryServiceType.non_residential, None),
+                (25.0, "Other Service", None),
+            ],
+            schema={
+                IndCQC.estimate_filled_posts: pl.Float32,
+                IndCQC.primary_service_type: pl.String,
+                IndCQC.estimate_filled_posts_size_group: pl.String,
+            },
+            orient="row",
+        )
+        input_lf = expected_lf.drop(IndCQC.estimate_filled_posts_size_group)
+        returned_lf = input_lf.with_columns(
+            job.estimate_filled_posts_size_group_expression()
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
