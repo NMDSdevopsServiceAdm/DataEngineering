@@ -27,6 +27,8 @@ All notable changes to this project will be documented in this file.
 
 - Moved filtering rule functions to polars utils.
 
+- Added grouped job role breakdown calculations based on location size bands and updated `create_ascwds_job_role_rolling_ratio` function to support dynamic grouping and rolling-period aggregation logic for improved base stability.
+
 - Changed add_filtering_rule_column() and update_filtering_rule() to handle categorical columns as well as string.
 
 ### Fixed
