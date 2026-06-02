@@ -1692,9 +1692,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.primary_service_type: pl.String,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
         IndCQC.main_job_group_labelled: pl.Enum(
-            list(
-                set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values())
-            )
+            AscwdsWorkerValueLabelsJobGroup.all_job_groups()
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
@@ -1706,9 +1704,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.primary_service_type: pl.String,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
         IndCQC.main_job_group_labelled: pl.Enum(
-            list(
-                set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values())
-            )
+            AscwdsWorkerValueLabelsJobGroup.all_job_groups()
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,

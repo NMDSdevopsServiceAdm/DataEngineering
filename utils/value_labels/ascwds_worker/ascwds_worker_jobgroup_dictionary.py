@@ -70,3 +70,8 @@ class AscwdsWorkerValueLabelsJobGroup:
     def all_roles(cls) -> list[str]:
         """Return all job roles."""
         return list(cls.job_role_to_job_group_dict)
+
+    @classmethod
+    def all_job_groups(cls) -> list[str]:
+        """Return all job groups."""
+        return list(set(cls.job_role_to_job_group_dict.values()))

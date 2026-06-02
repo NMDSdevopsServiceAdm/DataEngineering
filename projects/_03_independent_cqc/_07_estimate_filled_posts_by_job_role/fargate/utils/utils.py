@@ -3,15 +3,11 @@ from datetime import date
 
 import polars as pl
 
-
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     MainJobRoleLabels,
     PrimaryServiceType,
-)
-from utils.column_values.categorical_columns_by_dataset import (
-    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as JRValues,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
@@ -218,7 +214,7 @@ class CategoricalColumnTypes:
         pl.Categories("establishment", namespace="filled_posts")
     )
     JobRoleEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
-    JobGroupEnumType = pl.Enum(JRValues.job_group_column_values.categorical_values)
+    JobGroupEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_job_groups())
     EstimatesFilledPostSourceEnumType = pl.Enum(
         [
             EstimateFilledPostsSource.imputed_pir_filled_posts_model,

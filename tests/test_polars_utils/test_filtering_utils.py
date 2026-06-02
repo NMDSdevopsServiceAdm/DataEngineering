@@ -7,19 +7,12 @@ from polars_utils import filtering_utils as job
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     CategoricalColumnTypes as CatColType,
 )
-from tests.test_polars_utils_data import (
-    FilteringUtilsData as Data,
-)
-from tests.test_polars_utils_schemas import (
-    FilteringUtilsSchemas as Schemas,
-)
+from tests.test_polars_utils_data import FilteringUtilsData as Data
+from tests.test_polars_utils_schemas import FilteringUtilsSchemas as Schemas
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     JobRoleFilteringRule,
-)
-from utils.column_values.categorical_columns_by_dataset import (
-    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as JRValues,
 )
 
 
@@ -69,9 +62,7 @@ class AddFilteringRuleColumnTests(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class UpdateFilteringRuleTests(
-    unittest.TestCase
-):  # Add test cases for cetegorical column
+class UpdateFilteringRuleTests(unittest.TestCase):
     def test_returns_expected_labels_when_populated_values_are_nulled(self):
         test_lf = pl.LazyFrame(
             Data.update_filtering_rule_populated_to_nulled_rows,

@@ -1,10 +1,10 @@
 import polars as pl
 
+import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils as cUtils
 from polars_utils import utils
 from polars_utils.filtering_utils import (
     add_filtering_rule_column,
 )
-import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils as cUtils
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     CategoricalColumnTypes as CatColType,
 )
@@ -13,9 +13,6 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import JobRoleFilteringRule
-from utils.column_values.categorical_columns_by_dataset import (
-    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as JRValues,
-)
 
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.

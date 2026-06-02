@@ -216,14 +216,6 @@ class EstimatedIndCQCFilledPostsCategoricalValues:
 
 
 @dataclass
-class EstimatedIndCQCFilledPostsByJobRoleCategoricalValues:
-    job_role_filtering_rule_column_values = JobRoleFilteringRule(
-        IndCQC.job_role_filtering_rule
-    )
-    job_group_column_values = JobGroupLabels(IndCQC.main_job_group_labelled)
-
-
-@dataclass
 class DiagnosticOnKnownFilledPostsCategoricalValues:
     estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
         IndCQC.estimate_filled_posts_source,

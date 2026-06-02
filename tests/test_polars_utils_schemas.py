@@ -12,10 +12,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.column_values.categorical_columns_by_dataset import (
-    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as JRValues,
-)
 
 
 @dataclass
