@@ -119,14 +119,10 @@ def filter_job_role_group_outliers(
             on=IndCQC.primary_service_type,
             how="left",
         )
-        .with_columns(  # 5. Flag where job role percentage is outside bounds.
-            pl.when(Exprs.evaluation_expr)
-            .then(pl.lit(True))
-            .otherwise(pl.lit(False))
-            .cast(pl.Boolean)
-            .alias(temp_out_of_bounds_col)
+        # 5. Flag where job role percentage is outside bounds.
+        .with_columns(Exprs.evaluation_expr.alias(temp_out_of_bounds_col)).select(
+            IndCQC.id_per_locationid_import_date, temp_out_of_bounds_col
         )
-        .select(IndCQC.id_per_locationid_import_date, temp_out_of_bounds_col)
     )
 
     lf = (
@@ -254,10 +250,7 @@ def filter_job_role_group_equal_zero(lf: pl.LazyFrame) -> pl.LazyFrame:
         JobGroupLabels.managers,
         JobGroupLabels.regulated_professions,
     ]
-    eval_expr = (pl.col(JobGroupLabels.direct_care) == 0) | (
-        (pl.col(JobGroupLabels.regulated_professions) == 0)
-        & (pl.col(JobGroupLabels.managers) == 0)
-    )
+
     # 1. Pivot job roles
     piv_lf = lf.pivot(
         on=IndCQC.main_job_group_labelled,
@@ -269,11 +262,13 @@ def filter_job_role_group_equal_zero(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     # 2. Evaluate rows
     piv_lf = piv_lf.with_columns(
-        pl.when(eval_expr)
-        .then(True)
-        .otherwise(False)
-        .cast(pl.Boolean)
-        .alias(temp_equals_zero_col)
+        (
+            (pl.col(JobGroupLabels.direct_care) == pl.lit(0))
+            | (
+                (pl.col(JobGroupLabels.regulated_professions) == pl.lit(0))
+                & (pl.col(JobGroupLabels.managers) == pl.lit(0))
+            )
+        ).alias(temp_equals_zero_col)
     ).select(IndCQC.id_per_locationid_import_date, temp_equals_zero_col)
 
     lf = lf.join(piv_lf, on=IndCQC.id_per_locationid_import_date, how="left")
