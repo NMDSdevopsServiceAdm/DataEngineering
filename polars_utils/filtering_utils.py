@@ -30,22 +30,16 @@ def add_filtering_rule_column(
         pl.LazyFrame: A LazyFrame with an additional column indicating
         whether data is present or missing.
     """
+    expr = (
+        pl.when(pl.col(col_to_filter).is_not_null())
+        .then(pl.lit(populated_rule))
+        .otherwise(pl.lit(missing_rule))
+    )
+
     if categorical_type:
-        lf = lf.with_columns(
-            pl.when(pl.col(col_to_filter).is_not_null())
-            .then(pl.lit(populated_rule))
-            .otherwise(pl.lit(missing_rule))
-            .cast(categorical_type)
-            .alias(filter_rule_col_name)
-        )
-    else:
-        lf = lf.with_columns(
-            pl.when(pl.col(col_to_filter).is_not_null())
-            .then(pl.lit(populated_rule))
-            .otherwise(pl.lit(missing_rule))
-            .alias(filter_rule_col_name)
-        )
-    return lf
+        expr = expr.cast(categorical_type)
+
+    return lf.with_columns(expr.alias(filter_rule_col_name))
 
 
 def update_filtering_rule(
