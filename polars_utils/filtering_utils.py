@@ -62,10 +62,8 @@ def update_filtering_rule(
     Updates the text in the filtering rule column to reflect the change.
 
     This function updates the filtering rule in 2 cases:
-    1) Where the rule is listed as "populated" but the cleaned data
-       has been nulled or changed from the original value.
-    2) If a winsorized process has already occurred, where the rule
-       is listed as "winsorized" but the cleaned data has been nulled.
+    1) Where the cleaned data has been nulled but the rule says "populated" or "winsorized"
+    2) Where the cleaned data has been changed (winsorized) but the rule says "populated"
 
     Args:
         lf (pl.LazyFrame): A LazyFrame containing the raw column,
@@ -82,57 +80,21 @@ def update_filtering_rule(
     Returns:
         pl.LazyFrame: A LazyFrame with the filtering rule column updated.
     """
-    if not categorical_type:
-        lf = lf.with_columns(
-            pl.when(
-                (
-                    (
-                        pl.col(clean_col_name).is_null()
-                        | (pl.col(clean_col_name) != pl.col(raw_col_name))
-                    )
-                    & (pl.col(filter_rule_col_name) == populated_rule)
-                )
-            )
-            .then(pl.lit(new_rule_name))
-            .otherwise(pl.col(filter_rule_col_name))
-            .alias(filter_rule_col_name)
-        )
-        if winsorized_rule:
-            lf = lf.with_columns(
-                pl.when(
-                    pl.col(clean_col_name).is_null()
-                    & (pl.col(filter_rule_col_name) == winsorized_rule)
-                )
-                .then(pl.lit(new_rule_name))
-                .otherwise(pl.col(filter_rule_col_name))
-                .alias(filter_rule_col_name)
-            )
-    else:
-        lf = lf.with_columns(
-            pl.when(
-                (
-                    (
-                        pl.col(clean_col_name).is_null()
-                        | (pl.col(clean_col_name) != pl.col(raw_col_name))
-                    )
-                    & (pl.col(filter_rule_col_name) == populated_rule)
-                )
-            )
-            .then(pl.lit(new_rule_name))
-            .otherwise(pl.col(filter_rule_col_name))
-            .cast(categorical_type)
-            .alias(filter_rule_col_name)
-        )
-        if winsorized_rule:
-            lf = lf.with_columns(
-                pl.when(
-                    pl.col(clean_col_name).is_null()
-                    & (pl.col(filter_rule_col_name) == winsorized_rule)
-                )
-                .then(pl.lit(new_rule_name))
-                .otherwise(pl.col(filter_rule_col_name))
-                .cast(categorical_type)
-                .alias(filter_rule_col_name)
-            )
+    clean_col_is_null = pl.col(clean_col_name).is_null()
+    clean_col_has_changed = pl.col(clean_col_name) != pl.col(raw_col_name)
+    rule_is_populated = pl.col(filter_rule_col_name) == populated_rule
+    rule_is_winsorised = pl.col(filter_rule_col_name) == winsorized_rule
 
-    return lf
+    expr = (
+        pl.when(
+            (clean_col_is_null & (rule_is_populated | rule_is_winsorised))
+            | (clean_col_has_changed & rule_is_populated)
+        )
+        .then(pl.lit(new_rule_name))
+        .otherwise(pl.col(filter_rule_col_name))
+    )
+
+    if categorical_type is not None:
+        expr = expr.cast(categorical_type)
+
+    return lf.with_columns(expr.alias(filter_rule_col_name))
