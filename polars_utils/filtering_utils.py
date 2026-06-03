@@ -9,7 +9,7 @@ def add_filtering_rule_column(
     col_to_filter: str,
     populated_rule: str,
     missing_rule: str,
-    categorical_type: pl.Categorical = None,
+    categorical_type: pl.Categorical | None = None,
 ) -> pl.LazyFrame:
     """
     Adds a column which flags if data is present or missing.
@@ -24,7 +24,7 @@ def add_filtering_rule_column(
         col_to_filter (str): The name of the column to check for nulls.
         populated_rule (str): The value to assign when data is present.
         missing_rule (str): The value to assign when data is null.
-        categorical_type (pl.Categorical): If provided, creates a pl.Categorical col. Defaults to None.
+        categorical_type (pl.Categorical | None, optional): If provided, creates a pl.Categorical col. Defaults to None.
 
     Returns:
         pl.LazyFrame: A LazyFrame with an additional column indicating
@@ -55,8 +55,8 @@ def update_filtering_rule(
     clean_col_name: str,
     populated_rule: str,
     new_rule_name: str,
-    winsorized_rule: str = None,
-    categorical_type: pl.Categorical = None,
+    winsorized_rule: str | None = None,
+    categorical_type: pl.Categorical | None = None,
 ) -> pl.LazyFrame:
     """
     Updates the text in the filtering rule column to reflect the change.
@@ -75,9 +75,9 @@ def update_filtering_rule(
         clean_col_name (str): The name of the cleaned column with values.
         populated_rule (str): The rule name when original data is being used.
         new_rule_name (str): The name of the new rule to add.
-        winsorized_rule (str, optional): The rule name assigned if data
+        winsorized_rule (str | None, optional): The rule name assigned if data
             has been winsorized (capped). Defaults to None.
-        categorical_type (pl.Categorical): If provided, creates a pl.Categorical col. Defaults to None.
+        categorical_type (pl.Categorical | None, optional): If provided, creates a pl.Categorical col. Defaults to None.
 
     Returns:
         pl.LazyFrame: A LazyFrame with the filtering rule column updated.
