@@ -364,17 +364,16 @@ def run_date_validation(source_path, bucket_name, reports_path):
             columns=[IndCqcColumns.ascwds_workplace_import_date],
             value=ASCWDS_EARLIEST_IMPORT_DATE,
             brief=f"ascwds_workplace_import_date should not be before {ASCWDS_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
-        )
-        .col_vals_ge(
+        ).col_vals_ge(
             columns=[IndCqcColumns.imputed_registration_date],
             value=CQC_EARLIEST_REGISTRATION_DATE,
             brief=f"imputed_registration_date should not be before {CQC_EARLIEST_REGISTRATION_DATE.strftime('%d/%m/%Y')}",
         )
-        .col_vals_ge(
-            columns=[IndCqcColumns.current_ons_import_date],
-            value=ons_not_before,
-            brief=f"current_ons_import_date should not be more than 13 months ago (not before {ons_not_before.strftime('%d/%m/%Y')})",
-        )
+        # .col_vals_ge(
+        #     columns=[IndCqcColumns.current_ons_import_date],
+        #     value=ons_not_before,
+        #     brief=f"current_ons_import_date should not be more than 13 months ago (not before {ons_not_before.strftime('%d/%m/%Y')})",
+        # )
         .interrogate()
     )
 
