@@ -205,3 +205,26 @@ class UpdateFilteringRuleTests(unittest.TestCase):
             orient="row",
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_returns_expected_labels_when_raw_and_clean_col_args_refer_to_same_col(
+        self,
+    ):
+        test_lf = pl.LazyFrame(
+            Data.update_filtering_rule_populated_to_nulled_rows,
+            Schemas.update_filtering_rule_schema,
+            orient="row",
+        )
+        returned_lf = job.update_filtering_rule(
+            test_lf,
+            IndCQC.ascwds_filtering_rule,
+            IndCQC.ascwds_filled_posts_dedup_clean,
+            IndCQC.ascwds_filled_posts_dedup_clean,
+            AscwdsFilteringRule.populated,
+            AscwdsFilteringRule.contained_invalid_missing_data_code,
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_update_filtering_rule_populated_to_nulled_rows,
+            schema=Schemas.update_filtering_rule_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
