@@ -108,16 +108,6 @@ def main(
     gc.collect()
 
 
-def convert_main_job_role_to_int(df: pl.DataFrame) -> pl.DataFrame:
-    """Converts the main job role column to int for validation purposes."""
-    return df.with_columns(
-        pl.col(IndCqcColumns.main_job_role_clean_labelled).replace_strict(
-            old=AscwdsWorkerValueLabelsMainjrid.labels_dict.values(),
-            new=AscwdsWorkerValueLabelsMainjrid.labels_dict.keys(),
-        )
-    ).cast(pl.UInt8)
-
-
 def run_distinct_key_validation(source_path, bucket_name, reports_path):
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
@@ -135,7 +125,6 @@ def run_distinct_key_validation(source_path, bucket_name, reports_path):
             **VALIDATE_KWARGS,
         )
         .rows_distinct(
-            pre=convert_main_job_role_to_int,
             columns_subset=[
                 IndCqcColumns.location_id,
                 IndCqcColumns.cqc_location_import_date,
