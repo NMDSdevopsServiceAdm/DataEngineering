@@ -54,7 +54,7 @@ CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
 
 KEY_SCHEMA = pb.Schema(
     columns={
-        IndCqcColumns.id_per_locationid_import_date: "UInt32",
+        IndCqcColumns.id_per_locationid_import_date: "Int32",
         IndCqcColumns.location_id: "String",
         IndCqcColumns.cqc_location_import_date: "Date",
     }
