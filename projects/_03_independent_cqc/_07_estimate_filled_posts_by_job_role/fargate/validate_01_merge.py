@@ -153,6 +153,8 @@ def run_other_key_validation(source_path, compare_path, bucket_name, reports_pat
         AscwdsWorkerValueLabelsJobGroup.all_roles()
     )
 
+    print(f"KEY_COLS df dtypes:\n{source_df.dtypes}")
+
     other_key_validation = (
         pb.Validate(
             data=source_df,
@@ -193,6 +195,8 @@ def run_categorical_validation(source_path, bucket_name, reports_path):
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=CATEGORICAL_COLS,
     )
+
+    print(f"CATEGORICAL_COLS df dtypes:\n{categorical_df.dtypes}")
 
     categorical_validation = (
         pb.Validate(
@@ -247,6 +251,8 @@ def run_numeric_validation(source_path, bucket_name, reports_path):
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=NUMERIC_COLS,
     )
+
+    print(f"NUMERIC_COLS df dtypes:\n{numeric_df.dtypes}")
 
     numeric_validation = (
         pb.Validate(
