@@ -224,7 +224,7 @@ class IndCqcColumns:
     )
     imputed_registration_date: str = CQCLClean.imputed_registration_date
     interpolation_model: str = "interpolation_model"
-    job_group_dist_out_of_bounds: str = "location_job_group_distribution_out_of_bounds"
+    job_role_filtering_rule: str = "job_role_filtering_rule"
     last_ascwds_submission: str = "last_ascwds_submission"
     last_filled_posts: str = "last_filled_posts"
     last_pir_submission: str = "last_pir_submission"

@@ -25,6 +25,8 @@ from utils.column_values.categorical_column_values import (
     Dormancy,
     EstimateFilledPostsSource,
     InAscwds,
+    JobGroupLabels,
+    JobRoleFilteringRule,
     MainJobRoleID,
     MainJobRoleLabels,
     PrimaryServiceType,

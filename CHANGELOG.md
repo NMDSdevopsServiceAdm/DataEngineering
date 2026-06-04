@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted filter for job group outliers to polars.
 
+- Converted filter for zero job roles to polars.
+
 - In line Polars conversions into the Impute job for the PySpark functions `combine_care_home_and_non_res_values_into_single_column` and `convert_care_home_ratios_to_posts`.
 
 - Converted `model_primary_service_rate_of_change_trendline` to Polars.
@@ -25,7 +27,9 @@ All notable changes to this project will be documented in this file.
 
 - Moved filtering rule functions to polars utils.
 
-Added grouped job role breakdown calculations based on location size bands and updated `create_ascwds_job_role_rolling_ratio` function to support dynamic grouping and rolling-period aggregation logic for improved base stability.
+- Added grouped job role breakdown calculations based on location size bands and updated `create_ascwds_job_role_rolling_ratio` function to support dynamic grouping and rolling-period aggregation logic for improved base stability.
+
+- Changed add_filtering_rule_column() and update_filtering_rule() to handle categorical columns as well as string.
 
 ### Fixed
 

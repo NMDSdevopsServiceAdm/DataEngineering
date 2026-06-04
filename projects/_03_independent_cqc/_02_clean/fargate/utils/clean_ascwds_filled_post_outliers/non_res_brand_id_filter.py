@@ -1,5 +1,7 @@
-import polars as pl
 from datetime import date
+
+import polars as pl
+
 from polars_utils.filtering_utils import (
     update_filtering_rule,
 )
