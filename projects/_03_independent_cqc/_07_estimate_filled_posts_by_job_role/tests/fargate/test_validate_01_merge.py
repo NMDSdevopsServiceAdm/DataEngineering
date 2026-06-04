@@ -7,6 +7,7 @@ import polars as pl
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_01_merge as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_01_merge"
 
@@ -25,8 +26,8 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.ascwds_job_role_counts: pl.Int16,
         }
         source_rows = [
-            (1, "1-001", date(2026, 1, 1), "Service A", 10.0, "Source A", "Role A", 5.0, 10),
-            (2, "1-002", date(2026, 1, 1), "Service B", 20.0, "Source B", "Role B", 15.0, 20),
+            (1, "1-001", date(2026, 1, 1), "Service A", 10.0, "Source A", MainJobRoleLabels.care_worker, 5.0, 10),
+            (2, "1-002", date(2026, 1, 1), "Service B", 20.0, "Source B", MainJobRoleLabels.senior_care_worker, 15.0, 20),
         ]  # fmt: skip
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select(
