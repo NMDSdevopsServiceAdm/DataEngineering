@@ -4,21 +4,22 @@ from datetime import date
 
 import pointblank as pb
 import polars as pl
-import polars.selectors as cs
 
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
-from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
-    AscwdsWorkerValueLabelsJobGroup as jobGroupDict,
-)
-from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
-    AscwdsWorkerValueLabelsMainjrid,
+from utils.column_values.categorical_columns_by_dataset import (
+    ASCWDSWorkerCleanedCategoricalValues as ASCWDSWorkerCatValues,
 )
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsCategoricalValues as CatValues,
-    ASCWDSWorkerCleanedCategoricalValues as ASCWDSWorkerCatValues,
+)
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
+)
+from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
+    AscwdsWorkerValueLabelsMainjrid,
 )
 
 DISTINCT_CHECKS_KEY_COLS = [
@@ -107,11 +108,6 @@ def main(
     gc.collect()
 
 
-def cast_cols_back_to_string(df: pl.DataFrame) -> pl.DataFrame:
-    """Casts categorical and enums to string for validation purposes."""
-    return df.with_columns((cs.categorical() | cs.enum()).cast(pl.String))
-
-
 def convert_main_job_role_to_int(df: pl.DataFrame) -> pl.DataFrame:
     """Converts the main job role column to int for validation purposes."""
     return df.with_columns(
@@ -126,7 +122,11 @@ def run_distinct_key_validation(source_path, bucket_name, reports_path):
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=DISTINCT_CHECKS_KEY_COLS,
-    ).with_columns(pl.col(IndCqcColumns.main_job_role_clean_labelled).cast(pl.String))
+    ).with_columns(
+        pl.col(IndCqcColumns.main_job_role_clean_labelled).cast(
+            pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
+        )
+    )
 
     distinct_key_validation = (
         pb.Validate(
@@ -160,7 +160,9 @@ def run_other_key_validation(source_path, compare_path, bucket_name, reports_pat
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=ind_cqc_estimates_cols_to_import,
     )
-    expected_row_count = compare_df.height * len(jobGroupDict.all_roles())
+    expected_row_count = compare_df.height * len(
+        AscwdsWorkerValueLabelsJobGroup.all_roles()
+    )
 
     other_key_validation = (
         pb.Validate(
@@ -168,7 +170,7 @@ def run_other_key_validation(source_path, compare_path, bucket_name, reports_pat
             label=f"Key validation of {source_path}",
             **VALIDATE_KWARGS,
         )
-        .col_schema_match(pre=cast_cols_back_to_string, schema=KEY_SCHEMA)
+        .col_schema_match(schema=KEY_SCHEMA)
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
@@ -209,7 +211,7 @@ def run_categorical_validation(source_path, bucket_name, reports_path):
             label=f"Categorical validation of {source_path}",
             **VALIDATE_KWARGS,
         )
-        .col_schema_match(pre=cast_cols_back_to_string, schema=CATEGORICAL_SCHEMA)
+        .col_schema_match(schema=CATEGORICAL_SCHEMA)
         .col_vals_not_null(
             columns=CATEGORICAL_COLS,
             brief="Categorical columns should contain no null values",
@@ -263,7 +265,7 @@ def run_numeric_validation(source_path, bucket_name, reports_path):
             label=f"Numeric validation of {source_path}",
             **VALIDATE_KWARGS,
         )
-        .col_schema_match(pre=cast_cols_back_to_string, schema=NUMERIC_SCHEMA)
+        .col_schema_match(schema=NUMERIC_SCHEMA)
         .col_vals_not_null(
             columns=[IndCqcColumns.estimate_filled_posts],
             brief="estimate_filled_posts should contain no null values",
