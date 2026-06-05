@@ -18,20 +18,12 @@ from utils.column_values.categorical_columns_by_dataset import (
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
-from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
-    AscwdsWorkerValueLabelsMainjrid,
-)
-
-DISTINCT_CHECKS_KEY_COLS = [
-    IndCqcColumns.location_id,
-    IndCqcColumns.cqc_location_import_date,
-    IndCqcColumns.main_job_role_clean_labelled,
-]
 
 KEY_COLS = [
     IndCqcColumns.id_per_locationid_import_date,
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
+    IndCqcColumns.main_job_role_clean_labelled,
 ]
 
 CATEGORICAL_COLS = [
@@ -98,9 +90,7 @@ def main(
         reports_path (str): the output path to write reports to
     """
 
-    run_distinct_key_validation(source_path, bucket_name, reports_path)
-    gc.collect()
-    run_other_key_validation(source_path, compare_path, bucket_name, reports_path)
+    run_key_validation(source_path, compare_path, bucket_name, reports_path)
     gc.collect()
     run_categorical_validation(source_path, bucket_name, reports_path)
     gc.collect()
@@ -108,39 +98,7 @@ def main(
     gc.collect()
 
 
-def run_distinct_key_validation(source_path, bucket_name, reports_path):
-    source_df = utils.read_parquet(
-        source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=DISTINCT_CHECKS_KEY_COLS,
-    ).with_columns(
-        pl.col(IndCqcColumns.main_job_role_clean_labelled).cast(
-            pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
-        )
-    )
-
-    distinct_key_validation = (
-        pb.Validate(
-            data=source_df,
-            label=f"Distinct key validation of {source_path}",
-            **VALIDATE_KWARGS,
-        )
-        .rows_distinct(
-            columns_subset=[
-                IndCqcColumns.location_id,
-                IndCqcColumns.cqc_location_import_date,
-                IndCqcColumns.main_job_role_clean_labelled,
-            ],
-            brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
-        )
-        .interrogate()
-    )
-    vl.write_reports(
-        distinct_key_validation, bucket_name, f"{reports_path}distinct_key/"
-    )
-    del source_df, distinct_key_validation
-
-
-def run_other_key_validation(source_path, compare_path, bucket_name, reports_path):
+def run_key_validation(source_path, compare_path, bucket_name, reports_path):
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=KEY_COLS,
@@ -153,15 +111,21 @@ def run_other_key_validation(source_path, compare_path, bucket_name, reports_pat
         AscwdsWorkerValueLabelsJobGroup.all_roles()
     )
 
-    print(f"KEY_COLS df dtypes:\n{source_df.dtypes}")
-
-    other_key_validation = (
+    key_validation = (
         pb.Validate(
             data=source_df,
             label=f"Key validation of {source_path}",
             **VALIDATE_KWARGS,
         )
         .col_schema_match(schema=KEY_SCHEMA)
+        .rows_distinct(
+            columns_subset=[
+                IndCqcColumns.location_id,
+                IndCqcColumns.cqc_location_import_date,
+                IndCqcColumns.main_job_role_clean_labelled,
+            ],
+            brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
+        )
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
@@ -186,8 +150,8 @@ def run_other_key_validation(source_path, compare_path, bucket_name, reports_pat
         )
         .interrogate()
     )
-    vl.write_reports(other_key_validation, bucket_name, f"{reports_path}other_key/")
-    del source_df, compare_df, other_key_validation
+    vl.write_reports(key_validation, bucket_name, f"{reports_path}other_key/")
+    del source_df, compare_df, key_validation
 
 
 def run_categorical_validation(source_path, bucket_name, reports_path):
@@ -195,8 +159,6 @@ def run_categorical_validation(source_path, bucket_name, reports_path):
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=CATEGORICAL_COLS,
     )
-
-    print(f"CATEGORICAL_COLS df dtypes:\n{categorical_df.dtypes}")
 
     categorical_validation = (
         pb.Validate(
@@ -251,8 +213,6 @@ def run_numeric_validation(source_path, bucket_name, reports_path):
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=NUMERIC_COLS,
     )
-
-    print(f"NUMERIC_COLS df dtypes:\n{numeric_df.dtypes}")
 
     numeric_validation = (
         pb.Validate(
