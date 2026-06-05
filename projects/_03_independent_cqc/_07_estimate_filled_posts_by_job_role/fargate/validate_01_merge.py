@@ -49,6 +49,7 @@ KEY_SCHEMA = pb.Schema(
         IndCqcColumns.id_per_locationid_import_date: "UInt32",
         IndCqcColumns.location_id: 'Categorical(Categories(name="location", namespace="filled_posts", physical=pl.UInt32))',
         IndCqcColumns.cqc_location_import_date: "Date",
+        IndCqcColumns.main_job_role_clean_labelled: "Enum(categories=['advice_guidance_and_advocacy', 'care_worker', 'community_support_and_outreach', 'employment_support', 'nursing_assistant', 'other_care_role', 'senior_care_worker', 'support_worker', 'data_governance_manager', 'deputy_manager', 'first_line_manager', 'it_manager', 'it_service_desk_manager', 'middle_management', 'managers_and_staff_in_care_related_but_not_care_providing_roles', 'registered_manager', 'senior_management', 'supervisor', 'team_leader', 'allied_health_professional', 'occupational_therapist', 'registered_nurse', 'registered_nursing_associate', 'safeguarding_and_reviewing_officer', 'social_worker', 'activities_worker_or_coordinator', 'administrative_or_office_staff_not_care_providing', 'ancillary_staff_not_care_providing', 'assessment_officer', 'care_coordinator', 'childrens_roles', 'data_analyst', 'it_and_digital_support', 'learning_and_development_lead', 'occupational_therapist_assistant', 'other_non_care_related_staff', 'software_developer'])",
     }
 )
 
