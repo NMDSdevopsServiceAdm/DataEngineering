@@ -31,7 +31,10 @@ All notable changes to this project will be documented in this file.
 
 - Changed add_filtering_rule_column() and update_filtering_rule() to handle categorical columns as well as string.
 
+- Removed technician from job role labels in utils\column_values\categorical_column_values MainJobRoleLabels.
+
 ### Fixed
+- Raw and cleaned ascwds worker validation scripts so they raise exceptions on failure.
 
 
 ## [v2026.04.0] - 15/05/2026
