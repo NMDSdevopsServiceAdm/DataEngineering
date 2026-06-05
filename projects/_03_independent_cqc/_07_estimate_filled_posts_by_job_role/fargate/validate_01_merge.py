@@ -18,60 +18,36 @@ from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
 
-KEY_COLS = [
+VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.id_per_locationid_import_date,
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
     IndCqcColumns.main_job_role_clean_labelled,
-]
-
-CATEGORICAL_COLS = [
     IndCqcColumns.primary_service_type,
     IndCqcColumns.estimate_filled_posts_source,
-    IndCqcColumns.main_job_role_clean_labelled,
-]
-
-NUMERIC_COLS = [
     IndCqcColumns.estimate_filled_posts,
     IndCqcColumns.ascwds_filled_posts_dedup_clean,
     IndCqcColumns.ascwds_job_role_counts,
 ]
 
-ind_cqc_estimates_cols_to_import = [
+IND_CQC_ESTIMATES_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
 ]
 
 CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
 
-KEY_SCHEMA = pb.Schema(
+EXPECTED_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.id_per_locationid_import_date: "UInt32",
         IndCqcColumns.location_id: 'Categorical(Categories(name="location", namespace="filled_posts", physical=pl.UInt32))',
         IndCqcColumns.cqc_location_import_date: "Date",
         IndCqcColumns.main_job_role_clean_labelled: "Enum(categories=['advice_guidance_and_advocacy', 'care_worker', 'community_support_and_outreach', 'employment_support', 'nursing_assistant', 'other_care_role', 'senior_care_worker', 'support_worker', 'data_governance_manager', 'deputy_manager', 'first_line_manager', 'it_manager', 'it_service_desk_manager', 'middle_management', 'managers_and_staff_in_care_related_but_not_care_providing_roles', 'registered_manager', 'senior_management', 'supervisor', 'team_leader', 'allied_health_professional', 'occupational_therapist', 'registered_nurse', 'registered_nursing_associate', 'safeguarding_and_reviewing_officer', 'social_worker', 'activities_worker_or_coordinator', 'administrative_or_office_staff_not_care_providing', 'ancillary_staff_not_care_providing', 'assessment_officer', 'care_coordinator', 'childrens_roles', 'data_analyst', 'it_and_digital_support', 'learning_and_development_lead', 'occupational_therapist_assistant', 'other_non_care_related_staff', 'software_developer'])",
-    }
-)
-
-CATEGORICAL_SCHEMA = pb.Schema(
-    columns={
         IndCqcColumns.primary_service_type: "Enum(categories=['Care home without nursing', 'Care home with nursing', 'non-residential'])",
         IndCqcColumns.estimate_filled_posts_source: "Enum(categories=['imputed_pir_filled_posts_model', 'ascwds_pir_merged', 'imputed_posts_care_home_model', 'care_home_model', 'imputed_posts_non_res_combined_model', 'non_res_combined_model', 'posts_rolling_average_model'])",
-        IndCqcColumns.main_job_role_clean_labelled: "Enum(categories=['advice_guidance_and_advocacy', 'care_worker', 'community_support_and_outreach', 'employment_support', 'nursing_assistant', 'other_care_role', 'senior_care_worker', 'support_worker', 'data_governance_manager', 'deputy_manager', 'first_line_manager', 'it_manager', 'it_service_desk_manager', 'middle_management', 'managers_and_staff_in_care_related_but_not_care_providing_roles', 'registered_manager', 'senior_management', 'supervisor', 'team_leader', 'allied_health_professional', 'occupational_therapist', 'registered_nurse', 'registered_nursing_associate', 'safeguarding_and_reviewing_officer', 'social_worker', 'activities_worker_or_coordinator', 'administrative_or_office_staff_not_care_providing', 'ancillary_staff_not_care_providing', 'assessment_officer', 'care_coordinator', 'childrens_roles', 'data_analyst', 'it_and_digital_support', 'learning_and_development_lead', 'occupational_therapist_assistant', 'other_non_care_related_staff', 'software_developer'])",
-    }
-)
-
-NUMERIC_SCHEMA = pb.Schema(
-    columns={
         IndCqcColumns.estimate_filled_posts: "Float32",
         IndCqcColumns.ascwds_filled_posts_dedup_clean: "Float32",
         IndCqcColumns.ascwds_job_role_counts: "Int16",
     }
-)
-
-VALIDATE_KWARGS = dict(
-    thresholds=GLOBAL_THRESHOLDS,
-    brief=True,
-    actions=GLOBAL_ACTIONS,
 )
 
 
@@ -89,20 +65,13 @@ def main(
         compare_path (str): the path to the dataset to compare against
         reports_path (str): the output path to write reports to
     """
-
-    run_key_validation(source_path, compare_path, bucket_name, reports_path)
-    run_categorical_validation(source_path, bucket_name, reports_path)
-    run_numeric_validation(source_path, bucket_name, reports_path)
-
-
-def run_key_validation(source_path, compare_path, bucket_name, reports_path):
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=KEY_COLS,
+        selected_columns=VALIDATION_COLS_TO_IMPORT,
     )
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
-        selected_columns=ind_cqc_estimates_cols_to_import,
+        selected_columns=IND_CQC_ESTIMATES_COLS_TO_IMPORT,
     )
     expected_row_count = compare_df.height * len(
         AscwdsWorkerValueLabelsJobGroup.all_roles()
@@ -112,9 +81,11 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
         pb.Validate(
             data=source_df,
             label=f"Key validation of {source_path}",
-            **VALIDATE_KWARGS,
+            thresholds=GLOBAL_THRESHOLDS,
+            brief=True,
+            actions=GLOBAL_ACTIONS,
         )
-        .col_schema_match(schema=KEY_SCHEMA)
+        .col_schema_match(schema=EXPECTED_SCHEMA)
         .rows_distinct(
             columns_subset=[
                 IndCqcColumns.location_id,
@@ -128,7 +99,15 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
             brief=f"Expects {expected_row_count} rows",
         )
         .col_vals_not_null(
-            columns=KEY_COLS,
+            columns=[
+                IndCqcColumns.id_per_locationid_import_date,
+                IndCqcColumns.location_id,
+                IndCqcColumns.cqc_location_import_date,
+                IndCqcColumns.primary_service_type,
+                IndCqcColumns.main_job_role_clean_labelled,
+                IndCqcColumns.estimate_filled_posts_source,
+                IndCqcColumns.estimate_filled_posts,
+            ],
             brief="Key columns should contain no null values",
         )
         .col_vals_expr(
@@ -144,28 +123,6 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
                 == 1
             ),
             brief="id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
-        )
-        .interrogate()
-    )
-    vl.write_reports(key_validation, bucket_name, f"{reports_path}other_key/")
-
-
-def run_categorical_validation(source_path, bucket_name, reports_path):
-    categorical_df = utils.read_parquet(
-        source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=CATEGORICAL_COLS,
-    )
-
-    categorical_validation = (
-        pb.Validate(
-            data=categorical_df,
-            label=f"Categorical validation of {source_path}",
-            **VALIDATE_KWARGS,
-        )
-        .col_schema_match(schema=CATEGORICAL_SCHEMA)
-        .col_vals_not_null(
-            columns=CATEGORICAL_COLS,
-            brief="Categorical columns should contain no null values",
         )
         .col_vals_in_set(
             IndCqcColumns.estimate_filled_posts_source,
@@ -198,28 +155,6 @@ def run_categorical_validation(source_path, bucket_name, reports_path):
             ),
             brief="main_job_role_clean_labelled should only contain recognised job role categories",
         )
-        .interrogate()
-    )
-    vl.write_reports(categorical_validation, bucket_name, f"{reports_path}categorical/")
-
-
-def run_numeric_validation(source_path, bucket_name, reports_path):
-    numeric_df = utils.read_parquet(
-        source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=NUMERIC_COLS,
-    )
-
-    numeric_validation = (
-        pb.Validate(
-            data=numeric_df,
-            label=f"Numeric validation of {source_path}",
-            **VALIDATE_KWARGS,
-        )
-        .col_schema_match(schema=NUMERIC_SCHEMA)
-        .col_vals_not_null(
-            columns=[IndCqcColumns.estimate_filled_posts],
-            brief="estimate_filled_posts should contain no null values",
-        )
         .col_vals_gt(
             columns=[
                 IndCqcColumns.estimate_filled_posts,
@@ -237,7 +172,7 @@ def run_numeric_validation(source_path, bucket_name, reports_path):
         )
         .interrogate()
     )
-    vl.write_reports(numeric_validation, bucket_name, f"{reports_path}numeric/")
+    vl.write_reports(key_validation, bucket_name, reports_path)
 
 
 if __name__ == "__main__":
