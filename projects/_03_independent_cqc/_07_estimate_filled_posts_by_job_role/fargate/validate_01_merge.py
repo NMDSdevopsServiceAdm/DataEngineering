@@ -1,4 +1,3 @@
-import gc
 import sys
 from datetime import date
 
@@ -92,11 +91,8 @@ def main(
     """
 
     run_key_validation(source_path, compare_path, bucket_name, reports_path)
-    gc.collect()
     run_categorical_validation(source_path, bucket_name, reports_path)
-    gc.collect()
     run_numeric_validation(source_path, bucket_name, reports_path)
-    gc.collect()
 
 
 def run_key_validation(source_path, compare_path, bucket_name, reports_path):
@@ -152,7 +148,6 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
         .interrogate()
     )
     vl.write_reports(key_validation, bucket_name, f"{reports_path}other_key/")
-    del source_df, compare_df, key_validation
 
 
 def run_categorical_validation(source_path, bucket_name, reports_path):
@@ -206,7 +201,6 @@ def run_categorical_validation(source_path, bucket_name, reports_path):
         .interrogate()
     )
     vl.write_reports(categorical_validation, bucket_name, f"{reports_path}categorical/")
-    del categorical_df, categorical_validation
 
 
 def run_numeric_validation(source_path, bucket_name, reports_path):
@@ -244,7 +238,6 @@ def run_numeric_validation(source_path, bucket_name, reports_path):
         .interrogate()
     )
     vl.write_reports(numeric_validation, bucket_name, f"{reports_path}numeric/")
-    del numeric_df, numeric_validation
 
 
 if __name__ == "__main__":
