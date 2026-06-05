@@ -77,7 +77,7 @@ def main(
         AscwdsWorkerValueLabelsJobGroup.all_roles()
     )
 
-    key_validation = (
+    validation = (
         pb.Validate(
             data=source_df,
             label=f"Key validation of {source_path}",
@@ -85,19 +85,14 @@ def main(
             brief=True,
             actions=GLOBAL_ACTIONS,
         )
+        # dataset schema
         .col_schema_match(schema=EXPECTED_SCHEMA)
-        .rows_distinct(
-            columns_subset=[
-                IndCqcColumns.location_id,
-                IndCqcColumns.cqc_location_import_date,
-                IndCqcColumns.main_job_role_clean_labelled,
-            ],
-            brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
-        )
+        # dataset size
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
         )
+        # complete columns
         .col_vals_not_null(
             columns=[
                 IndCqcColumns.id_per_locationid_import_date,
@@ -109,6 +104,15 @@ def main(
                 IndCqcColumns.estimate_filled_posts,
             ],
             brief="Key columns should contain no null values",
+        )
+        # index columns
+        .rows_distinct(
+            columns_subset=[
+                IndCqcColumns.location_id,
+                IndCqcColumns.cqc_location_import_date,
+                IndCqcColumns.main_job_role_clean_labelled,
+            ],
+            brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
         )
         .col_vals_expr(
             expr=(
@@ -124,6 +128,7 @@ def main(
             ),
             brief="id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
         )
+        # categorical
         .col_vals_in_set(
             IndCqcColumns.estimate_filled_posts_source,
             CatValues.estimate_filled_posts_source_column_values.categorical_values,
@@ -132,6 +137,7 @@ def main(
             IndCqcColumns.primary_service_type,
             CatValues.primary_service_type_column_values.categorical_values,
         )
+        # distinct values
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.estimate_filled_posts_source,
@@ -155,6 +161,7 @@ def main(
             ),
             brief="main_job_role_clean_labelled should only contain recognised job role categories",
         )
+        # numerical
         .col_vals_gt(
             columns=[
                 IndCqcColumns.estimate_filled_posts,
@@ -172,7 +179,7 @@ def main(
         )
         .interrogate()
     )
-    vl.write_reports(key_validation, bucket_name, reports_path)
+    vl.write_reports(validation, bucket_name, reports_path)
 
 
 if __name__ == "__main__":
