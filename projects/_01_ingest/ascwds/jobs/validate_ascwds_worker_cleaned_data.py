@@ -19,13 +19,13 @@ def main(cleaned_ascwds_worker_source: str, report_destination: str):
     # count distinct values in job role column.
     print(
         cleaned_ascwds_worker_df.select(
-            "main_job_role_clean_labelled",
+            "mainjrid_clean_labels",
         ).distinct()
     )
 
     print(
         cleaned_ascwds_worker_df.select(
-            "main_job_role_clean_labelled",
+            "mainjrid_clean_labels",
         )
         .distinct()
         .count()
