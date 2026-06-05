@@ -233,6 +233,9 @@ class EstimatedIndCQCFilledPostsByJobRoleCategoricalValues:
     ascwds_filtering_rule_column_values = AscwdsFilteringRule(
         IndCQC.ascwds_filtering_rule
     )
+    main_job_role_labels_column_values = MainJobRoleLabels(
+        AWKClean.main_job_role_clean_labelled
+    )
 
 
 @dataclass
