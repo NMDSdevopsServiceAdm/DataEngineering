@@ -250,7 +250,10 @@ def create_check_of_number_of_distinct_values(
     )
     check = check.hasNumberOfDistinctValues(
         column=column_name,
-        assertion=lambda x: int(x) == distinct_values,
+        assertion=lambda x: (
+            print(f"Deequ value: {x}, expected: {distinct_values}")
+            or (x == distinct_values)
+        ),
         binningUdf=None,
         maxBins=None,
         hint=f"The number of distinct values in {column_name} should be {distinct_values}.",
