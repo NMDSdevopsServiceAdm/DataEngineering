@@ -28,7 +28,9 @@ class ASCWDSWorkerCleanedValidationRules:
             AWKClean.main_job_role_clean_labelled: CatValues.main_job_role_labels_column_values.categorical_values,
         },
         RuleName.distinct_values: {
-            AWKClean.main_job_role_clean: CatValues.main_job_role_id_column_values.count_of_categorical_values,
+            AWKClean.main_job_role_clean: (
+                CatValues.main_job_role_id_column_values.count_of_categorical_values - 2
+            ),  # Subtracting 2 because tecnician and care navigator raw worker codes get recoded before labels are applied. Therfore have no labels in class.
             AWKClean.main_job_role_clean_labelled: CatValues.main_job_role_labels_column_values.count_of_categorical_values,
         },
     }
