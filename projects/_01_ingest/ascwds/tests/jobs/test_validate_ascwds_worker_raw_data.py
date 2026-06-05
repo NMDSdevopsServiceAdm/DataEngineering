@@ -10,6 +10,8 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
 )
 from tests.base_test import SparkBaseTest
 
+PATCH_PATH = "projects._01_ingest.ascwds.jobs.validate_ascwds_worker_raw_data"
+
 
 class ValidateASCWDSWorkerRawDatasetTests(SparkBaseTest):
     TEST_ASCWDS_WORKER_RAW_SOURCE = "some/other/directory"
@@ -19,19 +21,27 @@ class ValidateASCWDSWorkerRawDatasetTests(SparkBaseTest):
         self.test_raw_ascwds_worker_df = self.spark.createDataFrame(
             Data.raw_ascwds_worker_rows, Schemas.raw_ascwds_worker_schema
         )
+        self.test_validated_ascwds_worker_df = self.spark.createDataFrame(
+            Data.validated_ascwds_worker_rows, Schemas.validated_ascwds_worker_schema
+        )
 
 
 class MainTests(ValidateASCWDSWorkerRawDatasetTests):
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.raise_exception_if_any_checks_failed")
+    @patch(f"{PATCH_PATH}.validate_dataset")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
+        validate_dataset_patch: Mock,
+        raise_exception_if_any_checks_failed_patch: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_raw_ascwds_worker_df,
         ]
+        validate_dataset_patch.side_effect = [self.test_validated_ascwds_worker_df]
 
         job.main(
             self.TEST_ASCWDS_WORKER_RAW_SOURCE,
@@ -39,6 +49,8 @@ class MainTests(ValidateASCWDSWorkerRawDatasetTests):
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 1)
+        validate_dataset_patch.assert_called_once()
+        raise_exception_if_any_checks_failed_patch.assert_called_once()
         self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 

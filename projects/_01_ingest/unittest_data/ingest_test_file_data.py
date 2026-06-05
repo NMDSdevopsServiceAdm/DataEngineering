@@ -747,6 +747,10 @@ class ValidateASCWDSWorkerRawData:
         ("estab_2", "20240109", "worker_4", "8"),
     ]
 
+    validated_ascwds_worker_rows = [
+        ("complete_columns", "Warning", "Success", "CompletenessConstraint", "Success", None),
+    ] # fmt: skip
+
 
 @dataclass
 class ValidateASCWDSWorkplaceCleanedData:
@@ -766,6 +770,10 @@ class ValidateASCWDSWorkerCleanedData:
         ("estab_1", date(2024, 1, 9), "worker_3", "8", "Care Worker"),
         ("estab_2", date(2024, 1, 9), "worker_4", "8", "Care Worker"),
     ]
+
+    validated_cleaned_ascwds_worker_rows = [
+        ("complete_columns", "Warning", "Success", "CompletenessConstraint", "Success", None),
+    ] # fmt: skip
 
 
 @dataclass
