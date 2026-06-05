@@ -3,41 +3,29 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.5"
 
+from pyspark.sql.dataframe import DataFrame
+
 from utils import utils
-from utils.column_values.categorical_columns_by_dataset import (
-    ASCWDSWorkerCleanedCategoricalValues as CatValues,
-)
 from utils.validation.validation_rules.ascwds_worker_cleaned_validation_rules import (
     ASCWDSWorkerCleanedValidationRules as Rules,
 )
-from utils.validation.validation_utils import validate_dataset
+from utils.validation.validation_utils import (
+    raise_exception_if_any_checks_failed,
+    validate_dataset,
+)
 
 
 def main(cleaned_ascwds_worker_source: str, report_destination: str):
     cleaned_ascwds_worker_df = utils.read_from_parquet(cleaned_ascwds_worker_source)
-
-    # count distinct values in job role column.
-    print(
-        cleaned_ascwds_worker_df.select(
-            "mainjrid_clean_labels",
-        ).distinct()
-    )
-
-    print(
-        cleaned_ascwds_worker_df.select(
-            "mainjrid_clean_labels",
-        )
-        .distinct()
-        .count()
-    )
-
-    print(CatValues.main_job_role_labels_column_values.count_of_categorical_values)
 
     rules = Rules.rules_to_check
 
     check_result_df = validate_dataset(cleaned_ascwds_worker_df, rules)
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
+
+    if isinstance(check_result_df, DataFrame):
+        raise_exception_if_any_checks_failed(check_result_df)
 
 
 if __name__ == "__main__":
