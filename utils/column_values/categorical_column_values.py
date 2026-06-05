@@ -200,7 +200,6 @@ class MainJobRoleLabels(ColumnValues):
     occupational_therapist: str = "occupational_therapist"
     registered_nurse: str = "registered_nurse"
     allied_health_professional: str = "allied_health_professional"
-    technician: str = "technician"
     other_care_role: str = "other_care_role"
     other_managerial_staff: str = (
         "managers_and_staff_in_care_related_but_not_care_providing_roles"
