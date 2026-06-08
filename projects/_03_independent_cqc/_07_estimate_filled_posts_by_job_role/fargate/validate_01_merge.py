@@ -9,9 +9,6 @@ from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_columns_by_dataset import (
-    ASCWDSWorkerCleanedCategoricalValues as ASCWDSWorkerCatValues,
-)
-from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
@@ -174,20 +171,20 @@ def main(
             brief="estimate_filled_posts and ascwds_filled_posts_dedup_clean should be > 0 where present",
         )
         .col_vals_ge(
-            columns=[IndCqcColumns.ascwds_job_role_counts],
+            columns=IndCqcColumns.ascwds_job_role_counts,
             value=0,
             na_pass=True,
             brief="ascwds_job_role_counts should be >= 0 where present",
         )
         .col_vals_le(
-            columns=[IndCqcColumns.ascwds_job_role_counts],
-            value=IndCqcColumns.estimate_filled_posts,
+            columns=IndCqcColumns.ascwds_job_role_counts,
+            value=pb.col(IndCqcColumns.estimate_filled_posts),
             na_pass=True,
             brief="ascwds_job_role_counts should be <= estimate_filled_posts where present",
         )
         # Date plausibility
         .col_vals_ge(
-            columns=[IndCqcColumns.cqc_location_import_date],
+            columns=IndCqcColumns.cqc_location_import_date,
             value=CQC_EARLIEST_IMPORT_DATE,
             brief=f"cqc_location_import_date should not be before {CQC_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
         )
