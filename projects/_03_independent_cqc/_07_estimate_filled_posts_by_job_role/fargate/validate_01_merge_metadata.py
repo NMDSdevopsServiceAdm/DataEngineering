@@ -66,9 +66,7 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.id_per_locationid_import_date: "UInt32",
         IndCqcColumns.name: "String",
         IndCqcColumns.provider_id: "String",
-        IndCqcColumns.primary_service_type_second_level: str(
-            CategoricalColumnTypes.PrimaryServiceEnumType
-        ),
+        IndCqcColumns.primary_service_type_second_level: "Categorical",
         IndCqcColumns.care_home: "Categorical",
         IndCqcColumns.dormancy: "Categorical",
         IndCqcColumns.number_of_beds: "Int16",
