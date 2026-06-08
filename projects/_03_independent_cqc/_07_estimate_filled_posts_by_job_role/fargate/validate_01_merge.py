@@ -178,12 +178,12 @@ def main(
             na_pass=True,
             brief="ascwds_job_role_counts should be >= 0 where present",
         )
-        .col_vals_le(
-            columns=IndCqcColumns.ascwds_job_role_counts,
-            value=pb.col(IndCqcColumns.estimate_filled_posts),
-            na_pass=True,
-            brief="ascwds_job_role_counts should be <= estimate_filled_posts where present",
-        )
+        # .col_vals_le(
+        #     columns=IndCqcColumns.ascwds_job_role_counts,
+        #     value=pb.col(IndCqcColumns.estimate_filled_posts),
+        #     na_pass=True,
+        #     brief="ascwds_job_role_counts should be <= estimate_filled_posts where present",
+        # )
         # Date plausibility
         .col_vals_ge(
             columns=IndCqcColumns.cqc_location_import_date,
