@@ -4,7 +4,7 @@ from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
 from utils.column_values.categorical_columns_by_dataset import (
-    ASCWDSWorkerCleanedCategoricalValues as CatValues,
+    ASCWDSWorkerRawCategoricalValues as CatValues,
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
