@@ -6,10 +6,10 @@ from dateutil.relativedelta import relativedelta
 
 from polars_utils import utils
 from polars_utils.validation import actions as vl
-from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from projects._01_ingest.cqc_api.utils.validate_cqc_locations import (
+from polars_utils.validation.actions import (
     add_list_column_validation_check_flags,
 )
+from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     CategoricalColumnTypes,
 )
