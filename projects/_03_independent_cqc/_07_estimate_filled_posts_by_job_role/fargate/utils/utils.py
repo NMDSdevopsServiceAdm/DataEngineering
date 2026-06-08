@@ -1,12 +1,12 @@
+from dataclasses import dataclass
 from datetime import date
 
 import polars as pl
-from dataclasses import dataclass
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
-    MainJobRoleLabels,
     EstimateFilledPostsSource,
+    MainJobRoleLabels,
     PrimaryServiceType,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
@@ -58,17 +58,10 @@ def add_job_role_groups_column(
         ),
     }
     job_role_group_schema = {
-        IndCQC.main_job_role_clean_labelled: pl.Enum(
-            AscwdsWorkerValueLabelsJobGroup.all_roles()
-        ),
-        job_group_column_name: pl.Enum(
-            list(
-                set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values())
-            )
-        ),
+        IndCQC.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
+        job_group_column_name: CategoricalColumnTypes.JobGroupEnumType,
     }
     job_role_group_lf = pl.LazyFrame(job_role_group_data, schema=job_role_group_schema)
-
     lf = lf.join(job_role_group_lf, on=IndCQC.main_job_role_clean_labelled, how="left")
     return lf
 
@@ -213,7 +206,7 @@ class HistoricJobRoleAdjustmentConfig:
 
 
 @dataclass
-class CatagoricalColumnTypes:
+class CategoricalColumnTypes:
     LocationCatType = pl.Categorical(
         pl.Categories("location", namespace="filled_posts")
     )
@@ -221,6 +214,7 @@ class CatagoricalColumnTypes:
         pl.Categories("establishment", namespace="filled_posts")
     )
     JobRoleEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
+    JobGroupEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_job_groups())
     EstimatesFilledPostSourceEnumType = pl.Enum(
         [
             EstimateFilledPostsSource.imputed_pir_filled_posts_model,
@@ -238,4 +232,9 @@ class CatagoricalColumnTypes:
             PrimaryServiceType.care_home_with_nursing,
             PrimaryServiceType.non_residential,
         ]
+    )
+    JobRoleFilteringRuleCatType = pl.Categorical(
+        pl.Categories(
+            "job_role_filtering_rule", namespace="filled_posts", physical=pl.UInt8
+        )
     )

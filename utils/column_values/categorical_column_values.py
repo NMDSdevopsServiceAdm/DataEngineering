@@ -6,7 +6,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 @dataclass
 class ColumnValues:
     column_name: str
-    value_to_remove: str = None
+    value_to_remove: str | list[str] = None
     contains_null_values: bool = False
 
     def __post_init__(self):
@@ -20,8 +20,14 @@ class ColumnValues:
         dict_values.pop("value_to_remove")
         dict_values.pop("contains_null_values")
         list_values = list(dict_values.values())
-        if value_to_remove in list_values:
-            list_values.remove(value_to_remove)
+
+        if isinstance(value_to_remove, str):
+            if value_to_remove in list_values:
+                list_values.remove(value_to_remove)
+        elif isinstance(value_to_remove, list):
+            for i in value_to_remove:
+                list_values.remove(i)
+
         return list_values
 
     def count_values(self) -> int:
@@ -200,7 +206,6 @@ class MainJobRoleLabels(ColumnValues):
     occupational_therapist: str = "occupational_therapist"
     registered_nurse: str = "registered_nurse"
     allied_health_professional: str = "allied_health_professional"
-    technician: str = "technician"
     other_care_role: str = "other_care_role"
     other_managerial_staff: str = (
         "managers_and_staff_in_care_related_but_not_care_providing_roles"
@@ -597,3 +602,15 @@ class NumericTrueFalse(ColumnValues):
 
     true: int = 1
     false: int = 2
+
+
+@dataclass
+class JobRoleFilteringRule(ColumnValues):
+    """The possible reasons or filtering job role data"""
+
+    populated: str = "populated"
+    missing_raw_data: str = "missing_raw_data"
+    missing_direct_care_or_managers_and_profs: str = (
+        "missing_direct_care_or_managers_and_professionals"
+    )
+    job_role_group_is_outlier: str = "job_role_group_is_outlier"

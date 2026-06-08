@@ -1,14 +1,18 @@
 import polars as pl
 
+import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils as cUtils
 from polars_utils import utils
-from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils import (
-    nullify_job_role_count_when_source_not_ascwds,
-    filter_job_role_group_outliers,
+from polars_utils.filtering_utils import (
+    add_filtering_rule_column,
 )
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
-    CatagoricalColumnTypes as CatColType,
+    CategoricalColumnTypes as CatColType,
+)
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    add_job_role_groups_column,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import JobRoleFilteringRule
 
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
@@ -45,20 +49,41 @@ def main(
         utils.cast_to_schema(estimates_by_job_role_schema)
     )
     print("Merged LazyFrame read in")
-
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
         IndCQC.id_per_locationid_import_date_job_role
     )
 
-    estimated_job_role_posts_lf = nullify_job_role_count_when_source_not_ascwds(
+    estimated_job_role_posts_lf = cUtils.nullify_job_role_count_when_source_not_ascwds(
         estimated_job_role_posts_lf
     ).drop(
         IndCQC.estimate_filled_posts_source,
         IndCQC.ascwds_filled_posts_dedup_clean,
     )
 
-    estimated_job_role_posts_lf = filter_job_role_group_outliers(
+    estimated_job_role_posts_lf = add_job_role_groups_column(
+        estimated_job_role_posts_lf, IndCQC.main_job_group_labelled
+    )
+
+    estimated_job_role_posts_lf = add_filtering_rule_column(
+        estimated_job_role_posts_lf,
+        filter_rule_col_name=IndCQC.job_role_filtering_rule,
+        col_to_filter=IndCQC.ascwds_job_role_counts,
+        populated_rule=JobRoleFilteringRule.populated,
+        missing_rule=JobRoleFilteringRule.missing_raw_data,
+        categorical_type=CatColType.JobRoleFilteringRuleCatType,
+    )
+
+    estimated_job_role_posts_lf = cUtils.filter_job_role_group_equal_zero(
         estimated_job_role_posts_lf
+    )
+
+    estimated_job_role_posts_lf = cUtils.filter_job_role_group_outliers(
+        estimated_job_role_posts_lf
+    )
+
+    # Drop job role group as this will be reallocated in later job
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.drop(
+        IndCQC.main_job_group_labelled
     )
 
     utils.sink_to_parquet(

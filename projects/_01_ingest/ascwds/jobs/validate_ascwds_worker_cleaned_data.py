@@ -1,6 +1,8 @@
 import os
 import sys
 
+from pyspark.sql.dataframe import DataFrame
+
 os.environ["SPARK_VERSION"] = "3.5"
 
 from utils import utils
@@ -8,6 +10,7 @@ from utils.validation.validation_rules.ascwds_worker_cleaned_validation_rules im
     ASCWDSWorkerCleanedValidationRules as Rules,
 )
 from utils.validation.validation_utils import (
+    raise_exception_if_any_checks_failed,
     validate_dataset,
 )
 
@@ -20,6 +23,8 @@ def main(cleaned_ascwds_worker_source: str, report_destination: str):
     check_result_df = validate_dataset(cleaned_ascwds_worker_df, rules)
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
+
+    raise_exception_if_any_checks_failed(check_result_df)
 
 
 if __name__ == "__main__":

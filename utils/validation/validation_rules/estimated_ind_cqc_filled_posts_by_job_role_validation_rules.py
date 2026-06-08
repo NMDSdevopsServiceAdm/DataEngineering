@@ -62,7 +62,6 @@ class EstimatedIndCqcFilledPostsByJobRoleValidationRules:
             MainJobRoleLabels.supervisor,
             MainJobRoleLabels.support_worker,
             MainJobRoleLabels.team_leader,
-            MainJobRoleLabels.technician,
         ],
         RuleName.index_columns: [
             IndCqcColumns.location_id,
@@ -114,7 +113,6 @@ class EstimatedIndCqcFilledPostsByJobRoleValidationRules:
             MainJobRoleLabels.supervisor: min_value,
             MainJobRoleLabels.support_worker: min_value,
             MainJobRoleLabels.team_leader: min_value,
-            MainJobRoleLabels.technician: min_value,
         },
         RuleName.max_values: {
             # IndCqcColumns.national_percentage_care_worker_filled_posts: 0.69,  # Analysis from April 2025 showed 64%, therefore lower limit is 5 points more.
@@ -160,6 +158,5 @@ class EstimatedIndCqcFilledPostsByJobRoleValidationRules:
             MainJobRoleLabels.supervisor: max_value,
             MainJobRoleLabels.support_worker: max_value,
             MainJobRoleLabels.team_leader: max_value,
-            MainJobRoleLabels.technician: max_value,
         },
     }

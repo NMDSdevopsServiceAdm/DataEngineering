@@ -1,12 +1,14 @@
 import polars as pl
 
+from polars_utils.filtering_utils import update_filtering_rule
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
-    add_job_role_groups_column,
+    CategoricalColumnTypes as CatColType,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     JobGroupLabels,
+    JobRoleFilteringRule,
 )
 
 
@@ -58,13 +60,13 @@ def filter_job_role_group_outliers(
     - managers/regulated professions/other outside upper percentile
 
     The steps are as follows:
-    1. Map job roles to job groups
-    2. Pivot table and aggregate to job group
-    3. Calculate total ASCWDS count for location, service type and date
-    4. Calculate job group percentage of total ASCWDS count for location, service type and date
-    5. Calculate upper and lower percentile bounds of job group percentages for each job group and primary service type
-    6. Flag where job role percentage is outside bounds
-    7. Null ascwds_job_role_counts_column
+    1. Pivot table and aggregate to job group
+    2. Calculate total ASCWDS count for location, service type and date
+    3. Calculate job group percentage of total ASCWDS count for location, service type and date
+    4. Calculate upper and lower percentile bounds of job group percentages for each job group and primary service type
+    5. Flag where job role percentage is outside bounds
+    6. Null ascwds_job_role_counts_column
+    7. Update filtering rule
 
     Args:
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
@@ -74,8 +76,8 @@ def filter_job_role_group_outliers(
     Returns:
         pl.LazyFrame: LazyFrame with outliers in job role groups filtered.
     """
-    # Define temporary column names
-    temp_job_group_column = "job_group"
+    temp_out_of_bounds_col: str = "location_out_of_bounds"
+
     Exprs = FilterJobRoleGroupExpressions(
         upper_percentile_bound, lower_percentile_bound
     )
@@ -88,27 +90,24 @@ def filter_job_role_group_outliers(
         IndCQC.id_per_locationid_import_date,
     ]
 
-    # 1. Map job roles to job groups
-    lf = add_job_role_groups_column(lf, temp_job_group_column)
-
-    # 2. Pivot table and aggregate to job group
+    # 1. Pivot table and aggregate to job group
     piv_lf = (
         lf.pivot(
-            on=temp_job_group_column,
+            on=IndCQC.main_job_group_labelled,
             on_columns=Exprs.job_group_cols,
             index=splits_for_pivot,
             values=IndCQC.ascwds_job_role_counts,
             aggregate_function="sum",
         )
-        .with_columns(  # 3. Calculate total ASCWDS count for location, service type and date.
+        .with_columns(  # 2. Calculate total ASCWDS count for location, service type and date.
             Exprs.location_sum_expr
         )
-        .with_columns(  # 4. Calculate job group percentage of total ASCWDS count for location, service type and date.
+        .with_columns(  # 3. Calculate job group percentage of total ASCWDS count for location, service type and date.
             Exprs.job_group_percentage_expr
         )
     )
 
-    # 5. Calculate upper and lower percentile bounds of job group percentages for each job group and primary service type.
+    # 4. Calculate upper and lower percentile bounds of job group percentages for each job group and primary service type.
     bounds_lf = piv_lf.group_by(IndCQC.primary_service_type).agg(
         Exprs.upper_bounds_expr,
         Exprs.lower_bounds_expr,
@@ -120,27 +119,31 @@ def filter_job_role_group_outliers(
             on=IndCQC.primary_service_type,
             how="left",
         )
-        .with_columns(  # 6. Flag where job role percentage is outside bounds.
-            pl.when(Exprs.evaluation_expr)
-            .then(pl.lit(True))
-            .otherwise(pl.lit(False))
-            .cast(pl.Boolean)
-            .alias(IndCQC.job_group_dist_out_of_bounds)
-        )
-        .select(
-            IndCQC.id_per_locationid_import_date, IndCQC.job_group_dist_out_of_bounds
+        # 5. Flag where job role percentage is outside bounds.
+        .with_columns(Exprs.evaluation_expr.alias(temp_out_of_bounds_col)).select(
+            IndCQC.id_per_locationid_import_date, temp_out_of_bounds_col
         )
     )
 
     lf = (
         lf.join(piv_lf, on=IndCQC.id_per_locationid_import_date, how="left")
-        .with_columns(  # 7. Null ascwds_job_role_counts_column
-            pl.when(pl.col(IndCQC.job_group_dist_out_of_bounds))
+        .with_columns(  # 6. Null ascwds_job_role_counts_column
+            pl.when(pl.col(temp_out_of_bounds_col))
             .then(None)
             .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
             .alias(IndCQC.ascwds_job_role_counts)
         )
-        .drop(temp_job_group_column)
+        .drop(temp_out_of_bounds_col)
+    )
+
+    lf = update_filtering_rule(  # 7. Add filtering rule
+        lf,
+        filter_rule_col_name=IndCQC.job_role_filtering_rule,
+        raw_col_name=IndCQC.ascwds_job_role_counts,
+        clean_col_name=IndCQC.ascwds_job_role_counts,
+        populated_rule=JobRoleFilteringRule.populated,
+        new_rule_name=JobRoleFilteringRule.job_role_group_is_outlier,
+        categorical_type=CatColType.JobRoleFilteringRuleCatType,
     )
     return lf
 
@@ -228,3 +231,62 @@ class FilterJobRoleGroupExpressions:
             .quantile(lower_percentile_bound, interpolation="linear")
             .name.suffix(self.lower_bound_suffix)
         )
+
+
+def filter_job_role_group_equal_zero(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Null job role counts at locations with zero direct care or managers +
+    regulated professions is zero.
+
+    Args:
+        lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
+
+    Returns:
+        pl.LazyFrame: LazyFrame with 'ascwds_job_role_counts' conditionally nulled.
+    """
+    temp_equals_zero_col = "job_role_groups_equal_zero"
+    job_group_cols = [
+        JobGroupLabels.direct_care,
+        JobGroupLabels.managers,
+        JobGroupLabels.regulated_professions,
+    ]
+
+    # 1. Pivot job roles
+    piv_lf = lf.pivot(
+        on=IndCQC.main_job_group_labelled,
+        on_columns=job_group_cols,
+        index=IndCQC.id_per_locationid_import_date,
+        values=IndCQC.ascwds_job_role_counts,
+        aggregate_function="sum",
+    )
+
+    # 2. Evaluate rows
+    piv_lf = piv_lf.with_columns(
+        (
+            (pl.col(JobGroupLabels.direct_care) == pl.lit(0))
+            | (
+                (pl.col(JobGroupLabels.regulated_professions) == pl.lit(0))
+                & (pl.col(JobGroupLabels.managers) == pl.lit(0))
+            )
+        ).alias(temp_equals_zero_col)
+    ).select(IndCQC.id_per_locationid_import_date, temp_equals_zero_col)
+
+    lf = lf.join(piv_lf, on=IndCQC.id_per_locationid_import_date, how="left")
+    lf = lf.with_columns(
+        pl.when(pl.col(temp_equals_zero_col))
+        .then(None)
+        .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
+        .alias(IndCQC.ascwds_job_role_counts)
+    ).drop(temp_equals_zero_col)
+
+    # 3. Update rules column
+    lf = update_filtering_rule(  # 7. Add filtering rule
+        lf,
+        filter_rule_col_name=IndCQC.job_role_filtering_rule,
+        raw_col_name=IndCQC.ascwds_job_role_counts,
+        clean_col_name=IndCQC.ascwds_job_role_counts,
+        populated_rule=JobRoleFilteringRule.populated,
+        new_rule_name=JobRoleFilteringRule.missing_direct_care_or_managers_and_profs,
+        categorical_type=CatColType.JobRoleFilteringRuleCatType,
+    )
+    return lf

@@ -1,19 +1,20 @@
 import unittest
+
 import polars as pl
 import polars.testing as pl_testing
 import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils as job
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import (
-    EstimateFilledPostsSource,
-    JobGroupLabels,
-)
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     EstimateFilledPostsByJobRoleCleanUtilsData as Data,
 )
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     EstimateFilledPostsByJobRoleCleanUtilsSchemas as Schemas,
+)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import (
+    EstimateFilledPostsSource,
+    JobGroupLabels,
 )
 
 
@@ -139,18 +140,21 @@ class TestFilterJobRoleGroupExpressions:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     def test_evaluation_expression(self):
-        expected_lf = pl.LazyFrame(
+        test_lf = pl.LazyFrame(
             Data.test_evaluation_expr_rows,
             Schemas.test_evaluation_expr_schema,
             orient="row",
         )
-        test_lf = expected_lf.drop("location_out_of_bounds")
+        expected_lf = pl.LazyFrame(
+            Data.expected_evaluation_expr_rows,
+            Schemas.test_evaluation_expr_schema,
+            orient="row",
+        )
         returned_lf = test_lf.with_columns(
             pl.when(self.TestExprs.evaluation_expr)
-            .then(pl.lit(True))
-            .otherwise(pl.lit(False))
-            .cast(pl.Boolean)
-            .alias("location_out_of_bounds")
+            .then(None)
+            .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
+            .alias(IndCQC.ascwds_job_role_counts)
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
@@ -168,3 +172,30 @@ class TestFilterJobRoleGroupExpressions:
             self.TestExprs.upper_bounds_expr, self.TestExprs.lower_bounds_expr
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
+class TestFilterJobRoleGroupsEqualZero:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.filter_job_role_group_equal_zero_test_cases
+        ],
+    )
+    def test_function_returns_expected_values(self, case):
+        test_lf = pl.LazyFrame(
+            case.test_data,
+            Schemas.test_job_role_group_equal_zero_schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_data,
+            Schemas.test_job_role_group_equal_zero_schema,
+            orient="row",
+        )
+
+        returned_lf = job.filter_job_role_group_equal_zero(test_lf)
+
+        pl_testing.assert_frame_equal(
+            returned_lf, expected_lf, check_column_order=False, check_row_order=False
+        )
