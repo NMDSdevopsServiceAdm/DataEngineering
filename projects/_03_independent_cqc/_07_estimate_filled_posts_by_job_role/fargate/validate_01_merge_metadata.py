@@ -255,20 +255,23 @@ def main(
         )
         # Date plausibility
         .col_vals_ge(
-            columns=[IndCqcColumns.ascwds_workplace_import_date],
+            columns=IndCqcColumns.ascwds_workplace_import_date,
             value=ASCWDS_IMPORT_DATE_LIMIT,
             brief=f"ascwds_workplace_import_date should not be before {ASCWDS_IMPORT_DATE_LIMIT.strftime('%d/%m/%Y')}",
         )
         .col_vals_ge(
-            columns=[IndCqcColumns.imputed_registration_date],
+            columns=IndCqcColumns.imputed_registration_date,
             value=CQC_REGISTRATION_DATE_LIMIT,
             brief=f"imputed_registration_date should not be before {CQC_REGISTRATION_DATE_LIMIT.strftime('%d/%m/%Y')}",
         )
-        # .col_vals_ge(
-        #     columns=[IndCqcColumns.current_ons_import_date],
-        #     value=ONS_IMPORT_DATE_LIMIT,
-        #     brief=f"current_ons_import_date should not be more than 13 months ago (not before {ONS_IMPORT_DATE_LIMIT.strftime('%d/%m/%Y')})",
-        # )
+        .col_vals_ge(
+            columns=IndCqcColumns.current_ons_import_date,
+            value=ONS_IMPORT_DATE_LIMIT,
+            actions=pb.Actions(
+                Warning="current_ons_import_date is more than 13 months old"
+            ),
+            brief=f"current_ons_import_date should not be more than 13 months ago (not before {ONS_IMPORT_DATE_LIMIT.strftime('%d/%m/%Y')})",
+        )
         # Numeric range — strictly positive (nulls allowed)
         .col_vals_gt(
             columns=[
