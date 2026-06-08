@@ -83,7 +83,9 @@ def main(
             actions=GLOBAL_ACTIONS,
         )
         # dataset schema
-        .col_schema_match(schema=EXPECTED_SCHEMA)
+        .col_schema_match(
+            schema=EXPECTED_SCHEMA, brief="Dataset should match the expected schema"
+        )
         # dataset size
         .row_count_match(
             expected_row_count,

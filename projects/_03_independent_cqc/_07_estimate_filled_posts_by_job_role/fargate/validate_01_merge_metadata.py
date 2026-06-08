@@ -16,16 +16,20 @@ from utils.value_labels.ons_pd.onspd_lsoa21 import OnspdLsoa21
 from utils.value_labels.ons_pd.onspd_msoa21 import OnspdMsoa21
 
 VALIDATION_COLS_TO_IMPORT = [
+    IndCqcColumns.id_per_locationid_import_date,
     IndCqcColumns.name,
     IndCqcColumns.provider_id,
-    IndCqcColumns.id_per_locationid_import_date,
+    IndCqcColumns.services_offered,
+    IndCqcColumns.primary_service_type_second_level,
+    IndCqcColumns.care_home,
+    IndCqcColumns.dormancy,
+    IndCqcColumns.number_of_beds,
     IndCqcColumns.imputed_registration_date,
     IndCqcColumns.ascwds_workplace_import_date,
-    IndCqcColumns.current_ons_import_date,
-    IndCqcColumns.services_offered,
-    IndCqcColumns.care_home,
-    IndCqcColumns.primary_service_type_second_level,
+    IndCqcColumns.ascwds_filled_posts_dedup_clean,
+    IndCqcColumns.ascwds_pir_merged,
     IndCqcColumns.ascwds_filtering_rule,
+    IndCqcColumns.current_ons_import_date,
     IndCqcColumns.current_cssr,
     IndCqcColumns.current_region,
     IndCqcColumns.current_icb,
@@ -33,10 +37,6 @@ VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.current_lsoa21,
     IndCqcColumns.current_msoa21,
     IndCqcColumns.estimate_filled_posts_source,
-    IndCqcColumns.dormancy,
-    IndCqcColumns.ascwds_filled_posts_dedup_clean,
-    IndCqcColumns.ascwds_pir_merged,
-    IndCqcColumns.number_of_beds,
     IndCqcColumns.worker_records_bounded,
 ]
 
@@ -45,22 +45,26 @@ ind_cqc_estimates_cols_to_import = [
     IndCqcColumns.cqc_location_import_date,
 ]
 
-ASCWDS_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
-CQC_EARLIEST_REGISTRATION_DATE = date(2010, 9, 13)
-ons_not_before = date.today() - relativedelta(months=13)
+ASCWDS_IMPORT_DATE_LIMIT = date(2013, 3, 1)
+CQC_REGISTRATION_DATE_LIMIT = date(2010, 9, 13)
+ONS_IMPORT_DATE_LIMIT = date.today() - relativedelta(months=13)
 
 EXPECTED_SCHEMA = pb.Schema(
     columns={
+        IndCqcColumns.id_per_locationid_import_date: "UInt32",
         IndCqcColumns.name: "String",
         IndCqcColumns.provider_id: "String",
-        IndCqcColumns.id_per_locationid_import_date: "UInt32",
+        IndCqcColumns.services_offered: "List(String)",
+        IndCqcColumns.primary_service_type_second_level: "String",
+        IndCqcColumns.care_home: "String",
+        IndCqcColumns.dormancy: "String",
+        IndCqcColumns.number_of_beds: "Int16",
         IndCqcColumns.imputed_registration_date: "Date",
         IndCqcColumns.ascwds_workplace_import_date: "Date",
-        IndCqcColumns.current_ons_import_date: "Date",
-        IndCqcColumns.services_offered: "List(String)",
-        IndCqcColumns.care_home: "String",
-        IndCqcColumns.primary_service_type_second_level: "String",
+        IndCqcColumns.ascwds_filled_posts_dedup_clean: "Float32",
+        IndCqcColumns.ascwds_pir_merged: "Float32",
         IndCqcColumns.ascwds_filtering_rule: "String",
+        IndCqcColumns.current_ons_import_date: "Date",
         IndCqcColumns.current_cssr: "String",
         IndCqcColumns.current_region: "String",
         IndCqcColumns.current_icb: "String",
@@ -68,10 +72,6 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.current_lsoa21: "String",
         IndCqcColumns.current_msoa21: "String",
         IndCqcColumns.estimate_filled_posts_source: "String",
-        IndCqcColumns.dormancy: "String",
-        IndCqcColumns.ascwds_filled_posts_dedup_clean: "Float32",
-        IndCqcColumns.ascwds_pir_merged: "Float32",
-        IndCqcColumns.number_of_beds: "Int16",
         IndCqcColumns.worker_records_bounded: "Int16",
     }
 )
@@ -101,6 +101,8 @@ def main(
         selected_columns=ind_cqc_estimates_cols_to_import,
     )
 
+    print(f"Source df dtypes:\n{source_df.dtypes}")
+
     validation = (
         pb.Validate(
             data=source_df,
@@ -111,7 +113,7 @@ def main(
         )
         # Schema check
         .col_schema_match(
-            schema=EXPECTED_SCHEMA, brief="All columns have the expected data types"
+            schema=EXPECTED_SCHEMA, brief="Dataset should match the expected schema"
         )
         # Dataset size
         .row_count_match(
@@ -123,25 +125,22 @@ def main(
         )
         # Uniqueness
         .rows_distinct(
-            columns_subset=[IndCqcColumns.id_per_locationid_import_date],
+            columns_subset=IndCqcColumns.id_per_locationid_import_date,
             brief="Primary key (id_per_locationid_import_date) should be unique",
         )
         # Completeness (no nulls)
         .col_vals_not_null(
             columns=[
                 IndCqcColumns.id_per_locationid_import_date,
-            ],
-            brief="Required columns should contain no null values",
-        )
-        # Completeness (no nulls)
-        .col_vals_not_null(
-            columns=[
                 IndCqcColumns.name,
                 IndCqcColumns.provider_id,
                 IndCqcColumns.services_offered,
-                IndCqcColumns.care_home,
                 IndCqcColumns.primary_service_type_second_level,
+                IndCqcColumns.care_home,
+                IndCqcColumns.imputed_registration_date,
+                IndCqcColumns.ascwds_workplace_import_date,
                 IndCqcColumns.ascwds_filtering_rule,
+                IndCqcColumns.current_ons_import_date,
                 IndCqcColumns.current_cssr,
                 IndCqcColumns.current_region,
                 IndCqcColumns.current_icb,
@@ -154,16 +153,16 @@ def main(
         )
         # Categorical values
         .col_vals_in_set(
-            IndCqcColumns.estimate_filled_posts_source,
-            CatValues.estimate_filled_posts_source_column_values.categorical_values,
-        )
-        .col_vals_in_set(
             IndCqcColumns.primary_service_type_second_level,
             CatValues.primary_service_type_second_level_column_values.categorical_values,
         )
         .col_vals_in_set(
             IndCqcColumns.care_home,
             CatValues.care_home_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            IndCqcColumns.dormancy,
+            [*CatValues.dormancy_column_values.categorical_values, None],
         )
         .col_vals_in_set(
             IndCqcColumns.ascwds_filtering_rule,
@@ -194,17 +193,10 @@ def main(
             list(OnspdMsoa21.labels_dict.values()),
         )
         .col_vals_in_set(
-            IndCqcColumns.dormancy,
-            [*CatValues.dormancy_column_values.categorical_values, None],
+            IndCqcColumns.estimate_filled_posts_source,
+            CatValues.estimate_filled_posts_source_column_values.categorical_values,
         )
         # Distinct value counts
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.estimate_filled_posts_source,
-                CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.estimate_filled_posts_source} should have exactly {CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values} distinct values",
-        )
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.primary_service_type_second_level,
@@ -218,6 +210,13 @@ def main(
                 CatValues.care_home_column_values.count_of_categorical_values,
             ),
             brief=f"{IndCqcColumns.care_home} should have exactly {CatValues.care_home_column_values.count_of_categorical_values} distinct values",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.dormancy,
+                CatValues.dormancy_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.dormancy} should have exactly {CatValues.dormancy_column_values.count_of_categorical_values} distinct values",
         )
         .specially(
             vl.is_unique_count_equal(
@@ -249,35 +248,26 @@ def main(
         )
         .specially(
             vl.is_unique_count_equal(
-                IndCqcColumns.dormancy,
-                CatValues.dormancy_column_values.count_of_categorical_values,
+                IndCqcColumns.estimate_filled_posts_source,
+                CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
             ),
-            brief=f"{IndCqcColumns.dormancy} should have exactly {CatValues.dormancy_column_values.count_of_categorical_values} distinct values",
-        )
-        # Completeness (no nulls)
-        .col_vals_not_null(
-            columns=[
-                IndCqcColumns.imputed_registration_date,
-                IndCqcColumns.ascwds_workplace_import_date,
-                IndCqcColumns.current_ons_import_date,
-            ],
-            brief="Required columns should contain no null values",
+            brief=f"{IndCqcColumns.estimate_filled_posts_source} should have exactly {CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values} distinct values",
         )
         # Date plausibility
         .col_vals_ge(
             columns=[IndCqcColumns.ascwds_workplace_import_date],
-            value=ASCWDS_EARLIEST_IMPORT_DATE,
-            brief=f"ascwds_workplace_import_date should not be before {ASCWDS_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
+            value=ASCWDS_IMPORT_DATE_LIMIT,
+            brief=f"ascwds_workplace_import_date should not be before {ASCWDS_IMPORT_DATE_LIMIT.strftime('%d/%m/%Y')}",
         )
         .col_vals_ge(
             columns=[IndCqcColumns.imputed_registration_date],
-            value=CQC_EARLIEST_REGISTRATION_DATE,
-            brief=f"imputed_registration_date should not be before {CQC_EARLIEST_REGISTRATION_DATE.strftime('%d/%m/%Y')}",
+            value=CQC_REGISTRATION_DATE_LIMIT,
+            brief=f"imputed_registration_date should not be before {CQC_REGISTRATION_DATE_LIMIT.strftime('%d/%m/%Y')}",
         )
         # .col_vals_ge(
         #     columns=[IndCqcColumns.current_ons_import_date],
-        #     value=ons_not_before,
-        #     brief=f"current_ons_import_date should not be more than 13 months ago (not before {ons_not_before.strftime('%d/%m/%Y')})",
+        #     value=ONS_IMPORT_DATE_LIMIT,
+        #     brief=f"current_ons_import_date should not be more than 13 months ago (not before {ONS_IMPORT_DATE_LIMIT.strftime('%d/%m/%Y')})",
         # )
         # Numeric range — strictly positive (nulls allowed)
         .col_vals_gt(
