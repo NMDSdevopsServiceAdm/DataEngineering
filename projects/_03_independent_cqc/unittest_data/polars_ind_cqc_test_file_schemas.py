@@ -1435,21 +1435,6 @@ class ImputeJobRoleSchemas:
         IndCQC.ascwds_job_role_rolling_ratio: pl.Float32,
     }
 
-    managerial_adjustment_core_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.registered_manager_names: pl.List,
-        IndCQC.main_job_role_clean_labelled: pl.String,
-        IndCQC.estimate_filled_posts_by_job_role: pl.Float64,
-    }
-
-    managerial_adjustment_expected_schema = managerial_adjustment_core_schema | {
-        # These output columns will be used by different tests.
-        "diff": pl.Float64,
-        "proportions": pl.Float64,
-        "adjusted_estimates": pl.Float64,
-    }
-
 
 @dataclass
 class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:

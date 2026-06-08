@@ -33,7 +33,9 @@ All notable changes to this project will be documented in this file.
 
 - Removed technician from job role labels in utils\column_values\categorical_column_values MainJobRoleLabels.
 
-- Removed PySpark version of Estimates by job Role and all its tests, validation, test data and test schemas as well. 
+- Removed PySpark version of Estimates by job Role and all its tests, validation, test data and test schemas as well.
+
+- Removed old version of job role estimates task and associated code not used elsewhere.
 
 ### Fixed
 - Raw and cleaned ascwds worker validation scripts so they raise exceptions on failure.
