@@ -7,6 +7,9 @@ from dateutil.relativedelta import relativedelta
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    CategoricalColumnTypes,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
@@ -55,7 +58,9 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.name: "String",
         IndCqcColumns.provider_id: "String",
         IndCqcColumns.services_offered: "List(String)",
-        IndCqcColumns.primary_service_type_second_level: "Categorical",
+        IndCqcColumns.primary_service_type_second_level: str(
+            CategoricalColumnTypes.PrimaryServiceEnumType
+        ),
         IndCqcColumns.care_home: "Categorical",
         IndCqcColumns.dormancy: "Categorical",
         IndCqcColumns.number_of_beds: "Int16",
@@ -71,7 +76,9 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.current_rural_urban_indicator_2011: "Categorical",
         IndCqcColumns.current_lsoa21: "Categorical",
         IndCqcColumns.current_msoa21: "Categorical",
-        IndCqcColumns.estimate_filled_posts_source: "Enum(categories=['imputed_pir_filled_posts_model', 'ascwds_pir_merged', 'imputed_posts_care_home_model', 'care_home_model', 'imputed_posts_non_res_combined_model', 'non_res_combined_model', 'posts_rolling_average_model'])",
+        IndCqcColumns.estimate_filled_posts_source: str(
+            CategoricalColumnTypes.EstimatesFilledPostSourceEnumType
+        ),
         IndCqcColumns.worker_records_bounded: "Int16",
     }
 )
