@@ -90,8 +90,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     validate_imputed_ind_cqc_ascwds_and_pir_data_job_name             = module.validate_imputed_ind_cqc_ascwds_and_pir_data_job.job_name
     estimate_ind_cqc_filled_posts_job_name                            = module.estimate_ind_cqc_filled_posts_job.job_name
     validate_estimated_ind_cqc_filled_posts_data_job_name             = module.validate_estimated_ind_cqc_filled_posts_data_job.job_name
-    estimate_ind_cqc_filled_posts_by_job_role_job_name                = module.estimate_ind_cqc_filled_posts_by_job_role_job.job_name
-    validate_estimated_ind_cqc_filled_posts_by_job_role_data_job_name = module.validate_estimated_ind_cqc_filled_posts_by_job_role_data_job.job_name
     diagnostics_on_known_filled_posts_job_name                        = module.diagnostics_on_known_filled_posts_job.job_name
     diagnostics_on_capacity_tracker_job_name                          = module.diagnostics_on_capacity_tracker_job.job_name
     prepare_dpr_external_job_name                                     = module.prepare_dpr_external_data_job.job_name
