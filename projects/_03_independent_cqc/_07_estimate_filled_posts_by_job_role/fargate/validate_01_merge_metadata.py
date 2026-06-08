@@ -294,6 +294,7 @@ def main(
         .col_vals_ge(
             columns=IndCqcColumns.current_ons_import_date,
             value=ONS_IMPORT_DATE_LIMIT,
+            thresholds=pb.Thresholds(warning=1),
             actions=pb.Actions(
                 warning="current_ons_import_date is more than 13 months old"
             ),
