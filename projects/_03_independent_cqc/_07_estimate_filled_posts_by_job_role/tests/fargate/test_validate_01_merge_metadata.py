@@ -80,7 +80,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_key_validation_report_includes_expected_validations(
+    def test_validation_report_includes_expected_validations(
         self,
         mock_read_parquet: Mock,
         mock_write_reports: Mock,

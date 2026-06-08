@@ -273,7 +273,7 @@ def main(
             columns=IndCqcColumns.current_ons_import_date,
             value=ONS_IMPORT_DATE_LIMIT,
             actions=pb.Actions(
-                Warning="current_ons_import_date is more than 13 months old"
+                warning="current_ons_import_date is more than 13 months old"
             ),
             brief=f"current_ons_import_date should not be more than 13 months ago (not before {ONS_IMPORT_DATE_LIMIT.strftime('%d/%m/%Y')})",
         )
