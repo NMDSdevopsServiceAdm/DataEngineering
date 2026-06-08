@@ -21,10 +21,6 @@ class ValidateASCWDSWorkerCleanedDatasetTests(SparkBaseTest):
         self.test_cleaned_ascwds_worker_df = self.spark.createDataFrame(
             Data.cleaned_ascwds_worker_rows, Schemas.cleaned_ascwds_worker_schema
         )
-        self.test_validated_ascwds_worker_df = self.spark.createDataFrame(
-            Data.validated_cleaned_ascwds_worker_rows,
-            Schemas.validated_cleaned_ascwds_worker_schema,
-        )
 
 
 class MainTests(ValidateASCWDSWorkerCleanedDatasetTests):
@@ -42,7 +38,7 @@ class MainTests(ValidateASCWDSWorkerCleanedDatasetTests):
         read_from_parquet_patch.side_effect = [
             self.test_cleaned_ascwds_worker_df,
         ]
-        validate_dataset_patch.side_effect = [self.test_validated_ascwds_worker_df]
+        validate_dataset_patch.return_value = Mock(name="validated_df")
 
         job.main(
             self.TEST_ASCWDS_WORKER_CLEANED_SOURCE,

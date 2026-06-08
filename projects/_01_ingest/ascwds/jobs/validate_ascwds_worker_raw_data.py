@@ -24,8 +24,7 @@ def main(raw_ascwds_worker_source: str, report_destination: str):
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
-    if isinstance(check_result_df, DataFrame):
-        raise_exception_if_any_checks_failed(check_result_df)
+    raise_exception_if_any_checks_failed(check_result_df)
 
 
 if __name__ == "__main__":

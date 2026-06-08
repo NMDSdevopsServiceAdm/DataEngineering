@@ -552,17 +552,6 @@ class ValidateASCWDSWorkerRawData:
         ]
     )
 
-    validated_ascwds_worker_schema = StructType(
-        [
-            StructField(Validation.check, StringType(), True),
-            StructField(Validation.check_level, StringType(), True),
-            StructField(Validation.check_status, StringType(), True),
-            StructField(Validation.constraint, StringType(), True),
-            StructField(Validation.constraint_status, StringType(), True),
-            StructField(Validation.constraint_message, StringType(), True),
-        ]
-    )
-
 
 @dataclass
 class ValidateASCWDSWorkplaceCleanedData:
@@ -587,17 +576,6 @@ class ValidateASCWDSWorkerCleanedData:
             StructField(AWKClean.worker_id, StringType(), True),
             StructField(AWKClean.main_job_role_clean, StringType(), True),
             StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
-        ]
-    )
-
-    validated_cleaned_ascwds_worker_schema = StructType(
-        [
-            StructField(Validation.check, StringType(), True),
-            StructField(Validation.check_level, StringType(), True),
-            StructField(Validation.check_status, StringType(), True),
-            StructField(Validation.constraint, StringType(), True),
-            StructField(Validation.constraint_status, StringType(), True),
-            StructField(Validation.constraint_message, StringType(), True),
         ]
     )
 

@@ -21,9 +21,6 @@ class ValidateASCWDSWorkerRawDatasetTests(SparkBaseTest):
         self.test_raw_ascwds_worker_df = self.spark.createDataFrame(
             Data.raw_ascwds_worker_rows, Schemas.raw_ascwds_worker_schema
         )
-        self.test_validated_ascwds_worker_df = self.spark.createDataFrame(
-            Data.validated_ascwds_worker_rows, Schemas.validated_ascwds_worker_schema
-        )
 
 
 class MainTests(ValidateASCWDSWorkerRawDatasetTests):
@@ -41,7 +38,7 @@ class MainTests(ValidateASCWDSWorkerRawDatasetTests):
         read_from_parquet_patch.side_effect = [
             self.test_raw_ascwds_worker_df,
         ]
-        validate_dataset_patch.side_effect = [self.test_validated_ascwds_worker_df]
+        validate_dataset_patch.return_value = Mock(name="validated_df")
 
         job.main(
             self.TEST_ASCWDS_WORKER_RAW_SOURCE,
