@@ -7,6 +7,9 @@ import polars as pl
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    CategoricalColumnTypes,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
@@ -36,11 +39,11 @@ CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
 EXPECTED_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.id_per_locationid_import_date: "UInt32",
-        IndCqcColumns.location_id: 'Categorical(Categories(name="location", namespace="filled_posts", physical=pl.UInt32))',
+        IndCqcColumns.location_id: CategoricalColumnTypes.LocationCatType,
         IndCqcColumns.cqc_location_import_date: "Date",
-        IndCqcColumns.main_job_role_clean_labelled: "Enum(categories=['advice_guidance_and_advocacy', 'care_worker', 'community_support_and_outreach', 'employment_support', 'nursing_assistant', 'other_care_role', 'senior_care_worker', 'support_worker', 'data_governance_manager', 'deputy_manager', 'first_line_manager', 'it_manager', 'it_service_desk_manager', 'middle_management', 'managers_and_staff_in_care_related_but_not_care_providing_roles', 'registered_manager', 'senior_management', 'supervisor', 'team_leader', 'allied_health_professional', 'occupational_therapist', 'registered_nurse', 'registered_nursing_associate', 'safeguarding_and_reviewing_officer', 'social_worker', 'activities_worker_or_coordinator', 'administrative_or_office_staff_not_care_providing', 'ancillary_staff_not_care_providing', 'assessment_officer', 'care_coordinator', 'childrens_roles', 'data_analyst', 'it_and_digital_support', 'learning_and_development_lead', 'occupational_therapist_assistant', 'other_non_care_related_staff', 'software_developer'])",
-        IndCqcColumns.primary_service_type: "Enum(categories=['Care home without nursing', 'Care home with nursing', 'non-residential'])",
-        IndCqcColumns.estimate_filled_posts_source: "Enum(categories=['imputed_pir_filled_posts_model', 'ascwds_pir_merged', 'imputed_posts_care_home_model', 'care_home_model', 'imputed_posts_non_res_combined_model', 'non_res_combined_model', 'posts_rolling_average_model'])",
+        IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
+        IndCqcColumns.primary_service_type: CategoricalColumnTypes.PrimaryServiceEnumType,
+        IndCqcColumns.estimate_filled_posts_source: CategoricalColumnTypes.EstimatesFilledPostSourceEnumType,
         IndCqcColumns.estimate_filled_posts: "Float32",
         IndCqcColumns.ascwds_filled_posts_dedup_clean: "Float32",
         IndCqcColumns.ascwds_job_role_counts: "Int16",
@@ -136,10 +139,10 @@ def main(
             IndCqcColumns.primary_service_type,
             CatValues.primary_service_type_column_values.categorical_values,
         )
-        # .col_vals_in_set(
-        #     IndCqcColumns.main_job_role_clean_labelled,
-        #     CatValues.main_job_role_labels_column_values.categorical_values,
-        # )
+        .col_vals_in_set(
+            IndCqcColumns.main_job_role_clean_labelled,
+            CatValues.main_job_role_labels_column_values.categorical_values,
+        )
         # distinct values
         .specially(
             vl.is_unique_count_equal(
@@ -155,13 +158,13 @@ def main(
             ),
             brief=f"{IndCqcColumns.primary_service_type} should have exactly {CatValues.primary_service_type_column_values.count_of_categorical_values} distinct values",
         )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.main_job_role_clean_labelled,
-        #         CatValues.main_job_role_labels_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.main_job_role_clean_labelled} should have exactly {CatValues.main_job_role_labels_column_values.count_of_categorical_values} distinct values",
-        # )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.main_job_role_clean_labelled,
+                CatValues.main_job_role_labels_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.main_job_role_clean_labelled} should have exactly {CatValues.main_job_role_labels_column_values.count_of_categorical_values} distinct values",
+        )
         # numerical
         .col_vals_gt(
             columns=[
