@@ -6,6 +6,9 @@ from unittest.mock import Mock, call, patch
 import polars as pl
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_01_merge_metadata as job
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedNewValidationColumns as CQCLVal,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_01_merge_metadata"
@@ -19,7 +22,6 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.id_per_locationid_import_date: pl.UInt32,
             IndCqcColumns.name: pl.String,
             IndCqcColumns.provider_id: pl.String,
-            IndCqcColumns.services_offered: pl.List(pl.String),
             IndCqcColumns.care_home: pl.String,
             IndCqcColumns.primary_service_type_second_level: pl.String,
             IndCqcColumns.imputed_registration_date: pl.Date,
@@ -40,10 +42,12 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.worker_records_bounded: pl.Float64,
             IndCqcColumns.dormancy: pl.String,
             IndCqcColumns.ascwds_job_role_counts: pl.Float64,
+            CQCLVal.services_offered_has_no_empty_or_null: pl.Int64,
+            CQCLVal.services_offered_is_not_null: pl.Int64,
         }
         source_rows = [
-            ("1-001", date(2025, 1, 1), 1, "name1", "1-001", ["Service A"], "Y", "something", date(2023, 1, 1), date(2022, 1, 1), "FilteringRule A", date(2023, 1, 2), "CSSR A", "Region A", "ICB A", "RUI A", "LSOA A", "MSOA A", "Estimate Source A", 10.0, 5.0, 7.0, 50.0, 100.0, "Not Dormant", 8.0),
-            ("2-002", date(2025, 1, 2), 2, "name2", "2-002", ["Service B"], "N", "something", date(2023, 1, 2), date(2022, 1, 2), "FilteringRule B", date(2023, 1, 2), "CSSR B", "Region B", "ICB B", "RUI B", "LSOA B", "MSOA B", "Estimate Source B", 15.0, 10.0, 12.0, 60.0, 120.0, "Dormant", 13.0),
+            ("1-001", date(2025, 1, 1), 1, "name1", "1-001", "Y", "something", date(2023, 1, 1), date(2022, 1, 1), "FilteringRule A", date(2023, 1, 2), "CSSR A", "Region A", "ICB A", "RUI A", "LSOA A", "MSOA A", "Estimate Source A", 10.0, 5.0, 7.0, 50.0, 100.0, "Not Dormant", 8.0, 1, 1),
+            ("2-002", date(2025, 1, 2), 2, "name2", "2-002", "N", "something", date(2023, 1, 2), date(2022, 1, 2), "FilteringRule B", date(2023, 1, 2), "CSSR B", "Region B", "ICB B", "RUI B", "LSOA B", "MSOA B", "Estimate Source B", 15.0, 10.0, 12.0, 60.0, 120.0, "Dormant", 13.0, 1, 1),
         ]  # fmt: skip
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select(
@@ -54,13 +58,16 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
         )
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.add_list_column_validation_check_flags")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_validation_runs(
         self,
         mock_read_parquet: Mock,
+        mock_add_list_column_validation_check_flags: Mock,
         mock_write_reports: Mock,
     ):
         mock_read_parquet.side_effect = [self.source_df, self.compare_df]
+        mock_add_list_column_validation_check_flags.return_value = self.source_df
         job.main("bucket", "my/source/", "my/compare/", "my/reports/")
 
         self.assertEqual(mock_read_parquet.call_count, 2)
@@ -76,16 +83,20 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
                 ),
             ]
         )
+        mock_add_list_column_validation_check_flags.assert_called_once()
         mock_write_reports.assert_called_once()
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.add_list_column_validation_check_flags")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_validation_report_includes_expected_validations(
         self,
         mock_read_parquet: Mock,
+        mock_add_list_column_validation_check_flags: Mock,
         mock_write_reports: Mock,
     ):
         mock_read_parquet.side_effect = [self.source_df, self.compare_df]
+        mock_add_list_column_validation_check_flags.return_value = self.source_df
 
         job.main("my/source/", "my/compare/", "bucket", "my/reports/")
 

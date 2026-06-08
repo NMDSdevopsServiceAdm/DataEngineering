@@ -66,7 +66,6 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.id_per_locationid_import_date: "UInt32",
         IndCqcColumns.name: "String",
         IndCqcColumns.provider_id: "String",
-        IndCqcColumns.services_offered: "List(String)",
         IndCqcColumns.primary_service_type_second_level: str(
             CategoricalColumnTypes.PrimaryServiceEnumType
         ),
@@ -89,6 +88,8 @@ EXPECTED_SCHEMA = pb.Schema(
             CategoricalColumnTypes.EstimatesFilledPostSourceEnumType
         ),
         IndCqcColumns.worker_records_bounded: "Int16",
+        CQCLVal.services_offered_has_no_empty_or_null: "Int64",
+        CQCLVal.services_offered_is_not_null: "Int64",
     }
 )
 
@@ -119,7 +120,7 @@ def main(
 
     source_df = add_list_column_validation_check_flags(
         source_df, [IndCqcColumns.services_offered]
-    ).drop(IndCqcColumns.services_offered)
+    )
 
     validation = (
         pb.Validate(
@@ -171,6 +172,10 @@ def main(
         )
         # Complex column validation for completeness
         .col_vals_in_set(CQCLVal.services_offered_is_not_null, [NumericTrueFalse.true])
+        # Complex column validation for empty list and null within list
+        .col_vals_in_set(
+            CQCLVal.services_offered_has_no_empty_or_null, [NumericTrueFalse.true]
+        )
         # Categorical values
         .col_vals_in_set(
             IndCqcColumns.primary_service_type_second_level,
