@@ -42,11 +42,22 @@ from utils.column_values.categorical_column_values import (
 
 
 @dataclass
-class ASCWDSWorkerCleanedCategoricalValues:
+class ASCWDSWorkerRawCategoricalValues:
     main_job_role_labels_column_values = MainJobRoleLabels(
         AWKClean.main_job_role_clean_labelled
     )
     main_job_role_id_column_values = MainJobRoleID(AWKClean.main_job_role_clean)
+
+
+@dataclass
+class ASCWDSWorkerCleanedCategoricalValues:
+    main_job_role_labels_column_values = MainJobRoleLabels(
+        AWKClean.main_job_role_clean_labelled
+    )
+    main_job_role_id_column_values = MainJobRoleID(
+        AWKClean.main_job_role_clean,
+        value_to_remove=[MainJobRoleID.technician, MainJobRoleID.care_navigator],
+    )
 
 
 @dataclass
