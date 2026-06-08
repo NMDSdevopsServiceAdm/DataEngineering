@@ -122,6 +122,8 @@ def main(
         source_df, [IndCqcColumns.services_offered]
     )
 
+    print(f"source df schema: {source_df.schema}")
+
     validation = (
         pb.Validate(
             data=source_df,
