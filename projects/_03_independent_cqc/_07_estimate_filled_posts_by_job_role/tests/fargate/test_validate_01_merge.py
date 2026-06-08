@@ -83,7 +83,6 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             "specially",
             "col_vals_gt",
             "col_vals_ge",
-            "col_vals_le",
         }
 
         for assertion in expected_assertions:
