@@ -7,10 +7,19 @@ from dateutil.relativedelta import relativedelta
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from projects._01_ingest.cqc_api.utils.validate_cqc_locations import (
+    add_list_column_validation_check_flags,
+)
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     CategoricalColumnTypes,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedNewValidationColumns as CQCLVal,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_values.categorical_column_values import (
+    NumericTrueFalse,
+)
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
 )
@@ -108,6 +117,10 @@ def main(
         selected_columns=IND_CQC_ESTIMATES_COLS_TO_IMPORT,
     )
 
+    source_df = add_list_column_validation_check_flags(
+        source_df, [IndCqcColumns.services_offered]
+    ).drop(IndCqcColumns.services_offered)
+
     validation = (
         pb.Validate(
             data=source_df,
@@ -139,7 +152,7 @@ def main(
                 IndCqcColumns.id_per_locationid_import_date,
                 IndCqcColumns.name,
                 IndCqcColumns.provider_id,
-                IndCqcColumns.services_offered,
+                CQCLVal.services_offered_is_not_null,
                 IndCqcColumns.primary_service_type_second_level,
                 IndCqcColumns.care_home,
                 IndCqcColumns.imputed_registration_date,
@@ -156,6 +169,8 @@ def main(
             ],
             brief="Required columns should contain no null values",
         )
+        # Complex column validation for completeness
+        .col_vals_in_set(CQCLVal.services_offered_is_not_null, [NumericTrueFalse.true])
         # Categorical values
         .col_vals_in_set(
             IndCqcColumns.primary_service_type_second_level,
