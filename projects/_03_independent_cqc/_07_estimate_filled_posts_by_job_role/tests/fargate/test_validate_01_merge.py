@@ -6,8 +6,15 @@ from unittest.mock import Mock, call, patch
 import polars as pl
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_01_merge as job
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    CategoricalColumnTypes,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
-from utils.column_values.categorical_column_values import MainJobRoleLabels
+from utils.column_values.categorical_column_values import (
+    EstimateFilledPostsSource,
+    MainJobRoleLabels,
+    PrimaryServiceType,
+)
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_01_merge"
 
@@ -16,18 +23,17 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
     def setUp(self) -> None:
         source_schema = {
             IndCqcColumns.id_per_locationid_import_date: pl.UInt32,
-            IndCqcColumns.location_id: pl.String,
+            IndCqcColumns.location_id: CategoricalColumnTypes.LocationCatType,
             IndCqcColumns.cqc_location_import_date: pl.Date,
-            IndCqcColumns.primary_service_type: pl.String,
+            IndCqcColumns.primary_service_type: CategoricalColumnTypes.PrimaryServiceEnumType,
             IndCqcColumns.estimate_filled_posts: pl.Float32,
-            IndCqcColumns.estimate_filled_posts_source: pl.String,
-            IndCqcColumns.main_job_role_clean_labelled: pl.String,
+            IndCqcColumns.estimate_filled_posts_source: CategoricalColumnTypes.EstimatesFilledPostSourceEnumType,
+            IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
             IndCqcColumns.ascwds_filled_posts_dedup_clean: pl.Float32,
             IndCqcColumns.ascwds_job_role_counts: pl.Int16,
         }
         source_rows = [
-            (1, "1-001", date(2026, 1, 1), "Service A", 10.0, "Source A", MainJobRoleLabels.care_worker, 5.0, 10),
-            (2, "1-002", date(2026, 1, 1), "Service B", 20.0, "Source B", MainJobRoleLabels.senior_care_worker, 15.0, 20),
+            (1, "1-001", date(2026, 1, 1), PrimaryServiceType.non_residential, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, MainJobRoleLabels.care_worker, 5.0, 10),
         ]  # fmt: skip
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])

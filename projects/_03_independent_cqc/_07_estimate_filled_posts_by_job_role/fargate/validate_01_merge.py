@@ -39,11 +39,17 @@ CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
 EXPECTED_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.id_per_locationid_import_date: "UInt32",
-        IndCqcColumns.location_id: CategoricalColumnTypes.LocationCatType,
+        IndCqcColumns.location_id: str(CategoricalColumnTypes.LocationCatType),
         IndCqcColumns.cqc_location_import_date: "Date",
-        IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
-        IndCqcColumns.primary_service_type: CategoricalColumnTypes.PrimaryServiceEnumType,
-        IndCqcColumns.estimate_filled_posts_source: CategoricalColumnTypes.EstimatesFilledPostSourceEnumType,
+        IndCqcColumns.main_job_role_clean_labelled: str(
+            CategoricalColumnTypes.JobRoleEnumType
+        ),
+        IndCqcColumns.primary_service_type: str(
+            CategoricalColumnTypes.PrimaryServiceEnumType
+        ),
+        IndCqcColumns.estimate_filled_posts_source: str(
+            CategoricalColumnTypes.EstimatesFilledPostSourceEnumType
+        ),
         IndCqcColumns.estimate_filled_posts: "Float32",
         IndCqcColumns.ascwds_filled_posts_dedup_clean: "Float32",
         IndCqcColumns.ascwds_job_role_counts: "Int16",
