@@ -108,8 +108,6 @@ def main(
         selected_columns=IND_CQC_ESTIMATES_COLS_TO_IMPORT,
     )
 
-    print(f"Source df dtypes:\n{source_df.dtypes}")
-
     validation = (
         pb.Validate(
             data=source_df,
