@@ -37,7 +37,6 @@ from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as C
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
 )
-from utils.column_names.validation_table_columns import Validation
 
 
 @dataclass
