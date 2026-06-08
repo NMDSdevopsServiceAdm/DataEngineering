@@ -1,10 +1,7 @@
-import gc
 import sys
 from datetime import date
 
 import pointblank as pb
-import polars as pl
-import polars.selectors as cs
 from dateutil.relativedelta import relativedelta
 
 from polars_utils import utils
@@ -18,13 +15,13 @@ from utils.value_labels.ons_pd.onspd_icb import OnspdIcb
 from utils.value_labels.ons_pd.onspd_lsoa21 import OnspdLsoa21
 from utils.value_labels.ons_pd.onspd_msoa21 import OnspdMsoa21
 
-KEY_COLS = [
-    IndCqcColumns.id_per_locationid_import_date,
-]
-
-CATEGORICAL_COLS = [
+VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.name,
     IndCqcColumns.provider_id,
+    IndCqcColumns.id_per_locationid_import_date,
+    IndCqcColumns.imputed_registration_date,
+    IndCqcColumns.ascwds_workplace_import_date,
+    IndCqcColumns.current_ons_import_date,
     IndCqcColumns.services_offered,
     IndCqcColumns.care_home,
     IndCqcColumns.primary_service_type_second_level,
@@ -37,15 +34,6 @@ CATEGORICAL_COLS = [
     IndCqcColumns.current_msoa21,
     IndCqcColumns.estimate_filled_posts_source,
     IndCqcColumns.dormancy,
-]
-
-DATE_COLS = [
-    IndCqcColumns.imputed_registration_date,
-    IndCqcColumns.ascwds_workplace_import_date,
-    IndCqcColumns.current_ons_import_date,
-]
-
-NUMERIC_COLS = [
     IndCqcColumns.ascwds_filled_posts_dedup_clean,
     IndCqcColumns.ascwds_pir_merged,
     IndCqcColumns.number_of_beds,
@@ -59,16 +47,16 @@ ind_cqc_estimates_cols_to_import = [
 
 ASCWDS_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
 CQC_EARLIEST_REGISTRATION_DATE = date(2010, 9, 13)
+ons_not_before = date.today() - relativedelta(months=13)
 
-KEY_SCHEMA = pb.Schema(
-    columns={
-        IndCqcColumns.id_per_locationid_import_date: "UInt32",
-    }
-)
-CATEGORICAL_SCHEMA = pb.Schema(
+EXPECTED_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.name: "String",
         IndCqcColumns.provider_id: "String",
+        IndCqcColumns.id_per_locationid_import_date: "UInt32",
+        IndCqcColumns.imputed_registration_date: "Date",
+        IndCqcColumns.ascwds_workplace_import_date: "Date",
+        IndCqcColumns.current_ons_import_date: "Date",
         IndCqcColumns.services_offered: "List(String)",
         IndCqcColumns.care_home: "String",
         IndCqcColumns.primary_service_type_second_level: "String",
@@ -81,17 +69,6 @@ CATEGORICAL_SCHEMA = pb.Schema(
         IndCqcColumns.current_msoa21: "String",
         IndCqcColumns.estimate_filled_posts_source: "String",
         IndCqcColumns.dormancy: "String",
-    }
-)
-DATE_SCHEMA = pb.Schema(
-    columns={
-        IndCqcColumns.imputed_registration_date: "Date",
-        IndCqcColumns.ascwds_workplace_import_date: "Date",
-        IndCqcColumns.current_ons_import_date: "Date",
-    }
-)
-NUMERIC_SCHEMA = pb.Schema(
-    columns={
         IndCqcColumns.ascwds_filled_posts_dedup_clean: "Float32",
         IndCqcColumns.ascwds_pir_merged: "Float32",
         IndCqcColumns.number_of_beds: "Int16",
@@ -115,32 +92,16 @@ def main(
         reports_path (str): the output path to write reports to
     """
 
-    run_key_validation(source_path, compare_path, bucket_name, reports_path)
-    gc.collect()
-    run_categorical_validation(source_path, bucket_name, reports_path)
-    gc.collect()
-    run_date_validation(source_path, bucket_name, reports_path)
-    gc.collect()
-    run_numeric_validation(source_path, bucket_name, reports_path)
-    gc.collect()
-
-
-def cast_cols_back_to_string(df: pl.DataFrame) -> pl.DataFrame:
-    """Casts categorical and enums to string for validation purposes."""
-    return df.with_columns((cs.categorical() | cs.enum()).cast(pl.String))
-
-
-def run_key_validation(source_path, compare_path, bucket_name, reports_path):
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=KEY_COLS,
+        selected_columns=VALIDATION_COLS_TO_IMPORT,
     )
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=ind_cqc_estimates_cols_to_import,
     )
 
-    key_validation = (
+    validation = (
         pb.Validate(
             data=source_df,
             label=f"Key validation of {source_path}",
@@ -150,9 +111,7 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
         )
         # Schema check
         .col_schema_match(
-            pre=cast_cols_back_to_string,
-            schema=KEY_SCHEMA,
-            brief="All columns have the expected data types",
+            schema=EXPECTED_SCHEMA, brief="All columns have the expected data types"
         )
         # Dataset size
         .row_count_match(
@@ -173,32 +132,6 @@ def run_key_validation(source_path, compare_path, bucket_name, reports_path):
                 IndCqcColumns.id_per_locationid_import_date,
             ],
             brief="Required columns should contain no null values",
-        ).interrogate()
-    )
-
-    vl.write_reports(key_validation, bucket_name, f"{reports_path}key/")
-    del source_df, compare_df, key_validation
-
-
-def run_categorical_validation(source_path, bucket_name, reports_path):
-    source_df = utils.read_parquet(
-        source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=CATEGORICAL_COLS,
-    )
-
-    categorical_validation = (
-        pb.Validate(
-            data=source_df,
-            label=f"Categorical validation of {source_path}",
-            thresholds=GLOBAL_THRESHOLDS,
-            brief=True,
-            actions=GLOBAL_ACTIONS,
-        )
-        # Schema check
-        .col_schema_match(
-            pre=cast_cols_back_to_string,
-            schema=CATEGORICAL_SCHEMA,
-            brief="All columns have the expected data types",
         )
         # Completeness (no nulls)
         .col_vals_not_null(
@@ -321,35 +254,6 @@ def run_categorical_validation(source_path, bucket_name, reports_path):
             ),
             brief=f"{IndCqcColumns.dormancy} should have exactly {CatValues.dormancy_column_values.count_of_categorical_values} distinct values",
         )
-        .interrogate()
-    )
-
-    vl.write_reports(categorical_validation, bucket_name, f"{reports_path}categorical/")
-    del source_df, categorical_validation
-
-
-def run_date_validation(source_path, bucket_name, reports_path):
-    source_df = utils.read_parquet(
-        source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=DATE_COLS,
-    )
-
-    ons_not_before = date.today() - relativedelta(months=13)
-
-    date_validation = (
-        pb.Validate(
-            data=source_df,
-            label=f"Date validation of {source_path}",
-            thresholds=GLOBAL_THRESHOLDS,
-            brief=True,
-            actions=GLOBAL_ACTIONS,
-        )
-        # Schema check
-        .col_schema_match(
-            pre=cast_cols_back_to_string,
-            schema=DATE_SCHEMA,
-            brief="All columns have the expected data types",
-        )
         # Completeness (no nulls)
         .col_vals_not_null(
             columns=[
@@ -364,7 +268,8 @@ def run_date_validation(source_path, bucket_name, reports_path):
             columns=[IndCqcColumns.ascwds_workplace_import_date],
             value=ASCWDS_EARLIEST_IMPORT_DATE,
             brief=f"ascwds_workplace_import_date should not be before {ASCWDS_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
-        ).col_vals_ge(
+        )
+        .col_vals_ge(
             columns=[IndCqcColumns.imputed_registration_date],
             value=CQC_EARLIEST_REGISTRATION_DATE,
             brief=f"imputed_registration_date should not be before {CQC_EARLIEST_REGISTRATION_DATE.strftime('%d/%m/%Y')}",
@@ -374,33 +279,6 @@ def run_date_validation(source_path, bucket_name, reports_path):
         #     value=ons_not_before,
         #     brief=f"current_ons_import_date should not be more than 13 months ago (not before {ons_not_before.strftime('%d/%m/%Y')})",
         # )
-        .interrogate()
-    )
-
-    vl.write_reports(date_validation, bucket_name, f"{reports_path}date/")
-    del source_df, date_validation
-
-
-def run_numeric_validation(source_path, bucket_name, reports_path):
-    source_df = utils.read_parquet(
-        source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=NUMERIC_COLS,
-    )
-
-    numeric_validation = (
-        pb.Validate(
-            data=source_df,
-            label=f"Numeric validation of {source_path}",
-            thresholds=GLOBAL_THRESHOLDS,
-            brief=True,
-            actions=GLOBAL_ACTIONS,
-        )
-        # Schema check
-        .col_schema_match(
-            pre=cast_cols_back_to_string,
-            schema=NUMERIC_SCHEMA,
-            brief="All columns have the expected data types",
-        )
         # Numeric range — strictly positive (nulls allowed)
         .col_vals_gt(
             columns=[
@@ -412,11 +290,10 @@ def run_numeric_validation(source_path, bucket_name, reports_path):
             value=0,
             na_pass=True,
             brief="ascwds_filled_posts_dedup_clean, ascwds_pir_merged, number_of_beds and wkrrecs_bounded should be > 0 where present",
-        ).interrogate()
-    )
+        )
+    ).interrogate()
 
-    vl.write_reports(numeric_validation, bucket_name, f"{reports_path}numeric/")
-    del source_df, numeric_validation
+    vl.write_reports(validation, bucket_name, reports_path)
 
 
 if __name__ == "__main__":
