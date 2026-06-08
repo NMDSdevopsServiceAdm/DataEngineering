@@ -40,7 +40,7 @@ VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.worker_records_bounded,
 ]
 
-ind_cqc_estimates_cols_to_import = [
+IND_CQC_ESTIMATES_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
 ]
@@ -55,23 +55,23 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.name: "String",
         IndCqcColumns.provider_id: "String",
         IndCqcColumns.services_offered: "List(String)",
-        IndCqcColumns.primary_service_type_second_level: "String",
-        IndCqcColumns.care_home: "String",
-        IndCqcColumns.dormancy: "String",
+        IndCqcColumns.primary_service_type_second_level: "Categorical",
+        IndCqcColumns.care_home: "Categorical",
+        IndCqcColumns.dormancy: "Categorical",
         IndCqcColumns.number_of_beds: "Int16",
         IndCqcColumns.imputed_registration_date: "Date",
         IndCqcColumns.ascwds_workplace_import_date: "Date",
         IndCqcColumns.ascwds_filled_posts_dedup_clean: "Float32",
         IndCqcColumns.ascwds_pir_merged: "Float32",
-        IndCqcColumns.ascwds_filtering_rule: "String",
+        IndCqcColumns.ascwds_filtering_rule: "Categorical",
         IndCqcColumns.current_ons_import_date: "Date",
-        IndCqcColumns.current_cssr: "String",
-        IndCqcColumns.current_region: "String",
-        IndCqcColumns.current_icb: "String",
-        IndCqcColumns.current_rural_urban_indicator_2011: "String",
-        IndCqcColumns.current_lsoa21: "String",
-        IndCqcColumns.current_msoa21: "String",
-        IndCqcColumns.estimate_filled_posts_source: "String",
+        IndCqcColumns.current_cssr: "Categorical",
+        IndCqcColumns.current_region: "Categorical",
+        IndCqcColumns.current_icb: "Categorical",
+        IndCqcColumns.current_rural_urban_indicator_2011: "Categorical",
+        IndCqcColumns.current_lsoa21: "Categorical",
+        IndCqcColumns.current_msoa21: "Categorical",
+        IndCqcColumns.estimate_filled_posts_source: "Enum(categories=['imputed_pir_filled_posts_model', 'ascwds_pir_merged', 'imputed_posts_care_home_model', 'care_home_model', 'imputed_posts_non_res_combined_model', 'non_res_combined_model', 'posts_rolling_average_model'])",
         IndCqcColumns.worker_records_bounded: "Int16",
     }
 )
@@ -98,7 +98,7 @@ def main(
     )
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
-        selected_columns=ind_cqc_estimates_cols_to_import,
+        selected_columns=IND_CQC_ESTIMATES_COLS_TO_IMPORT,
     )
 
     print(f"Source df dtypes:\n{source_df.dtypes}")
