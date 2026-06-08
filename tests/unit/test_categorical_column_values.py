@@ -6,7 +6,8 @@ from utils.column_values.categorical_column_values import Dormancy
 class ListValuesTests(unittest.TestCase):
     def setUp(self) -> None:
         self.expected_categorical_values = [Dormancy.dormant, Dormancy.not_dormant]
-        self.expected_filtered_categorical_values = [Dormancy.dormant]
+        self.expected_str_filtered_categorical_values = [Dormancy.dormant]
+        self.expected_list_filtered_categorical_values = []
 
     def test_list_values_initialises_a_list_of_values_for_the_column_when_no_values_to_remove_are_given(
         self,
@@ -16,12 +17,23 @@ class ListValuesTests(unittest.TestCase):
             test_object.categorical_values, self.expected_categorical_values
         )
 
-    def test_list_values_initialises_a_list_of_values_for_the_column_when_values_to_remove_are_given(
+    def test_list_values_initialises_a_list_of_values_for_the_column_when_string_value_to_remove_is_given(
         self,
     ):
         test_object = Dormancy("test_column", value_to_remove="N")
+
         self.assertEqual(
-            test_object.categorical_values, self.expected_filtered_categorical_values
+            test_object.categorical_values,
+            self.expected_str_filtered_categorical_values,
+        )
+
+    def test_list_values_initialises_a_list_of_values_for_the_column_when_list_of_values_to_remove_are_given(
+        self,
+    ):
+        test_object = Dormancy("test_column", value_to_remove=["N", "Y"])
+        self.assertEqual(
+            test_object.categorical_values,
+            self.expected_list_filtered_categorical_values,
         )
 
 

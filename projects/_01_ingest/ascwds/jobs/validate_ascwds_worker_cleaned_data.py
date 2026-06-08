@@ -1,13 +1,18 @@
 import os
 import sys
 
+from pyspark.sql.dataframe import DataFrame
+
 os.environ["SPARK_VERSION"] = "3.5"
 
 from utils import utils
 from utils.validation.validation_rules.ascwds_worker_cleaned_validation_rules import (
     ASCWDSWorkerCleanedValidationRules as Rules,
 )
-from utils.validation.validation_utils import validate_dataset
+from utils.validation.validation_utils import (
+    raise_exception_if_any_checks_failed,
+    validate_dataset,
+)
 
 
 def main(cleaned_ascwds_worker_source: str, report_destination: str):
@@ -19,12 +24,14 @@ def main(cleaned_ascwds_worker_source: str, report_destination: str):
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
+    raise_exception_if_any_checks_failed(check_result_df)
+
 
 if __name__ == "__main__":
     print("Spark job 'validate_ascwds_worker_cleaned_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    (cleaned_ascwds_worker_source, report_destination) = utils.collect_arguments(
+    cleaned_ascwds_worker_source, report_destination = utils.collect_arguments(
         (
             "--cleaned_ascwds_worker_source",
             "Source s3 directory for parquet ascwds worker api cleaned dataset",
