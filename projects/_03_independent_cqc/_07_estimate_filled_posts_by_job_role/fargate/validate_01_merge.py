@@ -112,7 +112,8 @@ def main(
                 IndCqcColumns.main_job_role_clean_labelled,
             ],
             brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
-        ).col_vals_expr(
+        )
+        .col_vals_expr(
             expr=(
                 pl.col(IndCqcColumns.id_per_locationid_import_date)
                 .n_unique()
@@ -126,41 +127,41 @@ def main(
             ),
             brief="id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
         )
-        # # categorical
-        # .col_vals_in_set(
-        #     IndCqcColumns.estimate_filled_posts_source,
-        #     CatValues.estimate_filled_posts_source_column_values.categorical_values,
-        # )
-        # .col_vals_in_set(
-        #     IndCqcColumns.primary_service_type,
-        #     CatValues.primary_service_type_column_values.categorical_values,
-        # )
-        # .col_vals_in_set(
-        #     IndCqcColumns.main_job_role_clean_labelled,
-        #     CatValues.main_job_role_labels_column_values.categorical_values,
-        # )
-        # # distinct values
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.estimate_filled_posts_source,
-        #         CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.estimate_filled_posts_source} should have exactly {CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values} distinct values",
-        # )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.primary_service_type,
-        #         CatValues.primary_service_type_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.primary_service_type} should have exactly {CatValues.primary_service_type_column_values.count_of_categorical_values} distinct values",
-        # )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         IndCqcColumns.main_job_role_clean_labelled,
-        #         CatValues.main_job_role_labels_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{IndCqcColumns.main_job_role_clean_labelled} should have exactly {CatValues.main_job_role_labels_column_values.count_of_categorical_values} distinct values",
-        # )
+        # categorical
+        .col_vals_in_set(
+            IndCqcColumns.estimate_filled_posts_source,
+            CatValues.estimate_filled_posts_source_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            IndCqcColumns.primary_service_type,
+            CatValues.primary_service_type_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            IndCqcColumns.main_job_role_clean_labelled,
+            CatValues.main_job_role_labels_column_values.categorical_values,
+        )
+        # distinct values
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.estimate_filled_posts_source,
+                CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.estimate_filled_posts_source} should have exactly {CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values} distinct values",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.primary_service_type,
+                CatValues.primary_service_type_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.primary_service_type} should have exactly {CatValues.primary_service_type_column_values.count_of_categorical_values} distinct values",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.main_job_role_clean_labelled,
+                CatValues.main_job_role_labels_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.main_job_role_clean_labelled} should have exactly {CatValues.main_job_role_labels_column_values.count_of_categorical_values} distinct values",
+        )
         # # numerical
         # .col_vals_gt(
         #     columns=[
