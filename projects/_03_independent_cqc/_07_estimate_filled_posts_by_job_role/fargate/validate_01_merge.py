@@ -86,7 +86,7 @@ def main(
     validation = (
         pb.Validate(
             data=source_df,
-            label=f"Key validation of {source_path}",
+            label=f"Validation of {source_path}",
             thresholds=GLOBAL_THRESHOLDS,
             brief=True,
             actions=GLOBAL_ACTIONS,
