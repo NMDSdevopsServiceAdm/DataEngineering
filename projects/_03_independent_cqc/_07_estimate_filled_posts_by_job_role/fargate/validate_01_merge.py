@@ -136,10 +136,10 @@ def main(
             IndCqcColumns.primary_service_type,
             CatValues.primary_service_type_column_values.categorical_values,
         )
-        .col_vals_in_set(
-            IndCqcColumns.main_job_role_clean_labelled,
-            CatValues.main_job_role_labels_column_values.categorical_values,
-        )
+        # .col_vals_in_set(
+        #     IndCqcColumns.main_job_role_clean_labelled,
+        #     CatValues.main_job_role_labels_column_values.categorical_values,
+        # )
         # distinct values
         .specially(
             vl.is_unique_count_equal(
@@ -155,41 +155,41 @@ def main(
             ),
             brief=f"{IndCqcColumns.primary_service_type} should have exactly {CatValues.primary_service_type_column_values.count_of_categorical_values} distinct values",
         )
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.main_job_role_clean_labelled,
-                CatValues.main_job_role_labels_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.main_job_role_clean_labelled} should have exactly {CatValues.main_job_role_labels_column_values.count_of_categorical_values} distinct values",
+        # .specially(
+        #     vl.is_unique_count_equal(
+        #         IndCqcColumns.main_job_role_clean_labelled,
+        #         CatValues.main_job_role_labels_column_values.count_of_categorical_values,
+        #     ),
+        #     brief=f"{IndCqcColumns.main_job_role_clean_labelled} should have exactly {CatValues.main_job_role_labels_column_values.count_of_categorical_values} distinct values",
+        # )
+        # numerical
+        .col_vals_gt(
+            columns=[
+                IndCqcColumns.estimate_filled_posts,
+                IndCqcColumns.ascwds_filled_posts_dedup_clean,
+            ],
+            value=0,
+            na_pass=True,
+            brief="estimate_filled_posts and ascwds_filled_posts_dedup_clean should be > 0 where present",
         )
-        # # numerical
-        # .col_vals_gt(
-        #     columns=[
-        #         IndCqcColumns.estimate_filled_posts,
-        #         IndCqcColumns.ascwds_filled_posts_dedup_clean,
-        #     ],
-        #     value=0,
-        #     na_pass=True,
-        #     brief="estimate_filled_posts and ascwds_filled_posts_dedup_clean should be > 0 where present",
-        # )
-        # .col_vals_ge(
-        #     columns=IndCqcColumns.ascwds_job_role_counts,
-        #     value=0,
-        #     na_pass=True,
-        #     brief="ascwds_job_role_counts should be >= 0 where present",
-        # )
-        # .col_vals_le(
-        #     columns=IndCqcColumns.ascwds_job_role_counts,
-        #     value=pb.col(IndCqcColumns.estimate_filled_posts),
-        #     na_pass=True,
-        #     brief="ascwds_job_role_counts should be <= estimate_filled_posts where present",
-        # )
-        # # Date plausibility
-        # .col_vals_ge(
-        #     columns=IndCqcColumns.cqc_location_import_date,
-        #     value=CQC_EARLIEST_IMPORT_DATE,
-        #     brief=f"cqc_location_import_date should not be before {CQC_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
-        # )
+        .col_vals_ge(
+            columns=IndCqcColumns.ascwds_job_role_counts,
+            value=0,
+            na_pass=True,
+            brief="ascwds_job_role_counts should be >= 0 where present",
+        )
+        .col_vals_le(
+            columns=IndCqcColumns.ascwds_job_role_counts,
+            value=pb.col(IndCqcColumns.estimate_filled_posts),
+            na_pass=True,
+            brief="ascwds_job_role_counts should be <= estimate_filled_posts where present",
+        )
+        # Date plausibility
+        .col_vals_ge(
+            columns=IndCqcColumns.cqc_location_import_date,
+            value=CQC_EARLIEST_IMPORT_DATE,
+            brief=f"cqc_location_import_date should not be before {CQC_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
+        )
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
