@@ -31,6 +31,8 @@ All notable changes to this project will be documented in this file.
 
 - Changed add_filtering_rule_column() and update_filtering_rule() to handle categorical columns as well as string.
 
+- Removed old version of job role estimates task and associated code not used elsewhere.
+
 ### Fixed
 
 
