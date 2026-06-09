@@ -207,9 +207,14 @@ class FilterJobRoleGroupExpressions:
         self.location_sum_expr = pl.sum_horizontal(self.job_group_cols).alias(
             self.temp_location_sum
         )
-        self.job_group_percentage_expr = pl.col(self.job_group_cols) / pl.col(
-            self.temp_location_sum
-        ).cast(pl.Float32)
+        self.job_group_percentage_expr = (
+            pl.when(pl.col(self.temp_location_sum) != 0)
+            .then(
+                pl.col(self.job_group_cols)
+                / pl.col(self.temp_location_sum).cast(pl.Float32)
+            )
+            .otherwise(None)
+        )
         self.evaluation_expr = (
             (
                 pl.col(JobGroupLabels.direct_care)
