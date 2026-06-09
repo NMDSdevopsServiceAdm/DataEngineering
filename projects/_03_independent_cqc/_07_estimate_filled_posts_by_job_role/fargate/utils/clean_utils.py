@@ -109,7 +109,7 @@ def filter_job_role_group_outliers(
     )
     utils.sink_to_parquet(
         piv_lf,
-        "s3://sfc-1629-test-01-wod-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_group_pct/",
+        "s3://sfc-1629-test-10-wod-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_group_pct/",
         append=False,
     )
     # test commnent
@@ -121,7 +121,7 @@ def filter_job_role_group_outliers(
     )
     utils.sink_to_parquet(
         bounds_lf,
-        "s3://sfc-1629-test-01-wod-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_roles_thresholds/",
+        "s3://sfc-1629-test-10-wod-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_roles_thresholds/",
         append=False,
     )
 
