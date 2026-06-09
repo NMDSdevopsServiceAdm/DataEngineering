@@ -18,6 +18,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
     def setUp(self) -> None:
         source_schema = {
             IndCqcColumns.id_per_locationid_import_date: pl.UInt32,
+            IndCqcColumns.id_per_locationid_import_date_job_role: pl.UInt32,
             IndCqcColumns.location_id: CategoricalColumnTypes.LocationCatType,
             IndCqcColumns.cqc_location_import_date: pl.Date,
             IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
@@ -33,8 +34,8 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.ascwds_job_role_rolling_ratio: pl.Float32,
         }
         source_rows = [
-            (1, "1", "1-001", date(2026, 1, 1), "JobRoleA", "non-residential", "ascwds_pir_merged", 10.0, 10, "populated", 0.5, 0.5, 0.5, "NR 1 to 24", 0.5),
-            (2, "2", "1-002", date(2026, 1, 1), "JobRoleB", "non-residential", "ascwds_pir_merged", 10.0, 10, "populated", 0.5, 0.5, 0.5, "NR 1 to 24", 0.5),
+            (1, 1, "1-001", date(2026, 1, 1), "care_worker", "non-residential", "ascwds_pir_merged", 10.0, 10, "populated", 0.5, 0.5, 0.5, "NR 1 to 24", 0.5),
+            (2, 1, "1-002", date(2026, 1, 1), "care_worker", "non-residential", "ascwds_pir_merged", 10.0, 10, "populated", 0.5, 0.5, 0.5, "NR 1 to 24", 0.5),
         ]  # fmt: skip
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])
