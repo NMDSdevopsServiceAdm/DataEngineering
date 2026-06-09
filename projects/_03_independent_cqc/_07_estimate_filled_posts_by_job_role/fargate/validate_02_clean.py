@@ -93,7 +93,7 @@ def main(
         .col_schema_match(
             schema=EXPECTED_SCHEMA,
             in_order=False,
-            brief=f"Dataset schema {source_df.schema} should match the expected schema",
+            brief=f"Dataset schema should match the expected schema",
         )
         # dataset size
         .row_count_match(
