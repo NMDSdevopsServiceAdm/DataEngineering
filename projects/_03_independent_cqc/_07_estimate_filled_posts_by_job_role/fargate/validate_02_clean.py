@@ -118,7 +118,6 @@ def main(
                 IndCqcColumns.id_per_locationid_import_date_job_role,
             ],
         )
-        # index columns
         .rows_distinct(
             columns_subset=[
                 IndCqcColumns.location_id,
@@ -156,7 +155,7 @@ def main(
             columns=IndCqcColumns.estimate_filled_posts,
             value=0,
             na_pass=True,
-            brief="estimate_filled_posts and ascwds_filled_posts_dedup_clean should be > 0 where present",
+            brief="estimate_filled_posts should be > 0 where present",
         )
         .col_vals_ge(
             columns=IndCqcColumns.ascwds_job_role_counts,
