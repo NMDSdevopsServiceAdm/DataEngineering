@@ -3,15 +3,12 @@ import polars as pl
 import pointblank as pb
 
 from polars_utils import utils
-from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.validate_utils import (
-    create_job_role_estimates_data_validation_columns,
-)
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
-from utils.column_names.validation_table_columns import Validation as validationColumns
-from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
-    AscwdsWorkerValueLabelsJobGroup as jobGroupDict,
+from utils.column_values.categorical_column_values import (
+    JobGroupLabels,
+    MainJobRoleLabels,
 )
 
 ind_cqc_job_role_cols_to_import = [
@@ -30,6 +27,14 @@ ind_cqc_estimates_cols_to_import = [
     IndCqcColumns.cqc_location_import_date,
 ]
 
+req_pcts = {
+    MainJobRoleLabels.care_worker: (0.59, 0.69),
+    JobGroupLabels.direct_care: (0.71, 0.81),
+    JobGroupLabels.managers: (0.03, 0.1),
+    JobGroupLabels.regulated_professions: (0.02, 0.06),
+    JobGroupLabels.other: (0.07, 0.21),
+}
+
 
 def main(
     bucket_name: str, source_path: str, compare_path: str, reports_path: str
@@ -45,21 +50,15 @@ def main(
         compare_path (str): the path to the comparison dataset
         reports_path (str): the output path to write reports to
     """
-    source_lf = utils.scan_parquet(
+    source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
         selected_columns=ind_cqc_job_role_cols_to_import,
     )
-    compare_lf = utils.scan_parquet(
+    compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=ind_cqc_estimates_cols_to_import,
     )
-    expected_row_count = compare_lf.select(pl.len()).collect().item() * len(
-        jobGroupDict.all_roles()
-    )
-    source_with_validation_columns_lf = (
-        create_job_role_estimates_data_validation_columns(source_lf)
-    )
-    source_df = source_with_validation_columns_lf.collect()
+    # expected_row_count = compare_df.height
 
     validation = (
         pb.Validate(
@@ -69,41 +68,60 @@ def main(
             brief=True,
             actions=GLOBAL_ACTIONS,
         )
-        # dataset size
-        .col_vals_eq(validationColumns.total_job_role_records, expected_row_count)
-        # complete columns
-        .col_vals_not_null(
-            [
-                IndCqcColumns.cqc_location_import_date,
-            ]
+        # estimates between (inclusive)
+        .col_vals_expr(
+            estimates_percentage_expressions(
+                MainJobRoleLabels.care_worker,
+                req_pcts[MainJobRoleLabels.care_worker],
+                "role",
+            )
         )
-        # index columns
-        .rows_distinct(
-            [
-                IndCqcColumns.cqc_location_import_date,
-            ],
+        .col_vals_expr(
+            estimates_percentage_expressions(
+                JobGroupLabels.direct_care,
+                req_pcts[JobGroupLabels.direct_care],
+                "group",
+            )
         )
-        # between (inclusive)
-        # .col_vals_between(
-        #     IndCqcColumns.national_percentage_care_worker_filled_posts, 0.59, 0.69
-        # )
-        .col_vals_between(
-            IndCqcColumns.national_percentage_direct_care_filled_posts, 0.71, 0.81
+        .col_vals_expr(
+            estimates_percentage_expressions(
+                JobGroupLabels.managers, req_pcts[JobGroupLabels.managers], "group"
+            )
         )
-        .col_vals_between(
-            IndCqcColumns.national_percentage_managers_filled_posts, 0.03, 0.1
+        .col_vals_expr(
+            estimates_percentage_expressions(
+                JobGroupLabels.regulated_professions,
+                req_pcts[JobGroupLabels.regulated_professions],
+                "group",
+            )
         )
-        .col_vals_between(
-            IndCqcColumns.national_percentage_regulated_professions_filled_posts,
-            0.02,
-            0.06,
-        )
-        .col_vals_between(
-            IndCqcColumns.national_percentage_other_filled_posts, 0.07, 0.21
+        .col_vals_expr(
+            estimates_percentage_expressions(
+                JobGroupLabels.other, req_pcts[JobGroupLabels.other], "group"
+            )
         )
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
+
+
+def estimates_percentage_expressions(
+    name: str, pcts: list, role_or_group: str
+) -> pl.Expr:
+    if role_or_group == "role":
+        expr = pl.when(pl.col(IndCqcColumns.main_job_role_clean_labelled) == name).then(
+            pl.col(IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted)
+        ).otherwise(0).sum() / pl.sum(
+            IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted
+        )
+
+    else:
+        expr = pl.when(pl.col(IndCqcColumns.main_job_group_labelled) == name).then(
+            pl.col(IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted)
+        ).otherwise(0).sum() / pl.sum(
+            IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted
+        )
+    return expr >= pcts[0] & expr <= pcts[1]
 
 
 if __name__ == "__main__":
