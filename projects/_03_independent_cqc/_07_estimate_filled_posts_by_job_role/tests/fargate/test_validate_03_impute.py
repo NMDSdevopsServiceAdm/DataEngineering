@@ -23,7 +23,6 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.cqc_location_import_date: pl.Date,
             IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
             IndCqcColumns.primary_service_type: CategoricalColumnTypes.PrimaryServiceEnumType,
-            IndCqcColumns.estimate_filled_posts_source: CategoricalColumnTypes.EstimatesFilledPostSourceEnumType,
             IndCqcColumns.estimate_filled_posts: pl.Float32,
             IndCqcColumns.ascwds_job_role_counts: pl.Int16,
             IndCqcColumns.job_role_filtering_rule: CategoricalColumnTypes.JobRoleFilteringRuleCatType,
@@ -34,8 +33,8 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.ascwds_job_role_rolling_ratio: pl.Float32,
         }
         source_rows = [
-            (1, 1, "1-001", date(2026, 1, 1), "care_worker", "non-residential", "ascwds_pir_merged", 10.0, 10, "populated", 0.5, 0.5, 0.5, "NR 1 to 24", 0.5),
-            (2, 1, "1-002", date(2026, 1, 1), "care_worker", "non-residential", "ascwds_pir_merged", 10.0, 10, "populated", 0.5, 0.5, 0.5, "NR 1 to 24", 0.5),
+            (1, 1, "1-001", date(2026, 1, 1), "care_worker", "non-residential", 10.0, 10, "populated", 0.5, 0.5, 0.5, "NR 1 to 24", 0.5),
+            (2, 1, "1-002", date(2026, 1, 1), "care_worker", "non-residential", 10.0, 10, "populated", 0.5, 0.5, 0.5, "NR 1 to 24", 0.5),
         ]  # fmt: skip
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])

@@ -22,7 +22,6 @@ VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.cqc_location_import_date,
     IndCqcColumns.main_job_role_clean_labelled,
     IndCqcColumns.primary_service_type,
-    IndCqcColumns.estimate_filled_posts_source,
     IndCqcColumns.estimate_filled_posts,
     IndCqcColumns.ascwds_job_role_counts,
     IndCqcColumns.job_role_filtering_rule,
@@ -49,9 +48,6 @@ EXPECTED_SCHEMA = pb.Schema(
         ),
         IndCqcColumns.primary_service_type: str(
             CategoricalColumnTypes.PrimaryServiceEnumType
-        ),
-        IndCqcColumns.estimate_filled_posts_source: str(
-            CategoricalColumnTypes.EstimatesFilledPostSourceEnumType
         ),
         IndCqcColumns.estimate_filled_posts: "Float32",
         IndCqcColumns.ascwds_job_role_counts: "Int16",
@@ -117,7 +113,6 @@ def main(
                 IndCqcColumns.cqc_location_import_date,
                 IndCqcColumns.primary_service_type,
                 IndCqcColumns.main_job_role_clean_labelled,
-                IndCqcColumns.estimate_filled_posts_source,
                 IndCqcColumns.estimate_filled_posts,
                 IndCqcColumns.job_role_filtering_rule,
                 IndCqcColumns.estimate_filled_posts_size_group,
@@ -151,10 +146,6 @@ def main(
         )
         # categorical
         .col_vals_in_set(
-            IndCqcColumns.estimate_filled_posts_source,
-            CatValues.estimate_filled_posts_source_column_values.categorical_values,
-        )
-        .col_vals_in_set(
             IndCqcColumns.primary_service_type,
             CatValues.primary_service_type_column_values.categorical_values,
         )
@@ -163,13 +154,6 @@ def main(
             CatValues.main_job_role_labels_column_values.categorical_values,
         )
         # distinct values
-        .specially(
-            vl.is_unique_count_equal(
-                IndCqcColumns.estimate_filled_posts_source,
-                CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
-            ),
-            brief=f"{IndCqcColumns.estimate_filled_posts_source} should have exactly {CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values} distinct values",
-        )
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.primary_service_type,
