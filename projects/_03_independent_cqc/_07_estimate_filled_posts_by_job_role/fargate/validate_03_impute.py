@@ -106,8 +106,6 @@ def main(
     )
     expected_row_count = compare_df.height
 
-    print(f"source_df schema: {source_df.schema}")
-
     validation = (
         pb.Validate(
             data=source_df,
@@ -197,10 +195,14 @@ def main(
                     (
                         pl.col(IndCqcColumns.job_role_filtering_rule)
                         != JobRoleFilteringRule.populated
+                        & pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
                     )
-                    & (pl.col(IndCqcColumns.ascwds_job_role_counts).is_null())
+                    | (
+                        pl.col(IndCqcColumns.job_role_filtering_rule)
+                        == JobRoleFilteringRule.populated
+                        & pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null()
+                    )
                 )
-                == True
             ),
             brief="ascwds_job_role_counts must be null where job_role_filtering_rule is not populated",
         )
@@ -216,15 +218,27 @@ def main(
         )
         .col_vals_expr(
             expr=(
-                pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null()
-                & pl.col(IndCqcColumns.ascwds_job_role_ratios).is_not_null()
+                (
+                    pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null()
+                    & pl.col(IndCqcColumns.ascwds_job_role_ratios).is_not_null()
+                )
+                | (
+                    pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
+                    & pl.col(IndCqcColumns.ascwds_job_role_ratios).is_null()
+                )
             ),
             brief="ascwds_job_role_counts and ascwds_job_role_ratios must be not null per row",
         )
         .col_vals_expr(
             expr=(
-                pl.col(IndCqcColumns.imputed_ascwds_job_role_counts).is_not_null()
-                & pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_not_null()
+                (
+                    pl.col(IndCqcColumns.imputed_ascwds_job_role_counts).is_not_null()
+                    & pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_not_null()
+                )
+                | (
+                    pl.col(IndCqcColumns.imputed_ascwds_job_role_counts).is_null()
+                    & pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_null()
+                )
             ),
             brief="imputed_ascwds_job_role_counts and imputed_ascwds_job_role_ratios must be not null per row",
         )
