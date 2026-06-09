@@ -198,12 +198,12 @@ def main(
                 (
                     (
                         pl.col(IndCqcColumns.job_role_filtering_rule)
-                        != JobRoleFilteringRule.populated
+                        != pl.lit(JobRoleFilteringRule.populated)
                         & pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
                     )
                     | (
                         pl.col(IndCqcColumns.job_role_filtering_rule)
-                        == JobRoleFilteringRule.populated
+                        == pl.lit(JobRoleFilteringRule.populated)
                         & pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null()
                     )
                 )
