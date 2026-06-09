@@ -18,6 +18,7 @@ from utils.column_values.categorical_columns_by_dataset import (
 
 VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.id_per_locationid_import_date,
+    IndCqcColumns.id_per_locationid_import_date_job_role,
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
     IndCqcColumns.main_job_role_clean_labelled,
