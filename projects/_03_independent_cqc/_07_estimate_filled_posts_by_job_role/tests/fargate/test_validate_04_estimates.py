@@ -98,58 +98,154 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
 class TestEstimatesPercentageExpressions:
     test_lf = pl.LazyFrame(
         schema={
+            IndCqcColumns.cqc_location_import_date: pl.Date,
             IndCqcColumns.main_job_role_clean_labelled: pl.String,
             IndCqcColumns.main_job_group_labelled: pl.String,
             IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
         },
         data=[
-            (MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 60.0),
-            (MainJobRoleLabels.support_worker, JobGroupLabels.direct_care, 20.0),
             (
+                date(2026, 1, 1),
+                MainJobRoleLabels.care_worker,
+                JobGroupLabels.direct_care,
+                60.0,
+            ),
+            (
+                date(2026, 1, 1),
+                MainJobRoleLabels.support_worker,
+                JobGroupLabels.direct_care,
+                20.0,
+            ),
+            (
+                date(2026, 1, 1),
                 MainJobRoleLabels.registered_nurse,
                 JobGroupLabels.regulated_professions,
                 5.0,
             ),
-            (MainJobRoleLabels.data_analyst, JobGroupLabels.other, 10.0),
-            (MainJobRoleLabels.it_manager, JobGroupLabels.managers, 5.0),
+            (
+                date(2026, 1, 1),
+                MainJobRoleLabels.data_analyst,
+                JobGroupLabels.other,
+                10.0,
+            ),
+            (
+                date(2026, 1, 1),
+                MainJobRoleLabels.it_manager,
+                JobGroupLabels.managers,
+                5.0,
+            ),
+            (
+                date(2026, 2, 1),
+                MainJobRoleLabels.care_worker,
+                JobGroupLabels.direct_care,
+                20.0,
+            ),
+            (
+                date(2026, 2, 1),
+                MainJobRoleLabels.support_worker,
+                JobGroupLabels.direct_care,
+                20.0,
+            ),
+            (
+                date(2026, 2, 1),
+                MainJobRoleLabels.registered_nurse,
+                JobGroupLabels.regulated_professions,
+                20.0,
+            ),
+            (
+                date(2026, 2, 1),
+                MainJobRoleLabels.data_analyst,
+                JobGroupLabels.other,
+                20.0,
+            ),
+            (
+                date(2026, 2, 1),
+                MainJobRoleLabels.it_manager,
+                JobGroupLabels.managers,
+                20.0,
+            ),
         ],
         orient="row",
     )
-    expected_schema = {
-        IndCqcColumns.main_job_role_clean_labelled: pl.String,
-        IndCqcColumns.main_job_group_labelled: pl.String,
-        IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
-        "expression": pl.Boolean,
-    }
-    expected_true_lf = pl.LazyFrame(
-        schema=expected_schema,
+    expected_lf = pl.LazyFrame(
+        schema={
+            IndCqcColumns.cqc_location_import_date: pl.Date,
+            IndCqcColumns.main_job_role_clean_labelled: pl.String,
+            IndCqcColumns.main_job_group_labelled: pl.String,
+            IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
+            "expression": pl.Boolean,
+        },
         data=[
-            (MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 60.0, True),
-            (MainJobRoleLabels.support_worker, JobGroupLabels.direct_care, 20.0, True),
             (
+                date(2026, 1, 1),
+                MainJobRoleLabels.care_worker,
+                JobGroupLabels.direct_care,
+                60.0,
+                True,
+            ),
+            (
+                date(2026, 1, 1),
+                MainJobRoleLabels.support_worker,
+                JobGroupLabels.direct_care,
+                20.0,
+                True,
+            ),
+            (
+                date(2026, 1, 1),
                 MainJobRoleLabels.registered_nurse,
                 JobGroupLabels.regulated_professions,
                 5.0,
                 True,
             ),
-            (MainJobRoleLabels.data_analyst, JobGroupLabels.other, 10.0, True),
-            (MainJobRoleLabels.it_manager, JobGroupLabels.managers, 5.0, True),
-        ],
-        orient="row",
-    )
-    expected_false_lf = pl.LazyFrame(
-        schema=expected_schema,
-        data=[
-            (MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 60.0, False),
-            (MainJobRoleLabels.support_worker, JobGroupLabels.direct_care, 20.0, False),
             (
-                MainJobRoleLabels.registered_nurse,
-                JobGroupLabels.regulated_professions,
+                date(2026, 1, 1),
+                MainJobRoleLabels.data_analyst,
+                JobGroupLabels.other,
+                10.0,
+                True,
+            ),
+            (
+                date(2026, 1, 1),
+                MainJobRoleLabels.it_manager,
+                JobGroupLabels.managers,
                 5.0,
+                True,
+            ),
+            (
+                date(2026, 2, 1),
+                MainJobRoleLabels.care_worker,
+                JobGroupLabels.direct_care,
+                20.0,
                 False,
             ),
-            (MainJobRoleLabels.data_analyst, JobGroupLabels.other, 10.0, False),
-            (MainJobRoleLabels.it_manager, JobGroupLabels.managers, 5.0, False),
+            (
+                date(2026, 2, 1),
+                MainJobRoleLabels.support_worker,
+                JobGroupLabels.direct_care,
+                20.0,
+                False,
+            ),
+            (
+                date(2026, 2, 1),
+                MainJobRoleLabels.registered_nurse,
+                JobGroupLabels.regulated_professions,
+                20.0,
+                False,
+            ),
+            (
+                date(2026, 2, 1),
+                MainJobRoleLabels.data_analyst,
+                JobGroupLabels.other,
+                20.0,
+                False,
+            ),
+            (
+                date(2026, 2, 1),
+                MainJobRoleLabels.it_manager,
+                JobGroupLabels.managers,
+                20.0,
+                False,
+            ),
         ],
         orient="row",
     )
@@ -159,28 +255,14 @@ class TestEstimatesPercentageExpressions:
             MainJobRoleLabels.care_worker, [0.59, 0.69], "role"
         )
         result = self.test_lf.with_columns(expr.alias("expression"))
-        pl_testing.assert_frame_equal(result, self.expected_true_lf)
-
-    def test_estimates_percentage_expressions_for_job_role_when_false(self):
-        expr = job.estimates_percentage_expressions(
-            MainJobRoleLabels.care_worker, [0.29, 0.39], "role"
-        )
-        result = self.test_lf.with_columns(expr.alias("expression"))
-        pl_testing.assert_frame_equal(result, self.expected_false_lf)
+        pl_testing.assert_frame_equal(result, self.expected_lf)
 
     def test_estimates_percentage_expressions_for_job_group_when_true(self):
         expr = job.estimates_percentage_expressions(
             JobGroupLabels.direct_care, [0.7, 0.8], "group"
         )
         result = self.test_lf.with_columns(expr.alias("expression"))
-        pl_testing.assert_frame_equal(result, self.expected_true_lf)
-
-    def test_estimates_percentage_expressions_for_job_group_when_false(self):
-        expr = job.estimates_percentage_expressions(
-            JobGroupLabels.direct_care, [0.7, 0.79], "group"
-        )
-        result = self.test_lf.with_columns(expr.alias("expression"))
-        pl_testing.assert_frame_equal(result, self.expected_false_lf)
+        pl_testing.assert_frame_equal(result, self.expected_lf)
 
     def test_estimates_percentage_expressions_invalid_role_or_group(self):
         with pytest.raises(ValueError) as excinfo:

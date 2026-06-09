@@ -148,7 +148,9 @@ def estimates_percentage_expressions(
         ).otherwise(0).sum() / pl.sum(
             IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted
         )
-    return (expr >= pcts[0]) & (expr <= pcts[1])
+    return ((expr >= pcts[0]) & (expr <= pcts[1])).over(
+        pl.col(IndCqcColumns.cqc_location_import_date)
+    )
 
 
 if __name__ == "__main__":
