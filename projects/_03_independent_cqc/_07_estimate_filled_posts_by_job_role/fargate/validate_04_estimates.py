@@ -20,6 +20,7 @@ ind_cqc_job_role_cols_to_import = [
     IndCqcColumns.main_job_role_clean_labelled,
     IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted,
     IndCqcColumns.estimate_filled_posts_from_all_job_roles,
+    IndCqcColumns.main_job_group_labelled,
 ]
 
 ind_cqc_estimates_cols_to_import = [
