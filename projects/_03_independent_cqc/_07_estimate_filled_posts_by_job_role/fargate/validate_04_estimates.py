@@ -70,22 +70,14 @@ def main(
             actions=GLOBAL_ACTIONS,
         )
         # estimates between (inclusive)
-        .col_vals_expr(
-            estimates_percentage_expressions(
-                MainJobRoleLabels.care_worker,
-                req_pcts[MainJobRoleLabels.care_worker],
-                "role",
-            ),
-            brief="Check percentage of filled posts for care workers",
-        )
-        .col_vals_expr(
-            estimates_percentage_expressions(
-                JobGroupLabels.direct_care,
-                req_pcts[JobGroupLabels.direct_care],
-                "group",
-            ),
-            brief="Check percentage of filled posts for direct care",
-        )
+        # .col_vals_expr(
+        #     estimates_percentage_expressions(
+        #         JobGroupLabels.direct_care,
+        #         req_pcts[JobGroupLabels.direct_care],
+        #         "group",
+        #     ),
+        #     brief="Check percentage of filled posts for direct care",
+        # )
         .col_vals_expr(
             estimates_percentage_expressions(
                 JobGroupLabels.managers, req_pcts[JobGroupLabels.managers], "group"
