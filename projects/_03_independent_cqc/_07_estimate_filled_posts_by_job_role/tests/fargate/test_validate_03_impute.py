@@ -100,6 +100,23 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
                 f"{assertion} not found in validation report",
             )
 
+    def test_count_nulls(self):
+        test_df = pl.DataFrame(
+            {
+                "col1": [1, 2, 3, 4],
+                "col2": [None, None, 3, 4],
+            }
+        )
+        returned_df = job.count_nulls(test_df, ["col1", "col2"])
+        expected_df = pl.DataFrame(
+            {
+                "col1": [0],
+                "col2": [2],
+            }
+        )
+        self.assertEqual(returned_df["col1"].to_list(), expected_df["col1"].to_list())
+        self.assertEqual(returned_df["col2"].to_list(), expected_df["col2"].to_list())
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

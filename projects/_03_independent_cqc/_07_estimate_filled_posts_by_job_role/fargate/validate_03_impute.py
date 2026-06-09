@@ -64,6 +64,13 @@ EXPECTED_SCHEMA = pb.Schema(
 )
 
 
+def count_nulls(df: pl.DataFrame, list: list[str]) -> pl.DataFrame:
+    """
+    Helper function to count null values in specified columns.
+    """
+    return df.select([pl.col(column).is_null().sum().alias(column) for column in list])
+
+
 def main(
     bucket_name: str, source_path: str, compare_path: str, reports_path: str
 ) -> None:
@@ -134,6 +141,7 @@ def main(
         .col_vals_expr(
             expr=(
                 pl.col(IndCqcColumns.id_per_locationid_import_date)
+                .sum()
                 .n_unique()
                 .over(
                     [
@@ -182,6 +190,28 @@ def main(
                 == True
             ),
             brief="ascwds_job_role_counts must be null where job_role_filtering_rule is not populated",
+        )
+        .col_vals_lt(
+            pre=count_nulls(
+                source_df,
+                [
+                    IndCqcColumns.imputed_ascwds_job_role_counts,
+                    IndCqcColumns.ascwds_job_role_counts,
+                ],
+            ),
+            columns=IndCqcColumns.imputed_ascwds_job_role_counts,
+            value=pb.col(IndCqcColumns.ascwds_job_role_counts),
+        )
+        .col_vals_lt(
+            pre=count_nulls(
+                source_df,
+                [
+                    IndCqcColumns.imputed_ascwds_job_role_ratios,
+                    IndCqcColumns.ascwds_job_role_ratios,
+                ],
+            ),
+            columns=IndCqcColumns.imputed_ascwds_job_role_ratios,
+            value=pb.col(IndCqcColumns.ascwds_job_role_ratios),
         )
         .col_vals_expr(
             expr=(
