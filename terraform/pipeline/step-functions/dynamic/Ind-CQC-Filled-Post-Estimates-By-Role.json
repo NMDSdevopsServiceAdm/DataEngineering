@@ -318,6 +318,7 @@
                                 "validate_03_impute.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_03_impute_job_roles/",
+                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_roles/",
                                 "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_07_03_impute_job_roles/"
                               ]
                             }
