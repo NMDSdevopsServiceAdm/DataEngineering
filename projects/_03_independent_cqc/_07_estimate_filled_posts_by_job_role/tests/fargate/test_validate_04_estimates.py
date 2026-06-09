@@ -274,7 +274,7 @@ class TestEstimatesPercentageExpressions:
         with pytest.raises(ValueError) as excinfo:
             job.estimates_percentage_expressions("care_worker", [0.59], "role")
 
-        assert "pcts must be a list of two values: [lower_bound, upper_bound]" in str(
+        assert "pcts must be a tuple of two values: (lower_bound, upper_bound)" in str(
             excinfo.value
         )
 

@@ -112,7 +112,7 @@ def main(
 
 
 def estimates_percentage_expressions(
-    name: str, pcts: list[float], role_or_group: str
+    name: str, pcts: tuple[float], role_or_group: str
 ) -> pl.Expr:
     """
     Constructs an expression to calculate the percentage of filled posts for a given job role or
@@ -120,7 +120,7 @@ def estimates_percentage_expressions(
 
     Args:
         name (str): the name of the job role or group to calculate the percentage for
-        pcts (list[float]): the lower and upper bounds for the acceptable percentage range
+        pcts (tuple[float]): the lower and upper bounds for the acceptable percentage range
         role_or_group (str): specifies whether to calculate for a job role or group
 
     Returns:
@@ -133,20 +133,32 @@ def estimates_percentage_expressions(
         raise ValueError("role_or_group must be either 'role' or 'group'")
     if len(pcts) != 2 or not all(isinstance(pct, (int, float)) for pct in pcts):
         raise ValueError(
-            "pcts must be a list of two values: [lower_bound, upper_bound]"
+            "pcts must be a tuple of two values: (lower_bound, upper_bound)"
         )
     if role_or_group == "role":
-        expr = pl.when(pl.col(IndCqcColumns.main_job_role_clean_labelled) == name).then(
-            pl.col(IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted)
-        ).otherwise(0).sum() / pl.sum(
-            IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted
+        expr = (
+            pl.when(pl.col(IndCqcColumns.main_job_role_clean_labelled) == name)
+            .then(
+                pl.col(IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted)
+            )
+            .otherwise(0)
+            .sum()
+            / pl.col(
+                IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted
+            ).sum()
         )
 
     elif role_or_group == "group":
-        expr = pl.when(pl.col(IndCqcColumns.main_job_group_labelled) == name).then(
-            pl.col(IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted)
-        ).otherwise(0).sum() / pl.sum(
-            IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted
+        expr = (
+            pl.when(pl.col(IndCqcColumns.main_job_group_labelled) == name)
+            .then(
+                pl.col(IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted)
+            )
+            .otherwise(0)
+            .sum()
+            / pl.col(
+                IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted
+            ).sum()
         )
     return ((expr >= pcts[0]) & (expr <= pcts[1])).over(
         pl.col(IndCqcColumns.cqc_location_import_date)
