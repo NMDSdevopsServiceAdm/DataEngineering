@@ -1,5 +1,6 @@
 import polars as pl
 
+from polars_utils import utils
 from polars_utils.filtering_utils import update_filtering_rule
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     CategoricalColumnTypes as CatColType,
@@ -111,6 +112,11 @@ def filter_job_role_group_outliers(
     bounds_lf = piv_lf.group_by(IndCQC.primary_service_type).agg(
         Exprs.upper_bounds_expr,
         Exprs.lower_bounds_expr,
+    )
+    utils.sink_to_parquet(
+        bounds_lf,
+        "domain=data_validation_reports/dataset=validation_ind_cqc_07_02_clean_job_roles/",
+        overwrite=True,
     )
 
     piv_lf = (
