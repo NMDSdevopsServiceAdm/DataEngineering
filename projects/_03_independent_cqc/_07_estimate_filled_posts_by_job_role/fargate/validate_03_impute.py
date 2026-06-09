@@ -24,7 +24,6 @@ VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.primary_service_type,
     IndCqcColumns.estimate_filled_posts_source,
     IndCqcColumns.estimate_filled_posts,
-    IndCqcColumns.ascwds_filled_posts_dedup_clean,
     IndCqcColumns.ascwds_job_role_counts,
     IndCqcColumns.job_role_filtering_rule,
     IndCqcColumns.ascwds_job_role_ratios,
@@ -55,7 +54,6 @@ EXPECTED_SCHEMA = pb.Schema(
             CategoricalColumnTypes.EstimatesFilledPostSourceEnumType
         ),
         IndCqcColumns.estimate_filled_posts: "Float32",
-        IndCqcColumns.ascwds_filled_posts_dedup_clean: "Float32",
         IndCqcColumns.ascwds_job_role_counts: "Int16",
         IndCqcColumns.job_role_filtering_rule: str(
             CategoricalColumnTypes.JobRoleFilteringRuleCatType
@@ -215,13 +213,10 @@ def main(
             brief="imputed_ascwds_job_role_counts and imputed_ascwds_job_role_ratios must be not null per row",
         )
         .col_vals_gt(
-            columns=[
-                IndCqcColumns.estimate_filled_posts,
-                IndCqcColumns.ascwds_filled_posts_dedup_clean,
-            ],
+            columns=IndCqcColumns.estimate_filled_posts,
             value=0,
             na_pass=True,
-            brief="estimate_filled_posts and ascwds_filled_posts_dedup_clean should be > 0 where present",
+            brief="estimate_filled_posts should be > 0 where present",
         )
         .col_vals_ge(
             columns=[
