@@ -6,6 +6,7 @@ from datetime import date
 import polars as pl
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_04_estimates as job
+from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_04_estimates"
 
@@ -88,6 +89,81 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
                 assertion_types_present,
                 f"{assertion} not found in validation report",
             )
+
+
+class TestEstimatesPercentageExpressions(unittest.TestCase):
+    def test_estimates_percentage_expressions_for_job_role(self):
+        expr = job.estimates_percentage_expressions(
+            MainJobRoleLabels.care_worker, [0.59, 0.69], "role"
+        )
+        expected_expr = (
+            (
+                pl.when(
+                    pl.col(IndCqcColumns.main_job_role_clean_labelled)
+                    == MainJobRoleLabels.care_worker
+                )
+                .then(
+                    pl.col(
+                        IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted
+                    )
+                )
+                .otherwise(0)
+                .sum()
+                / pl.sum(
+                    IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted
+                )
+            )
+            >= 0.59
+        ) & (
+            (
+                pl.when(
+                    pl.col(IndCqcColumns.main_job_role_clean_labelled)
+                    == MainJobRoleLabels.care_worker
+                )
+                .then(
+                    pl.col(
+                        IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted
+                    )
+                )
+                .otherwise(0)
+                .sum()
+                / pl.sum(
+                    IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted
+                )
+            )
+            <= 0.69
+        )
+        self.assertEqual(expr.meta.output_name, expected_expr.meta.output_name)
+        self.assertEqual(expr.meta.input_names, expected_expr.meta.input_names)
+        self.assertEqual(expr.meta.expr_type, expected_expr.meta.expr_type)
+
+    def test_estimates_percentage_expressions_for_job_group(self):
+        expr = job.estimates_percentage_expressions(
+            "direct_care", [0.71, 0.81], "group"
+        )
+        expected_expr = (
+            (
+                pl.col("estimate_filled_posts_by_job_role_manager_adjusted")
+                / pl.col("estimate_filled_posts_from_all_job_roles")
+            )
+            .filter(
+                pl.col("main_job_role_clean_labelled").is_in(
+                    ["care_worker", "support_worker"]
+                )
+            )
+            .alias("direct_care_percentage")
+        )
+        self.assertEqual(expr.meta.output_name, expected_expr.meta.output_name)
+        self.assertEqual(expr.meta.input_names, expected_expr.meta.input_names)
+        self.assertEqual(expr.meta.expr_type, expected_expr.meta.expr_type)
+
+    def test_estimates_percentage_expressions_invalid_role_or_group(self):
+        with self.assertRaises(ValueError):
+            job.estimates_percentage_expressions("care_worker", [0.59, 0.69], "invalid")
+
+    def test_estimates_percentage_expressions_invalid_pcts(self):
+        with self.assertRaises(ValueError):
+            job.estimates_percentage_expressions("care_worker", [0.59], "role")
 
 
 if __name__ == "__main__":
