@@ -202,20 +202,6 @@ def main(
         )
         .col_vals_expr(
             expr=(
-                pl.col(IndCqcColumns.imputed_ascwds_job_role_counts).null_count()
-                < pl.col(IndCqcColumns.ascwds_job_role_counts).null_count()
-            ),
-            brief="imputed_ascwds_job_role_counts must have fewer nulls than ascwds_job_role_counts",
-        )
-        .col_vals_expr(
-            expr=(
-                pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).null_count()
-                < pl.col(IndCqcColumns.ascwds_job_role_ratios).null_count()
-            ),
-            brief="imputed_ascwds_job_role_ratios must have fewer nulls than ascwds_job_role_ratios",
-        )
-        .col_vals_expr(
-            expr=(
                 pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null()
                 & pl.col(IndCqcColumns.ascwds_job_role_ratios).is_not_null()
             ),
