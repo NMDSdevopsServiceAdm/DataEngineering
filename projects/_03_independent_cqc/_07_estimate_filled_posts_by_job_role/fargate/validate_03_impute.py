@@ -95,6 +95,8 @@ def main(
     )
     expected_row_count = compare_df.height
 
+    print(f"source_df schema: {source_df.schema}")
+
     validation = (
         pb.Validate(
             data=source_df,
