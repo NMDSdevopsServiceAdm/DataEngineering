@@ -75,31 +75,36 @@ def main(
                 MainJobRoleLabels.care_worker,
                 req_pcts[MainJobRoleLabels.care_worker],
                 "role",
-            )
+            ),
+            brief=f"Check percentage of filled posts for care workers is between {req_pcts[MainJobRoleLabels.care_worker][0]} and {req_pcts[MainJobRoleLabels.care_worker][1]}",
         )
         .col_vals_expr(
             estimates_percentage_expressions(
                 JobGroupLabels.direct_care,
                 req_pcts[JobGroupLabels.direct_care],
                 "group",
-            )
+            ),
+            brief=f"Check percentage of filled posts for direct care is between {req_pcts[JobGroupLabels.direct_care][0]} and {req_pcts[JobGroupLabels.direct_care][1]}",
         )
         .col_vals_expr(
             estimates_percentage_expressions(
                 JobGroupLabels.managers, req_pcts[JobGroupLabels.managers], "group"
-            )
+            ),
+            brief=f"Check percentage of filled posts for managers is between {req_pcts[JobGroupLabels.managers][0]} and {req_pcts[JobGroupLabels.managers][1]}",
         )
         .col_vals_expr(
             estimates_percentage_expressions(
                 JobGroupLabels.regulated_professions,
                 req_pcts[JobGroupLabels.regulated_professions],
                 "group",
-            )
+            ),
+            brief=f"Check percentage of filled posts for regulated professions is between {req_pcts[JobGroupLabels.regulated_professions][0]} and {req_pcts[JobGroupLabels.regulated_professions][1]}",
         )
         .col_vals_expr(
             estimates_percentage_expressions(
                 JobGroupLabels.other, req_pcts[JobGroupLabels.other], "group"
-            )
+            ),
+            brief=f"Check percentage of filled posts for other is between {req_pcts[JobGroupLabels.other][0]} and {req_pcts[JobGroupLabels.other][1]}",
         )
         .interrogate()
     )
