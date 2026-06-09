@@ -42,6 +42,7 @@ CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
 EXPECTED_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.id_per_locationid_import_date: "UInt32",
+        IndCqcColumns.id_per_locationid_import_date_job_role: "UInt32",
         IndCqcColumns.location_id: str(CategoricalColumnTypes.LocationCatType),
         IndCqcColumns.cqc_location_import_date: "Date",
         IndCqcColumns.main_job_role_clean_labelled: str(
@@ -64,11 +65,21 @@ EXPECTED_SCHEMA = pb.Schema(
 )
 
 
-def count_nulls(df: pl.DataFrame, list: list[str]) -> pl.DataFrame:
+def count_nulls(df: pl.DataFrame) -> pl.DataFrame:
     """
-    Helper function to count null values in specified columns.
+    Helper function to count null values in specific columns.
     """
-    return df.select([pl.col(column).is_null().sum().alias(column) for column in list])
+
+    cols_to_count_nulls = [
+        IndCqcColumns.imputed_ascwds_job_role_counts,
+        IndCqcColumns.ascwds_job_role_counts,
+        IndCqcColumns.imputed_ascwds_job_role_ratios,
+        IndCqcColumns.ascwds_job_role_ratios,
+    ]
+
+    return df.select(
+        [pl.col(column).is_null().sum().alias(column) for column in cols_to_count_nulls]
+    )
 
 
 def main(
@@ -194,24 +205,12 @@ def main(
             brief="ascwds_job_role_counts must be null where job_role_filtering_rule is not populated",
         )
         .col_vals_lt(
-            pre=count_nulls(
-                source_df,
-                [
-                    IndCqcColumns.imputed_ascwds_job_role_counts,
-                    IndCqcColumns.ascwds_job_role_counts,
-                ],
-            ),
+            pre=count_nulls,
             columns=IndCqcColumns.imputed_ascwds_job_role_counts,
             value=pb.col(IndCqcColumns.ascwds_job_role_counts),
         )
         .col_vals_lt(
-            pre=count_nulls(
-                source_df,
-                [
-                    IndCqcColumns.imputed_ascwds_job_role_ratios,
-                    IndCqcColumns.ascwds_job_role_ratios,
-                ],
-            ),
+            pre=count_nulls,
             columns=IndCqcColumns.imputed_ascwds_job_role_ratios,
             value=pb.col(IndCqcColumns.ascwds_job_role_ratios),
         )

@@ -103,19 +103,37 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
     def test_count_nulls(self):
         test_df = pl.DataFrame(
             {
-                "col1": [1, 2, 3, 4],
-                "col2": [None, None, 3, 4],
+                IndCqcColumns.imputed_ascwds_job_role_counts: [1, 2, 3, 4],
+                IndCqcColumns.ascwds_job_role_counts: [None, None, 3, 4],
+                IndCqcColumns.imputed_ascwds_job_role_ratios: [None, None, None, None],
+                IndCqcColumns.ascwds_job_role_ratios: [None, None, None, None],
             }
         )
-        returned_df = job.count_nulls(test_df, ["col1", "col2"])
+        returned_df = job.count_nulls(test_df)
         expected_df = pl.DataFrame(
             {
-                "col1": [0],
-                "col2": [2],
+                IndCqcColumns.imputed_ascwds_job_role_counts: [0],
+                IndCqcColumns.ascwds_job_role_counts: [2],
+                IndCqcColumns.imputed_ascwds_job_role_ratios: [4],
+                IndCqcColumns.ascwds_job_role_ratios: [4],
             }
         )
-        self.assertEqual(returned_df["col1"].to_list(), expected_df["col1"].to_list())
-        self.assertEqual(returned_df["col2"].to_list(), expected_df["col2"].to_list())
+        self.assertEqual(
+            returned_df[IndCqcColumns.imputed_ascwds_job_role_counts].to_list(),
+            expected_df[IndCqcColumns.imputed_ascwds_job_role_counts].to_list(),
+        )
+        self.assertEqual(
+            returned_df[IndCqcColumns.ascwds_job_role_counts].to_list(),
+            expected_df[IndCqcColumns.ascwds_job_role_counts].to_list(),
+        )
+        self.assertEqual(
+            returned_df[IndCqcColumns.imputed_ascwds_job_role_ratios].to_list(),
+            expected_df[IndCqcColumns.imputed_ascwds_job_role_ratios].to_list(),
+        )
+        self.assertEqual(
+            returned_df[IndCqcColumns.ascwds_job_role_ratios].to_list(),
+            expected_df[IndCqcColumns.ascwds_job_role_ratios].to_list(),
+        )
 
 
 if __name__ == "__main__":
