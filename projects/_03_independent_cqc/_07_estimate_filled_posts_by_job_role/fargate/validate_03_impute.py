@@ -16,7 +16,15 @@ from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
 )
 
-VALIDATION_COLS_TO_IMPORT = [
+INDEX_VALIDATION_COLS_TO_IMPORT = [
+    IndCqcColumns.id_per_locationid_import_date,
+    IndCqcColumns.id_per_locationid_import_date_job_role,
+    IndCqcColumns.location_id,
+    IndCqcColumns.cqc_location_import_date,
+    IndCqcColumns.main_job_role_clean_labelled,
+]
+
+OTHER_VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.id_per_locationid_import_date,
     IndCqcColumns.id_per_locationid_import_date_job_role,
     IndCqcColumns.location_id,
@@ -39,7 +47,19 @@ IND_CQC_ESTIMATES_COLS_TO_IMPORT = [
 
 CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
 
-EXPECTED_SCHEMA = pb.Schema(
+INDEX_VAL_EXPECTED_SCHEMA = pb.Schema(
+    columns={
+        IndCqcColumns.id_per_locationid_import_date: "UInt32",
+        IndCqcColumns.id_per_locationid_import_date_job_role: "UInt32",
+        IndCqcColumns.location_id: str(CategoricalColumnTypes.LocationCatType),
+        IndCqcColumns.cqc_location_import_date: "Date",
+        IndCqcColumns.main_job_role_clean_labelled: str(
+            CategoricalColumnTypes.JobRoleEnumType
+        ),
+    }
+)
+
+OTHER_VAL_EXPECTED_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.id_per_locationid_import_date: "UInt32",
         IndCqcColumns.id_per_locationid_import_date_job_role: "UInt32",
@@ -96,15 +116,15 @@ def main(
         compare_path (str): the path to the dataset to compare against
         reports_path (str): the output path to write reports to
     """
+    index_validation(bucket_name, source_path, reports_path)
+    other_validation(bucket_name, source_path, compare_path, reports_path)
+
+
+def index_validation(bucket_name: str, source_path: str, reports_path: str) -> None:
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=VALIDATION_COLS_TO_IMPORT,
+        selected_columns=INDEX_VALIDATION_COLS_TO_IMPORT,
     )
-    compare_df = utils.read_parquet(
-        source=f"s3://{bucket_name}/{compare_path}",
-        selected_columns=IND_CQC_ESTIMATES_COLS_TO_IMPORT,
-    )
-    expected_row_count = compare_df.height
 
     validation = (
         pb.Validate(
@@ -116,34 +136,14 @@ def main(
         )
         # dataset schema
         .col_schema_match(
-            schema=EXPECTED_SCHEMA, brief="Dataset should match the expected schema"
-        )
-        # dataset size
-        .row_count_match(
-            expected_row_count,
-            brief=f"Expects {expected_row_count} rows",
-        )
-        # complete columns
-        .col_vals_not_null(
-            columns=[
-                IndCqcColumns.id_per_locationid_import_date,
-                IndCqcColumns.id_per_locationid_import_date_job_role,
-                IndCqcColumns.location_id,
-                IndCqcColumns.cqc_location_import_date,
-                IndCqcColumns.primary_service_type,
-                IndCqcColumns.main_job_role_clean_labelled,
-                IndCqcColumns.estimate_filled_posts,
-                IndCqcColumns.job_role_filtering_rule,
-                IndCqcColumns.estimate_filled_posts_size_group,
-                IndCqcColumns.ascwds_job_role_rolling_ratio,
-            ],
-            brief="Key columns should contain no null values",
+            schema=INDEX_VAL_EXPECTED_SCHEMA,
+            brief="Dataset should match the expected schema",
         )
         # index columns
-        # .rows_distinct(
-        #     columns_subset=IndCqcColumns.id_per_locationid_import_date_job_role,
-        #     brief="id_per_locationid_import_date_job_role should be unique",
-        # )
+        .rows_distinct(
+            columns_subset=IndCqcColumns.id_per_locationid_import_date_job_role,
+            brief="id_per_locationid_import_date_job_role should be unique",
+        )
         .rows_distinct(
             columns_subset=[
                 IndCqcColumns.location_id,
@@ -166,6 +166,60 @@ def main(
                 == 1
             ),
             brief="id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
+        )
+        .interrogate()
+    )
+    vl.write_reports(validation, bucket_name, f"{reports_path}/index_validation")
+
+
+def other_validation(
+    bucket_name: str, source_path: str, compare_path: str, reports_path: str
+) -> None:
+    source_df = utils.read_parquet(
+        source=f"s3://{bucket_name}/{source_path}",
+        selected_columns=OTHER_VALIDATION_COLS_TO_IMPORT,
+    )
+
+    compare_df = utils.read_parquet(
+        source=f"s3://{bucket_name}/{compare_path}",
+        selected_columns=IND_CQC_ESTIMATES_COLS_TO_IMPORT,
+    )
+
+    expected_row_count = compare_df.height
+
+    validation = (
+        pb.Validate(
+            data=source_df,
+            label=f"Validation of {source_path}",
+            thresholds=GLOBAL_THRESHOLDS,
+            brief=True,
+            actions=GLOBAL_ACTIONS,
+        )
+        # dataset schema
+        .col_schema_match(
+            schema=OTHER_VAL_EXPECTED_SCHEMA,
+            brief="Dataset should match the expected schema",
+        )
+        # dataset size
+        .row_count_match(
+            expected_row_count,
+            brief=f"Expects {expected_row_count} rows",
+        )
+        # complete columns
+        .col_vals_not_null(
+            columns=[
+                IndCqcColumns.id_per_locationid_import_date,
+                IndCqcColumns.id_per_locationid_import_date_job_role,
+                IndCqcColumns.location_id,
+                IndCqcColumns.cqc_location_import_date,
+                IndCqcColumns.primary_service_type,
+                IndCqcColumns.main_job_role_clean_labelled,
+                IndCqcColumns.estimate_filled_posts,
+                IndCqcColumns.job_role_filtering_rule,
+                IndCqcColumns.estimate_filled_posts_size_group,
+                IndCqcColumns.ascwds_job_role_rolling_ratio,
+            ],
+            brief="Key columns should contain no null values",
         )
         # categorical
         .col_vals_in_set(
@@ -284,7 +338,7 @@ def main(
         )
         .interrogate()
     )
-    vl.write_reports(validation, bucket_name, reports_path)
+    vl.write_reports(validation, bucket_name, f"{reports_path}/other_validation")
 
 
 if __name__ == "__main__":
