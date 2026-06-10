@@ -134,27 +134,6 @@ def main(
         )
         .col_vals_expr(
             expr=(
-                (
-                    (
-                        (
-                            pl.col(IndCqcColumns.job_role_filtering_rule)
-                            != pl.lit(JobRoleFilteringRule.populated)
-                        )
-                        & pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
-                    )
-                    | (
-                        (
-                            pl.col(IndCqcColumns.job_role_filtering_rule)
-                            == pl.lit(JobRoleFilteringRule.populated)
-                        )
-                        & pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null()
-                    )
-                )
-            ),
-            brief="ascwds_job_role_counts must be null when job_role_filtering_rule value is not 'populated', and non-null when it is 'populated'",
-        )
-        .col_vals_expr(
-            expr=(
                 pl.col(IndCqcColumns.id_per_locationid_import_date)
                 .n_unique()
                 .over(
@@ -190,6 +169,27 @@ def main(
             na_pass=True,
             brief="ascwds_job_role_counts should be >= 0 where present",
         )
+        .col_vals_expr(
+            expr=(
+                (
+                    (
+                        (
+                            pl.col(IndCqcColumns.job_role_filtering_rule)
+                            != pl.lit(JobRoleFilteringRule.populated)
+                        )
+                        & pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
+                    )
+                    | (
+                        (
+                            pl.col(IndCqcColumns.job_role_filtering_rule)
+                            == pl.lit(JobRoleFilteringRule.populated)
+                        )
+                        & pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null()
+                    )
+                )
+            ),
+            brief="ascwds_job_role_counts must be null when job_role_filtering_rule value is not 'populated', and non-null when it is 'populated'",
+        )
         # categorical
         .col_vals_in_set(
             IndCqcColumns.primary_service_type,
@@ -198,12 +198,6 @@ def main(
         .col_vals_in_set(
             IndCqcColumns.main_job_role_clean_labelled,
             CatValues.main_job_role_labels_column_values.categorical_values,
-        )
-        # Date plausibility
-        .col_vals_ge(
-            columns=IndCqcColumns.cqc_location_import_date,
-            value=CQC_EARLIEST_IMPORT_DATE,
-            brief=f"cqc_location_import_date should not be before {CQC_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
         )
         .specially(
             vl.is_unique_count_equal(
@@ -218,6 +212,12 @@ def main(
                 CatValues.main_job_role_labels_column_values.count_of_categorical_values,
             ),
             brief=f"{IndCqcColumns.main_job_role_clean_labelled} should have exactly {CatValues.main_job_role_labels_column_values.count_of_categorical_values} distinct values",
+        )
+        # Date plausibility
+        .col_vals_ge(
+            columns=IndCqcColumns.cqc_location_import_date,
+            value=CQC_EARLIEST_IMPORT_DATE,
+            brief=f"cqc_location_import_date should not be before {CQC_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
         )
         .interrogate()
     )
