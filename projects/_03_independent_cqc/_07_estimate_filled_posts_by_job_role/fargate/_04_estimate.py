@@ -1,6 +1,9 @@
 import polars as pl
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.estimate_utils as eUtils
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    add_job_role_groups_column,
+)
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -47,6 +50,8 @@ def main(
     lf = eUtils.adjust_managerial_roles(lf, non_rm_manager_roles)
 
     lf = eUtils.calc_diff_estimate_filled_posts_and_from_all_job_roles(lf)
+
+    lf = add_job_role_groups_column(lf, IndCQC.main_job_group_labelled)
 
     lf = lf.with_columns(
         pl.col(IndCQC.cqc_location_import_date).dt.year().alias(Keys.year)

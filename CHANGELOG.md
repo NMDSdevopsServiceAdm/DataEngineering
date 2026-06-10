@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 
 - Added Validations for merged data and merged metadata within Estimates by Job Roles Pipeline.
 
+- Added validations for cleaned data within Estimates by Job Roles Pipeline.
+
 - Added Validations for impute data within Estimates by Job Roles Pipeline.
 
 ### Changed
@@ -40,6 +42,8 @@ All notable changes to this project will be documented in this file.
 - Removed PySpark version of Estimates by job Role and all its tests, validation, test data and test schemas as well.
 
 - Removed old version of job role estimates task and associated code not used elsewhere.
+
+- Refactored job role estimates validation to remove aggregated table.
 
 ### Fixed
 - Raw and cleaned ascwds worker validation scripts so they raise exceptions on failure.
