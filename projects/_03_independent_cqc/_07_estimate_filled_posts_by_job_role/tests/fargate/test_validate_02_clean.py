@@ -11,6 +11,7 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_column_values import (
+    JobRoleFilteringRule,
     MainJobRoleLabels,
     PrimaryServiceType,
 )
@@ -29,9 +30,10 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.primary_service_type: CategoricalColumnTypes.PrimaryServiceEnumType,
             IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
             IndCqcColumns.ascwds_job_role_counts: pl.Int16,
+            IndCqcColumns.job_role_filtering_rule: pl.String,
         }
         source_rows = [
-            (1, "1-001", date(2026, 1, 1), 1, 10.0, PrimaryServiceType.non_residential, MainJobRoleLabels.care_worker, 10),
+            (1, "1-001", date(2026, 1, 1), 1, 10.0, PrimaryServiceType.non_residential, MainJobRoleLabels.care_worker, 10, JobRoleFilteringRule.populated),
         ]  # fmt: skip
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select(
@@ -88,6 +90,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             "col_vals_in_set",
             "col_vals_gt",
             "col_vals_ge",
+            "specially",
         }
 
         for assertion in expected_assertions:

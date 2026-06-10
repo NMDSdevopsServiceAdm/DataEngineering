@@ -14,6 +14,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
 )
+from utils.column_values.categorical_column_values import JobRoleFilteringRule
 
 VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.id_per_locationid_import_date,
@@ -24,6 +25,7 @@ VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.primary_service_type,
     IndCqcColumns.main_job_role_clean_labelled,
     IndCqcColumns.ascwds_job_role_counts,
+    IndCqcColumns.ascwds_filtering_rule,
 ]
 
 IND_CQC_MERGE_COLS_TO_IMPORT = [
@@ -47,6 +49,9 @@ EXPECTED_SCHEMA = pb.Schema(
             CategoricalColumnTypes.JobRoleEnumType
         ),
         IndCqcColumns.ascwds_job_role_counts: "Int16",
+        IndCqcColumns.job_role_filtering_rule: str(
+            CategoricalColumnTypes.JobRoleFilteringRuleCatType
+        ),
     }
 )
 
@@ -110,6 +115,7 @@ def main(
                 IndCqcColumns.estimate_filled_posts,
                 IndCqcColumns.primary_service_type,
                 IndCqcColumns.main_job_role_clean_labelled,
+                IndCqcColumns.job_role_filtering_rule,
             ]
         )
         # index columns
@@ -125,6 +131,27 @@ def main(
                 IndCqcColumns.main_job_role_clean_labelled,
             ],
             brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
+        )
+        .col_vals_expr(
+            expr=(
+                (
+                    (
+                        (
+                            pl.col(IndCqcColumns.job_role_filtering_rule)
+                            != pl.lit(JobRoleFilteringRule.populated)
+                        )
+                        & pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
+                    )
+                    | (
+                        (
+                            pl.col(IndCqcColumns.job_role_filtering_rule)
+                            == pl.lit(JobRoleFilteringRule.populated)
+                        )
+                        & pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null()
+                    )
+                )
+            ),
+            brief="ascwds_job_role_counts must be null where job_role_filtering_rule is not populated",
         )
         .col_vals_expr(
             expr=(
@@ -177,6 +204,20 @@ def main(
             columns=IndCqcColumns.cqc_location_import_date,
             value=CQC_EARLIEST_IMPORT_DATE,
             brief=f"cqc_location_import_date should not be before {CQC_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.primary_service_type,
+                CatValues.primary_service_type_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.primary_service_type} should have exactly {CatValues.primary_service_type_column_values.count_of_categorical_values} distinct values",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.main_job_role_clean_labelled,
+                CatValues.main_job_role_labels_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.main_job_role_clean_labelled} should have exactly {CatValues.main_job_role_labels_column_values.count_of_categorical_values} distinct values",
         )
         .interrogate()
     )
