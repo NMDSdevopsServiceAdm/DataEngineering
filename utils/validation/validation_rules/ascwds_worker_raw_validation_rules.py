@@ -21,6 +21,7 @@ class ASCWDSWorkerRawValidationRules:
         RuleName.categorical_values_in_columns: {
             AWK.main_job_role_id: CatValues.main_job_role_id_column_values.categorical_values
             + ["-1"],
+            # Adding the value "-1" to account for unknown job role ids, which are present in the dataset and should not be flagged as invalid values
         },
         RuleName.distinct_values: {
             AWK.main_job_role_id: CatValues.main_job_role_id_column_values.count_of_categorical_values
