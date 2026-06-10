@@ -151,7 +151,7 @@ def main(
                     )
                 )
             ),
-            brief="ascwds_job_role_counts must be null where job_role_filtering_rule is not populated",
+            brief="ascwds_job_role_counts must be null when job_role_filtering_rule value is not 'populated', and non-null when it is 'populated'",
         )
         .col_vals_expr(
             expr=(
