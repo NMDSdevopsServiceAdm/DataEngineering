@@ -41,7 +41,7 @@ OTHER_VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.ascwds_job_role_rolling_ratio,
 ]
 
-IND_CQC_ESTIMATES_COLS_TO_IMPORT = [
+IND_CQC_CLEAN_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
 ]
 
@@ -175,7 +175,7 @@ def other_validation(
 
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
-        selected_columns=IND_CQC_ESTIMATES_COLS_TO_IMPORT,
+        selected_columns=IND_CQC_CLEAN_COLS_TO_IMPORT,
     )
 
     expected_row_count = compare_df.height
@@ -264,11 +264,13 @@ def other_validation(
             pre=count_nulls,
             columns=IndCqcColumns.imputed_ascwds_job_role_counts,
             value=pb.col(IndCqcColumns.ascwds_job_role_counts),
+            brief="Number of nulls in imputed_ascwds_job_role_counts must be less than in ascwds_job_role_counts",
         )
         .col_vals_lt(
             pre=count_nulls,
             columns=IndCqcColumns.imputed_ascwds_job_role_ratios,
             value=pb.col(IndCqcColumns.ascwds_job_role_ratios),
+            brief="Number of nulls in imputed_ascwds_job_role_ratios must be less than in ascwds_job_role_ratios",
         )
         .col_vals_expr(
             expr=(

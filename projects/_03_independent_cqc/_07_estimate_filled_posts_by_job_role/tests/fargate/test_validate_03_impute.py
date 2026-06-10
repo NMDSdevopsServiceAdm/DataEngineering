@@ -101,7 +101,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
                 ),
                 call(
                     source="s3://bucket/my/compare/",
-                    selected_columns=job.IND_CQC_ESTIMATES_COLS_TO_IMPORT,
+                    selected_columns=job.IND_CQC_CLEAN_COLS_TO_IMPORT,
                 ),
             ]
         )
