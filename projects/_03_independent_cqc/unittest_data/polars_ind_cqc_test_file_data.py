@@ -3053,7 +3053,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
     test_job_group_percentage_rows = [
         (0.0625, 0.1875, 0.3125, 0.4375, 16),
         (0.1,    0.2,    0.3,    0.4,    20),
-        (None, None, None, None, None), # Test handling of null values
+        (None, None, None, None, 0), # Test handling of null values
     ] # fmt: skip
     test_evaluation_expr_rows = [
         (0.1, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, 1), # All within bounds

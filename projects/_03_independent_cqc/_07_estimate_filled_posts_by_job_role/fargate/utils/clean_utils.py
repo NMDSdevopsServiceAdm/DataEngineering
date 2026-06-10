@@ -196,8 +196,15 @@ class FilterJobRoleGroupExpressions:
         self.location_sum_expr = pl.sum_horizontal(self.job_group_cols).alias(
             self.temp_location_sum
         )
+        # Explicitly handle NULL and zero denominators to avoid ambiguous
+        # truthiness when comparing to 0. If the location sum is NULL or 0
+        # the resulting percentage should be NULL so downstream logic can
+        # distinguish missing data from a valid zero ratio.
         self.job_group_percentage_expr = (
-            pl.when(pl.col(self.temp_location_sum) != 0)
+            pl.when(
+                pl.col(self.temp_location_sum).is_not_null()
+                & (pl.col(self.temp_location_sum) != 0)
+            )
             .then(
                 pl.col(self.job_group_cols)
                 / pl.col(self.temp_location_sum).cast(pl.Float32)
