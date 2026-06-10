@@ -44,6 +44,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Raw and cleaned ascwds worker validation scripts so they raise exceptions on failure.
 
+- Null handling in job group filter.
+
 
 ## [v2026.04.0] - 15/05/2026
 
