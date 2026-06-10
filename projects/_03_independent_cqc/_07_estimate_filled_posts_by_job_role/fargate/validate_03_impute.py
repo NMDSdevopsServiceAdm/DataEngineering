@@ -82,6 +82,21 @@ def count_nulls(df: pl.DataFrame) -> pl.DataFrame:
     )
 
 
+def uniqueness_id_per_locationid_import_date(df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Helper function to check uniqueness of id_per_locationid_import_date within
+    location_id and cqc_location_import_date combinations.
+    """
+
+    return df.group_by(
+        [IndCqcColumns.location_id, IndCqcColumns.cqc_location_import_date]
+    ).agg(
+        pl.col(IndCqcColumns.id_per_locationid_import_date)
+        .n_unique()
+        .alias("uniqueness_id_per_locationid_import_date")
+    )
+
+
 def main(
     bucket_name: str, source_path: str, compare_path: str, reports_path: str
 ) -> None:
@@ -146,7 +161,6 @@ def main(
         )
         .rows_distinct(
             columns_subset=[
-                IndCqcColumns.id_per_locationid_import_date_job_role,
                 IndCqcColumns.location_id,
                 IndCqcColumns.cqc_location_import_date,
                 IndCqcColumns.main_job_role_clean_labelled,
@@ -154,18 +168,8 @@ def main(
             brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
         )
         .col_vals_expr(
-            expr=(
-                pl.col(IndCqcColumns.id_per_locationid_import_date)
-                .sum()
-                .n_unique()
-                .over(
-                    [
-                        IndCqcColumns.location_id,
-                        IndCqcColumns.cqc_location_import_date,
-                    ]
-                )
-                == 1
-            ),
+            pre=uniqueness_id_per_locationid_import_date,
+            expr=pl.col("uniqueness_id_per_locationid_import_date") == 1,
             brief="id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
         )
         # categorical
@@ -193,27 +197,27 @@ def main(
             brief=f"{IndCqcColumns.main_job_role_clean_labelled} should have exactly {CatValues.main_job_role_labels_column_values.count_of_categorical_values} distinct values",
         )
         # numerical
-        # .col_vals_expr(
-        #     expr=(
-        #         (
-        #             (
-        #                 (
-        #                     pl.col(IndCqcColumns.job_role_filtering_rule)
-        #                     != pl.lit(JobRoleFilteringRule.populated)
-        #                 )
-        #                 & pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
-        #             )
-        #             | (
-        #                 (
-        #                     pl.col(IndCqcColumns.job_role_filtering_rule)
-        #                     == pl.lit(JobRoleFilteringRule.populated)
-        #                 )
-        #                 & pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null()
-        #             )
-        #         )
-        #     ),
-        #     brief="ascwds_job_role_counts must be null where job_role_filtering_rule is not populated",
-        # )
+        .col_vals_expr(
+            expr=(
+                (
+                    (
+                        (
+                            pl.col(IndCqcColumns.job_role_filtering_rule)
+                            != pl.lit(JobRoleFilteringRule.populated)
+                        )
+                        & pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
+                    )
+                    | (
+                        (
+                            pl.col(IndCqcColumns.job_role_filtering_rule)
+                            == pl.lit(JobRoleFilteringRule.populated)
+                        )
+                        & pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null()
+                    )
+                )
+            ),
+            brief="ascwds_job_role_counts must be null where job_role_filtering_rule is not populated",
+        )
         .col_vals_lt(
             pre=count_nulls,
             columns=IndCqcColumns.imputed_ascwds_job_role_counts,
