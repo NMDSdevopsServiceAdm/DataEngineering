@@ -259,7 +259,7 @@ def other_validation(
                     )
                 )
             ),
-            brief="ascwds_job_role_counts must be null where job_role_filtering_rule is not populated",
+            brief="ascwds_job_role_counts must be null where job_role_filtering_rule is a value other than populated",
         )
         .col_vals_lt(
             pre=count_nulls,
@@ -282,7 +282,7 @@ def other_validation(
                     & pl.col(IndCqcColumns.ascwds_job_role_ratios).is_null()
                 )
             ),
-            brief="ascwds_job_role_counts and ascwds_job_role_ratios must be not null per row",
+            brief="ascwds_job_role_counts and ascwds_job_role_ratios must be populated or not populated on the same rows",
         )
         .col_vals_expr(
             expr=(
@@ -295,7 +295,7 @@ def other_validation(
                     & pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_null()
                 )
             ),
-            brief="imputed_ascwds_job_role_counts and imputed_ascwds_job_role_ratios must be not null per row",
+            brief="imputed_ascwds_job_role_counts and imputed_ascwds_job_role_ratios must be populated or not populated on the same rows",
         )
         .col_vals_gt(
             columns=IndCqcColumns.estimate_filled_posts,
@@ -311,7 +311,7 @@ def other_validation(
             ],
             value=0,
             na_pass=True,
-            brief="values should be >= 0 where present",
+            brief="ascwds_job_role_counts, imputed_ascwds_job_role_counts and ascwds_job_role_rolling_ratio should be >= 0 where present",
         )
         .col_vals_between(
             columns=[
@@ -322,7 +322,7 @@ def other_validation(
             left=0,
             right=1,
             na_pass=True,
-            brief="ascwds_job_role_rolling_ratio should be between 0 and 1 where present",
+            brief="ascwds_job_role_ratios, imputed_ascwds_job_role_ratios and ascwds_job_role_rolling_ratio should be between 0 and 1 where present",
         )
         # Date plausibility
         .col_vals_ge(
