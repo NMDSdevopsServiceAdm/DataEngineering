@@ -82,21 +82,6 @@ def count_nulls(df: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-def uniqueness_id_per_locationid_import_date(df: pl.DataFrame) -> pl.DataFrame:
-    """
-    Helper function to check uniqueness of id_per_locationid_import_date within
-    location_id and cqc_location_import_date combinations.
-    """
-
-    return df.group_by(
-        [IndCqcColumns.location_id, IndCqcColumns.cqc_location_import_date]
-    ).agg(
-        pl.col(IndCqcColumns.id_per_locationid_import_date)
-        .n_unique()
-        .alias("uniqueness_id_per_locationid_import_date")
-    )
-
-
 def main(
     bucket_name: str, source_path: str, compare_path: str, reports_path: str
 ) -> None:
@@ -168,8 +153,18 @@ def main(
             brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
         )
         .col_vals_expr(
-            pre=uniqueness_id_per_locationid_import_date,
-            expr=pl.col("uniqueness_id_per_locationid_import_date") == 1,
+            expr=(
+                pl.col(IndCqcColumns.id_per_locationid_import_date)
+                .sum()
+                .n_unique()
+                .over(
+                    [
+                        IndCqcColumns.location_id,
+                        IndCqcColumns.cqc_location_import_date,
+                    ]
+                )
+                == 1
+            ),
             brief="id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
         )
         # categorical
