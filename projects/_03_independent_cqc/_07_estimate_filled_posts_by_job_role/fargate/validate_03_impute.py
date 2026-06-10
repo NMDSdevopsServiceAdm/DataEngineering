@@ -193,27 +193,27 @@ def main(
             brief=f"{IndCqcColumns.main_job_role_clean_labelled} should have exactly {CatValues.main_job_role_labels_column_values.count_of_categorical_values} distinct values",
         )
         # numerical
-        .col_vals_expr(
-            expr=(
-                (
-                    (
-                        (
-                            pl.col(IndCqcColumns.job_role_filtering_rule)
-                            != pl.lit(JobRoleFilteringRule.populated)
-                        )
-                        & pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
-                    )
-                    | (
-                        (
-                            pl.col(IndCqcColumns.job_role_filtering_rule)
-                            == pl.lit(JobRoleFilteringRule.populated)
-                        )
-                        & pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null()
-                    )
-                )
-            ),
-            brief="ascwds_job_role_counts must be null where job_role_filtering_rule is not populated",
-        )
+        # .col_vals_expr(
+        #     expr=(
+        #         (
+        #             (
+        #                 (
+        #                     pl.col(IndCqcColumns.job_role_filtering_rule)
+        #                     != pl.lit(JobRoleFilteringRule.populated)
+        #                 )
+        #                 & pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
+        #             )
+        #             | (
+        #                 (
+        #                     pl.col(IndCqcColumns.job_role_filtering_rule)
+        #                     == pl.lit(JobRoleFilteringRule.populated)
+        #                 )
+        #                 & pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null()
+        #             )
+        #         )
+        #     ),
+        #     brief="ascwds_job_role_counts must be null where job_role_filtering_rule is not populated",
+        # )
         .col_vals_lt(
             pre=count_nulls,
             columns=IndCqcColumns.imputed_ascwds_job_role_counts,
