@@ -42,11 +42,22 @@ from utils.column_values.categorical_column_values import (
 
 
 @dataclass
-class ASCWDSWorkerCleanedCategoricalValues:
+class ASCWDSWorkerRawCategoricalValues:
     main_job_role_labels_column_values = MainJobRoleLabels(
         AWKClean.main_job_role_clean_labelled
     )
     main_job_role_id_column_values = MainJobRoleID(AWKClean.main_job_role_clean)
+
+
+@dataclass
+class ASCWDSWorkerCleanedCategoricalValues:
+    main_job_role_labels_column_values = MainJobRoleLabels(
+        AWKClean.main_job_role_clean_labelled
+    )
+    main_job_role_id_column_values = MainJobRoleID(
+        AWKClean.main_job_role_clean,
+        value_to_remove=[MainJobRoleID.technician, MainJobRoleID.care_navigator],
+    )
 
 
 @dataclass
@@ -212,6 +223,31 @@ class EstimatedIndCQCFilledPostsCategoricalValues:
     )
     estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
         IndCQC.estimate_filled_posts_source
+    )
+
+
+@dataclass
+class EstimatedIndCQCFilledPostsByJobRoleCategoricalValues:
+    care_home_column_values = CareHome(IndCQC.care_home)
+    primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
+    primary_service_type_second_level_column_values = PrimaryServiceTypeSecondLevel(
+        IndCQC.primary_service_type_second_level
+    )
+    current_region_column_values = Region(IndCQC.current_region)
+    current_cssr_column_values = CurrentCSSR(IndCQC.current_cssr)
+    ascwds_filled_posts_source_column_values = ASCWDSFilledPostsSource(
+        IndCQC.ascwds_filled_posts_source, contains_null_values=True
+    )
+    estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
+        IndCQC.estimate_filled_posts_source
+    )
+    current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
+    dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
+    ascwds_filtering_rule_column_values = AscwdsFilteringRule(
+        IndCQC.ascwds_filtering_rule
+    )
+    main_job_role_labels_column_values = MainJobRoleLabels(
+        AWKClean.main_job_role_clean_labelled
     )
 
 

@@ -35,12 +35,11 @@ COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/_03_impute.py /app/_03_impute.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/_04_estimate.py /app/_04_estimate.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_01_merge.py /app/validate_01_merge.py
+COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_01_merge_metadata.py /app/validate_01_merge_metadata.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_02_clean.py /app/validate_02_clean.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_03_impute.py /app/validate_03_impute.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_04_estimates.py /app/validate_04_estimates.py
-COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/estimate_ind_cqc_filled_posts_by_job_role.py /app/estimate_ind_cqc_filled_posts_by_job_role.py
 COPY projects/_03_independent_cqc/_09_archive_estimates/fargate/archive_filled_posts_estimates.py /app/archive_filled_posts_estimates.py
-
 COPY projects/_03_independent_cqc/Dockerfile_and_requirements/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 

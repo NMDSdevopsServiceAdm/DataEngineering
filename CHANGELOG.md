@@ -20,6 +20,8 @@ All notable changes to this project will be documented in this file.
 
 - Added base validation scripts and test validation scripts for all stages of the Estimates by Job Role pipeline. Also added validation job calls to the Terraform definition for the Estimates by Job Role pipeline.
 
+- Added Validations for merged data and merged metadata within Estimates by Job Roles Pipeline.
+
 ### Changed
 - Renamed replace_care_navigator_with_care_coordinator to remap_mainjrid_codes for clarity and optimised implementation to use dictionary-based replacements targeting the main_job_role_clean column and updated corresponding test data names. Added Technician Job Role('22') in the dictionary to replace it with Other non-care-providing job roles ('27').
 
@@ -31,7 +33,16 @@ All notable changes to this project will be documented in this file.
 
 - Changed add_filtering_rule_column() and update_filtering_rule() to handle categorical columns as well as string.
 
+- Removed technician from job role labels in utils\column_values\categorical_column_values MainJobRoleLabels.
+
+- Removed PySpark version of Estimates by job Role and all its tests, validation, test data and test schemas as well.
+
+- Removed old version of job role estimates task and associated code not used elsewhere.
+
+- Refactored job role estimates validation to remove aggregated table.
+
 ### Fixed
+- Raw and cleaned ascwds worker validation scripts so they raise exceptions on failure.
 
 
 ## [v2026.04.0] - 15/05/2026
