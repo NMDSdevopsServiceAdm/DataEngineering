@@ -206,10 +206,10 @@ class FilterJobRoleGroupExpressions:
                 & (pl.col(self.temp_location_sum) != 0)
             )
             .then(
-                pl.col(self.job_group_cols)
+                pl.col(self.job_group_cols).cast(pl.Float32)
                 / pl.col(self.temp_location_sum).cast(pl.Float32)
             )
-            .otherwise(None)
+            .otherwise(pl.lit(None).cast(pl.Float32))
         )
         self.evaluation_expr = (
             (
