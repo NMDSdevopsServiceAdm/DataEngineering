@@ -3,15 +3,16 @@ import unittest
 from unittest.mock import Mock, call, patch
 
 import polars as pl
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
-)
+
 import projects._03_independent_cqc._01_merge.fargate.validate_merged_ind_cqc_data as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     ValidateMergeIndCQCData as Data,
 )
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     ValidateMergeIndCQCSchemas as Schemas,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
 )
 
 PATCH_PATH = (

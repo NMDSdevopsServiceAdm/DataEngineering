@@ -2,16 +2,17 @@ from dataclasses import dataclass
 
 import polars as pl
 
-from polars_utils import utils, cleaning_utils as cUtils
+from polars_utils import cleaning_utils as cUtils
+from polars_utils import utils
 from polars_utils.expressions import is_care_home
-from projects._03_independent_cqc._03_impute.fargate.utils.primary_service_rate_of_change import (
-    model_primary_service_rate_of_change_trendline,
-)
 from projects._03_independent_cqc._03_impute.fargate.utils.convert_pir_people_to_filled_posts import (
     convert_pir_to_filled_posts,
 )
 from projects._03_independent_cqc._03_impute.fargate.utils.forward_fill_latest_known_value import (
     forward_fill_latest_known_value,
+)
+from projects._03_independent_cqc._03_impute.fargate.utils.primary_service_rate_of_change import (
+    model_primary_service_rate_of_change_trendline,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 

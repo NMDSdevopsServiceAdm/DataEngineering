@@ -12,10 +12,10 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.validation_table_columns import Validation
+from utils.column_values.categorical_column_values import Sector
 from utils.column_values.categorical_columns_by_dataset import (
     MergedIndCQCCategoricalValues as CatValues,
 )
-from utils.column_values.categorical_column_values import Sector
 
 cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,

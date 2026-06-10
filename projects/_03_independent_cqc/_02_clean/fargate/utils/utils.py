@@ -1,5 +1,7 @@
 from typing import Optional
+
 import polars as pl
+
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 

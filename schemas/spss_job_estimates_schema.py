@@ -1,11 +1,10 @@
 from pyspark.sql.types import (
-    StructField,
-    StructType,
-    StringType,
     FloatType,
     IntegerType,
+    StringType,
+    StructField,
+    StructType,
 )
-
 
 SPSS_JOBS_ESTIMATES = StructType(
     fields=[

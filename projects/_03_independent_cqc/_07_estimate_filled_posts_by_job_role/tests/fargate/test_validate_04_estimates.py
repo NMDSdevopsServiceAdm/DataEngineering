@@ -1,14 +1,14 @@
 import json
 import unittest
-from unittest.mock import Mock, patch
 from datetime import date
+from unittest.mock import Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_04_estimates as job
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     MainJobRoleLabels,
