@@ -11,22 +11,60 @@ from utils.column_values.categorical_column_values import (
     MainJobRoleLabels,
 )
 
-ind_cqc_job_role_cols_to_import = [
-    IndCqcColumns.id_per_locationid_import_date,
+VALIDATION_COLS = [
+    IndCqcColumns.id_per_locationid_import_date_job_role,
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
     IndCqcColumns.estimate_filled_posts,
-    IndCqcColumns.ascwds_job_role_ratios_merged_source,
+    IndCqcColumns.primary_service_type,
+    IndCqcColumns.id_per_locationid_import_date,
     IndCqcColumns.main_job_role_clean_labelled,
+    IndCqcColumns.ascwds_job_role_counts,
+    IndCqcColumns.job_role_filtering_rule,
+    IndCqcColumns.ascwds_job_role_ratios,
+    IndCqcColumns.imputed_ascwds_job_role_ratios,
+    IndCqcColumns.imputed_ascwds_job_role_counts,
+    IndCqcColumns.estimate_filled_posts_size_group,
+    IndCqcColumns.ascwds_job_role_rolling_ratio,
+    IndCqcColumns.ascwds_job_role_ratios_merged,
+    IndCqcColumns.ascwds_job_role_ratios_merged_source,
+    IndCqcColumns.estimate_filled_posts_by_job_role,
+    IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated,
     IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted,
     IndCqcColumns.estimate_filled_posts_from_all_job_roles,
+    IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
     IndCqcColumns.main_job_group_labelled,
 ]
 
-ind_cqc_estimates_cols_to_import = [
+COMPARE_COLS = [
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
 ]
+
+EXPECTED_SCHEMA = {
+    IndCqcColumns.id_per_locationid_import_date_job_role: pl.Utf8,
+    IndCqcColumns.location_id: pl.Utf8,
+    IndCqcColumns.cqc_location_import_date: pl.Date,
+    IndCqcColumns.estimate_filled_posts: pl.Int64,
+    IndCqcColumns.primary_service_type: pl.Utf8,
+    IndCqcColumns.id_per_locationid_import_date: pl.Utf8,
+    IndCqcColumns.main_job_role_clean_labelled: pl.Utf8,
+    IndCqcColumns.ascwds_job_role_counts: pl.Int16,
+    IndCqcColumns.job_role_filtering_rule: pl.Utf8,
+    IndCqcColumns.ascwds_job_role_ratios: pl.Float32,
+    IndCqcColumns.imputed_ascwds_job_role_ratios: pl.Float32,
+    IndCqcColumns.imputed_ascwds_job_role_counts: pl.Float32,
+    IndCqcColumns.estimate_filled_posts_size_group: pl.Utf8,
+    IndCqcColumns.ascwds_job_role_rolling_ratio: pl.Float32,
+    IndCqcColumns.ascwds_job_role_ratios_merged: pl.Float32,
+    IndCqcColumns.ascwds_job_role_ratios_merged_source: pl.Utf8,
+    IndCqcColumns.estimate_filled_posts_by_job_role: pl.Float32,
+    IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
+    IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: pl.Int64,
+    IndCqcColumns.estimate_filled_posts_from_all_job_roles: pl.Int64,
+    IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: pl.Int64,
+    IndCqcColumns.main_job_group_labelled: pl.Utf8,
+}
 
 req_pcts = {
     MainJobRoleLabels.care_worker: (0.59, 0.69),
@@ -53,13 +91,13 @@ def main(
     """
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=ind_cqc_job_role_cols_to_import,
+        selected_columns=VALIDATION_COLS,
     )
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
-        selected_columns=ind_cqc_estimates_cols_to_import,
+        selected_columns=COMPARE_COLS,
     )
-    # expected_row_count = compare_df.height
+    expected_row_count = compare_df.height
 
     validation = (
         pb.Validate(
@@ -68,6 +106,114 @@ def main(
             thresholds=GLOBAL_THRESHOLDS,
             brief=True,
             actions=GLOBAL_ACTIONS,
+        )
+        # dataset schema
+        .col_schema_match(
+            schema=EXPECTED_SCHEMA, brief="Dataset should match the expected schema"
+        )
+        # dataset size
+        .row_count_match(
+            expected_row_count,
+            brief=f"Expects {expected_row_count} rows",
+        )
+        # complete columns
+        .col_vals_not_null(
+            columns=[
+                IndCqcColumns.id_per_locationid_import_date,
+                IndCqcColumns.location_id,
+                IndCqcColumns.cqc_location_import_date,
+                IndCqcColumns.primary_service_type,
+                IndCqcColumns.main_job_role_clean_labelled,
+                IndCqcColumns.estimate_filled_posts_source,
+                IndCqcColumns.estimate_filled_posts,
+            ],
+            brief="Key columns should contain no null values",
+        )
+        # index columns
+        .rows_distinct(
+            columns_subset=[
+                IndCqcColumns.location_id,
+                IndCqcColumns.cqc_location_import_date,
+                IndCqcColumns.main_job_role_clean_labelled,
+            ],
+            brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
+        )
+        .rows_distinct(
+            columns_subset=[
+                IndCqcColumns.id_per_locationid_import_date_job_role,
+            ],
+            brief="ID key should be unique",
+        )
+        .col_vals_expr(
+            expr=(
+                pl.col(IndCqcColumns.id_per_locationid_import_date)
+                .n_unique()
+                .over(
+                    [
+                        IndCqcColumns.location_id,
+                        IndCqcColumns.cqc_location_import_date,
+                    ]
+                )
+                == 1
+            ),
+            brief="id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
+        )
+        # categorical
+        .col_vals_in_set(
+            IndCqcColumns.estimate_filled_posts_source,
+            CatValues.estimate_filled_posts_source_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            IndCqcColumns.primary_service_type,
+            CatValues.primary_service_type_column_values.categorical_values,
+        )
+        .col_vals_in_set(
+            IndCqcColumns.main_job_role_clean_labelled,
+            CatValues.main_job_role_labels_column_values.categorical_values,
+        )
+        # distinct values
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.estimate_filled_posts_source,
+                CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.estimate_filled_posts_source} should have exactly {CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values} distinct values",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.primary_service_type,
+                CatValues.primary_service_type_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.primary_service_type} should have exactly {CatValues.primary_service_type_column_values.count_of_categorical_values} distinct values",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                IndCqcColumns.main_job_role_clean_labelled,
+                CatValues.main_job_role_labels_column_values.count_of_categorical_values,
+            ),
+            brief=f"{IndCqcColumns.main_job_role_clean_labelled} should have exactly {CatValues.main_job_role_labels_column_values.count_of_categorical_values} distinct values",
+        )
+        # numerical
+        .col_vals_gt(
+            columns=[
+                IndCqcColumns.estimate_filled_posts,
+                IndCqcColumns.ascwds_filled_posts_dedup_clean,
+            ],
+            value=0,
+            na_pass=True,
+            brief="estimate_filled_posts and ascwds_filled_posts_dedup_clean should be > 0 where present",
+        )
+        .col_vals_ge(
+            columns=IndCqcColumns.ascwds_job_role_counts,
+            value=0,
+            na_pass=True,
+            brief="ascwds_job_role_counts should be >= 0 where present",
+        )
+        # Date plausibility
+        .col_vals_ge(
+            columns=IndCqcColumns.cqc_location_import_date,
+            value=CQC_EARLIEST_IMPORT_DATE,
+            brief=f"cqc_location_import_date should not be before {CQC_EARLIEST_IMPORT_DATE.strftime('%d/%m/%Y')}",
         )
         # estimates between (inclusive)
         # .col_vals_expr(
