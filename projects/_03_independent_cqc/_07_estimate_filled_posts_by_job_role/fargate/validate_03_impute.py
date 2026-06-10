@@ -98,7 +98,7 @@ def count_nulls(df: pl.DataFrame) -> pl.DataFrame:
     ]
 
     return df.select(
-        [pl.col(column).is_null().sum().alias(column) for column in cols_to_count_nulls]
+        [pl.col(column).null_count().alias(column) for column in cols_to_count_nulls]
     )
 
 
@@ -149,7 +149,6 @@ def index_validation(bucket_name: str, source_path: str, reports_path: str) -> N
         .col_vals_expr(
             expr=(
                 pl.col(IndCqcColumns.id_per_locationid_import_date)
-                .sum()
                 .n_unique()
                 .over(
                     [
