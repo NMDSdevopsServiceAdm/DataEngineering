@@ -5,7 +5,7 @@ import pointblank as pb
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns, PartitionKeys
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     MainJobRoleLabels,
@@ -34,6 +34,7 @@ VALIDATION_COLS = [
     IndCqcColumns.estimate_filled_posts_from_all_job_roles,
     IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
     IndCqcColumns.main_job_group_labelled,
+    PartitionKeys.year,
 ]
 
 COMPARE_COLS = [
@@ -64,6 +65,7 @@ EXPECTED_SCHEMA = {
     IndCqcColumns.estimate_filled_posts_from_all_job_roles: pl.Int64,
     IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: pl.Int64,
     IndCqcColumns.main_job_group_labelled: pl.Utf8,
+    PartitionKeys.year: pl.Utf8,
 }
 
 req_pcts = {
