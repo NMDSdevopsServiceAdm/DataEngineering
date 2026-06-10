@@ -46,8 +46,8 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
 
 def filter_job_role_group_outliers(
     lf: pl.LazyFrame,
-    upper_percentile_bound: float = 0.999,
-    lower_percentile_bound: float = 0.001,
+    upper_percentile_bound: float = 0.990,
+    lower_percentile_bound: float = 0.010,
 ) -> pl.LazyFrame:
     """
     Null job role counts at locations where job group distribution is out of bounds.
