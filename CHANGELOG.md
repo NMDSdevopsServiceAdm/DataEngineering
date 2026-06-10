@@ -41,6 +41,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed old version of job role estimates task and associated code not used elsewhere.
 
+- Refactored job role estimates validation to remove aggregated table.
+
 ### Fixed
 - Raw and cleaned ascwds worker validation scripts so they raise exceptions on failure.
 
