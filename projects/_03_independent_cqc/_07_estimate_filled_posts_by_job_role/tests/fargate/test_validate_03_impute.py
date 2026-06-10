@@ -39,22 +39,65 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select([IndCqcColumns.location_id])
 
+    @patch(f"{PATCH_PATH}.other_validation")
+    @patch(f"{PATCH_PATH}.index_validation")
+    def test_main_has_expected_calls(
+        self,
+        mock_index_validation: Mock,
+        mock_other_validation: Mock,
+    ):
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+
+        mock_index_validation.assert_called_once()
+        mock_other_validation.assert_called_once()
+
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_validation_runs(
+    def test_index_validation_runs(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_read_parquet.side_effect = [self.source_df]
+        job.index_validation("bucket", "my/source/", "my/reports/")
+
+        mock_read_parquet.assert_called_once_with(
+            source="s3://bucket/my/source/",
+            selected_columns=job.INDEX_VALIDATION_COLS_TO_IMPORT,
+        )
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+        assertion_types_present = {item["assertion_type"] for item in report_json}
+        expected_assertions = {
+            "rows_distinct",
+            "col_vals_expr",
+        }
+        for assertion in expected_assertions:
+            self.assertIn(
+                assertion,
+                assertion_types_present,
+                f"{assertion} not found in validation report",
+            )
+
+        mock_write_reports.assert_called_once()
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_other_validation_runs(
         self,
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
     ):
         mock_read_parquet.side_effect = [self.source_df, self.compare_df]
-        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+        job.other_validation("bucket", "my/source/", "my/compare/", "my/reports/")
 
         self.assertEqual(mock_read_parquet.call_count, 2)
         mock_read_parquet.assert_has_calls(
             [
                 call(
                     source="s3://bucket/my/source/",
-                    selected_columns=job.VALIDATION_COLS_TO_IMPORT,
+                    selected_columns=job.OTHER_VALIDATION_COLS_TO_IMPORT,
                 ),
                 call(
                     source="s3://bucket/my/compare/",
@@ -62,29 +105,14 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
                 ),
             ]
         )
-        mock_write_reports.assert_called_once()
-
-    @patch(f"{PATCH_PATH}.vl.write_reports")
-    @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_validation_report_includes_expected_validations(
-        self,
-        mock_read_parquet: Mock,
-        mock_write_reports: Mock,
-    ):
-        mock_read_parquet.side_effect = [self.source_df, self.compare_df]
-
-        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
-
         assertion_types_present = {item["assertion_type"] for item in report_json}
-
         expected_assertions = {
             "col_schema_match",
             "row_count_match",
             "col_vals_not_null",
-            "rows_distinct",
             "col_vals_expr",
             "col_vals_in_set",
             "specially",
@@ -92,13 +120,14 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             "col_vals_ge",
             "col_vals_between",
         }
-
         for assertion in expected_assertions:
             self.assertIn(
                 assertion,
                 assertion_types_present,
                 f"{assertion} not found in validation report",
             )
+
+        mock_write_reports.assert_called_once()
 
     def test_count_nulls(self):
         test_df = pl.DataFrame(
