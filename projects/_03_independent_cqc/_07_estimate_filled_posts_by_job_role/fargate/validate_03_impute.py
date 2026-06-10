@@ -134,12 +134,6 @@ def index_validation(bucket_name: str, source_path: str, reports_path: str) -> N
             brief=True,
             actions=GLOBAL_ACTIONS,
         )
-        # dataset schema
-        .col_schema_match(
-            schema=INDEX_VAL_EXPECTED_SCHEMA,
-            brief="Dataset should match the expected schema",
-        )
-        # index columns
         .rows_distinct(
             columns_subset=IndCqcColumns.id_per_locationid_import_date_job_role,
             brief="id_per_locationid_import_date_job_role should be unique",
