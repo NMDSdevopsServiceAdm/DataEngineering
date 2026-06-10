@@ -1,6 +1,5 @@
 import polars as pl
 
-from polars_utils import utils
 from polars_utils.filtering_utils import update_filtering_rule
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     CategoricalColumnTypes as CatColType,
@@ -107,22 +106,11 @@ def filter_job_role_group_outliers(
             Exprs.job_group_percentage_expr
         )
     )
-    utils.sink_to_parquet(
-        piv_lf,
-        "s3://sfc-1629-test-01-wod-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_group_pct/",
-        append=False,
-    )
-    # test commnent
 
     # 4. Calculate upper and lower percentile bounds of job group percentages for each job group and primary service type.
     bounds_lf = piv_lf.group_by(IndCQC.primary_service_type).agg(
         Exprs.upper_bounds_expr,
         Exprs.lower_bounds_expr,
-    )
-    utils.sink_to_parquet(
-        bounds_lf,
-        "s3://sfc-1629-test-01-wod-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_roles_thresholds/",
-        append=False,
     )
 
     piv_lf = (
