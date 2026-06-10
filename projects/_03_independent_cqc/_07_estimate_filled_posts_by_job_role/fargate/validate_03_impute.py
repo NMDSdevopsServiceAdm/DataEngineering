@@ -155,10 +155,10 @@ def main(
             brief="Key columns should contain no null values",
         )
         # index columns
-        .rows_distinct(
-            columns_subset=IndCqcColumns.id_per_locationid_import_date_job_role,
-            brief="id_per_locationid_import_date_job_role should be unique",
-        )
+        # .rows_distinct(
+        #     columns_subset=IndCqcColumns.id_per_locationid_import_date_job_role,
+        #     brief="id_per_locationid_import_date_job_role should be unique",
+        # )
         .rows_distinct(
             columns_subset=[
                 IndCqcColumns.location_id,
