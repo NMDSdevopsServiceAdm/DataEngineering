@@ -25,7 +25,7 @@ VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.primary_service_type,
     IndCqcColumns.main_job_role_clean_labelled,
     IndCqcColumns.ascwds_job_role_counts,
-    IndCqcColumns.ascwds_filtering_rule,
+    IndCqcColumns.job_role_filtering_rule,
 ]
 
 IND_CQC_MERGE_COLS_TO_IMPORT = [
