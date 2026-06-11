@@ -65,14 +65,15 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
 
     # merge_ascwds_and_pir_filled_post_submissions
 
-    lf = model_imputation(
-        lf,
-        IndCQC.ascwds_pir_merged,
-        IndCQC.ascwds_rate_of_change_trendline_model,
-        IndCQC.imputed_filled_post_model,
-        care_home=False,
-        extrapolation_method="ratio",
-    )
+    # Uncomment this call when merge_ascwds_and_pir_filled_post_submissions is converted to polars.
+    # lf = model_imputation(
+    #     lf,
+    #     IndCQC.ascwds_pir_merged,
+    #     IndCQC.ascwds_rate_of_change_trendline_model,
+    #     IndCQC.imputed_filled_post_model,
+    #     care_home=False,
+    #     extrapolation_method="ratio",
+    # )
 
     lf = model_imputation(
         lf,
