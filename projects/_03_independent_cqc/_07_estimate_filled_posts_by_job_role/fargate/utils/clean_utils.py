@@ -51,12 +51,12 @@ def filter_job_role_group_outliers(
 ) -> pl.LazyFrame:
     """
     Null job role counts at locations where job group distribution is out of bounds and
-    locations have more than 50 workers.
+    locations have the same or more workers than the threshold.
 
     This function nulls outliers based on a locations job group distribution. Their
     distribution is calculated per location and import date, then upper/lower percentile
     bounds are calculated per service type for each job group across all periods. Values
-    are nulled where there are more than 50 workers at a location and either:
+    are nulled where there are the same or more workers than the threshold at a location and either:
 
     - direct care outside upper or lower percentile
     - managers/regulated professions/other outside upper percentile
@@ -64,7 +64,7 @@ def filter_job_role_group_outliers(
     The steps are as follows:
     1. Pivot table and aggregate to job group
     2. Calculate total ASCWDS count for location, service type and date
-    3. Drop rows with 50 or fewer workers
+    3. Drop rows for small locations
     4. Calculate job group percentage of total ASCWDS count for location, service type and date
     5. Calculate upper and lower percentile bounds of job group percentages for each job group and primary service type
     6. Flag where job role percentage is outside bounds
@@ -106,13 +106,15 @@ def filter_job_role_group_outliers(
         .with_columns(  # 2. Calculate total ASCWDS count for location, service type and date.
             Exprs.location_sum_expr
         )
-        .filter(pl.col(Exprs.temp_location_sum) > small_location_threshold)
-        .with_columns(  # 3. Calculate job group percentage of total ASCWDS count for location, service type and date.
+        .filter(
+            pl.col(Exprs.temp_location_sum) > small_location_threshold
+        )  # 3. Drop rows for small locations
+        .with_columns(  # 4. Calculate job group percentage of total ASCWDS count for location, service type and date.
             Exprs.job_group_percentage_expr
         )
     )
 
-    # 4. Calculate upper and lower percentile bounds of job group percentages for each job group and primary service type.
+    # 5. Calculate upper and lower percentile bounds of job group percentages for each job group and primary service type.
     bounds_lf = piv_lf.group_by(IndCQC.primary_service_type).agg(
         Exprs.upper_bounds_expr,
         Exprs.lower_bounds_expr,
@@ -124,7 +126,7 @@ def filter_job_role_group_outliers(
             on=IndCQC.primary_service_type,
             how="left",
         )
-        # 5. Flag where job role percentage is outside bounds.
+        # 6. Flag where job role percentage is outside bounds.
         .with_columns(Exprs.evaluation_expr.alias(temp_out_of_bounds_col)).select(
             IndCQC.id_per_locationid_import_date, temp_out_of_bounds_col
         )
@@ -132,7 +134,7 @@ def filter_job_role_group_outliers(
 
     lf = (
         lf.join(piv_lf, on=IndCQC.id_per_locationid_import_date, how="left")
-        .with_columns(  # 6. Null ascwds_job_role_counts_column
+        .with_columns(  # 7. Null ascwds_job_role_counts_column
             pl.when(pl.col(temp_out_of_bounds_col))
             .then(None)
             .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
@@ -141,7 +143,7 @@ def filter_job_role_group_outliers(
         .drop(temp_out_of_bounds_col)
     )
 
-    lf = update_filtering_rule(  # 7. Add filtering rule
+    lf = update_filtering_rule(  # 8. Add filtering rule
         lf,
         filter_rule_col_name=IndCQC.job_role_filtering_rule,
         raw_col_name=IndCQC.ascwds_job_role_counts,
