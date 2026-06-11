@@ -47,31 +47,25 @@ def filter_job_role_group_outliers(
     lf: pl.LazyFrame,
     upper_percentile_bound: float = 0.999,
     lower_percentile_bound: float = 0.001,
+    small_location_threshold: int = 50,
 ) -> pl.LazyFrame:
     """
-    Null job role counts at locations where job group distribution is out of bounds.
+    Null job role counts at locations where job group distribution is out of bounds and
+    locations have the same or more workers than the threshold.
 
     This function nulls outliers based on a locations job group distribution. Their
     distribution is calculated per location and import date, then upper/lower percentile
     bounds are calculated per service type for each job group across all periods. Values
-    are nulled where:
+    are nulled where there are the same or more workers than the threshold at a location and either:
 
     - direct care outside upper or lower percentile
     - managers/regulated professions/other outside upper percentile
-
-    The steps are as follows:
-    1. Pivot table and aggregate to job group
-    2. Calculate total ASCWDS count for location, service type and date
-    3. Calculate job group percentage of total ASCWDS count for location, service type and date
-    4. Calculate upper and lower percentile bounds of job group percentages for each job group and primary service type
-    5. Flag where job role percentage is outside bounds
-    6. Null ascwds_job_role_counts_column
-    7. Update filtering rule
 
     Args:
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
         upper_percentile_bound (float): Upper bound for percentile filtering. Defaults to 0.999.
         lower_percentile_bound (float): Lower bound for percentile filtering. Defaults to 0.001.
+        small_location_threshold (int): Minimum number of workers at a location to be included in filtering. Defaults to 50.
 
     Returns:
         pl.LazyFrame: LazyFrame with outliers in job role groups filtered.
@@ -90,7 +84,6 @@ def filter_job_role_group_outliers(
         IndCQC.id_per_locationid_import_date,
     ]
 
-    # 1. Pivot table and aggregate to job group
     piv_lf = (
         lf.pivot(
             on=IndCQC.main_job_group_labelled,
@@ -99,15 +92,11 @@ def filter_job_role_group_outliers(
             values=IndCQC.ascwds_job_role_counts,
             aggregate_function="sum",
         )
-        .with_columns(  # 2. Calculate total ASCWDS count for location, service type and date.
-            Exprs.location_sum_expr
-        )
-        .with_columns(  # 3. Calculate job group percentage of total ASCWDS count for location, service type and date.
-            Exprs.job_group_percentage_expr
-        )
+        .with_columns(Exprs.location_sum_expr)
+        .filter(pl.col(Exprs.temp_location_sum) > small_location_threshold)
+        .with_columns(Exprs.job_group_percentage_expr)
     )
 
-    # 4. Calculate upper and lower percentile bounds of job group percentages for each job group and primary service type.
     bounds_lf = piv_lf.group_by(IndCQC.primary_service_type).agg(
         Exprs.upper_bounds_expr,
         Exprs.lower_bounds_expr,
@@ -119,15 +108,13 @@ def filter_job_role_group_outliers(
             on=IndCQC.primary_service_type,
             how="left",
         )
-        # 5. Flag where job role percentage is outside bounds.
-        .with_columns(Exprs.evaluation_expr.alias(temp_out_of_bounds_col)).select(
-            IndCQC.id_per_locationid_import_date, temp_out_of_bounds_col
-        )
+        .with_columns(Exprs.evaluation_expr.alias(temp_out_of_bounds_col))
+        .select(IndCQC.id_per_locationid_import_date, temp_out_of_bounds_col)
     )
 
     lf = (
         lf.join(piv_lf, on=IndCQC.id_per_locationid_import_date, how="left")
-        .with_columns(  # 6. Null ascwds_job_role_counts_column
+        .with_columns(
             pl.when(pl.col(temp_out_of_bounds_col))
             .then(None)
             .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
@@ -136,7 +123,7 @@ def filter_job_role_group_outliers(
         .drop(temp_out_of_bounds_col)
     )
 
-    lf = update_filtering_rule(  # 7. Add filtering rule
+    lf = update_filtering_rule(
         lf,
         filter_rule_col_name=IndCQC.job_role_filtering_rule,
         raw_col_name=IndCQC.ascwds_job_role_counts,

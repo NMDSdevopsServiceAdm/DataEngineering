@@ -89,7 +89,7 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
         )
 
         returned_lf = job.filter_job_role_group_outliers(
-            test_lf, case.upper_bound, case.lower_bound
+            test_lf, case.upper_bound, case.lower_bound, case.small_location_threshold
         )
 
         pl_testing.assert_frame_equal(
