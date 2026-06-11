@@ -112,7 +112,7 @@ def split_dataset_for_imputation(
         pl.when(
             (
                 pl.col(column_with_null_values)
-                .null_count()
+                .count()
                 .over([IndCqc.location_id, IndCqc.care_home])
                 > 0
             )

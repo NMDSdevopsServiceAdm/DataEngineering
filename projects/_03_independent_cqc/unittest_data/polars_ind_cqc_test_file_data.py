@@ -2642,11 +2642,11 @@ class ModelExtrapolation:
 @dataclass
 class ModelImputationTestCase:
     id: str
-    data: list[Any]
+    expected_data: list[Any]
 
     def as_pytest_param(self):
         """Return test case as pytest ParameterSet."""
-        return pytest.param(self.data, id=self.id)
+        return pytest.param(self.expected_data, id=self.id)
 
 
 @dataclass
@@ -2667,43 +2667,43 @@ class ModelImputation:
         ("1-003", date(2023, 3, 1), CareHome.not_care_home, None, 1.0, None),
     ] # fmt: skip
 
-    expected_model_imputation_rows = [
-        ExtrapolationTestCase(
+    expected_model_imputation_test_cases = [
+        ModelImputationTestCase(
             id="when_values_will_be_extrapolated",
-            data=[
+            expected_data=[
                 ("1-001", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, 19.0),
                 ("1-001", date(2023, 2, 1), CareHome.not_care_home, 20.0, 2.0, 20.0),
                 ("1-001", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, 21.0),
             ],
         ),
-        ExtrapolationTestCase(
+        ModelImputationTestCase(
             id="when_values_will_be_interpolated",
-            data=[
+            expected_data=[
                 ("1-001", date(2023, 1, 1), CareHome.not_care_home, 20.0, 1.0, 20.0),
                 ("1-001", date(2023, 2, 1), CareHome.not_care_home, None, 2.0, 21.0),
                 ("1-001", date(2023, 3, 1), CareHome.not_care_home, 22.0, 3.0, 22.0),
             ],
         ),
-        ExtrapolationTestCase(
+        ModelImputationTestCase(
             id="when_values_will_be_extrapolated_and_interpolated",
-            data=[
+            expected_data=[
                 ("1-001", date(2023, 1, 1), CareHome.not_care_home, 20.0, 1.0, 20.0),
                 ("1-001", date(2023, 2, 1), CareHome.not_care_home, None, 2.0, 21.0),
                 ("1-001", date(2023, 3, 1), CareHome.not_care_home, 22.0, 3.0, 22.0),
                 ("1-001", date(2023, 4, 1), CareHome.not_care_home, None, 4.0, 23.0),
             ],
         ),
-        ExtrapolationTestCase(
+        ModelImputationTestCase(
             id="when_values_will_not_be_imputed_because_all_present",
-            data=[
+            expected_data=[
                 ("1-001", date(2023, 1, 1), CareHome.not_care_home, 30.0, 1.0, None),
                 ("1-001", date(2023, 2, 1), CareHome.not_care_home, 31.0, 2.0, None),
                 ("1-001", date(2023, 3, 1), CareHome.not_care_home, 32.0, 3.0, None),
             ],
         ),
-        ExtrapolationTestCase(
+        ModelImputationTestCase(
             id="when_values_will_not_be_imputed_because_all_null",
-            data=[
+            expected_data=[
                 ("1-001", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, None),
                 ("1-001", date(2023, 2, 1), CareHome.not_care_home, None, 2.0, None),
                 ("1-001", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, None),
