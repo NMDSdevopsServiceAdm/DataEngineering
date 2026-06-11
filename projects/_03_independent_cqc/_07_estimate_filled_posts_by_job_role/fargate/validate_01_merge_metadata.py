@@ -2,6 +2,7 @@ import sys
 from datetime import date
 
 import pointblank as pb
+import polars as pl
 from dateutil.relativedelta import relativedelta
 
 from polars_utils import utils
@@ -114,7 +115,7 @@ def main(
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=IND_CQC_ESTIMATES_COLS_TO_IMPORT,
-    )
+    ).filter(pl.col(IndCqcColumns.cqc_location_import_date) > date(2018, 6, 1))
 
     source_df = add_list_column_validation_check_flags(
         source_df, [IndCqcColumns.services_offered]

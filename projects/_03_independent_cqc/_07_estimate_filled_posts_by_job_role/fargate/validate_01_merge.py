@@ -78,7 +78,7 @@ def main(
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=IND_CQC_ESTIMATES_COLS_TO_IMPORT,
-    )
+    ).filter(pl.col(IndCqcColumns.cqc_location_import_date) > date(2018, 6, 1))
     expected_row_count = compare_df.height * len(
         AscwdsWorkerValueLabelsJobGroup.all_roles()
     )
