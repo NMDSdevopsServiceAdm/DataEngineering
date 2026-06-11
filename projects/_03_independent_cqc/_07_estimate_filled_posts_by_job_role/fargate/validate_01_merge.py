@@ -32,6 +32,7 @@ VALIDATION_COLS_TO_IMPORT = [
 
 IND_CQC_ESTIMATES_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
+    IndCqcColumns.cqc_location_import_date,
 ]
 
 CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
