@@ -1621,7 +1621,7 @@ class ModelImputation:
         IndCQC.care_home: pl.String,
         "null_values": pl.Float32,
         "trend_model": pl.Float32,
-        "imputed_values": pl.Float64,
+        "imputed_values": pl.Float32,
     }
 
     input_split_dataset_for_imputation_schema = {

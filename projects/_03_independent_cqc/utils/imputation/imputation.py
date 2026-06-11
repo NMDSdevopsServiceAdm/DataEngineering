@@ -70,7 +70,9 @@ def model_imputation(
             column_with_null_values,
             IndCqc.extrapolation_model,
             IndCqc.interpolation_model,
-        ).alias(imputed_column_name)
+        )
+        .cast(pl.Float32)
+        .alias(imputed_column_name)
     ).drop(
         IndCqc.extrapolation_forwards,
         IndCqc.extrapolation_model,
@@ -108,21 +110,17 @@ def split_dataset_for_imputation(
     else:
         care_home_filter_value: str = CareHome.not_care_home
 
-    locs_with_nulls_expr = (
-        pl.when(
-            (
-                pl.col(column_with_null_values)
-                .count()
-                .over([IndCqc.location_id, IndCqc.care_home])
-                > 0
-            )
-            & (pl.col(IndCqc.care_home) == care_home_filter_value)
-        )
-        .then(True)
-        .otherwise(False)
-    )
+    locs_with_values_expr = (
+        pl.col(column_with_null_values)
+        .count()
+        .over([IndCqc.location_id, IndCqc.care_home])
+        > 0
+    ) & (pl.col(IndCqc.care_home) == care_home_filter_value)
 
-    imputation_lf = lf.filter(locs_with_nulls_expr == True)
-    non_imputation_lf = lf.filter(locs_with_nulls_expr == False)
+    temp_bool = "temp_bool"
+    lf = lf.with_columns(locs_with_values_expr.alias(temp_bool))
+
+    imputation_lf = lf.filter(pl.col(temp_bool) == True).drop(temp_bool)
+    non_imputation_lf = lf.filter(pl.col(temp_bool) == False).drop(temp_bool)
 
     return (imputation_lf, non_imputation_lf)
