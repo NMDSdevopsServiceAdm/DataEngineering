@@ -63,7 +63,7 @@ def main(
     )
     print("Merged Metadata LazyFrame read in")
     print(
-        f"estimated_job_role_posts_lf_TotalRecords before join: {estimated_job_role_posts_lf.count()}"
+        f"estimated_job_role_posts_lf_TotalRecords before join: {estimated_job_role_posts_lf.select(IndCQC.id_per_locationid_import_date).collect().height}"
     )
     # add metadata columns to estimated_job_role_posts_lf
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
@@ -73,7 +73,7 @@ def main(
     )
 
     print(
-        f"estimated_job_role_posts_lf_TotalRecords after join: {estimated_job_role_posts_lf.count()}"
+        f"estimated_job_role_posts_lf_TotalRecords after join: {estimated_job_role_posts_lf.select(IndCQC.id_per_locationid_import_date).collect().height}"
     )
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
