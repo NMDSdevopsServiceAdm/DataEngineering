@@ -49,7 +49,9 @@ def model_imputation(
     Returns:
         pl.LazyFrame: The LazyFrame with the added column for imputed values.
     """
-    imputed_lf, non_imputed_lf = split_dataset_for_imputation(lf, care_home)
+    imputed_lf, non_imputed_lf = split_dataset_for_imputation(
+        lf, column_with_null_values, care_home
+    )
 
     imputed_lf = model_extrapolation(
         imputed_lf,
@@ -70,14 +72,12 @@ def model_imputation(
             IndCqc.interpolation_model,
         ).alias(imputed_column_name)
     ).drop(
-        IndCqc.extrapolation_backwards,
         IndCqc.extrapolation_forwards,
         IndCqc.extrapolation_model,
         IndCqc.interpolation_model,
-        IndCqc.has_non_null_value,
     )
 
-    return pl.concat([imputed_lf, non_imputed_lf])
+    return pl.concat([imputed_lf, non_imputed_lf], how="diagonal")
 
 
 def split_dataset_for_imputation(
@@ -122,7 +122,7 @@ def split_dataset_for_imputation(
         .otherwise(False)
     )
 
-    imputation_df = lf.filter(locs_with_nulls_expr == True)
-    non_imputation_df = lf.filter(locs_with_nulls_expr == False)
+    imputation_lf = lf.filter(locs_with_nulls_expr == True)
+    non_imputation_lf = lf.filter(locs_with_nulls_expr == False)
 
-    return imputation_df, non_imputation_df
+    return (imputation_lf, non_imputation_lf)

@@ -2640,6 +2640,79 @@ class ModelExtrapolation:
 
 
 @dataclass
+class ModelImputationTestCase:
+    id: str
+    data: list[Any]
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(self.data, id=self.id)
+
+
+@dataclass
+class ModelImputation:
+    column_with_null_values_name: str = "null_values"
+    model_column_name: str = "trend_model"
+    imputed_values_column_name: str = "imputed_values"
+
+    imputed_rows = [
+        ("1-002", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, 19.0),
+        ("1-002", date(2023, 2, 1), CareHome.not_care_home, 20.0, 2.0, 20.0),
+        ("1-002", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, 21.0),
+    ] # fmt: skip
+    non_imputed_rows = [
+        ("1-001", date(2023, 1, 1), CareHome.care_home, 10.0, 1.0, None),
+        ("1-001", date(2023, 2, 1), CareHome.care_home, None, 2.0, None),
+        ("1-001", date(2023, 3, 1), CareHome.care_home, 30.0, 3.0, None),
+        ("1-003", date(2023, 3, 1), CareHome.not_care_home, None, 1.0, None),
+    ] # fmt: skip
+
+    expected_model_imputation_rows = [
+        ExtrapolationTestCase(
+            id="when_values_will_be_extrapolated",
+            data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, 19.0),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, 20.0, 2.0, 20.0),
+                ("1-001", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, 21.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_values_will_be_interpolated",
+            data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, 20.0, 1.0, 20.0),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, None, 2.0, 21.0),
+                ("1-001", date(2023, 3, 1), CareHome.not_care_home, 22.0, 3.0, 22.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_values_will_be_extrapolated_and_interpolated",
+            data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, 20.0, 1.0, 20.0),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, None, 2.0, 21.0),
+                ("1-001", date(2023, 3, 1), CareHome.not_care_home, 22.0, 3.0, 22.0),
+                ("1-001", date(2023, 4, 1), CareHome.not_care_home, None, 4.0, 23.0),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_values_will_not_be_imputed_because_all_present",
+            data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, 30.0, 1.0, None),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, 31.0, 2.0, None),
+                ("1-001", date(2023, 3, 1), CareHome.not_care_home, 32.0, 3.0, None),
+            ],
+        ),
+        ExtrapolationTestCase(
+            id="when_values_will_not_be_imputed_because_all_null",
+            data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, None),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, None, 2.0, None),
+                ("1-001", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, None),
+            ],
+        ),
+    ] # fmt: skip
+
+
+@dataclass
 class ModelRateOfChangeInputOutputTestCase:
     id: str
     input_data: list[Any]

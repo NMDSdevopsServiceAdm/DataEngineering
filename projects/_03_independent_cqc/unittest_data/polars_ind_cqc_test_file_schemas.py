@@ -1614,6 +1614,18 @@ class ModelExtrapolation:
 
 
 @dataclass
+class ModelImputation:
+    expected_model_imputation_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.care_home: pl.String,
+        "null_values": pl.Float32,
+        "trend_model": pl.Float32,
+        "imputed_values": pl.Float64,
+    }
+
+
+@dataclass
 class ModelRateOfChangeSchemas:
     expected_model_roc_trendline_schema = {
         IndCQC.location_id: pl.String,
