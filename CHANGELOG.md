@@ -22,6 +22,10 @@ All notable changes to this project will be documented in this file.
 
 - Added Validations for merged data and merged metadata within Estimates by Job Roles Pipeline.
 
+- Added validations for cleaned data within Estimates by Job Roles Pipeline.
+
+- Added Validations for impute data within Estimates by Job Roles Pipeline.
+
 ### Changed
 - Renamed replace_care_navigator_with_care_coordinator to remap_mainjrid_codes for clarity and optimised implementation to use dictionary-based replacements targeting the main_job_role_clean column and updated corresponding test data names. Added Technician Job Role('22') in the dictionary to replace it with Other non-care-providing job roles ('27').
 
@@ -43,6 +47,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Raw and cleaned ascwds worker validation scripts so they raise exceptions on failure.
+
+- Raw worker data validation was failing because the mainjrid column contained -1 values. Validation rules have been updated to allow this value in raw data, as it is handled during the clean step.
 
 - Null handling in job group filter.
 
