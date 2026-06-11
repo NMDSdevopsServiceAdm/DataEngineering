@@ -24,6 +24,8 @@ All notable changes to this project will be documented in this file.
 
 - Added validations for cleaned data within Estimates by Job Roles Pipeline.
 
+- Converted model_imputation function and called in imputation and estimates job scripts where possible. Unworkable calls are added but commented out.
+
 ### Changed
 - Renamed replace_care_navigator_with_care_coordinator to remap_mainjrid_codes for clarity and optimised implementation to use dictionary-based replacements targeting the main_job_role_clean column and updated corresponding test data names. Added Technician Job Role('22') in the dictionary to replace it with Other non-care-providing job roles ('27').
 
