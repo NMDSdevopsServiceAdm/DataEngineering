@@ -1,3 +1,5 @@
+from datetime import date
+
 import polars as pl
 
 from polars_utils import utils
@@ -76,6 +78,7 @@ def main(
     full_estimates_lf = (
         utils.scan_parquet(estimates_source)
         .select(list(combined_schema))
+        .filter(pl.col(IndCQC.cqc_location_import_date) > date(2018, 6, 1))
         .with_row_index(name=IndCQC.id_per_locationid_import_date)
         .with_columns(utils.cast_to_schema(combined_schema))
     )
