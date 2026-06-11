@@ -1,19 +1,20 @@
 import sys
-import polars as pl
-import pointblank as pb
 from datetime import date, datetime
+
+import pointblank as pb
+import polars as pl
 
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns, PartitionKeys
-from utils.column_values.categorical_columns_by_dataset import (
-    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
-)
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
-    MainJobRoleLabels,
     JobRoleFilteringRule,
+    MainJobRoleLabels,
+)
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
 )
 
 VALIDATION_COLS = [
@@ -128,14 +129,14 @@ def main(
         # complete columns
         .col_vals_not_null(
             columns=[
-                IndCqcColumns.locationid,
+                IndCqcColumns.location_id,
                 IndCqcColumns.id_per_locationid_import_date_job_role,
                 IndCqcColumns.cqc_location_import_date,
                 IndCqcColumns.estimate_filled_posts,
                 IndCqcColumns.primary_service_type,
                 IndCqcColumns.id_per_locationid_import_date,
-                IndCqcColumns.mainjrid_clean_labels,
-                IndCqcColumns.location_job_group_distribution_out_of_bounds,
+                IndCqcColumns.main_job_role_clean_labelled,
+                IndCqcColumns.job_role_filtering_rule,
                 IndCqcColumns.ascwds_job_role_rolling_sum,
                 IndCqcColumns.ascwds_job_role_rolling_ratio,
                 IndCqcColumns.ascwds_job_role_ratios_merged,
@@ -193,7 +194,7 @@ def main(
         )
         .col_vals_in_set(
             IndCqcColumns.main_job_group_labelled,
-            CatValues.main_job_group_labelled_column_values.categorical_values,
+            CatValues.main_job_group_labels_column_values.categorical_values,
         )
         # distinct values
         .specially(
@@ -220,9 +221,9 @@ def main(
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.main_job_group_labelled,
-                CatValues.main_job_group_labelled_column_values.count_of_categorical_values,
+                CatValues.main_job_group_labels_column_values.count_of_categorical_values,
             ),
-            brief=f"{IndCqcColumns.main_job_group_labelled} should have exactly {CatValues.main_job_group_labelled_column_values.count_of_categorical_values} distinct values",
+            brief=f"{IndCqcColumns.main_job_group_labelled} should have exactly {CatValues.main_job_group_labels_column_values.count_of_categorical_values} distinct values",
         )
         # numerical
         .col_vals_gt(
@@ -295,6 +296,20 @@ def main(
                 )
             ),
             brief="ascwds_job_role_counts must be null where job_role_filtering_rule is not populated",
+        )
+        .specially(
+            vl.make_col_has_fewer_nulls_validator(
+                IndCqcColumns.imputed_ascwds_job_role_counts,
+                IndCqcColumns.ascwds_job_role_counts,
+            ),
+            brief="imputed_ascwds_job_role_counts should have fewer null values than ascwds_job_role_counts",
+        )
+        .specially(
+            vl.make_col_has_fewer_nulls_validator(
+                IndCqcColumns.imputed_ascwds_job_role_ratios,
+                IndCqcColumns.ascwds_job_role_ratios,
+            ),
+            brief="imputed_ascwds_job_role_ratios should have fewer null values than ascwds_job_role_ratios",
         )
         # estimates between (inclusive)
         # .col_vals_expr(

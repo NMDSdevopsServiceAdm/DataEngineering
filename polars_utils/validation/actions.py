@@ -144,3 +144,29 @@ def add_list_column_validation_check_flags(
     df_with_flags = df.with_columns(expressions)
 
     return df_with_flags.drop(columns)
+
+
+def make_col_has_fewer_nulls_validator(
+    column1: str, column2: str
+) -> Callable[[pl.DataFrame], bool]:
+    """
+    Creates a validation function which checks if column1 has fewer null values than column2.
+
+    This function returns another Callable, for use in pointblank validations,
+    particularly `specially` which requires that the inner function accepts only a
+    single parameter (pl.DataFrame) as its arguments.
+
+    Args:
+        column1 (str): The first column to compare. Expected to have fewer null values.
+        column2 (str): The second column to compare. Expected to have more null values than column1.
+
+    Returns:
+        Callable[[pl.DataFrame], bool]: The validation function
+    """
+
+    def validate_col_has_fewer_nulls(data: pl.DataFrame) -> bool:
+        nulls_col1 = data.filter(pl.col(column1).is_null()).height
+        nulls_col2 = data.filter(pl.col(column2).is_null()).height
+        return nulls_col1 < nulls_col2
+
+    return validate_col_has_fewer_nulls

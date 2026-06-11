@@ -253,6 +253,9 @@ class EstimatedIndCQCFilledPostsByJobRoleCategoricalValues:
     ascwds_job_role_ratios_merged_source_column_values = (
         AscwdsJobRoleRatiosMergedSource(IndCQC.ascwds_job_role_ratios_merged_source)
     )
+    main_job_group_labels_column_values = JobGroupLabels(
+        AWKClean.main_job_role_clean_labelled
+    )
 
 
 @dataclass

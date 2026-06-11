@@ -209,5 +209,38 @@ class TestAddListColumnValidationCheckFlags(unittest.TestCase):
         pl_testing.assert_frame_equal(df_result, df_expected)
 
 
+class TestMakeColHasFewerNullsValidator(TestValidate):
+    col_a = "col_a"
+    col_b = "col_b"
+
+    def test_make_col_has_fewer_nulls_validator(self):
+        # Given
+
+        df = pl.DataFrame(
+            {
+                self.col_a: [1, None, 3, None],
+                self.col_b: [None, None, 3, None],
+            }
+        )
+        validator = vl.make_col_has_fewer_nulls_validator(self.col_a, self.col_b)
+        # When
+        result = validator(df)
+        # Then
+        self.assertTrue(result)
+
+    def test_make_col_has_fewer_nulls_validator_fails(self):
+        df_fail = pl.DataFrame(
+            {
+                self.col_a: [1, None, 3, None],
+                self.col_b: [1, 2, 3, None],
+            }
+        )
+        validator_fail = vl.make_col_has_fewer_nulls_validator(self.col_a, self.col_b)
+        # When
+        result_fail = validator_fail(df_fail)
+        # Then
+        self.assertFalse(result_fail)
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
