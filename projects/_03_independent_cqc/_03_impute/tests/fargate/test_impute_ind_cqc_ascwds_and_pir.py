@@ -25,6 +25,7 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
     mock_data = Mock(name="data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.model_imputation")
     @patch(f"{PATCH_PATH}.convert_pir_to_filled_posts")
     @patch(f"{PATCH_PATH}.model_primary_service_rate_of_change_trendline")
     @patch(f"{PATCH_PATH}.cUtils.calculate_filled_posts_per_bed_ratio")
@@ -37,6 +38,7 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
         calculate_filled_posts_per_bed_ratio_mock: Mock,
         model_roc_trendline_mock: Mock,
         convert_pir_to_filled_posts_mock: Mock,
+        model_imputation_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
 
@@ -50,6 +52,7 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
         calculate_filled_posts_per_bed_ratio_mock.assert_called_once()
         self.assertEqual(model_roc_trendline_mock.call_count, 2)
         convert_pir_to_filled_posts_mock.assert_called_once()
+        self.assertEqual(model_imputation_mock.call_count, 4)
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
