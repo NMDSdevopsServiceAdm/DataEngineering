@@ -2927,7 +2927,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
             small_location_threshold=1,
         ),
         EstimateFilledPostsByJobRoleCleanUtilsTestCase(
-            id="retains_values_when_ratio_is exactly_on_bound",
+            id="retains_values_when_ratio_is_exactly_on_bound",
             test_data=[
                 (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 5, JobRoleFilteringRule.populated),
                 (1, "loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 5, JobRoleFilteringRule.populated),
