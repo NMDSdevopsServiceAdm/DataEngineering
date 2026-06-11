@@ -1,5 +1,6 @@
 import sys
 from datetime import date, datetime
+from typing import Callable
 
 import pointblank as pb
 import polars as pl
@@ -7,6 +8,9 @@ import polars as pl
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    CategoricalColumnTypes,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns, PartitionKeys
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
@@ -48,31 +52,39 @@ COMPARE_COLS = [
     IndCqcColumns.cqc_location_import_date,
 ]
 
-EXPECTED_SCHEMA = {
-    IndCqcColumns.id_per_locationid_import_date_job_role: pl.Utf8,
-    IndCqcColumns.location_id: pl.Utf8,
-    IndCqcColumns.cqc_location_import_date: pl.Date,
-    IndCqcColumns.estimate_filled_posts: pl.Int64,
-    IndCqcColumns.primary_service_type: pl.Utf8,
-    IndCqcColumns.id_per_locationid_import_date: pl.Utf8,
-    IndCqcColumns.main_job_role_clean_labelled: pl.Utf8,
-    IndCqcColumns.ascwds_job_role_counts: pl.Int16,
-    IndCqcColumns.job_role_filtering_rule: pl.Utf8,
-    IndCqcColumns.ascwds_job_role_ratios: pl.Float32,
-    IndCqcColumns.imputed_ascwds_job_role_ratios: pl.Float32,
-    IndCqcColumns.imputed_ascwds_job_role_counts: pl.Float32,
-    IndCqcColumns.estimate_filled_posts_size_group: pl.Utf8,
-    IndCqcColumns.ascwds_job_role_rolling_ratio: pl.Float32,
-    IndCqcColumns.ascwds_job_role_ratios_merged: pl.Float32,
-    IndCqcColumns.ascwds_job_role_ratios_merged_source: pl.Utf8,
-    IndCqcColumns.estimate_filled_posts_by_job_role: pl.Float32,
-    IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
-    IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: pl.Int64,
-    IndCqcColumns.estimate_filled_posts_from_all_job_roles: pl.Int64,
-    IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: pl.Int64,
-    IndCqcColumns.main_job_group_labelled: pl.Utf8,
-    PartitionKeys.year: pl.Utf8,
-}
+EXPECTED_SCHEMA = pb.Schema(
+    columns={
+        IndCqcColumns.id_per_locationid_import_date_job_role: "UInt32",
+        IndCqcColumns.location_id: "Categorical",
+        IndCqcColumns.cqc_location_import_date: "Date",
+        IndCqcColumns.estimate_filled_posts: "Int64",
+        IndCqcColumns.primary_service_type: str(
+            CategoricalColumnTypes.PrimaryServiceEnumType
+        ),
+        IndCqcColumns.id_per_locationid_import_date: "UInt32",
+        IndCqcColumns.main_job_role_clean_labelled: str(
+            CategoricalColumnTypes.JobRoleEnumType
+        ),
+        IndCqcColumns.ascwds_job_role_counts: "Int16",
+        IndCqcColumns.job_role_filtering_rule: "Categorical",
+        IndCqcColumns.ascwds_job_role_ratios: "Float32",
+        IndCqcColumns.imputed_ascwds_job_role_ratios: "Float32",
+        IndCqcColumns.imputed_ascwds_job_role_counts: "Float32",
+        IndCqcColumns.estimate_filled_posts_size_group: "String",
+        IndCqcColumns.ascwds_job_role_rolling_ratio: "Float32",
+        IndCqcColumns.ascwds_job_role_ratios_merged: "Float32",
+        IndCqcColumns.ascwds_job_role_ratios_merged_source: "String",
+        IndCqcColumns.estimate_filled_posts_by_job_role: "Float32",
+        IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: "Float32",
+        IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: "Int64",
+        IndCqcColumns.estimate_filled_posts_from_all_job_roles: "Int64",
+        IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: "Int64",
+        IndCqcColumns.main_job_group_labelled: str(
+            CategoricalColumnTypes.JobGroupEnumType
+        ),
+        PartitionKeys.year: "String",
+    }
+)
 
 CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
 
@@ -137,7 +149,6 @@ def main(
                 IndCqcColumns.id_per_locationid_import_date,
                 IndCqcColumns.main_job_role_clean_labelled,
                 IndCqcColumns.job_role_filtering_rule,
-                IndCqcColumns.ascwds_job_role_rolling_sum,
                 IndCqcColumns.ascwds_job_role_rolling_ratio,
                 IndCqcColumns.ascwds_job_role_ratios_merged,
                 IndCqcColumns.ascwds_job_role_ratios_merged_source,
@@ -238,7 +249,6 @@ def main(
         .col_vals_ge(
             columns=[
                 IndCqcColumns.ascwds_job_role_counts,
-                IndCqcColumns.ascwds_job_role_rolling_sum,
                 IndCqcColumns.imputed_ascwds_job_role_counts,
                 IndCqcColumns.ascwds_job_role_ratios_merged,
                 IndCqcColumns.estimate_filled_posts_by_job_role,
@@ -256,14 +266,14 @@ def main(
                 IndCqcColumns.ascwds_job_role_rolling_ratio,
                 IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
             ],
-            lower=0,
-            upper=1,
+            left=0,
+            right=1,
             na_pass=True,
             brief="Ratios should be between 0 and 1 where present. Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be between 0 and 1 where present",
         )
         .col_vals_le(
             columns=IndCqcColumns.ascwds_job_role_counts,
-            value=IndCqcColumns.estimate_filled_posts,
+            value=pb.col(IndCqcColumns.estimate_filled_posts),
             na_pass=True,
             brief="ascwds_job_role_counts should be <= estimate_filled_posts where present",
         )
@@ -275,8 +285,9 @@ def main(
         )
         .col_vals_between(
             columns=PartitionKeys.year,
-            lower=2013,
-            upper=datetime.now().year,
+            pre=make_convert_col_to_integers_preprocessor(PartitionKeys.year),
+            left=2013,
+            right=int(datetime.now().year),
             brief="Year should be between 2013 and current year",
         )
         # logical checks
@@ -284,14 +295,18 @@ def main(
             expr=(
                 (
                     (
-                        pl.col(IndCqcColumns.job_role_filtering_rule)
-                        != pl.lit(JobRoleFilteringRule.populated)
-                        & pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
+                        (
+                            pl.col(IndCqcColumns.job_role_filtering_rule)
+                            != pl.lit(JobRoleFilteringRule.populated)
+                        )
+                        & (pl.col(IndCqcColumns.ascwds_job_role_counts).is_null())
                     )
                     | (
-                        pl.col(IndCqcColumns.job_role_filtering_rule)
-                        == pl.lit(JobRoleFilteringRule.populated)
-                        & pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null()
+                        (
+                            pl.col(IndCqcColumns.job_role_filtering_rule)
+                            == pl.lit(JobRoleFilteringRule.populated)
+                        )
+                        & (pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null())
                     )
                 )
             ),
@@ -310,6 +325,37 @@ def main(
                 IndCqcColumns.ascwds_job_role_ratios,
             ),
             brief="imputed_ascwds_job_role_ratios should have fewer null values than ascwds_job_role_ratios",
+        )
+        .conjointly(
+            lambda df: pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null(),
+            lambda df: pl.col(IndCqcColumns.ascwds_job_role_ratios).is_not_null(),
+            brief="Where ascwds_job_role_counts is not null, ascwds_job_role_ratios should also not be null",
+        )
+        .conjointly(
+            lambda df: pl.col(
+                IndCqcColumns.imputed_ascwds_job_role_counts
+            ).is_not_null(),
+            lambda df: pl.col(
+                IndCqcColumns.imputed_ascwds_job_role_ratios
+            ).is_not_null(),
+            brief="Where imputed_ascwds_job_role_counts is not null, imputed_ascwds_job_role_ratios should also not be null",
+        )
+        .col_vals_expr(
+            (
+                pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_null()
+                & (
+                    pl.col(IndCqcColumns.ascwds_job_role_ratios_merged)
+                    == pl.col(IndCqcColumns.ascwds_job_role_rolling_ratio)
+                )
+            )
+            | (
+                (pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_not_null())
+                & (
+                    pl.col(IndCqcColumns.ascwds_job_role_ratios_merged)
+                    == pl.col(IndCqcColumns.imputed_ascwds_job_role_counts)
+                )
+            ),
+            brief="Where imputed_ascwds_job_role_ratios is null, ascwds_job_role_ratios_merged should equal ascwds_job_role_rolling_ratio. Where imputed_ascwds_job_role_ratios is not null, ascwds_job_role_ratios_merged should equal imputed_ascwds_job_role_counts",
         )
         # estimates between (inclusive)
         # .col_vals_expr(
@@ -405,6 +451,28 @@ def estimates_percentage_expressions(
     return ((expr >= pcts[0]) & (expr <= pcts[1])).over(
         pl.col(IndCqcColumns.cqc_location_import_date)
     )
+
+
+def make_convert_col_to_integers_preprocessor(
+    column: str,
+) -> Callable[[pl.DataFrame], pl.DataFrame]:
+    """
+    Creates a preprocessor function that converts a specified column to integers.
+
+    This is used to preprocess the year partition column for validation, allowing
+    for checks that require the column to be in a numerical format.
+
+    Args:
+        column (str): the name of the column to convert
+
+    Returns:
+        Callable[[pl.DataFrame], pl.DataFrame]: the inner function which converts the specified column to integers
+    """
+
+    def convert_col_to_integers(df: pl.DataFrame) -> pl.DataFrame:
+        return df.with_columns(pl.col(column).cast(pl.Int64))
+
+    return convert_col_to_integers
 
 
 if __name__ == "__main__":

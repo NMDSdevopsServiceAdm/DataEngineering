@@ -1,14 +1,17 @@
 import json
 import unittest
-from unittest.mock import Mock, patch
 from datetime import date
+from unittest.mock import Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_04_estimates as job
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    CategoricalColumnTypes,
+)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns, PartitionKeys
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     MainJobRoleLabels,
@@ -19,22 +22,37 @@ PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role
 
 class ValidateJobRoleEstimatesTests(unittest.TestCase):
     def setUp(self) -> None:
+
         source_schema = {
-            IndCqcColumns.id_per_locationid_import_date: pl.String,
+            IndCqcColumns.id_per_locationid_import_date_job_role: pl.String,
             IndCqcColumns.location_id: pl.String,
             IndCqcColumns.cqc_location_import_date: pl.Date,
-            IndCqcColumns.estimate_filled_posts: pl.Float32,
-            IndCqcColumns.ascwds_job_role_ratios_merged_source: pl.String,
+            IndCqcColumns.estimate_filled_posts: pl.Int64,
+            IndCqcColumns.primary_service_type: pl.String,
+            IndCqcColumns.id_per_locationid_import_date: pl.String,
             IndCqcColumns.main_job_role_clean_labelled: pl.String,
-            IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
-            IndCqcColumns.estimate_filled_posts_from_all_job_roles: pl.Float32,
+            IndCqcColumns.ascwds_job_role_counts: pl.Int16,
+            IndCqcColumns.job_role_filtering_rule: pl.String,
+            IndCqcColumns.ascwds_job_role_ratios: pl.Float32,
+            IndCqcColumns.imputed_ascwds_job_role_ratios: pl.Float32,
+            IndCqcColumns.imputed_ascwds_job_role_counts: pl.Int64,
+            IndCqcColumns.estimate_filled_posts_size_group: pl.String,
+            IndCqcColumns.ascwds_job_role_rolling_ratio: pl.Float32,
+            IndCqcColumns.ascwds_job_role_ratios_merged: pl.Float32,
+            IndCqcColumns.ascwds_job_role_ratios_merged_source: pl.String,
+            IndCqcColumns.estimate_filled_posts_by_job_role: pl.Float32,
+            IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
+            IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: pl.Int64,
+            IndCqcColumns.estimate_filled_posts_from_all_job_roles: pl.Int64,
+            IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: pl.Int64,
             IndCqcColumns.main_job_group_labelled: pl.String,
+            PartitionKeys.year: pl.String,
         }
         source_rows = [
-            ("1", "1-001", date(2026, 1, 1), 100.0, "source", MainJobRoleLabels.care_worker,    40.0, 100.0, JobGroupLabels.direct_care),
-            ("2", "1-002", date(2026, 1, 1), 100.0, "source", MainJobRoleLabels.support_worker, 30.0, 100.0, JobGroupLabels.direct_care),
+            ("1", "1-001", date(2026, 1, 1), 100, "service", "1", MainJobRoleLabels.care_worker,    40, "Rule", 0.1, 0.1, 10, "size", 0.1, 0.1, "source", 10.0, 10.0, 10, 10, 10, JobGroupLabels.direct_care, "2026"),
+            ("2", "1-002", date(2026, 1, 1), 100, "service", "1", MainJobRoleLabels.support_worker, 30, "Rule", 0.1, 0.1, 10, "size", 0.1, 0.1, "source", 10.0, 10.0, 10, 10, 10, JobGroupLabels.direct_care, "2026"),
         ]  # fmt: skip
-        self.source_lf = pl.LazyFrame(source_rows, source_schema, orient="row")
+        self.source_lf = pl.DataFrame(source_rows, source_schema, orient="row")
 
         compare_schema = {
             IndCqcColumns.location_id: pl.String,
@@ -44,7 +62,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             ("1-001", date(2026, 1, 1)),
             ("1-002", date(2026, 1, 1)),
         ]
-        self.compare_lf = pl.LazyFrame(compare_rows, compare_schema, orient="row")
+        self.compare_lf = pl.DataFrame(compare_rows, compare_schema, orient="row")
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
@@ -84,7 +102,18 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
         expected_assertions = {
+            "col_schema_match",
+            "row_count_match",
+            "col_vals_not_null",
+            "rows_distinct",
             "col_vals_expr",
+            "col_vals_in_set",
+            "specially",
+            "col_vals_gt",
+            "col_vals_ge",
+            "col_vals_between",
+            "col_vals_le",
+            "conjointly",
         }
 
         for assertion in expected_assertions:
@@ -166,6 +195,20 @@ class TestEstimatesPercentageExpressions:
         assert "pcts must be a tuple of two values: (lower_bound, upper_bound)" in str(
             excinfo.value
         )
+
+
+class TestMakeConvertColToIntegersPreprocessor:
+    def test_make_convert_col_to_integers_preprocessor(self):
+        preprocessor = job.make_convert_col_to_integers_preprocessor(PartitionKeys.year)
+        df = pl.DataFrame({PartitionKeys.year: ["2020", "2021", "2022"]})
+        result = preprocessor(df)
+        expected = pl.DataFrame({PartitionKeys.year: [2020, 2021, 2022]})
+        pl_testing.assert_frame_equal(result, expected)
+
+    def test_convert_col_to_integers_with_non_numeric_values(self):
+        df = pl.DataFrame({PartitionKeys.year: ["2020", "invalid", "2022"]})
+        with pytest.raises(pl.exceptions.InvalidOperationError):
+            job.make_convert_col_to_integers_preprocessor(PartitionKeys.year)(df)
 
 
 if __name__ == "__main__":
