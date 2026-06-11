@@ -17,6 +17,7 @@ PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role
 
 class MainTests(unittest.TestCase):
     MERGED_DATA_SOURCE = "some/source"
+    MERGED_METADATA_SOURCE = "some/metadata/source"
     CLEANED_DATA_DESTINATION = "some/destination"
 
     mock_estimated_job_role_posts_lf = pl.LazyFrame()
@@ -26,6 +27,7 @@ class MainTests(unittest.TestCase):
         Data.expected_data,
         Schemas.expected_schema,
     )
+    metadata_lf = pl.LazyFrame(Data.metadata, Schemas.metadata_schema)
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.cUtils.filter_job_role_group_outliers")
@@ -35,7 +37,7 @@ class MainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.cUtils.nullify_job_role_count_when_source_not_ascwds")
     @patch(
         f"{PATCH_PATH}.utils.scan_parquet",
-        side_effect=[mock_estimated_job_role_posts_lf],
+        side_effect=[mock_estimated_job_role_posts_lf, metadata_lf],
     )
     def test_main_runs(
         self,
@@ -47,13 +49,18 @@ class MainTests(unittest.TestCase):
         filter_job_role_group_outliers_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        job.main(self.MERGED_DATA_SOURCE, self.CLEANED_DATA_DESTINATION)
+        job.main(
+            self.MERGED_DATA_SOURCE,
+            self.MERGED_METADATA_SOURCE,
+            self.CLEANED_DATA_DESTINATION,
+        )
 
-        self.assertEqual(scan_parquet_mock.call_count, 1)
+        self.assertEqual(scan_parquet_mock.call_count, 2)
         scan_parquet_mock.assert_has_calls(
             [
                 call(self.MERGED_DATA_SOURCE),
-            ]
+                call(self.MERGED_METADATA_SOURCE),
+            ],
         )
 
         nullify_job_role_count_when_source_not_ascwds_mock.assert_called_once()
@@ -71,14 +78,18 @@ class MainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(
         f"{PATCH_PATH}.utils.scan_parquet",
-        side_effect=[test_estimated_job_role_posts_lf],
+        side_effect=[test_estimated_job_role_posts_lf, metadata_lf],
     )
     def test_main_runs_with_data(
         self,
         scan_parquet_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        job.main(self.MERGED_DATA_SOURCE, self.CLEANED_DATA_DESTINATION)
+        job.main(
+            self.MERGED_DATA_SOURCE,
+            self.MERGED_METADATA_SOURCE,
+            self.CLEANED_DATA_DESTINATION,
+        )
 
         pltesting.assert_frame_equal(
             sink_to_parquet_mock.call_args.kwargs["lazy_df"],

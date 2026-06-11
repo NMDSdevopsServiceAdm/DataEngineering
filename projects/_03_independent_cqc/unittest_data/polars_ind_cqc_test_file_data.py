@@ -3348,3 +3348,9 @@ class EstimateFilledPostsByJobRoleCleanData:
         IndCQC.registered_manager_names: [["Manager 1", "Manager 2"]] * 4,
         IndCQC.job_role_filtering_rule: [JobRoleFilteringRule.populated] * 4,
     }
+
+    metadata = {
+        IndCQC.id_per_locationid_import_date: [1] * 4,
+        IndCQC.provider_id: ["provider1"] * 4,
+        IndCQC.brand_id: ["brand1"] * 4,
+    }
