@@ -24,6 +24,8 @@ All notable changes to this project will be documented in this file.
 
 - Added validations for cleaned data within Estimates by Job Roles Pipeline.
 
+- Added Validations for impute data within Estimates by Job Roles Pipeline.
+
 - Added `--delete` to all sws s3 sync commands to ensure that the files present in the destination bucket but no longer present in the source bucket are removed during sync.
 
 ### Changed
@@ -49,6 +51,8 @@ All notable changes to this project will be documented in this file.
 - Raw and cleaned ascwds worker validation scripts so they raise exceptions on failure.
 
 - Raw worker data validation was failing because the mainjrid column contained -1 values. Validation rules have been updated to allow this value in raw data, as it is handled during the clean step.
+
+- Null handling in job group filter.
 
 
 ## [v2026.04.0] - 15/05/2026
