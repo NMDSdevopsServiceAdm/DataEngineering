@@ -102,10 +102,11 @@ def filter_job_role_group_outliers(
             index=splits_for_pivot,
             values=IndCQC.ascwds_job_role_counts,
             aggregate_function="sum",
-        ).with_columns(  # 2. Calculate total ASCWDS count for location, service type and date.
+        )
+        .with_columns(  # 2. Calculate total ASCWDS count for location, service type and date.
             Exprs.location_sum_expr
         )
-        # .filter(pl.col(Exprs.temp_location_sum) > small_location_threshold)
+        .filter(pl.col(Exprs.temp_location_sum) > small_location_threshold)
         .with_columns(  # 3. Calculate job group percentage of total ASCWDS count for location, service type and date.
             Exprs.job_group_percentage_expr
         )
