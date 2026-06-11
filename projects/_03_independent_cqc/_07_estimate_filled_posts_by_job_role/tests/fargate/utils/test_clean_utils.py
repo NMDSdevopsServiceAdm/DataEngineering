@@ -139,6 +139,37 @@ class TestFilterJobRoleGroupExpressions:
         returned_lf = test_lf.with_columns(self.TestExprs.job_group_percentage_expr)
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
+    def test_job_group_percentage_handles_null_and_zero(self):
+        # Zero denominator should yield NULL percentages
+        test_lf_zero = pl.LazyFrame(
+            [(None, None, None, None, 0)],
+            Schemas.test_location_sum_schema,
+            orient="row",
+        )
+        returned_zero = test_lf_zero.with_columns(
+            self.TestExprs.job_group_percentage_expr
+        )
+        expected_zero = pl.LazyFrame(
+            [(None, None, None, None, 0)],
+            Schemas.test_job_group_percentage_schema,
+        )
+        pl_testing.assert_frame_equal(returned_zero, expected_zero)
+
+        # NULL denominator should also yield NULL percentages
+        test_lf_null = pl.LazyFrame(
+            [(None, None, None, None, None)],
+            Schemas.test_location_sum_schema,
+            orient="row",
+        )
+        returned_null = test_lf_null.with_columns(
+            self.TestExprs.job_group_percentage_expr
+        )
+        expected_null = pl.LazyFrame(
+            [(None, None, None, None, None)],
+            Schemas.test_job_group_percentage_schema,
+        )
+        pl_testing.assert_frame_equal(returned_null, expected_null)
+
     def test_evaluation_expression(self):
         test_lf = pl.LazyFrame(
             Data.test_evaluation_expr_rows,

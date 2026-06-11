@@ -50,6 +50,8 @@ All notable changes to this project will be documented in this file.
 
 - Raw worker data validation was failing because the mainjrid column contained -1 values. Validation rules have been updated to allow this value in raw data, as it is handled during the clean step.
 
+- Null handling in job group filter.
+
 
 ## [v2026.04.0] - 15/05/2026
 
