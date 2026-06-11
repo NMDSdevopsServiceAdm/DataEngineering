@@ -3350,7 +3350,7 @@ class EstimateFilledPostsByJobRoleCleanData:
     }
 
     metadata = {
-        IndCQC.id_per_locationid_import_date: [1] * 4,
-        IndCQC.provider_id: ["provider1"] * 4,
-        IndCQC.brand_id: ["brand1"] * 4,
+        IndCQC.id_per_locationid_import_date: [1],
+        IndCQC.provider_id: ["provider1"],
+        IndCQC.brand_id: ["brand1"],
     }
