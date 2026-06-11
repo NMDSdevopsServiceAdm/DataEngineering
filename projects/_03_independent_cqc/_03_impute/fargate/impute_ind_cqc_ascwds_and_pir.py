@@ -136,12 +136,13 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         extrapolation_method="ratio",
     )
 
-    lf = utils.nullify_ct_values_previous_to_first_submission(
-        lf,
-        [
-            IndCQC.ct_care_home_total_employed_imputed,
-            IndCQC.ct_non_res_care_workers_employed_imputed,
-        ],
+    lf = lf.with_columns(
+        utils.nullify_ct_values_previous_to_first_submission(
+            [
+                IndCQC.ct_care_home_total_employed_imputed,
+                IndCQC.ct_non_res_care_workers_employed_imputed,
+            ],
+        )
     )
 
     print(f"Exporting as parquet to {destination}")
