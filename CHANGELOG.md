@@ -45,6 +45,8 @@ All notable changes to this project will be documented in this file.
 
 - Refactored job role estimates validation to remove aggregated table.
 
+- Removed small locations from job group filter
+
 ### Fixed
 - Raw and cleaned ascwds worker validation scripts so they raise exceptions on failure.
 
