@@ -34,12 +34,11 @@ def model_imputation(
     of values in '<model_column_name>'.
 
     Args:
-        lf (pl.LazyFrame): The input LazyFrame containing the columns to be
-            extrapolated and interpolated.
+        lf (pl.LazyFrame): The input LazyFrame containing the column_with_null_values.
         column_with_null_values (str): The name of the column containing null
-            values to be extrapolated and interpolated.
+            values to be imputed.
         model_column_name (str): The name of the column containing the model
-            values used for extrapolation and interpolation.
+            values used for imputation.
         imputed_column_name (str): The name of the new imputated column.
         care_home (bool): True if imputation is for care homes, False if it is
             for non residential.
@@ -47,7 +46,7 @@ def model_imputation(
             Must be either 'nominal' or 'ratio'.
 
     Returns:
-        pl.LazyFrame: The LazyFrame with the added column for imputed values.
+        pl.LazyFrame: The LazyFrame with the added column imputed_column_name.
     """
     imputed_lf, non_imputed_lf = split_dataset_for_imputation(
         lf, column_with_null_values, care_home
@@ -86,12 +85,8 @@ def split_dataset_for_imputation(
     lf: pl.LazyFrame, column_with_null_values: str, care_home: bool
 ) -> Tuple[pl.LazyFrame, pl.LazyFrame]:
     """
-    Splits the LazyFrame into two based on whether or not the rows meet the
-    criteria for imputation.
-
     Splits the LazyFrame into two based on the presence of non-null values in a
-    specified column and whether the care_home column matches the provided
-    argument.
+    column_with_null_values and whether care_home is True or False.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame.
