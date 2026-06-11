@@ -62,18 +62,12 @@ def main(
         utils.cast_to_schema(metadata_columns_to_import_schema)
     )
     print("Merged Metadata LazyFrame read in")
-    print(
-        f"estimated_job_role_posts_lf_TotalRecords before join: {estimated_job_role_posts_lf.select(IndCQC.id_per_locationid_import_date).collect().height}"
-    )
+
     # add metadata columns to estimated_job_role_posts_lf
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
         merged_metadata_lf,
         on=IndCQC.id_per_locationid_import_date,
         how="left",
-    )
-
-    print(
-        f"estimated_job_role_posts_lf_TotalRecords after join: {estimated_job_role_posts_lf.select(IndCQC.id_per_locationid_import_date).collect().height}"
     )
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
