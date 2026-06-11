@@ -39,7 +39,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         )
         self.assertEqual(enrich_with_model_predictions_mock.call_count, 3)
         combine_non_res_with_and_without_dormancy_models_mcok.assert_called_once()
-        self.assertEqual(model_imputation.call_count, 3)
+        self.assertEqual(model_imputation.call_count, 1)
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,

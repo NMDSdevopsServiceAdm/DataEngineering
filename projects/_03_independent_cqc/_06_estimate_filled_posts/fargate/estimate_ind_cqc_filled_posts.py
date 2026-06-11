@@ -97,23 +97,24 @@ def main(
 
     lf = combine_non_res_with_and_without_dormancy_models(lf)
 
-    lf = model_imputation(
-        lf,
-        IndCQC.ascwds_pir_merged,
-        IndCQC.care_home_model,
-        IndCQC.imputed_posts_care_home_model,
-        care_home=True,
-        extrapolation_method="nominal",
-    )
+    # Uncommented these call when ascwds_pir_merged has been converted to polars.
+    # lf = model_imputation(
+    #     lf,
+    #     IndCQC.ascwds_pir_merged,
+    #     IndCQC.care_home_model,
+    #     IndCQC.imputed_posts_care_home_model,
+    #     care_home=True,
+    #     extrapolation_method="nominal",
+    # )
 
-    lf = model_imputation(
-        lf,
-        IndCQC.ascwds_pir_merged,
-        IndCQC.non_res_combined_model,
-        IndCQC.imputed_posts_non_res_combined_model,
-        care_home=False,
-        extrapolation_method="nominal",
-    )
+    # lf = model_imputation(
+    #     lf,
+    #     IndCQC.ascwds_pir_merged,
+    #     IndCQC.non_res_combined_model,
+    #     IndCQC.imputed_posts_non_res_combined_model,
+    #     care_home=False,
+    #     extrapolation_method="nominal",
+    # )
 
     lf = model_imputation(
         lf,
