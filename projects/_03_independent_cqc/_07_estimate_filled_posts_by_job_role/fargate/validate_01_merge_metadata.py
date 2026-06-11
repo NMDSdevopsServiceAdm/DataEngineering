@@ -135,7 +135,7 @@ def main(
         # Schema check
         .col_schema_match(
             schema=EXPECTED_SCHEMA,
-            brief="Dataset schema {} should match the expected schema",
+            brief="Dataset schema should match the expected schema",
         )
         # Dataset size
         .row_count_match(
