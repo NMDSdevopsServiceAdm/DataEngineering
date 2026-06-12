@@ -15,7 +15,8 @@ pl.Config.set_streaming_chunk_size(50000)
 
 metadata_columns = {
     IndCQC.name: str,
-    IndCQC.provider_id: str,
+    IndCQC.provider_id: CatColType.ProviderCatType,
+    IndCQC.brand_id: CatColType.BrandCatType,
     IndCQC.services_offered: pl.List(str),
     IndCQC.primary_service_type_second_level: pl.Categorical,
     IndCQC.care_home: pl.Categorical,
