@@ -122,6 +122,7 @@ def main(
         selected_columns=COMPARE_COLS,
     )
     print(source_df.schema)
+    print(EXPECTED_SCHEMA)
     expected_row_count = compare_df.height
 
     validation = (
