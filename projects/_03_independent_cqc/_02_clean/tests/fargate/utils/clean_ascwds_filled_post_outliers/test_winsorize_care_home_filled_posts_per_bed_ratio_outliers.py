@@ -13,7 +13,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema as Schemas,
 )
-
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 

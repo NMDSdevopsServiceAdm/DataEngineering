@@ -1,6 +1,5 @@
 from datetime import date
 
-
 calculate_new_column_rows = [
     ("1-001", 10.0, 2.5),
     ("1-002", 2.0, 4.0),

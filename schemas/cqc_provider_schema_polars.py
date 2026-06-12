@@ -1,8 +1,8 @@
 import polars as pl
+
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
 )
-
 
 POLARS_PROVIDER_SCHEMA = {
     ColNames.provider_id: pl.Utf8,

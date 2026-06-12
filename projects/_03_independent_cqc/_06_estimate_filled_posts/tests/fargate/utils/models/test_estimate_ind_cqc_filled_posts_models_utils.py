@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import ANY, Mock, patch
+
 import polars as pl
 import polars.testing as pl_testing
 

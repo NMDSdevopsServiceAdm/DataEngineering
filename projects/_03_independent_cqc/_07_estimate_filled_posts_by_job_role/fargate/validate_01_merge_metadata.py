@@ -31,6 +31,7 @@ VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.id_per_locationid_import_date,
     IndCqcColumns.name,
     IndCqcColumns.provider_id,
+    IndCqcColumns.brand_id,
     IndCqcColumns.services_offered,
     IndCqcColumns.primary_service_type_second_level,
     IndCqcColumns.care_home,
@@ -65,7 +66,8 @@ EXPECTED_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.id_per_locationid_import_date: "UInt32",
         IndCqcColumns.name: "String",
-        IndCqcColumns.provider_id: "String",
+        IndCqcColumns.provider_id: str(CategoricalColumnTypes.ProviderCatType),
+        IndCqcColumns.brand_id: str(CategoricalColumnTypes.BrandCatType),
         IndCqcColumns.primary_service_type_second_level: "Categorical",
         IndCqcColumns.care_home: "Categorical",
         IndCqcColumns.dormancy: "Categorical",
@@ -132,7 +134,8 @@ def main(
         )
         # Schema check
         .col_schema_match(
-            schema=EXPECTED_SCHEMA, brief="Dataset should match the expected schema"
+            schema=EXPECTED_SCHEMA,
+            brief="Dataset schema should match the expected schema",
         )
         # Dataset size
         .row_count_match(

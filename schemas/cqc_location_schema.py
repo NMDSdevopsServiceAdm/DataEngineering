@@ -1,9 +1,9 @@
 from pyspark.sql.types import (
-    StructField,
-    StructType,
-    StringType,
     ArrayType,
     IntegerType,
+    StringType,
+    StructField,
+    StructType,
 )
 
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
@@ -11,13 +11,13 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 
 """
-This schema (and the data in s3) has been updated to match changes which were announced 
-to be taking place on 30/1/25. The three new columns added are highlighted below. This 
+This schema (and the data in s3) has been updated to match changes which were announced
+to be taking place on 30/1/25. The three new columns added are highlighted below. This
 update to the API has now been postponed and no new launch date has been communicated as
 yet. We are leaving these columns in the schema for now, as they do not affect the pipeline.
 If another API schema change happens before these columns are added, they may need removing.
 
-The changes were made in PR #680: Update location api schema. Note that reversing this PR will 
+The changes were made in PR #680: Update location api schema. Note that reversing this PR will
 also roll back the version number for the CQC locations data in s3. The data in s3 and the
 version number in s3 will need reverting separately.
 """

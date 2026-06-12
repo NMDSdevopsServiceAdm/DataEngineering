@@ -10,15 +10,15 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AscWdsColumns,
 )
-from utils.column_values.categorical_columns_by_dataset import (
-    LocationsApiCleanedCategoricalValues as CatValues,
-)
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.reconciliation_columns import ReconciliationColumns
 from utils.column_names.validation_table_columns import Validation
+from utils.column_values.categorical_columns_by_dataset import (
+    LocationsApiCleanedCategoricalValues as CatValues,
+)
 
 
 def main(

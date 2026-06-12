@@ -1,5 +1,6 @@
 import polars as pl
-from polars_utils.expressions import is_care_home, is_not_care_home, is_dormant
+
+from polars_utils.expressions import is_care_home, is_dormant, is_not_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 average_number_of_beds: str = "avg_beds"

@@ -1,5 +1,8 @@
 import polars as pl
 
+from polars_utils.filtering_utils import (
+    add_filtering_rule_column,
+)
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.non_res_brand_id_filter import (
     non_res_brand_id_filter,
 )
@@ -11,9 +14,6 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_po
 )
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.winsorize_care_home_filled_posts_per_bed_ratio_outliers import (
     winsorize_care_home_filled_posts_per_bed_ratio_outliers,
-)
-from polars_utils.filtering_utils import (
-    add_filtering_rule_column,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import AscwdsFilteringRule

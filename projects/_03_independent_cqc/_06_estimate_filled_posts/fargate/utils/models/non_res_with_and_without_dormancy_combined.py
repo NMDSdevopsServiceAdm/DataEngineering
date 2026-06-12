@@ -1,9 +1,9 @@
 import polars as pl
 
+from polars_utils.expressions import is_not_care_home
 from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.utils import (
     join_model_predictions,
 )
-from polars_utils.expressions import is_not_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as TempColumns,

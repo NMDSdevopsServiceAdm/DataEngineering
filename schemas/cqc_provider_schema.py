@@ -1,8 +1,8 @@
 from pyspark.sql.types import (
+    ArrayType,
+    StringType,
     StructField,
     StructType,
-    StringType,
-    ArrayType,
 )
 
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (

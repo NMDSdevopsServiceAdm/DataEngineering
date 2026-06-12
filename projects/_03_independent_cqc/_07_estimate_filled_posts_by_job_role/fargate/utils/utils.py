@@ -122,6 +122,10 @@ class CategoricalColumnTypes:
     EstablishmentCatType = pl.Categorical(
         pl.Categories("establishment", namespace="filled_posts")
     )
+    ProviderCatType = pl.Categorical(
+        pl.Categories("provider", namespace="filled_posts")
+    )
+    BrandCatType = pl.Categorical(pl.Categories("brand", namespace="filled_posts"))
     JobRoleEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
     JobGroupEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_job_groups())
     EstimatesFilledPostSourceEnumType = pl.Enum(
