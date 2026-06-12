@@ -227,7 +227,7 @@ class TestFilterJobRoleGroupExpressions:
             orient="row",
         )
         test_lf = expected_lf.drop(self.TestExprs.temp_total_workers_sum)
-        returned_lf = test_lf.with_columns(self.TestExprs.temp_total_workers_sum)
+        returned_lf = test_lf.with_columns(self.TestExprs.horizontal_sum_expr)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
