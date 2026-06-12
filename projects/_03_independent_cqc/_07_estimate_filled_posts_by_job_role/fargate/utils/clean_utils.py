@@ -47,7 +47,8 @@ def filter_job_role_group_outliers(
     lf: pl.LazyFrame,
     upper_percentile_bound: float = 0.999,
     lower_percentile_bound: float = 0.001,
-    small_location_threshold: int = 50,
+    pass_filter_threshold: int = 50,
+    agg_level: str = IndCQC.location_id,
 ) -> pl.LazyFrame:
     """
     Null job role counts at locations where job group distribution is out of bounds and
@@ -65,11 +66,21 @@ def filter_job_role_group_outliers(
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
         upper_percentile_bound (float): Upper bound for percentile filtering. Defaults to 0.999.
         lower_percentile_bound (float): Lower bound for percentile filtering. Defaults to 0.001.
-        small_location_threshold (int): Minimum number of workers at a location to be included in filtering. Defaults to 50.
+        pass_filter_threshold (int): Minimum number of workers at which to be included in filtering. Defaults to 50.
+        agg_level (str): The aggregation level at which to identfy outliers.
+            Must be either 'locationId', 'providerId' or 'brandId'. Defaults to 'locationId'.
 
     Returns:
         pl.LazyFrame: LazyFrame with outliers in job role groups filtered.
+
+    Raises:
+        ValueError: If agg_level is not 'locationId', 'providerId' or 'brandId'.
     """
+    if agg_level not in [IndCQC.location_id, IndCQC.provider_id, IndCQC.brand_id]:
+        raise ValueError(
+            "Error: agg_level must be 'locationId', 'providerId' or 'brandId'."
+        )
+
     temp_out_of_bounds_col: str = "location_out_of_bounds"
 
     Exprs = FilterJobRoleGroupExpressions(
@@ -78,7 +89,7 @@ def filter_job_role_group_outliers(
 
     # Define splits for groupby operations
     splits_for_pivot = [
-        IndCQC.location_id,
+        agg_level,
         IndCQC.cqc_location_import_date,
         IndCQC.primary_service_type,
         IndCQC.id_per_locationid_import_date,
@@ -92,8 +103,8 @@ def filter_job_role_group_outliers(
             values=IndCQC.ascwds_job_role_counts,
             aggregate_function="sum",
         )
-        .with_columns(Exprs.location_sum_expr)
-        .filter(pl.col(Exprs.temp_location_sum) > small_location_threshold)
+        .with_columns(Exprs.horizontal_sum_expr)
+        .filter(pl.col(Exprs.temp_total_workers_sum) > pass_filter_threshold)
         .with_columns(Exprs.job_group_percentage_expr)
     )
 
@@ -129,7 +140,7 @@ def filter_job_role_group_outliers(
         raw_col_name=IndCQC.ascwds_job_role_counts,
         clean_col_name=IndCQC.ascwds_job_role_counts,
         populated_rule=JobRoleFilteringRule.populated,
-        new_rule_name=JobRoleFilteringRule.job_role_group_is_outlier,
+        new_rule_name=JobRoleFilteringRule.job_role_group_is_outlier + agg_level,
         categorical_type=CatColType.JobRoleFilteringRuleCatType,
     )
     return lf
@@ -144,11 +155,11 @@ class FilterJobRoleGroupExpressions:
     used by these expressions.
 
     Attributes:
-        temp_location_sum (str): Temporary column name for the total number of workers at a location.
+        temp_total_workers_sum (str): Temporary column name for the total number of workers at a location.
         job_group_cols (list[str]): List of job group column names.
         upper_bound_suffix (str): A column suffix for denoting upper bounds.
         lower_bound_suffix (str): A column suffix for denoting lower bounds.
-        location_sum_expr (pl.Expr): Expression to calculate the total workers at a location.
+        horizontal_sum_expr (pl.Expr): Expression to calculate the total workers at a location.
         job_group_percentage_expr (pl.Expr): Expression to calculate the percentage of job roles.
         evaluation_expr (pl.Expr): Expression to evaluate whether a value is out of bounds.
         upper_bounds_expr (pl.Expr): Expression to calulate upper percentage bounds.
@@ -160,18 +171,18 @@ class FilterJobRoleGroupExpressions:
 
     """
 
-    temp_location_sum: str
+    temp_total_workers_sum: str
     job_group_cols: list[str]
     upper_bound_suffix: str
     lower_bound_suffix: str
-    location_sum_expr: pl.Expr
+    horizontal_sum_expr: pl.Expr
     job_group_percentage_expr: pl.Expr
     evaluation_expr: pl.Expr
     upper_bounds_expr: pl.Expr
     lower_bounds_expr: pl.Expr
 
     def __init__(self, upper_percentile_bound: float, lower_percentile_bound: float):
-        self.temp_location_sum = "location_sum"
+        self.temp_total_workers_sum = "total_workers_sum"
         self.job_group_cols = [
             JobGroupLabels.direct_care,
             JobGroupLabels.managers,
@@ -180,8 +191,8 @@ class FilterJobRoleGroupExpressions:
         ]
         self.upper_bound_suffix = "_upper"
         self.lower_bound_suffix = "_lower"
-        self.location_sum_expr = pl.sum_horizontal(self.job_group_cols).alias(
-            self.temp_location_sum
+        self.horizontal_sum_expr = pl.sum_horizontal(self.job_group_cols).alias(
+            self.temp_total_workers_sum
         )
         # Explicitly handle NULL and zero denominators to avoid ambiguous
         # truthiness when comparing to 0. If the location sum is NULL or 0
@@ -189,12 +200,12 @@ class FilterJobRoleGroupExpressions:
         # distinguish missing data from a valid zero ratio.
         self.job_group_percentage_expr = (
             pl.when(
-                pl.col(self.temp_location_sum).is_not_null()
-                & (pl.col(self.temp_location_sum) != 0)
+                pl.col(self.temp_total_workers_sum).is_not_null()
+                & (pl.col(self.temp_total_workers_sum) != 0)
             )
             .then(
                 pl.col(self.job_group_cols).cast(pl.Float32)
-                / pl.col(self.temp_location_sum).cast(pl.Float32)
+                / pl.col(self.temp_total_workers_sum).cast(pl.Float32)
             )
             .otherwise(pl.lit(None).cast(pl.Float32))
         )

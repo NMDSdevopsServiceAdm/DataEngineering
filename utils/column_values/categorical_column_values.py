@@ -613,4 +613,4 @@ class JobRoleFilteringRule(ColumnValues):
     missing_direct_care_or_managers_and_profs: str = (
         "missing_direct_care_or_managers_and_professionals"
     )
-    job_role_group_is_outlier: str = "job_role_group_is_outlier"
+    job_role_group_is_outlier: str = "job_role_group_is_outlier_"

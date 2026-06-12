@@ -79,23 +79,132 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.filter_when_job_group_ratio_outside_percentile_bounds_test_cases
+            for case in Data.filter_when_job_group_ratio_outside_percentile_bounds_locationid_level_test_cases
         ],
     )
-    def test_filter_when_job_group_ratio_outside_percentile_bounds(self, case):
-        test_lf = pl.LazyFrame(case.test_data, Schemas.test_filter_schema, orient="row")
+    def test_filter_when_job_group_ratio_outside_percentile_bounds_when_agg_level_not_given(
+        self, case
+    ):
+        test_lf = pl.LazyFrame(
+            case.test_data,
+            Schemas.test_location_level_filter_schema,
+            orient="row",
+        )
         expected_lf = pl.LazyFrame(
-            case.expected_data, Schemas.expected_filter_schema, orient="row"
+            case.expected_data,
+            Schemas.expected_location_level_filter_schema,
+            orient="row",
         )
 
         returned_lf = job.filter_job_role_group_outliers(
-            test_lf, case.upper_bound, case.lower_bound, case.small_location_threshold
+            test_lf,
+            case.upper_bound,
+            case.lower_bound,
+            case.pass_filter_threshold,
         )
 
         pl_testing.assert_frame_equal(
             returned_lf,
             expected_lf,
             check_row_order=False,
+        )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.filter_when_job_group_ratio_outside_percentile_bounds_locationid_level_test_cases
+        ],
+    )
+    def test_filter_when_job_group_ratio_outside_percentile_bounds_when_agg_level_is_providerid(
+        self, case
+    ):
+        test_lf = pl.LazyFrame(
+            case.test_data,
+            Schemas.test_providerid_level_filter_schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_data,
+            Schemas.expected_providerid_level_filter_schema,
+            orient="row",
+        )
+
+        returned_lf = job.filter_job_role_group_outliers(
+            test_lf,
+            case.upper_bound,
+            case.lower_bound,
+            case.pass_filter_threshold,
+            IndCQC.provider_id,
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_row_order=False,
+        )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.filter_when_job_group_ratio_outside_percentile_bounds_locationid_level_test_cases
+        ],
+    )
+    def test_filter_when_job_group_ratio_outside_percentile_bounds_when_agg_level_is_brandid(
+        self, case
+    ):
+        test_lf = pl.LazyFrame(
+            case.test_data,
+            Schemas.test_brandid_level_filter_schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_data,
+            Schemas.expected_brandid_level_filter_schema,
+            orient="row",
+        )
+
+        returned_lf = job.filter_job_role_group_outliers(
+            test_lf,
+            case.upper_bound,
+            case.lower_bound,
+            case.pass_filter_threshold,
+            IndCQC.brand_id,
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_row_order=False,
+        )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.filter_when_job_group_ratio_outside_percentile_bounds_locationid_level_test_cases
+        ],
+    )
+    def test_filter_raises_error_when_agg_level_is_not_acceptable(self, case):
+        test_lf = pl.LazyFrame(
+            case.test_data,
+            Schemas.test_providerid_level_filter_schema,
+            orient="row",
+        )
+
+        with pytest.raises(ValueError) as context:
+            job.filter_job_role_group_outliers(
+                test_lf,
+                case.upper_bound,
+                case.lower_bound,
+                case.pass_filter_threshold,
+                "wrong_string",
+            )
+
+        assert (
+            str(context.value)
+            == "Error: agg_level must be 'locationId', 'providerId' or 'brandId'."
         )
 
 
@@ -105,7 +214,7 @@ class TestFilterJobRoleGroupExpressions:
     TestExprs = job.FilterJobRoleGroupExpressions(test_upper_bound, test_lower_bound)
 
     def test_variables_in_filter_job_role_group_expressions(self):
-        assert self.TestExprs.temp_location_sum == "location_sum"
+        assert self.TestExprs.temp_total_workers_sum == "total_workers_sum"
         assert self.TestExprs.job_group_cols == [
             JobGroupLabels.direct_care,
             JobGroupLabels.managers,
@@ -121,8 +230,8 @@ class TestFilterJobRoleGroupExpressions:
             Schemas.test_location_sum_schema,
             orient="row",
         )
-        test_lf = expected_lf.drop(self.TestExprs.temp_location_sum)
-        returned_lf = test_lf.with_columns(self.TestExprs.location_sum_expr)
+        test_lf = expected_lf.drop(self.TestExprs.temp_total_workers_sum)
+        returned_lf = test_lf.with_columns(self.TestExprs.temp_total_workers_sum)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 

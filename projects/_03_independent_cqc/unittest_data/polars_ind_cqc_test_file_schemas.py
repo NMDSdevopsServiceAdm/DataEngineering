@@ -1671,7 +1671,7 @@ class ModelRateOfChangeSchemas:
 class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
     Cols = TempCols(None, None)
     JRFR = JobRoleFilteringRule(IndCQC.job_role_filtering_rule)
-    test_filter_schema = {
+    test_location_level_filter_schema = {
         IndCQC.id_per_locationid_import_date: pl.Int64,
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
@@ -1683,7 +1683,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
-    expected_filter_schema = {
+    expected_location_level_filter_schema = {
         IndCQC.id_per_locationid_import_date: pl.Int64,
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
@@ -1695,20 +1695,36 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
+    }
+    test_providerid_level_filter_schema = {
+        (IndCQC.provider_id if k == IndCQC.location_id else k): v
+        for k, v in test_location_level_filter_schema.items()
+    }
+    expected_providerid_level_filter_schema = {
+        (IndCQC.provider_id if k == IndCQC.location_id else k): v
+        for k, v in expected_location_level_filter_schema.items()
+    }
+    test_brandid_level_filter_schema = {
+        (IndCQC.brand_id if k == IndCQC.location_id else k): v
+        for k, v in test_location_level_filter_schema.items()
+    }
+    expected_brandid_level_filter_schema = {
+        (IndCQC.brand_id if k == IndCQC.location_id else k): v
+        for k, v in expected_location_level_filter_schema.items()
     }
     test_location_sum_schema = {
         JobGroupLabels.direct_care: pl.Int64,
         JobGroupLabels.managers: pl.Int64,
         JobGroupLabels.regulated_professions: pl.Int64,
         JobGroupLabels.other: pl.Int64,
-        Cols.temp_location_sum: pl.Int64,
+        Cols.temp_total_workers_sum: pl.Int64,
     }
     test_job_group_percentage_schema = {
         JobGroupLabels.direct_care: pl.Float32,
         JobGroupLabels.managers: pl.Float32,
         JobGroupLabels.regulated_professions: pl.Float32,
         JobGroupLabels.other: pl.Float32,
-        Cols.temp_location_sum: pl.Int64,
+        Cols.temp_total_workers_sum: pl.Int64,
     }
     test_evaluation_expr_schema = {
         JobGroupLabels.direct_care: pl.Float32,
