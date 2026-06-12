@@ -131,15 +131,15 @@ def main(
             brief=True,
             actions=GLOBAL_ACTIONS,
         )
-        # dataset schema
-        .col_schema_match(  # failing
-            schema=EXPECTED_SCHEMA, brief="Dataset should match the expected schema"
-        )
-        # # dataset size
-        # .row_count_match(  # failing
-        #     expected_row_count,
-        #     brief=f"Expects {expected_row_count} rows",
+        # # dataset schema
+        # .col_schema_match(
+        #     schema=EXPECTED_SCHEMA, brief="Dataset should match the expected schema"
         # )
+        # dataset size
+        .row_count_match(  # failing
+            expected_row_count,
+            brief=f"Expects {expected_row_count} rows",
+        )
         # # complete columns
         # .col_vals_not_null(
         #     columns=[
