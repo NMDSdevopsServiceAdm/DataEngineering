@@ -122,7 +122,7 @@ def main(
         selected_columns=COMPARE_COLS,
     )
     expected_row_count = compare_df.height
-
+    print(f"source row count is {source_df.height}")
     validation = (
         pb.Validate(
             data=source_df,
