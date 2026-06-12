@@ -1773,3 +1773,9 @@ class EstimateFilledPostsByJobRoleCleanSchemas:
         IndCQC.registered_manager_names: pl.List(str),
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
+
+    metadata_schema = {
+        IndCQC.id_per_locationid_import_date: pl.UInt32,
+        IndCQC.provider_id: CatColType.ProviderCatType,
+        IndCQC.brand_id: CatColType.BrandCatType,
+    }

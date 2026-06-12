@@ -964,6 +964,7 @@
                                     "Command": [
                                       "_02_clean.py",
                                       "--merged_data_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_job_roles/",
+                                      "--merged_metadata_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_metadata_job_roles/",
                                       "--cleaned_data_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_roles/"
                                     ]
                                   }

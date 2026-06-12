@@ -22,6 +22,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.id_per_locationid_import_date: pl.UInt32,
             IndCqcColumns.name: pl.String,
             IndCqcColumns.provider_id: pl.String,
+            IndCqcColumns.brand_id: pl.String,
             IndCqcColumns.care_home: pl.String,
             IndCqcColumns.primary_service_type_second_level: pl.String,
             IndCqcColumns.imputed_registration_date: pl.Date,
@@ -46,8 +47,8 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             CQCLVal.services_offered_is_not_null: pl.Int64,
         }
         source_rows = [
-            ("1-001", date(2025, 1, 1), 1, "name1", "1-001", "Y", "something", date(2023, 1, 1), date(2022, 1, 1), "FilteringRule A", date(2023, 1, 2), "CSSR A", "Region A", "ICB A", "RUI A", "LSOA A", "MSOA A", "Estimate Source A", 10.0, 5.0, 7.0, 50.0, 100.0, "Not Dormant", 8.0, 1, 1),
-            ("2-002", date(2025, 1, 2), 2, "name2", "2-002", "N", "something", date(2023, 1, 2), date(2022, 1, 2), "FilteringRule B", date(2023, 1, 2), "CSSR B", "Region B", "ICB B", "RUI B", "LSOA B", "MSOA B", "Estimate Source B", 15.0, 10.0, 12.0, 60.0, 120.0, "Dormant", 13.0, 1, 1),
+            ("1-001", date(2025, 1, 1), 1, "name1", "1-001", "1-001", "Y", "something", date(2023, 1, 1), date(2022, 1, 1), "FilteringRule A", date(2023, 1, 2), "CSSR A", "Region A", "ICB A", "RUI A", "LSOA A", "MSOA A", "Estimate Source A", 10.0, 5.0, 7.0, 50.0, 100.0, "Not Dormant", 8.0, 1, 1),
+            ("2-002", date(2025, 1, 2), 2, "name2", "2-002", None, "N", "something", date(2023, 1, 2), date(2022, 1, 2), "FilteringRule B", date(2023, 1, 2), "CSSR B", "Region B", "ICB B", "RUI B", "LSOA B", "MSOA B", "Estimate Source B", 15.0, 10.0, 12.0, 60.0, 120.0, "Dormant", 13.0, 1, 1),
         ]  # fmt: skip
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
         self.compare_df = self.source_df.select(

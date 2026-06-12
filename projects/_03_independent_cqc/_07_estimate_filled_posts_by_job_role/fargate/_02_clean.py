@@ -31,9 +31,16 @@ estimates_by_job_role_schema = {
     IndCQC.ascwds_job_role_counts: pl.Int16,
 }
 
+metadata_columns_to_import_schema = {
+    IndCQC.id_per_locationid_import_date: pl.UInt32,
+    IndCQC.provider_id: CatColType.ProviderCatType,
+    IndCQC.brand_id: CatColType.BrandCatType,
+}
+
 
 def main(
     merged_data_source: str,
+    merged_metadata_source: str,
     cleaned_data_destination: str,
 ) -> None:
     """
@@ -41,6 +48,7 @@ def main(
 
     Args:
         merged_data_source (str): path to the merged data
+        merged_metadata_source (str): path to the merged metadata
         cleaned_data_destination (str): destination for output
     """
     print("Cleaning merged_ind_cqc dataset...")
@@ -49,6 +57,19 @@ def main(
         utils.cast_to_schema(estimates_by_job_role_schema)
     )
     print("Merged LazyFrame read in")
+
+    merged_metadata_lf = utils.scan_parquet(merged_metadata_source).with_columns(
+        utils.cast_to_schema(metadata_columns_to_import_schema)
+    )
+    print("Merged Metadata LazyFrame read in")
+
+    # add metadata columns to estimated_job_role_posts_lf
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
+        merged_metadata_lf,
+        on=IndCQC.id_per_locationid_import_date,
+        how="left",
+    )
+
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_row_index(
         IndCQC.id_per_locationid_import_date_job_role
     )
@@ -82,8 +103,11 @@ def main(
     )
 
     # Drop job role group as this will be reallocated in later job
+    # Drop providerid and brandid which are just used for filtering and not needed for impute and estimate steps.
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.drop(
-        IndCQC.main_job_group_labelled
+        IndCQC.main_job_group_labelled,
+        IndCQC.provider_id,
+        IndCQC.brand_id,
     )
 
     utils.sink_to_parquet(
@@ -99,9 +123,14 @@ if __name__ == "__main__":
             "--merged_data_source",
             "Source s3 directory for merged data",
         ),
+        (
+            "--merged_metadata_source",
+            "Source s3 directory for merged metadata",
+        ),
         ("--cleaned_data_destination", "Destination s3 directory for cleaned data"),
     )
     main(
         merged_data_source=args.merged_data_source,
+        merged_metadata_source=args.merged_metadata_source,
         cleaned_data_destination=args.cleaned_data_destination,
     )
