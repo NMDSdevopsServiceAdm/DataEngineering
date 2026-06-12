@@ -84,7 +84,7 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.main_job_group_labelled: str(
             CategoricalColumnTypes.JobGroupEnumType
         ),
-        PartitionKeys.year: "String",
+        PartitionKeys.year: "Int64",
     }
 )
 
