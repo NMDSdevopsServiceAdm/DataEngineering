@@ -6,11 +6,11 @@ import pytest
 
 from polars_utils.expressions import (
     has_value,
+    is_care_home,
+    is_dormant,
+    is_not_care_home,
     percentage_share,
     str_length_cols,
-    is_care_home,
-    is_not_care_home,
-    is_dormant,
 )
 
 

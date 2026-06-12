@@ -5,10 +5,10 @@ import pointblank as pb
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
 def main(bucket_name: str, source_path: str, reports_path: str) -> None:

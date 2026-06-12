@@ -5,14 +5,12 @@ import polars as pl
 import polars.testing as pl_testing
 
 import projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.null_grouped_providers as job
-
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     NullGroupedProvidersData as Data,
 )
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     NullGroupedProvidersSchema as Schemas,
 )
-
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH: str = (

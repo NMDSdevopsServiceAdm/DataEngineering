@@ -11,10 +11,10 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.
     CategoricalColumnTypes,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_values.categorical_column_values import JobRoleFilteringRule
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
 )
-from utils.column_values.categorical_column_values import JobRoleFilteringRule
 
 VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.id_per_locationid_import_date,

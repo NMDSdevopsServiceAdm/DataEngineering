@@ -1,9 +1,9 @@
 from pyspark.sql.types import (
-    StructField,
-    StructType,
-    StringType,
     FloatType,
     IntegerType,
+    StringType,
+    StructField,
+    StructType,
 )
 
 EXTERNAL_DATA = StructType(
