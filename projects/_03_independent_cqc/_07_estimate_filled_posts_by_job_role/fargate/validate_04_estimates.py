@@ -121,8 +121,6 @@ def main(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=COMPARE_COLS,
     )
-    print(source_df.schema)
-    print(EXPECTED_SCHEMA)
     expected_row_count = compare_df.height
 
     validation = (
