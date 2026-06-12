@@ -1222,7 +1222,7 @@
                                 "validate_04_estimates.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_04_estimate_job_roles/",
-                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/",
+                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=ind_cqc_07_03_impute_job_roles/",
                                 "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_07_04_estimate_job_roles/"
                               ]
                             }
