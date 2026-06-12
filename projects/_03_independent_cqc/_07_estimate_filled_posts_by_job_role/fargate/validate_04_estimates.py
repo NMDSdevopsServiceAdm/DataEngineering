@@ -55,9 +55,9 @@ COMPARE_COLS = [
 EXPECTED_SCHEMA = pb.Schema(
     columns={
         IndCqcColumns.id_per_locationid_import_date_job_role: "UInt32",
-        IndCqcColumns.location_id: "Categorical",
+        IndCqcColumns.location_id: str(CategoricalColumnTypes.LocationCatType),
         IndCqcColumns.cqc_location_import_date: "Date",
-        IndCqcColumns.estimate_filled_posts: "Int64",
+        IndCqcColumns.estimate_filled_posts: "Float32",
         IndCqcColumns.primary_service_type: str(
             CategoricalColumnTypes.PrimaryServiceEnumType
         ),
@@ -66,19 +66,21 @@ EXPECTED_SCHEMA = pb.Schema(
             CategoricalColumnTypes.JobRoleEnumType
         ),
         IndCqcColumns.ascwds_job_role_counts: "Int16",
-        IndCqcColumns.job_role_filtering_rule: "Categorical",
+        IndCqcColumns.job_role_filtering_rule: str(
+            CategoricalColumnTypes.JobRoleFilteringRuleCatType
+        ),
         IndCqcColumns.ascwds_job_role_ratios: "Float32",
         IndCqcColumns.imputed_ascwds_job_role_ratios: "Float32",
         IndCqcColumns.imputed_ascwds_job_role_counts: "Float32",
         IndCqcColumns.estimate_filled_posts_size_group: "String",
-        IndCqcColumns.ascwds_job_role_rolling_ratio: "Float32",
+        IndCqcColumns.ascwds_job_role_rolling_ratio: "Float32",  # checked to here matches previous schemas
         IndCqcColumns.ascwds_job_role_ratios_merged: "Float32",
         IndCqcColumns.ascwds_job_role_ratios_merged_source: "String",
         IndCqcColumns.estimate_filled_posts_by_job_role: "Float32",
         IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: "Float32",
-        IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: "Int64",
-        IndCqcColumns.estimate_filled_posts_from_all_job_roles: "Int64",
-        IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: "Int64",
+        IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: "Float64",
+        IndCqcColumns.estimate_filled_posts_from_all_job_roles: "Float64",
+        IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: "Float64",
         IndCqcColumns.main_job_group_labelled: str(
             CategoricalColumnTypes.JobGroupEnumType
         ),
