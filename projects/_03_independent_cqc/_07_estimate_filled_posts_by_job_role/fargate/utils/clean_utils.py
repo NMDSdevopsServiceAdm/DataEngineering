@@ -120,11 +120,11 @@ def filter_job_role_group_outliers(
             how="left",
         )
         .with_columns(Exprs.evaluation_expr.alias(temp_out_of_bounds_col))
-        .select(IndCQC.id_per_locationid_import_date, temp_out_of_bounds_col)
+        .select([agg_level, IndCQC.cqc_location_import_date, temp_out_of_bounds_col])
     )
 
     lf = (
-        lf.join(piv_lf, on=IndCQC.id_per_locationid_import_date, how="left")
+        lf.join(piv_lf, on=[agg_level, IndCQC.cqc_location_import_date], how="left")
         .with_columns(
             pl.when(pl.col(temp_out_of_bounds_col))
             .then(None)
