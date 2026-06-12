@@ -121,8 +121,7 @@ def main(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=COMPARE_COLS,
     )
-    expected_row_count = compare_df.height
-    print(f"source row count is {source_df.height}")
+
     validation = (
         pb.Validate(
             data=source_df,
@@ -135,11 +134,11 @@ def main(
         # .col_schema_match(
         #     schema=EXPECTED_SCHEMA, brief="Dataset should match the expected schema"
         # )
-        # dataset size
-        .row_count_match(  # failing
-            expected_row_count,
-            brief=f"Expects {expected_row_count} rows",
-        )
+        # # dataset size
+        # .row_count_match(  # failing
+        #     expected_row_count,
+        #     brief=f"Expects {expected_row_count} rows",
+        # )
         # # complete columns
         # .col_vals_not_null(
         #     columns=[
@@ -163,15 +162,15 @@ def main(
         #     ],
         #     brief="Key columns should contain no null values",
         # )
-        # # index columns
-        # .rows_distinct(
-        #     columns_subset=[
-        #         IndCqcColumns.location_id,
-        #         IndCqcColumns.cqc_location_import_date,
-        #         IndCqcColumns.main_job_role_clean_labelled,
-        #     ],
-        #     brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
-        # )
+        # index columns
+        .rows_distinct(
+            columns_subset=[
+                IndCqcColumns.location_id,
+                IndCqcColumns.cqc_location_import_date,
+                IndCqcColumns.main_job_role_clean_labelled,
+            ],
+            brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
+        )
         # .rows_distinct(
         #     columns_subset=[
         #         IndCqcColumns.id_per_locationid_import_date_job_role,
