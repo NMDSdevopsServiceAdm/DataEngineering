@@ -113,12 +113,10 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.filter_when_job_group_ratio_outside_percentile_bounds_locationid_level_test_cases
+            for case in Data.filter_when_job_group_ratio_outside_percentile_bounds_providerid_level_test_cases
         ],
     )
-    def test_filter_when_job_group_ratio_outside_percentile_bounds_when_agg_level_is_providerid(
-        self, case
-    ):
+    def test_filter_handles_when_agg_level_is_providerid(self, case):
         test_lf = pl.LazyFrame(
             case.test_data,
             Schemas.test_providerid_level_filter_schema,
@@ -148,12 +146,10 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.filter_when_job_group_ratio_outside_percentile_bounds_locationid_level_test_cases
+            for case in Data.filter_when_job_group_ratio_outside_percentile_bounds_brandid_level_test_cases
         ],
     )
-    def test_filter_when_job_group_ratio_outside_percentile_bounds_when_agg_level_is_brandid(
-        self, case
-    ):
+    def test_filter_handles_when_agg_level_is_brandid(self, case):
         test_lf = pl.LazyFrame(
             case.test_data,
             Schemas.test_brandid_level_filter_schema,
