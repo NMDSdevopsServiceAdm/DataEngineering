@@ -162,15 +162,15 @@ def main(
         #     ],
         #     brief="Key columns should contain no null values",
         # )
-        # index columns
-        .rows_distinct(
-            columns_subset=[
-                IndCqcColumns.location_id,
-                IndCqcColumns.cqc_location_import_date,
-                IndCqcColumns.main_job_role_clean_labelled,
-            ],
-            brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
-        )
+        # # index columns
+        # .rows_distinct( # OOM error when only test run
+        #     columns_subset=[
+        #         IndCqcColumns.location_id,
+        #         IndCqcColumns.cqc_location_import_date,
+        #         IndCqcColumns.main_job_role_clean_labelled,
+        #     ],
+        #     brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
+        # )
         # .rows_distinct(
         #     columns_subset=[
         #         IndCqcColumns.id_per_locationid_import_date_job_role,
@@ -260,24 +260,24 @@ def main(
         #     na_pass=True,
         #     brief="ascwds_job_role_counts should be >= 0 where present",
         # )
-        # .col_vals_between(  # failng
-        #     columns=[
-        #         IndCqcColumns.ascwds_job_role_ratios,
-        #         IndCqcColumns.imputed_ascwds_job_role_ratios,
-        #         IndCqcColumns.ascwds_job_role_rolling_ratio,
-        #         IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
-        #     ],
-        #     left=0,
-        #     right=1,
-        #     na_pass=True,
-        #     brief="Ratios should be between 0 and 1 where present. Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be between 0 and 1 where present",
-        # )
-        # .col_vals_le(  # failing
-        #     columns=IndCqcColumns.ascwds_job_role_counts,
-        #     value=pb.col(IndCqcColumns.estimate_filled_posts),
-        #     na_pass=True,
-        #     brief="ascwds_job_role_counts should be <= estimate_filled_posts where present",
-        # )
+        .col_vals_between(  # failng
+            columns=[
+                IndCqcColumns.ascwds_job_role_ratios,
+                IndCqcColumns.imputed_ascwds_job_role_ratios,
+                IndCqcColumns.ascwds_job_role_rolling_ratio,
+                IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
+            ],
+            left=0,
+            right=1,
+            na_pass=True,
+            brief="Ratios should be between 0 and 1 where present. Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be between 0 and 1 where present",
+        )
+        .col_vals_le(  # failing
+            columns=IndCqcColumns.ascwds_job_role_counts,
+            value=pb.col(IndCqcColumns.estimate_filled_posts),
+            na_pass=True,
+            brief="ascwds_job_role_counts should be <= estimate_filled_posts where present",
+        )
         # # Date plausibility
         # .col_vals_ge(
         #     columns=IndCqcColumns.cqc_location_import_date,
@@ -327,20 +327,20 @@ def main(
         #     ),
         #     brief="imputed_ascwds_job_role_ratios should have fewer null values than ascwds_job_role_ratios",
         # )
-        # .conjointly(  # failing
-        #     lambda df: pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null(),
-        #     lambda df: pl.col(IndCqcColumns.ascwds_job_role_ratios).is_not_null(),
-        #     brief="Where ascwds_job_role_counts is not null, ascwds_job_role_ratios should also not be null",
-        # )
-        # .conjointly(  # failing
-        #     lambda df: pl.col(
-        #         IndCqcColumns.imputed_ascwds_job_role_counts
-        #     ).is_not_null(),
-        #     lambda df: pl.col(
-        #         IndCqcColumns.imputed_ascwds_job_role_ratios
-        #     ).is_not_null(),
-        #     brief="Where imputed_ascwds_job_role_counts is not null, imputed_ascwds_job_role_ratios should also not be null",
-        # )
+        .conjointly(  # failing
+            lambda df: pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null(),
+            lambda df: pl.col(IndCqcColumns.ascwds_job_role_ratios).is_not_null(),
+            brief="Where ascwds_job_role_counts is not null, ascwds_job_role_ratios should also not be null",
+        )
+        .conjointly(  # failing
+            lambda df: pl.col(
+                IndCqcColumns.imputed_ascwds_job_role_counts
+            ).is_not_null(),
+            lambda df: pl.col(
+                IndCqcColumns.imputed_ascwds_job_role_ratios
+            ).is_not_null(),
+            brief="Where imputed_ascwds_job_role_counts is not null, imputed_ascwds_job_role_ratios should also not be null",
+        )
         # .col_vals_expr(
         #     (
         #         pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_null()
