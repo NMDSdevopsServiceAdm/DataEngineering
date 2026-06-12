@@ -92,7 +92,6 @@ def filter_job_role_group_outliers(
         agg_level,
         IndCQC.cqc_location_import_date,
         IndCQC.primary_service_type,
-        IndCQC.id_per_locationid_import_date,
     ]
 
     piv_lf = (
