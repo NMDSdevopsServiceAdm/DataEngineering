@@ -74,7 +74,7 @@ def call_api(
             f"API response: {response.status_code} - {response.json().get('message')}"
         )
 
-    if (response.status_code == 400) & (id is not None):
+    if (response.status_code == 400) and (id is not None) and (id != id.upper()):
         try:
             if id:
                 full_url = url + id.upper()
@@ -157,12 +157,12 @@ def get_object(id: str, object_type: str, cqc_api_primary_key: str) -> dict:
     Calls the API for a given object.
 
     Constructs the correct URL and API call for a given provider or
-    locaiton id.
+    location id.
 
     Args:
         id(str): provider or location id to request data on
         object_type(str): whether the object is a provider or location
-        cqc_api_primary_key(str): key requeired to access API
+        cqc_api_primary_key(str): key required to access API
 
     Returns:
         dict: a python dictionary contianing the json response from the API

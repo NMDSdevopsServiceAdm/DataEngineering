@@ -177,10 +177,16 @@ class CallApiTests(CqcApiTests):
 
         response_json = cqc.call_api(
             self.test_url,
-            self.test_location_id,
+            self.test_lc_location_id,
             {"test": "body"},
             headers_dict={"some": "header"},
         )
+
+        expected_call_args = [
+            call("test_urllower", params={"test": "body"}, headers={"some": "header"}),
+            call("test_urlLOWER", params={"test": "body"}, headers={"some": "header"}),
+        ]
+        get_mock.assert_has_calls(expected_call_args)
         self.assertEqual(response_json, {})
 
     @patch("requests.Session.get")
