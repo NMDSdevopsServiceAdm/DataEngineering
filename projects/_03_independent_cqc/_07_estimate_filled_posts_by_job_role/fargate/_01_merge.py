@@ -1,3 +1,5 @@
+from datetime import date
+
 import polars as pl
 
 from polars_utils import utils
@@ -73,9 +75,34 @@ def main(
         merged_data_destination (str): destination for merged output
         metadata_destination (str): destination for metadata
     """
+    today = date.today()
+
+    # ---- FY boundary (1 April logic) ----
+    fy_year = today.year if today.month >= 4 else today.year - 1
+    current_fy_start = date(fy_year, 4, 1)
+
+    # ---- monthly window (last 2 FY years) ----
+    monthly_start = date(current_fy_start.year - 2, 4, 1)
+
+    quarter_months = [1, 4, 7, 10]
+
     combined_schema = transformation_columns | metadata_columns
     full_estimates_lf = (
         utils.scan_parquet(estimates_source)
+        .filter(
+            # FULL monthly data for last 2 years
+            (pl.col(IndCQC.cqc_location_import_date) >= monthly_start)
+            |
+            # quarterly sampling BEFORE that
+            (
+                (pl.col(IndCQC.cqc_location_import_date) < monthly_start)
+                & (
+                    pl.col(IndCQC.cqc_location_import_date)
+                    .dt.month()
+                    .is_in(quarter_months)
+                )
+            )
+        )
         .select(list(combined_schema))
         .with_row_index(name=IndCQC.id_per_locationid_import_date)
         .with_columns(utils.cast_to_schema(combined_schema))
