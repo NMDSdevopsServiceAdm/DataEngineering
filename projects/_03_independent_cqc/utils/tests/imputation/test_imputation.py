@@ -107,14 +107,14 @@ class SplitDatasetForImputationTests(unittest.TestCase):
             schema=Schemas.input_split_dataset_for_imputation_schema,
             orient="row",
         )
-        returned_inputed_when_care_home, returned_non_inputed_when_care_home = (
+        returned_imputed_when_care_home, returned_non_imputed_when_care_home = (
             job.split_dataset_for_imputation(
                 input_lf,
                 Data.column_with_null_values_name,
                 care_home=True,
             )
         )
-        returned_inputed_when_not_care_home, returned_non_inputed_when_not_care_home = (
+        returned_imputed_when_not_care_home, returned_non_imputed_when_not_care_home = (
             job.split_dataset_for_imputation(
                 input_lf,
                 Data.column_with_null_values_name,
@@ -123,28 +123,28 @@ class SplitDatasetForImputationTests(unittest.TestCase):
         )
 
         self.assertEqual(
-            returned_inputed_when_care_home.select(IndCQC.location_id)
+            returned_imputed_when_care_home.select(IndCQC.location_id)
             .collect()
             .to_series()
             .to_list(),
             ["1-001", "1-001", "1-002"],
         )
         self.assertEqual(
-            returned_non_inputed_when_care_home.select(IndCQC.location_id)
+            returned_non_imputed_when_care_home.select(IndCQC.location_id)
             .collect()
             .to_series()
             .to_list(),
             ["1-003", "1-003", "1-004", "1-004", "1-005", "1-006", "1-006"],
         )
         self.assertEqual(
-            returned_inputed_when_not_care_home.select(IndCQC.location_id)
+            returned_imputed_when_not_care_home.select(IndCQC.location_id)
             .collect()
             .to_series()
             .to_list(),
             ["1-004", "1-004", "1-005"],
         )
         self.assertEqual(
-            returned_non_inputed_when_not_care_home.select(IndCQC.location_id)
+            returned_non_imputed_when_not_care_home.select(IndCQC.location_id)
             .collect()
             .to_series()
             .to_list(),
