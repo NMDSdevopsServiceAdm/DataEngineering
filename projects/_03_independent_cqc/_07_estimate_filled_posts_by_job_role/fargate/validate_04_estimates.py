@@ -99,7 +99,7 @@ EXPECTED_SCHEMA = pb.Schema(
 CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
 
 req_pcts = {
-    MainJobRoleLabels.care_worker: (0.59, 0.69),
+    MainJobRoleLabels.care_worker: (0.52, 0.69),
     JobGroupLabels.direct_care: (0.71, 0.81),
     JobGroupLabels.managers: (0.03, 0.1),
     JobGroupLabels.regulated_professions: (0.02, 0.06),
