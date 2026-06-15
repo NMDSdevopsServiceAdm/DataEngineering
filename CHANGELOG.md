@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-
+- Added error handling to CQC API call for 400 errors due to the location id being lowercase instead of uppercase.
 
 ### Changed
 
