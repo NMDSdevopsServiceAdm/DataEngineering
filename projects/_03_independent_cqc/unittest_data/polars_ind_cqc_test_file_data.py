@@ -2697,6 +2697,17 @@ class ModelImputation:
                 ("1-001", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, None),
             ],
         ),
+        ModelImputationTestCase(
+            id="when_given_multiple_service_types_only_non_res_gets_imputed_due_to_function_argument",
+            expected_data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, 19.0),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, 20.0, 2.0, 20.0),
+                ("1-001", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, 21.0),
+                ("1-002", date(2023, 1, 1), CareHome.care_home, None, 1.0, None),
+                ("1-002", date(2023, 2, 1), CareHome.care_home, 20.0, 2.0, None),
+                ("1-002", date(2023, 3, 1), CareHome.care_home, None, 3.0, None),
+            ],
+        ),
     ] # fmt: skip
 
 
