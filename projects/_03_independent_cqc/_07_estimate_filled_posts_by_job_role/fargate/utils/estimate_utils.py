@@ -378,6 +378,7 @@ def calc_diff_estimate_filled_posts_and_from_all_job_roles(
         .otherwise(
             pl.col(posts_by_job_role_col)
             .sum()
+            .cast(pl.Float32)
             .over(IndCQC.id_per_locationid_import_date)
         )
     )
