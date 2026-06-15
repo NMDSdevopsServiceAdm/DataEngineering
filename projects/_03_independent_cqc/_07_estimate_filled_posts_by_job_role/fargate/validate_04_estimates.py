@@ -245,20 +245,25 @@ def main(
                 IndCqcColumns.estimate_filled_posts_from_all_job_roles,
             ],
             value=0,
-            na_pass=True,
-            brief="estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be > 0 where present",
+            brief="estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be > 0",
         )
         .col_vals_ge(
             columns=[
                 IndCqcColumns.ascwds_job_role_counts,
                 IndCqcColumns.imputed_ascwds_job_role_counts,
                 IndCqcColumns.ascwds_job_role_ratios_merged,
+            ],
+            value=0,
+            na_pass=True,
+            brief="ascwds_job_role_counts should be >= 0 where present",
+        )
+        .col_vals_ge(
+            columns=[
                 IndCqcColumns.estimate_filled_posts_by_job_role,
                 IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated,
                 IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted,
             ],
             value=0,
-            na_pass=True,
             brief="ascwds_job_role_counts should be >= 0 where present",
         )
         .col_vals_between(
@@ -328,17 +333,31 @@ def main(
             ),
             brief="imputed_ascwds_job_role_ratios should have fewer null values than ascwds_job_role_ratios",
         )
-        .col_vals_lt(
-            pre=count_nulls,
-            columns=IndCqcColumns.imputed_ascwds_job_role_counts,
-            value=pb.col(IndCqcColumns.ascwds_job_role_counts),
-            brief="Number of nulls in imputed_ascwds_job_role_counts must be less than in ascwds_job_role_counts",
+        .col_vals_expr(
+            expr=(
+                (
+                    pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null()
+                    & pl.col(IndCqcColumns.ascwds_job_role_ratios).is_not_null()
+                )
+                | (
+                    pl.col(IndCqcColumns.ascwds_job_role_counts).is_null()
+                    & pl.col(IndCqcColumns.ascwds_job_role_ratios).is_null()
+                )
+            ),
+            brief="ascwds_job_role_counts and ascwds_job_role_ratios must be populated or not populated on the same rows",
         )
-        .col_vals_lt(
-            pre=count_nulls,
-            columns=IndCqcColumns.imputed_ascwds_job_role_ratios,
-            value=pb.col(IndCqcColumns.ascwds_job_role_ratios),
-            brief="Number of nulls in imputed_ascwds_job_role_ratios must be less than in ascwds_job_role_ratios",
+        .col_vals_expr(
+            expr=(
+                (
+                    pl.col(IndCqcColumns.imputed_ascwds_job_role_counts).is_not_null()
+                    & pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_not_null()
+                )
+                | (
+                    pl.col(IndCqcColumns.imputed_ascwds_job_role_counts).is_null()
+                    & pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_null()
+                )
+            ),
+            brief="imputed_ascwds_job_role_counts and imputed_ascwds_job_role_ratios must be populated or not populated on the same rows",
         )
         .col_vals_expr(
             (
@@ -473,23 +492,6 @@ def make_convert_col_to_integers_preprocessor(
         return df.with_columns(pl.col(column).cast(pl.Int64))
 
     return convert_col_to_integers
-
-
-def count_nulls(df: pl.DataFrame) -> pl.DataFrame:
-    """
-    Helper function to count null values in specific columns.
-    """
-
-    cols_to_count_nulls = [
-        IndCqcColumns.imputed_ascwds_job_role_counts,
-        IndCqcColumns.ascwds_job_role_counts,
-        IndCqcColumns.imputed_ascwds_job_role_ratios,
-        IndCqcColumns.ascwds_job_role_ratios,
-    ]
-
-    return df.select(
-        [pl.col(column).null_count().alias(column) for column in cols_to_count_nulls]
-    )
 
 
 if __name__ == "__main__":
