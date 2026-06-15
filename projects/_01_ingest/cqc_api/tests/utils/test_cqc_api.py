@@ -253,7 +253,7 @@ class CallApiTests(CqcApiTests):
         # When
         result = cqc.call_api(
             url="https://api.service.cqc.org.uk/test",
-            location_id=self.test_location_id,
+            id=self.test_location_id,
             query_params={"param": "value"},
         )
         # Then
@@ -294,7 +294,7 @@ class CallApiTests(CqcApiTests):
         with self.assertRaises(Exception) as context:
             result = cqc.call_api(
                 url="https://api.service.cqc.org.uk/test",
-                location_id=self.test_location_id,
+                id=self.test_location_id,
                 query_params={"param": "value"},
             )
             # Then

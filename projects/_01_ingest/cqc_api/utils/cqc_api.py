@@ -33,7 +33,7 @@ CQC_ADAPTER = HTTPAdapter(max_retries=RETRY_STRATEGY)
 @limits(calls=RATE_LIMIT, period=ONE_MINUTE)
 def call_api(
     url: str,
-    location_id: str,
+    id: str,
     query_params: dict | None = None,
     headers_dict: dict | None = None,
 ) -> dict:
@@ -41,7 +41,7 @@ def call_api(
     Calls an API and returns the json response
     Args:
         url (str): the api url
-        location_id (str): the location id to request data for
+        id (str): the location id to request data for
         query_params (dict | None): the parameters to pass to the api
         headers_dict (dict | None): headers to pass to the api
 
@@ -55,9 +55,7 @@ def call_api(
     with requests.Session() as session:
         try:
             session.mount(CQC_API_BASE_URL, CQC_ADAPTER)
-            response = session.get(
-                url + location_id, params=query_params, headers=headers_dict
-            )
+            response = session.get(url + id, params=query_params, headers=headers_dict)
         except (MaxRetryError, ResponseError) as e:
             raise Exception("Max retries exceeded: {}".format(e))
 
@@ -74,9 +72,9 @@ def call_api(
 
     if response.status_code == 400:
         try:
-            uc_location_id = location_id.upper()
+            uc_id = id.upper()
             response = session.get(
-                url + uc_location_id, params=query_params, headers=headers_dict
+                url + uc_id, params=query_params, headers=headers_dict
             )
         except:
             raise Exception(
@@ -153,7 +151,7 @@ def get_object(cqc_location_id, object_type, cqc_api_primary_key) -> dict:
     url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/{object_type}/"
     response = call_api(
         url,
-        cqc_location_id,
+        id=cqc_location_id,
         query_params=None,
         headers_dict={
             "User-Agent": USER_AGENT,
