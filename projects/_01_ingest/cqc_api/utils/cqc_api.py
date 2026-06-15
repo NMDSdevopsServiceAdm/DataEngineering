@@ -70,7 +70,7 @@ def call_api(
             f"API response: {response.status_code} - {response.json().get('message')}"
         )
 
-    if response.status_code == 400 & id:
+    if (response.status_code == 400) & (id is not None):
         try:
             uc_id = id.upper()
             response = session.get(
