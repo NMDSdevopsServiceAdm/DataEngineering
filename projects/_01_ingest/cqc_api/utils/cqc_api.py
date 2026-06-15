@@ -41,7 +41,7 @@ def call_api(
     Calls an API and returns the json response
     Args:
         url (str): the api url
-        id (str | None): the location id to request data for
+        id (str | None): the id to request data for
         query_params (dict | None): the parameters to pass to the api
         headers_dict (dict | None): headers to pass to the api
 
