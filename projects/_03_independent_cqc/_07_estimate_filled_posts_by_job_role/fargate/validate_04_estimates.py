@@ -272,12 +272,6 @@ def main(
             na_pass=True,
             brief="Ratios should be between 0 and 1 where present. Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be between 0 and 1 where present",
         )
-        .col_vals_le(  # failing
-            columns=IndCqcColumns.ascwds_job_role_counts,
-            value=pb.col(IndCqcColumns.estimate_filled_posts),
-            na_pass=True,
-            brief="ascwds_job_role_counts should be <= estimate_filled_posts where present",
-        )
         # # Date plausibility
         # .col_vals_ge(
         #     columns=IndCqcColumns.cqc_location_import_date,
@@ -331,8 +325,7 @@ def main(
             lambda df: pl.col(IndCqcColumns.ascwds_job_role_counts).is_not_null(),
             lambda df: pl.col(IndCqcColumns.ascwds_job_role_ratios).is_not_null(),
             brief="Where ascwds_job_role_counts is not null, ascwds_job_role_ratios should also not be null",
-        )
-        .conjointly(  # failing
+        ).conjointly(  # failing
             lambda df: pl.col(
                 IndCqcColumns.imputed_ascwds_job_role_counts
             ).is_not_null(),

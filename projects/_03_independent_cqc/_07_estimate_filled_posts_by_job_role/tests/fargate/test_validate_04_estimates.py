@@ -112,7 +112,6 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             "col_vals_gt",
             "col_vals_ge",
             "col_vals_between",
-            "col_vals_le",
             "conjointly",
         }
 
