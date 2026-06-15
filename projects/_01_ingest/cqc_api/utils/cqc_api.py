@@ -55,7 +55,11 @@ def call_api(
     with requests.Session() as session:
         try:
             session.mount(CQC_API_BASE_URL, CQC_ADAPTER)
-            response = session.get(url + id, params=query_params, headers=headers_dict)
+            if id:
+                full_url = url + id
+            else:
+                full_url = url
+            response = session.get(full_url, params=query_params, headers=headers_dict)
         except (MaxRetryError, ResponseError) as e:
             raise Exception("Max retries exceeded: {}".format(e))
 
@@ -72,10 +76,11 @@ def call_api(
 
     if (response.status_code == 400) & (id is not None):
         try:
-            uc_id = id.upper()
-            response = session.get(
-                url + uc_id, params=query_params, headers=headers_dict
-            )
+            if id:
+                full_url = url + id.upper()
+            else:
+                full_url = url
+            response = session.get(full_url, params=query_params, headers=headers_dict)
         except:
             raise Exception(
                 "API response: {} - {}".format(response.status_code, response.text)
