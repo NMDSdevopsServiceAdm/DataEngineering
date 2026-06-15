@@ -147,11 +147,25 @@ def get_page_objects(
     return page_objects
 
 
-def get_object(cqc_location_id, object_type, cqc_api_primary_key) -> dict:
+def get_object(id: str, object_type: str, cqc_api_primary_key: str) -> dict:
+    """
+    Calls the API for a given object.
+
+    Constructs the correct URL and API call for a given provider or
+    locaiton id.
+
+    Args:
+        id(str): provider or location id to request data on
+        object_type(str): whether the object is a provider or location
+        cqc_api_primary_key(str): key requeired to access API
+
+    Returns:
+        dict: a python dictionary contianing the json response from the API
+    """
     url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/{object_type}/"
     response = call_api(
         url,
-        id=cqc_location_id,
+        id=id,
         query_params=None,
         headers_dict={
             "User-Agent": USER_AGENT,
