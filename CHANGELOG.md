@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+
+
+### Changed
+
+
+### Fixed
+
+
+## [v2026.05.0] - 12/06/2026
+
+### Added
 - Added function to reallocate filled posts from job roles that didn't exist in the past.
 
 - Added reusable Polars expression helper functions in `polars_utils/expressions.py` for `is_care_home()`, `is_not_care_home()`, and `is_dormant()`.
