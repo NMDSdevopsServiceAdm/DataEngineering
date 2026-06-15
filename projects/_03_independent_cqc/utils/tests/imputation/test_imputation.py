@@ -21,12 +21,12 @@ PATCH_PATH = "projects._03_independent_cqc.utils.imputation.imputation"
 class TestModelImputationFunctionality(unittest.TestCase):
     def setUp(self):
         self.imputed_lf = pl.LazyFrame(
-            Data.imputed_rows,
+            [],
             Schemas.expected_model_imputation_schema,
             orient="row",
         )
         self.non_imputed_lf = pl.LazyFrame(
-            Data.non_imputed_rows,
+            [],
             Schemas.expected_model_imputation_schema,
             orient="row",
         )

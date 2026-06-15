@@ -2655,18 +2655,6 @@ class ModelImputation:
     model_column_name: str = "trend_model"
     imputed_values_column_name: str = "imputed_values"
 
-    imputed_rows = [
-        ("1-002", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, 19.0),
-        ("1-002", date(2023, 2, 1), CareHome.not_care_home, 20.0, 2.0, 20.0),
-        ("1-002", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, 21.0),
-    ] # fmt: skip
-    non_imputed_rows = [
-        ("1-001", date(2023, 1, 1), CareHome.care_home, 10.0, 1.0, None),
-        ("1-001", date(2023, 2, 1), CareHome.care_home, None, 2.0, None),
-        ("1-001", date(2023, 3, 1), CareHome.care_home, 30.0, 3.0, None),
-        ("1-003", date(2023, 3, 1), CareHome.not_care_home, None, 1.0, None),
-    ] # fmt: skip
-
     expected_model_imputation_test_cases = [
         ModelImputationTestCase(
             id="when_values_will_be_extrapolated",
