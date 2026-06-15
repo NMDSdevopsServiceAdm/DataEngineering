@@ -1,3 +1,5 @@
+import os
+
 import polars as pl
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.estimate_utils as eUtils
@@ -15,6 +17,8 @@ from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
 pl.Config.set_streaming_chunk_size(50000)
+
+os.environ["POLARS_MAX_THREADS"] = "4"
 
 # Create a list of non registered manager managerial job roles.
 non_rm_manager_roles = [
