@@ -136,7 +136,7 @@ def main(
             schema=EXPECTED_SCHEMA, brief="Dataset should match the expected schema"
         )
         # dataset size
-        .row_count_match(  # failing
+        .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
         )
@@ -164,7 +164,7 @@ def main(
             brief="Key columns should contain no null values",
         )
         # index columns
-        .rows_distinct(  # OOM error when only test run
+        .rows_distinct(
             columns_subset=[
                 IndCqcColumns.location_id,
                 IndCqcColumns.cqc_location_import_date,
@@ -261,7 +261,7 @@ def main(
             na_pass=True,
             brief="ascwds_job_role_counts should be >= 0 where present",
         )
-        .col_vals_between(  # failng
+        .col_vals_between(
             columns=[
                 IndCqcColumns.ascwds_job_role_ratios,
                 IndCqcColumns.imputed_ascwds_job_role_ratios,
