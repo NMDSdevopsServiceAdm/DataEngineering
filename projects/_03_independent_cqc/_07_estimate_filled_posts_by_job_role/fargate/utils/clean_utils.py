@@ -102,7 +102,7 @@ def filter_job_role_group_outliers(
         .filter(pl.col(Exprs.temp_location_sum) > small_location_threshold)
         .with_columns(Exprs.job_group_percentage_expr)
     )
-
+    print(f"pivotTableRecords BeforeJoin:{piv_lf.select(pl.len()).collect().item()}")
     piv_lf = (
         piv_lf.join(
             bounds_lf,
@@ -112,6 +112,7 @@ def filter_job_role_group_outliers(
         .with_columns(Exprs.evaluation_expr.alias(temp_out_of_bounds_col))
         .select(IndCQC.id_per_locationid_import_date, temp_out_of_bounds_col)
     )
+    print(f"pivotTableRecords AfterJoin:{piv_lf.select(pl.len()).collect().item()}")
 
     lf = (
         lf.join(piv_lf, on=IndCQC.id_per_locationid_import_date, how="left")
