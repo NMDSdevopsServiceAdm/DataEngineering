@@ -112,10 +112,7 @@ def split_dataset_for_imputation(
         > 0
     ) & (pl.col(IndCqc.care_home) == care_home_filter_value)
 
-    temp_bool = "temp_bool"
-    lf = lf.with_columns(locs_with_values_expr.alias(temp_bool))
-
-    imputation_lf = lf.filter(pl.col(temp_bool) == True).drop(temp_bool)
-    non_imputation_lf = lf.filter(pl.col(temp_bool) == False).drop(temp_bool)
+    imputation_lf = lf.filter(locs_with_values_expr == True)
+    non_imputation_lf = lf.filter(locs_with_values_expr == False)
 
     return (imputation_lf, non_imputation_lf)
