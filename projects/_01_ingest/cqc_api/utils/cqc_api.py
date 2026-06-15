@@ -194,6 +194,7 @@ def get_updated_objects(
             try:
                 # return each object within a generator
                 yield get_object(id, object_type, cqc_api_primary_key)
+                print(f"Getting changes for {id}")
             except NoProviderOrLocationException as err:
                 # CQC API changes URL returns unfetchable IDs
                 print(f"{err}: {id}")
