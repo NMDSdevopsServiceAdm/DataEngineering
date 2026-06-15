@@ -1,3 +1,5 @@
+import os
+
 import polars as pl
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.impute_utils as iUtils
@@ -6,6 +8,8 @@ from polars_utils import utils
 # Set streaming chunk size for memory management - each thread (per CPU core) will load
 # in a chunk of this size.
 pl.Config.set_streaming_chunk_size(50000)
+
+os.environ["POLARS_MAX_THREADS"] = "4"
 
 
 def main(
