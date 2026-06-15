@@ -32,12 +32,16 @@ CQC_ADAPTER = HTTPAdapter(max_retries=RETRY_STRATEGY)
 @sleep_and_retry
 @limits(calls=RATE_LIMIT, period=ONE_MINUTE)
 def call_api(
-    url: str, query_params: dict | None = None, headers_dict: dict | None = None
+    url: str,
+    id: str | None = None,
+    query_params: dict | None = None,
+    headers_dict: dict | None = None,
 ) -> dict:
     """
     Calls an API and returns the json response
     Args:
         url (str): the api url
+        id (str | None): the id to request data for
         query_params (dict | None): the parameters to pass to the api
         headers_dict (dict | None): headers to pass to the api
 
@@ -51,7 +55,11 @@ def call_api(
     with requests.Session() as session:
         try:
             session.mount(CQC_API_BASE_URL, CQC_ADAPTER)
-            response = session.get(url, params=query_params, headers=headers_dict)
+            if id:
+                full_url = url + id
+            else:
+                full_url = url
+            response = session.get(full_url, params=query_params, headers=headers_dict)
         except (MaxRetryError, ResponseError) as e:
             raise Exception("Max retries exceeded: {}".format(e))
 
@@ -65,6 +73,18 @@ def call_api(
         raise NoProviderOrLocationException(
             f"API response: {response.status_code} - {response.json().get('message')}"
         )
+
+    if (response.status_code == 400) and (id is not None) and (id != id.upper()):
+        try:
+            if id:
+                full_url = url + id.upper()
+            else:
+                full_url = url
+            response = session.get(full_url, params=query_params, headers=headers_dict)
+        except:
+            raise Exception(
+                "API response: {} - {}".format(response.status_code, response.text)
+            )
 
     if response.status_code != 200:
         raise Exception(
@@ -84,7 +104,7 @@ def get_all_objects(
 
     total_pages = call_api(
         url,
-        {
+        query_params={
             "perPage": per_page,
         },
         headers_dict={
@@ -116,7 +136,7 @@ def get_page_objects(
     page_objects = []
     response_body = call_api(
         url,
-        {"page": page_number, "perPage": per_page},
+        query_params={"page": page_number, "perPage": per_page},
         headers_dict={
             "User-Agent": USER_AGENT,
             "Ocp-Apim-Subscription-Key": cqc_api_primary_key,
@@ -132,10 +152,25 @@ def get_page_objects(
     return page_objects
 
 
-def get_object(cqc_location_id, object_type, cqc_api_primary_key) -> dict:
+def get_object(id: str, object_type: str, cqc_api_primary_key: str) -> dict:
+    """
+    Calls the API for a given object.
+
+    Constructs the correct URL and API call for a given provider or
+    location id.
+
+    Args:
+        id(str): provider or location id to request data on
+        object_type(str): whether the object is a provider or location
+        cqc_api_primary_key(str): key required to access API
+
+    Returns:
+        dict: a python dictionary contianing the json response from the API
+    """
     url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/{object_type}/"
     response = call_api(
-        url + cqc_location_id,
+        url,
+        id=id,
         query_params=None,
         headers_dict={
             "User-Agent": USER_AGENT,
