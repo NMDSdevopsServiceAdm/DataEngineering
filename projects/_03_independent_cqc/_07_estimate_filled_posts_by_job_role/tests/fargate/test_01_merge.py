@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import ANY, Mock, call, patch
 
 import polars as pl
+
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate._01_merge as job
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate._01_merge"

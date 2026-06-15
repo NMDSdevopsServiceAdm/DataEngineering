@@ -2,10 +2,10 @@ from datetime import date
 
 import polars as pl
 
+from polars_utils.expressions import is_not_care_home
 from polars_utils.filtering_utils import (
     update_filtering_rule,
 )
-from polars_utils.expressions import is_not_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import AscwdsFilteringRule
 

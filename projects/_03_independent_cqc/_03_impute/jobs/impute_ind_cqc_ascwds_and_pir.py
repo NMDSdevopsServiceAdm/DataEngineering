@@ -7,7 +7,6 @@ os.environ["SPARK_VERSION"] = "3.5"
 from pyspark.sql import DataFrame
 
 import utils.cleaning_utils as cUtils
-
 from projects._03_independent_cqc._03_impute.utils.forward_fill_latest_known_value import (
     forward_fill_latest_known_value,
 )

@@ -1,6 +1,7 @@
 import unittest
-from unittest.mock import Mock, patch
 from datetime import date
+from unittest.mock import Mock, patch
+
 import polars as pl
 import polars.testing as pl_testing
 

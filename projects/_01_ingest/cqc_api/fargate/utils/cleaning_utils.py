@@ -4,7 +4,10 @@ from polars_utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_values.categorical_column_values import CareHome, PrimaryServiceType
+from utils.column_values.categorical_column_values import (
+    CareHome,
+    PrimaryServiceType,
+)
 from utils.column_values.categorical_column_values import (
     PrimaryServiceTypeSecondLevel as PSSL_values,
 )

@@ -1,14 +1,11 @@
 from pyspark.sql.types import (
+    IntegerType,
+    StringType,
     StructField,
     StructType,
-    StringType,
-    IntegerType,
 )
 
-from utils.column_names.raw_data_files.cqc_pir_columns import (
-    CqcPirColumns as ColNames,
-)
-
+from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as ColNames
 
 PIR_SCHEMA = StructType(
     fields=[

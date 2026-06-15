@@ -3,10 +3,10 @@ from dataclasses import dataclass, fields
 import polars as pl
 
 import polars_utils.cleaning_utils as pUtils
+from polars_utils.expressions import is_care_home, is_not_care_home
 from polars_utils.filtering_utils import (
     update_filtering_rule,
 )
-from polars_utils.expressions import is_not_care_home, is_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,

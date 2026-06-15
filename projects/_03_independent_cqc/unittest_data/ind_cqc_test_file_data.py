@@ -2,7 +2,6 @@ import math
 from dataclasses import dataclass
 from datetime import date
 
-
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     CareHome,

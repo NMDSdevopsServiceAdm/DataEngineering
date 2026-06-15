@@ -9,6 +9,7 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     JobGroupLabels,
     JobRoleFilteringRule,
+    PrimaryServiceType,
 )
 
 
@@ -45,8 +46,6 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
 
 def filter_job_role_group_outliers(
     lf: pl.LazyFrame,
-    upper_percentile_bound: float = 0.999,
-    lower_percentile_bound: float = 0.001,
     small_location_threshold: int = 50,
 ) -> pl.LazyFrame:
     """
@@ -54,35 +53,42 @@ def filter_job_role_group_outliers(
     locations have the same or more workers than the threshold.
 
     This function nulls outliers based on a locations job group distribution. Their
-    distribution is calculated per location and import date, then upper/lower percentile
-    bounds are calculated per service type for each job group across all periods. Values
-    are nulled where there are the same or more workers than the threshold at a location and either:
+    distribution is calculated per location and import date, then
+    compared against fixed bounds per service type.
+    Values are nulled where there are the same or more workers than the threshold at
+    a location and either:
 
-    - direct care outside upper or lower percentile
-    - managers/regulated professions/other outside upper percentile
+    - direct care is outside the upper or lower bound
+    - managers, regulated professions, or other are outside their upper bound
 
     Args:
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
-        upper_percentile_bound (float): Upper bound for percentile filtering. Defaults to 0.999.
-        lower_percentile_bound (float): Lower bound for percentile filtering. Defaults to 0.001.
-        small_location_threshold (int): Minimum number of workers at a location to be included in filtering. Defaults to 50.
+        small_location_threshold (int): Minimum number of workers at a location to
+            be included in filtering. Defaults to 50.
 
     Returns:
         pl.LazyFrame: LazyFrame with outliers in job role groups filtered.
     """
     temp_out_of_bounds_col: str = "location_out_of_bounds"
 
-    Exprs = FilterJobRoleGroupExpressions(
-        upper_percentile_bound, lower_percentile_bound
-    )
+    Exprs = FilterJobRoleGroupExpressions()
 
-    # Define splits for groupby operations
     splits_for_pivot = [
         IndCQC.location_id,
         IndCQC.cqc_location_import_date,
         IndCQC.primary_service_type,
         IndCQC.id_per_locationid_import_date,
     ]
+
+    # Build a LazyFrame of the fixed bounds from the magic numbers dict
+    bounds_lf = pl.LazyFrame(
+        [
+            {IndCQC.primary_service_type: service_type, **bounds}
+            for service_type, bounds in Exprs.job_role_group_bounds.items()
+        ]
+    ).with_columns(
+        pl.col(IndCQC.primary_service_type).cast(CatColType.PrimaryServiceEnumType)
+    )
 
     piv_lf = (
         lf.pivot(
@@ -97,11 +103,9 @@ def filter_job_role_group_outliers(
         .with_columns(Exprs.job_group_percentage_expr)
     )
 
-    bounds_lf = piv_lf.group_by(IndCQC.primary_service_type).agg(
-        Exprs.upper_bounds_expr,
-        Exprs.lower_bounds_expr,
+    print(
+        f"PivottableRecordCount Before join: {piv_lf.select(pl.len()).collect().item()}"
     )
-
     piv_lf = (
         piv_lf.join(
             bounds_lf,
@@ -110,6 +114,9 @@ def filter_job_role_group_outliers(
         )
         .with_columns(Exprs.evaluation_expr.alias(temp_out_of_bounds_col))
         .select(IndCQC.id_per_locationid_import_date, temp_out_of_bounds_col)
+    )
+    print(
+        f"PivottableRecordCount After join: {piv_lf.select(pl.len()).collect().item()}"
     )
 
     lf = (
@@ -137,7 +144,7 @@ def filter_job_role_group_outliers(
 
 class FilterJobRoleGroupExpressions:
     """
-    Collection of polars expressions for filtering job group outliers.
+    Collection of Polars expressions for filtering job group outliers.
 
     This class defines reusable expressions for filtering locations
     with outlying job role group distributions. It also defines column names
@@ -148,29 +155,23 @@ class FilterJobRoleGroupExpressions:
         job_group_cols (list[str]): List of job group column names.
         upper_bound_suffix (str): A column suffix for denoting upper bounds.
         lower_bound_suffix (str): A column suffix for denoting lower bounds.
+        job_role_group_bounds (dict[str, dict[str, float]]): A dictionary mapping primary service
+            types to their respective job role group bounds.
         location_sum_expr (pl.Expr): Expression to calculate the total workers at a location.
         job_group_percentage_expr (pl.Expr): Expression to calculate the percentage of job roles.
         evaluation_expr (pl.Expr): Expression to evaluate whether a value is out of bounds.
-        upper_bounds_expr (pl.Expr): Expression to calulate upper percentage bounds.
-        lower_bounds_expr (pl.Expr): Expression to calulate lower percentage bounds.
-
-    Args:
-        upper_percentile_bound (float): The upper percentile bound for job group ratios.
-        lower_percentile_bound (float): The lower percentile bound for job group ratios.
-
     """
 
     temp_location_sum: str
     job_group_cols: list[str]
     upper_bound_suffix: str
     lower_bound_suffix: str
+    job_role_group_bounds: dict[str, dict[str, float]]
     location_sum_expr: pl.Expr
     job_group_percentage_expr: pl.Expr
     evaluation_expr: pl.Expr
-    upper_bounds_expr: pl.Expr
-    lower_bounds_expr: pl.Expr
 
-    def __init__(self, upper_percentile_bound: float, lower_percentile_bound: float):
+    def __init__(self):
         self.temp_location_sum = "location_sum"
         self.job_group_cols = [
             JobGroupLabels.direct_care,
@@ -180,6 +181,29 @@ class FilterJobRoleGroupExpressions:
         ]
         self.upper_bound_suffix = "_upper"
         self.lower_bound_suffix = "_lower"
+        self.job_role_group_bounds: dict[str, dict[str, float]] = {
+            PrimaryServiceType.care_home_only: {
+                f"{JobGroupLabels.direct_care}{self.upper_bound_suffix}": 0.985761,
+                f"{JobGroupLabels.managers}{self.upper_bound_suffix}": 0.307057,
+                f"{JobGroupLabels.regulated_professions}{self.upper_bound_suffix}": 0.161988,
+                f"{JobGroupLabels.other}{self.upper_bound_suffix}": 0.569972,
+                f"{JobGroupLabels.direct_care}{self.lower_bound_suffix}": 0.264068,
+            },
+            PrimaryServiceType.care_home_with_nursing: {
+                f"{JobGroupLabels.direct_care}{self.upper_bound_suffix}": 0.943761,
+                f"{JobGroupLabels.managers}{self.upper_bound_suffix}": 0.222222,
+                f"{JobGroupLabels.regulated_professions}{self.upper_bound_suffix}": 0.350631,
+                f"{JobGroupLabels.other}{self.upper_bound_suffix}": 0.964286,
+                f"{JobGroupLabels.direct_care}{self.lower_bound_suffix}": 0.012821,
+            },
+            PrimaryServiceType.non_residential: {
+                f"{JobGroupLabels.direct_care}{self.upper_bound_suffix}": 0.995851,
+                f"{JobGroupLabels.managers}{self.upper_bound_suffix}": 0.335846,
+                f"{JobGroupLabels.regulated_professions}{self.upper_bound_suffix}": 0.338843,
+                f"{JobGroupLabels.other}{self.upper_bound_suffix}": 0.576850,
+                f"{JobGroupLabels.direct_care}{self.lower_bound_suffix}": 0.233974,
+            },
+        }
         self.location_sum_expr = pl.sum_horizontal(self.job_group_cols).alias(
             self.temp_location_sum
         )
@@ -219,16 +243,6 @@ class FilterJobRoleGroupExpressions:
                 pl.col(JobGroupLabels.other)
                 > pl.col(JobGroupLabels.other + self.upper_bound_suffix)
             )
-        )
-        self.upper_bounds_expr = (
-            pl.col(self.job_group_cols)
-            .quantile(upper_percentile_bound, interpolation="linear")
-            .name.suffix(self.upper_bound_suffix)
-        )
-        self.lower_bounds_expr = (
-            pl.col(self.job_group_cols)
-            .quantile(lower_percentile_bound, interpolation="linear")
-            .name.suffix(self.lower_bound_suffix)
         )
 
 
