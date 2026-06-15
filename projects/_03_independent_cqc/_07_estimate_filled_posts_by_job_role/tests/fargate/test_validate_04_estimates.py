@@ -189,7 +189,7 @@ class TestEstimatesPercentageExpressions:
     test_lf = expected_lf.drop("expression")
 
     def test_required_percentages_dictionary(self):
-        assert job.req_pcts[MainJobRoleLabels.care_worker] == (0.59, 0.69)
+        assert job.req_pcts[MainJobRoleLabels.care_worker] == (0.52, 0.69)
         assert job.req_pcts[JobGroupLabels.direct_care] == (0.71, 0.81)
         assert job.req_pcts[JobGroupLabels.managers] == (0.03, 0.1)
         assert job.req_pcts[JobGroupLabels.regulated_professions] == (0.02, 0.06)
