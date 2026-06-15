@@ -106,25 +106,25 @@ class TestFilterJobRoleGroupExpressions:
     def test_job_role_group_bounds_dict(self):
         expected_bounds = {
             PrimaryServiceType.care_home_only: {
-                f"{JobGroupLabels.direct_care}_upper": 0.985761,
-                f"{JobGroupLabels.managers}_upper": 0.307057,
-                f"{JobGroupLabels.regulated_professions}_upper": 0.161988,
-                f"{JobGroupLabels.other}_upper": 0.569972,
-                f"{JobGroupLabels.direct_care}_lower": 0.264068,
+                f"{JobGroupLabels.direct_care}{self.TestExprs.upper_bound_suffix}": 0.985761,
+                f"{JobGroupLabels.managers}{self.TestExprs.upper_bound_suffix}": 0.307057,
+                f"{JobGroupLabels.regulated_professions}{self.TestExprs.upper_bound_suffix}": 0.161988,
+                f"{JobGroupLabels.other}{self.TestExprs.upper_bound_suffix}": 0.569972,
+                f"{JobGroupLabels.direct_care}{self.TestExprs.lower_bound_suffix}": 0.264068,
             },
             PrimaryServiceType.care_home_with_nursing: {
-                f"{JobGroupLabels.direct_care}_upper": 0.943761,
-                f"{JobGroupLabels.managers}_upper": 0.222222,
-                f"{JobGroupLabels.regulated_professions}_upper": 0.350631,
-                f"{JobGroupLabels.other}_upper": 0.964286,
-                f"{JobGroupLabels.direct_care}_lower": 0.012821,
+                f"{JobGroupLabels.direct_care}{self.TestExprs.upper_bound_suffix}": 0.943761,
+                f"{JobGroupLabels.managers}{self.TestExprs.upper_bound_suffix}": 0.222222,
+                f"{JobGroupLabels.regulated_professions}{self.TestExprs.upper_bound_suffix}": 0.350631,
+                f"{JobGroupLabels.other}{self.TestExprs.upper_bound_suffix}": 0.964286,
+                f"{JobGroupLabels.direct_care}{self.TestExprs.lower_bound_suffix}": 0.012821,
             },
             PrimaryServiceType.non_residential: {
-                f"{JobGroupLabels.direct_care}_upper": 0.995851,
-                f"{JobGroupLabels.managers}_upper": 0.335846,
-                f"{JobGroupLabels.regulated_professions}_upper": 0.338843,
-                f"{JobGroupLabels.other}_upper": 0.576850,
-                f"{JobGroupLabels.direct_care}_lower": 0.233974,
+                f"{JobGroupLabels.direct_care}{self.TestExprs.upper_bound_suffix}": 0.995851,
+                f"{JobGroupLabels.managers}{self.TestExprs.upper_bound_suffix}": 0.335846,
+                f"{JobGroupLabels.regulated_professions}{self.TestExprs.upper_bound_suffix}": 0.338843,
+                f"{JobGroupLabels.other}{self.TestExprs.upper_bound_suffix}": 0.576850,
+                f"{JobGroupLabels.direct_care}{self.TestExprs.lower_bound_suffix}": 0.233974,
             },
         }
         assert self.TestExprs.job_role_group_bounds == expected_bounds

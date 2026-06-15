@@ -145,50 +145,27 @@ class FilterJobRoleGroupExpressions:
     used by these expressions.
 
     Attributes:
-        job_role_group_bounds (dict[str, dict[str, float]]): A dictionary mapping primary service
-            types to their respective job role group bounds.
         temp_location_sum (str): Temporary column name for the total number of workers at a location.
         job_group_cols (list[str]): List of job group column names.
         upper_bound_suffix (str): A column suffix for denoting upper bounds.
         lower_bound_suffix (str): A column suffix for denoting lower bounds.
+        job_role_group_bounds (dict[str, dict[str, float]]): A dictionary mapping primary service
+            types to their respective job role group bounds.
         location_sum_expr (pl.Expr): Expression to calculate the total workers at a location.
         job_group_percentage_expr (pl.Expr): Expression to calculate the percentage of job roles.
         evaluation_expr (pl.Expr): Expression to evaluate whether a value is out of bounds.
     """
 
-    job_role_group_bounds: dict[str, dict[str, float]]
     temp_location_sum: str
     job_group_cols: list[str]
     upper_bound_suffix: str
     lower_bound_suffix: str
+    job_role_group_bounds: dict[str, dict[str, float]]
     location_sum_expr: pl.Expr
     job_group_percentage_expr: pl.Expr
     evaluation_expr: pl.Expr
 
     def __init__(self):
-        self.job_role_group_bounds: dict[str, dict[str, float]] = {
-            PrimaryServiceType.care_home_only: {
-                f"{JobGroupLabels.direct_care}_upper": 0.985761,
-                f"{JobGroupLabels.managers}_upper": 0.307057,
-                f"{JobGroupLabels.regulated_professions}_upper": 0.161988,
-                f"{JobGroupLabels.other}_upper": 0.569972,
-                f"{JobGroupLabels.direct_care}_lower": 0.264068,
-            },
-            PrimaryServiceType.care_home_with_nursing: {
-                f"{JobGroupLabels.direct_care}_upper": 0.943761,
-                f"{JobGroupLabels.managers}_upper": 0.222222,
-                f"{JobGroupLabels.regulated_professions}_upper": 0.350631,
-                f"{JobGroupLabels.other}_upper": 0.964286,
-                f"{JobGroupLabels.direct_care}_lower": 0.012821,
-            },
-            PrimaryServiceType.non_residential: {
-                f"{JobGroupLabels.direct_care}_upper": 0.995851,
-                f"{JobGroupLabels.managers}_upper": 0.335846,
-                f"{JobGroupLabels.regulated_professions}_upper": 0.338843,
-                f"{JobGroupLabels.other}_upper": 0.576850,
-                f"{JobGroupLabels.direct_care}_lower": 0.233974,
-            },
-        }
         self.temp_location_sum = "location_sum"
         self.job_group_cols = [
             JobGroupLabels.direct_care,
@@ -198,6 +175,29 @@ class FilterJobRoleGroupExpressions:
         ]
         self.upper_bound_suffix = "_upper"
         self.lower_bound_suffix = "_lower"
+        self.job_role_group_bounds: dict[str, dict[str, float]] = {
+            PrimaryServiceType.care_home_only: {
+                f"{JobGroupLabels.direct_care}{self.upper_bound_suffix}": 0.985761,
+                f"{JobGroupLabels.managers}{self.upper_bound_suffix}": 0.307057,
+                f"{JobGroupLabels.regulated_professions}{self.upper_bound_suffix}": 0.161988,
+                f"{JobGroupLabels.other}{self.upper_bound_suffix}": 0.569972,
+                f"{JobGroupLabels.direct_care}{self.lower_bound_suffix}": 0.264068,
+            },
+            PrimaryServiceType.care_home_with_nursing: {
+                f"{JobGroupLabels.direct_care}{self.upper_bound_suffix}": 0.943761,
+                f"{JobGroupLabels.managers}{self.upper_bound_suffix}": 0.222222,
+                f"{JobGroupLabels.regulated_professions}{self.upper_bound_suffix}": 0.350631,
+                f"{JobGroupLabels.other}{self.upper_bound_suffix}": 0.964286,
+                f"{JobGroupLabels.direct_care}{self.lower_bound_suffix}": 0.012821,
+            },
+            PrimaryServiceType.non_residential: {
+                f"{JobGroupLabels.direct_care}{self.upper_bound_suffix}": 0.995851,
+                f"{JobGroupLabels.managers}{self.upper_bound_suffix}": 0.335846,
+                f"{JobGroupLabels.regulated_professions}{self.upper_bound_suffix}": 0.338843,
+                f"{JobGroupLabels.other}{self.upper_bound_suffix}": 0.576850,
+                f"{JobGroupLabels.direct_care}{self.lower_bound_suffix}": 0.233974,
+            },
+        }
         self.location_sum_expr = pl.sum_horizontal(self.job_group_cols).alias(
             self.temp_location_sum
         )
