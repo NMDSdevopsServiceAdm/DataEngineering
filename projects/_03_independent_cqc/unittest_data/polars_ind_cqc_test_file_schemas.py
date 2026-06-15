@@ -1669,13 +1669,13 @@ class ModelRateOfChangeSchemas:
 
 @dataclass
 class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
-    Cols = TempCols(None, None)
+    Cols = TempCols()
     JRFR = JobRoleFilteringRule(IndCQC.job_role_filtering_rule)
     test_filter_schema = {
         IndCQC.id_per_locationid_import_date: pl.Int64,
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.primary_service_type: pl.String,
+        IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
         IndCQC.main_job_group_labelled: pl.Enum(
             AscwdsWorkerValueLabelsJobGroup.all_job_groups()
@@ -1687,7 +1687,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.id_per_locationid_import_date: pl.Int64,
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.primary_service_type: pl.String,
+        IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
         IndCQC.main_job_group_labelled: pl.Enum(
             AscwdsWorkerValueLabelsJobGroup.all_job_groups()
@@ -1721,20 +1721,6 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         (JobGroupLabels.other + Cols.upper_bound_suffix): pl.Float32,
         (JobGroupLabels.direct_care + Cols.lower_bound_suffix): pl.Float32,
         IndCQC.ascwds_job_role_counts: pl.Int64,
-    }
-    expected_bounds_expressions_schema = {
-        JobGroupLabels.direct_care: pl.Float32,
-        JobGroupLabels.managers: pl.Float32,
-        JobGroupLabels.regulated_professions: pl.Float32,
-        JobGroupLabels.other: pl.Float32,
-        JobGroupLabels.direct_care + Cols.upper_bound_suffix: pl.Float32,
-        JobGroupLabels.managers + Cols.upper_bound_suffix: pl.Float32,
-        JobGroupLabels.regulated_professions + Cols.upper_bound_suffix: pl.Float32,
-        JobGroupLabels.other + Cols.upper_bound_suffix: pl.Float32,
-        JobGroupLabels.direct_care + Cols.lower_bound_suffix: pl.Float32,
-        JobGroupLabels.managers + Cols.lower_bound_suffix: pl.Float32,
-        JobGroupLabels.regulated_professions + Cols.lower_bound_suffix: pl.Float32,
-        JobGroupLabels.other + Cols.lower_bound_suffix: pl.Float32,
     }
 
     test_job_role_group_equal_zero_schema = {

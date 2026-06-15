@@ -15,6 +15,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     JobGroupLabels,
+    PrimaryServiceType,
 )
 
 
@@ -89,7 +90,7 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
         )
 
         returned_lf = job.filter_job_role_group_outliers(
-            test_lf, case.upper_bound, case.lower_bound, case.small_location_threshold
+            test_lf, case.small_location_threshold
         )
 
         pl_testing.assert_frame_equal(
@@ -100,9 +101,33 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
 
 
 class TestFilterJobRoleGroupExpressions:
-    test_upper_bound = 0.8
-    test_lower_bound = 0.2
-    TestExprs = job.FilterJobRoleGroupExpressions(test_upper_bound, test_lower_bound)
+    TestExprs = job.FilterJobRoleGroupExpressions()
+
+    def test_job_role_group_bounds_dict(self):
+        expected_bounds = {
+            PrimaryServiceType.care_home_only: {
+                f"{JobGroupLabels.direct_care}{self.TestExprs.upper_bound_suffix}": 0.985761,
+                f"{JobGroupLabels.managers}{self.TestExprs.upper_bound_suffix}": 0.307057,
+                f"{JobGroupLabels.regulated_professions}{self.TestExprs.upper_bound_suffix}": 0.161988,
+                f"{JobGroupLabels.other}{self.TestExprs.upper_bound_suffix}": 0.569972,
+                f"{JobGroupLabels.direct_care}{self.TestExprs.lower_bound_suffix}": 0.264068,
+            },
+            PrimaryServiceType.care_home_with_nursing: {
+                f"{JobGroupLabels.direct_care}{self.TestExprs.upper_bound_suffix}": 0.943761,
+                f"{JobGroupLabels.managers}{self.TestExprs.upper_bound_suffix}": 0.222222,
+                f"{JobGroupLabels.regulated_professions}{self.TestExprs.upper_bound_suffix}": 0.350631,
+                f"{JobGroupLabels.other}{self.TestExprs.upper_bound_suffix}": 0.964286,
+                f"{JobGroupLabels.direct_care}{self.TestExprs.lower_bound_suffix}": 0.012821,
+            },
+            PrimaryServiceType.non_residential: {
+                f"{JobGroupLabels.direct_care}{self.TestExprs.upper_bound_suffix}": 0.995851,
+                f"{JobGroupLabels.managers}{self.TestExprs.upper_bound_suffix}": 0.335846,
+                f"{JobGroupLabels.regulated_professions}{self.TestExprs.upper_bound_suffix}": 0.338843,
+                f"{JobGroupLabels.other}{self.TestExprs.upper_bound_suffix}": 0.576850,
+                f"{JobGroupLabels.direct_care}{self.TestExprs.lower_bound_suffix}": 0.233974,
+            },
+        }
+        assert self.TestExprs.job_role_group_bounds == expected_bounds
 
     def test_variables_in_filter_job_role_group_expressions(self):
         assert self.TestExprs.temp_location_sum == "location_sum"
@@ -135,6 +160,7 @@ class TestFilterJobRoleGroupExpressions:
         expected_lf = pl.LazyFrame(
             Data.test_job_group_percentage_rows,
             Schemas.test_job_group_percentage_schema,
+            orient="row",
         )
         returned_lf = test_lf.with_columns(self.TestExprs.job_group_percentage_expr)
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
@@ -152,6 +178,7 @@ class TestFilterJobRoleGroupExpressions:
         expected_zero = pl.LazyFrame(
             [(None, None, None, None, 0)],
             Schemas.test_job_group_percentage_schema,
+            orient="row",
         )
         pl_testing.assert_frame_equal(returned_zero, expected_zero)
 
@@ -167,6 +194,7 @@ class TestFilterJobRoleGroupExpressions:
         expected_null = pl.LazyFrame(
             [(None, None, None, None, None)],
             Schemas.test_job_group_percentage_schema,
+            orient="row",
         )
         pl_testing.assert_frame_equal(returned_null, expected_null)
 
@@ -189,20 +217,6 @@ class TestFilterJobRoleGroupExpressions:
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_bounds_expressions(self):
-        expected_lf = pl.LazyFrame(
-            Data.expected_bounds_expressions_rows,
-            Schemas.expected_bounds_expressions_schema,
-            orient="row",
-        )
-        test_lf = expected_lf.select(
-            pl.col(self.TestExprs.job_group_cols),
-        )
-        returned_lf = test_lf.with_columns(
-            self.TestExprs.upper_bounds_expr, self.TestExprs.lower_bounds_expr
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
 class TestFilterJobRoleGroupsEqualZero:
