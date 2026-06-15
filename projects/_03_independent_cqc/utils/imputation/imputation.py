@@ -2,6 +2,7 @@ from typing import Tuple
 
 import polars as pl
 
+from polars_utils.expressions import is_care_home, is_not_care_home
 from projects._03_independent_cqc.utils.imputation.extrapolation import (
     model_extrapolation,
 )
@@ -101,16 +102,16 @@ def split_dataset_for_imputation(
             - non_imputation_lf: LazyFrame with rows not meeting the criteria.
     """
     if care_home:
-        care_home_filter_value: str = CareHome.care_home
+        care_home_filter_expr: pl.Expr = is_care_home()
     else:
-        care_home_filter_value: str = CareHome.not_care_home
+        care_home_filter_expr: pl.Expr = is_not_care_home()
 
     locs_with_values_expr = (
         pl.col(column_with_null_values)
         .count()
         .over([IndCqc.location_id, IndCqc.care_home])
         > 0
-    ) & (pl.col(IndCqc.care_home) == care_home_filter_value)
+    ) & (care_home_filter_expr)
 
     imputation_lf = lf.filter(locs_with_values_expr == True)
     non_imputation_lf = lf.filter(locs_with_values_expr == False)
