@@ -89,7 +89,7 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
         )
 
         returned_lf = job.filter_job_role_group_outliers(
-            test_lf, case.upper_bound, case.lower_bound, case.small_location_threshold
+            test_lf, case.small_location_threshold
         )
 
         pl_testing.assert_frame_equal(
@@ -100,9 +100,7 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
 
 
 class TestFilterJobRoleGroupExpressions:
-    test_upper_bound = 0.8
-    test_lower_bound = 0.2
-    TestExprs = job.FilterJobRoleGroupExpressions(test_upper_bound, test_lower_bound)
+    TestExprs = job.FilterJobRoleGroupExpressions()
 
     def test_variables_in_filter_job_role_group_expressions(self):
         assert self.TestExprs.temp_location_sum == "location_sum"
@@ -189,20 +187,6 @@ class TestFilterJobRoleGroupExpressions:
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-    def test_bounds_expressions(self):
-        expected_lf = pl.LazyFrame(
-            Data.expected_bounds_expressions_rows,
-            Schemas.expected_bounds_expressions_schema,
-            orient="row",
-        )
-        test_lf = expected_lf.select(
-            pl.col(self.TestExprs.job_group_cols),
-        )
-        returned_lf = test_lf.with_columns(
-            self.TestExprs.upper_bounds_expr, self.TestExprs.lower_bounds_expr
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
 class TestFilterJobRoleGroupsEqualZero:
