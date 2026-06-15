@@ -26,6 +26,8 @@ PATCHED_CQC_ADAPTER = HTTPAdapter(
 class CqcApiTests(unittest.TestCase):
     def setUp(self) -> None:
         self.test_url = "test_url"
+        self.test_location_id = "1-001"
+        self.test_lc_location_id = "lower"
         self.location_object_type = "locations"
         self.test_column = "test_column"
         self.value_examples = ["value_1", "value_2", "value_3"]
@@ -134,7 +136,10 @@ class CallApiTests(CqcApiTests):
         get_mock.return_value = test_response
 
         response_json = cqc.call_api(
-            self.test_url, {"test": "body"}, headers_dict={"some": "header"}
+            self.test_url,
+            self.test_location_id,
+            {"test": "body"},
+            headers_dict={"some": "header"},
         )
         self.assertEqual(response_json, {})
 
@@ -145,18 +150,38 @@ class CallApiTests(CqcApiTests):
 
         with self.assertRaisesRegex(Exception, "^API response: 500 -.*"):
             cqc.call_api(
-                self.test_url, {"test": "body"}, headers_dict={"some": "header"}
+                self.test_url,
+                self.test_location_id,
+                {"test": "body"},
+                headers_dict={"some": "header"},
             )
 
     @patch("requests.Session.get")
-    def test_call_api_handles_400(self, get_mock: Mock):
+    def test_call_api_handles_400_when_not_lowercase_id(self, get_mock: Mock):
         test_response = TestResponse(400, {})
         get_mock.return_value = test_response
 
         with self.assertRaisesRegex(Exception, "^API response: 400 -.*"):
             cqc.call_api(
-                self.test_url, {"test": "body"}, headers_dict={"some": "header"}
+                self.test_url,
+                self.test_location_id,
+                {"test": "body"},
+                headers_dict={"some": "header"},
             )
+
+    @patch("requests.Session.get")
+    def test_call_api_handles_400_when_lowercase_id(self, get_mock: Mock):
+        test_response_success = TestResponse(200, {})
+        test_response_fail = TestResponse(400, {})
+        get_mock.side_effect = [test_response_fail, test_response_success]
+
+        response_json = cqc.call_api(
+            self.test_url,
+            self.test_location_id,
+            {"test": "body"},
+            headers_dict={"some": "header"},
+        )
+        self.assertEqual(response_json, {})
 
     @patch("requests.Session.get")
     def test_call_api_handles_404(self, get_mock: Mock):
@@ -167,7 +192,10 @@ class CallApiTests(CqcApiTests):
             cqc.NoProviderOrLocationException, "^API response: 404 -.*"
         ):
             cqc.call_api(
-                self.test_url, {"test": "body"}, headers_dict={"some": "header"}
+                self.test_url,
+                self.test_location_id,
+                {"test": "body"},
+                headers_dict={"some": "header"},
             )
 
     @patch("requests.Session.get")
@@ -177,7 +205,10 @@ class CallApiTests(CqcApiTests):
 
         with self.assertRaisesRegex(Exception, "^API response: 403 -.*"):
             cqc.call_api(
-                self.test_url, {"test": "body"}, headers_dict={"some": "header"}
+                self.test_url,
+                self.test_location_id,
+                {"test": "body"},
+                headers_dict={"some": "header"},
             )
 
     @patch("requests.Session.get")
@@ -186,7 +217,12 @@ class CallApiTests(CqcApiTests):
         get_mock.return_value = test_response
 
         with self.assertRaises(Exception) as context:
-            cqc.call_api(self.test_url, {"test": "body"}, headers_dict=None)
+            cqc.call_api(
+                self.test_url,
+                self.test_location_id,
+                {"test": "body"},
+                headers_dict=None,
+            )
 
         self.assertTrue(
             "API response: 403, ensure you have set a User-Agent header"
@@ -217,6 +253,7 @@ class CallApiTests(CqcApiTests):
         # When
         result = cqc.call_api(
             url="https://api.service.cqc.org.uk/test",
+            location_id=self.test_location_id,
             query_params={"param": "value"},
         )
         # Then
@@ -257,6 +294,7 @@ class CallApiTests(CqcApiTests):
         with self.assertRaises(Exception) as context:
             result = cqc.call_api(
                 url="https://api.service.cqc.org.uk/test",
+                location_id=self.test_location_id,
                 query_params={"param": "value"},
             )
             # Then
