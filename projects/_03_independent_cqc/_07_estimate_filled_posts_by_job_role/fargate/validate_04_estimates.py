@@ -21,7 +21,15 @@ from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
 )
 
-VALIDATION_COLS = [
+INDEX_VALIDATION_COLS_TO_IMPORT = [
+    IndCqcColumns.id_per_locationid_import_date,
+    IndCqcColumns.id_per_locationid_import_date_job_role,
+    IndCqcColumns.location_id,
+    IndCqcColumns.cqc_location_import_date,
+    IndCqcColumns.main_job_role_clean_labelled,
+]
+
+OTHER_VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.id_per_locationid_import_date_job_role,
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
@@ -47,7 +55,7 @@ VALIDATION_COLS = [
     PartitionKeys.year,
 ]
 
-COMPARE_COLS = [
+IND_CQC_IMPUTE_COLS_TO_IMPORT = [
     IndCqcColumns.location_id,
     IndCqcColumns.cqc_location_import_date,
 ]
@@ -113,14 +121,68 @@ def main(
         compare_path (str): the path to the comparison dataset
         reports_path (str): the output path to write reports to
     """
+    index_validation(bucket_name, source_path, reports_path)
+    other_validation(bucket_name, source_path, compare_path, reports_path)
+
+
+def index_validation(bucket_name: str, source_path: str, reports_path: str) -> None:
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=VALIDATION_COLS,
+        selected_columns=INDEX_VALIDATION_COLS_TO_IMPORT,
     )
+
+    validation = (
+        pb.Validate(
+            data=source_df,
+            label=f"Validation of {source_path}",
+            thresholds=GLOBAL_THRESHOLDS,
+            brief=True,
+            actions=GLOBAL_ACTIONS,
+        )
+        .rows_distinct(
+            columns_subset=IndCqcColumns.id_per_locationid_import_date_job_role,
+            brief="id_per_locationid_import_date_job_role should be unique",
+        )
+        .rows_distinct(
+            columns_subset=[
+                IndCqcColumns.location_id,
+                IndCqcColumns.cqc_location_import_date,
+                IndCqcColumns.main_job_role_clean_labelled,
+            ],
+            brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
+        )
+        .col_vals_expr(
+            expr=(
+                pl.col(IndCqcColumns.id_per_locationid_import_date)
+                .n_unique()
+                .over(
+                    [
+                        IndCqcColumns.location_id,
+                        IndCqcColumns.cqc_location_import_date,
+                    ]
+                )
+                == 1
+            ),
+            brief="id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
+        )
+        .interrogate()
+    )
+    vl.write_reports(validation, bucket_name, f"{reports_path}/index_validation")
+
+
+def other_validation(
+    bucket_name: str, source_path: str, compare_path: str, reports_path: str
+) -> None:
+    source_df = utils.read_parquet(
+        source=f"s3://{bucket_name}/{source_path}",
+        selected_columns=OTHER_VALIDATION_COLS_TO_IMPORT,
+    )
+
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
-        selected_columns=COMPARE_COLS,
+        selected_columns=IND_CQC_IMPUTE_COLS_TO_IMPORT,
     )
+
     expected_row_count = compare_df.height
 
     validation = (
@@ -162,35 +224,6 @@ def main(
                 PartitionKeys.year,
             ],
             brief="Key columns should contain no null values",
-        )
-        # index columns
-        .rows_distinct(
-            columns_subset=[
-                IndCqcColumns.location_id,
-                IndCqcColumns.cqc_location_import_date,
-                IndCqcColumns.main_job_role_clean_labelled,
-            ],
-            brief="Primary key (location_id, cqc_location_import_date, main_job_role_clean_labelled) should be unique",
-        )
-        .rows_distinct(
-            columns_subset=[
-                IndCqcColumns.id_per_locationid_import_date_job_role,
-            ],
-            brief="ID key should be unique",
-        )
-        .col_vals_expr(
-            expr=(
-                pl.col(IndCqcColumns.id_per_locationid_import_date)
-                .n_unique()
-                .over(
-                    [
-                        IndCqcColumns.location_id,
-                        IndCqcColumns.cqc_location_import_date,
-                    ]
-                )
-                == 1
-            ),
-            brief="id_per_locationid_import_date should be unique per locationid and cqc_location_import_date combination",
         )
         # categorical
         .col_vals_in_set(
@@ -415,7 +448,7 @@ def main(
         )
         .interrogate()
     )
-    vl.write_reports(validation, bucket_name, reports_path)
+    vl.write_reports(validation, bucket_name, f"{reports_path}/other_validation")
 
 
 def estimates_percentage_expressions(

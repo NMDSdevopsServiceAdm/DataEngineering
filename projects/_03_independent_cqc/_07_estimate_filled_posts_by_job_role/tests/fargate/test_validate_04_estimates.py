@@ -22,6 +22,13 @@ PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role
 
 class ValidateJobRoleEstimatesTests(unittest.TestCase):
     def setUp(self) -> None:
+        self.index_schema = {
+            IndCqcColumns.id_per_locationid_import_date: pl.UInt32,
+            IndCqcColumns.id_per_locationid_import_date_job_role: pl.String,
+            IndCqcColumns.location_id: CategoricalColumnTypes.LocationCatType,
+            IndCqcColumns.cqc_location_import_date: pl.Date,
+            IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
+        }
 
         source_schema = {
             IndCqcColumns.id_per_locationid_import_date_job_role: pl.String,
@@ -64,15 +71,60 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
         ]
         self.compare_lf = pl.DataFrame(compare_rows, compare_schema, orient="row")
 
+    @patch(f"{PATCH_PATH}.other_validation")
+    @patch(f"{PATCH_PATH}.index_validation")
+    def test_main_has_expected_calls(
+        self,
+        mock_index_validation: Mock,
+        mock_other_validation: Mock,
+    ):
+        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+
+        mock_index_validation.assert_called_once()
+        mock_other_validation.assert_called_once()
+
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_validation_runs(
+    def test_index_validation_runs(
         self,
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
     ):
         mock_read_parquet.side_effect = [self.source_lf, self.compare_lf]
-        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+        job.index_validation("bucket", "my/source/", "my/reports/")
+
+        mock_read_parquet.assert_called_once_with(
+            source="s3://bucket/my/source/",
+            selected_columns=list(self.index_schema.keys()),
+        )
+        mock_write_reports.assert_called_once()
+
+        validation_arg = mock_write_reports.call_args[0][0]
+        report_json = json.loads(validation_arg.get_json_report())
+
+        assertion_types_present = {item["assertion_type"] for item in report_json}
+
+        expected_assertions = {
+            "rows_distinct",
+            "col_vals_expr",
+        }
+
+        for assertion in expected_assertions:
+            self.assertIn(
+                assertion,
+                assertion_types_present,
+                f"{assertion} not found in validation report",
+            )
+
+    @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
+    def test_other_validation_runs(
+        self,
+        mock_read_parquet: Mock,
+        mock_write_reports: Mock,
+    ):
+        mock_read_parquet.side_effect = [self.source_lf, self.compare_lf]
+        job.other_validation("bucket", "my/source/", "my/compare/", "my/reports/")
 
         self.assertEqual(mock_read_parquet.call_count, 2)
         mock_read_parquet.assert_any_call(
@@ -85,17 +137,6 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
         )
         mock_write_reports.assert_called_once()
 
-    @patch(f"{PATCH_PATH}.vl.write_reports")
-    @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_validation_report_includes_expected_validations(
-        self,
-        mock_read_parquet: Mock,
-        mock_write_reports: Mock,
-    ):
-        mock_read_parquet.side_effect = [self.source_lf, self.compare_lf]
-
-        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
-
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
 
@@ -105,7 +146,6 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             "col_schema_match",
             "row_count_match",
             "col_vals_not_null",
-            "rows_distinct",
             "col_vals_expr",
             "col_vals_in_set",
             "specially",
