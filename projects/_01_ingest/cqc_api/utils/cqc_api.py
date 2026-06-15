@@ -104,7 +104,7 @@ def get_all_objects(
 
     total_pages = call_api(
         url,
-        {
+        query_params={
             "perPage": per_page,
         },
         headers_dict={
@@ -136,7 +136,7 @@ def get_page_objects(
     page_objects = []
     response_body = call_api(
         url,
-        {"page": page_number, "perPage": per_page},
+        query_params={"page": page_number, "perPage": per_page},
         headers_dict={
             "User-Agent": USER_AGENT,
             "Ocp-Apim-Subscription-Key": cqc_api_primary_key,
