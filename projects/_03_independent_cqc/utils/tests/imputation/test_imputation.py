@@ -93,16 +93,16 @@ class SplitDatasetForImputationTests(unittest.TestCase):
 
         input_lf = pl.LazyFrame(
             data=[
-                ("1-001", CareHome.care_home, 10.0),
-                ("1-001", CareHome.care_home, None),
-                ("1-002", CareHome.care_home, 10.0),
-                ("1-003", CareHome.care_home, None),
-                ("1-003", CareHome.care_home, None),
-                ("1-004", CareHome.not_care_home, 10.0),
-                ("1-004", CareHome.not_care_home, None),
-                ("1-005", CareHome.not_care_home, 10.0),
-                ("1-006", CareHome.not_care_home, None),
-                ("1-006", CareHome.not_care_home, None),
+                (1, "1-001", CareHome.care_home, 10.0),
+                (2, "1-001", CareHome.care_home, None),
+                (3, "1-002", CareHome.care_home, 10.0),
+                (4, "1-003", CareHome.care_home, None),
+                (5, "1-003", CareHome.care_home, None),
+                (6, "1-004", CareHome.not_care_home, 10.0),
+                (7, "1-004", CareHome.not_care_home, None),
+                (8, "1-005", CareHome.not_care_home, 10.0),
+                (9, "1-006", CareHome.not_care_home, None),
+                (10, "1-006", CareHome.not_care_home, None),
             ],
             schema=Schemas.input_split_dataset_for_imputation_schema,
             orient="row",
@@ -122,31 +122,32 @@ class SplitDatasetForImputationTests(unittest.TestCase):
             )
         )
 
+        row_id = "row_id"
         self.assertEqual(
-            returned_imputed_when_care_home.select(IndCQC.location_id)
+            returned_imputed_when_care_home.select(row_id)
             .collect()
             .to_series()
             .to_list(),
-            ["1-001", "1-001", "1-002"],
+            [1, 2, 3],
         )
         self.assertEqual(
-            returned_non_imputed_when_care_home.select(IndCQC.location_id)
+            returned_non_imputed_when_care_home.select(row_id)
             .collect()
             .to_series()
             .to_list(),
-            ["1-003", "1-003", "1-004", "1-004", "1-005", "1-006", "1-006"],
+            [4, 5, 6, 7, 8, 9, 10],
         )
         self.assertEqual(
-            returned_imputed_when_not_care_home.select(IndCQC.location_id)
+            returned_imputed_when_not_care_home.select(row_id)
             .collect()
             .to_series()
             .to_list(),
-            ["1-004", "1-004", "1-005"],
+            [6, 7, 8],
         )
         self.assertEqual(
-            returned_non_imputed_when_not_care_home.select(IndCQC.location_id)
+            returned_non_imputed_when_not_care_home.select(row_id)
             .collect()
             .to_series()
             .to_list(),
-            ["1-001", "1-001", "1-002", "1-003", "1-003", "1-006", "1-006"],
+            [1, 2, 3, 4, 5, 9, 10],
         )
