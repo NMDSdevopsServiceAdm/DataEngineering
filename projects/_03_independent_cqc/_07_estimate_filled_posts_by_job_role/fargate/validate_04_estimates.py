@@ -342,7 +342,7 @@ def main(
         )
         .col_vals_expr(
             (
-                pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_null()
+                (pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_null())
                 & (
                     pl.col(IndCqcColumns.ascwds_job_role_ratios_merged)
                     == pl.col(IndCqcColumns.ascwds_job_role_rolling_ratio)
@@ -352,10 +352,10 @@ def main(
                 (pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios).is_not_null())
                 & (
                     pl.col(IndCqcColumns.ascwds_job_role_ratios_merged)
-                    == pl.col(IndCqcColumns.imputed_ascwds_job_role_counts)
+                    == pl.col(IndCqcColumns.imputed_ascwds_job_role_ratios)
                 )
             ),
-            brief="Where imputed_ascwds_job_role_ratios is null, ascwds_job_role_ratios_merged should equal ascwds_job_role_rolling_ratio. Where imputed_ascwds_job_role_ratios is not null, ascwds_job_role_ratios_merged should equal imputed_ascwds_job_role_counts",
+            brief="Where imputed_ascwds_job_role_ratios is null, ascwds_job_role_ratios_merged should equal ascwds_job_role_rolling_ratio. Where imputed_ascwds_job_role_ratios is not null, ascwds_job_role_ratios_merged should equal imputed_ascwds_job_role_ratios",
         )
         # estimates between (inclusive)
         .col_vals_expr(
