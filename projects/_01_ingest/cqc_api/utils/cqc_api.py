@@ -33,7 +33,7 @@ CQC_ADAPTER = HTTPAdapter(max_retries=RETRY_STRATEGY)
 @limits(calls=RATE_LIMIT, period=ONE_MINUTE)
 def call_api(
     url: str,
-    id: str,
+    id: str | None = None,
     query_params: dict | None = None,
     headers_dict: dict | None = None,
 ) -> dict:
@@ -41,7 +41,7 @@ def call_api(
     Calls an API and returns the json response
     Args:
         url (str): the api url
-        id (str): the location id to request data for
+        id (str | None): the location id to request data for
         query_params (dict | None): the parameters to pass to the api
         headers_dict (dict | None): headers to pass to the api
 
@@ -70,7 +70,7 @@ def call_api(
             f"API response: {response.status_code} - {response.json().get('message')}"
         )
 
-    if response.status_code == 400:
+    if response.status_code == 400 & id:
         try:
             uc_id = id.upper()
             response = session.get(
