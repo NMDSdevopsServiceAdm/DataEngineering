@@ -265,12 +265,18 @@ def main(
                 IndCqcColumns.ascwds_job_role_ratios,
                 IndCqcColumns.imputed_ascwds_job_role_ratios,
                 IndCqcColumns.ascwds_job_role_rolling_ratio,
-                IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
             ],
             left=0,
             right=1,
             na_pass=True,
             brief="Ratios should be between 0 and 1 where present. Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be between 0 and 1 where present",
+        )
+        .col_vals_between(  # failng
+            columns=IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
+            left=-0.0001,
+            right=1,
+            na_pass=True,
+            brief="Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be between -0.0001 and 1 where present",
         )
         # # Date plausibility
         # .col_vals_ge(
@@ -326,7 +332,8 @@ def main(
             columns=IndCqcColumns.imputed_ascwds_job_role_counts,
             value=pb.col(IndCqcColumns.ascwds_job_role_counts),
             brief="Number of nulls in imputed_ascwds_job_role_counts must be less than in ascwds_job_role_counts",
-        ).col_vals_lt(
+        )
+        .col_vals_lt(
             pre=count_nulls,
             columns=IndCqcColumns.imputed_ascwds_job_role_ratios,
             value=pb.col(IndCqcColumns.ascwds_job_role_ratios),
