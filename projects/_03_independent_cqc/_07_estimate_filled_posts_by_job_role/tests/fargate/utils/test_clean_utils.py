@@ -15,6 +15,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     JobGroupLabels,
+    PrimaryServiceType,
 )
 
 
@@ -102,6 +103,32 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
 class TestFilterJobRoleGroupExpressions:
     TestExprs = job.FilterJobRoleGroupExpressions()
 
+    def test_job_role_group_bounds_dict(self):
+        expected_bounds = {
+            PrimaryServiceType.care_home_only: {
+                f"{JobGroupLabels.direct_care}_upper": 0.985761,
+                f"{JobGroupLabels.managers}_upper": 0.307057,
+                f"{JobGroupLabels.regulated_professions}_upper": 0.161988,
+                f"{JobGroupLabels.other}_upper": 0.569972,
+                f"{JobGroupLabels.direct_care}_lower": 0.264068,
+            },
+            PrimaryServiceType.care_home_with_nursing: {
+                f"{JobGroupLabels.direct_care}_upper": 0.943761,
+                f"{JobGroupLabels.managers}_upper": 0.222222,
+                f"{JobGroupLabels.regulated_professions}_upper": 0.350631,
+                f"{JobGroupLabels.other}_upper": 0.964286,
+                f"{JobGroupLabels.direct_care}_lower": 0.012821,
+            },
+            PrimaryServiceType.non_residential: {
+                f"{JobGroupLabels.direct_care}_upper": 0.995851,
+                f"{JobGroupLabels.managers}_upper": 0.335846,
+                f"{JobGroupLabels.regulated_professions}_upper": 0.338843,
+                f"{JobGroupLabels.other}_upper": 0.576850,
+                f"{JobGroupLabels.direct_care}_lower": 0.233974,
+            },
+        }
+        assert self.TestExprs.job_role_group_bounds == expected_bounds
+
     def test_variables_in_filter_job_role_group_expressions(self):
         assert self.TestExprs.temp_location_sum == "location_sum"
         assert self.TestExprs.job_group_cols == [
@@ -133,6 +160,7 @@ class TestFilterJobRoleGroupExpressions:
         expected_lf = pl.LazyFrame(
             Data.test_job_group_percentage_rows,
             Schemas.test_job_group_percentage_schema,
+            orient="row",
         )
         returned_lf = test_lf.with_columns(self.TestExprs.job_group_percentage_expr)
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
@@ -150,6 +178,7 @@ class TestFilterJobRoleGroupExpressions:
         expected_zero = pl.LazyFrame(
             [(None, None, None, None, 0)],
             Schemas.test_job_group_percentage_schema,
+            orient="row",
         )
         pl_testing.assert_frame_equal(returned_zero, expected_zero)
 
@@ -165,6 +194,7 @@ class TestFilterJobRoleGroupExpressions:
         expected_null = pl.LazyFrame(
             [(None, None, None, None, None)],
             Schemas.test_job_group_percentage_schema,
+            orient="row",
         )
         pl_testing.assert_frame_equal(returned_null, expected_null)
 

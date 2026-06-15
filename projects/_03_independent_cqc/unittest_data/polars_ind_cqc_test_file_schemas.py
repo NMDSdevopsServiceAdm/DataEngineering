@@ -1675,7 +1675,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.id_per_locationid_import_date: pl.Int64,
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.primary_service_type: pl.String,
+        IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
         IndCQC.main_job_group_labelled: pl.Enum(
             AscwdsWorkerValueLabelsJobGroup.all_job_groups()
@@ -1687,7 +1687,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.id_per_locationid_import_date: pl.Int64,
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.primary_service_type: pl.String,
+        IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
         IndCQC.main_job_group_labelled: pl.Enum(
             AscwdsWorkerValueLabelsJobGroup.all_job_groups()

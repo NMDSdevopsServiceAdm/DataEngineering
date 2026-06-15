@@ -44,31 +44,6 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
     )
 
 
-JOB_ROLE_GROUP_BOUNDS: dict[str, dict[str, float]] = {
-    PrimaryServiceType.care_home_only: {
-        f"{JobGroupLabels.direct_care}_upper": 0.985761,
-        f"{JobGroupLabels.managers}_upper": 0.307057,
-        f"{JobGroupLabels.regulated_professions}_upper": 0.161988,
-        f"{JobGroupLabels.other}_upper": 0.569972,
-        f"{JobGroupLabels.direct_care}_lower": 0.264068,
-    },
-    PrimaryServiceType.care_home_with_nursing: {
-        f"{JobGroupLabels.direct_care}_upper": 0.943761,
-        f"{JobGroupLabels.managers}_upper": 0.222222,
-        f"{JobGroupLabels.regulated_professions}_upper": 0.350631,
-        f"{JobGroupLabels.other}_upper": 0.964286,
-        f"{JobGroupLabels.direct_care}_lower": 0.012821,
-    },
-    PrimaryServiceType.non_residential: {
-        f"{JobGroupLabels.direct_care}_upper": 0.995851,
-        f"{JobGroupLabels.managers}_upper": 0.335846,
-        f"{JobGroupLabels.regulated_professions}_upper": 0.338843,
-        f"{JobGroupLabels.other}_upper": 0.576850,
-        f"{JobGroupLabels.direct_care}_lower": 0.233974,
-    },
-}
-
-
 def filter_job_role_group_outliers(
     lf: pl.LazyFrame,
     small_location_threshold: int = 50,
@@ -109,8 +84,10 @@ def filter_job_role_group_outliers(
     bounds_lf = pl.LazyFrame(
         [
             {IndCQC.primary_service_type: service_type, **bounds}
-            for service_type, bounds in JOB_ROLE_GROUP_BOUNDS.items()
+            for service_type, bounds in Exprs.job_role_group_bounds.items()
         ]
+    ).with_columns(
+        pl.col(IndCQC.primary_service_type).cast(CatColType.PrimaryServiceEnumType)
     )
 
     piv_lf = (
@@ -168,6 +145,8 @@ class FilterJobRoleGroupExpressions:
     used by these expressions.
 
     Attributes:
+        job_role_group_bounds (dict[str, dict[str, float]]): A dictionary mapping primary service
+            types to their respective job role group bounds.
         temp_location_sum (str): Temporary column name for the total number of workers at a location.
         job_group_cols (list[str]): List of job group column names.
         upper_bound_suffix (str): A column suffix for denoting upper bounds.
@@ -177,6 +156,7 @@ class FilterJobRoleGroupExpressions:
         evaluation_expr (pl.Expr): Expression to evaluate whether a value is out of bounds.
     """
 
+    job_role_group_bounds: dict[str, dict[str, float]]
     temp_location_sum: str
     job_group_cols: list[str]
     upper_bound_suffix: str
@@ -186,6 +166,29 @@ class FilterJobRoleGroupExpressions:
     evaluation_expr: pl.Expr
 
     def __init__(self):
+        self.job_role_group_bounds: dict[str, dict[str, float]] = {
+            PrimaryServiceType.care_home_only: {
+                f"{JobGroupLabels.direct_care}_upper": 0.985761,
+                f"{JobGroupLabels.managers}_upper": 0.307057,
+                f"{JobGroupLabels.regulated_professions}_upper": 0.161988,
+                f"{JobGroupLabels.other}_upper": 0.569972,
+                f"{JobGroupLabels.direct_care}_lower": 0.264068,
+            },
+            PrimaryServiceType.care_home_with_nursing: {
+                f"{JobGroupLabels.direct_care}_upper": 0.943761,
+                f"{JobGroupLabels.managers}_upper": 0.222222,
+                f"{JobGroupLabels.regulated_professions}_upper": 0.350631,
+                f"{JobGroupLabels.other}_upper": 0.964286,
+                f"{JobGroupLabels.direct_care}_lower": 0.012821,
+            },
+            PrimaryServiceType.non_residential: {
+                f"{JobGroupLabels.direct_care}_upper": 0.995851,
+                f"{JobGroupLabels.managers}_upper": 0.335846,
+                f"{JobGroupLabels.regulated_professions}_upper": 0.338843,
+                f"{JobGroupLabels.other}_upper": 0.576850,
+                f"{JobGroupLabels.direct_care}_lower": 0.233974,
+            },
+        }
         self.temp_location_sum = "location_sum"
         self.job_group_cols = [
             JobGroupLabels.direct_care,
