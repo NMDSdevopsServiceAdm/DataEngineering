@@ -103,6 +103,9 @@ def filter_job_role_group_outliers(
         .with_columns(Exprs.job_group_percentage_expr)
     )
 
+    print(
+        f"PivottableRecordCount Before join: {piv_lf.select(pl.len()).collect().item()}"
+    )
     piv_lf = (
         piv_lf.join(
             bounds_lf,
@@ -111,6 +114,9 @@ def filter_job_role_group_outliers(
         )
         .with_columns(Exprs.evaluation_expr.alias(temp_out_of_bounds_col))
         .select(IndCQC.id_per_locationid_import_date, temp_out_of_bounds_col)
+    )
+    print(
+        f"PivottableRecordCount After join: {piv_lf.select(pl.len()).collect().item()}"
     )
 
     lf = (
