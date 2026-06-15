@@ -404,7 +404,7 @@ def estimates_percentage_expressions(
 ) -> pl.Expr:
     """
     Constructs an expression to calculate the percentage of filled posts for a given job role or
-        group and check if it falls within the specified range.
+        group per import date across all locations and check if it falls within the specified range.
 
     Args:
         name (str): the name of the job role or group to calculate the percentage for

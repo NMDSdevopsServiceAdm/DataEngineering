@@ -126,6 +126,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
 class TestEstimatesPercentageExpressions:
     expected_lf = pl.LazyFrame(
         schema={
+            IndCqcColumns.location_id: pl.String,
             IndCqcColumns.cqc_location_import_date: pl.Date,
             IndCqcColumns.main_job_role_clean_labelled: pl.String,
             IndCqcColumns.main_job_group_labelled: pl.String,
@@ -133,16 +134,16 @@ class TestEstimatesPercentageExpressions:
             "expression": pl.Boolean,
         },
         data=[
-            (date(2026, 1, 1), MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 60.0, True),
-            (date(2026, 1, 1), MainJobRoleLabels.support_worker, JobGroupLabels.direct_care, 20.0, True),
-            (date(2026, 1, 1), MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 5.0, True),
-            (date(2026, 1, 1), MainJobRoleLabels.data_analyst, JobGroupLabels.other, 10.0, True),
-            (date(2026, 1, 1), MainJobRoleLabels.it_manager, JobGroupLabels.managers, 5.0, True),
-            (date(2026, 2, 1), MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 20.0, False),
-            (date(2026, 2, 1), MainJobRoleLabels.support_worker, JobGroupLabels.direct_care, 20.0, False),
-            (date(2026, 2, 1), MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 20.0, False),
-            (date(2026, 2, 1), MainJobRoleLabels.data_analyst, JobGroupLabels.other, 20.0, False),
-            (date(2026, 2, 1), MainJobRoleLabels.it_manager, JobGroupLabels.managers, 20.0, False),
+            ("1-001", date(2026, 1, 1), MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 60.0, True),
+            ("1-002", date(2026, 1, 1), MainJobRoleLabels.support_worker, JobGroupLabels.direct_care, 20.0, True),
+            ("1-003", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 5.0, True),
+            ("1-004", date(2026, 1, 1), MainJobRoleLabels.data_analyst, JobGroupLabels.other, 10.0, True),
+            ("1-005", date(2026, 1, 1), MainJobRoleLabels.it_manager, JobGroupLabels.managers, 5.0, True),
+            ("1-001", date(2026, 2, 1), MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 20.0, False),
+            ("1-002", date(2026, 2, 1), MainJobRoleLabels.support_worker, JobGroupLabels.direct_care, 20.0, False),
+            ("1-003", date(2026, 2, 1), MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 20.0, False),
+            ("1-004", date(2026, 2, 1), MainJobRoleLabels.data_analyst, JobGroupLabels.other, 20.0, False),
+            ("1-005", date(2026, 2, 1), MainJobRoleLabels.it_manager, JobGroupLabels.managers, 20.0, False),
         ],
         orient="row",
     ) # fmt: skip
