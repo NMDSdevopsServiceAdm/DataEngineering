@@ -1,3 +1,6 @@
+import unittest
+from datetime import date
+
 import polars as pl
 import polars.testing as pl_testing
 import pytest
@@ -64,3 +67,42 @@ class TestJoinEstimatesToAscwds:
         # Sanity check: correct expansion
         expected_rows = len(case.estimates_data) * 2  # mocked roles
         assert result_lf.collect().height == expected_rows
+
+
+class TestReducedDataFilterExpr(unittest.TestCase):
+    def test_expr_function_filters_rows_correctly(self):
+        # Given
+        today = date(2024, 6, 15)
+        fy_start_month = 4
+        lookback_fy_years = 2
+        quarter_months = (1, 4, 7, 10)
+        col = "cqc_location_import_date"
+
+        expr = job.reduced_data_filter_expr(
+            today=today,
+            fy_start_month=fy_start_month,
+            lookback_fy_years=lookback_fy_years,
+            quarter_months=quarter_months,
+            col=col,
+        )
+
+        # Create test data around boundary
+        df = pl.DataFrame(
+            {
+                col: [
+                    date(2022, 3, 31),  # before monthly_start and quarterly rule does not match -> excluded
+                    date(2022, 4, 1),   # boundary -> included (monthly_start)
+                    date(2023, 6, 1),   # within range -> included
+                    date(2021, 4, 1),   # old FY but quarterly rule matches -> included
+                    date(2021, 5, 1),   # old FY, non-quarter -> excluded
+                ] #fmt: skip
+            }
+        )
+
+        # When
+        result = df.with_columns(expr.alias("keep"))
+
+        # Then
+        expected = [False, True, True, True, False]
+
+        assert result["keep"].to_list() == expected

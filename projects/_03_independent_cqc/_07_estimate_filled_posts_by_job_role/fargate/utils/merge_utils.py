@@ -1,3 +1,5 @@
+from datetime import date
+
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -55,3 +57,25 @@ def join_estimates_to_ascwds(
         on=IndCQC.id_per_locationid_import_date,
         how="right",
     ).drop(join_keys)
+
+
+def reduced_data_filter_expr(
+    today: date | None = None,
+    fy_start_month: int = 4,
+    lookback_fy_years: int = 2,
+    quarter_months=(1, 4, 7, 10),
+    col: str = "cqc_location_import_date",
+) -> pl.Expr:
+
+    today = today or date.today()
+
+    fy_year = today.year if today.month >= fy_start_month else today.year - 1
+    current_fy_start = date(fy_year, fy_start_month, 1)
+
+    monthly_start = date(current_fy_start.year - lookback_fy_years, fy_start_month, 1)
+
+    dt = pl.col(col)
+
+    return (dt >= monthly_start) | (
+        (dt < monthly_start) & (dt.dt.month().is_in(quarter_months))
+    )

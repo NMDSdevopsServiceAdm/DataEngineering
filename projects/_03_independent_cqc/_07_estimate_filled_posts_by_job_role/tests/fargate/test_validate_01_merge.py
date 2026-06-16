@@ -36,7 +36,9 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             (1, "1-001", date(2026, 1, 1), PrimaryServiceType.non_residential, 10.0, EstimateFilledPostsSource.ascwds_pir_merged, MainJobRoleLabels.care_worker, 5.0, 10),
         ]  # fmt: skip
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
-        self.compare_df = self.source_df.select([IndCqcColumns.location_id])
+        self.compare_df = self.source_df.select(
+            [IndCqcColumns.location_id, IndCqcColumns.cqc_location_import_date]
+        )
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
