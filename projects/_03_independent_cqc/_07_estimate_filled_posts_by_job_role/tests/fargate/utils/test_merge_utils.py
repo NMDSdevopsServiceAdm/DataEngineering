@@ -95,7 +95,7 @@ class TestReducedDataFilterExpr(unittest.TestCase):
                     date(2023, 6, 1),   # within range -> included
                     date(2021, 4, 1),   # old FY but quarterly rule matches -> included
                     date(2021, 5, 1),   # old FY, non-quarter -> excluded
-                ] #fmt: skip
+                ] # fmt: skip
             }
         )
 
