@@ -19,6 +19,7 @@ from utils.column_values.categorical_column_values import (
     RUI,
     ASCWDSFilledPostsSource,
     AscwdsFilteringRule,
+    AscwdsJobRoleRatiosMergedSource,
     CareHome,
     ContemporaryCSSR,
     CurrentCSSR,
@@ -249,6 +250,10 @@ class EstimatedIndCQCFilledPostsByJobRoleCategoricalValues:
     main_job_role_labels_column_values = MainJobRoleLabels(
         AWKClean.main_job_role_clean_labelled
     )
+    ascwds_job_role_ratios_merged_source_column_values = (
+        AscwdsJobRoleRatiosMergedSource(IndCQC.ascwds_job_role_ratios_merged_source)
+    )
+    main_job_group_labels_column_values = JobGroupLabels(IndCQC.main_job_group_labelled)
 
 
 @dataclass

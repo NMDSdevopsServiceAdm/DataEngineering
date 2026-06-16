@@ -5,6 +5,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models
 from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.utils import (
     enrich_with_model_predictions,
 )
+from projects._03_independent_cqc.utils.imputation.imputation import model_imputation
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 ind_cqc_columns = [
@@ -96,11 +97,33 @@ def main(
 
     lf = combine_non_res_with_and_without_dormancy_models(lf)
 
-    # model_imputation_with_extrapolation_and_interpolation - imputed_posts_care_home_model
+    # Uncommented these call when ascwds_pir_merged has been converted to polars.
+    # lf = model_imputation(
+    #     lf,
+    #     IndCQC.ascwds_pir_merged,
+    #     IndCQC.care_home_model,
+    #     IndCQC.imputed_posts_care_home_model,
+    #     care_home=True,
+    #     extrapolation_method="nominal",
+    # )
 
-    # model_imputation_with_extrapolation_and_interpolation - imputed_posts_non_res_combined_model
+    # lf = model_imputation(
+    #     lf,
+    #     IndCQC.ascwds_pir_merged,
+    #     IndCQC.non_res_combined_model,
+    #     IndCQC.imputed_posts_non_res_combined_model,
+    #     care_home=False,
+    #     extrapolation_method="nominal",
+    # )
 
-    # model_imputation_with_extrapolation_and_interpolation - imputed_pir_filled_posts_model
+    lf = model_imputation(
+        lf,
+        IndCQC.pir_filled_posts_model,
+        IndCQC.non_res_combined_model,
+        IndCQC.imputed_pir_filled_posts_model,
+        care_home=False,
+        extrapolation_method="nominal",
+    )
 
     # merge_columns_in_order
 
