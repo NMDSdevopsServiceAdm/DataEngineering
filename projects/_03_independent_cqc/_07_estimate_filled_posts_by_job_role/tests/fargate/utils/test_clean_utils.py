@@ -15,6 +15,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     JobGroupLabels,
+    JobRoleFilteringRule,
     PrimaryServiceType,
 )
 
@@ -119,7 +120,19 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
             case.test_data, Schemas.test_filter_provider_schema, orient="row"
         )
         expected_lf = pl.LazyFrame(
-            case.expected_data, Schemas.expected_filter_provider_schema, orient="row"
+            case.expected_data,
+            Schemas.expected_filter_provider_schema,
+            orient="row",
+        ).with_columns(
+            pl.when(
+                pl.col(IndCQC.job_role_filtering_rule)
+                == JobRoleFilteringRule.job_role_group_is_outlier_at_location_level
+            )
+            .then(
+                pl.lit(JobRoleFilteringRule.job_role_group_is_outlier_at_provider_level)
+            )
+            .otherwise(pl.col(IndCQC.job_role_filtering_rule))
+            .alias(IndCQC.job_role_filtering_rule)
         )
 
         returned_lf = job.filter_job_role_group_outliers(
@@ -149,6 +162,14 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
         )
         expected_lf = pl.LazyFrame(
             case.expected_data, Schemas.expected_filter_brand_schema, orient="row"
+        ).with_columns(
+            pl.when(
+                pl.col(IndCQC.job_role_filtering_rule)
+                == JobRoleFilteringRule.job_role_group_is_outlier_at_location_level
+            )
+            .then(pl.lit(JobRoleFilteringRule.job_role_group_is_outlier_at_brand_level))
+            .otherwise(pl.col(IndCQC.job_role_filtering_rule))
+            .alias(IndCQC.job_role_filtering_rule)
         )
 
         returned_lf = job.filter_job_role_group_outliers(
