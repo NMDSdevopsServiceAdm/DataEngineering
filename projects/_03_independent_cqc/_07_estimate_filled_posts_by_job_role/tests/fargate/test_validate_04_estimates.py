@@ -15,6 +15,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns, Partition
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     MainJobRoleLabels,
+    PrimaryServiceType,
 )
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_04_estimates"
@@ -56,8 +57,8 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             PartitionKeys.year: pl.String,
         }
         source_rows = [
-            ("1", "1-001", date(2026, 1, 1), 100.0, "non-residential", 1, MainJobRoleLabels.care_worker,    40, "Rule", 0.1, 0.1, 10.0, "size", 0.1, 0.1, "source", 10.0, 10.0, 10.0, 10.0, 10.0, JobGroupLabels.direct_care, "2026"),
-            ("2", "1-002", date(2026, 1, 1), 100.0, "non-residential", 1, MainJobRoleLabels.support_worker, 30, "Rule", 0.1, 0.1, 10.0, "size", 0.1, 0.1, "source", 10.0, 10.0, 10.0, 10.0, 10.0, JobGroupLabels.direct_care, "2026"),
+            ("1", "1-001", date(2026, 1, 1), 100.0, PrimaryServiceType.non_residential, 1, MainJobRoleLabels.care_worker,    40, "Rule", 0.1, 0.1, 10.0, "size", 0.1, 0.1, "source", 10.0, 10.0, 10.0, 10.0, 10.0, JobGroupLabels.direct_care, "2026"),
+            ("2", "1-002", date(2026, 1, 1), 100.0, PrimaryServiceType.non_residential, 1, MainJobRoleLabels.support_worker, 30, "Rule", 0.1, 0.1, 10.0, "size", 0.1, 0.1, "source", 10.0, 10.0, 10.0, 10.0, 10.0, JobGroupLabels.direct_care, "2026"),
         ]  # fmt: skip
         self.source_lf = pl.DataFrame(source_rows, source_schema, orient="row")
 
