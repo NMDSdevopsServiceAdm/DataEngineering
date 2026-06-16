@@ -92,7 +92,7 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
         returned_lf = job.filter_job_role_group_outliers(
             test_lf,
             id_column=IndCQC.location_id,
-            small_location_threshold=case.small_location_threshold,
+            min_workers_threshold=case.min_workers_threshold,
         )
 
         pl_testing.assert_frame_equal(
@@ -132,7 +132,7 @@ class TestFilterJobRoleGroupExpressions:
         assert self.TestExprs.job_role_group_bounds == expected_bounds
 
     def test_variables_in_filter_job_role_group_expressions(self):
-        assert self.TestExprs.temp_location_sum == "location_sum"
+        assert self.TestExprs.temp_id_column_sum == "location_sum"
         assert self.TestExprs.job_group_cols == [
             JobGroupLabels.direct_care,
             JobGroupLabels.managers,
@@ -142,20 +142,20 @@ class TestFilterJobRoleGroupExpressions:
         assert self.TestExprs.upper_bound_suffix == "_upper"
         assert self.TestExprs.lower_bound_suffix == "_lower"
 
-    def test_location_sum_expression(self):
+    def test_id_column_sum_expression(self):
         expected_lf = pl.LazyFrame(
-            Data.test_location_sum_expr_rows,
+            Data.test_id_column_sum_expr_rows,
             Schemas.test_location_sum_schema,
             orient="row",
         )
-        test_lf = expected_lf.drop(self.TestExprs.temp_location_sum)
-        returned_lf = test_lf.with_columns(self.TestExprs.location_sum_expr)
+        test_lf = expected_lf.drop(self.TestExprs.temp_id_column_sum)
+        returned_lf = test_lf.with_columns(self.TestExprs.id_column_sum_expr)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     def test_job_group_percentage_expression(self):
         test_lf = pl.LazyFrame(
-            Data.test_location_sum_expr_rows,
+            Data.test_id_column_sum_expr_rows,
             Schemas.test_location_sum_schema,
             orient="row",
         )

@@ -1720,14 +1720,14 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         JobGroupLabels.managers: pl.Int64,
         JobGroupLabels.regulated_professions: pl.Int64,
         JobGroupLabels.other: pl.Int64,
-        Cols.temp_location_sum: pl.Int64,
+        Cols.temp_id_column_sum: pl.Int64,
     }
     test_job_group_percentage_schema = {
         JobGroupLabels.direct_care: pl.Float32,
         JobGroupLabels.managers: pl.Float32,
         JobGroupLabels.regulated_professions: pl.Float32,
         JobGroupLabels.other: pl.Float32,
-        Cols.temp_location_sum: pl.Int64,
+        Cols.temp_id_column_sum: pl.Int64,
     }
     test_evaluation_expr_schema = {
         JobGroupLabels.direct_care: pl.Float32,

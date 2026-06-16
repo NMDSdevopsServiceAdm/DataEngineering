@@ -47,17 +47,17 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
 def filter_job_role_group_outliers(
     lf: pl.LazyFrame,
     id_column: str = IndCQC.location_id,
-    small_location_threshold: int = 50,
+    min_workers_threshold: int = 50,
 ) -> pl.LazyFrame:
     """
-    Null job role counts at locations where job group distribution is out of bounds and
-    locations have the same or more workers than the threshold.
+    Null job role counts at locations, providers or brands where job group distribution is
+    out of bounds and they have the same or more workers than the min workers threshold.
 
-    This function nulls outliers based on a locations job group distribution. Their
-    distribution is calculated per location and import date, then
-    compared against fixed bounds per service type.
-    Values are nulled where there are the same or more workers than the threshold at
-    a location and either:
+    This function nulls outliers based on job group distribution at either brand, provider
+    or location level, as specified. Their distribution is calculated per brand, provider,
+    or location and their import date, then compared against fixed bounds per service type.
+    Values are nulled where there are the same or more workers than the min workers threshold
+    and either:
 
     - direct care is outside the upper or lower bound
     - managers, regulated professions, or other are outside their upper bound
@@ -66,8 +66,8 @@ def filter_job_role_group_outliers(
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
         id_column (str): The id column on which the filter should be applied. Possible
             values: location id, provider id, brand id. Defaults to location id.
-        small_location_threshold (int): Minimum number of workers at a location to
-            be included in filtering. Defaults to 50.
+        min_workers_threshold (int): Minimum number of workers at a location/ provider/
+            brand to be included in filtering. Defaults to 50.
 
     Returns:
         pl.LazyFrame: LazyFrame with outliers in job role groups filtered.
@@ -80,7 +80,7 @@ def filter_job_role_group_outliers(
         raise ValueError(
             f"Value must be one of {IndCQC.brand_id}, {IndCQC.provider_id}, or {IndCQC.location_id}"
         )
-    temp_out_of_bounds_col: str = "location_out_of_bounds"
+    temp_out_of_bounds_col: str = "out_of_bounds"
 
     Exprs = FilterJobRoleGroupExpressions()
 
@@ -108,8 +108,8 @@ def filter_job_role_group_outliers(
             values=IndCQC.ascwds_job_role_counts,
             aggregate_function="sum",
         )
-        .with_columns(Exprs.location_sum_expr)
-        .filter(pl.col(Exprs.temp_location_sum) > small_location_threshold)
+        .with_columns(Exprs.id_column_sum_expr)
+        .filter(pl.col(Exprs.temp_id_column_sum) > min_workers_threshold)
         .with_columns(Exprs.job_group_percentage_expr)
     )
 
@@ -156,33 +156,33 @@ class FilterJobRoleGroupExpressions:
     """
     Collection of Polars expressions for filtering job group outliers.
 
-    This class defines reusable expressions for filtering locations
-    with outlying job role group distributions. It also defines column names
+    This class defines reusable expressions for filtering outlying job role
+    group distributions. It also defines column names
     used by these expressions.
 
     Attributes:
-        temp_location_sum (str): Temporary column name for the total number of workers at a location.
+        temp_id_column_sum (str): Temporary column name for the total number of workers.
         job_group_cols (list[str]): List of job group column names.
         upper_bound_suffix (str): A column suffix for denoting upper bounds.
         lower_bound_suffix (str): A column suffix for denoting lower bounds.
         job_role_group_bounds (dict[str, dict[str, float]]): A dictionary mapping primary service
             types to their respective job role group bounds.
-        location_sum_expr (pl.Expr): Expression to calculate the total workers at a location.
+        id_column_sum_expr (pl.Expr): Expression to calculate the total workers.
         job_group_percentage_expr (pl.Expr): Expression to calculate the percentage of job roles.
         evaluation_expr (pl.Expr): Expression to evaluate whether a value is out of bounds.
     """
 
-    temp_location_sum: str
+    temp_id_column_sum: str
     job_group_cols: list[str]
     upper_bound_suffix: str
     lower_bound_suffix: str
     job_role_group_bounds: dict[str, dict[str, float]]
-    location_sum_expr: pl.Expr
+    id_column_sum_expr: pl.Expr
     job_group_percentage_expr: pl.Expr
     evaluation_expr: pl.Expr
 
     def __init__(self):
-        self.temp_location_sum = "location_sum"
+        self.temp_id_column_sum = "location_sum"
         self.job_group_cols = [
             JobGroupLabels.direct_care,
             JobGroupLabels.managers,
@@ -214,8 +214,8 @@ class FilterJobRoleGroupExpressions:
                 f"{JobGroupLabels.direct_care}{self.lower_bound_suffix}": 0.233974,
             },
         }
-        self.location_sum_expr = pl.sum_horizontal(self.job_group_cols).alias(
-            self.temp_location_sum
+        self.id_column_sum_expr = pl.sum_horizontal(self.job_group_cols).alias(
+            self.temp_id_column_sum
         )
         # Explicitly handle NULL and zero denominators to avoid ambiguous
         # truthiness when comparing to 0. If the location sum is NULL or 0
@@ -223,12 +223,12 @@ class FilterJobRoleGroupExpressions:
         # distinguish missing data from a valid zero ratio.
         self.job_group_percentage_expr = (
             pl.when(
-                pl.col(self.temp_location_sum).is_not_null()
-                & (pl.col(self.temp_location_sum) != 0)
+                pl.col(self.temp_id_column_sum).is_not_null()
+                & (pl.col(self.temp_id_column_sum) != 0)
             )
             .then(
                 pl.col(self.job_group_cols).cast(pl.Float32)
-                / pl.col(self.temp_location_sum).cast(pl.Float32)
+                / pl.col(self.temp_id_column_sum).cast(pl.Float32)
             )
             .otherwise(pl.lit(None).cast(pl.Float32))
         )
