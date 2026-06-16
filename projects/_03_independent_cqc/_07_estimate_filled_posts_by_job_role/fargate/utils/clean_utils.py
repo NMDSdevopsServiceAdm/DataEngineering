@@ -71,7 +71,15 @@ def filter_job_role_group_outliers(
 
     Returns:
         pl.LazyFrame: LazyFrame with outliers in job role groups filtered.
+
+    Raises:
+        ValueError: If the id_column argument is not one of: location id, provider id,
+            or brand id.
     """
+    if id_column not in [IndCQC.brand_id, IndCQC.provider_id, IndCQC.location_id]:
+        raise ValueError(
+            f"Value must be one of {IndCQC.brand_id}, {IndCQC.provider_id}, or {IndCQC.location_id}"
+        )
     temp_out_of_bounds_col: str = "location_out_of_bounds"
 
     Exprs = FilterJobRoleGroupExpressions()
