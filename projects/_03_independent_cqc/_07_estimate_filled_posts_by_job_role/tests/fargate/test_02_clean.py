@@ -59,8 +59,8 @@ class MainTests(unittest.TestCase):
         self.assertEqual(scan_parquet_mock.call_count, 2)
         scan_parquet_mock.assert_has_calls(
             [
-                call(self.MERGED_DATA_SOURCE),
-                call(self.MERGED_METADATA_SOURCE),
+                call(self.MERGED_DATA_SOURCE, schema=ANY, selected_columns=ANY),
+                call(self.MERGED_METADATA_SOURCE, schema=ANY, selected_columns=ANY),
             ],
         )
 
