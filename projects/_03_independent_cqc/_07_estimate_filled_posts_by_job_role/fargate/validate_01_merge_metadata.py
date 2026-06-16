@@ -128,6 +128,12 @@ def main(
 
     print(f"source df schema: {source_df.schema}")
 
+    allowed_ascwds_filtering_rule_column_values = [
+        v
+        for v in CatValues.ascwds_filtering_rule_column_values.categorical_values
+        if v != AscwdsFilteringRule.contained_invalid_missing_data_code
+    ]
+
     validation = (
         pb.Validate(
             data=source_df,
@@ -198,8 +204,7 @@ def main(
         )
         .col_vals_in_set(
             IndCqcColumns.ascwds_filtering_rule,
-            CatValues.ascwds_filtering_rule_column_values.categorical_values
-            - {AscwdsFilteringRule.contained_invalid_missing_data_code},
+            allowed_ascwds_filtering_rule_column_values,
         )
         .col_vals_in_set(
             IndCqcColumns.current_cssr,
@@ -275,10 +280,9 @@ def main(
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.ascwds_filtering_rule,
-                CatValues.ascwds_filtering_rule_column_values.count_of_categorical_values
-                - 1,
+                len(allowed_ascwds_filtering_rule_column_values),
             ),
-            brief=f"{IndCqcColumns.ascwds_filtering_rule} should have exactly {CatValues.ascwds_filtering_rule_column_values.count_of_categorical_values} distinct values",
+            brief=f"{IndCqcColumns.ascwds_filtering_rule} should have exactly {len(allowed_ascwds_filtering_rule_column_values)} distinct values",
         )
         .specially(
             vl.is_unique_count_equal(
