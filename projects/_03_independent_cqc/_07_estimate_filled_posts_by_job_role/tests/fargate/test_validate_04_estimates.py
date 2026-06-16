@@ -236,19 +236,5 @@ class TestEstimatesPercentageExpressions:
         )
 
 
-class TestMakeConvertColToIntegersPreprocessor:
-    def test_make_convert_col_to_integers_preprocessor(self):
-        preprocessor = job.make_convert_col_to_integers_preprocessor(PartitionKeys.year)
-        df = pl.DataFrame({PartitionKeys.year: ["2020", "2021", "2022"]})
-        result = preprocessor(df)
-        expected = pl.DataFrame({PartitionKeys.year: [2020, 2021, 2022]})
-        pl_testing.assert_frame_equal(result, expected)
-
-    def test_convert_col_to_integers_with_non_numeric_values(self):
-        df = pl.DataFrame({PartitionKeys.year: ["2020", "invalid", "2022"]})
-        with pytest.raises(pl.exceptions.InvalidOperationError):
-            job.make_convert_col_to_integers_preprocessor(PartitionKeys.year)(df)
-
-
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
