@@ -1690,8 +1690,7 @@ class ModelRateOfChangeSchemas:
 class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
     Cols = TempCols()
     JRFR = JobRoleFilteringRule(IndCQC.job_role_filtering_rule)
-    test_filter_schema = {
-        IndCQC.id_per_locationid_import_date: pl.Int64,
+    test_filter_location_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
@@ -1702,9 +1701,54 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
-    expected_filter_schema = {
-        IndCQC.id_per_locationid_import_date: pl.Int64,
+    expected_filter_location_schema = {
         IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
+        IndCQC.main_job_group_labelled: pl.Enum(
+            AscwdsWorkerValueLabelsJobGroup.all_job_groups()
+        ),
+        IndCQC.ascwds_job_role_counts: pl.Int64,
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
+    }
+    test_filter_provider_schema = {
+        IndCQC.provider_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
+        IndCQC.main_job_group_labelled: pl.Enum(
+            AscwdsWorkerValueLabelsJobGroup.all_job_groups()
+        ),
+        IndCQC.ascwds_job_role_counts: pl.Int64,
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
+    }
+    expected_filter_provider_schema = {
+        IndCQC.provider_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
+        IndCQC.main_job_group_labelled: pl.Enum(
+            AscwdsWorkerValueLabelsJobGroup.all_job_groups()
+        ),
+        IndCQC.ascwds_job_role_counts: pl.Int64,
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
+    }
+    test_filter_brand_schema = {
+        IndCQC.brand_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
+        IndCQC.main_job_group_labelled: pl.Enum(
+            AscwdsWorkerValueLabelsJobGroup.all_job_groups()
+        ),
+        IndCQC.ascwds_job_role_counts: pl.Int64,
+        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
+    }
+    expected_filter_brand_schema = {
+        IndCQC.brand_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,

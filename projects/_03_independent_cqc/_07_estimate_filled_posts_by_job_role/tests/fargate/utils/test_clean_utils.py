@@ -83,10 +83,14 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
             for case in Data.filter_when_job_group_ratio_outside_percentile_bounds_test_cases
         ],
     )
-    def test_filter_when_job_group_ratio_outside_percentile_bounds(self, case):
-        test_lf = pl.LazyFrame(case.test_data, Schemas.test_filter_schema, orient="row")
+    def test_filter_when_location_and_job_group_ratio_outside_percentile_bounds(
+        self, case
+    ):
+        test_lf = pl.LazyFrame(
+            case.test_data, Schemas.test_filter_location_schema, orient="row"
+        )
         expected_lf = pl.LazyFrame(
-            case.expected_data, Schemas.expected_filter_schema, orient="row"
+            case.expected_data, Schemas.expected_filter_location_schema, orient="row"
         )
 
         returned_lf = job.filter_job_role_group_outliers(
@@ -100,6 +104,74 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
             expected_lf,
             check_row_order=False,
         )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.filter_when_job_group_ratio_outside_percentile_bounds_test_cases
+        ],
+    )
+    def test_filter_when_provider_and_job_group_ratio_outside_percentile_bounds(
+        self, case
+    ):
+        test_lf = pl.LazyFrame(
+            case.test_data, Schemas.test_filter_provider_schema, orient="row"
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_data, Schemas.expected_filter_provider_schema, orient="row"
+        )
+
+        returned_lf = job.filter_job_role_group_outliers(
+            test_lf,
+            id_column=IndCQC.provider_id,
+            min_workers_threshold=case.min_workers_threshold,
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_row_order=False,
+        )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.filter_when_job_group_ratio_outside_percentile_bounds_test_cases
+        ],
+    )
+    def test_filter_when_brand_and_job_group_ratio_outside_percentile_bounds(
+        self, case
+    ):
+        test_lf = pl.LazyFrame(
+            case.test_data, Schemas.test_filter_brand_schema, orient="row"
+        )
+        expected_lf = pl.LazyFrame(
+            case.expected_data, Schemas.expected_filter_brand_schema, orient="row"
+        )
+
+        returned_lf = job.filter_job_role_group_outliers(
+            test_lf,
+            id_column=IndCQC.brand_id,
+            min_workers_threshold=case.min_workers_threshold,
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_row_order=False,
+        )
+
+    def test_error_handling(self):
+        test_lf = pl.LazyFrame(
+            Data.test_error_handling_data,
+            Schemas.test_filter_brand_schema,
+            orient="row",
+        )
+        expected_error = f"Value must be one of {IndCQC.brand_id}, {IndCQC.provider_id}, or {IndCQC.location_id}"
+        with pytest.raises(ValueError, match=expected_error):
+            job.filter_job_role_group_outliers(test_lf, id_column="other")
 
 
 class TestFilterJobRoleGroupExpressions:
