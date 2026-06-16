@@ -21,6 +21,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_column_values import (
+    AscwdsFilteringRule,
     NumericTrueFalse,
 )
 from utils.column_values.categorical_columns_by_dataset import (
@@ -197,7 +198,8 @@ def main(
         )
         .col_vals_in_set(
             IndCqcColumns.ascwds_filtering_rule,
-            CatValues.ascwds_filtering_rule_column_values.categorical_values,
+            CatValues.ascwds_filtering_rule_column_values.categorical_values
+            - {AscwdsFilteringRule.contained_invalid_missing_data_code},
         )
         .col_vals_in_set(
             IndCqcColumns.current_cssr,
@@ -273,7 +275,8 @@ def main(
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.ascwds_filtering_rule,
-                CatValues.ascwds_filtering_rule_column_values.count_of_categorical_values,
+                CatValues.ascwds_filtering_rule_column_values.count_of_categorical_values
+                - 1,
             ),
             brief=f"{IndCqcColumns.ascwds_filtering_rule} should have exactly {CatValues.ascwds_filtering_rule_column_values.count_of_categorical_values} distinct values",
         )
