@@ -46,6 +46,7 @@ def nullify_job_role_count_when_source_not_ascwds(lf: pl.LazyFrame) -> pl.LazyFr
 
 def filter_job_role_group_outliers(
     lf: pl.LazyFrame,
+    id_column: str = IndCQC.location_id,
     small_location_threshold: int = 50,
 ) -> pl.LazyFrame:
     """
@@ -63,6 +64,8 @@ def filter_job_role_group_outliers(
 
     Args:
         lf (pl.LazyFrame): The estimated filled post by job role LazyFrame.
+        id_column (str): The id column on which the filter should be applied. Possible
+            values: location id, provider id, brand id. Defaults to location id.
         small_location_threshold (int): Minimum number of workers at a location to
             be included in filtering. Defaults to 50.
 

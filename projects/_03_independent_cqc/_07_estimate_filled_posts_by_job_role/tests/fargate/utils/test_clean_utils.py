@@ -90,7 +90,9 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
         )
 
         returned_lf = job.filter_job_role_group_outliers(
-            test_lf, case.small_location_threshold
+            test_lf,
+            id_column=IndCQC.location_id,
+            small_location_threshold=case.small_location_threshold,
         )
 
         pl_testing.assert_frame_equal(
