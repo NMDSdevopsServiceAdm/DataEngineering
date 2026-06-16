@@ -2640,6 +2640,78 @@ class ModelExtrapolation:
 
 
 @dataclass
+class ModelImputationTestCase:
+    id: str
+    expected_data: list[Any]
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(self.expected_data, id=self.id)
+
+
+@dataclass
+class ModelImputation:
+    column_with_null_values_name: str = "null_values"
+    model_column_name: str = "trend_model"
+    imputed_values_column_name: str = "imputed_values"
+
+    expected_model_imputation_test_cases = [
+        ModelImputationTestCase(
+            id="when_values_will_be_extrapolated",
+            expected_data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, 19.0),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, 20.0, 2.0, 20.0),
+                ("1-001", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, 21.0),
+            ],
+        ),
+        ModelImputationTestCase(
+            id="when_values_will_be_interpolated",
+            expected_data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, 20.0, 1.0, 20.0),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, None, 2.0, 21.0),
+                ("1-001", date(2023, 3, 1), CareHome.not_care_home, 22.0, 3.0, 22.0),
+            ],
+        ),
+        ModelImputationTestCase(
+            id="when_values_will_be_extrapolated_and_interpolated",
+            expected_data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, 20.0, 1.0, 20.0),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, None, 2.0, 21.0),
+                ("1-001", date(2023, 3, 1), CareHome.not_care_home, 22.0, 3.0, 22.0),
+                ("1-001", date(2023, 4, 1), CareHome.not_care_home, None, 4.0, 23.0),
+            ],
+        ),
+        ModelImputationTestCase(
+            id="when_values_will_not_be_imputed_because_all_present",
+            expected_data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, 30.0, 1.0, 30.0),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, 31.0, 2.0, 31.0),
+                ("1-001", date(2023, 3, 1), CareHome.not_care_home, 32.0, 3.0, 32.0),
+            ],
+        ),
+        ModelImputationTestCase(
+            id="when_values_will_not_be_imputed_because_all_null",
+            expected_data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, None),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, None, 2.0, None),
+                ("1-001", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, None),
+            ],
+        ),
+        ModelImputationTestCase(
+            id="when_given_multiple_service_types_only_non_res_gets_imputed_due_to_function_argument",
+            expected_data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, 19.0),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, 20.0, 2.0, 20.0),
+                ("1-001", date(2023, 3, 1), CareHome.not_care_home, None, 3.0, 21.0),
+                ("1-002", date(2023, 1, 1), CareHome.care_home, None, 1.0, None),
+                ("1-002", date(2023, 2, 1), CareHome.care_home, 20.0, 2.0, None),
+                ("1-002", date(2023, 3, 1), CareHome.care_home, None, 3.0, None),
+            ],
+        ),
+    ] # fmt: skip
+
+
+@dataclass
 class ModelRateOfChangeInputOutputTestCase:
     id: str
     input_data: list[Any]

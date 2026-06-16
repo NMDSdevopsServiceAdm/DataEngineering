@@ -14,6 +14,7 @@ from projects._03_independent_cqc._03_impute.fargate.utils.forward_fill_latest_k
 from projects._03_independent_cqc._03_impute.fargate.utils.primary_service_rate_of_change import (
     model_primary_service_rate_of_change_trendline,
 )
+from projects._03_independent_cqc.utils.imputation.imputation import model_imputation
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
@@ -64,9 +65,24 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
 
     # merge_ascwds_and_pir_filled_post_submissions
 
-    # model_imputation_with_extrapolation_and_interpolation - imputed_filled_post_model
+    # Uncomment this call when merge_ascwds_and_pir_filled_post_submissions is converted to polars.
+    # lf = model_imputation(
+    #     lf,
+    #     IndCQC.ascwds_pir_merged,
+    #     IndCQC.ascwds_rate_of_change_trendline_model,
+    #     IndCQC.imputed_filled_post_model,
+    #     care_home=False,
+    #     extrapolation_method="ratio",
+    # )
 
-    # model_imputation_with_extrapolation_and_interpolation - imputed_filled_posts_per_bed_ratio_model
+    lf = model_imputation(
+        lf,
+        IndCQC.filled_posts_per_bed_ratio,
+        IndCQC.ascwds_rate_of_change_trendline_model,
+        IndCQC.imputed_filled_posts_per_bed_ratio_model,
+        care_home=True,
+        extrapolation_method="ratio",
+    )
 
     # model_calculate_rolling_average - posts_rolling_average_model
 
@@ -102,11 +118,32 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
     )
 
-    # model_imputation_with_extrapolation_and_interpolation - ct_care_home_total_employed_imputed
+    lf = model_imputation(
+        lf,
+        IndCQC.ct_care_home_total_employed_cleaned,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+        IndCQC.ct_care_home_total_employed_imputed,
+        care_home=True,
+        extrapolation_method="ratio",
+    )
 
-    # model_imputation_with_extrapolation_and_interpolation - ct_non_res_care_workers_employed_imputed
+    lf = model_imputation(
+        lf,
+        IndCQC.ct_non_res_care_workers_employed_cleaned,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+        IndCQC.ct_non_res_care_workers_employed_imputed,
+        care_home=False,
+        extrapolation_method="ratio",
+    )
 
-    # nullify_ct_values_previous_to_first_submission
+    lf = lf.with_columns(
+        utils.nullify_ct_values_previous_to_first_submission(
+            [
+                IndCQC.ct_care_home_total_employed_imputed,
+                IndCQC.ct_non_res_care_workers_employed_imputed,
+            ],
+        )
+    )
 
     print(f"Exporting as parquet to {destination}")
 
