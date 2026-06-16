@@ -99,7 +99,15 @@ def main(
     )
 
     estimated_job_role_posts_lf = cUtils.filter_job_role_group_outliers(
-        estimated_job_role_posts_lf
+        estimated_job_role_posts_lf, id_column=IndCQC.brand_id
+    )
+
+    estimated_job_role_posts_lf = cUtils.filter_job_role_group_outliers(
+        estimated_job_role_posts_lf, id_column=IndCQC.provider_id
+    )
+
+    estimated_job_role_posts_lf = cUtils.filter_job_role_group_outliers(
+        estimated_job_role_posts_lf, id_column=IndCQC.location_id
     )
 
     # Drop job role group as this will be reallocated in later job

@@ -11,6 +11,7 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     EstimateFilledPostsByJobRoleCleanSchemas as Schemas,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate._02_clean"
 
@@ -67,7 +68,13 @@ class MainTests(unittest.TestCase):
         add_job_roles_groups_mock.assert_called_once()
         add_filtering_rule_column_mock.assert_called_once()
         filter_job_role_group_equal_zero_mock.assert_called_once()
-        filter_job_role_group_outliers_mock.assert_called_once()
+        filter_job_role_group_outliers_mock.assert_has_calls(
+            [
+                call(ANY, id_column=IndCQC.brand_id),
+                call(ANY, id_column=IndCQC.provider_id),
+                call(ANY, id_column=IndCQC.location_id),
+            ]
+        )
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
