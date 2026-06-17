@@ -14,7 +14,14 @@
               "Parameters": {
                 "Cluster": "${polars_cluster_arn}",
                 "TaskDefinition": "${independent_cqc_task_arn}",
-                "LaunchType": "FARGATE"
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        }
               },
               "Next": "Clean and Validate Merged Data"
             },
@@ -31,7 +38,14 @@
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
                         "TaskDefinition": "${independent_cqc_task_arn}",
-                        "LaunchType": "FARGATE"
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        }
                       },
                       "End": true
                     }
@@ -46,7 +60,14 @@
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
                         "TaskDefinition": "${independent_cqc_task_arn}",
-                        "LaunchType": "FARGATE"
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        }
                       },
                       "End": true
                     }
@@ -61,7 +82,14 @@
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
                         "TaskDefinition": "${independent_cqc_task_arn}",
-                        "LaunchType": "FARGATE"
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        }
                       },
                       "End": true
                     }
@@ -82,7 +110,14 @@
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
                         "TaskDefinition": "${independent_cqc_task_arn}",
-                        "LaunchType": "FARGATE"
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        }
                       },
                       "End": true
                     }
@@ -97,7 +132,14 @@
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
                         "TaskDefinition": "${independent_cqc_task_arn}",
-                        "LaunchType": "FARGATE"
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        }
                       },
                       "End": true
                     }
@@ -118,7 +160,14 @@
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
                         "TaskDefinition": "${independent_cqc_task_arn}",
-                        "LaunchType": "FARGATE"
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        }
                       },
                       "End": true
                     }
@@ -133,7 +182,14 @@
                       "Parameters": {
                         "Cluster": "${polars_cluster_arn}",
                         "TaskDefinition": "${independent_cqc_task_arn}",
-                        "LaunchType": "FARGATE"
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        }
                       },
                       "End": true
                     }
@@ -147,7 +203,14 @@
               "Parameters": {
                 "Cluster": "${polars_cluster_arn}",
                 "TaskDefinition": "${independent_cqc_task_arn}",
-                "LaunchType": "FARGATE"
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        }
               },
               "End": true
             }
