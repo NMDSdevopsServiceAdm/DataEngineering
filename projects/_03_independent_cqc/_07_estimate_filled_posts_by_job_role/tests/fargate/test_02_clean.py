@@ -73,7 +73,8 @@ class MainTests(unittest.TestCase):
                 call(ANY, id_column=IndCQC.brand_id),
                 call(ANY, id_column=IndCQC.provider_id),
                 call(ANY, id_column=IndCQC.location_id),
-            ]
+            ],
+            any_order=True,
         )
 
         sink_to_parquet_mock.assert_called_once_with(

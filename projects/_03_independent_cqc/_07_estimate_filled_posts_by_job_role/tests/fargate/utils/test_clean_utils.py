@@ -200,7 +200,7 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
 class TestFilterJobRoleGroupExpressions:
     TestExprs = job.FilterJobRoleGroupExpressions()
 
-    def test_job_role_group_bounds_dict(self):
+    def test_job_role_group_bounds_locations_dict(self):
         expected_bounds = {
             PrimaryServiceType.care_home_only: {
                 f"{JobGroupLabels.direct_care}{self.TestExprs.upper_bound_suffix}": 0.985761,
@@ -224,7 +224,17 @@ class TestFilterJobRoleGroupExpressions:
                 f"{JobGroupLabels.direct_care}{self.TestExprs.lower_bound_suffix}": 0.233974,
             },
         }
-        assert self.TestExprs.job_role_group_bounds == expected_bounds
+        assert self.TestExprs.job_role_group_bounds_locations == expected_bounds
+
+    def test_job_role_group_bounds_brand_prov_dict(self):
+        expected_bounds = {
+            f"{JobGroupLabels.direct_care}{self.TestExprs.upper_bound_suffix}": 0.995851,
+            f"{JobGroupLabels.managers}{self.TestExprs.upper_bound_suffix}": 0.335846,
+            f"{JobGroupLabels.regulated_professions}{self.TestExprs.upper_bound_suffix}": 0.350631,
+            f"{JobGroupLabels.other}{self.TestExprs.upper_bound_suffix}": 0.964286,
+            f"{JobGroupLabels.direct_care}{self.TestExprs.lower_bound_suffix}": 0.012821,
+        }
+        assert self.TestExprs.job_role_group_bounds_brand_prov == expected_bounds
 
     def test_variables_in_filter_job_role_group_expressions(self):
         assert self.TestExprs.temp_id_column_sum == "location_sum"
@@ -236,6 +246,13 @@ class TestFilterJobRoleGroupExpressions:
         ]
         assert self.TestExprs.upper_bound_suffix == "_upper"
         assert self.TestExprs.lower_bound_suffix == "_lower"
+        assert self.TestExprs.job_role_group_bounds_cols == [
+            JobGroupLabels.direct_care + self.TestExprs.upper_bound_suffix,
+            JobGroupLabels.managers + self.TestExprs.upper_bound_suffix,
+            JobGroupLabels.regulated_professions + self.TestExprs.upper_bound_suffix,
+            JobGroupLabels.other + self.TestExprs.upper_bound_suffix,
+            JobGroupLabels.direct_care + self.TestExprs.lower_bound_suffix,
+        ]
 
     def test_id_column_sum_expression(self):
         expected_lf = pl.LazyFrame(

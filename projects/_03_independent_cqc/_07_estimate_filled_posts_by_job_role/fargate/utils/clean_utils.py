@@ -84,22 +84,17 @@ def filter_job_role_group_outliers(
 
     Exprs = FilterJobRoleGroupExpressions()
 
-    splits_for_pivot = [
-        id_column,
-        IndCQC.cqc_location_import_date,
-        IndCQC.primary_service_type,
-    ]
-
-    # Build a LazyFrame of the fixed bounds from the magic numbers dict
-    bounds_lf = pl.LazyFrame(
-        [
-            {IndCQC.primary_service_type: service_type, **bounds}
-            for service_type, bounds in Exprs.job_role_group_bounds.items()
+    if id_column == IndCQC.location_id:
+        splits_for_pivot = [
+            id_column,
+            IndCQC.cqc_location_import_date,
+            IndCQC.primary_service_type,
         ]
-    ).with_columns(
-        pl.col(IndCQC.primary_service_type).cast(CatColType.PrimaryServiceEnumType)
-    )
-
+    else:
+        splits_for_pivot = [
+            id_column,
+            IndCQC.cqc_location_import_date,
+        ]
     piv_lf = (
         lf.pivot(
             on=IndCQC.main_job_group_labelled,
@@ -113,23 +108,46 @@ def filter_job_role_group_outliers(
         .with_columns(Exprs.job_group_percentage_expr)
     )
 
+    # Build a LazyFrame of the fixed bounds from the magic numbers dict
+    if id_column == IndCQC.location_id:
+        bounds_lf = pl.LazyFrame(
+            [
+                {IndCQC.primary_service_type: service_type, **bounds}
+                for service_type, bounds in Exprs.job_role_group_bounds_locations.items()
+            ]
+        ).with_columns(
+            pl.col(IndCQC.primary_service_type).cast(CatColType.PrimaryServiceEnumType)
+        )
+    else:
+        bounds_lf = (
+            pl.LazyFrame(Exprs.job_role_group_bounds_brand_prov)
+            .with_columns(
+                pl.col(Exprs.job_role_group_bounds_cols).repeat_by(
+                    piv_lf.collect().height
+                )
+            )
+            .explode(pl.col(Exprs.job_role_group_bounds_cols))
+        )
+
     print(
         f"PivottableRecordCount Before join: {piv_lf.select(pl.len()).collect().item()}"
     )
-    piv_lf = (
-        piv_lf.join(
+    if id_column == IndCQC.location_id:
+        piv_lf = piv_lf.join(
             bounds_lf,
             on=IndCQC.primary_service_type,
             how="left",
         )
-        .with_columns(Exprs.evaluation_expr.alias(temp_out_of_bounds_col))
-        .select(
-            id_column,
-            IndCQC.cqc_location_import_date,
-            IndCQC.primary_service_type,
-            temp_out_of_bounds_col,
-        )
+    else:
+        piv_lf = pl.concat([piv_lf, bounds_lf], how="horizontal")
+
+    piv_lf = piv_lf.with_columns(
+        Exprs.evaluation_expr.alias(temp_out_of_bounds_col)
+    ).select(
+        *splits_for_pivot,
+        temp_out_of_bounds_col,
     )
+
     print(
         f"PivottableRecordCount After join: {piv_lf.select(pl.len()).collect().item()}"
     )
@@ -137,7 +155,7 @@ def filter_job_role_group_outliers(
 
     lf = lf.join(
         piv_lf,
-        on=[id_column, IndCQC.cqc_location_import_date, IndCQC.primary_service_type],
+        on=splits_for_pivot,
         how="left",
     )
 
@@ -182,8 +200,11 @@ class FilterJobRoleGroupExpressions:
         job_group_cols (list[str]): List of job group column names.
         upper_bound_suffix (str): A column suffix for denoting upper bounds.
         lower_bound_suffix (str): A column suffix for denoting lower bounds.
-        job_role_group_bounds (dict[str, dict[str, float]]): A dictionary mapping primary service
-            types to their respective job role group bounds.
+        job_group_bounds_cols (list[str]): List of job group bounds columns.
+        job_role_group_bounds_locations (dict[str, dict[str, float]]): A dictionary mapping primary service
+            types to their respective job role group bounds for locations.
+        job_role_group_bounds_brand_prov (dict[str, float]): A dictionary mapping primary service
+            types to their respective job role group bounds for brands and providers.
         id_column_sum_expr (pl.Expr): Expression to calculate the total workers.
         job_group_percentage_expr (pl.Expr): Expression to calculate the percentage of job roles.
         evaluation_expr (pl.Expr): Expression to evaluate whether a value is out of bounds.
@@ -193,7 +214,9 @@ class FilterJobRoleGroupExpressions:
     job_group_cols: list[str]
     upper_bound_suffix: str
     lower_bound_suffix: str
-    job_role_group_bounds: dict[str, dict[str, float]]
+    job_group_bounds_cols: list[str]
+    job_role_group_bounds_locations: dict[str, dict[str, float]]
+    job_role_group_bounds_brand_prov: dict[str, float]
     id_column_sum_expr: pl.Expr
     job_group_percentage_expr: pl.Expr
     evaluation_expr: pl.Expr
@@ -208,7 +231,14 @@ class FilterJobRoleGroupExpressions:
         ]
         self.upper_bound_suffix = "_upper"
         self.lower_bound_suffix = "_lower"
-        self.job_role_group_bounds: dict[str, dict[str, float]] = {
+        self.job_role_group_bounds_cols = [
+            JobGroupLabels.direct_care + self.upper_bound_suffix,
+            JobGroupLabels.managers + self.upper_bound_suffix,
+            JobGroupLabels.regulated_professions + self.upper_bound_suffix,
+            JobGroupLabels.other + self.upper_bound_suffix,
+            JobGroupLabels.direct_care + self.lower_bound_suffix,
+        ]
+        self.job_role_group_bounds_locations: dict[str, dict[str, float]] = {
             PrimaryServiceType.care_home_only: {
                 f"{JobGroupLabels.direct_care}{self.upper_bound_suffix}": 0.985761,
                 f"{JobGroupLabels.managers}{self.upper_bound_suffix}": 0.307057,
@@ -231,6 +261,14 @@ class FilterJobRoleGroupExpressions:
                 f"{JobGroupLabels.direct_care}{self.lower_bound_suffix}": 0.233974,
             },
         }
+        self.job_role_group_bounds_brand_prov: dict[str, float] = {
+            f"{JobGroupLabels.direct_care}{self.upper_bound_suffix}": 0.995851,
+            f"{JobGroupLabels.managers}{self.upper_bound_suffix}": 0.335846,
+            f"{JobGroupLabels.regulated_professions}{self.upper_bound_suffix}": 0.350631,
+            f"{JobGroupLabels.other}{self.upper_bound_suffix}": 0.964286,
+            f"{JobGroupLabels.direct_care}{self.lower_bound_suffix}": 0.012821,
+        }
+
         self.id_column_sum_expr = pl.sum_horizontal(self.job_group_cols).alias(
             self.temp_id_column_sum
         )
