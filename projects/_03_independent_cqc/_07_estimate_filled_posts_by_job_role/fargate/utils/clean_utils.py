@@ -123,14 +123,23 @@ def filter_job_role_group_outliers(
             how="left",
         )
         .with_columns(Exprs.evaluation_expr.alias(temp_out_of_bounds_col))
-        .select(id_column, IndCQC.cqc_location_import_date, temp_out_of_bounds_col)
+        .select(
+            id_column,
+            IndCQC.cqc_location_import_date,
+            IndCQC.primary_service_type,
+            temp_out_of_bounds_col,
+        )
     )
     print(
         f"PivottableRecordCount After join: {piv_lf.select(pl.len()).collect().item()}"
     )
     print(f"FullRecordCount Before join: {lf.select(pl.len()).collect().item()}")
 
-    lf = lf.join(piv_lf, on=[id_column, IndCQC.cqc_location_import_date], how="left")
+    lf = lf.join(
+        piv_lf,
+        on=[id_column, IndCQC.cqc_location_import_date, IndCQC.primary_service_type],
+        how="left",
+    )
 
     lf = lf.with_columns(
         pl.when(pl.col(temp_out_of_bounds_col))
