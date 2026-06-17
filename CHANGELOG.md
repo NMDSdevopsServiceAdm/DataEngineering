@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 
 - Added validations for estimates data within Estimates by Job Roles Pipeline.
 
+- Added skeleton step function for estimating starters, leavers and vacancies.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
