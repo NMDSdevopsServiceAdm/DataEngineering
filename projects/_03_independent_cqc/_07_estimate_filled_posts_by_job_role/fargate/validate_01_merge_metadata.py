@@ -10,6 +10,9 @@ from polars_utils.validation.actions import (
     add_list_column_validation_check_flags,
 )
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.merge_utils import (
+    reduced_data_filter_expr,
+)
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     CategoricalColumnTypes,
 )
@@ -18,6 +21,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_column_values import (
+    AscwdsFilteringRule,
     NumericTrueFalse,
 )
 from utils.column_values.categorical_columns_by_dataset import (
@@ -116,13 +120,23 @@ def main(
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=IND_CQC_ESTIMATES_COLS_TO_IMPORT,
-    )
+    ).filter(reduced_data_filter_expr())
 
     source_df = add_list_column_validation_check_flags(
         source_df, [IndCqcColumns.services_offered]
     )
 
     print(f"source df schema: {source_df.schema}")
+
+    # With the reduced data, validation of ascwds_filtering_rule was failing as the data now did not have records with
+    # ascwds_filtering_rule column set to 'contained_invalid_missing_data_code'. So this is now handled by subtracting
+    # it in allowed_ascwds_filtering_rule_column_values. the dataclass 'AscwdsFilteringRule'is not updated directly as
+    # 'contained_invalid_missing_data_code' value is still needed in IND CQC pipeline.
+    allowed_ascwds_filtering_rule_column_values = [
+        v
+        for v in CatValues.ascwds_filtering_rule_column_values.categorical_values
+        if v != AscwdsFilteringRule.contained_invalid_missing_data_code
+    ]
 
     validation = (
         pb.Validate(
@@ -194,7 +208,7 @@ def main(
         )
         .col_vals_in_set(
             IndCqcColumns.ascwds_filtering_rule,
-            CatValues.ascwds_filtering_rule_column_values.categorical_values,
+            allowed_ascwds_filtering_rule_column_values,
         )
         .col_vals_in_set(
             IndCqcColumns.current_cssr,
@@ -270,9 +284,9 @@ def main(
         .specially(
             vl.is_unique_count_equal(
                 IndCqcColumns.ascwds_filtering_rule,
-                CatValues.ascwds_filtering_rule_column_values.count_of_categorical_values,
+                len(allowed_ascwds_filtering_rule_column_values),
             ),
-            brief=f"{IndCqcColumns.ascwds_filtering_rule} should have exactly {CatValues.ascwds_filtering_rule_column_values.count_of_categorical_values} distinct values",
+            brief=f"{IndCqcColumns.ascwds_filtering_rule} should have exactly {len(allowed_ascwds_filtering_rule_column_values)} distinct values",
         )
         .specially(
             vl.is_unique_count_equal(

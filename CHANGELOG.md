@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 
 - Added validations for estimates data within Estimates by Job Roles Pipeline.
 
+- Added reduced data filter in the merge job within Estimates by Job Role Pipeline.
+
 - Added skeleton step function for estimating starters, leavers and vacancies.
 
 ### Changed

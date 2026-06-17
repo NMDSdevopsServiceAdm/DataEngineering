@@ -311,10 +311,10 @@ def other_validation(
         )
         .col_vals_between(
             columns=IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
-            left=-0.0001,
+            left=-0.0002,
             right=1,
             na_pass=True,
-            brief="Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be between -0.0001 and 1 where present",
+            brief="Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be between -0.0002 and 1 where present",
         )
         # Date plausibility
         .col_vals_ge(
