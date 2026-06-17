@@ -15,8 +15,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
-- Removed sorting of registered_manager_names in extract_registered_manager_names, so list of names is as given in API.
-  Also removed imputation of registered_manager_names so if no names given in API then null for that import date.
+- Removed imputation of registered_manager_names so if no names given in API then null for that import date.
 
 ### Fixed
 
