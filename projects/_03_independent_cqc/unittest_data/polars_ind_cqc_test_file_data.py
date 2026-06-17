@@ -1,5 +1,5 @@
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from typing import Any, Optional
 
@@ -2914,7 +2914,12 @@ class EstimateFilledPostsByJobRoleCleanUtilsTestCase:
     id: str
     test_data: list[Any]
     expected_data: list[Any]
+    expected_brand_prov_data: Optional[list[Any]] = None
     min_workers_threshold: Optional[int] = None
+
+    def __post_init__(self):
+        if self.expected_brand_prov_data is None:
+            self.expected_brand_prov_data = self.expected_data
 
 
 @dataclass
@@ -3005,6 +3010,14 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
             expected_data=[
                 ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 95, JobRoleFilteringRule.populated),
                 ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 5, JobRoleFilteringRule.populated),
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier_at_location_level),
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.job_role_group_is_outlier_at_location_level),
+                ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier_at_location_level),
+                ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.job_role_group_is_outlier_at_location_level),
+            ],
+            expected_brand_prov_data=[
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.populated),
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.populated),
                 ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier_at_location_level),
                 ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.job_role_group_is_outlier_at_location_level),
                 ("loc3", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier_at_location_level),

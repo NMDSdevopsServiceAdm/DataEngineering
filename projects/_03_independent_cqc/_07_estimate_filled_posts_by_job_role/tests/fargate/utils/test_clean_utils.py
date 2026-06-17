@@ -120,7 +120,7 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
             case.test_data, Schemas.test_filter_provider_schema, orient="row"
         )
         expected_lf = pl.LazyFrame(
-            case.expected_data,
+            case.expected_brand_prov_data,
             Schemas.expected_filter_provider_schema,
             orient="row",
         ).with_columns(
@@ -161,7 +161,9 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
             case.test_data, Schemas.test_filter_brand_schema, orient="row"
         )
         expected_lf = pl.LazyFrame(
-            case.expected_data, Schemas.expected_filter_brand_schema, orient="row"
+            case.expected_brand_prov_data,
+            Schemas.expected_filter_brand_schema,
+            orient="row",
         ).with_columns(
             pl.when(
                 pl.col(IndCQC.job_role_filtering_rule)
