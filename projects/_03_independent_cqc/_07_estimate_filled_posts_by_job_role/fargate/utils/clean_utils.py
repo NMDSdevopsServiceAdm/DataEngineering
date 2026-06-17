@@ -119,19 +119,8 @@ def filter_job_role_group_outliers(
             pl.col(IndCQC.primary_service_type).cast(CatColType.PrimaryServiceEnumType)
         )
     else:
-        bounds_lf = (
-            pl.LazyFrame(Exprs.job_role_group_bounds_brand_prov)
-            .with_columns(
-                pl.col(Exprs.job_role_group_bounds_cols).repeat_by(
-                    piv_lf.collect().height
-                )
-            )
-            .explode(pl.col(Exprs.job_role_group_bounds_cols))
-        )
+        bounds_lf = pl.LazyFrame(Exprs.job_role_group_bounds_brand_prov)
 
-    print(
-        f"PivottableRecordCount Before join: {piv_lf.select(pl.len()).collect().item()}"
-    )
     if id_column == IndCQC.location_id:
         piv_lf = piv_lf.join(
             bounds_lf,
@@ -139,7 +128,7 @@ def filter_job_role_group_outliers(
             how="left",
         )
     else:
-        piv_lf = pl.concat([piv_lf, bounds_lf], how="horizontal")
+        piv_lf = piv_lf.join(bounds_lf, how="cross")
 
     piv_lf = piv_lf.with_columns(
         Exprs.evaluation_expr.alias(temp_out_of_bounds_col)
@@ -147,11 +136,6 @@ def filter_job_role_group_outliers(
         *splits_for_pivot,
         temp_out_of_bounds_col,
     )
-
-    print(
-        f"PivottableRecordCount After join: {piv_lf.select(pl.len()).collect().item()}"
-    )
-    print(f"FullRecordCount Before join: {lf.select(pl.len()).collect().item()}")
 
     lf = lf.join(
         piv_lf,
@@ -165,7 +149,6 @@ def filter_job_role_group_outliers(
         .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
         .alias(IndCQC.ascwds_job_role_counts)
     ).drop(temp_out_of_bounds_col)
-    print(f"FullRecordCount After join: {lf.select(pl.len()).collect().item()}")
 
     if id_column == IndCQC.brand_id:
         new_rule = JobRoleFilteringRule.job_role_group_is_outlier_at_brand_level

@@ -101,22 +101,18 @@ def main(
     estimated_job_role_posts_lf = cUtils.filter_job_role_group_equal_zero(
         estimated_job_role_posts_lf
     )
-    print(f"Before filtering: {estimated_job_role_posts_lf.collect().height}")
 
     estimated_job_role_posts_lf = cUtils.filter_job_role_group_outliers(
         estimated_job_role_posts_lf, id_column=IndCQC.brand_id
     )
-    print(f"After brand: {estimated_job_role_posts_lf.collect().height}")
 
     estimated_job_role_posts_lf = cUtils.filter_job_role_group_outliers(
         estimated_job_role_posts_lf, id_column=IndCQC.provider_id
     )
-    print(f"After provider: {estimated_job_role_posts_lf.collect().height}")
 
     estimated_job_role_posts_lf = cUtils.filter_job_role_group_outliers(
         estimated_job_role_posts_lf, id_column=IndCQC.location_id
     )
-    print(f"After location: {estimated_job_role_posts_lf.collect().height}")
 
     # Drop job role group as this will be reallocated in later job
     # Drop providerid and brandid which are just used for filtering and not needed for impute and estimate steps.
