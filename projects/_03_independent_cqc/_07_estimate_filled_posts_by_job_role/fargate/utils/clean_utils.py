@@ -128,17 +128,17 @@ def filter_job_role_group_outliers(
     print(
         f"PivottableRecordCount After join: {piv_lf.select(pl.len()).collect().item()}"
     )
+    print(f"FullRecordCount Before join: {lf.select(pl.len()).collect().item()}")
 
-    lf = (
-        lf.join(piv_lf, on=[id_column, IndCQC.cqc_location_import_date], how="left")
-        .with_columns(
-            pl.when(pl.col(temp_out_of_bounds_col))
-            .then(None)
-            .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
-            .alias(IndCQC.ascwds_job_role_counts)
-        )
-        .drop(temp_out_of_bounds_col)
-    )
+    lf = lf.join(piv_lf, on=[id_column, IndCQC.cqc_location_import_date], how="left")
+
+    lf = lf.with_columns(
+        pl.when(pl.col(temp_out_of_bounds_col))
+        .then(None)
+        .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
+        .alias(IndCQC.ascwds_job_role_counts)
+    ).drop(temp_out_of_bounds_col)
+    print(f"FullRecordCount After join: {lf.select(pl.len()).collect().item()}")
 
     if id_column == IndCQC.brand_id:
         new_rule = JobRoleFilteringRule.job_role_group_is_outlier_at_brand_level
@@ -156,6 +156,7 @@ def filter_job_role_group_outliers(
         new_rule_name=new_rule,
         categorical_type=CatColType.JobRoleFilteringRuleCatType,
     )
+
     return lf
 
 
