@@ -7,7 +7,7 @@ from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
 )
 
-JobRoleEnumType = pl.Enum(CatVals.main_job_role_labels_column_values)
+JobRoleEnumType = pl.Enum(CatVals.main_job_role_labels_column_values.categorical_values)
 
 
 def join_estimates_to_ascwds(
@@ -39,7 +39,10 @@ def join_estimates_to_ascwds(
     )
 
     roles_lf = pl.LazyFrame(
-        data=[(role,) for role in CatVals.main_job_role_labels_column_values],
+        data=[
+            (role,)
+            for role in CatVals.main_job_role_labels_column_values.categorical_values
+        ],
         schema={job_role_labels: JobRoleEnumType},
         orient="row",
     )

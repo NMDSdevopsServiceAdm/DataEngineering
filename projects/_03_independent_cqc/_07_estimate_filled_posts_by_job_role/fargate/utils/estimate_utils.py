@@ -90,7 +90,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
     if null_count > 0:
         raise ValueError("Error: Estimate filled posts by job role column has nulls")
 
-    all_job_roles = CatVals.main_job_role_labels_column_values
+    all_job_roles = CatVals.main_job_role_labels_column_values.categorical_values
     lf_adjusted = lf.pivot(
         on=IndCQC.main_job_role_clean_labelled,
         on_columns=all_job_roles,

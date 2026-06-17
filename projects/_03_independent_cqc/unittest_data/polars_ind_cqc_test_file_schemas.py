@@ -52,9 +52,6 @@ from utils.column_values.categorical_column_values import (
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
 )
-from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
-    AscwdsWorkerValueLabelsJobGroup,
-)
 
 
 @dataclass
@@ -1465,7 +1462,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
         {
             IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
-                CatVals.main_job_role_labels_column_values
+                CatVals.main_job_role_labels_column_values.categorical_values
             ),
             IndCQC.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
             IndCQC.registered_manager_count: pl.Float32,
@@ -1475,7 +1472,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
         {
             IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
-                CatVals.main_job_role_labels_column_values
+                CatVals.main_job_role_labels_column_values.categorical_values
             ),
             IndCQC.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
             IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
@@ -1486,7 +1483,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
         {
             IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
-                CatVals.main_job_role_labels_column_values
+                CatVals.main_job_role_labels_column_values.categorical_values
             ),
             IndCQC.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
             IndCQC.registered_manager_count: pl.Float32,
@@ -1498,7 +1495,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
         {
             IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
-                CatVals.main_job_role_labels_column_values
+                CatVals.main_job_role_labels_column_values.categorical_values
             ),
             IndCQC.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
             IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role: pl.Float32,
@@ -1509,7 +1506,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
         {
             IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
-                CatVals.main_job_role_labels_column_values
+                CatVals.main_job_role_labels_column_values.categorical_values
             ),
             IndCQC.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
             IndCQC.registered_manager_count: pl.Int32,
@@ -1524,7 +1521,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
             IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.estimate_filled_posts: pl.Float32,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
-                CatVals.main_job_role_labels_column_values
+                CatVals.main_job_role_labels_column_values.categorical_values
             ),
             IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
             IndCQC.estimate_filled_posts_from_all_job_roles: pl.Float32,
@@ -1538,7 +1535,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
             IndCQC.location_id: pl.String,
             IndCQC.cqc_location_import_date: pl.Date,
             IndCQC.main_job_role_clean_labelled: pl.Enum(
-                CatVals.main_job_role_labels_column_values
+                CatVals.main_job_role_labels_column_values.categorical_values
             ),
             IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
             IndCQC.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
@@ -1700,7 +1697,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
         IndCQC.main_job_group_labelled: pl.Enum(
-            CatVals.main_job_group_labels_column_values
+            CatVals.main_job_group_labels_column_values.categorical_values
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
@@ -1712,7 +1709,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
         IndCQC.main_job_group_labelled: pl.Enum(
-            CatVals.main_job_group_labels_column_values
+            CatVals.main_job_group_labels_column_values.categorical_values
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,

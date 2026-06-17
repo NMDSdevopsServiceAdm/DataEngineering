@@ -81,7 +81,7 @@ def main(
         selected_columns=IND_CQC_ESTIMATES_COLS_TO_IMPORT,
     ).filter(reduced_data_filter_expr())
     expected_row_count = compare_df.height * len(
-        CatValues.main_job_role_labels_column_values
+        CatValues.main_job_role_labels_column_values.categorical_values
     )
 
     validation = (
