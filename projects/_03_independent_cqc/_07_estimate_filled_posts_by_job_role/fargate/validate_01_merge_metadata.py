@@ -128,6 +128,10 @@ def main(
 
     print(f"source df schema: {source_df.schema}")
 
+    # With the reduced data, validation of ascwds_filtering_rule was failing as the data now did not have records with
+    # ascwds_filtering_rule column set to 'contained_invalid_missing_data_code'. So this is now handled by subtracting
+    # it in allowed_ascwds_filtering_rule_column_values. the dataclass 'AscwdsFilteringRule'is not updated directly as
+    # 'contained_invalid_missing_data_code' value is still needed in IND CQC pipeline.
     allowed_ascwds_filtering_rule_column_values = [
         v
         for v in CatValues.ascwds_filtering_rule_column_values.categorical_values

@@ -9,6 +9,9 @@ import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargat
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     TestJoinEstimatesToAscwds as Data,
 )
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    TestReducedDataFilter as ReducedDataFilterdata,
+)
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     TestJoinEstimatesToAscwds as Schemas,
 )
@@ -69,40 +72,27 @@ class TestJoinEstimatesToAscwds:
         assert result_lf.collect().height == expected_rows
 
 
-class TestReducedDataFilterExpr(unittest.TestCase):
-    def test_expr_function_filters_rows_correctly(self):
-        # Given
-        today = date(2024, 6, 15)
-        fy_start_month = 4
-        lookback_fy_years = 2
-        quarter_months = (1, 4, 7, 10)
-        col = "cqc_location_import_date"
+class TestReducedDataFilterExpr:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in ReducedDataFilterdata.reduced_data_filter_test_cases
+        ],
+    )
+    def test_function_returns_expected_values(self, case):
+        date_col = "cqc_location_import_date"
 
         expr = job.reduced_data_filter_expr(
-            today=today,
-            fy_start_month=fy_start_month,
-            lookback_fy_years=lookback_fy_years,
-            quarter_months=quarter_months,
-            col=col,
+            today=case.today,
+            fy_start_month=case.fy_start_month,
+            lookback_fy_years=case.lookback_fy_years,
+            quarter_months=case.quarter_months,
+            date_col=date_col,
         )
 
-        # Create test data around boundary
-        df = pl.DataFrame(
-            {
-                col: [
-                    date(2022, 3, 31),  # before monthly_start and quarterly rule does not match -> excluded
-                    date(2022, 4, 1),   # boundary -> included (monthly_start)
-                    date(2023, 6, 1),   # within range -> included
-                    date(2021, 4, 1),   # old FY but quarterly rule matches -> included
-                    date(2021, 5, 1),   # old FY, non-quarter -> excluded
-                ] # fmt: skip
-            }
-        )
+        df = pl.DataFrame({date_col: case.input_data})
 
-        # When
         result = df.with_columns(expr.alias("keep"))
 
-        # Then
-        expected = [False, True, True, True, False]
-
-        assert result["keep"].to_list() == expected
+        assert result["keep"].to_list() == case.expected

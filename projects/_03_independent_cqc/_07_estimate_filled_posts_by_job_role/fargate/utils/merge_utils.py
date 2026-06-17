@@ -64,7 +64,7 @@ def reduced_data_filter_expr(
     fy_start_month: int = 4,
     lookback_fy_years: int = 2,
     quarter_months: tuple[int, ...] = (1, 4, 7, 10),
-    col: str = "cqc_location_import_date",
+    date_col: str = "cqc_location_import_date",
 ) -> pl.Expr:
     """
     Build a Polars expression for filtering a reduced dataset using financial-year
@@ -94,9 +94,9 @@ def reduced_data_filter_expr(
             applying sampling.
 
         quarter_months (tuple[int, ...]): Months considered valid for quarterly sampling
-            of historical data.
+            of historical data (Defaults to Jan, Apr, Jul, and Oct).
 
-        col (str): Name of the date column the filter is applied to.
+        date_col (str): Name of the date column the filter is applied to.
 
     Returns:
         pl.Expr: A Polars boolean expression that can be used inside `.filter()` or
@@ -105,11 +105,10 @@ def reduced_data_filter_expr(
     today = today or date.today()
 
     fy_year = today.year if today.month >= fy_start_month else today.year - 1
-    current_fy_start = date(fy_year, fy_start_month, 1)
 
-    monthly_start = date(current_fy_start.year - lookback_fy_years, fy_start_month, 1)
+    monthly_start = date(fy_year - lookback_fy_years, fy_start_month, 1)
 
-    dt = pl.col(col)
+    dt = pl.col(date_col)
 
     return (dt >= monthly_start) | (
         (dt < monthly_start) & (dt.dt.month().is_in(quarter_months))
