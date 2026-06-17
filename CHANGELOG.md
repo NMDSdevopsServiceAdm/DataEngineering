@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added error handling to CQC API call for 400 errors due to the location id being lowercase instead of uppercase.
 
+- Added validations for estimates data within Estimates by Job Roles Pipeline.
+
+- Added reduced data filter in the merge job within Estimates by Job Role Pipeline.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 

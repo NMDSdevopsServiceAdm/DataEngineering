@@ -162,7 +162,7 @@ def index_validation(bucket_name: str, source_path: str, reports_path: str) -> N
         )
         .interrogate()
     )
-    vl.write_reports(validation, bucket_name, f"{reports_path}/index_validation")
+    vl.write_reports(validation, bucket_name, f"{reports_path}index_validation/")
 
 
 def other_validation(
@@ -333,7 +333,7 @@ def other_validation(
         )
         .interrogate()
     )
-    vl.write_reports(validation, bucket_name, f"{reports_path}/other_validation")
+    vl.write_reports(validation, bucket_name, f"{reports_path}other_validation/")
 
 
 if __name__ == "__main__":

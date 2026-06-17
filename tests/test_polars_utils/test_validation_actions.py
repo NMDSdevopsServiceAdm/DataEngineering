@@ -4,9 +4,11 @@ from unittest.mock import ANY, patch
 import pointblank as pb
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 import polars_utils.validation.actions as job
 from polars_utils.validation import actions as vl
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys
 
 SRC_PATH = "polars_utils.validation.actions"
 
@@ -207,6 +209,53 @@ class TestAddListColumnValidationCheckFlags(unittest.TestCase):
             df_test, ["my_list", "another_list"]
         )
         pl_testing.assert_frame_equal(df_result, df_expected)
+
+
+class TestMakeColHasFewerNullsValidator(TestValidate):
+    col_a = "col_a"
+    col_b = "col_b"
+
+    def test_make_col_has_fewer_nulls_validator(self):
+        # Given
+
+        df = pl.DataFrame(
+            {
+                self.col_a: [1, None, 3, None],
+                self.col_b: [None, None, 3, None],
+            }
+        )
+        validator = vl.make_col_has_fewer_nulls_validator(self.col_a, self.col_b)
+        # When
+        result = validator(df)
+        # Then
+        self.assertTrue(result)
+
+    def test_make_col_has_fewer_nulls_validator_fails(self):
+        df_fail = pl.DataFrame(
+            {
+                self.col_a: [1, None, 3, None],
+                self.col_b: [1, 2, 3, None],
+            }
+        )
+        validator_fail = vl.make_col_has_fewer_nulls_validator(self.col_a, self.col_b)
+        # When
+        result_fail = validator_fail(df_fail)
+        # Then
+        self.assertFalse(result_fail)
+
+
+class TestMakeConvertColToIntegersPreprocessor:
+    def test_make_convert_col_to_integers_preprocessor(self):
+        preprocessor = job.make_convert_col_to_integers_preprocessor(PartitionKeys.year)
+        df = pl.DataFrame({PartitionKeys.year: ["2020", "2021", "2022"]})
+        result = preprocessor(df)
+        expected = pl.DataFrame({PartitionKeys.year: [2020, 2021, 2022]})
+        pl_testing.assert_frame_equal(result, expected)
+
+    def test_convert_col_to_integers_with_non_numeric_values(self):
+        df = pl.DataFrame({PartitionKeys.year: ["2020", "invalid", "2022"]})
+        with pytest.raises(pl.exceptions.InvalidOperationError):
+            job.make_convert_col_to_integers_preprocessor(PartitionKeys.year)(df)
 
 
 if __name__ == "__main__":

@@ -622,3 +622,12 @@ class JobRoleFilteringRule(ColumnValues):
     job_role_group_is_outlier_at_brand_level: str = (
         "job_role_group_is_outlier_at_brand_level"
     )
+
+
+@dataclass
+class AscwdsJobRoleRatiosMergedSource(ColumnValues):
+    """The possible values of the ASCWDS job role ratios merged source column in the independent CQC estimates pipeline"""
+
+    imputed_ascwds_job_role_ratios: str = IndCQC.imputed_ascwds_job_role_ratios
+    ascwds_job_role_rolling_ratio: str = IndCQC.ascwds_job_role_rolling_ratio
+    ascwds_job_role_ratios: str = IndCQC.ascwds_job_role_ratios
