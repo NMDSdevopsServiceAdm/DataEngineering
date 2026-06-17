@@ -828,9 +828,9 @@ class ExtractRegisteredManagerNamesData:
         ),
         (
             ["Name Surname_1"],
-            ["Name Surname_2", "Name Surname_1"],
-            ["Name Surname_3", "Name Surname_1"],
-            ["Name Surname_2", "Name Surname_3", "Name Surname_1"],
+            ["Name Surname_1", "Name Surname_2"],
+            ["Name Surname_1", "Name Surname_3"],
+            ["Name Surname_1", "Name Surname_2", "Name Surname_3"],
         ),
     ]
 

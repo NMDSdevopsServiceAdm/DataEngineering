@@ -293,7 +293,7 @@ class AddRegisteredManagerNamesTests(unittest.TestCase):
             returned_lf.collect()["registered_manager_names"].to_list(),
         )
 
-    def test_when_multiple_unique_managers_per_location_returns_original_list_of_all_names(
+    def test_when_multiple_unique_managers_per_location_returns_sorted_list_of_all_names(
         self,
     ):
         # GIVEN
@@ -319,9 +319,9 @@ class AddRegisteredManagerNamesTests(unittest.TestCase):
         self.assertEqual(
             [
                 ["Name Surname_1"],
-                ["Name Surname_2", "Name Surname_1"],
-                ["Name Surname_3", "Name Surname_1"],
-                ["Name Surname_2", "Name Surname_3", "Name Surname_1"],
+                ["Name Surname_1", "Name Surname_2"],
+                ["Name Surname_1", "Name Surname_3"],
+                ["Name Surname_1", "Name Surname_2", "Name Surname_3"],
             ],
             returned_lf.collect()["registered_manager_names"].to_list(),
         )
