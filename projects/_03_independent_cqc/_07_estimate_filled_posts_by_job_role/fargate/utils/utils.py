@@ -130,7 +130,7 @@ class CategoricalColumnTypes:
     )
     BrandCatType = pl.Categorical(pl.Categories("brand", namespace="filled_posts"))
     JobRoleEnumType = pl.Enum(CatVals.main_job_role_labels_column_values)
-    JobGroupEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_job_groups())
+    JobGroupEnumType = pl.Enum(CatVals.main_job_group_labels_column_values)
     EstimatesFilledPostSourceEnumType = pl.Enum(
         [
             EstimateFilledPostsSource.imputed_pir_filled_posts_model,

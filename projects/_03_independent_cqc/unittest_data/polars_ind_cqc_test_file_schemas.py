@@ -1700,7 +1700,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
         IndCQC.main_job_group_labelled: pl.Enum(
-            AscwdsWorkerValueLabelsJobGroup.all_job_groups()
+            CatVals.main_job_group_labels_column_values
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
@@ -1712,7 +1712,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
         IndCQC.main_job_group_labelled: pl.Enum(
-            AscwdsWorkerValueLabelsJobGroup.all_job_groups()
+            CatVals.main_job_group_labels_column_values
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
