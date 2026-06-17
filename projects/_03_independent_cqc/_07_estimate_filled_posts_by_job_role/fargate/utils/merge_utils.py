@@ -102,7 +102,7 @@ def reduced_data_filter_expr(
         pl.Expr: A Polars boolean expression that can be used inside `.filter()` or
             `.with_columns()` to select rows based on the reduced data strategy.
     """
-    today = today or date.today()
+    today: date = today or date.today()
 
     fy_year = today.year if today.month >= fy_start_month else today.year - 1
 
