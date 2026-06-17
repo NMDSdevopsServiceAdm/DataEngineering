@@ -9,6 +9,9 @@ from utils.column_values.categorical_column_values import (
     MainJobRoleLabels,
     PrimaryServiceType,
 )
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
+)
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
@@ -126,7 +129,7 @@ class CategoricalColumnTypes:
         pl.Categories("provider", namespace="filled_posts")
     )
     BrandCatType = pl.Categorical(pl.Categories("brand", namespace="filled_posts"))
-    JobRoleEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
+    JobRoleEnumType = pl.Enum(CatVals.main_job_role_labels_column_values)
     JobGroupEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_job_groups())
     EstimatesFilledPostSourceEnumType = pl.Enum(
         [

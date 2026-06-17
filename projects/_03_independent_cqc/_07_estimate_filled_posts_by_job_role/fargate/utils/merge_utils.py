@@ -3,11 +3,11 @@ from datetime import date
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
-    AscwdsWorkerValueLabelsJobGroup,
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
 )
 
-JobRoleEnumType = pl.Enum(AscwdsWorkerValueLabelsJobGroup.all_roles())
+JobRoleEnumType = pl.Enum(CatVals.main_job_role_labels_column_values)
 
 
 def join_estimates_to_ascwds(
@@ -39,7 +39,7 @@ def join_estimates_to_ascwds(
     )
 
     roles_lf = pl.LazyFrame(
-        data=[(role,) for role in AscwdsWorkerValueLabelsJobGroup.all_roles()],
+        data=[(role,) for role in CatVals.main_job_role_labels_column_values],
         schema={job_role_labels: JobRoleEnumType},
         orient="row",
     )
