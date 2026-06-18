@@ -196,7 +196,7 @@
         {
           "StartAt": "Run workforce characteristics crawler",
           "States": {
-            "Run IND CQC Crawler": {
+            "Run workforce characteristics crawler": {
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
