@@ -3467,7 +3467,7 @@ class EstimateFilledPostsByJobRoleCleanData:
         IndCQC.cqc_location_import_date: [date(2024, 1, 1)] * 4,
         IndCQC.primary_service_type: [PrimaryServiceType.care_home_with_nursing] * 4,
         IndCQC.estimate_filled_posts: [10.0] * 4,
-        IndCQC.ascwds_job_role_counts: [1] * 4,
+        IndCQC.ascwds_job_role_counts: [None] * 4,
         IndCQC.main_job_role_clean_labelled: [
             MainJobRoleLabels.care_worker,
             MainJobRoleLabels.admin_staff,
@@ -3475,7 +3475,10 @@ class EstimateFilledPostsByJobRoleCleanData:
             MainJobRoleLabels.registered_nurse,
         ],
         IndCQC.registered_manager_names: [["Manager 1", "Manager 2"]] * 4,
-        IndCQC.job_role_filtering_rule: [JobRoleFilteringRule.populated] * 4,
+        IndCQC.job_role_filtering_rule: [
+            JobRoleFilteringRule.job_role_group_is_outlier_at_brand_level
+        ]
+        * 4,
     }
 
     metadata = {
