@@ -146,7 +146,10 @@ def filter_job_role_group_outliers(
     lf = lf.with_columns(
         pl.when(
             (pl.col(temp_out_of_bounds_col) == True)
-            | (pl.col(temp_out_of_bounds_col).is_null())
+            | (
+                (pl.col(temp_out_of_bounds_col).is_null())
+                & (pl.col(id_column).is_not_null())  # brand_id can be null
+            )
         )
         .then(None)
         .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
