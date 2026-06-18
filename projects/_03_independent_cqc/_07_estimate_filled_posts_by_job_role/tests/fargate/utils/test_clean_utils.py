@@ -237,7 +237,7 @@ class TestFilterJobRoleGroupExpressions:
         assert self.TestExprs.job_role_group_bounds_brand_prov == expected_bounds
 
     def test_variables_in_filter_job_role_group_expressions(self):
-        assert self.TestExprs.temp_id_column_sum == "location_sum"
+        assert self.TestExprs.temp_id_column_sum == "id_column_sum"
         assert self.TestExprs.job_group_cols == [
             JobGroupLabels.direct_care,
             JobGroupLabels.managers,
