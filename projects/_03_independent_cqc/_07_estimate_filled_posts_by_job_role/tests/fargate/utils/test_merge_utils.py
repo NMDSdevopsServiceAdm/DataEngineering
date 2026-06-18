@@ -1,6 +1,3 @@
-import unittest
-from datetime import date
-
 import polars as pl
 import polars.testing as pl_testing
 import pytest
@@ -66,6 +63,24 @@ class TestJoinEstimatesToAscwds:
         # Sanity check: correct expansion
         expected_rows = len(case.estimates_data) * 2  # mocked roles
         assert result_lf.collect().height == expected_rows
+
+
+class TestCreateJobRoleLazyFrame:
+    def test_create_job_role_lazyframe_schema_rowcount_and_order():
+        lf = job.create_job_role_lazyframe()
+        df = lf.collect()
+
+        # Column name
+        assert job.job_role_labels in df.columns
+
+        # Row count matches the authoritative values
+        expected = job.MAIN_JOB_ROLE_VALUES
+        assert df.height == len(expected)
+
+        # Values are strings and in the exact expected order
+        values = df[job.job_role_labels].to_list()
+        assert all(isinstance(v, str) for v in values)
+        assert values == expected
 
 
 class TestReducedDataFilterExpr:

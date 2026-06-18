@@ -8,6 +8,8 @@ from utils.column_values.categorical_columns_by_dataset import (
 )
 
 job_role_labels = IndCQC.main_job_role_clean_labelled
+# Cache the stable, ordered list of job role labels for reuse and determinism.
+MAIN_JOB_ROLE_VALUES = CatVals.main_job_role_labels_column_values.categorical_values
 
 
 def join_estimates_to_ascwds(
@@ -61,17 +63,14 @@ def create_job_role_lazyframe() -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: A LazyFrame of job role labels.
     """
-    roles_lf = pl.LazyFrame(
-        data=CatVals.main_job_role_labels_column_values.categorical_values,
-        schema={
-            job_role_labels: pl.Enum(
-                CatVals.main_job_role_labels_column_values.categorical_values
-            ),
-        },
+    values = MAIN_JOB_ROLE_VALUES
+    # Build explicit 1-tuple rows so Polars interprets each string as a single column value.
+    rows = [(v,) for v in values]
+    return pl.LazyFrame(
+        data=rows,
+        schema={job_role_labels: pl.Enum(values)},
         orient="row",
     )
-
-    return roles_lf
 
 
 def reduced_data_filter_expr(
