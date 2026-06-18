@@ -200,7 +200,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
-                "Name": "${workforce_characteristics_crawler}"
+                "Name": "${workforce_characteristics_crawler_name}"
               },
               "End": true
             }

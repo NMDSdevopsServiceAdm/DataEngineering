@@ -117,14 +117,15 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     reconciliation_job_name                               = module.reconciliation_job.job_name
 
     # crawlers
-    data_validation_reports_crawler_name = module.data_validation_reports_crawler.crawler_name
-    ascwds_crawler_name                  = module.ascwds_crawler.crawler_name
-    ind_cqc_filled_posts_crawler_name    = module.ind_cqc_filled_posts_crawler.crawler_name
-    cqc_crawler_name                     = module.cqc_crawler.crawler_name
-    dpr_crawler_name                     = module.dpr_crawler.crawler_name
-    ons_crawler_name                     = module.ons_crawler.crawler_name
-    sfc_crawler_name                     = module.sfc_crawler.crawler_name
-    ct_crawler_name                      = module.capacity_tracker_crawler.crawler_name
+    data_validation_reports_crawler_name   = module.data_validation_reports_crawler.crawler_name
+    ascwds_crawler_name                    = module.ascwds_crawler.crawler_name
+    ind_cqc_filled_posts_crawler_name      = module.ind_cqc_filled_posts_crawler.crawler_name
+    cqc_crawler_name                       = module.cqc_crawler.crawler_name
+    dpr_crawler_name                       = module.dpr_crawler.crawler_name
+    ons_crawler_name                       = module.ons_crawler.crawler_name
+    sfc_crawler_name                       = module.sfc_crawler.crawler_name
+    ct_crawler_name                        = module.capacity_tracker_crawler.crawler_name
+    workforce_characteristics_crawler_name = module.workforce_characteristics_crawler.crawler_name
 
     # parameter store
     last_providers_run_param_name = aws_ssm_parameter.providers_last_run.name
