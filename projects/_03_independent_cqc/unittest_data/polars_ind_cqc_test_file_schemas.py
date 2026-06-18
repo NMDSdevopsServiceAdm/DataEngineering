@@ -1711,7 +1711,6 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
-        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
     test_filter_provider_schema = {
         IndCQC.provider_id: pl.String,
@@ -1734,7 +1733,6 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
-        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
     test_filter_brand_schema = {
         IndCQC.brand_id: pl.String,
@@ -1756,7 +1754,6 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
             AscwdsWorkerValueLabelsJobGroup.all_job_groups()
         ),
         IndCQC.ascwds_job_role_counts: pl.Int64,
-        IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
     test_location_sum_schema = {
