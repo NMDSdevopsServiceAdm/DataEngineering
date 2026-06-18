@@ -84,7 +84,7 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.ascwds_job_role_ratios_merged: "Float32",
         IndCqcColumns.ascwds_job_role_ratios_merged_source: "String",
         IndCqcColumns.estimate_filled_posts_by_job_role: "Float32",
-        IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: "Float32",
+        IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: "Float64",
         IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: "Float64",
         IndCqcColumns.estimate_filled_posts_from_all_job_roles: "Float64",
         IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: "Float64",
