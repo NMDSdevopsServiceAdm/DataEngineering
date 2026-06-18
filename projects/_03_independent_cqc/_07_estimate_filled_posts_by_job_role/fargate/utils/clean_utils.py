@@ -205,7 +205,7 @@ class FilterJobRoleGroupExpressions:
     evaluation_expr: pl.Expr
 
     def __init__(self):
-        self.temp_id_column_sum = "location_sum"
+        self.temp_id_column_sum = "id_column_sum"
         self.job_group_cols = [
             JobGroupLabels.direct_care,
             JobGroupLabels.managers,
