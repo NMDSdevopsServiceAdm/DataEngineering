@@ -54,7 +54,13 @@ def join_estimates_to_ascwds(
     ).drop(join_keys)
 
 
-def create_job_role_lazyframe():
+def create_job_role_lazyframe() -> pl.LazyFrame:
+    """
+    Creates a LazyFrame with one column containing a row per job role label.
+
+    Returns:
+        pl.LazyFrame: A LazyFrame of job role labels.
+    """
     roles_lf = pl.LazyFrame(
         data=CatVals.main_job_role_labels_column_values.categorical_values,
         schema={
