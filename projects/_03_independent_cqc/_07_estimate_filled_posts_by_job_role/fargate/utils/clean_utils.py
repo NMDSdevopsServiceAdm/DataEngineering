@@ -67,7 +67,8 @@ def filter_job_role_group_outliers(
         id_column (str): The id column on which the filter should be applied. Possible
             values: location id, provider id, brand id. Defaults to location id.
         min_workers_threshold (int): Minimum number of workers at a location/ provider/
-            brand to be included in filtering. Defaults to 50.
+            brand to be included in filtering. If below this treshold, location/ provider/brand
+            bypasses the filter and is automatically included. Defaults to 50.
 
     Returns:
         pl.LazyFrame: LazyFrame with outliers in job role groups filtered.
@@ -146,10 +147,7 @@ def filter_job_role_group_outliers(
     lf = lf.with_columns(
         pl.when(
             (pl.col(temp_out_of_bounds_col) == True)
-            | (
-                (pl.col(temp_out_of_bounds_col).is_null())
-                & (pl.col(id_column).is_not_null())  # brand_id can be null
-            )
+            & (pl.col(id_column).is_not_null())  # brand_id can be null
         )
         .then(None)
         .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
