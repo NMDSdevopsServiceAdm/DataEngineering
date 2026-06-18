@@ -232,9 +232,9 @@ def calculate_reg_man_difference(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf.with_columns(
         (
             (
-                pl.col(
-                    IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
-                ).sub(pl.col(IndCQC.registered_manager_count))
+                pl.col(IndCQC.estimate_filled_posts_by_job_role).sub(
+                    pl.col(IndCQC.registered_manager_count)
+                )
             )
             .filter(
                 pl.col(IndCQC.main_job_role_clean_labelled)
@@ -265,7 +265,7 @@ def calculate_non_rm_managerial_distribution(
             'proportion_of_non_rm_managerial_estimated_filled_posts_by_role'.
     """
     sum_non_rm_managerial_posts_expr = (
-        pl.col(IndCQC.estimate_filled_posts_by_job_role_historically_reallocated)
+        pl.col(IndCQC.estimate_filled_posts_by_job_role)
         .filter(non_rm_manager_condition)
         .sum()
         .over(IndCQC.id_per_locationid_import_date)
@@ -289,9 +289,7 @@ def calculate_non_rm_managerial_distribution(
                     .cast(pl.Float32)
                 )
                 .otherwise(
-                    pl.col(
-                        IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
-                    )
+                    pl.col(IndCQC.estimate_filled_posts_by_job_role)
                     .truediv(sum_non_rm_managerial_posts_expr)
                     .cast(pl.Float32)
                 )
@@ -327,9 +325,7 @@ def distribute_rm_difference(
         pl.LazyFrame: The input LazyFrame with column
             'estimate_filled_posts_by_job_role_manager_adjusted'.
     """
-    redistribution_expr = pl.col(
-        IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
-    ).add(
+    redistribution_expr = pl.col(IndCQC.estimate_filled_posts_by_job_role).add(
         pl.col(IndCQC.difference_between_estimate_and_cqc_registered_managers).mul(
             pl.col(
                 IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
@@ -345,9 +341,7 @@ def distribute_rm_difference(
             == MainJobRoleLabels.registered_manager
         )
         .then(pl.col(IndCQC.registered_manager_count).cast(pl.Float32))
-        .otherwise(
-            pl.col(IndCQC.estimate_filled_posts_by_job_role_historically_reallocated)
-        )
+        .otherwise(pl.col(IndCQC.estimate_filled_posts_by_job_role))
         .alias(IndCQC.estimate_filled_posts_by_job_role_manager_adjusted)
     )
 
@@ -362,14 +356,16 @@ def calc_diff_estimate_filled_posts_and_from_all_job_roles(
 
     Args:
         lf (pl.LazyFrame): A LazyFrame with 'estimate_filled_posts' and
-            'estimate_filled_posts_by_job_role_manager_adjusted'.
+            'estimate_filled_posts_by_job_role_historically_reallocated'.
 
     Returns:
         pl.LazyFrame: A LazyFrame with new columns
             'estimate_filled_posts_from_all_job_roles' and
             'difference_estimate_filled_posts_and_from_all_job_roles'.
     """
-    posts_by_job_role_col = IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
+    posts_by_job_role_col = (
+        IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
+    )
 
     sum_expr = (
         pl.when(
