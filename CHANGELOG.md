@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
+- Removed imputation of registered_manager_names so if no names given in API then null for that import date.
+
 ### Fixed
 
 
