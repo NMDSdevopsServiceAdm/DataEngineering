@@ -22,15 +22,11 @@ def mock_roles(monkeypatch):
     roles = ["role_a", "role_b"]
 
     monkeypatch.setattr(
-        job.AscwdsWorkerValueLabelsJobGroup,
-        "all_roles",
-        lambda: roles,
-    )
-
-    monkeypatch.setattr(
         job,
-        "JobRoleEnumType",
-        pl.Enum(roles),
+        "create_job_role_lazyframe",
+        lambda: pl.LazyFrame(
+            roles, {job.job_role_labels: pl.Enum(roles)}, orient="row"
+        ),
     )
 
 

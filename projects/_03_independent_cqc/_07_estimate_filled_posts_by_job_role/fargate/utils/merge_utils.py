@@ -7,7 +7,7 @@ from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
 )
 
-JobRoleEnumType = pl.Enum(CatVals.main_job_role_labels_column_values.categorical_values)
+job_role_labels = IndCQC.main_job_role_clean_labelled
 
 
 def join_estimates_to_ascwds(
@@ -32,20 +32,12 @@ def join_estimates_to_ascwds(
         IndCQC.ascwds_workplace_import_date,
         IndCQC.establishment_id,
     ]
-    job_role_labels = IndCQC.main_job_role_clean_labelled
 
     narrow_keys_lf = estimates_lf.select(
         [IndCQC.id_per_locationid_import_date] + join_keys
     )
 
-    roles_lf = pl.LazyFrame(
-        data=[
-            (role,)
-            for role in CatVals.main_job_role_labels_column_values.categorical_values
-        ],
-        schema={job_role_labels: JobRoleEnumType},
-        orient="row",
-    )
+    roles_lf = create_job_role_lazyframe()
 
     expanded_keys_lf = narrow_keys_lf.join(roles_lf, how="cross")
 
@@ -60,6 +52,20 @@ def join_estimates_to_ascwds(
         on=IndCQC.id_per_locationid_import_date,
         how="right",
     ).drop(join_keys)
+
+
+def create_job_role_lazyframe():
+    roles_lf = pl.LazyFrame(
+        data=CatVals.main_job_role_labels_column_values.categorical_values,
+        schema={
+            job_role_labels: pl.Enum(
+                CatVals.main_job_role_labels_column_values.categorical_values
+            ),
+        },
+        orient="row",
+    )
+
+    return roles_lf
 
 
 def reduced_data_filter_expr(
