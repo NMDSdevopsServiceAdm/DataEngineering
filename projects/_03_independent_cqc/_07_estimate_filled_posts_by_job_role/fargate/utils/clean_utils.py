@@ -104,7 +104,7 @@ def filter_job_role_group_outliers(
             aggregate_function="sum",
         )
         .with_columns(Exprs.id_column_sum_expr)
-        .filter(pl.col(Exprs.temp_id_column_sum) > min_workers_threshold)
+        .filter(pl.col(Exprs.temp_id_column_sum) >= min_workers_threshold)
         .with_columns(Exprs.job_group_percentage_expr)
     )
 
