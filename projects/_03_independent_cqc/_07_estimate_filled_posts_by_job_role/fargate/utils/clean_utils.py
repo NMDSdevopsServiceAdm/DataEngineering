@@ -144,7 +144,10 @@ def filter_job_role_group_outliers(
     )
 
     lf = lf.with_columns(
-        pl.when(pl.col(temp_out_of_bounds_col))
+        pl.when(
+            (pl.col(temp_out_of_bounds_col) == True)
+            | (pl.col(temp_out_of_bounds_col).is_null())
+        )
         .then(None)
         .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
         .alias(IndCQC.ascwds_job_role_counts)
