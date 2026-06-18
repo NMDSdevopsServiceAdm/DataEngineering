@@ -71,7 +71,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame with column
-            'estimate_filled_posts_by_job_role'.
+            'estimate_filled_posts_by_job_role_manager_adjusted'.
 
     Returns:
         pl.LazyFrame: The input LazyFrame with new column
@@ -81,9 +81,13 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
         ValueError: If estimate filled posts by job role column has nulls.
     """
 
-    # Raise error if there are nulls in job role filled post columns.
+    # Raise error if there are nulls in job role filled post column.
     null_count = (
-        lf.select(pl.col(IndCQC.estimate_filled_posts_by_job_role).null_count())
+        lf.select(
+            pl.col(
+                IndCQC.estimate_filled_posts_by_job_role_manager_adjusted
+            ).null_count()
+        )
         .collect()
         .item()
     )
@@ -95,7 +99,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
         on=IndCQC.main_job_role_clean_labelled,
         on_columns=all_job_roles,
         index=[IndCQC.id_per_locationid_import_date, IndCQC.cqc_location_import_date],
-        values=IndCQC.estimate_filled_posts_by_job_role,
+        values=IndCQC.estimate_filled_posts_by_job_role_manager_adjusted,
         aggregate_function="sum",
     )
 

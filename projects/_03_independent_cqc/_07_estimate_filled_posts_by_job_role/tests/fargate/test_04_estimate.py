@@ -18,18 +18,18 @@ class TestMain(unittest.TestCase):
     @patch(
         f"{PATCH_PATH}.eUtils.calc_diff_estimate_filled_posts_and_from_all_job_roles"
     )
+    @patch(f"{PATCH_PATH}.eUtils.reallocate_historical_filled_posts_by_job_role")
     @patch(f"{PATCH_PATH}.eUtils.adjust_managerial_roles")
     @patch(f"{PATCH_PATH}.eUtils.has_rm_in_cqc_rm_name_list_flag")
-    @patch(f"{PATCH_PATH}.eUtils.reallocate_historical_filled_posts_by_job_role")
     @patch(f"{PATCH_PATH}.eUtils.calculate_estimated_filled_posts_by_job_role")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_succeeds(
         self,
         scan_parquet_mock: Mock,
         calculate_estimated_filled_posts_by_job_role_mock: Mock,
-        reallocate_historical_filled_posts_by_job_role: Mock,
         has_rm_in_cqc_rm_name_list_flag_mock: Mock,
         adjust_managerial_roles_mock: Mock,
+        reallocate_historical_filled_posts_by_job_role: Mock,
         calc_diff_estimate_filled_posts_and_from_all_job_roles_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -40,9 +40,9 @@ class TestMain(unittest.TestCase):
 
         scan_parquet_mock.assert_called_once()
         calculate_estimated_filled_posts_by_job_role_mock.assert_called_once()
-        reallocate_historical_filled_posts_by_job_role.assert_called_once()
         has_rm_in_cqc_rm_name_list_flag_mock.assert_called_once()
         adjust_managerial_roles_mock.assert_called_once()
+        reallocate_historical_filled_posts_by_job_role.assert_called_once()
         calc_diff_estimate_filled_posts_and_from_all_job_roles_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,

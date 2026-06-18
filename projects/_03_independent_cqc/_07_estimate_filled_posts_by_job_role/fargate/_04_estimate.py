@@ -41,13 +41,13 @@ def main(
 
     lf = eUtils.calculate_estimated_filled_posts_by_job_role(lf)
 
-    lf = eUtils.reallocate_historical_filled_posts_by_job_role(lf)
-
     lf = lf.with_columns(
         eUtils.has_rm_in_cqc_rm_name_list_flag().alias(IndCQC.registered_manager_count)
     )
 
     lf = eUtils.adjust_managerial_roles(lf, non_rm_manager_roles)
+
+    lf = eUtils.reallocate_historical_filled_posts_by_job_role(lf)
 
     lf = eUtils.calc_diff_estimate_filled_posts_and_from_all_job_roles(lf)
 

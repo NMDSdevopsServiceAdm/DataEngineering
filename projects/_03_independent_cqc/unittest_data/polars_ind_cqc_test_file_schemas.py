@@ -1537,7 +1537,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
             IndCQC.main_job_role_clean_labelled: pl.Enum(
                 AscwdsWorkerValueLabelsJobGroup.all_roles()
             ),
-            IndCQC.estimate_filled_posts_by_job_role: pl.Float32,
+            IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
             IndCQC.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
         }
     )
