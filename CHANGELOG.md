@@ -12,8 +12,15 @@ All notable changes to this project will be documented in this file.
 
 - Added reduced data filter in the merge job within Estimates by Job Role Pipeline.
 
+- Added skeleton step function for estimating starters, leavers and vacancies.
+
+- Added folder structure for workforce characteristics that includes starters, leavers and vacancies merge job.
+  Also added merge job and it's validation to SLV step function, and its required terraform changes.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
+
+- Removed imputation of registered_manager_names so if no names given in API then null for that import date.
 
 - Changed _04_estimate job role filled posts so historical reallocation is called after manager adjustment.
 
