@@ -613,7 +613,15 @@ class JobRoleFilteringRule(ColumnValues):
     missing_direct_care_or_managers_and_profs: str = (
         "missing_direct_care_or_managers_and_professionals"
     )
-    job_role_group_is_outlier: str = "job_role_group_is_outlier"
+    job_role_group_is_outlier_at_location_level: str = (
+        "job_role_group_is_outlier_at_location_level"
+    )
+    job_role_group_is_outlier_at_provider_level: str = (
+        "job_role_group_is_outlier_at_provider_level"
+    )
+    job_role_group_is_outlier_at_brand_level: str = (
+        "job_role_group_is_outlier_at_brand_level"
+    )
 
 
 @dataclass

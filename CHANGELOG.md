@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed imputation of registered_manager_names so if no names given in API then null for that import date.
 
+- Refactored job group filter to work for brands and providers as well as locations.
+
 ### Fixed
 
 
