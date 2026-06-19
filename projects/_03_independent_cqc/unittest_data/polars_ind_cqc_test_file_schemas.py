@@ -1695,9 +1695,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
-        IndCQC.main_job_group_labelled: pl.Enum(
-            CatVals.main_job_role_labels_column_values.categorical_values
-        ),
+        IndCQC.main_job_group_labelled: CatColType.JobGroupEnumType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
@@ -1706,9 +1704,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
-        IndCQC.main_job_group_labelled: pl.Enum(
-            CatVals.main_job_role_labels_column_values.categorical_values
-        ),
+        IndCQC.main_job_group_labelled: CatColType.JobGroupEnumType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
@@ -1717,9 +1713,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
-        IndCQC.main_job_group_labelled: pl.Enum(
-            CatVals.main_job_role_labels_column_values.categorical_values
-        ),
+        IndCQC.main_job_group_labelled: CatColType.JobGroupEnumType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
@@ -1728,9 +1722,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
-        IndCQC.main_job_group_labelled: pl.Enum(
-            CatVals.main_job_role_labels_column_values.categorical_values
-        ),
+        IndCQC.main_job_group_labelled: CatColType.JobGroupEnumType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
@@ -1739,9 +1731,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
-        IndCQC.main_job_group_labelled: pl.Enum(
-            CatVals.main_job_role_labels_column_values.categorical_values
-        ),
+        IndCQC.main_job_group_labelled: CatColType.JobGroupEnumType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
@@ -1750,9 +1740,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
-        IndCQC.main_job_group_labelled: pl.Enum(
-            CatVals.main_job_role_labels_column_values.categorical_values
-        ),
+        IndCQC.main_job_group_labelled: CatColType.JobGroupEnumType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
