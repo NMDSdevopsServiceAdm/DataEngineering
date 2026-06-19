@@ -42,10 +42,12 @@ class NullGroupedProvidersConfig:
     POSTS_PER_PIR_PROVIDER_THRESHOLD: pl.Float64 = 1.5
 
 
-def null_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
+def null_grouped_providers(lf: pl.LazyFrame) -> tuple[pl.LazyFrame, pl.LazyFrame]:
     """
     Null ascwds_filled_posts_dedup_clean where a provider has multiple
     locations, all their ascwds is under one location.
+
+    These providers are returned in a separate LazyFrame before being nulled.
 
     Following analysis of ASCWDS data and contacting some providers, we
     discovered that some providers were submitting their entire workforce
@@ -61,11 +63,14 @@ def null_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
         lf (pl.LazyFrame): A polars LazyFrame with independent cqc data.
 
     Returns:
-        pl.LazyFrame: A polars LazyFrame with grouped providers' data nulled.
+        tuple[pl.LazyFrame, pl.LazyFrame]: The input LazyFrame with grouped
+            providers' data nulled and a LazyFrame of potential grouped providers prior to nulling.
     """
     lf = calculate_data_for_grouped_provider_identification(lf)
 
     lf = identify_potential_grouped_providers(lf)
+
+    grouped_providers = select_grouped_providers_on_latest_import(lf)
 
     lf = null_care_home_grouped_providers(lf)
     lf = null_non_residential_grouped_providers(lf)
@@ -73,7 +78,7 @@ def null_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     columns_to_drop = [field.name for field in fields(NGPcol())]
     lf = lf.drop(*columns_to_drop)
 
-    return lf
+    return lf, grouped_providers
 
 
 def calculate_data_for_grouped_provider_identification(
@@ -290,3 +295,30 @@ def null_non_residential_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
     return lf
+
+
+def select_grouped_providers_on_latest_import(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Filters LazyFrame where potential_grouped_provider is True and
+    cqc_location_import_date equal to max cqc_location_import_date.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with potential_grouped_provider column.
+
+    Returns:
+        pl.LazyFrame: The filtered input LazyFrame.
+    """
+    cols_to_select = [
+        IndCQC.location_id,
+        IndCQC.provider_id,
+        IndCQC.cqc_location_import_date,
+        NGPcol.potential_grouped_provider,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+    ]
+    return lf.select(cols_to_select).filter(
+        (pl.col(NGPcol.potential_grouped_provider) == True)
+        & (
+            pl.col(IndCQC.cqc_location_import_date)
+            == pl.max(IndCQC.cqc_location_import_date)
+        )
+    )
