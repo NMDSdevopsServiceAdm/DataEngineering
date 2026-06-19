@@ -17,6 +17,8 @@ All notable changes to this project will be documented in this file.
 - Added folder structure for workforce characteristics that includes starters, leavers and vacancies merge job.
   Also added merge job and it's validation to SLV step function, and its required terraform changes.
 
+- Added clean job, its validation and test scripts within SLV pipeline. Updated the required terraform changes for the same.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
