@@ -17,9 +17,6 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
 )
-from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
-    AscwdsWorkerValueLabelsJobGroup,
-)
 
 VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.id_per_locationid_import_date,
@@ -84,7 +81,7 @@ def main(
         selected_columns=IND_CQC_ESTIMATES_COLS_TO_IMPORT,
     ).filter(reduced_data_filter_expr())
     expected_row_count = compare_df.height * len(
-        AscwdsWorkerValueLabelsJobGroup.all_roles()
+        CatValues.main_job_role_labels_column_values.categorical_values
     )
 
     validation = (
