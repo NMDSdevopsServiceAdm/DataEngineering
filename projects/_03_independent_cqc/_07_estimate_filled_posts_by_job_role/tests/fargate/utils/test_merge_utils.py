@@ -13,10 +13,11 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
     TestJoinEstimatesToAscwds as Schemas,
 )
 
+roles = ["role_a", "role_b"]
+
 
 @pytest.fixture(autouse=True)
 def mock_roles(monkeypatch):
-    roles = ["role_a", "role_b"]
 
     monkeypatch.setattr(
         job,
@@ -66,21 +67,13 @@ class TestJoinEstimatesToAscwds:
 
 
 class TestCreateJobRoleLazyFrame:
-    def test_create_job_role_lazyframe_schema_rowcount_and_order():
-        lf = job.create_job_role_lazyframe()
-        df = lf.collect()
+    def test_create_job_role_lazyframe_schema_rowcount_and_order(self):
+        expected_lf = pl.LazyFrame(
+            roles, {job.job_role_labels: pl.Enum(roles)}, orient="row"
+        )
+        returned_lf = job.create_job_role_lazyframe()
 
-        # Column name
-        assert job.job_role_labels in df.columns
-
-        # Row count matches the authoritative values
-        expected = job.MAIN_JOB_ROLE_VALUES
-        assert df.height == len(expected)
-
-        # Values are strings and in the exact expected order
-        values = df[job.job_role_labels].to_list()
-        assert all(isinstance(v, str) for v in values)
-        assert values == expected
+        pl_testing.assert_frame_equal(expected_lf, returned_lf)
 
 
 class TestReducedDataFilterExpr:
