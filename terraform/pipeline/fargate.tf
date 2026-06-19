@@ -73,3 +73,14 @@ module "_04_direct_payments" {
   ]
   tag_name = terraform.workspace
 }
+
+module "_07_workforce_characteristics" {
+  source        = "../modules/fargate-task"
+  task_name     = "_07_workforce_characteristics"
+  ecr_repo_name = "fargate/07_workforce_characteristics"
+  cluster_arn   = aws_ecs_cluster.polars_cluster.arn
+  environment = [
+    { "name" : "AWS_REGION", "value" : "eu-west-2" }
+  ]
+  tag_name = terraform.workspace
+}

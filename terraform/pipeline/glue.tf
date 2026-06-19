@@ -665,3 +665,10 @@ module "capacity_tracker_crawler" {
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
+
+module "workforce_characteristics_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "workforce_characteristics"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+}
