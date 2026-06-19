@@ -1,6 +1,3 @@
-import unittest
-from datetime import date
-
 import polars as pl
 import polars.testing as pl_testing
 import pytest
@@ -16,21 +13,18 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
     TestJoinEstimatesToAscwds as Schemas,
 )
 
+roles = ["role_a", "role_b"]
+
 
 @pytest.fixture(autouse=True)
 def mock_roles(monkeypatch):
-    roles = ["role_a", "role_b"]
-
-    monkeypatch.setattr(
-        job.AscwdsWorkerValueLabelsJobGroup,
-        "all_roles",
-        lambda: roles,
-    )
 
     monkeypatch.setattr(
         job,
-        "JobRoleEnumType",
-        pl.Enum(roles),
+        "create_job_role_lazyframe",
+        lambda: pl.LazyFrame(
+            roles, {job.job_role_labels: pl.Enum(roles)}, orient="row"
+        ),
     )
 
 
@@ -70,6 +64,16 @@ class TestJoinEstimatesToAscwds:
         # Sanity check: correct expansion
         expected_rows = len(case.estimates_data) * 2  # mocked roles
         assert result_lf.collect().height == expected_rows
+
+
+class TestCreateJobRoleLazyFrame:
+    def test_create_job_role_lazyframe_schema_rowcount_and_order(self):
+        expected_lf = pl.LazyFrame(
+            roles, {job.job_role_labels: pl.Enum(roles)}, orient="row"
+        )
+        returned_lf = job.create_job_role_lazyframe()
+
+        pl_testing.assert_frame_equal(expected_lf, returned_lf)
 
 
 class TestReducedDataFilterExpr:
