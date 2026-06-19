@@ -1184,6 +1184,18 @@ class NullGroupedProvidersData:
         ("1-008", CareHome.not_care_home, True, 50.0, None, 10.0, 2, 25.0, AscwdsFilteringRule.contained_invalid_missing_data_code),  # already filtered
     ] # fmt: skip
 
+    select_grouped_providers_on_latest_import_rows = [
+        ("1-001", "prov-1", date(2026, 1, 1), True, 1.0), # Grouped provider but not on latest import date.
+        ("1-002", "prov-1", date(2026, 1, 1), False, 1.0), # Not grouped provider and not on latest import date.
+        ("1-003", "prov-1", date(2026, 1, 2), False, 1.0), # Latest import date but not grouped provider.
+        ("1-004", "prov-1", date(2026, 1, 2), True, 1.0),
+        ("1-005", "prov-2", date(2026, 1, 2), True, 1.0),
+    ] # fmt: skip
+    expected_select_grouped_providers_on_latest_import_rows = [
+        ("1-004", "prov-1", date(2026, 1, 2), True, 1.0),
+        ("1-005", "prov-2", date(2026, 1, 2), True, 1.0),
+    ] # fmt: skip
+
 
 @dataclass
 class CleanAscwdsFilledPostOutliersData:

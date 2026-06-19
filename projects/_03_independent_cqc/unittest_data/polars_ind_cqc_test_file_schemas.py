@@ -1002,6 +1002,16 @@ class NullGroupedProvidersSchema:
         ]
     )
 
+    select_grouped_providers_on_latest_import_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.provider_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (NGPcol.potential_grouped_provider, pl.Boolean()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+        ]
+    )
+
 
 @dataclass
 class CleanAscwdsFilledPostOutliersSchema:
