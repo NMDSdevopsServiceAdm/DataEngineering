@@ -25,7 +25,6 @@ All notable changes to this project will be documented in this file.
 - Refactored job group filter to work for brands and providers as well as locations.
 
 ### Fixed
-- Replace the all roles and all job groups functions with the appropriate categorical values attribute.
 
 
 ## [v2026.05.0] - 12/06/2026
