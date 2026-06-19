@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
+- Changed _04_estimate job role filled posts so historical reallocation is called after manager adjustment.
+
 ### Fixed
 
 
