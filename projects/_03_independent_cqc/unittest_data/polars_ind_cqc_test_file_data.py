@@ -2976,6 +2976,7 @@ class EstimateFilledPostsByJobRoleCleanUtilsTestCase:
     expected_data: list[Any]
     expected_brand_prov_data: Optional[list[Any]] = None
     min_workers_threshold: Optional[int] = None
+    include_direct_care_lower_bound: bool = True
 
     def __post_init__(self):
         if self.expected_brand_prov_data is None:
@@ -3181,6 +3182,29 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
             ],
             min_workers_threshold=1,
         ),
+        EstimateFilledPostsByJobRoleCleanUtilsTestCase(
+            id="retains_values_when_below_direct_care_lower_bound_and_flag_is_false",
+            test_data=[
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 1, JobRoleFilteringRule.populated),
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, JobGroupLabels.managers, 2, JobRoleFilteringRule.populated),
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 1, JobRoleFilteringRule.populated),
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.admin_staff, JobGroupLabels.other, 5, JobRoleFilteringRule.populated),
+            ],
+            expected_data=[
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, None, JobRoleFilteringRule.job_role_group_is_outlier_at_location_level),
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, JobGroupLabels.managers, None, JobRoleFilteringRule.job_role_group_is_outlier_at_location_level),
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, None, JobRoleFilteringRule.job_role_group_is_outlier_at_location_level),
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.admin_staff, JobGroupLabels.other, None, JobRoleFilteringRule.job_role_group_is_outlier_at_location_level),
+            ],
+            expected_brand_prov_data=[
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, JobGroupLabels.direct_care, 1, JobRoleFilteringRule.populated),
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_manager, JobGroupLabels.managers, 2, JobRoleFilteringRule.populated),
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, JobGroupLabels.regulated_professions, 1, JobRoleFilteringRule.populated),
+                ("loc1", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.admin_staff, JobGroupLabels.other, 5, JobRoleFilteringRule.populated),
+            ],
+            min_workers_threshold=1,
+            include_direct_care_lower_bound=False,
+        ),
     ]  # fmt: skip
 
     test_error_handling_data =[
@@ -3217,6 +3241,16 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
         (0.01, 0.3, 0.3, 0.3, 0.2, 0.2, 0.2, 0.2, 0.05, None), # All out of bounds
         (None, None, None, None, None, None, None, None, None, None), # Test handling of null values
     ] # fmt: skip
+    expected_evaluation_expr_rows_no_lower_bound = [
+        (0.1, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, 1),    # All within bounds - retained
+        (0.3, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, None),  # Direct care above upper bound - nulled
+        (0.1, 0.3, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, None),  # Managers above upper bound - nulled
+        (0.1, 0.1, 0.3, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, None),  # Regulated professionals above upper bound - nulled
+        (0.1, 0.1, 0.1, 0.3, 0.2, 0.2, 0.2, 0.2, 0.05, None),  # Other above upper bound - nulled
+        (0.01, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, 1),    # Direct care below lower bound - retained (flag=False)
+        (0.01, 0.3, 0.3, 0.3, 0.2, 0.2, 0.2, 0.2, 0.05, None), # All out of bounds - nulled (upper bounds still apply)
+        (None, None, None, None, None, None, None, None, None, None), # Null values - retained
+    ]  # fmt: skip
 
     filter_job_role_group_equal_zero_test_cases = [
         EstimateFilledPostsByJobRoleCleanUtilsTestCase(

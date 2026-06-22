@@ -28,6 +28,8 @@ All notable changes to this project will be documented in this file.
 
 - Refactored job group filter to work for brands and providers as well as locations.
 
+- Refactored `filter_job_role_group_outliers` and `FilterJobRoleGroupExpressions` to accept an include_direct_care_lower_bound parameter, allowing the direct care lower bound check to be optionally excluded from outlier filtering.
+
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
 

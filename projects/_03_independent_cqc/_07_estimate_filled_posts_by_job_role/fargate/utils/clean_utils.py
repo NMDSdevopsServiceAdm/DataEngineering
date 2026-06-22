@@ -48,6 +48,7 @@ def filter_job_role_group_outliers(
     lf: pl.LazyFrame,
     id_column: str = IndCQC.location_id,
     min_workers_threshold: int = 50,
+    include_direct_care_lower_bound: bool = True,
 ) -> pl.LazyFrame:
     """
     Null job role counts at locations, providers or brands where job group distribution is
@@ -59,7 +60,8 @@ def filter_job_role_group_outliers(
     Values are nulled where there are the same or more workers than the min workers threshold
     and either:
 
-    - direct care is outside the upper or lower bound
+    - direct care is outside the upper bound, or outside the lower bound if
+      include_direct_care_lower_bound is True
     - managers, regulated professions, or other are outside their upper bound
 
     Args:
@@ -69,6 +71,8 @@ def filter_job_role_group_outliers(
         min_workers_threshold (int): Minimum number of workers at a location/ provider/
             brand to be included in filtering. If below this threshold, location/ provider/brand
             bypasses the filter and is automatically included. Defaults to 50.
+        include_direct_care_lower_bound (bool): Whether to include the lower bound for
+            direct care in the filtering. Defaults to True.
 
     Returns:
         pl.LazyFrame: LazyFrame with outliers in job role groups filtered.
@@ -81,9 +85,9 @@ def filter_job_role_group_outliers(
         raise ValueError(
             f"Value must be one of {IndCQC.brand_id}, {IndCQC.provider_id}, or {IndCQC.location_id}"
         )
-    temp_out_of_bounds_col: str = "out_of_bounds"
+    temp_out_of_bounds_col: str = f"{id_column}_out_of_bounds"
 
-    Exprs = FilterJobRoleGroupExpressions()
+    Exprs = FilterJobRoleGroupExpressions(include_direct_care_lower_bound)
 
     if id_column == IndCQC.location_id:
         splits_for_pivot = [
@@ -131,12 +135,11 @@ def filter_job_role_group_outliers(
     else:
         piv_lf = piv_lf.join(bounds_lf, how="cross")
 
-    piv_lf = piv_lf.with_columns(
-        Exprs.evaluation_expr.alias(temp_out_of_bounds_col)
-    ).select(
-        *splits_for_pivot,
-        temp_out_of_bounds_col,
-    )
+    piv_lf = piv_lf.with_columns(Exprs.evaluation_expr.alias(temp_out_of_bounds_col))
+    # .select(
+    #     *splits_for_pivot,
+    #     temp_out_of_bounds_col,
+    # )
 
     lf = lf.join(
         piv_lf,
@@ -152,7 +155,8 @@ def filter_job_role_group_outliers(
         .then(None)
         .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
         .alias(IndCQC.ascwds_job_role_counts)
-    ).drop(temp_out_of_bounds_col)
+    )
+    # .drop(temp_out_of_bounds_col)
 
     if id_column == IndCQC.brand_id:
         new_rule = JobRoleFilteringRule.job_role_group_is_outlier_at_brand_level
@@ -182,6 +186,10 @@ class FilterJobRoleGroupExpressions:
     group distributions. It also defines column names
     used by these expressions.
 
+    Args:
+        include_direct_care_lower_bound (bool): Whether to include the lower bound
+            for direct care in the evaluation expression.
+
     Attributes:
         temp_id_column_sum (str): Temporary column name for the total number of workers.
         job_group_cols (list[str]): List of job group column names.
@@ -208,7 +216,7 @@ class FilterJobRoleGroupExpressions:
     job_group_percentage_expr: pl.Expr
     evaluation_expr: pl.Expr
 
-    def __init__(self):
+    def __init__(self, include_direct_care_lower_bound: bool = True):
         self.temp_id_column_sum = "id_column_sum"
         self.job_group_cols = [
             JobGroupLabels.direct_care,
@@ -274,14 +282,11 @@ class FilterJobRoleGroupExpressions:
             )
             .otherwise(pl.lit(None).cast(pl.Float32))
         )
+
         self.evaluation_expr = (
             (
                 pl.col(JobGroupLabels.direct_care)
                 > pl.col(JobGroupLabels.direct_care + self.upper_bound_suffix)
-            )
-            | (
-                pl.col(JobGroupLabels.direct_care)
-                < pl.col(JobGroupLabels.direct_care + self.lower_bound_suffix)
             )
             | (
                 pl.col(JobGroupLabels.managers)
@@ -296,6 +301,13 @@ class FilterJobRoleGroupExpressions:
                 > pl.col(JobGroupLabels.other + self.upper_bound_suffix)
             )
         )
+
+        lower_bound_check = pl.col(JobGroupLabels.direct_care) < pl.col(
+            JobGroupLabels.direct_care + self.lower_bound_suffix
+        )
+
+        if include_direct_care_lower_bound:
+            self.evaluation_expr = self.evaluation_expr | lower_bound_check
 
 
 def filter_job_role_group_equal_zero(lf: pl.LazyFrame) -> pl.LazyFrame:

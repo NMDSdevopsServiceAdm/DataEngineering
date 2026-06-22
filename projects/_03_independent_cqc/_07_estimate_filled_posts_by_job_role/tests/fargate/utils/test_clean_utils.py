@@ -178,6 +178,7 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
             test_lf,
             id_column=IndCQC.brand_id,
             min_workers_threshold=case.min_workers_threshold,
+            include_direct_care_lower_bound=case.include_direct_care_lower_bound,
         )
 
         pl_testing.assert_frame_equal(
@@ -330,6 +331,29 @@ class TestFilterJobRoleGroupExpressions:
             .alias(IndCQC.ascwds_job_role_counts)
         )
 
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    TestExprsNoLowerBound = job.FilterJobRoleGroupExpressions(
+        include_direct_care_lower_bound=False
+    )
+
+    def test_evaluation_expression_excludes_lower_bound_when_flag_is_false(self):
+        test_lf = pl.LazyFrame(
+            Data.test_evaluation_expr_rows,
+            Schemas.test_evaluation_expr_schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            Data.expected_evaluation_expr_rows_no_lower_bound,
+            Schemas.test_evaluation_expr_schema,
+            orient="row",
+        )
+        returned_lf = test_lf.with_columns(
+            pl.when(self.TestExprsNoLowerBound.evaluation_expr)
+            .then(None)
+            .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
+            .alias(IndCQC.ascwds_job_role_counts)
+        )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
