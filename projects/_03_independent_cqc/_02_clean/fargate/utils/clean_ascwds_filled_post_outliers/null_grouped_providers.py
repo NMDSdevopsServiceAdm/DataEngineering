@@ -304,8 +304,8 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Filters the input LazyFrame to the following:
         - potential_grouped_provider is True
-        - cqc_location_import_date equal to max month across dataset.
-        - cqc_location_import_date equal to min day of the max month across dataset.
+        - cqc_location_import_date equal to max year/month across dataset.
+        - cqc_location_import_date equal to min day of the max year/month across dataset.
 
     Args:
         lf (pl.LazyFrame): A LazyFrame with potential_grouped_provider column.
@@ -325,6 +325,10 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
         lf.select(cols_to_select)
         .filter(
             (pl.col(NGPcol.potential_grouped_provider) == True)
+            & (
+                pl.col(IndCQC.cqc_location_import_date).dt.year()
+                == pl.col(IndCQC.cqc_location_import_date).dt.year().max()
+            )
             & (
                 pl.col(IndCQC.cqc_location_import_date).dt.month()
                 == pl.col(IndCQC.cqc_location_import_date).dt.month().max()
