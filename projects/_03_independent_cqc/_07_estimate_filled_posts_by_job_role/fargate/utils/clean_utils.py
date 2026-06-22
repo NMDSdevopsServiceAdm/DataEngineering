@@ -85,7 +85,7 @@ def filter_job_role_group_outliers(
         raise ValueError(
             f"Value must be one of {IndCQC.brand_id}, {IndCQC.provider_id}, or {IndCQC.location_id}"
         )
-    temp_out_of_bounds_col: str = "out_of_bounds"
+    temp_out_of_bounds_col: str = f"{id_column}_out_of_bounds"
 
     Exprs = FilterJobRoleGroupExpressions(include_direct_care_lower_bound)
 
@@ -108,9 +108,13 @@ def filter_job_role_group_outliers(
             values=IndCQC.ascwds_job_role_counts,
             aggregate_function="sum",
         )
-        .with_columns(Exprs.id_column_sum_expr)
+        .with_columns(Exprs.id_column_sum_expr.alias(f"{id_column}_sum"))
         .filter(pl.col(Exprs.temp_id_column_sum) >= min_workers_threshold)
-        .with_columns(Exprs.job_group_percentage_expr)
+        .with_columns(
+            Exprs.job_group_percentage_expr.alias(
+                f"{id_column}_job_group_percentage_expr"
+            )
+        )
     )
 
     # Build a LazyFrame of the fixed bounds from the magic numbers dict
@@ -156,7 +160,8 @@ def filter_job_role_group_outliers(
         .then(None)
         .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
         .alias(IndCQC.ascwds_job_role_counts)
-    ).drop(temp_out_of_bounds_col)
+    )
+    # .drop(temp_out_of_bounds_col)
 
     if id_column == IndCQC.brand_id:
         new_rule = JobRoleFilteringRule.job_role_group_is_outlier_at_brand_level
