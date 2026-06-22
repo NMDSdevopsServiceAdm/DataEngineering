@@ -1340,6 +1340,19 @@
           }
         },
         {
+          "StartAt": "Run SfC Crawler",
+          "States": {
+            "Run SfC Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${sfc_crawler_name}"
+              },
+              "End": true
+            }
+          }
+        },
+        {
           "StartAt": "Run Validation Crawler",
           "States": {
             "Run Validation Crawler": {
