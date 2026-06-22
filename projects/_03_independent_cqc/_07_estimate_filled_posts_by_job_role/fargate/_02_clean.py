@@ -53,13 +53,17 @@ def main(
     """
     print("Cleaning merged_ind_cqc dataset...")
 
-    estimated_job_role_posts_lf = utils.scan_parquet(merged_data_source).with_columns(
-        utils.cast_to_schema(estimates_by_job_role_schema)
+    estimated_job_role_posts_lf = utils.scan_parquet(
+        merged_data_source,
+        schema=estimates_by_job_role_schema,
+        selected_columns=estimates_by_job_role_schema.keys(),
     )
     print("Merged LazyFrame read in")
 
-    merged_metadata_lf = utils.scan_parquet(merged_metadata_source).with_columns(
-        utils.cast_to_schema(metadata_columns_to_import_schema)
+    merged_metadata_lf = utils.scan_parquet(
+        merged_metadata_source,
+        schema=metadata_columns_to_import_schema,
+        selected_columns=metadata_columns_to_import_schema.keys(),
     )
     print("Merged Metadata LazyFrame read in")
 
@@ -99,7 +103,15 @@ def main(
     )
 
     estimated_job_role_posts_lf = cUtils.filter_job_role_group_outliers(
-        estimated_job_role_posts_lf
+        estimated_job_role_posts_lf, id_column=IndCQC.brand_id
+    )
+
+    estimated_job_role_posts_lf = cUtils.filter_job_role_group_outliers(
+        estimated_job_role_posts_lf, id_column=IndCQC.provider_id
+    )
+
+    estimated_job_role_posts_lf = cUtils.filter_job_role_group_outliers(
+        estimated_job_role_posts_lf, id_column=IndCQC.location_id
     )
 
     # Drop job role group as this will be reallocated in later job
