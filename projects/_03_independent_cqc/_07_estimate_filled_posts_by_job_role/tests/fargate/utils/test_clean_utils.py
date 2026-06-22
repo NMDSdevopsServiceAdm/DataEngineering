@@ -178,6 +178,7 @@ class TestFilterAscwdsJobRoleCountWhenJobGroupRatiosOutsidePercentileBounds:
             test_lf,
             id_column=IndCQC.brand_id,
             min_workers_threshold=case.min_workers_threshold,
+            include_direct_care_lower_bound=case.include_direct_care_lower_bound,
         )
 
         pl_testing.assert_frame_equal(

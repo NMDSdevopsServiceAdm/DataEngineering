@@ -70,7 +70,11 @@ class MainTests(unittest.TestCase):
         filter_job_role_group_equal_zero_mock.assert_called_once()
         filter_job_role_group_outliers_mock.assert_has_calls(
             [
-                call(ANY, id_column=IndCQC.brand_id),
+                call(
+                    ANY,
+                    id_column=IndCQC.brand_id,
+                    include_direct_care_lower_bound=False,
+                ),
                 call(ANY, id_column=IndCQC.provider_id),
                 call(ANY, id_column=IndCQC.location_id),
             ],
