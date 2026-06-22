@@ -112,7 +112,7 @@ def filter_job_role_group_outliers(
         .filter(pl.col(Exprs.temp_id_column_sum) >= min_workers_threshold)
         .with_columns(
             Exprs.job_group_percentage_expr.alias(
-                f"{pl.col(IndCQC.main_job_group_labelled)}_percentage"
+                f"{id_column}_{pl.col(IndCQC.main_job_group_labelled)}_percentage"
             )
         )
     )
