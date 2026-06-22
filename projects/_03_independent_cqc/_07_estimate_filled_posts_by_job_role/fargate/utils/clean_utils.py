@@ -60,7 +60,8 @@ def filter_job_role_group_outliers(
     Values are nulled where there are the same or more workers than the min workers threshold
     and either:
 
-    - direct care is outside the upper or lower bound
+    - direct care is outside the upper bound, or outside the lower bound if
+      include_direct_care_lower_bound is True
     - managers, regulated professions, or other are outside their upper bound
 
     Args:
@@ -185,6 +186,10 @@ class FilterJobRoleGroupExpressions:
     group distributions. It also defines column names
     used by these expressions.
 
+    Args:
+        include_direct_care_lower_bound (bool): Whether to include the lower bound
+            for direct care in the evaluation expression.
+
     Attributes:
         temp_id_column_sum (str): Temporary column name for the total number of workers.
         job_group_cols (list[str]): List of job group column names.
@@ -212,13 +217,6 @@ class FilterJobRoleGroupExpressions:
     evaluation_expr: pl.Expr
 
     def __init__(self, include_direct_care_lower_bound: bool = True):
-        """
-        Initialise FilterJobRoleGroupExpressions.
-
-        Args:
-            include_direct_care_lower_bound (bool): Whether to include the lower bound
-                for direct care in the evaluation expression. Defaults to True.
-        """
         self.temp_id_column_sum = "id_column_sum"
         self.job_group_cols = [
             JobGroupLabels.direct_care,
