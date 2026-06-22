@@ -96,7 +96,8 @@ def main(
 
     locations_lf = calculate_care_home_status_count(locations_lf)
 
-    print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
+    print(f"Exporting cleaned data to {cleaned_ind_cqc_destination}")
+    print(f"Exporting grouped providers data to {grouped_providers_destination}")
 
     utils.sink_to_parquet(
         locations_lf,
