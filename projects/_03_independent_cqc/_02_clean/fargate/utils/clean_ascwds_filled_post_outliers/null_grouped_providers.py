@@ -7,6 +7,9 @@ from polars_utils.expressions import is_care_home, is_not_care_home
 from polars_utils.filtering_utils import (
     update_filtering_rule,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
@@ -312,6 +315,7 @@ def select_grouped_providers_on_latest_import(lf: pl.LazyFrame) -> pl.LazyFrame:
         IndCQC.location_id,
         IndCQC.provider_id,
         IndCQC.cqc_location_import_date,
+        AWPClean.nmds_id,
         NGPcol.potential_grouped_provider,
         IndCQC.ascwds_filled_posts_dedup_clean,
     ]

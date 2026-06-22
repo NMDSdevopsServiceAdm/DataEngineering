@@ -23,6 +23,9 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_p
 from projects._03_independent_cqc._02_clean.fargate.utils.utils import (
     create_column_with_repeated_values_removed,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
@@ -80,6 +83,7 @@ def main(
     )
 
     locations_lf, grouped_providers = clean_ascwds_filled_post_outliers(locations_lf)
+    locations_lf = locations_lf.drop(AWPClean.nmds_id)
 
     locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
         locations_lf,
