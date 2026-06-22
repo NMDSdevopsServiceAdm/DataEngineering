@@ -6,8 +6,8 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import MainJobRoleLabels
-from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
-    AscwdsWorkerValueLabelsJobGroup,
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
 )
 
 
@@ -94,7 +94,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
     if null_count > 0:
         raise ValueError("Error: Estimate filled posts by job role column has nulls")
 
-    all_job_roles = AscwdsWorkerValueLabelsJobGroup.all_roles()
+    all_job_roles = CatVals.main_job_role_labels_column_values.categorical_values
     lf_adjusted = lf.pivot(
         on=IndCQC.main_job_role_clean_labelled,
         on_columns=all_job_roles,
