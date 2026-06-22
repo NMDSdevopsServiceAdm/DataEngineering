@@ -108,19 +108,13 @@ def filter_job_role_group_outliers(
             values=IndCQC.ascwds_job_role_counts,
             aggregate_function="sum",
         )
-        .with_columns(
-            [
-                Exprs.id_column_sum_expr,
-                *[
-                    (pl.col(c) / pl.col(Exprs.temp_id_column_sum)).alias(
-                        f"{id_column}_{c}_pct"
-                    )
-                    for c in Exprs.job_group_cols
-                ],
-            ]
-        )
+        .with_columns(Exprs.id_column_sum_expr)
         .filter(pl.col(Exprs.temp_id_column_sum) >= min_workers_threshold)
-        .with_columns(Exprs.job_group_percentage_expr)
+        .with_columns(
+            Exprs.job_group_percentage_expr.alias(
+                f"{pl.col(IndCQC.main_job_group_labelled)}_percentage"
+            )
+        )
     )
 
     # Build a LazyFrame of the fixed bounds from the magic numbers dict
@@ -145,14 +139,11 @@ def filter_job_role_group_outliers(
     else:
         piv_lf = piv_lf.join(bounds_lf, how="cross")
 
-    piv_lf = piv_lf.with_columns(
-        Exprs.evaluation_expr.alias(temp_out_of_bounds_col)
-    ).select(
-        *splits_for_pivot,
-        temp_out_of_bounds_col,
-        Exprs.temp_id_column_sum,
-        *[f"{id_column}_{c}_pct" for c in Exprs.job_group_cols],
-    )
+    piv_lf = piv_lf.with_columns(Exprs.evaluation_expr.alias(temp_out_of_bounds_col))
+    # .select(
+    #     *splits_for_pivot,
+    #     temp_out_of_bounds_col,
+    # )
 
     lf = lf.join(
         piv_lf,
