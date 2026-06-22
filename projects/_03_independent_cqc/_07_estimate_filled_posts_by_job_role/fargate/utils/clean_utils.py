@@ -110,11 +110,7 @@ def filter_job_role_group_outliers(
         )
         .with_columns(Exprs.id_column_sum_expr)
         .filter(pl.col(Exprs.temp_id_column_sum) >= min_workers_threshold)
-        .with_columns(
-            Exprs.job_group_percentage_expr.alias(
-                f"{id_column}_{pl.col(IndCQC.main_job_group_labelled)}_percentage"
-            )
-        )
+        .with_columns(Exprs.job_group_percentage_expr)
     )
 
     # Build a LazyFrame of the fixed bounds from the magic numbers dict
