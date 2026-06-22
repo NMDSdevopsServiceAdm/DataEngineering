@@ -45,7 +45,32 @@
                   "StartAt": "Clean data",
                   "States": {
                     "Clean data": {
-                      "Type": "Pass",
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_07_workforce_characteristics-container",
+                              "Command": [
+                                "_01_starters_leavers_vacancies/fargate/_02_clean.py",
+                                "--merged_data_source", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_01_merge_slv/",
+                                "--cleaned_data_destination", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_02_clean_slv/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
                       "End": true
                     }
                   }
@@ -96,7 +121,32 @@
                   "StartAt": "Impute data",
                   "States": {
                     "Impute data": {
-                      "Type": "Pass",
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_07_workforce_characteristics-container",
+                              "Command": [
+                                "_01_starters_leavers_vacancies/fargate/_03_impute.py",
+                                "--cleaned_data_source", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_02_clean_slv/",
+                                "--imputed_data_destination", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_03_impute_slv/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
                       "End": true
                     }
                   }
@@ -105,7 +155,34 @@
                   "StartAt": "Validate Cleaned Data",
                   "States": {
                     "Validate Cleaned Data": {
-                      "Type": "Pass",
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_07_workforce_characteristics-container",
+                              "Command": [
+                                "_01_starters_leavers_vacancies/fargate/validate_02_clean.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_02_clean_slv/",
+                                "--compare_path", "domain=workforce_characteristics/dataset=ind_cqc_01_merge_slv/",
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_02_clean_slv/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
                       "End": true
                     }
                   }
@@ -129,7 +206,34 @@
                   "StartAt": "Validate Imputed Data",
                   "States": {
                     "Validate Imputed Data": {
-                      "Type": "Pass",
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_07_workforce_characteristics-container",
+                              "Command": [
+                                "_01_starters_leavers_vacancies/fargate/validate_03_impute.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_03_impute_slv/",
+                                "--compare_path", "domain=workforce_characteristics/dataset=ind_cqc_02_clean_slv/",
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_03_impute_slv/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
                       "End": true
                     }
                   }
