@@ -70,6 +70,19 @@ def add_job_role_groups_column(
 
 
 class HistoricJobRoleAdjustmentConfig:
+    """
+    A dictionary in which keys are dates before which we reallocate job roles.
+        Date: {
+            historic role to reallocate: {
+                receiving role: amount to receive,
+            },
+        }
+
+    Please note the registered manager role must not be a receiving role due to
+    the order of functions in _04_estimate job roles script (historical reallocation
+    happens after RM reassignment). This role is taken from CQC counts and therefore
+    must be that count thereafter.
+    """
 
     adjustment_dict = {
         date(2023, 8, 1): {
