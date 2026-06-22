@@ -190,7 +190,7 @@ class NullNonResidentialGroupedProvidersTests(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), test_lf)
 
 
-class SelectGroupedProvidersOnLatestImport(unittest.TestCase):
+class SelectGroupedProviders(unittest.TestCase):
     def test_function_returns_expected_rows(self):
         input_lf = pl.LazyFrame(
             Data.select_grouped_providers_rows,
@@ -203,4 +203,4 @@ class SelectGroupedProvidersOnLatestImport(unittest.TestCase):
             Schemas.select_grouped_providers_schema,
             orient="row",
         )
-        pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), expected_lf)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

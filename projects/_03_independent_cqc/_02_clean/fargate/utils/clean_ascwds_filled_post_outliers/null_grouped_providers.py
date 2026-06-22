@@ -323,9 +323,10 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     ]
 
     date_col = pl.col(IndCQC.cqc_location_import_date)
+    trunc_date_col = date_col.dt.truncate("1mo")  # E.g. 2026-01-05 becomes 2026-01-01.
     return (
-        lf.select(cols_to_select)
-        .filter(pl.col(NGPcol.potential_grouped_provider) == True)
-        .filter(date_col.dt.truncate("1mo") == date_col.dt.truncate("1mo").max())
-        .filter(date_col == date_col.min().over(date_col.dt.truncate("1mo")))
+        lf.filter(pl.col(NGPcol.potential_grouped_provider))
+        .filter(trunc_date_col == trunc_date_col.max())
+        .filter(date_col == date_col.min().over(trunc_date_col))
+        .select(cols_to_select)
     )
