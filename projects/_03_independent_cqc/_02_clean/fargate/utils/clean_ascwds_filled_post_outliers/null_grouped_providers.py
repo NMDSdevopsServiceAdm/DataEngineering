@@ -321,23 +321,11 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
         NGPcol.potential_grouped_provider,
         IndCQC.ascwds_filled_posts_dedup_clean,
     ]
+
+    date_col = pl.col(IndCQC.cqc_location_import_date)
     return (
         lf.select(cols_to_select)
-        .filter(
-            (pl.col(NGPcol.potential_grouped_provider) == True)
-            & (
-                pl.col(IndCQC.cqc_location_import_date).dt.year()
-                == pl.col(IndCQC.cqc_location_import_date).dt.year().max()
-            )
-            & (
-                pl.col(IndCQC.cqc_location_import_date).dt.month()
-                == pl.col(IndCQC.cqc_location_import_date).dt.month().max()
-            )
-        )
-        .filter(
-            (
-                pl.col(IndCQC.cqc_location_import_date).dt.day()
-                == pl.col(IndCQC.cqc_location_import_date).dt.day().min()
-            )
-        )
+        .filter(pl.col(NGPcol.potential_grouped_provider) == True)
+        .filter(date_col.dt.truncate("1mo") == date_col.dt.truncate("1mo").max())
+        .filter(date_col == date_col.min().over(date_col.dt.truncate("1mo")))
     )

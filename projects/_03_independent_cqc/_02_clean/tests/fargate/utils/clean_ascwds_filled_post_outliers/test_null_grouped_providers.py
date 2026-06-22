@@ -203,5 +203,4 @@ class SelectGroupedProvidersOnLatestImport(unittest.TestCase):
             Schemas.select_grouped_providers_schema,
             orient="row",
         )
-
         pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), expected_lf)
