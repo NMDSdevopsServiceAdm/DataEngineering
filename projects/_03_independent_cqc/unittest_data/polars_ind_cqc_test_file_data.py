@@ -1090,8 +1090,8 @@ class NullGroupedProvidersData:
         ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", "nmdsid_1", 13.0, 13.0, 4, 3.25, AscwdsFilteringRule.populated, 1.0),
         ("loc 2", "prov 1", date(2024, 1, 1), "Y", None, None, None,  None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
         ("loc 3", "prov 1", date(2024, 1, 1), "Y", None, None, None, None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
-        ("loc 1", "prov 1", date(2024, 1, 8), "Y", "estab 1", "nmdsid_1", 12.0, 12.0, 4, 3.0, AscwdsFilteringRule.populated, 1.0),
-        ("loc 2", "prov 1", date(2024, 1, 8), "Y", None, None, None, None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
+        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", "nmdsid_1", 12.0, 12.0, 4, 3.0, AscwdsFilteringRule.populated, 1.0),
+        ("loc 2", "prov 1", date(2024, 2, 1), "Y", None, None, None, None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
     ] # fmt: skip
 
     input_grouped_provider_rows = [
@@ -1184,16 +1184,17 @@ class NullGroupedProvidersData:
         ("1-008", CareHome.not_care_home, True, 50.0, None, 10.0, 2, 25.0, AscwdsFilteringRule.contained_invalid_missing_data_code),  # already filtered
     ] # fmt: skip
 
-    select_grouped_providers_on_latest_import_rows = [
+    select_grouped_providers_rows = [
         ("1-001", "prov-1", date(2026, 1, 1), "nmdsid_1", True, 1.0), # Grouped provider but not on latest import date.
         ("1-002", "prov-1", date(2026, 1, 1), "nmdsid_2", False, 1.0), # Not grouped provider and not on latest import date.
-        ("1-003", "prov-1", date(2026, 1, 2), "nmdsid_3", False, 1.0), # Latest import date but not grouped provider.
-        ("1-004", "prov-1", date(2026, 1, 2), "nmdsid_4", True, 1.0),
-        ("1-005", "prov-2", date(2026, 1, 2), "nmdsid_5", True, 1.0),
+        ("1-003", "prov-1", date(2026, 2, 2), "nmdsid_3", False, 1.0), # Latest import month and min day but not grouped provider.
+        ("1-004", "prov-1", date(2026, 2, 2), "nmdsid_4", True, 1.0), # Keep
+        ("1-005", "prov-2", date(2026, 2, 2), "nmdsid_5", True, 1.0), # Keep (different provider)
+        ("1-006", "prov-1", date(2026, 2, 3), "nmdsid_6", True, 1.0), # Latest import month but not min day.
     ] # fmt: skip
-    expected_select_grouped_providers_on_latest_import_rows = [
-        ("1-004", "prov-1", date(2026, 1, 2), "nmdsid_4", True, 1.0),
-        ("1-005", "prov-2", date(2026, 1, 2), "nmdsid_5", True, 1.0),
+    expected_select_grouped_providers_rows = [
+        ("1-004", "prov-1", date(2026, 2, 2), "nmdsid_4", True, 1.0),
+        ("1-005", "prov-2", date(2026, 2, 2), "nmdsid_5", True, 1.0),
     ] # fmt: skip
 
 

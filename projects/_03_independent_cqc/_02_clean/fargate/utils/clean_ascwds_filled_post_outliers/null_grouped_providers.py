@@ -73,7 +73,7 @@ def null_grouped_providers(lf: pl.LazyFrame) -> tuple[pl.LazyFrame, pl.LazyFrame
 
     lf = identify_potential_grouped_providers(lf)
 
-    grouped_providers = select_grouped_providers_on_latest_import(lf)
+    grouped_providers = select_grouped_providers(lf)
 
     lf = null_care_home_grouped_providers(lf)
     lf = null_non_residential_grouped_providers(lf)
@@ -300,10 +300,12 @@ def null_non_residential_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf
 
 
-def select_grouped_providers_on_latest_import(lf: pl.LazyFrame) -> pl.LazyFrame:
+def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Filters LazyFrame where potential_grouped_provider is True and
-    cqc_location_import_date equal to max cqc_location_import_date.
+    Filters the input LazyFrame to the following:
+        - potential_grouped_provider is True
+        - cqc_location_import_date equal to max month across dataset.
+        - cqc_location_import_date equal to min day of the max month across dataset.
 
     Args:
         lf (pl.LazyFrame): A LazyFrame with potential_grouped_provider column.
@@ -319,10 +321,19 @@ def select_grouped_providers_on_latest_import(lf: pl.LazyFrame) -> pl.LazyFrame:
         NGPcol.potential_grouped_provider,
         IndCQC.ascwds_filled_posts_dedup_clean,
     ]
-    return lf.select(cols_to_select).filter(
-        (pl.col(NGPcol.potential_grouped_provider) == True)
-        & (
-            pl.col(IndCQC.cqc_location_import_date)
-            == pl.max(IndCQC.cqc_location_import_date)
+    return (
+        lf.select(cols_to_select)
+        .filter(
+            (pl.col(NGPcol.potential_grouped_provider) == True)
+            & (
+                pl.col(IndCQC.cqc_location_import_date).dt.month()
+                == pl.col(IndCQC.cqc_location_import_date).dt.month().max()
+            )
+        )
+        .filter(
+            (
+                pl.col(IndCQC.cqc_location_import_date).dt.day()
+                == pl.col(IndCQC.cqc_location_import_date).dt.day().min()
+            )
         )
     )

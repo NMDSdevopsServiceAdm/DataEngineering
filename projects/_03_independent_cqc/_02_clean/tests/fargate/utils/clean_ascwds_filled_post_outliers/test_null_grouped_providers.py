@@ -77,14 +77,14 @@ class MainTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.null_non_residential_grouped_providers")
     @patch(f"{PATCH_PATH}.null_care_home_grouped_providers")
-    @patch(f"{PATCH_PATH}.select_grouped_providers_on_latest_import")
+    @patch(f"{PATCH_PATH}.select_grouped_providers")
     @patch(f"{PATCH_PATH}.identify_potential_grouped_providers")
     @patch(f"{PATCH_PATH}.calculate_data_for_grouped_provider_identification")
     def test_null_grouped_providers_calls_functions(
         self,
         calculate_data_for_grouped_provider_identification_mock: Mock,
         identify_potential_grouped_providers_mock: Mock,
-        select_grouped_providers_on_latest_import: Mock,
+        select_grouped_providers: Mock,
         null_care_home_grouped_providers_mock: Mock,
         null_non_residential_grouped_providers_mock: Mock,
     ):
@@ -94,7 +94,7 @@ class MainTests(unittest.TestCase):
             self.test_lf
         )
         identify_potential_grouped_providers_mock.assert_called_once()
-        select_grouped_providers_on_latest_import.assert_called_once()
+        select_grouped_providers.assert_called_once()
         null_care_home_grouped_providers_mock.assert_called_once()
         null_non_residential_grouped_providers_mock.assert_called_once()
 
@@ -193,15 +193,15 @@ class NullNonResidentialGroupedProvidersTests(unittest.TestCase):
 class SelectGroupedProvidersOnLatestImport(unittest.TestCase):
     def test_function_returns_expected_rows(self):
         input_lf = pl.LazyFrame(
-            Data.select_grouped_providers_on_latest_import_rows,
-            Schemas.select_grouped_providers_on_latest_import_schema,
+            Data.select_grouped_providers_rows,
+            Schemas.select_grouped_providers_schema,
             orient="row",
         )
-        returned_lf = job.select_grouped_providers_on_latest_import(input_lf)
+        returned_lf = job.select_grouped_providers(input_lf)
         expected_lf = pl.LazyFrame(
-            Data.expected_select_grouped_providers_on_latest_import_rows,
-            Schemas.select_grouped_providers_on_latest_import_schema,
+            Data.expected_select_grouped_providers_rows,
+            Schemas.select_grouped_providers_schema,
             orient="row",
         )
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+        pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), expected_lf)

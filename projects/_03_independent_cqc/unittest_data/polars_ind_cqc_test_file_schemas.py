@@ -1003,7 +1003,7 @@ class NullGroupedProvidersSchema:
         ]
     )
 
-    select_grouped_providers_on_latest_import_schema = pl.Schema(
+    select_grouped_providers_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.provider_id, pl.String()),
