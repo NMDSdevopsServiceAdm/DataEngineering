@@ -3241,6 +3241,16 @@ class EstimateFilledPostsByJobRoleCleanUtilsData:
         (0.01, 0.3, 0.3, 0.3, 0.2, 0.2, 0.2, 0.2, 0.05, None), # All out of bounds
         (None, None, None, None, None, None, None, None, None, None), # Test handling of null values
     ] # fmt: skip
+    expected_evaluation_expr_rows_no_lower_bound = [
+        (0.1, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, 1),    # All within bounds - retained
+        (0.3, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, None),  # Direct care above upper bound - nulled
+        (0.1, 0.3, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, None),  # Managers above upper bound - nulled
+        (0.1, 0.1, 0.3, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, None),  # Regulated professionals above upper bound - nulled
+        (0.1, 0.1, 0.1, 0.3, 0.2, 0.2, 0.2, 0.2, 0.05, None),  # Other above upper bound - nulled
+        (0.01, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.05, 1),    # Direct care below lower bound - retained (flag=False)
+        (0.01, 0.3, 0.3, 0.3, 0.2, 0.2, 0.2, 0.2, 0.05, None), # All out of bounds - nulled (upper bounds still apply)
+        (None, None, None, None, None, None, None, None, None, None), # Null values - retained
+    ]  # fmt: skip
 
     filter_job_role_group_equal_zero_test_cases = [
         EstimateFilledPostsByJobRoleCleanUtilsTestCase(
