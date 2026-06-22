@@ -85,7 +85,7 @@ def filter_job_role_group_outliers(
         raise ValueError(
             f"Value must be one of {IndCQC.brand_id}, {IndCQC.provider_id}, or {IndCQC.location_id}"
         )
-    temp_out_of_bounds_col: str = f"{id_column}_out_of_bounds"
+    temp_out_of_bounds_col: str = "out_of_bounds"
 
     Exprs = FilterJobRoleGroupExpressions(include_direct_care_lower_bound)
 
@@ -135,11 +135,12 @@ def filter_job_role_group_outliers(
     else:
         piv_lf = piv_lf.join(bounds_lf, how="cross")
 
-    piv_lf = piv_lf.with_columns(Exprs.evaluation_expr.alias(temp_out_of_bounds_col))
-    # .select(
-    #     *splits_for_pivot,
-    #     temp_out_of_bounds_col,
-    # )
+    piv_lf = piv_lf.with_columns(
+        Exprs.evaluation_expr.alias(temp_out_of_bounds_col)
+    ).select(
+        *splits_for_pivot,
+        temp_out_of_bounds_col,
+    )
 
     lf = lf.join(
         piv_lf,
@@ -155,8 +156,7 @@ def filter_job_role_group_outliers(
         .then(None)
         .otherwise(pl.col(IndCQC.ascwds_job_role_counts))
         .alias(IndCQC.ascwds_job_role_counts)
-    )
-    # .drop(temp_out_of_bounds_col)
+    ).drop(temp_out_of_bounds_col)
 
     if id_column == IndCQC.brand_id:
         new_rule = JobRoleFilteringRule.job_role_group_is_outlier_at_brand_level

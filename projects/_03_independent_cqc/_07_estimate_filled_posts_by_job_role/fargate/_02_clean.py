@@ -118,11 +118,11 @@ def main(
 
     # Drop job role group as this will be reallocated in later job
     # Drop providerid and brandid which are just used for filtering and not needed for impute and estimate steps.
-    # estimated_job_role_posts_lf = estimated_job_role_posts_lf.drop(
-    #     IndCQC.main_job_group_labelled,
-    #     IndCQC.provider_id,
-    #     IndCQC.brand_id,
-    # )
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.drop(
+        IndCQC.main_job_group_labelled,
+        IndCQC.provider_id,
+        IndCQC.brand_id,
+    )
 
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
