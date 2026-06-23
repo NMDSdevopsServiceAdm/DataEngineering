@@ -32,6 +32,8 @@ All notable changes to this project will be documented in this file.
 
 - Changed _04_estimate job role filled posts so historical reallocation is called after manager adjustment.
 
+- Changed null_grouped_providers so that they are saved to s3 before being nulled.
+
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
 
