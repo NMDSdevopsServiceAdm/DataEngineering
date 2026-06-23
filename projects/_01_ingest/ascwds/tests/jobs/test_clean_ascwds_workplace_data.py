@@ -389,5 +389,26 @@ class JobRoleColsTests(unittest.TestCase):
         self.assertEqual(len(self.returned_list), 520)
 
 
+class MergeJobRoleColumns(unittest.TestCase):
+    def setUp(self):
+        self.test_df = self.spark.createDataFrame(
+            Data.merge_job_role_columns_rows, Schemas.merge_job_role_columns_schema
+        )
+        self.returned_df = job.merge_job_role_columns(self.test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_merge_job_role_columns_rows,
+            Schemas.expected_merge_job_role_columns_schema,
+        )
+
+    def test_function_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_function_returns_expected_values(self):
+        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+
+    def test_function_does_not_change_row_count(self):
+        self.assertEqual(self.returned_df.count(), self.test_df.count())
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

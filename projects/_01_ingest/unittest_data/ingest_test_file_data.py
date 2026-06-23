@@ -265,6 +265,13 @@ class ASCWDSWorkplaceData:
         ("2", date(2024, 4, 4), date(2022, 4, 4)),
     ]
 
+    merge_job_role_columns_rows = [
+        (10, 10),
+    ]
+    expected_merge_job_role_columns_rows = [
+        (20),
+    ]
+
 
 @dataclass
 class ASCWDSWorkerData:

@@ -176,6 +176,18 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
+    merge_job_role_columns_schema = StringType(
+        [
+            StructField(AWP.job_role_12_agency, IntegerType(), True),
+            StructField(AWP.job_role_42_agency, IntegerType(), True),
+        ]
+    )
+    expected_merge_job_role_columns_schema = StringType(
+        [
+            StructField(AWP.job_role_42_agency, IntegerType(), True),
+        ]
+    )
+
 
 @dataclass
 class ASCWDSWorkerSchemas:

@@ -382,6 +382,24 @@ def create_date_column_for_purging_data(df: DataFrame) -> DataFrame:
     return df
 
 
+def merge_job_role_columns(df: DataFrame) -> DataFrame:
+    """
+    Merge legacy job roles into current job roles.
+
+    Over time, the ASC-WDS has stopped collecting specific roles.
+    We have decided to merge the historic data for these roles into
+    the current job roles.
+
+    Args:
+        df (DataFrame): Input DataFrame containing workplace records.
+
+    Returns:
+        DataFrame: Input DataFrame with only current job role columns.
+    """
+
+    return df
+
+
 if __name__ == "__main__":
     print("Spark job 'clean_ascwds_workplace_data' starting...")
     print(f"Job parameters: {sys.argv}")
