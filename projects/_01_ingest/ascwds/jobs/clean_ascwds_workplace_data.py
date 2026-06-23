@@ -56,6 +56,10 @@ ascwds_workplace_columns_to_import = [
     AWPClean.import_date,
 ]
 
+job_role_cols = [
+    role for role, value in vars(AWPClean()).items() if role.startswith("job_role_")
+]
+
 cols_required_for_reconciliation_df = [
     AWPClean.ascwds_workplace_import_date,
     AWPClean.establishment_id,
@@ -86,7 +90,8 @@ def main(
     workplace_for_reconciliation_destination: str,
 ):
     ascwds_workplace_df = utils.read_from_parquet(
-        ascwds_workplace_source, selected_columns=ascwds_workplace_columns_to_import
+        ascwds_workplace_source,
+        selected_columns=list(set(ascwds_workplace_columns_to_import + job_role_cols)),
     )
 
     ascwds_workplace_df = filter_test_accounts(ascwds_workplace_df)
