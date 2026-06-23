@@ -468,6 +468,9 @@ def estimates_percentage_expressions(
     Raises:
         ValueError: if role_or_group is not 'role' or 'group', or if pcts is not a list of two numbers
     """
+    job_role_estimate_col = pl.col(
+        IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
+    )
     if role_or_group not in ["role", "group"]:
         raise ValueError("role_or_group must be either 'role' or 'group'")
     if len(pcts) != 2 or not all(isinstance(pct, (int, float)) for pct in pcts):
@@ -477,31 +480,19 @@ def estimates_percentage_expressions(
     if role_or_group == "role":
         expr = (
             pl.when(pl.col(IndCqcColumns.main_job_role_clean_labelled) == name)
-            .then(
-                pl.col(
-                    IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
-                )
-            )
+            .then(job_role_estimate_col)
             .otherwise(0)
             .sum()
-            / pl.col(
-                IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
-            ).sum()
+            / job_role_estimate_col.sum()
         )
 
     elif role_or_group == "group":
         expr = (
             pl.when(pl.col(IndCqcColumns.main_job_group_labelled) == name)
-            .then(
-                pl.col(
-                    IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
-                )
-            )
+            .then(job_role_estimate_col)
             .otherwise(0)
             .sum()
-            / pl.col(
-                IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
-            ).sum()
+            / job_role_estimate_col.sum()
         )
     return ((expr >= pcts[0]) & (expr <= pcts[1])).over(
         pl.col(IndCqcColumns.cqc_location_import_date)
