@@ -23,19 +23,24 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_p
 from projects._03_independent_cqc._02_clean.fargate.utils.utils import (
     create_column_with_repeated_values_removed,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 def main(
     merged_ind_cqc_source: str,
-    destination: str,
+    cleaned_ind_cqc_destination: str,
+    grouped_providers_destination: str,
 ) -> None:
     """
     Cleans independent CQC locations data.
 
     Args:
         merged_ind_cqc_source (str): s3 path to the merged independent CQC location data
-        destination (str): s3 path to save cleaned independent CQC location data
+        cleaned_ind_cqc_destination (str): s3 path to save cleaned independent CQC location data
+        grouped_providers_destination (str): S3 path to save potential grouped providers data
     """
     print("Cleaning merged_ind_cqc dataset...")
 
@@ -77,7 +82,8 @@ def main(
         [0, 1, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
     )
 
-    locations_lf = clean_ascwds_filled_post_outliers(locations_lf)
+    locations_lf, grouped_providers = clean_ascwds_filled_post_outliers(locations_lf)
+    locations_lf = locations_lf.drop(AWPClean.nmds_id)
 
     locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
         locations_lf,
@@ -90,11 +96,17 @@ def main(
 
     locations_lf = calculate_care_home_status_count(locations_lf)
 
-    print(f"Exporting as parquet to {destination}")
+    print(f"Exporting cleaned data to {cleaned_ind_cqc_destination}")
+    print(f"Exporting grouped providers data to {grouped_providers_destination}")
 
     utils.sink_to_parquet(
         locations_lf,
-        destination,
+        cleaned_ind_cqc_destination,
+    )
+
+    utils.sink_to_parquet(
+        grouped_providers,
+        grouped_providers_destination,
     )
 
 
@@ -107,14 +119,19 @@ if __name__ == "__main__":
             "S3 URI to read merged CQC location data from",
         ),
         (
-            "--destination",
+            "--cleaned_ind_cqc_destination",
             "S3 URI to save cleaned ind cqc data to",
+        ),
+        (
+            "--grouped_providers_destination",
+            "S3 URI to save potential grouped providers data to",
         ),
     )
 
     main(
         merged_ind_cqc_source=args.merged_ind_cqc_source,
-        destination=args.destination,
+        cleaned_ind_cqc_destination=args.cleaned_ind_cqc_destination,
+        grouped_providers_destination=args.grouped_providers_destination,
     )
 
     print("Finished Clean Independent CQC job")

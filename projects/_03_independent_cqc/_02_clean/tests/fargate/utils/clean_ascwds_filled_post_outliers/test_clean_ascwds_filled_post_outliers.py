@@ -39,6 +39,11 @@ class CleanAscwdsFilledPostOutliersTests(unittest.TestCase):
         null_filled_posts_where_locations_use_invalid_missing_data_code_mock: Mock,
         add_filtering_rule_column_mock: Mock,
     ):
+        null_grouped_provders_mock.return_value = [
+            Mock(name="clean_ind_cqc_data"),
+            Mock(name="grouped_providers"),
+        ]
+
         job.clean_ascwds_filled_post_outliers(self.unfiltered_ind_cqc_lf)
         winsorize_care_home_filled_posts_per_bed_ratio_outliers_mock.assert_called_once()
         null_grouped_provders_mock.assert_called_once()

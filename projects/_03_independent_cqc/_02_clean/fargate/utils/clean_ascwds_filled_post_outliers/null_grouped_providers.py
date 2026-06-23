@@ -7,6 +7,9 @@ from polars_utils.expressions import is_care_home, is_not_care_home
 from polars_utils.filtering_utils import (
     update_filtering_rule,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
@@ -42,10 +45,12 @@ class NullGroupedProvidersConfig:
     POSTS_PER_PIR_PROVIDER_THRESHOLD: pl.Float64 = 1.5
 
 
-def null_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
+def null_grouped_providers(lf: pl.LazyFrame) -> tuple[pl.LazyFrame, pl.LazyFrame]:
     """
     Null ascwds_filled_posts_dedup_clean where a provider has multiple
     locations, all their ascwds is under one location.
+
+    These providers are returned in a separate LazyFrame before being nulled.
 
     Following analysis of ASCWDS data and contacting some providers, we
     discovered that some providers were submitting their entire workforce
@@ -61,11 +66,14 @@ def null_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
         lf (pl.LazyFrame): A polars LazyFrame with independent cqc data.
 
     Returns:
-        pl.LazyFrame: A polars LazyFrame with grouped providers' data nulled.
+        tuple[pl.LazyFrame, pl.LazyFrame]: The input LazyFrame with grouped
+            providers' data nulled and a LazyFrame of potential grouped providers prior to nulling.
     """
     lf = calculate_data_for_grouped_provider_identification(lf)
 
     lf = identify_potential_grouped_providers(lf)
+
+    grouped_providers = select_grouped_providers(lf)
 
     lf = null_care_home_grouped_providers(lf)
     lf = null_non_residential_grouped_providers(lf)
@@ -73,7 +81,7 @@ def null_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     columns_to_drop = [field.name for field in fields(NGPcol())]
     lf = lf.drop(*columns_to_drop)
 
-    return lf
+    return lf, grouped_providers
 
 
 def calculate_data_for_grouped_provider_identification(
@@ -290,3 +298,34 @@ def null_non_residential_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
     return lf
+
+
+def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Filters the input LazyFrame to the following:
+        - potential_grouped_provider is True
+        - cqc_location_import_date equal to max year/month across dataset.
+        - cqc_location_import_date equal to min day of the max year/month across dataset.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with potential_grouped_provider column.
+
+    Returns:
+        pl.LazyFrame: The filtered input LazyFrame.
+    """
+    cols_to_select = [
+        IndCQC.location_id,
+        IndCQC.provider_id,
+        IndCQC.cqc_location_import_date,
+        AWPClean.nmds_id,
+        NGPcol.potential_grouped_provider,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+    ]
+
+    date_col = pl.col(IndCQC.cqc_location_import_date)
+    trunc_date_col = date_col.dt.truncate("1mo")  # E.g. 2026-01-05 becomes 2026-01-01.
+    return (
+        lf.filter(pl.col(NGPcol.potential_grouped_provider))
+        .filter(trunc_date_col == trunc_date_col.max())
+        .select(cols_to_select)
+    )

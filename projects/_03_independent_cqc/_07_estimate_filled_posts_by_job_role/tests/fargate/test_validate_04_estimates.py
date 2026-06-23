@@ -49,8 +49,8 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.ascwds_job_role_ratios_merged: pl.Float32,
             IndCqcColumns.ascwds_job_role_ratios_merged_source: pl.String,
             IndCqcColumns.estimate_filled_posts_by_job_role: pl.Float32,
-            IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
             IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
+            IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
             IndCqcColumns.estimate_filled_posts_from_all_job_roles: pl.Float32,
             IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: pl.Float32,
             IndCqcColumns.main_job_group_labelled: pl.String,
@@ -170,7 +170,7 @@ class TestEstimatesPercentageExpressions:
             IndCqcColumns.cqc_location_import_date: pl.Date,
             IndCqcColumns.main_job_role_clean_labelled: pl.String,
             IndCqcColumns.main_job_group_labelled: pl.String,
-            IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
+            IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
             "expression": pl.Boolean,
         },
         data=[
