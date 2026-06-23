@@ -19,10 +19,6 @@ from utils.value_labels.ascwds_workplace.workplace_label_dictionary import (
     ascwds_workplace_labels_dict,
 )
 
-DATE_COLUMN_IDENTIFIER = "date"
-COLUMNS_TO_BOUND = [AWPClean.total_staff, AWPClean.worker_records]
-MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
-
 ascwds_workplace_columns_to_import = [
     AWPClean.organisation_id,
     AWPClean.period,
@@ -84,6 +80,10 @@ cols_required_for_reconciliation_df = [
     AWPClean.last_logged_in_date,
     AWPClean.la_permission,
 ]
+
+DATE_COLUMN_IDENTIFIER = "date"
+COLUMNS_TO_BOUND = [AWPClean.total_staff, AWPClean.worker_records] + job_role_cols
+MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
 
 
 def main(
