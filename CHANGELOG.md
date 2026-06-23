@@ -30,6 +30,8 @@ All notable changes to this project will be documented in this file.
 
 - Changed _04_estimate job role filled posts so historical reallocation is called after manager adjustment.
 
+- Changed validate_04_estimates to reflect that historical reallocation is called after manager adjustment.
+
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
 
