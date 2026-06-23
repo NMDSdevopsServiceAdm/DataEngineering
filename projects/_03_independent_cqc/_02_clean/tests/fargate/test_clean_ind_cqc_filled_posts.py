@@ -87,7 +87,7 @@ class MainTests(CleanIndFilledPostsTests):
                 call(
                     ANY,
                     self.GROUPED_PROVIDERS_DESTINATION,
-                    append=True,
+                    append=False,
                 ),
             ]
         )

@@ -108,7 +108,7 @@ def main(
     utils.sink_to_parquet(
         grouped_providers,
         grouped_providers_destination,
-        append=True,
+        append=False,
     )
 
 
