@@ -168,13 +168,6 @@ def sink_to_parquet(
         print("The provided LazyFrame was empty. No data was written.")
         return
 
-    # if append:
-    #     fname = f"{uuid.uuid4()}.parquet"
-    #     if isinstance(output_path, str):
-    #         output_path += fname
-    #     else:
-    #         output_path = output_path / fname
-
     try:
         if partition_cols:
             pad_cols = [col for col in partition_cols if col in ("day", "month")]
