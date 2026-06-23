@@ -1187,16 +1187,15 @@ class NullGroupedProvidersData:
     select_grouped_providers_rows = [
         ("1-001", "prov-1", date(2026, 1, 1), "nmdsid_1", True, 1.0), # Grouped provider but undesired import date.
         ("1-002", "prov-1", date(2026, 1, 1), "nmdsid_2", False, 1.0), # Not grouped provider and undesired import date.
-        ("1-003", "prov-1", date(2026, 2, 2), "nmdsid_3", False, 1.0), # Desired date but not grouped provider.
-        ("1-004", "prov-1", date(2026, 2, 2), "nmdsid_4", True, 1.0), # Keep
-        ("1-005", "prov-2", date(2026, 2, 2), "nmdsid_5", True, 1.0), # Keep (different provider)
-        ("1-006", "prov-1", date(2026, 2, 3), "nmdsid_6", True, 1.0), # Correct year/month but not min day.
-        ("1-007", "prov-1", date(2025, 1, 1), "nmdsid_7", True, 1.0), # Incorrect date with lower year and month than desired.
+        ("1-003", "prov-1", date(2026, 2, 1), "nmdsid_3", False, 1.0), # Desired date but not grouped provider.
+        ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0), # Keep
+        ("1-005", "prov-2", date(2026, 2, 1), "nmdsid_5", True, 1.0), # Keep (different provider)
+        ("1-006", "prov-1", date(2025, 1, 1), "nmdsid_6", True, 1.0), # Incorrect date with lower year and month than desired.
         ("1-008", "prov-1", date(2025, 3, 1), "nmdsid_7", True, 1.0), # Incorrect date with lower year and higher month than desired.
     ] # fmt: skip
     expected_select_grouped_providers_rows = [
-        ("1-004", "prov-1", date(2026, 2, 2), "nmdsid_4", True, 1.0),
-        ("1-005", "prov-2", date(2026, 2, 2), "nmdsid_5", True, 1.0),
+        ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0),
+        ("1-005", "prov-2", date(2026, 2, 1), "nmdsid_5", True, 1.0),
     ] # fmt: skip
 
 

@@ -327,6 +327,5 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     return (
         lf.filter(pl.col(NGPcol.potential_grouped_provider))
         .filter(trunc_date_col == trunc_date_col.max())
-        .filter(date_col == date_col.min().over(trunc_date_col))
         .select(cols_to_select)
     )

@@ -67,12 +67,14 @@ class MainTests(unittest.TestCase):
         self.assertIsInstance(self.returned_lf, pl.LazyFrame)
         self.assertIsInstance(self.grouped_providers, pl.LazyFrame)
 
-    def test_null_grouped_providers_returns_same_number_of_rows(self):
+    def test_null_grouped_providers_returns_same_number_of_rows_in_locations_data(self):
         self.assertEqual(
             self.returned_lf.collect().height, self.test_lf.collect().height
         )
 
-    def test_null_grouped_providers_returns_expected_grouped_providers(self):
+    def test_null_grouped_providers_returns_expected_rows_in_grouped_providers_data(
+        self,
+    ):
         self.assertEqual(self.grouped_providers.collect().height, 2)
 
     @patch(f"{PATCH_PATH}.null_non_residential_grouped_providers")
