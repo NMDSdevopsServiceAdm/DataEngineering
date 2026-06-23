@@ -84,7 +84,6 @@ class MainTests(CleanIndFilledPostsTests):
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.CLEANED_IND_CQC_DESTINATION,
-            append=False,
         )
 
 

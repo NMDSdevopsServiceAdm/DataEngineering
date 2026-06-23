@@ -95,7 +95,6 @@ def main(
     utils.sink_to_parquet(
         locations_lf,
         destination,
-        append=False,
     )
 
 

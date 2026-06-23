@@ -50,12 +50,10 @@ class EstimateDirectPaymentsTests(unittest.TestCase):
                 call(
                     ANY,
                     self.SOME_DESTINATION,
-                    append=False,
                 ),
                 call(
                     ANY,
                     self.SOME_OTHER_DESTINATION,
-                    append=False,
                 ),
             ]
         )

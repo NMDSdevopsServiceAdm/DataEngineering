@@ -209,7 +209,7 @@ class TestSinkParquet(TestUtils):
 
         f = io.StringIO()
         with redirect_stdout(f):
-            utils.sink_to_parquet(lazy_df, destination, None, append=False)
+            utils.sink_to_parquet(lazy_df, destination, None)
         output = f.getvalue()
 
         self.assertFalse(destination.exists())
@@ -221,25 +221,16 @@ class TestSinkParquet(TestUtils):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
         lazy_df = df.lazy()
         destination: str = str(self.temp_dir) + "/"
-        utils.sink_to_parquet(lazy_df, destination, append=True)
+        utils.sink_to_parquet(lazy_df, destination)
         files = glob(os.path.join(str(destination), "*.parquet"))
         self.assertEqual(len(files), 1)
-
-    def test_sink_parquet_writes_with_append(self):
-        df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
-        lazy_df = df.lazy()
-        destination: str = str(self.temp_dir) + "/"
-        utils.sink_to_parquet(lazy_df, destination, append=True)
-        utils.sink_to_parquet(lazy_df, destination, append=True)
-        files = glob(os.path.join(destination, "*.parquet"))
-        self.assertEqual(len(files), 2)
 
     def test_sink_parquet_writes_with_overwrite(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
         lazy_df = df.lazy()
         destination = self.temp_dir / "test.parquet"
-        utils.sink_to_parquet(lazy_df, destination, append=False)
-        utils.sink_to_parquet(lazy_df, destination, append=False)
+        utils.sink_to_parquet(lazy_df, destination)
+        utils.sink_to_parquet(lazy_df, destination)
 
         files = glob(os.path.join(self.temp_dir, "*.parquet"))
         self.assertEqual(len(files), 1)
@@ -254,7 +245,6 @@ class TestSinkParquet(TestUtils):
             lazy_df,
             destination,
             partition_cols=["part"],
-            append=False,
         )
         partitions = [d.name for d in destination.iterdir() if d.is_dir()]
         self.assertTrue(set(partitions) == {"part=x", "part=y"})
@@ -277,7 +267,6 @@ class TestSinkParquet(TestUtils):
                 lazy_df,
                 output_path,
                 partition_cols=["year", "month", "day"],
-                append=False,
             )
 
             written_files = [str(p) for p in output_path.rglob("*.parquet")]

@@ -149,7 +149,6 @@ def sink_to_parquet(
     lazy_df: pl.LazyFrame,
     output_path: str | Path,
     partition_cols: list[str] | None = None,
-    append: bool = True,
 ) -> None:
     """
     Sinks a Polars LazyFrame directly to Parquet using sink_parquet (fully lazy), with optional partitioning.
@@ -158,7 +157,6 @@ def sink_to_parquet(
         lazy_df (pl.LazyFrame): The Polars LazyFrame to write.
         output_path (str | Path): Directory path to sink Parquet files.
         partition_cols (list[str] | None): Columns to partition by. Defaults to None.
-        append (bool): Whether to append (True) or overwrite (False). Defaults to True.
 
     Returns:
         None: This function does not return any value.
@@ -170,12 +168,12 @@ def sink_to_parquet(
         print("The provided LazyFrame was empty. No data was written.")
         return
 
-    if append:
-        fname = f"{uuid.uuid4()}.parquet"
-        if isinstance(output_path, str):
-            output_path += fname
-        else:
-            output_path = output_path / fname
+    # if append:
+    #     fname = f"{uuid.uuid4()}.parquet"
+    #     if isinstance(output_path, str):
+    #         output_path += fname
+    #     else:
+    #         output_path = output_path / fname
 
     try:
         if partition_cols:
