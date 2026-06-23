@@ -1,16 +1,7 @@
 import unittest
-import warnings
-from unittest.mock import ANY, Mock, patch
-
-import polars as pl
+from unittest.mock import ANY, Mock, call, patch
 
 import projects._03_independent_cqc._02_clean.fargate.clean_ind_cqc_filled_posts as job
-from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
-    CleanIndCQCData as Data,
-)
-from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
-    CleanIndCQCSchema as Schemas,
-)
 
 PATCH_PATH = "projects._03_independent_cqc._02_clean.fargate.clean_ind_cqc_filled_posts"
 
@@ -18,9 +9,7 @@ PATCH_PATH = "projects._03_independent_cqc._02_clean.fargate.clean_ind_cqc_fille
 class CleanIndFilledPostsTests(unittest.TestCase):
     MERGE_IND_CQC_SOURCE = "input_dir"
     CLEANED_IND_CQC_DESTINATION = "output_dir"
-
-    def setUp(self):
-        self.merge_ind_cqc_test_df = Mock(name="merge_ind_cqc_data")
+    GROUPED_PROVIDERS_DESTINATION = "another_dir"
 
 
 class MainTests(CleanIndFilledPostsTests):
@@ -59,11 +48,17 @@ class MainTests(CleanIndFilledPostsTests):
         calculate_care_home_status_count_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
-        scan_parquet_mock.return_value = self.merge_ind_cqc_test_df
+        scan_parquet_mock.return_value = Mock(name="merge_ind_cqc_data")
+
+        clean_ascwds_filled_post_outliers_mock.return_value = [
+            Mock(name="clean_ind_cqc_data"),
+            Mock(name="grouped_providers"),
+        ]
 
         job.main(
             self.MERGE_IND_CQC_SOURCE,
             self.CLEANED_IND_CQC_DESTINATION,
+            self.GROUPED_PROVIDERS_DESTINATION,
         )
 
         reduce_dataset_to_earliest_file_per_month_mock.assert_called_once()
@@ -81,10 +76,20 @@ class MainTests(CleanIndFilledPostsTests):
         clean_capacity_tracker_non_res_outliers_mock.assert_called_once()
         calculate_care_home_status_count_mock.assert_called_once()
 
-        sink_to_parquet_mock.assert_called_once_with(
-            ANY,
-            self.CLEANED_IND_CQC_DESTINATION,
-            append=False,
+        self.assertEqual(sink_to_parquet_mock.call_count, 2)
+        sink_to_parquet_mock.assert_has_calls(
+            [
+                call(
+                    ANY,
+                    self.CLEANED_IND_CQC_DESTINATION,
+                    append=False,
+                ),
+                call(
+                    ANY,
+                    self.GROUPED_PROVIDERS_DESTINATION,
+                    append=False,
+                ),
+            ]
         )
 
 
