@@ -389,7 +389,7 @@ class JobRoleColsTests(unittest.TestCase):
         self.assertEqual(len(self.returned_list), 520)
 
 
-class MergeJobRoleColumns(unittest.TestCase):
+class MergeJobRoleColumns(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self):
         self.test_df = self.spark.createDataFrame(
             Data.merge_job_role_columns_rows, Schemas.merge_job_role_columns_schema

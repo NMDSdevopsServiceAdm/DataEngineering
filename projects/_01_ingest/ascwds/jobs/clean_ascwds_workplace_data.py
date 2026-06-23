@@ -396,6 +396,72 @@ def merge_job_role_columns(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: Input DataFrame with only current job role columns.
     """
+    # For each giving column, coalesce col and lit 0. So giving col always has a value and you are not doing val + null = null.
+    df = df.withColumns(
+        {
+            AWPClean.job_role_12_agency: F.coalesce(
+                F.col(AWPClean.job_role_12_agency), F.lit(0)
+            ),
+            AWPClean.job_role_13_agency: F.coalesce(
+                F.col(AWPClean.job_role_13_agency), F.lit(0)
+            ),
+            AWPClean.job_role_14_agency: F.coalesce(
+                F.col(AWPClean.job_role_14_agency), F.lit(0)
+            ),
+            AWPClean.job_role_18_agency: F.coalesce(
+                F.col(AWPClean.job_role_18_agency), F.lit(0)
+            ),
+            AWPClean.job_role_19_agency: F.coalesce(
+                F.col(AWPClean.job_role_19_agency), F.lit(0)
+            ),
+            AWPClean.job_role_20_agency: F.coalesce(
+                F.col(AWPClean.job_role_20_agency), F.lit(0)
+            ),
+            AWPClean.job_role_21_agency: F.coalesce(
+                F.col(AWPClean.job_role_21_agency), F.lit(0)
+            ),
+            AWPClean.job_role_22_agency: F.coalesce(
+                F.col(AWPClean.job_role_22_agency), F.lit(0)
+            ),
+            AWPClean.job_role_41_agency: F.coalesce(
+                F.col(AWPClean.job_role_41_agency), F.lit(0)
+            ),
+        }
+    )
+
+    # Add historic job roles to specific current role.
+    df = df.withColumns(
+        {
+            AWPClean.job_role_42_agency: F.col(AWPClean.job_role_42_agency)
+            + F.col(AWPClean.job_role_12_agency)
+            + F.col(AWPClean.job_role_13_agency)
+            + F.col(AWPClean.job_role_14_agency)
+            + F.col(AWPClean.job_role_18_agency)
+            + F.col(AWPClean.job_role_19_agency)
+            + F.col(AWPClean.job_role_20_agency)
+            + F.col(AWPClean.job_role_21_agency),
+            AWPClean.job_role_27_agency: F.col(AWPClean.job_role_27_agency)
+            + F.col(AWPClean.job_role_22_agency),
+            AWPClean.job_role_40_agency: F.col(AWPClean.job_role_40_agency)
+            + F.col(AWPClean.job_role_41_agency),
+        }
+    )
+
+    cols_to_drop = [
+        AWPClean.job_role_12_agency,
+        AWPClean.job_role_13_agency,
+        AWPClean.job_role_14_agency,
+        AWPClean.job_role_18_agency,
+        AWPClean.job_role_19_agency,
+        AWPClean.job_role_20_agency,
+        AWPClean.job_role_21_agency,
+        AWPClean.job_role_22_agency,
+        AWPClean.job_role_33_agency,
+        AWPClean.job_role_41_agency,
+    ]
+    df = df.drop(*cols_to_drop)
+
+    # Drop jr33 columns without merging their data anywhere. They're PA's.
 
     return df
 

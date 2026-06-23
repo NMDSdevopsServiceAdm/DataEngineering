@@ -176,14 +176,33 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
-    merge_job_role_columns_schema = StringType(
+    merge_job_role_columns_schema = StructType(
         [
+            StructField(
+                AWP.job_role_01_agency, IntegerType(), True
+            ),  # job role is not touched by function.
+            StructField(
+                AWP.job_role_33_agency, IntegerType(), True
+            ),  # personal assistant are removed without merging values.
             StructField(AWP.job_role_12_agency, IntegerType(), True),
+            StructField(AWP.job_role_13_agency, IntegerType(), True),
+            StructField(AWP.job_role_14_agency, IntegerType(), True),
+            StructField(AWP.job_role_18_agency, IntegerType(), True),
+            StructField(AWP.job_role_19_agency, IntegerType(), True),
+            StructField(AWP.job_role_20_agency, IntegerType(), True),
+            StructField(AWP.job_role_21_agency, IntegerType(), True),
+            StructField(AWP.job_role_22_agency, IntegerType(), True),
+            StructField(AWP.job_role_41_agency, IntegerType(), True),
+            StructField(AWP.job_role_27_agency, IntegerType(), True),
+            StructField(AWP.job_role_40_agency, IntegerType(), True),
             StructField(AWP.job_role_42_agency, IntegerType(), True),
         ]
     )
-    expected_merge_job_role_columns_schema = StringType(
+    expected_merge_job_role_columns_schema = StructType(
         [
+            StructField(AWP.job_role_01_agency, IntegerType(), True),
+            StructField(AWP.job_role_27_agency, IntegerType(), True),
+            StructField(AWP.job_role_40_agency, IntegerType(), True),
             StructField(AWP.job_role_42_agency, IntegerType(), True),
         ]
     )

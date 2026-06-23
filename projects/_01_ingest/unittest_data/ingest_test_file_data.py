@@ -266,10 +266,10 @@ class ASCWDSWorkplaceData:
     ]
 
     merge_job_role_columns_rows = [
-        (10, 10),
+        (1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, 1),
     ]
     expected_merge_job_role_columns_rows = [
-        (20),
+        (1, 3, 4, 8),
     ]
 
 
