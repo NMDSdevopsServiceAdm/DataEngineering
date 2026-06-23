@@ -197,7 +197,32 @@
                   "StartAt": "Estimate data",
                   "States": {
                     "Estimate data": {
-                      "Type": "Pass",
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_07_workforce_characteristics-container",
+                              "Command": [
+                                "_01_starters_leavers_vacancies/fargate/_04_estimate.py",
+                                "--imputed_data_source", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_03_impute_slv/",
+                                "--estimated_data_destination", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_04_estimate_slv/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
                       "End": true
                     }
                   }
@@ -241,8 +266,35 @@
               ]
             },
             "Validate SLV Estimates": {
-              "Type": "Pass",
-              "End": true
+              "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${workforce_characteristics_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_07_workforce_characteristics-container",
+                              "Command": [
+                                "_01_starters_leavers_vacancies/fargate/validate_04_estimate.py",
+                                "--bucket_name", "${dataset_bucket_name}",
+                                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_04_estimate_slv/",
+                                "--compare_path", "domain=workforce_characteristics/dataset=ind_cqc_03_impute_slv/",
+                                "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_04_estimate_slv/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
             }
           }
         }
