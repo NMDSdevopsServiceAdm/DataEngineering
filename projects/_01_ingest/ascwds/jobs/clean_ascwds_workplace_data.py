@@ -57,7 +57,9 @@ ascwds_workplace_columns_to_import = [
 ]
 
 job_role_cols = [
-    role for role, value in vars(AWPClean()).items() if role.startswith("job_role_")
+    role
+    for role, value in vars(AWPClean()).items()
+    if role.startswith("job_role_") and "flag" not in role
 ]
 
 cols_required_for_reconciliation_df = [

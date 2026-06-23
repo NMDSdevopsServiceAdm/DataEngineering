@@ -69,7 +69,10 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         )
 
         read_from_parquet_mock.assert_called_once_with(
-            self.TEST_SOURCE, selected_columns=job.ascwds_workplace_columns_to_import
+            self.TEST_SOURCE,
+            selected_columns=list(
+                set(job.ascwds_workplace_columns_to_import + job.job_role_cols)
+            ),
         )
         filter_test_accounts_mock.assert_called_once()
         remove_duplicate_workplaces_mock.assert_called_once()
@@ -358,6 +361,32 @@ class RemoveWorkplacesWithDuplicateLocationIdsTests(CleanASCWDSWorkplaceDatasetT
             returned_df.sort(AWP.organisation_id).collect(),
             expected_df.sort(AWP.organisation_id).collect(),
         )
+
+
+class JobRoleColsTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.returned_list = job.job_role_cols
+
+    def test_list_contains_job_role_columns(self):
+        expected_suffixes = (
+            "agency",
+            "employees",
+            "leavers",
+            "other",
+            "permanent",
+            "pool",
+            "starters",
+            "temporary",
+            "vacancies",
+            "workers",
+        )
+        for i in self.returned_list:
+            assert i.startswith("job_role_")
+            assert i.endswith(expected_suffixes)
+            assert "flag" not in i
+
+    def test_list_is_expected_length(self):
+        self.assertEqual(len(self.returned_list), 520)
 
 
 if __name__ == "__main__":
