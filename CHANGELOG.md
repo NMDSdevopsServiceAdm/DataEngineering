@@ -21,6 +21,8 @@ All notable changes to this project will be documented in this file.
 
 - Added impute job, its validation and test scripts within SLV pipeline. Updated the required terraform changes for the same.
 
+- Added estimate job, its validation and test scripts within SLV pipeline. Updated the required terraform changes for the same.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
