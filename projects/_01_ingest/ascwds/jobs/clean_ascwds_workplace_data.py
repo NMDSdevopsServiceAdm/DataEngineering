@@ -391,6 +391,11 @@ def merge_job_role_columns(df: DataFrame) -> DataFrame:
     We have decided to merge the historic data for these roles into
     the current job roles.
 
+    Nulls are preserved in the merging where all cols summed are null.
+
+    Job role 33 is personal assistant which is dropped from the dataset
+    without merging their data into another role.
+
     Args:
         df (DataFrame): Input DataFrame containing workplace records.
 
