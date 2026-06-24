@@ -82,7 +82,12 @@ def main(
         [0, 1, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
     )
 
-    locations_lf, grouped_providers = clean_ascwds_filled_post_outliers(locations_lf)
+    grouped_providers_lf = utils.scan_parquet(grouped_providers_destination)
+    print("Existing Grouped providers LazyFrame read in")
+
+    locations_lf, grouped_providers = clean_ascwds_filled_post_outliers(
+        locations_lf, grouped_providers_lf
+    )
     locations_lf = locations_lf.drop(AWPClean.nmds_id)
 
     locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(

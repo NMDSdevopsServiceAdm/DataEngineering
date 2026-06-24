@@ -45,7 +45,9 @@ class NullGroupedProvidersConfig:
     POSTS_PER_PIR_PROVIDER_THRESHOLD: pl.Float64 = 1.5
 
 
-def null_grouped_providers(lf: pl.LazyFrame) -> tuple[pl.LazyFrame, pl.LazyFrame]:
+def null_grouped_providers(
+    lf: pl.LazyFrame, grouped_providers_lf: pl.LazyFrame
+) -> tuple[pl.LazyFrame, pl.LazyFrame]:
     """
     Null ascwds_filled_posts_dedup_clean where a provider has multiple
     locations, all their ascwds is under one location.
@@ -64,6 +66,7 @@ def null_grouped_providers(lf: pl.LazyFrame) -> tuple[pl.LazyFrame, pl.LazyFrame
 
     Args:
         lf (pl.LazyFrame): A polars LazyFrame with independent cqc data.
+        grouped_providers_lf (pl.LazyFrame): A polars LazyFrame containing existing grouped providers.
 
     Returns:
         tuple[pl.LazyFrame, pl.LazyFrame]: The input LazyFrame with grouped
@@ -73,7 +76,7 @@ def null_grouped_providers(lf: pl.LazyFrame) -> tuple[pl.LazyFrame, pl.LazyFrame
 
     lf = identify_potential_grouped_providers(lf)
 
-    grouped_providers = select_grouped_providers(lf)
+    grouped_providers = select_grouped_providers(lf, grouped_providers_lf)
 
     lf = null_care_home_grouped_providers(lf)
     lf = null_non_residential_grouped_providers(lf)
@@ -300,7 +303,9 @@ def null_non_residential_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf
 
 
-def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
+def select_grouped_providers(
+    lf: pl.LazyFrame, grouped_providers_lf: pl.LazyFrame
+) -> pl.LazyFrame:
     """
     Filters the input LazyFrame to the following:
         - potential_grouped_provider is True
@@ -309,6 +314,7 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Args:
         lf (pl.LazyFrame): A LazyFrame with potential_grouped_provider column.
+        grouped_providers_lf (pl.LazyFrame): A LazyFrame containing existing grouped providers.
 
     Returns:
         pl.LazyFrame: The filtered input LazyFrame.
@@ -324,8 +330,22 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     date_col = pl.col(IndCQC.cqc_location_import_date)
     trunc_date_col = date_col.dt.truncate("1mo")  # E.g. 2026-01-05 becomes 2026-01-01.
-    return (
+
+    new_grouped_providers_lf = (
         lf.filter(pl.col(NGPcol.potential_grouped_provider))
         .filter(trunc_date_col == trunc_date_col.max())
         .select(cols_to_select)
+        .with_columns(
+            # add a new bool column to true for all newly identified grouped providers
+            pl.lit(True).alias("grouped_provider")
+        )
     )
+
+    # If the locationid is in the grouped_providers_lf but not in new_grouped_providers_lf then change their "grouped_provider" status in the grouped_providers_lf to False.
+    # Append the new_grouped_providers_lf to the grouped_providers_lf and remove duplicates on locationid and "grouped_provider".
+
+    grouped_providers_lf = grouped_providers_lf.join(
+        new_grouped_providers_lf, on=IndCQC.location_id, how="outer"
+    )
+
+    return grouped_providers_lf
