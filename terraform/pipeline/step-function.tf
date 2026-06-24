@@ -5,7 +5,7 @@ locals {
     substr(fn, 0, length(fn) - 5) => "step-functions/dynamic/${fn}"
   })
 
-  ind_cqc_compare_path = terraform.workspace == "main" ? "domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/" : "domain=ind_cqc_filled_posts/dataset=main_ind_cqc_06_estimated_filled_posts/"
+  ind_cqc_comparison_dataset_name_for_validation = terraform.workspace == "main" ? "ind_cqc_06_estimated_filled_posts" : "main_ind_cqc_06_estimated_filled_posts"
 }
 
 # Created explicitly as required by dynamic step functions
@@ -76,7 +76,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     pipeline_resources_bucket_uri = module.pipeline_resources.bucket_uri
 
     # compare paths
-    ind_cqc_compare_path = local.ind_cqc_compare_path
+    ind_cqc_compare_dataset_name = local.ind_cqc_comparison_dataset_name_for_validation
 
     # lambdas
     pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
