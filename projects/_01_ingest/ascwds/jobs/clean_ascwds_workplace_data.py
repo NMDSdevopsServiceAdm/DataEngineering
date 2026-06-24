@@ -414,7 +414,7 @@ def merge_job_role_columns(
     We have decided to merge the historic data for these roles into
     the current job roles.
 
-    Nulls are preserved in the merging where all cols summed are null.
+    Null is returned only when all contributing columns are null.
 
     Job role 33 is personal assistant which is dropped from the dataset
     without merging their data into another role.
@@ -436,22 +436,24 @@ def merge_job_role_columns(
     #     ...
     # }
     legacy_role_mapping = {}
+
     for role in job_role_cols:
         for current_role, legacy_roles in job_role_mapping.items():
-            if role.startswith(current_role):
-                for suffix in suffix_list:
-                    if role.endswith(suffix):
-                        legacy_role_mapping[role] = [
-                            role,
-                            *[f"jr{i}{suffix}" for i in legacy_roles],
-                        ]
-                        break
+            for suffix in suffix_list:
+                if role == f"{current_role}{suffix}":
+                    legacy_role_mapping[role] = [
+                        role,
+                        *[f"jr{i}{suffix}" for i in legacy_roles],
+                    ]
+                    break
 
     # Construct a sum expression in which columns are coalesced with zero (to prevent null + value = null)
     # then when any of the columns in the sum are not null, sum them and assign to a current role.
     # Otherwise current role stays as null.
     for current_role, legacy_roles in legacy_role_mapping.items():
-        sum_expr = sum(F.coalesce(F.col(c), F.lit(0)) for c in legacy_roles)
+        sum_expr = reduce(
+            lambda a, b: a + b, (F.coalesce(F.col(c), F.lit(0)) for c in legacy_roles)
+        )
         any_non_null = reduce(
             lambda a, b: a | b, (F.col(c).isNotNull() for c in legacy_roles)
         )
@@ -460,10 +462,10 @@ def merge_job_role_columns(
         df = df.withColumn(current_role, result_expr)
 
     # Drop legacy job roles from dataset.
-    cols_to_drop = [f"jr33{suffix}" for suffix in suffix_list]
+    cols_to_drop = {f"jr33{suffix}" for suffix in suffix_list}
     for suffix in suffix_list:
         for current_role, legacy_roles in job_role_mapping.items():
-            cols_to_drop.extend(f"jr{i}{suffix}" for i in legacy_roles)
+            cols_to_drop.update(f"jr{i}{suffix}" for i in legacy_roles)
 
     df = df.drop(*cols_to_drop)
 
