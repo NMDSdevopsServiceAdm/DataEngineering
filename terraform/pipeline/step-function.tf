@@ -5,9 +5,7 @@ locals {
     substr(fn, 0, length(fn) - 5) => "step-functions/dynamic/${fn}"
   })
 
-  ind_cqc_compare_path = terraform.workspace == "main" ?
-    "domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/" :
-    "domain=ind_cqc_filled_posts/dataset=main_ind_cqc_06_estimated_filled_posts/"
+  ind_cqc_compare_path = terraform.workspace == "main" ? "domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/" : "domain=ind_cqc_filled_posts/dataset=main_ind_cqc_06_estimated_filled_posts/"
 }
 
 # Created explicitly as required by dynamic step functions
