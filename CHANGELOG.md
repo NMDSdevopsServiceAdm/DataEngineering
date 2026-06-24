@@ -23,7 +23,7 @@ All notable changes to this project will be documented in this file.
 
 - Added estimate job, its validation and test scripts within SLV pipeline. Updated the required terraform changes for the same.
 
-- Added SLV pipeline to existing IND CQC Step Function.
+- Added SLV pipeline to trigger after IND CQC pipeline finishes in Workforce Intelligence pipeline.
 
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
