@@ -383,7 +383,9 @@ def create_date_column_for_purging_data(df: DataFrame) -> DataFrame:
     return df
 
 
-def merge_job_role_columns(df: DataFrame, suffix_list: list[str]) -> DataFrame:
+def merge_job_role_columns(
+    df: DataFrame, job_role_mapping: dict[str, list[str]], suffix_list: list[str]
+) -> DataFrame:
     """
     Merge legacy job roles into current job roles.
 
@@ -398,59 +400,50 @@ def merge_job_role_columns(df: DataFrame, suffix_list: list[str]) -> DataFrame:
 
     Args:
         df (DataFrame): Input DataFrame containing workplace records.
+        job_role_mapping (dict[str, list[str]]): A dict in which keys are
+            current job roles and values are legacy job roles to be merged
+            into the key.
         suffix_list (list[str]): A list of workplace job role column suffixes.
 
     Returns:
         DataFrame: Input DataFrame with only current job role columns.
     """
-    jr27_and_jr40_mapping = {
-        "jr27": "22",
-        "jr40": "41",
-    }
-    jr42_mapping = ["12", "13", "14", "18", "19", "20", "21", "22"]
-
+    # Construct a mapping dict for each job role and employment status:
+    # {
+    #     current role perm: [Current role perm and legacy roles perm to merge into current role],
+    #     current role temp: [Current role temp and legacy roles temp to merge into current role],
+    #     ...
+    # }
     legacy_role_mapping = {}
     for role in job_role_cols:
-
-        # jr27 / jr40
-        for prefix, num in jr27_and_jr40_mapping.items():
-            if role.startswith(prefix):
+        for current_role, legacy_roles in job_role_mapping.items():
+            if role.startswith(current_role):
                 for suffix in suffix_list:
                     if role.endswith(suffix):
-                        legacy_role_mapping[role] = [role, f"jr{num}{suffix}"]
+                        legacy_role_mapping[role] = [
+                            role,
+                            *[f"jr{i}{suffix}" for i in legacy_roles],
+                        ]
                         break
 
-        # jr42
-        if role.startswith("jr42"):
-            for suffix in suffix_list:
-                if role.endswith(suffix):
-                    legacy_role_mapping[role] = [
-                        role,
-                        *[f"jr{i}{suffix}" for i in jr42_mapping],
-                    ]
-                    break
-
-    for role, mapping in legacy_role_mapping.items():
-        sum_expr = sum(F.coalesce(F.col(c), F.lit(0)) for c in mapping)
+    # Construct a sum expression in which columns are coalesced with zero (to prevent null + value = null)
+    # then when any of the columns in the sum are not null, sum them and assign to a current role.
+    # Otherwise current role stays as null.
+    for current_role, legacy_roles in legacy_role_mapping.items():
+        sum_expr = sum(F.coalesce(F.col(c), F.lit(0)) for c in legacy_roles)
         any_non_null = reduce(
-            lambda a, b: a | b, (F.col(c).isNotNull() for c in mapping)
+            lambda a, b: a | b, (F.col(c).isNotNull() for c in legacy_roles)
         )
         result_expr = F.when(any_non_null, sum_expr).otherwise(F.lit(None))
 
-        df = df.withColumn(role, result_expr)
+        df = df.withColumn(current_role, result_expr)
 
-    cols_to_drop = [
-        AWPClean.job_role_12_agency,
-        AWPClean.job_role_13_agency,
-        AWPClean.job_role_14_agency,
-        AWPClean.job_role_18_agency,
-        AWPClean.job_role_19_agency,
-        AWPClean.job_role_20_agency,
-        AWPClean.job_role_21_agency,
-        AWPClean.job_role_22_agency,
-        AWPClean.job_role_33_agency,
-        AWPClean.job_role_41_agency,
-    ]
+    # Drop legacy job roles from dataset.
+    cols_to_drop = [f"jr33{suffix}" for suffix in suffix_list]
+    for suffix in suffix_list:
+        for current_role, legacy_roles in job_role_mapping.items():
+            cols_to_drop.extend(f"jr{i}{suffix}" for i in legacy_roles)
+
     df = df.drop(*cols_to_drop)
 
     return df

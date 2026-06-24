@@ -266,18 +266,18 @@ class ASCWDSWorkplaceData:
     ]
 
     merge_job_role_columns_rows = [
-        (1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, 1), # All columns are populated.
-        (1, 1, None, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, 1), # A giving role is null.
-        (1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, None), # A receiving role is null.
-        (1, 1, None, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, None), # Receiving role is null and one of giving roles is null.
-        (1, 1, None, None, None, None, None, None, None, 2, 3, 1, 1, None), # All roles in sum group are null.
+        (1, 1, 2, 2, 2, 3, 4, 10, 10, 20, 20, 20, 30, 40), # All columns are populated.
+        (None, 1, 2, 2, 2, 3, 4, 10, 10, 20, 20, 20, 30, 40), # A giving role is null.
+        (1, None, 2, 2, 2, 3, 4, 10, 10, 20, 20, 20, 30, 40), # A receiving role is null.
+        (1, 1, None, None, 2, 3, 4, 10, 10, 20, 20, 20, 30, 40), # Receiving role is null and one of giving roles is null.
+        (None, None, 2, 2, 2, 3, 4, 10, 10, 20, 20, 20, 30, 40), # All roles in sum group are null.
     ] # fmt: skip
     expected_merge_job_role_columns_rows = [
-        (1, 3, 4, 8),
-        (1, 3, 4, 7),
-        (1, 3, 4, 7),
-        (1, 3, 4, 6),
-        (1, 3, 4, None),
+        (2, 6, 3, 20, 60, 30),
+        (1, 6, 3, 20, 60, 30),
+        (1, 6, 3, 20, 60, 30),
+        (2, 2, 3, 20, 60, 30),
+        (None, 6, 3, 20, 60, 30),
     ]
 
 

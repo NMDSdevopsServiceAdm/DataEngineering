@@ -394,8 +394,14 @@ class MergeJobRoleColumns(CleanASCWDSWorkplaceDatasetTests):
         self.test_df = self.spark.createDataFrame(
             Data.merge_job_role_columns_rows, Schemas.merge_job_role_columns_schema
         )
+        test_mapping = {
+            "jr40": ["41"],
+            "jr42": ["12", "13"],
+        }
         test_suffixes = ["perm", "temp"]
-        self.returned_df = job.merge_job_role_columns(self.test_df, test_suffixes)
+        self.returned_df = job.merge_job_role_columns(
+            self.test_df, test_mapping, test_suffixes
+        )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_merge_job_role_columns_rows,
             Schemas.expected_merge_job_role_columns_schema,
