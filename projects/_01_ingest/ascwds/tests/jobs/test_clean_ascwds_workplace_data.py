@@ -34,6 +34,7 @@ class CleanASCWDSWorkplaceDatasetTests(SparkBaseTest):
 class MainTests(CleanASCWDSWorkplaceDatasetTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.cUtils.set_column_bounds")
+    @patch(f"{PATCH_PATH}.merge_job_role_columns")
     @patch(f"{PATCH_PATH}.cUtils.cast_to_int")
     @patch(f"{PATCH_PATH}.remove_workplaces_with_duplicate_location_ids")
     @patch(f"{PATCH_PATH}.create_purged_dfs_for_reconciliation_and_data")
@@ -56,6 +57,7 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         create_purged_dfs_mock: Mock,
         remove_workplaces_with_duplicate_ids_mock: Mock,
         cast_to_int_mock: Mock,
+        merge_job_role_columns_mock: Mock,
         set_column_bounds_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
@@ -83,6 +85,7 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         create_purged_dfs_mock.assert_called_once()
         remove_workplaces_with_duplicate_ids_mock.assert_called_once()
         cast_to_int_mock.assert_called_once()
+        merge_job_role_columns_mock.assert_called_once()
         self.assertEqual(set_column_bounds_mock.call_count, 2)
         self.assertEqual(write_to_parquet_mock.call_count, 2)
 

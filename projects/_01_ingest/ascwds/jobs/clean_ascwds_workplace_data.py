@@ -137,6 +137,27 @@ def main(
 
     ascwds_workplace_df = cUtils.cast_to_int(ascwds_workplace_df, COLUMNS_TO_BOUND)
 
+    job_role_mapping = {
+        "jr27": ["22"],
+        "jr40": ["41"],
+        "jr42": ["12", "13", "14", "18", "19", "20", "21"],
+    }
+    suffix_list = [
+        "perm",
+        "temp",
+        "pool",
+        "agcy",
+        "oth",
+        "emp",
+        "work",
+        "strt",
+        "stop",
+        "vacy",
+    ]
+    ascwds_workplace_df = merge_job_role_columns(
+        ascwds_workplace_df, job_role_mapping, suffix_list
+    )
+
     ascwds_workplace_df = cUtils.set_column_bounds(
         ascwds_workplace_df,
         AWPClean.total_staff,
