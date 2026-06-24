@@ -368,24 +368,36 @@ class RemoveWorkplacesWithDuplicateLocationIdsTests(CleanASCWDSWorkplaceDatasetT
 
 class JobRoleColsTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.returned_list = job.job_role_cols
+        self.returned_list: list[str] = job.job_role_cols
 
-    def test_list_contains_job_role_columns(self):
-        expected_suffixes = (
+    def test_list_contains_strings_starting_with_jr(self):
+        for i in self.returned_list:
+            assert i.startswith("jr")
+
+    def test_list_contains_expected_number_of_elements(self):
+        string_prefix = set([i[:4] for i in self.returned_list])
+        self.assertEqual(len(string_prefix), 52)
+
+    def test_list_contains_strings_with_expected_endings(self):
+        string_endings_1 = [i[-4:] for i in self.returned_list if len(i) == 8]
+        string_endings_2 = [i[-3:] for i in self.returned_list if len(i) == 7]
+        string_endings_3 = set(string_endings_1 + string_endings_2)
+        expected_endings = {
             "perm",
             "temp",
             "pool",
             "agcy",
             "oth",
+            "work",
+            "emp",
             "strt",
             "stop",
             "vacy",
-            "work",
-            "emp",
-        )
+        }
+        self.assertEqual(string_endings_3, expected_endings)
+
+    def test_list_does_not_contain_strings_with_flag(self):
         for i in self.returned_list:
-            assert i.startswith("jr")
-            assert i.endswith(expected_suffixes)
             assert "flag" not in i
 
     def test_list_is_expected_length(self):
