@@ -3,6 +3,7 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.5"
 
+from functools import reduce
 from typing import Tuple
 
 from pyspark.sql import DataFrame, Window
@@ -396,56 +397,35 @@ def merge_job_role_columns(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: Input DataFrame with only current job role columns.
     """
-    # For each giving column, coalesce col and lit 0. So giving col always has a value and you are not doing val + null = null.
-    df = df.withColumns(
-        {
-            AWPClean.job_role_12_agency: F.coalesce(
-                F.col(AWPClean.job_role_12_agency), F.lit(0)
-            ),
-            AWPClean.job_role_13_agency: F.coalesce(
-                F.col(AWPClean.job_role_13_agency), F.lit(0)
-            ),
-            AWPClean.job_role_14_agency: F.coalesce(
-                F.col(AWPClean.job_role_14_agency), F.lit(0)
-            ),
-            AWPClean.job_role_18_agency: F.coalesce(
-                F.col(AWPClean.job_role_18_agency), F.lit(0)
-            ),
-            AWPClean.job_role_19_agency: F.coalesce(
-                F.col(AWPClean.job_role_19_agency), F.lit(0)
-            ),
-            AWPClean.job_role_20_agency: F.coalesce(
-                F.col(AWPClean.job_role_20_agency), F.lit(0)
-            ),
-            AWPClean.job_role_21_agency: F.coalesce(
-                F.col(AWPClean.job_role_21_agency), F.lit(0)
-            ),
-            AWPClean.job_role_22_agency: F.coalesce(
-                F.col(AWPClean.job_role_22_agency), F.lit(0)
-            ),
-            AWPClean.job_role_41_agency: F.coalesce(
-                F.col(AWPClean.job_role_41_agency), F.lit(0)
-            ),
-        }
-    )
+    legacy_role_mapping = {
+        AWPClean.job_role_27_agency: [
+            AWPClean.job_role_22_agency,
+            AWPClean.job_role_27_agency,
+        ],
+        AWPClean.job_role_40_agency: [
+            AWPClean.job_role_41_agency,
+            AWPClean.job_role_40_agency,
+        ],
+        AWPClean.job_role_42_agency: [
+            AWPClean.job_role_12_agency,
+            AWPClean.job_role_13_agency,
+            AWPClean.job_role_14_agency,
+            AWPClean.job_role_18_agency,
+            AWPClean.job_role_19_agency,
+            AWPClean.job_role_20_agency,
+            AWPClean.job_role_21_agency,
+            AWPClean.job_role_42_agency,
+        ],
+    }
 
-    # Add historic job roles to specific current role.
-    df = df.withColumns(
-        {
-            AWPClean.job_role_42_agency: F.col(AWPClean.job_role_42_agency)
-            + F.col(AWPClean.job_role_12_agency)
-            + F.col(AWPClean.job_role_13_agency)
-            + F.col(AWPClean.job_role_14_agency)
-            + F.col(AWPClean.job_role_18_agency)
-            + F.col(AWPClean.job_role_19_agency)
-            + F.col(AWPClean.job_role_20_agency)
-            + F.col(AWPClean.job_role_21_agency),
-            AWPClean.job_role_27_agency: F.col(AWPClean.job_role_27_agency)
-            + F.col(AWPClean.job_role_22_agency),
-            AWPClean.job_role_40_agency: F.col(AWPClean.job_role_40_agency)
-            + F.col(AWPClean.job_role_41_agency),
-        }
-    )
+    for role, mapping in legacy_role_mapping.items():
+        sum_expr = sum(F.coalesce(F.col(c), F.lit(0)) for c in mapping)
+        any_non_null = reduce(
+            lambda a, b: a | b, (F.col(c).isNotNull() for c in mapping)
+        )
+        result_expr = F.when(any_non_null, sum_expr).otherwise(F.lit(None))
+
+        df = df.withColumn(role, result_expr)
 
     cols_to_drop = [
         AWPClean.job_role_12_agency,
@@ -460,8 +440,6 @@ def merge_job_role_columns(df: DataFrame) -> DataFrame:
         AWPClean.job_role_41_agency,
     ]
     df = df.drop(*cols_to_drop)
-
-    # Drop jr33 columns without merging their data anywhere. They're PA's.
 
     return df
 
