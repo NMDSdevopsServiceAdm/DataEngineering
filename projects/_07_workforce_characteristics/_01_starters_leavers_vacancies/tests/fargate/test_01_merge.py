@@ -13,10 +13,12 @@ class MainTests(unittest.TestCase):
     MERGED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.mUtils.placeholder_function")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
+        placeholder_function_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -34,6 +36,8 @@ class MainTests(unittest.TestCase):
             call(self.CLEANED_ASCWDS_WORKPLACE_SOURCE),
         ]
         scan_parquet_mock.assert_has_calls(scan_calls)
+
+        placeholder_function_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
