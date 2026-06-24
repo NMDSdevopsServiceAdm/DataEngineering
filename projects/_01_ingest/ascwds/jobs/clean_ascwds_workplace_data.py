@@ -54,7 +54,7 @@ ascwds_workplace_columns_to_import = [
 ]
 
 job_role_cols = [
-    role
+    value
     for role, value in vars(AWPClean()).items()
     if role.startswith("job_role_") and "flag" not in role
 ]
@@ -383,7 +383,7 @@ def create_date_column_for_purging_data(df: DataFrame) -> DataFrame:
     return df
 
 
-def merge_job_role_columns(df: DataFrame) -> DataFrame:
+def merge_job_role_columns(df: DataFrame, suffix_list: list[str]) -> DataFrame:
     """
     Merge legacy job roles into current job roles.
 
@@ -398,30 +398,37 @@ def merge_job_role_columns(df: DataFrame) -> DataFrame:
 
     Args:
         df (DataFrame): Input DataFrame containing workplace records.
+        suffix_list (list[str]): A list of workplace job role column suffixes.
 
     Returns:
         DataFrame: Input DataFrame with only current job role columns.
     """
-    legacy_role_mapping = {
-        AWPClean.job_role_27_agency: [
-            AWPClean.job_role_22_agency,
-            AWPClean.job_role_27_agency,
-        ],
-        AWPClean.job_role_40_agency: [
-            AWPClean.job_role_41_agency,
-            AWPClean.job_role_40_agency,
-        ],
-        AWPClean.job_role_42_agency: [
-            AWPClean.job_role_12_agency,
-            AWPClean.job_role_13_agency,
-            AWPClean.job_role_14_agency,
-            AWPClean.job_role_18_agency,
-            AWPClean.job_role_19_agency,
-            AWPClean.job_role_20_agency,
-            AWPClean.job_role_21_agency,
-            AWPClean.job_role_42_agency,
-        ],
+    jr27_and_jr40_mapping = {
+        "jr27": "22",
+        "jr40": "41",
     }
+    jr42_mapping = ["12", "13", "14", "18", "19", "20", "21", "22"]
+
+    legacy_role_mapping = {}
+    for role in job_role_cols:
+
+        # jr27 / jr40
+        for prefix, num in jr27_and_jr40_mapping.items():
+            if role.startswith(prefix):
+                for suffix in suffix_list:
+                    if role.endswith(suffix):
+                        legacy_role_mapping[role] = [role, f"jr{num}{suffix}"]
+                        break
+
+        # jr42
+        if role.startswith("jr42"):
+            for suffix in suffix_list:
+                if role.endswith(suffix):
+                    legacy_role_mapping[role] = [
+                        role,
+                        *[f"jr{i}{suffix}" for i in jr42_mapping],
+                    ]
+                    break
 
     for role, mapping in legacy_role_mapping.items():
         sum_expr = sum(F.coalesce(F.col(c), F.lit(0)) for c in mapping)

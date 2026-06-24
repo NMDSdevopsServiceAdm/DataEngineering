@@ -369,19 +369,19 @@ class JobRoleColsTests(unittest.TestCase):
 
     def test_list_contains_job_role_columns(self):
         expected_suffixes = (
-            "agency",
-            "employees",
-            "leavers",
-            "other",
-            "permanent",
+            "perm",
+            "temp",
             "pool",
-            "starters",
-            "temporary",
-            "vacancies",
-            "workers",
+            "agcy",
+            "oth",
+            "strt",
+            "stop",
+            "vacy",
+            "work",
+            "emp",
         )
         for i in self.returned_list:
-            assert i.startswith("job_role_")
+            assert i.startswith("jr")
             assert i.endswith(expected_suffixes)
             assert "flag" not in i
 
@@ -394,7 +394,8 @@ class MergeJobRoleColumns(CleanASCWDSWorkplaceDatasetTests):
         self.test_df = self.spark.createDataFrame(
             Data.merge_job_role_columns_rows, Schemas.merge_job_role_columns_schema
         )
-        self.returned_df = job.merge_job_role_columns(self.test_df)
+        test_suffixes = ["perm", "temp"]
+        self.returned_df = job.merge_job_role_columns(self.test_df, test_suffixes)
         self.expected_df = self.spark.createDataFrame(
             Data.expected_merge_job_role_columns_rows,
             Schemas.expected_merge_job_role_columns_schema,

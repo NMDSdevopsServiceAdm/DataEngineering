@@ -179,31 +179,53 @@ class ASCWDSWorkplaceSchemas:
     merge_job_role_columns_schema = StructType(
         [
             StructField(
-                AWP.job_role_01_agency, IntegerType(), True
+                AWP.job_role_01_permanent, IntegerType(), True
             ),  # job role is not touched by function.
             StructField(
-                AWP.job_role_33_agency, IntegerType(), True
+                AWP.job_role_33_permanent, IntegerType(), True
             ),  # personal assistant are removed without merging values.
-            StructField(AWP.job_role_12_agency, IntegerType(), True),
-            StructField(AWP.job_role_13_agency, IntegerType(), True),
-            StructField(AWP.job_role_14_agency, IntegerType(), True),
-            StructField(AWP.job_role_18_agency, IntegerType(), True),
-            StructField(AWP.job_role_19_agency, IntegerType(), True),
-            StructField(AWP.job_role_20_agency, IntegerType(), True),
-            StructField(AWP.job_role_21_agency, IntegerType(), True),
-            StructField(AWP.job_role_22_agency, IntegerType(), True),
-            StructField(AWP.job_role_41_agency, IntegerType(), True),
-            StructField(AWP.job_role_27_agency, IntegerType(), True),
-            StructField(AWP.job_role_40_agency, IntegerType(), True),
-            StructField(AWP.job_role_42_agency, IntegerType(), True),
+            StructField(AWP.job_role_12_permanent, IntegerType(), True),
+            StructField(AWP.job_role_13_permanent, IntegerType(), True),
+            StructField(AWP.job_role_14_permanent, IntegerType(), True),
+            StructField(AWP.job_role_18_permanent, IntegerType(), True),
+            StructField(AWP.job_role_19_permanent, IntegerType(), True),
+            StructField(AWP.job_role_20_permanent, IntegerType(), True),
+            StructField(AWP.job_role_21_permanent, IntegerType(), True),
+            StructField(AWP.job_role_22_permanent, IntegerType(), True),
+            StructField(AWP.job_role_41_permanent, IntegerType(), True),
+            StructField(AWP.job_role_27_permanent, IntegerType(), True),
+            StructField(AWP.job_role_40_permanent, IntegerType(), True),
+            StructField(AWP.job_role_42_permanent, IntegerType(), True),
+            StructField(
+                AWP.job_role_01_temporary, IntegerType(), True
+            ),  # job role is not touched by function.
+            StructField(
+                AWP.job_role_33_temporary, IntegerType(), True
+            ),  # personal assistant are removed without merging values.
+            StructField(AWP.job_role_12_temporary, IntegerType(), True),
+            StructField(AWP.job_role_13_temporary, IntegerType(), True),
+            StructField(AWP.job_role_14_temporary, IntegerType(), True),
+            StructField(AWP.job_role_18_temporary, IntegerType(), True),
+            StructField(AWP.job_role_19_temporary, IntegerType(), True),
+            StructField(AWP.job_role_20_temporary, IntegerType(), True),
+            StructField(AWP.job_role_21_temporary, IntegerType(), True),
+            StructField(AWP.job_role_22_temporary, IntegerType(), True),
+            StructField(AWP.job_role_41_temporary, IntegerType(), True),
+            StructField(AWP.job_role_27_temporary, IntegerType(), True),
+            StructField(AWP.job_role_40_temporary, IntegerType(), True),
+            StructField(AWP.job_role_42_temporary, IntegerType(), True),
         ]
     )
     expected_merge_job_role_columns_schema = StructType(
         [
-            StructField(AWP.job_role_01_agency, IntegerType(), True),
-            StructField(AWP.job_role_27_agency, IntegerType(), True),
-            StructField(AWP.job_role_40_agency, IntegerType(), True),
-            StructField(AWP.job_role_42_agency, IntegerType(), True),
+            StructField(AWP.job_role_01_permanent, IntegerType(), True),
+            StructField(AWP.job_role_27_permanent, IntegerType(), True),
+            StructField(AWP.job_role_40_permanent, IntegerType(), True),
+            StructField(AWP.job_role_42_permanent, IntegerType(), True),
+            StructField(AWP.job_role_01_temporary, IntegerType(), True),
+            StructField(AWP.job_role_27_temporary, IntegerType(), True),
+            StructField(AWP.job_role_40_temporary, IntegerType(), True),
+            StructField(AWP.job_role_42_temporary, IntegerType(), True),
         ]
     )
 
