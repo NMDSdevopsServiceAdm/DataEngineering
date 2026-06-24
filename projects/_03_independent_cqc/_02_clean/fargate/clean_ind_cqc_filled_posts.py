@@ -102,13 +102,11 @@ def main(
     utils.sink_to_parquet(
         locations_lf,
         cleaned_ind_cqc_destination,
-        append=False,
     )
 
     utils.sink_to_parquet(
         grouped_providers,
         grouped_providers_destination,
-        append=False,
     )
 
 

@@ -43,5 +43,4 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
-            append=False,
         )

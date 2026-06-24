@@ -56,13 +56,11 @@ def main(
     utils.sink_to_parquet(
         lf,
         destination,
-        append=False,
     )
 
     utils.sink_to_parquet(
         summary_lf,
         summary_destination,
-        append=False,
     )
 
 

@@ -53,12 +53,10 @@ class MainTests(unittest.TestCase):
                 call(
                     lazy_df=ANY,
                     output_path=self.MERGED_DATA_DESTINATION,
-                    append=False,
                 ),
                 call(
                     lazy_df=ANY,
                     output_path=self.METADATA_DESTINATION,
-                    append=False,
                 ),
             ]
         )

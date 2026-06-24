@@ -42,5 +42,4 @@ class IndCQCArchiveTests(unittest.TestCase):
             ANY,
             self.TEST_DESTINATION,
             partition_cols=self.partition_keys,
-            append=False,
         )

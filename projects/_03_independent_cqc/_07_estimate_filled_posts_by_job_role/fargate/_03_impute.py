@@ -36,7 +36,6 @@ def main(
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
         output_path=imputed_data_destination,
-        append=False,
     )
 
 

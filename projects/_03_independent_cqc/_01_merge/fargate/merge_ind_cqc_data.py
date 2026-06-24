@@ -183,7 +183,6 @@ def main(
     utils.sink_to_parquet(
         independent_cqc_lf,
         destination,
-        append=False,
     )
 
 

@@ -49,7 +49,6 @@ class IndCQCMergeTests(unittest.TestCase):
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
-            append=False,
         )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")

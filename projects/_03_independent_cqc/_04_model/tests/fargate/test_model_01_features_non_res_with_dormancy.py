@@ -57,4 +57,4 @@ class ModelFeaturesNonResWithoutDormancyTests(unittest.TestCase):
         group_rural_urban_sparse_categories_mock.assert_called_once()
         self.assertEqual(expand_encode_and_extract_features_mock.call_count, 5)
         select_and_filter_features_data_mock.assert_called_once()
-        sink_to_parquet_mock.assert_called_once_with(ANY, ANY, append=False)
+        sink_to_parquet_mock.assert_called_once_with(ANY, ANY)

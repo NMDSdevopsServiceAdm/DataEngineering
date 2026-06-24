@@ -48,5 +48,4 @@ class TestMain(unittest.TestCase):
             lazy_df=ANY,
             output_path=self.TEST_DESTINATION,
             partition_cols=[Keys.year],
-            append=False,
         )
