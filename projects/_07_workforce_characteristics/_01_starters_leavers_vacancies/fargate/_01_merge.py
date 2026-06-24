@@ -1,3 +1,4 @@
+import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.merge_utils as mUtils
 from polars_utils import utils
 
 
@@ -18,7 +19,9 @@ def main(
     """
     estimates_lf = utils.scan_parquet(estimates_source)
     job_role_estimates_lf = utils.scan_parquet(job_role_estimates_source)
-    cleaned_ascwds_workplace_lf = utils.scan_parquet(cleaned_ascwds_workplace_source)
+    ascwds_lf = utils.scan_parquet(cleaned_ascwds_workplace_source)
+
+    ascwds_lf = mUtils.placeholder_function(ascwds_lf)
 
     utils.sink_to_parquet(
         lazy_df=estimates_lf,
