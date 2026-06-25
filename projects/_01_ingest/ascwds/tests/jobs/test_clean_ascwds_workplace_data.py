@@ -375,6 +375,7 @@ class JobRoleColsTests(unittest.TestCase):
             assert i.startswith("jr")
 
     def test_list_contains_expected_number_of_elements(self):
+        print(self.returned_list)
         string_prefix = set([i[:4] for i in self.returned_list])
         self.assertEqual(len(string_prefix), 52)
 
@@ -383,6 +384,12 @@ class JobRoleColsTests(unittest.TestCase):
         string_endings_2 = [i[-3:] for i in self.returned_list if len(i) == 7]
         string_endings_3 = set(string_endings_1 + string_endings_2)
         expected_endings = {
+            "perm",
+            "temp",
+            "pool",
+            "agcy",
+            "oth",
+            "work",
             "emp",
             "strt",
             "stop",
@@ -395,7 +402,7 @@ class JobRoleColsTests(unittest.TestCase):
             assert "flag" not in i
 
     def test_list_is_expected_length(self):
-        self.assertEqual(len(self.returned_list), 208)
+        self.assertEqual(len(self.returned_list), 520)
 
 
 class MergeJobRoleColumns(CleanASCWDSWorkplaceDatasetTests):
