@@ -41,29 +41,29 @@
                         "Cluster": "${polars_cluster_arn}",
                         "TaskDefinition": "${ascwds_task_arn}"
                       },
-                      "NetworkConfiguration": {
-                        "AwsvpcConfiguration": {
-                          "Subnets": ${public_subnet_ids},
-                          "SecurityGroups": ["${ascwds_security_group_id}"],
-                          "AssignPublicIp": "ENABLED"
-                        }
-                      },
-                      "Overrides": {
-                        "ContainerOverrides": [
-                          {
-                            "Name": "ingest-ascwds-conatiner",
-                            "Command": [
-                              "clean_ascwds_workplace.py",
-                              "--workplace_source",
-                              "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
-                              "--cleaned_workplace_destination",
-                              "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned_polars/",
-                              "--workplace_for_reconciliation_destination",
-                              "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation_polars/"
-                            ]
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${ascwds_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
                           }
-                        ]
-                      },
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "ingest-ascwds-conatiner",
+                              "Command": [
+                                "clean_ascwds_workplace.py",
+                                "--workplace_source",
+                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+                                "--cleaned_workplace_destination",
+                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned_polars/",
+                                "--workplace_for_reconciliation_destination",
+                                "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation_polars/"
+                              ]
+                            }
+                          ]
+                        },
                       "End": true
                     }
                   }
@@ -115,31 +115,31 @@
                         "Cluster": "${polars_cluster_arn}",
                         "TaskDefinition": "${ascwds_task_arn}"
                       },
-                      "NetworkConfiguration": {
-                        "AwsvpcConfiguration": {
-                          "Subnets": ${public_subnet_ids},
-                          "SecurityGroups": ["${ascwds_security_group_id}"],
-                          "AssignPublicIp": "ENABLED"
-                        }
-                      },
-                      "Overrides": {
-                        "ContainerOverrides": [
-                          {
-                            "Name": "ingest-ascwds-conatiner",
-                            "Command": [
-                              "validate_clean_ascwds_workplace.py",
-                              "--bucket_name",
-                              "${dataset_bucket_name}",
-                              "--source_path",
-                              "/domain=ASCWDS/dataset=workplace_cleaned_polars/",
-                              "--compare_path",
-                              "domain=ASCWDS/dataset=workplace/",
-                              "--reports_path",
-                              "domain=data_validation_reports/dataset=validation_ascwds_workplace_cleaned/"
-                            ]
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${ascwds_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
                           }
-                        ]
-                      },
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "ingest-ascwds-conatiner",
+                              "Command": [
+                                "validate_clean_ascwds_workplace.py",
+                                "--bucket_name",
+                                "${dataset_bucket_name}",
+                                "--source_path",
+                                "/domain=ASCWDS/dataset=workplace_cleaned_polars/",
+                                "--compare_path",
+                                "domain=ASCWDS/dataset=workplace/",
+                                "--reports_path",
+                                "domain=data_validation_reports/dataset=validation_ascwds_workplace_cleaned/"
+                              ]
+                            }
+                          ]
+                        },
                       "End": true
                     }
                   }
