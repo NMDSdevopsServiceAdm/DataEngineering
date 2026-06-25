@@ -99,13 +99,7 @@ def main(
     )
 
     # cast jr## columns to ints.
-    lf = lf.with_columns(
-        pl.when(
-            (pl.col(*job_role_cols) != " ") & (pl.col(*job_role_cols).is_not_null())
-        )
-        .then(pl.col(*job_role_cols).cast(pl.Int16))
-        .otherwise(None)
-    )
+    lf = lf.with_columns(pl.col(*job_role_cols).cast(pl.Int16, strict=False))
 
     utils.sink_to_parquet(
         lazy_df=lf,
