@@ -56,7 +56,7 @@ ascwds_workplace_columns_to_import = [
 job_role_cols = [
     value
     for role, value in vars(AWPClean()).items()
-    if role.startswith("job_role_") and "flag" not in role
+    if value.startswith("jr") and value[4:] in ["emp", "strt", "stop", "vacy"]
 ]
 
 cols_required_for_reconciliation_df = [
@@ -143,13 +143,7 @@ def main(
         "jr42": ["12", "13", "14", "18", "19", "20", "21"],
     }
     suffix_list = [
-        "perm",
-        "temp",
-        "pool",
-        "agcy",
-        "oth",
         "emp",
-        "work",
         "strt",
         "stop",
         "vacy",

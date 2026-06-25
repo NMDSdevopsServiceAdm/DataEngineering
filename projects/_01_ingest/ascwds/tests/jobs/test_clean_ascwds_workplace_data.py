@@ -383,12 +383,6 @@ class JobRoleColsTests(unittest.TestCase):
         string_endings_2 = [i[-3:] for i in self.returned_list if len(i) == 7]
         string_endings_3 = set(string_endings_1 + string_endings_2)
         expected_endings = {
-            "perm",
-            "temp",
-            "pool",
-            "agcy",
-            "oth",
-            "work",
             "emp",
             "strt",
             "stop",
@@ -401,7 +395,7 @@ class JobRoleColsTests(unittest.TestCase):
             assert "flag" not in i
 
     def test_list_is_expected_length(self):
-        self.assertEqual(len(self.returned_list), 520)
+        self.assertEqual(len(self.returned_list), 208)
 
 
 class MergeJobRoleColumns(CleanASCWDSWorkplaceDatasetTests):
@@ -413,7 +407,7 @@ class MergeJobRoleColumns(CleanASCWDSWorkplaceDatasetTests):
             "jr40": ["41"],
             "jr42": ["12", "13"],
         }
-        test_suffixes = ["perm", "temp"]
+        test_suffixes = ["emp", "strt"]
         self.returned_df = job.merge_job_role_columns(
             self.test_df, test_mapping, test_suffixes
         )
