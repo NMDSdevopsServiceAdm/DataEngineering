@@ -81,7 +81,9 @@ def null_grouped_providers(
     lf = null_care_home_grouped_providers(lf)
     lf = null_non_residential_grouped_providers(lf)
 
-    columns_to_drop = [field.name for field in fields(NGPcol())]
+    ngp_cols = {field.name for field in fields(NGPcol())}
+    columns_to_drop = [c for c in lf.collect_schema().names() if c in ngp_cols]
+
     lf = lf.drop(*columns_to_drop)
 
     return lf, grouped_providers
