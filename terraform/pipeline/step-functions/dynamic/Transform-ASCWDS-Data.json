@@ -6,9 +6,9 @@
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "Parallel",
+          "StartAt": "Parallel Clean Workspace",
           "States": {
-            "Parallel": {
+            "Parallel Clean Workspace": {
               "Type": "Parallel",
               "Next": "Clean Worker and validate cleaned data",
               "Branches": [
@@ -105,9 +105,9 @@
                   }
                 },
                 {
-                  "StartAt": "ECS RunTask (1)",
+                  "StartAt": "Validate Cleaned Workplace Polars",
                   "States": {
-                    "ECS RunTask (1)": {
+                    "Validate Cleaned Workplace Polars": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask",
                       "Parameters": {
