@@ -4,6 +4,8 @@ locals {
     for fn in fileset("step-functions/dynamic", "*.json") :
     substr(fn, 0, length(fn) - 5) => "step-functions/dynamic/${fn}"
   })
+
+  ind_cqc_comparison_dataset_name_for_validation = terraform.workspace == "main" ? "ind_cqc_06_estimated_filled_posts" : "main_ind_cqc_06_estimated_filled_posts"
 }
 
 # Created explicitly as required by dynamic step functions
@@ -32,6 +34,7 @@ resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
     transform_cqc_data_state_machine_arn    = aws_sfn_state_machine.sf_pipelines["Transform-CQC-Data"].arn
     ind_cqc_pipeline_state_machine_arn      = aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
     sfc_internal_pipeline_state_machine_arn = aws_sfn_state_machine.sf_pipelines["SfC-Internal"].arn
+    workforce_characteristics_task_arn      = aws_sfn_state_machine.sf_pipelines["Ind-CQC-SLV"].arn
   })
 
   depends_on = [
@@ -71,6 +74,9 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     dataset_bucket_uri            = module.datasets_bucket.bucket_uri
     dataset_bucket_name           = module.datasets_bucket.bucket_name
     pipeline_resources_bucket_uri = module.pipeline_resources.bucket_uri
+
+    # compare paths
+    ind_cqc_compare_dataset_name = local.ind_cqc_comparison_dataset_name_for_validation
 
     # lambdas
     pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
