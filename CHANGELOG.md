@@ -38,6 +38,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed `Append` option from `sink_to_parquet` function.
 
+- Added more datasets to SLV merge job.
+
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
 
