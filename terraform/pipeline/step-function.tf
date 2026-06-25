@@ -307,6 +307,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         ],
         "Resource" : [
           module.cqc-api.task_arn,
+          module.ascwds.task_arn,
           module._02_sfc_internal.task_arn,
           module._03_independent_cqc.task_arn,
           module._03_independent_cqc_model.task_arn,
@@ -321,6 +322,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         Resource = [
           module.cqc-api.task_exc_role_arn,
           module.cqc-api.task_role_arn,
+          module.ascwds.task_exc_role_arn,
+          module.ascwds.task_role_arn,
           module._02_sfc_internal.task_exc_role_arn,
           module._02_sfc_internal.task_role_arn,
           module._03_independent_cqc.task_exc_role_arn,
