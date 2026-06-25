@@ -23,6 +23,8 @@ All notable changes to this project will be documented in this file.
 
 - Added estimate job, its validation and test scripts within SLV pipeline. Updated the required terraform changes for the same.
 
+- Added placeholder polars tasks for clean ascwds workplace and validate clean ascwds workplace jobs.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
