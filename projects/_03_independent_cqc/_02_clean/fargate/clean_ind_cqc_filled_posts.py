@@ -25,13 +25,26 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_p
 from projects._03_independent_cqc._02_clean.fargate.utils.utils import (
     create_column_with_repeated_values_removed,
 )
-from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
-    NullGroupedProvidersSchema as Schemas,
-)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    NullGroupedProviderColumns as NGPcol,
+)
+
+GROUPED_PROVIDER_SCHEMA = pl.Schema(
+    [
+        (IndCQC.location_id, pl.String()),
+        (IndCQC.provider_id, pl.String()),
+        (IndCQC.cqc_location_import_date, pl.Date()),
+        (AWPClean.nmds_id, pl.String()),
+        (NGPcol.potential_grouped_provider, pl.Boolean()),
+        (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+        (NGPcol.grouped_provider_status, pl.String()),
+        (NGPcol.last_update_date, pl.Date()),
+    ]
+)
 
 
 def main(
@@ -91,9 +104,7 @@ def main(
         grouped_providers_lf = utils.scan_parquet(grouped_providers_destination)
         print("Existing grouped providers read in")
     except FileNotFoundError:
-        grouped_providers_lf = pl.LazyFrame(
-            schema=Schemas.expected_select_grouped_providers_schema
-        )
+        grouped_providers_lf = pl.LazyFrame(schema=GROUPED_PROVIDER_SCHEMA)
         print("No existing grouped providers found, starting fresh")
 
     locations_lf, grouped_providers = clean_ascwds_filled_post_outliers(

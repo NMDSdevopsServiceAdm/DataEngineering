@@ -1201,9 +1201,6 @@ class NullGroupedProvidersData:
         ("1-007", "prov-1", date(2026, 1, 1), "nmdsid_8", True, 1.0, "problem",  date(2026, 1, 1)),  # Drops off this run → flipped to "fixed".
     ]  # fmt: skip
 
-    # Expected: 1-004 and 1-005 unchanged (oldest kept, update_date null),
-    #           1-007 flipped to False with update_date = snapshot date,
-    #           new True rows for 1-004 and 1-005 deduped away (same location_id + grouped_provider).
     expected_select_grouped_providers_rows = [
         ("1-004", "prov-1", date(2026, 1, 1), "nmdsid_4", True, 1.0, "problem",  None),           # Oldest retained, unchanged.
         ("1-005", "prov-2", date(2026, 1, 1), "nmdsid_5", True, 1.0, "problem",  None),           # Oldest retained, unchanged.

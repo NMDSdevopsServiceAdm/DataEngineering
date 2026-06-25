@@ -398,6 +398,8 @@ class NullGroupedProviderColumns:
     potential_grouped_provider: str = "potential_grouped_provider"
     provider_pir_count: str = "provider_pir_count"
     provider_pir_sum: str = "provider_pir_sum"
+    grouped_provider_status: str = "grouped_provider_status"
+    last_update_date: str = "last_update_date"
 
 
 @dataclass

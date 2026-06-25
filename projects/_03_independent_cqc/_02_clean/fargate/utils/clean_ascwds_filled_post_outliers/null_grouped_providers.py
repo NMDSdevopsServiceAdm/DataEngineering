@@ -330,8 +330,6 @@ def select_grouped_providers(
         pl.LazyFrame: Full history of grouped provider records with updated flags.
             Unique on (location_id, grouped_provider_status).
     """
-    grouped_provider_status = "grouped_provider_status"  # New column to indicate the status of the grouped provider (problem/fixed).
-    last_update_date = "last_update_date"  # New column to indicate the last update date for the grouped provider status.
     cols_to_select = [
         IndCQC.location_id,
         IndCQC.provider_id,
@@ -349,8 +347,8 @@ def select_grouped_providers(
         .filter(trunc_date_col == trunc_date_col.max())
         .select(cols_to_select)
         .with_columns(
-            pl.lit("problem").alias(grouped_provider_status),
-            pl.col(IndCQC.cqc_location_import_date).alias(last_update_date),
+            pl.lit("problem").alias(NGPcol.grouped_provider_status),
+            pl.col(IndCQC.cqc_location_import_date).alias(NGPcol.last_update_date),
         )
     )
 
@@ -362,8 +360,8 @@ def select_grouped_providers(
     dropped_ids_lf = grouped_providers_lf.join(
         active_ids, on=IndCQC.location_id, how="anti"
     ).with_columns(
-        pl.lit("fixed").alias(grouped_provider_status),
-        pl.col(IndCQC.cqc_location_import_date).alias(last_update_date),
+        pl.lit("fixed").alias(NGPcol.grouped_provider_status),
+        pl.col(IndCQC.cqc_location_import_date).alias(NGPcol.last_update_date),
     )
 
     retained_lf = grouped_providers_lf.join(
@@ -374,7 +372,7 @@ def select_grouped_providers(
         pl.concat([retained_lf, dropped_ids_lf, new_grouped_providers_lf])
         .sort(IndCQC.cqc_location_import_date, descending=False)
         .unique(
-            subset=[IndCQC.location_id, grouped_provider_status],
+            subset=[IndCQC.location_id, NGPcol.grouped_provider_status],
             keep="first",
             maintain_order=True,
         )
