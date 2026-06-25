@@ -50,7 +50,7 @@
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "ingest-ascwds-conatiner",
+                              "Name": "ascwds-conatiner",
                               "Command": [
                                 "clean_ascwds_workplace.py",
                                 "--workplace_source",
@@ -124,7 +124,7 @@
                         "Overrides": {
                           "ContainerOverrides": [
                             {
-                              "Name": "ingest-ascwds-conatiner",
+                              "Name": "ascwds-conatiner",
                               "Command": [
                                 "validate_clean_ascwds_workplace.py",
                                 "--bucket_name",
