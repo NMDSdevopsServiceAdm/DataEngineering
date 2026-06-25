@@ -80,6 +80,4 @@ class CqcLocationsFullCleanTests(unittest.TestCase):
         add_related_location_column_mock.assert_called_once()
         classify_specialisms_mock.assert_called_once()
         run_postcode_matching_mock.assert_called_once()
-        sink_to_parquet_mock.assert_called_once_with(
-            ANY, self.TEST_REG_DESTINATION, append=False
-        )
+        sink_to_parquet_mock.assert_called_once_with(ANY, self.TEST_REG_DESTINATION)

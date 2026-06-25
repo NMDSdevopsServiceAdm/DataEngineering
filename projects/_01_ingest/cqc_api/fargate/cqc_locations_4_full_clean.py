@@ -113,7 +113,6 @@ def main(
     utils.sink_to_parquet(
         cqc_reg_lf,
         cqc_registered_locations_cleaned_destination,
-        append=False,
     )
 
 

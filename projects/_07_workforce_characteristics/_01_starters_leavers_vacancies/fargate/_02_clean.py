@@ -17,7 +17,6 @@ def main(
     utils.sink_to_parquet(
         lazy_df=lf,
         output_path=cleaned_data_destination,
-        append=False,
     )
 
 

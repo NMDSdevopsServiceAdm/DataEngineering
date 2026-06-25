@@ -30,7 +30,6 @@ def main(delta_api_source: str, flattened_destination: str) -> None:
         cqc_lf,
         flattened_destination,
         partition_cols=cqc_partition_keys,
-        append=False,
     )
 
 

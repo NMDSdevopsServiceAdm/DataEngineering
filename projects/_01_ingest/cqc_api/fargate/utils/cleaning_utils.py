@@ -51,7 +51,7 @@ def save_latest_full_snapshot(
         cqc_lf, CQCLClean.cqc_location_import_date
     )
 
-    utils.sink_to_parquet(cqc_lf, cqc_full_snapshot_destination, append=False)
+    utils.sink_to_parquet(cqc_lf, cqc_full_snapshot_destination)
 
 
 def clean_provider_id_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:

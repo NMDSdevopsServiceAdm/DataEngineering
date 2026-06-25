@@ -35,7 +35,7 @@ def main(full_flattened_source: str, full_cleaned_destination: str) -> None:
         cqc_reg_lf, Keys.import_date, CQCPClean.cqc_provider_import_date
     ).drop(Keys.import_date)
 
-    utils.sink_to_parquet(cqc_reg_lf, full_cleaned_destination, append=False)
+    utils.sink_to_parquet(cqc_reg_lf, full_cleaned_destination)
 
 
 if __name__ == "__main__":

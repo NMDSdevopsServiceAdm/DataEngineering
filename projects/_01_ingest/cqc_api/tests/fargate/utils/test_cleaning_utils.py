@@ -35,9 +35,7 @@ class SaveLatestFullSnapshotTests(unittest.TestCase):
         job.save_latest_full_snapshot(self.lf, self.destination_path)
 
         filter_to_max_mock.assert_called_once()
-        sink_to_parquet_mock.assert_called_once_with(
-            ANY, self.destination_path, append=False
-        )
+        sink_to_parquet_mock.assert_called_once_with(ANY, self.destination_path)
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     def test_expected_lazyframe_is_stored(self, sink_to_parquet_mock: Mock):

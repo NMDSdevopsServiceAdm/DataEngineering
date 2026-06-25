@@ -82,12 +82,10 @@ class MainTests(CleanIndFilledPostsTests):
                 call(
                     ANY,
                     self.CLEANED_IND_CQC_DESTINATION,
-                    append=False,
                 ),
                 call(
                     ANY,
                     self.GROUPED_PROVIDERS_DESTINATION,
-                    append=False,
                 ),
             ]
         )
