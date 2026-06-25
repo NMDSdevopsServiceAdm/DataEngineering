@@ -59,8 +59,9 @@ class MainTests(unittest.TestCase):
             Schemas.null_grouped_providers_schema,
             orient="row",
         )
+        self.grouped_providers_lf = pl.LazyFrame()
         self.returned_lf, self.grouped_providers = job.null_grouped_providers(
-            self.test_lf
+            self.test_lf, self.grouped_providers_lf
         )
 
     def test_null_grouped_providers_runs(self):
@@ -90,7 +91,7 @@ class MainTests(unittest.TestCase):
         null_care_home_grouped_providers_mock: Mock,
         null_non_residential_grouped_providers_mock: Mock,
     ):
-        job.null_grouped_providers(self.test_lf)
+        job.null_grouped_providers(self.test_lf, self.grouped_providers_lf)
 
         calculate_data_for_grouped_provider_identification_mock.assert_called_once_with(
             self.test_lf
@@ -193,16 +194,36 @@ class NullNonResidentialGroupedProvidersTests(unittest.TestCase):
 
 
 class SelectGroupedProviders(unittest.TestCase):
-    def test_function_returns_expected_rows(self):
+    def test_function_returns_expected_rows_when_grouped_providers_exist(self):
         input_lf = pl.LazyFrame(
             Data.select_grouped_providers_rows,
             Schemas.select_grouped_providers_schema,
             orient="row",
         )
-        returned_lf = job.select_grouped_providers(input_lf)
+        grouped_providers_lf = pl.LazyFrame(
+            Data.grouped_providers_rows,
+            Schemas.expected_select_grouped_providers_schema,
+            orient="row",
+        )
+        returned_lf = job.select_grouped_providers(input_lf, grouped_providers_lf)
         expected_lf = pl.LazyFrame(
             Data.expected_select_grouped_providers_rows,
+            Schemas.expected_select_grouped_providers_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_function_returns_expected_rows_when_grouped_providers_does_not_exist(self):
+        input_lf = pl.LazyFrame(
+            Data.select_grouped_providers_rows,
             Schemas.select_grouped_providers_schema,
+            orient="row",
+        )
+        grouped_providers_lf = pl.LazyFrame()
+        returned_lf = job.select_grouped_providers(input_lf, grouped_providers_lf)
+        expected_lf = pl.LazyFrame(
+            Data.expected_first_run_rows,
+            Schemas.expected_select_grouped_providers_schema,
             orient="row",
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)

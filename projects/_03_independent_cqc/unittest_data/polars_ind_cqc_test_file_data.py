@@ -1193,10 +1193,28 @@ class NullGroupedProvidersData:
         ("1-006", "prov-1", date(2025, 1, 1), "nmdsid_6", True, 1.0), # Incorrect date with lower year and month than desired.
         ("1-008", "prov-1", date(2025, 3, 1), "nmdsid_7", True, 1.0), # Incorrect date with lower year and higher month than desired.
     ] # fmt: skip
+
+    # Historical state: 1-004 and 1-005 active, 1-007 was active but drops off this run.
+    grouped_providers_rows = [
+        ("1-004", "prov-1", date(2026, 1, 1), "nmdsid_4", True, 1.0, "problem",  None),           # Still active — oldest record kept.
+        ("1-005", "prov-2", date(2026, 1, 1), "nmdsid_5", True, 1.0, "problem",  None),           # Still active — oldest record kept.
+        ("1-007", "prov-1", date(2026, 1, 1), "nmdsid_8", True, 1.0, "problem",  date(2026, 1, 1)),  # Drops off this run → flipped to "fixed".
+    ]  # fmt: skip
+
+    # Expected: 1-004 and 1-005 unchanged (oldest kept, update_date null),
+    #           1-007 flipped to False with update_date = snapshot date,
+    #           new True rows for 1-004 and 1-005 deduped away (same location_id + grouped_provider).
     expected_select_grouped_providers_rows = [
-        ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0),
-        ("1-005", "prov-2", date(2026, 2, 1), "nmdsid_5", True, 1.0),
-    ] # fmt: skip
+        ("1-004", "prov-1", date(2026, 1, 1), "nmdsid_4", True, 1.0, "problem",  None),           # Oldest retained, unchanged.
+        ("1-005", "prov-2", date(2026, 1, 1), "nmdsid_5", True, 1.0, "problem",  None),           # Oldest retained, unchanged.
+        ("1-007", "prov-1", date(2026, 1, 1), "nmdsid_8", True, 1.0, "fixed", date(2026, 1, 1)),  # Flipped, last_update_date = snapshot date.
+    ]  # fmt: skip
+
+    # First run: no history, output equals filtered new snapshot only.
+    expected_first_run_rows = [
+        ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "problem", date(2026, 2, 1)),
+        ("1-005", "prov-2", date(2026, 2, 1), "nmdsid_5", True, 1.0, "problem", date(2026, 2, 1)),
+    ]  # fmt: skip
 
 
 @dataclass

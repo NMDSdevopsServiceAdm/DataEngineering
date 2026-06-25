@@ -307,18 +307,31 @@ def select_grouped_providers(
     lf: pl.LazyFrame, grouped_providers_lf: pl.LazyFrame
 ) -> pl.LazyFrame:
     """
-    Filters the input LazyFrame to the following:
+    Filters the input LazyFrame to the following and merges
+    with historical grouped provider records, updating status columns for locations
+    that have dropped off:
         - potential_grouped_provider is True
         - cqc_location_import_date equal to max year/month across dataset.
-        - cqc_location_import_date equal to min day of the max year/month across dataset.
+
+    On first run (empty grouped_providers_lf), returns only the new snapshot.
+    On subsequent runs:
+        - Locations no longer in the new snapshot have grouped_provider_status set to
+            "fixed".
+        - Locations still active are retained as-is.
+        - Duplicates on (location_id, grouped_provider_status) are dropped, keeping the
+          oldest import date.
 
     Args:
-        lf (pl.LazyFrame): A LazyFrame with potential_grouped_provider column.
-        grouped_providers_lf (pl.LazyFrame): A LazyFrame containing existing grouped providers.
+        lf (pl.LazyFrame): Input frame containing potential_grouped_provider column.
+        grouped_providers_lf (pl.LazyFrame): Historical grouped provider records.
+            May be empty on first run.
 
     Returns:
-        pl.LazyFrame: The filtered input LazyFrame.
+        pl.LazyFrame: Full history of grouped provider records with updated flags.
+            Unique on (location_id, grouped_provider_status).
     """
+    grouped_provider_status = "grouped_provider_status"  # New column to indicate the status of the grouped provider (problem/fixed).
+    last_update_date = "last_update_date"  # New column to indicate the last update date for the grouped provider status.
     cols_to_select = [
         IndCQC.location_id,
         IndCQC.provider_id,
@@ -336,16 +349,33 @@ def select_grouped_providers(
         .filter(trunc_date_col == trunc_date_col.max())
         .select(cols_to_select)
         .with_columns(
-            # add a new bool column to true for all newly identified grouped providers
-            pl.lit(True).alias("grouped_provider")
+            pl.lit("problem").alias(grouped_provider_status),
+            pl.col(IndCQC.cqc_location_import_date).alias(last_update_date),
         )
     )
 
-    # If the locationid is in the grouped_providers_lf but not in new_grouped_providers_lf then change their "grouped_provider" status in the grouped_providers_lf to False.
-    # Append the new_grouped_providers_lf to the grouped_providers_lf and remove duplicates on locationid and "grouped_provider".
+    if grouped_providers_lf.limit(1).collect().is_empty():
+        return new_grouped_providers_lf
 
-    grouped_providers_lf = grouped_providers_lf.join(
-        new_grouped_providers_lf, on=IndCQC.location_id, how="outer"
+    active_ids = new_grouped_providers_lf.select(IndCQC.location_id)
+
+    dropped_ids_lf = grouped_providers_lf.join(
+        active_ids, on=IndCQC.location_id, how="anti"
+    ).with_columns(
+        pl.lit("fixed").alias(grouped_provider_status),
+        pl.col(IndCQC.cqc_location_import_date).alias(last_update_date),
     )
 
-    return grouped_providers_lf
+    retained_lf = grouped_providers_lf.join(
+        active_ids, on=IndCQC.location_id, how="semi"
+    )
+
+    return (
+        pl.concat([retained_lf, dropped_ids_lf, new_grouped_providers_lf])
+        .sort(IndCQC.cqc_location_import_date, descending=False)
+        .unique(
+            subset=[IndCQC.location_id, grouped_provider_status],
+            keep="first",
+            maintain_order=True,
+        )
+    )
