@@ -7,7 +7,7 @@ PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacanc
 
 
 class MainTests(unittest.TestCase):
-    ESTIMATE_SOURCE = "some/source"
+    METADATA_SOURCE = "some/source"
     JOB_ROLE_ESTIMATES_SOURCE = "another/source"
     CLEANED_ASCWDS_WORKPLACE_SOURCE = "other/source"
     MERGED_DATA_DESTINATION = "some/destination"
@@ -20,7 +20,7 @@ class MainTests(unittest.TestCase):
         sink_to_parquet_mock: Mock,
     ):
         job.main(
-            self.ESTIMATE_SOURCE,
+            self.METADATA_SOURCE,
             self.JOB_ROLE_ESTIMATES_SOURCE,
             self.CLEANED_ASCWDS_WORKPLACE_SOURCE,
             self.MERGED_DATA_DESTINATION,
@@ -29,7 +29,7 @@ class MainTests(unittest.TestCase):
         assert len(scan_parquet_mock.call_args_list) == 3
 
         scan_calls = [
-            call(self.ESTIMATE_SOURCE),
+            call(self.METADATA_SOURCE),
             call(self.JOB_ROLE_ESTIMATES_SOURCE),
             call(self.CLEANED_ASCWDS_WORKPLACE_SOURCE),
         ]

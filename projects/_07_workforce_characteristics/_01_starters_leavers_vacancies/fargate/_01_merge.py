@@ -2,7 +2,7 @@ from polars_utils import utils
 
 
 def main(
-    estimates_source: str,
+    metadata_source: str,
     job_role_estimates_source: str,
     cleaned_ascwds_workplace_source: str,
     merged_data_destination: str,
@@ -11,17 +11,17 @@ def main(
     Merges estimates of filled posts data with AWS-WDS data.
 
     Args:
-        estimates_source (str): path to the estimates ind cqc filled posts data
+        metadata_source (str): path to the estimates ind cqc filled posts data
         job_role_estimates_source (str): path to the job role estimates data
         cleaned_ascwds_workplace_source (str): path to the cleaned ascwds workplace data
         merged_data_destination (str): destination for merged output
     """
-    estimates_lf = utils.scan_parquet(estimates_source)
+    metadata_lf = utils.scan_parquet(metadata_source)
     job_role_estimates_lf = utils.scan_parquet(job_role_estimates_source)
     cleaned_ascwds_workplace_lf = utils.scan_parquet(cleaned_ascwds_workplace_source)
 
     utils.sink_to_parquet(
-        lazy_df=estimates_lf,
+        lazy_df=metadata_lf,
         output_path=merged_data_destination,
     )
 
@@ -29,8 +29,8 @@ def main(
 if __name__ == "__main__":
     args = utils.get_args(
         (
-            "--estimates_source",
-            "Source s3 directory for estimated ind cqc filled posts data",
+            "--metadata_source",
+            "Source s3 directory for metadata",
         ),
         (
             "--job_role_estimates_source",
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         ),
     )
     main(
-        estimates_source=args.estimates_source,
+        metadata_source=args.metadata_source,
         job_role_estimates_source=args.job_role_estimates_source,
         cleaned_ascwds_workplace_source=args.cleaned_ascwds_workplace_source,
         merged_data_destination=args.merged_data_destination,
