@@ -44,6 +44,43 @@ job_role_cols = [
     if role.startswith("job_role_") and "flag" not in role
 ]
 
+ascwds_schema = {
+    AWPClean.organisation_id: pl.String,
+    AWPClean.period: pl.String,
+    AWPClean.establishment_id: pl.String,
+    AWPClean.establishment_id_from_nmds: pl.String,
+    AWPClean.parent_id: pl.String,
+    AWPClean.nmds_id: pl.String,
+    AWPClean.establishment_created_date: pl.String,
+    AWPClean.establishment_updated_date: pl.String,
+    AWPClean.master_update_date: pl.String,
+    AWPClean.last_logged_in: pl.String,
+    AWPClean.la_permission: pl.String,
+    AWPClean.is_bulk_uploader: pl.String,
+    AWPClean.is_parent: pl.String,
+    AWPClean.parent_permission: pl.String,
+    AWPClean.registration_type: pl.String,
+    AWPClean.provider_id: pl.String,
+    AWPClean.location_id: pl.String,
+    AWPClean.establishment_type: pl.String,
+    AWPClean.establishment_name: pl.String,
+    AWPClean.address: pl.String,
+    AWPClean.postcode: pl.String,
+    AWPClean.region_id: pl.String,
+    AWPClean.total_staff: pl.String,
+    AWPClean.worker_records: pl.String,
+    AWPClean.total_starters: pl.String,
+    AWPClean.total_leavers: pl.String,
+    AWPClean.total_vacancies: pl.String,
+    AWPClean.main_service_id: pl.String,
+    AWPClean.version: pl.String,
+    AWPClean.import_date: pl.String,
+}
+
+job_role_schema = ascwds_schema.update(
+    dict(zip(job_role_cols, [pl.String] * len(job_role_cols)))
+)
+
 
 def main(
     estimates_source: str,
@@ -56,8 +93,10 @@ def main(
         estimates_source (str): path to the estimates ind cqc filled posts data
         merged_data_destination (str): destination for merged output
     """
+    print(ascwds_schema)
     lf = utils.scan_parquet(
         estimates_source,
+        schema=ascwds_schema,
         selected_columns=list(set(ascwds_workplace_columns_to_import + job_role_cols)),
     )
 
