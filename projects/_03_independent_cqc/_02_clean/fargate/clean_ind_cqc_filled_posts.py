@@ -1,3 +1,5 @@
+import polars as pl
+
 import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator import (
@@ -22,6 +24,9 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_p
 )
 from projects._03_independent_cqc._02_clean.fargate.utils.utils import (
     create_column_with_repeated_values_removed,
+)
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
+    NullGroupedProvidersSchema as Schemas,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -82,8 +87,14 @@ def main(
         [0, 1, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
     )
 
-    grouped_providers_lf = utils.scan_parquet(grouped_providers_destination)
-    print("Existing Grouped providers LazyFrame read in")
+    try:
+        grouped_providers_lf = utils.scan_parquet(grouped_providers_destination)
+        print("Existing grouped providers read in")
+    except FileNotFoundError:
+        grouped_providers_lf = pl.LazyFrame(
+            schema=Schemas.expected_select_grouped_providers_schema
+        )
+        print("No existing grouped providers found, starting fresh")
 
     locations_lf, grouped_providers = clean_ascwds_filled_post_outliers(
         locations_lf, grouped_providers_lf
