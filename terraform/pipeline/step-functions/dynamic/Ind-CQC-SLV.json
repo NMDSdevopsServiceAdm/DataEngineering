@@ -102,7 +102,7 @@
                                 "_01_starters_leavers_vacancies/fargate/validate_01_merge.py",
                                 "--bucket_name", "${dataset_bucket_name}",
                                 "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_01_merge_slv/",
-                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=main_ind_cqc_06_estimated_filled_posts/",
+                                "--compare_path", "domain=ind_cqc_filled_posts/dataset=main_ind_cqc_07_04_estimate_job_roles/",
                                 "--reports_path", "domain=data_validation_reports/dataset=validation_ind_cqc_01_merge_slv/"
                               ]
                             }

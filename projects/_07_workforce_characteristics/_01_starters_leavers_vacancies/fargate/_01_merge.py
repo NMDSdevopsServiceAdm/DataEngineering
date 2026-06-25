@@ -21,7 +21,7 @@ def main(
     cleaned_ascwds_workplace_lf = utils.scan_parquet(cleaned_ascwds_workplace_source)
 
     utils.sink_to_parquet(
-        lazy_df=metadata_lf,
+        lazy_df=job_role_estimates_lf,
         output_path=merged_data_destination,
     )
 
