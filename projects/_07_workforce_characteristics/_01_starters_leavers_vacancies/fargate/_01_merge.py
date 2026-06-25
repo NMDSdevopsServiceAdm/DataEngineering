@@ -77,9 +77,7 @@ ascwds_schema = {
     AWPClean.import_date: pl.String,
 }
 
-job_role_schema = ascwds_schema.update(
-    dict(zip(job_role_cols, [pl.String] * len(job_role_cols)))
-)
+ascwds_schema.update(dict(zip(job_role_cols, [pl.String] * len(job_role_cols))))
 
 
 def main(
