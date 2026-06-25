@@ -31,16 +31,15 @@
                   }
                 },
                 {
-                  "StartAt": "ECS RunTask",
+                  "StartAt": "Clean ASCWDS Workplace polars",
                   "States": {
-                    "ECS RunTask": {
+                    "Clean ASCWDS Workplace polars": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask",
                       "Parameters": {
                         "LaunchType": "FARGATE",
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${ascwds_task_arn}"
-                      },
+                        "TaskDefinition": "${ascwds_task_arn}",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
@@ -63,7 +62,8 @@
                               ]
                             }
                           ]
-                        },
+                        }
+                      },
                       "End": true
                     }
                   }
@@ -113,8 +113,7 @@
                       "Parameters": {
                         "LaunchType": "FARGATE",
                         "Cluster": "${polars_cluster_arn}",
-                        "TaskDefinition": "${ascwds_task_arn}"
-                      },
+                        "TaskDefinition": "${ascwds_task_arn}",
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
@@ -139,7 +138,8 @@
                               ]
                             }
                           ]
-                        },
+                        }
+                      },
                       "End": true
                     }
                   }
