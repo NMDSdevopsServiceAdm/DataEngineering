@@ -35,7 +35,7 @@
                   "States": {
                     "Clean ASCWDS Workplace polars": {
                       "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "LaunchType": "FARGATE",
                         "Cluster": "${polars_cluster_arn}",
@@ -109,7 +109,7 @@
                   "States": {
                     "Validate Cleaned Workplace Polars": {
                       "Type": "Task",
-                      "Resource": "arn:aws:states:::ecs:runTask",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
                         "LaunchType": "FARGATE",
                         "Cluster": "${polars_cluster_arn}",
