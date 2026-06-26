@@ -1014,7 +1014,7 @@ class NullGroupedProvidersSchema:
         ]
     )
 
-    expected_select_grouped_providers_schema = pl.Schema(
+    final_grouped_providers_schema = pl.Schema(
         list(select_grouped_providers_schema.items())
         + [
             (NGPcol.grouped_provider_status, pl.String()),

@@ -76,7 +76,10 @@ def null_grouped_providers(
 
     lf = identify_potential_grouped_providers(lf)
 
-    grouped_providers = select_grouped_providers(lf, grouped_providers_lf)
+    new_grouped_providers = select_grouped_providers(lf)
+    updated_grouped_providers_lf = update_grouped_providers_history(
+        new_grouped_providers, grouped_providers_lf
+    )
 
     lf = null_care_home_grouped_providers(lf)
     lf = null_non_residential_grouped_providers(lf)
@@ -86,7 +89,7 @@ def null_grouped_providers(
 
     lf = lf.drop(*columns_to_drop)
 
-    return lf, grouped_providers
+    return lf, updated_grouped_providers_lf
 
 
 def calculate_data_for_grouped_provider_identification(
@@ -305,32 +308,18 @@ def null_non_residential_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf
 
 
-def select_grouped_providers(
-    lf: pl.LazyFrame, grouped_providers_lf: pl.LazyFrame
-) -> pl.LazyFrame:
+def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Filters the input LazyFrame to the following and merges
-    with historical grouped provider records, updating status columns for locations
-    that have dropped off:
+    Filters the input LazyFrame to the following:
         - potential_grouped_provider is True
         - cqc_location_import_date equal to max year/month across dataset.
 
-    On first run (empty grouped_providers_lf), returns only the new snapshot.
-    On subsequent runs:
-        - Locations no longer in the new snapshot have grouped_provider_status set to
-            "fixed".
-        - Locations still active are retained as-is.
-        - Duplicates on (location_id, grouped_provider_status) are dropped, keeping the
-          oldest import date.
-
     Args:
-        lf (pl.LazyFrame): Input frame containing potential_grouped_provider column.
-        grouped_providers_lf (pl.LazyFrame): Historical grouped provider records.
-            May be empty on first run.
+        lf (pl.LazyFrame): A LazyFrame with potential_grouped_provider column.
 
     Returns:
-        pl.LazyFrame: Full history of grouped provider records with updated flags.
-            Unique on (location_id, grouped_provider_status).
+        pl.LazyFrame: The filtered input LazyFrame with `grouped_provider_status`
+            and `last_update_date` columns added.
     """
     cols_to_select = [
         IndCQC.location_id,
@@ -344,7 +333,7 @@ def select_grouped_providers(
     date_col = pl.col(IndCQC.cqc_location_import_date)
     trunc_date_col = date_col.dt.truncate("1mo")  # E.g. 2026-01-05 becomes 2026-01-01.
 
-    new_grouped_providers_lf = (
+    return (
         lf.filter(pl.col(NGPcol.potential_grouped_provider))
         .filter(trunc_date_col == trunc_date_col.max())
         .select(cols_to_select)
@@ -354,24 +343,63 @@ def select_grouped_providers(
         )
     )
 
+
+def update_grouped_providers_history(
+    new_grouped_providers_lf: pl.LazyFrame,
+    grouped_providers_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """
+    Merges newly identified grouped providers with the historical records,
+    updating status for locations that have dropped off.
+
+    On first run (empty grouped_providers_lf), returns only the new snapshot.
+    On subsequent runs:
+        - Locations no longer in the new snapshot have grouped_provider_status
+          set to "fixed" and last_update_date set to cqc_location_import_date.
+        - Locations still active are retained as-is with last_update_date unchanged.
+        - Duplicates on (location_id, grouped_provider_status) are dropped,
+          keeping the oldest import date.
+
+    Args:
+        new_grouped_providers_lf (pl.LazyFrame): Current snapshot of grouped
+            providers, as returned by select_grouped_providers function.
+        grouped_providers_lf (pl.LazyFrame): Historical grouped provider records.
+            May be empty on first run.
+
+    Returns:
+        pl.LazyFrame: Full history of grouped provider records with updated statuses.
+            Unique on (location_id, grouped_provider_status).
+    """
     if grouped_providers_lf.limit(1).collect().is_empty():
         return new_grouped_providers_lf
 
-    active_ids = new_grouped_providers_lf.select(IndCQC.location_id)
+    new_grouped_provider_ids = new_grouped_providers_lf.select(IndCQC.location_id)
 
-    dropped_ids_lf = grouped_providers_lf.join(
-        active_ids, on=IndCQC.location_id, how="anti"
-    ).with_columns(
-        pl.lit("fixed").alias(NGPcol.grouped_provider_status),
-        pl.col(IndCQC.cqc_location_import_date).alias(NGPcol.last_update_date),
+    snapshot_date = (
+        new_grouped_providers_lf.select(pl.col(IndCQC.cqc_location_import_date).max())
+        .collect()
+        .item()
     )
 
-    retained_lf = grouped_providers_lf.join(
-        active_ids, on=IndCQC.location_id, how="semi"
+    fixed_grouped_providers_lf = grouped_providers_lf.join(
+        new_grouped_provider_ids, on=IndCQC.location_id, how="anti"
+    ).with_columns(
+        pl.lit("fixed").alias(NGPcol.grouped_provider_status),
+        pl.lit(snapshot_date).alias(NGPcol.last_update_date),
+    )
+
+    active_grouped_providers_lf = grouped_providers_lf.join(
+        new_grouped_provider_ids, on=IndCQC.location_id, how="semi"
     )
 
     return (
-        pl.concat([retained_lf, dropped_ids_lf, new_grouped_providers_lf])
+        pl.concat(
+            [
+                active_grouped_providers_lf,
+                fixed_grouped_providers_lf,
+                new_grouped_providers_lf,
+            ]
+        )
         .sort(IndCQC.cqc_location_import_date, descending=False)
         .unique(
             subset=[IndCQC.location_id, NGPcol.grouped_provider_status],

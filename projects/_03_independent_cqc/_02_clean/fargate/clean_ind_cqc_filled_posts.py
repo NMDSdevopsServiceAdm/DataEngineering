@@ -101,7 +101,9 @@ def main(
     )
 
     try:
-        grouped_providers_lf = utils.scan_parquet(grouped_providers_destination)
+        grouped_providers_lf = utils.scan_parquet(
+            source=grouped_providers_destination, schema=GROUPED_PROVIDER_SCHEMA
+        )
         print("Existing grouped providers read in")
     except FileNotFoundError:
         grouped_providers_lf = pl.LazyFrame(schema=GROUPED_PROVIDER_SCHEMA)

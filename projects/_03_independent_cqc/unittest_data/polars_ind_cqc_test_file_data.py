@@ -1194,23 +1194,32 @@ class NullGroupedProvidersData:
         ("1-008", "prov-1", date(2025, 3, 1), "nmdsid_7", True, 1.0), # Incorrect date with lower year and higher month than desired.
     ] # fmt: skip
 
-    # Historical state: 1-004 and 1-005 active, 1-007 was active but drops off this run.
-    grouped_providers_rows = [
-        ("1-004", "prov-1", date(2026, 1, 1), "nmdsid_4", True, 1.0, "problem",  None),           # Still active — oldest record kept.
-        ("1-005", "prov-2", date(2026, 1, 1), "nmdsid_5", True, 1.0, "problem",  None),           # Still active — oldest record kept.
-        ("1-007", "prov-1", date(2026, 1, 1), "nmdsid_8", True, 1.0, "problem",  date(2026, 1, 1)),  # Drops off this run → flipped to "fixed".
-    ]  # fmt: skip
-
     expected_select_grouped_providers_rows = [
-        ("1-004", "prov-1", date(2026, 1, 1), "nmdsid_4", True, 1.0, "problem",  None),           # Oldest retained, unchanged.
-        ("1-005", "prov-2", date(2026, 1, 1), "nmdsid_5", True, 1.0, "problem",  None),           # Oldest retained, unchanged.
-        ("1-007", "prov-1", date(2026, 1, 1), "nmdsid_8", True, 1.0, "fixed", date(2026, 1, 1)),  # Flipped, last_update_date = snapshot date.
-    ]  # fmt: skip
-
-    # First run: no history, output equals filtered new snapshot only.
-    expected_first_run_rows = [
         ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "problem", date(2026, 2, 1)),
         ("1-005", "prov-2", date(2026, 2, 1), "nmdsid_5", True, 1.0, "problem", date(2026, 2, 1)),
+    ] # fmt: skip
+
+    # All rows have grouped_provider_status = "problem" and last_update_date = their import date.
+    new_grouped_providers_rows = [
+        ("1-001", "prov-1", date(2026, 2, 1), "nmds_1", True, 10.0, "problem", date(2026, 2, 1)),
+        ("1-003", "prov-2", date(2026, 2, 1), "nmds_3", True, 30.0, "problem", date(2026, 2, 1)),
+        ("1-004", "prov-3", date(2026, 2, 1), "nmds_4", True, 40.0, "problem", date(2026, 2, 1)),
+    ]  # fmt: skip
+
+    # historical_grouped_providers_rows: what was previously saved to the grouped providers dataset.
+    historical_grouped_providers_rows = [
+        ("1-001", "prov-1", date(2026, 1, 1), "nmds_1", True, 10.0, "problem", date(2026, 1, 1)), # Still active problem — should be retained as-is (oldest kept, last_update_date stays same).
+        ("1-002", "prov-1", date(2026, 1, 1), "nmds_2", True, 20.0, "problem", date(2026, 1, 1)), # Dropped off — not in new snapshot, should be flipped to "fixed".
+        ("1-003", "prov-2", date(2026, 1, 1), "nmds_3", True, 30.0, "fixed", date(2026, 1, 1)), # Re-appearing — was fixed, now back as "problem" in new snapshot; new row appended.
+    ]  # fmt: skip
+
+    # expected_update_grouped_providers_history_rows: full history after update.
+    expected_update_grouped_providers_history_rows = [
+        ("1-001", "prov-1", date(2026, 1, 1), "nmds_1", True, 10.0, "problem", date(2026, 1, 1)), # Retained — oldest "problem" record kept, last_update_date unchanged.
+        ("1-002", "prov-1", date(2026, 1, 1), "nmds_2", True, 20.0, "fixed", date(2026, 2, 1)), # Flipped — was "problem", now "fixed" with last_update_date = new snapshot date.
+        ("1-003", "prov-2", date(2026, 1, 1), "nmds_3", True, 30.0, "fixed", date(2026, 1, 1)), # Preserved — old "fixed" row kept as part of full history.
+        ("1-003", "prov-2", date(2026, 2, 1), "nmds_3", True, 30.0, "problem", date(2026, 2, 1)), # Re-appeared — new "problem" row appended alongside the old "fixed" row.
+        ("1-004", "prov-3", date(2026, 2, 1), "nmds_4", True, 40.0, "problem", date(2026, 2, 1)), # New — first time seen, added with "problem" status.
     ]  # fmt: skip
 
 
