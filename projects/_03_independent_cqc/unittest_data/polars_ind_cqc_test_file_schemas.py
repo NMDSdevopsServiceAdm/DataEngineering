@@ -1014,6 +1014,14 @@ class NullGroupedProvidersSchema:
         ]
     )
 
+    final_grouped_providers_schema = pl.Schema(
+        list(select_grouped_providers_schema.items())
+        + [
+            (NGPcol.grouped_provider_status, pl.String()),
+            (NGPcol.last_update_date, pl.Date()),
+        ]
+    )
+
 
 @dataclass
 class CleanAscwdsFilledPostOutliersSchema:

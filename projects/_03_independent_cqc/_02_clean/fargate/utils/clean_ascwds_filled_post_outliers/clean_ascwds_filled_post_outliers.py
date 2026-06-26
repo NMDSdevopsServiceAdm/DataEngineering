@@ -21,6 +21,7 @@ from utils.column_values.categorical_column_values import AscwdsFilteringRule
 
 def clean_ascwds_filled_post_outliers(
     lf: pl.LazyFrame,
+    grouped_providers_lf: pl.LazyFrame,
 ) -> tuple[pl.LazyFrame, pl.LazyFrame]:
     """
     Creates a clean version of 'ascwds_filled_posts_dedup' column.
@@ -31,6 +32,7 @@ def clean_ascwds_filled_post_outliers(
 
     Args:
         lf (pl.LazyFrame): A polars LazyFrame containing 'ascwds_filled_posts_dedup'.
+        grouped_providers_lf (pl.LazyFrame): A polars LazyFrame containing existing grouped providers.
 
     Returns:
         tuple[pl.LazyFrame, pl.LazyFrame]: The input LazyFrame containing
@@ -52,7 +54,7 @@ def clean_ascwds_filled_post_outliers(
     )
 
     lf = null_filled_posts_where_locations_use_invalid_missing_data_code(lf)
-    lf, grouped_providers = null_grouped_providers(lf)
+    lf, grouped_providers = null_grouped_providers(lf, grouped_providers_lf)
     lf = winsorize_care_home_filled_posts_per_bed_ratio_outliers(lf)
     lf = non_res_brand_id_filter(lf)
 
