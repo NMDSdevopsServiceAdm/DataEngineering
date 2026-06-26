@@ -130,7 +130,7 @@
                                 "--bucket_name",
                                 "${dataset_bucket_name}",
                                 "--source_path",
-                                "/domain=ASCWDS/dataset=workplace_cleaned_polars/",
+                                "domain=ASCWDS/dataset=workplace_cleaned_polars/",
                                 "--compare_path",
                                 "domain=ASCWDS/dataset=workplace/",
                                 "--reports_path",
