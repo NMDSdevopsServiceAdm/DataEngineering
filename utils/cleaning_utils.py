@@ -286,6 +286,7 @@ def reduce_dataset_to_earliest_file_per_month(df: DataFrame) -> DataFrame:
     return df
 
 
+# Not converting to polars, use inline -> lf.with_columns(pl.col(column).cast(pl.Int32))
 def cast_to_int(df: DataFrame, column_names: list) -> DataFrame:
     for column in column_names:
         df = df.withColumn(column, df[column].cast(IntegerType()))
