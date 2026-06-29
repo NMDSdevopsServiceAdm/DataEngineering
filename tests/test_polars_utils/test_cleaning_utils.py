@@ -1,4 +1,5 @@
 import unittest
+from datetime import date
 
 import polars as pl
 import polars.testing as pl_testing
@@ -226,3 +227,60 @@ class CreateBandedBedCountColumnTests(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class CastDateStringsToDatesTests(unittest.TestCase):
+    def test_when_raw_date_format_is_ddmmyyyy(self):
+        test_lf_ddmmyyyy = pl.LazyFrame(
+            data=[
+                (
+                    "01/01/2026",
+                    "02/01/2026",
+                    "03/01/2026 00:00:00",
+                    "2026/01/03",
+                    "words",
+                )
+            ],
+            schema={
+                "import_date": pl.String,
+                "any_other_date_col": pl.String,
+                "date_time_element": pl.String,
+                "malformed_date": pl.String,
+                "another_column": pl.String,
+            },
+            orient="row",
+        )
+        returned_lf_ddmmyyyy = job.cast_date_strings_to_dates(
+            test_lf_ddmmyyyy, raw_date_format="%d/%m/%Y"
+        )
+        expected_lf_ddmmyyyy = pl.LazyFrame(
+            data=[("01/01/2026", date(2026, 1, 2), None, None, "words")],
+            schema={
+                "import_date": pl.String,
+                "any_other_date_col": pl.Date,
+                "date_time_element": pl.Date,
+                "malformed_date": pl.Date,
+                "another_column": pl.String,
+            },
+            orient="row",
+        )
+
+        pl_testing.assert_frame_equal(returned_lf_ddmmyyyy, expected_lf_ddmmyyyy)
+
+    def test_when_raw_date_format_is_yyyymmdd(self):
+        test_lf_ddmmyyyy = pl.LazyFrame({"any_other_date_col": ["2026/01/01"]})
+        returned_lf_ddmmyyyy = job.cast_date_strings_to_dates(
+            test_lf_ddmmyyyy, raw_date_format="%Y/%m/%d"
+        )
+        expected_lf_ddmmyyyy = pl.LazyFrame({"any_other_date_col": date(2026, 1, 1)})
+
+        pl_testing.assert_frame_equal(returned_lf_ddmmyyyy, expected_lf_ddmmyyyy)
+
+    def test_when_raw_date_format_has_time_element(self):
+        test_lf_ddmmyyyy = pl.LazyFrame({"any_other_date_col": ["2026/01/01 00:00:00"]})
+        returned_lf_ddmmyyyy = job.cast_date_strings_to_dates(
+            test_lf_ddmmyyyy, raw_date_format="%Y/%m/%d %T"
+        )
+        expected_lf_ddmmyyyy = pl.LazyFrame({"any_other_date_col": date(2026, 1, 1)})
+
+        pl_testing.assert_frame_equal(returned_lf_ddmmyyyy, expected_lf_ddmmyyyy)

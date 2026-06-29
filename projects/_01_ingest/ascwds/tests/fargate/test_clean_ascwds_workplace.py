@@ -14,10 +14,14 @@ class MainTests(unittest.TestCase):
     WORKPLACE_FOR_RECONCILIATION_DESTINATION = "some/other/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.cUtils.column_to_date")
+    @patch(f"{PATCH_PATH}.cUtils.cast_date_strings_to_dates")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
+        cast_date_strings_to_dates_mock: Mock,
+        column_to_date_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -27,6 +31,11 @@ class MainTests(unittest.TestCase):
         )
 
         scan_parquet_mock.assert_called_once_with(self.WORKPLACE_SOURCE)
+
+        cast_date_strings_to_dates_mock.assert_called_once_with(
+            ANY, raw_date_format="dd/MM/yyyy"
+        )
+        column_to_date_mock.assert_called_once()
 
         assert sink_to_parquet_mock.call_count == 2
 

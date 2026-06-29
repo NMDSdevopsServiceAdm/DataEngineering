@@ -32,24 +32,13 @@ def main(
     # trello 1724
     # ascwds_workplace_df = remove_white_space_from_nmdsid(ascwds_workplace_df)
 
-    # trello 1724
-    # ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
-    #     AWPClean.last_logged_in, AWPClean.last_logged_in_date
-    # )
+    lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
 
-    # trello 1700
-    # ascwds_workplace_df = utils.format_date_fields(
-    #     ascwds_workplace_df,
-    #     date_column_identifier=DATE_COLUMN_IDENTIFIER,
-    #     raw_date_format="dd/MM/yyyy",
-    # )
+    lf = cUtils.cast_date_strings_to_dates(lf, raw_date_format="dd/MM/yyyy")
 
-    # trello 1700
-    # ascwds_workplace_df = cUtils.column_to_date(
-    #     ascwds_workplace_df,
-    #     AWPClean.import_date,
-    #     AWPClean.ascwds_workplace_import_date,
-    # )
+    lf = cUtils.column_to_date(
+        lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
+    )
 
     # trello 1705
     # ascwds_workplace_df = cUtils.apply_categorical_labels(
