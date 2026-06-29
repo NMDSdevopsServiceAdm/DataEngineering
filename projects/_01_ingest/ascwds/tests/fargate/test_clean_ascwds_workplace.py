@@ -33,7 +33,7 @@ class MainTests(unittest.TestCase):
         scan_parquet_mock.assert_called_once_with(self.WORKPLACE_SOURCE)
 
         cast_date_strings_to_dates_mock.assert_called_once_with(
-            ANY, raw_date_format="dd/MM/yyyy"
+            ANY, raw_date_format="%d/%m/%Y"
         )
         column_to_date_mock.assert_called_once()
 

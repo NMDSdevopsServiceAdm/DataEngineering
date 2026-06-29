@@ -170,8 +170,8 @@ def cast_date_strings_to_dates(
     """
     Converts columns to date type.
 
-    All columns in LazyFrame with date_column_identifier in their name and
-    values formatted as raw_date_format will be type cast.
+    Columns in LazyFrame with date_column_identifier in their name excluding
+    'import_date' and values formatted as raw_date_format will be type cast.
     The raw_date_format must match data exactly, otherwise value will be nulled.
 
     Args:
@@ -190,7 +190,7 @@ def cast_date_strings_to_dates(
 
     return lf.with_columns(
         [
-            pl.col(col).str.strptime(pl.Date, raw_date_format, strict=False).alias(col)
+            pl.col(col).str.strptime(pl.Date, raw_date_format, strict=False)
             for col in date_columns
         ]
     )
