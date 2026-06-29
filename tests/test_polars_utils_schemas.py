@@ -12,6 +12,9 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+)
 
 
 @dataclass
@@ -36,45 +39,45 @@ class CleaningUtilsSchemas:
         ]
     )
 
-    worker_schema = StructType(
+    worker_schema = pl.Schema(
         [
-            StructField(AWK.worker_id, StringType(), True),
-            StructField(AWK.gender, StringType(), True),
-            StructField(AWK.nationality, StringType(), True),
+            (AWK.worker_id, pl.String),
+            (AWK.gender, pl.String),
+            (AWK.nationality, pl.String),
         ]
     )
 
-    expected_schema_with_new_columns = StructType(
+    expected_schema_with_new_columns = pl.Schema(
         [
-            StructField(AWK.worker_id, StringType(), True),
-            StructField(AWK.gender, StringType(), True),
-            StructField(AWK.nationality, StringType(), True),
-            StructField("gender_labels", StringType(), True),
-            StructField("nationality_labels", StringType(), True),
+            (AWK.worker_id, pl.String),
+            (AWK.gender, pl.String),
+            (AWK.nationality, pl.String),
+            ("gender_labels", pl.String),
+            ("nationality_labels", pl.String),
         ]
     )
 
-    expected_schema_with_new_code_columns = StructType(
+    expected_schema_with_new_code_columns = pl.Schema(
         [
-            StructField(AWK.worker_id, StringType(), True),
-            StructField(AWK.gender, StringType(), True),
-            StructField(AWK.nationality, StringType(), True),
-            StructField("gender_codes", StringType(), True),
-            StructField("nationality_codes", StringType(), True),
+            (AWK.worker_id, pl.String),
+            (AWK.gender, pl.String),
+            (AWK.nationality, pl.String),
+            ("gender_codes", pl.String),
+            ("nationality_codes", pl.String),
         ]
     )
 
-    worker_schema_for_testing_label_dict_with_duplicate_values = StructType(
+    worker_schema_for_testing_label_dict_with_duplicate_values = pl.Schema(
         [
-            StructField(AWK.worker_id, StringType(), True),
-            StructField(IndCQC.contemporary_cssr, StringType(), True),
+            (AWK.worker_id, pl.String),
+            (IndCQC.contemporary_cssr, pl.String),
         ]
     )
-    expected_worker_schema_for_testing_label_dict_with_duplicate_values = StructType(
+    expected_worker_schema_for_testing_label_dict_with_duplicate_values = pl.Schema(
         [
-            StructField(AWK.worker_id, StringType(), True),
-            StructField(IndCQC.contemporary_cssr, StringType(), True),
-            StructField(IndCQC.contemporary_cssr + "_codes", StringType(), True),
+            (AWK.worker_id, pl.String),
+            (IndCQC.contemporary_cssr, pl.String),
+            (IndCQC.contemporary_cssr + "_codes", pl.String),
         ]
     )
 

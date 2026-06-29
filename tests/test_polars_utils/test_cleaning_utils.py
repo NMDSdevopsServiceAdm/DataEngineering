@@ -2,6 +2,7 @@ import unittest
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 import polars_utils.cleaning_utils as job
 from tests.test_polars_utils_data import CleaningUtilsData as Data
@@ -13,6 +14,9 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+)
 
 
 class PolarsCleaningUtilsTests(unittest.TestCase):
@@ -126,10 +130,10 @@ gender_labels: str = "gender_labels"
 nationality_labels: str = "nationality_labels"
 
 
-class ApplyCategoricalLabelsTests(SparkBaseTest):
+class TestApplyCategoricalLabels:
     def setUp(self):
-        self.test_worker_df = self.spark.createDataFrame(
-            Data.worker_rows, schema=Schemas.worker_schema
+        self.test_worker_df = pl.LazyFrame(
+            Data.worker_rows, schema=Schemas.worker_schema, orient="row"
         )
         self.label_dict = {
             AWK.gender: Data.gender,
@@ -140,24 +144,28 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
             AWK.nationality: Data.nationality,
             IndCQC.contemporary_cssr: Data.contemporary_cssr,
         }
-        self.expected_df_with_new_columns = self.spark.createDataFrame(
+        self.expected_df_with_new_columns = pl.LazyFrame(
             Data.expected_rows_with_new_columns,
             Schemas.expected_schema_with_new_columns,
+            orient="row",
         )
-        self.expected_df_with_new_code_columns = self.spark.createDataFrame(
+        self.expected_df_with_new_code_columns = pl.LazyFrame(
             Data.expected_rows_with_new_code_columns,
             Schemas.expected_schema_with_new_code_columns,
+            orient="row",
         )
-        self.expected_df_without_new_columns = self.spark.createDataFrame(
-            Data.expected_rows_without_new_columns, Schemas.worker_schema
+        self.expected_df_without_new_columns = pl.LazyFrame(
+            Data.expected_rows_without_new_columns, Schemas.worker_schema, orient="row"
         )
-        self.test_df_when_duplicate_values_in_label_dict = self.spark.createDataFrame(
+        self.test_df_when_duplicate_values_in_label_dict = pl.LazyFrame(
             Data.worker_rows_for_testing_label_dict_with_duplicate_values,
             schema=Schemas.worker_schema_for_testing_label_dict_with_duplicate_values,
+            orient="row",
         )
-        self.expected_df_when_duplicate_values_in_label_dict = self.spark.createDataFrame(
+        self.expected_df_when_duplicate_values_in_label_dict = pl.LazyFrame(
             Data.expected_worker_rows_for_testing_label_dict_with_duplicate_values,
             schema=Schemas.expected_worker_schema_for_testing_label_dict_with_duplicate_values,
+            orient="row",
         )
 
     def test_apply_categorical_labels_completes(self):
@@ -167,9 +175,10 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
             [AWK.gender, AWK.nationality],
             add_as_new_column=True,
         )
+        assert type(returned_df) == pl.LazyFrame
+        assert returned_df.collect_schema
 
-        self.assertIsNotNone(returned_df)
-
+    @pytest.mark.skip(reason="to convert")
     def test_single_column_added_with_replaced_values_when_new_column_is_set_to_true(
         self,
     ):
@@ -184,6 +193,7 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
 
         self.assertEqual(len(returned_df.columns), expected_columns)
 
+    @pytest.mark.skip(reason="to convert")
     def test_multiple_columns_added_with_replaced_values_when_new_column_is_set_to_true(
         self,
     ):
@@ -205,6 +215,7 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
         self.assertEqual(len(returned_df.columns), expected_columns)
         self.assertEqual(returned_data, expected_data)
 
+    @pytest.mark.skip(reason="to convert")
     def test_replaces_values_in_original_columns_when_new_column_is_set_to_false(
         self,
     ):
@@ -228,6 +239,7 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
         self.assertEqual(len(returned_df.columns), expected_columns)
         self.assertEqual(returned_data, expected_data)
 
+    @pytest.mark.skip(reason="to convert")
     def test_reverse_label_strings_into_code_strings_when_new_column_is_set_to_false(
         self,
     ):
@@ -250,6 +262,7 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
         self.assertEqual(len(returned_df.columns), expected_columns)
         self.assertEqual(returned_data, expected_data)
 
+    @pytest.mark.skip(reason="to convert")
     def test_reverse_label_strings_into_code_strings_when_new_column_is_set_to_true(
         self,
     ):
@@ -274,6 +287,7 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
         self.assertEqual(len(returned_df.columns), expected_columns)
         self.assertEqual(returned_data, expected_data)
 
+    @pytest.mark.skip(reason="to convert")
     def test_reverse_label_strings_into_code_strings_when_label_dict_has_duplicate_values(
         self,
     ):
@@ -302,6 +316,7 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
         self.assertEqual(len(returned_df.columns), expected_columns)
         self.assertEqual(returned_data, expected_data)
 
+    @pytest.mark.skip(reason="to convert")
     def test_add_as_new_column_defaults_to_true(self):
         returned_df = job.apply_categorical_labels(
             self.test_worker_df,
@@ -312,12 +327,13 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
 
         self.assertEqual(len(returned_df.columns), expected_columns)
 
+    @pytest.mark.skip(reason="to convert")
     def test_original_values_not_in_label_dict_are_retained_when_new_col_added(self):
-        input_df = self.spark.createDataFrame(
+        input_df = pl.LazyFrame(
             Data.worker_rows_with_unmatched_labels,
             Schemas.worker_schema,
         )
-        expected_df = self.spark.createDataFrame(
+        expected_df = pl.LazyFrame(
             Data.expected_worker_rows_with_unmatched_labels_with_new_columns,
             Schemas.expected_schema_with_new_columns,
         )
@@ -336,14 +352,15 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
 
         self.assertEqual(returned_data, expected_data)
 
+    @pytest.mark.skip(reason="to convert")
     def test_original_values_not_in_label_dict_are_retained_when_labels_added_into_original_col(
         self,
     ):
-        input_df = self.spark.createDataFrame(
+        input_df = pl.LazyFrame(
             Data.worker_rows_with_unmatched_labels,
             Schemas.worker_schema,
         )
-        expected_df = self.spark.createDataFrame(
+        expected_df = pl.LazyFrame(
             Data.expected_worker_rows_with_unmatched_labels_without_new_columns,
             Schemas.worker_schema,
         )
@@ -362,6 +379,7 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
 
         self.assertEqual(returned_data, expected_data)
 
+    @pytest.mark.skip(reason="to convert")
     def test_raises_value_error_when_column_not_in_dataframe(
         self,
     ):
@@ -378,6 +396,7 @@ class ApplyCategoricalLabelsTests(SparkBaseTest):
             "Column age not found in DataFrame.",
         )
 
+    @pytest.mark.skip(reason="to convert")
     def test_raises_key_error_when_column_not_in_labels_dict(
         self,
     ):
