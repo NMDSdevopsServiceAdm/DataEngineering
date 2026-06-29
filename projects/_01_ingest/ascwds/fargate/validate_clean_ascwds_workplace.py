@@ -9,6 +9,10 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as ASCWPClean,
 )
 
+VALIDATION_COLS_TO_IMPORT = [
+    ASCWPClean.establishment_id,
+]
+
 COMPARE_COLS_TO_IMPORT = [
     ASCWPClean.establishment_id,
 ]
@@ -28,7 +32,10 @@ def main(
         compare_path (str): the path to the dataset to compare against
         reports_path (str): the output path to write reports to
     """
-    source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
+    source_df = utils.read_parquet(
+        source=f"s3://{bucket_name}/{source_path}",
+        selected_columns=VALIDATION_COLS_TO_IMPORT,
+    )
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=COMPARE_COLS_TO_IMPORT,
