@@ -4,6 +4,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 
+# Organisation IDs used internally by Skills for Care for testing purposes.
+# These organisations do not represent real workplaces and are excluded from
+# downstream processing.
 TEST_ACCOUNTS: set[str] = {
     "305",
     "307",
@@ -18,6 +21,16 @@ TEST_ACCOUNTS: set[str] = {
     "51818",
 }
 
+# Establishment IDs known to contain duplicated ASC-WDS submissions.
+#
+# These records represent the same workplace data uploaded against multiple
+# accounts. The issue was raised with the support team but there is no way of
+# automatically blocking this going forwards.
+#
+# There are two sets of workplaces here who submitted the exact same ASCWDS
+# files on the same day.
+# - Four locations ("48904" to "49968")
+# - 18 locations ("50538" to "50870").
 DUPLICATE_ESTABLISHMENT_IDS: set[str] = {
     "48904",
     "49966",
@@ -46,7 +59,11 @@ DUPLICATE_ESTABLISHMENT_IDS: set[str] = {
 
 def valid_workplace_filter() -> pl.Expr:
     """
-    Create a filter expression to exclude test accounts and duplicate establishments.
+    Return a filter expression that excludes known invalid workplace records.
+
+    Removes:
+        - Internal Skills for Care test organisations.
+        - Known duplicate workplace submissions.
 
     Returns:
         pl.Expr: A Polars expression that can be used to filter a LazyFrame.
