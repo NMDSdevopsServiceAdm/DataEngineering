@@ -1,3 +1,9 @@
+import polars as pl
+
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+
 TEST_ACCOUNTS: set[str] = {
     "305",
     "307",
@@ -36,3 +42,19 @@ DUPLICATE_ESTABLISHMENT_IDS: set[str] = {
     "50869",
     "50870",
 }
+
+
+def valid_workplace_filter() -> pl.Expr:
+    """
+    Create a filter expression to exclude test accounts and duplicate establishments.
+
+    Returns:
+        pl.Expr: A Polars expression that can be used to filter a LazyFrame.
+    """
+    return (
+        # exclude test accounts
+        ~pl.col(AWPClean.organisation_id).is_in(TEST_ACCOUNTS)
+        &
+        # exclude duplicate establishments
+        ~pl.col(AWPClean.establishment_id).is_in(DUPLICATE_ESTABLISHMENT_IDS)
+    )
