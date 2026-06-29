@@ -90,7 +90,11 @@ def main(
         & ~pl.col(AWPClean.establishment_id).is_in(wUtils.DUPLICATE_ESTABLISHMENT_IDS)
     )
 
-    lf = lf.with_columns(pl.col(AWPClean.nmds_id).str.strip_chars())
+    lf = lf.with_columns(
+        (pl.col(AWPClean.nmds_id).str.strip_chars()),
+        (pl.col(AWPClean.total_staff).cast(pl.Int32)),
+        (pl.col(AWPClean.worker_records).cast(pl.Int32)),
+    )
 
     lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
 
@@ -120,11 +124,6 @@ def main(
     #     ascwds_workplace_df
     # )
 
-    lf = lf.with_columns(
-        (pl.col(AWPClean.total_staff).cast(pl.Int32)),
-        (pl.col(AWPClean.worker_records).cast(pl.Int32)),
-    )
-
     # ascwds_workplace_df = cUtils.set_column_bounds(
     #     ascwds_workplace_df,
     #     AWPClean.total_staff,
@@ -141,18 +140,12 @@ def main(
 
     # reconciliation_lf = reconciliation_lf.select(cols_required_for_reconciliation)
 
-    # print(
-    #     f"Exporting clean ascwds workplace data as parquet to {cleaned_ascwds_workplace_destination}"
-    # )
     utils.sink_to_parquet(
         lazy_df=lf,
         # ascwds_workplace_lf,
         output_path=cleaned_workplace_destination,
     )
 
-    # print(
-    #     f"Exporting ascwds workplace reconciliation data as parquet to {workplace_for_reconciliation_destination}"
-    # )
     utils.sink_to_parquet(
         lazy_df=lf,
         # reconciliation_lf,
