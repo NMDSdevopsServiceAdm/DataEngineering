@@ -91,7 +91,7 @@ def apply_categorical_labels(
     # spark = utils.get_spark()
 
     for column_name in column_names:
-        if column_name not in lf.columns:
+        if column_name not in lf.collect_schema().names():
             raise ValueError(f"Column {column_name} not found in DataFrame.")
         if column_name not in labels:
             raise ValueError(f"No label mapping found for {column_name}.")

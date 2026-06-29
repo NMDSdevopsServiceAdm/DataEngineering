@@ -176,20 +176,20 @@ class TestApplyCategoricalLabels(PolarsCleaningUtilsTests):
         assert type(returned_lf) == pl.LazyFrame
         assert returned_lf.collect().height > 0
 
-    # @pytest.mark.skip(reason="to convert")
-    # def test_single_column_added_with_replaced_values_when_new_column_is_set_to_true(
-    #     self,
-    # ):
-    #     returned_df = job.apply_categorical_labels(
-    #         self.test_worker_df,
-    #         self.label_dict,
-    #         [AWK.gender],
-    #         add_as_new_column=True,
-    #     )
+    def test_single_column_added_with_replaced_values_when_new_column_is_set_to_true(
+        self,
+    ):
+        returned_df = job.apply_categorical_labels(
+            self.test_worker_lf,
+            self.label_dict,
+            [AWK.gender],
+            add_as_new_column=True,
+        )
 
-    #     expected_columns = len(self.test_worker_df.columns) + 1
-
-    #     self.assertEqual(len(returned_df.columns), expected_columns)
+        assert (
+            len(returned_df.collect_schema().names())
+            == len(self.test_worker_lf.collect_schema().names()) + 1
+        )
 
     # @pytest.mark.skip(reason="to convert")
     # def test_multiple_columns_added_with_replaced_values_when_new_column_is_set_to_true(
