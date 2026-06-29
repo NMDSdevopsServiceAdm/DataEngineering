@@ -142,11 +142,7 @@ class TestApplyCategoricalLabels(PolarsCleaningUtilsTests):
         #     AWK.nationality: Data.nationality,
         #     IndCQC.contemporary_cssr: Data.contemporary_cssr,
         # }
-        # self.expected_df_with_new_columns = pl.LazyFrame(
-        #     Data.expected_rows_with_new_columns,
-        #     Schemas.expected_schema_with_new_columns,
-        #     orient="row",
-        # )
+
         # self.expected_df_with_new_code_columns = pl.LazyFrame(
         #     Data.expected_rows_with_new_code_columns,
         #     Schemas.expected_schema_with_new_code_columns,
@@ -179,7 +175,7 @@ class TestApplyCategoricalLabels(PolarsCleaningUtilsTests):
     def test_single_column_added_with_replaced_values_when_new_column_is_set_to_true(
         self,
     ):
-        returned_df = job.apply_categorical_labels(
+        returned_lf = job.apply_categorical_labels(
             self.test_worker_lf,
             self.label_dict,
             [AWK.gender],
@@ -187,31 +183,25 @@ class TestApplyCategoricalLabels(PolarsCleaningUtilsTests):
         )
 
         assert (
-            len(returned_df.collect_schema().names())
+            len(returned_lf.collect_schema().names())
             == len(self.test_worker_lf.collect_schema().names()) + 1
         )
 
-    # @pytest.mark.skip(reason="to convert")
-    # def test_multiple_columns_added_with_replaced_values_when_new_column_is_set_to_true(
-    #     self,
-    # ):
-    #     returned_df = job.apply_categorical_labels(
-    #         self.test_worker_df,
-    #         self.label_dict,
-    #         [AWK.gender, AWK.nationality],
-    #         add_as_new_column=True,
-    #     )
-    #     returned_data = (
-    #         returned_df.select(self.expected_df_with_new_columns.columns)
-    #         .sort(AWK.worker_id)
-    #         .collect()
-    #     )
-    #     expected_data = self.expected_df_with_new_columns.sort(AWK.worker_id).collect()
-
-    #     expected_columns = len(self.test_worker_df.columns) + 2
-
-    #     self.assertEqual(len(returned_df.columns), expected_columns)
-    #     self.assertEqual(returned_data, expected_data)
+    def test_multiple_columns_added_with_replaced_values_when_new_column_is_set_to_true(
+        self,
+    ):
+        returned_lf = job.apply_categorical_labels(
+            self.test_worker_lf,
+            self.label_dict,
+            [AWK.gender, AWK.nationality],
+            add_as_new_column=True,
+        )
+        expected_lf = pl.LazyFrame(
+            Data.expected_rows_with_new_columns,
+            Schemas.expected_schema_with_new_columns,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     # @pytest.mark.skip(reason="to convert")
     # def test_replaces_values_in_original_columns_when_new_column_is_set_to_false(
