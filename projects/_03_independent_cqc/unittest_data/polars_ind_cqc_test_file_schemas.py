@@ -1018,7 +1018,8 @@ class NullGroupedProvidersSchema:
         list(select_grouped_providers_schema.items())
         + [
             (NGPcol.grouped_provider_status, pl.String()),
-            (NGPcol.last_update_date, pl.Date()),
+            (NGPcol.grp_prov_identified_date, pl.Date()),
+            (NGPcol.grp_prov_fixed_date, pl.Date()),
         ]
     )
 

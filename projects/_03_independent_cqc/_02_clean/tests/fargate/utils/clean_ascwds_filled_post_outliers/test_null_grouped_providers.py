@@ -251,5 +251,5 @@ class UpdateGropupedProvidersHistory(unittest.TestCase):
         returned_lf = job.update_grouped_providers_history(
             new_grouped_providers_lf, historical_grouped_providers_lf
         )
-        expected_lf = new_grouped_providers_lf
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, new_grouped_providers_lf)

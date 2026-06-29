@@ -399,7 +399,8 @@ class NullGroupedProviderColumns:
     provider_pir_count: str = "provider_pir_count"
     provider_pir_sum: str = "provider_pir_sum"
     grouped_provider_status: str = "grouped_provider_status"
-    last_update_date: str = "last_update_date"
+    grp_prov_identified_date: str = "grouped_provider_identified_date"
+    grp_prov_fixed_date: str = "grouped_provider_fixed_date"
 
 
 @dataclass

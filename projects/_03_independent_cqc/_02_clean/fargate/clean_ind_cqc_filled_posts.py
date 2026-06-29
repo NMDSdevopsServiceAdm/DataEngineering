@@ -42,7 +42,8 @@ GROUPED_PROVIDER_SCHEMA = pl.Schema(
         (NGPcol.potential_grouped_provider, pl.Boolean()),
         (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
         (NGPcol.grouped_provider_status, pl.String()),
-        (NGPcol.last_update_date, pl.Date()),
+        (NGPcol.grp_prov_identified_date, pl.Date()),
+        (NGPcol.grp_prov_fixed_date, pl.Date()),
     ]
 )
 
