@@ -36,9 +36,9 @@ def main(
 
     lf = cUtils.cast_date_strings_to_dates(lf, raw_date_format="%d/%m/%Y")
 
-    lf = cUtils.column_to_date(
-        lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
-    )
+    # lf = cUtils.column_to_date(
+    #     lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
+    # )
 
     # trello 1705
     # ascwds_workplace_df = cUtils.apply_categorical_labels(
