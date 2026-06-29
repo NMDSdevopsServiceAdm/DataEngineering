@@ -6,20 +6,69 @@
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "Clean Workplace Data",
+          "StartAt": "Parallel Clean Workspace",
           "States": {
-            "Clean Workplace Data": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${clean_ascwds_workplace_job_name}",
-                "Arguments": {
-                  "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
-                  "--cleaned_ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                  "--workplace_for_reconciliation_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
+            "Parallel Clean Workspace": {
+              "Type": "Parallel",
+              "Next": "Clean Worker and validate cleaned data",
+              "Branches": [
+                {
+                  "StartAt": "Clean Workplace Data",
+                  "States": {
+                    "Clean Workplace Data": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${clean_ascwds_workplace_job_name}",
+                        "Arguments": {
+                          "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+                          "--cleaned_ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                          "--workplace_for_reconciliation_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Clean ASCWDS Workplace polars",
+                  "States": {
+                    "Clean ASCWDS Workplace polars": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "LaunchType": "FARGATE",
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${ascwds_task_arn}",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${ascwds_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "ascwds-container",
+                              "Command": [
+                                "clean_ascwds_workplace.py",
+                                "--workplace_source",
+                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+                                "--cleaned_workplace_destination",
+                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned_polars/",
+                                "--workplace_for_reconciliation_destination",
+                                "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation_polars/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
                 }
-              },
-              "Next": "Clean Worker and validate cleaned data"
+              ]
             },
             "Clean Worker and validate cleaned data": {
               "Type": "Parallel",
@@ -49,6 +98,46 @@
                         "Arguments": {
                           "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
                           "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_worker_cleaned/"
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate Cleaned Workplace Polars",
+                  "States": {
+                    "Validate Cleaned Workplace Polars": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "LaunchType": "FARGATE",
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${ascwds_task_arn}",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${ascwds_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "ascwds-container",
+                              "Command": [
+                                "validate_clean_ascwds_workplace.py",
+                                "--bucket_name",
+                                "${dataset_bucket_name}",
+                                "--source_path",
+                                "domain=ASCWDS/dataset=workplace_cleaned_polars/",
+                                "--compare_path",
+                                "domain=ASCWDS/dataset=workplace/",
+                                "--reports_path",
+                                "domain=data_validation_reports/dataset=validation_ascwds_workplace_cleaned/"
+                              ]
+                            }
+                          ]
                         }
                       },
                       "End": true

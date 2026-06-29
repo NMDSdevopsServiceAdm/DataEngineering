@@ -25,6 +25,8 @@ All notable changes to this project will be documented in this file.
 
 - Added SLV pipeline to trigger after IND CQC pipeline finishes in Workforce Intelligence pipeline.
 
+- Added placeholder polars tasks for clean ascwds workplace and validate clean ascwds workplace jobs.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
