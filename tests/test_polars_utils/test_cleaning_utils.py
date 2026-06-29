@@ -143,11 +143,11 @@ class TestApplyCategoricalLabels(PolarsCleaningUtilsTests):
         #     IndCQC.contemporary_cssr: Data.contemporary_cssr,
         # }
 
-        # self.expected_df_with_new_code_columns = pl.LazyFrame(
-        #     Data.expected_rows_with_new_code_columns,
-        #     Schemas.expected_schema_with_new_code_columns,
-        #     orient="row",
-        # )
+        self.expected_lf_with_new_code_columns = pl.LazyFrame(
+            Data.expected_rows_with_new_code_columns,
+            Schemas.expected_schema_with_new_code_columns,
+            orient="row",
+        )
         # self.expected_df_without_new_columns = pl.LazyFrame(
         #     Data.expected_rows_without_new_columns, Schemas.worker_schema, orient="row"
         # )
@@ -203,29 +203,17 @@ class TestApplyCategoricalLabels(PolarsCleaningUtilsTests):
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    # @pytest.mark.skip(reason="to convert")
-    # def test_replaces_values_in_original_columns_when_new_column_is_set_to_false(
-    #     self,
-    # ):
-    #     returned_df = job.apply_categorical_labels(
-    #         self.test_worker_df,
-    #         self.label_dict,
-    #         [AWK.gender, AWK.nationality],
-    #         add_as_new_column=False,
-    #     )
-    #     returned_data = (
-    #         returned_df.select(self.expected_df_without_new_columns.columns)
-    #         .sort(AWK.worker_id)
-    #         .collect()
-    #     )
-    #     expected_data = self.expected_df_without_new_columns.sort(
-    #         AWK.worker_id
-    #     ).collect()
-
-    #     expected_columns = len(self.test_worker_df.columns)
-
-    #     self.assertEqual(len(returned_df.columns), expected_columns)
-    #     self.assertEqual(returned_data, expected_data)
+    def test_replaces_values_in_original_columns_when_new_column_is_set_to_false(
+        self,
+    ):
+        returned_lf = job.apply_categorical_labels(
+            self.test_worker_lf,
+            self.label_dict,
+            [AWK.gender, AWK.nationality],
+            add_as_new_column=False,
+        )
+        expected_lf = self.expected_lf_with_new_code_columns
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     # @pytest.mark.skip(reason="to convert")
     # def test_reverse_label_strings_into_code_strings_when_new_column_is_set_to_false(
