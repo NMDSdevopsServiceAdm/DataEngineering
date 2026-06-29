@@ -36,6 +36,48 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    worker_schema = StructType(
+        [
+            StructField(AWK.worker_id, StringType(), True),
+            StructField(AWK.gender, StringType(), True),
+            StructField(AWK.nationality, StringType(), True),
+        ]
+    )
+
+    expected_schema_with_new_columns = StructType(
+        [
+            StructField(AWK.worker_id, StringType(), True),
+            StructField(AWK.gender, StringType(), True),
+            StructField(AWK.nationality, StringType(), True),
+            StructField("gender_labels", StringType(), True),
+            StructField("nationality_labels", StringType(), True),
+        ]
+    )
+
+    expected_schema_with_new_code_columns = StructType(
+        [
+            StructField(AWK.worker_id, StringType(), True),
+            StructField(AWK.gender, StringType(), True),
+            StructField(AWK.nationality, StringType(), True),
+            StructField("gender_codes", StringType(), True),
+            StructField("nationality_codes", StringType(), True),
+        ]
+    )
+
+    worker_schema_for_testing_label_dict_with_duplicate_values = StructType(
+        [
+            StructField(AWK.worker_id, StringType(), True),
+            StructField(IndCQC.contemporary_cssr, StringType(), True),
+        ]
+    )
+    expected_worker_schema_for_testing_label_dict_with_duplicate_values = StructType(
+        [
+            StructField(AWK.worker_id, StringType(), True),
+            StructField(IndCQC.contemporary_cssr, StringType(), True),
+            StructField(IndCQC.contemporary_cssr + "_codes", StringType(), True),
+        ]
+    )
+
     col_to_date_string_schema = pl.Schema([("date_col", pl.String())])
     col_to_date_integer_schema = pl.Schema([("date_col", pl.Int64())])
     expected_col_to_date_schema = pl.Schema([("date_col", pl.Date())])
