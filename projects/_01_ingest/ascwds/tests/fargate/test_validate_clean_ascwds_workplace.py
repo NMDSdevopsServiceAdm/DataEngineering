@@ -17,14 +17,14 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
     def setUp(self) -> None:
         self.source_df = pl.DataFrame(
             [
-                ("123", date(2024, 1, 1)),
-                ("456", date(2024, 1, 1)),
-                ("123", date(2024, 2, 1)),
+                ("123", "20240101"),
+                ("456", "20240101"),
+                ("123", "20240201"),
             ],
             schema=pl.Schema(
                 [
                     (ASCWPClean.establishment_id, pl.String),
-                    (ASCWPClean.ascwds_workplace_import_date, pl.Date),
+                    (ASCWPClean.import_date, pl.String),
                 ]
             ),
             orient="row",
