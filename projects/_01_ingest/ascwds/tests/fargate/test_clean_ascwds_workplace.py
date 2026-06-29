@@ -26,7 +26,9 @@ class MainTests(unittest.TestCase):
             self.WORKPLACE_FOR_RECONCILIATION_DESTINATION,
         )
 
-        scan_parquet_mock.assert_called_once_with(self.WORKPLACE_SOURCE)
+        scan_parquet_mock.assert_called_once_with(
+            self.WORKPLACE_SOURCE, selected_columns=job.columns_to_import
+        )
 
         assert sink_to_parquet_mock.call_count == 2
 
