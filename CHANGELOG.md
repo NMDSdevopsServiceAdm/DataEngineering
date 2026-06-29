@@ -23,6 +23,8 @@ All notable changes to this project will be documented in this file.
 
 - Added estimate job, its validation and test scripts within SLV pipeline. Updated the required terraform changes for the same.
 
+- Added SLV pipeline to trigger after IND CQC pipeline finishes in Workforce Intelligence pipeline.
+
 - Added placeholder polars tasks for clean ascwds workplace and validate clean ascwds workplace jobs.
 
 ### Changed
@@ -39,6 +41,8 @@ All notable changes to this project will be documented in this file.
 - Changed validate_04_estimates to reflect that historical reallocation is called after manager adjustment.
 
 - Removed `Append` option from `sink_to_parquet` function.
+
+- Added more datasets to SLV merge job.
 
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
