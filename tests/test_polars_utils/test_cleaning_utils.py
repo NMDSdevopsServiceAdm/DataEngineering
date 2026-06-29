@@ -164,7 +164,7 @@ class TestApplyCategoricalLabels:
                 AWK.gender: ["1"],
             },
         )
-        error_msg = "Column age not found in DataFrame."
+        error_msg = "Column age not found in LazyFrame."
         with pytest.raises(ValueError, match=error_msg):
             job.apply_categorical_labels(
                 test_error_lf,
@@ -185,7 +185,7 @@ class TestApplyCategoricalLabels:
         with pytest.raises(KeyError, match=error_msg):
             job.apply_categorical_labels(
                 test_error_lf,
-                Data.label_dict.pop[AWK.gender],
+                Data.label_dict.pop(AWK.gender),
                 [AWK.gender],
             )
 

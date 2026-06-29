@@ -84,17 +84,17 @@ def apply_categorical_labels(
         are preserved.
 
     Raises:
-        ValueError: If column to apply labels is not in LazyFrame or has no
-            mapping in labels dict.
+        ValueError: If column to apply labels to is not in LazyFrame.
+        KeyError: If column has no mapping in labels dict.
 
     """
     # spark = utils.get_spark()
 
     for column_name in column_names:
         if column_name not in lf.collect_schema().names():
-            raise ValueError(f"Column {column_name} not found in DataFrame.")
+            raise ValueError(f"Column {column_name} not found in LazyFrame.")
         if column_name not in labels:
-            raise ValueError(f"No label mapping found for {column_name}.")
+            raise KeyError(f"No label mapping found for {column_name}.")
 
     # for column_name in column_names:
     #     mapping_schema = StructType(
