@@ -81,7 +81,7 @@ def create_purged_lfs_for_reconciliation_and_data(
         lf (pl.LazyFrame): The ascwds_workplace_lf to be purged
 
     Returns:
-        Tuple[pl.LazyFrame, pl.LazyFrame]: A tuple of two LazyFrames: -
+        tuple[pl.LazyFrame, pl.LazyFrame]: A tuple of two LazyFrames: -
         ascwds_workplace_lf where old data has been removed based on mupddate
             date
         - reconciliation_lf where old data has been removed based on the maximum
