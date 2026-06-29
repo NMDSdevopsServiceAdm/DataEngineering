@@ -126,268 +126,68 @@ class AddAlignedDateColumnsTests(PolarsCleaningUtilsTests):
         )
 
 
-class TestApplyCategoricalLabels(PolarsCleaningUtilsTests):
-    def setUp(self):
-        # self.gender_labels: str = "gender_labels"
-        # self.nationality_labels: str = "nationality_labels"
-        self.test_worker_lf = pl.LazyFrame(
-            Data.worker_rows, schema=Schemas.worker_schema, orient="row"
-        )
-        self.label_dict = {
-            AWK.gender: Data.gender,
-            AWK.nationality: Data.nationality,
-            IndCQC.contemporary_cssr: Data.contemporary_cssr,
-        }
-        # self.label_dict_missing_gender = {
-        #     AWK.nationality: Data.nationality,
-        #     IndCQC.contemporary_cssr: Data.contemporary_cssr,
-        # }
+class TestApplyCategoricalLabels:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.apply_catagorical_labels_test_cases
+        ],
+    )
+    def test_apply_categorical_labels(self, case):
+        test_lf = pl.LazyFrame(case.test_data)
 
-        self.expected_lf_with_new_code_columns = pl.LazyFrame(
-            Data.expected_rows_with_new_code_columns,
-            Schemas.expected_schema_with_new_code_columns,
-            orient="row",
-        )
-        # self.expected_df_without_new_columns = pl.LazyFrame(
-        #     Data.expected_rows_without_new_columns, Schemas.worker_schema, orient="row"
-        # )
-        # self.test_df_when_duplicate_values_in_label_dict = pl.LazyFrame(
-        #     Data.worker_rows_for_testing_label_dict_with_duplicate_values,
-        #     schema=Schemas.worker_schema_for_testing_label_dict_with_duplicate_values,
-        #     orient="row",
-        # )
-        # self.expected_df_when_duplicate_values_in_label_dict = pl.LazyFrame(
-        #     Data.expected_worker_rows_for_testing_label_dict_with_duplicate_values,
-        #     schema=Schemas.expected_worker_schema_for_testing_label_dict_with_duplicate_values,
-        #     orient="row",
-        # )
-
-    def test_apply_categorical_labels_completes(self):
-        returned_lf = job.apply_categorical_labels(
-            self.test_worker_lf,
-            self.label_dict,
-            [AWK.gender, AWK.nationality],
-            add_as_new_column=True,
-        )
-        assert type(returned_lf) == pl.LazyFrame
-        assert returned_lf.collect().height > 0
-
-    def test_single_column_added_with_replaced_values_when_new_column_is_set_to_true(
-        self,
-    ):
-        returned_lf = job.apply_categorical_labels(
-            self.test_worker_lf,
-            self.label_dict,
-            [AWK.gender],
-            add_as_new_column=True,
-        )
-
-        assert (
-            len(returned_lf.collect_schema().names())
-            == len(self.test_worker_lf.collect_schema().names()) + 1
-        )
-
-    def test_multiple_columns_added_with_replaced_values_when_new_column_is_set_to_true(
-        self,
-    ):
-        returned_lf = job.apply_categorical_labels(
-            self.test_worker_lf,
-            self.label_dict,
-            [AWK.gender, AWK.nationality],
-            add_as_new_column=True,
-        )
         expected_lf = pl.LazyFrame(
-            Data.expected_rows_with_new_columns,
-            Schemas.expected_schema_with_new_columns,
-            orient="row",
+            case.expected_data,
         )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_replaces_values_in_original_columns_when_new_column_is_set_to_false(
+        returned_lf = job.apply_categorical_labels(
+            test_lf,
+            case.label_dict,
+            case.column_names,
+            case.add_as_new_column,
+            case.reverse_mapping,
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_row_order=False,
+        )
+
+    def test_raises_value_error_when_column_not_in_dataframe(
         self,
     ):
-        returned_lf = job.apply_categorical_labels(
-            self.test_worker_lf,
-            self.label_dict,
-            [AWK.gender, AWK.nationality],
-            add_as_new_column=False,
+        test_error_lf = pl.LazyFrame(
+            data={
+                AWK.worker_id: ["1"],
+                AWK.gender: ["1"],
+            },
         )
-        expected_lf = self.expected_lf_with_new_code_columns
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+        error_msg = "Column age not found in DataFrame."
+        with pytest.raises(ValueError, match=error_msg):
+            job.apply_categorical_labels(
+                test_error_lf,
+                Data.label_dict,
+                [AWK.age],
+            )
 
-    # @pytest.mark.skip(reason="to convert")
-    # def test_reverse_label_strings_into_code_strings_when_new_column_is_set_to_false(
-    #     self,
-    # ):
-    #     returned_df = job.apply_categorical_labels(
-    #         self.expected_df_without_new_columns,
-    #         self.label_dict,
-    #         [AWK.gender, AWK.nationality],
-    #         add_as_new_column=False,
-    #         reverse_mapping=True,
-    #     )
-    #     returned_data = (
-    #         returned_df.select(self.test_worker_df.columns)
-    #         .sort(AWK.worker_id)
-    #         .collect()
-    #     )
-    #     expected_data = self.test_worker_df.sort(AWK.worker_id).collect()
-
-    #     expected_columns = len(self.test_worker_df.columns)
-
-    #     self.assertEqual(len(returned_df.columns), expected_columns)
-    #     self.assertEqual(returned_data, expected_data)
-
-    # @pytest.mark.skip(reason="to convert")
-    # def test_reverse_label_strings_into_code_strings_when_new_column_is_set_to_true(
-    #     self,
-    # ):
-    #     returned_df = job.apply_categorical_labels(
-    #         self.expected_df_without_new_columns,
-    #         self.label_dict,
-    #         [AWK.gender, AWK.nationality],
-    #         add_as_new_column=True,
-    #         reverse_mapping=True,
-    #     )
-    #     returned_data = (
-    #         returned_df.select(self.expected_df_with_new_code_columns.columns)
-    #         .sort(AWK.worker_id)
-    #         .collect()
-    #     )
-    #     expected_data = self.expected_df_with_new_code_columns.sort(
-    #         AWK.worker_id
-    #     ).collect()
-
-    #     expected_columns = len(self.test_worker_df.columns) + 2
-
-    #     self.assertEqual(len(returned_df.columns), expected_columns)
-    #     self.assertEqual(returned_data, expected_data)
-
-    # @pytest.mark.skip(reason="to convert")
-    # def test_reverse_label_strings_into_code_strings_when_label_dict_has_duplicate_values(
-    #     self,
-    # ):
-    #     returned_df = job.apply_categorical_labels(
-    #         self.test_df_when_duplicate_values_in_label_dict,
-    #         self.label_dict,
-    #         [IndCQC.contemporary_cssr],
-    #         add_as_new_column=True,
-    #         reverse_mapping=True,
-    #     )
-    #     returned_data = (
-    #         returned_df.select(
-    #             self.expected_df_when_duplicate_values_in_label_dict.columns
-    #         )
-    #         .sort(AWK.worker_id)
-    #         .collect()
-    #     )
-    #     expected_data = self.expected_df_when_duplicate_values_in_label_dict.sort(
-    #         AWK.worker_id
-    #     ).collect()
-
-    #     expected_columns = (
-    #         len(self.test_df_when_duplicate_values_in_label_dict.columns) + 1
-    #     )
-
-    #     self.assertEqual(len(returned_df.columns), expected_columns)
-    #     self.assertEqual(returned_data, expected_data)
-
-    # @pytest.mark.skip(reason="to convert")
-    # def test_add_as_new_column_defaults_to_true(self):
-    #     returned_df = job.apply_categorical_labels(
-    #         self.test_worker_df,
-    #         self.label_dict,
-    #         [AWK.gender, AWK.nationality],
-    #     )
-    #     expected_columns = len(self.test_worker_df.columns) + 2
-
-    #     self.assertEqual(len(returned_df.columns), expected_columns)
-
-    # @pytest.mark.skip(reason="to convert")
-    # def test_original_values_not_in_label_dict_are_retained_when_new_col_added(self):
-    #     input_df = pl.LazyFrame(
-    #         Data.worker_rows_with_unmatched_labels,
-    #         Schemas.worker_schema,
-    #     )
-    #     expected_df = pl.LazyFrame(
-    #         Data.expected_worker_rows_with_unmatched_labels_with_new_columns,
-    #         Schemas.expected_schema_with_new_columns,
-    #     )
-
-    #     returned_df = job.apply_categorical_labels(
-    #         input_df,
-    #         self.label_dict,
-    #         [AWK.gender, AWK.nationality],
-    #         add_as_new_column=True,
-    #     )
-
-    #     returned_data = (
-    #         returned_df.select(expected_df.columns).sort(AWK.worker_id).collect()
-    #     )
-    #     expected_data = expected_df.sort(AWK.worker_id).collect()
-
-    #     self.assertEqual(returned_data, expected_data)
-
-    # @pytest.mark.skip(reason="to convert")
-    # def test_original_values_not_in_label_dict_are_retained_when_labels_added_into_original_col(
-    #     self,
-    # ):
-    #     input_df = pl.LazyFrame(
-    #         Data.worker_rows_with_unmatched_labels,
-    #         Schemas.worker_schema,
-    #     )
-    #     expected_df = pl.LazyFrame(
-    #         Data.expected_worker_rows_with_unmatched_labels_without_new_columns,
-    #         Schemas.worker_schema,
-    #     )
-
-    #     returned_df = job.apply_categorical_labels(
-    #         input_df,
-    #         self.label_dict,
-    #         [AWK.gender, AWK.nationality],
-    #         add_as_new_column=False,
-    #     )
-
-    #     returned_data = (
-    #         returned_df.select(expected_df.columns).sort(AWK.worker_id).collect()
-    #     )
-    #     expected_data = expected_df.sort(AWK.worker_id).collect()
-
-    #     self.assertEqual(returned_data, expected_data)
-
-    # @pytest.mark.skip(reason="to convert")
-    # def test_raises_value_error_when_column_not_in_dataframe(
-    #     self,
-    # ):
-    #     with self.assertRaises(ValueError) as context:
-    #         job.apply_categorical_labels(
-    #             self.test_worker_df,
-    #             self.label_dict,
-    #             [AWK.age],
-    #             add_as_new_column=True,
-    #         )
-
-    #     self.assertEqual(
-    #         str(context.exception),
-    #         "Column age not found in DataFrame.",
-    #     )
-
-    # @pytest.mark.skip(reason="to convert")
-    # def test_raises_key_error_when_column_not_in_labels_dict(
-    #     self,
-    # ):
-    #     with self.assertRaises(ValueError) as context:
-    #         job.apply_categorical_labels(
-    #             self.test_worker_df,
-    #             self.label_dict_missing_gender,
-    #             [AWK.gender],
-    #             add_as_new_column=True,
-    #         )
-
-    #     self.assertEqual(
-    #         str(context.exception),
-    #         "No label mapping found for gender.",
-    #     )
+    def test_raises_key_error_when_column_not_in_labels_dict(
+        self,
+    ):
+        test_error_lf = pl.LazyFrame(
+            data={
+                AWK.worker_id: ["1"],
+                AWK.gender: ["1"],
+            },
+        )
+        error_msg = "No label mapping found for gender."
+        with pytest.raises(KeyError, match=error_msg):
+            job.apply_categorical_labels(
+                test_error_lf,
+                Data.label_dict.pop[AWK.gender],
+                [AWK.gender],
+            )
 
 
 class ColumnToDateTests(unittest.TestCase):

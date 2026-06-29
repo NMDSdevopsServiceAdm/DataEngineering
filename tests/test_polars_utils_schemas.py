@@ -39,48 +39,6 @@ class CleaningUtilsSchemas:
         ]
     )
 
-    worker_schema = pl.Schema(
-        [
-            (AWK.worker_id, pl.String),
-            (AWK.gender, pl.String),
-            (AWK.nationality, pl.String),
-        ]
-    )
-
-    expected_schema_with_new_columns = pl.Schema(
-        [
-            (AWK.worker_id, pl.String),
-            (AWK.gender, pl.String),
-            (AWK.nationality, pl.String),
-            ("gender_labels", pl.String),
-            ("nationality_labels", pl.String),
-        ]
-    )
-
-    expected_schema_with_new_code_columns = pl.Schema(
-        [
-            (AWK.worker_id, pl.String),
-            (AWK.gender, pl.String),
-            (AWK.nationality, pl.String),
-            ("gender_codes", pl.String),
-            ("nationality_codes", pl.String),
-        ]
-    )
-
-    worker_schema_for_testing_label_dict_with_duplicate_values = pl.Schema(
-        [
-            (AWK.worker_id, pl.String),
-            (IndCQC.contemporary_cssr, pl.String),
-        ]
-    )
-    expected_worker_schema_for_testing_label_dict_with_duplicate_values = pl.Schema(
-        [
-            (AWK.worker_id, pl.String),
-            (IndCQC.contemporary_cssr, pl.String),
-            (IndCQC.contemporary_cssr + "_codes", pl.String),
-        ]
-    )
-
     col_to_date_string_schema = pl.Schema([("date_col", pl.String())])
     col_to_date_integer_schema = pl.Schema([("date_col", pl.Int64())])
     expected_col_to_date_schema = pl.Schema([("date_col", pl.Date())])

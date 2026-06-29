@@ -2,13 +2,29 @@ import json
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+from typing import Any
 
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+)
 from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     CareHome,
     ContemporaryCSSR,
     JobRoleFilteringRule,
 )
+
+
+@dataclass
+class CleaningUtilsTestCase:
+    id: str
+    test_data: list[Any]
+    expected_data: list[Any]
+    label_dict: dict
+    column_names: list[str]
+    add_as_new_column: bool | None
+    reverse_mapping: bool | None
 
 
 @dataclass
@@ -60,88 +76,261 @@ class CleaningUtilsData:
         ("1-001",),
         (None,),
     ]
-    ###
-    worker_rows = [
-        ("1", "1", "100"),
-        ("2", "1", "101"),
-        ("3", "2", "102"),
-        ("4", "2", "103"),
-        ("5", None, "103"),
-        ("6", "2", None),
-    ]
 
-    gender = {
-        "1": "male",
-        "2": "female",
+    label_dict = {
+        AWK.gender: {
+            "1": "male",
+            "2": "female",
+        },
+        AWK.nationality: {
+            "100": "British",
+            "101": "French",
+            "102": "Spanish",
+        },
+        IndCQC.contemporary_cssr: {
+            "902": ContemporaryCSSR.cornwall_and_isles_of_scilly,
+            "906": ContemporaryCSSR.cornwall_and_isles_of_scilly,
+            "407": ContemporaryCSSR.coventry,
+        },
     }
+    gender_labels = "gender_labels"
+    gender_codes = "gender_codes"
+    nationality_labels = "nationality_labels"
+    nationality_codes = "nationality_codes"
+    contemporary_cssr_codes = IndCQC.contemporary_cssr + "_codes"
 
-    nationality = {
-        "100": "British",
-        "101": "French",
-        "102": "Spanish",
-        "103": "Portuguese",
-    }
-
-    contemporary_cssr = {
-        "902": ContemporaryCSSR.cornwall_and_isles_of_scilly,
-        "906": ContemporaryCSSR.cornwall_and_isles_of_scilly,
-        "407": ContemporaryCSSR.coventry,
-    }
-
-    expected_rows_with_new_columns = [
-        ("1", "1", "100", "male", "British"),
-        ("2", "1", "101", "male", "French"),
-        ("3", "2", "102", "female", "Spanish"),
-        ("4", "2", "103", "female", "Portuguese"),
-        ("5", None, "103", None, "Portuguese"),
-        ("6", "2", None, "female", None),
+    apply_catagorical_labels_test_cases = [
+        CleaningUtilsTestCase(
+            id="adds_multiple_columns_with_labels_when_multiple_column_names_passed_and_add_as_new_column_is_true_and_reverse_mapping_is_false",
+            test_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                AWK.nationality: ["100", "101", "102", None],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                AWK.nationality: ["100", "101", "102", None],
+                gender_labels: ["male", "female", None, "female"],
+                nationality_labels: ["British", "French", "Spanish", None],
+            },
+            label_dict=label_dict,
+            column_names=[AWK.gender, AWK.nationality],
+            add_as_new_column=True,
+            reverse_mapping=False,
+        ),
+        CleaningUtilsTestCase(
+            id="adds_single_column_with_labels_when_single_column_name_passed_and_add_as_new_column_is_true_and_reverse_mapping_is_false",
+            test_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                AWK.nationality: ["100", "101", "102", None],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                AWK.nationality: ["100", "101", "102", None],
+                gender_labels: ["male", "female", None, "female"],
+            },
+            label_dict=label_dict,
+            column_names=[AWK.gender],
+            add_as_new_column=True,
+            reverse_mapping=False,
+        ),
+        CleaningUtilsTestCase(
+            id="replaces_single_column_with_labels_when_single_column_name_passed_and_add_as_new_column_is_false_and_reverse_mapping_is_false",
+            test_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                AWK.nationality: ["100", "101", "102", None],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["male", "female", None, "female"],
+                AWK.nationality: ["100", "101", "102", None],
+            },
+            label_dict=label_dict,
+            column_names=[AWK.gender],
+            add_as_new_column=False,
+            reverse_mapping=False,
+        ),
+        CleaningUtilsTestCase(
+            id="replaces_multiple_columns_with_labels_when_multiple_column_names_passed_and_add_as_new_column_is_false_and_reverse_mapping_is_false",
+            test_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                AWK.nationality: ["100", "101", "102", None],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["male", "female", None, "female"],
+                AWK.nationality: ["British", "French", "Spanish", None],
+            },
+            label_dict=label_dict,
+            column_names=[AWK.gender, AWK.nationality],
+            add_as_new_column=False,
+            reverse_mapping=False,
+        ),
+        CleaningUtilsTestCase(
+            id="adds_multiple_columns_with_codes_when_multiple_column_names_passed_and_add_as_new_column_is_true_and_reverse_mapping_is_true",
+            test_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["male", "female", None, "female"],
+                AWK.nationality: ["British", "French", "Spanish", None],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["male", "female", None, "female"],
+                AWK.nationality: ["British", "French", "Spanish", None],
+                gender_codes: ["1", "2", None, "2"],
+                nationality_codes: ["100", "101", "102", None],
+            },
+            label_dict=label_dict,
+            column_names=[AWK.gender, AWK.nationality],
+            add_as_new_column=True,
+            reverse_mapping=False,
+        ),
+        CleaningUtilsTestCase(
+            id="adds_single_column_with_codes_when_single_column_name_passed_and_add_as_new_column_is_true_and_reverse_mapping_is_true",
+            test_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["male", "female", None, "female"],
+                AWK.nationality: ["British", "French", "Spanish", None],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["male", "female", None, "female"],
+                AWK.nationality: ["British", "French", "Spanish", None],
+                gender_codes: ["1", "2", None, "2"],
+            },
+            label_dict=label_dict,
+            column_names=[AWK.gender],
+            add_as_new_column=True,
+            reverse_mapping=False,
+        ),
+        CleaningUtilsTestCase(
+            id="replaces_single_column_with_codes_when_single_column_name_passed_and_add_as_new_column_is_false_and_reverse_mapping_is_true",
+            test_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["male", "female", None, "female"],
+                AWK.nationality: ["British", "French", "Spanish", None],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                AWK.nationality: ["British", "French", "Spanish", None],
+            },
+            label_dict=label_dict,
+            column_names=[AWK.gender],
+            add_as_new_column=False,
+            reverse_mapping=False,
+        ),
+        CleaningUtilsTestCase(
+            id="replaces_multiple_columns_with_codes_when_multiple_column_names_passed_and_add_as_new_column_is_false_and_reverse_mapping_is_true",
+            test_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["male", "female", None, "female"],
+                AWK.nationality: ["British", "French", "Spanish", None],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                AWK.nationality: ["100", "101", "102", None],
+            },
+            label_dict=label_dict,
+            column_names=[AWK.gender, AWK.nationality],
+            add_as_new_column=False,
+            reverse_mapping=False,
+        ),
+        CleaningUtilsTestCase(
+            id="adds_single_column_with_first_code_in_dict_when_single_column_name_passed_and_label_dict_one_to_many_values_and_add_as_new_column_is_true_and_reverse_mapping_is_true",
+            test_data={
+                AWK.worker_id: ["1", "2", "3"],
+                IndCQC.contemporary_cssr: [
+                    ContemporaryCSSR.cornwall_and_isles_of_scilly,
+                    ContemporaryCSSR.cornwall_and_isles_of_scilly,
+                    ContemporaryCSSR.coventry,
+                ],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                IndCQC.contemporary_cssr: [
+                    ContemporaryCSSR.cornwall_and_isles_of_scilly,
+                    ContemporaryCSSR.cornwall_and_isles_of_scilly,
+                    ContemporaryCSSR.coventry,
+                ],
+                contemporary_cssr_codes: ["902", "902", "407"],
+            },
+            label_dict=label_dict,
+            column_names=[IndCQC.contemporary_cssr],
+            add_as_new_column=True,
+            reverse_mapping=False,
+        ),
+        CleaningUtilsTestCase(
+            id="add_as_new_column_defaults_to_true",
+            test_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                gender_labels: ["male", "female", None, "female"],
+            },
+            label_dict=label_dict,
+            column_names=[AWK.gender],
+            add_as_new_column=None,
+            reverse_mapping=False,
+        ),
+        CleaningUtilsTestCase(
+            id="reverse_mapping_defaults_to_false",
+            test_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                gender_labels: ["male", "female", None, "female"],
+            },
+            label_dict=label_dict,
+            column_names=[AWK.gender],
+            add_as_new_column=True,
+            reverse_mapping=None,
+        ),
+        CleaningUtilsTestCase(
+            id="rows_with_values_not_in_label_dict_are_retained_when_add_as_new_column_is_true",
+            test_data={
+                AWK.worker_id: ["1", "2"],
+                AWK.gender: ["other value", "2"],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2"],
+                AWK.gender: ["other value", "2"],
+                gender_labels: ["other value", "female"],
+            },
+            label_dict=label_dict,
+            column_names=[AWK.gender],
+            add_as_new_column=True,
+            reverse_mapping=False,
+        ),
+        CleaningUtilsTestCase(
+            id="rows_with_values_not_in_label_dict_are_retained_when_add_as_new_column_is_false",
+            test_data={
+                AWK.worker_id: ["1", "2"],
+                AWK.gender: ["other value", "2"],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2"],
+                AWK.gender: ["other value", "female"],
+            },
+            label_dict=label_dict,
+            column_names=[AWK.gender],
+            add_as_new_column=False,
+            reverse_mapping=False,
+        ),
     ]
 
-    expected_rows_without_new_columns = [
-        ("1", "male", "British"),
-        ("2", "male", "French"),
-        ("3", "female", "Spanish"),
-        ("4", "female", "Portuguese"),
-        ("5", None, "Portuguese"),
-        ("6", "female", None),
-    ]
-
-    expected_rows_with_new_code_columns = [
-        ("1", "male", "British", "1", "100"),
-        ("2", "male", "French", "1", "101"),
-        ("3", "female", "Spanish", "2", "102"),
-        ("4", "female", "Portuguese", "2", "103"),
-        ("5", None, "Portuguese", None, "103"),
-        ("6", "female", None, "2", None),
-    ]
-
-    worker_rows_with_unmatched_labels = [
-        ("1", "0", "100"),
-        ("2", "1", "104"),
-        ("3", None, None),
-    ]
-    expected_worker_rows_with_unmatched_labels_with_new_columns = [
-        ("1", "0", "100", "0", "British"),
-        ("2", "1", "104", "male", "104"),
-        ("3", None, None, None, None),
-    ]
-    expected_worker_rows_with_unmatched_labels_without_new_columns = [
-        ("1", "0", "British"),
-        ("2", "male", "104"),
-        ("3", None, None),
-    ]
-
-    worker_rows_for_testing_label_dict_with_duplicate_values = [
-        ("1", ContemporaryCSSR.cornwall_and_isles_of_scilly),
-        ("2", ContemporaryCSSR.cornwall_and_isles_of_scilly),
-        ("3", ContemporaryCSSR.coventry),
-    ]
-    expected_worker_rows_for_testing_label_dict_with_duplicate_values = [
-        ("1", ContemporaryCSSR.cornwall_and_isles_of_scilly, "902"),
-        ("2", ContemporaryCSSR.cornwall_and_isles_of_scilly, "902"),
-        ("3", ContemporaryCSSR.coventry, "407"),
-    ]
-    ###
     column_to_date_string_with_hyphens_rows = [
         ("2023-01-02", "2022-05-04", "2019-12-07", "1908-12-05"),
     ]
