@@ -46,10 +46,10 @@ def add_master_update_date_org(lf: pl.LazyFrame) -> pl.LazyFrame:
     preserve compatibility with Polars streaming execution.
 
     Args:
-        lf: Input lazy frame containing workplace records.
+        lf (pl.LazyFrame): Input lazy frame containing workplace records.
 
     Returns:
-        Input frame with ``master_update_date_org`` column added.
+        pl.LazyFrame: Input frame with ``master_update_date_org`` column added.
     """
     org_max = lf.group_by(
         AWPClean.organisation_id, AWPClean.ascwds_workplace_import_date
@@ -67,35 +67,25 @@ def add_master_update_date_org(lf: pl.LazyFrame) -> pl.LazyFrame:
 def create_purged_lfs_for_reconciliation_and_data(
     lf: pl.LazyFrame,
 ) -> tuple[pl.LazyFrame, pl.LazyFrame]:
-    """Create purged DataFrames for data reconciliation and workplace activity.
+    """
+    This process is designed to purge/remove data which has not been updated for
+    an extended period of time.
 
-    Removes stale records based on two different staleness definitions:
+    If the worplace is a parent account, the mupddate used to purge is the
+    maximum of any account within that organisation.
 
-    - ``ascwds_workplace_df``: filtered by ``data_last_amended_date``, which
-      uses the org-level max update date for parent accounts and the record's
-      own ``master_update_date`` for others.
-    - ``reconciliation_df``: filtered by ``workplace_last_active_date``, which
-      additionally accounts for ``last_logged_in_date``.
-
-    Both filters compare against ``purge_date``, derived by subtracting
-    ``MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE`` months from the import date.
+    The purge rules for workplace_last_active_date also takes last_logged_in
+    date into account.
 
     Args:
-        lf: Lazy ASCWDS workplace frame. Must contain columns defined in
-            ``AWPClean``: ``organisation_id``, ``ascwds_workplace_import_date``,
-            ``master_update_date``, ``is_parent``, ``last_logged_in_date``.
+        lf (pl.LazyFrame): The ascwds_workplace_lf to be purged
 
     Returns:
-        Tuple of two ``LazyFrame``s:
-            - ``ascwds_workplace_df``: records whose ``data_last_amended_date``
-              is on or after ``purge_date``.
-            - ``reconciliation_df``: records whose ``workplace_last_active_date``
-              is on or after ``purge_date``.
-
-    Note:
-        Both returned frames share the same intermediate computation up to the
-        filter step. Polars' query optimiser will deduplicate the shared plan
-        when both are collected together via ``pl.collect_all``.
+        Tuple[pl.LazyFrame, pl.LazyFrame]: A tuple of two LazyFrames: -
+        ascwds_workplace_lf where old data has been removed based on mupddate
+            date
+        - reconciliation_lf where old data has been removed based on the maximum
+            of mupddate and lastloggedin date
     """
     expr = CleanWorkplaceDataExpressions()
     lf = add_master_update_date_org(lf)
