@@ -52,12 +52,12 @@ def main(
     # )
 
     # trello 1705
-    # ascwds_workplace_df = cUtils.apply_categorical_labels(
-    #     ascwds_workplace_df,
-    #     ascwds_workplace_labels_dict,
-    #     ascwds_workplace_labels_dict.keys(),
-    #     add_as_new_column=False,
-    # )
+    ascwds_workplace_df = cUtils.apply_categorical_labels(
+        ascwds_workplace_df,
+        wUtils.ascwds_workplace_labels_dict,
+        wUtils.ascwds_workplace_labels_dict.keys(),
+        add_as_new_column=False,
+    )
 
     # trello 1706
     # (
