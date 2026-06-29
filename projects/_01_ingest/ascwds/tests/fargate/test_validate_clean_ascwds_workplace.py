@@ -37,7 +37,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
     ):
-        mock_read_parquet.side_effect = [self.source_df, self.source_df]
+        mock_read_parquet.return_value = self.source_df
         job.main("bucket", "my/source/", "my/reports/")
 
         mock_read_parquet.assert_called_once_with(
@@ -52,7 +52,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
     ):
-        mock_read_parquet.side_effect = [self.source_df, self.source_df]
+        mock_read_parquet.return_value = self.source_df
 
         job.main("bucket", "my/source/", "my/reports/")
 
