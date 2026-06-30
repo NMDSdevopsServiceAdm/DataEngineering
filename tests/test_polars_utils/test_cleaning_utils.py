@@ -241,9 +241,7 @@ class CastDateStringsToDatesTests(unittest.TestCase):
             },
             orient="row",
         )
-        returned_lf = job.cast_date_strings_to_dates(
-            test_lf, raw_date_format="%d/%m/%Y"
-        )
+        returned_lf = job.cast_date_strings_to_dates(test_lf)
         expected_lf = pl.LazyFrame(
             data=[("01/01/2026", date(2026, 1, 2), "words", None)],
             schema={
@@ -266,9 +264,7 @@ class CastDateStringsToDatesTests(unittest.TestCase):
             },
             orient="row",
         )
-        returned_lf = job.cast_date_strings_to_dates(
-            test_lf, raw_date_format="%d/%m/%Y"
-        )
+        returned_lf = job.cast_date_strings_to_dates(test_lf)
         expected_lf = pl.LazyFrame(
             data=[(None, None)],
             schema={
