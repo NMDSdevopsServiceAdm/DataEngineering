@@ -19,7 +19,7 @@ parameters:
     default: ""
   terraform_version:
     type: string
-    default: 1.13.5
+    default: 1.15.7
 
 orbs:
   aws-cli: circleci/aws-cli@5.4.1
