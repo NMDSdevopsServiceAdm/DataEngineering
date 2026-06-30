@@ -21,6 +21,12 @@ All notable changes to this project will be documented in this file.
 
 - Added impute job, its validation and test scripts within SLV pipeline. Updated the required terraform changes for the same.
 
+- Added estimate job, its validation and test scripts within SLV pipeline. Updated the required terraform changes for the same.
+
+- Added SLV pipeline to trigger after IND CQC pipeline finishes in Workforce Intelligence pipeline.
+
+- Added placeholder polars tasks for clean ascwds workplace and validate clean ascwds workplace jobs.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
@@ -29,6 +35,16 @@ All notable changes to this project will be documented in this file.
 - Refactored job group filter to work for brands and providers as well as locations.
 
 - Changed _04_estimate job role filled posts so historical reallocation is called after manager adjustment.
+
+- Changed null_grouped_providers so that they are saved to s3 before being nulled.
+
+- Changed validate_04_estimates to reflect that historical reallocation is called after manager adjustment.
+
+- Removed `Append` option from `sink_to_parquet` function.
+
+- Added more datasets to SLV merge job.
+
+- Updated `select_grouped_providers` function and added a new `update_grouped_providers_history` function within `null_grouped_providers` function to get historic audit of grouped providers identified and fixed over time.
 
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.

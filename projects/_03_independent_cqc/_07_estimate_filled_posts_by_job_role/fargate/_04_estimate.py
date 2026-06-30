@@ -61,7 +61,6 @@ def main(
         lazy_df=lf,
         output_path=estimated_data_destination,
         partition_cols=[Keys.year],
-        append=False,
     )
 
 

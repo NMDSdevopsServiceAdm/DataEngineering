@@ -108,13 +108,11 @@ def main(
     utils.sink_to_parquet(
         lazy_df=estimated_job_role_posts_lf,
         output_path=merged_data_destination,
-        append=False,
     )
 
     utils.sink_to_parquet(
         lazy_df=metadata_lf,
         output_path=metadata_destination,
-        append=False,
     )
 
 

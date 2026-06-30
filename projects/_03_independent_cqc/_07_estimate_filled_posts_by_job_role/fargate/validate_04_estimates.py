@@ -46,8 +46,8 @@ OTHER_VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.ascwds_job_role_ratios_merged,
     IndCqcColumns.ascwds_job_role_ratios_merged_source,
     IndCqcColumns.estimate_filled_posts_by_job_role,
-    IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated,
     IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted,
+    IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated,
     IndCqcColumns.estimate_filled_posts_from_all_job_roles,
     IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
     IndCqcColumns.main_job_group_labelled,
@@ -84,8 +84,8 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.ascwds_job_role_ratios_merged: "Float32",
         IndCqcColumns.ascwds_job_role_ratios_merged_source: "String",
         IndCqcColumns.estimate_filled_posts_by_job_role: "Float32",
-        IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: "Float64",
         IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted: "Float64",
+        IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated: "Float64",
         IndCqcColumns.estimate_filled_posts_from_all_job_roles: "Float64",
         IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: "Float64",
         IndCqcColumns.main_job_group_labelled: str(
@@ -216,8 +216,8 @@ def other_validation(
                 IndCqcColumns.ascwds_job_role_ratios_merged,
                 IndCqcColumns.ascwds_job_role_ratios_merged_source,
                 IndCqcColumns.estimate_filled_posts_by_job_role,
-                IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated,
                 IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted,
+                IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated,
                 IndCqcColumns.estimate_filled_posts_from_all_job_roles,
                 IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
                 PartitionKeys.year,
@@ -292,8 +292,8 @@ def other_validation(
         .col_vals_ge(
             columns=[
                 IndCqcColumns.estimate_filled_posts_by_job_role,
-                IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated,
                 IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted,
+                IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated,
             ],
             value=0,
             brief="ascwds_job_role_counts should be >= 0 where present",
@@ -468,6 +468,9 @@ def estimates_percentage_expressions(
     Raises:
         ValueError: if role_or_group is not 'role' or 'group', or if pcts is not a list of two numbers
     """
+    job_role_estimate_col = pl.col(
+        IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
+    )
     if role_or_group not in ["role", "group"]:
         raise ValueError("role_or_group must be either 'role' or 'group'")
     if len(pcts) != 2 or not all(isinstance(pct, (int, float)) for pct in pcts):
@@ -477,27 +480,19 @@ def estimates_percentage_expressions(
     if role_or_group == "role":
         expr = (
             pl.when(pl.col(IndCqcColumns.main_job_role_clean_labelled) == name)
-            .then(
-                pl.col(IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted)
-            )
+            .then(job_role_estimate_col)
             .otherwise(0)
             .sum()
-            / pl.col(
-                IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted
-            ).sum()
+            / job_role_estimate_col.sum()
         )
 
     elif role_or_group == "group":
         expr = (
             pl.when(pl.col(IndCqcColumns.main_job_group_labelled) == name)
-            .then(
-                pl.col(IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted)
-            )
+            .then(job_role_estimate_col)
             .otherwise(0)
             .sum()
-            / pl.col(
-                IndCqcColumns.estimate_filled_posts_by_job_role_manager_adjusted
-            ).sum()
+            / job_role_estimate_col.sum()
         )
     return ((expr >= pcts[0]) & (expr <= pcts[1])).over(
         pl.col(IndCqcColumns.cqc_location_import_date)

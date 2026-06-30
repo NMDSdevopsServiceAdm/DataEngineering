@@ -27,5 +27,4 @@ class MainTests(unittest.TestCase):
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
             output_path=self.IMPUTED_DATA_DESTINATION,
-            append=False,
         )

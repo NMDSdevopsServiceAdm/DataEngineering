@@ -150,7 +150,6 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
     utils.sink_to_parquet(
         lf,
         destination,
-        append=False,
     )
 
     print("Completed imputing independent CQC ASCWDS and PIR")

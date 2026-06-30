@@ -67,6 +67,7 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.organisation_id,
     AWPClean.total_staff_bounded,
     AWPClean.worker_records_bounded,
+    AWPClean.nmds_id,
 ]
 
 cleaned_cqc_pir_columns_to_import = [
@@ -182,7 +183,6 @@ def main(
     utils.sink_to_parquet(
         independent_cqc_lf,
         destination,
-        append=False,
     )
 
 

@@ -76,8 +76,10 @@
                                 "clean_ind_cqc_filled_posts.py",
                                 "--merged_ind_cqc_source",
                                 "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_01_merged_data/",
-                                "--destination",
-                                "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/"
+                                "--cleaned_ind_cqc_destination",
+                                "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/",
+                                "--grouped_providers_destination",
+                                "${dataset_bucket_uri}/domain=SfC/dataset=sfc_grouped_providers/"
                               ]
                             }
                           ]
@@ -1332,6 +1334,19 @@
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
                 "Name": "${ind_cqc_filled_posts_crawler_name}"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Run SfC Crawler",
+          "States": {
+            "Run SfC Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${sfc_crawler_name}"
               },
               "End": true
             }

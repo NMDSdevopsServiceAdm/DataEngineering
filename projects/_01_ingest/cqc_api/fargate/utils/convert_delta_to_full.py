@@ -66,7 +66,6 @@ def convert_delta_to_full(
             merged_lf,
             full_destination,
             partition_cols=cqc_partition_keys,
-            append=False,
         )
 
         full_lf = merged_lf

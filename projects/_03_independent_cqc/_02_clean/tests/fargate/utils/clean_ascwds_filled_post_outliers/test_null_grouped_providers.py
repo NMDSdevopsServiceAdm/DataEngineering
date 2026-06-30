@@ -59,33 +59,55 @@ class MainTests(unittest.TestCase):
             Schemas.null_grouped_providers_schema,
             orient="row",
         )
-        self.returned_lf = job.null_grouped_providers(self.test_lf)
+        self.grouped_providers_lf = pl.LazyFrame()
+        self.returned_lf, self.grouped_providers = job.null_grouped_providers(
+            self.test_lf, self.grouped_providers_lf
+        )
 
     def test_null_grouped_providers_runs(self):
         self.assertIsInstance(self.returned_lf, pl.LazyFrame)
+        self.assertIsInstance(self.grouped_providers, pl.LazyFrame)
 
-    def test_null_grouped_providers_returns_same_number_of_rows(self):
+    def test_null_grouped_providers_returns_tuple_of_two_lazyframes(self):
+        result = job.null_grouped_providers(self.test_lf, self.grouped_providers_lf)
+        self.assertIsInstance(result, tuple)
+        self.assertEqual(len(result), 2)
+        self.assertIsInstance(result[0], pl.LazyFrame)
+        self.assertIsInstance(result[1], pl.LazyFrame)
+
+    def test_null_grouped_providers_returns_same_number_of_rows_in_locations_data(self):
         self.assertEqual(
             self.returned_lf.collect().height, self.test_lf.collect().height
         )
 
+    def test_null_grouped_providers_returns_expected_rows_in_grouped_providers_data(
+        self,
+    ):
+        self.assertEqual(self.grouped_providers.collect().height, 2)
+
     @patch(f"{PATCH_PATH}.null_non_residential_grouped_providers")
     @patch(f"{PATCH_PATH}.null_care_home_grouped_providers")
+    @patch(f"{PATCH_PATH}.update_grouped_providers_history")
+    @patch(f"{PATCH_PATH}.select_grouped_providers")
     @patch(f"{PATCH_PATH}.identify_potential_grouped_providers")
     @patch(f"{PATCH_PATH}.calculate_data_for_grouped_provider_identification")
     def test_null_grouped_providers_calls_functions(
         self,
         calculate_data_for_grouped_provider_identification_mock: Mock,
         identify_potential_grouped_providers_mock: Mock,
+        select_grouped_providers_mock: Mock,
+        update_grouped_providers_history_mock: Mock,
         null_care_home_grouped_providers_mock: Mock,
         null_non_residential_grouped_providers_mock: Mock,
     ):
-        job.null_grouped_providers(self.test_lf)
+        job.null_grouped_providers(self.test_lf, self.grouped_providers_lf)
 
         calculate_data_for_grouped_provider_identification_mock.assert_called_once_with(
             self.test_lf
         )
         identify_potential_grouped_providers_mock.assert_called_once()
+        select_grouped_providers_mock.assert_called_once()
+        update_grouped_providers_history_mock.assert_called_once()
         null_care_home_grouped_providers_mock.assert_called_once()
         null_non_residential_grouped_providers_mock.assert_called_once()
 
@@ -179,3 +201,55 @@ class NullNonResidentialGroupedProvidersTests(unittest.TestCase):
         returned_lf = job.null_non_residential_grouped_providers(test_lf)
 
         pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), test_lf)
+
+
+class SelectGroupedProviders(unittest.TestCase):
+    def test_function_returns_expected_rows(self):
+        input_lf = pl.LazyFrame(
+            Data.select_grouped_providers_rows,
+            Schemas.select_grouped_providers_schema,
+            orient="row",
+        )
+        returned_lf = job.select_grouped_providers(input_lf)
+        expected_lf = pl.LazyFrame(
+            Data.expected_select_grouped_providers_rows,
+            Schemas.final_grouped_providers_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class UpdateGropupedProvidersHistory(unittest.TestCase):
+    def test_function_returns_expected_rows_when_grouped_providers_exist(self):
+        new_grouped_providers_lf = pl.LazyFrame(
+            Data.new_grouped_providers_rows,
+            Schemas.final_grouped_providers_schema,
+            orient="row",
+        )
+        historical_grouped_providers_lf = pl.LazyFrame(
+            Data.historical_grouped_providers_rows,
+            Schemas.final_grouped_providers_schema,
+            orient="row",
+        )
+        returned_lf = job.update_grouped_providers_history(
+            new_grouped_providers_lf, historical_grouped_providers_lf
+        )
+        expected_lf = pl.LazyFrame(
+            Data.expected_update_grouped_providers_history_rows,
+            Schemas.final_grouped_providers_schema,
+            orient="row",
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+    def test_function_returns_expected_rows_when_grouped_providers_does_not_exist(self):
+        new_grouped_providers_lf = pl.LazyFrame(
+            Data.new_grouped_providers_rows,
+            Schemas.final_grouped_providers_schema,
+            orient="row",
+        )
+        historical_grouped_providers_lf = pl.LazyFrame()
+        returned_lf = job.update_grouped_providers_history(
+            new_grouped_providers_lf, historical_grouped_providers_lf
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, new_grouped_providers_lf)

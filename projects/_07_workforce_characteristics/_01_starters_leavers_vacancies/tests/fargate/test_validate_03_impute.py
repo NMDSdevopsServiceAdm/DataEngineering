@@ -10,7 +10,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_03_impute"
 
 
-class ValidateJobRoleEstimatesTests(unittest.TestCase):
+class ValidateImputedSLVDataTests(unittest.TestCase):
     def setUp(self) -> None:
         source_schema = {
             IndCqcColumns.location_id: pl.String,

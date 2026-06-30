@@ -31,6 +31,4 @@ class CqcProvidersFullCleanTests(unittest.TestCase):
             selected_columns=job.cqc_provider_cols_to_import,
         )
         column_to_date_mock.assert_called_once()
-        sink_to_parquet_mock.assert_called_once_with(
-            ANY, self.TEST_CLEAN_DESTINATION, append=False
-        )
+        sink_to_parquet_mock.assert_called_once_with(ANY, self.TEST_CLEAN_DESTINATION)

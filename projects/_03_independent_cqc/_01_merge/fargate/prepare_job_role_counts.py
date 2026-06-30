@@ -48,7 +48,6 @@ def main(
     utils.sink_to_parquet(
         lazy_df=aggregated_worker_lf,
         output_path=prepared_ascwds_job_role_counts_destination,
-        append=False,
     )
 
 

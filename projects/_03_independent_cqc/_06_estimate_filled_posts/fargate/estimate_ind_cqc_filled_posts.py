@@ -134,7 +134,6 @@ def main(
     utils.sink_to_parquet(
         lf,
         destination,
-        append=False,
     )
 
 
