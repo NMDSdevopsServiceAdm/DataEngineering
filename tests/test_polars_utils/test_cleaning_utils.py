@@ -127,6 +127,21 @@ class AddAlignedDateColumnsTests(PolarsCleaningUtilsTests):
 
 
 class TestApplyCategoricalLabels:
+    labels_lf = pl.LazyFrame(Data.labels_data, Schemas.labels_schema, orient="row")
+    test_defaults_lf = pl.LazyFrame(
+        {
+            AWK.worker_id: ["1", "2", "3", "4"],
+            AWK.gender: ["1", "2", None, "2"],
+        }
+    )
+    expected_defaults_lf = pl.LazyFrame(
+        {
+            AWK.worker_id: ["1", "2", "3", "4"],
+            AWK.gender: ["1", "2", None, "2"],
+            "gender_labels": ["male", "female", None, "female"],
+        }
+    )
+
     @pytest.mark.parametrize(
         "case",
         [
@@ -143,7 +158,7 @@ class TestApplyCategoricalLabels:
 
         returned_lf = job.apply_categorical_labels(
             test_lf,
-            case.label_dict,
+            self.labels_lf,
             case.column_names,
             case.add_as_new_column,
             case.reverse_mapping,
@@ -152,6 +167,32 @@ class TestApplyCategoricalLabels:
         pl_testing.assert_frame_equal(
             returned_lf,
             expected_lf,
+            check_row_order=False,
+        )
+
+    def test_add_as_new_column_defaults_to_true(self):
+        returned_lf = job.apply_categorical_labels(
+            self.test_defaults_lf,
+            self.labels_lf,
+            column_names=[AWK.gender],
+            reverse_mapping=False,
+        )
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            self.expected_defaults_lf,
+            check_row_order=False,
+        )
+
+    def test_reverse_mapping_defaults_to_false(self):
+        returned_lf = job.apply_categorical_labels(
+            self.test_defaults_lf,
+            self.labels_lf,
+            column_names=[AWK.gender],
+            add_as_new_column=True,
+        )
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            self.expected_defaults_lf,
             check_row_order=False,
         )
 
@@ -168,7 +209,7 @@ class TestApplyCategoricalLabels:
         with pytest.raises(ValueError, match=error_msg):
             job.apply_categorical_labels(
                 test_error_lf,
-                Data.label_dict,
+                self.labels_lf,
                 [AWK.age],
             )
 
@@ -185,7 +226,7 @@ class TestApplyCategoricalLabels:
         with pytest.raises(KeyError, match=error_msg):
             job.apply_categorical_labels(
                 test_error_lf,
-                Data.label_dict.pop(AWK.gender),
+                self.labels_lf.filter(pl.col("column_name") != AWK.gender),
                 [AWK.gender],
             )
 

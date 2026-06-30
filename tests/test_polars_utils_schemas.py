@@ -39,6 +39,14 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    labels_schema = pl.Schema(
+        [
+            ("column_name", pl.String()),
+            ("code", pl.String()),
+            ("label", pl.String()),
+        ]
+    )
+
     col_to_date_string_schema = pl.Schema([("date_col", pl.String())])
     col_to_date_integer_schema = pl.Schema([("date_col", pl.Int64())])
     expected_col_to_date_schema = pl.Schema([("date_col", pl.Date())])

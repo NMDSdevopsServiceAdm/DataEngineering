@@ -52,15 +52,15 @@ def add_aligned_date_column(
 
 def apply_categorical_labels(
     lf: pl.LazyFrame,
-    labels: dict,
+    labels_lf: pl.LazyFrame,
     column_names: list,
     add_as_new_column: bool = True,
     reverse_mapping: bool = False,
 ) -> pl.LazyFrame:
     """
-    Apply categorical label mappings to one or more columns using a join-based lookup.
+    Apply categorical label mappings to one or more columns.
 
-    For each column in `column_names`, the corresponding dictionary in `labels`
+    For each column in `column_names`, the corresponding codes and labels in the labels LazyFrame are joined as a new column in the original LazyFrame. The column is then name appropriately.dictionary in `labels`
     is converted to a LazyFrame and joined to `lf` to map codes to labels.
     Partial mappings are supported: unmapped values will be preserved.
 
@@ -72,7 +72,7 @@ def apply_categorical_labels(
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame.
-        labels (dict): Dictionary of column-to-mapping dictionaries.
+        labels_lf (pl.LazyFrame): LazyFrame with mapping dictionaries for columns.
         column_names (list): List of column names to apply label mappings to.
         add_as_new_column (bool, optional): If True, adds a new column with
             "_labels" suffix. If False, replaces the original column.
@@ -81,53 +81,62 @@ def apply_categorical_labels(
 
     Returns:
         pl.LazyFrame: LazyFrame with categorical labels applied. Unmapped values
-        are preserved.
+            are preserved.
 
     Raises:
         ValueError: If column to apply labels to is not in LazyFrame.
         KeyError: If column has no mapping in labels dict.
 
     """
-    # spark = utils.get_spark()
+    column_name_col = "column_name"
+    if reverse_mapping == False:
+        join_col = "code"
+        new_col = "label"
+        suffix = "_labels"
+    else:
+        join_col = "label"
+        new_col = "code"
+        suffix = "_codes"
 
     for column_name in column_names:
         if column_name not in lf.collect_schema().names():
             raise ValueError(f"Column {column_name} not found in LazyFrame.")
-        if column_name not in labels:
+        if (
+            labels_lf.filter(pl.col(column_name_col) == column_name).collect().height
+            == 0
+        ):
             raise KeyError(f"No label mapping found for {column_name}.")
 
-    # for column_name in column_names:
-    #     mapping_schema = StructType(
-    #         [
-    #             StructField(column_name, StringType(), True),
-    #             StructField(f"{column_name}_labels", StringType(), True),
-    #         ]
-    #     )
+        filterd_labels_lf = labels_lf.filter(
+            pl.col(column_name_col) == column_name
+        ).drop(column_name_col)
 
-    #     if reverse_mapping:
-    #         mapping_dict = {}
-    #         for k, v in labels[column_name].items():
-    #             if v not in mapping_dict:
-    #                 mapping_dict[v] = k
-    #         mapping_dict = mapping_dict.items()
-    #     else:
-    #         mapping_dict = labels[column_name].items()
+        filterd_labels_lf = filterd_labels_lf.sort(join_col, new_col).unique(
+            pl.col(join_col), keep="first"
+        )
 
-    #     mapping_df = spark.createDataFrame(mapping_dict, schema=mapping_schema)
+        lf = lf.join(
+            filterd_labels_lf,
+            left_on=column_name,
+            right_on=join_col,
+            how="left",
+        )
 
-    #     df = df.join(mapping_df, on=column_name, how="left")
+        if add_as_new_column == True:
+            lf = lf.with_columns(
+                pl.when(pl.col(new_col).is_null() & pl.col(column_name).is_not_null())
+                .then(pl.col(column_name))
+                .otherwise(pl.col(new_col))
+                .alias(column_name + suffix)
+            ).drop(new_col)
+        elif add_as_new_column == False:
 
-    #     merged_col = F.coalesce(F.col(f"{column_name}_labels"), F.col(column_name))
-
-    #     if add_as_new_column:
-    #         if reverse_mapping:
-    #             df = df.withColumn(f"{column_name}_codes", merged_col).drop(
-    #                 f"{column_name}_labels"
-    #             )
-    #         else:
-    #             df = df.withColumn(f"{column_name}_labels", merged_col)
-    #     else:
-    #         df = df.withColumn(column_name, merged_col).drop(f"{column_name}_labels")
+            lf = lf.with_columns(
+                pl.when(pl.col(new_col).is_null() & pl.col(column_name).is_not_null())
+                .then(pl.col(column_name))
+                .otherwise(pl.col(new_col))
+                .alias(column_name)
+            ).drop(new_col)
 
     return lf
 
