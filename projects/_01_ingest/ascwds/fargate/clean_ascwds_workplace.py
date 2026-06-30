@@ -117,6 +117,25 @@ def main(
     # trello 1710
     # reconciliation_df = reconciliation_df.select(cols_required_for_reconciliation_df)
 
+    job_role_mapping = {
+        "jr27": ["22"],
+        "jr40": ["41"],
+        "jr42": ["12", "13", "14", "18", "19", "20", "21"],
+    }
+    suffix_list = [
+        "perm",
+        "temp",
+        "pool",
+        "agcy",
+        "oth",
+        "work",
+        "emp",
+        "strt",
+        "stop",
+        "vacy",
+    ]
+    lf = wUtils.merge_job_role_columns(lf, job_role_mapping, suffix_list)
+
     utils.sink_to_parquet(
         # trello 1710
         lazy_df=lf,

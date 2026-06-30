@@ -14,12 +14,14 @@ class MainTests(unittest.TestCase):
     RECONCILIATION_DESTINATION = "some/other/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.merge_job_role_columns")
     @patch(f"{PATCH_PATH}.wUtils.valid_workplace_filter")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         valid_filter_mock: Mock,
+        merge_job_role_columns_mcok: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -32,6 +34,7 @@ class MainTests(unittest.TestCase):
             self.WORKPLACE_SOURCE, selected_columns=job.columns_to_import
         )
         valid_filter_mock.assert_called_once()
+        merge_job_role_columns_mcok.assert_called_once()
 
         self.assertEqual(sink_to_parquet_mock.call_count, 2)
 
