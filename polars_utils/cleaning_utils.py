@@ -1,4 +1,4 @@
-from typing import List
+from typing import Generator, List
 
 import polars as pl
 
@@ -89,14 +89,6 @@ def apply_categorical_labels(
 
     """
     column_name_col = "column_name"
-    if reverse_mapping == False:
-        join_col = "code"
-        new_col = "label"
-        suffix = "_labels"
-    else:
-        join_col = "label"
-        new_col = "code"
-        suffix = "_codes"
 
     for column_name in column_names:
         if column_name not in lf.collect_schema().names():
@@ -107,38 +99,62 @@ def apply_categorical_labels(
         ):
             raise KeyError(f"No label mapping found for {column_name}.")
 
-        filterd_labels_lf = labels_lf.filter(
-            pl.col(column_name_col) == column_name
-        ).drop(column_name_col)
-
-        filterd_labels_lf = filterd_labels_lf.sort(join_col, new_col).unique(
-            pl.col(join_col), keep="first"
-        )
-
-        lf = lf.join(
-            filterd_labels_lf,
-            left_on=column_name,
-            right_on=join_col,
-            how="left",
-        )
-
-        if add_as_new_column == True:
-            lf = lf.with_columns(
-                pl.when(pl.col(new_col).is_null() & pl.col(column_name).is_not_null())
-                .then(pl.col(column_name))
-                .otherwise(pl.col(new_col))
-                .alias(column_name + suffix)
-            ).drop(new_col)
-        elif add_as_new_column == False:
-
-            lf = lf.with_columns(
-                pl.when(pl.col(new_col).is_null() & pl.col(column_name).is_not_null())
-                .then(pl.col(column_name))
-                .otherwise(pl.col(new_col))
-                .alias(column_name)
-            ).drop(new_col)
-
+    lf = lf.with_columns(
+        labels_generator(labels_lf, column_names, add_as_new_column, reverse_mapping)
+    )
     return lf
+
+
+def labels_generator(
+    labels_lf: pl.LazyFrame,
+    column_names: list,
+    add_as_new_column: bool,  # TODO
+    reverse_mapping: bool,
+) -> Generator[pl.Expr, None, None]:
+    column_name_col = "column_name"
+    if reverse_mapping == False:
+        join_col = "code"
+        new_col = "label"
+        suffix = "_labels"
+    else:
+        join_col = "label"
+        new_col = "code"
+        suffix = "_codes"
+    for column_name in column_names:
+        old_vals = (
+            labels_lf.filter(pl.col(column_name_col) == column_name)
+            .sort(join_col, new_col)
+            .unique(subset=[column_name_col, join_col], keep="first")
+            .collect()
+            .sort(join_col, new_col)
+            .get_column(join_col)
+        )
+        new_vals = (
+            labels_lf.filter(pl.col(column_name_col) == column_name)
+            .sort(join_col, new_col)
+            .unique(subset=[column_name_col, join_col], keep="first")
+            .collect()
+            .sort(join_col, new_col)
+            .get_column(new_col)
+        )
+        if add_as_new_column == True:
+            yield (
+                pl.col(column_name)
+                .replace_strict(
+                    old=old_vals,
+                    new=new_vals,
+                    default=pl.col(column_name),
+                )
+                .name.suffix(suffix)
+            )
+        elif add_as_new_column == False:
+            yield (
+                pl.col(column_name).replace_strict(
+                    old=old_vals,
+                    new=new_vals,
+                    default=pl.col(column_name),
+                )
+            )
 
 
 def column_to_date(
