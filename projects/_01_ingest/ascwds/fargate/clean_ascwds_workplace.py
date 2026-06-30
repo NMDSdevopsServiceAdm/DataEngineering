@@ -7,7 +7,8 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 
 INT_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
-MIN_VALID_WORKFORCE_COUNT: int = 1
+BOUNDED_STAFF_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
+MIN_VALID_STAFF_COUNT: int = 1
 
 COLUMNS_TO_IMPORT = [
     AWPClean.organisation_id,
@@ -100,14 +101,10 @@ def main(
     lf = lf.with_columns(pl.col(INT_COLUMNS).cast(pl.Int32, strict=False))
 
     lf = lf.with_columns(
-        pl.when(pl.col(AWPClean.total_staff) >= MIN_VALID_WORKFORCE_COUNT)
-        .then(pl.col(AWPClean.total_staff))
+        pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)
+        .then(pl.col(BOUNDED_STAFF_COLUMNS))
         .otherwise(None)
-        .alias(AWPClean.total_staff_bounded),
-        pl.when(pl.col(AWPClean.worker_records) >= MIN_VALID_WORKFORCE_COUNT)
-        .then(pl.col(AWPClean.worker_records))
-        .otherwise(None)
-        .alias(AWPClean.worker_records_bounded),
+        .name.suffix("_bounded")
     )
 
     # trello 1710
