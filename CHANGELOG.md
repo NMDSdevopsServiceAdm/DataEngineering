@@ -46,6 +46,8 @@ All notable changes to this project will be documented in this file.
 
 - Added more datasets to SLV merge job.
 
+- Updated `select_grouped_providers` function and added a new `update_grouped_providers_history` function within `null_grouped_providers` function to get historic audit of grouped providers identified and fixed over time.
+
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
 

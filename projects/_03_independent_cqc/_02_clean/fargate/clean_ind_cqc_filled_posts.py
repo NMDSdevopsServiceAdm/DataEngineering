@@ -1,3 +1,5 @@
+import polars as pl
+
 import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator import (
@@ -27,6 +29,23 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    NullGroupedProviderColumns as NGPcol,
+)
+
+GROUPED_PROVIDER_SCHEMA = pl.Schema(
+    [
+        (IndCQC.location_id, pl.String()),
+        (IndCQC.provider_id, pl.String()),
+        (IndCQC.cqc_location_import_date, pl.Date()),
+        (AWPClean.nmds_id, pl.String()),
+        (NGPcol.potential_grouped_provider, pl.Boolean()),
+        (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+        (NGPcol.grouped_provider_status, pl.String()),
+        (NGPcol.grp_prov_identified_date, pl.Date()),
+        (NGPcol.grp_prov_fixed_date, pl.Date()),
+    ]
+)
 
 
 def main(
@@ -82,7 +101,18 @@ def main(
         [0, 1, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
     )
 
-    locations_lf, grouped_providers = clean_ascwds_filled_post_outliers(locations_lf)
+    try:
+        grouped_providers_lf = utils.scan_parquet(
+            source=grouped_providers_destination, schema=GROUPED_PROVIDER_SCHEMA
+        )
+        print("Existing grouped providers read in")
+    except FileNotFoundError:
+        grouped_providers_lf = pl.LazyFrame(schema=GROUPED_PROVIDER_SCHEMA)
+        print("No existing grouped providers found, starting fresh")
+
+    locations_lf, grouped_providers = clean_ascwds_filled_post_outliers(
+        locations_lf, grouped_providers_lf
+    )
     locations_lf = locations_lf.drop(AWPClean.nmds_id)
 
     locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(

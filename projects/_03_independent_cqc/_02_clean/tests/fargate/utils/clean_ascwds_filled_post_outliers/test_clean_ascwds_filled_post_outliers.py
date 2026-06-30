@@ -23,6 +23,7 @@ class CleanAscwdsFilledPostOutliersTests(unittest.TestCase):
             Schemas.unfiltered_ind_cqc_schema,
             orient="row",
         )
+        self.grouped_providers_lf = pl.LazyFrame()
 
     @patch(f"{PATCH_PATH}.add_filtering_rule_column")
     @patch(
@@ -44,7 +45,9 @@ class CleanAscwdsFilledPostOutliersTests(unittest.TestCase):
             Mock(name="grouped_providers"),
         ]
 
-        job.clean_ascwds_filled_post_outliers(self.unfiltered_ind_cqc_lf)
+        job.clean_ascwds_filled_post_outliers(
+            self.unfiltered_ind_cqc_lf, self.grouped_providers_lf
+        )
         winsorize_care_home_filled_posts_per_bed_ratio_outliers_mock.assert_called_once()
         null_grouped_provders_mock.assert_called_once()
         null_filled_posts_where_locations_use_invalid_missing_data_code_mock.assert_called_once()
