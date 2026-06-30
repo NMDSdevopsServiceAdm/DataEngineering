@@ -34,7 +34,6 @@ class CleanASCWDSWorkplaceDatasetTests(SparkBaseTest):
 class MainTests(CleanASCWDSWorkplaceDatasetTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.cUtils.set_column_bounds")
-    @patch(f"{PATCH_PATH}.merge_job_role_columns")
     @patch(f"{PATCH_PATH}.cUtils.cast_to_int")
     @patch(f"{PATCH_PATH}.remove_workplaces_with_duplicate_location_ids")
     @patch(f"{PATCH_PATH}.create_purged_dfs_for_reconciliation_and_data")
@@ -57,7 +56,6 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         create_purged_dfs_mock: Mock,
         remove_workplaces_with_duplicate_ids_mock: Mock,
         cast_to_int_mock: Mock,
-        merge_job_role_columns_mock: Mock,
         set_column_bounds_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
@@ -71,10 +69,7 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         )
 
         read_from_parquet_mock.assert_called_once_with(
-            self.TEST_SOURCE,
-            selected_columns=list(
-                set(job.ascwds_workplace_columns_to_import + job.job_role_cols)
-            ),
+            self.TEST_SOURCE, selected_columns=job.ascwds_workplace_columns_to_import
         )
         filter_test_accounts_mock.assert_called_once()
         remove_duplicate_workplaces_mock.assert_called_once()
@@ -85,7 +80,6 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         create_purged_dfs_mock.assert_called_once()
         remove_workplaces_with_duplicate_ids_mock.assert_called_once()
         cast_to_int_mock.assert_called_once()
-        merge_job_role_columns_mock.assert_called_once()
         self.assertEqual(set_column_bounds_mock.call_count, 2)
         self.assertEqual(write_to_parquet_mock.call_count, 2)
 
@@ -364,73 +358,6 @@ class RemoveWorkplacesWithDuplicateLocationIdsTests(CleanASCWDSWorkplaceDatasetT
             returned_df.sort(AWP.organisation_id).collect(),
             expected_df.sort(AWP.organisation_id).collect(),
         )
-
-
-class JobRoleColsTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.returned_list: list[str] = job.job_role_cols
-
-    def test_list_contains_strings_starting_with_jr(self):
-        for i in self.returned_list:
-            assert i.startswith("jr")
-
-    def test_list_contains_expected_number_of_elements(self):
-        print(self.returned_list)
-        string_prefix = set([i[:4] for i in self.returned_list])
-        self.assertEqual(len(string_prefix), 52)
-
-    def test_list_contains_strings_with_expected_endings(self):
-        string_endings_1 = [i[-4:] for i in self.returned_list if len(i) == 8]
-        string_endings_2 = [i[-3:] for i in self.returned_list if len(i) == 7]
-        string_endings_3 = set(string_endings_1 + string_endings_2)
-        expected_endings = {
-            "perm",
-            "temp",
-            "pool",
-            "agcy",
-            "oth",
-            "work",
-            "emp",
-            "strt",
-            "stop",
-            "vacy",
-        }
-        self.assertEqual(string_endings_3, expected_endings)
-
-    def test_list_does_not_contain_strings_with_flag(self):
-        for i in self.returned_list:
-            assert "flag" not in i
-
-    def test_list_is_expected_length(self):
-        self.assertEqual(len(self.returned_list), 520)
-
-
-class MergeJobRoleColumns(CleanASCWDSWorkplaceDatasetTests):
-    def setUp(self):
-        self.test_df = self.spark.createDataFrame(
-            Data.merge_job_role_columns_rows, Schemas.merge_job_role_columns_schema
-        )
-        test_mapping = {
-            "jr40": ["41"],
-            "jr42": ["12", "13"],
-        }
-        test_suffixes = ["emp", "strt"]
-        self.returned_df = job.merge_job_role_columns(
-            self.test_df, test_mapping, test_suffixes
-        )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_merge_job_role_columns_rows,
-            Schemas.expected_merge_job_role_columns_schema,
-        )
-
-    def test_function_returns_expected_columns(self):
-        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
-
-    def test_function_returns_expected_values(self):
-        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
-
-    def test_function_does_not_change_row_count(self):
-        self.assertEqual(self.returned_df.count(), self.test_df.count())
 
 
 if __name__ == "__main__":

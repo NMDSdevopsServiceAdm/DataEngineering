@@ -3,7 +3,6 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.5"
 
-from functools import reduce
 from typing import Tuple
 
 from pyspark.sql import DataFrame, Window
@@ -19,6 +18,10 @@ from utils.scale_variable_limits import AscwdsScaleVariableLimits
 from utils.value_labels.ascwds_workplace.workplace_label_dictionary import (
     ascwds_workplace_labels_dict,
 )
+
+DATE_COLUMN_IDENTIFIER = "date"
+COLUMNS_TO_BOUND = [AWPClean.total_staff, AWPClean.worker_records]
+MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
 
 ascwds_workplace_columns_to_import = [
     AWPClean.organisation_id,
@@ -53,12 +56,6 @@ ascwds_workplace_columns_to_import = [
     AWPClean.import_date,
 ]
 
-job_role_cols = [
-    value
-    for role, value in vars(AWPClean()).items()
-    if value.startswith("jr") and "flag" not in value
-]
-
 cols_required_for_reconciliation_df = [
     AWPClean.ascwds_workplace_import_date,
     AWPClean.establishment_id,
@@ -82,10 +79,6 @@ cols_required_for_reconciliation_df = [
     AWPClean.la_permission,
 ]
 
-DATE_COLUMN_IDENTIFIER = "date"
-COLUMNS_TO_BOUND = [AWPClean.total_staff, AWPClean.worker_records] + job_role_cols
-MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
-
 
 def main(
     ascwds_workplace_source: str,
@@ -93,8 +86,7 @@ def main(
     workplace_for_reconciliation_destination: str,
 ):
     ascwds_workplace_df = utils.read_from_parquet(
-        ascwds_workplace_source,
-        selected_columns=list(set(ascwds_workplace_columns_to_import + job_role_cols)),
+        ascwds_workplace_source, selected_columns=ascwds_workplace_columns_to_import
     )
 
     ascwds_workplace_df = filter_test_accounts(ascwds_workplace_df)
@@ -136,27 +128,6 @@ def main(
     )
 
     ascwds_workplace_df = cUtils.cast_to_int(ascwds_workplace_df, COLUMNS_TO_BOUND)
-
-    job_role_mapping = {
-        "jr27": ["22"],
-        "jr40": ["41"],
-        "jr42": ["12", "13", "14", "18", "19", "20", "21"],
-    }
-    suffix_list = [
-        "perm",
-        "temp",
-        "pool",
-        "agcy",
-        "oth",
-        "work",
-        "emp",
-        "strt",
-        "stop",
-        "vacy",
-    ]
-    ascwds_workplace_df = merge_job_role_columns(
-        ascwds_workplace_df, job_role_mapping, suffix_list
-    )
 
     ascwds_workplace_df = cUtils.set_column_bounds(
         ascwds_workplace_df,
@@ -401,74 +372,6 @@ def create_date_column_for_purging_data(df: DataFrame) -> DataFrame:
             -MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE,
         ),
     )
-    return df
-
-
-def merge_job_role_columns(
-    df: DataFrame, job_role_mapping: dict[str, list[str]], suffix_list: list[str]
-) -> DataFrame:
-    """
-    Merge legacy job roles into current job roles.
-
-    Over time, the ASC-WDS has stopped collecting specific roles.
-    We have decided to merge the historic data for these roles into
-    the current job roles.
-
-    Null is returned only when all contributing columns are null.
-
-    Job role 33 is personal assistant which is dropped from the dataset
-    without merging their data into another role.
-
-    Args:
-        df (DataFrame): Input DataFrame containing workplace records.
-        job_role_mapping (dict[str, list[str]]): A dict in which keys are
-            current job roles and values are legacy job roles to be merged
-            into the key.
-        suffix_list (list[str]): A list of workplace job role column suffixes.
-
-    Returns:
-        DataFrame: Input DataFrame with only current job role columns.
-    """
-    # Construct a mapping dict for each job role and employment status:
-    # {
-    #     current role perm: [Current role perm and legacy roles perm to merge into current role],
-    #     current role temp: [Current role temp and legacy roles temp to merge into current role],
-    #     ...
-    # }
-    legacy_role_mapping = {}
-
-    for role in job_role_cols:
-        for current_role, legacy_roles in job_role_mapping.items():
-            for suffix in suffix_list:
-                if role == f"{current_role}{suffix}":
-                    legacy_role_mapping[role] = [
-                        role,
-                        *[f"jr{i}{suffix}" for i in legacy_roles],
-                    ]
-                    break
-
-    # Construct a sum expression in which columns are coalesced with zero (to prevent null + value = null)
-    # then when any of the columns in the sum are not null, sum them and assign to a current role.
-    # Otherwise current role stays as null.
-    for current_role, legacy_roles in legacy_role_mapping.items():
-        sum_expr = reduce(
-            lambda a, b: a + b, (F.coalesce(F.col(c), F.lit(0)) for c in legacy_roles)
-        )
-        any_non_null = reduce(
-            lambda a, b: a | b, (F.col(c).isNotNull() for c in legacy_roles)
-        )
-        result_expr = F.when(any_non_null, sum_expr).otherwise(F.lit(None))
-
-        df = df.withColumn(current_role, result_expr)
-
-    # Drop legacy job roles from dataset.
-    cols_to_drop = {f"jr33{suffix}" for suffix in suffix_list}
-    for suffix in suffix_list:
-        for current_role, legacy_roles in job_role_mapping.items():
-            cols_to_drop.update(f"jr{i}{suffix}" for i in legacy_roles)
-
-    df = df.drop(*cols_to_drop)
-
     return df
 
 

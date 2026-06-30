@@ -176,39 +176,6 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
-    merge_job_role_columns_schema = StructType(
-        [
-            StructField(AWP.job_role_41_employees, IntegerType(), True),
-            StructField(AWP.job_role_40_employees, IntegerType(), True),
-            StructField(AWP.job_role_12_employees, IntegerType(), True),
-            StructField(AWP.job_role_13_employees, IntegerType(), True),
-            StructField(AWP.job_role_42_employees, IntegerType(), True),
-            StructField(
-                AWP.job_role_01_employees, IntegerType(), True
-            ),  # job role is not touched by function.
-            StructField(
-                AWP.job_role_33_employees, IntegerType(), True
-            ),  # personal assistant are removed without merging values.
-            StructField(AWP.job_role_41_starters, IntegerType(), True),
-            StructField(AWP.job_role_40_starters, IntegerType(), True),
-            StructField(AWP.job_role_12_starters, IntegerType(), True),
-            StructField(AWP.job_role_13_starters, IntegerType(), True),
-            StructField(AWP.job_role_42_starters, IntegerType(), True),
-            StructField(AWP.job_role_01_starters, IntegerType(), True),
-            StructField(AWP.job_role_33_starters, IntegerType(), True),
-        ]
-    )
-    expected_merge_job_role_columns_schema = StructType(
-        [
-            StructField(AWP.job_role_40_employees, IntegerType(), True),
-            StructField(AWP.job_role_42_employees, IntegerType(), True),
-            StructField(AWP.job_role_01_employees, IntegerType(), True),
-            StructField(AWP.job_role_40_starters, IntegerType(), True),
-            StructField(AWP.job_role_42_starters, IntegerType(), True),
-            StructField(AWP.job_role_01_starters, IntegerType(), True),
-        ]
-    )
-
 
 @dataclass
 class ASCWDSWorkerSchemas:

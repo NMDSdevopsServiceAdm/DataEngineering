@@ -265,21 +265,6 @@ class ASCWDSWorkplaceData:
         ("2", date(2024, 4, 4), date(2022, 4, 4)),
     ]
 
-    merge_job_role_columns_rows = [
-        (1, 1, 2, 2, 2, 3, 4, 10, 10, 20, 20, 20, 30, 40), # All columns are populated.
-        (None, 1, 2, 2, 2, 3, 4, 10, 10, 20, 20, 20, 30, 40), # A giving role is null.
-        (1, None, 2, 2, 2, 3, 4, 10, 10, 20, 20, 20, 30, 40), # A receiving role is null.
-        (1, 1, None, None, 2, 3, 4, 10, 10, 20, 20, 20, 30, 40), # Receiving role is null and one of giving roles is null.
-        (None, None, 2, 2, 2, 3, 4, 10, 10, 20, 20, 20, 30, 40), # All roles in sum group are null.
-    ] # fmt: skip
-    expected_merge_job_role_columns_rows = [
-        (2, 6, 3, 20, 60, 30),
-        (1, 6, 3, 20, 60, 30),
-        (1, 6, 3, 20, 60, 30),
-        (2, 2, 3, 20, 60, 30),
-        (None, 6, 3, 20, 60, 30),
-    ]
-
 
 @dataclass
 class ASCWDSWorkerData:
