@@ -79,8 +79,9 @@ def valid_workplace_filter() -> pl.Expr:
 
 def remove_rows_with_duplicate_location_ids() -> pl.Expr:
     """
-    Returns a filter expression that excludes duplicate non-null location_id's
-    per ascwds_workplace_import_date.
+    Returns a filter expression that excludes rows where a non-null location_id
+    appears more than once within the same ascwds_workplace_import_date.
+    Null location_id values are retained.
 
     Returns:
         pl.Expr: A Polars expression that can be used to filter a LazyFrame.

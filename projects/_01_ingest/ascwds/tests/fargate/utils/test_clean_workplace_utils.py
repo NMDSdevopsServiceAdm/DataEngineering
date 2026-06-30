@@ -40,7 +40,7 @@ class TestValidWorkplaceFilter:
 
 
 class TestRemoveRowsWithDuplicateLocationIds:
-    def test_function_returns_expected_rows(self):
+    def test_filters_duplicate_location_ids_within_import_date(self):
         test_lf = pl.LazyFrame(
             {
                 AWPClean.establishment_id: [
