@@ -26,19 +26,13 @@ class Schemas:
     purge_date_exprs_schema = {
         **master_upd_date_org_schema,
         AWPClean.purge_date: pl.Date,
-        AWPClean.data_last_amended_date: pl.Date,
-        AWPClean.workplace_last_active_date: pl.Date,
     }
-    purge_date_exprs_schema = {
+    last_amended_date_exprs_schema = {
         **master_upd_date_org_schema,
-        AWPClean.purge_date: pl.Date,
         AWPClean.data_last_amended_date: pl.Date,
-        AWPClean.workplace_last_active_date: pl.Date,
     }
-    purge_date_exprs_schema = {
-        **master_upd_date_org_schema,
-        AWPClean.purge_date: pl.Date,
-        AWPClean.data_last_amended_date: pl.Date,
+    workplace_last_active_date_exprs_schema = {
+        **last_amended_date_exprs_schema,
         AWPClean.workplace_last_active_date: pl.Date,
     }
 
@@ -48,12 +42,18 @@ class TestCleanWorkplaceDataExpressions:
 
     def test_purge_date_subtracts_correct_months(self):
         test_lf = pl.LazyFrame(
-            [("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1))],
-            schema=Schemas.base,
+            [
+                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1), date(2024, 5, 1))
+            ], # fmt: skip
+            schema=Schemas.master_upd_date_org_schema,
             orient="row",
         )
-        expected_lf = test_lf.with_columns(
-            pl.lit(date(2022, 6, 1)).cast(pl.Date).alias(AWPClean.purge_date)
+        expected_lf = pl.LazyFrame(
+            [
+                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1), date(2024, 5, 1), date(2022, 6, 1))
+            ], # fmt: skip
+            schema=Schemas.purge_date_exprs_schema,
+            orient="row",
         )
         returned_lf = test_lf.with_columns(self.exprs.purge_date)
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
@@ -61,15 +61,17 @@ class TestCleanWorkplaceDataExpressions:
     def test_data_last_amended_date_uses_org_max_for_parent(self):
         test_lf = pl.LazyFrame(
             [
-                ("org1",date(2024, 6, 1),date(2020, 1, 1),"Yes",date(2024, 4, 1),date(2024, 5, 1))
+                ("org1", date(2024, 6, 1), date(2020, 1, 1), "Yes", date(2024, 4, 1), date(2024, 5, 1))
             ], # fmt: skip
-            schema=Schemas.with_org_max,
+            schema=Schemas.master_upd_date_org_schema,
             orient="row",
         )
-        expected_lf = test_lf.with_columns(
-            pl.lit(date(2024, 5, 1))
-            .cast(pl.Date)
-            .alias(AWPClean.data_last_amended_date)
+        expected_lf = pl.LazyFrame(
+            [
+                ("org1", date(2024, 6, 1), date(2020, 1, 1), "Yes", date(2024, 4, 1), date(2024, 5, 1), date(2024, 5, 1))
+            ], # fmt: skip
+            schema=Schemas.last_amended_date_exprs_schema,
+            orient="row",
         )
         returned_lf = test_lf.with_columns(self.exprs.data_last_amended_date)
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
@@ -77,31 +79,57 @@ class TestCleanWorkplaceDataExpressions:
     def test_data_last_amended_date_uses_own_date_for_non_parent(self):
         test_lf = pl.LazyFrame(
             [
-                ("org1",date(2024, 6, 1),date(2024, 3, 1),"No",date(2024, 4, 1),date(2024, 5, 1))
+                ("org1", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 4, 1), date(2024, 5, 1))
             ], # fmt: skip
-            schema=Schemas.with_org_max,
+            schema=Schemas.master_upd_date_org_schema,
             orient="row",
         )
-        expected_lf = test_lf.with_columns(
-            pl.lit(date(2024, 3, 1))
-            .cast(pl.Date)
-            .alias(AWPClean.data_last_amended_date)
+        expected_lf = pl.LazyFrame(
+            [
+                ("org1", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 4, 1), date(2024, 5, 1), date(2024, 3, 1))
+            ], # fmt: skip
+            schema=Schemas.last_amended_date_exprs_schema,
+            orient="row",
         )
         returned_lf = test_lf.with_columns(self.exprs.data_last_amended_date)
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_workplace_last_active_date(self):
+    def test_workplace_last_active_date_uses_data_last_amended_date_when_more_recent(
+        self,
+    ):
         test_lf = pl.LazyFrame(
             [
-                ("org1",date(2024, 6, 1),date(2024, 3, 1),"No",date(2024, 4, 1),date(2024, 5, 1))
+                ("org1", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 1, 1), date(2024, 5, 1), date(2024, 5, 1))
             ], # fmt: skip
-            schema=Schemas.with_org_max,
+            schema=Schemas.last_amended_date_exprs_schema,
             orient="row",
         )
-        expected_lf = test_lf.with_columns(
-            pl.lit(date(2024, 3, 1))
-            .cast(pl.Date)
-            .alias(AWPClean.workplace_last_active_date)
+        expected_lf = pl.LazyFrame(
+            [
+                ("org1", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 1, 1), date(2024, 5, 1), date(2024, 5, 1), date(2024, 5, 1))
+            ], # fmt: skip
+            schema=Schemas.workplace_last_active_date_exprs_schema,
+            orient="row",
+        )
+        returned_lf = test_lf.with_columns(self.exprs.workplace_last_active_date)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_workplace_last_active_date_uses_last_logged_in_date_when_more_recent(
+        self,
+    ):
+        test_lf = pl.LazyFrame(
+            [
+                ("org1", date(2024, 6, 1), date(2020, 1, 1), "No", date(2024, 4, 1), date(2020, 1, 1), date(2020, 1, 1))
+            ], # fmt: skip
+            schema=Schemas.last_amended_date_exprs_schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            [
+                ("org1", date(2024, 6, 1), date(2020, 1, 1), "No", date(2024, 4, 1), date(2020, 1, 1), date(2020, 1, 1), date(2024, 4, 1))
+            ], # fmt: skip
+            schema=Schemas.workplace_last_active_date_exprs_schema,
+            orient="row",
         )
         returned_lf = test_lf.with_columns(self.exprs.workplace_last_active_date)
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
@@ -115,15 +143,17 @@ class TestAddMasterUpdateDateOrg:
                 ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 1, 1)),
                 ("org2", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 1, 1)),
             ],
-            schema=Schemas.base,
+            schema=Schemas.test_schema,
             orient="row",
         )
-        expected_lf = test_lf.with_columns(
-            pl.Series(
-                AWPClean.master_update_date_org,
-                [date(2024, 5, 1), date(2024, 5, 1), date(2024, 3, 1)],
-                dtype=pl.Date,
-            )
+        expected_lf = pl.LazyFrame(
+            [
+                ("org1", date(2024, 6, 1), date(2024, 1, 1), "No", date(2024, 1, 1), date(2024, 5, 1)),
+                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 1, 1), date(2024, 5, 1)),
+                ("org2", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 1, 1), date(2024, 3, 1)),
+            ], # fmt: skip
+            schema=Schemas.master_upd_date_org_schema,
+            orient="row",
         )
         returned_lf = job.add_master_update_date_org(test_lf)
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
@@ -134,15 +164,16 @@ class TestAddMasterUpdateDateOrg:
                 ("org1", date(2024, 1, 1), date(2024, 1, 1), "No", date(2024, 1, 1)),
                 ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 1, 1)),
             ],
-            schema=Schemas.base,
+            schema=Schemas.test_schema,
             orient="row",
         )
-        expected_lf = test_lf.with_columns(
-            pl.Series(
-                AWPClean.master_update_date_org,
-                [date(2024, 1, 1), date(2024, 5, 1)],
-                dtype=pl.Date,
-            )
+        expected_lf = pl.LazyFrame(
+            [
+                ("org1", date(2024, 1, 1), date(2024, 1, 1), "No", date(2024, 1, 1), date(2024, 1, 1)),
+                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 1, 1), date(2024, 5, 1)),
+            ], # fmt: skip
+            schema=Schemas.master_upd_date_org_schema,
+            orient="row",
         )
         returned_lf = job.add_master_update_date_org(test_lf)
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
@@ -150,13 +181,15 @@ class TestAddMasterUpdateDateOrg:
     def test_single_record_org_uses_own_date(self):
         test_lf = pl.LazyFrame(
             [("org1", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 1, 1))],
-            schema=Schemas.base,
+            schema=Schemas.test_schema,
             orient="row",
         )
-        expected_lf = test_lf.with_columns(
-            pl.lit(date(2024, 3, 1))
-            .cast(pl.Date)
-            .alias(AWPClean.master_update_date_org)
+        expected_lf = pl.LazyFrame(
+            [
+                ("org1", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 1, 1), date(2024, 3, 1))
+            ], # fmt: skip
+            schema=Schemas.master_upd_date_org_schema,
+            orient="row",
         )
         returned_lf = job.add_master_update_date_org(test_lf)
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
@@ -166,54 +199,54 @@ class TestCreatePurgedLfsForReconciliationAndData:
     def test_recent_record_retained_in_both_outputs(self):
         test_lf = pl.LazyFrame(
             [("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1))],
-            schema=Schemas.base,
+            schema=Schemas.test_schema,
             orient="row",
         )
         workplace_lf, recon_lf = job.create_purged_lfs_for_reconciliation_and_data(
             test_lf
         )
         pl_testing.assert_frame_equal(
-            workplace_lf.select(Schemas.base.keys()),
+            workplace_lf.select(Schemas.test_schema.keys()),
             test_lf,
         )
         pl_testing.assert_frame_equal(
-            recon_lf.select(Schemas.base.keys()),
+            recon_lf.select(Schemas.test_schema.keys()),
             test_lf,
         )
 
     def test_stale_record_removed_from_both_outputs(self):
         test_lf = pl.LazyFrame(
             [("org1", date(2024, 6, 1), date(2020, 1, 1), "No", date(2020, 1, 1))],
-            schema=Schemas.base,
+            schema=Schemas.test_schema,
             orient="row",
         )
         workplace_lf, recon_lf = job.create_purged_lfs_for_reconciliation_and_data(
             test_lf
         )
         pl_testing.assert_frame_equal(
-            workplace_lf.select(Schemas.base.keys()),
-            pl.LazyFrame(schema=Schemas.base),
+            workplace_lf.select(Schemas.test_schema.keys()),
+            pl.LazyFrame(schema=Schemas.test_schema),
         )
         pl_testing.assert_frame_equal(
-            recon_lf.select(Schemas.base.keys()),
-            pl.LazyFrame(schema=Schemas.base),
+            recon_lf.select(Schemas.test_schema.keys()),
+            pl.LazyFrame(schema=Schemas.test_schema),
         )
 
     def test_stale_by_update_but_recent_login_retained_in_recon_only(self):
         test_lf = pl.LazyFrame(
             [("org1", date(2024, 6, 1), date(2020, 1, 1), "No", date(2024, 5, 1))],
-            schema=Schemas.base,
+            schema=Schemas.test_schema,
             orient="row",
         )
         workplace_lf, recon_lf = job.create_purged_lfs_for_reconciliation_and_data(
             test_lf
         )
         pl_testing.assert_frame_equal(
-            workplace_lf.select(Schemas.base.keys()),
-            pl.LazyFrame(schema=Schemas.base),
+            workplace_lf.select(Schemas.test_schema.keys()),
+            pl.LazyFrame(schema=Schemas.test_schema),
         )
         pl_testing.assert_frame_equal(
-            recon_lf.select(Schemas.base.keys()),
+            recon_lf.select(Schemas.test_schema.keys()),
             test_lf,
         )
 
@@ -223,12 +256,19 @@ class TestCreatePurgedLfsForReconciliationAndData:
                 ("org1", date(2024, 6, 1), date(2020, 1, 1), "Yes", date(2020, 1, 1)),
                 ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2020, 1, 1)),
             ],
-            schema=Schemas.base,
+            schema=Schemas.test_schema,
             orient="row",
         )
-        workplace_lf, _ = job.create_purged_lfs_for_reconciliation_and_data(test_lf)
+        workplace_lf, recon_lf = job.create_purged_lfs_for_reconciliation_and_data(
+            test_lf
+        )
         pl_testing.assert_frame_equal(
-            workplace_lf.select(Schemas.base.keys()),
+            workplace_lf.select(Schemas.test_schema.keys()),
+            test_lf,
+            check_row_order=False,
+        )
+        pl_testing.assert_frame_equal(
+            recon_lf.select(Schemas.test_schema.keys()),
             test_lf,
             check_row_order=False,
         )
@@ -239,19 +279,25 @@ class TestCreatePurgedLfsForReconciliationAndData:
                 ("org1", date(2024, 6, 1), date(2020, 1, 1), "Yes", date(2020, 1, 1)),
                 ("org1", date(2024, 6, 1), date(2020, 2, 1), "No", date(2020, 1, 1)),
             ],
-            schema=Schemas.base,
+            schema=Schemas.test_schema,
             orient="row",
         )
-        workplace_lf, _ = job.create_purged_lfs_for_reconciliation_and_data(test_lf)
+        workplace_lf, recon_lf = job.create_purged_lfs_for_reconciliation_and_data(
+            test_lf
+        )
         pl_testing.assert_frame_equal(
-            workplace_lf.select(Schemas.base.keys()),
-            pl.LazyFrame(schema=Schemas.base),
+            workplace_lf.select(Schemas.test_schema.keys()),
+            pl.LazyFrame(schema=Schemas.test_schema),
+        )
+        pl_testing.assert_frame_equal(
+            recon_lf.select(Schemas.test_schema.keys()),
+            pl.LazyFrame(schema=Schemas.test_schema),
         )
 
     def test_returns_lazy_frames(self):
         test_lf = pl.LazyFrame(
             [("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1))],
-            schema=Schemas.base,
+            schema=Schemas.test_schema,
             orient="row",
         )
         workplace_lf, recon_lf = job.create_purged_lfs_for_reconciliation_and_data(
