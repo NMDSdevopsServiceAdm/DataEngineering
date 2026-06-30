@@ -27,6 +27,8 @@ All notable changes to this project will be documented in this file.
 
 - Added placeholder polars tasks for clean ascwds workplace and validate clean ascwds workplace jobs.
 
+- Converted remove_workplaces_with_duplicate_location_ids to polars as remove_rows_with_duplicate_location_ids.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
