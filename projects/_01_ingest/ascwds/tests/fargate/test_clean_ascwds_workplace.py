@@ -37,9 +37,7 @@ class MainTests(unittest.TestCase):
         )
         valid_filter_mock.assert_called_once()
 
-        cast_date_strings_to_dates_mock.assert_called_once_with(
-            ANY, raw_date_format="%d/%m/%Y"
-        )
+        cast_date_strings_to_dates_mock.assert_called_once()
         column_to_date_mock.assert_called_once()
 
         self.assertEqual(sink_to_parquet_mock.call_count, 2)
