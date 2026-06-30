@@ -97,7 +97,7 @@ def main(
     #     ascwds_workplace_df
     # )
 
-    lf = lf.with_columns(pl.col(INT_COLUMNS).cast(pl.Int32))
+    lf = lf.with_columns(pl.col(INT_COLUMNS).cast(pl.Int32, strict=False))
 
     lf = lf.with_columns(
         pl.when(pl.col(AWPClean.total_staff) >= MIN_VALID_WORKFORCE_COUNT)
