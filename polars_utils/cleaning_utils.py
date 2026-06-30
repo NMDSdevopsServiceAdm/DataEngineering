@@ -165,7 +165,7 @@ def create_banded_bed_count_column(
 def cast_date_strings_to_dates(
     lf: pl.LazyFrame,
     date_column_identifier: str = "date",
-    raw_date_format: str = None,
+    raw_date_format: str = "%d/%m/%Y",
 ) -> pl.LazyFrame:
     """
     Converts columns to date type.
@@ -177,7 +177,7 @@ def cast_date_strings_to_dates(
     Args:
         lf (pl.LazyFrame): A LazyFrame with string columns containing dates.
         date_column_identifier (str): A string to identify columns to convert. Defaults to 'date'.
-        raw_date_format (str): The format of string dates.
+        raw_date_format (str): The format of string dates. Defaults to '%d/%m/%Y'.
 
     Returns:
         pl.LazyFrame: The input LazyFrame with columns cast to dates.

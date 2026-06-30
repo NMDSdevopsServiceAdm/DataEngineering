@@ -62,7 +62,7 @@ def main(
 
     lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
 
-    lf = cUtils.cast_date_strings_to_dates(lf, raw_date_format="%d/%m/%Y")
+    lf = cUtils.cast_date_strings_to_dates(lf)
 
     lf = cUtils.column_to_date(
         lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
