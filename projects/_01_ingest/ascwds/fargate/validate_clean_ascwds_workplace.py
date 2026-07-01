@@ -9,7 +9,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as ASCWPClean,
 )
 
-COLS_TO_IMPORT = [ASCWPClean.establishment_id, ASCWPClean.import_date]
+COLS_TO_IMPORT = [ASCWPClean.establishment_id, ASCWPClean.ascwds_workplace_import_date]
 
 
 def main(bucket_name: str, source_path: str, reports_path: str) -> None:
@@ -38,7 +38,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         )
         # index columns
         .rows_distinct(
-            [ASCWPClean.establishment_id, ASCWPClean.import_date]
+            [ASCWPClean.establishment_id, ASCWPClean.ascwds_workplace_import_date]
         ).interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
