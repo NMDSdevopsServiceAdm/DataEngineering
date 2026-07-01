@@ -242,6 +242,7 @@ def remove_workplaces_with_duplicate_location_ids(df: DataFrame) -> DataFrame:
     )
 
 
+# converted to polars -> projects\_01_ingest\ascwds\fargate\utils\clean_workplace_utils.py
 def create_purged_dfs_for_reconciliation_and_data(
     df: DataFrame,
 ) -> Tuple[DataFrame, DataFrame]:
@@ -281,6 +282,7 @@ def create_purged_dfs_for_reconciliation_and_data(
     return ascwds_workplace_df, reconciliation_df
 
 
+# use polars expression instead -> projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py
 def calculate_maximum_master_update_date_for_organisation(df: DataFrame) -> DataFrame:
     """
     Calculates the latest master update date for each organisation and import
@@ -309,6 +311,7 @@ def calculate_maximum_master_update_date_for_organisation(df: DataFrame) -> Data
     return df
 
 
+# use polars expression instead -> projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py
 def create_data_last_amended_date_column(df: DataFrame) -> DataFrame:
     """
     Creates the data last amended date column.
@@ -331,6 +334,7 @@ def create_data_last_amended_date_column(df: DataFrame) -> DataFrame:
     return df
 
 
+# use polars expression instead -> projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py
 def create_workplace_last_active_date_column(df: DataFrame) -> DataFrame:
     """
     Creates the workplace last active date column.
@@ -353,6 +357,7 @@ def create_workplace_last_active_date_column(df: DataFrame) -> DataFrame:
     return df
 
 
+# use polars expression instead -> projects\_01_ingest\ascwds\jobs\clean_ascwds_workplace_data.py
 def create_date_column_for_purging_data(df: DataFrame) -> DataFrame:
     """
     Creates the purge comparison date column.
