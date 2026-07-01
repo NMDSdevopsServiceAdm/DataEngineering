@@ -1,13 +1,16 @@
 import polars as pl
 
-from polars_utils import cleaning_utils as cUtils
 from polars_utils import utils
 from projects._01_ingest.ascwds.fargate.utils import clean_workplace_utils as wUtils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 
-columns_to_import = [
+INT_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
+BOUNDED_STAFF_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
+MIN_VALID_STAFF_COUNT: int = 1
+
+COLUMNS_TO_IMPORT = [
     AWPClean.organisation_id,
     AWPClean.period,
     AWPClean.establishment_id,
@@ -54,7 +57,7 @@ def main(
         cleaned_workplace_destination (str): destination for cleaned ascwds workplace output
         workplace_for_reconciliation_destination (str): destination for reconciliation workplace output
     """
-    lf = utils.scan_parquet(workplace_source, selected_columns=columns_to_import)
+    lf = utils.scan_parquet(workplace_source, selected_columns=COLUMNS_TO_IMPORT)
 
     lf = lf.filter(wUtils.valid_workplace_filter())
 
@@ -87,24 +90,14 @@ def main(
     #     ascwds_workplace_df
     # )
 
-    # trello 1709
-    # ascwds_workplace_df = cUtils.cast_to_int(ascwds_workplace_df, COLUMNS_TO_BOUND)
+    lf = lf.with_columns(pl.col(INT_COLUMNS).cast(pl.Int32, strict=False))
 
-    # trello 1708
-    # ascwds_workplace_df = cUtils.set_column_bounds(
-    #     ascwds_workplace_df,
-    #     AWPClean.total_staff,
-    #     AWPClean.total_staff_bounded,
-    #     AscwdsScaleVariableLimits.total_staff_lower_limit,
-    # )
-
-    # trello 1708
-    # ascwds_workplace_df = cUtils.set_column_bounds(
-    #     ascwds_workplace_df,
-    #     AWPClean.worker_records,
-    #     AWPClean.worker_records_bounded,
-    #     AscwdsScaleVariableLimits.worker_records_lower_limit,
-    # )
+    lf = lf.with_columns(
+        pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)
+        .then(pl.col(BOUNDED_STAFF_COLUMNS))
+        .otherwise(None)
+        .name.suffix("_bounded")
+    )
 
     # trello 1710
     # reconciliation_df = reconciliation_df.select(cols_required_for_reconciliation_df)

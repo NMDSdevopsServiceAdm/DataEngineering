@@ -27,6 +27,8 @@ All notable changes to this project will be documented in this file.
 
 - Added placeholder polars tasks for clean ascwds workplace and validate clean ascwds workplace jobs.
 
+- Added bounded columns for total staff and worker records in Clean ASCWDS Workplace Polars job.
+
 - Converted format_date_fields to polars as cast_date_strings_to_dates.
 
 ### Changed
