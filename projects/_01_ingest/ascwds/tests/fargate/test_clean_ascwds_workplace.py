@@ -29,7 +29,7 @@ class MainTests(unittest.TestCase):
         )
 
         scan_parquet_mock.assert_called_once_with(
-            self.WORKPLACE_SOURCE, selected_columns=job.columns_to_import
+            self.WORKPLACE_SOURCE, selected_columns=job.COLUMNS_TO_IMPORT
         )
         valid_filter_mock.assert_called_once()
 
