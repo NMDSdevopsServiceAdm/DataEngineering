@@ -82,7 +82,7 @@ def main(
 
     # trello 1706
     (
-        ascwds_workplace_lf,
+        lf,
         reconciliation_lf,
     ) = wUtils.create_purged_lfs_for_reconciliation_and_data(lf)
 
