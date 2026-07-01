@@ -86,16 +86,16 @@ def main(
     #     reconciliation_df,
     # ) = create_purged_dfs_for_reconciliation_and_data(ascwds_workplace_df)
 
-    lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
+    # lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
 
-    lf = lf.with_columns(pl.col(INT_COLUMNS).cast(pl.Int32, strict=False))
+    # lf = lf.with_columns(pl.col(INT_COLUMNS).cast(pl.Int32, strict=False))
 
-    lf = lf.with_columns(
-        pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)
-        .then(pl.col(BOUNDED_STAFF_COLUMNS))
-        .otherwise(None)
-        .name.suffix("_bounded")
-    )
+    # lf = lf.with_columns(
+    #     pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)
+    #     .then(pl.col(BOUNDED_STAFF_COLUMNS))
+    #     .otherwise(None)
+    #     .name.suffix("_bounded")
+    # )
 
     # trello 1710
     # reconciliation_df = reconciliation_df.select(cols_required_for_reconciliation_df)
