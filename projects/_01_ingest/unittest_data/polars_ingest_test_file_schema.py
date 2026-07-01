@@ -2,6 +2,9 @@ from dataclasses import dataclass
 
 import polars as pl
 
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -458,3 +461,30 @@ class ValidateCqcLocations4FullLatestSnapshotTest:
             (CQCLClean.deregistration_date, pl.Date()),
         ]
     )
+
+
+@dataclass
+class TestCreatePurgedLfsForReconciliationAndDataSchemas:
+    test_schema = {
+        AWPClean.organisation_id: pl.String,
+        AWPClean.ascwds_workplace_import_date: pl.Date,
+        AWPClean.master_update_date: pl.Date,
+        AWPClean.is_parent: pl.String,
+        AWPClean.last_logged_in_date: pl.Date,
+    }
+    master_upd_date_org_schema = {
+        **test_schema,
+        AWPClean.master_update_date_org: pl.Date,
+    }
+    purge_date_exprs_schema = {
+        **master_upd_date_org_schema,
+        AWPClean.purge_date: pl.Date,
+    }
+    last_amended_date_exprs_schema = {
+        **master_upd_date_org_schema,
+        AWPClean.data_last_amended_date: pl.Date,
+    }
+    workplace_last_active_date_exprs_schema = {
+        **last_amended_date_exprs_schema,
+        AWPClean.workplace_last_active_date: pl.Date,
+    }
