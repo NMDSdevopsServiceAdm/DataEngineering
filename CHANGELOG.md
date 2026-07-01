@@ -27,6 +27,10 @@ All notable changes to this project will be documented in this file.
 
 - Added placeholder polars tasks for clean ascwds workplace and validate clean ascwds workplace jobs.
 
+- Added bounded columns for total staff and worker records in Clean ASCWDS Workplace Polars job.
+
+- Converted format_date_fields to polars as cast_date_strings_to_dates.
+
 - Converted remove_workplaces_with_duplicate_location_ids to polars as remove_rows_with_duplicate_location_ids.
 
 ### Changed
@@ -45,6 +49,8 @@ All notable changes to this project will be documented in this file.
 - Removed `Append` option from `sink_to_parquet` function.
 
 - Added more datasets to SLV merge job.
+
+- Updated `select_grouped_providers` function and added a new `update_grouped_providers_history` function within `null_grouped_providers` function to get historic audit of grouped providers identified and fixed over time.
 
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.

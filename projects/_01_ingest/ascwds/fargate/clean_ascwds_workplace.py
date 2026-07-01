@@ -7,7 +7,11 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 
-columns_to_import = [
+INT_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
+BOUNDED_STAFF_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
+MIN_VALID_STAFF_COUNT: int = 1
+
+COLUMNS_TO_IMPORT = [
     AWPClean.organisation_id,
     AWPClean.period,
     AWPClean.establishment_id,
@@ -54,7 +58,7 @@ def main(
         cleaned_workplace_destination (str): destination for cleaned ascwds workplace output
         workplace_for_reconciliation_destination (str): destination for reconciliation workplace output
     """
-    lf = utils.scan_parquet(workplace_source, selected_columns=columns_to_import)
+    lf = utils.scan_parquet(workplace_source, selected_columns=COLUMNS_TO_IMPORT)
 
     lf = lf.filter(wUtils.valid_workplace_filter())
 
@@ -62,19 +66,11 @@ def main(
 
     lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
 
-    # trello 1700
-    # ascwds_workplace_df = utils.format_date_fields(
-    #     ascwds_workplace_df,
-    #     date_column_identifier=DATE_COLUMN_IDENTIFIER,
-    #     raw_date_format="dd/MM/yyyy",
-    # )
+    lf = cUtils.cast_date_strings_to_dates(lf)
 
-    # trello 1700
-    # ascwds_workplace_df = cUtils.column_to_date(
-    #     ascwds_workplace_df,
-    #     AWPClean.import_date,
-    #     AWPClean.ascwds_workplace_import_date,
-    # )
+    lf = cUtils.column_to_date(
+        lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
+    ).drop(AWPClean.import_date)
 
     # trello 1705
     # ascwds_workplace_df = cUtils.apply_categorical_labels(
@@ -92,24 +88,14 @@ def main(
 
     lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
 
-    # trello 1709
-    # ascwds_workplace_df = cUtils.cast_to_int(ascwds_workplace_df, COLUMNS_TO_BOUND)
+    lf = lf.with_columns(pl.col(INT_COLUMNS).cast(pl.Int32, strict=False))
 
-    # trello 1708
-    # ascwds_workplace_df = cUtils.set_column_bounds(
-    #     ascwds_workplace_df,
-    #     AWPClean.total_staff,
-    #     AWPClean.total_staff_bounded,
-    #     AscwdsScaleVariableLimits.total_staff_lower_limit,
-    # )
-
-    # trello 1708
-    # ascwds_workplace_df = cUtils.set_column_bounds(
-    #     ascwds_workplace_df,
-    #     AWPClean.worker_records,
-    #     AWPClean.worker_records_bounded,
-    #     AscwdsScaleVariableLimits.worker_records_lower_limit,
-    # )
+    lf = lf.with_columns(
+        pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)
+        .then(pl.col(BOUNDED_STAFF_COLUMNS))
+        .otherwise(None)
+        .name.suffix("_bounded")
+    )
 
     # trello 1710
     # reconciliation_df = reconciliation_df.select(cols_required_for_reconciliation_df)
