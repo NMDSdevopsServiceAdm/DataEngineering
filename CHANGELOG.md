@@ -31,6 +31,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted format_date_fields to polars as cast_date_strings_to_dates.
 
+- Converted remove_workplaces_with_duplicate_location_ids to polars as remove_rows_with_duplicate_location_ids.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
