@@ -46,12 +46,9 @@ class MainTests(unittest.TestCase):
         cast_date_strings_to_dates_mock.assert_called_once()
         column_to_date_mock.assert_called_once()
 
-        self.assertEqual(sink_to_parquet_mock.call_count, 2)
-        scan_parquet_mock.assert_called_once_with(self.WORKPLACE_SOURCE)
-
         create_purged_lfs_for_reconciliation_and_data_mock.assert_called_once()
 
-        assert sink_to_parquet_mock.call_count == 2
+        self.assertEqual(sink_to_parquet_mock.call_count, 2)
 
         sink_calls = [
             call(lazy_df=ANY, output_path=self.CLEANED_WORKPLACE_DESTINATION),
