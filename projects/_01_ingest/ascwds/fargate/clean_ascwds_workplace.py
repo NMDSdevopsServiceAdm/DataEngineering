@@ -7,6 +7,43 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 
+INT_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
+BOUNDED_STAFF_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
+MIN_VALID_STAFF_COUNT: int = 1
+
+COLUMNS_TO_IMPORT = [
+    AWPClean.organisation_id,
+    AWPClean.period,
+    AWPClean.establishment_id,
+    AWPClean.establishment_id_from_nmds,
+    AWPClean.parent_id,
+    AWPClean.nmds_id,
+    AWPClean.establishment_created_date,
+    AWPClean.establishment_updated_date,
+    AWPClean.master_update_date,
+    AWPClean.last_logged_in,
+    AWPClean.la_permission,
+    AWPClean.is_bulk_uploader,
+    AWPClean.is_parent,
+    AWPClean.parent_permission,
+    AWPClean.registration_type,
+    AWPClean.provider_id,
+    AWPClean.location_id,
+    AWPClean.establishment_type,
+    AWPClean.establishment_name,
+    AWPClean.address,
+    AWPClean.postcode,
+    AWPClean.region_id,
+    AWPClean.total_staff,
+    AWPClean.worker_records,
+    AWPClean.total_starters,
+    AWPClean.total_leavers,
+    AWPClean.total_vacancies,
+    AWPClean.main_service_id,
+    AWPClean.version,
+    AWPClean.import_date,
+]
+
 
 def main(
     workplace_source: str,
@@ -21,35 +58,19 @@ def main(
         cleaned_workplace_destination (str): destination for cleaned ascwds workplace output
         workplace_for_reconciliation_destination (str): destination for reconciliation workplace output
     """
-    lf = utils.scan_parquet(workplace_source)
+    lf = utils.scan_parquet(workplace_source, selected_columns=COLUMNS_TO_IMPORT)
 
-    # trello 1724
-    # ascwds_workplace_df = filter_test_accounts(ascwds_workplace_df)
-    # trello 1724
-    # ascwds_workplace_df = remove_duplicate_workplaces_in_raw_workplace_data(
-    #     ascwds_workplace_df
-    # )
-    # trello 1724
-    # ascwds_workplace_df = remove_white_space_from_nmdsid(ascwds_workplace_df)
+    lf = lf.filter(wUtils.valid_workplace_filter())
 
-    # trello 1724
-    # ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
-    #     AWPClean.last_logged_in, AWPClean.last_logged_in_date
-    # )
+    lf = lf.with_columns(pl.col(AWPClean.nmds_id).str.strip_chars())
 
-    # trello 1700
-    # ascwds_workplace_df = utils.format_date_fields(
-    #     ascwds_workplace_df,
-    #     date_column_identifier=DATE_COLUMN_IDENTIFIER,
-    #     raw_date_format="dd/MM/yyyy",
-    # )
+    lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
 
-    # trello 1700
-    # ascwds_workplace_df = cUtils.column_to_date(
-    #     ascwds_workplace_df,
-    #     AWPClean.import_date,
-    #     AWPClean.ascwds_workplace_import_date,
-    # )
+    lf = cUtils.cast_date_strings_to_dates(lf)
+
+    lf = cUtils.column_to_date(
+        lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
+    ).drop(AWPClean.import_date)
 
     # trello 1705
     # ascwds_workplace_df = cUtils.apply_categorical_labels(
@@ -70,24 +91,14 @@ def main(
     #     ascwds_workplace_df
     # )
 
-    # trello 1709
-    # ascwds_workplace_df = cUtils.cast_to_int(ascwds_workplace_df, COLUMNS_TO_BOUND)
+    lf = lf.with_columns(pl.col(INT_COLUMNS).cast(pl.Int32, strict=False))
 
-    # trello 1708
-    # ascwds_workplace_df = cUtils.set_column_bounds(
-    #     ascwds_workplace_df,
-    #     AWPClean.total_staff,
-    #     AWPClean.total_staff_bounded,
-    #     AscwdsScaleVariableLimits.total_staff_lower_limit,
-    # )
-
-    # trello 1708
-    # ascwds_workplace_df = cUtils.set_column_bounds(
-    #     ascwds_workplace_df,
-    #     AWPClean.worker_records,
-    #     AWPClean.worker_records_bounded,
-    #     AscwdsScaleVariableLimits.worker_records_lower_limit,
-    # )
+    lf = lf.with_columns(
+        pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)
+        .then(pl.col(BOUNDED_STAFF_COLUMNS))
+        .otherwise(None)
+        .name.suffix("_bounded")
+    )
 
     # trello 1710
     # reconciliation_df = reconciliation_df.select(cols_required_for_reconciliation_df)

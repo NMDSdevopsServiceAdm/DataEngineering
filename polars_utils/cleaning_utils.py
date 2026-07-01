@@ -160,3 +160,37 @@ def create_banded_bed_count_column(
     return input_lf.with_columns(
         pl.when(is_not_care_home()).then(zero).otherwise(expr).alias(new_col)
     )
+
+
+def cast_date_strings_to_dates(
+    lf: pl.LazyFrame,
+    date_column_identifier: str = "date",
+    raw_date_format: str = "%d/%m/%Y",
+) -> pl.LazyFrame:
+    """
+    Converts columns to date type.
+
+    Columns in LazyFrame with date_column_identifier in their name excluding
+    'import_date' and values formatted as raw_date_format will be type cast.
+    The raw_date_format must match data exactly, otherwise value will be nulled.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with string columns containing dates.
+        date_column_identifier (str): A string to identify columns to convert. Defaults to 'date'.
+        raw_date_format (str): The format of string dates. Defaults to '%d/%m/%Y'.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with columns cast to dates.
+    """
+    date_columns = [
+        col
+        for col in lf.collect_schema().names()
+        if date_column_identifier in col and "import_date" not in col
+    ]
+
+    return lf.with_columns(
+        [
+            pl.col(col).str.strptime(pl.Date, raw_date_format, strict=False)
+            for col in date_columns
+        ]
+    )

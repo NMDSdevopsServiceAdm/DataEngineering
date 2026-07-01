@@ -160,6 +160,7 @@ def main(
     )
 
 
+# Not converting to polars directly, list moved to -> projects\_01_ingest\ascwds\fargate\utils\clean_workplace_utils.py
 def filter_test_accounts(df: DataFrame) -> DataFrame:
     """
     Filters out test accounts (accounts used by internal Skills for Care staff)
@@ -191,6 +192,7 @@ def filter_test_accounts(df: DataFrame) -> DataFrame:
     return df
 
 
+# Not converting to polars, use inline -> lf.with_columns(pl.col(AWPClean.nmds_id).str.strip_chars())
 def remove_white_space_from_nmdsid(df: DataFrame) -> DataFrame:
     """
     Removes white space from the nmds_id column in the DataFrame.
