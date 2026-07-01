@@ -55,6 +55,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
 
+- Updated `validate_clean_ascwds_workplace.py` to use `acswds_workplace_import_date` instead of `import_date`, since the `import_date` column is now dropped after being converted to a new date type column.
+
 
 ## [v2026.05.0] - 12/06/2026
 

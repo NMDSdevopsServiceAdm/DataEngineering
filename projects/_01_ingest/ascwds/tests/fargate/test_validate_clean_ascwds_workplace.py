@@ -17,7 +17,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
     def setUp(self) -> None:
         self.source_df = pl.DataFrame(
             [
-                ("123", date(2024, 2, 1)),
+                ("123", date(2014, 1, 1)),
                 ("456", date(2024, 1, 1)),
                 ("123", date(2024, 2, 1)),
             ],
