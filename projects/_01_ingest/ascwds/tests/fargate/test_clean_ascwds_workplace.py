@@ -15,11 +15,15 @@ class MainTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.valid_workplace_filter")
+    @patch(f"{PATCH_PATH}.cUtils.column_to_date")
+    @patch(f"{PATCH_PATH}.cUtils.cast_date_strings_to_dates")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         valid_filter_mock: Mock,
+        cast_date_strings_to_dates_mock: Mock,
+        column_to_date_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -32,6 +36,9 @@ class MainTests(unittest.TestCase):
             self.WORKPLACE_SOURCE, selected_columns=job.COLUMNS_TO_IMPORT
         )
         valid_filter_mock.assert_called_once()
+
+        cast_date_strings_to_dates_mock.assert_called_once()
+        column_to_date_mock.assert_called_once()
 
         self.assertEqual(sink_to_parquet_mock.call_count, 2)
 

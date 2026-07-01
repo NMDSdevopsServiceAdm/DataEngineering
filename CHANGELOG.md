@@ -29,6 +29,8 @@ All notable changes to this project will be documented in this file.
 
 - Added bounded columns for total staff and worker records in Clean ASCWDS Workplace Polars job.
 
+- Converted format_date_fields to polars as cast_date_strings_to_dates.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 

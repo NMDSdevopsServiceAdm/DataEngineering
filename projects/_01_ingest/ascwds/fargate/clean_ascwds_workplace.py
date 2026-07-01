@@ -1,5 +1,6 @@
 import polars as pl
 
+from polars_utils import cleaning_utils as cUtils
 from polars_utils import utils
 from projects._01_ingest.ascwds.fargate.utils import clean_workplace_utils as wUtils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
@@ -65,19 +66,11 @@ def main(
 
     lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
 
-    # trello 1700
-    # ascwds_workplace_df = utils.format_date_fields(
-    #     ascwds_workplace_df,
-    #     date_column_identifier=DATE_COLUMN_IDENTIFIER,
-    #     raw_date_format="dd/MM/yyyy",
-    # )
+    lf = cUtils.cast_date_strings_to_dates(lf)
 
-    # trello 1700
-    # ascwds_workplace_df = cUtils.column_to_date(
-    #     ascwds_workplace_df,
-    #     AWPClean.import_date,
-    #     AWPClean.ascwds_workplace_import_date,
-    # )
+    lf = cUtils.column_to_date(
+        lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
+    ).drop(AWPClean.import_date)
 
     # trello 1705
     # ascwds_workplace_df = cUtils.apply_categorical_labels(

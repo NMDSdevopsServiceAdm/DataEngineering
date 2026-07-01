@@ -143,6 +143,7 @@ def read_csv_with_defined_schema(source, schema):
     return df
 
 
+# converted to polars as cast_date_strings_to_dates -> polars_utils\cleaning_utils.py
 def format_date_fields(df, date_column_identifier="date", raw_date_format=None):
     date_columns = [column for column in df.columns if date_column_identifier in column]
 
