@@ -81,10 +81,10 @@ def main(
     # )
 
     # trello 1706
-    # (
-    #     ascwds_workplace_df,
-    #     reconciliation_df,
-    # ) = create_purged_dfs_for_reconciliation_and_data(ascwds_workplace_df)
+    (
+        lf,
+        reconciliation_lf,
+    ) = wUtils.create_purged_lfs_for_reconciliation_and_data(lf)
 
     lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
 

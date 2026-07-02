@@ -52,6 +52,8 @@ All notable changes to this project will be documented in this file.
 
 - Updated `select_grouped_providers` function and added a new `update_grouped_providers_history` function within `null_grouped_providers` function to get historic audit of grouped providers identified and fixed over time.
 
+- Converted `create_purged_dfs_for_reconciliation_and_data` function within Clean Workplace Data job to Polars and updated tests for the same.
+
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
 
