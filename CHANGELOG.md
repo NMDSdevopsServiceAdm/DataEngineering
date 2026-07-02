@@ -27,6 +27,10 @@ All notable changes to this project will be documented in this file.
 
 - Added placeholder polars tasks for clean ascwds workplace and validate clean ascwds workplace jobs.
 
+- Added bounded columns for total staff and worker records in Clean ASCWDS Workplace Polars job.
+
+- Converted format_date_fields to polars as cast_date_strings_to_dates.
+
 - Added csv of data label mappings to s3.
 
 ### Changed
@@ -46,10 +50,14 @@ All notable changes to this project will be documented in this file.
 
 - Added more datasets to SLV merge job.
 
+- Updated `select_grouped_providers` function and added a new `update_grouped_providers_history` function within `null_grouped_providers` function to get historic audit of grouped providers identified and fixed over time.
+
 - Converted apply_categorical_labels() to polars.
 
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
+
+- Updated `validate_clean_ascwds_workplace.py` to use `acswds_workplace_import_date` instead of `import_date`, since the `import_date` column is now dropped after being converted to a new date type column.
 
 
 ## [v2026.05.0] - 12/06/2026

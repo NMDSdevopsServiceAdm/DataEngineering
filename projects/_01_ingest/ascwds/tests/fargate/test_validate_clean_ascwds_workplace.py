@@ -1,6 +1,7 @@
 import json
 import unittest
-from unittest.mock import Mock, call, patch
+from datetime import date
+from unittest.mock import Mock, patch
 
 import polars as pl
 
@@ -14,14 +15,20 @@ PATCH_PATH = "projects._01_ingest.ascwds.fargate.validate_clean_ascwds_workplace
 
 class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
     def setUp(self) -> None:
-        source_schema = {
-            ASCWPClean.establishment_id: pl.String,
-        }
-        source_rows = [
-            ("1-001"),
-        ]  # fmt: skip
-        self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
-        self.compare_df = self.source_df.select([ASCWPClean.establishment_id])
+        self.source_df = pl.DataFrame(
+            [
+                ("123", date(2014, 1, 1)),
+                ("456", date(2024, 1, 1)),
+                ("123", date(2024, 2, 1)),
+            ],
+            schema=pl.Schema(
+                [
+                    (ASCWPClean.establishment_id, pl.String),
+                    (ASCWPClean.ascwds_workplace_import_date, pl.Date),
+                ]
+            ),
+            orient="row",
+        )
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
@@ -30,21 +37,11 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
     ):
-        mock_read_parquet.side_effect = [self.source_df, self.compare_df]
-        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+        mock_read_parquet.return_value = self.source_df
+        job.main("bucket", "my/source/", "my/reports/")
 
-        self.assertEqual(mock_read_parquet.call_count, 2)
-        mock_read_parquet.assert_has_calls(
-            [
-                call(
-                    source="s3://bucket/my/source/",
-                    selected_columns=job.VALIDATION_COLS_TO_IMPORT,
-                ),
-                call(
-                    source="s3://bucket/my/compare/",
-                    selected_columns=job.COMPARE_COLS_TO_IMPORT,
-                ),
-            ]
+        mock_read_parquet.assert_called_once_with(
+            source="s3://bucket/my/source/", selected_columns=job.COLS_TO_IMPORT
         )
         mock_write_reports.assert_called_once()
 
@@ -55,9 +52,9 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
     ):
-        mock_read_parquet.side_effect = [self.source_df, self.compare_df]
+        mock_read_parquet.return_value = self.source_df
 
-        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
+        job.main("bucket", "my/source/", "my/reports/")
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
@@ -65,7 +62,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
         expected_assertions = {
-            "row_count_match",
+            "rows_distinct",
         }
 
         for assertion in expected_assertions:

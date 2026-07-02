@@ -98,6 +98,7 @@ def apply_categorical_labels(
     return df
 
 
+# Not converting to polars, use inline -> pl.when().then().otherwise().alias()
 def set_column_bounds(
     df: DataFrame,
     col_name: str,

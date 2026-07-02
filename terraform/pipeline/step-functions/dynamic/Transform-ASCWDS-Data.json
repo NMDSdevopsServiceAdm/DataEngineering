@@ -133,8 +133,6 @@
                                 "${dataset_bucket_name}",
                                 "--source_path",
                                 "domain=ASCWDS/dataset=workplace_cleaned_polars/",
-                                "--compare_path",
-                                "domain=ASCWDS/dataset=workplace/",
                                 "--reports_path",
                                 "domain=data_validation_reports/dataset=validation_ascwds_workplace_cleaned/"
                               ]
