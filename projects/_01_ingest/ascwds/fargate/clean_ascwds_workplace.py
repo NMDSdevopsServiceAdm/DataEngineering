@@ -102,10 +102,7 @@ def main(
     #     reconciliation_df,
     # ) = create_purged_dfs_for_reconciliation_and_data(ascwds_workplace_df)
 
-    # trello 1707
-    # ascwds_workplace_df = remove_workplaces_with_duplicate_location_ids(
-    #     ascwds_workplace_df
-    # )
+    lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
 
     lf = lf.with_columns(pl.col(INT_COLUMNS).cast(pl.Int32, strict=False))
 
