@@ -79,9 +79,18 @@ def valid_workplace_filter() -> pl.Expr:
     )
 
 
-class CleanWorkplaceDataExpressions:
+class PurgeWorkplaceDataExpressions:
     """
-    Polars expressions for clean ASCWDS workplace data.
+    Polars expressions for purging ASCWDS workplace data.
+
+    Attributes:
+        data_last_amended_date (pl.Expr): Expression to compute the most
+            recent update date for the workplace, using the org-level max for
+            parent workplaces and establishment-level dates for others.
+        workplace_last_active_date (pl.Expr): Expression to compute the most recent
+            date the workplace was active, using the maximum of data_last_amended_date
+            and last_logged_in_date.
+        purge_date (pl.Expr): Expression to compute the purge date based on the given purge window.
     """
 
     data_last_amended_date: pl.Expr
@@ -140,14 +149,12 @@ def create_purged_lfs_for_reconciliation_and_data(
     lf: pl.LazyFrame,
 ) -> tuple[pl.LazyFrame, pl.LazyFrame]:
     """
-    This process is designed to purge/remove data which has not been updated for
-    an extended period of time.
+    Remove rows which have not been updated/logged into since the purge date.
 
-    If the worplace is a parent account, the mupddate used to purge is the
-    maximum of any account within that organisation.
-
-    The purge rules for workplace_last_active_date also takes last_logged_in
-    date into account.
+    Rows in ASC-WDS workplace data are removed using master_update_date.
+    Rows in reconciliation data are removed using master_update_date and
+        last_logged_in_date (whichever is more recent).
+    Parent accounts use the most recent date from all accounts in that organisation.
 
     Args:
         lf (pl.LazyFrame): The ascwds_workplace_lf to be purged
@@ -159,7 +166,7 @@ def create_purged_lfs_for_reconciliation_and_data(
         - reconciliation_lf where old data has been removed based on the maximum
             of mupddate and lastloggedin date
     """
-    expr = CleanWorkplaceDataExpressions()
+    expr = PurgeWorkplaceDataExpressions()
     lf = add_master_update_date_org(lf)
     lf = lf.with_columns(
         expr.purge_date,
