@@ -87,9 +87,9 @@ def remove_rows_with_duplicate_location_ids() -> pl.Expr:
         pl.Expr: A Polars expression that can be used to filter a LazyFrame.
     """
 
-    return (
+    return pl.col(AWPClean.location_id).is_null() | (
         pl.count(AWPClean.location_id).over(
             [AWPClean.location_id, AWPClean.ascwds_workplace_import_date]
         )
-        <= 1
+        == 1
     )

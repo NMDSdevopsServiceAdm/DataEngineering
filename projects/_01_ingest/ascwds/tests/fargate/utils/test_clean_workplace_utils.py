@@ -40,42 +40,36 @@ class TestValidWorkplaceFilter:
 
 
 class TestRemoveRowsWithDuplicateLocationIds:
-    def test_filters_duplicate_location_ids_within_import_date(self):
+    def test_remove_duplicate_location_ids_within_import_date(self):
+        test_schema = [
+            AWPClean.establishment_id,
+            AWPClean.location_id,
+            AWPClean.ascwds_workplace_import_date,
+        ]
         test_lf = pl.LazyFrame(
-            {
-                AWPClean.establishment_id: [
-                    "1", # duplicate locationid
-                    "2", # duplicate locationid
-                    "3", # keep - not duplicated
-                    "4", # keep - null locationid
-                    "5", # keep - null locationid
-                    "6", # keep - not duplicate within import date.
-                    "7", # keep - not duplicate within import date.
-                ],
-                AWPClean.location_id: [
-                    "1-001",
-                    "1-001",
-                    "1-003",
-                    None,
-                    None,
-                    "1-006",
-                    "1-006",
-                ],
-                AWPClean.ascwds_workplace_import_date: [
-                    date(2026, 1, 1),
-                    date(2026, 1, 1),
-                    date(2026, 1, 1),
-                    date(2026, 1, 1),
-                    date(2026, 1, 1),
-                    date(2026, 1, 1),
-                    date(2026, 1, 2),
-                ],
-            }
-        ) # fmt: skip
-
+            [
+                ("1", "1-001", date(2026, 1, 1)),  # duplicate location_id
+                ("2", "1-001", date(2026, 1, 1)),  # duplicate location_id
+                ("3", "1-003", date(2026, 1, 1)),  # keep - unique
+                ("4", None, date(2026, 1, 1)),  # keep - null location_id
+                ("5", None, date(2026, 1, 1)),  # keep - null location_id
+                ("6", "1-006", date(2026, 1, 1)),  # keep - unique within import date
+                ("7", "1-006", date(2026, 1, 2)),  # keep - unique within import date
+            ],
+            schema=test_schema,
+            orient="row",
+        )
         returned_lf = test_lf.filter(job.remove_rows_with_duplicate_location_ids())
-        expected_lf = test_lf.filter(
-            ~pl.col(AWPClean.establishment_id).is_in(["1", "2"])
+        expected_lf = pl.LazyFrame(
+            [
+                ("3", "1-003", date(2026, 1, 1)),
+                ("4", None, date(2026, 1, 1)),
+                ("5", None, date(2026, 1, 1)),
+                ("6", "1-006", date(2026, 1, 1)),
+                ("7", "1-006", date(2026, 1, 2)),
+            ],
+            schema=test_schema,
+            orient="row",
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
