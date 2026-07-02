@@ -11,6 +11,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
@@ -41,9 +42,9 @@ class CleaningUtilsSchemas:
 
     labels_schema = pl.Schema(
         [
-            ("column_name", pl.String()),
-            ("code", pl.String()),
-            ("label", pl.String()),
+            (DLC.column_name, pl.String()),
+            (DLC.code, pl.String()),
+            (DLC.label, pl.String()),
         ]
     )
 

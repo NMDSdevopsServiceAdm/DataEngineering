@@ -3,9 +3,8 @@ from typing import Generator, List
 import polars as pl
 
 from polars_utils.expressions import is_care_home, is_not_care_home
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-
-column_name_col = "column_name"
 
 
 def add_aligned_date_column(
@@ -85,7 +84,7 @@ def apply_categorical_labels(
         if column_name not in lf.collect_schema().names():
             raise ValueError(f"Column {column_name} not found in LazyFrame.")
         if (
-            labels_lf.filter(pl.col(column_name_col) == column_name).collect().height
+            labels_lf.filter(pl.col(DLC.column_name) == column_name).collect().height
             == 0
         ):
             raise KeyError(f"No label mapping found for {column_name}.")
@@ -116,19 +115,19 @@ def labels_generator(
         pl.Expr: Polars expressions for applying the categorical labels.
     """
     if reverse_mapping == False:
-        join_col = "code"
-        new_col = "label"
-        suffix = "_labels"
+        join_col = DLC.code
+        new_col = DLC.label
+        suffix = f"_{DLC.label}s"
     else:
-        join_col = "label"
-        new_col = "code"
-        suffix = "_codes"
+        join_col = DLC.label
+        new_col = DLC.code
+        suffix = f"_{DLC.code}s"
 
     for column_name in column_names:
         filtered_labels_df = (
-            labels_lf.filter(pl.col(column_name_col) == column_name)
+            labels_lf.filter(pl.col(DLC.column_name) == column_name)
             .sort(join_col, new_col)
-            .unique(subset=[column_name_col, join_col], keep="first")
+            .unique(subset=[DLC.column_name, join_col], keep="first")
             .collect()
             .sort(join_col, new_col)
         )

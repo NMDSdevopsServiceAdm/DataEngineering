@@ -4,6 +4,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
@@ -87,11 +88,11 @@ class CleaningUtilsData:
         (IndCQC.contemporary_cssr, "407", ContemporaryCSSR.coventry),
     ] # fmt: skip
 
-    gender_labels = AWK.gender + "_labels"
-    gender_codes = AWK.gender + "_codes"
-    nationality_labels = AWK.nationality + "_labels"
-    nationality_codes = AWK.nationality + "_codes"
-    contemporary_cssr_codes = IndCQC.contemporary_cssr + "_codes"
+    gender_labels = AWK.gender + f"_{DLC.label}s"
+    gender_codes = AWK.gender + f"_{DLC.code}s"
+    nationality_labels = AWK.nationality + f"_{DLC.label}s"
+    nationality_codes = AWK.nationality + f"_{DLC.code}s"
+    contemporary_cssr_codes = IndCQC.contemporary_cssr + f"_{DLC.code}s"
 
     apply_catagorical_labels_test_cases = [
         CleaningUtilsTestCase(
