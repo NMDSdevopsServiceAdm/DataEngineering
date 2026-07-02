@@ -6,45 +6,13 @@ from projects._01_ingest.ascwds.fargate.utils import clean_workplace_utils as wU
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 
 INT_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
 BOUNDED_STAFF_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
 MIN_VALID_STAFF_COUNT: int = 1
 
 COLUMNS_TO_IMPORT = [
-    AWPClean.organisation_id,
-    AWPClean.period,
-    AWPClean.establishment_id,
-    AWPClean.establishment_id_from_nmds,
-    AWPClean.parent_id,
-    AWPClean.nmds_id,
-    AWPClean.establishment_created_date,
-    AWPClean.establishment_updated_date,
-    AWPClean.master_update_date,
-    AWPClean.last_logged_in,
-    AWPClean.la_permission,
-    AWPClean.is_bulk_uploader,
-    AWPClean.is_parent,
-    AWPClean.parent_permission,
-    AWPClean.registration_type,
-    AWPClean.provider_id,
-    AWPClean.location_id,
-    AWPClean.establishment_type,
-    AWPClean.establishment_name,
-    AWPClean.address,
-    AWPClean.postcode,
-    AWPClean.region_id,
-    AWPClean.total_staff,
-    AWPClean.worker_records,
-    AWPClean.total_starters,
-    AWPClean.total_leavers,
-    AWPClean.total_vacancies,
-    AWPClean.main_service_id,
-    AWPClean.version,
-    AWPClean.import_date,
-]
-
-ascwds_workplace_columns_to_import = [
     AWPClean.organisation_id,
     AWPClean.period,
     AWPClean.establishment_id,
@@ -86,7 +54,7 @@ columns_to_apply_labels = [
 ]
 
 data_labels_schema = pl.Schema(
-    [("column_name", pl.String), ("code", pl.String), ("label", pl.String)]
+    [(DLC.column_name, pl.String), (DLC.code, pl.String), (DLC.label, pl.String)]
 )
 
 
@@ -121,8 +89,8 @@ def main(
 
     # trello 1705
     data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
-    workplace_lf = cUtils.apply_categorical_labels(
-        workplace_lf,
+    lf = cUtils.apply_categorical_labels(
+        lf,
         data_labels_lf,
         columns_to_apply_labels,
         add_as_new_column=False,
@@ -153,13 +121,13 @@ def main(
 
     utils.sink_to_parquet(
         # trello 1710
-        lazy_df=workplace_lf,
+        lazy_df=lf,
         output_path=cleaned_workplace_destination,
     )
 
     utils.sink_to_parquet(
         # trello 1710
-        lazy_df=workplace_lf,
+        lazy_df=lf,
         output_path=workplace_for_reconciliation_destination,
     )
 
