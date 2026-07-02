@@ -1609,9 +1609,9 @@ class TestCreatePurgedLfsForReconciliationAndData:
             ], # fmt: skip
         ),
         CleanWorkplaceUtilsTestCase(
-            id="single_record_org_uses_own_date",
+            id="returns_null_when_update_date_is_null",
             expected_data=[
-                ("org1", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 1, 1), date(2024, 3, 1))
+                ("org1", date(2024, 6, 1), None, "No", date(2024, 1, 1), None)
             ], # fmt: skip
         ),
     ]

@@ -46,8 +46,8 @@ class TestValidWorkplaceFilter:
         pl_testing.assert_frame_equal(expected_lf, returned_lf)
 
 
-class TestCleanWorkplaceDataExpressions:
-    exprs = job.CleanWorkplaceDataExpressions()
+class TestPurgeWorkplaceDataExpressions:
+    exprs = job.PurgeWorkplaceDataExpressions()
 
     @pytest.mark.parametrize(
         "case",
