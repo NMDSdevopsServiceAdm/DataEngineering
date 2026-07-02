@@ -5,6 +5,8 @@ import polars as pl
 from polars_utils.expressions import is_care_home, is_not_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
+column_name_col = "column_name"
+
 
 def add_aligned_date_column(
     primary_lf: pl.LazyFrame,
@@ -79,8 +81,6 @@ def apply_categorical_labels(
             `column_names` in `labels_lf`.
 
     """
-    column_name_col = "column_name"
-
     for column_name in column_names:
         if column_name not in lf.collect_schema().names():
             raise ValueError(f"Column {column_name} not found in LazyFrame.")
@@ -102,8 +102,19 @@ def labels_generator(
     add_as_new_column: bool,  # TODO
     reverse_mapping: bool,
 ) -> Generator[pl.Expr, None, None]:
-    column_name_col = "column_name"
+    """
+    A generator function that yields Polars expressions for applying categorical labels
+    to specified columns in a LazyFrame based on a mapping provided in another LazyFrame.
 
+    Args:
+        labels_lf (pl.LazyFrame): A LazyFrame containing the mapping of codes to labels.
+        column_names (list): A list of column names in the target LazyFrame to which the labels should be applied.
+        add_as_new_column (bool): If True, adds the labeled values as new columns with a suffix. If False, replaces the original columns with labeled values.
+        reverse_mapping (bool): If True, maps labels back to codes instead of codes to labels.
+
+    Yields:
+        pl.Expr: Polars expressions for applying the categorical labels.
+    """
     if reverse_mapping == False:
         join_col = "code"
         new_col = "label"
