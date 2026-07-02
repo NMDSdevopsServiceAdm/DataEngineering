@@ -27,6 +27,8 @@ All notable changes to this project will be documented in this file.
 
 - Added placeholder polars tasks for clean ascwds workplace and validate clean ascwds workplace jobs.
 
+- Added csv of data label mappings to s3.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
@@ -43,6 +45,8 @@ All notable changes to this project will be documented in this file.
 - Removed `Append` option from `sink_to_parquet` function.
 
 - Added more datasets to SLV merge job.
+
+- Converted apply_categorical_labels() to polars.
 
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
