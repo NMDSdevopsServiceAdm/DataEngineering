@@ -14,6 +14,7 @@ class MainTests(unittest.TestCase):
     RECONCILIATION_DESTINATION = "some/other/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.remove_rows_with_duplicate_location_ids")
     @patch(f"{PATCH_PATH}.cUtils.column_to_date")
     @patch(f"{PATCH_PATH}.cUtils.cast_date_strings_to_dates")
     @patch(f"{PATCH_PATH}.wUtils.valid_workplace_filter")
@@ -24,6 +25,7 @@ class MainTests(unittest.TestCase):
         valid_filter_mock: Mock,
         cast_date_strings_to_dates_mock: Mock,
         column_to_date_mock: Mock,
+        remove_rows_with_duplicate_location_ids_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -39,6 +41,7 @@ class MainTests(unittest.TestCase):
 
         cast_date_strings_to_dates_mock.assert_called_once()
         column_to_date_mock.assert_called_once()
+        remove_rows_with_duplicate_location_ids_mock.assert_called_once()
 
         self.assertEqual(sink_to_parquet_mock.call_count, 2)
 

@@ -75,3 +75,21 @@ def valid_workplace_filter() -> pl.Expr:
         # exclude duplicate establishments
         ~pl.col(AWPClean.establishment_id).is_in(DUPLICATE_ESTABLISHMENT_IDS)
     )
+
+
+def remove_rows_with_duplicate_location_ids() -> pl.Expr:
+    """
+    Returns a filter expression that excludes rows where a non-null location_id
+    appears more than once within the same ascwds_workplace_import_date.
+    Null location_id values are retained.
+
+    Returns:
+        pl.Expr: A Polars expression that can be used to filter a LazyFrame.
+    """
+
+    return pl.col(AWPClean.location_id).is_null() | (
+        pl.count(AWPClean.location_id).over(
+            [AWPClean.location_id, AWPClean.ascwds_workplace_import_date]
+        )
+        == 1
+    )
