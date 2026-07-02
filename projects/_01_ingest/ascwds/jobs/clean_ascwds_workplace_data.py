@@ -207,6 +207,7 @@ def remove_white_space_from_nmdsid(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars as remove_rows_with_duplicate_location_ids -> projects\_01_ingest\ascwds\fargate\utils\clean_workplace_utils.py
 def remove_workplaces_with_duplicate_location_ids(df: DataFrame) -> DataFrame:
     """
     Removes workplace records that share the same location ID within the same
