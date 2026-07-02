@@ -56,7 +56,6 @@ def apply_categorical_labels(
     labels_lf: pl.LazyFrame,
     column_names: list,
     add_as_new_column: bool = True,
-    reverse_mapping: bool = False,
 ) -> pl.LazyFrame:
     """
     Applies categorical labels to specified columns in a Polars LazyFrame based on a
@@ -68,7 +67,6 @@ def apply_categorical_labels(
         column_names (list): A list of column names in `lf` to which the labels should be applied.
         add_as_new_column (bool): If True, adds the labeled values as new columns with a
             suffix. If False, replaces the original columns with labeled values.
-        reverse_mapping (bool): If True, maps labels back to codes instead of codes to labels.
 
     Returns:
         pl.LazyFrame: A new LazyFrame with the specified columns labeled according to the
@@ -89,9 +87,7 @@ def apply_categorical_labels(
         ):
             raise KeyError(f"No label mapping found for {column_name}.")
 
-    lf = lf.with_columns(
-        labels_generator(labels_lf, column_names, add_as_new_column, reverse_mapping)
-    )
+    lf = lf.with_columns(labels_generator(labels_lf, column_names, add_as_new_column))
     return lf
 
 
@@ -99,7 +95,6 @@ def labels_generator(
     labels_lf: pl.LazyFrame,
     column_names: list,
     add_as_new_column: bool,  # TODO
-    reverse_mapping: bool,
 ) -> Generator[pl.Expr, None, None]:
     """
     A generator function that yields Polars expressions for applying categorical labels
@@ -107,33 +102,27 @@ def labels_generator(
 
     Args:
         labels_lf (pl.LazyFrame): A LazyFrame containing the mapping of codes to labels.
-        column_names (list): A list of column names in the target LazyFrame to which the labels should be applied.
-        add_as_new_column (bool): If True, adds the labeled values as new columns with a suffix. If False, replaces the original columns with labeled values.
-        reverse_mapping (bool): If True, maps labels back to codes instead of codes to labels.
+        column_names (list): A list of column names in the target LazyFrame to which the labels
+            should be applied.
+        add_as_new_column (bool): If True, adds the labeled values as new columns with a suffix.
+            If False, replaces the original columns with labeled values.
 
     Yields:
         pl.Expr: Polars expressions for applying the categorical labels.
     """
-    if reverse_mapping == False:
-        join_col = DLC.code
-        new_col = DLC.label
-        suffix = f"_{DLC.label}s"
-    else:
-        join_col = DLC.label
-        new_col = DLC.code
-        suffix = f"_{DLC.code}s"
+    suffix = f"_{DLC.label}s"
 
     for column_name in column_names:
         filtered_labels_df = (
             labels_lf.filter(pl.col(DLC.column_name) == column_name)
-            .sort(join_col, new_col)
-            .unique(subset=[DLC.column_name, join_col], keep="first")
+            .sort(DLC.code, DLC.label)
+            .unique(subset=[DLC.column_name, DLC.code], keep="first")
             .collect()
-            .sort(join_col, new_col)
+            .sort(DLC.code, DLC.label)
         )
 
-        old_vals = filtered_labels_df.get_column(join_col)
-        new_vals = filtered_labels_df.get_column(new_col)
+        old_vals = filtered_labels_df.get_column(DLC.code)
+        new_vals = filtered_labels_df.get_column(DLC.label)
 
         if add_as_new_column == True:
             yield (

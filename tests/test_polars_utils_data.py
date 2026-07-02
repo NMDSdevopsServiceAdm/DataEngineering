@@ -24,7 +24,6 @@ class CleaningUtilsTestCase:
     expected_data: list[Any]
     column_names: list[str]
     add_as_new_column: Optional[bool]
-    reverse_mapping: Optional[bool]
 
 
 @dataclass
@@ -110,7 +109,6 @@ class CleaningUtilsData:
             },
             column_names=[AWK.gender],
             add_as_new_column=True,
-            reverse_mapping=False,
         ),
         CleaningUtilsTestCase(
             id="adds_multiple_columns_with_labels_when_multiple_column_names_passed_and_add_as_new_column_is_true_and_reverse_mapping_is_false",
@@ -128,7 +126,6 @@ class CleaningUtilsData:
             },
             column_names=[AWK.gender, AWK.nationality],
             add_as_new_column=True,
-            reverse_mapping=False,
         ),
         CleaningUtilsTestCase(
             id="replaces_single_column_with_labels_when_single_column_name_passed_and_add_as_new_column_is_false_and_reverse_mapping_is_false",
@@ -144,7 +141,6 @@ class CleaningUtilsData:
             },
             column_names=[AWK.gender],
             add_as_new_column=False,
-            reverse_mapping=False,
         ),
         CleaningUtilsTestCase(
             id="replaces_multiple_columns_with_labels_when_multiple_column_names_passed_and_add_as_new_column_is_false_and_reverse_mapping_is_false",
@@ -160,97 +156,6 @@ class CleaningUtilsData:
             },
             column_names=[AWK.gender, AWK.nationality],
             add_as_new_column=False,
-            reverse_mapping=False,
-        ),
-        CleaningUtilsTestCase(
-            id="adds_single_column_with_codes_when_single_column_name_passed_and_add_as_new_column_is_true_and_reverse_mapping_is_true",
-            test_data={
-                AWK.worker_id: ["1", "2", "3", "4"],
-                AWK.gender: ["male", "female", None, "female"],
-                AWK.nationality: ["British", "French", "Spanish", None],
-            },
-            expected_data={
-                AWK.worker_id: ["1", "2", "3", "4"],
-                AWK.gender: ["male", "female", None, "female"],
-                AWK.nationality: ["British", "French", "Spanish", None],
-                gender_codes: ["1", "2", None, "2"],
-            },
-            column_names=[AWK.gender],
-            add_as_new_column=True,
-            reverse_mapping=True,
-        ),
-        CleaningUtilsTestCase(
-            id="adds_multiple_columns_with_codes_when_multiple_column_names_passed_and_add_as_new_column_is_true_and_reverse_mapping_is_true",
-            test_data={
-                AWK.worker_id: ["1", "2", "3", "4"],
-                AWK.gender: ["male", "female", None, "female"],
-                AWK.nationality: ["British", "French", "Spanish", None],
-            },
-            expected_data={
-                AWK.worker_id: ["1", "2", "3", "4"],
-                AWK.gender: ["male", "female", None, "female"],
-                AWK.nationality: ["British", "French", "Spanish", None],
-                gender_codes: ["1", "2", None, "2"],
-                nationality_codes: ["100", "101", "102", None],
-            },
-            column_names=[AWK.gender, AWK.nationality],
-            add_as_new_column=True,
-            reverse_mapping=True,
-        ),
-        CleaningUtilsTestCase(
-            id="replaces_single_column_with_codes_when_single_column_name_passed_and_add_as_new_column_is_false_and_reverse_mapping_is_true",
-            test_data={
-                AWK.worker_id: ["1", "2", "3", "4"],
-                AWK.gender: ["male", "female", None, "female"],
-                AWK.nationality: ["British", "French", "Spanish", None],
-            },
-            expected_data={
-                AWK.worker_id: ["1", "2", "3", "4"],
-                AWK.gender: ["1", "2", None, "2"],
-                AWK.nationality: ["British", "French", "Spanish", None],
-            },
-            column_names=[AWK.gender],
-            add_as_new_column=False,
-            reverse_mapping=True,
-        ),
-        CleaningUtilsTestCase(
-            id="replaces_multiple_columns_with_codes_when_multiple_column_names_passed_and_add_as_new_column_is_false_and_reverse_mapping_is_true",
-            test_data={
-                AWK.worker_id: ["1", "2", "3", "4"],
-                AWK.gender: ["male", "female", None, "female"],
-                AWK.nationality: ["British", "French", "Spanish", None],
-            },
-            expected_data={
-                AWK.worker_id: ["1", "2", "3", "4"],
-                AWK.gender: ["1", "2", None, "2"],
-                AWK.nationality: ["100", "101", "102", None],
-            },
-            column_names=[AWK.gender, AWK.nationality],
-            add_as_new_column=False,
-            reverse_mapping=True,
-        ),
-        CleaningUtilsTestCase(
-            id="adds_single_column_with_first_code_in_dict_when_single_column_name_passed_and_label_dict_one_to_many_values_and_add_as_new_column_is_true_and_reverse_mapping_is_true",
-            test_data={
-                AWK.worker_id: ["1", "2", "3"],
-                IndCQC.contemporary_cssr: [
-                    ContemporaryCSSR.cornwall_and_isles_of_scilly,
-                    ContemporaryCSSR.cornwall_and_isles_of_scilly,
-                    ContemporaryCSSR.coventry,
-                ],
-            },
-            expected_data={
-                AWK.worker_id: ["1", "2", "3"],
-                IndCQC.contemporary_cssr: [
-                    ContemporaryCSSR.cornwall_and_isles_of_scilly,
-                    ContemporaryCSSR.cornwall_and_isles_of_scilly,
-                    ContemporaryCSSR.coventry,
-                ],
-                contemporary_cssr_codes: ["902", "902", "407"],
-            },
-            column_names=[IndCQC.contemporary_cssr],
-            add_as_new_column=True,
-            reverse_mapping=True,
         ),
         CleaningUtilsTestCase(
             id="rows_with_values_not_in_label_dict_are_retained_when_add_as_new_column_is_true",
@@ -265,7 +170,6 @@ class CleaningUtilsData:
             },
             column_names=[AWK.gender],
             add_as_new_column=True,
-            reverse_mapping=False,
         ),
         CleaningUtilsTestCase(
             id="rows_with_values_not_in_label_dict_are_retained_when_add_as_new_column_is_false",
@@ -279,7 +183,6 @@ class CleaningUtilsData:
             },
             column_names=[AWK.gender],
             add_as_new_column=False,
-            reverse_mapping=False,
         ),
     ]
 
