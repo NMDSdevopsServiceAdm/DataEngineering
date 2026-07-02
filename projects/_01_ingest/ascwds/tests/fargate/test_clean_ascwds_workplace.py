@@ -43,7 +43,9 @@ class MainTests(unittest.TestCase):
             self.WORKPLACE_SOURCE,
             selected_columns=job.ascwds_workplace_columns_to_import,
         )
-        scan_csv_mock.assert_called_once_with(self.DATA_LABELS_SOURCE)
+        scan_csv_mock.assert_called_once_with(
+            self.DATA_LABELS_SOURCE, schema=job.data_labels_schema
+        )
         apply_categorical_labels_mock.assert_called_once()
 
         assert sink_to_parquet_mock.call_count == 2

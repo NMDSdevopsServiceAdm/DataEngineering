@@ -48,6 +48,10 @@ columns_to_apply_labels = [
     AWPClean.registration_type,
 ]
 
+data_labels_schema = pl.Schema(
+    [("column_name", pl.String), ("code", pl.String), ("label", pl.String)]
+)
+
 
 def main(
     workplace_source: str,
@@ -97,7 +101,7 @@ def main(
     # )
 
     # trello 1705
-    data_labels_lf = pl.scan_csv(data_labels_source)
+    data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
     workplace_lf = cUtils.apply_categorical_labels(
         workplace_lf,
         data_labels_lf,
