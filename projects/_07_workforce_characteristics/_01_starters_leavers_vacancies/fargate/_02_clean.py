@@ -1,3 +1,4 @@
+import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.clean_utils as cUtils
 from polars_utils import utils
 
 
@@ -13,6 +14,10 @@ def main(
         cleaned_data_destination (str): destination for cleaned output
     """
     lf = utils.scan_parquet(merged_data_source)
+
+    cUtils.combine_job_role_rows()
+
+    cUtils.deduplicate_slv_over_time()
 
     utils.sink_to_parquet(
         lazy_df=lf,

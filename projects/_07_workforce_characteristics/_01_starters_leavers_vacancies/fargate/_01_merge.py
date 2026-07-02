@@ -1,3 +1,4 @@
+import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.merge_utils as mUtils
 from polars_utils import utils
 
 
@@ -16,9 +17,17 @@ def main(
         cleaned_ascwds_workplace_source (str): path to the cleaned ascwds workplace data
         merged_data_destination (str): destination for merged output
     """
+    mUtils.create_list_of_cols_for_ascwds()
+
     metadata_lf = utils.scan_parquet(metadata_source)
     job_role_estimates_lf = utils.scan_parquet(job_role_estimates_source)
     cleaned_ascwds_workplace_lf = utils.scan_parquet(cleaned_ascwds_workplace_source)
+
+    mUtils.convert_ascwds_job_role_columns_to_rows()
+
+    mUtils.join_datasets()
+
+    mUtils.apply_employment_status_magic_numbers()
 
     utils.sink_to_parquet(
         lazy_df=job_role_estimates_lf,
