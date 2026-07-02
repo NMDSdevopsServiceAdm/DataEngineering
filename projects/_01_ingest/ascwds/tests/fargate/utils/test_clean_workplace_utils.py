@@ -54,12 +54,11 @@ class TestCleanWorkplaceDataExpressions:
         [pytest.param(case, id=case.id) for case in Data.purge_date_test_cases],
     )
     def test_purge_date(self, case):
-        test_lf = pl.LazyFrame(
-            case.test_data, Schemas.master_upd_date_org_schema, orient="row"
-        )
+
         expected_lf = pl.LazyFrame(
             case.expected_data, Schemas.purge_date_exprs_schema, orient="row"
         )
+        test_lf = expected_lf.drop(AWPClean.purge_date)
 
         returned_lf = test_lf.with_columns(self.exprs.purge_date)
 
@@ -73,12 +72,10 @@ class TestCleanWorkplaceDataExpressions:
         ],
     )
     def test_data_last_amended_date(self, case):
-        test_lf = pl.LazyFrame(
-            case.test_data, Schemas.master_upd_date_org_schema, orient="row"
-        )
         expected_lf = pl.LazyFrame(
             case.expected_data, Schemas.last_amended_date_exprs_schema, orient="row"
         )
+        test_lf = expected_lf.drop(AWPClean.data_last_amended_date)
 
         returned_lf = test_lf.with_columns(self.exprs.data_last_amended_date)
 
@@ -92,15 +89,12 @@ class TestCleanWorkplaceDataExpressions:
         ],
     )
     def test_workplace_last_active_date(self, case):
-        test_lf = pl.LazyFrame(
-            case.test_data, Schemas.last_amended_date_exprs_schema, orient="row"
-        )
         expected_lf = pl.LazyFrame(
             case.expected_data,
             Schemas.workplace_last_active_date_exprs_schema,
             orient="row",
         )
-
+        test_lf = expected_lf.drop(AWPClean.workplace_last_active_date)
         returned_lf = test_lf.with_columns(self.exprs.workplace_last_active_date)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
@@ -115,11 +109,10 @@ class TestAddMasterUpdateDateOrg:
         ],
     )
     def test_function_returns_expected_values(self, case):
-        test_lf = pl.LazyFrame(case.test_data, Schemas.test_schema, orient="row")
         expected_lf = pl.LazyFrame(
             case.expected_data, Schemas.master_upd_date_org_schema, orient="row"
         )
-
+        test_lf = expected_lf.drop(AWPClean.master_update_date_org)
         returned_lf = job.add_master_update_date_org(test_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)

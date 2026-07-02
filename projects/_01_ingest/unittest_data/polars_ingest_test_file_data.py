@@ -1540,7 +1540,6 @@ class ValidateCqcLocations4FullLatestSnapshotTest:
 @dataclass
 class CleanWorkplaceUtilsTestCase:
     id: str
-    test_data: list[Any]
     expected_data: list[Any]
 
 
@@ -1557,9 +1556,6 @@ class TestCreatePurgedLfsForReconciliationAndData:
     purge_date_test_cases = [
         CleanWorkplaceUtilsTestCase(
             id="subtracts_correct_months",
-            test_data=[
-                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1), date(2024, 5, 1))
-            ],
             expected_data=[
                 ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1), date(2024, 5, 1), date(2022, 6, 1))
             ], # fmt: skip
@@ -1569,18 +1565,12 @@ class TestCreatePurgedLfsForReconciliationAndData:
     data_last_amended_date_test_cases = [
         CleanWorkplaceUtilsTestCase(
             id="uses_org_max_for_parent",
-            test_data=[
-                ("org1", date(2024, 6, 1), date(2020, 1, 1), "Yes", date(2024, 4, 1), date(2024, 5, 1))
-            ],
             expected_data=[
                 ("org1", date(2024, 6, 1), date(2020, 1, 1), "Yes", date(2024, 4, 1), date(2024, 5, 1), date(2024, 5, 1))
             ], # fmt: skip
         ),
         CleanWorkplaceUtilsTestCase(
             id="uses_own_date_for_non_parent",
-            test_data=[
-                ("org1", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 4, 1), date(2024, 5, 1))
-            ],
             expected_data=[
                 ("org1", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 4, 1), date(2024, 5, 1), date(2024, 3, 1))
             ], # fmt: skip
@@ -1590,18 +1580,12 @@ class TestCreatePurgedLfsForReconciliationAndData:
     workplace_last_active_date_test_cases = [
         CleanWorkplaceUtilsTestCase(
             id="uses_data_last_amended_date",
-            test_data=[
-                ("org1", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 1, 1), date(2024, 5, 1), date(2024, 5, 1))
-            ], # fmt: skip
             expected_data=[
                 ("org1", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 1, 1), date(2024, 5, 1), date(2024, 5, 1), date(2024, 5, 1))
             ], # fmt: skip
         ),
         CleanWorkplaceUtilsTestCase(
             id="uses_last_logged_in_date_when_more_recent",
-            test_data=[
-                ("org1", date(2024, 6, 1), date(2020, 1, 1), "No", date(2024, 4, 1), date(2020, 1, 1), date(2020, 1, 1))
-            ], # fmt: skip
             expected_data=[
                 ("org1", date(2024, 6, 1), date(2020, 1, 1), "No", date(2024, 4, 1), date(2020, 1, 1), date(2020, 1, 1), date(2024, 4, 1))
             ], # fmt: skip
@@ -1611,11 +1595,6 @@ class TestCreatePurgedLfsForReconciliationAndData:
     add_master_update_date_org_test_cases = [
         CleanWorkplaceUtilsTestCase(
             id="org_max_is_maximum_within_org_and_import_date",
-            test_data=[
-                ("org1", date(2024, 6, 1), date(2024, 1, 1), "No", date(2024, 1, 1)),
-                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 1, 1)),
-                ("org2", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 1, 1)),
-            ],
             expected_data=[
                 ("org1", date(2024, 6, 1), date(2024, 1, 1), "No", date(2024, 1, 1), date(2024, 5, 1)),
                 ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 1, 1), date(2024, 5, 1)),
@@ -1624,10 +1603,6 @@ class TestCreatePurgedLfsForReconciliationAndData:
         ),
         CleanWorkplaceUtilsTestCase(
             id="org_max_is_scoped_per_import_date",
-            test_data=[
-                ("org1", date(2024, 1, 1), date(2024, 1, 1), "No", date(2024, 1, 1)),
-                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 1, 1)),
-            ],
             expected_data=[
                 ("org1", date(2024, 1, 1), date(2024, 1, 1), "No", date(2024, 1, 1), date(2024, 1, 1)),
                 ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 1, 1), date(2024, 5, 1)),
@@ -1635,9 +1610,6 @@ class TestCreatePurgedLfsForReconciliationAndData:
         ),
         CleanWorkplaceUtilsTestCase(
             id="single_record_org_uses_own_date",
-            test_data=[
-                ("org1", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 1,1))
-            ],
             expected_data=[
                 ("org1", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 1, 1), date(2024, 3, 1))
             ], # fmt: skip
