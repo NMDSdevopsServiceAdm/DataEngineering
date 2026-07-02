@@ -58,34 +58,25 @@ def apply_categorical_labels(
     reverse_mapping: bool = False,
 ) -> pl.LazyFrame:
     """
-    Apply categorical label mappings to one or more columns.
-
-    For each column in `column_names`, the corresponding codes and labels in the labels LazyFrame are joined as a new column in the original LazyFrame. The column is then name appropriately.dictionary in `labels`
-    is converted to a LazyFrame and joined to `lf` to map codes to labels.
-    Partial mappings are supported: unmapped values will be preserved.
-
-    Labels can either be added as new columns or replace the original columns.
-
-    reverse_mapping is an optional argument to revert columns from a label string to a code string.
-    Warning: the values in 'labels' dict should be unique, otherwise only first key of
-    duplicate values will be used in the mapping.
+    Applies categorical labels to specified columns in a Polars LazyFrame based on a
+    mapping provided in another LazyFrame.
 
     Args:
-        lf (pl.LazyFrame): Input LazyFrame.
-        labels_lf (pl.LazyFrame): LazyFrame with mapping dictionaries for columns.
-        column_names (list): List of column names to apply label mappings to.
-        add_as_new_column (bool, optional): If True, adds a new column with
-            "_labels" suffix. If False, replaces the original column.
-            Defaults to True.
-        reverse_mapping (bool, optional): If True, reverts labels to codes.
+        lf (pl.LazyFrame): The input LazyFrame containing the columns to be labeled.
+        labels_lf (pl.LazyFrame): A LazyFrame containing the mapping of codes to labels.
+        column_names (list): A list of column names in `lf` to which the labels should be applied.
+        add_as_new_column (bool): If True, adds the labeled values as new columns with a
+            suffix. If False, replaces the original columns with labeled values.
+        reverse_mapping (bool): If True, maps labels back to codes instead of codes to labels.
 
     Returns:
-        pl.LazyFrame: LazyFrame with categorical labels applied. Unmapped values
-            are preserved.
-
+        pl.LazyFrame: A new LazyFrame with the specified columns labeled according to the
+            provided mapping. If `add_as_new_column` is True, the new columns will have a
+            suffix indicating they contain labels or codes.
     Raises:
-        ValueError: If column to apply labels to is not in LazyFrame.
-        KeyError: If column has no mapping in labels dict.
+        ValueError: If any of the specified `column_names` do not exist in `lf`.
+        KeyError: If there are no label mappings found for any of the specified
+            `column_names` in `labels_lf`.
 
     """
     column_name_col = "column_name"
@@ -112,6 +103,7 @@ def labels_generator(
     reverse_mapping: bool,
 ) -> Generator[pl.Expr, None, None]:
     column_name_col = "column_name"
+
     if reverse_mapping == False:
         join_col = "code"
         new_col = "label"
@@ -120,23 +112,19 @@ def labels_generator(
         join_col = "label"
         new_col = "code"
         suffix = "_codes"
+
     for column_name in column_names:
-        old_vals = (
+        filtered_labels_df = (
             labels_lf.filter(pl.col(column_name_col) == column_name)
             .sort(join_col, new_col)
             .unique(subset=[column_name_col, join_col], keep="first")
             .collect()
             .sort(join_col, new_col)
-            .get_column(join_col)
         )
-        new_vals = (
-            labels_lf.filter(pl.col(column_name_col) == column_name)
-            .sort(join_col, new_col)
-            .unique(subset=[column_name_col, join_col], keep="first")
-            .collect()
-            .sort(join_col, new_col)
-            .get_column(new_col)
-        )
+
+        old_vals = filtered_labels_df.get_column(join_col)
+        new_vals = filtered_labels_df.get_column(new_col)
+
         if add_as_new_column == True:
             yield (
                 pl.col(column_name)
