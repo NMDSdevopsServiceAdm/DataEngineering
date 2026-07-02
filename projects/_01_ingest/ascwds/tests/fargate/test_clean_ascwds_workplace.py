@@ -15,9 +15,9 @@ class MainTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.remove_rows_with_duplicate_location_ids")
-    @patch(f"{PATCH_PATH}.wUtils.valid_workplace_filter")
     @patch(f"{PATCH_PATH}.cUtils.column_to_date")
     @patch(f"{PATCH_PATH}.cUtils.cast_date_strings_to_dates")
+    @patch(f"{PATCH_PATH}.wUtils.valid_workplace_filter")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
