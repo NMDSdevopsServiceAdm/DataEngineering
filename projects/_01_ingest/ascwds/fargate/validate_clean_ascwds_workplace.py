@@ -12,8 +12,6 @@ from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkplaceCleanedCategoricalValues as CatValues,
 )
 
-COLS_TO_IMPORT = [ASCWPClean.establishment_id, ASCWPClean.ascwds_workplace_import_date]
-
 EXPECTED_SCHEMA = pb.Schema(
     columns={
         ASCWPClean.organisation_id: "String",
@@ -70,7 +68,6 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
     """
     source_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{source_path}",
-        selected_columns=COLS_TO_IMPORT,
     )
 
     validation = (

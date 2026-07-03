@@ -106,9 +106,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
         mock_read_parquet.return_value = self.source_df
         job.main("bucket", "my/source/", "my/reports/")
 
-        mock_read_parquet.assert_called_once_with(
-            source="s3://bucket/my/source/", selected_columns=job.COLS_TO_IMPORT
-        )
+        mock_read_parquet.assert_called_once_with(source="s3://bucket/my/source/")
         mock_write_reports.assert_called_once()
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
