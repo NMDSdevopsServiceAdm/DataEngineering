@@ -74,20 +74,11 @@ def apply_categorical_labels(
             suffix indicating they contain labels or codes.
     Raises:
         ValueError: If any of the specified `column_names` do not exist in `lf`.
-        KeyError: If there are no label mappings found for any of the specified
-            `column_names` in `labels_lf`.
 
     """
     for column_name in column_names:
         if column_name not in lf.collect_schema().names():
             raise ValueError(f"Column {column_name} not found in LazyFrame.")
-
-        # Minimise the size of the lazyframe being materialised by filtering to only the relevant column and rows
-        column_name_check_lf = labels_lf.select(pl.col(DLC.column_name)).filter(
-            pl.col(DLC.column_name) == column_name
-        )
-        if column_name_check_lf.collect().height == 0:
-            raise KeyError(f"No label mapping found for {column_name}.")
 
     lf = lf.with_columns(labels_generator(labels_lf, column_names, add_as_new_column))
     return lf
@@ -109,8 +100,13 @@ def labels_generator(
         add_as_new_column (bool): If True, adds the labeled values as new columns with a suffix.
             If False, replaces the original columns with labeled values.
 
+    Raises:
+        KeyError: If there are no label mappings found for at least one of the specified
+            `column_names` in `labels_lf`.
+
     Yields:
         pl.Expr: Polars expressions for applying the categorical labels.
+
     """
     suffix = f"_{DLC.label}s"
 
@@ -118,6 +114,9 @@ def labels_generator(
         filtered_labels_df = labels_lf.filter(
             pl.col(DLC.column_name) == column_name
         ).collect()
+
+        if filtered_labels_df.height == 0:
+            raise KeyError(f"No label mapping found for {column_name}.")
 
         old_vals = filtered_labels_df.get_column(DLC.code)
         new_vals = filtered_labels_df.get_column(DLC.label)
