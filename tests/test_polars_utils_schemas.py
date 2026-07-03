@@ -11,7 +11,11 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+)
 
 
 @dataclass
@@ -33,6 +37,14 @@ class CleaningUtilsSchemas:
             (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.location_id, pl.String()),
             (AWPClean.ascwds_workplace_import_date, pl.Date()),
+        ]
+    )
+
+    labels_schema = pl.Schema(
+        [
+            (DLC.column_name, pl.String()),
+            (DLC.code, pl.String()),
+            (DLC.label, pl.String()),
         ]
     )
 
