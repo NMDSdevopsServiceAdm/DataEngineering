@@ -310,6 +310,18 @@ class RUI(ColumnValues):
 
 
 @dataclass
+class RUI2021(ColumnValues):
+    """The possible values of the rural urban indicator 2021 columns in ONS data"""
+
+    rural_larger_further: str = "Rural - Larger: Further from a major town or city"
+    rural_larger_nearer: str = "Rural - Larger: Nearer to a major town or city"
+    rural_smaller_further: str = "Rural - Smaller: Further from a major town or city"
+    rural_smaller_nearer: str = "Rural - Smaller: Nearer to a major town or city"
+    urban_further: str = "Urban - Further from a major town or city"
+    urban_nearer: str = "Urban - Nearer to a major town or city"
+
+
+@dataclass
 class CurrentCSSR(ColumnValues):
     """The possible values of the local authority columns in ONS data"""
 
