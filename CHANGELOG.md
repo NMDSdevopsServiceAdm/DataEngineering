@@ -54,6 +54,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted `create_purged_dfs_for_reconciliation_and_data` function within Clean Workplace Data job to Polars and updated tests for the same.
 
+- Updated output columns for reconciliation dataset.
+
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
 
