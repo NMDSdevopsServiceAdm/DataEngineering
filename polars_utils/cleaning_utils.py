@@ -81,10 +81,12 @@ def apply_categorical_labels(
     for column_name in column_names:
         if column_name not in lf.collect_schema().names():
             raise ValueError(f"Column {column_name} not found in LazyFrame.")
-        if (
-            labels_lf.filter(pl.col(DLC.column_name) == column_name).collect().height
-            == 0
-        ):
+
+        # Minimise the size of the lazyframe being materialised by filtering to only the relevant column and rows
+        column_name_check_lf = labels_lf.select(pl.col(DLC.column_name)).filter(
+            pl.col(DLC.column_name) == column_name
+        )
+        if column_name_check_lf.collect().height == 0:
             raise KeyError(f"No label mapping found for {column_name}.")
 
     lf = lf.with_columns(labels_generator(labels_lf, column_names, add_as_new_column))
@@ -94,7 +96,7 @@ def apply_categorical_labels(
 def labels_generator(
     labels_lf: pl.LazyFrame,
     column_names: list,
-    add_as_new_column: bool,  # TODO
+    add_as_new_column: bool,
 ) -> Generator[pl.Expr, None, None]:
     """
     A generator function that yields Polars expressions for applying categorical labels
@@ -113,35 +115,23 @@ def labels_generator(
     suffix = f"_{DLC.label}s"
 
     for column_name in column_names:
-        filtered_labels_df = (
-            labels_lf.filter(pl.col(DLC.column_name) == column_name)
-            .sort(DLC.code, DLC.label)
-            .unique(subset=[DLC.column_name, DLC.code], keep="first")
-            .collect()
-            .sort(DLC.code, DLC.label)
-        )
+        filtered_labels_df = labels_lf.filter(
+            pl.col(DLC.column_name) == column_name
+        ).collect()
 
         old_vals = filtered_labels_df.get_column(DLC.code)
         new_vals = filtered_labels_df.get_column(DLC.label)
 
+        mapping_expr = pl.col(column_name).replace_strict(
+            old=old_vals,
+            new=new_vals,
+            default=pl.col(column_name),
+        )
+
         if add_as_new_column == True:
-            yield (
-                pl.col(column_name)
-                .replace_strict(
-                    old=old_vals,
-                    new=new_vals,
-                    default=pl.col(column_name),
-                )
-                .name.suffix(suffix)
-            )
-        elif add_as_new_column == False:
-            yield (
-                pl.col(column_name).replace_strict(
-                    old=old_vals,
-                    new=new_vals,
-                    default=pl.col(column_name),
-                )
-            )
+            mapping_expr = mapping_expr.name.suffix(suffix)
+
+        yield mapping_expr
 
 
 def column_to_date(
