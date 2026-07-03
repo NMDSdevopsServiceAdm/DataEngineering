@@ -56,6 +56,8 @@ All notable changes to this project will be documented in this file.
 
 - Updated output columns for reconciliation dataset.
 
+- National care work thresholds removed from job role estimates validation.
+
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
 
