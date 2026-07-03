@@ -190,46 +190,24 @@ class TestEstimatesPercentageExpressions:
     test_lf = expected_lf.drop("expression")
 
     def test_required_percentages_dictionary(self):
-        assert job.req_pcts[MainJobRoleLabels.care_worker] == (0.52, 0.69)
         assert job.req_pcts[JobGroupLabels.direct_care] == (0.71, 0.81)
         assert job.req_pcts[JobGroupLabels.managers] == (0.03, 0.1)
         assert job.req_pcts[JobGroupLabels.regulated_professions] == (0.02, 0.06)
         assert job.req_pcts[JobGroupLabels.other] == (0.07, 0.21)
 
-    def test_estimates_percentage_expressions_for_job_role_when_true(self):
-        expr = job.estimates_percentage_expressions(
-            MainJobRoleLabels.care_worker,
-            job.req_pcts[MainJobRoleLabels.care_worker],
-            "role",
-        )
-        result = self.test_lf.with_columns(expr.alias("expression"))
-        pl_testing.assert_frame_equal(result, self.expected_lf)
-
-    def test_estimates_percentage_expressions_for_job_group_when_true(self):
+    def test_estimates_percentage_expressions(self):
         expr = job.estimates_percentage_expressions(
             JobGroupLabels.direct_care,
             job.req_pcts[JobGroupLabels.direct_care],
-            "group",
         )
         result = self.test_lf.with_columns(expr.alias("expression"))
         pl_testing.assert_frame_equal(result, self.expected_lf)
-
-    def test_estimates_percentage_expressions_invalid_role_or_group(self):
-        with pytest.raises(ValueError) as excinfo:
-            job.estimates_percentage_expressions(
-                MainJobRoleLabels.care_worker,
-                job.req_pcts[MainJobRoleLabels.care_worker],
-                "invalid",
-            )
-
-        assert "role_or_group must be either 'role' or 'group'" in str(excinfo.value)
 
     def test_estimates_percentage_expressions_invalid_pcts(self):
         with pytest.raises(ValueError) as excinfo:
             job.estimates_percentage_expressions(
-                MainJobRoleLabels.care_worker,
+                JobGroupLabels.direct_care,
                 (0.5,),  # Invalid pcts tuple
-                "role",
             )
 
         assert "pcts must be a tuple of two values: (lower_bound, upper_bound)" in str(
