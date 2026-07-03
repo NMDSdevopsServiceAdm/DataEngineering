@@ -445,7 +445,7 @@ def estimates_percentage_expressions(name: str, pcts: tuple[float]) -> pl.Expr:
         group per import date across all locations and check if it falls within the specified range.
 
     Args:
-        name (str): the name of the job role or group to calculate the percentage for
+        name (str): the name of the job group to calculate the percentage for
         pcts (tuple[float]): the lower and upper bounds for the acceptable percentage range
 
     Returns:
