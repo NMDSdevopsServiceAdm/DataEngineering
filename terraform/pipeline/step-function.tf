@@ -5,7 +5,7 @@ locals {
     substr(fn, 0, length(fn) - 5) => "step-functions/dynamic/${fn}"
   })
 
-  ind_cqc_job_role_estimates_dataset_name = terraform.workspace == "main" ? "ind_cqc_07_04_estimate_job_roles/" : "main_ind_cqc_07_04_estimate_job_roles/"
+  ind_cqc_job_role_estimates_dataset_name = terraform.workspace == "main" ? "ind_cqc_07_04_estimate_job_roles" : "main_ind_cqc_07_04_estimate_job_roles"
   ind_cqc_job_role_metadata_dataset_name  = terraform.workspace == "main" ? "ind_cqc_07_01_merge_metadata_job_roles" : "main_ind_cqc_07_01_merge_metadata_job_roles"
 }
 
