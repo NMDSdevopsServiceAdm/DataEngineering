@@ -6,7 +6,7 @@ locals {
   })
 
   ind_cqc_comparison_dataset_name_for_validation = terraform.workspace == "main" ? "ind_cqc_06_estimated_filled_posts" : "main_ind_cqc_06_estimated_filled_posts"
-  ind_cqc_job_role_metadata                      = terraform.workspace == "main" ? "ind_cqc_07_01_merge_metadata_job_roles" : "main_ind_cqc_07_01_merge_metadata_job_roles"
+  ind_cqc_job_role_metadata_dataset_name         = terraform.workspace == "main" ? "ind_cqc_07_01_merge_metadata_job_roles" : "main_ind_cqc_07_01_merge_metadata_job_roles"
 }
 
 # Created explicitly as required by dynamic step functions
@@ -78,6 +78,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
 
     # compare paths
     ind_cqc_compare_dataset_name = local.ind_cqc_comparison_dataset_name_for_validation
+    ind_cqc_job_role_metadata    = local.ind_cqc_job_role_metadata_dataset_name
 
     # lambdas
     pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
