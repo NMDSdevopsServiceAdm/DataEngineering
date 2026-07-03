@@ -6,6 +6,7 @@ locals {
   })
 
   ind_cqc_comparison_dataset_name_for_validation = terraform.workspace == "main" ? "ind_cqc_06_estimated_filled_posts" : "main_ind_cqc_06_estimated_filled_posts"
+  ind_cqc_job_role_metadata                      = terraform.workspace == "main" ? "ind_cqc_07_01_merge_metadata_job_roles/" : "main_ind_cqc_07_01_merge_metadata_job_roles/"
 }
 
 # Created explicitly as required by dynamic step functions
