@@ -3,6 +3,9 @@ from dataclasses import dataclass
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -24,16 +27,21 @@ from utils.column_values.categorical_column_values import (
     ContemporaryCSSR,
     CurrentCSSR,
     Dormancy,
+    EstablishmentType,
     EstimateFilledPostsSource,
     InAscwds,
+    IsParent,
     JobGroupLabels,
     JobRoleFilteringRule,
     MainJobRoleID,
     MainJobRoleLabels,
+    MainServiceID,
+    ParentPermission,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
     Region,
     RegistrationStatus,
+    RegistrationType,
     RelatedLocation,
     Sector,
     Services,
@@ -59,6 +67,15 @@ class ASCWDSWorkerCleanedCategoricalValues:
         AWKClean.main_job_role_clean,
         value_to_remove=[MainJobRoleID.technician, MainJobRoleID.care_navigator],
     )
+
+
+@dataclass
+class ASCWDSWorkplaceCleanedCategoricalValues:
+    establishment_type_column_values = EstablishmentType(AWPClean.establishment_type)
+    parent_permission_column_values = ParentPermission(AWPClean.parent_permission)
+    is_parent_column_values = IsParent(AWPClean.is_parent)
+    main_service_id_column_values = MainServiceID(AWPClean.main_service_id)
+    registration_type_column_values = RegistrationType(AWPClean.registration_type)
 
 
 @dataclass
