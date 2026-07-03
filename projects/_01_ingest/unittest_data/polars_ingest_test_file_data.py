@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
+from typing import Any, Optional
 
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
@@ -1533,4 +1534,141 @@ class ValidateCqcLocations4FullLatestSnapshotTest:
         (date(2025, 1, 1),),
         (RegistrationStatus.registered,),
         (date(2024, 1, 1),),
+    ]
+
+
+@dataclass
+class CleanWorkplaceUtilsTestCase:
+    id: str
+    expected_data: list[Any]
+
+
+@dataclass
+class PurgedLfsTestCase:
+    id: str
+    test_data: list[Any]
+    expected_workplace_data: Optional[list[Any]]
+    expected_recon_data: Optional[list[Any]]
+
+
+@dataclass
+class TestCreatePurgedLfsForReconciliationAndData:
+    purge_date_test_cases = [
+        CleanWorkplaceUtilsTestCase(
+            id="subtracts_correct_months",
+            expected_data=[
+                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1), date(2024, 5, 1), date(2022, 6, 1))
+            ], # fmt: skip
+        ),
+    ]
+
+    data_last_amended_date_test_cases = [
+        CleanWorkplaceUtilsTestCase(
+            id="uses_org_max_for_parent",
+            expected_data=[
+                ("org1", date(2024, 6, 1), date(2020, 1, 1), "Yes", date(2024, 4, 1), date(2024, 5, 1), date(2024, 5, 1))
+            ], # fmt: skip
+        ),
+        CleanWorkplaceUtilsTestCase(
+            id="uses_own_date_for_non_parent",
+            expected_data=[
+                ("org1", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 4, 1), date(2024, 5, 1), date(2024, 3, 1))
+            ], # fmt: skip
+        ),
+    ]
+
+    workplace_last_active_date_test_cases = [
+        CleanWorkplaceUtilsTestCase(
+            id="uses_data_last_amended_date",
+            expected_data=[
+                ("org1", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 1, 1), date(2024, 5, 1), date(2024, 5, 1), date(2024, 5, 1))
+            ], # fmt: skip
+        ),
+        CleanWorkplaceUtilsTestCase(
+            id="uses_last_logged_in_date_when_more_recent",
+            expected_data=[
+                ("org1", date(2024, 6, 1), date(2020, 1, 1), "No", date(2024, 4, 1), date(2020, 1, 1), date(2020, 1, 1), date(2024, 4, 1))
+            ], # fmt: skip
+        ),
+    ]
+
+    add_master_update_date_org_test_cases = [
+        CleanWorkplaceUtilsTestCase(
+            id="org_max_is_maximum_within_org_and_import_date",
+            expected_data=[
+                ("org1", date(2024, 6, 1), date(2024, 1, 1), "No", date(2024, 1, 1), date(2024, 5, 1)),
+                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 1, 1), date(2024, 5, 1)),
+                ("org2", date(2024, 6, 1), date(2024, 3, 1), "No", date(2024, 1, 1), date(2024, 3, 1)),
+            ], # fmt: skip
+        ),
+        CleanWorkplaceUtilsTestCase(
+            id="org_max_is_scoped_per_import_date",
+            expected_data=[
+                ("org1", date(2024, 1, 1), date(2024, 1, 1), "No", date(2024, 1, 1), date(2024, 1, 1)),
+                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 1, 1), date(2024, 5, 1)),
+            ], # fmt: skip
+        ),
+        CleanWorkplaceUtilsTestCase(
+            id="returns_null_when_update_date_is_null",
+            expected_data=[
+                ("org1", date(2024, 6, 1), None, "No", date(2024, 1, 1), None)
+            ], # fmt: skip
+        ),
+    ]
+
+    create_purged_lfs_test_cases = [
+        PurgedLfsTestCase(
+            id="recent_record_retained_in_both_outputs",
+            test_data=[
+                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1))
+            ],
+            expected_workplace_data=[
+                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1))
+            ],
+            expected_recon_data=[
+                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1))
+            ],
+        ),
+        PurgedLfsTestCase(
+            id="stale_record_removed_from_both_outputs",
+            test_data=[
+                ("org1", date(2024, 6, 1), date(2020, 1, 1), "No", date(2020, 1, 1))
+            ],
+            expected_workplace_data=None,
+            expected_recon_data=None,
+        ),
+        PurgedLfsTestCase(
+            id="stale_by_update_but_recent_login_retained_in_recon_only",
+            test_data=[
+                ("org1", date(2024, 6, 1), date(2020, 1, 1), "No", date(2024, 5, 1))
+            ],
+            expected_workplace_data=None,
+            expected_recon_data=[
+                ("org1", date(2024, 6, 1), date(2020, 1, 1), "No", date(2024, 5, 1))
+            ],
+        ),
+        PurgedLfsTestCase(
+            id="parent_retained_when_sibling_has_recent_update",
+            test_data=[
+                ("org1", date(2024, 6, 1), date(2020, 1, 1), "Yes", date(2020, 1, 1)),
+                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2020, 1, 1)),
+            ],
+            expected_workplace_data=[
+                ("org1", date(2024, 6, 1), date(2020, 1, 1), "Yes", date(2020, 1, 1)),
+                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2020, 1, 1)),
+            ],
+            expected_recon_data=[
+                ("org1", date(2024, 6, 1), date(2020, 1, 1), "Yes", date(2020, 1, 1)),
+                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2020, 1, 1)),
+            ],
+        ),
+        PurgedLfsTestCase(
+            id="parent_removed_when_all_siblings_stale",
+            test_data=[
+                ("org1", date(2024, 6, 1), date(2020, 1, 1), "Yes", date(2020, 1, 1)),
+                ("org1", date(2024, 6, 1), date(2020, 2, 1), "No", date(2020, 1, 1)),
+            ],
+            expected_workplace_data=None,
+            expected_recon_data=None,
+        ),
     ]

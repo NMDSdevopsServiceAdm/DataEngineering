@@ -45,6 +45,29 @@ COLUMNS_TO_IMPORT = [
     AWPClean.import_date,
 ]
 
+RECONCILIATION_COLUMNS = [
+    AWPClean.ascwds_workplace_import_date,
+    AWPClean.establishment_id,
+    AWPClean.nmds_id,
+    AWPClean.master_update_date,
+    AWPClean.master_update_date_org,
+    AWPClean.establishment_created_date,
+    AWPClean.is_parent,
+    AWPClean.parent_id,
+    AWPClean.organisation_id,
+    AWPClean.parent_permission,
+    AWPClean.establishment_type,
+    AWPClean.registration_type,
+    AWPClean.location_id,
+    AWPClean.main_service_id,
+    AWPClean.establishment_name,
+    AWPClean.region_id,
+    AWPClean.total_staff,
+    AWPClean.worker_records,
+    AWPClean.last_logged_in_date,
+    AWPClean.la_permission,
+]
+
 columns_to_apply_labels = [
     AWPClean.establishment_type,
     AWPClean.parent_permission,
@@ -96,11 +119,10 @@ def main(
         add_as_new_column=False,
     )
 
-    # trello 1706
-    # (
-    #     ascwds_workplace_df,
-    #     reconciliation_df,
-    # ) = create_purged_dfs_for_reconciliation_and_data(ascwds_workplace_df)
+    (
+        lf,
+        reconciliation_lf,
+    ) = wUtils.create_purged_lfs_for_reconciliation_and_data(lf)
 
     lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
 
@@ -113,18 +135,21 @@ def main(
         .name.suffix("_bounded")
     )
 
-    # trello 1710
-    # reconciliation_df = reconciliation_df.select(cols_required_for_reconciliation_df)
+    reconciliation_lf = reconciliation_lf.select(RECONCILIATION_COLUMNS)
 
+    print(
+        f"Exporting clean ascwds workplace data as parquet to {cleaned_workplace_destination}"
+    )
     utils.sink_to_parquet(
-        # trello 1710
         lazy_df=lf,
         output_path=cleaned_workplace_destination,
     )
 
+    print(
+        f"Exporting ascwds workplace reconciliation data as parquet to {workplace_for_reconciliation_destination}"
+    )
     utils.sink_to_parquet(
-        # trello 1710
-        lazy_df=lf,
+        lazy_df=reconciliation_lf,
         output_path=workplace_for_reconciliation_destination,
     )
 
