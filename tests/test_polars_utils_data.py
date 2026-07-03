@@ -2,12 +2,28 @@ import json
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+from typing import Any, Optional
 
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+)
 from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     CareHome,
+    ContemporaryCSSR,
     JobRoleFilteringRule,
 )
+
+
+@dataclass
+class CleaningUtilsTestCase:
+    id: str
+    test_data: list[Any]
+    expected_data: list[Any]
+    column_names: list[str]
+    add_as_new_column: Optional[bool]
 
 
 @dataclass
@@ -58,6 +74,116 @@ class CleaningUtilsData:
         (date(2025, 5, 1),),
         ("1-001",),
         (None,),
+    ]
+
+    labels_data = [
+        (AWK.gender, "1", "male"),
+        (AWK.gender, "2", "female"),
+        (AWK.nationality, "100", "British"),
+        (AWK.nationality, "101", "French"),
+        (AWK.nationality, "102", "Spanish"),
+        (IndCQC.contemporary_cssr, "902", ContemporaryCSSR.cornwall_and_isles_of_scilly),
+        (IndCQC.contemporary_cssr, "906", ContemporaryCSSR.cornwall_and_isles_of_scilly),
+        (IndCQC.contemporary_cssr, "407", ContemporaryCSSR.coventry),
+    ] # fmt: skip
+
+    gender_labels = AWK.gender + f"_{DLC.label}s"
+    gender_codes = AWK.gender + f"_{DLC.code}s"
+    nationality_labels = AWK.nationality + f"_{DLC.label}s"
+    nationality_codes = AWK.nationality + f"_{DLC.code}s"
+    contemporary_cssr_codes = IndCQC.contemporary_cssr + f"_{DLC.code}s"
+
+    apply_catagorical_labels_test_cases = [
+        CleaningUtilsTestCase(
+            id="adds_single_column_with_labels_when_single_column_name_passed_and_add_as_new_column_is_true_and_reverse_mapping_is_false",
+            test_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                AWK.nationality: ["100", "101", "102", None],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                AWK.nationality: ["100", "101", "102", None],
+                gender_labels: ["male", "female", None, "female"],
+            },
+            column_names=[AWK.gender],
+            add_as_new_column=True,
+        ),
+        CleaningUtilsTestCase(
+            id="adds_multiple_columns_with_labels_when_multiple_column_names_passed_and_add_as_new_column_is_true_and_reverse_mapping_is_false",
+            test_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                AWK.nationality: ["100", "101", "102", None],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                AWK.nationality: ["100", "101", "102", None],
+                gender_labels: ["male", "female", None, "female"],
+                nationality_labels: ["British", "French", "Spanish", None],
+            },
+            column_names=[AWK.gender, AWK.nationality],
+            add_as_new_column=True,
+        ),
+        CleaningUtilsTestCase(
+            id="replaces_single_column_with_labels_when_single_column_name_passed_and_add_as_new_column_is_false_and_reverse_mapping_is_false",
+            test_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                AWK.nationality: ["100", "101", "102", None],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["male", "female", None, "female"],
+                AWK.nationality: ["100", "101", "102", None],
+            },
+            column_names=[AWK.gender],
+            add_as_new_column=False,
+        ),
+        CleaningUtilsTestCase(
+            id="replaces_multiple_columns_with_labels_when_multiple_column_names_passed_and_add_as_new_column_is_false_and_reverse_mapping_is_false",
+            test_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["1", "2", None, "2"],
+                AWK.nationality: ["100", "101", "102", None],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2", "3", "4"],
+                AWK.gender: ["male", "female", None, "female"],
+                AWK.nationality: ["British", "French", "Spanish", None],
+            },
+            column_names=[AWK.gender, AWK.nationality],
+            add_as_new_column=False,
+        ),
+        CleaningUtilsTestCase(
+            id="rows_with_values_not_in_label_dict_are_retained_when_add_as_new_column_is_true",
+            test_data={
+                AWK.worker_id: ["1", "2"],
+                AWK.gender: ["other value", "2"],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2"],
+                AWK.gender: ["other value", "2"],
+                gender_labels: ["other value", "female"],
+            },
+            column_names=[AWK.gender],
+            add_as_new_column=True,
+        ),
+        CleaningUtilsTestCase(
+            id="rows_with_values_not_in_label_dict_are_retained_when_add_as_new_column_is_false",
+            test_data={
+                AWK.worker_id: ["1", "2"],
+                AWK.gender: ["other value", "2"],
+            },
+            expected_data={
+                AWK.worker_id: ["1", "2"],
+                AWK.gender: ["other value", "female"],
+            },
+            column_names=[AWK.gender],
+            add_as_new_column=False,
+        ),
     ]
 
     column_to_date_string_with_hyphens_rows = [

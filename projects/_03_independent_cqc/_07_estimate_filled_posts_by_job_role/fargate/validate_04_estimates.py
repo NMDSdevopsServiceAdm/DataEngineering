@@ -98,7 +98,6 @@ EXPECTED_SCHEMA = pb.Schema(
 CQC_EARLIEST_IMPORT_DATE = date(2013, 3, 1)
 
 req_pcts = {
-    MainJobRoleLabels.care_worker: (0.52, 0.69),
     JobGroupLabels.direct_care: (0.71, 0.81),
     JobGroupLabels.managers: (0.03, 0.1),
     JobGroupLabels.regulated_professions: (0.02, 0.06),
@@ -411,23 +410,14 @@ def other_validation(
         # estimates between (inclusive)
         .col_vals_expr(
             estimates_percentage_expressions(
-                MainJobRoleLabels.care_worker,
-                req_pcts[MainJobRoleLabels.care_worker],
-                "role",
-            ),
-            brief="Check percentage of filled posts for care workers",
-        )
-        .col_vals_expr(
-            estimates_percentage_expressions(
                 JobGroupLabels.direct_care,
                 req_pcts[JobGroupLabels.direct_care],
-                "group",
             ),
             brief="Check percentage of filled posts for direct care",
         )
         .col_vals_expr(
             estimates_percentage_expressions(
-                JobGroupLabels.managers, req_pcts[JobGroupLabels.managers], "group"
+                JobGroupLabels.managers, req_pcts[JobGroupLabels.managers]
             ),
             brief="Check percentage of filled posts for managers",
         )
@@ -435,13 +425,12 @@ def other_validation(
             estimates_percentage_expressions(
                 JobGroupLabels.regulated_professions,
                 req_pcts[JobGroupLabels.regulated_professions],
-                "group",
             ),
             brief="Check percentage of filled posts for regulated professions",
         )
         .col_vals_expr(
             estimates_percentage_expressions(
-                JobGroupLabels.other, req_pcts[JobGroupLabels.other], "group"
+                JobGroupLabels.other, req_pcts[JobGroupLabels.other]
             ),
             brief="Check percentage of filled posts for other",
         )
@@ -450,50 +439,36 @@ def other_validation(
     vl.write_reports(validation, bucket_name, f"{reports_path}other_validation/")
 
 
-def estimates_percentage_expressions(
-    name: str, pcts: tuple[float], role_or_group: str
-) -> pl.Expr:
+def estimates_percentage_expressions(name: str, pcts: tuple[float]) -> pl.Expr:
     """
-    Constructs an expression to calculate the percentage of filled posts for a given job role or
+    Constructs an expression to calculate the percentage of filled posts for a given job
         group per import date across all locations and check if it falls within the specified range.
 
     Args:
-        name (str): the name of the job role or group to calculate the percentage for
+        name (str): the name of the job group to calculate the percentage for
         pcts (tuple[float]): the lower and upper bounds for the acceptable percentage range
-        role_or_group (str): specifies whether to calculate for a job role or group
 
     Returns:
         pl.Expr: the expression for validating the percentage
 
     Raises:
-        ValueError: if role_or_group is not 'role' or 'group', or if pcts is not a list of two numbers
+        ValueError: if pcts is not a list of two numbers
     """
     job_role_estimate_col = pl.col(
         IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
     )
-    if role_or_group not in ["role", "group"]:
-        raise ValueError("role_or_group must be either 'role' or 'group'")
     if len(pcts) != 2 or not all(isinstance(pct, (int, float)) for pct in pcts):
         raise ValueError(
             "pcts must be a tuple of two values: (lower_bound, upper_bound)"
         )
-    if role_or_group == "role":
-        expr = (
-            pl.when(pl.col(IndCqcColumns.main_job_role_clean_labelled) == name)
-            .then(job_role_estimate_col)
-            .otherwise(0)
-            .sum()
-            / job_role_estimate_col.sum()
-        )
 
-    elif role_or_group == "group":
-        expr = (
-            pl.when(pl.col(IndCqcColumns.main_job_group_labelled) == name)
-            .then(job_role_estimate_col)
-            .otherwise(0)
-            .sum()
-            / job_role_estimate_col.sum()
-        )
+    expr = (
+        pl.when(pl.col(IndCqcColumns.main_job_group_labelled) == name)
+        .then(job_role_estimate_col)
+        .otherwise(0)
+        .sum()
+        / job_role_estimate_col.sum()
+    )
     return ((expr >= pcts[0]) & (expr <= pcts[1])).over(
         pl.col(IndCqcColumns.cqc_location_import_date)
     )

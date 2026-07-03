@@ -6,6 +6,7 @@ from projects._01_ingest.ascwds.fargate.utils import clean_workplace_utils as wU
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 
 INT_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
 BOUNDED_STAFF_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
@@ -44,9 +45,45 @@ COLUMNS_TO_IMPORT = [
     AWPClean.import_date,
 ]
 
+RECONCILIATION_COLUMNS = [
+    AWPClean.ascwds_workplace_import_date,
+    AWPClean.establishment_id,
+    AWPClean.nmds_id,
+    AWPClean.master_update_date,
+    AWPClean.master_update_date_org,
+    AWPClean.establishment_created_date,
+    AWPClean.is_parent,
+    AWPClean.parent_id,
+    AWPClean.organisation_id,
+    AWPClean.parent_permission,
+    AWPClean.establishment_type,
+    AWPClean.registration_type,
+    AWPClean.location_id,
+    AWPClean.main_service_id,
+    AWPClean.establishment_name,
+    AWPClean.region_id,
+    AWPClean.total_staff,
+    AWPClean.worker_records,
+    AWPClean.last_logged_in_date,
+    AWPClean.la_permission,
+]
+
+columns_to_apply_labels = [
+    AWPClean.establishment_type,
+    AWPClean.parent_permission,
+    AWPClean.is_parent,
+    AWPClean.main_service_id,
+    AWPClean.registration_type,
+]
+
+data_labels_schema = pl.Schema(
+    [(DLC.column_name, pl.String), (DLC.code, pl.String), (DLC.label, pl.String)]
+)
+
 
 def main(
     workplace_source: str,
+    data_labels_source: str,
     cleaned_workplace_destination: str,
     workplace_for_reconciliation_destination: str,
 ) -> None:
@@ -55,6 +92,7 @@ def main(
 
     Args:
         workplace_source (str): path to the raw ascwds workplace data
+        data_labels_source (str): path to the ascwdsdata labels source
         cleaned_workplace_destination (str): destination for cleaned ascwds workplace output
         workplace_for_reconciliation_destination (str): destination for reconciliation workplace output
     """
@@ -73,14 +111,14 @@ def main(
     ).drop(AWPClean.import_date)
 
     # trello 1705
-    # ascwds_workplace_df = cUtils.apply_categorical_labels(
-    #     ascwds_workplace_df,
-    #     ascwds_workplace_labels_dict,
-    #     ascwds_workplace_labels_dict.keys(),
-    #     add_as_new_column=False,
-    # )
+    data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
+    lf = cUtils.apply_categorical_labels(
+        lf,
+        data_labels_lf,
+        columns_to_apply_labels,
+        add_as_new_column=False,
+    )
 
-    # trello 1706
     (
         lf,
         reconciliation_lf,
@@ -97,18 +135,21 @@ def main(
         .name.suffix("_bounded")
     )
 
-    # trello 1710
-    # reconciliation_df = reconciliation_df.select(cols_required_for_reconciliation_df)
+    reconciliation_lf = reconciliation_lf.select(RECONCILIATION_COLUMNS)
 
+    print(
+        f"Exporting clean ascwds workplace data as parquet to {cleaned_workplace_destination}"
+    )
     utils.sink_to_parquet(
-        # trello 1710
         lazy_df=lf,
         output_path=cleaned_workplace_destination,
     )
 
+    print(
+        f"Exporting ascwds workplace reconciliation data as parquet to {workplace_for_reconciliation_destination}"
+    )
     utils.sink_to_parquet(
-        # trello 1710
-        lazy_df=lf,
+        lazy_df=reconciliation_lf,
         output_path=workplace_for_reconciliation_destination,
     )
 
@@ -118,6 +159,10 @@ if __name__ == "__main__":
         (
             "--workplace_source",
             "Source s3 directory for raw ascwds workplace data",
+        ),
+        (
+            "--data_labels_source",
+            "Source s3 directory for ascwds data labels",
         ),
         (
             "--cleaned_workplace_destination",
@@ -130,6 +175,7 @@ if __name__ == "__main__":
     )
     main(
         workplace_source=args.workplace_source,
+        data_labels_source=args.data_labels_source,
         cleaned_workplace_destination=args.cleaned_workplace_destination,
         workplace_for_reconciliation_destination=args.workplace_for_reconciliation_destination,
     )
