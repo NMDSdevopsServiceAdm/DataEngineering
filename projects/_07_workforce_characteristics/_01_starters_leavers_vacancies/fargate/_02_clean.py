@@ -15,9 +15,11 @@ def main(
     """
     lf = utils.scan_parquet(merged_data_source)
 
-    cUtils.combine_job_role_rows()  # TODO: Placeholder only
+    # TODO: Placeholder only
+    # cUtils.combine_job_role_rows()
 
-    cUtils.deduplicate_slv_over_time()  # TODO: Placeholder only
+    # TODO: Placeholder only
+    # cUtils.deduplicate_slv_over_time()
 
     utils.sink_to_parquet(
         lazy_df=lf,

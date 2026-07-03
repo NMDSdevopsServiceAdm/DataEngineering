@@ -17,17 +17,21 @@ def main(
         cleaned_ascwds_workplace_source (str): path to the cleaned ascwds workplace data
         merged_data_destination (str): destination for merged output
     """
-    mUtils.create_list_of_cols_for_ascwds()  # TODO: Placeholder only
+    # TODO: Placeholder only
+    # mUtils.create_list_of_cols_for_ascwds()
 
     metadata_lf = utils.scan_parquet(metadata_source)
     job_role_estimates_lf = utils.scan_parquet(job_role_estimates_source)
     cleaned_ascwds_workplace_lf = utils.scan_parquet(cleaned_ascwds_workplace_source)
 
-    mUtils.convert_ascwds_job_role_columns_to_rows()  # TODO: Placeholder only
+    # TODO: Placeholder only
+    # mUtils.convert_ascwds_job_role_columns_to_rows()
 
-    mUtils.join_datasets()  # TODO: Placeholder only
+    # TODO: Placeholder only
+    # mUtils.join_datasets()
 
-    mUtils.apply_employment_status_magic_numbers()  # TODO: Placeholder only
+    # TODO: Placeholder only
+    # mUtils.apply_employment_status_magic_numbers()
 
     utils.sink_to_parquet(
         lazy_df=job_role_estimates_lf,
