@@ -33,6 +33,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted remove_workplaces_with_duplicate_location_ids to polars as remove_rows_with_duplicate_location_ids.
 
+- Added csv of data label mappings to s3.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
@@ -55,6 +57,8 @@ All notable changes to this project will be documented in this file.
 - Converted `create_purged_dfs_for_reconciliation_and_data` function within Clean Workplace Data job to Polars and updated tests for the same.
 
 - Updated output columns for reconciliation dataset.
+
+- Converted apply_categorical_labels() to polars.
 
 - National care work thresholds removed from job role estimates validation.
 

@@ -6,6 +6,7 @@ from projects._01_ingest.ascwds.fargate.utils import clean_workplace_utils as wU
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 
 INT_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
 BOUNDED_STAFF_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
@@ -67,9 +68,22 @@ RECONCILIATION_COLUMNS = [
     AWPClean.la_permission,
 ]
 
+columns_to_apply_labels = [
+    AWPClean.establishment_type,
+    AWPClean.parent_permission,
+    AWPClean.is_parent,
+    AWPClean.main_service_id,
+    AWPClean.registration_type,
+]
+
+data_labels_schema = pl.Schema(
+    [(DLC.column_name, pl.String), (DLC.code, pl.String), (DLC.label, pl.String)]
+)
+
 
 def main(
     workplace_source: str,
+    data_labels_source: str,
     cleaned_workplace_destination: str,
     workplace_for_reconciliation_destination: str,
 ) -> None:
@@ -78,6 +92,7 @@ def main(
 
     Args:
         workplace_source (str): path to the raw ascwds workplace data
+        data_labels_source (str): path to the ascwdsdata labels source
         cleaned_workplace_destination (str): destination for cleaned ascwds workplace output
         workplace_for_reconciliation_destination (str): destination for reconciliation workplace output
     """
@@ -96,12 +111,13 @@ def main(
     ).drop(AWPClean.import_date)
 
     # trello 1705
-    # ascwds_workplace_df = cUtils.apply_categorical_labels(
-    #     ascwds_workplace_df,
-    #     ascwds_workplace_labels_dict,
-    #     ascwds_workplace_labels_dict.keys(),
-    #     add_as_new_column=False,
-    # )
+    data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
+    lf = cUtils.apply_categorical_labels(
+        lf,
+        data_labels_lf,
+        columns_to_apply_labels,
+        add_as_new_column=False,
+    )
 
     (
         lf,
@@ -145,6 +161,10 @@ if __name__ == "__main__":
             "Source s3 directory for raw ascwds workplace data",
         ),
         (
+            "--data_labels_source",
+            "Source s3 directory for ascwds data labels",
+        ),
+        (
             "--cleaned_workplace_destination",
             "Destination s3 directory for cleaned ascwds workplace output",
         ),
@@ -155,6 +175,7 @@ if __name__ == "__main__":
     )
     main(
         workplace_source=args.workplace_source,
+        data_labels_source=args.data_labels_source,
         cleaned_workplace_destination=args.cleaned_workplace_destination,
         workplace_for_reconciliation_destination=args.workplace_for_reconciliation_destination,
     )

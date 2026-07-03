@@ -3,6 +3,7 @@ from datetime import date
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 import polars_utils.cleaning_utils as job
 from tests.test_polars_utils_data import CleaningUtilsData as Data
@@ -14,6 +15,9 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+)
 
 
 class PolarsCleaningUtilsTests(unittest.TestCase):
@@ -121,6 +125,96 @@ class AddAlignedDateColumnsTests(PolarsCleaningUtilsTests):
             returned_lf,
             expected_lf,
         )
+
+
+class TestApplyCategoricalLabels:
+    labels_lf = pl.LazyFrame(Data.labels_data, Schemas.labels_schema, orient="row")
+    test_defaults_lf = pl.LazyFrame(
+        {
+            AWK.worker_id: ["1", "2", "3", "4"],
+            AWK.gender: ["1", "2", None, "2"],
+        }
+    )
+    expected_defaults_lf = pl.LazyFrame(
+        {
+            AWK.worker_id: ["1", "2", "3", "4"],
+            AWK.gender: ["1", "2", None, "2"],
+            "gender_labels": ["male", "female", None, "female"],
+        }
+    )
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.apply_catagorical_labels_test_cases
+        ],
+    )
+    def test_apply_categorical_labels(self, case):
+        test_lf = pl.LazyFrame(case.test_data)
+
+        expected_lf = pl.LazyFrame(
+            case.expected_data,
+        )
+
+        returned_lf = job.apply_categorical_labels(
+            test_lf,
+            self.labels_lf,
+            case.column_names,
+            case.add_as_new_column,
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_row_order=False,
+        )
+
+    def test_add_as_new_column_defaults_to_true(self):
+        returned_lf = job.apply_categorical_labels(
+            self.test_defaults_lf,
+            self.labels_lf,
+            column_names=[AWK.gender],
+        )
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            self.expected_defaults_lf,
+            check_row_order=False,
+        )
+
+    def test_raises_value_error_when_column_not_in_dataframe(
+        self,
+    ):
+        test_error_lf = pl.LazyFrame(
+            data={
+                AWK.worker_id: ["1"],
+                AWK.gender: ["1"],
+            },
+        )
+        error_msg = "Column age not found in LazyFrame."
+        with pytest.raises(ValueError, match=error_msg):
+            job.apply_categorical_labels(
+                test_error_lf,
+                self.labels_lf,
+                [AWK.age],
+            )
+
+    def test_raises_key_error_when_column_not_in_labels_dict(
+        self,
+    ):
+        test_error_lf = pl.LazyFrame(
+            data={
+                AWK.worker_id: ["1"],
+                AWK.gender: ["1"],
+            },
+        )
+        error_msg = "No label mapping found for gender."
+        with pytest.raises(KeyError, match=error_msg):
+            job.apply_categorical_labels(
+                test_error_lf,
+                self.labels_lf.filter(pl.col("column_name") != AWK.gender),
+                [AWK.gender],
+            )
 
 
 class ColumnToDateTests(unittest.TestCase):
