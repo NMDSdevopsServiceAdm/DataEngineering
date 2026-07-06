@@ -505,6 +505,7 @@ class CleanONSData:
             StructField(ONSClean.current_lsoa11, StringType(), True),
             StructField(ONSClean.current_msoa11, StringType(), True),
             StructField(ONSClean.current_rural_urban_ind_11, StringType(), True),
+            StructField(ONSClean.current_rural_urban_ind_21, StringType(), True),
             StructField(ONSClean.current_lsoa21, StringType(), True),
             StructField(ONSClean.current_msoa21, StringType(), True),
             StructField(ONSClean.current_constituency, StringType(), True),
