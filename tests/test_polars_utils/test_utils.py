@@ -15,6 +15,7 @@ from unittest.mock import MagicMock, Mock, patch
 import boto3
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 from botocore.exceptions import ClientError
 from moto import mock_aws, sns
 from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
@@ -681,5 +682,10 @@ class TestCreateListOfJobRoleColumns:
             ASCWKPCols.job_role_02_agency,
             ASCWKPCols.job_role_02_employees,
         ]
-        returned_columns = utils.create_list_of_job_role_columns(TestColumns())
-        self.assertEqual(returned_columns, expected_columns)
+        returned_columns = utils.create_list_of_job_role_columns(TestColumns)
+        assert returned_columns == expected_columns
+
+    def test_function_raises_type_error_for_non_dataclass_input(self):
+        err_msg = "Input must be a dataclass object"
+        with pytest.raises(TypeError, match=err_msg):
+            utils.create_list_of_job_role_columns("not_a_dataclass")

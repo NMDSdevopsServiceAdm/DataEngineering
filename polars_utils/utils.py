@@ -459,13 +459,9 @@ def nullify_ct_values_previous_to_first_submission(columns: list) -> list[pl.Exp
     ]
 
 
-def create_list_of_job_role_columns_excluding_flag_column(columns: object) -> list[str]:
+def create_list_of_job_role_columns(columns: object) -> list[str]:
     """Creates a list of job role columns from a dataclass object."""
     if not is_dataclass(columns):
         raise TypeError("Input must be a dataclass object")
 
-    return [
-        value
-        for name, value in vars(columns()).items()
-        if value.startswith("jr") and "flag" not in value
-    ]
+    return [value for name, value in vars(columns()).items() if value.startswith("jr")]
