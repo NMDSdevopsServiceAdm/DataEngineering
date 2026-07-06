@@ -20,6 +20,7 @@ def main(ons_source: str, cleaned_ons_destination: str):
     ons_df = cUtils.column_to_date(
         ons_df, Keys.import_date, ONSClean.contemporary_ons_import_date
     )
+    print(f"Columns in ONS DataFrame: {ons_df.columns}")
 
     ons_df = cUtils.apply_categorical_labels(
         ons_df,
