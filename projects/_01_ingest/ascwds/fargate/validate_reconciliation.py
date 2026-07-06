@@ -90,7 +90,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         # )
         .col_vals_in_set(
             AWPClean.is_parent,
-            [*CatValues.is_parent_column_values.categorical_values, None],
+            *CatValues.is_parent_column_values.categorical_values,
         )
         # .col_vals_in_set(
         #     AWPClean.main_service_id,
