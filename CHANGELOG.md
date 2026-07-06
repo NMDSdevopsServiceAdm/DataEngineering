@@ -35,6 +35,8 @@ All notable changes to this project will be documented in this file.
 
 - Added csv of data label mappings to s3.
 
+- Added point blank validation of ASCWDS cleaned dataset.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
