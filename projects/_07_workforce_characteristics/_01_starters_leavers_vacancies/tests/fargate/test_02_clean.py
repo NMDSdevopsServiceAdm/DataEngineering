@@ -11,10 +11,14 @@ class MainTests(unittest.TestCase):
     CLEANED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.cUtils.deduplicate_slv_over_time")
+    @patch(f"{PATCH_PATH}.cUtils.combine_job_role_rows")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
+        combine_job_role_rows_mock: Mock,
+        deduplicate_slv_over_time_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -23,6 +27,10 @@ class MainTests(unittest.TestCase):
         )
 
         scan_parquet_mock.assert_called_once_with(self.MERGED_DATA_SOURCE)
+
+        # TODO: Uncomment these assertions when the placeholder functions are implemented
+        # combine_job_role_rows_mock.assert_called_once()
+        # deduplicate_slv_over_time_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
