@@ -335,6 +335,8 @@ All notable changes to this project will be documented in this file.
 
 - Converted `clean_ct_outliers` utils folder to polars within Clean Ind CQC Job and added tests for them as well.
 
+- Added latest ONS postcode directory, including additional codes and the rural urban 2021 column.
+
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.
 
