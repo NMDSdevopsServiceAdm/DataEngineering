@@ -659,8 +659,8 @@ class ParentPermission(ColumnValues):
 class MainServiceID(ColumnValues):
     """The possible values of the main service id column in ASCWDS data"""
 
-    care_home_services_with_nursing_chN: str = "Care home services with nursing - CHN"
-    care_home_services_without_nursing_chS: str = (
+    care_home_services_with_nursing_chn: str = "Care home services with nursing - CHN"
+    care_home_services_without_nursing_chs: str = (
         "Care home services without nursing - CHS"
     )
     adult_placement_home: str = "Adult placement home"
