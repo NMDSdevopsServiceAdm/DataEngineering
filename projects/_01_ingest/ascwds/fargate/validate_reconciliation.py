@@ -6,7 +6,7 @@ from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as ASCWPClean,
+    AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkplaceCleanedCategoricalValues as CatValues,
@@ -14,42 +14,26 @@ from utils.column_values.categorical_columns_by_dataset import (
 
 EXPECTED_SCHEMA = pb.Schema(
     columns={
-        ASCWPClean.organisation_id: "String",
-        ASCWPClean.period: "String",
-        ASCWPClean.establishment_id: "String",
-        ASCWPClean.establishment_id_from_nmds: "String",
-        ASCWPClean.parent_id: "String",
-        ASCWPClean.nmds_id: "String",
-        ASCWPClean.establishment_created_date: "Date",
-        ASCWPClean.establishment_updated_date: "Date",
-        ASCWPClean.master_update_date: "Date",
-        ASCWPClean.last_logged_in_date: "Date",
-        ASCWPClean.la_permission: "String",
-        ASCWPClean.is_bulk_uploader: "String",
-        ASCWPClean.is_parent: "String",
-        ASCWPClean.parent_permission: "String",
-        ASCWPClean.registration_type: "String",
-        ASCWPClean.provider_id: "String",
-        ASCWPClean.location_id: "String",
-        ASCWPClean.establishment_type: "String",
-        ASCWPClean.establishment_name: "String",
-        ASCWPClean.address: "String",
-        ASCWPClean.postcode: "String",
-        ASCWPClean.region_id: "String",
-        ASCWPClean.total_staff: "Int32",
-        ASCWPClean.worker_records: "Int32",
-        ASCWPClean.total_starters: "String",
-        ASCWPClean.total_leavers: "String",
-        ASCWPClean.total_vacancies: "String",
-        ASCWPClean.main_service_id: "String",
-        ASCWPClean.version: "String",
-        ASCWPClean.ascwds_workplace_import_date: "Date",
-        ASCWPClean.master_update_date_org: "Date",
-        ASCWPClean.purge_date: "Date",
-        ASCWPClean.data_last_amended_date: "Date",
-        ASCWPClean.workplace_last_active_date: "Date",
-        ASCWPClean.total_staff_bounded: "Int32",
-        ASCWPClean.worker_records_bounded: "Int32",
+        AWPClean.ascwds_workplace_import_date: "Date",
+        AWPClean.establishment_id: "String",
+        AWPClean.nmds_id: "String",
+        AWPClean.master_update_date: "Date",
+        AWPClean.master_update_date_org: "Date",
+        AWPClean.establishment_created_date: "Date",
+        AWPClean.is_parent: "String",
+        AWPClean.parent_id: "String",
+        AWPClean.organisation_id: "String",
+        AWPClean.parent_permission: "String",
+        AWPClean.establishment_type: "String",
+        AWPClean.registration_type: "String",
+        AWPClean.location_id: "String",
+        AWPClean.main_service_id: "String",
+        AWPClean.establishment_name: "String",
+        AWPClean.region_id: "String",
+        AWPClean.total_staff: "Int32",
+        AWPClean.worker_records: "Int32",
+        AWPClean.last_logged_in_date: "Date",
+        AWPClean.la_permission: "String",
     }
 )
 
@@ -84,84 +68,73 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         )
         # index columns
         .rows_distinct(
-            [ASCWPClean.establishment_id, ASCWPClean.ascwds_workplace_import_date]
+            [AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date]
         )
         # complete columns
         .col_vals_not_null(
             columns=[
-                ASCWPClean.organisation_id,
-                ASCWPClean.ascwds_workplace_import_date,
-                ASCWPClean.establishment_id,
+                AWPClean.organisation_id,
+                AWPClean.ascwds_workplace_import_date,
+                AWPClean.establishment_id,
             ],
             brief="Key columns should contain no null values",
         )
-        # numerical
-        .col_vals_between(
-            columns=[
-                ASCWPClean.total_staff_bounded,
-                ASCWPClean.worker_records_bounded,
-            ],
-            left=1,
-            right=3000,
-            na_pass=True,
-            brief="Counts should be between 1 and 3000 where present.",
-        )
         # categorical
         # .col_vals_in_set(
-        #     ASCWPClean.establishment_type,
+        #     AWPClean.establishment_type,
         #     [*CatValues.establishment_type_column_values.categorical_values, None],
         # )
         # .col_vals_in_set(
-        #     ASCWPClean.parent_permission,
+        #     AWPClean.parent_permission,
         #     [*CatValues.parent_permission_column_values.categorical_values, None],
         # )
         .col_vals_in_set(
-            ASCWPClean.is_parent,
+            AWPClean.is_parent,
             [*CatValues.is_parent_column_values.categorical_values, None],
         )
         # .col_vals_in_set(
-        #     ASCWPClean.main_service_id,
+        #     AWPClean.main_service_id,
         #     [*CatValues.main_service_id_column_values.categorical_values, None],
         # )
         # .col_vals_in_set(
-        #     ASCWPClean.registration_type,
+        #     AWPClean.registration_type,
         #     [*CatValues.registration_type_column_values.categorical_values, None],
         # )
         # distinct values
         # .specially(
         #     vl.is_unique_count_equal(
-        #         ASCWPClean.establishment_type,
+        #         AWPClean.establishment_type,
         #         CatValues.establishment_type_column_values.count_of_categorical_values,
         #     ),
-        #     brief=f"{ASCWPClean.establishment_type} should have exactly {CatValues.establishment_type_column_values.count_of_categorical_values} distinct values",
+        #     brief=f"{AWPClean.establishment_type} should have exactly {CatValues.establishment_type_column_values.count_of_categorical_values} distinct values",
         # )
         # .specially(
         #     vl.is_unique_count_equal(
-        #         ASCWPClean.parent_permission,
+        #         AWPClean.parent_permission,
         #         CatValues.parent_permission_column_values.count_of_categorical_values,
         #     ),
-        #     brief=f"{ASCWPClean.parent_permission} should have exactly {CatValues.parent_permission_column_values.count_of_categorical_values} distinct values",
+        #     brief=f"{AWPClean.parent_permission} should have exactly {CatValues.parent_permission_column_values.count_of_categorical_values} distinct values",
         # )
         .specially(
             vl.is_unique_count_equal(
-                ASCWPClean.is_parent,
+                AWPClean.is_parent,
                 CatValues.is_parent_column_values.count_of_categorical_values,
             ),
-            brief=f"{ASCWPClean.is_parent} should have exactly {CatValues.is_parent_column_values.count_of_categorical_values} distinct values",
+            brief=f"{AWPClean.is_parent} should have exactly {CatValues.is_parent_column_values.count_of_categorical_values} distinct values",
         )
         # .specially(
         #     vl.is_unique_count_equal(
-        #         ASCWPClean.main_service_id,
+        #         AWPClean.main_service_id,
         #         CatValues.main_service_id_column_values.count_of_categorical_values,
         #     ),
-        #     brief=f"{ASCWPClean.main_service_id} should have exactly {CatValues.main_service_id_column_values.count_of_categorical_values} distinct values",
+        #     brief=f"{AWPClean.main_service_id} should have exactly {CatValues.main_service_id_column_values.count_of_categorical_values} distinct values",
         # )
         # .specially(
         #     vl.is_unique_count_equal(
-        #         ASCWPClean.registration_type,
+        #         AWPClean.registration_type,
         #         CatValues.registration_type_column_values.count_of_categorical_values,
         #     ),
-        #     brief=f"{ASCWPClean.registration_type} should have exactly {CatValues.registration_type_column_values.count_of_categorical_values} distinct values",
+        #     brief=f"{AWPClean.registration_type} should have exactly {CatValues.registration_type_column_values.count_of_categorical_values} distinct values",
         # )
         .interrogate()
     )
