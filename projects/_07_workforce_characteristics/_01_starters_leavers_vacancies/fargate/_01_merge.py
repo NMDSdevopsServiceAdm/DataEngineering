@@ -17,8 +17,7 @@ def main(
         cleaned_ascwds_workplace_source (str): path to the cleaned ascwds workplace data
         merged_data_destination (str): destination for merged output
     """
-    # TODO: Placeholder only
-    # mUtils.create_list_of_cols_for_ascwds()
+    mUtils.create_list_of_cols_and_schema_dict_for_ascwds()
 
     metadata_lf = utils.scan_parquet(metadata_source)
     job_role_estimates_lf = utils.scan_parquet(job_role_estimates_source)
