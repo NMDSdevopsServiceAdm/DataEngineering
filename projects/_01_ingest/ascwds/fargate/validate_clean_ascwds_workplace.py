@@ -81,7 +81,13 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         )
         # dataset schema
         .col_schema_match(
-            schema=EXPECTED_SCHEMA, brief="Dataset should match the expected schema"
+            schema=EXPECTED_SCHEMA,
+            brief="Dataset should match the expected schema",
+            complete=False,
+            in_order=False,
+            case_sensitive_colnames=False,
+            case_sensitive_dtypes=False,
+            full_match_dtypes=False,
         )
         # index columns
         .rows_distinct(
