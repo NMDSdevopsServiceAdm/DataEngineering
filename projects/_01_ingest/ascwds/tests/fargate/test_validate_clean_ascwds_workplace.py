@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 
 import polars as pl
 
-import projects._01_ingest.ascwds.fargate.validate_reconciliation as job
+import projects._01_ingest.ascwds.fargate.validate_clean_ascwds_workplace as job
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as ASCWPClean,
 )
@@ -53,7 +53,6 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
                 ASCWPClean.workplace_last_active_date: date(2000, 1, 1),
                 ASCWPClean.total_staff_bounded: 1,
                 ASCWPClean.worker_records_bounded: 1,
-                ASCWPClean.import_date: "",
             },
             schema={
                 ASCWPClean.organisation_id: pl.String,
@@ -92,7 +91,6 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
                 ASCWPClean.workplace_last_active_date: pl.Date,
                 ASCWPClean.total_staff_bounded: pl.Int32,
                 ASCWPClean.worker_records_bounded: pl.Int32,
-                ASCWPClean.import_date: pl.String,
             },
         )
 
