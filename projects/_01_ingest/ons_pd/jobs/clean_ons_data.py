@@ -4,6 +4,7 @@ import sys
 os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
+from pyspark.sql.types import StructType
 
 import utils.cleaning_utils as cUtils
 from utils import utils
@@ -15,7 +16,7 @@ from utils.value_labels.ons_pd.label_dictionaries import onspd_labels_dict
 
 
 def main(ons_source: str, cleaned_ons_destination: str):
-    ons_df = utils.read_from_parquet(ons_source)
+    ons_df = utils.read_from_parquet(ons_source, schema=StructType([]))
 
     ons_df = cUtils.column_to_date(
         ons_df, Keys.import_date, ONSClean.contemporary_ons_import_date
