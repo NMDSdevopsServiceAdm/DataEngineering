@@ -77,7 +77,7 @@ class ASCWDSWorkplaceCleanedCategoricalValues:
     parent_permission_column_values = ParentPermission(
         AWPClean.parent_permission, contains_null_values=True
     )
-    is_parent_column_values = IsParent(AWPClean.is_parent, contains_null_values=True)
+    is_parent_column_values = IsParent(AWPClean.is_parent)
     main_service_id_column_values = MainServiceID(
         AWPClean.main_service_id, contains_null_values=True
     )
