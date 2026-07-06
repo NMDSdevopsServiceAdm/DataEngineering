@@ -461,6 +461,7 @@ class CleanONSData:
             StructField(ONS.lower_super_output_area_2011, StringType(), True),
             StructField(ONS.middle_super_output_area_2011, StringType(), True),
             StructField(ONS.rural_urban_indicator_2011, StringType(), True),
+            StructField(ONS.rural_urban_indicator_2021, StringType(), True),
             StructField(ONS.lower_super_output_area_2021, StringType(), True),
             StructField(ONS.middle_super_output_area_2021, StringType(), True),
             StructField(ONS.parliamentary_constituency, StringType(), True),
