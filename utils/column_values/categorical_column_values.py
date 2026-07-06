@@ -631,3 +631,129 @@ class AscwdsJobRoleRatiosMergedSource(ColumnValues):
     imputed_ascwds_job_role_ratios: str = IndCQC.imputed_ascwds_job_role_ratios
     ascwds_job_role_rolling_ratio: str = IndCQC.ascwds_job_role_rolling_ratio
     ascwds_job_role_ratios: str = IndCQC.ascwds_job_role_ratios
+
+
+@dataclass
+class EstablishmentType(ColumnValues):
+    """The possible values of the establishment type column in ASCWDS data"""
+
+    not_known: str = "Not known"
+    local_authority_adult_services: str = "Local authority (adult services)"
+    local_authority_childrens_services: str = "Local authority (childrens services)"
+    local_authority_generic_other: str = "Local authority (generic/other)"
+    local_authority_owned: str = "Local authority owned"
+    private_sector: str = "Private sector"
+    voluntary_charity: str = "Voluntary/Charity"
+    other: str = "Other"
+
+
+@dataclass
+class ParentPermission(ColumnValues):
+    """The possible values of the parent permission column in ASCWDS data"""
+
+    parent_has_ownership: str = "Parent has ownership"
+    workplace_has_ownership: str = "Workplace has ownership"
+
+
+@dataclass
+class MainServiceID(ColumnValues):
+    """The possible values of the main service id column in ASCWDS data"""
+
+    care_home_services_with_nursing_chn: str = "Care home services with nursing - CHN"
+    care_home_services_without_nursing_chs: str = (
+        "Care home services without nursing - CHS"
+    )
+    adult_placement_home: str = "Adult placement home"
+    sheltered_housing: str = "Sheltered housing"  # This label has two possible codes
+    other_adult_residential_care_service: str = "Other adult residential care service"
+    day_care_and_day_services: str = "Day care and day services"
+    other_adult_day_care_services: str = "Other adult day care services"
+    domiciliary_care_services_adults_dcc: str = (
+        "Domiciliary care services (Adults) - DCC"
+    )
+    home_nursing_care_for_a_person_aged_18_or_over: str = (
+        "Home nursing care for a person aged 18 or over"
+    )
+    domestic_services_and_home_help: str = "Domestic services and home help"
+    meals_on_wheels: str = "Meals on wheels"
+    other_adult_domiciliary_care_service: str = "Other adult domiciliary care service"
+    carers_support: str = "Carers support"
+    short_breaks_respite_care: str = "Short breaks / respite care"
+    community_support_and_outreach: str = "Community support and outreach"
+    social_work_and_care_management: str = (
+        "Social work and care management"  # This label has two possible codes
+    )
+    shared_lives_shl: str = "Shared lives - SHL"
+    disability_adaptations_assistive_technology_services: str = (
+        "Disability adaptations / assistive technology services"
+    )
+    occupational_employment_related_services: str = (
+        "Occupational / employment-related services"
+    )
+    information_and_advice_services: str = "Information and advice services"
+    other_adult_community_care_service: str = "Other adult community care service"
+    care_home_hostel: str = "Care home / hostel"
+    family_centre_residential: str = "Family centre (residential)"
+    other_childrens_residential_care_service: str = (
+        "Other childrens residential care service"
+    )
+    full_day_care_e_g_day_nursery: str = "Full day care, e.g. day nursery"
+    sessional_day_care_e_g_play_group_preschool: str = (
+        "Sessional day care e.g. play group / preschool"
+    )
+    holiday_club: str = "Holiday club"
+    other_childrens_day_care_services: str = "Other childrens day care services"
+    domiciliary_care_services_childrens_dcc: str = (
+        "Domiciliary care services (Childrens) - DCC"
+    )
+    fostering_or_adoption_service_agency: str = "Fostering or adoption service / agency"
+    family_support: str = "Family support"
+    other_childrens_community_care_service: str = (
+        "Other childrens community care service"
+    )
+    nhs_primary_care_trust: str = "NHS Primary Care Trust"
+    social_care_nhs_trust: str = "Social Care NHS Trust"
+    independent_acute_or_mental_health_hospital: str = (
+        "Independent acute or mental health hospital"
+    )
+    other_independent_healthcare_setting: str = "Other independent healthcare setting"
+    any_other_services: str = "Any other Services"
+    extra_care_housing_services: str = "Extra care housing services - EXC"
+    supported_living_services: str = "Supported living services - SLS"
+    childrens_homes: str = "Childrens homes"
+    specialist_college_services: str = "Specialist college services - SPC"
+    community_based_services_for_people_with_a_learning_disability: str = (
+        "Community based services for people with a learning disability - LDC"
+    )
+    community_based_services_for_people_with_mental_health_needs: str = (
+        "Community based services for people with mental health needs - MHC"
+    )
+    community_based_services_for_people_who_misuse_substances: str = (
+        "Community based services for people who misuse substances - SMC"
+    )
+    community_healthcare_services: str = "Community healthcare services - CHC"
+    acute_services: str = "Acute services - ACS"
+    hospice_services: str = "Hospice services - HPS"
+    long_term_conditions_services: str = "Long term conditions services - LTC"
+    hospital_services_for_people_with_mental_health_needs_learning_disabilities_and_or_problems_with_substance_misuse: (
+        str
+    ) = "Hospital services for people with mental health needs, learning disabilities and/or problems with substance misuse - MLS"
+    rehabilitation_services: str = "Rehabilitation services - RHS"
+    residential_substance_misuse_treatment_rehabilitation_services: str = (
+        "Residential substance misuse treatment/rehabilitation services - RSM"
+    )
+    other_healthcare_service: str = "Other healthcare service"
+    head_office_services: str = "Head office services"
+    live_in_care: str = (
+        "Live-in Care (can only be used as Other Service) - CQC Regulated"
+    )
+    nurses_agency: str = "Nurses Agency"
+    any_childrens_young_peoples_service: str = "Any childrens/young peoples service"
+
+
+@dataclass
+class RegistrationType(ColumnValues):
+    """The possible values of the registration type column in ASCWDS data"""
+
+    not_regulated: str = "Not regulated"
+    cqc_regulated: str = "CQC regulated"

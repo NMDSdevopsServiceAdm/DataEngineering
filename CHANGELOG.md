@@ -37,6 +37,8 @@ All notable changes to this project will be documented in this file.
 
 - Add placeholder code for upcoming tickets in SLV merge and clean jobs.
 
+- Added point blank validation of ASCWDS cleaned dataset.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
