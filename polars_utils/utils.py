@@ -459,9 +459,13 @@ def nullify_ct_values_previous_to_first_submission(columns: list) -> list[pl.Exp
     ]
 
 
-def create_list_of_job_role_columns(columns: object) -> list[str]:
+def create_list_of_job_role_columns(column_dataclass: object) -> list[str]:
     """Creates a list of job role columns from a dataclass object."""
-    if not is_dataclass(columns):
+    if not is_dataclass(column_dataclass):
         raise TypeError("Input must be a dataclass object")
 
-    return [value for name, value in vars(columns()).items() if value.startswith("jr")]
+    return [
+        value
+        for name, value in vars(column_dataclass()).items()
+        if value.startswith("jr")
+    ]
