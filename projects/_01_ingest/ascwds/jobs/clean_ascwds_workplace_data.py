@@ -16,7 +16,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.raw_data_adjustments import remove_duplicate_workplaces_in_raw_workplace_data
 from utils.scale_variable_limits import AscwdsScaleVariableLimits
 from utils.value_labels.ascwds_workplace.workplace_label_dictionary import (
-    ascwds_workplace_labels_dict,
+    ascwds_workplace_labels_dict,  # Remove these dictionaries when removing this job
 )
 
 DATE_COLUMN_IDENTIFIER = "date"

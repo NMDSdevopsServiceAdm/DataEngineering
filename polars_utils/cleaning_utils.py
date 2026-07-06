@@ -1,8 +1,9 @@
-from typing import List
+from typing import Generator, List
 
 import polars as pl
 
 from polars_utils.expressions import is_care_home, is_not_care_home
+from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
@@ -48,6 +49,88 @@ def add_aligned_date_column(
     )
 
     return primary_lf_with_aligned_dates
+
+
+def apply_categorical_labels(
+    lf: pl.LazyFrame,
+    labels_lf: pl.LazyFrame,
+    column_names: list,
+    add_as_new_column: bool = True,
+) -> pl.LazyFrame:
+    """
+    Applies categorical labels to specified columns in a Polars LazyFrame based on a
+    mapping provided in another LazyFrame.
+
+    Args:
+        lf (pl.LazyFrame): The input LazyFrame containing the columns to be labeled.
+        labels_lf (pl.LazyFrame): A LazyFrame containing the mapping of codes to labels.
+        column_names (list): A list of column names in `lf` to which the labels should be applied.
+        add_as_new_column (bool): If True, adds the labeled values as new columns with a
+            suffix. If False, replaces the original columns with labeled values.
+
+    Returns:
+        pl.LazyFrame: A new LazyFrame with the specified columns labeled according to the
+            provided mapping. If `add_as_new_column` is True, the new columns will have a
+            suffix indicating they contain labels or codes.
+    Raises:
+        ValueError: If any of the specified `column_names` do not exist in `lf`.
+
+    """
+    for column_name in column_names:
+        if column_name not in lf.collect_schema().names():
+            raise ValueError(f"Column {column_name} not found in LazyFrame.")
+
+    lf = lf.with_columns(labels_generator(labels_lf, column_names, add_as_new_column))
+    return lf
+
+
+def labels_generator(
+    labels_lf: pl.LazyFrame,
+    column_names: list,
+    add_as_new_column: bool,
+) -> Generator[pl.Expr, None, None]:
+    """
+    A generator function that yields Polars expressions for applying categorical labels
+    to specified columns in a LazyFrame based on a mapping provided in another LazyFrame.
+
+    Args:
+        labels_lf (pl.LazyFrame): A LazyFrame containing the mapping of codes to labels.
+        column_names (list): A list of column names in the target LazyFrame to which the labels
+            should be applied.
+        add_as_new_column (bool): If True, adds the labeled values as new columns with a suffix.
+            If False, replaces the original columns with labeled values.
+
+    Raises:
+        KeyError: If there are no label mappings found for at least one of the specified
+            `column_names` in `labels_lf`.
+
+    Yields:
+        pl.Expr: Polars expressions for applying the categorical labels.
+
+    """
+    suffix = f"_{DLC.label}s"
+
+    for column_name in column_names:
+        filtered_labels_df = labels_lf.filter(
+            pl.col(DLC.column_name) == column_name
+        ).collect()
+
+        if filtered_labels_df.height == 0:
+            raise KeyError(f"No label mapping found for {column_name}.")
+
+        old_vals = filtered_labels_df.get_column(DLC.code)
+        new_vals = filtered_labels_df.get_column(DLC.label)
+
+        mapping_expr = pl.col(column_name).replace_strict(
+            old=old_vals,
+            new=new_vals,
+            default=pl.col(column_name),
+        )
+
+        if add_as_new_column == True:
+            mapping_expr = mapping_expr.name.suffix(suffix)
+
+        yield mapping_expr
 
 
 def column_to_date(

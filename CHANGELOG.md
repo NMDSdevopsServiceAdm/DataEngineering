@@ -33,6 +33,12 @@ All notable changes to this project will be documented in this file.
 
 - Converted remove_workplaces_with_duplicate_location_ids to polars as remove_rows_with_duplicate_location_ids.
 
+- Added csv of data label mappings to s3.
+
+- Add placeholder code for upcoming tickets in SLV merge and clean jobs.
+
+- Added point blank validation of ASCWDS cleaned dataset.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
@@ -54,10 +60,18 @@ All notable changes to this project will be documented in this file.
 
 - Converted `create_purged_dfs_for_reconciliation_and_data` function within Clean Workplace Data job to Polars and updated tests for the same.
 
+- Updated output columns for reconciliation dataset.
+
+- Converted apply_categorical_labels() to polars.
+
+- National care work thresholds removed from job role estimates validation.
+
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
 
 - Updated `validate_clean_ascwds_workplace.py` to use `acswds_workplace_import_date` instead of `import_date`, since the `import_date` column is now dropped after being converted to a new date type column.
+
+- Corrected datasets in SLV pipeline that need switching between main and dev in terraform.
 
 
 ## [v2026.05.0] - 12/06/2026
