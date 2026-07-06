@@ -664,7 +664,7 @@ class MainServiceID(ColumnValues):
         "Care home services without nursing - CHS"
     )
     adult_placement_home: str = "Adult placement home"
-    sheltered_housing: str = "Sheltered housing"
+    sheltered_housing: str = "Sheltered housing"  # This label has two possible codes
     other_adult_residential_care_service: str = "Other adult residential care service"
     day_care_and_day_services: str = "Day care and day services"
     other_adult_day_care_services: str = "Other adult day care services"
@@ -680,7 +680,9 @@ class MainServiceID(ColumnValues):
     carers_support: str = "Carers support"
     short_breaks_respite_care: str = "Short breaks / respite care"
     community_support_and_outreach: str = "Community support and outreach"
-    social_work_and_care_management: str = "Social work and care management"
+    social_work_and_care_management: str = (
+        "Social work and care management"  # This label has two possible codes
+    )
     shared_lives_shl: str = "Shared lives - SHL"
     disability_adaptations_assistive_technology_services: str = (
         "Disability adaptations / assistive technology services"
@@ -705,7 +707,6 @@ class MainServiceID(ColumnValues):
         "Domiciliary care services (Childrens) - DCC"
     )
     fostering_or_adoption_service_agency: str = "Fostering or adoption service / agency"
-    social_work_and_care_management: str = "Social work and care management"
     family_support: str = "Family support"
     other_childrens_community_care_service: str = (
         "Other childrens community care service"
@@ -717,7 +718,6 @@ class MainServiceID(ColumnValues):
     )
     other_independent_healthcare_setting: str = "Other independent healthcare setting"
     any_other_services: str = "Any other Services"
-    sheltered_housing: str = "Sheltered housing"
     extra_care_housing_services: str = "Extra care housing services - EXC"
     supported_living_services: str = "Supported living services - SLS"
     childrens_homes: str = "Childrens homes"

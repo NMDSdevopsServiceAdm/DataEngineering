@@ -69,9 +69,6 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         source=f"s3://{bucket_name}/{source_path}",
     )
 
-    print(source_df.schema)
-    print(EXPECTED_SCHEMA)
-
     validation = (
         pb.Validate(
             data=source_df,
