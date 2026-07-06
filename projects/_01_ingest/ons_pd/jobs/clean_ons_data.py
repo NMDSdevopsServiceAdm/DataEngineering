@@ -61,6 +61,9 @@ def prepare_current_ons_data(df: DataFrame) -> DataFrame:
         df[ONSClean.rural_urban_indicator_2011].alias(
             ONSClean.current_rural_urban_ind_11
         ),
+        df[ONSClean.rural_urban_indicator_2021].alias(
+            ONSClean.current_rural_urban_ind_21
+        ),
         df[ONSClean.lower_super_output_area_2021].alias(ONSClean.current_lsoa21),
         df[ONSClean.middle_super_output_area_2021].alias(ONSClean.current_msoa21),
         df[ONSClean.parliamentary_constituency].alias(ONSClean.current_constituency),

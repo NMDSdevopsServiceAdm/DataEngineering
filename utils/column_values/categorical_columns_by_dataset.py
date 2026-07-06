@@ -17,6 +17,7 @@ from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     RUI,
+    RUI2021,
     ASCWDSFilledPostsSource,
     AscwdsFilteringRule,
     AscwdsJobRoleRatiosMergedSource,
@@ -27,7 +28,6 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     InAscwds,
     JobGroupLabels,
-    JobRoleFilteringRule,
     MainJobRoleID,
     MainJobRoleLabels,
     PrimaryServiceType,
@@ -102,6 +102,7 @@ class PostcodeDirectoryCleanedCategoricalValues:
     current_region_column_values = Region(ONSClean.current_region)
     contemporary_region_column_values = Region(ONSClean.contemporary_region)
     current_rui_column_values = RUI(ONSClean.current_rural_urban_ind_11)
+    current_rui_21_column_values = RUI2021(ONSClean.current_rural_urban_ind_21)
     contemporary_rui_column_values = RUI(ONSClean.contemporary_rural_urban_ind_11)
     current_cssr_column_values = CurrentCSSR(ONSClean.current_cssr)
     contemporary_cssr_column_values = ContemporaryCSSR(ONSClean.contemporary_cssr)
