@@ -6,6 +6,7 @@ import sys
 import tempfile
 import unittest
 from contextlib import redirect_stdout
+from dataclasses import dataclass
 from datetime import date, datetime
 from glob import glob
 from pathlib import Path
@@ -20,6 +21,9 @@ from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
 
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    AscwdsWorkplaceColumns as ASCWKPCols,
+)
 
 SRC_PATH = "polars_utils.validation.actions"
 PATCH_PATH = "polars_utils.utils"
@@ -658,3 +662,24 @@ class TestNullifyCtValuesPreviousToFirstSubmission:
             }
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestCreateListOfJobRoleColumns:
+    def test_function_returns_list_of_job_role_columns(self):
+        @dataclass
+        class TestColumns:
+            job_role_01_agency: str = ASCWKPCols.job_role_01_agency
+            job_role_01_employees: str = ASCWKPCols.job_role_01_employees
+            job_role_02_agency: str = ASCWKPCols.job_role_02_agency
+            job_role_02_employees: str = ASCWKPCols.job_role_02_employees
+            other_column_1: str = "other_column_1"
+            other_column_2: str = "other_column_2"
+
+        expected_columns = [
+            ASCWKPCols.job_role_01_agency,
+            ASCWKPCols.job_role_01_employees,
+            ASCWKPCols.job_role_02_agency,
+            ASCWKPCols.job_role_02_employees,
+        ]
+        returned_columns = utils.create_list_of_job_role_columns(TestColumns())
+        self.assertEqual(returned_columns, expected_columns)
