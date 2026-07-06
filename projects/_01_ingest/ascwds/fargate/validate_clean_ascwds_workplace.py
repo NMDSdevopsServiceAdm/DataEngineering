@@ -50,7 +50,6 @@ EXPECTED_SCHEMA = pb.Schema(
         ASCWPClean.workplace_last_active_date: "Date",
         ASCWPClean.total_staff_bounded: "Int32",
         ASCWPClean.worker_records_bounded: "Int32",
-        ASCWPClean.import_date: "String",
     }
 )
 
