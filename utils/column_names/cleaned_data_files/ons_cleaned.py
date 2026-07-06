@@ -36,6 +36,7 @@ class OnsCleanedColumns(ONScol):
     current_lsoa11: str = "current_" + ONScol.lower_super_output_area_2011
     current_msoa11: str = "current_" + ONScol.middle_super_output_area_2011
     current_rural_urban_ind_11: str = "current_" + ONScol.rural_urban_indicator_2011
+    current_rural_urban_ind_21: str = "current_" + ONScol.rural_urban_indicator_2021
     current_lsoa21: str = "current_" + ONScol.lower_super_output_area_2021
     current_msoa21: str = "current_" + ONScol.middle_super_output_area_2021
     current_constituency: str = "current_" + ONScol.parliamentary_constituency
@@ -72,6 +73,7 @@ current_geography_columns: list = [
     OnsCleanedColumns.current_lsoa11,
     OnsCleanedColumns.current_msoa11,
     OnsCleanedColumns.current_rural_urban_ind_11,
+    OnsCleanedColumns.current_rural_urban_ind_21,
     OnsCleanedColumns.current_lsoa21,
     OnsCleanedColumns.current_msoa21,
     OnsCleanedColumns.current_constituency,

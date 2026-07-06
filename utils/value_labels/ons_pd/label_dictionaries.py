@@ -6,7 +6,12 @@ from utils.value_labels.ons_pd.onspd_lsoa21 import OnspdLsoa21
 from utils.value_labels.ons_pd.onspd_msoa21 import OnspdMsoa21
 from utils.value_labels.ons_pd.onspd_pcon import OnspdPcon
 from utils.value_labels.ons_pd.onspd_region import OnspdRegion
-from utils.value_labels.ons_pd.onspd_ru11ind import OnspdRuralUrbanIndicator2011
+from utils.value_labels.ons_pd.onspd_ru11ind import (
+    OnspdRuralUrbanIndicator2011 as OnspdRui11,
+)
+from utils.value_labels.ons_pd.onspd_ru21ind import (
+    OnspdRuralUrbanIndicator2021 as OnspdRui21,
+)
 from utils.value_labels.ons_pd.onspd_sub_icb import OnspdSubIcb
 
 onspd_labels_dict = {
@@ -17,7 +22,8 @@ onspd_labels_dict = {
     OnspdMsoa21.column_name: OnspdMsoa21.labels_dict,
     OnspdPcon.column_name: OnspdPcon.labels_dict,
     OnspdRegion.column_name: OnspdRegion.labels_dict,
-    OnspdRuralUrbanIndicator2011.column_name: OnspdRuralUrbanIndicator2011.labels_dict,
+    OnspdRui11.column_name: OnspdRui11.labels_dict,
+    OnspdRui21.column_name: OnspdRui21.labels_dict,
     OnspdSubIcb.column_name: OnspdSubIcb.labels_dict,
 }
 
