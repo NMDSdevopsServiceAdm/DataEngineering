@@ -71,11 +71,19 @@ class ASCWDSWorkerCleanedCategoricalValues:
 
 @dataclass
 class ASCWDSWorkplaceCleanedCategoricalValues:
-    establishment_type_column_values = EstablishmentType(AWPClean.establishment_type)
-    parent_permission_column_values = ParentPermission(AWPClean.parent_permission)
-    is_parent_column_values = IsParent(AWPClean.is_parent)
-    main_service_id_column_values = MainServiceID(AWPClean.main_service_id)
-    registration_type_column_values = RegistrationType(AWPClean.registration_type)
+    establishment_type_column_values = EstablishmentType(
+        AWPClean.establishment_type, contains_null_values=True
+    )
+    parent_permission_column_values = ParentPermission(
+        AWPClean.parent_permission, contains_null_values=True
+    )
+    is_parent_column_values = IsParent(AWPClean.is_parent, contains_null_values=True)
+    main_service_id_column_values = MainServiceID(
+        AWPClean.main_service_id, contains_null_values=True
+    )
+    registration_type_column_values = RegistrationType(
+        AWPClean.registration_type, contains_null_values=True
+    )
 
 
 @dataclass
