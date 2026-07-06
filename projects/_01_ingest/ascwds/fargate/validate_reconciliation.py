@@ -30,8 +30,8 @@ EXPECTED_SCHEMA = pb.Schema(
         AWPClean.main_service_id: "String",
         AWPClean.establishment_name: "String",
         AWPClean.region_id: "String",
-        AWPClean.total_staff: "Int32",
-        AWPClean.worker_records: "Int32",
+        AWPClean.total_staff: "String",
+        AWPClean.worker_records: "String",
         AWPClean.last_logged_in_date: "Date",
         AWPClean.la_permission: "String",
     }
