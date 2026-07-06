@@ -23,7 +23,7 @@ EXPECTED_SCHEMA = pb.Schema(
         ASCWPClean.establishment_created_date: "Date",
         ASCWPClean.establishment_updated_date: "Date",
         ASCWPClean.master_update_date: "Date",
-        ASCWPClean.last_logged_in: "Date",
+        ASCWPClean.last_logged_in_date: "Date",
         ASCWPClean.la_permission: "String",
         ASCWPClean.is_bulk_uploader: "String",
         ASCWPClean.is_parent: "String",
@@ -70,6 +70,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
     )
 
     print(source_df.schema)
+    print(EXPECTED_SCHEMA)
 
     validation = (
         pb.Validate(
@@ -83,11 +84,6 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         .col_schema_match(
             schema=EXPECTED_SCHEMA,
             brief="Dataset should match the expected schema",
-            complete=False,
-            in_order=False,
-            case_sensitive_colnames=False,
-            case_sensitive_dtypes=False,
-            full_match_dtypes=False,
         )
         # index columns
         .rows_distinct(
