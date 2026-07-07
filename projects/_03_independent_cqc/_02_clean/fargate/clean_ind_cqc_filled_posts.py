@@ -45,7 +45,7 @@ GROUPED_PROVIDER_SCHEMA = pl.Schema(
         (NGPcol.grp_prov_identified_date, pl.Date()),
         (NGPcol.grp_prov_fixed_date, pl.Date()),
         (IndCQC.care_home, pl.String()),
-        (IndCQC.number_of_beds, pl.Int32()),
+        (IndCQC.number_of_beds, pl.Int64()),
     ]
 )
 
