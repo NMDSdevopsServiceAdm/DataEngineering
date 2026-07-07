@@ -150,6 +150,12 @@ jobs:
             terraform init -input=false -backend-config=../${AWS_ENV}.s3.tfbackend
             terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
             terraform plan -out tfapply
+      - run:
+          name: Check workspace size
+          command: |
+            du -sh .
+            du -sh terraform/pipeline/tfapply
+            du -sh terraform/pipeline/tfapply/* || true
       - store_artifacts:
           path: terraform/pipeline/tfapply
       - persist_to_workspace:
