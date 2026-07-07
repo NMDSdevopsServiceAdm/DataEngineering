@@ -328,6 +328,8 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
         AWPClean.nmds_id,
         NGPcol.potential_grouped_provider,
         IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.care_home,
+        IndCQC.number_of_beds,
     ]
 
     date_col = pl.col(IndCQC.cqc_location_import_date)
