@@ -131,7 +131,7 @@
           "States": {
             "Ind CQC Filled Posts Pipeline": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::states:startExecution",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
               "Parameters": {
                 "StateMachineArn": "${ind_cqc_pipeline_state_machine_arn}",
                 "Input": {
