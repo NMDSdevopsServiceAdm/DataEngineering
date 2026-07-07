@@ -75,6 +75,14 @@ class IngestASCWDSData:
 
 @dataclass
 class ASCWDSWorkerSchemas:
+    workplace_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.establishment_id, StringType(), True),
+            StructField(AWP.import_date, StringType(), True),
+        ]
+    )
+
     worker_schema = StructType(
         [
             StructField(AWK.location_id, StringType(), True),
