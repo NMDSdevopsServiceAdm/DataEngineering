@@ -749,16 +749,6 @@ class ValidateASCWDSWorkerRawData:
 
 
 @dataclass
-class ValidateASCWDSWorkplaceCleanedData:
-    cleaned_ascwds_workplace_rows = [
-        ("estab_1", date(2024, 1, 1), "org_id", "location_id", 10, 10),
-        ("estab_2", date(2024, 1, 1), "org_id", "location_id", 10, 10),
-        ("estab_1", date(2024, 1, 9), "org_id", "location_id", 10, 10),
-        ("estab_2", date(2024, 1, 9), "org_id", "location_id", 10, 10),
-    ]
-
-
-@dataclass
 class ValidateASCWDSWorkerCleanedData:
     cleaned_ascwds_worker_rows = [
         ("estab_1", date(2024, 1, 1), "worker_1", "8", "Care Worker"),
