@@ -117,7 +117,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         )
         .col_vals_in_set(
             ASCWPClean.is_parent,
-            *CatValues.is_parent_column_values.categorical_values,
+            CatValues.is_parent_column_values.categorical_values,
         )
         .col_vals_in_set(
             ASCWPClean.main_service_id,
