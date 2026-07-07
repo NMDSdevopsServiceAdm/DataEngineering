@@ -27,6 +27,7 @@ class PostcodeDirectoryCleanedValidationRules:
             ONSClean.current_lsoa21,
             ONSClean.current_msoa21,
             ONSClean.current_rural_urban_ind_11,
+            ONSClean.current_rural_urban_ind_21,
         ],
         RuleName.index_columns: [
             ONSClean.postcode,
@@ -38,6 +39,7 @@ class PostcodeDirectoryCleanedValidationRules:
             ONSClean.current_cssr: CatValues.current_cssr_column_values.categorical_values,
             ONSClean.current_region: CatValues.current_region_column_values.categorical_values,
             ONSClean.current_rural_urban_ind_11: CatValues.current_rui_column_values.categorical_values,
+            ONSClean.current_rural_urban_ind_21: CatValues.current_rui_21_column_values.categorical_values,
         },
         RuleName.distinct_values: {
             ONSClean.contemporary_cssr: CatValues.contemporary_cssr_column_values.count_of_categorical_values,
@@ -45,5 +47,6 @@ class PostcodeDirectoryCleanedValidationRules:
             ONSClean.current_cssr: CatValues.current_cssr_column_values.count_of_categorical_values,
             ONSClean.current_region: CatValues.current_region_column_values.count_of_categorical_values,
             ONSClean.current_rural_urban_ind_11: CatValues.current_rui_column_values.count_of_categorical_values,
+            ONSClean.current_rural_urban_ind_21: CatValues.current_rui_21_column_values.count_of_categorical_values,
         },
     }

@@ -43,7 +43,9 @@ class MainTests(CleanONSDatasetTests):
 
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
-        read_from_parquet_patch.assert_called_once_with(self.TEST_SOURCE)
+        read_from_parquet_patch.assert_called_once_with(
+            self.TEST_SOURCE, schema=job.ons_schema
+        )
         column_to_date.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
             ANY, self.TEST_DESTINATION, mode="overwrite"

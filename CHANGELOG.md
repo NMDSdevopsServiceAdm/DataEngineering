@@ -39,6 +39,8 @@ All notable changes to this project will be documented in this file.
 
 - Added point blank validation of ASCWDS cleaned dataset and reconciliation dataset.
 
+- Added `careHome` and `numberOfBeds` columns to Grouped Provider Output file and updated tests for the same.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
@@ -334,6 +336,8 @@ All notable changes to this project will be documented in this file.
 - Converted clean_ascwds_filled_post_outliers utils folder to polars within Clean Ind CQC Job.
 
 - Converted `clean_ct_outliers` utils folder to polars within Clean Ind CQC Job and added tests for them as well.
+
+- Added latest ONS postcode directory, including additional codes and the rural urban 2021 column.
 
 ### Changed
 - Remove interim/demo model preprocessing/retraining code.

@@ -310,6 +310,18 @@ class RUI(ColumnValues):
 
 
 @dataclass
+class RUI2021(ColumnValues):
+    """The possible values of the rural urban indicator 2021 columns in ONS data"""
+
+    rural_larger_further: str = "Rural - Larger: Further from a major town or city"
+    rural_larger_nearer: str = "Rural - Larger: Nearer to a major town or city"
+    rural_smaller_further: str = "Rural - Smaller: Further from a major town or city"
+    rural_smaller_nearer: str = "Rural - Smaller: Nearer to a major town or city"
+    urban_further: str = "Urban - Further from a major town or city"
+    urban_nearer: str = "Urban - Nearer to a major town or city"
+
+
+@dataclass
 class CurrentCSSR(ColumnValues):
     """The possible values of the local authority columns in ONS data"""
 
@@ -694,6 +706,7 @@ class MainServiceID(ColumnValues):
     other_adult_community_care_service: str = "Other adult community care service"
     care_home_hostel: str = "Care home / hostel"
     family_centre_residential: str = "Family centre (residential)"
+    residential_school: str = "Residential school"
     other_childrens_residential_care_service: str = (
         "Other childrens residential care service"
     )
@@ -707,6 +720,7 @@ class MainServiceID(ColumnValues):
         "Domiciliary care services (Childrens) - DCC"
     )
     fostering_or_adoption_service_agency: str = "Fostering or adoption service / agency"
+    child_protection: str = "Child protection"
     family_support: str = "Family support"
     other_childrens_community_care_service: str = (
         "Other childrens community care service"
@@ -721,6 +735,7 @@ class MainServiceID(ColumnValues):
     extra_care_housing_services: str = "Extra care housing services - EXC"
     supported_living_services: str = "Supported living services - SLS"
     childrens_homes: str = "Childrens homes"
+    residential_special_schools: str = "Residential special schools"
     specialist_college_services: str = "Specialist college services - SPC"
     community_based_services_for_people_with_a_learning_disability: str = (
         "Community based services for people with a learning disability - LDC"
@@ -755,5 +770,7 @@ class MainServiceID(ColumnValues):
 class RegistrationType(ColumnValues):
     """The possible values of the registration type column in ASCWDS data"""
 
+    not_recorded: str = "Not recorded"
     not_regulated: str = "Not regulated"
+    ofsted: str = "Ofsted"
     cqc_regulated: str = "CQC regulated"

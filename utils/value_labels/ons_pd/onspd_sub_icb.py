@@ -116,4 +116,7 @@ class OnspdSubIcb:
         "38000263": "NHS Greater Manchester ICB - 01Y (Tameside and Glossop)",
         "38000264": "NHS Surrey Heartlands ICB - 92A",
         "38000265": "NHS Sussex ICB - 70F (West Sussex)",
+        "38000266": "NHS Hampshire and Isle of Wight ICB - D9Y0V",
+        "38000267": "NHS Surrey and Sussex ICB - 92A",
+        "38000268": "NHS Thames Valley ICB - U2G6B",
     }

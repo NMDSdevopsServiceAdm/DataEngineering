@@ -32,4 +32,6 @@ class OnspdIcbRegion:
         "40000010": north_west,
         "40000011": midlands,
         "40000012": north_east_and_yorkshire,
+        "40000013": east_of_england,
+        "40000014": north_west,
     }
