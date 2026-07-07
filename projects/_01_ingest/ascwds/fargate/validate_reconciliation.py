@@ -80,41 +80,41 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             brief="Key columns should contain no null values",
         )
         # categorical
-        # .col_vals_in_set(
-        #     AWPClean.establishment_type,
-        #     [*CatValues.establishment_type_column_values.categorical_values, None],
-        # )
-        # .col_vals_in_set(
-        #     AWPClean.parent_permission,
-        #     [*CatValues.parent_permission_column_values.categorical_values, None],
-        # )
+        .col_vals_in_set(
+            AWPClean.establishment_type,
+            [*CatValues.establishment_type_column_values.categorical_values, None],
+        )
+        .col_vals_in_set(
+            AWPClean.parent_permission,
+            [*CatValues.parent_permission_column_values.categorical_values, None],
+        )
         .col_vals_in_set(
             AWPClean.is_parent,
             *CatValues.is_parent_column_values.categorical_values,
         )
-        # .col_vals_in_set(
-        #     AWPClean.main_service_id,
-        #     [*CatValues.main_service_id_column_values.categorical_values, None],
-        # )
-        # .col_vals_in_set(
-        #     AWPClean.registration_type,
-        #     [*CatValues.registration_type_column_values.categorical_values, None],
-        # )
+        .col_vals_in_set(
+            AWPClean.main_service_id,
+            [*CatValues.main_service_id_column_values.categorical_values, None],
+        )
+        .col_vals_in_set(
+            AWPClean.registration_type,
+            [*CatValues.registration_type_column_values.categorical_values, None],
+        )
         # distinct values
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         AWPClean.establishment_type,
-        #         CatValues.establishment_type_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{AWPClean.establishment_type} should have exactly {CatValues.establishment_type_column_values.count_of_categorical_values} distinct values",
-        # )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         AWPClean.parent_permission,
-        #         CatValues.parent_permission_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{AWPClean.parent_permission} should have exactly {CatValues.parent_permission_column_values.count_of_categorical_values} distinct values",
-        # )
+        .specially(
+            vl.is_unique_count_equal(
+                AWPClean.establishment_type,
+                CatValues.establishment_type_column_values.count_of_categorical_values,
+            ),
+            brief=f"{AWPClean.establishment_type} should have exactly {CatValues.establishment_type_column_values.count_of_categorical_values} distinct values",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                AWPClean.parent_permission,
+                CatValues.parent_permission_column_values.count_of_categorical_values,
+            ),
+            brief=f"{AWPClean.parent_permission} should have exactly {CatValues.parent_permission_column_values.count_of_categorical_values} distinct values",
+        )
         .specially(
             vl.is_unique_count_equal(
                 AWPClean.is_parent,
@@ -122,20 +122,20 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             ),
             brief=f"{AWPClean.is_parent} should have exactly {CatValues.is_parent_column_values.count_of_categorical_values} distinct values",
         )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         AWPClean.main_service_id,
-        #         CatValues.main_service_id_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{AWPClean.main_service_id} should have exactly {CatValues.main_service_id_column_values.count_of_categorical_values} distinct values",
-        # )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         AWPClean.registration_type,
-        #         CatValues.registration_type_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{AWPClean.registration_type} should have exactly {CatValues.registration_type_column_values.count_of_categorical_values} distinct values",
-        # )
+        .specially(
+            vl.is_unique_count_equal(
+                AWPClean.main_service_id,
+                CatValues.main_service_id_column_values.count_of_categorical_values,
+            ),
+            brief=f"{AWPClean.main_service_id} should have exactly {CatValues.main_service_id_column_values.count_of_categorical_values} distinct values",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                AWPClean.registration_type,
+                CatValues.registration_type_column_values.count_of_categorical_values,
+            ),
+            brief=f"{AWPClean.registration_type} should have exactly {CatValues.registration_type_column_values.count_of_categorical_values} distinct values",
+        )
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)

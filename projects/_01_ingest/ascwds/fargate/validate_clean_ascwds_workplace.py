@@ -107,41 +107,41 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             brief="Counts should be between 1 and 3000 where present.",
         )
         # categorical
-        # .col_vals_in_set(
-        #     ASCWPClean.establishment_type,
-        #     [*CatValues.establishment_type_column_values.categorical_values, None],
-        # )
-        # .col_vals_in_set(
-        #     ASCWPClean.parent_permission,
-        #     [*CatValues.parent_permission_column_values.categorical_values, None],
-        # )
+        .col_vals_in_set(
+            ASCWPClean.establishment_type,
+            [*CatValues.establishment_type_column_values.categorical_values, None],
+        )
+        .col_vals_in_set(
+            ASCWPClean.parent_permission,
+            [*CatValues.parent_permission_column_values.categorical_values, None],
+        )
         .col_vals_in_set(
             ASCWPClean.is_parent,
             *CatValues.is_parent_column_values.categorical_values,
         )
-        # .col_vals_in_set(
-        #     ASCWPClean.main_service_id,
-        #     [*CatValues.main_service_id_column_values.categorical_values, None],
-        # )
-        # .col_vals_in_set(
-        #     ASCWPClean.registration_type,
-        #     [*CatValues.registration_type_column_values.categorical_values, None],
-        # )
+        .col_vals_in_set(
+            ASCWPClean.main_service_id,
+            [*CatValues.main_service_id_column_values.categorical_values, None],
+        )
+        .col_vals_in_set(
+            ASCWPClean.registration_type,
+            [*CatValues.registration_type_column_values.categorical_values, None],
+        )
         # distinct values
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         ASCWPClean.establishment_type,
-        #         CatValues.establishment_type_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{ASCWPClean.establishment_type} should have exactly {CatValues.establishment_type_column_values.count_of_categorical_values} distinct values",
-        # )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         ASCWPClean.parent_permission,
-        #         CatValues.parent_permission_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{ASCWPClean.parent_permission} should have exactly {CatValues.parent_permission_column_values.count_of_categorical_values} distinct values",
-        # )
+        .specially(
+            vl.is_unique_count_equal(
+                ASCWPClean.establishment_type,
+                CatValues.establishment_type_column_values.count_of_categorical_values,
+            ),
+            brief=f"{ASCWPClean.establishment_type} should have exactly {CatValues.establishment_type_column_values.count_of_categorical_values} distinct values",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                ASCWPClean.parent_permission,
+                CatValues.parent_permission_column_values.count_of_categorical_values,
+            ),
+            brief=f"{ASCWPClean.parent_permission} should have exactly {CatValues.parent_permission_column_values.count_of_categorical_values} distinct values",
+        )
         .specially(
             vl.is_unique_count_equal(
                 ASCWPClean.is_parent,
@@ -149,20 +149,20 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             ),
             brief=f"{ASCWPClean.is_parent} should have exactly {CatValues.is_parent_column_values.count_of_categorical_values} distinct values",
         )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         ASCWPClean.main_service_id,
-        #         CatValues.main_service_id_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{ASCWPClean.main_service_id} should have exactly {CatValues.main_service_id_column_values.count_of_categorical_values} distinct values",
-        # )
-        # .specially(
-        #     vl.is_unique_count_equal(
-        #         ASCWPClean.registration_type,
-        #         CatValues.registration_type_column_values.count_of_categorical_values,
-        #     ),
-        #     brief=f"{ASCWPClean.registration_type} should have exactly {CatValues.registration_type_column_values.count_of_categorical_values} distinct values",
-        # )
+        .specially(
+            vl.is_unique_count_equal(
+                ASCWPClean.main_service_id,
+                CatValues.main_service_id_column_values.count_of_categorical_values,
+            ),
+            brief=f"{ASCWPClean.main_service_id} should have exactly {CatValues.main_service_id_column_values.count_of_categorical_values} distinct values",
+        )
+        .specially(
+            vl.is_unique_count_equal(
+                ASCWPClean.registration_type,
+                CatValues.registration_type_column_values.count_of_categorical_values,
+            ),
+            brief=f"{ASCWPClean.registration_type} should have exactly {CatValues.registration_type_column_values.count_of_categorical_values} distinct values",
+        )
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
