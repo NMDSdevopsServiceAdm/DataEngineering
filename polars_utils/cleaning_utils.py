@@ -1,6 +1,7 @@
 from typing import Generator, List
 
 import polars as pl
+import polars.selectors as cs
 
 from polars_utils.expressions import is_care_home, is_not_care_home
 from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
@@ -251,7 +252,7 @@ def cast_date_strings_to_dates(
     raw_date_format: str = "%d/%m/%Y",
 ) -> pl.LazyFrame:
     """
-    Converts columns to date type.
+    Parses string date columns into `Date` values.
 
     Columns in LazyFrame with date_column_identifier in their name excluding
     'import_date' and values formatted as raw_date_format will be type cast.
@@ -265,15 +266,12 @@ def cast_date_strings_to_dates(
     Returns:
         pl.LazyFrame: The input LazyFrame with columns cast to dates.
     """
-    date_columns = [
-        col
-        for col in lf.collect_schema().names()
-        if date_column_identifier in col and "import_date" not in col
-    ]
+    date_columns = (
+        cs.string()
+        & cs.contains(date_column_identifier)
+        & ~cs.by_name("import_date", require_all=False)
+    )
 
     return lf.with_columns(
-        [
-            pl.col(col).str.strptime(pl.Date, raw_date_format, strict=False)
-            for col in date_columns
-        ]
+        date_columns.as_expr().str.strptime(pl.Date, raw_date_format, strict=False)
     )
