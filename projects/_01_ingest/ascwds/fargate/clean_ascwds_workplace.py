@@ -103,13 +103,13 @@ def main(
 
     lf = lf.select(*COLUMNS_TO_IMPORT, slv_columns)
 
-    # lf = lf.filter(wUtils.valid_workplace_filter())
+    lf = lf.filter(wUtils.valid_workplace_filter())
 
-    # lf = lf.with_columns(pl.col(AWPClean.nmds_id).str.strip_chars())
+    lf = lf.with_columns(pl.col(AWPClean.nmds_id).str.strip_chars())
 
-    # lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
+    lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
 
-    # lf = cUtils.cast_date_strings_to_dates(lf)
+    lf = cUtils.cast_date_strings_to_dates(lf)
 
     # lf = cUtils.column_to_date(
     #     lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
