@@ -167,10 +167,12 @@ def main(
 
 
 def check_id_present(
-    lf: pl.DataFrame, id_value: str, id_column: str, step_name: str
+    lf: pl.LazyFrame, id_value: str, id_column: str, step_name: str
 ) -> pl.LazyFrame:
-    count = lf.filter(pl.col(id_column) == id_value).height
-    print(f"[{step_name}] {id_column}={id_value} present: {count} row(s)")
+    count_lf = lf.filter(pl.col(id_column) == id_value).select(id_column)
+    print(
+        f"[{step_name}] {id_column}={id_value} present: {count_lf.collect().height} row(s)"
+    )
     return lf  # unchanged, so it can be dropped inline
 
 
