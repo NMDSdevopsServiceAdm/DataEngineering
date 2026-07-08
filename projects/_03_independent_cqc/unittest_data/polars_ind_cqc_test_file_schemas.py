@@ -1838,104 +1838,73 @@ class EstimateFilledPostsByJobRoleCleanSchemas:
 
 @dataclass
 class CombineASCWDSAndPIRSchemas:
-    expected_convert_pir_to_filled_posts_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.pir_filled_posts_model, FloatType(), True),
-        ]
-    )
+    blend_pir_and_ascwds_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.care_home: pl.String,
+        IndCQC.pir_filled_posts_model: pl.Float32,
+        IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
+    }
 
-    blend_pir_and_ascwds_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.pir_filled_posts_model, FloatType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-        ]
-    )
+    create_repeated_ascwds_clean_column_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
+    }
+    expected_create_repeated_ascwds_clean_column_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
+        IndCQC.ascwds_filled_posts_dedup_clean_repeated: pl.Float32,
+    }
 
-    create_repeated_ascwds_clean_column_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-        ]
-    )
-    expected_create_repeated_ascwds_clean_column_schema = StructType(
-        [
-            *create_repeated_ascwds_clean_column_schema,
-            StructField(
-                IndCQC.ascwds_filled_posts_dedup_clean_repeated, FloatType(), True
-            ),
-        ]
-    )
+    create_last_submission_columns_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
+        IndCQC.pir_filled_posts_model: pl.Float32,
+    }
 
-    create_last_submission_columns_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.pir_filled_posts_model, FloatType(), True),
-        ]
-    )
-    expected_create_last_submission_columns_schema = StructType(
-        [
-            *create_last_submission_columns_schema,
-            StructField(IndCQC.last_ascwds_submission, DateType(), True),
-            StructField(IndCQC.last_pir_submission, DateType(), True),
-        ]
-    )
+    expected_create_last_submission_columns_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
+        IndCQC.pir_filled_posts_model: pl.Float32,
+        IndCQC.last_ascwds_submission: pl.Date,
+        IndCQC.last_pir_submission: pl.Date,
+    }
 
-    create_ascwds_pir_merged_column_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.last_ascwds_submission, DateType(), True),
-            StructField(IndCQC.last_pir_submission, DateType(), True),
-            StructField(
-                IndCQC.ascwds_filled_posts_dedup_clean_repeated, FloatType(), True
-            ),
-            StructField(IndCQC.pir_filled_posts_model, FloatType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-        ]
-    )
-    expected_create_ascwds_pir_merged_column_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.last_ascwds_submission, DateType(), True),
-            StructField(IndCQC.last_pir_submission, DateType(), True),
-            StructField(
-                IndCQC.ascwds_filled_posts_dedup_clean_repeated, FloatType(), True
-            ),
-            StructField(IndCQC.pir_filled_posts_model, FloatType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
-        ]
-    )
+    create_ascwds_pir_merged_column_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.last_ascwds_submission: pl.Date,
+        IndCQC.last_pir_submission: pl.Date,
+        IndCQC.ascwds_filled_posts_dedup_clean_repeated: pl.Float32,
+        IndCQC.pir_filled_posts_model: pl.Float32,
+        IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
+    }
+    expected_create_ascwds_pir_merged_column_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.last_ascwds_submission: pl.Date,
+        IndCQC.last_pir_submission: pl.Date,
+        IndCQC.ascwds_filled_posts_dedup_clean_repeated: pl.Float32,
+        IndCQC.pir_filled_posts_model: pl.Float32,
+        IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
+        IndCQC.ascwds_pir_merged: pl.Float32,
+    }
 
-    include_pir_if_never_submitted_ascwds_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
-            StructField(IndCQC.pir_filled_posts_model, FloatType(), True),
-        ]
-    )
+    include_pir_if_never_submitted_ascwds_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_pir_merged: pl.Float32,
+        IndCQC.pir_filled_posts_model: pl.Float32,
+    }
 
-    drop_temporary_columns_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.last_ascwds_submission, DateType(), True),
-            StructField(IndCQC.last_pir_submission, DateType(), True),
-            StructField(
-                IndCQC.ascwds_filled_posts_dedup_clean_repeated, FloatType(), True
-            ),
-        ]
-    )
+    drop_temporary_columns_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.last_ascwds_submission: pl.Date,
+        IndCQC.last_pir_submission: pl.Date,
+        IndCQC.ascwds_filled_posts_dedup_clean_repeated: pl.Float32,
+    }
     expected_drop_temporary_columns = [IndCQC.location_id]
