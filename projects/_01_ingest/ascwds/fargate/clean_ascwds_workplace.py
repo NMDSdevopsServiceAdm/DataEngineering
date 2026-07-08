@@ -135,10 +135,23 @@ def main(
         lf,
         reconciliation_lf,
     ) = wUtils.create_purged_lfs_for_reconciliation_and_data(lf)
+    lf = check_id_present(
+        lf,
+        "99157107",
+        "establishmentid",
+        "after create_purged_lfs_for_reconciliation_and_data",
+    )
 
     lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
+    lf = check_id_present(
+        lf,
+        "99157107",
+        "establishmentid",
+        "after remove_rows_with_duplicate_location_ids",
+    )
 
     lf = lf.with_columns(pl.col(INT_COLUMNS).cast(pl.Int32, strict=False))
+    lf = check_id_present(lf, "99157107", "establishmentid", "after castIntColumns")
 
     lf = lf.with_columns(
         pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)
@@ -146,8 +159,14 @@ def main(
         .otherwise(None)
         .name.suffix("_bounded")
     )
+    lf = check_id_present(
+        lf, "99157107", "establishmentid", "after boundedStaffColumns"
+    )
 
     reconciliation_lf = reconciliation_lf.select(RECONCILIATION_COLUMNS)
+    lf = check_id_present(
+        reconciliation_lf, "99157107", "establishmentid", "after reconciliation_lf"
+    )
 
     print(
         f"Exporting clean ascwds workplace data as parquet to {cleaned_workplace_destination}"
