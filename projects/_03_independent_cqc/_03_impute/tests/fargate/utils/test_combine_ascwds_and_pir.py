@@ -145,7 +145,7 @@ class TestDropTemporaryColumns:
         [],
         Schemas.drop_temporary_columns_schema,
     )
-    expected_columns = Schemas.expected_drop_temporary_columns.keys()
+    expected_columns = Schemas.expected_drop_temporary_columns
     returned_columns = job.drop_temporary_columns(test_lf).columns
 
     def test_drop_temporary_columns_removes_temporary_columns(
