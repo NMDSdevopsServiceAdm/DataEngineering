@@ -65,28 +65,28 @@ def create_last_submission_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: A LazyFrame with two extra columns containing the latest submission dates.
     """
-    w = (
-        Window.partitionBy(IndCQC.location_id)
-        .orderBy(IndCQC.cqc_location_import_date)
-        .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
-    )
+    # w = (
+    #     Window.partitionBy(IndCQC.location_id)
+    #     .orderBy(IndCQC.cqc_location_import_date)
+    #     .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+    # )
 
-    lf = get_selected_value(
-        lf,
-        w,
-        IndCQC.ascwds_filled_posts_dedup_clean,
-        IndCQC.cqc_location_import_date,
-        IndCQC.last_ascwds_submission,
-        "last",
-    )
-    lf = get_selected_value(
-        lf,
-        w,
-        IndCQC.pir_filled_posts_model,
-        IndCQC.cqc_location_import_date,
-        IndCQC.last_pir_submission,
-        "last",
-    )
+    # lf = get_selected_value(
+    #     lf,
+    #     w,
+    #     IndCQC.ascwds_filled_posts_dedup_clean,
+    #     IndCQC.cqc_location_import_date,
+    #     IndCQC.last_ascwds_submission,
+    #     "last",
+    # )
+    # lf = get_selected_value(
+    #     lf,
+    #     w,
+    #     IndCQC.pir_filled_posts_model,
+    #     IndCQC.cqc_location_import_date,
+    #     IndCQC.last_pir_submission,
+    #     "last",
+    # )
 
     return lf
 
@@ -108,37 +108,37 @@ def create_ascwds_pir_merged_column(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: A LazyFrame with an additional column `ascwds_pir_merged` that contains either the ASCWDS or PIR filled posts value,
                       depending on submission recency and similarity thresholds.
     """
-    time_between_last_pir_and_ascwds_submissions = F.months_between(
-        F.col(IndCQC.last_pir_submission),
-        F.col(IndCQC.last_ascwds_submission),
-    )
-    absolute_difference_between_pir_and_ascwds = F.abs(
-        F.col(IndCQC.pir_filled_posts_model)
-        - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
-    )
-    average_of_pir_and_ascwds = (
-        F.col(IndCQC.pir_filled_posts_model)
-        + F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
-    ) / 2
+    # time_between_last_pir_and_ascwds_submissions = F.months_between(
+    #     F.col(IndCQC.last_pir_submission),
+    #     F.col(IndCQC.last_ascwds_submission),
+    # )
+    # absolute_difference_between_pir_and_ascwds = F.abs(
+    #     F.col(IndCQC.pir_filled_posts_model)
+    #     - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+    # )
+    # average_of_pir_and_ascwds = (
+    #     F.col(IndCQC.pir_filled_posts_model)
+    #     + F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+    # ) / 2
 
-    lf = lf.withColumn(
-        IndCQC.ascwds_pir_merged,
-        F.when(
-            (
-                time_between_last_pir_and_ascwds_submissions
-                > ThresholdValues.months_in_two_years
-            )
-            & (
-                absolute_difference_between_pir_and_ascwds
-                > ThresholdValues.max_absolute_difference
-            )
-            & (
-                (absolute_difference_between_pir_and_ascwds / average_of_pir_and_ascwds)
-                > ThresholdValues.max_percentage_difference
-            ),
-            F.col(IndCQC.pir_filled_posts_model),
-        ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
-    )
+    # lf = lf.withColumn(
+    #     IndCQC.ascwds_pir_merged,
+    #     F.when(
+    #         (
+    #             time_between_last_pir_and_ascwds_submissions
+    #             > ThresholdValues.months_in_two_years
+    #         )
+    #         & (
+    #             absolute_difference_between_pir_and_ascwds
+    #             > ThresholdValues.max_absolute_difference
+    #         )
+    #         & (
+    #             (absolute_difference_between_pir_and_ascwds / average_of_pir_and_ascwds)
+    #             > ThresholdValues.max_percentage_difference
+    #         ),
+    #         F.col(IndCQC.pir_filled_posts_model),
+    #     ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
+    # )
     return lf
 
 
@@ -156,19 +156,19 @@ def include_pir_if_never_submitted_ascwds(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: LazyFrame with updated 'ascwds_pir_merged' values
                    where applicable.
     """
-    w = Window.partitionBy(IndCQC.location_id)
+    # w = Window.partitionBy(IndCQC.location_id)
 
-    lf = lf.withColumn(
-        IndCQC.submitted_ascwds_data,
-        F.max(F.col(IndCQC.ascwds_pir_merged).isNotNull().cast(IntegerType())).over(w),
-    )
-    lf = lf.withColumn(
-        IndCQC.ascwds_pir_merged,
-        F.when(
-            F.col(IndCQC.submitted_ascwds_data) == 0,
-            F.col(IndCQC.pir_filled_posts_model),
-        ).otherwise(F.col(IndCQC.ascwds_pir_merged)),
-    ).drop(IndCQC.submitted_ascwds_data)
+    # lf = lf.withColumn(
+    #     IndCQC.submitted_ascwds_data,
+    #     F.max(F.col(IndCQC.ascwds_pir_merged).isNotNull().cast(IntegerType())).over(w),
+    # )
+    # lf = lf.withColumn(
+    #     IndCQC.ascwds_pir_merged,
+    #     F.when(
+    #         F.col(IndCQC.submitted_ascwds_data) == 0,
+    #         F.col(IndCQC.pir_filled_posts_model),
+    #     ).otherwise(F.col(IndCQC.ascwds_pir_merged)),
+    # ).drop(IndCQC.submitted_ascwds_data)
 
     return lf
 
