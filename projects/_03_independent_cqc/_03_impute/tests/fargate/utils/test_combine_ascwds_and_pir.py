@@ -140,18 +140,15 @@ class TestIncludePirIfNeverSubmittedAscwds:
         )
 
 
-# class DropTemporaryColumnsTests(ModelAndMergePirTests):
-#     def setUp(self):
-#         super().setUp()
+class TestDropTemporaryColumns:
+    test_lf = pl.LazyFrame(
+        [],
+        Schemas.drop_temporary_columns_schema,
+    )
+    expected_columns = Schemas.expected_drop_temporary_columns.keys()
+    returned_columns = job.drop_temporary_columns(test_lf).columns
 
-#         test_df = self.spark.createDataFrame(
-#             [],
-#             Schemas.drop_temporary_columns_schema,
-#         )
-#         self.expected_columns = Schemas.expected_drop_temporary_columns
-#         self.returned_columns = job.drop_temporary_columns(test_df).columns
-
-#     def test_drop_temporary_columns_removes_temporary_columns(
-#         self,
-#     ):
-#         self.assertEqual(self.returned_columns, self.expected_columns)
+    def test_drop_temporary_columns_removes_temporary_columns(
+        self,
+    ):
+        assert self.returned_columns == self.expected_columns
