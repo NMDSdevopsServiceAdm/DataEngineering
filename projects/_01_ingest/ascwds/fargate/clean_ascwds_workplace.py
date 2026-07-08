@@ -129,12 +129,12 @@ def main(
         reconciliation_lf,
     ) = wUtils.create_purged_lfs_for_reconciliation_and_data(lf)
 
-    # lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
+    lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
 
-    # lf = lf.with_columns(
-    #     pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
-    #     slv_columns.cast(pl.Int32, strict=False),
-    # )
+    lf = lf.with_columns(
+        pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
+        slv_columns.cast(pl.Int32, strict=False),
+    )
 
     # lf = lf.with_columns(
     #     pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)
