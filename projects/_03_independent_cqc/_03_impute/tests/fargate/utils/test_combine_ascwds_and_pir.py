@@ -117,30 +117,27 @@ class TestCreateAscwdsPirMergedColumn:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
-# class IncludePirIfNeverSubmittedAscwdsTests(ModelAndMergePirTests):
-#     def setUp(self):
-#         super().setUp()
+class TestIncludePirIfNeverSubmittedAscwds:
+    test_lf = pl.LazyFrame(
+        Data.include_pir_if_never_submitted_ascwds_rows,
+        Schemas.include_pir_if_never_submitted_ascwds_schema,
+        orient="row",
+    )
+    returned_lf = job.include_pir_if_never_submitted_ascwds(test_lf)
 
-#         self.test_df = self.spark.createDataFrame(
-#             Data.include_pir_if_never_submitted_ascwds_rows,
-#             Schemas.include_pir_if_never_submitted_ascwds_schema,
-#         )
-#         self.returned_df = job.include_pir_if_never_submitted_ascwds(self.test_df)
+    expected_lf = pl.LazyFrame(
+        Data.expected_include_pir_if_never_submitted_ascwds_rows,
+        Schemas.include_pir_if_never_submitted_ascwds_schema,
+        orient="row",
+    )
 
-#         expected_df = self.spark.createDataFrame(
-#             Data.expected_include_pir_if_never_submitted_ascwds_rows,
-#             Schemas.include_pir_if_never_submitted_ascwds_schema,
-#         )
-#         self.returned_data = self.returned_df.sort(
-#             IndCQC.location_id, IndCQC.cqc_location_import_date
-#         ).collect()
-#         self.expected_data = expected_df.collect()
+    def test_include_pir_if_never_submitted_ascwds_returns_original_columns(self):
+        assert self.returned_lf.columns == self.test_lf.columns
 
-#     def test_include_pir_if_never_submitted_ascwds_returns_original_columns(self):
-#         self.assertEqual(self.returned_df.columns, self.test_df.columns)
-
-#     def test_include_pir_if_never_submitted_ascwds_returns_expected_data(self):
-#         self.assertEqual(self.returned_data, self.expected_data)
+    def test_include_pir_if_never_submitted_ascwds_returns_expected_data(self):
+        pl_testing.assert_frame_equal(
+            self.returned_lf, self.expected_lf, check_row_order=False
+        )
 
 
 # class DropTemporaryColumnsTests(ModelAndMergePirTests):
