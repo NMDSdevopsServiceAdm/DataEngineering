@@ -17,7 +17,6 @@ class AscwdsWorkplaceValueLabelsEsttype:
         "2": "Local authority (childrens services)",
         "3": "Local authority (generic/other)",
         "4": "Local authority owned",
-        "5": "Health",
         "6": "Private sector",
         "7": "Voluntary/Charity",
         "8": "Other",

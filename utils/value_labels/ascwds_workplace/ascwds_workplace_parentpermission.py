@@ -14,5 +14,4 @@ class AscwdsWorkplaceValueLabelsParentPermission:
     labels_dict = {
         "1": "Parent has ownership",
         "2": "Workplace has ownership",
-        "3": "Placeholder label",
     }
