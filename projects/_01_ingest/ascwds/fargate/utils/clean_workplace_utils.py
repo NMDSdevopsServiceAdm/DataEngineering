@@ -79,22 +79,30 @@ def valid_workplace_filter() -> pl.Expr:
     )
 
 
-def remove_rows_with_duplicate_location_ids() -> pl.Expr:
+def remove_rows_with_duplicate_location_ids(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Returns a filter expression that excludes rows where a non-null location_id
-    appears more than once within the same ascwds_workplace_import_date.
-    Null location_id values are retained.
+    Remove rows where a non-null location_id appears more than once within
+    the same ascwds_workplace_import_date.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with duplicate location_id's per ascwds_workplace_import_date.
 
     Returns:
-        pl.Expr: A Polars expression that can be used to filter a LazyFrame.
+        pl.LazyFrame: The input LazyFrame without rows containing duplicate location_id's.
     """
-
-    return pl.col(AWPClean.location_id).is_null() | (
-        pl.count(AWPClean.location_id).over(
-            [AWPClean.location_id, AWPClean.ascwds_workplace_import_date]
-        )
-        == 1
+    group_cols = [AWPClean.location_id, AWPClean.ascwds_workplace_import_date]
+    locid_count = lf.group_by(group_cols).agg(
+        pl.col(AWPClean.location_id).count().alias(AWPClean.locationid_count)
     )
+
+    lf = lf.join(locid_count, on=group_cols, how="left")
+
+    lf = lf.filter(
+        pl.col(AWPClean.location_id).is_null()
+        | (pl.col(AWPClean.locationid_count) == 1)
+    ).drop(AWPClean.locationid_count)
+
+    return lf
 
 
 class PurgeWorkplaceDataExpressions:

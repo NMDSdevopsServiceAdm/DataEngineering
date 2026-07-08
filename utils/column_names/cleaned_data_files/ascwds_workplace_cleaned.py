@@ -15,3 +15,4 @@ class AscwdsWorkplaceCleanedColumns(AWP):
     purge_date: str = "purge_date"
     total_staff_bounded: str = AWP.total_staff + "_bounded"
     worker_records_bounded: str = AWP.worker_records + "_bounded"
+    locationid_count: str = "locationid_count"

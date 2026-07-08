@@ -115,7 +115,6 @@ def main(
         lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
     ).drop(AWPClean.import_date)
 
-    # trello 1705
     data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
     lf = cUtils.apply_categorical_labels(
         lf,
@@ -129,7 +128,7 @@ def main(
         reconciliation_lf,
     ) = wUtils.create_purged_lfs_for_reconciliation_and_data(lf)
 
-    # lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
+    lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
 
     lf = lf.with_columns(
         pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),

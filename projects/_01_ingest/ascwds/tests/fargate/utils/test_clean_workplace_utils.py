@@ -66,7 +66,7 @@ class TestRemoveRowsWithDuplicateLocationIds:
             schema=test_schema,
             orient="row",
         )
-        returned_lf = test_lf.filter(job.remove_rows_with_duplicate_location_ids())
+        returned_lf = job.remove_rows_with_duplicate_location_ids(test_lf)
         expected_lf = pl.LazyFrame(
             [
                 ("3", "1-003", date(2026, 1, 1)),
