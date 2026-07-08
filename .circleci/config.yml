@@ -91,7 +91,7 @@ jobs:
             name: Output Coverage Report
             command: coverage report
       - store_artifacts:
-          path: htmlcov
+          path: htmlcov.index.html
 
   lint-python:
     docker:
