@@ -75,6 +75,8 @@ All notable changes to this project will be documented in this file.
 
 - Corrected datasets in SLV pipeline that need switching between main and dev in terraform.
 
+- Reduced persistant storage in CircleCI.
+
 
 ## [v2026.05.0] - 12/06/2026
 
