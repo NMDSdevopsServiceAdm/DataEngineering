@@ -1,24 +1,24 @@
 import warnings
 from unittest.mock import Mock, patch
 
-from pyspark.sql import DataFrame
+import polars as pl
+import pytest
 
-import projects._03_independent_cqc._03_impute.utils.model_and_merge_pir_filled_posts as job
-from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
-    ModelAndMergePirData as Data,
+import projects._03_independent_cqc._03_impute.fargate.utils.combine_ascwds_and_pir as job
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    CombineASCWDSAndPIRData as Data,
 )
-from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
-    ModelAndMergePirData as Schemas,
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
+    CombineASCWDSAndPIRSchemas as Schemas,
 )
-from tests.base_test import SparkBaseTest
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH: str = (
-    "projects._03_independent_cqc._03_impute.utils.model_and_merge_pir_filled_posts"
+    "projects._03_independent_cqc._03_impute.fargate.utils.combine_ascwds_and_pir"
 )
 
 
-class ModelAndMergePirTests(SparkBaseTest):
+class ModelAndMergePirTests:
     def setUp(self):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
