@@ -12,6 +12,8 @@ class AscwdsWorkplaceValueLabelsRegtype:
     column_name: str = AWP.registration_type
 
     labels_dict = {
+        "-1": "Not recorded",
         "0": "Not regulated",
+        "1": "Ofsted",
         "2": "CQC regulated",
     }
