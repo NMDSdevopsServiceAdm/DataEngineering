@@ -60,7 +60,7 @@ class TestCreateRepeatedAscwdsCleanColumn:
             for case in Data.create_repeated_ascwds_clean_column_test_cases
         ],
     )
-    def test_create_repeated_ascwds_clean_column_returns_correct_values_when_missing_earlier_and_later_data(
+    def test_create_repeated_ascwds_clean_column_returns_correct_values(
         self,
         case,
     ):
@@ -94,98 +94,27 @@ class TestCreateLastSubmissionColumns:
         )
 
 
-# class CreateAscwdsPirMergedColumnTests(ModelAndMergePirTests):
-#     def setUp(self):
-#         super().setUp()
+class TestCreateAscwdsPirMergedColumn:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.create_ascwds_pir_merged_column_test_cases
+        ],
+    )
+    def test_create_ascwds_pir_merged_column_returns_correct_values(
+        self,
+        case,
+    ):
 
-#     def test_create_ascwds_pir_merged_column_blends_data_when_pir_more_than_two_years_after_asc_and_difference_greater_than_absolute_and_percentage_thresholds(
-#         self,
-#     ):
-#         test_df = self.spark.createDataFrame(
-#             Data.create_ascwds_pir_merged_column_when_pir_more_than_two_years_after_asc_and_difference_greater_than_thresholds_rows,
-#             Schemas.create_ascwds_pir_merged_column_schema,
-#         )
-#         expected_df = self.spark.createDataFrame(
-#             Data.expected_create_ascwds_pir_merged_column_when_pir_more_than_two_years_after_asc_and_difference_greater_than_thresholds_rows,
-#             Schemas.expected_create_ascwds_pir_merged_column_schema,
-#         )
-#         returned_df = job.create_ascwds_pir_merged_column(test_df)
-#         self.assertEqual(
-#             returned_df.sort(IndCQC.cqc_location_import_date).collect(),
-#             expected_df.collect(),
-#         )
-
-#     def test_create_ascwds_pir_merged_column_does_not_blend_data_when_pir_less_than_two_years_after_asc(
-#         self,
-#     ):
-#         test_df = self.spark.createDataFrame(
-#             Data.create_ascwds_pir_merged_column_when_pir_less_than_two_years_after_asc_rows,
-#             Schemas.create_ascwds_pir_merged_column_schema,
-#         )
-#         expected_df = self.spark.createDataFrame(
-#             Data.expected_create_ascwds_pir_merged_column_when_pir_less_than_two_years_after_asc_rows,
-#             Schemas.expected_create_ascwds_pir_merged_column_schema,
-#         )
-#         returned_df = job.create_ascwds_pir_merged_column(test_df)
-#         self.assertEqual(
-#             returned_df.sort(IndCQC.cqc_location_import_date).collect(),
-#             expected_df.collect(),
-#         )
-
-#     def test_create_ascwds_pir_merged_column_does_not_blend_data_when_asc_after_pir(
-#         self,
-#     ):
-#         test_df = self.spark.createDataFrame(
-#             Data.create_ascwds_pir_merged_column_when_asc_after_pir_rows,
-#             Schemas.create_ascwds_pir_merged_column_schema,
-#         )
-#         expected_df = self.spark.createDataFrame(
-#             Data.expected_create_ascwds_pir_merged_column_when_asc_after_pir_rows,
-#             Schemas.expected_create_ascwds_pir_merged_column_schema,
-#         )
-#         returned_df = job.create_ascwds_pir_merged_column(test_df)
-#         self.assertEqual(
-#             returned_df.sort(IndCQC.cqc_location_import_date).collect(),
-#             expected_df.collect(),
-#         )
-
-#     def test_create_ascwds_pir_merged_column_does_not_blend_data_when_difference_less_than_absolute_threshold(
-#         self,
-#     ):
-#         test_df = self.spark.createDataFrame(
-#             Data.create_ascwds_pir_merged_column_when_difference_less_than_absolute_threshold_rows,
-#             Schemas.create_ascwds_pir_merged_column_schema,
-#         )
-#         expected_df = self.spark.createDataFrame(
-#             Data.expected_create_ascwds_pir_merged_column_when_difference_less_than_absolute_threshold_rows,
-#             Schemas.expected_create_ascwds_pir_merged_column_schema,
-#         )
-#         returned_df = job.create_ascwds_pir_merged_column(test_df)
-#         self.assertEqual(
-#             returned_df.sort(
-#                 IndCQC.location_id, IndCQC.cqc_location_import_date
-#             ).collect(),
-#             expected_df.collect(),
-#         )
-
-#     def test_create_ascwds_pir_merged_column_does_not_blend_data_when_difference_less_than_percentage_threshold(
-#         self,
-#     ):
-#         test_df = self.spark.createDataFrame(
-#             Data.create_ascwds_pir_merged_column_when_difference_less_than_percentage_threshold_rows,
-#             Schemas.create_ascwds_pir_merged_column_schema,
-#         )
-#         expected_df = self.spark.createDataFrame(
-#             Data.expected_create_ascwds_pir_merged_column_when_difference_less_than_percentage_threshold_rows,
-#             Schemas.expected_create_ascwds_pir_merged_column_schema,
-#         )
-#         returned_df = job.create_ascwds_pir_merged_column(test_df)
-#         self.assertEqual(
-#             returned_df.sort(
-#                 IndCQC.location_id, IndCQC.cqc_location_import_date
-#             ).collect(),
-#             expected_df.collect(),
-#         )
+        expected_lf = pl.LazyFrame(
+            case.expected_data,
+            Schemas.expected_create_ascwds_pir_merged_column_schema,
+            orient="row",
+        )
+        test_lf = expected_lf.drop(IndCQC.ascwds_pir_merged)
+        returned_lf = job.create_ascwds_pir_merged_column(test_lf)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
 # class IncludePirIfNeverSubmittedAscwdsTests(ModelAndMergePirTests):
