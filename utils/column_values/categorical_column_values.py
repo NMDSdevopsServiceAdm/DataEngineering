@@ -666,7 +666,6 @@ class ParentPermission(ColumnValues):
 
     parent_has_ownership: str = "Parent has ownership"
     workplace_has_ownership: str = "Workplace has ownership"
-    placeholder_label: str = "Placeholder label"
 
 
 @dataclass
