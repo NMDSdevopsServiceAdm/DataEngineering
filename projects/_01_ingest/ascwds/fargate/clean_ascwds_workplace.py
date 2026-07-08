@@ -111,23 +111,23 @@ def main(
 
     lf = cUtils.cast_date_strings_to_dates(lf)
 
-    # lf = cUtils.column_to_date(
-    #     lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
-    # ).drop(AWPClean.import_date)
+    lf = cUtils.column_to_date(
+        lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
+    ).drop(AWPClean.import_date)
 
-    # # trello 1705
-    # data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
-    # lf = cUtils.apply_categorical_labels(
-    #     lf,
-    #     data_labels_lf,
-    #     columns_to_apply_labels,
-    #     add_as_new_column=False,
-    # )
+    # trello 1705
+    data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
+    lf = cUtils.apply_categorical_labels(
+        lf,
+        data_labels_lf,
+        columns_to_apply_labels,
+        add_as_new_column=False,
+    )
 
-    # (
-    #     lf,
-    #     reconciliation_lf,
-    # ) = wUtils.create_purged_lfs_for_reconciliation_and_data(lf)
+    (
+        lf,
+        reconciliation_lf,
+    ) = wUtils.create_purged_lfs_for_reconciliation_and_data(lf)
 
     # lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
 
