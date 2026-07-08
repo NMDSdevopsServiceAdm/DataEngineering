@@ -52,9 +52,7 @@ class MainTests(unittest.TestCase):
             self.RECONCILIATION_DESTINATION,
         )
 
-        scan_parquet_mock.assert_called_once_with(
-            self.WORKPLACE_SOURCE, selected_columns=job.COLUMNS_TO_IMPORT
-        )
+        scan_parquet_mock.assert_called_once_with(self.WORKPLACE_SOURCE)
         valid_filter_mock.assert_called_once()
 
         cast_date_strings_to_dates_mock.assert_called_once()
