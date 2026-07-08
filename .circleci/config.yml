@@ -163,7 +163,11 @@ jobs:
           paths:
             - terraform/pipeline/tfplan
             - terraform/pipeline/.*
-            #- .
+            - utils
+            - schemas
+            - projects
+            - environment
+            - polars_utils
 
   terraform-apply:
     docker:
