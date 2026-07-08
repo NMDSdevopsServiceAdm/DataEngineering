@@ -90,8 +90,6 @@ jobs:
       - run:
             name: Output Coverage Report
             command: coverage report
-      - store_artifacts:
-          path: htmlcov.index.html
 
   lint-python:
     docker:
@@ -150,15 +148,6 @@ jobs:
             terraform init -input=false -backend-config=../${AWS_ENV}.s3.tfbackend
             terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
             terraform plan -out tfplan
-      - run:
-          name: Check workspace size
-          command: |
-            du -sh utils
-            du -sh schemas
-            du -sh projects
-            du -sh polars_utils
-            du -sh terraform/pipeline/tfplan
-            du -sh terraform/pipeline/* || true
       - store_artifacts:
           path: terraform/pipeline/tfplan
       - persist_to_workspace:
