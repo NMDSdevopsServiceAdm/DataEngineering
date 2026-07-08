@@ -90,18 +90,20 @@ def remove_rows_with_duplicate_location_ids(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: The input LazyFrame without rows containing duplicate location_id's.
     """
-    locid_count = lf.group_by("row_index").agg(
-        pl.col(AWPClean.location_id).count().alias(AWPClean.locationid_count)
+    group_cols = [AWPClean.location_id, AWPClean.ascwds_workplace_import_date]
+    duplicate_keys = (
+        lf.filter(pl.col(AWPClean.location_id).is_not_null())
+        .group_by(group_cols)
+        .len()
+        .filter(pl.col("len") > 1)
+        .select(group_cols)
     )
 
-    lf = lf.join(locid_count, on="row_index", how="left")
-
-    lf = lf.filter(
-        pl.col(AWPClean.location_id).is_null()
-        | (pl.col(AWPClean.locationid_count) == 1)
-    ).drop(AWPClean.locationid_count)
-
-    return lf
+    return lf.join(
+        duplicate_keys,
+        on=group_cols,
+        how="anti",
+    )
 
 
 class PurgeWorkplaceDataExpressions:
