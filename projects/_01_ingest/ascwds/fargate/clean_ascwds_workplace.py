@@ -103,8 +103,10 @@ def main(
         cleaned_workplace_destination (str): destination for cleaned ascwds workplace output
         workplace_for_reconciliation_destination (str): destination for reconciliation workplace output
     """
-    lf = utils.scan_parquet(workplace_source).with_columns(
-        utils.cast_to_schema(COLUMNS_TO_IMPORT)
+    lf = (
+        utils.scan_parquet(workplace_source)
+        .filter(utils.reduced_data_filter_expr())
+        .with_columns(utils.cast_to_schema(COLUMNS_TO_IMPORT))
     )
 
     lf = lf.select(*COLUMNS_TO_IMPORT, slv_columns)
