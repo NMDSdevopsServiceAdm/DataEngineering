@@ -153,10 +153,11 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
+            # The workspace is intentionally limited to the Terraform plan file plus dependency folders to reduce CircleCI storage costs
             # Needed for terraform deployment
             - terraform/pipeline/tfplan
             - terraform/pipeline/.*
-            # Needed for dependancies folder in s3
+            # Needed for dependencies folder in s3
             - utils
             - schemas
             - projects
