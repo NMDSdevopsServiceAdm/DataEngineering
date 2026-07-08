@@ -128,7 +128,7 @@ def main(
         reconciliation_lf,
     ) = wUtils.create_purged_lfs_for_reconciliation_and_data(lf)
 
-    lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
+    lf = wUtils.remove_rows_with_duplicate_location_ids(lf)
 
     lf = lf.with_columns(
         pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
