@@ -10,6 +10,7 @@ ENV PYTHONPATH=/app
 COPY polars_utils polars_utils
 COPY projects/_01_ingest/ascwds/fargate/utils projects/_01_ingest/ascwds/fargate/utils
 COPY utils utils
+COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/utils /app/projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/utils
 
 # Copy all python jobs to WORKDIR
 COPY projects/_01_ingest/ascwds/fargate/*.py .
