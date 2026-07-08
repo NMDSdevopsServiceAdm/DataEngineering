@@ -77,3 +77,37 @@ class MainTests(unittest.TestCase):
             call(lazy_df=ANY, output_path=self.RECONCILIATION_DESTINATION),
         ]
         sink_to_parquet_mock.assert_has_calls(sink_calls)
+
+
+class SLVColumnsTests(unittest.TestCase):
+    def setUp(self) -> None:
+        slv_cols_selector = job.slv_columns
+
+        test_lf = pl.LazyFrame(
+            {
+                AWPClean.job_role_01_agency: "1",
+                AWPClean.job_role_01_employees: "1",
+                AWPClean.job_role_01_flag: "1",
+                "any_other_col": "1",
+            }
+        )
+        selected_lf = test_lf.select(slv_cols_selector)
+        self.selected_cols = selected_lf.collect_schema().names()
+
+    def test_selected_cols_contains_strings_starting_with_jr(self):
+        for i in self.selected_cols:
+            assert i.startswith("jr")
+
+    def test_list_contains_strings_with_expected_endings(self):
+        string_endings_1 = [i[-4:] for i in self.selected_cols if len(i) == 8]
+        string_endings_2 = [i[-3:] for i in self.selected_cols if len(i) == 7]
+        string_endings_3 = set(string_endings_1 + string_endings_2)
+        expected_endings = {"agcy", "emp"}
+        self.assertEqual(string_endings_3, expected_endings)
+
+    def test_list_does_not_contain_strings_with_flag(self):
+        for i in self.selected_cols:
+            assert "flag" not in i
+
+    def test_list_is_expected_length(self):
+        self.assertEqual(len(self.selected_cols), 2)

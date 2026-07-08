@@ -1,4 +1,5 @@
 import polars as pl
+import polars.selectors as cs
 
 from polars_utils import cleaning_utils as cUtils
 from polars_utils import utils
@@ -80,6 +81,8 @@ data_labels_schema = pl.Schema(
     [(DLC.column_name, pl.String), (DLC.code, pl.String), (DLC.label, pl.String)]
 )
 
+slv_columns = cs.string() & cs.contains("jr") & ~cs.contains("flag")
+
 
 def main(
     workplace_source: str,
@@ -96,7 +99,9 @@ def main(
         cleaned_workplace_destination (str): destination for cleaned ascwds workplace output
         workplace_for_reconciliation_destination (str): destination for reconciliation workplace output
     """
-    lf = utils.scan_parquet(workplace_source, selected_columns=COLUMNS_TO_IMPORT)
+    lf = utils.scan_parquet(workplace_source)
+
+    lf = lf.select(*COLUMNS_TO_IMPORT, slv_columns)
 
     lf = lf.filter(wUtils.valid_workplace_filter())
 
