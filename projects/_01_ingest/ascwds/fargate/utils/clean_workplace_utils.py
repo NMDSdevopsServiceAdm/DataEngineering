@@ -92,7 +92,8 @@ def remove_rows_with_duplicate_location_ids(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     group_cols = [AWPClean.location_id, AWPClean.ascwds_workplace_import_date]
     duplicate_keys = (
-        lf.filter(pl.col(AWPClean.location_id).is_not_null())
+        lf.select(group_cols)
+        .filter(pl.col(AWPClean.location_id).is_not_null())
         .group_by(group_cols)
         .len()
         .filter(pl.col("len") > 1)
