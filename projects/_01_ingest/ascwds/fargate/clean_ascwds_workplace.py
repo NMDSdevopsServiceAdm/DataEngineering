@@ -129,21 +129,21 @@ def main(
         reconciliation_lf,
     ) = wUtils.create_purged_lfs_for_reconciliation_and_data(lf)
 
-    lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
+    # lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
 
     lf = lf.with_columns(
         pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
         slv_columns.cast(pl.Int32, strict=False),
     )
 
-    # lf = lf.with_columns(
-    #     pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)
-    #     .then(pl.col(BOUNDED_STAFF_COLUMNS))
-    #     .otherwise(None)
-    #     .name.suffix("_bounded")
-    # )
+    lf = lf.with_columns(
+        pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)
+        .then(pl.col(BOUNDED_STAFF_COLUMNS))
+        .otherwise(None)
+        .name.suffix("_bounded")
+    )
 
-    # reconciliation_lf = reconciliation_lf.select(RECONCILIATION_COLUMNS)
+    reconciliation_lf = reconciliation_lf.select(RECONCILIATION_COLUMNS)
 
     print(
         f"Exporting clean ascwds workplace data as parquet to {cleaned_workplace_destination}"
@@ -156,10 +156,10 @@ def main(
     print(
         f"Exporting ascwds workplace reconciliation data as parquet to {workplace_for_reconciliation_destination}"
     )
-    # utils.sink_to_parquet(
-    #     lazy_df=reconciliation_lf,
-    #     output_path=workplace_for_reconciliation_destination,
-    # )
+    utils.sink_to_parquet(
+        lazy_df=reconciliation_lf,
+        output_path=workplace_for_reconciliation_destination,
+    )
 
 
 if __name__ == "__main__":
