@@ -156,7 +156,6 @@ jobs:
             du -sh utils
             du -sh schemas
             du -sh projects
-            du -sh environment
             du -sh polars_utils
             du -sh terraform/pipeline/tfplan
             du -sh terraform/pipeline/* || true
