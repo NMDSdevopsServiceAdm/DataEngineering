@@ -75,28 +75,23 @@ class TestCreateRepeatedAscwdsCleanColumn:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
-# class CreateLastSubmissionColumnsTests(ModelAndMergePirTests):
-#     def setUp(self):
-#         super().setUp()
-#         test_df = self.spark.createDataFrame(
-#             Data.create_last_submission_columns_rows,
-#             Schemas.create_last_submission_columns_schema,
-#         )
-#         self.expected_df = self.spark.createDataFrame(
-#             Data.expected_create_last_submission_columns_rows,
-#             Schemas.expected_create_last_submission_columns_schema,
-#         )
-#         self.returned_df = job.create_last_submission_columns(test_df)
+class TestCreateLastSubmissionColumns:
+    expected_lf = pl.LazyFrame(
+        Data.expected_create_last_submission_columns_rows,
+        Schemas.expected_create_last_submission_columns_schema,
+        orient="row",
+    )
+    test_lf = expected_lf.drop(
+        IndCQC.last_ascwds_submission, IndCQC.last_pir_submission
+    )
+    returned_lf = job.create_last_submission_columns(test_lf)
 
-#     def test_create_last_submission_columns_returns_correct_values(
-#         self,
-#     ):
-#         self.assertEqual(
-#             self.returned_df.sort(
-#                 IndCQC.location_id, IndCQC.cqc_location_import_date
-#             ).collect(),
-#             self.expected_df.collect(),
-#         )
+    def test_create_last_submission_columns_returns_correct_values(
+        self,
+    ):
+        pl_testing.assert_frame_equal(
+            self.returned_lf, self.expected_lf, check_row_order=False
+        )
 
 
 # class CreateAscwdsPirMergedColumnTests(ModelAndMergePirTests):

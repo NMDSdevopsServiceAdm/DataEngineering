@@ -3571,18 +3571,6 @@ class CombineASCWDSAndPIRData:
         ),
     ]
 
-    create_last_submission_columns_rows = [
-        ("loc 1", date(2024, 1, 1), 10.0, None),
-        ("loc 1", date(2024, 2, 1), None, 20.0),
-        ("loc 2", date(2024, 1, 1), None, 30.0),
-        ("loc 2", date(2024, 2, 1), 40.0, None),
-        ("loc 3", date(2024, 1, 1), None, None),
-        ("loc 3", date(2024, 2, 1), None, None),
-        ("loc 4", date(2024, 1, 1), 50.0, None),
-        ("loc 4", date(2024, 2, 1), None, None),
-        ("loc 4", date(2024, 3, 1), 60.0, None),
-        ("loc 4", date(2024, 4, 1), None, 70.0),
-    ]
     expected_create_last_submission_columns_rows = [
         ("loc 1", date(2024, 1, 1), 10.0, None, date(2024, 1, 1), date(2024, 2, 1)),
         ("loc 1", date(2024, 2, 1), None, 20.0, date(2024, 1, 1), date(2024, 2, 1)),

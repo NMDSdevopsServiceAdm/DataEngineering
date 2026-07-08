@@ -1853,13 +1853,6 @@ class CombineASCWDSAndPIRSchemas:
         IndCQC.ascwds_filled_posts_dedup_clean_repeated: pl.Float32,
     }
 
-    create_last_submission_columns_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
-        IndCQC.pir_filled_posts_model: pl.Float32,
-    }
-
     expected_create_last_submission_columns_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
