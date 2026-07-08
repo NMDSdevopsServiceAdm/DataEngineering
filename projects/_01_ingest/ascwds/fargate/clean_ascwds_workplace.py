@@ -97,18 +97,27 @@ def main(
         workplace_for_reconciliation_destination (str): destination for reconciliation workplace output
     """
     lf = utils.scan_parquet(workplace_source, selected_columns=COLUMNS_TO_IMPORT)
-
+    lf = check_id_present(lf, "99157107", "establishmentid", "after scan_parquet")
     lf = lf.filter(wUtils.valid_workplace_filter())
+    lf = check_id_present(
+        lf, "99157107", "establishmentid", "after valid_workplace_filter"
+    )
 
     lf = lf.with_columns(pl.col(AWPClean.nmds_id).str.strip_chars())
+    lf = check_id_present(lf, "99157107", "establishmentid", "after strip_chars")
 
     lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
+    lf = check_id_present(lf, "99157107", "establishmentid", "after rename")
 
     lf = cUtils.cast_date_strings_to_dates(lf)
+    lf = check_id_present(
+        lf, "99157107", "establishmentid", "after cast_date_strings_to_dates"
+    )
 
     lf = cUtils.column_to_date(
         lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
     ).drop(AWPClean.import_date)
+    lf = check_id_present(lf, "99157107", "establishmentid", "after column_to_date")
 
     # trello 1705
     data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
@@ -117,6 +126,9 @@ def main(
         data_labels_lf,
         columns_to_apply_labels,
         add_as_new_column=False,
+    )
+    lf = check_id_present(
+        lf, "99157107", "establishmentid", "after apply_categorical_labels"
     )
 
     (
@@ -152,6 +164,14 @@ def main(
         lazy_df=reconciliation_lf,
         output_path=workplace_for_reconciliation_destination,
     )
+
+
+def check_id_present(
+    lf: pl.DataFrame, id_value: str, id_column: str, step_name: str
+) -> pl.LazyFrame:
+    count = lf.filter(pl.col(id_column) == id_value).height
+    print(f"[{step_name}] {id_column}={id_value} present: {count} row(s)")
+    return lf  # unchanged, so it can be dropped inline
 
 
 if __name__ == "__main__":
