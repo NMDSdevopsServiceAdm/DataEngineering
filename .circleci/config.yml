@@ -161,7 +161,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            #- terraform/pipeline/tfplan
+            - terraform/pipeline/tfplan
             - terraform/pipeline/.*
             #- .
 
