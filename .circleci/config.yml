@@ -90,8 +90,6 @@ jobs:
       - run:
             name: Output Coverage Report
             command: coverage report
-      - store_artifacts:
-          path: htmlcov
 
   lint-python:
     docker:
@@ -149,15 +147,22 @@ jobs:
             cd terraform/pipeline
             terraform init -input=false -backend-config=../${AWS_ENV}.s3.tfbackend
             terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
-            terraform plan -out tfapply
+            terraform plan -out tfplan
       - store_artifacts:
-          path: terraform/pipeline/tfapply
+          path: terraform/pipeline/tfplan
       - persist_to_workspace:
           root: .
           paths:
-            - terraform/pipeline/tfapply
+            # The workspace is intentionally limited to the Terraform plan file plus dependency folders to reduce CircleCI storage costs
+            # Needed for terraform deployment
+            - terraform/pipeline/tfplan
             - terraform/pipeline/.*
-            - .
+            # Needed for dependencies folder in s3
+            - utils
+            - schemas
+            - projects
+            - environment
+            - polars_utils
 
   terraform-apply:
     docker:
@@ -176,7 +181,7 @@ jobs:
             unset AWS_ACCESS_KEY_ID
             unset AWS_SECRET_ACCESS_KEY
             cd terraform/pipeline
-            terraform apply -auto-approve tfapply
+            terraform apply -auto-approve tfplan
       - run:
           name: save pipeline resources bucket name
           command: |
