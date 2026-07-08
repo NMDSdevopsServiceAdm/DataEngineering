@@ -155,14 +155,14 @@ jobs:
           command: |
             du -sh .
             du -sh terraform/pipeline/tfplan
-            du -sh terraform/pipeline/tfplan/* || true
+            du -sh terraform/pipeline/* || true
       - store_artifacts:
           path: terraform/pipeline/tfplan
       - persist_to_workspace:
           root: .
           paths:
-            - terraform/pipeline/tfplan
-            #- terraform/pipeline/.*
+            #- terraform/pipeline/tfplan
+            - terraform/pipeline/.*
             #- .
 
   terraform-apply:
