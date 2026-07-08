@@ -153,8 +153,10 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
+            # Needed for terraform deployment
             - terraform/pipeline/tfplan
             - terraform/pipeline/.*
+            # Needed for dependancies folder in s3
             - utils
             - schemas
             - projects
