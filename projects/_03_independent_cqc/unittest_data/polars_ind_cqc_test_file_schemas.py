@@ -1846,11 +1846,6 @@ class CombineASCWDSAndPIRSchemas:
         IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
     }
 
-    create_repeated_ascwds_clean_column_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
-    }
     expected_create_repeated_ascwds_clean_column_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,

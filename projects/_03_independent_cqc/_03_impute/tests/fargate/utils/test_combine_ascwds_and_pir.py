@@ -2,6 +2,7 @@ import warnings
 from unittest.mock import Mock, patch
 
 import polars as pl
+import polars.testing as pl_testing
 import pytest
 
 import projects._03_independent_cqc._03_impute.fargate.utils.combine_ascwds_and_pir as job
@@ -47,66 +48,31 @@ class TestCombineASCWDSAndPIR:
         drop_temporary_columns_mock.assert_called_once()
 
     def test_merge_ascwds_and_pir_filled_post_submissions_completes(self):
-        returned_df = job.merge_ascwds_and_pir_filled_post_submissions(self.test_lf)
-        assert type(returned_df) == pl.LazyFrame
+        returned_lf = job.merge_ascwds_and_pir_filled_post_submissions(self.test_lf)
+        assert type(returned_lf) == pl.LazyFrame
 
 
-# class CreateRepeatedAscwdsCleanColumnTests(ModelAndMergePirTests):
-#     def setUp(self):
-#         super().setUp()
+class TestCreateRepeatedAscwdsCleanColumn:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.create_repeated_ascwds_clean_column_test_cases
+        ],
+    )
+    def test_create_repeated_ascwds_clean_column_returns_correct_values_when_missing_earlier_and_later_data(
+        self,
+        case,
+    ):
 
-#     def test_create_repeated_ascwds_clean_column_returns_correct_values_when_missing_earlier_and_later_data(
-#         self,
-#     ):
-#         test_df = self.spark.createDataFrame(
-#             Data.create_repeated_ascwds_clean_column_when_missing_earlier_and_later_data_rows,
-#             Schemas.create_repeated_ascwds_clean_column_schema,
-#         )
-#         expected_df = self.spark.createDataFrame(
-#             Data.expected_create_repeated_ascwds_clean_column_when_missing_earlier_and_later_data_rows,
-#             Schemas.expected_create_repeated_ascwds_clean_column_schema,
-#         )
-#         returned_df = job.create_repeated_ascwds_clean_column(test_df)
-#         self.assertEqual(
-#             returned_df.sort(IndCQC.cqc_location_import_date).collect(),
-#             expected_df.collect(),
-#         )
-
-#     def test_create_repeated_ascwds_clean_column_returns_correct_values_when_missing_middle_data(
-#         self,
-#     ):
-#         test_df = self.spark.createDataFrame(
-#             Data.create_repeated_ascwds_clean_column_when_missing_middle_data_rows,
-#             Schemas.create_repeated_ascwds_clean_column_schema,
-#         )
-#         expected_df = self.spark.createDataFrame(
-#             Data.expected_create_repeated_ascwds_clean_column_when_missing_middle_data_rows,
-#             Schemas.expected_create_repeated_ascwds_clean_column_schema,
-#         )
-#         returned_df = job.create_repeated_ascwds_clean_column(test_df)
-#         self.assertEqual(
-#             returned_df.sort(IndCQC.cqc_location_import_date).collect(),
-#             expected_df.collect(),
-#         )
-
-#     def test_create_repeated_ascwds_clean_column_separates_repetition_by_location_id(
-#         self,
-#     ):
-#         test_df = self.spark.createDataFrame(
-#             Data.create_repeated_ascwds_clean_column_separates_repetition_by_location_id_rows,
-#             Schemas.create_repeated_ascwds_clean_column_schema,
-#         )
-#         expected_df = self.spark.createDataFrame(
-#             Data.expected_create_repeated_ascwds_clean_column_separates_repetition_by_location_id_rows,
-#             Schemas.expected_create_repeated_ascwds_clean_column_schema,
-#         )
-#         returned_df = job.create_repeated_ascwds_clean_column(test_df)
-#         self.assertEqual(
-#             returned_df.sort(
-#                 IndCQC.location_id, IndCQC.cqc_location_import_date
-#             ).collect(),
-#             expected_df.collect(),
-#         )
+        expected_lf = pl.LazyFrame(
+            case.expected_data,
+            Schemas.expected_create_repeated_ascwds_clean_column_schema,
+            orient="row",
+        )
+        test_lf = expected_lf.drop(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+        returned_lf = job.create_repeated_ascwds_clean_column(test_lf)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
 # class CreateLastSubmissionColumnsTests(ModelAndMergePirTests):

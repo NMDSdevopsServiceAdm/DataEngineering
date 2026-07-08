@@ -3532,43 +3532,43 @@ class EstimateFilledPostsByJobRoleCleanData:
 
 
 @dataclass
+class CombineASCWDSAndPIRTestCase:
+    id: str
+    expected_data: list[Any]
+
+
+@dataclass
 class CombineASCWDSAndPIRData:
     blend_pir_and_ascwds_rows = [
         ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10.0, 20.0),
     ]
-    create_repeated_ascwds_clean_column_when_missing_earlier_and_later_data_rows = [
-        ("loc 1", date(2024, 1, 1), None),
-        ("loc 1", date(2024, 2, 1), 100.0),
-        ("loc 1", date(2024, 3, 1), None),
-    ]
-    expected_create_repeated_ascwds_clean_column_when_missing_earlier_and_later_data_rows = [
-        ("loc 1", date(2024, 1, 1), None, None),
-        ("loc 1", date(2024, 2, 1), 100.0, 100.0),
-        ("loc 1", date(2024, 3, 1), None, 100.0),
-    ]
 
-    create_repeated_ascwds_clean_column_when_missing_middle_data_rows = [
-        ("loc 3", date(2024, 1, 1), 40.0),
-        ("loc 3", date(2024, 2, 1), None),
-        ("loc 3", date(2024, 3, 1), 60.0),
-    ]
-    expected_create_repeated_ascwds_clean_column_when_missing_middle_data_rows = [
-        ("loc 3", date(2024, 1, 1), 40.0, 40.0),
-        ("loc 3", date(2024, 2, 1), None, 40.0),
-        ("loc 3", date(2024, 3, 1), 60.0, 60.0),
-    ]
-
-    create_repeated_ascwds_clean_column_separates_repetition_by_location_id_rows = [
-        ("loc 1", date(2024, 1, 1), 100.0),
-        ("loc 1", date(2024, 2, 1), None),
-        ("loc 2", date(2024, 1, 1), 50.0),
-        ("loc 2", date(2024, 2, 1), None),
-    ]
-    expected_create_repeated_ascwds_clean_column_separates_repetition_by_location_id_rows = [
-        ("loc 1", date(2024, 1, 1), 100.0, 100.0),
-        ("loc 1", date(2024, 2, 1), None, 100.0),
-        ("loc 2", date(2024, 1, 1), 50.0, 50.0),
-        ("loc 2", date(2024, 2, 1), None, 50.0),
+    create_repeated_ascwds_clean_column_test_cases = [
+        CombineASCWDSAndPIRTestCase(
+            id="repeats_ascwds_clean_column_when_missing_earlier_and_later_data",
+            expected_data=[
+                ("loc 1", date(2024, 1, 1), None, None),
+                ("loc 1", date(2024, 2, 1), 100.0, 100.0),
+                ("loc 1", date(2024, 3, 1), None, 100.0),
+            ],
+        ),
+        CombineASCWDSAndPIRTestCase(
+            id="repeats_ascwds_clean_column_when_missing_middle_data",
+            expected_data=[
+                ("loc 3", date(2024, 1, 1), 40.0, 40.0),
+                ("loc 3", date(2024, 2, 1), None, 40.0),
+                ("loc 3", date(2024, 3, 1), 60.0, 60.0),
+            ],
+        ),
+        CombineASCWDSAndPIRTestCase(
+            id="repeats_ascwds_clean_column_separates_repetition_by_location_id",
+            expected_data=[
+                ("loc 1", date(2024, 1, 1), 100.0, 100.0),
+                ("loc 1", date(2024, 2, 1), None, 100.0),
+                ("loc 2", date(2024, 1, 1), 50.0, 50.0),
+                ("loc 2", date(2024, 2, 1), None, 50.0),
+            ],
+        ),
     ]
 
     create_last_submission_columns_rows = [
