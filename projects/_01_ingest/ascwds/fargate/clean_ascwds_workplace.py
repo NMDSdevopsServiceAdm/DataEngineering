@@ -105,7 +105,11 @@ def main(
     """
     lf = (
         utils.scan_parquet(workplace_source)
-        .filter(utils.reduced_data_filter_expr())
+        .filter(
+            utils.reduced_data_filter_expr(
+                date_col=AWPClean.ascwds_workplace_import_date
+            )
+        )
         .with_columns(utils.cast_to_schema(COLUMNS_TO_IMPORT))
     )
 
