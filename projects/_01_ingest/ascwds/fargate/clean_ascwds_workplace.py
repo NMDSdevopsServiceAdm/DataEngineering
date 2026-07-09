@@ -12,42 +12,46 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 
+# Set streaming chunk size for memory management - each thread (per CPU core) will load
+# in a chunk of this size.
+pl.Config.set_streaming_chunk_size(50000)
+
 INT_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
 BOUNDED_STAFF_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
 MIN_VALID_STAFF_COUNT: int = 1
 
-COLUMNS_TO_IMPORT = {
-    AWPClean.organisation_id: pl.String,
-    AWPClean.period: pl.String,
-    AWPClean.establishment_id: pl.String,
-    AWPClean.establishment_id_from_nmds: pl.String,
-    AWPClean.parent_id: pl.String,
-    AWPClean.nmds_id: pl.String,
-    AWPClean.establishment_created_date: pl.String,
-    AWPClean.establishment_updated_date: pl.String,
-    AWPClean.master_update_date: pl.String,
-    AWPClean.last_logged_in: pl.String,
-    AWPClean.la_permission: pl.String,
-    AWPClean.is_bulk_uploader: pl.String,
-    AWPClean.is_parent: pl.String,
-    AWPClean.parent_permission: pl.String,
-    AWPClean.registration_type: pl.String,
-    AWPClean.provider_id: pl.String,
-    AWPClean.location_id: CatColType.LocationCatType,
-    AWPClean.establishment_type: pl.String,
-    AWPClean.establishment_name: pl.String,
-    AWPClean.address: pl.String,
-    AWPClean.postcode: pl.String,
-    AWPClean.region_id: pl.String,
-    AWPClean.total_staff: pl.String,
-    AWPClean.worker_records: pl.String,
-    AWPClean.total_starters: pl.String,
-    AWPClean.total_leavers: pl.String,
-    AWPClean.total_vacancies: pl.String,
-    AWPClean.main_service_id: pl.String,
-    AWPClean.version: pl.String,
-    AWPClean.import_date: pl.String,
-}
+COLUMNS_TO_IMPORT = [
+    AWPClean.organisation_id,
+    AWPClean.period,
+    AWPClean.establishment_id,
+    AWPClean.establishment_id_from_nmds,
+    AWPClean.parent_id,
+    AWPClean.nmds_id,
+    AWPClean.establishment_created_date,
+    AWPClean.establishment_updated_date,
+    AWPClean.master_update_date,
+    AWPClean.last_logged_in,
+    AWPClean.la_permission,
+    AWPClean.is_bulk_uploader,
+    AWPClean.is_parent,
+    AWPClean.parent_permission,
+    AWPClean.registration_type,
+    AWPClean.provider_id,
+    AWPClean.location_id,
+    AWPClean.establishment_type,
+    AWPClean.establishment_name,
+    AWPClean.address,
+    AWPClean.postcode,
+    AWPClean.region_id,
+    AWPClean.total_staff,
+    AWPClean.worker_records,
+    AWPClean.total_starters,
+    AWPClean.total_leavers,
+    AWPClean.total_vacancies,
+    AWPClean.main_service_id,
+    AWPClean.version,
+    AWPClean.import_date,
+]
 
 
 RECONCILIATION_COLUMNS = [
@@ -103,7 +107,7 @@ def main(
         cleaned_workplace_destination (str): destination for cleaned ascwds workplace output
         workplace_for_reconciliation_destination (str): destination for reconciliation workplace output
     """
-    lf = utils.scan_parquet(workplace_source, selected_columns=COLUMNS_TO_IMPORT)
+    lf = utils.scan_parquet(workplace_source).select(*COLUMNS_TO_IMPORT, slv_columns)
 
     lf = lf.filter(wUtils.valid_workplace_filter())
 
@@ -111,6 +115,13 @@ def main(
 
     lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
 
+    lf = cUtils.cast_date_strings_to_dates(lf)
+
+    lf = cUtils.column_to_date(
+        lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
+    ).drop(AWPClean.import_date)
+
+    # trello 1705
     data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
     lf = cUtils.apply_categorical_labels(
         lf,
@@ -124,9 +135,12 @@ def main(
         reconciliation_lf,
     ) = wUtils.create_purged_lfs_for_reconciliation_and_data(lf)
 
-    lf = wUtils.remove_rows_with_duplicate_location_ids(lf)
+    lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
 
-    lf = lf.with_columns(pl.col(INT_COLUMNS).cast(pl.Int32, strict=False))
+    lf = lf.with_columns(
+        pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
+        slv_columns.cast(pl.Int32, strict=False),
+    )
 
     lf = lf.with_columns(
         pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)
@@ -136,18 +150,6 @@ def main(
     )
 
     reconciliation_lf = reconciliation_lf.select(RECONCILIATION_COLUMNS)
-
-    lf_slv = (
-        utils.scan_parquet(workplace_source)
-        .select(slv_columns)
-        .with_columns(slv_columns.cast(pl.Int32, strict=False))
-    )
-
-    lf = lf.join(
-        lf_slv,
-        on=[AWPClean.location_id, AWPClean.ascwds_workplace_import_date],
-        how="left",
-    )
 
     print(
         f"Exporting clean ascwds workplace data as parquet to {cleaned_workplace_destination}"
