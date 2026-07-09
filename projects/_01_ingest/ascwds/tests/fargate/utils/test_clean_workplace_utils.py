@@ -6,10 +6,10 @@ import pytest
 
 import projects._01_ingest.ascwds.fargate.utils.clean_workplace_utils as job
 from projects._01_ingest.unittest_data.polars_ingest_test_file_data import (
-    TestCreatePurgedLfsForReconciliationAndData as Data,
+    TestCleanAscwdsWorkplaceUtilsData as Data,
 )
 from projects._01_ingest.unittest_data.polars_ingest_test_file_schema import (
-    TestCreatePurgedLfsForReconciliationAndDataSchemas as Schemas,
+    TestCleanAscwdsWorkplaceUtilsSchemas as Schemas,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -202,3 +202,27 @@ class TestCreatePurgedLfsForReconciliationAndData:
 
         assert isinstance(workplace_lf, pl.LazyFrame)
         assert isinstance(recon_lf, pl.LazyFrame)
+
+
+class TestApplyDataCorrections:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.apply_data_corrections_test_cases
+        ],
+    )
+    def test_function_returns_expected_values(self, case):
+        test_lf = pl.LazyFrame(
+            case.test_data, Schemas.apply_data_corrections_schema, orient="row"
+        )
+
+        expected_workplace_lf = pl.LazyFrame(
+            case.expected_data,
+            Schemas.apply_data_corrections_schema,
+            orient="row",
+        )
+
+        returned_lf = job.apply_data_corrections(test_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_workplace_lf)
