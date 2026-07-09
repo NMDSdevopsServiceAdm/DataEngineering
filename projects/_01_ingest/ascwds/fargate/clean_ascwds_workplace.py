@@ -4,9 +4,6 @@ import polars.selectors as cs
 from polars_utils import cleaning_utils as cUtils
 from polars_utils import utils
 from projects._01_ingest.ascwds.fargate.utils import clean_workplace_utils as wUtils
-from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
-    CategoricalColumnTypes as CatColType,
-)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -48,7 +45,6 @@ COLUMNS_TO_IMPORT = [
     AWPClean.version,
     AWPClean.import_date,
 ]
-
 
 RECONCILIATION_COLUMNS = [
     AWPClean.ascwds_workplace_import_date,
