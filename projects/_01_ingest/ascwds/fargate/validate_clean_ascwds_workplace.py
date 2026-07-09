@@ -12,8 +12,6 @@ from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkplaceCleanedCategoricalValues as CatValues,
 )
 
-KNOWN_PARENT_PERMISSION_DATA_ISSUES = ["Placeholder label"]
-
 EXPECTED_SCHEMA = pb.Schema(
     columns={
         ASCWPClean.organisation_id: "String",
@@ -117,7 +115,6 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             ASCWPClean.parent_permission,
             [
                 *CatValues.parent_permission_column_values.categorical_values,
-                *KNOWN_PARENT_PERMISSION_DATA_ISSUES,
                 None,
             ],
         )

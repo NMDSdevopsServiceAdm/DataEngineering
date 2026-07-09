@@ -97,27 +97,18 @@ def main(
         workplace_for_reconciliation_destination (str): destination for reconciliation workplace output
     """
     lf = utils.scan_parquet(workplace_source, selected_columns=COLUMNS_TO_IMPORT)
-    lf = check_id_present(lf, "99157107", "establishmentid", "after scan_parquet")
+
     lf = lf.filter(wUtils.valid_workplace_filter())
-    lf = check_id_present(
-        lf, "99157107", "establishmentid", "after valid_workplace_filter"
-    )
 
     lf = lf.with_columns(pl.col(AWPClean.nmds_id).str.strip_chars())
-    lf = check_id_present(lf, "99157107", "establishmentid", "after strip_chars")
 
     lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
-    lf = check_id_present(lf, "99157107", "establishmentid", "after rename")
 
     lf = cUtils.cast_date_strings_to_dates(lf)
-    lf = check_id_present(
-        lf, "99157107", "establishmentid", "after cast_date_strings_to_dates"
-    )
 
     lf = cUtils.column_to_date(
         lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
     ).drop(AWPClean.import_date)
-    lf = check_id_present(lf, "99157107", "establishmentid", "after column_to_date")
 
     # trello 1705
     data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
@@ -127,31 +118,15 @@ def main(
         columns_to_apply_labels,
         add_as_new_column=False,
     )
-    lf = check_id_present(
-        lf, "99157107", "establishmentid", "after apply_categorical_labels"
-    )
 
     (
         lf,
         reconciliation_lf,
     ) = wUtils.create_purged_lfs_for_reconciliation_and_data(lf)
-    lf = check_id_present(
-        lf,
-        "99157107",
-        "establishmentid",
-        "after create_purged_lfs_for_reconciliation_and_data",
-    )
 
     lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
-    lf = check_id_present(
-        lf,
-        "99157107",
-        "establishmentid",
-        "after remove_rows_with_duplicate_location_ids",
-    )
 
     lf = lf.with_columns(pl.col(INT_COLUMNS).cast(pl.Int32, strict=False))
-    lf = check_id_present(lf, "99157107", "establishmentid", "after castIntColumns")
 
     lf = lf.with_columns(
         pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)
@@ -159,14 +134,8 @@ def main(
         .otherwise(None)
         .name.suffix("_bounded")
     )
-    lf = check_id_present(
-        lf, "99157107", "establishmentid", "after boundedStaffColumns"
-    )
 
     reconciliation_lf = reconciliation_lf.select(RECONCILIATION_COLUMNS)
-    lf = check_id_present(
-        reconciliation_lf, "99157107", "establishmentid", "after reconciliation_lf"
-    )
 
     print(
         f"Exporting clean ascwds workplace data as parquet to {cleaned_workplace_destination}"
@@ -183,16 +152,6 @@ def main(
         lazy_df=reconciliation_lf,
         output_path=workplace_for_reconciliation_destination,
     )
-
-
-def check_id_present(
-    lf: pl.LazyFrame, id_value: str, id_column: str, step_name: str
-) -> pl.LazyFrame:
-    count_lf = lf.filter(pl.col(id_column) == id_value).select(id_column)
-    print(
-        f"[{step_name}] {id_column}={id_value} present: {count_lf.collect().height} row(s)"
-    )
-    return lf  # unchanged, so it can be dropped inline
 
 
 if __name__ == "__main__":

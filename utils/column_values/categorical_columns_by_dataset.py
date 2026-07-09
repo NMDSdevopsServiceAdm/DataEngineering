@@ -72,9 +72,7 @@ class ASCWDSWorkerCleanedCategoricalValues:
 @dataclass
 class ASCWDSWorkplaceCleanedCategoricalValues:
     establishment_type_column_values = EstablishmentType(
-        AWPClean.establishment_type,
-        value_to_remove=[EstablishmentType.not_known],
-        contains_null_values=True,
+        AWPClean.establishment_type, contains_null_values=True
     )
     parent_permission_column_values = ParentPermission(
         AWPClean.parent_permission, contains_null_values=True
