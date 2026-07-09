@@ -140,7 +140,7 @@ def main(
     lf_slv = (
         utils.scan_parquet(workplace_source)
         .select(slv_columns)
-        .with_columns(pl.col(slv_columns).cast(pl.Int32, strict=False))
+        .with_columns(slv_columns.cast(pl.Int32, strict=False))
     )
 
     lf = lf.join(
