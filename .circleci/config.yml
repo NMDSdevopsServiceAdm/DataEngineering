@@ -142,7 +142,7 @@ jobs:
           command: |
             unset AWS_ACCESS_KEY_ID
             unset AWS_SECRET_ACCESS_KEY
-            mkdir hashicorp/aws/custom-terraform-plugins
+            mkdir -p hashicorp/aws/custom-terraform-plugins
             aws s3 cp s3://${AWS_BINARY_BUCKET}/terraform-provider-aws_v6.15.0_x5.exe hashicorp/aws/custom-terraform-plugins/terraform-provider-aws_v6.15.0_x5.exe
       - run:
           name: terraform plan
