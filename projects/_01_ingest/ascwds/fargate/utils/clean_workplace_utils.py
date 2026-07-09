@@ -201,3 +201,41 @@ def create_purged_lfs_for_reconciliation_and_data(
     )
 
     return ascwds_workplace_lf, reconciliation_lf
+
+
+def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Apply legacy data corrections to an ASC-WDS workplace LazyFrame.
+
+    The following corrections are applied:
+        - Convert empty and whitespace-only string values to NULL across all
+          string columns.
+        - Set `parent_permission` to NULL where its value is `3`, as this is a
+          legacy value present in older data.
+
+    Args:
+        lf (pl.LazyFrame): Input LazyFrame containing ASC-WDS workplace data.
+
+    Returns:
+        pl.LazyFrame: A LazyFrame with the data corrections applied.
+    """
+    schema = lf.collect_schema()
+
+    string_columns = [name for name, dtype in schema.items() if dtype == pl.String]
+
+    lf = lf.with_columns(
+        pl.when(pl.col(col).str.strip_chars() == "")
+        .then(None)
+        .otherwise(pl.col(col))
+        .alias(col)
+        for col in string_columns
+    )
+
+    lf = lf.with_columns(
+        pl.when(pl.col(AWPClean.parent_permission) == "3")
+        .then(None)
+        .otherwise(pl.col(AWPClean.parent_permission))
+        .alias(AWPClean.parent_permission)
+    )
+
+    return lf

@@ -98,6 +98,8 @@ def main(
     """
     lf = utils.scan_parquet(workplace_source, selected_columns=COLUMNS_TO_IMPORT)
 
+    lf = wUtils.apply_data_corrections(lf)
+
     lf = lf.filter(wUtils.valid_workplace_filter())
 
     lf = lf.with_columns(pl.col(AWPClean.nmds_id).str.strip_chars())

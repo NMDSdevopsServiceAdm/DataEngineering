@@ -28,10 +28,12 @@ class MainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.cUtils.column_to_date")
     @patch(f"{PATCH_PATH}.cUtils.cast_date_strings_to_dates")
     @patch(f"{PATCH_PATH}.wUtils.valid_workplace_filter")
+    @patch(f"{PATCH_PATH}.wUtils.apply_data_corrections")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
+        apply_data_corrections_mock: Mock,
         valid_filter_mock: Mock,
         cast_date_strings_to_dates_mock: Mock,
         column_to_date_mock: Mock,
@@ -55,6 +57,9 @@ class MainTests(unittest.TestCase):
         scan_parquet_mock.assert_called_once_with(
             self.WORKPLACE_SOURCE, selected_columns=job.COLUMNS_TO_IMPORT
         )
+
+        apply_data_corrections_mock.assert_called_once()
+
         valid_filter_mock.assert_called_once()
 
         cast_date_strings_to_dates_mock.assert_called_once()

@@ -2,6 +2,9 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any, Optional
 
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
@@ -1670,5 +1673,177 @@ class TestCreatePurgedLfsForReconciliationAndData:
             ],
             expected_workplace_data=None,
             expected_recon_data=None,
+        ),
+    ]
+
+
+BASE_ROW = {
+    AWPClean.organisation_id: "org-001",
+    AWPClean.period: "2023-04",
+    AWPClean.establishment_id: "1",
+    AWPClean.establishment_id_from_nmds: "E001",
+    AWPClean.parent_id: "100",
+    AWPClean.nmds_id: "N001",
+    AWPClean.establishment_created_date: date(2020, 1, 1),
+    AWPClean.establishment_updated_date: date(2023, 1, 1),
+    AWPClean.master_update_date: date(2023, 4, 1),
+    AWPClean.last_logged_in: date(2023, 4, 1),
+    AWPClean.la_permission: "1",
+    AWPClean.is_bulk_uploader: "0",
+    AWPClean.is_parent: "0",
+    AWPClean.parent_permission: "1",
+    AWPClean.registration_type: "1",
+    AWPClean.provider_id: "PR-001",
+    AWPClean.location_id: "LOC-001",
+    AWPClean.establishment_type: "1",
+    AWPClean.establishment_name: "Sunnyside Care Home",
+    AWPClean.address: "1 Example Street",
+    AWPClean.postcode: "M1 1AA",
+    AWPClean.region_id: "5",
+    AWPClean.total_staff: "20",
+    AWPClean.worker_records: "18",
+    AWPClean.total_starters: "2",
+    AWPClean.total_leavers: "1",
+    AWPClean.total_vacancies: "3",
+    AWPClean.main_service_id: "10",
+    AWPClean.version: "1.0",
+    AWPClean.import_date: date(2023, 4, 15),
+}
+
+
+def make_row(**overrides: Any) -> tuple:
+    """Build a full row tuple (in COLUMNS_TO_IMPORT order) from the baseline,
+    with specific columns overridden for a given test case."""
+    row = {**BASE_ROW, **overrides}
+    return tuple(row[col] for col in BASE_ROW.keys())
+
+
+@dataclass
+class ApplyDataCorrectionsTestCase:
+    id: str
+    test_data: list[Any]
+    expected_data: Optional[list[Any]]
+
+
+@dataclass
+class TestApplyDataCorrections:
+    apply_data_corrections_test_cases = [
+        ApplyDataCorrectionsTestCase(
+            id="empty_string_converted_to_null",
+            test_data=[
+                make_row(**{AWPClean.location_id: ""}),
+            ],
+            expected_data=[
+                make_row(**{AWPClean.location_id: None}),
+            ], # fmt: skip
+        ),
+        ApplyDataCorrectionsTestCase(
+            id="whitespace_only_string_converted_to_null",
+            test_data=[
+                make_row(**{AWPClean.location_id: " "}),
+            ],
+            expected_data=[
+                make_row(**{AWPClean.location_id: None}),
+            ], # fmt: skip
+        ),
+        ApplyDataCorrectionsTestCase(
+            id="non_empty_string_unchanged",
+            test_data=[
+                make_row(),
+            ],
+            expected_data=[
+                make_row(),
+            ], # fmt: skip
+        ),
+        ApplyDataCorrectionsTestCase(
+            id="null_string_remains_null",
+            test_data=[
+                make_row(**{AWPClean.postcode: None}),
+            ],
+            expected_data=[
+                make_row(**{AWPClean.postcode: None}),
+            ], # fmt: skip
+        ),
+        ApplyDataCorrectionsTestCase(
+            id="parent_permission_converted_to_null_when_value_is_3",
+            test_data=[
+                make_row(**{AWPClean.parent_permission: "3"}),
+            ],
+            expected_data=[
+                make_row(**{AWPClean.parent_permission: None}),
+            ], # fmt: skip
+        ),
+        ApplyDataCorrectionsTestCase(
+            id="parent_permission_non_legacy_value_unchanged",
+            test_data=[
+                make_row(**{AWPClean.parent_permission: "2"}),
+            ],
+            expected_data=[
+                make_row(**{AWPClean.parent_permission: "2"}),
+            ], # fmt: skip
+        ),
+        ApplyDataCorrectionsTestCase(
+            id="parent_permission_empty_string_converted_to_null",
+            test_data=[
+                make_row(**{AWPClean.parent_permission: ""}),
+            ],
+            expected_data=[
+                make_row(**{AWPClean.parent_permission: None}),
+            ], # fmt: skip
+        ),
+        ApplyDataCorrectionsTestCase(
+            id="parent_permission_whitespace_only_converted_to_null",
+            test_data=[
+                make_row(**{AWPClean.parent_permission: "   "}),
+            ],
+            expected_data=[
+                make_row(**{AWPClean.parent_permission: None}),
+            ], # fmt: skip
+        ),
+        ApplyDataCorrectionsTestCase(
+            id="parent_permission_already_null_remains_null",
+            test_data=[
+                make_row(**{AWPClean.parent_permission: None}),
+            ],
+            expected_data=[
+                make_row(**{AWPClean.parent_permission: None}),
+            ], # fmt: skip
+        ),
+        ApplyDataCorrectionsTestCase(
+            id="multiple_rows_mixed_corrections",
+            test_data=[
+                make_row(**{AWPClean.establishment_name: "", AWPClean.parent_permission: "3"}),
+                make_row(**{AWPClean.address: "  ", AWPClean.parent_permission: "2"}),
+                make_row(**{AWPClean.postcode: "", AWPClean.parent_permission: None}),
+                make_row(**{AWPClean.la_permission: "1", AWPClean.parent_permission: "1"}),
+            ],
+            expected_data=[
+                make_row(**{AWPClean.establishment_name: None, AWPClean.parent_permission: None}),
+                make_row(**{AWPClean.address: None, AWPClean.parent_permission: "2"}),
+                make_row(**{AWPClean.postcode: None, AWPClean.parent_permission: None}),
+                make_row(**{AWPClean.la_permission: "1", AWPClean.parent_permission: "1"}),
+            ], # fmt: skip
+        ),
+        ApplyDataCorrectionsTestCase(
+            id="multiple_string_columns_cleaned_in_same_row",
+            test_data=[
+                make_row(**{
+                    AWPClean.establishment_name: "",
+                    AWPClean.address: "   ",
+                    AWPClean.postcode: "M1 1AA",
+                }),
+            ],
+            expected_data=[
+                make_row(**{
+                    AWPClean.establishment_name: None,
+                    AWPClean.address: None,
+                    AWPClean.postcode: "M1 1AA",
+                }),
+            ], # fmt: skip
+        ),
+        ApplyDataCorrectionsTestCase(
+            id="empty_dataframe_are_unchanged",
+            test_data=[],
+            expected_data=[], # fmt: skip
         ),
     ]
