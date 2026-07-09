@@ -154,6 +154,7 @@ jobs:
             cd terraform/pipeline
             terraform init -input=false -backend-config=../${AWS_ENV}.s3.tfbackend -plugin-dir=custom-terraform-plugins
             terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
+            terraform providers
             terraform plan -out tfplan
       - store_artifacts:
           path: terraform/pipeline/tfplan
