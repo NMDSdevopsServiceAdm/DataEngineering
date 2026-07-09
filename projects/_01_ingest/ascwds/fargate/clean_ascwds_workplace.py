@@ -12,10 +12,6 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 
-# Set streaming chunk size for memory management - each thread (per CPU core) will load
-# in a chunk of this size.
-pl.Config.set_streaming_chunk_size(50000)
-
 INT_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
 BOUNDED_STAFF_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
 MIN_VALID_STAFF_COUNT: int = 1
@@ -107,7 +103,7 @@ def main(
         cleaned_workplace_destination (str): destination for cleaned ascwds workplace output
         workplace_for_reconciliation_destination (str): destination for reconciliation workplace output
     """
-    lf = utils.scan_parquet(workplace_source).select(*COLUMNS_TO_IMPORT, slv_columns)
+    lf = utils.scan_parquet(workplace_source, selected_columns=COLUMNS_TO_IMPORT)
 
     lf = lf.filter(wUtils.valid_workplace_filter())
 
@@ -119,7 +115,7 @@ def main(
 
     lf = cUtils.column_to_date(
         lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
-    ).drop(AWPClean.import_date)
+    )
 
     # trello 1705
     data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
@@ -136,6 +132,12 @@ def main(
     ) = wUtils.create_purged_lfs_for_reconciliation_and_data(lf)
 
     lf = wUtils.remove_rows_with_duplicate_location_ids(lf)
+
+    lf_slv = utils.scan_parquet(workplace_source).select(
+        *[AWPClean.location_id, AWPClean.import_date], slv_columns
+    )
+
+    lf = lf.join(lf_slv, on=[AWPClean.location_id, AWPClean.import_date], how="left")
 
     lf = lf.with_columns(
         pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
