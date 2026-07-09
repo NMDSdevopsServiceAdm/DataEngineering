@@ -1,4 +1,5 @@
 import polars as pl
+import polars.selectors as cs
 
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -211,3 +212,22 @@ def create_purged_lfs_for_reconciliation_and_data(
     )
 
     return ascwds_workplace_lf, reconciliation_lf
+
+
+class SelectSlvCols:
+    """
+    Polars Selector that selects job role columns from ascwds workplace datasets.
+
+    Selects string columns with names beginning with 'jr' that do not contain
+    'flag' or 'date'.
+
+    Attributes:
+        slv_cols_selector (cs.Selector): Select job role columns in ascwds workplace datasets.
+    """
+
+    slv_cols_selector: cs.Selector
+
+    def __init__(self):
+        self.slv_cols_selector = (
+            cs.string() & cs.contains("jr") & ~cs.contains("flag", "date")
+        )

@@ -1,5 +1,4 @@
 import polars as pl
-import polars.selectors as cs
 
 from polars_utils import cleaning_utils as cUtils
 from polars_utils import utils
@@ -81,8 +80,6 @@ data_labels_schema = pl.Schema(
     [(DLC.column_name, pl.String), (DLC.code, pl.String), (DLC.label, pl.String)]
 )
 
-slv_cols_selector = cs.string() & cs.contains("jr") & ~cs.contains("flag", "date")
-
 
 def main(
     workplace_source: str,
@@ -129,8 +126,9 @@ def main(
 
     lf = wUtils.remove_rows_with_duplicate_location_ids(lf)
 
+    jr_cols_selector = wUtils.SelectSlvCols().slv_cols_selector
     lf_slv = utils.scan_parquet(workplace_source).select(
-        *[AWPClean.establishment_id, AWPClean.import_date], slv_cols_selector
+        *[AWPClean.establishment_id, AWPClean.import_date], jr_cols_selector
     )
 
     lf = lf.join(
@@ -139,7 +137,7 @@ def main(
 
     lf = lf.with_columns(
         pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
-        slv_cols_selector.cast(pl.Int32, strict=False),
+        jr_cols_selector.cast(pl.Int32, strict=False),
     )
 
     lf = lf.with_columns(
