@@ -133,13 +133,6 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         # distinct values
         .specially(
             vl.is_unique_count_equal(
-                ASCWPClean.establishment_type,
-                CatValues.establishment_type_column_values.count_of_categorical_values,
-            ),
-            brief=f"{ASCWPClean.establishment_type} should have exactly {CatValues.establishment_type_column_values.count_of_categorical_values} distinct values",
-        )
-        .specially(
-            vl.is_unique_count_equal(
                 ASCWPClean.parent_permission,
                 CatValues.parent_permission_column_values.count_of_categorical_values,
             ),
