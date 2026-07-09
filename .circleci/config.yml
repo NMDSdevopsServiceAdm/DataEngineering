@@ -198,6 +198,13 @@ jobs:
           role_arn: $AWS_ROLE_ARN
           region: $AWS_REGION
       - run:
+          name: copy terraform provider binaries
+          command: |
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
+            mkdir -p custom-terraform-plugins
+            aws s3 cp s3://${AWS_BINARY_BUCKET}/terraform-provider-aws_6.15.0_linux_amd64.zip custom-terraform-plugins/terraform-provider-aws_6.15.0_linux_amd64.zip
+      - run:
           name: terraform apply
           command: |
             unset AWS_ACCESS_KEY_ID
