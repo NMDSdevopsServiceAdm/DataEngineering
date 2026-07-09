@@ -79,6 +79,8 @@ All notable changes to this project will be documented in this file.
 
 - Reduced persistant storage in CircleCI.
 
+- Added missing lambda folder to deployment.
+
 
 ## [v2026.05.0] - 12/06/2026
 
