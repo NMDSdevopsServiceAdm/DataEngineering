@@ -77,9 +77,9 @@ class MainTests(unittest.TestCase):
         sink_to_parquet_mock.assert_has_calls(sink_calls)
 
 
-class SLVColumnsTests(unittest.TestCase):
+class SlvColsSelectorTests(unittest.TestCase):
     def setUp(self) -> None:
-        slv_cols_selector = job.slv_columns
+        slv_cols_selector = job.slv_cols_selector
 
         test_lf = pl.LazyFrame(
             {

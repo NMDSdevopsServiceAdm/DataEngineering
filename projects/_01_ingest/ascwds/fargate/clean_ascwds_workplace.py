@@ -81,7 +81,7 @@ data_labels_schema = pl.Schema(
     [(DLC.column_name, pl.String), (DLC.code, pl.String), (DLC.label, pl.String)]
 )
 
-slv_columns = cs.string() & cs.contains("jr") & ~cs.contains("flag", "date")
+slv_cols_selector = cs.string() & cs.contains("jr") & ~cs.contains("flag", "date")
 
 
 def main(
@@ -130,7 +130,7 @@ def main(
     lf = wUtils.remove_rows_with_duplicate_location_ids(lf)
 
     lf_slv = utils.scan_parquet(workplace_source).select(
-        *[AWPClean.establishment_id, AWPClean.import_date], slv_columns
+        *[AWPClean.establishment_id, AWPClean.import_date], slv_cols_selector
     )
 
     lf = lf.join(
@@ -139,7 +139,7 @@ def main(
 
     lf = lf.with_columns(
         pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
-        slv_columns.cast(pl.Int32, strict=False),
+        slv_cols_selector.cast(pl.Int32, strict=False),
     )
 
     lf = lf.with_columns(
