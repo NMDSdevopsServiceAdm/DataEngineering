@@ -464,7 +464,7 @@ class ValidateCqcLocations4FullLatestSnapshotTest:
 
 
 @dataclass
-class TestCreatePurgedLfsForReconciliationAndDataSchemas:
+class TestCleanAscwdsWorkplaceUtilsSchemas:
     test_schema = {
         AWPClean.organisation_id: pl.String,
         AWPClean.ascwds_workplace_import_date: pl.Date,
@@ -487,4 +487,37 @@ class TestCreatePurgedLfsForReconciliationAndDataSchemas:
     workplace_last_active_date_exprs_schema = {
         **last_amended_date_exprs_schema,
         AWPClean.workplace_last_active_date: pl.Date,
+    }
+
+    apply_data_corrections_schema = {
+        AWPClean.organisation_id: pl.String,
+        AWPClean.period: pl.String,
+        AWPClean.establishment_id: pl.String,
+        AWPClean.establishment_id_from_nmds: pl.String,
+        AWPClean.parent_id: pl.String,
+        AWPClean.nmds_id: pl.String,
+        AWPClean.establishment_created_date: pl.Date,
+        AWPClean.establishment_updated_date: pl.Date,
+        AWPClean.master_update_date: pl.Date,
+        AWPClean.last_logged_in: pl.Date,
+        AWPClean.la_permission: pl.String,
+        AWPClean.is_bulk_uploader: pl.String,
+        AWPClean.is_parent: pl.String,
+        AWPClean.parent_permission: pl.String,
+        AWPClean.registration_type: pl.String,
+        AWPClean.provider_id: pl.String,
+        AWPClean.location_id: pl.String,
+        AWPClean.establishment_type: pl.String,
+        AWPClean.establishment_name: pl.String,
+        AWPClean.address: pl.String,
+        AWPClean.postcode: pl.String,
+        AWPClean.region_id: pl.String,
+        AWPClean.total_staff: pl.String,
+        AWPClean.worker_records: pl.String,
+        AWPClean.total_starters: pl.String,
+        AWPClean.total_leavers: pl.String,
+        AWPClean.total_vacancies: pl.String,
+        AWPClean.main_service_id: pl.String,
+        AWPClean.version: pl.String,
+        AWPClean.import_date: pl.Date,
     }
