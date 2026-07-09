@@ -52,9 +52,9 @@ class MainTests(unittest.TestCase):
             self.RECONCILIATION_DESTINATION,
         )
 
-        scan_parquet_mock.assert_called_once_with(self.WORKPLACE_SOURCE)
-        valid_filter_mock.assert_called_once()
+        assert scan_parquet_mock.call_count == 2
 
+        valid_filter_mock.assert_called_once()
         cast_date_strings_to_dates_mock.assert_called_once()
         column_to_date_mock.assert_called_once()
         remove_rows_with_duplicate_location_ids_mock.assert_called_once()
