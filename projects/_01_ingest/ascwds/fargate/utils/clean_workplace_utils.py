@@ -214,6 +214,31 @@ def create_purged_lfs_for_reconciliation_and_data(
     return ascwds_workplace_lf, reconciliation_lf
 
 
+def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Apply legacy data corrections to an ASC-WDS workplace LazyFrame.
+
+    The following corrections are applied:
+        - Convert empty and whitespace-only string values to NULL across all
+          string columns.
+        - Set `parent_permission` to NULL where its value is `3`, as this is a
+          legacy value present in older data.
+
+    Args:
+        lf (pl.LazyFrame): Input LazyFrame containing ASC-WDS workplace data.
+
+    Returns:
+        pl.LazyFrame: A LazyFrame with the data corrections applied.
+    """
+    # Treat blank strings as missing values.
+    lf = lf.with_columns(cs.string().str.strip_chars().replace("", None))
+
+    # legacy parent permission temporarily contained invalid "3" codes
+    lf = lf.with_columns(pl.col(AWPClean.parent_permission).replace(3, None))
+
+    return lf
+
+
 class SelectJrCols:
     """
     Polars Selector that selects job role columns from ascwds workplace datasets.

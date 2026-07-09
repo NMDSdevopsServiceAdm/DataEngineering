@@ -25,10 +25,12 @@ class MainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.cUtils.column_to_date")
     @patch(f"{PATCH_PATH}.cUtils.cast_date_strings_to_dates")
     @patch(f"{PATCH_PATH}.wUtils.valid_workplace_filter")
+    @patch(f"{PATCH_PATH}.wUtils.apply_data_corrections")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
+        apply_data_corrections_mock: Mock,
         valid_filter_mock: Mock,
         cast_date_strings_to_dates_mock: Mock,
         column_to_date_mock: Mock,
@@ -51,12 +53,12 @@ class MainTests(unittest.TestCase):
 
         assert scan_parquet_mock.call_count == 2
 
+        apply_data_corrections_mock.assert_called_once()
+
         valid_filter_mock.assert_called_once()
         cast_date_strings_to_dates_mock.assert_called_once()
         column_to_date_mock.assert_called_once()
         remove_rows_with_duplicate_location_ids_mock.assert_called_once()
-
-        create_purged_lfs_for_reconciliation_and_data_mock.assert_called_once()
 
         create_purged_lfs_for_reconciliation_and_data_mock.assert_called_once()
 

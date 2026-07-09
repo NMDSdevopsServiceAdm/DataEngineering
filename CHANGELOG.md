@@ -41,6 +41,8 @@ All notable changes to this project will be documented in this file.
 
 - Added `careHome` and `numberOfBeds` columns to Grouped Provider Output file and updated tests for the same.
 
+- Added `apply_data_corrections` function to null out empty/whitespace string values and legacy `parent_permission` value `3` in ASC-WDS workplace data. Added tests for the same.
+
 - Added column selection to clean_ascwds_workplace to get workplace job role columns into dataset.
 
 ### Changed
@@ -76,6 +78,10 @@ All notable changes to this project will be documented in this file.
 - Updated `validate_clean_ascwds_workplace.py` to use `acswds_workplace_import_date` instead of `import_date`, since the `import_date` column is now dropped after being converted to a new date type column.
 
 - Corrected datasets in SLV pipeline that need switching between main and dev in terraform.
+
+- Reduced persistant storage in CircleCI.
+
+- Added missing lambda folder to deployment.
 
 
 ## [v2026.05.0] - 12/06/2026

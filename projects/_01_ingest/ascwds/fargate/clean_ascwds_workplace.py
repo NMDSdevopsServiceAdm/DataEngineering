@@ -98,9 +98,9 @@ def main(
     """
     lf = utils.scan_parquet(workplace_source, selected_columns=COLUMNS_TO_IMPORT)
 
-    lf = lf.filter(wUtils.valid_workplace_filter())
+    lf = wUtils.apply_data_corrections(lf)
 
-    lf = lf.with_columns(pl.col(AWPClean.nmds_id).str.strip_chars())
+    lf = lf.filter(wUtils.valid_workplace_filter())
 
     lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
 
