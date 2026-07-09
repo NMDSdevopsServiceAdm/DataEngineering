@@ -68,8 +68,6 @@ class MainTests(unittest.TestCase):
 
         create_purged_lfs_for_reconciliation_and_data_mock.assert_called_once()
 
-        create_purged_lfs_for_reconciliation_and_data_mock.assert_called_once()
-
         scan_csv_mock.assert_called_once_with(
             self.DATA_LABELS_SOURCE, schema=job.data_labels_schema
         )

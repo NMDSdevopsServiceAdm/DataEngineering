@@ -1,4 +1,5 @@
 import polars as pl
+import polars.selectors as cs
 
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -219,23 +220,10 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: A LazyFrame with the data corrections applied.
     """
-    schema = lf.collect_schema()
+    # Treat blank strings as missing values.
+    lf = lf.with_columns(cs.string().str.strip_chars().replace("", None))
 
-    string_columns = [name for name, dtype in schema.items() if dtype == pl.String]
-
-    lf = lf.with_columns(
-        pl.when(pl.col(col).str.strip_chars() == "")
-        .then(None)
-        .otherwise(pl.col(col))
-        .alias(col)
-        for col in string_columns
-    )
-
-    lf = lf.with_columns(
-        pl.when(pl.col(AWPClean.parent_permission) == "3")
-        .then(None)
-        .otherwise(pl.col(AWPClean.parent_permission))
-        .alias(AWPClean.parent_permission)
-    )
+    # legacy parent permission temporarily contained invalid "3" codes
+    lf = lf.with_columns(pl.col(AWPClean.parent_permission).replace(3, None))
 
     return lf

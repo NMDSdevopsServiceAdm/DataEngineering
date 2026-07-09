@@ -464,7 +464,7 @@ class ValidateCqcLocations4FullLatestSnapshotTest:
 
 
 @dataclass
-class TestCreatePurgedLfsForReconciliationAndDataSchemas:
+class TestCleanAscwdsWorkplaceUtilsSchemas:
     test_schema = {
         AWPClean.organisation_id: pl.String,
         AWPClean.ascwds_workplace_import_date: pl.Date,
@@ -489,10 +489,7 @@ class TestCreatePurgedLfsForReconciliationAndDataSchemas:
         AWPClean.workplace_last_active_date: pl.Date,
     }
 
-
-@dataclass
-class TestApplyDataCorrectionsSchemas:
-    ApplyDataCorrectionsSchema = {
+    apply_data_corrections_schema = {
         AWPClean.organisation_id: pl.String,
         AWPClean.period: pl.String,
         AWPClean.establishment_id: pl.String,

@@ -102,8 +102,6 @@ def main(
 
     lf = lf.filter(wUtils.valid_workplace_filter())
 
-    lf = lf.with_columns(pl.col(AWPClean.nmds_id).str.strip_chars())
-
     lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
 
     lf = cUtils.cast_date_strings_to_dates(lf)
