@@ -81,7 +81,7 @@ data_labels_schema = pl.Schema(
     [(DLC.column_name, pl.String), (DLC.code, pl.String), (DLC.label, pl.String)]
 )
 
-slv_columns = cs.string() & cs.contains("jr") & ~cs.contains("flag")
+slv_columns = cs.string() & cs.contains("jr") & ~cs.contains("flag", "date")
 
 
 def main(
