@@ -41,6 +41,8 @@ All notable changes to this project will be documented in this file.
 
 - Added `careHome` and `numberOfBeds` columns to Grouped Provider Output file and updated tests for the same.
 
+- Added column selection to clean_ascwds_workplace to get workplace job role columns into dataset.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
