@@ -135,7 +135,7 @@ def main(
 
     lf = lf.join(
         lf_slv, on=[AWPClean.establishment_id, AWPClean.import_date], how="left"
-    )
+    ).drop(AWPClean.import_date)
 
     lf = lf.with_columns(
         pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
