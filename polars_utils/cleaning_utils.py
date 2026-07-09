@@ -273,5 +273,5 @@ def cast_date_strings_to_dates(
     )
 
     return lf.with_columns(
-        date_columns.as_expr().str.strptime(pl.Date, raw_date_format, strict=False)
+        date_columns.str.strptime(pl.Date, raw_date_format, strict=False)
     )
