@@ -41,6 +41,8 @@ All notable changes to this project will be documented in this file.
 
 - Added `careHome` and `numberOfBeds` columns to Grouped Provider Output file and updated tests for the same.
 
+- Added `apply_data_corrections` function to null out empty/whitespace string values and legacy `parent_permission` value `3` in ASC-WDS workplace data. Added tests for the same.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
