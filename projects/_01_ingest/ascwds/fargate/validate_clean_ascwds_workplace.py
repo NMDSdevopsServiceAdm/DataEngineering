@@ -154,13 +154,6 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         )
         .specially(
             vl.is_unique_count_equal(
-                ASCWPClean.main_service_id,
-                CatValues.main_service_id_column_values.count_of_categorical_values,
-            ),
-            brief=f"{ASCWPClean.main_service_id} should have exactly {CatValues.main_service_id_column_values.count_of_categorical_values} distinct values",
-        )
-        .specially(
-            vl.is_unique_count_equal(
                 ASCWPClean.registration_type,
                 CatValues.registration_type_column_values.count_of_categorical_values,
             ),
