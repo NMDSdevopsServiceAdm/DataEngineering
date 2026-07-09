@@ -134,7 +134,7 @@ def main(
     lf = wUtils.remove_rows_with_duplicate_location_ids(lf)
 
     lf_slv = utils.scan_parquet(workplace_source).select(
-        *[AWPClean.location_id, AWPClean.import_date], slv_columns
+        *[AWPClean.establishment_id, AWPClean.import_date], slv_columns
     )
 
     lf = lf.join(lf_slv, on=[AWPClean.location_id, AWPClean.import_date], how="left")
