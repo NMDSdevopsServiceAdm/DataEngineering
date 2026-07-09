@@ -243,7 +243,7 @@ class SelectJrCols:
     """
     Polars Selector that selects job role columns from ascwds workplace datasets.
 
-    Selects string columns with names beginning with 'jr' that do not contain
+    Selects string columns with names that start with 'jr' that do not contain
     'flag' or 'date'.
 
     Attributes:
@@ -254,5 +254,5 @@ class SelectJrCols:
 
     def __init__(self):
         self.jr_cols_selector = (
-            cs.string() & cs.contains("jr") & ~cs.contains("flag", "date")
+            cs.string() & cs.starts_with("jr") & ~cs.contains("flag", "date")
         )

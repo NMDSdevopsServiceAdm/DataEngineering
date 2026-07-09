@@ -244,20 +244,17 @@ class JrColsSelectorTests(unittest.TestCase):
         selected_lf = test_lf.select(jr_cols_selector)
         self.selected_cols = selected_lf.collect_schema().names()
 
-    def test_selected_cols_contains_strings_starting_with_jr(self):
+    def test_selects_job_role_columns(self):
         for i in self.selected_cols:
-            assert i.startswith("jr")
+            self.assertTrue(i.startswith("jr"))
 
-    def test_list_contains_strings_with_expected_endings(self):
-        string_endings_1 = [i[-4:] for i in self.selected_cols if len(i) == 8]
-        string_endings_2 = [i[-3:] for i in self.selected_cols if len(i) == 7]
-        string_endings_3 = set(string_endings_1 + string_endings_2)
-        expected_endings = {"agcy", "emp"}
-        self.assertEqual(string_endings_3, expected_endings)
-
-    def test_list_does_not_contain_strings_with_flag(self):
+    def test_excludes_job_role_flag_columns(self):
         for i in self.selected_cols:
-            assert "flag" not in i
+            self.assertNotIn("flag", i)
 
-    def test_list_is_expected_length(self):
+    def test_excludes_job_role_date_columns(self):
+        for i in self.selected_cols:
+            self.assertNotIn("date", i)
+
+    def test_returns_expected_column_count(self):
         self.assertEqual(len(self.selected_cols), 2)
