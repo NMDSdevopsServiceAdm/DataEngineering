@@ -103,11 +103,7 @@ def main(
         cleaned_workplace_destination (str): destination for cleaned ascwds workplace output
         workplace_for_reconciliation_destination (str): destination for reconciliation workplace output
     """
-    lf = utils.scan_parquet(workplace_source).with_columns(
-        utils.cast_to_schema(COLUMNS_TO_IMPORT)
-    )
-
-    lf = lf.select(*COLUMNS_TO_IMPORT, slv_columns)
+    lf = utils.scan_parquet(workplace_source, selected_columns=COLUMNS_TO_IMPORT)
 
     lf = lf.filter(wUtils.valid_workplace_filter())
 
@@ -130,10 +126,7 @@ def main(
 
     lf = wUtils.remove_rows_with_duplicate_location_ids(lf)
 
-    lf = lf.with_columns(
-        pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
-        slv_columns.cast(pl.Int32, strict=False),
-    )
+    lf = lf.with_columns(pl.col(INT_COLUMNS).cast(pl.Int32, strict=False))
 
     lf = lf.with_columns(
         pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)
@@ -143,6 +136,18 @@ def main(
     )
 
     reconciliation_lf = reconciliation_lf.select(RECONCILIATION_COLUMNS)
+
+    lf_slv = (
+        utils.scan_parquet(workplace_source)
+        .select(slv_columns)
+        .with_columns(pl.col(slv_columns).cast(pl.Int32, strict=False))
+    )
+
+    lf = lf.join(
+        lf_slv,
+        on=[AWPClean.location_id, AWPClean.ascwds_workplace_import_date],
+        how="left",
+    )
 
     print(
         f"Exporting clean ascwds workplace data as parquet to {cleaned_workplace_destination}"
