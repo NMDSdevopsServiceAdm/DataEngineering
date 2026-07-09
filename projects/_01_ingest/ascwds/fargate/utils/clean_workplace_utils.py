@@ -214,7 +214,7 @@ def create_purged_lfs_for_reconciliation_and_data(
     return ascwds_workplace_lf, reconciliation_lf
 
 
-class SelectSlvCols:
+class SelectJrCols:
     """
     Polars Selector that selects job role columns from ascwds workplace datasets.
 
@@ -222,12 +222,12 @@ class SelectSlvCols:
     'flag' or 'date'.
 
     Attributes:
-        slv_cols_selector (cs.Selector): Select job role columns in ascwds workplace datasets.
+        jr_cols_selector (cs.Selector): Select job role columns in ascwds workplace datasets.
     """
 
-    slv_cols_selector: cs.Selector
+    jr_cols_selector: cs.Selector
 
     def __init__(self):
-        self.slv_cols_selector = (
+        self.jr_cols_selector = (
             cs.string() & cs.contains("jr") & ~cs.contains("flag", "date")
         )

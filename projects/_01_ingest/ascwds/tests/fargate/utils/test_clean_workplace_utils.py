@@ -205,9 +205,9 @@ class TestCreatePurgedLfsForReconciliationAndData:
         assert isinstance(recon_lf, pl.LazyFrame)
 
 
-class SlvColsSelectorTests(unittest.TestCase):
+class JrColsSelectorTests(unittest.TestCase):
     def setUp(self) -> None:
-        slv_cols_selector = job.SelectSlvCols().slv_cols_selector
+        jr_cols_selector = job.SelectJrCols().jr_cols_selector
 
         test_lf = pl.LazyFrame(
             {
@@ -217,7 +217,7 @@ class SlvColsSelectorTests(unittest.TestCase):
                 "any_other_col": "1",
             }
         )
-        selected_lf = test_lf.select(slv_cols_selector)
+        selected_lf = test_lf.select(jr_cols_selector)
         self.selected_cols = selected_lf.collect_schema().names()
 
     def test_selected_cols_contains_strings_starting_with_jr(self):

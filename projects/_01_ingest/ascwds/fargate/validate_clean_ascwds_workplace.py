@@ -6,7 +6,7 @@ import polars as pl
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from projects._01_ingest.ascwds.fargate.utils.clean_workplace_utils import SelectSlvCols
+from projects._01_ingest.ascwds.fargate.utils.clean_workplace_utils import SelectJrCols
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as ASCWPClean,
 )
@@ -69,10 +69,8 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         source=f"s3://{bucket_name}/{source_path}",
     )
 
-    slv_cols = (
-        source_df.select(SelectSlvCols().slv_cols_selector).collect_schema().names()
-    )
-    columns.update({k: pl.Int32 for k in slv_cols})
+    jr_cols = source_df.select(SelectJrCols().jr_cols_selector).collect_schema().names()
+    columns.update({k: pl.Int32 for k in jr_cols})
     EXPECTED_SCHEMA = pb.Schema(columns=columns)
 
     validation = (
