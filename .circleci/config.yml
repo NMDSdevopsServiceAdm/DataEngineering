@@ -152,9 +152,9 @@ jobs:
             # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
             export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
             cd terraform/pipeline
+            terraform providers
             terraform init -input=false -backend-config=../${AWS_ENV}.s3.tfbackend -plugin-dir=custom-terraform-plugins
             terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
-            terraform providers
             terraform plan -out tfplan
       - store_artifacts:
           path: terraform/pipeline/tfplan
