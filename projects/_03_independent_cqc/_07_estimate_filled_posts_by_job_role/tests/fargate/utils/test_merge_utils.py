@@ -1,3 +1,6 @@
+import unittest
+from datetime import date
+
 import polars as pl
 import polars.testing as pl_testing
 import pytest
@@ -5,6 +8,9 @@ import pytest
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.merge_utils as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     TestJoinEstimatesToAscwds as Data,
+)
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    TestReducedDataFilter as ReducedDataFilterdata,
 )
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     TestJoinEstimatesToAscwds as Schemas,
@@ -70,3 +76,29 @@ class TestCreateJobRoleLazyFrame:
         returned_lf = job.create_job_role_lazyframe()
 
         pl_testing.assert_frame_equal(expected_lf, returned_lf)
+
+
+class TestReducedDataFilterExpr:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in ReducedDataFilterdata.reduced_data_filter_test_cases
+        ],
+    )
+    def test_function_returns_expected_values(self, case):
+        date_col = "cqc_location_import_date"
+
+        expr = job.reduced_data_filter_expr(
+            today=case.today,
+            fy_start_month=case.fy_start_month,
+            lookback_fy_years=case.lookback_fy_years,
+            quarter_months=case.quarter_months,
+            date_col=date_col,
+        )
+
+        df = pl.DataFrame({date_col: case.input_data})
+
+        result = df.with_columns(expr.alias("keep"))
+
+        assert result["keep"].to_list() == case.expected

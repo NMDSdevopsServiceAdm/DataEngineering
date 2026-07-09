@@ -14,13 +14,11 @@ from unittest.mock import MagicMock, Mock, patch
 import boto3
 import polars as pl
 import polars.testing as pl_testing
-import pytest
 from botocore.exceptions import ClientError
 from moto import mock_aws, sns
 from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
 
 from polars_utils import utils
-from tests.test_polars_utils_data import TestReducedDataFilter as ReducedDataFilterdata
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 SRC_PATH = "polars_utils.validation.actions"
@@ -660,29 +658,3 @@ class TestNullifyCtValuesPreviousToFirstSubmission:
             }
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
-class TestReducedDataFilterExpr:
-    @pytest.mark.parametrize(
-        "case",
-        [
-            pytest.param(case, id=case.id)
-            for case in ReducedDataFilterdata.reduced_data_filter_test_cases
-        ],
-    )
-    def test_function_returns_expected_values(self, case):
-        date_col = "cqc_location_import_date"
-
-        expr = utils.reduced_data_filter_expr(
-            today=case.today,
-            fy_start_month=case.fy_start_month,
-            lookback_fy_years=case.lookback_fy_years,
-            quarter_months=case.quarter_months,
-            date_col=date_col,
-        )
-
-        df = pl.DataFrame({date_col: case.input_data})
-
-        result = df.with_columns(expr.alias("keep"))
-
-        assert result["keep"].to_list() == case.expected

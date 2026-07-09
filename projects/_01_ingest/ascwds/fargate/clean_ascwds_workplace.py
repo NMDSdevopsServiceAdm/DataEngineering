@@ -103,21 +103,11 @@ def main(
         cleaned_workplace_destination (str): destination for cleaned ascwds workplace output
         workplace_for_reconciliation_destination (str): destination for reconciliation workplace output
     """
-    lf = (
-        utils.scan_parquet(workplace_source)
-        .with_columns(utils.cast_to_schema(COLUMNS_TO_IMPORT))
-        .select(*COLUMNS_TO_IMPORT, slv_columns)
+    lf = utils.scan_parquet(workplace_source).with_columns(
+        utils.cast_to_schema(COLUMNS_TO_IMPORT)
     )
 
-    lf = cUtils.cast_date_strings_to_dates(lf)
-
-    lf = cUtils.column_to_date(
-        lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
-    ).drop(AWPClean.import_date)
-
-    lf = lf.filter(
-        utils.reduced_data_filter_expr(date_col=AWPClean.ascwds_workplace_import_date)
-    )
+    lf = lf.select(*COLUMNS_TO_IMPORT, slv_columns)
 
     lf = lf.filter(wUtils.valid_workplace_filter())
 
