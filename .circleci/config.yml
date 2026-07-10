@@ -28,15 +28,16 @@ commands:
   initialise_terraform:
     description: "Set up the terraform backend for terraform jobs"
     steps:
-      - checkout
       # UNSET old keys to force AWS CLI to use OIDC
-      - run: unset AWS_ACCESS_KEY_ID
-      - run: unset AWS_SECRET_ACCESS_KEY
-      # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
-      - run: export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
-      - run: cd terraform/pipeline
-      - run: terraform init -input=false -backend-config=../${AWS_ENV}.s3.tfbackend
-      - run: terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
+      - run: |
+          unset AWS_ACCESS_KEY_ID
+          unset AWS_SECRET_ACCESS_KEY
+          # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
+          export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
+          export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
+          cd terraform/pipeline
+          terraform init -input=false -backend-config=../${AWS_ENV}.s3.tfbackend
+          terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
 
 
 jobs:
