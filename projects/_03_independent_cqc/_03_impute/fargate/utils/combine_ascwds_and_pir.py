@@ -1,7 +1,16 @@
+from dataclasses import dataclass
+
 import polars as pl
 
 from polars_utils.expressions import is_not_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+
+
+@dataclass
+class ThresholdValues:
+    two_years: int = "-2y"
+    max_absolute_difference: int = 100
+    max_percentage_difference: float = 0.5
 
 
 def merge_ascwds_and_pir_filled_post_submissions(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -84,52 +93,60 @@ def create_last_submission_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def create_ascwds_pir_merged_column(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Merges ASCWDS and PIR filled post estimates based on recently and similarity thresholds and stores in a new column.
+    Adds a column in which ascwds and pir data are merged on the following conditions:
+        - The last ascwds submission is more than two years before pir submission
+        - The absolute difference between ascwds and pir is above threshold
+        - The percentage difference between ascwds and pir is above threshold
 
-    The ASCWDS dataset is the preferred source for workforce filled post figures.
-    However, if a workplace has not submitted ASCWDS data for a prolonged period of time and the corresponding PIR
-    submission differs significantly (both in absolute and percentage terms) then the PIR figure is used instead.
+    The ASCWDS dataset is the preferred source for workforce filled post
+    figures. However, if a workplace has not submitted ASCWDS data for a
+    prolonged period of time and the corresponding PIR submission differs
+    significantly (both in absolute and percentage terms) then the PIR figure is
+    used instead.
 
-    If the PIR and ASCWDS values are within acceptable difference thresholds, the older ASCWDS value is retained.
+    If the PIR and ASCWDS values are within acceptable difference thresholds,
+    the older ASCWDS value is retained.
 
     Args:
-        lf (pl.LazyFrame): Input Polars LazyFrame containing filled posts from ASCWDS and PIR and their respective submission dates.
+        lf (pl.LazyFrame): Input Polars LazyFrame containing filled posts from
+            ASCWDS and PIR and their respective submission dates.
 
     Returns:
-        pl.LazyFrame: A LazyFrame with an additional column `ascwds_pir_merged` that contains either the ASCWDS or PIR filled posts value,
-                      depending on submission recency and similarity thresholds.
+        pl.LazyFrame: A LazyFrame with an additional column `ascwds_pir_merged`
+            that contains either the ASCWDS or PIR filled posts value,
+            depending on submission recency and similarity thresholds.
     """
-    # time_between_last_pir_and_ascwds_submissions = F.months_between(
-    #     F.col(IndCQC.last_pir_submission),
-    #     F.col(IndCQC.last_ascwds_submission),
-    # )
-    # absolute_difference_between_pir_and_ascwds = F.abs(
-    #     F.col(IndCQC.pir_filled_posts_model)
-    #     - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
-    # )
-    # average_of_pir_and_ascwds = (
-    #     F.col(IndCQC.pir_filled_posts_model)
-    #     + F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
-    # ) / 2
 
-    # lf = lf.withColumn(
-    #     IndCQC.ascwds_pir_merged,
-    #     F.when(
-    #         (
-    #             time_between_last_pir_and_ascwds_submissions
-    #             > ThresholdValues.months_in_two_years
-    #         )
-    #         & (
-    #             absolute_difference_between_pir_and_ascwds
-    #             > ThresholdValues.max_absolute_difference
-    #         )
-    #         & (
-    #             (absolute_difference_between_pir_and_ascwds / average_of_pir_and_ascwds)
-    #             > ThresholdValues.max_percentage_difference
-    #         ),
-    #         F.col(IndCQC.pir_filled_posts_model),
-    #     ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
-    # )
+    time_expr = pl.col(IndCQC.last_ascwds_submission) < (
+        pl.col(IndCQC.last_pir_submission).dt.offset_by(ThresholdValues.two_years)
+    )
+
+    abs_diff_expr = (
+        pl.col(IndCQC.pir_filled_posts_model)
+        - pl.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+    ).abs()
+
+    average_of_pir_and_ascwds = (
+        pl.col(IndCQC.pir_filled_posts_model)
+        + pl.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+    ) / 2
+
+    condition = (
+        time_expr
+        & (abs_diff_expr > ThresholdValues.max_absolute_difference)
+        & (
+            (abs_diff_expr / average_of_pir_and_ascwds)
+            > ThresholdValues.max_percentage_difference
+        )
+    )
+
+    lf = lf.with_columns(
+        pl.when(condition)
+        .then(pl.col(IndCQC.pir_filled_posts_model))
+        .otherwise(IndCQC.ascwds_filled_posts_dedup_clean)
+        .alias(IndCQC.ascwds_pir_merged)
+    )
+
     return lf
 
 

@@ -102,10 +102,7 @@ class TestCreateAscwdsPirMergedColumn:
             for case in Data.create_ascwds_pir_merged_column_test_cases
         ],
     )
-    def test_create_ascwds_pir_merged_column_returns_correct_values(
-        self,
-        case,
-    ):
+    def test_create_ascwds_pir_merged_column_returns_correct_values(self, case):
 
         expected_lf = pl.LazyFrame(
             case.expected_data,

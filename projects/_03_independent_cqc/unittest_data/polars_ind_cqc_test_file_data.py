@@ -3600,6 +3600,10 @@ class CombineASCWDSAndPIRData:
                 ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2022, 1, 1), 10.0, None, 10.0, 10.0),
                 ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2022, 1, 1), 10.0, None, None, None),
                 ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2022, 1, 1), 10.0, 200.0, None, None),
+                ("loc 2", date(2020, 1, 1), date(2023, 1, 1), date(2023, 1, 1), 20.0, None, 20.0, 20.0),
+                ("loc 2", date(2021, 1, 1), date(2023, 1, 1), date(2023, 1, 1), 20.0, None, None, None),
+                ("loc 2", date(2022, 1, 1), date(2023, 1, 1), date(2023, 1, 1), 20.0, None, None, None),
+                ("loc 2", date(2023, 1, 1), date(2023, 1, 1), date(2023, 1, 1), 10.0, 200.0, 10.0, 10.0),
             ],
         ),
         CombineASCWDSAndPIRTestCase(
