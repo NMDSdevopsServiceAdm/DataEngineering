@@ -1862,15 +1862,6 @@ class CombineASCWDSAndPIRSchemas:
         IndCQC.last_pir_submission: pl.Date,
     }
 
-    create_ascwds_pir_merged_column_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.last_ascwds_submission: pl.Date,
-        IndCQC.last_pir_submission: pl.Date,
-        IndCQC.ascwds_filled_posts_dedup_clean_repeated: pl.Float32,
-        IndCQC.pir_filled_posts_model: pl.Float32,
-        IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
-    }
     expected_create_ascwds_pir_merged_column_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,

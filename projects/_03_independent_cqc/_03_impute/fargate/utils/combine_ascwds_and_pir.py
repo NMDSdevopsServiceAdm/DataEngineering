@@ -2,13 +2,12 @@ from dataclasses import dataclass
 
 import polars as pl
 
-from polars_utils.expressions import is_not_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 @dataclass
 class ThresholdValues:
-    two_years: int = "-2y"
+    two_years: str = "-2y"
     max_absolute_difference: int = 100
     max_percentage_difference: float = 0.5
 
@@ -26,7 +25,7 @@ def merge_ascwds_and_pir_filled_post_submissions(lf: pl.LazyFrame) -> pl.LazyFra
     This avoids introducing noise when the PIR and ASCWDS values are effectively aligned.
 
     Args:
-        lf (pl.LazyFrame): Input PySpark LazyFrame containing filled posts from ASCWDS and PIR and their respective submission dates.
+        lf (pl.LazyFrame): Input LazyFrame containing filled posts from ASCWDS and PIR and their respective submission dates.
 
     Returns:
         pl.LazyFrame: A LazyFrame with an additional column `ascwds_pir_merged` that contains either the ASCWDS or PIR filled posts value,
@@ -42,7 +41,7 @@ def merge_ascwds_and_pir_filled_post_submissions(lf: pl.LazyFrame) -> pl.LazyFra
 
 def create_repeated_ascwds_clean_column(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Creates a column containing cleaned ascwds filled posts filled forwards.
+    Creates a forward-filled version of the cleaned ASCWDS filled posts column.
 
     This column is needed to compare to people directly employed figures to see where they diverge.
 
@@ -143,7 +142,7 @@ def create_ascwds_pir_merged_column(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.with_columns(
         pl.when(condition)
         .then(pl.col(IndCQC.pir_filled_posts_model))
-        .otherwise(IndCQC.ascwds_filled_posts_dedup_clean)
+        .otherwise(pl.col(IndCQC.ascwds_filled_posts_dedup_clean))
         .alias(IndCQC.ascwds_pir_merged)
     )
 

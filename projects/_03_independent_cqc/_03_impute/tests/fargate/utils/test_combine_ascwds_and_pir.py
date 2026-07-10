@@ -1,4 +1,3 @@
-import warnings
 from unittest.mock import Mock, patch
 
 import polars as pl
@@ -49,7 +48,7 @@ class TestCombineASCWDSAndPIR:
 
     def test_merge_ascwds_and_pir_filled_post_submissions_completes(self):
         returned_lf = job.merge_ascwds_and_pir_filled_post_submissions(self.test_lf)
-        assert type(returned_lf) == pl.LazyFrame
+        assert isinstance(returned_lf, pl.LazyFrame)
 
 
 class TestCreateRepeatedAscwdsCleanColumn:
@@ -60,10 +59,7 @@ class TestCreateRepeatedAscwdsCleanColumn:
             for case in Data.create_repeated_ascwds_clean_column_test_cases
         ],
     )
-    def test_create_repeated_ascwds_clean_column_returns_correct_values(
-        self,
-        case,
-    ):
+    def test_function_returns_correct_values(self, case):
 
         expected_lf = pl.LazyFrame(
             case.expected_data,
@@ -86,9 +82,7 @@ class TestCreateLastSubmissionColumns:
     )
     returned_lf = job.create_last_submission_columns(test_lf)
 
-    def test_create_last_submission_columns_returns_correct_values(
-        self,
-    ):
+    def test_function_returns_correct_values(self):
         pl_testing.assert_frame_equal(
             self.returned_lf, self.expected_lf, check_row_order=False
         )
@@ -102,7 +96,7 @@ class TestCreateAscwdsPirMergedColumn:
             for case in Data.create_ascwds_pir_merged_column_test_cases
         ],
     )
-    def test_create_ascwds_pir_merged_column_returns_correct_values(self, case):
+    def test_function_returns_correct_values(self, case):
 
         expected_lf = pl.LazyFrame(
             case.expected_data,
@@ -128,24 +122,16 @@ class TestIncludePirIfNeverSubmittedAscwds:
         orient="row",
     )
 
-    def test_include_pir_if_never_submitted_ascwds_returns_original_columns(self):
-        assert self.returned_lf.columns == self.test_lf.columns
-
-    def test_include_pir_if_never_submitted_ascwds_returns_expected_data(self):
+    def test_function_returns_correct_values(self):
         pl_testing.assert_frame_equal(
             self.returned_lf, self.expected_lf, check_row_order=False
         )
 
 
 class TestDropTemporaryColumns:
-    test_lf = pl.LazyFrame(
-        [],
-        Schemas.drop_temporary_columns_schema,
-    )
+    test_lf = pl.LazyFrame([], Schemas.drop_temporary_columns_schema)
     expected_columns = Schemas.expected_drop_temporary_columns
-    returned_columns = job.drop_temporary_columns(test_lf).columns
+    returned_columns = job.drop_temporary_columns(test_lf).collect_schema().names()
 
-    def test_drop_temporary_columns_removes_temporary_columns(
-        self,
-    ):
+    def test_function_removes_temporary_columns(self):
         assert self.returned_columns == self.expected_columns
