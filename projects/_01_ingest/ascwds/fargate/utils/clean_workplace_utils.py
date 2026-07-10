@@ -246,10 +246,16 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def slv_cols_selector() -> cs.Selector:
     """
-    Returns a Selector for string columns that start with 'jr' and end with
-    either 'emp', 'strt', 'stop' or 'vacy.
+    Returns a Selector for columns that are:
+     - string datatype
+     - start with 'jr'
+     - end with either 'emp', 'strt', 'stop' or 'vacy
+     - do not end with 'temp'
     """
 
     return (
-        cs.string() & cs.starts_with("jr") & cs.ends_with("emp", "strt", "stop", "vacy")
+        cs.string()
+        & cs.starts_with("jr")
+        & cs.ends_with("emp", "strt", "stop", "vacy")
+        & ~cs.ends_with("temp")
     )

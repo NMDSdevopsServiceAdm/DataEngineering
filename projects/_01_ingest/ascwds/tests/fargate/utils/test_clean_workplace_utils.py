@@ -237,6 +237,7 @@ class JrColsSelectorTests(unittest.TestCase):
                 AWPClean.job_role_01_starters: "1",
                 AWPClean.job_role_01_leavers: "1",
                 AWPClean.job_role_01_vacancies: "1",
+                AWPClean.job_role_01_temporary: "1",
                 AWPClean.job_role_01_flag: "1",
                 "jr01permdate": "1",
                 "any_other_col": "1",
