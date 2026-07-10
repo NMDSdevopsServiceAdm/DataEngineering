@@ -25,15 +25,25 @@ orbs:
   aws-cli: circleci/aws-cli@5.4.1
 
 commands:
-  initialise_terraform:
-    description: "Set up the terraform backend for terraform jobs"
+  unset-keys:
+    description: "UNSET old keys to force AWS CLI to use OIDC"
     steps:
       - run:
-          name: Initialise terraform
+          name: Unset keys
           command: |
             # UNSET old keys to force AWS CLI to use OIDC
             unset AWS_ACCESS_KEY_ID
             unset AWS_SECRET_ACCESS_KEY
+  initialise_terraform:
+    description: "Set up the terraform backend for terraform jobs"
+    steps:
+      - unset-keys
+      - run:
+          name: Initialise terraform
+          command: |
+            # UNSET old keys to force AWS CLI to use OIDC
+            # unset AWS_ACCESS_KEY_ID
+            # unset AWS_SECRET_ACCESS_KEY
             # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
             export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
             cd terraform/pipeline
