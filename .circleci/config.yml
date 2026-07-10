@@ -57,9 +57,6 @@ jobs:
       SPARK_VERSION: "3.5"       # Required for pydeequ to initialize
     steps:
       - checkout
-      # - restore_cache:
-      #     keys:
-      #       - v1.2-uv-cache-{{ checksum "Pipfile.lock" }}
       - run:
           name: Install system packages
           command: |
@@ -68,17 +65,10 @@ jobs:
       - run:
           name: install dependencies
           command: uv pip install --system -r <(uvx pipenv requirements --dev)
-      # Pre-cache the pyqeequ dependency so xdist works better.
-      # - run:
-      #       name: Pre-cache Spark JARs
-      #       command: python scripts/fetch_spark_dependencies.py
-      # - save_cache:
-      #     key: v1.2-uv-cache-{{ checksum "Pipfile.lock" }}
-      #     paths:
-      #       - ~/.m2/repository
-      #       - ~/.ivy2/jars
-      #       - ~/.ivy2/cache
-      #       - ~/.cache/uv
+      # Download the pyqeequ dependency and configure.
+      - run:
+            name: Fetch Spark JARs
+            command: python scripts/fetch_spark_dependencies.py
       - run:
           name: Run unit tests and generate coverage
           command: |
