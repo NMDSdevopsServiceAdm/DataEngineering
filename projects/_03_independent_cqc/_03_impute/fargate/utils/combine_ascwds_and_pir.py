@@ -54,7 +54,8 @@ def create_repeated_ascwds_clean_column(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def create_last_submission_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Creates columns containing the latest submission dates by location id for ascwds and pir data.
+    Adds columns with the max cqc_location_import_date per location_id for
+    ascwds and pir data.
 
     This column is needed to identify whether there has been a gap of at least two years
     between an ascwds submission and a pir submission.
@@ -65,28 +66,18 @@ def create_last_submission_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: A LazyFrame with two extra columns containing the latest submission dates.
     """
-    # w = (
-    #     Window.partitionBy(IndCQC.location_id)
-    #     .orderBy(IndCQC.cqc_location_import_date)
-    #     .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
-    # )
-
-    # lf = get_selected_value(
-    #     lf,
-    #     w,
-    #     IndCQC.ascwds_filled_posts_dedup_clean,
-    #     IndCQC.cqc_location_import_date,
-    #     IndCQC.last_ascwds_submission,
-    #     "last",
-    # )
-    # lf = get_selected_value(
-    #     lf,
-    #     w,
-    #     IndCQC.pir_filled_posts_model,
-    #     IndCQC.cqc_location_import_date,
-    #     IndCQC.last_pir_submission,
-    #     "last",
-    # )
+    lf = lf.with_columns(
+        pl.col(IndCQC.cqc_location_import_date)
+        .filter(pl.col(IndCQC.ascwds_filled_posts_dedup_clean).is_not_null())
+        .max()
+        .over(IndCQC.location_id)
+        .alias(IndCQC.last_ascwds_submission),
+        pl.col(IndCQC.cqc_location_import_date)
+        .filter(pl.col(IndCQC.pir_filled_posts_model).is_not_null())
+        .max()
+        .over(IndCQC.location_id)
+        .alias(IndCQC.last_pir_submission),
+    )
 
     return lf
 
