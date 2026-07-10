@@ -25,29 +25,27 @@ orbs:
   aws-cli: circleci/aws-cli@5.4.1
 
 commands:
-  unset-keys:
-    description: "UNSET old keys to force AWS CLI to use OIDC"
+  sanitise-branch:
+    description: "Create workspace prefix from CIRCLE BRANCH"
     steps:
       - run:
-          name: Unset keys
+          name: Sanitise branch
           command: |
-            # UNSET old keys to force AWS CLI to use OIDC
-            unset AWS_ACCESS_KEY_ID
-            unset AWS_SECRET_ACCESS_KEY
+            # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
   initialise_terraform:
     description: "Set up the terraform backend for terraform jobs"
     steps:
-      - unset-keys
+      - sanitise-branch
       - run:
           name: Initialise terraform
           command: |
             # UNSET old keys to force AWS CLI to use OIDC
-            # unset AWS_ACCESS_KEY_ID
-            # unset AWS_SECRET_ACCESS_KEY
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
             # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
-            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
+            # export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
             cd terraform/pipeline
-            echo ${AWS_ENV}
             terraform init -input=false -backend-config=../${AWS_ENV}.s3.tfbackend
             terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
 
@@ -63,6 +61,7 @@ jobs:
       - aws-cli/setup:
           role_arn: $AWS_ROLE_ARN
           region: $AWS_REGION
+      - sanitise-branch
       - run:
           name: Build Docker Images
           command: |
@@ -73,7 +72,7 @@ jobs:
             aws ecr get-login-password --region eu-west-2 | docker login -u AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
             echo "Rebuilding lambdas and pushing to ECR."
             # Needed for docker-bake. This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
-            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
+            #export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
             docker buildx bake all --push
 
   test:
