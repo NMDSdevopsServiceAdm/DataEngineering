@@ -152,7 +152,8 @@ def create_ascwds_pir_merged_column(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def include_pir_if_never_submitted_ascwds(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Updates the 'ascwds_pir_merged' column to use PIR filled posts model values for locations who have never submitted ASC-WDS data.
+    Populates ascwds_pir_merged with pir_filled_posts_model when
+    ascwds_pir_merged is null for all rows of same locationid.
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame with columns:
@@ -164,19 +165,16 @@ def include_pir_if_never_submitted_ascwds(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: LazyFrame with updated 'ascwds_pir_merged' values
                    where applicable.
     """
-    # w = Window.partitionBy(IndCQC.location_id)
+    has_data_expr = (
+        pl.col(IndCQC.ascwds_pir_merged).is_null().all().over(IndCQC.location_id)
+    )
 
-    # lf = lf.withColumn(
-    #     IndCQC.submitted_ascwds_data,
-    #     F.max(F.col(IndCQC.ascwds_pir_merged).isNotNull().cast(IntegerType())).over(w),
-    # )
-    # lf = lf.withColumn(
-    #     IndCQC.ascwds_pir_merged,
-    #     F.when(
-    #         F.col(IndCQC.submitted_ascwds_data) == 0,
-    #         F.col(IndCQC.pir_filled_posts_model),
-    #     ).otherwise(F.col(IndCQC.ascwds_pir_merged)),
-    # ).drop(IndCQC.submitted_ascwds_data)
+    lf = lf.with_columns(
+        pl.when(has_data_expr)
+        .then(pl.col(IndCQC.pir_filled_posts_model))
+        .otherwise(pl.col(IndCQC.ascwds_pir_merged))
+        .alias(IndCQC.ascwds_pir_merged)
+    )
 
     return lf
 
