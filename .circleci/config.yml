@@ -25,6 +25,15 @@ orbs:
   aws-cli: circleci/aws-cli@5.4.1
 
 commands:
+  sanitise-branch:
+    description: "Create workspace prefix from CIRCLE BRANCH"
+    steps:
+      - run:
+          name: Sanitise branch
+          command: |
+            # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
+            echo 'export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")' >> "$BASH_ENV"
+            source "$BASH_ENV"
   initialise_terraform:
     description: "Set up the terraform backend for terraform jobs"
     steps:
@@ -53,6 +62,7 @@ jobs:
       - aws-cli/setup:
           role_arn: $AWS_ROLE_ARN
           region: $AWS_REGION
+      - sanitise-branch
       - run:
           name: Build Docker Images
           command: |
@@ -63,7 +73,7 @@ jobs:
             aws ecr get-login-password --region eu-west-2 | docker login -u AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
             echo "Rebuilding lambdas and pushing to ECR."
             # Needed for docker-bake. This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
-            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
+            # export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
             docker buildx bake all --push
 
   test:
