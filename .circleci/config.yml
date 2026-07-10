@@ -149,7 +149,9 @@ jobs:
       - initialise_terraform
       - run:
           name: terraform plan
-          command: terraform plan -out tfplan
+          command: |
+            cd terraform/pipeline
+            terraform plan -out tfplan
       - store_artifacts:
           path: terraform/pipeline/tfplan
       - persist_to_workspace:
@@ -181,7 +183,9 @@ jobs:
       - initialise_terraform # Reinitialising terraform to reduce cost of persisting .terraform folder in workspace
       - run:
           name: terraform apply
-          command: terraform apply -auto-approve tfplan
+          command: |
+            cd terraform/pipeline
+            terraform apply -auto-approve tfplan
       - run:
           name: save pipeline resources bucket name
           command: |
