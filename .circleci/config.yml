@@ -27,30 +27,18 @@ orbs:
 commands:
   initialise_terraform:
     description: "Set up the terraform backend for terraform jobs"
-    parameters:
-      access-key:
-        type: env_var_name
-        default: AWS_ACCESS_KEY
-      secret-key:
-        type: env_var_name
-        default: AWS_SECRET_KEY
-      circle-branch:
-        type: env_var_name
-        default: CIRCLE_BRANCH
-      aws-env:
-        type: env_var_name
-        default: AWS_ENV
     steps:
       # UNSET old keys to force AWS CLI to use OIDC
       - run:
           name: Initialise terraform
           command: |
-            unset parameters.access_key
-            unset parameters.secret_key
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
             # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
-            export SANITISED_CIRCLE_BRANCH=$(echo ${parameters.circle-branch:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
+            export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
             cd terraform/pipeline
-            terraform init -input=false -backend-config=../${parameters.aws-env}.s3.tfbackend
+            terraform init -input=false -backend-config=../${AWS_ENV}.s3.tfbackend
             terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
 
 
