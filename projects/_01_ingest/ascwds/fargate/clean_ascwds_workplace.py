@@ -126,9 +126,9 @@ def main(
 
     lf = wUtils.remove_rows_with_duplicate_location_ids(lf)
 
-    jr_cols_selector = wUtils.SelectJrCols().jr_cols_selector
+    slv_cols_selector = wUtils.SelectSlvCols().slv_cols_selector
     lf_slv = utils.scan_parquet(workplace_source).select(
-        *[AWPClean.establishment_id, AWPClean.import_date], jr_cols_selector
+        *[AWPClean.establishment_id, AWPClean.import_date], slv_cols_selector
     )
 
     lf = lf.join(
@@ -137,7 +137,7 @@ def main(
 
     lf = lf.with_columns(
         pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
-        jr_cols_selector.cast(pl.Int32, strict=False),
+        slv_cols_selector.cast(pl.Int32, strict=False),
     )
 
     lf = lf.with_columns(

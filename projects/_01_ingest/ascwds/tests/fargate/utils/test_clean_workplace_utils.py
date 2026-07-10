@@ -231,22 +231,32 @@ class TestApplyDataCorrections:
 
 class JrColsSelectorTests(unittest.TestCase):
     def setUp(self) -> None:
-        jr_cols_selector = job.SelectJrCols().jr_cols_selector
+        slv_cols_selector = job.SelectSlvCols().slv_cols_selector
 
         test_lf = pl.LazyFrame(
             {
-                AWPClean.job_role_01_agency: "1",
                 AWPClean.job_role_01_employees: "1",
+                AWPClean.job_role_01_starters: "1",
+                AWPClean.job_role_01_leavers: "1",
+                AWPClean.job_role_01_vacancies: "1",
                 AWPClean.job_role_01_flag: "1",
+                "jr01permdate": "1",
                 "any_other_col": "1",
             }
         )
-        selected_lf = test_lf.select(jr_cols_selector)
+        selected_lf = test_lf.select(slv_cols_selector)
         self.selected_cols = selected_lf.collect_schema().names()
 
     def test_selects_job_role_columns(self):
         for i in self.selected_cols:
             self.assertTrue(i.startswith("jr"))
+
+    def test_selects_columns_with_expected_endings(self):
+        string_endings_1 = [i[-4:] for i in self.selected_cols if len(i) == 8]
+        string_endings_2 = [i[-3:] for i in self.selected_cols if len(i) == 7]
+        string_endings_3 = set(string_endings_1 + string_endings_2)
+        expected_endings = {"emp", "strt", "stop", "vacy"}
+        self.assertEqual(string_endings_3, expected_endings)
 
     def test_excludes_job_role_flag_columns(self):
         for i in self.selected_cols:
@@ -257,4 +267,4 @@ class JrColsSelectorTests(unittest.TestCase):
             self.assertNotIn("date", i)
 
     def test_returns_expected_column_count(self):
-        self.assertEqual(len(self.selected_cols), 2)
+        self.assertEqual(len(self.selected_cols), 4)
