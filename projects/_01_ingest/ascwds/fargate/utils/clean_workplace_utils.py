@@ -85,6 +85,11 @@ def remove_rows_with_duplicate_location_ids(lf: pl.LazyFrame) -> pl.LazyFrame:
     Remove rows where a non-null location_id appears more than once within
     the same ascwds_workplace_import_date.
 
+    polars_streaming:
+    Identify duplicate keys separately rather than using a window expression.
+    This allows the aggregation to stream over only the key columns, avoiding
+    the memory overhead of `.over()` on wide datasets.
+
     Args:
         lf (pl.LazyFrame): A LazyFrame with duplicate location_id's per ascwds_workplace_import_date.
 
