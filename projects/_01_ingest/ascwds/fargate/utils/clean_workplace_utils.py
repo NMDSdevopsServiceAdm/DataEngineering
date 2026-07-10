@@ -239,22 +239,12 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf
 
 
-class SelectSlvCols:
+def slv_cols_selector() -> cs.Selector:
     """
-    Polars Selector that selects job role columns from ascwds workplace datasets.
-
-    Selects string columns with names that start with 'jr' and ends with
+    Returns a Selector for string columns that start with 'jr' and end with
     either 'emp', 'strt', 'stop' or 'vacy.
-
-    Attributes:
-        slv_cols_selector (cs.Selector): Select job role columns in ascwds workplace datasets.
     """
 
-    slv_cols_selector: cs.Selector
-
-    def __init__(self):
-        self.slv_cols_selector = (
-            cs.string()
-            & cs.starts_with("jr")
-            & cs.ends_with("emp", "strt", "stop", "vacy")
-        )
+    return (
+        cs.string() & cs.starts_with("jr") & cs.ends_with("emp", "strt", "stop", "vacy")
+    )

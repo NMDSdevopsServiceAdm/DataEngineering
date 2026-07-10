@@ -231,8 +231,6 @@ class TestApplyDataCorrections:
 
 class JrColsSelectorTests(unittest.TestCase):
     def setUp(self) -> None:
-        slv_cols_selector = job.SelectSlvCols().slv_cols_selector
-
         test_lf = pl.LazyFrame(
             {
                 AWPClean.job_role_01_employees: "1",
@@ -244,7 +242,7 @@ class JrColsSelectorTests(unittest.TestCase):
                 "any_other_col": "1",
             }
         )
-        selected_lf = test_lf.select(slv_cols_selector)
+        selected_lf = test_lf.select(job.slv_cols_selector())
         self.selected_cols = selected_lf.collect_schema().names()
 
     def test_selects_job_role_columns(self):
