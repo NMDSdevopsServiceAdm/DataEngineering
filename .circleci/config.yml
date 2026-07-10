@@ -156,21 +156,21 @@ jobs:
             # The workspace is intentionally limited to the Terraform plan file plus dependency folders to reduce CircleCI storage costs
             # Needed for terraform deployment
             - terraform/pipeline/tfplan
-            - terraform/pipeline/policy_documents/.*
-            - terraform/pipeline/step_functions/.*
-            - terraform/pipeline/ecr.tf
-            - terraform/pipeline/eventbridge.tf
-            - terraform/pipeline/fargate.tf
-            - terraform/pipeline/glue.tf
-            - terraform/pipeline/iam.tf
-            - terraform/pipeline/lambda.tf
-            - terraform/pipeline/main.tf
-            - terraform/pipeline/outputs.tf
-            - terraform/pipeline/parameter-store.tf
-            - terraform/pipeline/s3.tf
-            - terraform/pipeline/sns.tf
-            - terraform/pipeline/step-function.tf
-            - terraform/pipeline/variables.tf
+            #- terraform/pipeline/policy_documents/.*
+            #- terraform/pipeline/step_functions/.*
+            #- terraform/pipeline/ecr.tf
+            #- terraform/pipeline/eventbridge.tf
+            #- terraform/pipeline/fargate.tf
+            #- terraform/pipeline/glue.tf
+            #- terraform/pipeline/iam.tf
+            #- terraform/pipeline/lambda.tf
+            #- terraform/pipeline/main.tf
+            #- terraform/pipeline/outputs.tf
+            #- terraform/pipeline/parameter-store.tf
+            #- terraform/pipeline/s3.tf
+            #- terraform/pipeline/sns.tf
+            #- terraform/pipeline/step-function.tf
+            #- terraform/pipeline/variables.tf
             # Needed for dependencies folder in s3
             - utils
             - schemas
