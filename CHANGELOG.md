@@ -75,7 +75,7 @@ All notable changes to this project will be documented in this file.
 
 - Corrected datasets in SLV pipeline that need switching between main and dev in terraform.
 
-- Optimised persistant storage in CircleCI.
+- Optimised persistent storage in CircleCI.
 
 - Added missing lambda folder to deployment.
 
