@@ -66,7 +66,7 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
 
     lf = convert_pir_to_filled_posts(lf)
 
-    # lf = merge_ascwds_and_pir_filled_post_submissions(lf)
+    lf = merge_ascwds_and_pir_filled_post_submissions(lf)
 
     # lf = model_imputation(
     #     lf,

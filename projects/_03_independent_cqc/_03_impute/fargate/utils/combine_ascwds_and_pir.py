@@ -34,10 +34,10 @@ def merge_ascwds_and_pir_filled_post_submissions(lf: pl.LazyFrame) -> pl.LazyFra
     temp_date_cols = [IndCQC.last_ascwds_submission, IndCQC.last_pir_submission]
 
     lf = create_last_submission_columns(lf)
-    # lf_within_two_years, lf_outside_two_years = split_dataset_for_merging(lf)
+    lf_within_two_years, lf_outside_two_years = split_dataset_for_merging(lf)
 
-    # lf_within_two_years = lf_within_two_years.drop(temp_date_cols)
-    # lf_outside_two_years = lf_outside_two_years.drop(temp_date_cols)
+    lf_within_two_years = lf_within_two_years.drop(temp_date_cols)
+    lf_outside_two_years = lf_outside_two_years.drop(temp_date_cols)
 
     # lf_within_two_years = create_repeated_ascwds_clean_column(lf_within_two_years)
     # lf_within_two_years = create_ascwds_pir_merged_column(lf_within_two_years)
@@ -47,8 +47,7 @@ def merge_ascwds_and_pir_filled_post_submissions(lf: pl.LazyFrame) -> pl.LazyFra
 
     # lf_outside_two_years = include_pir_if_never_submitted_ascwds(lf_outside_two_years)
 
-    return lf
-    # return pl.concat([lf_within_two_years, lf_outside_two_years])
+    return pl.concat([lf_within_two_years, lf_outside_two_years])
 
 
 def create_last_submission_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -67,20 +66,30 @@ def create_last_submission_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: A LazyFrame with two extra columns containing the latest submission dates.
     """
-    lf_agg = lf.group_by(IndCQC.location_id).agg(
-        [
+    last_ascwds = (
+        lf.filter(pl.col(IndCQC.ascwds_filled_posts_dedup_clean).is_not_null())
+        .group_by(IndCQC.location_id)
+        .agg(
             pl.col(IndCQC.cqc_location_import_date)
-            .filter(pl.col(IndCQC.ascwds_filled_posts_dedup_clean).is_not_null())
             .max()
-            .alias(IndCQC.last_ascwds_submission),
-            pl.col(IndCQC.cqc_location_import_date)
-            .filter(pl.col(IndCQC.pir_filled_posts_model).is_not_null())
-            .max()
-            .alias(IndCQC.last_pir_submission),
-        ]
+            .alias(IndCQC.last_ascwds_submission)
+        )
     )
 
-    return lf.join(lf_agg, on=IndCQC.location_id, how="left")
+    last_pir = (
+        lf.filter(pl.col(IndCQC.pir_filled_posts_model).is_not_null())
+        .group_by(IndCQC.location_id)
+        .agg(
+            pl.col(IndCQC.cqc_location_import_date)
+            .max()
+            .alias(IndCQC.last_pir_submission)
+        )
+    )
+
+    lf = lf.join(last_ascwds, on=IndCQC.location_id, how="left")
+    lf = lf.join(last_pir, on=IndCQC.location_id, how="left")
+
+    return lf
 
 
 def split_dataset_for_merging(lf: pl.LazyFrame) -> tuple[pl.LazyFrame, pl.LazyFrame]:
