@@ -402,7 +402,7 @@ if __name__ == "__main__":
         ),
         (
             "--workplace_for_reconciliation_destination",
-            "Destination s3 directory for ascwds for reconciliation dataset",
+            "Destination s3 directory for ascwds reconciliation dataset",
         ),
     )
     main(
