@@ -145,10 +145,7 @@ def main(
         .name.suffix("_bounded")
     )
 
-    utils.sink_to_parquet(
-        clean_workplace_lf,
-        output_path=cleaned_workplace_destination,
-    )
+    utils.sink_to_parquet(clean_workplace_lf, output_path=cleaned_workplace_destination)
 
 
 if __name__ == "__main__":

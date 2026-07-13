@@ -218,8 +218,8 @@ def produce_and_save_data_for_reconciliation(
     """
     Create input data for reconciliation and save it as a Parquet file.
 
-    Reconciliation data is filtered to the most recent import date and only
-    includes the columns required for reconciliation. Rows are filtered to those
+    The data is filtered to the most recent import date and only includes the
+    columns required for the reconciliation process. Rows are filtered to those
     where the workplace was active on or after the purge date.
 
     Args:
