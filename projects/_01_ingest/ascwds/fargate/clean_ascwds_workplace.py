@@ -91,11 +91,11 @@ def main(
     Clean raw AWS-WDS data.
 
     Args:
-        workplace_source (str): path to the raw ascwds workplace data
-        data_labels_source (str): path to the ascwdsdata labels source
-        cleaned_workplace_destination (str): destination for cleaned ascwds
+        workplace_source (str): path to the raw ASC-WDS workplace data
+        data_labels_source (str): path to the ASC-WDS data labels source
+        cleaned_workplace_destination (str): destination for cleaned ASC-WDS
             workplace output
-        ascwds_for_sfc_internal_destination (str): destination for ASCWDS data
+        ascwds_for_sfc_internal_destination (str): destination for ASC-WDS data
             for SFC internal pipeline use
     """
     lf = utils.scan_parquet(workplace_source, selected_columns=COLUMNS_TO_IMPORT)
@@ -122,12 +122,20 @@ def main(
 
     lf = wUtils.create_purge_date_columns(lf)
 
-    # Produce data required for SfC Internal pipeline use
+    # The LazyFrame is split into two at this point:
+    # - SfC internal pipeline (filtered to workplaces last *active* on or after the purge date)
+    # - Cleaned ASC-WDS workplace data (filtered to workplaces last *amended* on or after the purge date)
+
+    # SfC Internal pipeline
     sfc_internal_lf = lf.filter(
         pl.col(AWPClean.workplace_last_active_date) >= pl.col(AWPClean.purge_date)
     ).select(SFC_INTERNAL_COLUMNS)
 
-    # Produce cleaned ASCWDS workplace data
+    utils.sink_to_parquet(
+        sfc_internal_lf, output_path=ascwds_for_sfc_internal_destination
+    )
+
+    # Cleaned ASC-WDS workplace data
     workplace_lf = lf.filter(
         pl.col(AWPClean.data_last_amended_date) >= pl.col(AWPClean.purge_date)
     )
@@ -145,10 +153,6 @@ def main(
         .name.suffix("_bounded")
     )
 
-    # Save datasets to parquet
-    utils.sink_to_parquet(
-        sfc_internal_lf, output_path=ascwds_for_sfc_internal_destination
-    )
     utils.sink_to_parquet(workplace_lf, output_path=cleaned_workplace_destination)
 
 
@@ -156,19 +160,19 @@ if __name__ == "__main__":
     args = utils.get_args(
         (
             "--workplace_source",
-            "Source s3 directory for raw ascwds workplace data",
+            "Source s3 directory for raw ASC-WDS workplace data",
         ),
         (
             "--data_labels_source",
-            "Source s3 directory for ascwds data labels",
+            "Source s3 directory for ASC-WDS data labels",
         ),
         (
             "--cleaned_workplace_destination",
-            "Destination s3 directory for cleaned ascwds workplace output",
+            "Destination s3 directory for cleaned ASC-WDS workplace output",
         ),
         (
             "--ascwds_for_sfc_internal_destination",
-            "Destination s3 directory for ASCWDS data for SFC internal pipeline use",
+            "Destination s3 directory for ASC-WDS data for SFC internal pipeline use",
         ),
     )
     main(

@@ -12,8 +12,8 @@ class MainTests(unittest.TestCase):
     CLEANED_WORKPLACE_DESTINATION = "some/destination"
     SFC_INTERNAL_DESTINATION = "some/other/destination"
 
-    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.remove_rows_with_duplicate_location_ids")
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.create_purge_date_columns")
     @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
     @patch(f"{PATCH_PATH}.pl.scan_csv")
@@ -32,8 +32,8 @@ class MainTests(unittest.TestCase):
         scan_csv_mock: Mock,
         apply_categorical_labels_mock: Mock,
         create_purge_date_columns_mock: Mock,
-        remove_rows_with_duplicate_location_ids_mock: Mock,
         sink_to_parquet_mock: Mock,
+        remove_rows_with_duplicate_location_ids_mock: Mock,
     ):
         job.main(
             self.WORKPLACE_SOURCE,
