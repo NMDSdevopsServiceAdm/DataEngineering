@@ -37,7 +37,7 @@ All notable changes to this project will be documented in this file.
 
 - Add placeholder code for upcoming tickets in SLV merge and clean jobs.
 
-- Added point blank validation of ASCWDS cleaned dataset.
+- Added point blank validation of ASCWDS cleaned dataset and reconciliation dataset.
 
 - Added `careHome` and `numberOfBeds` columns to Grouped Provider Output file and updated tests for the same.
 
@@ -77,7 +77,7 @@ All notable changes to this project will be documented in this file.
 
 - Corrected datasets in SLV pipeline that need switching between main and dev in terraform.
 
-- Reduced persistant storage in CircleCI.
+- Optimised persistent storage in CircleCI.
 
 - Added missing lambda folder to deployment.
 
