@@ -69,23 +69,23 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
 
     lf = merge_ascwds_and_pir_filled_post_submissions(lf)
 
-    # lf = model_imputation(
-    #     lf,
-    #     IndCQC.ascwds_pir_merged,
-    #     IndCQC.ascwds_rate_of_change_trendline_model,
-    #     IndCQC.imputed_filled_post_model,
-    #     care_home=False,
-    #     extrapolation_method="ratio",
-    # )
+    lf = model_imputation(
+        lf,
+        IndCQC.ascwds_pir_merged,
+        IndCQC.ascwds_rate_of_change_trendline_model,
+        IndCQC.imputed_filled_post_model,
+        care_home=False,
+        extrapolation_method="ratio",
+    )
 
-    # lf = model_imputation(
-    #     lf,
-    #     IndCQC.filled_posts_per_bed_ratio,
-    #     IndCQC.ascwds_rate_of_change_trendline_model,
-    #     IndCQC.imputed_filled_posts_per_bed_ratio_model,
-    #     care_home=True,
-    #     extrapolation_method="ratio",
-    # )
+    lf = model_imputation(
+        lf,
+        IndCQC.filled_posts_per_bed_ratio,
+        IndCQC.ascwds_rate_of_change_trendline_model,
+        IndCQC.imputed_filled_posts_per_bed_ratio_model,
+        care_home=True,
+        extrapolation_method="ratio",
+    )
 
     # model_calculate_rolling_average - posts_rolling_average_model
 
