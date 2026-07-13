@@ -1846,13 +1846,6 @@ class CombineASCWDSAndPIRSchemas:
         IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
     }
 
-    expected_create_repeated_ascwds_clean_column_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
-        IndCQC.ascwds_filled_posts_dedup_clean_repeated: pl.Float32,
-    }
-
     expected_create_last_submission_columns_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
@@ -1860,6 +1853,19 @@ class CombineASCWDSAndPIRSchemas:
         IndCQC.pir_filled_posts_model: pl.Float32,
         IndCQC.last_ascwds_submission: pl.Date,
         IndCQC.last_pir_submission: pl.Date,
+    }
+
+    split_dataset_for_merging_rows = {
+        IndCQC.location_id: pl.String,
+        IndCQC.last_ascwds_submission: pl.Date,
+        IndCQC.last_pir_submission: pl.Date,
+    }
+
+    expected_create_repeated_ascwds_clean_column_schema = {
+        IndCQC.location_id: pl.String,
+        IndCQC.cqc_location_import_date: pl.Date,
+        IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
+        IndCQC.ascwds_filled_posts_dedup_clean_repeated: pl.Float32,
     }
 
     expected_create_ascwds_pir_merged_column_schema = {
@@ -1873,11 +1879,12 @@ class CombineASCWDSAndPIRSchemas:
         IndCQC.ascwds_pir_merged: pl.Float32,
     }
 
-    include_pir_if_never_submitted_ascwds_schema = {
+    expected_include_pir_if_never_submitted_ascwds_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
-        IndCQC.ascwds_pir_merged: pl.Float32,
+        IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
         IndCQC.pir_filled_posts_model: pl.Float32,
+        IndCQC.ascwds_pir_merged: pl.Float32,
     }
 
     drop_temporary_columns_schema = {

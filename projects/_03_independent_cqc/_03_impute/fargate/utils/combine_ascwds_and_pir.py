@@ -31,46 +31,17 @@ def merge_ascwds_and_pir_filled_post_submissions(lf: pl.LazyFrame) -> pl.LazyFra
         pl.LazyFrame: A LazyFrame with an additional column `ascwds_pir_merged` that contains either the ASCWDS or PIR filled posts value,
                       depending on submission recency and similarity thresholds.
     """
-    lf = create_repeated_ascwds_clean_column(lf)
+
     lf = create_last_submission_columns(lf)
-    lf = create_ascwds_pir_merged_column(lf)
-    lf = include_pir_if_never_submitted_ascwds(lf)
-    lf = drop_temporary_columns(lf)
-    return lf
+    lf_within_two_years, lf_outside_two_years = split_dataset_for_merging(lf)
 
+    lf_within_two_years = create_repeated_ascwds_clean_column(lf_within_two_years)
+    lf_within_two_years = create_ascwds_pir_merged_column(lf_within_two_years)
+    lf_within_two_years = drop_temporary_columns(lf_within_two_years)
 
-def create_repeated_ascwds_clean_column(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Creates a forward-filled version of the cleaned ASCWDS filled posts column.
+    lf_outside_two_years = include_pir_if_never_submitted_ascwds(lf_outside_two_years)
 
-    This column is needed to compare to people directly employed figures to see where they diverge.
-
-    polars_streaming - .over() is not streaming compatible as at 13/07/2026.
-
-    Args:
-        lf (pl.LazyFrame): A LazyFrame with cleaned ascwds data
-
-    Returns:
-        pl.LazyFrame: A LazyFrame with an extra column containing ascwds filled posts filled forwards.
-    """
-    non_nulls = (
-        lf.filter(pl.col(IndCQC.ascwds_filled_posts_dedup_clean).is_not_null())
-        .select(
-            IndCQC.location_id,
-            IndCQC.cqc_location_import_date,
-            pl.col(IndCQC.ascwds_filled_posts_dedup_clean).alias(
-                IndCQC.ascwds_filled_posts_dedup_clean_repeated
-            ),
-        )
-        .sort(IndCQC.cqc_location_import_date)
-    )
-
-    return lf.sort(IndCQC.cqc_location_import_date).join_asof(
-        non_nulls,
-        on=IndCQC.cqc_location_import_date,
-        by=IndCQC.location_id,
-        strategy="backward",
-    )
+    return pl.concat([lf_within_two_years, lf_outside_two_years])
 
 
 def create_last_submission_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -105,6 +76,68 @@ def create_last_submission_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf.join(lf_agg, on=IndCQC.location_id, how="left")
 
 
+def split_dataset_for_merging(lf: pl.LazyFrame) -> tuple[pl.LazyFrame, pl.LazyFrame]:
+    """
+    Splits the dataset into two LazyFrames:
+        1. Locations suitable for merging ascwds and pir.
+        2. All other locations
+
+    Locations suitable for merging are those where the last ascwds submission is
+    more than two years before the last pir submission.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with last_ascwds_submission and last_pir_submission.
+
+    Returns:
+        tuple[pl.LazyFrame, pl.LazyFrame]: A tuple containing two LazyFrames:
+            - Locations suitable for merging ascwds and pir.
+            - All other locations.
+
+    """
+    time_expr = pl.col(IndCQC.last_ascwds_submission) < (
+        pl.col(IndCQC.last_pir_submission).dt.offset_by(ThresholdValues.two_years)
+    )
+
+    lf_for_merging = lf.filter(time_expr.fill_null(False))
+    lf_not_merging = lf.filter(~time_expr.fill_null(False))
+
+    return lf_for_merging, lf_not_merging
+
+
+def create_repeated_ascwds_clean_column(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Creates a forward-filled version of the cleaned ASCWDS filled posts column.
+
+    This column is needed to compare to people directly employed figures to see where they diverge.
+
+    polars_streaming - .over() is not streaming compatible as at 13/07/2026.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with cleaned ascwds data
+
+    Returns:
+        pl.LazyFrame: A LazyFrame with an extra column containing ascwds filled posts filled forwards.
+    """
+    lf = lf.sort(IndCQC.cqc_location_import_date)
+
+    non_nulls = lf.filter(
+        pl.col(IndCQC.ascwds_filled_posts_dedup_clean).is_not_null()
+    ).select(
+        IndCQC.location_id,
+        IndCQC.cqc_location_import_date,
+        pl.col(IndCQC.ascwds_filled_posts_dedup_clean).alias(
+            IndCQC.ascwds_filled_posts_dedup_clean_repeated
+        ),
+    )
+
+    return lf.join_asof(
+        non_nulls,
+        on=IndCQC.cqc_location_import_date,
+        by=IndCQC.location_id,
+        strategy="backward",
+    )
+
+
 def create_ascwds_pir_merged_column(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Adds a column in which ascwds and pir data are merged on the following conditions:
@@ -130,11 +163,6 @@ def create_ascwds_pir_merged_column(lf: pl.LazyFrame) -> pl.LazyFrame:
             that contains either the ASCWDS or PIR filled posts value,
             depending on submission recency and similarity thresholds.
     """
-
-    time_expr = pl.col(IndCQC.last_ascwds_submission) < (
-        pl.col(IndCQC.last_pir_submission).dt.offset_by(ThresholdValues.two_years)
-    )
-
     abs_diff_expr = (
         pl.col(IndCQC.pir_filled_posts_model)
         - pl.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
@@ -145,13 +173,9 @@ def create_ascwds_pir_merged_column(lf: pl.LazyFrame) -> pl.LazyFrame:
         + pl.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
     ) / 2
 
-    condition = (
-        time_expr
-        & (abs_diff_expr > ThresholdValues.max_absolute_difference)
-        & (
-            (abs_diff_expr / average_of_pir_and_ascwds)
-            > ThresholdValues.max_percentage_difference
-        )
+    condition = (abs_diff_expr > ThresholdValues.max_absolute_difference) & (
+        (abs_diff_expr / average_of_pir_and_ascwds)
+        > ThresholdValues.max_percentage_difference
     )
 
     lf = lf.with_columns(
@@ -166,24 +190,24 @@ def create_ascwds_pir_merged_column(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def include_pir_if_never_submitted_ascwds(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Populates ascwds_pir_merged with pir_filled_posts_model when
-    ascwds_pir_merged is null for all rows of same locationid.
+    Copies pir_filled_posts_model values into new column 'ascwds_pir_merged'
+    when ascwds_filled_posts_dedup_clean is null for all rows of same locationid.
 
     polars_streaming - .over() is not streaming compatible as at 13/07/2026
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame with columns:
-            - location_id (str)
-            - ascwds_pir_merged (double)
-            - pir_filled_posts_model (double)
+            - location_id
+            - ascwds_filled_posts_dedup_clean
+            - pir_filled_posts_model
 
     Returns:
-        pl.LazyFrame: LazyFrame with updated 'ascwds_pir_merged' values
-                   where applicable.
+        pl.LazyFrame: LazyFrame with new column 'ascwds_pir_merged'.
     """
+
     all_null = "all_null"
     lf_ascwds_null = lf.group_by(IndCQC.location_id).agg(
-        pl.col(IndCQC.ascwds_pir_merged).is_null().all().alias("all_null")
+        pl.col(IndCQC.ascwds_filled_posts_dedup_clean).is_null().all().alias(all_null)
     )
 
     lf = lf.join(lf_ascwds_null, on=IndCQC.location_id, how="left")
@@ -191,7 +215,7 @@ def include_pir_if_never_submitted_ascwds(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf.with_columns(
         pl.when(all_null)
         .then(pl.col(IndCQC.pir_filled_posts_model))
-        .otherwise(pl.col(IndCQC.ascwds_pir_merged))
+        .otherwise(pl.col(IndCQC.ascwds_filled_posts_dedup_clean))
         .alias(IndCQC.ascwds_pir_merged)
     ).drop(all_null)
 
