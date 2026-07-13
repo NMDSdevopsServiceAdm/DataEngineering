@@ -1,6 +1,7 @@
 import polars as pl
 import polars.selectors as cs
 
+from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -209,3 +210,43 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.with_columns(pl.col(AWPClean.parent_permission).replace(3, None))
 
     return lf
+
+
+def produce_and_save_data_for_reconciliation(
+    lf: pl.LazyFrame, output_path: str
+) -> None:
+    current_lf = utils.filter_to_maximum_value_in_column(
+        lf, AWPClean.ascwds_workplace_import_date
+    )
+
+    purged_lf = current_lf.filter(
+        pl.col(AWPClean.workplace_last_active_date) >= pl.col(AWPClean.purge_date)
+    )
+
+    RECONCILIATION_COLUMNS = [
+        AWPClean.ascwds_workplace_import_date,
+        AWPClean.establishment_id,
+        AWPClean.nmds_id,
+        AWPClean.master_update_date,
+        AWPClean.master_update_date_org,
+        AWPClean.establishment_created_date,
+        AWPClean.is_parent,
+        AWPClean.parent_id,
+        AWPClean.organisation_id,
+        AWPClean.parent_permission,
+        AWPClean.establishment_type,
+        AWPClean.registration_type,
+        AWPClean.location_id,
+        AWPClean.main_service_id,
+        AWPClean.establishment_name,
+        AWPClean.region_id,
+        AWPClean.total_staff,
+        AWPClean.worker_records,
+        AWPClean.last_logged_in_date,
+        AWPClean.la_permission,
+    ]
+
+    recon_lf = purged_lf.select(RECONCILIATION_COLUMNS)
+
+    print(f"Exporting ascwds workplace reconciliation data as parquet to {output_path}")
+    utils.sink_to_parquet(recon_lf, output_path=output_path)

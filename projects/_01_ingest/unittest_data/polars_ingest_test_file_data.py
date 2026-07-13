@@ -1667,26 +1667,18 @@ class TestCleanAscwdsWorkplaceUtilsData:
         ),
     ]
 
-    create_purge_date_columns_test_cases = [
-        CleanWorkplaceUtilsTestCase(
-            id="adds_all_purge_columns",
-            expected_data=[
-                (
-                    "org1",
-                    date(2024, 6, 1),
-                    date(2024, 4, 1),
-                    "Yes",
-                    date(2024, 5, 1),
-                    date(2024, 4, 1),
-                    date(2022, 6, 1),
-                    date(2024, 4, 1),
-                    date(2024, 5, 1),
-                )
-            ], # fmt: skip
-        ),
-    ]
+    expected_create_purge_date_columns_rows = [
+        ("org1", date(2024, 6, 1), date(2024, 4, 1), "Yes", date(2024, 5, 1), date(2024, 4, 1), date(2022, 6, 1), date(2024, 4, 1), date(2024, 5, 1))
+    ] # fmt: skip
 
-    # ADD_TEST_DATA_HERE
+    data_for_reconciliation_rows = [
+        (date(2024, 1, 1), "1", "A123", date(2023, 12, 1), date(2023, 12, 1), date(2020, 1, 1), "No",  "100", "org1", "1", "1", "1", "loc1", "10", "A", "1", "10", "10", date(2023, 12, 15), "1", date(2023, 12, 20), date(2024, 1, 2)),
+        (date(2024, 1, 2), "2", "A234",  date(2024, 1, 1),  date(2024, 1, 1), date(2020, 1, 1), "No",  "101", "org2", "1", "2", "1", "loc2", "11", "B", "2", "15", "11", date(2024, 1, 1),   "1", date(2024, 1, 1),   date(2024, 1, 2)),
+        (date(2024, 1, 2), "3", "A345",  date(2024, 1, 2),  date(2024, 1, 2), date(2020, 1, 1), "Yes", "102", "org3", "1", "3", "1", "loc3", "12", "C", "3", "20", "12", date(2024, 1, 2),   "1", date(2024, 1, 2),   date(2024, 1, 2)),
+    ] # fmt: skip
+    expected_data_for_reconciliation_rows = [
+        (date(2024, 1, 2), "3", "A345", date(2024, 1, 2), date(2024, 1, 2), date(2020, 1, 1), "Yes", "102", "org3", "1", "3", "1", "loc3", "12", "C", "3", "20", "12", date(2024, 1, 2), "1")
+    ] # fmt: skip
 
     apply_data_corrections_test_cases = [
         ApplyDataCorrectionsTestCase(

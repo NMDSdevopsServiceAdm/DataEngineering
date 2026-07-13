@@ -1,4 +1,5 @@
 from datetime import date
+from unittest.mock import ANY, Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
@@ -14,6 +15,8 @@ from projects._01_ingest.unittest_data.polars_ingest_test_file_schema import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+
+PATCH_PATH = "projects._01_ingest.ascwds.fargate.utils.clean_workplace_utils"
 
 
 class TestValidWorkplaceFilter:
@@ -155,16 +158,9 @@ class TestAddMasterUpdateDateOrg:
 
 
 class TestCreatePurgeDateColumns:
-    @pytest.mark.parametrize(
-        "case",
-        [
-            pytest.param(case, id=case.id)
-            for case in Data.create_purge_date_columns_test_cases
-        ],
-    )
-    def test_function_returns_expected_values(self, case):
+    def test_function_returns_expected_values(self):
         expected_lf = pl.LazyFrame(
-            case.expected_data,
+            Data.expected_create_purge_date_columns_rows,
             Schemas.create_purge_date_columns_schema,
             orient="row",
         )
@@ -178,6 +174,50 @@ class TestCreatePurgeDateColumns:
         returned_lf = job.create_purge_date_columns(test_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
+class TestProduceAndSaveDataForReconciliation:
+    TEST_LF = Mock(spec=pl.LazyFrame, name="test_lf")
+    RECONCILIATION_DESTINATION = "some/other/destination"
+
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.filter_to_maximum_value_in_column")
+    def test_main_runs(
+        self,
+        filter_to_maximum_value_in_column_mock: Mock,
+        sink_to_parquet_mock: Mock,
+    ):
+        job.produce_and_save_data_for_reconciliation(
+            self.TEST_LF, self.RECONCILIATION_DESTINATION
+        )
+
+        filter_to_maximum_value_in_column_mock.assert_called_once()
+        sink_to_parquet_mock.assert_called_once_with(
+            ANY, output_path=self.RECONCILIATION_DESTINATION
+        )
+
+    @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    def test_filters_to_latest_import_date_and_selects_expected_columns(
+        self, sink_to_parquet_mock: Mock
+    ):
+        test_lf = pl.LazyFrame(
+            Data.data_for_reconciliation_rows,
+            Schemas.produce_and_save_data_for_reconciliation_schema,
+            orient="row",
+        )
+        expected_lf = pl.LazyFrame(
+            Data.expected_data_for_reconciliation_rows,
+            Schemas.expected_produce_and_save_data_for_reconciliation_schema,
+            orient="row",
+        )
+
+        job.produce_and_save_data_for_reconciliation(
+            test_lf, self.RECONCILIATION_DESTINATION
+        )
+
+        passed_lf = sink_to_parquet_mock.call_args.args[0]
+
+        pl_testing.assert_frame_equal(passed_lf, expected_lf)
 
 
 class TestApplyDataCorrections:
