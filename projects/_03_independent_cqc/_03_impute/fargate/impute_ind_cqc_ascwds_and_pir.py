@@ -23,10 +23,6 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.
 from projects._03_independent_cqc.utils.imputation.imputation import model_imputation
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
-# Set streaming chunk size for memory management - each thread (per CPU core) will load
-# in a chunk of this size.
-pl.Config.set_streaming_chunk_size(50000)
-
 
 @dataclass
 class NumericalValues:
@@ -42,58 +38,57 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         cleaned_ind_cqc_source (str): s3 path to the cleaned ind cqc data
         destination (str): s3 path to save the output data
     """
-    lf = utils.scan_parquet(cleaned_ind_cqc_source).with_columns(
-        pl.col(IndCQC.location_id).cast(CategoricalColumnTypes.LocationCatType)
-    )
+    lf = utils.scan_parquet(cleaned_ind_cqc_source)
+
     print("Cleaned IND CQC LazyFrame read in")
 
-    lf = forward_fill_latest_known_value(lf, IndCQC.ascwds_filled_posts_dedup_clean)
+    # lf = forward_fill_latest_known_value(lf, IndCQC.ascwds_filled_posts_dedup_clean)
 
-    lf = forward_fill_latest_known_value(lf, IndCQC.pir_people_directly_employed_dedup)
+    # lf = forward_fill_latest_known_value(lf, IndCQC.pir_people_directly_employed_dedup)
 
-    lf = cUtils.calculate_filled_posts_per_bed_ratio(
-        lf,
-        IndCQC.ascwds_filled_posts_dedup_clean,
-        IndCQC.filled_posts_per_bed_ratio,
-    )
+    # lf = cUtils.calculate_filled_posts_per_bed_ratio(
+    #     lf,
+    #     IndCQC.ascwds_filled_posts_dedup_clean,
+    #     IndCQC.filled_posts_per_bed_ratio,
+    # )
 
-    lf = lf.with_columns(
-        pl.when(is_care_home())
-        .then(pl.col(IndCQC.filled_posts_per_bed_ratio))
-        .otherwise(pl.col(IndCQC.ascwds_filled_posts_dedup_clean))
-        .cast(pl.Float32)
-        .alias(IndCQC.combined_ratio_and_filled_posts)
-    )
+    # lf = lf.with_columns(
+    #     pl.when(is_care_home())
+    #     .then(pl.col(IndCQC.filled_posts_per_bed_ratio))
+    #     .otherwise(pl.col(IndCQC.ascwds_filled_posts_dedup_clean))
+    #     .cast(pl.Float32)
+    #     .alias(IndCQC.combined_ratio_and_filled_posts)
+    # )
 
-    lf = model_primary_service_rate_of_change_trendline(
-        lf,
-        IndCQC.combined_ratio_and_filled_posts,
-        NumericalValues.number_of_days_in_window,
-        IndCQC.ascwds_rate_of_change_trendline_model,
-        max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
-    )
+    # lf = model_primary_service_rate_of_change_trendline(
+    #     lf,
+    #     IndCQC.combined_ratio_and_filled_posts,
+    #     NumericalValues.number_of_days_in_window,
+    #     IndCQC.ascwds_rate_of_change_trendline_model,
+    #     max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
+    # )
 
     lf = convert_pir_to_filled_posts(lf)
 
     lf = merge_ascwds_and_pir_filled_post_submissions(lf)
 
-    lf = model_imputation(
-        lf,
-        IndCQC.ascwds_pir_merged,
-        IndCQC.ascwds_rate_of_change_trendline_model,
-        IndCQC.imputed_filled_post_model,
-        care_home=False,
-        extrapolation_method="ratio",
-    )
+    # lf = model_imputation(
+    #     lf,
+    #     IndCQC.ascwds_pir_merged,
+    #     IndCQC.ascwds_rate_of_change_trendline_model,
+    #     IndCQC.imputed_filled_post_model,
+    #     care_home=False,
+    #     extrapolation_method="ratio",
+    # )
 
-    lf = model_imputation(
-        lf,
-        IndCQC.filled_posts_per_bed_ratio,
-        IndCQC.ascwds_rate_of_change_trendline_model,
-        IndCQC.imputed_filled_posts_per_bed_ratio_model,
-        care_home=True,
-        extrapolation_method="ratio",
-    )
+    # lf = model_imputation(
+    #     lf,
+    #     IndCQC.filled_posts_per_bed_ratio,
+    #     IndCQC.ascwds_rate_of_change_trendline_model,
+    #     IndCQC.imputed_filled_posts_per_bed_ratio_model,
+    #     care_home=True,
+    #     extrapolation_method="ratio",
+    # )
 
     # model_calculate_rolling_average - posts_rolling_average_model
 
@@ -113,48 +108,48 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
     #     .alias(IndCQC.posts_rolling_average_model)
     # )
 
-    lf = lf.with_columns(
-        pl.when(is_care_home())
-        .then(pl.col(IndCQC.ct_care_home_total_employed_cleaned))
-        .otherwise(pl.col(IndCQC.ct_non_res_care_workers_employed_cleaned))
-        .cast(pl.Float32)
-        .alias(IndCQC.ct_combined_care_home_and_non_res)
-    )
+    # lf = lf.with_columns(
+    #     pl.when(is_care_home())
+    #     .then(pl.col(IndCQC.ct_care_home_total_employed_cleaned))
+    #     .otherwise(pl.col(IndCQC.ct_non_res_care_workers_employed_cleaned))
+    #     .cast(pl.Float32)
+    #     .alias(IndCQC.ct_combined_care_home_and_non_res)
+    # )
 
-    lf = model_primary_service_rate_of_change_trendline(
-        lf,
-        IndCQC.ct_combined_care_home_and_non_res,
-        NumericalValues.number_of_days_in_window,
-        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
-        max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
-    )
+    # lf = model_primary_service_rate_of_change_trendline(
+    #     lf,
+    #     IndCQC.ct_combined_care_home_and_non_res,
+    #     NumericalValues.number_of_days_in_window,
+    #     IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+    #     max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
+    # )
 
-    lf = model_imputation(
-        lf,
-        IndCQC.ct_care_home_total_employed_cleaned,
-        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
-        IndCQC.ct_care_home_total_employed_imputed,
-        care_home=True,
-        extrapolation_method="ratio",
-    )
+    # lf = model_imputation(
+    #     lf,
+    #     IndCQC.ct_care_home_total_employed_cleaned,
+    #     IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+    #     IndCQC.ct_care_home_total_employed_imputed,
+    #     care_home=True,
+    #     extrapolation_method="ratio",
+    # )
 
-    lf = model_imputation(
-        lf,
-        IndCQC.ct_non_res_care_workers_employed_cleaned,
-        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
-        IndCQC.ct_non_res_care_workers_employed_imputed,
-        care_home=False,
-        extrapolation_method="ratio",
-    )
+    # lf = model_imputation(
+    #     lf,
+    #     IndCQC.ct_non_res_care_workers_employed_cleaned,
+    #     IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+    #     IndCQC.ct_non_res_care_workers_employed_imputed,
+    #     care_home=False,
+    #     extrapolation_method="ratio",
+    # )
 
-    lf = lf.with_columns(
-        utils.nullify_ct_values_previous_to_first_submission(
-            [
-                IndCQC.ct_care_home_total_employed_imputed,
-                IndCQC.ct_non_res_care_workers_employed_imputed,
-            ],
-        )
-    )
+    # lf = lf.with_columns(
+    #     utils.nullify_ct_values_previous_to_first_submission(
+    #         [
+    #             IndCQC.ct_care_home_total_employed_imputed,
+    #             IndCQC.ct_non_res_care_workers_employed_imputed,
+    #         ],
+    #     )
+    # )
 
     print(f"Exporting as parquet to {destination}")
 
