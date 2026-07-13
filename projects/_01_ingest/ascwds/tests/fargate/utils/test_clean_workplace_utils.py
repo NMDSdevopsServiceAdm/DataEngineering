@@ -154,54 +154,30 @@ class TestAddMasterUpdateDateOrg:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
-class TestCreatePurgedLfsForReconciliationAndData:
+class TestCreatePurgeDateColumns:
     @pytest.mark.parametrize(
         "case",
-        [pytest.param(case, id=case.id) for case in Data.create_purged_lfs_test_cases],
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.create_purge_date_columns_test_cases
+        ],
     )
     def test_function_returns_expected_values(self, case):
-        test_lf = pl.LazyFrame(case.test_data, Schemas.test_schema, orient="row")
-
-        expected_workplace_lf = (
-            pl.LazyFrame(
-                case.expected_workplace_data, Schemas.test_schema, orient="row"
-            )
-            if case.expected_workplace_data is not None
-            else pl.LazyFrame(schema=Schemas.test_schema)
-        )
-        expected_recon_lf = (
-            pl.LazyFrame(case.expected_recon_data, Schemas.test_schema, orient="row")
-            if case.expected_recon_data is not None
-            else pl.LazyFrame(schema=Schemas.test_schema)
-        )
-
-        workplace_lf, recon_lf = job.create_purged_lfs_for_reconciliation_and_data(
-            test_lf
-        )
-
-        pl_testing.assert_frame_equal(
-            workplace_lf.select(Schemas.test_schema.keys()),
-            expected_workplace_lf,
-            check_row_order=False,
-        )
-        pl_testing.assert_frame_equal(
-            recon_lf.select(Schemas.test_schema.keys()),
-            expected_recon_lf,
-            check_row_order=False,
-        )
-
-    def test_returns_lazy_frames(self):
-        test_lf = pl.LazyFrame(
-            [("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1))],
-            schema=Schemas.test_schema,
+        expected_lf = pl.LazyFrame(
+            case.expected_data,
+            Schemas.create_purge_date_columns_schema,
             orient="row",
         )
-        workplace_lf, recon_lf = job.create_purged_lfs_for_reconciliation_and_data(
-            test_lf
+        test_lf = expected_lf.drop(
+            AWPClean.master_update_date_org,
+            AWPClean.purge_date,
+            AWPClean.data_last_amended_date,
+            AWPClean.workplace_last_active_date,
         )
 
-        assert isinstance(workplace_lf, pl.LazyFrame)
-        assert isinstance(recon_lf, pl.LazyFrame)
+        returned_lf = job.create_purge_date_columns(test_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
 class TestApplyDataCorrections:

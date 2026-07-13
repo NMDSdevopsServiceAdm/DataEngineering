@@ -164,26 +164,15 @@ def add_master_update_date_org(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
-def create_purged_lfs_for_reconciliation_and_data(
-    lf: pl.LazyFrame,
-) -> tuple[pl.LazyFrame, pl.LazyFrame]:
+def create_purge_date_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Remove rows which have not been updated/logged into since the purge date.
-
-    Rows in ASC-WDS workplace data are removed using master_update_date.
-    Rows in reconciliation data are removed using master_update_date and
-        last_logged_in_date (whichever is more recent).
-    Parent accounts use the most recent date from all accounts in that organisation.
+    Create purge date columns for the input LazyFrame.
 
     Args:
-        lf (pl.LazyFrame): The ascwds_workplace_lf to be purged
+        lf (pl.LazyFrame): The input LazyFrame.
 
     Returns:
-        tuple[pl.LazyFrame, pl.LazyFrame]: A tuple of two LazyFrames:
-        - ascwds_workplace_lf where old data has been removed based on mupddate
-            date
-        - reconciliation_lf where old data has been removed based on the maximum
-            of mupddate and lastloggedin date
+        pl.LazyFrame: The LazyFrame with purge date columns added.
     """
     expr = PurgeWorkplaceDataExpressions()
     lf = add_master_update_date_org(lf)
@@ -194,14 +183,7 @@ def create_purged_lfs_for_reconciliation_and_data(
         expr.workplace_last_active_date,
     )
 
-    ascwds_workplace_lf = lf.filter(
-        pl.col(AWPClean.data_last_amended_date) >= pl.col(AWPClean.purge_date)
-    )
-    reconciliation_lf = lf.filter(
-        pl.col(AWPClean.workplace_last_active_date) >= pl.col(AWPClean.purge_date)
-    )
-
-    return ascwds_workplace_lf, reconciliation_lf
+    return lf
 
 
 def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
