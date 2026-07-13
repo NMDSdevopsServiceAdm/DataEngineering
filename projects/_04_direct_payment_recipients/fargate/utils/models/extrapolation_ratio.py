@@ -34,6 +34,7 @@ def model_extrapolation(direct_payments_lf: pl.LazyFrame) -> pl.LazyFrame:
         direct_payments_lf.filter(
             pl.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).is_not_null()
         )
+        # polars_streaming: groupby-agg-join workaround; could be .min().over() and .max().over() when window functions support streaming
         .group_by(DP.LA_AREA)
         .agg(
             pl.col(DP.YEAR_AS_INTEGER)
