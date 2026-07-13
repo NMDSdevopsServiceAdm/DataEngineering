@@ -56,7 +56,7 @@ ascwds_workplace_columns_to_import = [
     AWPClean.import_date,
 ]
 
-cols_required_for_sfc_internal_df = [
+cols_required_for_reconciliation_df = [
     AWPClean.ascwds_workplace_import_date,
     AWPClean.establishment_id,
     AWPClean.nmds_id,
@@ -83,7 +83,7 @@ cols_required_for_sfc_internal_df = [
 def main(
     ascwds_workplace_source: str,
     cleaned_ascwds_workplace_destination: str,
-    ascwds_for_sfc_internal_destination: str,
+    workplace_for_reconciliation_destination: str,
 ):
     ascwds_workplace_df = utils.read_from_parquet(
         ascwds_workplace_source, selected_columns=ascwds_workplace_columns_to_import
@@ -143,13 +143,13 @@ def main(
         AscwdsScaleVariableLimits.worker_records_lower_limit,
     )
 
-    reconciliation_df = reconciliation_df.select(cols_required_for_sfc_internal_df)
+    reconciliation_df = reconciliation_df.select(cols_required_for_reconciliation_df)
 
     print(
-        f"Exporting ascwds workplace reconciliation data as parquet to {ascwds_for_sfc_internal_destination}"
+        f"Exporting ascwds workplace reconciliation data as parquet to {workplace_for_reconciliation_destination}"
     )
     utils.write_to_parquet(
-        reconciliation_df, ascwds_for_sfc_internal_destination, mode="overwrite"
+        reconciliation_df, workplace_for_reconciliation_destination, mode="overwrite"
     )
 
     print(
@@ -390,7 +390,7 @@ if __name__ == "__main__":
     (
         ascwds_workplace_source,
         cleaned_ascwds_workplace_destination,
-        ascwds_for_sfc_internal_destination,
+        workplace_for_reconciliation_destination,
     ) = utils.collect_arguments(
         (
             "--ascwds_workplace_source",
@@ -401,14 +401,14 @@ if __name__ == "__main__":
             "Destination s3 directory for cleaned parquet ascwds workplace dataset",
         ),
         (
-            "--ascwds_for_sfc_internal_destination",
-            "Destination s3 directory for ascwds for SfC internal dataset",
+            "--workplace_for_reconciliation_destination",
+            "Destination s3 directory for ascwds for reconciliation dataset",
         ),
     )
     main(
         ascwds_workplace_source,
         cleaned_ascwds_workplace_destination,
-        ascwds_for_sfc_internal_destination,
+        workplace_for_reconciliation_destination,
     )
 
     print("Spark job 'clean_ascwds_workplace_data' complete")

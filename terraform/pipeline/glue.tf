@@ -155,9 +155,9 @@ module "clean_ascwds_workplace_job" {
   glue_version      = "5.0"
 
   job_parameters = {
-    "--ascwds_workplace_source"              = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--cleaned_ascwds_workplace_destination" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
-    "--ascwds_for_sfc_internal_destination"  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=ascwds_for_sfc_internal/"
+    "--ascwds_workplace_source"                  = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
+    "--cleaned_ascwds_workplace_destination"     = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
+    "--workplace_for_reconciliation_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=ascwds_for_sfc_internal/"
   }
 }
 
