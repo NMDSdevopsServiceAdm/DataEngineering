@@ -42,8 +42,12 @@ class MainTests(unittest.TestCase):
             self.SFC_INTERNAL_DESTINATION,
         )
 
-        scan_parquet_mock.assert_called_once_with(
-            self.WORKPLACE_SOURCE, selected_columns=job.COLUMNS_TO_IMPORT
+        assert scan_parquet_mock.call_count == 2
+        scan_parquet_mock.assert_has_calls(
+            [
+                call(self.WORKPLACE_SOURCE, selected_columns=job.COLUMNS_TO_IMPORT),
+                call(self.WORKPLACE_SOURCE),
+            ]
         )
 
         apply_data_corrections_mock.assert_called_once()
