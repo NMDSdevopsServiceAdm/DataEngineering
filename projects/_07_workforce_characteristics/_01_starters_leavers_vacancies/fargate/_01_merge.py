@@ -25,13 +25,6 @@ metadata_columns_schema = {
     IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
     IndCQC.ascwds_pir_merged: pl.Float32,
     IndCQC.ascwds_filtering_rule: pl.Categorical,
-    IndCQC.current_ons_import_date: pl.Date,
-    IndCQC.current_cssr: pl.Categorical,
-    IndCQC.current_region: pl.Categorical,
-    IndCQC.current_icb: pl.Categorical,
-    IndCQC.current_rural_urban_indicator_2011: pl.Categorical,
-    IndCQC.current_lsoa21: pl.Categorical,
-    IndCQC.current_msoa21: pl.Categorical,
     IndCQC.estimate_filled_posts_source: CatColType.EstimatesFilledPostSourceEnumType,
 }
 
