@@ -155,9 +155,9 @@ module "clean_ascwds_workplace_job" {
   glue_version      = "5.0"
 
   job_parameters = {
-    "--ascwds_workplace_source"                  = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--cleaned_ascwds_workplace_destination"     = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
-    "--workplace_for_reconciliation_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
+    "--ascwds_workplace_source"              = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
+    "--cleaned_ascwds_workplace_destination" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
+    "--ascwds_for_sfc_internal_destination"  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=ascwds_for_sfc_internal/"
   }
 }
 
@@ -308,7 +308,7 @@ module "reconciliation_job" {
 
   job_parameters = {
     "--cqc_locations_snapshot_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_locations_04_latest_snapshot/"
-    "--ascwds_reconciliation_source"               = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
+    "--ascwds_reconciliation_source"               = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=ascwds_for_sfc_internal/"
     "--reconciliation_single_and_subs_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_reconciliation_singles_and_subs"
     "--reconciliation_parents_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_reconciliation_parents"
   }
@@ -328,7 +328,7 @@ module "merge_coverage_data_job" {
 
   job_parameters = {
     "--cleaned_cqc_location_source"         = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
-    "--workplace_for_reconciliation_source" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
+    "--workplace_for_reconciliation_source" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=ascwds_for_sfc_internal/"
     "--cqc_ratings_source"                  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
     "--cleaned_cqc_providers_source"        = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_providers_04_full_cleaned/"
     "--merged_coverage_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/"
