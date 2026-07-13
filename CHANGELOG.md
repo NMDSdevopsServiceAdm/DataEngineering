@@ -70,7 +70,7 @@ All notable changes to this project will be documented in this file.
 
 - National care work thresholds removed from job role estimates validation.
 
-- Refactored clean ASCWDS workplace to have a specific function (`produce_and_save_data_for_reconciliation`) for creating and saving data for the reconciliation process.
+- Updated references from workplace data for 'reconciliation' process to 'SfC internal' as the dataset is used in multiple jobs
 
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
