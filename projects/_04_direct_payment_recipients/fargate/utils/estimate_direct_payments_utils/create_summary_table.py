@@ -24,7 +24,6 @@ def create_summary_table(
             - total_dprs_employing_staff
             - total_personal_assistant_filled_posts
     """
-    # polars_streaming: groupby-agg pattern; could be simplified with aggregation window functions when streaming is supported
     summary_direct_payments_lf = lf.group_by(DP.YEAR_AS_INTEGER).agg(
         pl.sum(DP.TOTAL_DPRS_DURING_YEAR).cast(pl.Float32).alias(DP.TOTAL_DPRS),
         pl.sum(DP.SERVICE_USER_DPRS_DURING_YEAR)
