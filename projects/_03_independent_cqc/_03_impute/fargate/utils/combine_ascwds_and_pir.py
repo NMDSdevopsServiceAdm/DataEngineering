@@ -74,20 +74,20 @@ def create_last_submission_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: A LazyFrame with two extra columns containing the latest submission dates.
     """
-    lf = lf.with_columns(
-        pl.col(IndCQC.cqc_location_import_date)
-        .filter(pl.col(IndCQC.ascwds_filled_posts_dedup_clean).is_not_null())
-        .max()
-        .over(IndCQC.location_id)
-        .alias(IndCQC.last_ascwds_submission),
-        pl.col(IndCQC.cqc_location_import_date)
-        .filter(pl.col(IndCQC.pir_filled_posts_model).is_not_null())
-        .max()
-        .over(IndCQC.location_id)
-        .alias(IndCQC.last_pir_submission),
+    lf_agg = lf.group_by(IndCQC.location_id).agg(
+        [
+            pl.col(IndCQC.cqc_location_import_date)
+            .filter(pl.col(IndCQC.ascwds_filled_posts_dedup_clean).is_not_null())
+            .max()
+            .alias(IndCQC.last_ascwds_submission),
+            pl.col(IndCQC.cqc_location_import_date)
+            .filter(pl.col(IndCQC.pir_filled_posts_model).is_not_null())
+            .max()
+            .alias(IndCQC.last_pir_submission),
+        ]
     )
 
-    return lf
+    return lf.join(lf_agg, on=IndCQC.location_id, how="left")
 
 
 def create_ascwds_pir_merged_column(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -164,18 +164,19 @@ def include_pir_if_never_submitted_ascwds(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: LazyFrame with updated 'ascwds_pir_merged' values
                    where applicable.
     """
-    has_data_expr = (
-        pl.col(IndCQC.ascwds_pir_merged).is_null().all().over(IndCQC.location_id)
+    all_null = "all_null"
+    lf_ascwds_null = lf.group_by(IndCQC.location_id).agg(
+        pl.col(IndCQC.ascwds_pir_merged).is_null().all().alias("all_null")
     )
 
-    lf = lf.with_columns(
-        pl.when(has_data_expr)
+    lf = lf.join(lf_ascwds_null, on=IndCQC.location_id, how="left")
+
+    return lf.with_columns(
+        pl.when(all_null)
         .then(pl.col(IndCQC.pir_filled_posts_model))
         .otherwise(pl.col(IndCQC.ascwds_pir_merged))
         .alias(IndCQC.ascwds_pir_merged)
-    )
-
-    return lf
+    ).drop(all_null)
 
 
 def drop_temporary_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
