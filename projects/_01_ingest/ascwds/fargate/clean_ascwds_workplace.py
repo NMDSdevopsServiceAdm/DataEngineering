@@ -126,26 +126,24 @@ def main(
     )
 
     # Produce and save cleaned ASCWDS workplace data
-    clean_workplace_lf = lf.filter(
+    workplace_lf = lf.filter(
         pl.col(AWPClean.data_last_amended_date) >= pl.col(AWPClean.purge_date)
     )
 
-    clean_workplace_lf = clean_workplace_lf.filter(
-        wUtils.remove_rows_with_duplicate_location_ids()
-    )
+    workplace_lf = wUtils.remove_rows_with_duplicate_location_ids(workplace_lf)
 
-    clean_workplace_lf = clean_workplace_lf.with_columns(
+    workplace_lf = workplace_lf.with_columns(
         pl.col(INT_COLUMNS).cast(pl.Int32, strict=False)
     )
 
-    clean_workplace_lf = clean_workplace_lf.with_columns(
+    workplace_lf = workplace_lf.with_columns(
         pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)
         .then(pl.col(BOUNDED_STAFF_COLUMNS))
         .otherwise(None)
         .name.suffix("_bounded")
     )
 
-    utils.sink_to_parquet(clean_workplace_lf, output_path=cleaned_workplace_destination)
+    utils.sink_to_parquet(workplace_lf, output_path=cleaned_workplace_destination)
 
 
 if __name__ == "__main__":
