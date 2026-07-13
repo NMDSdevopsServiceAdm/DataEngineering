@@ -3555,9 +3555,18 @@ class CombineASCWDSAndPIRData:
         CombineASCWDSAndPIRTestCase(
             id="repeats_ascwds_clean_column_when_missing_middle_data",
             expected_data=[
-                ("loc 3", date(2024, 1, 1), 40.0, 40.0),
-                ("loc 3", date(2024, 2, 1), None, 40.0),
-                ("loc 3", date(2024, 3, 1), 60.0, 60.0),
+                ("loc 1", date(2024, 1, 1), 40.0, 40.0),
+                ("loc 1", date(2024, 2, 1), None, 40.0),
+                ("loc 1", date(2024, 3, 1), 60.0, 60.0),
+            ],
+        ),
+        CombineASCWDSAndPIRTestCase(
+            id="repeats_ascwds_clean_column_when_values_change",
+            expected_data=[
+                ("loc 1", date(2024, 1, 1), 40.0, 40.0),
+                ("loc 1", date(2024, 2, 1), None, 40.0),
+                ("loc 1", date(2024, 3, 1), 60.0, 60.0),
+                ("loc 1", date(2024, 4, 1), None, 60.0),
             ],
         ),
         CombineASCWDSAndPIRTestCase(
