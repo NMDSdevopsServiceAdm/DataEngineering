@@ -17,9 +17,6 @@ from projects._03_independent_cqc._03_impute.fargate.utils.forward_fill_latest_k
 from projects._03_independent_cqc._03_impute.fargate.utils.primary_service_rate_of_change import (
     model_primary_service_rate_of_change_trendline,
 )
-from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
-    CategoricalColumnTypes,
-)
 from projects._03_independent_cqc.utils.imputation.imputation import model_imputation
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
@@ -42,31 +39,31 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
 
     print("Cleaned IND CQC LazyFrame read in")
 
-    # lf = forward_fill_latest_known_value(lf, IndCQC.ascwds_filled_posts_dedup_clean)
+    lf = forward_fill_latest_known_value(lf, IndCQC.ascwds_filled_posts_dedup_clean)
 
-    # lf = forward_fill_latest_known_value(lf, IndCQC.pir_people_directly_employed_dedup)
+    lf = forward_fill_latest_known_value(lf, IndCQC.pir_people_directly_employed_dedup)
 
-    # lf = cUtils.calculate_filled_posts_per_bed_ratio(
-    #     lf,
-    #     IndCQC.ascwds_filled_posts_dedup_clean,
-    #     IndCQC.filled_posts_per_bed_ratio,
-    # )
+    lf = cUtils.calculate_filled_posts_per_bed_ratio(
+        lf,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.filled_posts_per_bed_ratio,
+    )
 
-    # lf = lf.with_columns(
-    #     pl.when(is_care_home())
-    #     .then(pl.col(IndCQC.filled_posts_per_bed_ratio))
-    #     .otherwise(pl.col(IndCQC.ascwds_filled_posts_dedup_clean))
-    #     .cast(pl.Float32)
-    #     .alias(IndCQC.combined_ratio_and_filled_posts)
-    # )
+    lf = lf.with_columns(
+        pl.when(is_care_home())
+        .then(pl.col(IndCQC.filled_posts_per_bed_ratio))
+        .otherwise(pl.col(IndCQC.ascwds_filled_posts_dedup_clean))
+        .cast(pl.Float32)
+        .alias(IndCQC.combined_ratio_and_filled_posts)
+    )
 
-    # lf = model_primary_service_rate_of_change_trendline(
-    #     lf,
-    #     IndCQC.combined_ratio_and_filled_posts,
-    #     NumericalValues.number_of_days_in_window,
-    #     IndCQC.ascwds_rate_of_change_trendline_model,
-    #     max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
-    # )
+    lf = model_primary_service_rate_of_change_trendline(
+        lf,
+        IndCQC.combined_ratio_and_filled_posts,
+        NumericalValues.number_of_days_in_window,
+        IndCQC.ascwds_rate_of_change_trendline_model,
+        max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
+    )
 
     lf = convert_pir_to_filled_posts(lf)
 
