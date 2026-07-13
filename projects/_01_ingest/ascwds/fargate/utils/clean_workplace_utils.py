@@ -166,6 +166,7 @@ def add_master_update_date_org(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: Input frame with ``master_update_date_org`` column added.
     """
+    # polars_streaming: groupby+join workaround; could be .max().over() when window functions support streaming
     org_max = lf.group_by(
         AWPClean.organisation_id, AWPClean.ascwds_workplace_import_date
     ).agg(

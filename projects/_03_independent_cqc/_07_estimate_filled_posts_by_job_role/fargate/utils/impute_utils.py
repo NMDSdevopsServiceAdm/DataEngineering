@@ -41,6 +41,7 @@ def create_imputed_ascwds_job_role_counts(
     )
 
     impute_agg_lf = (
+        # polars_streaming: groupby-agg-explode workaround; should be .over() when window functions support streaming
         estimated_job_role_posts_lf.group_by(impute_groups)
         .agg(
             # Sort the join key in the same manner as the imputed values.
@@ -90,6 +91,7 @@ def get_percent_share_ratios(
         groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
 
     # Groupby-agg-explode on only necessary subset, before joining back on id_per_locationid_import_date_job_role.
+    # polars_streaming: groupby-agg-explode workaround; could be replaced with .over() and simpler join when window functions support streaming
     ratios_agg_lf = (
         estimated_job_role_posts_lf.group_by(groups)
         .agg(
@@ -204,11 +206,13 @@ def create_ascwds_job_role_rolling_ratio(
     monthly_groups = rolling_groups + [order_key]
 
     # STEP A: Pre-aggregate to monthly totals
+    # polars_streaming: groupby-agg pre-aggregation workaround; data reduction allows streaming but limits flexibility
     monthly_totals_lf = estimated_job_role_posts_lf.group_by(monthly_groups).agg(
         pl.col(IndCQC.imputed_ascwds_job_role_counts).sum()
     )
 
     # STEP B: Sort and compute rolling 6-month sums on small dataset
+    # polars_streaming: .rolling() with groupby requires pre-aggregation workaround; could use .over() for grouped rolling windows when streaming is supported
     rolling_agg_lf = (
         monthly_totals_lf.sort(*rolling_groups, order_key)
         .rolling(index_column=order_key, group_by=rolling_groups, period="6mo")

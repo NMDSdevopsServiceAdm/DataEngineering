@@ -135,8 +135,8 @@ def build_extrapolation_aggregates(
     """
     return (
         lf.filter(pl.col(value_col).is_not_null())
-        .group_by(IndCqc.location_id)
-        .agg(
+        # polars_streaming: groupby+agg workaround; could be .min().over() and .max().over() when window functions support streaming
+        .group_by(IndCqc.location_id).agg(
             [
                 pl.col(IMPORT_DATE).min().alias(TEMP.first_submission_time),
                 pl.col(IMPORT_DATE).max().alias(TEMP.final_submission_time),
