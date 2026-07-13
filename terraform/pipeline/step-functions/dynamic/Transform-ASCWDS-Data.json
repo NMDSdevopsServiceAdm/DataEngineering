@@ -145,9 +145,9 @@
                   }
                 },
                 {
-                  "StartAt": "Validate Workplace for Reconciliation Polars",
+                  "StartAt": "Validate ASCWDS for SfC Internal",
                   "States": {
-                    "Validate Workplace for Reconciliation Polars": {
+                    "Validate ASCWDS for SfC Internal": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
@@ -166,13 +166,13 @@
                             {
                               "Name": "ascwds-container",
                               "Command": [
-                                "validate_reconciliation.py",
+                                "validate_ascwds_for_sfc_internal.py",
                                 "--bucket_name",
                                 "${dataset_bucket_name}",
                                 "--source_path",
                                 "domain=SfC/dataset=ascwds_for_sfc_internal_polars/",
                                 "--reports_path",
-                                "domain=data_validation_reports/dataset=validation_ascwds_for_sfc_internal_pipeline/"
+                                "domain=data_validation_reports/dataset=validation_ascwds_for_sfc_internal/"
                               ]
                             }
                           ]
