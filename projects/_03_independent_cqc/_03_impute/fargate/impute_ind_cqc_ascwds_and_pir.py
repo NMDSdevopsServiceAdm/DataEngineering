@@ -121,32 +121,32 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
     )
 
-    # lf = model_imputation(
-    #     lf,
-    #     IndCQC.ct_care_home_total_employed_cleaned,
-    #     IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
-    #     IndCQC.ct_care_home_total_employed_imputed,
-    #     care_home=True,
-    #     extrapolation_method="ratio",
-    # )
+    lf = model_imputation(
+        lf,
+        IndCQC.ct_care_home_total_employed_cleaned,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+        IndCQC.ct_care_home_total_employed_imputed,
+        care_home=True,
+        extrapolation_method="ratio",
+    )
 
-    # lf = model_imputation(
-    #     lf,
-    #     IndCQC.ct_non_res_care_workers_employed_cleaned,
-    #     IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
-    #     IndCQC.ct_non_res_care_workers_employed_imputed,
-    #     care_home=False,
-    #     extrapolation_method="ratio",
-    # )
+    lf = model_imputation(
+        lf,
+        IndCQC.ct_non_res_care_workers_employed_cleaned,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+        IndCQC.ct_non_res_care_workers_employed_imputed,
+        care_home=False,
+        extrapolation_method="ratio",
+    )
 
-    # lf = lf.with_columns(
-    #     utils.nullify_ct_values_previous_to_first_submission(
-    #         [
-    #             IndCQC.ct_care_home_total_employed_imputed,
-    #             IndCQC.ct_non_res_care_workers_employed_imputed,
-    #         ],
-    #     )
-    # )
+    lf = lf.with_columns(
+        utils.nullify_ct_values_previous_to_first_submission(
+            [
+                IndCQC.ct_care_home_total_employed_imputed,
+                IndCQC.ct_non_res_care_workers_employed_imputed,
+            ],
+        )
+    )
 
     print(f"Exporting as parquet to {destination}")
 
