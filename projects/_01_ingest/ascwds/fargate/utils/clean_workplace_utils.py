@@ -167,7 +167,7 @@ def add_master_update_date_org(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def create_purge_date_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Create purge date columns for the input LazyFrame.
+    Ochestrator function to create purge date columns for the input LazyFrame.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame.
@@ -215,14 +215,17 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
 def produce_and_save_data_for_reconciliation(
     lf: pl.LazyFrame, output_path: str
 ) -> None:
-    current_lf = utils.filter_to_maximum_value_in_column(
-        lf, AWPClean.ascwds_workplace_import_date
-    )
+    """
+    Create input data for reconciliation and save it as a Parquet file.
 
-    purged_lf = current_lf.filter(
-        pl.col(AWPClean.workplace_last_active_date) >= pl.col(AWPClean.purge_date)
-    )
+    Reconciliation data is filtered to the most recent import date and only
+    includes the columns required for reconciliation. Rows are filtered to those
+    where the workplace was active on or after the purge date.
 
+    Args:
+        lf (pl.LazyFrame): Input LazyFrame containing ASC-WDS workplace data.
+        output_path (str): Destination path for the reconciliation input file.
+    """
     RECONCILIATION_COLUMNS = [
         AWPClean.ascwds_workplace_import_date,
         AWPClean.establishment_id,
@@ -246,7 +249,13 @@ def produce_and_save_data_for_reconciliation(
         AWPClean.la_permission,
     ]
 
-    recon_lf = purged_lf.select(RECONCILIATION_COLUMNS)
+    current_lf = utils.filter_to_maximum_value_in_column(
+        lf, AWPClean.ascwds_workplace_import_date
+    )
+
+    recon_lf = current_lf.filter(
+        pl.col(AWPClean.workplace_last_active_date) >= pl.col(AWPClean.purge_date)
+    ).select(RECONCILIATION_COLUMNS)
 
     print(f"Exporting ascwds workplace reconciliation data as parquet to {output_path}")
     utils.sink_to_parquet(recon_lf, output_path=output_path)
