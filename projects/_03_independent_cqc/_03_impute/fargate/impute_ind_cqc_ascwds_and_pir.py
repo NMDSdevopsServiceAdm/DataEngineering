@@ -17,6 +17,9 @@ from projects._03_independent_cqc._03_impute.fargate.utils.forward_fill_latest_k
 from projects._03_independent_cqc._03_impute.fargate.utils.primary_service_rate_of_change import (
     model_primary_service_rate_of_change_trendline,
 )
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
+    CategoricalColumnTypes,
+)
 from projects._03_independent_cqc.utils.imputation.imputation import model_imputation
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
@@ -35,7 +38,9 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         cleaned_ind_cqc_source (str): s3 path to the cleaned ind cqc data
         destination (str): s3 path to save the output data
     """
-    lf = utils.scan_parquet(cleaned_ind_cqc_source)
+    lf = utils.scan_parquet(cleaned_ind_cqc_source).with_columns(
+        pl.col(IndCQC.location_id).cast(CategoricalColumnTypes.LocationCatType)
+    )
     print("Cleaned IND CQC LazyFrame read in")
 
     lf = forward_fill_latest_known_value(lf, IndCQC.ascwds_filled_posts_dedup_clean)
