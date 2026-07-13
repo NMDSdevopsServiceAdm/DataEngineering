@@ -283,6 +283,7 @@ def average_beds_per_location(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: A polars LazyFrame with average beds per location.
     """
+    # polars_streaming: groupby+agg workaround; could be .mean().over() when window functions support streaming
     return (
         lf.group_by(IndCQC.location_id)
         .agg(pl.col(IndCQC.number_of_beds).mean().alias(average_number_of_beds))

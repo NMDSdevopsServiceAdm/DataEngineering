@@ -122,6 +122,7 @@ def add_registered_manager_names(
     """
     join_keys: list[str] = [CQCLClean.location_id, CQCLClean.import_date]
 
+    # polars_streaming: groupby-agg-join pattern; could be .unique().sort().over() when window functions support streaming
     grouped_lf = contact_names_lf.group_by(join_keys).agg(
         pl.col(CQCLClean.contacts_full_name)
         .unique()
