@@ -34,10 +34,10 @@ def merge_ascwds_and_pir_filled_post_submissions(lf: pl.LazyFrame) -> pl.LazyFra
     temp_date_cols = [IndCQC.last_ascwds_submission, IndCQC.last_pir_submission]
 
     lf = create_last_submission_columns(lf)
-    lf_within_two_years, lf_outside_two_years = split_dataset_for_merging(lf)
+    # lf_within_two_years, lf_outside_two_years = split_dataset_for_merging(lf)
 
-    lf_within_two_years = lf_within_two_years.drop(temp_date_cols)
-    lf_outside_two_years = lf_outside_two_years.drop(temp_date_cols)
+    # lf_within_two_years = lf_within_two_years.drop(temp_date_cols)
+    # lf_outside_two_years = lf_outside_two_years.drop(temp_date_cols)
 
     # lf_within_two_years = create_repeated_ascwds_clean_column(lf_within_two_years)
     # lf_within_two_years = create_ascwds_pir_merged_column(lf_within_two_years)
@@ -47,7 +47,8 @@ def merge_ascwds_and_pir_filled_post_submissions(lf: pl.LazyFrame) -> pl.LazyFra
 
     # lf_outside_two_years = include_pir_if_never_submitted_ascwds(lf_outside_two_years)
 
-    return pl.concat([lf_within_two_years, lf_outside_two_years])
+    return lf
+    # return pl.concat([lf_within_two_years, lf_outside_two_years])
 
 
 def create_last_submission_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
