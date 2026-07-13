@@ -230,7 +230,7 @@ class TestApplyDataCorrections:
 
 
 class JrColsSelectorTests(unittest.TestCase):
-    def setUp(self) -> None:
+    def test_selects_expected_columns(self):
         test_lf = pl.LazyFrame(
             {
                 AWPClean.job_role_01_employees: "1",
@@ -243,27 +243,23 @@ class JrColsSelectorTests(unittest.TestCase):
                 "any_other_col": "1",
             }
         )
-        selected_lf = test_lf.select(job.slv_cols_selector())
-        self.selected_cols = selected_lf.collect_schema().names()
+        returned_cols = test_lf.select(job.slv_cols_selector()).collect_schema().names()
+        expected_cols = [
+            AWPClean.job_role_01_employees,
+            AWPClean.job_role_01_starters,
+            AWPClean.job_role_01_leavers,
+            AWPClean.job_role_01_vacancies,
+        ]
 
-    def test_selects_job_role_columns(self):
-        for i in self.selected_cols:
-            self.assertTrue(i.startswith("jr"))
+        self.assertEqual(returned_cols, expected_cols)
 
-    def test_selects_columns_with_expected_endings(self):
-        string_endings_1 = [i[-4:] for i in self.selected_cols if len(i) == 8]
-        string_endings_2 = [i[-3:] for i in self.selected_cols if len(i) == 7]
-        string_endings_3 = set(string_endings_1 + string_endings_2)
-        expected_endings = {"emp", "strt", "stop", "vacy"}
-        self.assertEqual(string_endings_3, expected_endings)
+    def test_ignores_non_string_job_role_columns(self):
+        test_lf = pl.LazyFrame(
+            {
+                "jr_int_strt": [1],  # int
+                "jr_str_strt": ["1"],  # string
+            }
+        )
+        returned_cols = test_lf.select(job.slv_cols_selector()).collect_schema().names()
 
-    def test_excludes_job_role_flag_columns(self):
-        for i in self.selected_cols:
-            self.assertNotIn("flag", i)
-
-    def test_excludes_job_role_date_columns(self):
-        for i in self.selected_cols:
-            self.assertNotIn("date", i)
-
-    def test_returns_expected_column_count(self):
-        self.assertEqual(len(self.selected_cols), 4)
+        self.assertEqual(returned_cols, ["jr_str_strt"])
