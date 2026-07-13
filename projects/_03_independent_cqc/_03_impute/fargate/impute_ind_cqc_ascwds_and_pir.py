@@ -105,21 +105,21 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
     #     .alias(IndCQC.posts_rolling_average_model)
     # )
 
-    # lf = lf.with_columns(
-    #     pl.when(is_care_home())
-    #     .then(pl.col(IndCQC.ct_care_home_total_employed_cleaned))
-    #     .otherwise(pl.col(IndCQC.ct_non_res_care_workers_employed_cleaned))
-    #     .cast(pl.Float32)
-    #     .alias(IndCQC.ct_combined_care_home_and_non_res)
-    # )
+    lf = lf.with_columns(
+        pl.when(is_care_home())
+        .then(pl.col(IndCQC.ct_care_home_total_employed_cleaned))
+        .otherwise(pl.col(IndCQC.ct_non_res_care_workers_employed_cleaned))
+        .cast(pl.Float32)
+        .alias(IndCQC.ct_combined_care_home_and_non_res)
+    )
 
-    # lf = model_primary_service_rate_of_change_trendline(
-    #     lf,
-    #     IndCQC.ct_combined_care_home_and_non_res,
-    #     NumericalValues.number_of_days_in_window,
-    #     IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
-    #     max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
-    # )
+    lf = model_primary_service_rate_of_change_trendline(
+        lf,
+        IndCQC.ct_combined_care_home_and_non_res,
+        NumericalValues.number_of_days_in_window,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+        max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
+    )
 
     # lf = model_imputation(
     #     lf,
