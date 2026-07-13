@@ -182,6 +182,7 @@ def calculate_average_filled_posts_per_banded_bed_count(
         pl.LazyFrame: A LazyFrame with the number of banded beds and the
             corresponding average filled posts per bed ratio.
     """
+    # polars_streaming: groupby+agg workaround; could be .mean().over() when window functions support streaming
     output_lf = input_lf.group_by(IndCQC.number_of_beds_banded).agg(
         pl.col(IndCQC.filled_posts_per_bed_ratio)
         .mean()
