@@ -23,6 +23,10 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.
 from projects._03_independent_cqc.utils.imputation.imputation import model_imputation
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
+# Set streaming chunk size for memory management - each thread (per CPU core) will load
+# in a chunk of this size.
+pl.Config.set_streaming_chunk_size(50000)
+
 
 @dataclass
 class NumericalValues:
