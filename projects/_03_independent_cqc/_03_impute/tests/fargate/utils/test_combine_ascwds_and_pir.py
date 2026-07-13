@@ -26,7 +26,6 @@ class TestCombineASCWDSAndPIR:
     )
 
     @patch(f"{PATCH_PATH}.include_pir_if_never_submitted_ascwds")
-    @patch(f"{PATCH_PATH}.drop_temporary_columns")
     @patch(f"{PATCH_PATH}.create_ascwds_pir_merged_column")
     @patch(f"{PATCH_PATH}.create_repeated_ascwds_clean_column")
     @patch(f"{PATCH_PATH}.split_dataset_for_merging")
@@ -37,11 +36,10 @@ class TestCombineASCWDSAndPIR:
         split_dataset_for_merging_mock: Mock,
         create_repeated_ascwds_clean_column_mock: Mock,
         create_ascwds_pir_merged_column_mock: Mock,
-        drop_temporary_columns_mock: Mock,
         include_pir_if_never_submitted_ascwds_mock: Mock,
     ):
         split_dataset_for_merging_mock.return_value = (self.test_lf, self.test_lf)
-        drop_temporary_columns_mock.return_value = self.test_lf
+        create_ascwds_pir_merged_column_mock.return_value = self.test_lf
         include_pir_if_never_submitted_ascwds_mock.return_value = self.test_lf
 
         job.merge_ascwds_and_pir_filled_post_submissions(self.test_lf)
@@ -50,7 +48,6 @@ class TestCombineASCWDSAndPIR:
         split_dataset_for_merging_mock.assert_called_once()
         create_repeated_ascwds_clean_column_mock.assert_called_once()
         create_ascwds_pir_merged_column_mock.assert_called_once()
-        drop_temporary_columns_mock.assert_called_once()
         include_pir_if_never_submitted_ascwds_mock.assert_called_once()
 
     def test_merge_ascwds_and_pir_filled_post_submissions_completes(self):
@@ -158,12 +155,3 @@ class TestIncludePirIfNeverSubmittedAscwds:
         pl_testing.assert_frame_equal(
             self.returned_lf, self.expected_lf, check_row_order=False
         )
-
-
-class TestDropTemporaryColumns:
-    test_lf = pl.LazyFrame([], Schemas.drop_temporary_columns_schema)
-    expected_columns = Schemas.expected_drop_temporary_columns
-    returned_columns = job.drop_temporary_columns(test_lf).collect_schema().names()
-
-    def test_function_removes_temporary_columns(self):
-        assert self.returned_columns == self.expected_columns

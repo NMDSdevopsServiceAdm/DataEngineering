@@ -31,13 +31,19 @@ def merge_ascwds_and_pir_filled_post_submissions(lf: pl.LazyFrame) -> pl.LazyFra
         pl.LazyFrame: A LazyFrame with an additional column `ascwds_pir_merged` that contains either the ASCWDS or PIR filled posts value,
                       depending on submission recency and similarity thresholds.
     """
+    temp_date_cols = [IndCQC.last_ascwds_submission, IndCQC.last_pir_submission]
 
     lf = create_last_submission_columns(lf)
     lf_within_two_years, lf_outside_two_years = split_dataset_for_merging(lf)
 
+    lf_within_two_years = lf_within_two_years.drop(temp_date_cols)
+    lf_outside_two_years = lf_outside_two_years.drop(temp_date_cols)
+
     lf_within_two_years = create_repeated_ascwds_clean_column(lf_within_two_years)
     lf_within_two_years = create_ascwds_pir_merged_column(lf_within_two_years)
-    lf_within_two_years = drop_temporary_columns(lf_within_two_years)
+    lf_within_two_years = lf_within_two_years.drop(
+        IndCQC.ascwds_filled_posts_dedup_clean_repeated
+    )
 
     lf_outside_two_years = include_pir_if_never_submitted_ascwds(lf_outside_two_years)
 
@@ -218,21 +224,3 @@ def include_pir_if_never_submitted_ascwds(lf: pl.LazyFrame) -> pl.LazyFrame:
         .otherwise(pl.col(IndCQC.ascwds_filled_posts_dedup_clean))
         .alias(IndCQC.ascwds_pir_merged)
     ).drop(all_null)
-
-
-def drop_temporary_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Drops temporary columns from the blend pir and ascwds function.
-
-    Args:
-        lf (pl.LazyFrame): A LazyFrame which has just had the ascwds and pir data blended.
-
-    Returns:
-        pl.LazyFrame: A LazyFrame with temporary columns removed.
-    """
-    lf = lf.drop(
-        IndCQC.last_ascwds_submission,
-        IndCQC.last_pir_submission,
-        IndCQC.ascwds_filled_posts_dedup_clean_repeated,
-    )
-    return lf
