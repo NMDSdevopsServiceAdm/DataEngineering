@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import ANY, Mock, call, patch
 
 import projects._01_ingest.ascwds.fargate.clean_ascwds_workplace as job
 
@@ -10,11 +10,10 @@ class MainTests(unittest.TestCase):
     WORKPLACE_SOURCE = "some/source"
     DATA_LABELS_SOURCE = "some/labels/source"
     CLEANED_WORKPLACE_DESTINATION = "some/destination"
-    RECONCILIATION_DESTINATION = "some/other/destination"
+    SFC_INTERNAL_DESTINATION = "some/other/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.wUtils.remove_rows_with_duplicate_location_ids")
-    @patch(f"{PATCH_PATH}.wUtils.produce_and_save_data_for_reconciliation")
     @patch(f"{PATCH_PATH}.wUtils.create_purge_date_columns")
     @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
     @patch(f"{PATCH_PATH}.pl.scan_csv")
@@ -33,7 +32,6 @@ class MainTests(unittest.TestCase):
         scan_csv_mock: Mock,
         apply_categorical_labels_mock: Mock,
         create_purge_date_columns_mock: Mock,
-        produce_and_save_data_for_reconciliation_mock: Mock,
         remove_rows_with_duplicate_location_ids_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -41,7 +39,7 @@ class MainTests(unittest.TestCase):
             self.WORKPLACE_SOURCE,
             self.DATA_LABELS_SOURCE,
             self.CLEANED_WORKPLACE_DESTINATION,
-            self.RECONCILIATION_DESTINATION,
+            self.SFC_INTERNAL_DESTINATION,
         )
 
         scan_parquet_mock.assert_called_once_with(
@@ -57,8 +55,12 @@ class MainTests(unittest.TestCase):
         )
         apply_categorical_labels_mock.assert_called_once()
         create_purge_date_columns_mock.assert_called_once()
-        produce_and_save_data_for_reconciliation_mock.assert_called_once()
         remove_rows_with_duplicate_location_ids_mock.assert_called_once()
-        sink_to_parquet_mock.assert_called_once_with(
-            ANY, output_path=self.CLEANED_WORKPLACE_DESTINATION
+
+        assert sink_to_parquet_mock.call_count == 2
+        sink_to_parquet_mock.assert_has_calls(
+            [
+                call(ANY, output_path=self.SFC_INTERNAL_DESTINATION),
+                call(ANY, output_path=self.CLEANED_WORKPLACE_DESTINATION),
+            ]
         )
