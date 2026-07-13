@@ -120,10 +120,12 @@ def main(
 
     lf = wUtils.create_purge_date_columns(lf)
 
+    # Produce and save data required for the reconciliation process
     wUtils.produce_and_save_data_for_reconciliation(
         lf, workplace_for_reconciliation_destination
     )
 
+    # Produce and save cleaned ASCWDS workplace data
     clean_workplace_lf = lf.filter(
         pl.col(AWPClean.data_last_amended_date) >= pl.col(AWPClean.purge_date)
     )
@@ -143,9 +145,6 @@ def main(
         .name.suffix("_bounded")
     )
 
-    print(
-        f"Exporting clean ascwds workplace data as parquet to {cleaned_workplace_destination}"
-    )
     utils.sink_to_parquet(
         clean_workplace_lf,
         output_path=cleaned_workplace_destination,

@@ -257,5 +257,4 @@ def produce_and_save_data_for_reconciliation(
         pl.col(AWPClean.workplace_last_active_date) >= pl.col(AWPClean.purge_date)
     ).select(RECONCILIATION_COLUMNS)
 
-    print(f"Exporting ascwds workplace reconciliation data as parquet to {output_path}")
-    utils.sink_to_parquet(recon_lf, output_path=output_path)
+    utils.sink_to_parquet(recon_lf, output_path)

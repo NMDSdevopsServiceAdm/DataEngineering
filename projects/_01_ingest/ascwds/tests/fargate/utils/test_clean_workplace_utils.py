@@ -193,7 +193,7 @@ class TestProduceAndSaveDataForReconciliation:
 
         filter_to_maximum_value_in_column_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
-            ANY, output_path=self.RECONCILIATION_DESTINATION
+            ANY, self.RECONCILIATION_DESTINATION
         )
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
