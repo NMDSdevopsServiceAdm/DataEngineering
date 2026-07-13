@@ -59,8 +59,8 @@
                                 "${dataset_bucket_uri}/domain=ASCWDS/dataset=data_labels/data_labels_lookup.csv",
                                 "--cleaned_workplace_destination",
                                 "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned_polars/",
-                                "--workplace_for_reconciliation_destination",
-                                "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation_polars/"
+                                "--ascwds_for_sfc_internal_destination",
+                                "${dataset_bucket_uri}/domain=SfC/dataset=ascwds_for_sfc_internal_pipeline/"
                               ]
                             }
                           ]
@@ -170,9 +170,9 @@
                                 "--bucket_name",
                                 "${dataset_bucket_name}",
                                 "--source_path",
-                                "domain=SfC/dataset=sfc_workplace_for_reconciliation_polars/",
+                                "domain=SfC/dataset=ascwds_for_sfc_internal_pipeline/",
                                 "--reports_path",
-                                "domain=data_validation_reports/dataset=validation_sfc_workplace_for_reconciliation_polars/"
+                                "domain=data_validation_reports/dataset=validation_ascwds_for_sfc_internal_pipeline/"
                               ]
                             }
                           ]
