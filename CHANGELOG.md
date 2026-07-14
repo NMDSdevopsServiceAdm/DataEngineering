@@ -74,6 +74,8 @@ All notable changes to this project will be documented in this file.
 
 - Pull metadata columns into merge job within SLV pipeline.
 
+- Removed workplace and worker datasets from syncing to branch.
+
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
 
