@@ -225,3 +225,20 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.with_columns(pl.col(AWPClean.parent_permission).replace(3, None))
 
     return lf
+
+
+def slv_cols_selector() -> cs.Selector:
+    """
+    Returns a Selector for columns that are:
+     - string datatype
+     - start with 'jr'
+     - end with either 'emp', 'strt', 'stop' or 'vacy
+     - do not end with 'temp'
+    """
+
+    return (
+        cs.string()
+        & cs.starts_with("jr")
+        & cs.ends_with("emp", "strt", "stop", "vacy")
+        & ~cs.ends_with("temp")
+    )

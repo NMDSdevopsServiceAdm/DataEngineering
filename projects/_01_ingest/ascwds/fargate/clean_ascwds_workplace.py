@@ -110,7 +110,7 @@ def main(
 
     lf = cUtils.column_to_date(
         lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
-    ).drop(AWPClean.import_date)
+    )
 
     data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
     lf = cUtils.apply_categorical_labels(
@@ -142,8 +142,17 @@ def main(
 
     workplace_lf = wUtils.remove_rows_with_duplicate_location_ids(workplace_lf)
 
+    slv_lf = utils.scan_parquet(workplace_source).select(
+        *[AWPClean.establishment_id, AWPClean.import_date], wUtils.slv_cols_selector()
+    )
+
+    workplace_lf = workplace_lf.join(
+        slv_lf, on=[AWPClean.establishment_id, AWPClean.import_date], how="left"
+    ).drop(AWPClean.import_date)
+
     workplace_lf = workplace_lf.with_columns(
-        pl.col(INT_COLUMNS).cast(pl.Int32, strict=False)
+        pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
+        wUtils.slv_cols_selector().cast(pl.Int32, strict=False),
     )
 
     workplace_lf = workplace_lf.with_columns(

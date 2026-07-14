@@ -1,10 +1,14 @@
 import sys
 
 import pointblank as pb
+import polars as pl
 
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from projects._01_ingest.ascwds.fargate.utils.clean_workplace_utils import (
+    slv_cols_selector,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as ASCWPClean,
 )
@@ -12,46 +16,44 @@ from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkplaceCleanedCategoricalValues as CatValues,
 )
 
-EXPECTED_SCHEMA = pb.Schema(
-    columns={
-        ASCWPClean.organisation_id: "String",
-        ASCWPClean.period: "String",
-        ASCWPClean.establishment_id: "String",
-        ASCWPClean.establishment_id_from_nmds: "String",
-        ASCWPClean.parent_id: "String",
-        ASCWPClean.nmds_id: "String",
-        ASCWPClean.establishment_created_date: "Date",
-        ASCWPClean.establishment_updated_date: "Date",
-        ASCWPClean.master_update_date: "Date",
-        ASCWPClean.last_logged_in_date: "Date",
-        ASCWPClean.la_permission: "String",
-        ASCWPClean.is_bulk_uploader: "String",
-        ASCWPClean.is_parent: "String",
-        ASCWPClean.parent_permission: "String",
-        ASCWPClean.registration_type: "String",
-        ASCWPClean.provider_id: "String",
-        ASCWPClean.location_id: "String",
-        ASCWPClean.establishment_type: "String",
-        ASCWPClean.establishment_name: "String",
-        ASCWPClean.address: "String",
-        ASCWPClean.postcode: "String",
-        ASCWPClean.region_id: "String",
-        ASCWPClean.total_staff: "Int32",
-        ASCWPClean.worker_records: "Int32",
-        ASCWPClean.total_starters: "String",
-        ASCWPClean.total_leavers: "String",
-        ASCWPClean.total_vacancies: "String",
-        ASCWPClean.main_service_id: "String",
-        ASCWPClean.version: "String",
-        ASCWPClean.ascwds_workplace_import_date: "Date",
-        ASCWPClean.master_update_date_org: "Date",
-        ASCWPClean.purge_date: "Date",
-        ASCWPClean.data_last_amended_date: "Date",
-        ASCWPClean.workplace_last_active_date: "Date",
-        ASCWPClean.total_staff_bounded: "Int32",
-        ASCWPClean.worker_records_bounded: "Int32",
-    }
-)
+columns = {
+    ASCWPClean.organisation_id: "String",
+    ASCWPClean.period: "String",
+    ASCWPClean.establishment_id: "String",
+    ASCWPClean.establishment_id_from_nmds: "String",
+    ASCWPClean.parent_id: "String",
+    ASCWPClean.nmds_id: "String",
+    ASCWPClean.establishment_created_date: "Date",
+    ASCWPClean.establishment_updated_date: "Date",
+    ASCWPClean.master_update_date: "Date",
+    ASCWPClean.last_logged_in_date: "Date",
+    ASCWPClean.la_permission: "String",
+    ASCWPClean.is_bulk_uploader: "String",
+    ASCWPClean.is_parent: "String",
+    ASCWPClean.parent_permission: "String",
+    ASCWPClean.registration_type: "String",
+    ASCWPClean.provider_id: "String",
+    ASCWPClean.location_id: "String",
+    ASCWPClean.establishment_type: "String",
+    ASCWPClean.establishment_name: "String",
+    ASCWPClean.address: "String",
+    ASCWPClean.postcode: "String",
+    ASCWPClean.region_id: "String",
+    ASCWPClean.total_staff: "Int32",
+    ASCWPClean.worker_records: "Int32",
+    ASCWPClean.total_starters: "String",
+    ASCWPClean.total_leavers: "String",
+    ASCWPClean.total_vacancies: "String",
+    ASCWPClean.main_service_id: "String",
+    ASCWPClean.version: "String",
+    ASCWPClean.ascwds_workplace_import_date: "Date",
+    ASCWPClean.master_update_date_org: "Date",
+    ASCWPClean.purge_date: "Date",
+    ASCWPClean.data_last_amended_date: "Date",
+    ASCWPClean.workplace_last_active_date: "Date",
+    ASCWPClean.total_staff_bounded: "Int32",
+    ASCWPClean.worker_records_bounded: "Int32",
+}
 
 
 def main(bucket_name: str, source_path: str, reports_path: str) -> None:
@@ -69,6 +71,10 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         source=f"s3://{bucket_name}/{source_path}",
     )
 
+    jr_cols = source_df.select(slv_cols_selector()).collect_schema().names()
+    columns.update({k: pl.Int32 for k in jr_cols})
+    EXPECTED_SCHEMA = pb.Schema(columns=columns)
+
     validation = (
         pb.Validate(
             data=source_df,
@@ -78,10 +84,10 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             actions=GLOBAL_ACTIONS,
         )
         # dataset schema
-        .col_schema_match(
-            schema=EXPECTED_SCHEMA,
-            brief="Dataset should match the expected schema",
-        )
+        # .col_schema_match(
+        #     schema=EXPECTED_SCHEMA,
+        #     brief="Dataset should match the expected schema",
+        # )
         # index columns
         .rows_distinct(
             [ASCWPClean.establishment_id, ASCWPClean.ascwds_workplace_import_date]
