@@ -1,6 +1,5 @@
 import unittest
 from datetime import date
-from unittest.mock import ANY, Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
@@ -16,8 +15,6 @@ from projects._01_ingest.unittest_data.polars_ingest_test_file_schema import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-
-PATCH_PATH = "projects._01_ingest.ascwds.fargate.utils.clean_workplace_utils"
 
 
 class TestValidWorkplaceFilter:
