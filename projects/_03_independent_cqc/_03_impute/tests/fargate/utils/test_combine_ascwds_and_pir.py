@@ -47,6 +47,11 @@ class TestCombineASCWDSAndPIR:
         returned_lf = job.merge_ascwds_and_pir_filled_post_submissions(self.test_lf)
         assert isinstance(returned_lf, pl.LazyFrame)
 
+    def test_constants_are_expected_values(self):
+        assert job.ThresholdValues.two_years == "-2y"
+        assert job.ThresholdValues.max_absolute_difference == 100
+        assert job.ThresholdValues.max_percentage_difference == 0.5
+
 
 class TestCreateRepeatedAscwdsCleanColumn:
     @pytest.mark.parametrize(
