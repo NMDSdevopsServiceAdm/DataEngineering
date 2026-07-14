@@ -4,7 +4,7 @@ import polars as pl
 import polars.testing as pl_testing
 
 import projects._04_direct_payment_recipients.fargate.utils.models.mean_imputation as job
-from projects._04_direct_payment_recipients.direct_payments_column_names import (
+from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 
