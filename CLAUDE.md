@@ -22,6 +22,22 @@ Datasets here are large in both rows and columns, and OOM is a recurring real pr
 - Prefer `float32` over `float64` where precision requirements allow — call out explicitly when a trade-off matters (e.g. long aggregations/sums where error can accumulate).
 - If a lazy chain is unintentionally broken (an early `.collect()`, a `.to_pandas()`, list-comprehension row-wise logic), flag it — that's a correctness-adjacent issue here, not a style nitpick. Some `.collect()` are ok as they directly follow an aggregation which results in a very small LazyFrame.
 
+### Polars streaming engine — what isn't covered yet
+
+`.collect(engine="streaming")` doesn't yet cover everything — some operations silently fall back to the in-memory engine, which defeats the point for large data. Below is what's **not yet natively streaming**, last checked 2026-07-14 against [pola-rs/polars#20947](https://github.com/pola-rs/polars/issues/20947) (the project's own tracking issue — check it, don't rely on general knowledge, since this moves fast). Assume anything not listed here streams natively.
+
+- **`.over()` (window functions — relevant to our PySpark→Polars window-function migration):** only `.over(mapping_strategy="group_to_rows")` translates to streaming. Plain `.over()` → group-by+join, and `.over(keys)` with sorted keys, do not yet.
+- **Out-of-core (i.e. runs in streaming mode but still needs to fit in memory):** `group_by`, equi-joins, `sort`.
+- **Aggregates:** `implode`, median/quantile, `str.join`.
+- **Other expressions:** `.replace()`, `is_last_distinct`/`is_unique`/`is_duplicated`, `reshape`, `qcut`, `sample`, `pct_change`, `interpolate_by`, `ewm_*_by`, `fill_null(strategy="min"/"max"/"mean")`, `search_sorted`, `random`, `rank`, `arg_sort`, `hist`, rolling functions (`rolling_sum`/`std`/`var`/etc.), `group_by_dynamic` with a sorted key.
+- **Sources/sinks:** `AnonymousScan`, anonymous sinks.
+
+**Refreshing this list:** re-check the issue every ~3 months, or immediately before relying on streaming mode for a pipeline that's OOM-prone and uses one of the operations above. Fetch the current checklist with:
+```
+curl -s https://api.github.com/repos/pola-rs/polars/issues/20947 | python3 -c "import json,sys; print(json.load(sys.stdin)['body'])"
+```
+(no auth needed — it's a public issue). Diff the checkboxes against this list and update it if anything's moved.
+
 ## Polars style
 
 - Expression-based and declarative; avoid `.apply()` unless there's no vectorised alternative.
