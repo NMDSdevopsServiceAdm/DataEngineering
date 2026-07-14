@@ -114,6 +114,61 @@
                       "End": true
                     }
                   }
+                },
+                {
+                  "StartAt": "Validate ASCWDS for SfC Internal",
+                  "States": {
+                    "Validate ASCWDS for SfC Internal": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "LaunchType": "FARGATE",
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${ascwds_task_arn}",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${ascwds_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "ascwds-container",
+                              "Command": [
+                                "validate_ascwds_for_sfc_internal.py",
+                                "--bucket_name",
+                                "${dataset_bucket_name}",
+                                "--source_path",
+                                "domain=SfC/dataset=ascwds_for_sfc_internal_polars/",
+                                "--reports_path",
+                                "domain=data_validation_reports/dataset=validation_ascwds_for_sfc_internal/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Validate Cleaned Workplace",
+                  "States": {
+                    "Validate Cleaned Workplace": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${validate_ascwds_workplace_cleaned_data_job_name}",
+                        "Arguments": {
+                          "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_workplace_cleaned/"
+                        }
+                      },
+                      "End": true
+                    }
+                  }
                 }
               ]
             }

@@ -24,6 +24,23 @@ parameters:
 orbs:
   aws-cli: circleci/aws-cli@5.4.1
 
+commands:
+  initialise_terraform:
+    description: "Set up the terraform backend for terraform jobs"
+    steps:
+      - run:
+          name: Initialise terraform
+          command: |
+            # UNSET old keys to force AWS CLI to use OIDC
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
+            # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
+            cd terraform/pipeline
+            terraform init -input=false -backend-config=../${AWS_ENV}.s3.tfbackend
+            terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
+
+
 jobs:
   task-containerisation:
     docker:
@@ -44,9 +61,8 @@ jobs:
             # Authenticate Docker to ECR
             aws ecr get-login-password --region eu-west-2 | docker login -u AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
             echo "Rebuilding lambdas and pushing to ECR."
-            # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
-            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
-
+            # Needed for docker-bake. This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
             docker buildx bake all --push
 
   test:
@@ -57,9 +73,6 @@ jobs:
       SPARK_VERSION: "3.5"       # Required for pydeequ to initialize
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - v1.2-uv-cache-{{ checksum "Pipfile.lock" }}
       - run:
           name: Install system packages
           command: |
@@ -68,17 +81,10 @@ jobs:
       - run:
           name: install dependencies
           command: uv pip install --system -r <(uvx pipenv requirements --dev)
-      # Pre-cache the pyqeequ dependency so xdist works better.
+      # Download the pydeequ dependency and configure.
       - run:
-            name: Pre-cache Spark JARs
+            name: Fetch Spark JARs
             command: python scripts/fetch_spark_dependencies.py
-      - save_cache:
-          key: v1.2-uv-cache-{{ checksum "Pipfile.lock" }}
-          paths:
-            - ~/.m2/repository
-            - ~/.ivy2/jars
-            - ~/.ivy2/cache
-            - ~/.cache/uv
       - run:
           name: Run unit tests and generate coverage
           command: |
@@ -90,8 +96,6 @@ jobs:
       - run:
             name: Output Coverage Report
             command: coverage report
-      - store_artifacts:
-          path: htmlcov
 
   lint-python:
     docker:
@@ -139,25 +143,30 @@ jobs:
       - aws-cli/setup:
           role_arn: $AWS_ROLE_ARN
           region: $AWS_REGION
+      - initialise_terraform
       - run:
           name: terraform plan
           command: |
             unset AWS_ACCESS_KEY_ID
             unset AWS_SECRET_ACCESS_KEY
-            # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
-            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
             cd terraform/pipeline
-            terraform init -input=false -backend-config=../${AWS_ENV}.s3.tfbackend
-            terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
-            terraform plan -out tfapply
+            terraform plan -out tfplan
       - store_artifacts:
-          path: terraform/pipeline/tfapply
+          path: terraform/pipeline/tfplan
       - persist_to_workspace:
           root: .
           paths:
-            - terraform/pipeline/tfapply
-            - terraform/pipeline/.*
-            - .
+            # The workspace is intentionally limited to the Terraform plan file plus dependency folders to reduce CircleCI storage costs
+            # Needed for terraform apply step
+            - terraform/pipeline/tfplan
+            - lambdas
+            # Needed for deploy-dependencies step
+            - utils
+            - schemas
+            - projects
+            - environment
+            - polars_utils
+
 
   terraform-apply:
     docker:
@@ -170,13 +179,14 @@ jobs:
       - aws-cli/setup:
           role_arn: $AWS_ROLE_ARN
           region: $AWS_REGION
+      - initialise_terraform # Reinitialising terraform to reduce cost of persisting .terraform folder in workspace
       - run:
           name: terraform apply
           command: |
             unset AWS_ACCESS_KEY_ID
             unset AWS_SECRET_ACCESS_KEY
             cd terraform/pipeline
-            terraform apply -auto-approve tfapply
+            terraform apply -auto-approve tfplan
       - run:
           name: save pipeline resources bucket name
           command: |

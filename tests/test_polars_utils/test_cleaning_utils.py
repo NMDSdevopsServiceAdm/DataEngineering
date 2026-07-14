@@ -324,7 +324,9 @@ class CreateBandedBedCountColumnTests(unittest.TestCase):
 
 
 class CastDateStringsToDatesTests(unittest.TestCase):
-    def test_casts_cols_that_match_arg_format_except_import_date(self):
+    def test_string_cols_containing_identifier_are_converted_to_date_apart_from_import_date(
+        self,
+    ):
         test_lf = pl.LazyFrame(
             data=[("01/01/2026", "02/01/2026", "02/01/2026")],
             schema={
@@ -347,7 +349,7 @@ class CastDateStringsToDatesTests(unittest.TestCase):
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
-    def test_invalid_date_strings_are_converted_to_null(self):
+    def test_date_strings_which_differ_to_raw_date_format_are_converted_to_null(self):
         input_lf = pl.LazyFrame(
             {
                 "time_element_date": [
@@ -373,3 +375,17 @@ class CastDateStringsToDatesTests(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(result_lf, expected_lf)
+
+    def test_column_is_not_converted_if_already_date_type(self):
+        input_lf = pl.LazyFrame(
+            {
+                "time_element_date": [
+                    date(2026, 1, 1),
+                    date(2026, 1, 2),
+                    None,
+                ]
+            }
+        )
+        result_lf = job.cast_date_strings_to_dates(input_lf)
+
+        pl_testing.assert_frame_equal(result_lf, input_lf)

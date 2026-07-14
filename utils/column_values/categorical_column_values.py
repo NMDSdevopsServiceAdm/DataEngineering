@@ -654,6 +654,7 @@ class EstablishmentType(ColumnValues):
     local_authority_childrens_services: str = "Local authority (childrens services)"
     local_authority_generic_other: str = "Local authority (generic/other)"
     local_authority_owned: str = "Local authority owned"
+    health: str = "Health"
     private_sector: str = "Private sector"
     voluntary_charity: str = "Voluntary/Charity"
     other: str = "Other"
@@ -714,14 +715,20 @@ class MainServiceID(ColumnValues):
     sessional_day_care_e_g_play_group_preschool: str = (
         "Sessional day care e.g. play group / preschool"
     )
+    out_of_school_club: str = "Out of school club"
     holiday_club: str = "Holiday club"
+    creche: str = "Crèche"
+    childminder: str = "Childminder"
     other_childrens_day_care_services: str = "Other childrens day care services"
     domiciliary_care_services_childrens_dcc: str = (
         "Domiciliary care services (Childrens) - DCC"
     )
     fostering_or_adoption_service_agency: str = "Fostering or adoption service / agency"
     child_protection: str = "Child protection"
+    family_centre: str = "Family centre"
     family_support: str = "Family support"
+    information_and_advice_services: str = "Information and advice services"
+    mental_health: str = "Mental health"
     other_childrens_community_care_service: str = (
         "Other childrens community care service"
     )
@@ -735,7 +742,9 @@ class MainServiceID(ColumnValues):
     extra_care_housing_services: str = "Extra care housing services - EXC"
     supported_living_services: str = "Supported living services - SLS"
     childrens_homes: str = "Childrens homes"
+    secure_units: str = "Secure units"
     residential_special_schools: str = "Residential special schools"
+    boarding_schools: str = "Boarding schools"
     specialist_college_services: str = "Specialist college services - SPC"
     community_based_services_for_people_with_a_learning_disability: str = (
         "Community based services for people with a learning disability - LDC"
