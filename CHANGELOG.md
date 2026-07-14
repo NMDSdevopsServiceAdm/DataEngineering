@@ -74,6 +74,8 @@ All notable changes to this project will be documented in this file.
 
 - Pull metadata columns into merge job within SLV pipeline.
 
+- Moved the Direct Payment column names from that project folder to the `utils/column_names/` folder alongside the rest
+
 - Updated references from workplace data for 'reconciliation' process to 'SfC internal' as the dataset is used in multiple jobs
 
 ### Fixed
