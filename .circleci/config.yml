@@ -258,9 +258,6 @@ jobs:
       - run:
           name: Copy main datasets to non-prod dataset bucket
           command: |
-            aws s3 sync "s3://sfc-main-datasets/domain=SfC/dataset=sfc_workplace_for_reconciliation_polars/" "s3://$BRANCH_DATASET_BUCKET/domain=SfC/dataset=main_sfc_workplace_for_reconciliation_polars/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=SfC/dataset=sfc_workplace_for_reconciliation/" "s3://$BRANCH_DATASET_BUCKET/domain=SfC/dataset=main_sfc_workplace_for_reconciliation/" --delete
-            aws s3 sync "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace_cleaned_polars/" "s3://$BRANCH_DATASET_BUCKET/domain=ASCWDS/dataset=main_workplace_cleaned_polars/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=postcode_corrections/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=ONS/dataset=postcode_directory_cleaned/" --delete
