@@ -71,7 +71,7 @@ def main(
     # mUtils.apply_employment_status_magic_numbers()
 
     utils.sink_to_parquet(
-        lazy_df=job_role_estimates_lf,
+        lazy_df=cleaned_ascwds_workplace_lf,
         output_path=merged_data_destination,
     )
 
