@@ -3,6 +3,8 @@ import warnings
 import polars as pl
 import polars.selectors as cs
 
+import polars_utils.expressions as expr
+
 
 def slv_cols_selector() -> cs.Selector:
     """
@@ -13,12 +15,7 @@ def slv_cols_selector() -> cs.Selector:
      - do not end with 'temp'
     """
 
-    return (
-        cs.numeric()
-        & cs.starts_with("jr")
-        & cs.ends_with("emp", "strt", "stop", "vacy")
-        & ~cs.ends_with("temp")
-    )
+    return cs.numeric() & expr.is_slv_job_role_column()
 
 
 def convert_ascwds_job_role_columns_to_rows():

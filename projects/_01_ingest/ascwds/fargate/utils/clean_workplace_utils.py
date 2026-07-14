@@ -1,6 +1,7 @@
 import polars as pl
 import polars.selectors as cs
 
+import polars_utils.expressions as expr
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -254,9 +255,4 @@ def slv_cols_selector() -> cs.Selector:
      - do not end with 'temp'
     """
 
-    return (
-        cs.string()
-        & cs.starts_with("jr")
-        & cs.ends_with("emp", "strt", "stop", "vacy")
-        & ~cs.ends_with("temp")
-    )
+    return cs.string() & expr.is_slv_job_role_column()
