@@ -71,7 +71,7 @@ import os
 import polars as pl
 
 import projects._00_example.fargate.utils.utils as utils
-from projects._00_example.example_column_names import ExampleColumnNames as Cols
+from utils.column_names import ExampleColumnNames as Cols
 ```
 
 ## Docstrings
@@ -104,8 +104,8 @@ def your_function(df: DataFrame) -> DataFrame:
 
 ## Column Names
 - Never hardcode column-name strings
-- Each project keeps its own column-name class near the project root, e.g. `projects/_04_direct_payment_recipients/direct_payments_column_names.py` defining `DirectPaymentColumnNames` (alphabetise entries within the class)
-- Import it under a short alias, e.g. `from ...direct_payments_column_names import DirectPaymentColumnNames as DP`
+- Column-name classes belong in `utils/column_names`, shared across the repo (alphabetise entries within each class) — not per-project
+- Import under a short alias, e.g. `from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC`
 
 ## Dataset Names in AWS S3
 - Athena uses the dataset partition to name the tables so we will use this structure when saving files to S3

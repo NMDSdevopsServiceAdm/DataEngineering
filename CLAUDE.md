@@ -67,12 +67,10 @@ Place a helper at the narrowest scope that covers its actual usage (stage → pr
 
 ## Column names
 
-Never hardcode column-name strings. Each project keeps its own column-name class near the project root, e.g. `projects/_04_direct_payment_recipients/direct_payments_column_names.py` defining `DirectPaymentColumnNames`, imported under a short alias:
+Never hardcode column-name strings. Column-name classes belong in `utils/column_names` (shared across the repo), not per-project. Import under a short alias:
 
 ```python
-from projects._04_direct_payment_recipients.direct_payments_column_names import (
-    DirectPaymentColumnNames as DP,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 ```
 
 ## Testing
