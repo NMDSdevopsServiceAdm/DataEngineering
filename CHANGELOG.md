@@ -43,6 +43,8 @@ All notable changes to this project will be documented in this file.
 
 - Added `apply_data_corrections` function to null out empty/whitespace string values and legacy `parent_permission` value `3` in ASC-WDS workplace data. Added tests for the same.
 
+- Added column selection to clean_ascwds_workplace to get workplace job role columns into dataset.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 

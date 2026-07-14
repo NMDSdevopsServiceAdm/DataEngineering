@@ -120,6 +120,7 @@ def return_last_known_value(
     lf_with_last_known = (
         lf.filter(pl.col(col_to_forward_fill).is_not_null())
         .sort(IndCQC.cqc_location_import_date)
+        # polars_streaming: groupby+agg workaround; could be .max().over() when window functions support streaming
         .group_by(IndCQC.location_id)
         .agg(
             [

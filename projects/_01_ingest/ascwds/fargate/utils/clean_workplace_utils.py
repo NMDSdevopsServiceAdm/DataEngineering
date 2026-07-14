@@ -80,21 +80,36 @@ def valid_workplace_filter() -> pl.Expr:
     )
 
 
-def remove_rows_with_duplicate_location_ids() -> pl.Expr:
+def remove_rows_with_duplicate_location_ids(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Returns a filter expression that excludes rows where a non-null location_id
-    appears more than once within the same ascwds_workplace_import_date.
-    Null location_id values are retained.
+    Remove rows where a non-null location_id appears more than once within
+    the same ascwds_workplace_import_date.
+
+    polars_streaming:
+    Identify duplicate keys separately rather than using a window expression.
+    This allows the aggregation to stream over only the key columns, avoiding
+    the memory overhead of `.over()` on wide datasets.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with duplicate location_id's per ascwds_workplace_import_date.
 
     Returns:
-        pl.Expr: A Polars expression that can be used to filter a LazyFrame.
+        pl.LazyFrame: The input LazyFrame without rows containing duplicate location_id's.
     """
+    group_cols = [AWPClean.location_id, AWPClean.ascwds_workplace_import_date]
+    duplicate_keys = (
+        lf.select(group_cols)
+        .filter(pl.col(AWPClean.location_id).is_not_null())
+        .group_by(group_cols)
+        .len()
+        .filter(pl.col("len") > 1)
+        .select(group_cols)
+    )
 
-    return pl.col(AWPClean.location_id).is_null() | (
-        pl.count(AWPClean.location_id).over(
-            [AWPClean.location_id, AWPClean.ascwds_workplace_import_date]
-        )
-        == 1
+    return lf.join(
+        duplicate_keys,
+        on=group_cols,
+        how="anti",
     )
 
 
@@ -151,6 +166,7 @@ def add_master_update_date_org(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: Input frame with ``master_update_date_org`` column added.
     """
+    # polars_streaming: groupby+join workaround; could be .max().over() when window functions support streaming
     org_max = lf.group_by(
         AWPClean.organisation_id, AWPClean.ascwds_workplace_import_date
     ).agg(
@@ -227,3 +243,20 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.with_columns(pl.col(AWPClean.parent_permission).replace(3, None))
 
     return lf
+
+
+def slv_cols_selector() -> cs.Selector:
+    """
+    Returns a Selector for columns that are:
+     - string datatype
+     - start with 'jr'
+     - end with either 'emp', 'strt', 'stop' or 'vacy
+     - do not end with 'temp'
+    """
+
+    return (
+        cs.string()
+        & cs.starts_with("jr")
+        & cs.ends_with("emp", "strt", "stop", "vacy")
+        & ~cs.ends_with("temp")
+    )
