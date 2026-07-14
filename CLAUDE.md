@@ -85,6 +85,12 @@ Don't add defensive zero-guards by default — upstream steps enforce that relev
 
 Athena names tables from the partition, so: `{dataset}_{sub_dataset_if_relevant}_{order_of_process_if_relevant}_{brief_description}`, e.g. `ind_cqc_02_cleaned`.
 
+## Changelog
+
+When making a substantive code change, keep [CHANGELOG.md](CHANGELOG.md)'s `## [Unreleased]` section up to date:
+- Add one short, plain-sentence bullet under whichever subsection fits — `### Added` (new capability), `### Changed` (modified existing behaviour), `### Improved` (performance/quality, no behaviour change), or `### Fixed` (bug fix) — matching the plain English style of existing entries (e.g. "Added validations for estimates data within Estimates by Job Roles Pipeline.").
+- One bullet per piece of work, not per edit. If the task's scope changes as it progresses, update that same bullet in place rather than adding a new one, so by the end it reflects what was actually delivered, not the original ask.
+
 ## When reviewing code
 
 - Review as a senior engineer: correctness, performance, maintainability — in that order of weight.
