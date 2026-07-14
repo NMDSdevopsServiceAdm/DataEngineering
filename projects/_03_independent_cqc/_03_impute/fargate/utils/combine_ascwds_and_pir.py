@@ -14,7 +14,7 @@ class ThresholdValues:
 
 def merge_ascwds_and_pir_filled_post_submissions(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Merges ASCWDS and PIR filled post estimates based on recently and similarity thresholds and stores in a new column.
+    Merges ASCWDS and PIR filled post estimates based on recency and similarity thresholds and stores in a new column.
 
     The ASCWDS dataset is the preferred source for workforce filled post figures.
     However, if a workplace has not submitted ASCWDS data for a prolonged period of time and the corresponding PIR
@@ -194,7 +194,7 @@ def include_pir_if_never_submitted_ascwds(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.join(lf_ascwds_null, on=IndCQC.location_id, how="left")
 
     return lf.with_columns(
-        pl.when(all_null)
+        pl.when(pl.col(all_null))
         .then(pl.col(IndCQC.pir_filled_posts_model))
         .otherwise(pl.col(IndCQC.ascwds_pir_merged))
         .alias(IndCQC.ascwds_pir_merged)
