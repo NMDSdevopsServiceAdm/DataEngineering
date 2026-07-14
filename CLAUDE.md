@@ -25,7 +25,12 @@ Datasets here are large in both rows and columns, and OOM is a recurring real pr
 ## Polars style
 
 - Expression-based and declarative; avoid `.apply()` unless there's no vectorised alternative.
-- Avoid fragmenting a pipeline into many tiny helper functions — prefer one readable, linear chain. Extract a function only where it adds reuse, clarity, or testability.
+- Avoid `.pipe()` — we find it harder to visually trace than a plain linear chain, and it makes it harder to drop in an intermediate `.collect().head()` or print for debugging. Prefer explicit intermediate LazyFrame variables instead (see LazyFrame naming below).
+- Keep basic, simple transformations inline. Only extract into a function when it's genuinely complex, encodes non-obvious business logic, or is worth its own unit tests — not by default. This is a deliberate correction from old PySpark habits in this repo, where almost everything was wrapped in a function regardless of complexity, often making the function longer and harder to follow than the plain code inside it.
+
+## LazyFrame naming
+
+Keep the same `<entity>_lf` name for as long as it's still fundamentally the same entity — including through `.join()` and adding/amending columns; overwriting the same name (`workplace_lf = workplace_lf.join(...)`) is expected and fine, since it's still "the workplace data, with more columns." Only rename when an operation changes what the frame conceptually represents — e.g. a `.group_by().agg()` that collapses it into a summary is no longer "the workplace data," so give it a new name (`workplace_summary_lf`).
 
 ## Project layout
 
@@ -73,7 +78,7 @@ Don't add defensive zero-guards by default — upstream steps enforce that relev
 
 - Google-style docstrings (enforced via `pydoclint`, see `pyproject.toml`); document non-obvious performance considerations (e.g. why something is kept lazy, why a collect happens where it does).
 - `snake_case` for variables/functions, `PascalCase` for classes.
-- Prefer concise, intent-revealing names over long ones that encode full logic or data values.
+- Prefer concise, intent-revealing names over long ones that encode full logic or data values. This is a known growth area for the team — naming defaults to more literal, sentence-like names (e.g. `test_function_returns_one_when_this_column_is_one_and_that_column_is_one`). Nudging towards more concise names in review and explain why a shorter name still captures the intent rather than just flagging it as wrong.
 - Flag numeric literals whose business meaning isn't obvious; don't extract universally-understood values (0, 1, simple limits/indices) into named constants just for the sake of it.
 
 ## Dataset naming in S3 / Athena
