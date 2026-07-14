@@ -1,3 +1,4 @@
+import unittest
 from datetime import date
 
 import polars as pl
@@ -6,10 +7,10 @@ import pytest
 
 import projects._01_ingest.ascwds.fargate.utils.clean_workplace_utils as job
 from projects._01_ingest.unittest_data.polars_ingest_test_file_data import (
-    TestCreatePurgedLfsForReconciliationAndData as Data,
+    TestCleanAscwdsWorkplaceUtilsData as Data,
 )
 from projects._01_ingest.unittest_data.polars_ingest_test_file_schema import (
-    TestCreatePurgedLfsForReconciliationAndDataSchemas as Schemas,
+    TestCleanAscwdsWorkplaceUtilsSchemas as Schemas,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -66,7 +67,7 @@ class TestRemoveRowsWithDuplicateLocationIds:
             schema=test_schema,
             orient="row",
         )
-        returned_lf = test_lf.filter(job.remove_rows_with_duplicate_location_ids())
+        returned_lf = job.remove_rows_with_duplicate_location_ids(test_lf)
         expected_lf = pl.LazyFrame(
             [
                 ("3", "1-003", date(2026, 1, 1)),
@@ -202,3 +203,63 @@ class TestCreatePurgedLfsForReconciliationAndData:
 
         assert isinstance(workplace_lf, pl.LazyFrame)
         assert isinstance(recon_lf, pl.LazyFrame)
+
+
+class TestApplyDataCorrections:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.apply_data_corrections_test_cases
+        ],
+    )
+    def test_function_returns_expected_values(self, case):
+        test_lf = pl.LazyFrame(
+            case.test_data, Schemas.apply_data_corrections_schema, orient="row"
+        )
+
+        expected_workplace_lf = pl.LazyFrame(
+            case.expected_data,
+            Schemas.apply_data_corrections_schema,
+            orient="row",
+        )
+
+        returned_lf = job.apply_data_corrections(test_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_workplace_lf)
+
+
+class JrColsSelectorTests(unittest.TestCase):
+    def test_selects_expected_columns(self):
+        test_lf = pl.LazyFrame(
+            {
+                AWPClean.job_role_01_employees: "1",
+                AWPClean.job_role_01_starters: "1",
+                AWPClean.job_role_01_leavers: "1",
+                AWPClean.job_role_01_vacancies: "1",
+                AWPClean.job_role_01_temporary: "1",
+                AWPClean.job_role_01_flag: "1",
+                "jr01permdate": "1",
+                "any_other_col": "1",
+            }
+        )
+        returned_cols = test_lf.select(job.slv_cols_selector()).collect_schema().names()
+        expected_cols = [
+            AWPClean.job_role_01_employees,
+            AWPClean.job_role_01_starters,
+            AWPClean.job_role_01_leavers,
+            AWPClean.job_role_01_vacancies,
+        ]
+
+        self.assertEqual(returned_cols, expected_cols)
+
+    def test_ignores_non_string_job_role_columns(self):
+        test_lf = pl.LazyFrame(
+            {
+                "jr_int_strt": [1],  # int
+                "jr_str_strt": ["1"],  # string
+            }
+        )
+        returned_cols = test_lf.select(job.slv_cols_selector()).collect_schema().names()
+
+        self.assertEqual(returned_cols, ["jr_str_strt"])

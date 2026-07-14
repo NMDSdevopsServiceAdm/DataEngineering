@@ -98,9 +98,9 @@ def main(
     """
     lf = utils.scan_parquet(workplace_source, selected_columns=COLUMNS_TO_IMPORT)
 
-    lf = lf.filter(wUtils.valid_workplace_filter())
+    lf = wUtils.apply_data_corrections(lf)
 
-    lf = lf.with_columns(pl.col(AWPClean.nmds_id).str.strip_chars())
+    lf = lf.filter(wUtils.valid_workplace_filter())
 
     lf = lf.rename({AWPClean.last_logged_in: AWPClean.last_logged_in_date})
 
@@ -108,7 +108,7 @@ def main(
 
     lf = cUtils.column_to_date(
         lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
-    ).drop(AWPClean.import_date)
+    )
 
     # trello 1705
     data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
@@ -124,9 +124,20 @@ def main(
         reconciliation_lf,
     ) = wUtils.create_purged_lfs_for_reconciliation_and_data(lf)
 
-    lf = lf.filter(wUtils.remove_rows_with_duplicate_location_ids())
+    lf = wUtils.remove_rows_with_duplicate_location_ids(lf)
 
-    lf = lf.with_columns(pl.col(INT_COLUMNS).cast(pl.Int32, strict=False))
+    lf_slv = utils.scan_parquet(workplace_source).select(
+        *[AWPClean.establishment_id, AWPClean.import_date], wUtils.slv_cols_selector()
+    )
+
+    lf = lf.join(
+        lf_slv, on=[AWPClean.establishment_id, AWPClean.import_date], how="left"
+    ).drop(AWPClean.import_date)
+
+    lf = lf.with_columns(
+        pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
+        wUtils.slv_cols_selector().cast(pl.Int32, strict=False),
+    )
 
     lf = lf.with_columns(
         pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)

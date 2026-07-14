@@ -1011,6 +1011,8 @@ class NullGroupedProvidersSchema:
             (AWPClean.nmds_id, pl.String()),
             (NGPcol.potential_grouped_provider, pl.Boolean()),
             (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.care_home, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
         ]
     )
 

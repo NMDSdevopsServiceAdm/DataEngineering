@@ -30,6 +30,7 @@ def merge_cornwall_and_isles_of_scilly(lf: pl.LazyFrame) -> pl.LazyFrame:
         lf.filter(
             (pl.col(DP.LA_AREA) == cornwall) | (pl.col(DP.LA_AREA) == isles_of_scilly)
         )
+        # polars_streaming: groupby-agg workaround; could be replaced with .over() grouped aggregations when window functions support streaming
         .group_by([DP.YEAR_AS_INTEGER])
         .agg(
             pl.when(pl.col(DP.SERVICE_USER_DPRS_DURING_YEAR).count() > 0).then(

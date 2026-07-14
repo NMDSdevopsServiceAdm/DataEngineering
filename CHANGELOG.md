@@ -37,7 +37,13 @@ All notable changes to this project will be documented in this file.
 
 - Add placeholder code for upcoming tickets in SLV merge and clean jobs.
 
-- Added point blank validation of ASCWDS cleaned dataset.
+- Added point blank validation of ASCWDS cleaned dataset and reconciliation dataset.
+
+- Added `careHome` and `numberOfBeds` columns to Grouped Provider Output file and updated tests for the same.
+
+- Added `apply_data_corrections` function to null out empty/whitespace string values and legacy `parent_permission` value `3` in ASC-WDS workplace data. Added tests for the same.
+
+- Added column selection to clean_ascwds_workplace to get workplace job role columns into dataset.
 
 - Converted merge_ascwds_and_pir_filled_post_submissions to polars.
 
@@ -68,12 +74,18 @@ All notable changes to this project will be documented in this file.
 
 - National care work thresholds removed from job role estimates validation.
 
+- Pull metadata columns into merge job within SLV pipeline.
+
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
 
 - Updated `validate_clean_ascwds_workplace.py` to use `acswds_workplace_import_date` instead of `import_date`, since the `import_date` column is now dropped after being converted to a new date type column.
 
 - Corrected datasets in SLV pipeline that need switching between main and dev in terraform.
+
+- Optimised persistent storage in CircleCI.
+
+- Added missing lambda folder to deployment.
 
 
 ## [v2026.05.0] - 12/06/2026

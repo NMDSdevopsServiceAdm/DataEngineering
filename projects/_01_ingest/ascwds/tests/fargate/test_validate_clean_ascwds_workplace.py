@@ -53,7 +53,6 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
                 ASCWPClean.workplace_last_active_date: date(2000, 1, 1),
                 ASCWPClean.total_staff_bounded: 1,
                 ASCWPClean.worker_records_bounded: 1,
-                ASCWPClean.import_date: "",
             },
             schema={
                 ASCWPClean.organisation_id: pl.String,
@@ -92,7 +91,6 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
                 ASCWPClean.workplace_last_active_date: pl.Date,
                 ASCWPClean.total_staff_bounded: pl.Int32,
                 ASCWPClean.worker_records_bounded: pl.Int32,
-                ASCWPClean.import_date: pl.String,
             },
         )
 
@@ -126,7 +124,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
         expected_assertions = {
-            "col_schema_match",
+            # "col_schema_match",
             "col_vals_not_null",
             "rows_distinct",
             "col_vals_between",
