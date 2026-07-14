@@ -4,6 +4,7 @@ import sys
 os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
+from pyspark.sql.types import StringType, StructField, StructType
 
 import utils.cleaning_utils as cUtils
 from utils import utils
@@ -13,9 +14,31 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.value_labels.ons_pd.label_dictionaries import onspd_labels_dict
 
+ons_schema = StructType(
+    [
+        StructField(ONSClean.postcode, StringType(), True),
+        StructField(ONSClean.cssr, StringType(), True),
+        StructField(ONSClean.region, StringType(), True),
+        StructField(ONSClean.sub_icb, StringType(), True),
+        StructField(ONSClean.icb, StringType(), True),
+        StructField(ONSClean.icb_region, StringType(), True),
+        StructField(ONSClean.latitude, StringType(), True),
+        StructField(ONSClean.longitude, StringType(), True),
+        StructField(ONSClean.imd_score, StringType(), True),
+        StructField(ONSClean.lower_super_output_area_2011, StringType(), True),
+        StructField(ONSClean.middle_super_output_area_2011, StringType(), True),
+        StructField(ONSClean.rural_urban_indicator_2011, StringType(), True),
+        StructField(ONSClean.rural_urban_indicator_2021, StringType(), True),
+        StructField(ONSClean.lower_super_output_area_2021, StringType(), True),
+        StructField(ONSClean.middle_super_output_area_2021, StringType(), True),
+        StructField(ONSClean.parliamentary_constituency, StringType(), True),
+        StructField(Keys.import_date, StringType(), True),
+    ]
+)
+
 
 def main(ons_source: str, cleaned_ons_destination: str):
-    ons_df = utils.read_from_parquet(ons_source)
+    ons_df = utils.read_from_parquet(ons_source, schema=ons_schema)
 
     ons_df = cUtils.column_to_date(
         ons_df, Keys.import_date, ONSClean.contemporary_ons_import_date
@@ -60,6 +83,9 @@ def prepare_current_ons_data(df: DataFrame) -> DataFrame:
         df[ONSClean.middle_super_output_area_2011].alias(ONSClean.current_msoa11),
         df[ONSClean.rural_urban_indicator_2011].alias(
             ONSClean.current_rural_urban_ind_11
+        ),
+        df[ONSClean.rural_urban_indicator_2021].alias(
+            ONSClean.current_rural_urban_ind_21
         ),
         df[ONSClean.lower_super_output_area_2021].alias(ONSClean.current_lsoa21),
         df[ONSClean.middle_super_output_area_2021].alias(ONSClean.current_msoa21),

@@ -37,7 +37,7 @@ class MainTests(unittest.TestCase):
         assert len(scan_parquet_mock.call_args_list) == 3
 
         scan_calls = [
-            call(self.METADATA_SOURCE),
+            call(source=self.METADATA_SOURCE, selected_columns=job.metadata_columns),
             call(self.JOB_ROLE_ESTIMATES_SOURCE),
             call(self.CLEANED_ASCWDS_WORKPLACE_SOURCE),
         ]

@@ -145,6 +145,44 @@
                   }
                 },
                 {
+                  "StartAt": "Validate Workplace for Reconciliation Polars",
+                  "States": {
+                    "Validate Workplace for Reconciliation Polars": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "LaunchType": "FARGATE",
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${ascwds_task_arn}",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${ascwds_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "ascwds-container",
+                              "Command": [
+                                "validate_reconciliation.py",
+                                "--bucket_name",
+                                "${dataset_bucket_name}",
+                                "--source_path",
+                                "domain=SfC/dataset=sfc_workplace_for_reconciliation_polars/",
+                                "--reports_path",
+                                "domain=data_validation_reports/dataset=validation_sfc_workplace_for_reconciliation_polars/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
                   "StartAt": "Validate Cleaned Workplace",
                   "States": {
                     "Validate Cleaned Workplace": {

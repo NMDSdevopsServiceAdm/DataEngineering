@@ -1,11 +1,8 @@
 import unittest
-from pathlib import Path
 from unittest.mock import ANY, Mock, call, patch
 
 import polars as pl
-import pytest
 
-import projects
 import projects._01_ingest.ascwds.fargate.clean_ascwds_workplace as job
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -28,10 +25,12 @@ class MainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.cUtils.column_to_date")
     @patch(f"{PATCH_PATH}.cUtils.cast_date_strings_to_dates")
     @patch(f"{PATCH_PATH}.wUtils.valid_workplace_filter")
+    @patch(f"{PATCH_PATH}.wUtils.apply_data_corrections")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
+        apply_data_corrections_mock: Mock,
         valid_filter_mock: Mock,
         cast_date_strings_to_dates_mock: Mock,
         column_to_date_mock: Mock,
@@ -52,16 +51,14 @@ class MainTests(unittest.TestCase):
             self.RECONCILIATION_DESTINATION,
         )
 
-        scan_parquet_mock.assert_called_once_with(
-            self.WORKPLACE_SOURCE, selected_columns=job.COLUMNS_TO_IMPORT
-        )
-        valid_filter_mock.assert_called_once()
+        assert scan_parquet_mock.call_count == 2
 
+        apply_data_corrections_mock.assert_called_once()
+
+        valid_filter_mock.assert_called_once()
         cast_date_strings_to_dates_mock.assert_called_once()
         column_to_date_mock.assert_called_once()
         remove_rows_with_duplicate_location_ids_mock.assert_called_once()
-
-        create_purged_lfs_for_reconciliation_and_data_mock.assert_called_once()
 
         create_purged_lfs_for_reconciliation_and_data_mock.assert_called_once()
 

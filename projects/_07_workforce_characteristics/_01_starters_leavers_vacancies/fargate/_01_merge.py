@@ -1,5 +1,29 @@
+import polars as pl
+
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.merge_utils as mUtils
 from polars_utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+
+metadata_columns = {
+    IndCQC.id_per_locationid_import_date,
+    IndCQC.name,
+    IndCQC.provider_id,
+    IndCQC.brand_id,
+    IndCQC.services_offered,
+    IndCQC.primary_service_type_second_level,
+    IndCQC.care_home,
+    IndCQC.dormancy,
+    IndCQC.number_of_beds,
+    IndCQC.imputed_registration_date,
+    IndCQC.ascwds_workplace_import_date,
+    IndCQC.establishment_id,
+    IndCQC.organisation_id,
+    IndCQC.worker_records_bounded,
+    IndCQC.ascwds_filled_posts_dedup_clean,
+    IndCQC.ascwds_pir_merged,
+    IndCQC.ascwds_filtering_rule,
+    IndCQC.estimate_filled_posts_source,
+}
 
 
 def main(
@@ -19,7 +43,9 @@ def main(
     """
     mUtils.create_list_of_cols_and_schema_dict_for_ascwds()
 
-    metadata_lf = utils.scan_parquet(metadata_source)
+    metadata_lf = utils.scan_parquet(
+        source=metadata_source, selected_columns=metadata_columns
+    )
     job_role_estimates_lf = utils.scan_parquet(job_role_estimates_source)
     cleaned_ascwds_workplace_lf = utils.scan_parquet(cleaned_ascwds_workplace_source)
 

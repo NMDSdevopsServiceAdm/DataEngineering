@@ -70,4 +70,11 @@ class OnspdIcb:
         "54000062": "NHS Black Country",
         "54000063": "NHS Surrey Heartlands",
         "54000064": "NHS Sussex",
+        "54000065": "NHS Central East",
+        "54000066": "NHS Essex",
+        "54000067": "NHS Hampshire and Isle of Wight",
+        "54000068": "NHS Norfolk and Suffolk",
+        "54000069": "NHS Surrey and Sussex",
+        "54000070": "NHS Thames Valley",
+        "54000071": "NHS West and North London",
     }
