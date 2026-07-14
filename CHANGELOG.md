@@ -72,7 +72,7 @@ All notable changes to this project will be documented in this file.
 
 - National care work thresholds removed from job role estimates validation.
 
-- Pull metadata columns into merge job within SLV pipeline.
+- Pull metadata and cleaned workplace columns into merge job within SLV pipeline.
 
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
