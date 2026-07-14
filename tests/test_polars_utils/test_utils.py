@@ -663,29 +663,3 @@ class TestNullifyCtValuesPreviousToFirstSubmission:
             }
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
-class TestCreateListOfJobRoleColumns:
-    def test_function_returns_list_of_job_role_columns(self):
-        @dataclass
-        class TestColumns:
-            job_role_01_agency: str = ASCWKPCols.job_role_01_agency
-            job_role_01_employees: str = ASCWKPCols.job_role_01_employees
-            job_role_02_agency: str = ASCWKPCols.job_role_02_agency
-            job_role_02_employees: str = ASCWKPCols.job_role_02_employees
-            other_column_1: str = "other_column_1"
-            other_column_2: str = "other_column_2"
-
-        expected_columns = [
-            ASCWKPCols.job_role_01_agency,
-            ASCWKPCols.job_role_01_employees,
-            ASCWKPCols.job_role_02_agency,
-            ASCWKPCols.job_role_02_employees,
-        ]
-        returned_columns = utils.create_list_of_job_role_columns(TestColumns)
-        assert returned_columns == expected_columns
-
-    def test_function_raises_type_error_for_non_dataclass_input(self):
-        err_msg = "Input must be a dataclass object"
-        with pytest.raises(TypeError, match=err_msg):
-            utils.create_list_of_job_role_columns("not_a_dataclass")
