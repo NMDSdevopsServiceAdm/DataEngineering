@@ -1,11 +1,8 @@
-from dataclasses import dataclass
-
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-@dataclass
 class ThresholdValues:
     two_years: str = "-2y"
     max_absolute_difference: int = 100

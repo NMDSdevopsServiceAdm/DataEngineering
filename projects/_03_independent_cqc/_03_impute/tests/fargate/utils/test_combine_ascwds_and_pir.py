@@ -29,7 +29,7 @@ class TestCombineASCWDSAndPIR:
     @patch(f"{PATCH_PATH}.create_ascwds_pir_merged_column")
     @patch(f"{PATCH_PATH}.create_last_submission_columns")
     @patch(f"{PATCH_PATH}.create_repeated_ascwds_clean_column")
-    def test_merge_ascwds_and_pir_filled_post_submissions_calls_correct_functions(
+    def test_function_runs_successfully(
         self,
         create_repeated_ascwds_clean_column_mock: Mock,
         create_last_submission_columns_mock: Mock,

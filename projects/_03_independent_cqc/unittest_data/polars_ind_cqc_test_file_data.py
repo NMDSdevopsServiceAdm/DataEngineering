@@ -3545,7 +3545,7 @@ class CombineASCWDSAndPIRData:
 
     create_repeated_ascwds_clean_column_test_cases = [
         CombineASCWDSAndPIRTestCase(
-            id="repeats_ascwds_clean_column_when_missing_earlier_and_later_data",
+            id="forward_fills_latest_available_value",
             expected_data=[
                 ("loc 1", date(2024, 1, 1), None, None),
                 ("loc 1", date(2024, 2, 1), 100.0, 100.0),
@@ -3553,7 +3553,7 @@ class CombineASCWDSAndPIRData:
             ],
         ),
         CombineASCWDSAndPIRTestCase(
-            id="repeats_ascwds_clean_column_when_missing_middle_data",
+            id="maintains_latest_value_until_new_submission",
             expected_data=[
                 ("loc 1", date(2024, 1, 1), 40.0, 40.0),
                 ("loc 1", date(2024, 2, 1), None, 40.0),
@@ -3570,7 +3570,7 @@ class CombineASCWDSAndPIRData:
             ],
         ),
         CombineASCWDSAndPIRTestCase(
-            id="repeats_ascwds_clean_column_separates_repetition_by_location_id",
+            id="isolates_forward_fill_by_location",
             expected_data=[
                 ("loc 1", date(2024, 1, 1), 100.0, 100.0),
                 ("loc 1", date(2024, 2, 1), None, 100.0),
@@ -3587,10 +3587,11 @@ class CombineASCWDSAndPIRData:
         ("loc 2", date(2024, 2, 1), 40.0, None, date(2024, 2, 1), date(2024, 1, 1)),
         ("loc 3", date(2024, 1, 1), None, None, None, None),
         ("loc 3", date(2024, 2, 1), None, None, None, None),
-        ("loc 4", date(2024, 1, 1), 50.0, None, date(2024, 3, 1), date(2024, 4, 1)),
-        ("loc 4", date(2024, 2, 1), None, None, date(2024, 3, 1), date(2024, 4, 1)),
-        ("loc 4", date(2024, 3, 1), 60.0, None, date(2024, 3, 1), date(2024, 4, 1)),
-        ("loc 4", date(2024, 4, 1), None, 70.0, date(2024, 3, 1), date(2024, 4, 1)),
+        ("loc 4", date(2024, 1, 1), 50.0, None, date(2024, 3, 1), date(2024, 5, 1)),
+        ("loc 4", date(2024, 2, 1), None, None, date(2024, 3, 1), date(2024, 5, 1)),
+        ("loc 4", date(2024, 3, 1), 60.0, None, date(2024, 3, 1), date(2024, 5, 1)),
+        ("loc 4", date(2024, 4, 1), None, 70.0, date(2024, 3, 1), date(2024, 5, 1)),
+        ("loc 4", date(2024, 5, 1), None, 80.0, date(2024, 3, 1), date(2024, 5, 1)),
     ]
 
     create_ascwds_pir_merged_column_test_cases = [
@@ -3644,18 +3645,14 @@ class CombineASCWDSAndPIRData:
         CombineASCWDSAndPIRTestCase(
             id="when_difference_less_than_percentage_threshold_rows",
             expected_data=[
-                ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10.0, None, 10.0, 10.0),
-                ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10.0, None, None, None),
-                ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10.0, None, None, None),
-                ("loc 1", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10.0, 5.0, None, None),
-                ("loc 2", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5.0, None, 5.0, 5.0),
-                ("loc 2", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5.0, None, None, None),
-                ("loc 2", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5.0, None, None, None),
-                ("loc 2", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5.0, 10.0, None, None),
-                ("loc 3", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 1000.0, None, 1000.0, 1000.0),
-                ("loc 3", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 1000.0, None, None, None),
-                ("loc 3", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 1000.0, None, None, None),
-                ("loc 3", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 1000.0, 1150.0, None, None),
+                ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 1000.0, None, 1000.0, 1000.0),
+                ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 1000.0, None, None, None),
+                ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 1000.0, None, None, None),
+                ("loc 1", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 1000.0, 600.0, None, None),
+                ("loc 2", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 600.0, None, 600.0, 600.0),
+                ("loc 2", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 600.0, None, None, None),
+                ("loc 2", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 600.0, None, None, None),
+                ("loc 2", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 600.0, 1000.0, None, None),
             ],
         ),
         CombineASCWDSAndPIRTestCase(
