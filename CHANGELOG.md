@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
+- Updated references from workplace data for 'reconciliation' process to 'SfC internal' as the dataset is used in multiple jobs
 
 
 ### Fixed
@@ -89,8 +90,6 @@ All notable changes to this project will be documented in this file.
 - Moved the Direct Payment column names from that project folder to the `utils/column_names/` folder alongside the rest
 
 - Removed workplace and worker datasets from syncing to branch.
-
-- Updated references from workplace data for 'reconciliation' process to 'SfC internal' as the dataset is used in multiple jobs
 
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.
