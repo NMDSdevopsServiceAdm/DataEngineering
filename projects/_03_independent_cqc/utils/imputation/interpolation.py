@@ -2,6 +2,9 @@ from typing import Optional
 
 import polars as pl
 
+from projects._03_independent_cqc.utils.imputation.extrapolation import (
+    get_previous_value,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
@@ -53,16 +56,8 @@ def model_interpolation(
         )
 
     elif method == "straight":
-        lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
-        lf = lf.with_columns(
-            (
-                pl.when(pl.col(column_with_null_values).is_not_null())
-                .then(pl.col(column_with_null_values))
-                .otherwise(None)
-                .shift(1)
-                .forward_fill()
-                .over(IndCqc.location_id)
-            ).alias(IndCqc.previous_non_null_value)
+        lf = get_previous_value(
+            lf, column_with_null_values, IndCqc.previous_non_null_value
         )
 
         lf = calculate_residuals(
