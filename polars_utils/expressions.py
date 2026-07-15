@@ -1,4 +1,5 @@
 import polars as pl
+import polars.selectors as cs
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CareHome, Dormancy
@@ -74,3 +75,18 @@ def is_not_care_home() -> pl.Expr:
 def is_dormant() -> pl.Expr:
     """Expression to identify dormant records."""
     return pl.col(IndCQC.dormancy) == Dormancy.dormant
+
+
+def is_slv_job_role_column() -> cs.Selector:
+    """
+    Returns a Selector for columns that:
+     - start with 'jr'
+     - end with either 'emp', 'strt', 'stop' or 'vacy
+     - do not end with 'temp'
+    """
+
+    return (
+        cs.starts_with("jr")
+        & cs.ends_with("emp", "strt", "stop", "vacy")
+        & ~cs.ends_with("temp")
+    )

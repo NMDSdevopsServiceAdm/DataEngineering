@@ -1,10 +1,19 @@
 import polars as pl
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.merge_utils as mUtils
+from polars_utils import expressions as expr
 from polars_utils import utils
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
-metadata_columns = {
+workplace_columns = [
+    AWPClean.establishment_id,
+    AWPClean.ascwds_workplace_import_date,
+]
+
+metadata_columns = [
     IndCQC.id_per_locationid_import_date,
     IndCQC.name,
     IndCQC.provider_id,
@@ -23,7 +32,7 @@ metadata_columns = {
     IndCQC.ascwds_pir_merged,
     IndCQC.ascwds_filtering_rule,
     IndCQC.estimate_filled_posts_source,
-}
+]
 
 
 def main(
@@ -41,14 +50,17 @@ def main(
         cleaned_ascwds_workplace_source (str): path to the cleaned ascwds workplace data
         merged_data_destination (str): destination for merged output
     """
-    # TODO: Placeholder only
-    # mUtils.create_list_of_cols_for_ascwds()
 
     metadata_lf = utils.scan_parquet(
         source=metadata_source, selected_columns=metadata_columns
     )
     job_role_estimates_lf = utils.scan_parquet(job_role_estimates_source)
-    cleaned_ascwds_workplace_lf = utils.scan_parquet(cleaned_ascwds_workplace_source)
+    cleaned_ascwds_workplace_lf = utils.scan_parquet(
+        cleaned_ascwds_workplace_source
+    ).select(
+        *[AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date],
+        expr.is_slv_job_role_column()
+    )
 
     # TODO: Placeholder only
     # mUtils.convert_ascwds_job_role_columns_to_rows()
