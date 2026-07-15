@@ -69,8 +69,10 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         source=f"s3://{bucket_name}/{source_path}",
     )
 
-    jr_cols = source_df.select(expr.is_slv_job_role_column()).collect_schema().names()
-    columns.update({k: pl.Int32 for k in jr_cols})
+    all_job_roles = [i for i in range(1, 52)]
+    roles_to_remove = [12, 13, 14, 18, 19, 20, 21, 22, 41]
+    exp_job_roles = [role for role in all_job_roles if role not in roles_to_remove]
+    columns.update(vl.create_slv_schema(exp_job_roles))
     EXPECTED_SCHEMA = pb.Schema(columns=columns)
 
     validation = (
@@ -82,10 +84,10 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             actions=GLOBAL_ACTIONS,
         )
         # dataset schema
-        # .col_schema_match(
-        #     schema=EXPECTED_SCHEMA,
-        #     brief="Dataset should match the expected schema",
-        # )
+        .col_schema_match(
+            schema=EXPECTED_SCHEMA,
+            brief="Dataset should match the expected schema",
+        )
         # index columns
         .rows_distinct(
             [ASCWPClean.establishment_id, ASCWPClean.ascwds_workplace_import_date]

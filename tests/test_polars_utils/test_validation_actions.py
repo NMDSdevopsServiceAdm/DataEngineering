@@ -8,6 +8,9 @@ import pytest
 
 import polars_utils.validation.actions as job
 from polars_utils.validation import actions as vl
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys
 
 SRC_PATH = "polars_utils.validation.actions"
@@ -256,6 +259,35 @@ class TestMakeConvertColToIntegersPreprocessor:
         df = pl.DataFrame({PartitionKeys.year: ["2020", "invalid", "2022"]})
         with pytest.raises(pl.exceptions.InvalidOperationError):
             job.make_convert_col_to_integers_preprocessor(PartitionKeys.year)(df)
+
+
+class TestCreateSlvSchema:
+    returned_schema = job.create_slv_schema([9, 10])
+
+    def test_raises_value_error_when_given_empty_list(self):
+        with pytest.raises(ValueError) as context:
+            job.create_slv_schema([])
+
+        assert str(context.value) == "Given job role list be populated. Got []"
+
+    def test_returns_a_polars_schema(self):
+        assert type(self.returned_schema) == pl.Schema
+
+    def test_returns_schema_for_requested_job_roles(self):
+        expected_schema = pl.Schema(
+            {
+                AWPClean.job_role_09_employees: pl.Int32,
+                AWPClean.job_role_09_starters: pl.Int32,
+                AWPClean.job_role_09_leavers: pl.Int32,
+                AWPClean.job_role_09_vacancies: pl.Int32,
+                AWPClean.job_role_10_employees: pl.Int32,
+                AWPClean.job_role_10_starters: pl.Int32,
+                AWPClean.job_role_10_leavers: pl.Int32,
+                AWPClean.job_role_10_vacancies: pl.Int32,
+            }
+        )
+
+        assert self.returned_schema == expected_schema
 
 
 if __name__ == "__main__":

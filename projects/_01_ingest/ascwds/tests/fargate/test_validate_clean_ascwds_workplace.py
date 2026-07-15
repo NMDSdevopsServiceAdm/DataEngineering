@@ -124,7 +124,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
         expected_assertions = {
-            # "col_schema_match",
+            "col_schema_match",
             "col_vals_not_null",
             "rows_distinct",
             "col_vals_between",
