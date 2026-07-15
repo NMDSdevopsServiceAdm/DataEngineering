@@ -1,9 +1,4 @@
-import polars as pl
-
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.merge_utils as job
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
 
 PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.merge_utils"
 
