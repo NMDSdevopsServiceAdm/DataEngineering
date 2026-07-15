@@ -1,7 +1,6 @@
 import argparse
 import re
 import uuid
-from dataclasses import is_dataclass
 from datetime import date
 from pathlib import Path
 
