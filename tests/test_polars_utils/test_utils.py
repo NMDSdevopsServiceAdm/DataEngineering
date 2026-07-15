@@ -6,7 +6,6 @@ import sys
 import tempfile
 import unittest
 from contextlib import redirect_stdout
-from dataclasses import dataclass
 from datetime import date, datetime
 from glob import glob
 from pathlib import Path
@@ -15,16 +14,12 @@ from unittest.mock import MagicMock, Mock, patch
 import boto3
 import polars as pl
 import polars.testing as pl_testing
-import pytest
 from botocore.exceptions import ClientError
 from moto import mock_aws, sns
 from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
 
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.raw_data_files.ascwds_workplace_columns import (
-    AscwdsWorkplaceColumns as ASCWKPCols,
-)
 
 SRC_PATH = "polars_utils.validation.actions"
 PATCH_PATH = "polars_utils.utils"
