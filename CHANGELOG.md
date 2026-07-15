@@ -6,6 +6,18 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+
+
+### Changed
+
+
+### Fixed
+
+
+
+## [v2026.06.0] - 15/07/2026
+
+### Added
 - Added error handling to CQC API call for 400 errors due to the location id being lowercase instead of uppercase.
 
 - Added validations for estimates data within Estimates by Job Roles Pipeline.
