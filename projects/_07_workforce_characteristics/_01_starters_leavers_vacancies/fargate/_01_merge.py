@@ -1,6 +1,7 @@
 import polars as pl
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.merge_utils as mUtils
+from polars_utils import expressions as expr
 from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -58,7 +59,7 @@ def main(
         cleaned_ascwds_workplace_source
     ).select(
         *[AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date],
-        mUtils.slv_cols_selector()
+        expr.is_slv_job_role_column()
     )
 
     # TODO: Placeholder only
