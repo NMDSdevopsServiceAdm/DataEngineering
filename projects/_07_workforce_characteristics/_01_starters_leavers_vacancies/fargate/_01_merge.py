@@ -29,16 +29,10 @@ job_role_estimates_columns = {
     IndCQC.id_per_locationid_import_date_job_role,
     IndCQC.location_id,
     IndCQC.cqc_location_import_date,
-    IndCQC.estimate_filled_posts,
     IndCQC.primary_service_type,
     IndCQC.id_per_locationid_import_date,
     IndCQC.main_job_role_clean_labelled,
-    IndCQC.ascwds_job_role_counts,
-    IndCQC.imputed_ascwds_job_role_counts,
-    IndCQC.estimate_filled_posts_by_job_role,
-    IndCQC.estimate_filled_posts_by_job_role_manager_adjusted,
     IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
-    IndCQC.estimate_filled_posts_from_all_job_roles,
     IndCQC.main_job_group_labelled,
 }
 
