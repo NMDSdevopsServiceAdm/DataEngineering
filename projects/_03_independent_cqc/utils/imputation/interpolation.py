@@ -98,8 +98,12 @@ def calculate_residuals(
     second_column).
 
     This function computes the residual between two non-null values in the
-    specified columns, then backward fills the residual into rows where
-    either of the specified columns are null.
+    specified columns, then joins that residual onto rows where either of the
+    specified columns are null, using the next available residual within the
+    same `location_id` group.
+
+    A forward as-of join is used instead of `.over()` because `.over()` is
+    not supported by the Polars streaming engine.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame containing the data.
@@ -110,16 +114,26 @@ def calculate_residuals(
         pl.LazyFrame: The LazyFrame with the calculated residuals in a new
             column.
     """
-    lf = lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
+    lf = lf.sort(IndCqc.cqc_location_import_date)
 
-    residual_expr = pl.when(
-        pl.col(first_column).is_not_null() & pl.col(second_column).is_not_null()
-    ).then(pl.col(first_column) - pl.col(second_column))
-
-    lf = lf.with_columns(
-        residual_expr.backward_fill().over(IndCqc.location_id).alias(IndCqc.residual)
+    residuals = (
+        lf.filter(
+            pl.col(first_column).is_not_null() & pl.col(second_column).is_not_null()
+        )
+        .select(
+            IndCqc.location_id,
+            IndCqc.cqc_location_import_date,
+            (pl.col(first_column) - pl.col(second_column)).alias(IndCqc.residual),
+        )
+        .sort(IndCqc.cqc_location_import_date)
     )
-    return lf
+
+    return lf.join_asof(
+        residuals,
+        on=IndCqc.cqc_location_import_date,
+        by=IndCqc.location_id,
+        strategy="forward",
+    )
 
 
 def calculate_proportion_of_days_between_submissions(
@@ -128,6 +142,12 @@ def calculate_proportion_of_days_between_submissions(
     """
     Calculates the proportion of days between consecutive non-null values
     based on cqc_location_import_date.
+
+    The previous and next submission dates for each row are found using
+    backward and forward as-of joins (within each `location_id` group)
+    against the rows where `column_with_null_values` is not null, instead of
+    `.over()`, because `.over()` is not supported by the Polars streaming
+    engine.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame containing the data.
@@ -139,18 +159,41 @@ def calculate_proportion_of_days_between_submissions(
             (days_between_submissions and proportion_of_days_between_submissions)
             added.
     """
-    lf = lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
-    val_not_null_date = pl.when(pl.col(column_with_null_values).is_not_null()).then(
-        pl.col(IndCqc.cqc_location_import_date)
+    previous_submission_date = "previous_submission_date"
+    next_submission_date = "next_submission_date"
+
+    lf = lf.sort(IndCqc.cqc_location_import_date)
+
+    submission_dates = (
+        lf.filter(pl.col(column_with_null_values).is_not_null())
+        .select(IndCqc.location_id, IndCqc.cqc_location_import_date)
+        .sort(IndCqc.cqc_location_import_date)
     )
-    previous_submission_date = val_not_null_date.forward_fill().over(IndCqc.location_id)
-    next_submission_date = val_not_null_date.backward_fill().over(IndCqc.location_id)
+
+    lf = lf.join_asof(
+        submission_dates.rename(
+            {IndCqc.cqc_location_import_date: previous_submission_date}
+        ),
+        left_on=IndCqc.cqc_location_import_date,
+        right_on=previous_submission_date,
+        by=IndCqc.location_id,
+        strategy="backward",
+    )
+    lf = lf.join_asof(
+        submission_dates.rename(
+            {IndCqc.cqc_location_import_date: next_submission_date}
+        ),
+        left_on=IndCqc.cqc_location_import_date,
+        right_on=next_submission_date,
+        by=IndCqc.location_id,
+        strategy="forward",
+    )
 
     condition = pl.col(IndCqc.cqc_location_import_date).is_between(
-        previous_submission_date, next_submission_date, "none"
+        pl.col(previous_submission_date), pl.col(next_submission_date), "none"
     )
     days_between_values = (
-        next_submission_date - previous_submission_date
+        pl.col(next_submission_date) - pl.col(previous_submission_date)
     ).dt.total_days()
 
     lf = lf.with_columns(
@@ -160,13 +203,14 @@ def calculate_proportion_of_days_between_submissions(
         pl.when(condition)
         .then(
             (
-                pl.col(IndCqc.cqc_location_import_date) - previous_submission_date
+                pl.col(IndCqc.cqc_location_import_date)
+                - pl.col(previous_submission_date)
             ).dt.total_days()
             / days_between_values
         )
         .alias(IndCqc.proportion_of_days_between_submissions),
     )
-    return lf
+    return lf.drop(previous_submission_date, next_submission_date)
 
 
 def calculate_interpolated_values(

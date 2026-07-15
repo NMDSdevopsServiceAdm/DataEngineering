@@ -156,31 +156,53 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
 
 
 def calculate_rolling_average(
+    lf: pl.LazyFrame,
     column_to_average: str,
     period: str,
     columns_to_partition_by: list,
-) -> pl.Expr:
+    new_column_name: str,
+) -> pl.LazyFrame:
     """
     Calculate the rolling mean of the "column_to_average" over a given period
-    and partition.
+    and partition, and join the result back onto the input LazyFrame.
 
     This function calculates the rolling mean of a column based on a given
-    number of days and a column to partition by. For example, a 3-day rolling
+    number of days and columns to partition by. For example, a 3-day rolling
     average includes the current day plus the two preceding days.
 
+    A frame-level rolling group-by (rather than `pl.mean().rolling().over()`)
+    is used because `.over()` is not supported by the Polars streaming
+    engine. Rolling group-by returns one row per contributing source row, so
+    `.unique()` is used to deduplicate to one row per partition and import
+    date before joining back onto the input LazyFrame.
+
     Args:
+        lf (pl.LazyFrame): The input LazyFrame containing column_to_average.
         column_to_average (str): The name of the column with the values to average.
-        period (str): period (str): String language timedelta. See:
+        period (str): String language timedelta. See:
           https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.rolling.html
-        columns_to_partition_by (list): The name of the column to partition the window by.
+        columns_to_partition_by (list): The names of the columns to partition the window by.
+        new_column_name (str): The name of the new column to store the rolling mean in.
 
     Returns:
-        pl.Expr: Expression for rolling mean of column_to_average.
+        pl.LazyFrame: The input LazyFrame with new_column_name added, containing
+            the rolling mean of column_to_average.
     """
-    return (
-        pl.mean(column_to_average)
-        .rolling(index_column=IndCQC.cqc_location_import_date, period=period)
-        .over(columns_to_partition_by)
+    rolling_average_lf = (
+        lf.sort(columns_to_partition_by + [IndCQC.cqc_location_import_date])
+        .rolling(
+            index_column=IndCQC.cqc_location_import_date,
+            period=period,
+            group_by=columns_to_partition_by,
+        )
+        .agg(pl.mean(column_to_average).alias(new_column_name))
+        .unique(columns_to_partition_by + [IndCQC.cqc_location_import_date])
+    )
+
+    return lf.join(
+        rolling_average_lf,
+        on=columns_to_partition_by + [IndCQC.cqc_location_import_date],
+        how="left",
     )
 
 

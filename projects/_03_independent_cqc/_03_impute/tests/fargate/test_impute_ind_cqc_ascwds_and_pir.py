@@ -70,12 +70,12 @@ class CalculateRollingAverageTests(unittest.TestCase):
             orient="row",
         )
         test_lf = expected_lf.drop(IndCQC.posts_rolling_average_model)
-        returned_lf = test_lf.with_columns(
-            job.calculate_rolling_average(
-                column_to_average=IndCQC.ascwds_filled_posts_dedup_clean,
-                period=Data.test_rolling_average_period,
-                columns_to_partition_by=[IndCQC.location_id],
-            ).alias(IndCQC.posts_rolling_average_model)
+        returned_lf = job.calculate_rolling_average(
+            test_lf,
+            column_to_average=IndCQC.ascwds_filled_posts_dedup_clean,
+            period=Data.test_rolling_average_period,
+            columns_to_partition_by=[IndCQC.location_id],
+            new_column_name=IndCQC.posts_rolling_average_model,
         )
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)

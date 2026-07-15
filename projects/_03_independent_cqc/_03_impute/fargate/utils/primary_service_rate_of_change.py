@@ -114,14 +114,26 @@ def model_primary_service_rate_of_change_trendline(
         .alias(TempCol.current_period_interpolated)
     )
 
-    roc_lf = roc_lf.with_columns(
-        pl.col(TempCol.current_period_interpolated)
-        .sort_by(IndCqc.cqc_location_import_date)
-        .shift(1)
-        .over(IndCqc.location_id)
-        .cast(pl.Float32)
-        .alias(TempCol.previous_period_interpolated)
+    roc_lf = roc_lf.sort(IndCqc.cqc_location_import_date)
+
+    previous_period_lf = roc_lf.select(
+        IndCqc.location_id,
+        IndCqc.cqc_location_import_date,
+        pl.col(TempCol.current_period_interpolated).alias(
+            TempCol.previous_period_interpolated
+        ),
     )
+
+    # A backward as-of join (excluding exact date matches) is used instead of
+    # `.over()`, because `.over()` is not supported by the Polars streaming
+    # engine.
+    roc_lf = roc_lf.join_asof(
+        previous_period_lf,
+        on=IndCqc.cqc_location_import_date,
+        by=IndCqc.location_id,
+        strategy="backward",
+        allow_exact_matches=False,
+    ).with_columns(pl.col(TempCol.previous_period_interpolated).cast(pl.Float32))
 
     roc_lf = clean_non_residential_rate_of_change(roc_lf)
 
@@ -329,9 +341,12 @@ def calculate_trendline(
     calculated by taking the exponential of the sum of the logarithms of the
     values.
 
-    The input rows are sorted by the grouping columns and import date before the
-    cumulative sum is computed. This ensures stable and deterministic trendline
-    values even when input rows arrive out of order.
+    The input rows are sorted by the grouping columns and import date, then
+    aggregated into one list per group so the cumulative sum can be computed
+    per group via `list.eval` and exploded back out. This is used instead of
+    `cum_sum().over()` because `.over()` is not supported by the Polars
+    streaming engine. This ensures stable and deterministic trendline values
+    even when input rows arrive out of order.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame.
@@ -343,10 +358,13 @@ def calculate_trendline(
     """
     rate_col = IndCqc.single_period_rate_of_change
 
-    rolling_product = pl.col(rate_col).log().cum_sum().over(group_cols).exp()
-
     return (
         lf.sort(group_cols + [IndCqc.cqc_location_import_date])
-        .with_columns(rolling_product.alias(out_col))
-        .drop(rate_col)
+        .group_by(group_cols, maintain_order=True)
+        .agg(
+            pl.col(IndCqc.cqc_location_import_date),
+            pl.col(rate_col).log().alias(out_col),
+        )
+        .with_columns(pl.col(out_col).list.eval(pl.element().cum_sum().exp()))
+        .explode(IndCqc.cqc_location_import_date, out_col)
     )

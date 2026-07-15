@@ -70,12 +70,8 @@ def model_extrapolation(
     )
 
     # Get last observed values
-    lf = lf.with_columns(
-        [
-            get_previous_value(column_with_null_values).alias(TEMP.previous_value),
-            get_previous_value(TEMP.model_with_nulls).alias(TEMP.previous_model),
-        ]
-    )
+    lf = get_previous_value(lf, column_with_null_values, TEMP.previous_value)
+    lf = get_previous_value(lf, TEMP.model_with_nulls, TEMP.previous_model)
 
     expr = ExtrapolationCalculationExpressions(model_to_extrapolate_from)
 
@@ -147,29 +143,45 @@ def build_extrapolation_aggregates(
     )
 
 
-def get_previous_value(col: str) -> pl.Expr:
+def get_previous_value(
+    lf: pl.LazyFrame, col: str, new_column_name: str
+) -> pl.LazyFrame:
     """
-    Generate an expression for the previous observed non-null value within a group.
+    Joins on the previous observed non-null value of `col` within each
+    `location_id` group.
 
-    This expression forward-fills null values within each `location_id` group,
-    then shifts the result by one row to obtain the most recent prior observed value.
+    This uses a backward as-of join against the non-null rows of `col`
+    (excluding exact date matches) to find the most recent prior observed
+    value within each `location_id` group. An as-of join is used instead of
+    `.over()` because `.over()` is not supported by the Polars streaming
+    engine.
 
     It is used to support forward extrapolation, where the last known value
     prior to a gap is required.
 
     Args:
+        lf (pl.LazyFrame): Input LazyFrame containing time series data.
         col (str): Name of the column to compute previous values for.
+        new_column_name (str): Name of the column to store the previous
+            value in.
 
     Returns:
-        pl.Expr: Polars expression representing the previous observed value
-        within each `location_id` group.
+        pl.LazyFrame: The input LazyFrame with `new_column_name` added,
+            containing the previous observed value of `col` within each
+            `location_id` group.
     """
-    return (
-        pl.col(col)
-        .sort_by(IMPORT_DATE)
-        .fill_null(strategy="forward")
-        .shift(1)
-        .over(IndCqc.location_id, order_by=IMPORT_DATE)
+    previous_values = (
+        lf.filter(pl.col(col).is_not_null())
+        .select(IndCqc.location_id, IMPORT_DATE, pl.col(col).alias(new_column_name))
+        .sort(IMPORT_DATE)
+    )
+
+    return lf.sort(IMPORT_DATE).join_asof(
+        previous_values,
+        on=IMPORT_DATE,
+        by=IndCqc.location_id,
+        strategy="backward",
+        allow_exact_matches=False,
     )
 
 

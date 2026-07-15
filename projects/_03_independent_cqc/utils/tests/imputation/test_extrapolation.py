@@ -129,10 +129,8 @@ class TestGetPreviousValue:
             orient="row",
         )
         input_lf = expected_lf.drop(ExtrapCol.previous_value)
-        returned_lf = input_lf.with_columns(
-            job.get_previous_value(IndCQC.ascwds_pir_merged).alias(
-                ExtrapCol.previous_value
-            )
+        returned_lf = job.get_previous_value(
+            input_lf, IndCQC.ascwds_pir_merged, ExtrapCol.previous_value
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
