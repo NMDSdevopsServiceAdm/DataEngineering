@@ -68,11 +68,10 @@ Example:
 import datetime
 import os
 
-import pandas as pd
-from pyspark.sql import DataFrame, Window
+import polars as pl
 
-import projects._00_example.utils.utils as utils
-from utils.column_names import Columns
+import projects._00_example.fargate.utils.utils as utils
+from utils.column_names import ExampleColumnNames as Cols
 ```
 
 ## Docstrings
@@ -104,9 +103,9 @@ def your_function(df: DataFrame) -> DataFrame:
 ```
 
 ## Column Names
-- Store all column names in `utils.column_names` (alphabetically)
-- Always reference columns via that module — do not hardcode strings
-- Helps consistency and reduces typos
+- Never hardcode column-name strings
+- Column-name classes belong in `utils/column_names`, shared across the repo (alphabetise entries within each class) — not per-project
+- Import under a short alias, e.g. `from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC`
 
 ## Dataset Names in AWS S3
 - Athena uses the dataset partition to name the tables so we will use this structure when saving files to S3
@@ -124,44 +123,59 @@ Examples:
 - Use `PascalCase` for class names
 
 ## Test Conventions
-- Use `unittest`
+- Use `pytest` (the repo is mid-migration off `unittest`; migrate a file opportunistically when you're already touching it, don't mass-rewrite passing tests)
 - Group tests for each function in a test class
 - Include at least one test per function/method
 - Each test function should test **one specific behaviour**
 - Use mock objects if setup is complex or if it is an orchestrator function
 - Store test data rows and schemas in the relevant `test_file_data.py` and `test_file_schemas.py`
 - File naming: `test_<module>.py`
-- Class naming: `YourFunctionNameTests`
+- Class naming: `Test<YourFunctionName>` — **must** start with `Test`; pytest's default discovery only collects plain classes prefixed this way (unlike `unittest.TestCase`, which pytest collects regardless of name)
 - Test naming: `test_<expected_behaviour>()` or `test_when_<scenario>_returns_<expected_outcome>()`
+- For multiple cases against the same function, prefer `@pytest.mark.parametrize` over one test method per case — build cases from a small `@dataclass` carrying a descriptive `id`, so failures read as the scenario, not a row of data
 
 Example:
 
 ```python
-class CleanIdColumnTests:
-    def test_does_not_change_valid_ids(self):
-        input_lf = pl.LazyFrame(...)
+@dataclass
+class CleanIdColumnTestCase:
+    id: str
+    data: list[Any]
 
-        returned_lf = job.function_name(...)
+    def as_pytest_param(self):
+        return pytest.param(self.data, id=self.id)
+
+
+cases = [
+    CleanIdColumnTestCase(id="does_not_change_valid_ids", data=[...]),
+    CleanIdColumnTestCase(id="nulls_invalid_ids", data=[...]),
+]
+
+
+class TestCleanIdColumn:
+    @pytest.mark.parametrize("test_data", [c.as_pytest_param() for c in cases])
+    def test_function_returns_expected_values(self, test_data):
+        input_lf = pl.LazyFrame(test_data, ...)
+
+        returned_lf = job.function_name(input_lf)
 
         expected_lf = pl.LazyFrame(...)
-        pl_testing.assert_frame_equal(expected_lf, output_lf)
-
-    def test_when_no_id_returns_null(self):
-        ...
-    ...
+        pl_testing.assert_frame_equal(expected_lf, returned_lf)
 ```
 
 ### Mocking and Patching
+- No `pytest-mock` in this repo — mocking stays on the standard-library `unittest.mock` (`Mock`, `patch`), used as plain decorators, not via `TestCase`
 - If patching, define a `PATCH_PATH` string at the top of the test module
 - Use this string when applying patches to improve readability and reduce errors
 - Patch in the **order the functions are called** and note that **decorators are applied in reverse order**
+- Assert with plain `assert`, not `self.assertEqual(...)` (there's no `self` without `TestCase`)
 
 Example:
 
 ```python
 PATCH_PATH: str = "projects._01_ingest.jobs.my_job"
 
-class MainTest:
+class TestMain:
     @patch(f"{PATCH_PATH}.utils.save_data")
     @patch(f"{PATCH_PATH}.clean_data")
     @patch(f"{PATCH_PATH}.utils.read_data")
