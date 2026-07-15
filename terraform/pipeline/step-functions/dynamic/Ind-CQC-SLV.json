@@ -30,7 +30,7 @@
                         "_01_starters_leavers_vacancies/fargate/_01_merge.py",
                         "--metadata_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=${ind_cqc_job_role_metadata}/",
                         "--job_role_estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=${ind_cqc_job_role_estimates}/",
-                        "--cleaned_ascwds_workplace_source", "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned_polars/",
+                        "--cleaned_ascwds_workplace_source", "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
                         "--merged_data_destination","${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_01_merge_slv/"
                       ]
                     }
