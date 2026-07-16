@@ -1,6 +1,7 @@
 import polars as pl
 import polars.selectors as cs
 
+import polars_utils.expressions as expr
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -243,3 +244,41 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.with_columns(pl.col(AWPClean.parent_permission).replace(3, None))
 
     return lf
+
+
+class BoundingExpressions:
+    """Create Polars expressions that bound workplace metrics to valid ranges.
+
+    The class defines expressions for constraining filled-posts values and
+    starters, leavers, vacancies (SLV) job-role values to acceptable ranges.
+    These expressions are designed for use in lazy Polars pipelines and keep
+    the transformation logic declarative and readable.
+    """
+
+    filled_posts_bounding_cols: list[str] = [
+        AWPClean.total_staff,
+        AWPClean.worker_records,
+    ]
+    filled_posts_lower_bound: int = 1
+
+    slv_bounding_cols = expr.is_slv_job_role_column()
+    slv_lower_bound: int = 1
+    slv_upper_bound: int = 998
+
+    filled_posts_expr: pl.Expr = (
+        pl.when(pl.col(*filled_posts_bounding_cols) >= filled_posts_lower_bound)
+        .then(pl.col(*filled_posts_bounding_cols))
+        .otherwise(None)
+        .name.suffix("_bounded")
+    )
+
+    slv_expr: pl.Expr = (
+        (
+            pl.when(
+                (slv_bounding_cols < slv_lower_bound)
+                | (slv_bounding_cols > slv_upper_bound)
+            )
+        )
+        .then(None)
+        .otherwise(slv_bounding_cols)
+    )
