@@ -16,12 +16,12 @@ class MainTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.mUtils.apply_employment_status_magic_numbers")
     @patch(f"{PATCH_PATH}.mUtils.join_datasets")
     @patch(f"{PATCH_PATH}.mUtils.convert_ascwds_job_role_columns_to_rows")
-    @patch(f"{PATCH_PATH}.mUtils.create_list_of_cols_for_ascwds")
+    @patch(f"{PATCH_PATH}.expr.is_slv_job_role_column")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
-        create_list_of_cols_for_ascwds_mock: Mock,
+        is_slv_job_role_column_mock: Mock,
         convert_ascwds_job_role_columns_to_rows_mock: Mock,
         join_datasets_mock: Mock,
         apply_employment_status_magic_numbers_mock: Mock,
@@ -47,7 +47,7 @@ class MainTests(unittest.TestCase):
         scan_parquet_mock.assert_has_calls(scan_calls)
 
         # TODO: Uncomment these assertions when the placeholder functions are implemented
-        # create_list_of_cols_for_ascwds_mock.assert_called_once()
+        is_slv_job_role_column_mock.assert_called_once()
         # convert_ascwds_job_role_columns_to_rows_mock.assert_called_once()
         # join_datasets_mock.assert_called_once()
         # apply_employment_status_magic_numbers_mock.assert_called_once()

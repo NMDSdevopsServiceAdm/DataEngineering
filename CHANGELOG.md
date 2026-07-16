@@ -6,6 +6,19 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+
+
+### Changed
+
+- Pull clean workplace columns into merge job within SLV pipeline.
+
+### Fixed
+
+
+
+## [v2026.06.0] - 15/07/2026
+
+### Added
 - Added error handling to CQC API call for 400 errors due to the location id being lowercase instead of uppercase.
 
 - Added validations for estimates data within Estimates by Job Roles Pipeline.
@@ -73,6 +86,10 @@ All notable changes to this project will be documented in this file.
 - National care work thresholds removed from job role estimates validation.
 
 - Pull metadata and estimates by job role columns into merge job within SLV pipeline.
+
+- Moved the Direct Payment column names from that project folder to the `utils/column_names/` folder alongside the rest
+
+- Removed workplace and worker datasets from syncing to branch.
 
 ### Fixed
 - Replace the all roles and all job groups functions with the appropriate categorical values attribute.

@@ -40,7 +40,7 @@ pipenv shell
 ## Testing
 ```
 # Run all tests
-python -m unittest discover -s . -p "test_*.py"
+pytest
 
 # Watch tests
 pytest-watch
