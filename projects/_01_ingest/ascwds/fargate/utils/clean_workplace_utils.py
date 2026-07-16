@@ -243,3 +243,44 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.with_columns(pl.col(AWPClean.parent_permission).replace(3, None))
 
     return lf
+
+
+def create_slv_schema(jr_num_list: list[int], incl_index: bool = False) -> pl.Schema:
+    """
+    Creates a polars schema for employees, starters, leavers and vacancy columns.
+
+    If incl_index is True then schema will also include establishment_id and import_date,
+    and all datatypes will be pl.String.
+    If False, then only slv columns will be in schema and all datatypes will be pl.Int32.
+
+    Single digit job role codes are padded with 0.
+
+    Args:
+        jr_num_list (list[int]): A list of job role codes for the roles
+            you want in the polars schema.
+        incl_index (bool): True to include establishment_id and import_date
+          in the polars schema. Defaults to False.
+
+    Returns:
+        pl.Schema: A polars schema of ascwds workplace job role columns.
+
+    Raises:
+        ValueError: If given job role list is empty.
+    """
+    if jr_num_list == []:
+        raise ValueError(f"Given job role list be populated. Got {jr_num_list}")
+
+    jr_numbers = [f"{i:02d}" for i in jr_num_list]
+    suffixes = ["emp", "strt", "stop", "vacy"]
+
+    if incl_index:
+        schema = {AWPClean.establishment_id: pl.String, AWPClean.import_date: pl.String}
+        schema.update(
+            {f"jr{num}{suffix}": pl.String for num in jr_numbers for suffix in suffixes}
+        )
+    else:
+        schema = {
+            f"jr{num}{suffix}": pl.Int32 for num in jr_numbers for suffix in suffixes
+        }
+
+    return pl.Schema(schema)

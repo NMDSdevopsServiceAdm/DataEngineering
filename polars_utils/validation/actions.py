@@ -192,31 +192,3 @@ def make_convert_col_to_integers_preprocessor(
         return df.with_columns(pl.col(column).cast(pl.Int64))
 
     return convert_col_to_integers
-
-
-def create_slv_schema(jr_num_list: list[int]) -> pl.Schema:
-    """
-    Creates a polars schema for employees, starters, leavers and vacancy
-    columns in ascwds workplace data using the given list of job role codes.
-
-    Single digit codes are padded with 0.
-
-    Args:
-        jr_num_list (list[int]): A list of job role codes for the roles
-            you want in the polars schema.
-
-    Returns:
-        pl.Schema: A polars schema of ascwds workplace job role columns.
-
-    Raises:
-        ValueError: If given job role list is empty.
-    """
-    if jr_num_list == []:
-        raise ValueError(f"Given job role list be populated. Got {jr_num_list}")
-
-    jr_numbers = [f"{i:02d}" for i in jr_num_list]
-    suffixes = ["emp", "strt", "stop", "vacy"]
-
-    schema = {f"jr{num}{suffix}": pl.Int32 for num in jr_numbers for suffix in suffixes}
-
-    return pl.Schema(schema)

@@ -227,3 +227,53 @@ class TestApplyDataCorrections:
         returned_lf = job.apply_data_corrections(test_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_workplace_lf)
+
+
+class TestCreateSlvSchema:
+    returned_schema_default = job.create_slv_schema([9, 10])
+    returned_schema_inc_index = job.create_slv_schema([9, 10], incl_index=True)
+
+    def test_raises_value_error_when_given_empty_list(self):
+        with pytest.raises(ValueError) as context:
+            job.create_slv_schema([])
+
+        assert str(context.value) == "Given job role list be populated. Got []"
+
+    def test_returns_a_polars_schema(self):
+        assert type(self.returned_schema_default) == pl.Schema
+
+    def test_returns_schema_for_requested_job_roles_when_inc_index_is_default(self):
+        expected_schema = pl.Schema(
+            {
+                AWPClean.job_role_09_employees: pl.Int32,
+                AWPClean.job_role_09_starters: pl.Int32,
+                AWPClean.job_role_09_leavers: pl.Int32,
+                AWPClean.job_role_09_vacancies: pl.Int32,
+                AWPClean.job_role_10_employees: pl.Int32,
+                AWPClean.job_role_10_starters: pl.Int32,
+                AWPClean.job_role_10_leavers: pl.Int32,
+                AWPClean.job_role_10_vacancies: pl.Int32,
+            }
+        )
+
+        assert self.returned_schema_default == expected_schema
+
+    def test_returns_schema_with_index_cols_and_requested_job_roles_when_inc_index_is_true(
+        self,
+    ):
+        expected_schema = pl.Schema(
+            {
+                AWPClean.establishment_id: pl.String,
+                AWPClean.import_date: pl.String,
+                AWPClean.job_role_09_employees: pl.String,
+                AWPClean.job_role_09_starters: pl.String,
+                AWPClean.job_role_09_leavers: pl.String,
+                AWPClean.job_role_09_vacancies: pl.String,
+                AWPClean.job_role_10_employees: pl.String,
+                AWPClean.job_role_10_starters: pl.String,
+                AWPClean.job_role_10_leavers: pl.String,
+                AWPClean.job_role_10_vacancies: pl.String,
+            }
+        )
+
+        assert self.returned_schema_inc_index == expected_schema

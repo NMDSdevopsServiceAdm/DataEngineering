@@ -1,12 +1,13 @@
 import sys
 
 import pointblank as pb
-import polars as pl
 
-from polars_utils import expressions as expr
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from projects._01_ingest.ascwds.fargate.utils.clean_workplace_utils import (
+    create_slv_schema,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as ASCWPClean,
 )
@@ -69,10 +70,8 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         source=f"s3://{bucket_name}/{source_path}",
     )
 
-    all_job_roles = [i for i in range(1, 52)]
-    roles_to_remove = [12, 13, 14, 18, 19, 20, 21, 22, 41]
-    exp_job_roles = [role for role in all_job_roles if role not in roles_to_remove]
-    columns.update(vl.create_slv_schema(exp_job_roles))
+    slv_columns = [i for i in range(1, 52)]
+    columns.update(create_slv_schema(slv_columns))
     EXPECTED_SCHEMA = pb.Schema(columns=columns)
 
     validation = (

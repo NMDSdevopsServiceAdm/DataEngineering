@@ -1,12 +1,7 @@
 import unittest
 from unittest.mock import ANY, Mock, call, patch
 
-import polars as pl
-
 import projects._01_ingest.ascwds.fargate.clean_ascwds_workplace as job
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
 
 PATCH_PATH = "projects._01_ingest.ascwds.fargate.clean_ascwds_workplace"
 
@@ -18,6 +13,7 @@ class MainTests(unittest.TestCase):
     RECONCILIATION_DESTINATION = "some/other/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.create_slv_schema")
     @patch(f"{PATCH_PATH}.wUtils.create_purged_lfs_for_reconciliation_and_data")
     @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
     @patch(f"{PATCH_PATH}.pl.scan_csv")
@@ -38,6 +34,7 @@ class MainTests(unittest.TestCase):
         scan_csv_mock: Mock,
         apply_categorical_labels_mock: Mock,
         create_purged_lfs_for_reconciliation_and_data_mock: Mock,
+        create_slv_schema_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         create_purged_lfs_for_reconciliation_and_data_mock.return_value = (
@@ -66,6 +63,7 @@ class MainTests(unittest.TestCase):
             self.DATA_LABELS_SOURCE, schema=job.data_labels_schema
         )
         apply_categorical_labels_mock.assert_called_once()
+        create_slv_schema_mock.assert_called_once()
 
         assert sink_to_parquet_mock.call_count == 2
 
