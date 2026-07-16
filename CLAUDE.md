@@ -38,6 +38,18 @@ curl -s https://api.github.com/repos/pola-rs/polars/issues/20947 | python3 -c "i
 ```
 (no auth needed — it's a public issue). Diff the checkboxes against this list and update it if anything's moved.
 
+### `.over()` vs join-based rewrites — "not streaming" ≠ "uses more memory"
+
+Don't treat "not on the streaming list above" as a proxy for "will OOM" — they're different questions, and confirmed (2026-07-16, `.over()` OOM investigation on the imputation pipeline) to sometimes point in opposite directions:
+
+- `.over()`'s in-memory fallback computes and writes its result in place — measured at ~0 extra peak memory beyond holding the frame, regardless of whether it's a simple aggregate or an order-dependent shift/cumsum.
+- A join that **broadcasts a computed value back onto every row** (a left-join, or `join_asof`) needs a hash/sorted structure *and* a new merged output frame — measured at several GB more peak memory than the equivalent `.over()`, on a ~4M-row wide frame. This is what caused a real production OOM in `merge_ascwds_and_pir_filled_post_submissions` when it was converted away from `.over()` to "streaming-friendly" `join_asof`/`group_by`+join — the conversion made memory usage worse, not better.
+- Row-filtering joins (`how="semi"`/`"anti"`) avoid the merged-output cost since they don't attach new columns — this is why converting `split_dataset_for_imputation`'s `.over()` to a semi/anti join did fix an OOM there. But don't assume any join is free either: recombining split frames afterwards (`pl.concat`) has its own real memory cost.
+
+**Before converting a `.over()` to a "streaming-friendly" join to fix a memory issue:** confirm the replacement is a row filter, not a column broadcast, and verify with the method below — don't assume streaming-labeled means memory-safe.
+
+**How to test:** run the candidate code with `POLARS_VERBOSE=1` to see whether it gets a genuine streaming node (e.g. `sorted-group-by`) or falls back (`in-memory-join`/`in-memory-map`) — node names alone don't tell you the memory cost, so also measure actual peak memory (e.g. `psutil.Process().memory_info().peak_wset` on Windows, `.rss` on Linux/Mac, wrapping a `.collect()` call) on a synthetic frame shaped like the real data (row count *and* column count — sort/join cost scales with frame width, not just row count).
+
 ## Polars style
 
 - Expression-based and declarative; avoid `.apply()` unless there's no vectorised alternative.
