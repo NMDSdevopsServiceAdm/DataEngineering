@@ -317,9 +317,11 @@ def check_job_roles_list(worker_source: pl.LazyFrame, jr_num_list: list[int]) ->
 
     worker_job_roles = sorted(worker_job_roles)
 
-    # These roles exist in raw workplace but not raw worker data
+    # These roles exist in raw workplace but not raw worker data.
     jr_num_list = [
-        role for role in jr_num_list if role not in [12, 13, 14, 18, 19, 20, 21, 22, 41]
+        role
+        for role in jr_num_list
+        if role not in [12, 13, 14, 18, 19, 20, 21, 22, 28, 29, 30, 31, 32, 33, 41]
     ]
 
     if set(jr_num_list) != set(worker_job_roles):
