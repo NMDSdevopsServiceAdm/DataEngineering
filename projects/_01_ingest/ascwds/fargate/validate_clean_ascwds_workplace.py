@@ -8,7 +8,6 @@ from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from projects._01_ingest.ascwds.fargate.utils.clean_workplace_utils import (
     create_slv_schema,
-    jr_in_wp_but_not_wrkr,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as ASCWPClean,
@@ -52,8 +51,6 @@ columns = {
     ASCWPClean.purge_date: "Date",
     ASCWPClean.data_last_amended_date: "Date",
     ASCWPClean.workplace_last_active_date: "Date",
-    ASCWPClean.total_staff_bounded: "Int32",
-    ASCWPClean.worker_records_bounded: "Int32",
 }
 
 
@@ -72,13 +69,17 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         source=f"s3://{bucket_name}/{source_path}",
     )
 
-    slv_columns = create_slv_schema(
-        [i for i in range(1, 53) if i not in jr_in_wp_but_not_wrkr]
-    )
+    slv_columns = create_slv_schema([i for i in range(1, 53)])
     slv_columns = {
         k: "Int32" for k in slv_columns
     }  # polars schema has datatype pl.Int32, but pb schema requires "Int32"
-    columns.update(slv_columns.items())
+    columns.update(slv_columns.items())  # Add job role columns.
+    columns.update(
+        {
+            ASCWPClean.total_staff_bounded: "Int32",
+            ASCWPClean.worker_records_bounded: "Int32",
+        }
+    )  # Add columns created after job role cols are joined.
     EXPECTED_SCHEMA = pb.Schema(columns)
 
     print("data_schema:")
