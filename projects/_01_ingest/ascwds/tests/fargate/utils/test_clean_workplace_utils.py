@@ -239,10 +239,19 @@ class TestCreateSlvSchema:
         with pytest.raises(ValueError) as context:
             job.create_slv_schema([])
 
-        assert str(context.value) == "Given job role list be populated. Got []"
+        assert str(context.value) == "Given job role list must be populated. Got []"
+
+    def test_raises_value_error_when_list_has_duplicates(self):
+        with pytest.raises(ValueError) as context:
+            job.create_slv_schema([1, 1, 2])
+
+        assert (
+            str(context.value)
+            == "Values in job role list must be unique. Got [1, 1, 2]"
+        )
 
     def test_returns_a_polars_schema(self):
-        assert type(self.returned_schema_default) == pl.Schema
+        assert isinstance(self.returned_schema_default, pl.Schema)
 
     def test_returns_schema_for_requested_job_roles_when_inc_index_is_default(self):
         expected_schema = pl.Schema(
@@ -282,7 +291,7 @@ class TestCreateSlvSchema:
 
 
 class TestCheckJobRolesList:
-    def test_function_raises_value_error(self):
+    def test_raises_when_job_roles_do_not_match_worker_data(self):
         test_worker_lf = pl.LazyFrame(
             {
                 AWKRaw.main_job_role_id: ["-1", "1", "2", "3"],

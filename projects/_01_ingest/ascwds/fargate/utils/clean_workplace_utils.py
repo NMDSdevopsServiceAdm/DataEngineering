@@ -251,7 +251,7 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 def create_slv_schema(jr_num_list: list[int], incl_index: bool = False) -> pl.Schema:
     """
-    Creates a polars schema for employees, starters, leavers and vacancy columns.
+    Creates a Polars schema for employees, starters, leavers and vacancy columns.
 
     If incl_index is True then schema will also include establishment_id and import_date,
     and all datatypes will be pl.String.
@@ -266,13 +266,15 @@ def create_slv_schema(jr_num_list: list[int], incl_index: bool = False) -> pl.Sc
           in the polars schema. Defaults to False.
 
     Returns:
-        pl.Schema: A polars schema of ascwds workplace job role columns.
+        pl.Schema: A Polars schema of ascwds workplace job role columns.
 
     Raises:
         ValueError: If given job role list is empty.
     """
     if jr_num_list == []:
-        raise ValueError(f"Given job role list be populated. Got {jr_num_list}")
+        raise ValueError(f"Given job role list must be populated. Got {jr_num_list}")
+    if len(jr_num_list) != len(set(jr_num_list)):
+        raise ValueError(f"Values in job role list must be unique. Got {jr_num_list}")
 
     jr_numbers = [f"{i:02d}" for i in jr_num_list]
     suffixes = ["emp", "strt", "stop", "vacy"]
@@ -306,11 +308,13 @@ def check_job_roles_list(worker_source: pl.LazyFrame, jr_num_list: list[int]) ->
         worker_source.filter(
             pl.col(AWKRaw.main_job_role_id) != "-1"
         )  # -1 == not recorded
-        .select(pl.col(AWKRaw.main_job_role_id).cast(pl.Int32).unique())
+        .select(pl.col(AWKRaw.main_job_role_id).cast(pl.Int32))
+        .unique()
         .collect()
         .get_column(AWKRaw.main_job_role_id)
         .to_list()
     )
+    worker_job_roles = sorted(worker_job_roles)
 
     if set(jr_num_list) != set(worker_job_roles):
         raise ValueError(
