@@ -1667,19 +1667,17 @@ class TestCleanAscwdsWorkplaceUtilsData:
         ),
     ]
 
-    expected_create_purge_date_columns_rows = [
-        (
-            "org1",
-            date(2024, 6, 1),
-            date(2024, 4, 1),
-            "Yes",
-            date(2024, 5, 1),
-            date(2024, 4, 1),
-            date(2022, 6, 1),
-            date(2024, 4, 1),
-            date(2024, 5, 1),
-        )
-    ]
+    expected_create_purge_date_columns_rows = {
+        AWPClean.organisation_id: "org1",
+        AWPClean.ascwds_workplace_import_date: date(2024, 6, 1),
+        AWPClean.master_update_date: date(2024, 4, 1),
+        AWPClean.is_parent: "Yes",
+        AWPClean.last_logged_in_date: date(2024, 5, 1),
+        AWPClean.master_update_date_org: date(2024, 4, 1),
+        AWPClean.purge_date: date(2022, 6, 1),
+        AWPClean.data_last_amended_date: date(2024, 4, 1),
+        AWPClean.workplace_last_active_date: date(2024, 5, 1),
+    }
 
     apply_data_corrections_test_cases = [
         ApplyDataCorrectionsTestCase(

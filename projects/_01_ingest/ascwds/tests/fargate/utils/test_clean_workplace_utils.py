@@ -157,11 +157,7 @@ class TestAddMasterUpdateDateOrg:
 
 class TestCreatePurgeDateColumns:
     def test_function_returns_expected_values(self):
-        expected_lf = pl.LazyFrame(
-            Data.expected_create_purge_date_columns_rows,
-            Schemas.create_purge_date_columns_schema,
-            orient="row",
-        )
+        expected_lf = pl.LazyFrame(Data.expected_create_purge_date_columns_rows)
         test_lf = expected_lf.drop(
             AWPClean.master_update_date_org,
             AWPClean.purge_date,

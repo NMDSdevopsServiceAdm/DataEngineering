@@ -488,17 +488,6 @@ class TestCleanAscwdsWorkplaceUtilsSchemas:
         **last_amended_date_exprs_schema,
         AWPClean.workplace_last_active_date: pl.Date,
     }
-    create_purge_date_columns_schema = {
-        AWPClean.organisation_id: pl.String,
-        AWPClean.ascwds_workplace_import_date: pl.Date,
-        AWPClean.master_update_date: pl.Date,
-        AWPClean.is_parent: pl.String,
-        AWPClean.last_logged_in_date: pl.Date,
-        AWPClean.master_update_date_org: pl.Date,
-        AWPClean.purge_date: pl.Date,
-        AWPClean.data_last_amended_date: pl.Date,
-        AWPClean.workplace_last_active_date: pl.Date,
-    }
 
     apply_data_corrections_schema = {
         AWPClean.organisation_id: pl.String,
