@@ -81,6 +81,12 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
     columns.update(slv_columns.items())
     EXPECTED_SCHEMA = pb.Schema(columns)
 
+    print("data_schema:")
+    print(source_df.collect_schema())
+
+    print("expected_schema:")
+    print(EXPECTED_SCHEMA)
+
     validation = (
         pb.Validate(
             data=source_df,

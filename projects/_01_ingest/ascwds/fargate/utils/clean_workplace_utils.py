@@ -296,7 +296,11 @@ def create_slv_schema(jr_num_list: list[int], incl_index: bool = False) -> pl.Sc
 
 def check_job_roles_list(worker_source: pl.LazyFrame, jr_num_list: list[int]) -> None:
     """
-    Compares a list of job role codes against all codes in raw worker data.
+    Compares a list of job role codes against codes in raw worker data.
+
+    Some job roles are known to exist in raw workplace but not in
+    raw worker data, see jr_in_wp_but_not_wrkr, therefore these are
+    removed from the given jr_num_list before checking.
 
     Args:
         worker_source (pl.LazyFrame): Raw worker LazyFrame.
