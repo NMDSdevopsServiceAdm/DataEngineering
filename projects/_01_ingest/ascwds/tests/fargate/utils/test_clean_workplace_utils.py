@@ -192,39 +192,3 @@ class TestApplyDataCorrections:
         returned_lf = job.apply_data_corrections(test_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_workplace_lf)
-
-
-class JrColsSelectorTests(unittest.TestCase):
-    def test_selects_expected_columns(self):
-        test_lf = pl.LazyFrame(
-            {
-                AWPClean.job_role_01_employees: "1",
-                AWPClean.job_role_01_starters: "1",
-                AWPClean.job_role_01_leavers: "1",
-                AWPClean.job_role_01_vacancies: "1",
-                AWPClean.job_role_01_temporary: "1",
-                AWPClean.job_role_01_flag: "1",
-                "jr01permdate": "1",
-                "any_other_col": "1",
-            }
-        )
-        returned_cols = test_lf.select(job.slv_cols_selector()).collect_schema().names()
-        expected_cols = [
-            AWPClean.job_role_01_employees,
-            AWPClean.job_role_01_starters,
-            AWPClean.job_role_01_leavers,
-            AWPClean.job_role_01_vacancies,
-        ]
-
-        self.assertEqual(returned_cols, expected_cols)
-
-    def test_ignores_non_string_job_role_columns(self):
-        test_lf = pl.LazyFrame(
-            {
-                "jr_int_strt": [1],  # int
-                "jr_str_strt": ["1"],  # string
-            }
-        )
-        returned_cols = test_lf.select(job.slv_cols_selector()).collect_schema().names()
-
-        self.assertEqual(returned_cols, ["jr_str_strt"])

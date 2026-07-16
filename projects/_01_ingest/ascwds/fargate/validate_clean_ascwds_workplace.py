@@ -3,12 +3,10 @@ import sys
 import pointblank as pb
 import polars as pl
 
+from polars_utils import expressions as expr
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from projects._01_ingest.ascwds.fargate.utils.clean_workplace_utils import (
-    slv_cols_selector,
-)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as ASCWPClean,
 )
@@ -71,7 +69,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         source=f"s3://{bucket_name}/{source_path}",
     )
 
-    jr_cols = source_df.select(slv_cols_selector()).collect_schema().names()
+    jr_cols = source_df.select(expr.is_slv_job_role_column()).collect_schema().names()
     columns.update({k: pl.Int32 for k in jr_cols})
     EXPECTED_SCHEMA = pb.Schema(columns=columns)
 

@@ -1,6 +1,7 @@
 import polars as pl
 
 from polars_utils import cleaning_utils as cUtils
+from polars_utils import expressions as expr
 from polars_utils import utils
 from projects._01_ingest.ascwds.fargate.utils import clean_workplace_utils as wUtils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
@@ -143,7 +144,8 @@ def main(
     workplace_lf = wUtils.remove_rows_with_duplicate_location_ids(workplace_lf)
 
     slv_lf = utils.scan_parquet(workplace_source).select(
-        *[AWPClean.establishment_id, AWPClean.import_date], wUtils.slv_cols_selector()
+        *[AWPClean.establishment_id, AWPClean.import_date],
+        expr.is_slv_job_role_column(),
     )
 
     workplace_lf = workplace_lf.join(
@@ -152,7 +154,7 @@ def main(
 
     workplace_lf = workplace_lf.with_columns(
         pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
-        wUtils.slv_cols_selector().cast(pl.Int32, strict=False),
+        expr.is_slv_job_role_column().cast(pl.Int32, strict=False),
     )
 
     workplace_lf = workplace_lf.with_columns(
