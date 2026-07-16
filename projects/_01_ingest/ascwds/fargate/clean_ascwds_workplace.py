@@ -103,6 +103,8 @@ def main(
     """
     lf = utils.scan_parquet(workplace_source, schema=WORKPLACE_SCHEMA)
 
+    lf = lf.select(WORKPLACE_SCHEMA.keys())  # Removes partition columns from output.
+
     lf = wUtils.apply_data_corrections(lf)
 
     lf = lf.filter(wUtils.valid_workplace_filter())
