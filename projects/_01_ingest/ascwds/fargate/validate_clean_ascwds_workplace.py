@@ -17,35 +17,35 @@ from utils.column_values.categorical_columns_by_dataset import (
 )
 
 columns = {
-    ASCWPClean.organisation_id: "string",
-    ASCWPClean.period: "string",
-    ASCWPClean.establishment_id: "string",
-    ASCWPClean.establishment_id_from_nmds: "string",
-    ASCWPClean.parent_id: "string",
-    ASCWPClean.nmds_id: "string",
+    ASCWPClean.organisation_id: "String",
+    ASCWPClean.period: "String",
+    ASCWPClean.establishment_id: "String",
+    ASCWPClean.establishment_id_from_nmds: "String",
+    ASCWPClean.parent_id: "String",
+    ASCWPClean.nmds_id: "String",
     ASCWPClean.establishment_created_date: "Date",
     ASCWPClean.establishment_updated_date: "Date",
     ASCWPClean.master_update_date: "Date",
     ASCWPClean.last_logged_in_date: "Date",
-    ASCWPClean.la_permission: "string",
-    ASCWPClean.is_bulk_uploader: "string",
-    ASCWPClean.is_parent: "string",
-    ASCWPClean.parent_permission: "string",
-    ASCWPClean.registration_type: "string",
-    ASCWPClean.provider_id: "string",
-    ASCWPClean.location_id: "string",
-    ASCWPClean.establishment_type: "string",
-    ASCWPClean.establishment_name: "string",
-    ASCWPClean.address: "string",
-    ASCWPClean.postcode: "string",
-    ASCWPClean.region_id: "string",
+    ASCWPClean.la_permission: "String",
+    ASCWPClean.is_bulk_uploader: "String",
+    ASCWPClean.is_parent: "String",
+    ASCWPClean.parent_permission: "String",
+    ASCWPClean.registration_type: "String",
+    ASCWPClean.provider_id: "String",
+    ASCWPClean.location_id: "String",
+    ASCWPClean.establishment_type: "String",
+    ASCWPClean.establishment_name: "String",
+    ASCWPClean.address: "String",
+    ASCWPClean.postcode: "String",
+    ASCWPClean.region_id: "String",
     ASCWPClean.total_staff: "Int32",
     ASCWPClean.worker_records: "Int32",
-    ASCWPClean.total_starters: "string",
-    ASCWPClean.total_leavers: "string",
-    ASCWPClean.total_vacancies: "string",
-    ASCWPClean.main_service_id: "string",
-    ASCWPClean.version: "string",
+    ASCWPClean.total_starters: "String",
+    ASCWPClean.total_leavers: "String",
+    ASCWPClean.total_vacancies: "String",
+    ASCWPClean.main_service_id: "String",
+    ASCWPClean.version: "String",
     ASCWPClean.ascwds_workplace_import_date: "Date",
     ASCWPClean.master_update_date_org: "Date",
     ASCWPClean.purge_date: "Date",
@@ -91,10 +91,10 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             actions=GLOBAL_ACTIONS,
         )
         # dataset schema
-        # .col_schema_match(
-        #     schema=EXPECTED_SCHEMA,
-        #     brief="Dataset should match the expected schema",
-        # )
+        .col_schema_match(
+            schema=EXPECTED_SCHEMA,
+            brief="Dataset should match the expected schema",
+        )
         # index columns
         .rows_distinct(
             [ASCWPClean.establishment_id, ASCWPClean.ascwds_workplace_import_date]
