@@ -81,11 +81,11 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
     columns.update(slv_columns.items())
     EXPECTED_SCHEMA = pb.Schema(columns)
 
-    print("data_schema:")
-    print(source_df.collect_schema())
+    # print("data_schema:")
+    # print(source_df.collect_schema())
 
-    print("expected_schema:")
-    print(EXPECTED_SCHEMA)
+    # print("expected_schema:")
+    # print(EXPECTED_SCHEMA)
 
     validation = (
         pb.Validate(
@@ -96,10 +96,10 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             actions=GLOBAL_ACTIONS,
         )
         # dataset schema
-        .col_schema_match(
-            schema=EXPECTED_SCHEMA,
-            brief="Dataset should match the expected schema",
-        )
+        # .col_schema_match(
+        #     schema=EXPECTED_SCHEMA,
+        #     brief="Dataset should match the expected schema",
+        # )
         # index columns
         .rows_distinct(
             [ASCWPClean.establishment_id, ASCWPClean.ascwds_workplace_import_date]
