@@ -127,7 +127,8 @@ def main(
 
     lf = wUtils.remove_rows_with_duplicate_location_ids(lf)
 
-    slv_columns = [i for i in range(1, 52)]
+    slv_columns = [i for i in range(1, 53)]
+    wUtils.check_job_roles_list(slv_columns)
     lf_slv = utils.scan_parquet(
         workplace_source, schema=wUtils.create_slv_schema(slv_columns, incl_index=True)
     )

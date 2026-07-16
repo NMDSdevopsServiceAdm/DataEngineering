@@ -1,5 +1,5 @@
-import unittest
 from datetime import date
+from unittest.mock import Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
@@ -14,6 +14,9 @@ from projects._01_ingest.unittest_data.polars_ingest_test_file_schema import (
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWKRaw,
 )
 
 
@@ -277,3 +280,24 @@ class TestCreateSlvSchema:
         )
 
         assert self.returned_schema_inc_index == expected_schema
+
+
+class TestCheckJobRolesList:
+    PATCH_PATH = "projects._01_ingest.ascwds.fargate.clean_ascwds_workplace"
+
+    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    def test_function_raises_value_error(self, scan_parquet_mock: Mock):
+        scan_parquet_mock.return_value = pl.LazyFrame(
+            {
+                AWKRaw.main_job_role_id: ["-1", "1", "2", "3"],
+                "Another_column": ["a", "b", "c", "d"],
+            }
+        )
+
+        with pytest.raises(ValueError) as context:
+            job.check_job_roles_list([1, 2])
+
+        assert (
+            str(context.value)
+            == "Given job role list ([1, 2]) must match equivalent from raw worker data ([1, 2, 3])."
+        )

@@ -1,8 +1,12 @@
 import polars as pl
 import polars.selectors as cs
 
+from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWKRaw,
 )
 
 MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
@@ -284,3 +288,29 @@ def create_slv_schema(jr_num_list: list[int], incl_index: bool = False) -> pl.Sc
         }
 
     return pl.Schema(schema)
+
+
+def check_job_roles_list(jr_num_list: list[int]) -> None:
+    """
+    Compares a list of job role codes against all codes in raw worker data.
+
+    Args:
+        jr_num_list (list[int]): A list of job role codes to check.
+
+    Raises:
+        ValueError: When given list differs from worker data list.
+    """
+
+    lf_worker_job_roles = (
+        utils.scan_parquet("raw_worker")
+        .filter(pl.col(AWKRaw.main_job_role_id) != "-1")  # -1 == not recorded
+        .select(pl.col(AWKRaw.main_job_role_id).cast(pl.Int32).unique())
+        .collect()
+        .get_column(AWKRaw.main_job_role_id)
+        .to_list()
+    )
+
+    if set(jr_num_list) != set(lf_worker_job_roles):
+        raise ValueError(
+            f"Given job role list ({jr_num_list}) must match equivalent from raw worker data ({lf_worker_job_roles})."
+        )
