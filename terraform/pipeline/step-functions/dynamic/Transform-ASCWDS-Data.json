@@ -152,23 +152,6 @@
                       "End": true
                     }
                   }
-                },
-                {
-                  "StartAt": "Validate Cleaned Workplace",
-                  "States": {
-                    "Validate Cleaned Workplace": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${validate_ascwds_workplace_cleaned_data_job_name}",
-                        "Arguments": {
-                          "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_workplace_cleaned/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
                 }
               ]
             }
