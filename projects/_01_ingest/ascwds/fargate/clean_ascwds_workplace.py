@@ -137,7 +137,7 @@ def main(
     wUtils.check_job_roles_list(worker_lf, jr_nums_list)
     lf_slv = utils.scan_parquet(
         workplace_source, schema=wUtils.create_slv_schema(jr_nums_list, incl_index=True)
-    )
+    ).drop([AWPClean.version, AWPClean.year, AWPClean.month, AWPClean.day])
 
     lf = lf.join(
         lf_slv, on=[AWPClean.establishment_id, AWPClean.import_date], how="left"
