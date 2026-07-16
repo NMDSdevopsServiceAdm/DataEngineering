@@ -85,7 +85,7 @@ All notable changes to this project will be documented in this file.
 
 - National care work thresholds removed from job role estimates validation.
 
-- Pull metadata columns into merge job within SLV pipeline.
+- Pull metadata and estimates by job role columns into merge job within SLV pipeline.
 
 - Moved the Direct Payment column names from that project folder to the `utils/column_names/` folder alongside the rest
 

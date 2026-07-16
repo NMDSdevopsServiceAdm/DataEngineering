@@ -38,7 +38,10 @@ class MainTests(unittest.TestCase):
 
         scan_calls = [
             call(source=self.METADATA_SOURCE, selected_columns=job.metadata_columns),
-            call(self.JOB_ROLE_ESTIMATES_SOURCE),
+            call(
+                source=self.JOB_ROLE_ESTIMATES_SOURCE,
+                selected_columns=job.job_role_estimates_columns,
+            ),
             call(self.CLEANED_ASCWDS_WORKPLACE_SOURCE),
         ]
         scan_parquet_mock.assert_has_calls(scan_calls)
