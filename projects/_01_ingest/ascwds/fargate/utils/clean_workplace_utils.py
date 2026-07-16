@@ -275,10 +275,11 @@ class BoundingExpressions:
     slv_expr: pl.Expr = (
         (
             pl.when(
-                (slv_bounding_cols < slv_lower_bound)
-                | (slv_bounding_cols > slv_upper_bound)
+                (slv_bounding_cols.as_expr() < slv_lower_bound)
+                | (slv_bounding_cols.as_expr() > slv_upper_bound)
             )
         )
         .then(None)
         .otherwise(slv_bounding_cols)
+        .name.keep()
     )
