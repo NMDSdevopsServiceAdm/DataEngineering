@@ -70,9 +70,9 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         source=f"s3://{bucket_name}/{source_path}",
     )
 
-    slv_columns = [i for i in range(1, 53)]
-    columns.update(create_slv_schema(slv_columns))
-    EXPECTED_SCHEMA = pb.Schema(columns=columns)
+    columns = pb.Schema(columns)
+    slv_columns = create_slv_schema([i for i in range(1, 53)])
+    EXPECTED_SCHEMA = pb.Schema({**columns, **slv_columns})
 
     validation = (
         pb.Validate(
