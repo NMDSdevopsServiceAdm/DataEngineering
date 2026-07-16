@@ -1667,62 +1667,17 @@ class TestCleanAscwdsWorkplaceUtilsData:
         ),
     ]
 
-    create_purged_lfs_test_cases = [
-        PurgedLfsTestCase(
-            id="recent_record_retained_in_both_outputs",
-            test_data=[
-                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1))
-            ],
-            expected_workplace_data=[
-                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1))
-            ],
-            expected_recon_data=[
-                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1))
-            ],
-        ),
-        PurgedLfsTestCase(
-            id="stale_record_removed_from_both_outputs",
-            test_data=[
-                ("org1", date(2024, 6, 1), date(2020, 1, 1), "No", date(2020, 1, 1))
-            ],
-            expected_workplace_data=None,
-            expected_recon_data=None,
-        ),
-        PurgedLfsTestCase(
-            id="stale_by_update_but_recent_login_retained_in_recon_only",
-            test_data=[
-                ("org1", date(2024, 6, 1), date(2020, 1, 1), "No", date(2024, 5, 1))
-            ],
-            expected_workplace_data=None,
-            expected_recon_data=[
-                ("org1", date(2024, 6, 1), date(2020, 1, 1), "No", date(2024, 5, 1))
-            ],
-        ),
-        PurgedLfsTestCase(
-            id="parent_retained_when_sibling_has_recent_update",
-            test_data=[
-                ("org1", date(2024, 6, 1), date(2020, 1, 1), "Yes", date(2020, 1, 1)),
-                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2020, 1, 1)),
-            ],
-            expected_workplace_data=[
-                ("org1", date(2024, 6, 1), date(2020, 1, 1), "Yes", date(2020, 1, 1)),
-                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2020, 1, 1)),
-            ],
-            expected_recon_data=[
-                ("org1", date(2024, 6, 1), date(2020, 1, 1), "Yes", date(2020, 1, 1)),
-                ("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2020, 1, 1)),
-            ],
-        ),
-        PurgedLfsTestCase(
-            id="parent_removed_when_all_siblings_stale",
-            test_data=[
-                ("org1", date(2024, 6, 1), date(2020, 1, 1), "Yes", date(2020, 1, 1)),
-                ("org1", date(2024, 6, 1), date(2020, 2, 1), "No", date(2020, 1, 1)),
-            ],
-            expected_workplace_data=None,
-            expected_recon_data=None,
-        ),
-    ]
+    expected_create_purge_date_columns_rows = {
+        AWPClean.organisation_id: "org1",
+        AWPClean.ascwds_workplace_import_date: date(2024, 6, 1),
+        AWPClean.master_update_date: date(2024, 4, 1),
+        AWPClean.is_parent: "Yes",
+        AWPClean.last_logged_in_date: date(2024, 5, 1),
+        AWPClean.master_update_date_org: date(2024, 4, 1),
+        AWPClean.purge_date: date(2022, 6, 1),
+        AWPClean.data_last_amended_date: date(2024, 4, 1),
+        AWPClean.workplace_last_active_date: date(2024, 5, 1),
+    }
 
     apply_data_corrections_test_cases = [
         ApplyDataCorrectionsTestCase(

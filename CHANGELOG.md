@@ -9,8 +9,9 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
-
 - Pull clean workplace columns into merge job within SLV pipeline.
+
+- Updated references from workplace data for 'reconciliation' process to 'SfC internal' as the dataset is used in multiple jobs
 
 ### Fixed
 
