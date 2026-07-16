@@ -26,7 +26,6 @@ COPY projects/_03_independent_cqc/_01_merge/fargate/merge_ind_cqc_data.py /app/m
 COPY projects/_03_independent_cqc/_01_merge/fargate/validate_merged_ind_cqc_data.py /app/validate_merged_ind_cqc_data.py
 COPY projects/_03_independent_cqc/_02_clean/fargate/clean_ind_cqc_filled_posts.py /app/clean_ind_cqc_filled_posts.py
 COPY projects/_03_independent_cqc/_02_clean/fargate/validate_cleaned_ind_cqc_data.py /app/validate_cleaned_ind_cqc_data.py
-COPY projects/_03_independent_cqc/_03_impute/fargate/impute_prepare.py /app/impute_prepare.py
 COPY projects/_03_independent_cqc/_03_impute/fargate/impute_ind_cqc_ascwds_and_pir.py /app/impute_ind_cqc_ascwds_and_pir.py
 COPY projects/_03_independent_cqc/_03_impute/fargate/validate_imputed_ind_cqc_ascwds_and_pir_data.py /app/validate_imputed_ind_cqc_ascwds_and_pir_data.py
 COPY projects/_03_independent_cqc/_06_estimate_filled_posts/fargate/estimate_ind_cqc_filled_posts.py /app/estimate_ind_cqc_filled_posts.py
