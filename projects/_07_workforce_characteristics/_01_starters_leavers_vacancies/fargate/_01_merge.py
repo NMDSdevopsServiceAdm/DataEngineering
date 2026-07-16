@@ -34,6 +34,17 @@ metadata_columns = [
     IndCQC.estimate_filled_posts_source,
 ]
 
+job_role_estimates_columns = [
+    IndCQC.id_per_locationid_import_date_job_role,
+    IndCQC.location_id,
+    IndCQC.cqc_location_import_date,
+    IndCQC.primary_service_type,
+    IndCQC.id_per_locationid_import_date,
+    IndCQC.main_job_role_clean_labelled,
+    IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
+    IndCQC.main_job_group_labelled,
+]
+
 
 def main(
     metadata_source: str,
@@ -54,7 +65,9 @@ def main(
     metadata_lf = utils.scan_parquet(
         source=metadata_source, selected_columns=metadata_columns
     )
-    job_role_estimates_lf = utils.scan_parquet(job_role_estimates_source)
+    job_role_estimates_lf = utils.scan_parquet(
+        source=job_role_estimates_source, selected_columns=job_role_estimates_columns
+    )
     cleaned_ascwds_workplace_lf = utils.scan_parquet(
         cleaned_ascwds_workplace_source
     ).select(
