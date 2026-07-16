@@ -17,42 +17,42 @@ from utils.column_values.categorical_columns_by_dataset import (
 )
 
 columns = {
-    ASCWPClean.organisation_id: pl.String,
-    ASCWPClean.period: pl.String,
-    ASCWPClean.establishment_id: pl.String,
-    ASCWPClean.establishment_id_from_nmds: pl.String,
-    ASCWPClean.parent_id: pl.String,
-    ASCWPClean.nmds_id: pl.String,
-    ASCWPClean.establishment_created_date: pl.Date,
-    ASCWPClean.establishment_updated_date: pl.Date,
-    ASCWPClean.master_update_date: pl.Date,
-    ASCWPClean.last_logged_in_date: pl.Date,
-    ASCWPClean.la_permission: pl.String,
-    ASCWPClean.is_bulk_uploader: pl.String,
-    ASCWPClean.is_parent: pl.String,
-    ASCWPClean.parent_permission: pl.String,
-    ASCWPClean.registration_type: pl.String,
-    ASCWPClean.provider_id: pl.String,
-    ASCWPClean.location_id: pl.String,
-    ASCWPClean.establishment_type: pl.String,
-    ASCWPClean.establishment_name: pl.String,
-    ASCWPClean.address: pl.String,
-    ASCWPClean.postcode: pl.String,
-    ASCWPClean.region_id: pl.String,
-    ASCWPClean.total_staff: pl.Int32,
-    ASCWPClean.worker_records: pl.Int32,
-    ASCWPClean.total_starters: pl.String,
-    ASCWPClean.total_leavers: pl.String,
-    ASCWPClean.total_vacancies: pl.String,
-    ASCWPClean.main_service_id: pl.String,
-    ASCWPClean.version: pl.String,
-    ASCWPClean.ascwds_workplace_import_date: pl.Date,
-    ASCWPClean.master_update_date_org: pl.Date,
-    ASCWPClean.purge_date: pl.Date,
-    ASCWPClean.data_last_amended_date: pl.Date,
-    ASCWPClean.workplace_last_active_date: pl.Date,
-    ASCWPClean.total_staff_bounded: pl.Int32,
-    ASCWPClean.worker_records_bounded: pl.Int32,
+    ASCWPClean.organisation_id: "string",
+    ASCWPClean.period: "string",
+    ASCWPClean.establishment_id: "string",
+    ASCWPClean.establishment_id_from_nmds: "string",
+    ASCWPClean.parent_id: "string",
+    ASCWPClean.nmds_id: "string",
+    ASCWPClean.establishment_created_date: "Date",
+    ASCWPClean.establishment_updated_date: "Date",
+    ASCWPClean.master_update_date: "Date",
+    ASCWPClean.last_logged_in_date: "Date",
+    ASCWPClean.la_permission: "string",
+    ASCWPClean.is_bulk_uploader: "string",
+    ASCWPClean.is_parent: "string",
+    ASCWPClean.parent_permission: "string",
+    ASCWPClean.registration_type: "string",
+    ASCWPClean.provider_id: "string",
+    ASCWPClean.location_id: "string",
+    ASCWPClean.establishment_type: "string",
+    ASCWPClean.establishment_name: "string",
+    ASCWPClean.address: "string",
+    ASCWPClean.postcode: "string",
+    ASCWPClean.region_id: "string",
+    ASCWPClean.total_staff: "Int32",
+    ASCWPClean.worker_records: "Int32",
+    ASCWPClean.total_starters: "string",
+    ASCWPClean.total_leavers: "string",
+    ASCWPClean.total_vacancies: "string",
+    ASCWPClean.main_service_id: "string",
+    ASCWPClean.version: "string",
+    ASCWPClean.ascwds_workplace_import_date: "Date",
+    ASCWPClean.master_update_date_org: "Date",
+    ASCWPClean.purge_date: "Date",
+    ASCWPClean.data_last_amended_date: "Date",
+    ASCWPClean.workplace_last_active_date: "Date",
+    ASCWPClean.total_staff_bounded: "Int32",
+    ASCWPClean.worker_records_bounded: "Int32",
 }
 
 
@@ -72,6 +72,9 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
     )
 
     slv_columns = create_slv_schema([i for i in range(1, 53)])
+    slv_columns = {
+        k: "Int32" for k in slv_columns
+    }  # polars schema has datatype pl.Int32, but pb schema requires "Int32"
     columns.update(slv_columns.items())
     EXPECTED_SCHEMA = pb.Schema(columns)
 
@@ -84,10 +87,10 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             actions=GLOBAL_ACTIONS,
         )
         # dataset schema
-        # .col_schema_match(
-        #     schema=EXPECTED_SCHEMA,
-        #     brief="Dataset should match the expected schema",
-        # )
+        .col_schema_match(
+            schema=EXPECTED_SCHEMA,
+            brief="Dataset should match the expected schema",
+        )
         # index columns
         .rows_distinct(
             [ASCWPClean.establishment_id, ASCWPClean.ascwds_workplace_import_date]
