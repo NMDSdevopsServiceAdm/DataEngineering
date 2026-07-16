@@ -23,7 +23,7 @@
                         "Arguments": {
                           "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
                           "--cleaned_ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                          "--workplace_for_reconciliation_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
+                          "--workplace_for_reconciliation_destination": "${dataset_bucket_uri}/domain=SfC/dataset=ascwds_for_sfc_internal/"
                         }
                       },
                       "End": true
@@ -61,8 +61,8 @@
                                 "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
                                 "--cleaned_workplace_destination",
                                 "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned_polars/",
-                                "--workplace_for_reconciliation_destination",
-                                "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation_polars/"
+                                "--ascwds_for_sfc_internal_destination",
+                                "${dataset_bucket_uri}/domain=SfC/dataset=ascwds_for_sfc_internal_polars/"
                               ]
                             }
                           ]
@@ -147,9 +147,9 @@
                   }
                 },
                 {
-                  "StartAt": "Validate Workplace for Reconciliation Polars",
+                  "StartAt": "Validate ASCWDS for SfC Internal",
                   "States": {
-                    "Validate Workplace for Reconciliation Polars": {
+                    "Validate ASCWDS for SfC Internal": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::ecs:runTask.sync",
                       "Parameters": {
@@ -168,13 +168,13 @@
                             {
                               "Name": "ascwds-container",
                               "Command": [
-                                "validate_reconciliation.py",
+                                "validate_ascwds_for_sfc_internal.py",
                                 "--bucket_name",
                                 "${dataset_bucket_name}",
                                 "--source_path",
-                                "domain=SfC/dataset=sfc_workplace_for_reconciliation_polars/",
+                                "domain=SfC/dataset=ascwds_for_sfc_internal_polars/",
                                 "--reports_path",
-                                "domain=data_validation_reports/dataset=validation_sfc_workplace_for_reconciliation_polars/"
+                                "domain=data_validation_reports/dataset=validation_ascwds_for_sfc_internal/"
                               ]
                             }
                           ]

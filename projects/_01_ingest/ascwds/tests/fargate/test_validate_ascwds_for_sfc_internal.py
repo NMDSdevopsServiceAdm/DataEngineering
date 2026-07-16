@@ -5,12 +5,12 @@ from unittest.mock import Mock, patch
 
 import polars as pl
 
-import projects._01_ingest.ascwds.fargate.validate_reconciliation as job
+import projects._01_ingest.ascwds.fargate.validate_ascwds_for_sfc_internal as job
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 
-PATCH_PATH = "projects._01_ingest.ascwds.fargate.validate_reconciliation"
+PATCH_PATH = "projects._01_ingest.ascwds.fargate.validate_ascwds_for_sfc_internal"
 
 
 class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
