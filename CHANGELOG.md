@@ -9,8 +9,9 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
-
 - Pull clean workplace columns into merge job within SLV pipeline.
+
+- Removed PySpark version of `clean_ascwds_workplace_data.py` and replaced with the Polars version in the pipeline
 
 ### Fixed
 
