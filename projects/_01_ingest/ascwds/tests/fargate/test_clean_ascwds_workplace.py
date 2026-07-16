@@ -52,20 +52,12 @@ class MainTests(unittest.TestCase):
         )
 
         assert scan_parquet_mock.call_count == 3
-        self.assertEqual(
-            scan_parquet_mock.call_args_list[0],
-            call(self.WORKPLACE_SOURCE, schema=job.WORKPLACE_SCHEMA),
+        assert scan_parquet_mock.call_args_list[0] == call(
+            self.WORKPLACE_SOURCE, schema=job.WORKPLACE_SCHEMA
         )
-        self.assertEqual(
-            scan_parquet_mock.call_args_list[1],
-            call(self.WORKER_SOURCE),
-        )
-        self.assertEqual(
-            scan_parquet_mock.call_args_list[2],
-            call(
-                self.WORKPLACE_SOURCE,
-                schema=create_slv_schema_mock.return_value,
-            ),
+        assert scan_parquet_mock.call_args_list[1] == call(self.WORKER_SOURCE)
+        assert scan_parquet_mock.call_args_list[2] == call(
+            self.WORKPLACE_SOURCE, schema=create_slv_schema_mock.return_value
         )
 
         apply_data_corrections_mock.assert_called_once()

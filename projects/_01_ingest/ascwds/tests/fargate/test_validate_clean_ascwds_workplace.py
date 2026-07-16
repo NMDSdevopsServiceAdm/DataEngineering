@@ -96,16 +96,13 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
         self.test_schema = {ASCWPClean.job_role_01_employees: pl.Int32}
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
-    @patch(f"{PATCH_PATH}.create_slv_schema")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_validation_runs(
         self,
         mock_read_parquet: Mock,
-        mock_create_slv_schema: Mock,
         mock_write_reports: Mock,
     ):
         mock_read_parquet.return_value = self.source_df
-        mock_create_slv_schema.return_value = self.test_schema
         job.main("bucket", "my/source/", "my/reports/")
 
         mock_read_parquet.assert_called_once_with(source="s3://bucket/my/source/")
