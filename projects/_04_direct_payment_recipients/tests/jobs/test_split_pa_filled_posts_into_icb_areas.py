@@ -1,7 +1,7 @@
 from unittest.mock import ANY, Mock, patch
 
 import projects._04_direct_payment_recipients.jobs.split_pa_filled_posts_into_icb_areas as job
-from projects._04_direct_payment_recipients.direct_payments_column_names import (
+from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DPColNames,
 )
 from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_data import (
