@@ -81,6 +81,8 @@ data_labels_schema = pl.Schema(
     [(DLC.column_name, pl.String), (DLC.code, pl.String), (DLC.label, pl.String)]
 )
 
+jr_nums_list = [i for i in range(1, 53)]
+
 
 def main(
     workplace_source: str,
@@ -130,7 +132,6 @@ def main(
     lf = wUtils.remove_rows_with_duplicate_location_ids(lf)
 
     worker_lf = utils.scan_parquet(worker_source)
-    jr_nums_list = [i for i in range(1, 53)]
     wUtils.check_job_roles_list(worker_lf, jr_nums_list)
     lf_slv = utils.scan_parquet(
         workplace_source, schema=wUtils.create_slv_schema(jr_nums_list, incl_index=True)

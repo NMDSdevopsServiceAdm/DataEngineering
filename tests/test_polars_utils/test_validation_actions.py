@@ -8,9 +8,6 @@ import pytest
 
 import polars_utils.validation.actions as job
 from polars_utils.validation import actions as vl
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys
 
 SRC_PATH = "polars_utils.validation.actions"
