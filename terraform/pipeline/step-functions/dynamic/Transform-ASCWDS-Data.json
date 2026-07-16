@@ -58,6 +58,8 @@
                                 "--data_labels_source",
                                 "${dataset_bucket_uri}/domain=ASCWDS/dataset=data_labels/data_labels_lookup.csv",
                                 "--cleaned_workplace_destination",
+                                "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
+                                "--cleaned_workplace_destination",
                                 "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned_polars/",
                                 "--workplace_for_reconciliation_destination",
                                 "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation_polars/"

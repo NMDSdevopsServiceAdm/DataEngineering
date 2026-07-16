@@ -85,6 +85,7 @@ data_labels_schema = pl.Schema(
 def main(
     workplace_source: str,
     data_labels_source: str,
+    worker_source: str,
     cleaned_workplace_destination: str,
     workplace_for_reconciliation_destination: str,
 ) -> None:
@@ -94,6 +95,7 @@ def main(
     Args:
         workplace_source (str): path to the raw ascwds workplace data
         data_labels_source (str): path to the ascwdsdata labels source
+        worker_source (str): path to the raw ascwds worker data
         cleaned_workplace_destination (str): destination for cleaned ascwds workplace output
         workplace_for_reconciliation_destination (str): destination for reconciliation workplace output
     """
@@ -127,10 +129,11 @@ def main(
 
     lf = wUtils.remove_rows_with_duplicate_location_ids(lf)
 
-    slv_columns = [i for i in range(1, 53)]
-    wUtils.check_job_roles_list(slv_columns)
+    worker_lf = utils.scan_parquet(worker_source)
+    jr_nums_list = [i for i in range(1, 53)]
+    wUtils.check_job_roles_list(worker_lf, jr_nums_list)
     lf_slv = utils.scan_parquet(
-        workplace_source, schema=wUtils.create_slv_schema(slv_columns, incl_index=True)
+        workplace_source, schema=wUtils.create_slv_schema(jr_nums_list, incl_index=True)
     )
 
     lf = lf.join(
@@ -179,6 +182,10 @@ if __name__ == "__main__":
             "Source s3 directory for ascwds data labels",
         ),
         (
+            "--worker_source",
+            "Source s3 directory for raw ascwds worker data",
+        ),
+        (
             "--cleaned_workplace_destination",
             "Destination s3 directory for cleaned ascwds workplace output",
         ),
@@ -190,6 +197,7 @@ if __name__ == "__main__":
     main(
         workplace_source=args.workplace_source,
         data_labels_source=args.data_labels_source,
+        worker_source=args.worker_source,
         cleaned_workplace_destination=args.cleaned_workplace_destination,
         workplace_for_reconciliation_destination=args.workplace_for_reconciliation_destination,
     )

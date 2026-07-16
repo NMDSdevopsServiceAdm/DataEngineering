@@ -290,27 +290,29 @@ def create_slv_schema(jr_num_list: list[int], incl_index: bool = False) -> pl.Sc
     return pl.Schema(schema)
 
 
-def check_job_roles_list(jr_num_list: list[int]) -> None:
+def check_job_roles_list(worker_source: pl.LazyFrame, jr_num_list: list[int]) -> None:
     """
     Compares a list of job role codes against all codes in raw worker data.
 
     Args:
+        worker_source (pl.LazyFrame): Raw worker LazyFrame.
         jr_num_list (list[int]): A list of job role codes to check.
 
     Raises:
         ValueError: When given list differs from worker data list.
     """
 
-    lf_worker_job_roles = (
-        utils.scan_parquet("raw_worker")
-        .filter(pl.col(AWKRaw.main_job_role_id) != "-1")  # -1 == not recorded
+    worker_job_roles = (
+        worker_source.filter(
+            pl.col(AWKRaw.main_job_role_id) != "-1"
+        )  # -1 == not recorded
         .select(pl.col(AWKRaw.main_job_role_id).cast(pl.Int32).unique())
         .collect()
         .get_column(AWKRaw.main_job_role_id)
         .to_list()
     )
 
-    if set(jr_num_list) != set(lf_worker_job_roles):
+    if set(jr_num_list) != set(worker_job_roles):
         raise ValueError(
-            f"Given job role list ({jr_num_list}) must match equivalent from raw worker data ({lf_worker_job_roles})."
+            f"Given job role list ({jr_num_list}) must match equivalent from raw worker data ({worker_job_roles})."
         )

@@ -9,6 +9,7 @@ PATCH_PATH = "projects._01_ingest.ascwds.fargate.clean_ascwds_workplace"
 class MainTests(unittest.TestCase):
     WORKPLACE_SOURCE = "some/source"
     DATA_LABELS_SOURCE = "some/labels/source"
+    WORKER_SOURCE = "some/other/souce"
     CLEANED_WORKPLACE_DESTINATION = "some/destination"
     RECONCILIATION_DESTINATION = "some/other/destination"
 
@@ -46,11 +47,12 @@ class MainTests(unittest.TestCase):
         job.main(
             self.WORKPLACE_SOURCE,
             self.DATA_LABELS_SOURCE,
+            self.WORKER_SOURCE,
             self.CLEANED_WORKPLACE_DESTINATION,
             self.RECONCILIATION_DESTINATION,
         )
 
-        assert scan_parquet_mock.call_count == 2
+        assert scan_parquet_mock.call_count == 3
 
         apply_data_corrections_mock.assert_called_once()
 

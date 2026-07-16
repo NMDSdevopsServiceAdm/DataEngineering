@@ -1,5 +1,4 @@
 from datetime import date
-from unittest.mock import Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
@@ -283,19 +282,17 @@ class TestCreateSlvSchema:
 
 
 class TestCheckJobRolesList:
-    PATCH_PATH = "projects._01_ingest.ascwds.fargate.clean_ascwds_workplace"
-
-    @patch(f"{PATCH_PATH}.utils.scan_parquet")
-    def test_function_raises_value_error(self, scan_parquet_mock: Mock):
-        scan_parquet_mock.return_value = pl.LazyFrame(
+    def test_function_raises_value_error(self):
+        test_worker_lf = pl.LazyFrame(
             {
                 AWKRaw.main_job_role_id: ["-1", "1", "2", "3"],
                 "Another_column": ["a", "b", "c", "d"],
             }
         )
+        test_jr_num_list = [1, 2]
 
         with pytest.raises(ValueError) as context:
-            job.check_job_roles_list([1, 2])
+            job.check_job_roles_list(test_worker_lf, test_jr_num_list)
 
         assert (
             str(context.value)
