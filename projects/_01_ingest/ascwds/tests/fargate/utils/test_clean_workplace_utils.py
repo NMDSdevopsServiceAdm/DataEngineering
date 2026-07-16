@@ -291,10 +291,21 @@ class TestCreateSlvSchema:
 
 
 class TestCheckJobRolesList:
+    def test_excluded_roles_are_ignored(self):
+        test_worker_lf = pl.LazyFrame(
+            {
+                AWKRaw.main_job_role_id: ["-1", "12", "13", "1"],
+                "Another_column": ["a", "b", "c", "d"],
+            }
+        )
+
+        # Should pass because 12 and 13 are excluded
+        job.check_job_roles_list(test_worker_lf, [1])
+
     def test_raises_when_job_roles_do_not_match_worker_data(self):
         test_worker_lf = pl.LazyFrame(
             {
-                AWKRaw.main_job_role_id: ["-1", "1", "2", "3"],
+                AWKRaw.main_job_role_id: ["-1", "3", "2", "1"],
                 "Another_column": ["a", "b", "c", "d"],
             }
         )

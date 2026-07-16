@@ -314,6 +314,14 @@ def check_job_roles_list(worker_source: pl.LazyFrame, jr_num_list: list[int]) ->
         .get_column(AWKRaw.main_job_role_id)
         .to_list()
     )
+
+    # These roles exist in raw workplace but not raw worker data
+    worker_job_roles = [
+        role
+        for role in worker_job_roles
+        if role not in [12, 13, 14, 18, 19, 20, 21, 22, 41]
+    ]
+
     worker_job_roles = sorted(worker_job_roles)
 
     if set(jr_num_list) != set(worker_job_roles):
