@@ -9,8 +9,9 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changed
-
 - Pull clean workplace columns into merge job within SLV pipeline.
+
+- Replaced Polars .over() usages (not supported by Polars' streaming engine) with join-based equivalents.
 
 ### Fixed
 
