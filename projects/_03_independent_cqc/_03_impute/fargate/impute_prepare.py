@@ -69,6 +69,24 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
 
     lf = merge_ascwds_and_pir_filled_post_submissions(lf)
 
+    # model_calculate_rolling_average - posts_rolling_average_model
+
+    # create_banded_bed_count_column
+
+    # model_calculate_rolling_average - banded_bed_ratio_rolling_average_model
+
+    # convert_care_home_ratios_to_posts - unhash after `model_calculate_rolling_average` converted
+    # lf = lf.with_columns(
+    #     pl.when(is_care_home())
+    #     .then(
+    #         pl.col(IndCQC.banded_bed_ratio_rolling_average_model)
+    #         * pl.col(IndCQC.number_of_beds)
+    #     )
+    #     .otherwise(pl.col(IndCQC.posts_rolling_average_model))
+    #     .cast(pl.Float32)
+    #     .alias(IndCQC.posts_rolling_average_model)
+    # )
+
     lf = lf.with_columns(
         pl.when(is_care_home())
         .then(pl.col(IndCQC.ct_care_home_total_employed_cleaned))
