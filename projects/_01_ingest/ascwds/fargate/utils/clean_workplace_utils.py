@@ -253,6 +253,20 @@ class BoundingExpressions:
     starters, leavers, vacancies (SLV) job-role values to acceptable ranges.
     These expressions are designed for use in lazy Polars pipelines and keep
     the transformation logic declarative and readable.
+
+    Attributes:
+        filled_posts_bounding_cols (list[str]): Columns used in filled-posts
+            estimates needing bounding.
+        filled_posts_lower_bound (int): Minimum accepted value for filled-posts
+            columns.
+        slv_bounding_cols (pl.selectors.Selector): Selector for SLV job-role
+            columns.
+        slv_lower_bound (int): Minimum accepted value for SLV job-role columns.
+        slv_upper_bound (int): Maximum accepted value for SLV job-role columns.
+        filled_posts_expr (pl.Expr): Expression that bounds columns needed in
+            filled-posts estimates to the configured valid range and renaming.
+        slv_expr (pl.Expr): Expression that bounds SLV job-role columns to the
+            configured valid range while preserving the original column names.
     """
 
     filled_posts_bounding_cols: list[str] = [
@@ -261,7 +275,7 @@ class BoundingExpressions:
     ]
     filled_posts_lower_bound: int = 1
 
-    slv_bounding_cols = expr.is_slv_job_role_column()
+    slv_bounding_cols: pl.selectors.Selector = expr.is_slv_job_role_column()
     slv_lower_bound: int = 1
     slv_upper_bound: int = 998
 
