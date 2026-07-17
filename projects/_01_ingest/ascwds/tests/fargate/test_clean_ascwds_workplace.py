@@ -44,7 +44,7 @@ class MainTests(unittest.TestCase):
         remove_rows_with_duplicate_location_ids_mock: Mock,
     ):
         discover_combined_schema_mock.return_value = {
-            "jr09emp": pl.Int64,
+            "jr09emp": pl.String,
             AWPClean.establishment_id: pl.String,
         }
 

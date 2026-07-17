@@ -153,10 +153,8 @@ def main(
         *[AWPClean.establishment_id, AWPClean.import_date],
         expr.is_slv_job_role_column(),
     )
-    print("SLVLazyFrame_read_in_with_schema: ", slv_lf.collect_schema())
-    slv_lf = slv_lf.with_columns(
-        pl.col(AWPClean.import_date).cast(pl.String, strict=False)
-    )
+
+    slv_lf = slv_lf.with_columns(pl.col(AWPClean.import_date).cast(pl.String))
 
     workplace_lf = workplace_lf.join(
         slv_lf, on=[AWPClean.establishment_id, AWPClean.import_date], how="left"
