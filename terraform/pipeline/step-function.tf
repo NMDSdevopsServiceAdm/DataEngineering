@@ -90,9 +90,7 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     # jobs
     validate_ascwds_workplace_raw_data_job_name           = module.validate_ascwds_workplace_raw_data_job.job_name
     validate_ascwds_worker_raw_data_job_name              = module.validate_ascwds_worker_raw_data_job.job_name
-    clean_ascwds_workplace_job_name                       = module.clean_ascwds_workplace_job.job_name
     clean_ascwds_worker_job_name                          = module.clean_ascwds_worker_job.job_name
-    validate_ascwds_workplace_cleaned_data_job_name       = module.validate_ascwds_workplace_cleaned_data_job.job_name
     validate_ascwds_worker_cleaned_data_job_name          = module.validate_ascwds_worker_cleaned_data_job.job_name
     impute_ind_cqc_ascwds_and_pir_job_name                = module.impute_ind_cqc_ascwds_and_pir_job.job_name
     validate_imputed_ind_cqc_ascwds_and_pir_data_job_name = module.validate_imputed_ind_cqc_ascwds_and_pir_data_job.job_name

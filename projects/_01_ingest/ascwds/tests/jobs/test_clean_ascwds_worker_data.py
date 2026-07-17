@@ -4,13 +4,9 @@ from unittest.mock import ANY, Mock, patch
 from pyspark.sql.dataframe import DataFrame
 
 import projects._01_ingest.ascwds.jobs.clean_ascwds_worker_data as job
-from projects._01_ingest.unittest_data.ingest_test_file_data import (
-    ASCWDSWorkerData,
-    ASCWDSWorkplaceData,
-)
+from projects._01_ingest.unittest_data.ingest_test_file_data import ASCWDSWorkerData
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ASCWDSWorkerSchemas,
-    ASCWDSWorkplaceSchemas,
 )
 from tests.base_test import SparkBaseTest
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
@@ -30,7 +26,7 @@ class IngestASCWDSWorkerDatasetTests(SparkBaseTest):
             ASCWDSWorkerData.worker_rows, ASCWDSWorkerSchemas.worker_schema
         )
         self.test_ascwds_workplace_df = self.spark.createDataFrame(
-            ASCWDSWorkplaceData.workplace_rows, ASCWDSWorkplaceSchemas.workplace_schema
+            ASCWDSWorkerData.workplace_rows, ASCWDSWorkerSchemas.workplace_schema
         )
 
 
