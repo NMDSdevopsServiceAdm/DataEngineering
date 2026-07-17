@@ -14,9 +14,6 @@ from projects._01_ingest.unittest_data.polars_ingest_test_file_schema import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.raw_data_files.ascwds_worker_columns import (
-    AscwdsWorkerColumns as AWKRaw,
-)
 
 
 class TestValidWorkplaceFilter:
@@ -194,85 +191,3 @@ class TestApplyDataCorrections:
         returned_lf = job.apply_data_corrections(test_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_workplace_lf)
-
-
-class TestCreateSlvSchema:
-    returned_schema_default = job.create_slv_schema([9, 10])
-    returned_schema_inc_index = job.create_slv_schema([9, 10], incl_index=True)
-
-    def test_raises_value_error_when_given_empty_list(self):
-        with pytest.raises(ValueError) as context:
-            job.create_slv_schema([])
-
-        assert str(context.value) == "Given job role list must be populated. Got []"
-
-    def test_raises_value_error_when_list_has_duplicates(self):
-        with pytest.raises(ValueError) as context:
-            job.create_slv_schema([1, 1, 2])
-
-        assert (
-            str(context.value)
-            == "Values in job role list must be unique. Got [1, 1, 2]"
-        )
-
-    def test_returns_a_polars_schema(self):
-        assert isinstance(self.returned_schema_default, pl.Schema)
-
-    def test_returns_schema_for_requested_job_roles_when_inc_index_is_default(self):
-        expected_schema = pl.Schema(
-            {
-                AWPClean.job_role_09_employees: pl.Int32,
-                AWPClean.job_role_09_starters: pl.Int32,
-                AWPClean.job_role_09_leavers: pl.Int32,
-                AWPClean.job_role_09_vacancies: pl.Int32,
-                AWPClean.job_role_10_employees: pl.Int32,
-                AWPClean.job_role_10_starters: pl.Int32,
-                AWPClean.job_role_10_leavers: pl.Int32,
-                AWPClean.job_role_10_vacancies: pl.Int32,
-            }
-        )
-
-        assert self.returned_schema_default == expected_schema
-
-    def test_returns_schema_with_index_cols_and_requested_job_roles_when_inc_index_is_true(
-        self,
-    ):
-        expected_schema = pl.Schema(
-            {
-                AWPClean.establishment_id: pl.String,
-                AWPClean.import_date: pl.String,
-                AWPClean.job_role_09_employees: pl.String,
-                AWPClean.job_role_09_starters: pl.String,
-                AWPClean.job_role_09_leavers: pl.String,
-                AWPClean.job_role_09_vacancies: pl.String,
-                AWPClean.job_role_10_employees: pl.String,
-                AWPClean.job_role_10_starters: pl.String,
-                AWPClean.job_role_10_leavers: pl.String,
-                AWPClean.job_role_10_vacancies: pl.String,
-            }
-        )
-
-        assert self.returned_schema_inc_index == expected_schema
-
-
-class TestCheckJobRolesList:
-    test_worker_lf = pl.LazyFrame(
-        {
-            AWKRaw.main_job_role_id: ["-1", "3", "2", "1"],
-            "another_column": ["a", "b", "c", "d"],
-        }
-    )
-
-    def test_excluded_roles_are_ignored(self):
-        # Should pass because 12 and 13 are excluded
-        job.check_job_roles_list(self.test_worker_lf, [1, 2, 3, 12, 13])
-
-    def test_raises_when_job_roles_do_not_match_worker_data(self):
-
-        with pytest.raises(ValueError) as context:
-            job.check_job_roles_list(self.test_worker_lf, [1, 2])
-
-        assert (
-            str(context.value)
-            == "Given job role list ([1, 2]) must match equivalent from raw worker data ([1, 2, 3])."
-        )

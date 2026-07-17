@@ -1,12 +1,8 @@
 import polars as pl
 import polars.selectors as cs
 
-from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
-)
-from utils.column_names.raw_data_files.ascwds_worker_columns import (
-    AscwdsWorkerColumns as AWKRaw,
 )
 
 MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
@@ -62,8 +58,6 @@ DUPLICATE_ESTABLISHMENT_IDS: set[str] = {
     "50869",
     "50870",
 }
-
-jr_in_wp_but_not_wrkr = [12, 13, 14, 18, 19, 20, 21, 28, 29, 30, 31, 32, 33]
 
 
 def valid_workplace_filter() -> pl.Expr:
@@ -231,84 +225,3 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.with_columns(pl.col(AWPClean.parent_permission).replace(3, None))
 
     return lf
-
-
-def create_slv_schema(jr_num_list: list[int], incl_index: bool = False) -> pl.Schema:
-    """
-    Creates a Polars schema for employees, starters, leavers and vacancy columns.
-
-    If incl_index is True then schema will also include establishment_id and import_date,
-    and all datatypes will be pl.String.
-    If False, then only slv columns will be in schema and all datatypes will be pl.Int32.
-
-    Single digit job role codes are padded with 0.
-
-    Args:
-        jr_num_list (list[int]): A list of job role codes for the roles
-            you want in the polars schema.
-        incl_index (bool): True to include establishment_id and import_date
-          in the polars schema. Defaults to False.
-
-    Returns:
-        pl.Schema: A Polars schema of ascwds workplace job role columns.
-
-    Raises:
-        ValueError: If given job role list is empty.
-    """
-    if jr_num_list == []:
-        raise ValueError(f"Given job role list must be populated. Got {jr_num_list}")
-    if len(jr_num_list) != len(set(jr_num_list)):
-        raise ValueError(f"Values in job role list must be unique. Got {jr_num_list}")
-
-    jr_numbers = [f"{i:02d}" for i in jr_num_list]
-    suffixes = ["emp", "strt", "stop", "vacy"]
-
-    if incl_index:
-        schema = {AWPClean.establishment_id: pl.String, AWPClean.import_date: pl.String}
-        schema.update(
-            {f"jr{num}{suffix}": pl.String for num in jr_numbers for suffix in suffixes}
-        )
-    else:
-        schema = {
-            f"jr{num}{suffix}": pl.Int32 for num in jr_numbers for suffix in suffixes
-        }
-
-    return pl.Schema(schema)
-
-
-def check_job_roles_list(worker_source: pl.LazyFrame, jr_num_list: list[int]) -> None:
-    """
-    Compares a list of job role codes against codes in raw worker data.
-
-    Some job roles are known to exist in raw workplace but not in
-    raw worker data, see jr_in_wp_but_not_wrkr, therefore these are
-    removed from the given jr_num_list before checking.
-
-    Args:
-        worker_source (pl.LazyFrame): Raw worker LazyFrame.
-        jr_num_list (list[int]): A list of job role codes to check.
-
-    Raises:
-        ValueError: When given list differs from worker data list.
-    """
-
-    worker_job_roles = (
-        worker_source.filter(
-            pl.col(AWKRaw.main_job_role_id) != "-1"
-        )  # -1 == not recorded
-        .select(pl.col(AWKRaw.main_job_role_id).cast(pl.Int32))
-        .unique()
-        .collect()
-        .get_column(AWKRaw.main_job_role_id)
-        .to_list()
-    )
-
-    worker_job_roles = sorted(worker_job_roles)
-
-    # These roles exist in raw workplace but not raw worker data.
-    jr_num_list = [role for role in jr_num_list if role not in jr_in_wp_but_not_wrkr]
-
-    if set(jr_num_list) != set(worker_job_roles):
-        raise ValueError(
-            f"Given job role list ({jr_num_list}) must match equivalent from raw worker data ({worker_job_roles})."
-        )

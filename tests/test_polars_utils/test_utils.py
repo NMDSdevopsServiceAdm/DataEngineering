@@ -445,6 +445,57 @@ class TestListS3ParquetImportDates(unittest.TestCase):
         self.assertEqual(result, [])
 
 
+class TestDiscoverCombinedSchema(unittest.TestCase):
+    @patch(f"{PATCH_PATH}.pl.scan_parquet")
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_unions_columns_added_across_partitions(
+        self, mock_boto_client: Mock, mock_scan_parquet: Mock
+    ):
+        """A column present in only one partition should still appear in the result."""
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [
+            {
+                "Contents": [
+                    {"Key": "domain=x/dataset=y/file1.parquet"},
+                    {"Key": "domain=x/dataset=y/file2.parquet"},
+                    {"Key": "domain=x/dataset=y/_SUCCESS"},  # not a parquet file
+                ]
+            }
+        ]
+        mock_boto_client.return_value.get_paginator.return_value = mock_paginator
+
+        schemas_by_path = {
+            "s3://test_bucket/domain=x/dataset=y/file1.parquet": pl.Schema(
+                {"a": pl.String, "b": pl.String}
+            ),
+            "s3://test_bucket/domain=x/dataset=y/file2.parquet": pl.Schema(
+                {"a": pl.String, "c": pl.String}
+            ),
+        }
+
+        def scan_parquet_side_effect(path):
+            mock_lf = MagicMock()
+            mock_lf.collect_schema.return_value = schemas_by_path[path]
+            return mock_lf
+
+        mock_scan_parquet.side_effect = scan_parquet_side_effect
+
+        result = utils.discover_combined_schema("s3://test_bucket/domain=x/dataset=y/")
+
+        self.assertEqual(
+            result, pl.Schema({"a": pl.String, "b": pl.String, "c": pl.String})
+        )
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_raises_when_no_parquet_files_found(self, mock_boto_client: Mock):
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [{"Contents": []}]
+        mock_boto_client.return_value.get_paginator.return_value = mock_paginator
+
+        with self.assertRaises(FileNotFoundError):
+            utils.discover_combined_schema("s3://test_bucket/domain=x/dataset=y/")
+
+
 class TestEmptyS3Folder(unittest.TestCase):
     @patch("boto3.client")
     def test_empty_s3_folder_no_objects(self, mock_s3_client):

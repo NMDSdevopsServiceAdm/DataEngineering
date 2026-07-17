@@ -81,13 +81,10 @@ data_labels_schema = pl.Schema(
     [(DLC.column_name, pl.String), (DLC.code, pl.String), (DLC.label, pl.String)]
 )
 
-jr_nums_list = [i for i in range(1, 53)]
-
 
 def main(
     workplace_source: str,
     data_labels_source: str,
-    worker_source: str,
     cleaned_workplace_destination: str,
     ascwds_for_sfc_internal_destination: str,
 ) -> None:
@@ -97,7 +94,6 @@ def main(
     Args:
         workplace_source (str): path to the raw ASC-WDS workplace data
         data_labels_source (str): path to the ASC-WDS data labels source
-        worker_source (str): path to the raw ascwds worker data
         cleaned_workplace_destination (str): destination for cleaned ASC-WDS
             workplace output
         ascwds_for_sfc_internal_destination (str): destination for ASC-WDS data
@@ -149,11 +145,13 @@ def main(
 
     workplace_lf = wUtils.remove_rows_with_duplicate_location_ids(workplace_lf)
 
-    worker_lf = utils.scan_parquet(worker_source)
-    wUtils.check_job_roles_list(worker_lf, jr_nums_list)
-    slv_lf = utils.scan_parquet(
-        workplace_source, schema=wUtils.create_slv_schema(jr_nums_list, incl_index=True)
-    ).select(
+    # polars_streaming: job role columns are added/dropped across partitions over
+    # time, so the schema is built from every file's own columns rather than a
+    # fixed list - this is a metadata-only pass over file footers, not the data.
+    combined_schema = pl.Schema(
+        {col: pl.String for col in utils.discover_combined_schema(workplace_source)}
+    )
+    slv_lf = utils.scan_parquet(workplace_source, schema=combined_schema).select(
         *[AWPClean.establishment_id, AWPClean.import_date],
         expr.is_slv_job_role_column(),
     )
@@ -188,10 +186,6 @@ if __name__ == "__main__":
             "Source s3 directory for ASC-WDS data labels",
         ),
         (
-            "--worker_source",
-            "Source s3 directory for raw ASC-WDS worker data",
-        ),
-        (
             "--cleaned_workplace_destination",
             "Destination s3 directory for cleaned ASC-WDS workplace output",
         ),
@@ -203,7 +197,6 @@ if __name__ == "__main__":
     main(
         workplace_source=args.workplace_source,
         data_labels_source=args.data_labels_source,
-        worker_source=args.worker_source,
         cleaned_workplace_destination=args.cleaned_workplace_destination,
         ascwds_for_sfc_internal_destination=args.ascwds_for_sfc_internal_destination,
     )
