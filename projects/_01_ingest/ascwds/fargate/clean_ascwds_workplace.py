@@ -148,12 +148,14 @@ def main(
     # polars_streaming: job role columns are added/dropped across partitions over
     # time, so the schema is built from every file's own columns rather than a
     # fixed list - this is a metadata-only pass over file footers, not the data.
-    combined_schema = pl.Schema(
-        {col: pl.String for col in utils.discover_combined_schema(workplace_source)}
-    )
+    combined_schema = utils.discover_combined_schema(workplace_source)
     slv_lf = utils.scan_parquet(workplace_source, schema=combined_schema).select(
         *[AWPClean.establishment_id, AWPClean.import_date],
         expr.is_slv_job_role_column(),
+    )
+    print("SLVLazyFrame_read_in_with_schema: ", slv_lf.collect_schema())
+    slv_lf = slv_lf.with_columns(
+        pl.col(AWPClean.import_date).cast(pl.String, strict=False)
     )
 
     workplace_lf = workplace_lf.join(
