@@ -6,14 +6,12 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-
+- Added `discover_combined_schema` function in Polars Utils to generate combined schema from a partitioned dataset.
 
 ### Changed
 - Pull clean workplace columns into merge job within SLV pipeline.
 
 - Updated references from workplace data for 'reconciliation' process to 'SfC internal' as the dataset is used in multiple jobs
-
-- Replaced the hardcoded job role number range and worker-file cross-check in the ASC-WDS workplace clean job with a generic combined-schema scan across all partitions (`polars_utils.utils.discover_combined_schema`) plus a selector, so job role (starters/leavers/vacancies) columns added or dropped over time are picked up automatically. Also updated the validation job to derive its expected job role columns from the data being validated rather than a fixed list.
 
 ### Fixed
 

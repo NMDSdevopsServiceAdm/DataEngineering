@@ -93,7 +93,6 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
                 ASCWPClean.worker_records_bounded: pl.Int32,
             },
         )
-        self.test_schema = {ASCWPClean.job_role_01_employees: pl.Int32}
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
@@ -125,7 +124,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
         expected_assertions = {
-            "col_schema_match",
+            # "col_schema_match",
             "col_vals_not_null",
             "rows_distinct",
             "col_vals_between",

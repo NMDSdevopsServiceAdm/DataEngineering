@@ -1,13 +1,7 @@
 import unittest
 from unittest.mock import ANY, Mock, call, patch
 
-import polars as pl
-
 import projects._01_ingest.ascwds.fargate.clean_ascwds_workplace as job
-from projects._01_ingest.ascwds.fargate.utils import clean_workplace_utils as wUtils
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
 
 PATCH_PATH = "projects._01_ingest.ascwds.fargate.clean_ascwds_workplace"
 
@@ -20,7 +14,6 @@ class MainTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.wUtils.remove_rows_with_duplicate_location_ids")
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.utils.discover_combined_schema")
     @patch(f"{PATCH_PATH}.wUtils.create_purge_date_columns")
     @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
     @patch(f"{PATCH_PATH}.pl.scan_csv")
@@ -39,15 +32,9 @@ class MainTests(unittest.TestCase):
         scan_csv_mock: Mock,
         apply_categorical_labels_mock: Mock,
         create_purge_date_columns_mock: Mock,
-        discover_combined_schema_mock: Mock,
         sink_to_parquet_mock: Mock,
         remove_rows_with_duplicate_location_ids_mock: Mock,
     ):
-        discover_combined_schema_mock.return_value = {
-            "jr09emp": pl.String,
-            AWPClean.establishment_id: pl.String,
-        }
-
         job.main(
             self.WORKPLACE_SOURCE,
             self.DATA_LABELS_SOURCE,
@@ -56,14 +43,11 @@ class MainTests(unittest.TestCase):
         )
 
         assert scan_parquet_mock.call_count == 2
-        assert scan_parquet_mock.call_args_list[0] == call(
-            self.WORKPLACE_SOURCE, schema=job.WORKPLACE_SCHEMA
-        )
-        assert scan_parquet_mock.call_args_list[1] == call(
-            self.WORKPLACE_SOURCE,
-            schema=pl.Schema(
-                {"jr09emp": pl.String, AWPClean.establishment_id: pl.String}
-            ),
+        scan_parquet_mock.assert_has_calls(
+            [
+                call(self.WORKPLACE_SOURCE, selected_columns=job.COLUMNS_TO_IMPORT),
+                call(self.WORKPLACE_SOURCE),
+            ]
         )
 
         apply_data_corrections_mock.assert_called_once()
@@ -76,7 +60,6 @@ class MainTests(unittest.TestCase):
         apply_categorical_labels_mock.assert_called_once()
         create_purge_date_columns_mock.assert_called_once()
         remove_rows_with_duplicate_location_ids_mock.assert_called_once()
-        discover_combined_schema_mock.assert_called_once_with(self.WORKPLACE_SOURCE)
 
         assert sink_to_parquet_mock.call_count == 2
         sink_to_parquet_mock.assert_has_calls(
