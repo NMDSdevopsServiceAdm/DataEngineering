@@ -92,7 +92,7 @@ cleaned_cqc_providers_columns_to_import = [
 
 def main(
     cleaned_cqc_location_source: str,
-    workplace_for_reconciliation_source: str,
+    ascwds_workplace_source: str,
     cqc_ratings_source: str,
     cleaned_cqc_providers_source: str,
     merged_coverage_destination: str,
@@ -107,7 +107,7 @@ def main(
     )
 
     ascwds_workplace_df = utils.read_from_parquet(
-        workplace_for_reconciliation_source,
+        ascwds_workplace_source,
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
     )
 
@@ -334,7 +334,7 @@ if __name__ == "__main__":
 
     (
         cleaned_cqc_location_source,
-        workplace_for_reconciliation_source,
+        ascwds_workplace_source,
         cqc_ratings_source,
         cleaned_cqc_providers_source,
         merged_coverage_destination,
@@ -345,8 +345,8 @@ if __name__ == "__main__":
             "Source s3 directory for parquet CQC locations cleaned dataset",
         ),
         (
-            "--workplace_for_reconciliation_source",
-            "Source s3 directory for parquet ASCWDS workplace for reconciliation dataset",
+            "--ascwds_workplace_source",
+            "Source s3 directory for ASC-WDS workplace data",
         ),
         ("--cqc_ratings_source", "Source s3 directory for parquet CQC ratings dataset"),
         (
@@ -364,7 +364,7 @@ if __name__ == "__main__":
     )
     main(
         cleaned_cqc_location_source,
-        workplace_for_reconciliation_source,
+        ascwds_workplace_source,
         cqc_ratings_source,
         cleaned_cqc_providers_source,
         merged_coverage_destination,

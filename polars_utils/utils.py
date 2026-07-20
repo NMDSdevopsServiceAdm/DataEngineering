@@ -1,6 +1,7 @@
 import argparse
 import re
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 from pathlib import Path
 
@@ -10,6 +11,8 @@ import polars.selectors as cs
 from botocore.exceptions import ClientError
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+
+SCHEMA_DISCOVERY_MAX_WORKERS = 20
 
 
 def scan_parquet(
@@ -288,6 +291,56 @@ def list_s3_parquet_import_dates(s3_prefix: str) -> list[int]:
                 dates.append(date_val)
 
     return sorted(dates)
+
+
+def discover_combined_schema(source: str) -> pl.Schema:
+    """
+    Builds the union of every column found across all parquet files under a
+    partitioned S3 dataset.
+
+    Generates a full schema for wide datasets where columns get added or dropped
+    between partitions over time.  `pl.scan_parquet` alone only infers columns
+    from the first file it encounters, silently missing anything added later.
+    This wrapper reads each file's schema (the parquet footer), not a full data
+    scan.
+
+    Each file's footer is read in paralel on its own thread - these are
+    independent, I/O-bound S3 calls, therefore runtime is close to the cost of
+    one read rather than multiple back-to-back reads.
+
+    Args:
+        source (str): S3 directory containing the partitioned parquet dataset.
+
+    Returns:
+        pl.Schema: The union of every column and dtype found across all files.
+
+    Raises:
+        FileNotFoundError: If there are no parquet files in the source directory.
+    """
+    bucket, prefix = split_s3_uri(source.rstrip("/") + "/")
+
+    s3_client = boto3.client("s3")
+    paginator = s3_client.get_paginator("list_objects_v2")
+
+    keys = [
+        obj["Key"]
+        for page in paginator.paginate(Bucket=bucket, Prefix=prefix)
+        for obj in page.get("Contents", [])
+        if obj["Key"].endswith(".parquet")
+    ]
+
+    def file_schema(key: str) -> pl.Schema:
+        return pl.scan_parquet(f"s3://{bucket}/{key}").collect_schema()
+
+    schema: dict[str, pl.DataType] = {}
+    with ThreadPoolExecutor(max_workers=SCHEMA_DISCOVERY_MAX_WORKERS) as executor:
+        for file_schema_result in executor.map(file_schema, keys):
+            schema.update(file_schema_result)
+
+    if not schema:
+        raise FileNotFoundError(f"No parquet files found in {source}")
+
+    return pl.Schema(schema)
 
 
 def empty_s3_folder(bucket_name: str, prefix: str) -> None:

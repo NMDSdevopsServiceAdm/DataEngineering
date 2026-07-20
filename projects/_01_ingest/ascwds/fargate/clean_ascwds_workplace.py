@@ -46,7 +46,7 @@ COLUMNS_TO_IMPORT = [
     AWPClean.import_date,
 ]
 
-RECONCILIATION_COLUMNS = [
+SFC_INTERNAL_COLUMNS = [
     AWPClean.ascwds_workplace_import_date,
     AWPClean.establishment_id,
     AWPClean.nmds_id,
@@ -86,16 +86,18 @@ def main(
     workplace_source: str,
     data_labels_source: str,
     cleaned_workplace_destination: str,
-    workplace_for_reconciliation_destination: str,
+    ascwds_for_sfc_internal_destination: str,
 ) -> None:
     """
     Clean raw AWS-WDS data.
 
     Args:
-        workplace_source (str): path to the raw ascwds workplace data
-        data_labels_source (str): path to the ascwdsdata labels source
-        cleaned_workplace_destination (str): destination for cleaned ascwds workplace output
-        workplace_for_reconciliation_destination (str): destination for reconciliation workplace output
+        workplace_source (str): path to the raw ASC-WDS workplace data
+        data_labels_source (str): path to the ASC-WDS data labels source
+        cleaned_workplace_destination (str): destination for cleaned ASC-WDS
+            workplace output
+        ascwds_for_sfc_internal_destination (str): destination for ASC-WDS data
+            for SFC internal pipeline use
     """
     lf = utils.scan_parquet(workplace_source, selected_columns=COLUMNS_TO_IMPORT)
 
@@ -111,7 +113,6 @@ def main(
         lf, AWPClean.import_date, AWPClean.ascwds_workplace_import_date
     )
 
-    # trello 1705
     data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
     lf = cUtils.apply_categorical_labels(
         lf,
@@ -120,73 +121,72 @@ def main(
         add_as_new_column=False,
     )
 
-    (
-        lf,
-        reconciliation_lf,
-    ) = wUtils.create_purged_lfs_for_reconciliation_and_data(lf)
+    lf = wUtils.create_purge_date_columns(lf)
 
-    lf = wUtils.remove_rows_with_duplicate_location_ids(lf)
+    # The LazyFrame is split into two at this point:
+    # - SfC internal pipeline (filtered to workplaces last *active* on or after the purge date)
+    # - Cleaned ASC-WDS workplace data (filtered to workplaces last *amended* on or after the purge date)
 
-    lf_slv = utils.scan_parquet(workplace_source).select(
+    # SfC Internal pipeline
+    sfc_internal_lf = lf.filter(
+        pl.col(AWPClean.workplace_last_active_date) >= pl.col(AWPClean.purge_date)
+    ).select(SFC_INTERNAL_COLUMNS)
+
+    utils.sink_to_parquet(
+        sfc_internal_lf, output_path=ascwds_for_sfc_internal_destination
+    )
+
+    # Cleaned ASC-WDS workplace data
+    workplace_lf = lf.filter(
+        pl.col(AWPClean.data_last_amended_date) >= pl.col(AWPClean.purge_date)
+    )
+
+    workplace_lf = wUtils.remove_rows_with_duplicate_location_ids(workplace_lf)
+
+    slv_lf = utils.scan_parquet(workplace_source).select(
         *[AWPClean.establishment_id, AWPClean.import_date],
         expr.is_slv_job_role_column(),
     )
 
-    lf = lf.join(
-        lf_slv, on=[AWPClean.establishment_id, AWPClean.import_date], how="left"
+    workplace_lf = workplace_lf.join(
+        slv_lf, on=[AWPClean.establishment_id, AWPClean.import_date], how="left"
     ).drop(AWPClean.import_date)
 
-    lf = lf.with_columns(
+    workplace_lf = workplace_lf.with_columns(
         pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
         expr.is_slv_job_role_column().cast(pl.Int32, strict=False),
     )
 
-    lf = lf.with_columns(
+    workplace_lf = workplace_lf.with_columns(
         bounds.filled_posts_expr,
         bounds.slv_expr,
     )
 
-    reconciliation_lf = reconciliation_lf.select(RECONCILIATION_COLUMNS)
-
-    print(
-        f"Exporting clean ascwds workplace data as parquet to {cleaned_workplace_destination}"
-    )
-    utils.sink_to_parquet(
-        lazy_df=lf,
-        output_path=cleaned_workplace_destination,
-    )
-
-    print(
-        f"Exporting ascwds workplace reconciliation data as parquet to {workplace_for_reconciliation_destination}"
-    )
-    utils.sink_to_parquet(
-        lazy_df=reconciliation_lf,
-        output_path=workplace_for_reconciliation_destination,
-    )
+    utils.sink_to_parquet(workplace_lf, output_path=cleaned_workplace_destination)
 
 
 if __name__ == "__main__":
     args = utils.get_args(
         (
             "--workplace_source",
-            "Source s3 directory for raw ascwds workplace data",
+            "Source s3 directory for raw ASC-WDS workplace data",
         ),
         (
             "--data_labels_source",
-            "Source s3 directory for ascwds data labels",
+            "Source s3 directory for ASC-WDS data labels",
         ),
         (
             "--cleaned_workplace_destination",
-            "Destination s3 directory for cleaned ascwds workplace output",
+            "Destination s3 directory for cleaned ASC-WDS workplace output",
         ),
         (
-            "--workplace_for_reconciliation_destination",
-            "Destination s3 directory for reconciliation workplace output",
+            "--ascwds_for_sfc_internal_destination",
+            "Destination s3 directory for ASC-WDS data for SFC internal pipeline use",
         ),
     )
     main(
         workplace_source=args.workplace_source,
         data_labels_source=args.data_labels_source,
         cleaned_workplace_destination=args.cleaned_workplace_destination,
-        workplace_for_reconciliation_destination=args.workplace_for_reconciliation_destination,
+        ascwds_for_sfc_internal_destination=args.ascwds_for_sfc_internal_destination,
     )

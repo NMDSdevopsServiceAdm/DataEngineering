@@ -6,11 +6,16 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added `discover_combined_schema` function in Polars Utils to generate combined schema from a partitioned dataset.
 
+- Added workplace and worker datasets to syncing to branch.
 
 ### Changed
-
 - Pull clean workplace columns into merge job within SLV pipeline.
+
+- Updated references from workplace data for 'reconciliation' process to 'SfC internal' as the dataset is used in multiple jobs
+
+- Removed PySpark version of `clean_ascwds_workplace_data.py` and replaced with the Polars version in the pipeline
 
 ### Fixed
 

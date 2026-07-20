@@ -143,24 +143,6 @@ module "clean_capacity_tracker_non_res_job" {
   }
 }
 
-module "clean_ascwds_workplace_job" {
-  source            = "../modules/glue-job"
-  script_dir        = "projects/_01_ingest/ascwds/jobs"
-  script_name       = "clean_ascwds_workplace_data.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  worker_type       = "G.1X"
-  number_of_workers = 4
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-  glue_version      = "5.0"
-
-  job_parameters = {
-    "--ascwds_workplace_source"                  = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--cleaned_ascwds_workplace_destination"     = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
-    "--workplace_for_reconciliation_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
-  }
-}
-
 
 module "ingest_ons_data_job" {
   source          = "../modules/glue-job"
@@ -308,7 +290,7 @@ module "reconciliation_job" {
 
   job_parameters = {
     "--cqc_locations_snapshot_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_locations_04_latest_snapshot/"
-    "--ascwds_reconciliation_source"               = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
+    "--ascwds_workplace_source"                    = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=ascwds_for_sfc_internal/"
     "--reconciliation_single_and_subs_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_reconciliation_singles_and_subs"
     "--reconciliation_parents_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_reconciliation_parents"
   }
@@ -327,12 +309,12 @@ module "merge_coverage_data_job" {
   number_of_workers = 5
 
   job_parameters = {
-    "--cleaned_cqc_location_source"         = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
-    "--workplace_for_reconciliation_source" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
-    "--cqc_ratings_source"                  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
-    "--cleaned_cqc_providers_source"        = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_providers_04_full_cleaned/"
-    "--merged_coverage_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/"
-    "--reduced_coverage_destination"        = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
+    "--cleaned_cqc_location_source"  = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_locations_04_full_cleaned_registered/"
+    "--ascwds_workplace_source"      = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=ascwds_for_sfc_internal/"
+    "--cqc_ratings_source"           = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
+    "--cleaned_cqc_providers_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=cqc_providers_04_full_cleaned/"
+    "--merged_coverage_destination"  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/"
+    "--reduced_coverage_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
   }
 }
 
@@ -348,21 +330,6 @@ module "validate_pir_cleaned_data_job" {
   job_parameters = {
     "--cleaned_cqc_pir_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir_cleaned/"
     "--report_destination"     = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_pir_cleaned/"
-  }
-}
-
-module "validate_ascwds_workplace_cleaned_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/ascwds/jobs"
-  script_name     = "validate_ascwds_workplace_cleaned_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--cleaned_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
-    "--report_destination"              = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=validation_pdq_workplace_cleaned/"
   }
 }
 
