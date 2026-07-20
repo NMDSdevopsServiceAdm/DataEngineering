@@ -14,6 +14,7 @@ from unittest.mock import MagicMock, Mock, patch
 import boto3
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 from botocore.exceptions import ClientError
 from moto import mock_aws, sns
 from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
@@ -445,7 +446,7 @@ class TestListS3ParquetImportDates(unittest.TestCase):
         self.assertEqual(result, [])
 
 
-class TestDiscoverCombinedSchema(unittest.TestCase):
+class TestDiscoverCombinedSchema:
     @patch(f"{PATCH_PATH}.pl.scan_parquet")
     @patch(f"{PATCH_PATH}.boto3.client")
     def test_unions_columns_added_across_partitions(
@@ -481,10 +482,8 @@ class TestDiscoverCombinedSchema(unittest.TestCase):
         mock_scan_parquet.side_effect = scan_parquet_side_effect
 
         result = utils.discover_combined_schema("s3://test_bucket/domain=x/dataset=y/")
-
-        self.assertEqual(
-            result, pl.Schema({"a": pl.String, "b": pl.String, "c": pl.String})
-        )
+        expected_schema = pl.Schema({"a": pl.String, "b": pl.String, "c": pl.String})
+        assert result == expected_schema
 
     @patch(f"{PATCH_PATH}.boto3.client")
     def test_raises_when_no_parquet_files_found(self, mock_boto_client: Mock):
@@ -492,7 +491,10 @@ class TestDiscoverCombinedSchema(unittest.TestCase):
         mock_paginator.paginate.return_value = [{"Contents": []}]
         mock_boto_client.return_value.get_paginator.return_value = mock_paginator
 
-        with self.assertRaises(FileNotFoundError):
+        with pytest.raises(
+            FileNotFoundError,
+            match=r"No parquet files found in s3://test_bucket/domain=x/dataset=y/",
+        ):
             utils.discover_combined_schema("s3://test_bucket/domain=x/dataset=y/")
 
 
