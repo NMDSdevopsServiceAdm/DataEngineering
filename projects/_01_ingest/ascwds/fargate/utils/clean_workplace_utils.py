@@ -300,9 +300,16 @@ def fix_legacy_job_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Fix legacy job roles.
     """
+
     lf = lf.with_columns(
-        pl.sum_horizontal(pl.col("jr22emp"), pl.col("jr27emp")).alias("jr27emp"),
-        pl.sum_horizontal(pl.col("jr22strt"), pl.col("jr27strt")).alias("jr27strt"),
+        pl.sum_horizontal(cs.starts_with("jr22", "jr27") & cs.ends_with("emp")).alias(
+            "jr27emp"
+        ),
+        pl.sum_horizontal(cs.starts_with("jr22", "jr27") & cs.ends_with("strt")).alias(
+            "jr27strt"
+        ),
+        # pl.sum_horizontal(pl.col("jr22emp"), pl.col("jr27emp")).alias("jr27emp"),
+        # pl.sum_horizontal(pl.col("jr22strt"), pl.col("jr27strt")).alias("jr27strt"),
     ).drop("jr22emp", "jr22strt")
 
     return lf
