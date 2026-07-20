@@ -315,8 +315,7 @@ def discover_combined_schema(source: str) -> pl.Schema:
         pl.Schema: The union of every column and dtype found across all files.
 
     Raises:
-        FileNotFoundError: If there are no parquet files in the source
-        directory.
+        FileNotFoundError: If there are no parquet files in the source directory.
     """
     bucket, prefix = split_s3_uri(source.rstrip("/") + "/")
 
