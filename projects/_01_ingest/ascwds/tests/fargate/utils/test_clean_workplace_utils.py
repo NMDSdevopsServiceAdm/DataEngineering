@@ -245,3 +245,27 @@ class TestBoundingExpressions:
         returned_lf = test_lf.with_columns(exprs.slv_expr)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestFixLegacyJobRoles:
+    test_lf = pl.LazyFrame(
+        {
+            "jr22emp": 1,
+            "jr22strt": 2,
+            "jr27emp": 3,
+            "jr27strt": 4,
+        }
+    )
+
+    expected_lf = pl.LazyFrame(
+        {
+            "jr27emp": 4,
+            "jr27strt": 6,
+        }
+    )
+
+    def test_fix_legacy_job_roles(self):
+        returned_lf = job.fix_legacy_job_roles(self.test_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
+        pass

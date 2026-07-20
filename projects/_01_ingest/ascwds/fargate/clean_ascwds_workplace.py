@@ -116,6 +116,7 @@ def main(
     )
 
     data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
+
     lf = cUtils.apply_categorical_labels(
         lf,
         data_labels_lf,
@@ -150,6 +151,7 @@ def main(
         *[AWPClean.establishment_id, AWPClean.import_date],
         expr.is_slv_job_role_column(),
     )
+
     slv_lf = slv_lf.with_columns(pl.col(AWPClean.import_date).cast(pl.String))
 
     workplace_lf = workplace_lf.join(
@@ -165,6 +167,9 @@ def main(
         bounds.filled_posts_expr,
         bounds.slv_expr,
     )
+
+    # Fix legacy job roles here?
+    slv_lf = wUtils.fix_legacy_job_roles(slv_lf)
 
     utils.sink_to_parquet(workplace_lf, output_path=cleaned_workplace_destination)
 

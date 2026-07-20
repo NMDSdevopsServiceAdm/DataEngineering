@@ -279,3 +279,30 @@ class BoundingExpressions:
         .otherwise(slv_bounding_cols)
         .name.keep()
     )
+
+
+legacy_job_roles_dict = {  # old: new
+    "22": "27",
+    "41": "40",
+    "12": "42",
+    "13": "42",
+    "14": "42",
+    "18": "42",
+    "19": "42",
+    "20": "42",
+    "21": "42",
+}
+
+job_roles_to_remove = "33"
+
+
+def fix_legacy_job_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Fix legacy job roles.
+    """
+    lf = lf.with_columns(
+        pl.sum_horizontal(pl.col("jr22emp"), pl.col("jr27emp")).alias("jr27emp"),
+        pl.sum_horizontal(pl.col("jr22strt"), pl.col("jr27strt")).alias("jr27strt"),
+    ).drop("jr22emp", "jr22strt")
+
+    return lf
