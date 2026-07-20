@@ -17,6 +17,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed PySpark version of `clean_ascwds_workplace_data.py` and replaced with the Polars version in the pipeline
 
+- Refactored bounding of total staff and worker record columns in `clean_ascwds_workplace.py` and added logic for bounding SLV columns.
+
 ### Fixed
 
 
