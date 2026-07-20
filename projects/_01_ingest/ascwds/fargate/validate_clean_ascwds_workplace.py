@@ -49,8 +49,6 @@ columns = {
     ASCWPClean.purge_date: "Date",
     ASCWPClean.data_last_amended_date: "Date",
     ASCWPClean.workplace_last_active_date: "Date",
-    ASCWPClean.total_staff_bounded: "Int32",
-    ASCWPClean.worker_records_bounded: "Int32",
 }
 
 
@@ -69,9 +67,20 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         source=f"s3://{bucket_name}/{source_path}",
     )
 
-    jr_cols = source_df.select(expr.is_slv_job_role_column()).collect_schema().names()
-    columns.update({k: pl.Int32 for k in jr_cols})
-    EXPECTED_SCHEMA = pb.Schema(columns=columns)
+    # Job role columns vary between imports as ASCWDS adds/drops codes over
+    # time, so the expected set is read off the data being validated itself
+    # rather than a fixed list.
+    slv_columns = {
+        col: "Int32" for col in source_df.select(expr.is_slv_job_role_column()).columns
+    }
+    columns.update(slv_columns.items())  # Add job role columns.
+    columns.update(
+        {
+            ASCWPClean.total_staff_bounded: "Int32",
+            ASCWPClean.worker_records_bounded: "Int32",
+        }
+    )  # Add columns created after job role cols are joined.
+    EXPECTED_SCHEMA = pb.Schema(columns)
 
     validation = (
         pb.Validate(
@@ -82,10 +91,10 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             actions=GLOBAL_ACTIONS,
         )
         # dataset schema
-        # .col_schema_match(
-        #     schema=EXPECTED_SCHEMA,
-        #     brief="Dataset should match the expected schema",
-        # )
+        .col_schema_match(
+            schema=EXPECTED_SCHEMA,
+            brief="Dataset should match the expected schema",
+        )
         # index columns
         .rows_distinct(
             [ASCWPClean.establishment_id, ASCWPClean.ascwds_workplace_import_date]

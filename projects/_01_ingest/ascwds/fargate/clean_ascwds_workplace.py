@@ -13,38 +13,38 @@ bounds = wUtils.BoundingExpressions()
 
 INT_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
 
-COLUMNS_TO_IMPORT = [
-    AWPClean.organisation_id,
-    AWPClean.period,
-    AWPClean.establishment_id,
-    AWPClean.establishment_id_from_nmds,
-    AWPClean.parent_id,
-    AWPClean.nmds_id,
-    AWPClean.establishment_created_date,
-    AWPClean.establishment_updated_date,
-    AWPClean.master_update_date,
-    AWPClean.last_logged_in,
-    AWPClean.la_permission,
-    AWPClean.is_bulk_uploader,
-    AWPClean.is_parent,
-    AWPClean.parent_permission,
-    AWPClean.registration_type,
-    AWPClean.provider_id,
-    AWPClean.location_id,
-    AWPClean.establishment_type,
-    AWPClean.establishment_name,
-    AWPClean.address,
-    AWPClean.postcode,
-    AWPClean.region_id,
-    AWPClean.total_staff,
-    AWPClean.worker_records,
-    AWPClean.total_starters,
-    AWPClean.total_leavers,
-    AWPClean.total_vacancies,
-    AWPClean.main_service_id,
-    AWPClean.version,
-    AWPClean.import_date,
-]
+WORKPLACE_SCHEMA = {
+    AWPClean.organisation_id: pl.String,
+    AWPClean.period: pl.String,
+    AWPClean.establishment_id: pl.String,
+    AWPClean.establishment_id_from_nmds: pl.String,
+    AWPClean.parent_id: pl.String,
+    AWPClean.nmds_id: pl.String,
+    AWPClean.establishment_created_date: pl.String,
+    AWPClean.establishment_updated_date: pl.String,
+    AWPClean.master_update_date: pl.String,
+    AWPClean.last_logged_in: pl.String,
+    AWPClean.la_permission: pl.String,
+    AWPClean.is_bulk_uploader: pl.String,
+    AWPClean.is_parent: pl.String,
+    AWPClean.parent_permission: pl.String,
+    AWPClean.registration_type: pl.String,
+    AWPClean.provider_id: pl.String,
+    AWPClean.location_id: pl.String,
+    AWPClean.establishment_type: pl.String,
+    AWPClean.establishment_name: pl.String,
+    AWPClean.address: pl.String,
+    AWPClean.postcode: pl.String,
+    AWPClean.region_id: pl.String,
+    AWPClean.total_staff: pl.String,
+    AWPClean.worker_records: pl.String,
+    AWPClean.total_starters: pl.String,
+    AWPClean.total_leavers: pl.String,
+    AWPClean.total_vacancies: pl.String,
+    AWPClean.main_service_id: pl.String,
+    AWPClean.version: pl.String,
+    AWPClean.import_date: pl.String,
+}
 
 SFC_INTERNAL_COLUMNS = [
     AWPClean.ascwds_workplace_import_date,
@@ -99,7 +99,9 @@ def main(
         ascwds_for_sfc_internal_destination (str): destination for ASC-WDS data
             for SFC internal pipeline use
     """
-    lf = utils.scan_parquet(workplace_source, selected_columns=COLUMNS_TO_IMPORT)
+    lf = utils.scan_parquet(workplace_source, schema=WORKPLACE_SCHEMA).select(
+        WORKPLACE_SCHEMA.keys()
+    )
 
     lf = wUtils.apply_data_corrections(lf)
 
@@ -143,10 +145,12 @@ def main(
 
     workplace_lf = wUtils.remove_rows_with_duplicate_location_ids(workplace_lf)
 
-    slv_lf = utils.scan_parquet(workplace_source).select(
+    combined_schema = utils.discover_combined_schema(workplace_source)
+    slv_lf = utils.scan_parquet(workplace_source, schema=combined_schema).select(
         *[AWPClean.establishment_id, AWPClean.import_date],
         expr.is_slv_job_role_column(),
     )
+    slv_lf = slv_lf.with_columns(pl.col(AWPClean.import_date).cast(pl.String))
 
     workplace_lf = workplace_lf.join(
         slv_lf, on=[AWPClean.establishment_id, AWPClean.import_date], how="left"

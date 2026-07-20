@@ -1,4 +1,3 @@
-import unittest
 from datetime import date
 
 import polars as pl

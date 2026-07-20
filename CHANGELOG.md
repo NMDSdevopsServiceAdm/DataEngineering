@@ -19,6 +19,8 @@ All notable changes to this project will be documented in this file.
 
 - Refactored bounding of total staff and worker record columns in `clean_ascwds_workplace.py` and added logic for bounding SLV columns.
 
+- Get Workplace data schema from `discover_combined_schema` within Clean Workplace Job. Updated tests for the same.
+
 ### Fixed
 
 
