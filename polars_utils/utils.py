@@ -298,17 +298,15 @@ def discover_combined_schema(source: str) -> pl.Schema:
     Builds the union of every column found across all parquet files under a
     partitioned S3 dataset.
 
-    Reads only each file's own schema (the parquet footer), never its data,
-    so this stays cheap even across many partitions - a network call per
-    file, not a data scan. Useful for wide, coded datasets where columns get
-    added or dropped between partitions over time (e.g. a new code introduced
-    in a later import): `pl.scan_parquet` alone only infers columns from the
-    first file it encounters, silently missing anything added later. Combine
-    with a selector to narrow down to the columns a given job actually needs.
+    Generates a full schema for wide datasets where columns get added or dropped
+    between partitions over time.  `pl.scan_parquet` alone only infers columns
+    from the first file it encounters, silently missing anything added later.
+    This wrapper reads each file's schema (the parquet footer), not a full data
+    scan.
 
-    Each file's footer is read on its own thread - these are independent,
-    I/O-bound S3 calls, so this keeps wall-clock close to the cost of one
-    read rather than file_count reads done back-to-back.
+    Each file's footer is read in paralel on its own thread - these are
+    independent, I/O-bound S3 calls, therefore runtime is close to the cost of
+    one read rather than multiple back-to-back reads.
 
     Args:
         source (str): S3 directory containing the partitioned parquet dataset.
@@ -317,7 +315,8 @@ def discover_combined_schema(source: str) -> pl.Schema:
         pl.Schema: The union of every column and dtype found across all files.
 
     Raises:
-        FileNotFoundError: If there are no parquet files in the source directory.
+        FileNotFoundError: If there are no parquet files in the source
+        directory.
     """
     bucket, prefix = split_s3_uri(source.rstrip("/") + "/")
 
