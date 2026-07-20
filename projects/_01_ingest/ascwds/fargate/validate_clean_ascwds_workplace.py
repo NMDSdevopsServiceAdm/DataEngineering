@@ -49,8 +49,6 @@ columns = {
     ASCWPClean.purge_date: "Date",
     ASCWPClean.data_last_amended_date: "Date",
     ASCWPClean.workplace_last_active_date: "Date",
-    ASCWPClean.total_staff_bounded: "Int32",
-    ASCWPClean.worker_records_bounded: "Int32",
 }
 
 
