@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed PySpark version of `clean_ascwds_workplace_data.py` and replaced with the Polars version in the pipeline
 
+- Get Workplace data schema from `discover_combined_schema` within Clean Workplace Job. Updated tests for the same.
+
 ### Fixed
 
 
