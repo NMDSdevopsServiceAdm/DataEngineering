@@ -9,9 +9,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 
+bounds = wUtils.BoundingExpressions()
+
 INT_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
-BOUNDED_STAFF_COLUMNS: list[str] = [AWPClean.total_staff, AWPClean.worker_records]
-MIN_VALID_STAFF_COUNT: int = 1
 
 COLUMNS_TO_IMPORT = [
     AWPClean.organisation_id,
@@ -158,10 +158,8 @@ def main(
     )
 
     workplace_lf = workplace_lf.with_columns(
-        pl.when(pl.col(BOUNDED_STAFF_COLUMNS) >= MIN_VALID_STAFF_COUNT)
-        .then(pl.col(BOUNDED_STAFF_COLUMNS))
-        .otherwise(None)
-        .name.suffix("_bounded")
+        bounds.filled_posts_expr,
+        bounds.slv_expr,
     )
 
     utils.sink_to_parquet(workplace_lf, output_path=cleaned_workplace_destination)

@@ -192,3 +192,57 @@ class TestApplyDataCorrections:
         returned_lf = job.apply_data_corrections(test_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_workplace_lf)
+
+
+class TestBoundingExpressions:
+    def test_expression_bounds(self):
+        exprs = job.BoundingExpressions()
+        assert exprs.filled_posts_lower_bound == 1
+        assert exprs.slv_lower_bound == 1
+        assert exprs.slv_upper_bound == 998
+
+    def test_filled_posts_expression_bounds_values_to_valid_range(self):
+        exprs = job.BoundingExpressions()
+        test_lf = pl.LazyFrame(
+            {
+                AWPClean.total_staff: [0, 5, None],
+                AWPClean.worker_records: [1, 0, 2],
+            }
+        )
+        expected_lf = pl.LazyFrame(
+            {
+                AWPClean.total_staff: [0, 5, None],
+                AWPClean.worker_records: [1, 0, 2],
+                f"{AWPClean.total_staff}_bounded": [None, 5, None],
+                f"{AWPClean.worker_records}_bounded": [1, None, 2],
+            }
+        )
+
+        returned_lf = test_lf.with_columns(exprs.filled_posts_expr)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_slv_expression_bounds_values_to_valid_range(self):
+        exprs = job.BoundingExpressions()
+        test_lf = pl.LazyFrame(
+            {
+                AWPClean.job_role_01_employees: [0, 10, 1000, 500],
+                AWPClean.job_role_01_starters: [1, 2, 999, 1000],
+                AWPClean.job_role_01_leavers: [-1, 500, 998, 999],
+                AWPClean.job_role_01_vacancies: [0, 998, 999, 500],
+                AWPClean.job_role_01_temporary: [0, 1, 2, 3],  # Not an SLV column
+            }
+        )
+        expected_lf = pl.LazyFrame(
+            {
+                AWPClean.job_role_01_employees: [None, 10, None, 500],
+                AWPClean.job_role_01_starters: [1, 2, None, None],
+                AWPClean.job_role_01_leavers: [None, 500, 998, None],
+                AWPClean.job_role_01_vacancies: [None, 998, None, 500],
+                AWPClean.job_role_01_temporary: [0, 1, 2, 3],
+            }
+        )
+
+        returned_lf = test_lf.with_columns(exprs.slv_expr)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
