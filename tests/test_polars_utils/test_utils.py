@@ -14,6 +14,7 @@ from unittest.mock import MagicMock, Mock, patch
 import boto3
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 from botocore.exceptions import ClientError
 from moto import mock_aws, sns
 from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
@@ -443,6 +444,58 @@ class TestListS3ParquetImportDates(unittest.TestCase):
         # Should not raise an error
         result = utils.list_s3_parquet_import_dates("s3://test_bucket/path/to/prefix/")
         self.assertEqual(result, [])
+
+
+class TestDiscoverCombinedSchema:
+    @patch(f"{PATCH_PATH}.pl.scan_parquet")
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_unions_columns_added_across_partitions(
+        self, mock_boto_client: Mock, mock_scan_parquet: Mock
+    ):
+        """A column present in only one partition should still appear in the result."""
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [
+            {
+                "Contents": [
+                    {"Key": "domain=x/dataset=y/file1.parquet"},
+                    {"Key": "domain=x/dataset=y/file2.parquet"},
+                    {"Key": "domain=x/dataset=y/_SUCCESS"},  # not a parquet file
+                ]
+            }
+        ]
+        mock_boto_client.return_value.get_paginator.return_value = mock_paginator
+
+        schemas_by_path = {
+            "s3://test_bucket/domain=x/dataset=y/file1.parquet": pl.Schema(
+                {"a": pl.String, "b": pl.String}
+            ),
+            "s3://test_bucket/domain=x/dataset=y/file2.parquet": pl.Schema(
+                {"a": pl.String, "c": pl.String}
+            ),
+        }
+
+        def scan_parquet_side_effect(path):
+            mock_lf = MagicMock()
+            mock_lf.collect_schema.return_value = schemas_by_path[path]
+            return mock_lf
+
+        mock_scan_parquet.side_effect = scan_parquet_side_effect
+
+        result = utils.discover_combined_schema("s3://test_bucket/domain=x/dataset=y/")
+        expected_schema = pl.Schema({"a": pl.String, "b": pl.String, "c": pl.String})
+        assert result == expected_schema
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    def test_raises_when_no_parquet_files_found(self, mock_boto_client: Mock):
+        mock_paginator = MagicMock()
+        mock_paginator.paginate.return_value = [{"Contents": []}]
+        mock_boto_client.return_value.get_paginator.return_value = mock_paginator
+
+        with pytest.raises(
+            FileNotFoundError,
+            match=r"No parquet files found in s3://test_bucket/domain=x/dataset=y/",
+        ):
+            utils.discover_combined_schema("s3://test_bucket/domain=x/dataset=y/")
 
 
 class TestEmptyS3Folder(unittest.TestCase):
