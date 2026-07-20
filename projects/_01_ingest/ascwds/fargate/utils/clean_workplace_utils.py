@@ -277,7 +277,7 @@ class BoundingExpressions:
 
     slv_bounding_cols: pl.selectors.Selector = expr.is_slv_job_role_column()
     slv_lower_bound: int = 1
-    slv_upper_bound: int = 998
+    slv_upper_bound: int = 998  # 999 has been used as code for not known
 
     filled_posts_expr: pl.Expr = (
         pl.when(pl.col(*filled_posts_bounding_cols) >= filled_posts_lower_bound)

@@ -230,6 +230,12 @@ class TestApplyDataCorrections:
 
 
 class TestBoundingExpressions:
+    def test_expression_bounds(self):
+        exprs = job.BoundingExpressions()
+        assert exprs.filled_posts_lower_bound == 1
+        assert exprs.slv_lower_bound == 1
+        assert exprs.slv_upper_bound == 998
+
     def test_filled_posts_expression_bounds_values_to_valid_range(self):
         exprs = job.BoundingExpressions()
         test_lf = pl.LazyFrame(
