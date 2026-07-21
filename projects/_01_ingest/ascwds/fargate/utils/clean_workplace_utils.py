@@ -284,13 +284,6 @@ class BoundingExpressions:
     )
 
 
-legacy_job_roles_dict = {  # new: old
-    "27": ["22"],
-    "40": ["41"],
-    "42": ["12", "13", "14", "18", "19", "20", "21"],
-}
-
-
 def fix_legacy_job_roles(
     lf: pl.LazyFrame, legacy_job_roles_dict: dict[str, list[str]]
 ) -> pl.LazyFrame:

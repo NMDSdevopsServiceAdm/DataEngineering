@@ -154,6 +154,13 @@ def main(
 
     slv_lf = slv_lf.with_columns(pl.col(AWPClean.import_date).cast(pl.String))
 
+    legacy_job_roles_dict = {
+        "27": ["22"],
+        "40": ["41"],
+        "42": ["12", "13", "14", "18", "19", "20", "21"],
+    }
+    slv_lf = wUtils.fix_legacy_job_roles(slv_lf, legacy_job_roles_dict)
+
     workplace_lf = workplace_lf.join(
         slv_lf, on=[AWPClean.establishment_id, AWPClean.import_date], how="left"
     ).drop(AWPClean.import_date)
@@ -167,9 +174,6 @@ def main(
         bounds.filled_posts_expr,
         bounds.slv_expr,
     )
-
-    # Fix legacy job roles here?
-    slv_lf = wUtils.fix_legacy_job_roles(slv_lf)
 
     utils.sink_to_parquet(workplace_lf, output_path=cleaned_workplace_destination)
 

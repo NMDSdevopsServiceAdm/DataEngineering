@@ -17,9 +17,11 @@ class MainTests(unittest.TestCase):
     CLEANED_WORKPLACE_DESTINATION = "some/destination"
     SFC_INTERNAL_DESTINATION = "some/other/destination"
 
-    @patch(f"{PATCH_PATH}.wUtils.remove_rows_with_duplicate_location_ids")
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.wUtils.fix_legacy_job_roles")
+    @patch(f"{PATCH_PATH}.expr.is_slv_job_role_column")
     @patch(f"{PATCH_PATH}.utils.discover_combined_schema")
+    @patch(f"{PATCH_PATH}.wUtils.remove_rows_with_duplicate_location_ids")
     @patch(f"{PATCH_PATH}.wUtils.create_purge_date_columns")
     @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
     @patch(f"{PATCH_PATH}.pl.scan_csv")
@@ -38,9 +40,11 @@ class MainTests(unittest.TestCase):
         scan_csv_mock: Mock,
         apply_categorical_labels_mock: Mock,
         create_purge_date_columns_mock: Mock,
-        discover_combined_schema_mock: Mock,
-        sink_to_parquet_mock: Mock,
         remove_rows_with_duplicate_location_ids_mock: Mock,
+        discover_combined_schema_mock: Mock,
+        is_slv_job_role_column_mock: Mock,
+        fix_legacy_job_roles_mock: Mock,
+        sink_to_parquet_mock: Mock,
     ):
         discover_combined_schema_mock.return_value = {
             "jr09emp": pl.String,
@@ -76,6 +80,8 @@ class MainTests(unittest.TestCase):
         create_purge_date_columns_mock.assert_called_once()
         remove_rows_with_duplicate_location_ids_mock.assert_called_once()
         discover_combined_schema_mock.assert_called_once_with(self.WORKPLACE_SOURCE)
+        assert is_slv_job_role_column_mock.call_count == 2
+        fix_legacy_job_roles_mock.assert_called_once()
 
         assert sink_to_parquet_mock.call_count == 2
         sink_to_parquet_mock.assert_has_calls(
