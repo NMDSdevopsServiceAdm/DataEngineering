@@ -281,16 +281,10 @@ class BoundingExpressions:
     )
 
 
-legacy_job_roles_dict = {  # old: new
-    "22": "27",
-    "41": "40",
-    "12": "42",
-    # "13": "42",
-    # "14": "42",
-    # "18": "42",
-    # "19": "42",
-    # "20": "42",
-    # "21": "42",
+legacy_job_roles_dict = {  # new: old
+    "27": ["22"],
+    "40": ["41"],
+    "42": ["12", "13", "14", "18", "19", "20", "21"],
 }
 
 job_roles_to_remove = "33"
@@ -304,13 +298,12 @@ def fix_legacy_job_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
     job_role_suffixes = list(
         set([col[4:] for col in job_role_cols])
     )  # Unique list after removing 'jr' and job role code
-    print(job_role_suffixes)
 
     lf = lf.with_columns(
         legacy_replacement_expressions(legacy_job_roles_dict, job_role_suffixes),
     )
 
-    old_roles = list(legacy_job_roles_dict.keys())
+    old_roles = [old for olds in legacy_job_roles_dict.values() for old in olds]
     cols_to_drop = [
         f"jr{role}{suffix}" for role in old_roles for suffix in job_role_suffixes
     ]
@@ -320,9 +313,9 @@ def fix_legacy_job_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def legacy_replacement_expressions(job_roles, slv_suffixes):
-    for old, new in job_roles.items():
+    for new, olds in job_roles.items():
         for suffix in slv_suffixes:
-            print(old, new, suffix)
+            prefixes = [f"jr{new}"] + [f"jr{old}" for old in olds]
             yield pl.sum_horizontal(
-                (cs.starts_with(f"jr{new}", f"jr{old}") & cs.ends_with(suffix))
+                (cs.starts_with(*prefixes) & cs.ends_with(suffix))
             ).alias(f"jr{new}{suffix}")
