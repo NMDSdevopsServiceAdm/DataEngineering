@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
 - Get Workplace data schema from `discover_combined_schema` within Clean Workplace Job. Updated tests for the same.
 
 ### Fixed
+- Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`. 
 
 
 
