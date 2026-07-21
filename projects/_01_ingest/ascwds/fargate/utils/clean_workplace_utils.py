@@ -285,12 +285,12 @@ legacy_job_roles_dict = {  # old: new
     "22": "27",
     "41": "40",
     "12": "42",
-    "13": "42",
-    "14": "42",
-    "18": "42",
-    "19": "42",
-    "20": "42",
-    "21": "42",
+    # "13": "42",
+    # "14": "42",
+    # "18": "42",
+    # "19": "42",
+    # "20": "42",
+    # "21": "42",
 }
 
 job_roles_to_remove = "33"
@@ -300,16 +300,31 @@ def fix_legacy_job_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Fix legacy job roles.
     """
+    job_role_cols = lf.collect_schema().names()
+    job_role_suffixes = list(
+        set([col[4:] for col in job_role_cols])
+    )  # Unique list after removing 'jr' and job role code
+    print(job_role_suffixes)
 
     lf = lf.with_columns(
-        pl.sum_horizontal(cs.starts_with("jr22", "jr27") & cs.ends_with("emp")).alias(
-            "jr27emp"
-        ),
-        pl.sum_horizontal(cs.starts_with("jr22", "jr27") & cs.ends_with("strt")).alias(
-            "jr27strt"
-        ),
+        legacy_replacement_expressions(legacy_job_roles_dict, job_role_suffixes),
+        # pl.sum_horizontal(cs.starts_with("jr22", "jr27") & cs.ends_with("emp")).alias(
+        #     "jr27emp"
+        # ),
+        # pl.sum_horizontal(cs.starts_with("jr22", "jr27") & cs.ends_with("strt")).alias(
+        #     "jr27strt"
+        # ),
         # pl.sum_horizontal(pl.col("jr22emp"), pl.col("jr27emp")).alias("jr27emp"),
         # pl.sum_horizontal(pl.col("jr22strt"), pl.col("jr27strt")).alias("jr27strt"),
     ).drop("jr22emp", "jr22strt")
 
     return lf
+
+
+def legacy_replacement_expressions(job_roles, slv_suffixes):
+    for old, new in job_roles.items():
+        for suffix in slv_suffixes:
+            print(old, new, suffix)
+            yield pl.sum_horizontal(
+                (cs.starts_with(f"jr{new}", f"jr{old}") & cs.ends_with(suffix))
+            ).name.keep()
