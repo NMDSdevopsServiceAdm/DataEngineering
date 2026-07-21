@@ -11,10 +11,10 @@ def main(
         cleaned_ascwds_workplace_source (str): path to the cleaned ascwds workplace data
         prepared_data_destination (str): destination for output
     """
-    lf = utils.scan_parquet(cleaned_ascwds_workplace_source)
+    workplace_lf = utils.scan_parquet(cleaned_ascwds_workplace_source)
 
     utils.sink_to_parquet(
-        lazy_df=lf,
+        lazy_df=workplace_lf,
         output_path=prepared_data_destination,
     )
 
