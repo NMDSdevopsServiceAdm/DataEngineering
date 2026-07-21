@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file.
 - Get Workplace data schema from `discover_combined_schema` within Clean Workplace Job. Updated tests for the same.
 
 ### Fixed
-
+- Increased wait time on CQC and ASCWDS Orchestrator to avoid timeout of loop.
 
 
 ## [v2026.06.0] - 15/07/2026
