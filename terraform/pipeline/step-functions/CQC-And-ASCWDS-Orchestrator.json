@@ -5,6 +5,13 @@
     "Ingest CQC And ASCWDS": {
       "Type": "Parallel",
       "Next": "Trigger Workforce Intelligence Pipeline",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "Publish Error Notification"
+        }
+      ],
       "Branches": [
         {
           "StartAt": "Ingest CQC API",
@@ -30,7 +37,9 @@
               "Parameters": {
                 "year.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0)",
                 "month.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1)",
-                "day.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2)"
+                "day.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2)",
+                "worker_attempts": 0,
+                "workplace_attempts": 0
               },
               "Branches": [
                 {
@@ -58,15 +67,41 @@
                         {
                           "Variable": "$.workerfile.KeyCount",
                           "NumericEquals": 0,
-                          "Next": "Wait For Worker"
+                          "Next": "Increment Worker Attempts"
                         }
                       ]
+                    },
+                    "Increment Worker Attempts": {
+                      "Type": "Pass",
+                      "Parameters": {
+                        "year.$": "$.year",
+                        "month.$": "$.month",
+                        "day.$": "$.day",
+                        "worker_attempts.$": "States.MathAdd($.worker_attempts, 1)"
+                      },
+                      "Next": "Worker Attempts Exceeded?"
+                    },
+                    "Worker Attempts Exceeded?": {
+                      "Type": "Choice",
+                      "Choices": [
+                        {
+                          "Variable": "$.worker_attempts",
+                          "NumericGreaterThanEquals": ${ascwds_polling_max_attempts},
+                          "Next": "Worker Timeout"
+                        }
+                      ],
+                      "Default": "Wait For Worker"
                     },
                     "Wait For Worker": {
                       "Type": "Wait",
                       "Seconds": 10,
                       "Next": "Check Worker"
                    },
+                    "Worker Timeout": {
+                      "Type": "Fail",
+                      "Error": "ASCWDSFileTimeout",
+                      "Cause": "Worker file not found after ${ascwds_polling_max_attempts} attempts"
+                    },
                     "Mark Worker Ready": {
                       "Type": "Pass",
                       "End": true
@@ -98,14 +133,40 @@
                         {
                           "Variable": "$.workerfile.KeyCount",
                           "NumericEquals": 0,
-                          "Next": "Wait For Workplace"
+                          "Next": "Increment Workplace Attempts"
                         }
                         ]
+                    },
+                    "Increment Workplace Attempts": {
+                      "Type": "Pass",
+                      "Parameters": {
+                        "year.$": "$.year",
+                        "month.$": "$.month",
+                        "day.$": "$.day",
+                        "workplace_attempts.$": "States.MathAdd($.workplace_attempts, 1)"
+                      },
+                      "Next": "Workplace Attempts Exceeded?"
+                    },
+                    "Workplace Attempts Exceeded?": {
+                      "Type": "Choice",
+                      "Choices": [
+                        {
+                          "Variable": "$.workplace_attempts",
+                          "NumericGreaterThanEquals": ${ascwds_polling_max_attempts},
+                          "Next": "Workplace Timeout"
+                        }
+                      ],
+                      "Default": "Wait For Workplace"
                     },
                     "Wait For Workplace": {
                       "Type": "Wait",
                       "Seconds": 10,
                       "Next": "Check Workplace"
+                    },
+                    "Workplace Timeout": {
+                      "Type": "Fail",
+                      "Error": "ASCWDSFileTimeout",
+                      "Cause": "Workplace file not found after ${ascwds_polling_max_attempts} attempts"
                     },
                     "Mark Workplace Ready": {
                       "Type": "Pass",
@@ -129,11 +190,37 @@
           "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
         }
       },
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "Publish Error Notification"
+        }
+      ],
       "Next": "Success"
     },
     "Success": {
       "Type": "Pass",
       "End": true
+    },
+    "Publish Error Notification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+        "Payload": {
+          "Error.$": "$.error.Cause",
+          "ExecutionId.$": "$$.Execution.Id",
+          "StateMachineName.$": "$$.StateMachine.Name",
+          "StateMachineId.$": "$$.StateMachine.Id",
+          "ExecutionStartTime.$": "$$.Execution.StartTime",
+          "CallbackToken.$": "$$.Task.Token"
+        }
+      },
+      "Next": "Fail"
+    },
+    "Fail": {
+      "Type": "Fail"
     }
   }
 }

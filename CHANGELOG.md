@@ -22,8 +22,7 @@ All notable changes to this project will be documented in this file.
 - Get Workplace data schema from `discover_combined_schema` within Clean Workplace Job. Updated tests for the same.
 
 ### Fixed
-
-
+- Added missing error notifications for the CQC/ASC-WDS orchestrator and crawler-refresh steps in three ingestion pipelines, and a bounded timeout for the ASC-WDS worker/workplace file-arrival polling loops.
 
 ## [v2026.06.0] - 15/07/2026
 
