@@ -254,27 +254,26 @@ class TestFixLegacyJobRoles:
     }
     test_lf = pl.LazyFrame(
         {
-            "jr01emp": 1,
-            "jr02emp": 2,
-            "jr03emp": 3,
-            "jr04emp": 4,
-            "jr05emp": 5,
-            "jr33emp": 1000,  # personal assistants are hard coded to remove.
-            "jr01strt": 1,
-            "jr02strt": 2,
-            "jr03strt": 3,
-            "jr04strt": 4,
-            "jr05strt": 5,
-            "jr33strt": 1000,  # personal assistants are hard coded to remove.
+            AWPClean.job_role_01_employees: 1,
+            AWPClean.job_role_02_employees: 2,
+            AWPClean.job_role_03_employees: 3,
+            AWPClean.job_role_04_employees: 4,
+            AWPClean.job_role_05_employees: 5,
+            AWPClean.job_role_33_employees: 1000,  # personal assistants are hard coded to remove.
+            AWPClean.job_role_01_starters: 10,
+            AWPClean.job_role_02_starters: 20,
+            AWPClean.job_role_03_starters: 30,
+            AWPClean.job_role_04_starters: 40,
+            AWPClean.job_role_05_starters: 50,
+            AWPClean.job_role_33_starters: 1000,  # personal assistants are hard coded to remove.
         }
     )
-
     expected_lf = pl.LazyFrame(
         {
-            "jr01emp": 3,
-            "jr03emp": 12,
-            "jr01strt": 3,
-            "jr03strt": 12,
+            AWPClean.job_role_01_employees: 3,
+            AWPClean.job_role_03_employees: 12,
+            AWPClean.job_role_01_starters: 30,
+            AWPClean.job_role_03_starters: 120,
         }
     )
 
