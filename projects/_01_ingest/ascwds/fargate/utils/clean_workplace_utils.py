@@ -303,7 +303,8 @@ def fix_legacy_job_roles(
             {new: [old_1, old_2...]}
 
     Returns:
-        pl.LazyFrame: Input LazyFrame without given job role columns.
+        pl.LazyFrame: Input LazyFrame in which columns have been merged and
+            removed.
     """
     job_role_cols = lf.collect_schema().names()
     job_role_suffixes = list(
@@ -326,7 +327,7 @@ def fix_legacy_job_roles(
 
 
 def legacy_replacement_expressions(
-    legacy_job_roles_dict: dict[str, list[str]], slv_suffixes: list
+    legacy_job_roles_dict: dict[str, list[str]], slv_suffixes: list[str]
 ) -> Generator[pl.Expr, None, None]:
     """
     A generator function that yields Polars expressions that sum
@@ -336,7 +337,7 @@ def legacy_replacement_expressions(
     Args:
         legacy_job_roles_dict (dict[str, list[str]]): A mapping of job roles.
             E.g. {new: [old_1, old_2...]}
-        slv_suffixes (list): A list of ASC-WDS workplace job role column suffixes.
+        slv_suffixes (list[str]): A list of ASC-WDS workplace job role column suffixes.
             E.g. ["flag", "emp", "work"]
 
     Yields:
