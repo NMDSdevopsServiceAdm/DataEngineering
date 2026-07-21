@@ -1,4 +1,5 @@
 import re
+from typing import Generator
 
 import polars as pl
 import polars.selectors as cs
@@ -331,8 +332,25 @@ def fix_legacy_job_roles(
     return lf
 
 
-def legacy_replacement_expressions(job_roles, slv_suffixes):
-    for new, olds in job_roles.items():
+def legacy_replacement_expressions(
+    legacy_job_roles_dict: dict[str, list[str]], slv_suffixes: list
+) -> Generator[pl.Expr, None, None]:
+    """
+    A generator function that yields Polars expressions that sum
+    ASC-WDS workplace job role columns in the given legacy_job_roles_dict
+    that have the given slv_suffixes.
+
+    Args:
+        legacy_job_roles_dict (dict[str, list[str]]): A mapping of job roles.
+            E.g. {new: [old_1, old_2...]}
+        slv_suffixes (list): A list of ASC-WDS workplace job role column suffixes.
+            E.g. ["flag", "emp", "work"]
+
+    Yields:
+        pl.Expr: Polars expressions for summing columns.
+
+    """
+    for new, olds in legacy_job_roles_dict.items():
         for suffix in slv_suffixes:
             prefixes = [f"jr{new}"] + [f"jr{old}" for old in olds]
             yield pl.sum_horizontal(
