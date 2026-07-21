@@ -266,6 +266,7 @@ class TestFixLegacyJobRoles:
             AWPClean.job_role_04_starters: 40,
             AWPClean.job_role_05_starters: 50,
             AWPClean.job_role_33_starters: 1000,  # personal assistants are hard coded to remove.
+            "not_a_job_role_column": "A",
         }
     )
     expected_lf = pl.LazyFrame(
@@ -274,6 +275,7 @@ class TestFixLegacyJobRoles:
             AWPClean.job_role_03_employees: 12,
             AWPClean.job_role_01_starters: 30,
             AWPClean.job_role_03_starters: 120,
+            "not_a_job_role_column": "A",
         }
     )
 

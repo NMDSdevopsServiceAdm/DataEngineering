@@ -1,3 +1,5 @@
+import re
+
 import polars as pl
 import polars.selectors as cs
 
@@ -298,7 +300,8 @@ def fix_legacy_job_roles(
     and all its values from given dict are summed, then all value columns
     are dropped.
 
-    Job role 33 (personal assistant) is hard coded to be dropped.
+    Job role 33 (personal assistant) is hard coded to be dropped without
+    merging their values.
 
     Args:
         lf (pl.LazyFrame): ASC-WDS workplace LazyFrame.
@@ -310,8 +313,8 @@ def fix_legacy_job_roles(
     """
     job_role_cols = lf.collect_schema().names()
     job_role_suffixes = list(
-        set([col[4:] for col in job_role_cols])
-    )  # Unique list after removing 'jr' and job role code
+        {re.sub(r"^jr\d+", "", col) for col in job_role_cols if col.startswith("jr")}
+    )
 
     lf = lf.with_columns(
         legacy_replacement_expressions(legacy_job_roles_dict, job_role_suffixes),
