@@ -64,7 +64,7 @@
                     },
                     "Wait For Worker": {
                       "Type": "Wait",
-                      "Seconds": 10,
+                      "Seconds": 60,
                       "Next": "Check Worker"
                    },
                     "Mark Worker Ready": {
@@ -104,7 +104,7 @@
                     },
                     "Wait For Workplace": {
                       "Type": "Wait",
-                      "Seconds": 10,
+                      "Seconds": 60,
                       "Next": "Check Workplace"
                     },
                     "Mark Workplace Ready": {
