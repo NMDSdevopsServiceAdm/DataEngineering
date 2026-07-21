@@ -288,9 +288,25 @@ legacy_job_roles_dict = {  # new: old
 }
 
 
-def fix_legacy_job_roles(lf: pl.LazyFrame, legacy_job_roles_dict: dict) -> pl.LazyFrame:
+def fix_legacy_job_roles(
+    lf: pl.LazyFrame, legacy_job_roles_dict: dict[str, list[str]]
+) -> pl.LazyFrame:
     """
-    Fix legacy job roles.
+    Merge ASC-WDS workplace job role columns.
+
+    The ASC-WDS workplace job role columns corresponding to each key
+    and all its values from given dict are summed, then all value columns
+    are dropped.
+
+    Job role 33 (personal assistant) is hard coded to be dropped.
+
+    Args:
+        lf (pl.LazyFrame): ASC-WDS workplace LazyFrame.
+        legacy_job_roles_dict (dict[str, list[str]]): A mapping of job roles. E.g.
+            {new: [old_1, old_2...]}
+
+    Returns:
+        pl.LazyFrame: Input LazyFrame without given job role columns.
     """
     job_role_cols = lf.collect_schema().names()
     job_role_suffixes = list(
