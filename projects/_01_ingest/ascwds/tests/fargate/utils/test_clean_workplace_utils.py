@@ -262,6 +262,7 @@ class TestFixLegacyJobRoles:
             "jr40emp": 10,
             "jr41emp": 11,
             "jr42emp": 12,
+            "jr33emp": 1000,
             "jr12strt": 1,
             "jr13strt": 2,
             "jr14strt": 3,
@@ -274,6 +275,7 @@ class TestFixLegacyJobRoles:
             "jr40strt": 10,
             "jr41strt": 11,
             "jr42strt": 12,
+            "jr33strt": 1000,
         }
     )
 
