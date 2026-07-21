@@ -248,49 +248,37 @@ class TestBoundingExpressions:
 
 
 class TestFixLegacyJobRoles:
+    test_jr_dict = {
+        "01": ["02"],
+        "03": ["04", "05"],
+    }
     test_lf = pl.LazyFrame(
         {
-            "jr12emp": 1,
-            "jr13emp": 2,
-            "jr14emp": 3,
-            "jr18emp": 4,
-            "jr19emp": 5,
-            "jr20emp": 6,
-            "jr21emp": 7,
-            "jr22emp": 8,
-            "jr27emp": 9,
-            "jr40emp": 10,
-            "jr41emp": 11,
-            "jr42emp": 12,
-            "jr33emp": 1000,
-            "jr12strt": 1,
-            "jr13strt": 2,
-            "jr14strt": 3,
-            "jr18strt": 4,
-            "jr19strt": 5,
-            "jr20strt": 6,
-            "jr21strt": 7,
-            "jr22strt": 8,
-            "jr27strt": 9,
-            "jr40strt": 10,
-            "jr41strt": 11,
-            "jr42strt": 12,
-            "jr33strt": 1000,
+            "jr01emp": 1,
+            "jr02emp": 2,
+            "jr03emp": 3,
+            "jr04emp": 4,
+            "jr05emp": 5,
+            "jr33emp": 1000,  # personal assistants are hard coded to remove.
+            "jr01strt": 1,
+            "jr02strt": 2,
+            "jr03strt": 3,
+            "jr04strt": 4,
+            "jr05strt": 5,
+            "jr33strt": 1000,  # personal assistants are hard coded to remove.
         }
     )
 
     expected_lf = pl.LazyFrame(
         {
-            "jr27emp": 17,
-            "jr40emp": 21,
-            "jr42emp": 40,
-            "jr27strt": 17,
-            "jr40strt": 21,
-            "jr42strt": 40,
+            "jr01emp": 3,
+            "jr03emp": 12,
+            "jr01strt": 3,
+            "jr03strt": 12,
         }
     )
 
     def test_fix_legacy_job_roles(self):
-        returned_lf = job.fix_legacy_job_roles(self.test_lf)
+        returned_lf = job.fix_legacy_job_roles(self.test_lf, self.test_jr_dict)
 
         pl_testing.assert_frame_equal(returned_lf, self.expected_lf)

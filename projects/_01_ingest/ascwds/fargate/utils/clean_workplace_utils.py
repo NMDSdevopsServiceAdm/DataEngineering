@@ -287,10 +287,8 @@ legacy_job_roles_dict = {  # new: old
     "42": ["12", "13", "14", "18", "19", "20", "21"],
 }
 
-job_roles_to_remove = ["33"]
 
-
-def fix_legacy_job_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
+def fix_legacy_job_roles(lf: pl.LazyFrame, legacy_job_roles_dict: dict) -> pl.LazyFrame:
     """
     Fix legacy job roles.
     """
@@ -306,7 +304,7 @@ def fix_legacy_job_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
     old_roles = [old for olds in legacy_job_roles_dict.values() for old in olds]
     cols_to_drop = [
         f"jr{role}{suffix}"
-        for role in old_roles + job_roles_to_remove
+        for role in old_roles + ["33"]
         for suffix in job_role_suffixes
     ]
     lf = lf.drop(cols_to_drop)
