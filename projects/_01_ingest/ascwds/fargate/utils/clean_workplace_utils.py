@@ -308,15 +308,13 @@ def fix_legacy_job_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     lf = lf.with_columns(
         legacy_replacement_expressions(legacy_job_roles_dict, job_role_suffixes),
-        # pl.sum_horizontal(cs.starts_with("jr22", "jr27") & cs.ends_with("emp")).alias(
-        #     "jr27emp"
-        # ),
-        # pl.sum_horizontal(cs.starts_with("jr22", "jr27") & cs.ends_with("strt")).alias(
-        #     "jr27strt"
-        # ),
-        # pl.sum_horizontal(pl.col("jr22emp"), pl.col("jr27emp")).alias("jr27emp"),
-        # pl.sum_horizontal(pl.col("jr22strt"), pl.col("jr27strt")).alias("jr27strt"),
-    ).drop("jr22emp", "jr22strt")
+    )
+
+    old_roles = list(legacy_job_roles_dict.keys())
+    cols_to_drop = [
+        f"jr{role}{suffix}" for role in old_roles for suffix in job_role_suffixes
+    ]
+    lf = lf.drop(cols_to_drop)
 
     return lf
 
@@ -327,4 +325,4 @@ def legacy_replacement_expressions(job_roles, slv_suffixes):
             print(old, new, suffix)
             yield pl.sum_horizontal(
                 (cs.starts_with(f"jr{new}", f"jr{old}") & cs.ends_with(suffix))
-            ).name.keep()
+            ).alias(f"jr{new}{suffix}")

@@ -250,17 +250,41 @@ class TestBoundingExpressions:
 class TestFixLegacyJobRoles:
     test_lf = pl.LazyFrame(
         {
-            "jr22emp": 1,
-            "jr22strt": 2,
-            "jr27emp": 3,
-            "jr27strt": 4,
+            "jr12emp": 1,
+            # "jr13emp": 2,
+            # "jr14emp": 3,
+            # "jr18emp": 4,
+            # "jr19emp": 5,
+            # "jr20emp": 6,
+            # "jr21emp": 7,
+            "jr22emp": 8,
+            "jr27emp": 9,
+            "jr40emp": 10,
+            "jr41emp": 11,
+            "jr42emp": 12,
+            "jr12strt": 1,
+            # "jr13strt": 2,
+            # "jr14strt": 3,
+            # "jr18strt": 4,
+            # "jr19strt": 5,
+            # "jr20strt": 6,
+            # "jr21strt": 7,
+            "jr22strt": 8,
+            "jr27strt": 9,
+            "jr40strt": 10,
+            "jr41strt": 11,
+            "jr42strt": 12,
         }
     )
 
     expected_lf = pl.LazyFrame(
         {
-            "jr27emp": 4,
-            "jr27strt": 6,
+            "jr27emp": 17,
+            "jr40emp": 21,
+            "jr42emp": 13,
+            "jr27strt": 17,
+            "jr40strt": 21,
+            "jr42strt": 13,
         }
     )
 
@@ -268,4 +292,3 @@ class TestFixLegacyJobRoles:
         returned_lf = job.fix_legacy_job_roles(self.test_lf)
 
         pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
-        pass
