@@ -284,15 +284,15 @@ class BoundingExpressions:
     )
 
 
-def fix_legacy_job_roles(
+def merge_legacy_job_roles(
     lf: pl.LazyFrame, legacy_job_roles_dict: dict[str, list[str]]
 ) -> pl.LazyFrame:
     """
     Merge ASC-WDS workplace job role columns.
 
-    The ASC-WDS workplace job role columns corresponding to each key
-    and all its values from given dict are summed, then all value columns
-    are dropped.
+    For each key job role code in legacy_job_roles_dict, sums the key job role
+    together with all the listed job role columns. This sum then replaces the
+    key job roles value. The listed job role columns are then dropped.
 
     Args:
         lf (pl.LazyFrame): ASC-WDS workplace LazyFrame.
@@ -313,10 +313,7 @@ def fix_legacy_job_roles(
     )
 
     old_roles = [old for olds in legacy_job_roles_dict.values() for old in olds]
-    cols_to_drop = [
-        f"jr{role}{suffix}" for role in old_roles for suffix in job_role_suffixes
-    ]
-    lf = lf.drop(cols_to_drop)
+    lf = lf.drop(cs.starts_with(*[f"jr{role}" for role in old_roles]))
 
     return lf
 

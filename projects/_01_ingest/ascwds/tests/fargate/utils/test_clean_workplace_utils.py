@@ -285,6 +285,6 @@ class TestFixLegacyJobRoles:
     )
 
     def test_function_returns_expected_data(self):
-        returned_lf = job.fix_legacy_job_roles(self.test_lf, self.test_jr_dict)
+        returned_lf = job.merge_legacy_job_roles(self.test_lf, self.test_jr_dict)
 
         pl_testing.assert_frame_equal(returned_lf, self.expected_lf)

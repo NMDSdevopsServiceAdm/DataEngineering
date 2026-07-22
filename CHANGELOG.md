@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 - Added workplace and worker datasets to syncing to branch.
 
-- Added fix_legacy_job_roles function to clean_ascwds_workplace job.
+- Added merge_legacy_job_roles function to clean_ascwds_workplace job.
 
 ### Changed
 - Pull clean workplace columns into merge job within SLV pipeline.

@@ -82,6 +82,12 @@ data_labels_schema = pl.Schema(
     [(DLC.column_name, pl.String), (DLC.code, pl.String), (DLC.label, pl.String)]
 )
 
+legacy_job_roles_dict = {
+    "27": ["22"],
+    "40": ["41"],
+    "42": ["12", "13", "14", "18", "19", "20", "21"],
+}
+
 
 def main(
     workplace_source: str,
@@ -173,12 +179,7 @@ def main(
         bounds.slv_expr,
     )
 
-    legacy_job_roles_dict = {
-        "27": ["22"],
-        "40": ["41"],
-        "42": ["12", "13", "14", "18", "19", "20", "21"],
-    }
-    workplace_lf = wUtils.fix_legacy_job_roles(workplace_lf, legacy_job_roles_dict)
+    workplace_lf = wUtils.merge_legacy_job_roles(workplace_lf, legacy_job_roles_dict)
 
     utils.sink_to_parquet(workplace_lf, output_path=cleaned_workplace_destination)
 
