@@ -159,8 +159,8 @@ def main(
         expr.is_slv_job_role_column(),
     )
 
-    # Personal assistant data was collected in the NMDS-SC up to Oct 2017.
-    # This role has a dedicated survey, therefore NMDS-SC data is not required.
+    # Personal assistant data was collected in the ASC-WDS up to Oct 2017.
+    # This role has a dedicated survey, therefore ASC-WDS data is not required.
     slv_lf = slv_lf.drop(cs.starts_with("jr33"))
 
     slv_lf = slv_lf.with_columns(pl.col(AWPClean.import_date).cast(pl.String))
