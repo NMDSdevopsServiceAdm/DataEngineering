@@ -24,6 +24,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`. 
 
+- Fixed Schema mismatch error while generating grouped providers output.
+
 
 
 ## [v2026.06.0] - 15/07/2026
