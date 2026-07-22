@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
 - Added workplace and worker datasets to syncing to branch.
 
 ### Changed
+- Reshaped the wide SLV job-role columns in `_00_prepare` from one column per (job-role code, metric) into a long-format table with one row per (establishment, import date, job role code), dynamically discovering job-role codes from the schema rather than a hardcoded list. Updated the merge job's stale column selection and the prepare validation's row-count check to match.
+
 - Pull clean workplace columns into merge job within SLV pipeline.
 
 - Updated references from workplace data for 'reconciliation' process to 'SfC internal' as the dataset is used in multiple jobs
@@ -24,7 +26,7 @@ All notable changes to this project will be documented in this file.
 - Get Workplace data schema from `discover_combined_schema` within Clean Workplace Job. Updated tests for the same.
 
 ### Fixed
-- Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`. 
+- Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
 
 
 
