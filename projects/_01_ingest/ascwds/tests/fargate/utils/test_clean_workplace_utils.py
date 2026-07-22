@@ -262,7 +262,6 @@ class TestFixLegacyJobRoles:
             AWPClean.job_role_05_employees: 5,     # group 2 - sum single new and multiple old
             AWPClean.job_role_06_employees: None,  # group 3 - sum null and value
             AWPClean.job_role_07_employees: 6,     # group 3 - sum null and value
-            AWPClean.job_role_33_employees: 1000,  # personal assistants are hard coded to remove.
             AWPClean.job_role_01_starters: 10,     # handles different column suffixes
             AWPClean.job_role_02_starters: 20,     # handles different column suffixes
             AWPClean.job_role_03_starters: 30,     # handles different column suffixes
@@ -270,7 +269,6 @@ class TestFixLegacyJobRoles:
             AWPClean.job_role_05_starters: 50,     # handles different column suffixes
             AWPClean.job_role_06_starters: None,   # group 4 - sum null and null
             AWPClean.job_role_07_starters: None,   # group 4 - sum null and null
-            AWPClean.job_role_33_starters: 1000,   # personal assistants are hard coded to remove.
             "not_a_job_role_column": "A",
         }
     ) # fmt: skip

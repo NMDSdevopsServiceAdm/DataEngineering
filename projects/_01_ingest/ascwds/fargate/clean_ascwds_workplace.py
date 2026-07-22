@@ -1,4 +1,5 @@
 import polars as pl
+import polars.selectors as cs
 
 from polars_utils import cleaning_utils as cUtils
 from polars_utils import expressions as expr
@@ -151,6 +152,10 @@ def main(
         *[AWPClean.establishment_id, AWPClean.import_date],
         expr.is_slv_job_role_column(),
     )
+
+    # Personal assistant data was collected in the NMDS-SC up to Oct 2017.
+    # This role has a dedicated survey, therefore NMDS-SC data is not required.
+    slv_lf = slv_lf.drop(cs.starts_with("jr33"))
 
     slv_lf = slv_lf.with_columns(pl.col(AWPClean.import_date).cast(pl.String))
 

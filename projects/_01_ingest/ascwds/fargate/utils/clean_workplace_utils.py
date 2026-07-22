@@ -294,9 +294,6 @@ def fix_legacy_job_roles(
     and all its values from given dict are summed, then all value columns
     are dropped.
 
-    Job role 33 (personal assistant) is hard coded to be dropped without
-    merging their values.
-
     Args:
         lf (pl.LazyFrame): ASC-WDS workplace LazyFrame.
         legacy_job_roles_dict (dict[str, list[str]]): A mapping of job roles. E.g.
@@ -317,9 +314,7 @@ def fix_legacy_job_roles(
 
     old_roles = [old for olds in legacy_job_roles_dict.values() for old in olds]
     cols_to_drop = [
-        f"jr{role}{suffix}"
-        for role in old_roles + ["33"]
-        for suffix in job_role_suffixes
+        f"jr{role}{suffix}" for role in old_roles for suffix in job_role_suffixes
     ]
     lf = lf.drop(cols_to_drop)
 
