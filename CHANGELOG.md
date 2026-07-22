@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a skeleton `_00_prepare` task (with validation) ahead of the merge step in the SLV pipeline, and rewired the merge step to read its output.
+
 - Added `discover_combined_schema` function in Polars Utils to generate combined schema from a partitioned dataset.
 
 - Added workplace and worker datasets to syncing to branch.

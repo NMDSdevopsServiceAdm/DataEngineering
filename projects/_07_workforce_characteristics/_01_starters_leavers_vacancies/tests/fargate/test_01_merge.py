@@ -9,7 +9,7 @@ PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacanc
 class MainTests(unittest.TestCase):
     METADATA_SOURCE = "some/source"
     JOB_ROLE_ESTIMATES_SOURCE = "another/source"
-    CLEANED_ASCWDS_WORKPLACE_SOURCE = "other/source"
+    PREPARED_SLV_DATASET_SOURCE = "other/source"
     MERGED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
@@ -30,7 +30,7 @@ class MainTests(unittest.TestCase):
         job.main(
             self.METADATA_SOURCE,
             self.JOB_ROLE_ESTIMATES_SOURCE,
-            self.CLEANED_ASCWDS_WORKPLACE_SOURCE,
+            self.PREPARED_SLV_DATASET_SOURCE,
             self.MERGED_DATA_DESTINATION,
         )
 
@@ -42,7 +42,7 @@ class MainTests(unittest.TestCase):
                 source=self.JOB_ROLE_ESTIMATES_SOURCE,
                 selected_columns=job.job_role_estimates_columns,
             ),
-            call(self.CLEANED_ASCWDS_WORKPLACE_SOURCE),
+            call(self.PREPARED_SLV_DATASET_SOURCE),
         ]
         scan_parquet_mock.assert_has_calls(scan_calls)
 
