@@ -8,6 +8,9 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_job_roles import (
+    AscwdsWorkplaceJobRolesColumns as AWPJobRoles,
+)
 
 COMPARE_COLS_TO_IMPORT = [
     AWPClean.establishment_id,
@@ -33,7 +36,8 @@ def main(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=COMPARE_COLS_TO_IMPORT,
     )
-    expected_row_count = compare_df.height
+    job_role_code_count = source_df.select(AWPJobRoles.job_role_code).n_unique()
+    expected_row_count = compare_df.height * job_role_code_count
 
     validation = (
         pb.Validate(
