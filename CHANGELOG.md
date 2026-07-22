@@ -6,9 +6,13 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a skeleton `_00_prepare` task (with validation) ahead of the merge step in the SLV pipeline, and rewired the merge step to read its output.
+
 - Added `discover_combined_schema` function in Polars Utils to generate combined schema from a partitioned dataset.
 
 - Added workplace and worker datasets to syncing to branch.
+
+- Added placeholders to slv prepare job, a utils script for prep with placeholders and tests placeholders.
 
 - Added merge_legacy_job_roles function to clean_ascwds_workplace job.
 
@@ -26,7 +30,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
 
-
+- Fixed Schema mismatch error while generating grouped providers output.
+- Added missing error notifications for the CQC/ASC-WDS orchestrator and crawler-refresh steps in three ingestion pipelines, and a bounded timeout for the ASC-WDS worker/workplace file-arrival polling loops.
 
 ## [v2026.06.0] - 15/07/2026
 

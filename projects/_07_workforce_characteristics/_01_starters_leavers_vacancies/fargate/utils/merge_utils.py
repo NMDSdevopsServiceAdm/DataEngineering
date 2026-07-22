@@ -1,9 +1,3 @@
-def convert_ascwds_job_role_columns_to_rows():
-    """
-    Placeholder function to convert ASCWDS job role columns to rows."""
-    pass
-
-
 def join_datasets():
     """
     Placeholder function to join the datasets."""
