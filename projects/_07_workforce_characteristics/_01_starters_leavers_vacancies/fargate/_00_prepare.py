@@ -1,4 +1,6 @@
+import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as pUtils
 from polars_utils import utils
+from polars_utils.cleaning_utils import apply_categorical_labels
 
 
 def main(
@@ -12,6 +14,17 @@ def main(
         prepared_data_destination (str): destination for output
     """
     workplace_lf = utils.scan_parquet(cleaned_ascwds_workplace_source)
+
+    # TODO: 1796 - Placeholder only.
+    # pUtils.reduce_to_published_roles()
+
+    # TODO: No ticket - Pivot job role columns into rows to create column for job role number and columns for emps, starters, leavers and vacancies.
+
+    # TODO: 1795 - Placeholder only.
+    # pUtils.convert_job_role_strings_to_number_only()
+
+    # TODO: 1794 - Placeholder only.
+    # workplace_lf = apply_categorical_labels()
 
     utils.sink_to_parquet(
         lazy_df=workplace_lf,
