@@ -49,7 +49,7 @@ job_role_estimates_columns = [
 def main(
     metadata_source: str,
     job_role_estimates_source: str,
-    cleaned_ascwds_workplace_source: str,
+    prepared_slv_dataset_source: str,
     merged_data_destination: str,
 ) -> None:
     """
@@ -58,7 +58,7 @@ def main(
     Args:
         metadata_source (str): path to the estimates ind cqc filled posts data
         job_role_estimates_source (str): path to the job role estimates data
-        cleaned_ascwds_workplace_source (str): path to the cleaned ascwds workplace data
+        prepared_slv_dataset_source (str): path to the cleaned ascwds workplace data
         merged_data_destination (str): destination for merged output
     """
 
@@ -69,7 +69,7 @@ def main(
         source=job_role_estimates_source, selected_columns=job_role_estimates_columns
     )
     cleaned_ascwds_workplace_lf = utils.scan_parquet(
-        cleaned_ascwds_workplace_source
+        prepared_slv_dataset_source
     ).select(
         *[AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date],
         expr.is_slv_job_role_column()
@@ -101,7 +101,7 @@ if __name__ == "__main__":
             "Source s3 directory for job role estimates data",
         ),
         (
-            "--cleaned_ascwds_workplace_source",
+            "--prepared_slv_dataset_source",
             "Source s3 directory for cleaned ascwds workplace data",
         ),
         (
@@ -112,6 +112,6 @@ if __name__ == "__main__":
     main(
         metadata_source=args.metadata_source,
         job_role_estimates_source=args.job_role_estimates_source,
-        cleaned_ascwds_workplace_source=args.cleaned_ascwds_workplace_source,
+        prepared_slv_dataset_source=args.prepared_slv_dataset_source,
         merged_data_destination=args.merged_data_destination,
     )
