@@ -163,7 +163,7 @@ def main(
 
     workplace_lf = workplace_lf.join(
         slv_lf, on=[AWPClean.establishment_id, AWPClean.import_date], how="left"
-    ).drop(AWPClean.import_date)
+    )
 
     workplace_lf = workplace_lf.with_columns(
         pl.col(INT_COLUMNS).cast(pl.Int32, strict=False),
