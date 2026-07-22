@@ -352,7 +352,7 @@ def legacy_replacement_expressions(
             cols = cs.starts_with(*prefixes) & cs.ends_with(suffix)
             yield (
                 pl.when(pl.all_horizontal(cols.is_null()))
-                .then(None)
+                .then(pl.lit(None))
                 .otherwise(pl.sum_horizontal(cols))
                 .alias(f"jr{new}{suffix}")
             )
