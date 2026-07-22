@@ -141,7 +141,7 @@
                                 "--bucket_name",
                                 "${dataset_bucket_name}",
                                 "--source_path",
-                                "domain=SfC/dataset=ascwds_for_sfc_internal_polars/",
+                                "domain=SfC/dataset=ascwds_for_sfc_internal/",
                                 "--reports_path",
                                 "domain=data_validation_reports/dataset=validation_ascwds_for_sfc_internal/"
                               ]

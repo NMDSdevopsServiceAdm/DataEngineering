@@ -44,6 +44,7 @@ columns = {
     ASCWPClean.total_vacancies: "String",
     ASCWPClean.main_service_id: "String",
     ASCWPClean.version: "String",
+    ASCWPClean.import_date: "String",
     ASCWPClean.ascwds_workplace_import_date: "Date",
     ASCWPClean.master_update_date_org: "Date",
     ASCWPClean.purge_date: "Date",
