@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 
 - Added workplace and worker datasets to syncing to branch.
 
+- Added placeholders to slv prepare job, a utils script for prep with placeholders and tests placeholders.
+
 ### Changed
 - Pull clean workplace columns into merge job within SLV pipeline.
 
