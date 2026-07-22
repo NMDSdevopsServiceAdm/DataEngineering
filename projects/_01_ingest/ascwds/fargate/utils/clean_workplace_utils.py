@@ -334,6 +334,8 @@ def legacy_replacement_expressions(
     ASC-WDS workplace job role columns in the given legacy_job_roles_dict
     that have the given slv_suffixes.
 
+    When all columns to sum are null then expression produces null.
+
     Args:
         legacy_job_roles_dict (dict[str, list[str]]): A mapping of job roles.
             E.g. {new: [old_1, old_2...]}
@@ -347,6 +349,10 @@ def legacy_replacement_expressions(
     for new, olds in legacy_job_roles_dict.items():
         for suffix in slv_suffixes:
             prefixes = [f"jr{new}"] + [f"jr{old}" for old in olds]
-            yield pl.sum_horizontal(
-                (cs.starts_with(*prefixes) & cs.ends_with(suffix))
-            ).alias(f"jr{new}{suffix}")
+            cols = cs.starts_with(*prefixes) & cs.ends_with(suffix)
+            yield (
+                pl.when(pl.all_horizontal(cols.is_null()))
+                .then(None)
+                .otherwise(pl.sum_horizontal(cols))
+                .alias(f"jr{new}{suffix}")
+            )

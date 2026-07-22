@@ -248,10 +248,7 @@ class TestBoundingExpressions:
 
 
 class TestFixLegacyJobRoles:
-    test_jr_dict = {
-        "01": ["02"],
-        "03": ["04", "05"],
-    }
+    test_jr_dict = {"01": ["02"], "03": ["04", "05"], "06": ["07"]}
     test_lf = pl.LazyFrame(
         {
             AWPClean.job_role_01_employees: 1,
@@ -259,12 +256,16 @@ class TestFixLegacyJobRoles:
             AWPClean.job_role_03_employees: 3,
             AWPClean.job_role_04_employees: 4,
             AWPClean.job_role_05_employees: 5,
+            AWPClean.job_role_06_employees: None,
+            AWPClean.job_role_07_employees: None,
             AWPClean.job_role_33_employees: 1000,  # personal assistants are hard coded to remove.
             AWPClean.job_role_01_starters: 10,
             AWPClean.job_role_02_starters: 20,
             AWPClean.job_role_03_starters: 30,
             AWPClean.job_role_04_starters: 40,
             AWPClean.job_role_05_starters: 50,
+            AWPClean.job_role_06_starters: None,
+            AWPClean.job_role_07_starters: None,
             AWPClean.job_role_33_starters: 1000,  # personal assistants are hard coded to remove.
             "not_a_job_role_column": "A",
         }
@@ -273,8 +274,10 @@ class TestFixLegacyJobRoles:
         {
             AWPClean.job_role_01_employees: 3,
             AWPClean.job_role_03_employees: 12,
+            AWPClean.job_role_06_employees: None,
             AWPClean.job_role_01_starters: 30,
             AWPClean.job_role_03_starters: 120,
+            AWPClean.job_role_06_starters: None,
             "not_a_job_role_column": "A",
         }
     )
