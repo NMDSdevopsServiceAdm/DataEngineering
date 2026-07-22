@@ -17,7 +17,7 @@ Datasets here are large in both rows and columns, and OOM is a recurring real pr
 
 - Keep the pipeline lazy end-to-end; use `scan_parquet` / `scan_csv`, not `read_*`; `.collect()` once, at the end, not mid-pipeline.
 - `.select()` / `.drop()` unneeded columns as early as possible — with wide datasets, column count matters as much as row count.
-- Be deliberate around operations that can force materialisation or blow up memory: `.unique()` on high-cardinality columns, `.pivot()`, `.explode()`, joins with row fan-out, `.collect().to_pandas()` round-trips.
+- Be deliberate around operations that can force materialisation or blow up memory: `.unique()` on high-cardinality columns, `.pivot()`, `.explode()`, joins with row fan-out, `.collect().to_pandas()` round-trips. Even a fan-out-free 1:1 join (e.g. broadcasting one computed value back onto every row) has real memory overhead of its own — see `.over()` vs join-based rewrites below.
 - Prefer `Categorical` / `Enum` over `String` for low-cardinality repeated columns.
 - Prefer `float32` over `float64` where precision requirements allow — call out explicitly when a trade-off matters (e.g. long aggregations/sums where error can accumulate).
 - If a lazy chain is unintentionally broken (an early `.collect()`, a `.to_pandas()`, list-comprehension row-wise logic), flag it — that's a correctness-adjacent issue here, not a style nitpick. Some `.collect()` are ok as they directly follow an aggregation which results in a very small LazyFrame.
@@ -26,7 +26,7 @@ Datasets here are large in both rows and columns, and OOM is a recurring real pr
 
 `.collect(engine="streaming")` doesn't yet cover everything — some operations silently fall back to the in-memory engine, which defeats the point for large data. Below is what's **not yet natively streaming**, last checked 2026-07-14 against [pola-rs/polars#20947](https://github.com/pola-rs/polars/issues/20947) (the project's own tracking issue — check it, don't rely on general knowledge, since this moves fast). Assume anything not listed here streams natively.
 
-- **`.over()` (window functions — relevant to our PySpark→Polars window-function migration):** only `.over(mapping_strategy="group_to_rows")` translates to streaming. Plain `.over()` → group-by+join, and `.over(keys)` with sorted keys, do not yet.
+- **`.over()` (window functions — relevant to our PySpark→Polars window-function migration):** only `.over(mapping_strategy="group_to_rows")` translates to streaming. Plain `.over()` → group-by+join, and `.over(keys)` with sorted keys, do not yet. Before rewriting a plain `.over()` this way to chase streaming support, read the memory caveat just below — the group-by+join rewrite is not automatically a memory win.
 - **Out-of-core (i.e. runs in streaming mode but still needs to fit in memory):** `group_by`, equi-joins, `sort`.
 - **Aggregates:** `implode`, median/quantile, `str.join`.
 - **Other expressions:** `.replace()`, `is_last_distinct`/`is_unique`/`is_duplicated`, `reshape`, `qcut`, `sample`, `pct_change`, `interpolate_by`, `ewm_*_by`, `fill_null(strategy="min"/"max"/"mean")`, `search_sorted`, `random`, `rank`, `arg_sort`, `hist`, rolling functions (`rolling_sum`/`std`/`var`/etc.), `group_by_dynamic` with a sorted key.
@@ -37,6 +37,28 @@ Datasets here are large in both rows and columns, and OOM is a recurring real pr
 curl -s https://api.github.com/repos/pola-rs/polars/issues/20947 | python3 -c "import json,sys; print(json.load(sys.stdin)['body'])"
 ```
 (no auth needed — it's a public issue). Diff the checkboxes against this list and update it if anything's moved.
+
+### `.over()` vs join-based rewrites — "not streaming" ≠ "uses more memory"
+
+"Not on the streaming list above" is not a proxy for "will OOM" — they're different questions, and can point in opposite directions. Confirmed by direct measurement during a 2026-07-16 OOM investigation on the imputation pipeline:
+
+- `.over()`'s in-memory fallback computes and writes its result in place — measured at ~0 extra peak memory beyond holding the frame, whether it's a simple aggregate or an order-dependent shift/cumsum.
+- A join that **broadcasts a computed value back onto every row** (a left-join, or `join_asof` — the usual "streaming-friendly" `.over()` replacement) needs a hash/sorted structure *and* a new merged output frame. Measured several GB more peak memory than the equivalent `.over()` on a ~4M-row wide frame — real fan-out-free, 1:1 joins, not the row-fan-out case already flagged above. This is what caused a real production OOM in `merge_ascwds_and_pir_filled_post_submissions`. It was converted from `.over()` to "streaming-friendly" `join_asof`/`group_by`+join specifically to fix a memory issue, and that conversion made memory usage worse, not better.
+- Row-filtering joins (`how="semi"`/`"anti"`) avoid the merged-output cost since they don't attach new columns — this is why converting `split_dataset_for_imputation`'s `.over()` to a semi/anti join *did* fix an OOM there (see that function for a worked example). But recombining split frames afterwards (`pl.concat`) has its own real memory cost, so don't assume a join is free just because it's a semi/anti join.
+
+**Before converting a `.over()` to a join to fix a memory issue, compare — don't assume:**
+1. Check which engine actually runs each version: `POLARS_VERBOSE=1 python -c "your_lf.collect(engine='streaming')"` — a genuine streaming node (e.g. `sorted-group-by`) vs. a fallback (`in-memory-join`/`in-memory-map`). Node names alone don't tell you the memory cost, so:
+2. Measure actual peak memory for both versions, on a synthetic frame shaped like the real data (row count *and* column count — sort/join cost scales with frame width, not just row count):
+   ```python
+   import psutil
+   proc = psutil.Process()
+   before = proc.memory_info().peak_wset  # rss on Linux/Mac
+   result = candidate_lf.collect(engine="streaming")
+   print((proc.memory_info().peak_wset - before) / 1e6, "MB")
+   ```
+   Run each candidate in its own fresh process — peak memory only ever goes up within a process, so reusing one process across comparisons will contaminate later results with earlier peaks.
+
+**Temporary, remove after ~2026-10:** when you write or review code that chooses between `.over()` and a join-based rewrite, state which one you picked and why (streaming support, measured memory, row-filter vs column-broadcast). The team is still building intuition here — once we have enough real examples to trust default judgement, drop this instruction.
 
 ## Polars style
 
