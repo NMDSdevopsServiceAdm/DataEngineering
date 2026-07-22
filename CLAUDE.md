@@ -43,12 +43,10 @@ curl -s https://api.github.com/repos/pola-rs/polars/issues/20947 | python3 -c "i
 "Not on the streaming list above" is not a proxy for "will OOM" — they're different questions, and can point in opposite directions. Confirmed by direct measurement during a 2026-07-16 OOM investigation on the imputation pipeline:
 
 - `.over()`'s in-memory fallback computes and writes its result in place — measured at ~0 extra peak memory beyond holding the frame, whether it's a simple aggregate or an order-dependent shift/cumsum.
-- A join that **broadcasts a computed value back onto every row** (a left-join, or `join_asof` — the usual "streaming-friendly" `.over()` replacement) needs a hash/sorted structure *and* a new merged output frame. Measured several GB more peak memory than the equivalent `.over()` on a ~4M-row wide frame — real fan-out-free, 1:1 joins, not the row-fan-out case already flagged above. This is what caused a real production OOM in `merge_ascwds_and_pir_filled_post_submissions`: it was converted from `.over()` to "streaming-friendly" `join_asof`/`group_by`+join specifically to fix a memory issue, and that conversion made memory usage worse, not better.
+- A join that **broadcasts a computed value back onto every row** (a left-join, or `join_asof` — the usual "streaming-friendly" `.over()` replacement) needs a hash/sorted structure *and* a new merged output frame. Measured several GB more peak memory than the equivalent `.over()` on a ~4M-row wide frame — real fan-out-free, 1:1 joins, not the row-fan-out case already flagged above. This is what caused a real production OOM in `merge_ascwds_and_pir_filled_post_submissions`. It was converted from `.over()` to "streaming-friendly" `join_asof`/`group_by`+join specifically to fix a memory issue, and that conversion made memory usage worse, not better.
 - Row-filtering joins (`how="semi"`/`"anti"`) avoid the merged-output cost since they don't attach new columns — this is why converting `split_dataset_for_imputation`'s `.over()` to a semi/anti join *did* fix an OOM there (see that function for a worked example). But recombining split frames afterwards (`pl.concat`) has its own real memory cost, so don't assume a join is free just because it's a semi/anti join.
 
-**Before converting a `.over()` to a join to fix a memory issue:** confirm the replacement is a row filter, not a column broadcast, and verify with the method below — don't assume streaming-labeled means memory-safe, and don't assume `.over()` is the problem by default.
-
-**How to test — compare, don't assume:**
+**Before converting a `.over()` to a join to fix a memory issue, compare — don't assume:**
 1. Check which engine actually runs each version: `POLARS_VERBOSE=1 python -c "your_lf.collect(engine='streaming')"` — a genuine streaming node (e.g. `sorted-group-by`) vs. a fallback (`in-memory-join`/`in-memory-map`). Node names alone don't tell you the memory cost, so:
 2. Measure actual peak memory for both versions, on a synthetic frame shaped like the real data (row count *and* column count — sort/join cost scales with frame width, not just row count):
    ```python
@@ -59,6 +57,8 @@ curl -s https://api.github.com/repos/pola-rs/polars/issues/20947 | python3 -c "i
    print((proc.memory_info().peak_wset - before) / 1e6, "MB")
    ```
    Run each candidate in its own fresh process — peak memory only ever goes up within a process, so reusing one process across comparisons will contaminate later results with earlier peaks.
+
+**Temporary, remove after ~2026-10:** when you write or review code that chooses between `.over()` and a join-based rewrite, state which one you picked and why (streaming support, measured memory, row-filter vs column-broadcast). The team is still building intuition here — once we have enough real examples to trust default judgement, drop this instruction.
 
 ## Polars style
 
