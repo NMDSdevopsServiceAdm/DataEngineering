@@ -18,7 +18,8 @@ def main(
     # TODO: 1796 - Placeholder only.
     # pUtils.reduce_to_published_roles()
 
-    # TODO: No ticket - Pivot job role columns into rows to create column for job role number and columns for emps, starters, leavers and vacancies.
+    # TODO: Backlog ticket/no number - Placeholder only.
+    # pUtils.pivot_job_role_cols_to_rows()
 
     # TODO: 1795 - Placeholder only.
     # pUtils.convert_job_role_strings_to_number_only()

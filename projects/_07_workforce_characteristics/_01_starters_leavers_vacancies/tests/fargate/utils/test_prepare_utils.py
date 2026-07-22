@@ -8,6 +8,11 @@ class TestReduceToPublishedRoles:
         pass
 
 
+class TestPivotJobRoleColsToRows:
+    def test_pivot_job_role_cols_to_rows(self):
+        pass
+
+
 class TestConvertJobRoleStringsToNumberOnly:
     def test_convert_job_role_strings_to_number_only(self):
         pass
