@@ -1,4 +1,5 @@
 import polars as pl
+import polars.selectors as cs
 
 from polars_utils import cleaning_utils as cUtils
 from polars_utils import expressions as expr
@@ -81,6 +82,12 @@ data_labels_schema = pl.Schema(
     [(DLC.column_name, pl.String), (DLC.code, pl.String), (DLC.label, pl.String)]
 )
 
+legacy_job_roles_dict = {
+    "27": ["22"],
+    "40": ["41"],
+    "42": ["12", "13", "14", "18", "19", "20", "21"],
+}
+
 
 def main(
     workplace_source: str,
@@ -116,6 +123,7 @@ def main(
     )
 
     data_labels_lf = pl.scan_csv(data_labels_source, schema=data_labels_schema)
+
     lf = cUtils.apply_categorical_labels(
         lf,
         data_labels_lf,
@@ -150,6 +158,11 @@ def main(
         *[AWPClean.establishment_id, AWPClean.import_date],
         expr.is_slv_job_role_column(),
     )
+
+    # Personal assistant data was collected in the ASC-WDS up to Oct 2017.
+    # This role has a dedicated survey, therefore ASC-WDS data is not required.
+    slv_lf = slv_lf.drop(cs.starts_with("jr33"))
+
     slv_lf = slv_lf.with_columns(pl.col(AWPClean.import_date).cast(pl.String))
 
     workplace_lf = workplace_lf.join(
@@ -165,6 +178,8 @@ def main(
         bounds.filled_posts_expr,
         bounds.slv_expr,
     )
+
+    workplace_lf = cUtils.merge_job_role_columns(workplace_lf, legacy_job_roles_dict)
 
     utils.sink_to_parquet(workplace_lf, output_path=cleaned_workplace_destination)
 
