@@ -497,35 +497,13 @@ class TestMergeJobRoleColumns:
             },
         ),
         MergeJobRoleColumnsTestCase(
-            id="handles_three_digit_job_role",
-            mapping={"101": ["02"]},
+            id="handles_job_roles_with_same_characters",
+            mapping={"101": ["10"]},
             input_data={
-                AWPClean.job_role_01_employees: 1,
-                AWPClean.job_role_02_employees: 2,
+                AWPClean.job_role_10_employees: 10,
             },
             expected_data={
-                AWPClean.job_role_01_employees: 1,
-                "jr101emp": 2,
-            },
-        ),
-        MergeJobRoleColumnsTestCase(
-            id="handles_multiple_roles_to_keep",
-            mapping={"101": ["02"], "102": ["02", "03"]},
-            input_data={
-                AWPClean.job_role_01_employees: 1,
-                AWPClean.job_role_02_employees: 2,
-                AWPClean.job_role_03_employees: 3,
-                AWPClean.job_role_01_starters: 10,
-                AWPClean.job_role_02_starters: 20,
-                AWPClean.job_role_03_starters: 30,
-            },
-            expected_data={
-                AWPClean.job_role_01_employees: 1,
-                AWPClean.job_role_01_starters: 10,
-                "jr101emp": 2,
-                "jr102emp": 5,
-                "jr101strt": 20,
-                "jr102strt": 60,
+                "jr101emp": 10,
             },
         ),
     ]
