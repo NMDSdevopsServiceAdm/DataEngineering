@@ -1,3 +1,5 @@
+import polars.selectors as cs
+
 import polars_utils.cleaning_utils as cUtils
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as pUtils
 from polars_utils import utils
@@ -5,8 +7,8 @@ from polars_utils import utils
 unpublished_roles_mapping = {
     "101": ["02", "03", "05", "24", "45", "47", "49", "50"], # other managers
     "102": ["35", "37"], # other regulated professions
-    "103": ["10", "11", "22", "23", "38"], # other direct care
-    "104": ["25", "26", "27", "34", "36", "39", "40", "41", "42", "44", "46", "48", "51"], # other
+    "103": ["10", "11", "23", "38"], # other direct care
+    "104": ["25", "26", "27", "34", "36", "39", "40", "42", "44", "46", "48", "51"], # other
 } # fmt: skip
 
 
@@ -25,6 +27,12 @@ def main(
 
     workplace_lf = cUtils.merge_job_role_columns(
         workplace_lf, unpublished_roles_mapping
+    )
+
+    # These columns refer to overall and job groups.
+    # They are not required because we only want job roles at this stage.
+    workplace_lf = workplace_lf.drop(
+        cs.matches(r"^jr(28|29|30|31|32)(emp|strt|stop|vacy)$")
     )
 
     # TODO: Backlog ticket/no number - Placeholder only.
