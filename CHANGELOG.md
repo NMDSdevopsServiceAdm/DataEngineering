@@ -76,6 +76,8 @@ All notable changes to this project will be documented in this file.
 
 - Added column selection to clean_ascwds_workplace to get workplace job role columns into dataset.
 
+- Converted merge_ascwds_and_pir_filled_post_submissions to polars.
+
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.
 
