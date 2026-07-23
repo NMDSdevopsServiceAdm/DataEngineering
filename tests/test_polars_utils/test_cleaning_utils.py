@@ -396,7 +396,7 @@ class TestMergeJobRoleColumns:
         "01": ["02"],
         "03": ["04", "05"],
         "06": ["07"],
-        "99": ["04", "05"],
+        "99": ["04", "05"],  # Role 99 does not exist in test data.
     }
     test_lf = pl.LazyFrame(
         {
