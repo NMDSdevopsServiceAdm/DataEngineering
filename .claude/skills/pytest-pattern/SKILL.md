@@ -5,12 +5,7 @@ description: Use when writing a new unit test in this repo, or migrating an exis
 
 # Writing a test in this repo
 
-New tests are pytest-style (the repo is mid-migration off `unittest`). Migrate opportunistically, scoped to what you're actually touching — don't mass-rewrite passing tests beyond that:
-
-- Editing one function/method → migrate just that function's test(s).
-- Editing a whole class → migrate its whole test class.
-- Editing a whole script/module → migrate the whole test file.
-- Editing at folder level (e.g. a full pipeline-stage migration) → migrate everything within that folder.
+New tests are pytest-style (the repo is mid-migration off `unittest`). Migrate opportunistically, scoped to what you're actually touching, not beyond it — see CLAUDE.md's "Migration & opportunistic upgrade scope" section for the general function/class/script/folder escalation ladder (it applies to tests the same way it applies to docstrings/naming).
 
 ## Structure
 

@@ -32,7 +32,7 @@ If there's nothing critical, say so plainly rather than inventing improvements t
 
 ## Validating a change
 
-If asked to validate before/during review, run the relevant unit tests (`pipenv run pytest ...`) and `terraform validate` where applicable — don't attempt to deploy or run code against AWS; CI/CD does the full-suite/full-data run automatically once the branch is pushed. The `gh` CLI isn't installed in this environment, so don't shell out to it to check PR/CI status — ask the user or read what's available locally instead.
+If asked to validate before/during review, see CLAUDE.md's "Environment & workflow" section for what's in scope (tests + `terraform validate`, never deploying or running against AWS) and what tooling isn't available (`gh` CLI).
 
 ## Ambiguity
 

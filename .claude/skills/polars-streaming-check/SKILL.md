@@ -29,4 +29,4 @@ To refresh:
 curl -s https://api.github.com/repos/pola-rs/polars/issues/20947 | python3 -c "import json,sys; print(json.load(sys.stdin)['body'])"
 ```
 
-(no auth needed — it's a public issue). Diff the checkboxes against the list above. If anything moved, update **both** this file and the equivalent list in the repo's `CLAUDE.md`, and bump the "last checked" date in both places.
+(no auth needed — it's a public issue). Diff the checkboxes against the list above. If anything moved, update the list and the "last checked" date **in this file only** — CLAUDE.md just points here and no longer carries its own copy of the list or date.
