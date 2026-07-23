@@ -67,6 +67,7 @@
                                 "--metadata_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=${ind_cqc_job_role_metadata}/",
                                 "--job_role_estimates_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=${ind_cqc_job_role_estimates}/",
                                 "--prepared_slv_dataset_source", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_00_prepare_slv/",
+                                "--employee_status_rates_source", "${dataset_bucket_uri}/domain=workforce_characteristics/dataset=empstat_rates/employee_status_rates.csv",
                                 "--merged_data_destination","${dataset_bucket_uri}/domain=workforce_characteristics/dataset=ind_cqc_01_merge_slv/"
                               ]
                             }

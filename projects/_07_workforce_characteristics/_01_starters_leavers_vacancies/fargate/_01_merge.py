@@ -6,7 +6,53 @@ from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.employee_status_rates_columns import (
+    EmployeeStatusRatesColumns as EmpStatRates,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+
+WEIGHTING_YEAR_COLUMN = (
+    "weighting_year"  # filter-only; not a class field since it's not an output column
+)
+TARGET_WEIGHTING_YEAR = (
+    "2025/26"  # hardcoded; file is temporary pending a real upstream pipeline
+)
+
+# The raw count/date columns below are calculation inputs for emp_stat_* upstream of this
+# file and are never used past the initial parse, so - like WEIGHTING_YEAR_COLUMN above -
+# they're kept as schema-local literals rather than EmployeeStatusRatesColumns fields.
+# scan_csv's `schema` must cover every column in the file, so they still need declaring here
+# even though they're dropped by the immediate `.select()` in main().
+employee_status_rates_schema = pl.Schema(
+    [
+        (EmpStatRates.service, pl.Categorical()),
+        (WEIGHTING_YEAR_COLUMN, pl.Categorical()),
+        (EmpStatRates.weighting_job_role, pl.Categorical()),
+        ("permanent", pl.String),
+        ("temporary", pl.String),
+        ("bank_or_pool", pl.String),
+        ("agency", pl.String),
+        ("other", pl.String),
+        ("filled_posts", pl.String),
+        ("weighting_date", pl.String),
+        (EmpStatRates.emp_stat_perm, pl.Float32),
+        (EmpStatRates.emp_stat_temp, pl.Float32),
+        (EmpStatRates.emp_stat_bank_or_pool, pl.Float32),
+        (EmpStatRates.emp_stat_agency, pl.Float32),
+        (EmpStatRates.emp_stat_other, pl.Float32),
+    ]
+)
+
+EMPLOYEE_STATUS_RATES_OUTPUT_COLUMNS = [
+    EmpStatRates.service,
+    WEIGHTING_YEAR_COLUMN,
+    EmpStatRates.weighting_job_role,
+    EmpStatRates.emp_stat_perm,
+    EmpStatRates.emp_stat_temp,
+    EmpStatRates.emp_stat_bank_or_pool,
+    EmpStatRates.emp_stat_agency,
+    EmpStatRates.emp_stat_other,
+]
 
 workplace_columns = [
     AWPClean.establishment_id,
@@ -46,10 +92,32 @@ job_role_estimates_columns = [
 ]
 
 
+def load_employee_status_rates_lf(source: str) -> pl.LazyFrame:
+    """
+    Loads and filters the temporary employee status rates reference csv.
+
+    Args:
+        source (str): path to the employee status rates csv
+
+    Returns:
+        pl.LazyFrame: employee status rates filtered to TARGET_WEIGHTING_YEAR, with
+            blank rows and the weighting_year column removed
+    """
+    lf = pl.scan_csv(source, schema=employee_status_rates_schema).select(
+        EMPLOYEE_STATUS_RATES_OUTPUT_COLUMNS
+    )
+    return (
+        lf.filter(~pl.all_horizontal(pl.all().is_null()))
+        .filter(pl.col(WEIGHTING_YEAR_COLUMN) == TARGET_WEIGHTING_YEAR)
+        .drop(WEIGHTING_YEAR_COLUMN)
+    )
+
+
 def main(
     metadata_source: str,
     job_role_estimates_source: str,
     prepared_slv_dataset_source: str,
+    employee_status_rates_source: str,
     merged_data_destination: str,
 ) -> None:
     """
@@ -59,6 +127,7 @@ def main(
         metadata_source (str): path to the estimates ind cqc filled posts data
         job_role_estimates_source (str): path to the job role estimates data
         prepared_slv_dataset_source (str): path to the cleaned ascwds workplace data
+        employee_status_rates_source (str): path to the employee status rates csv
         merged_data_destination (str): destination for merged output
     """
 
@@ -73,6 +142,10 @@ def main(
     ).select(
         *[AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date],
         expr.is_slv_job_role_column()
+    )
+
+    employee_status_rates_lf = load_employee_status_rates_lf(
+        employee_status_rates_source
     )
 
     # TODO: Placeholder only
@@ -105,6 +178,10 @@ if __name__ == "__main__":
             "Source s3 directory for cleaned ascwds workplace data",
         ),
         (
+            "--employee_status_rates_source",
+            "Source s3 directory for employee status rates data",
+        ),
+        (
             "--merged_data_destination",
             "Destination s3 directory for merged data",
         ),
@@ -113,5 +190,6 @@ if __name__ == "__main__":
         metadata_source=args.metadata_source,
         job_role_estimates_source=args.job_role_estimates_source,
         prepared_slv_dataset_source=args.prepared_slv_dataset_source,
+        employee_status_rates_source=args.employee_status_rates_source,
         merged_data_destination=args.merged_data_destination,
     )
