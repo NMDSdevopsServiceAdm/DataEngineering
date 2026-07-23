@@ -3,7 +3,7 @@ import projects._07_workforce_characteristics._01_starters_leavers_vacancies.far
 from polars_utils import utils
 
 unpublished_roles_mapping = {
-    "101": ["2", "3", "4", "24", "45", "47", "49", "50"], # other managers
+    "101": ["2", "3", "5", "24", "45", "47", "49", "50"], # other managers
     "102": ["35", "37"], # other regulated professions
     "103": ["10", "11", "22", "23", "38"], # other direct care
     "104": ["25", "26", "27", "34", "36", "39", "40", "41", "42", "44", "46", "48", "51"], # other
