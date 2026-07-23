@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added a skeleton `_00_prepare` task (with validation) ahead of the merge step in the SLV pipeline, and rewired the merge step to read its output.
 
-- Added loading of `employee_status_rates.csv` into the SLV merge job, filtered to the current weighting year, ready for future use in splitting job-role filled-post estimates by employment status.
+- Added loading of `employee_status_rates.csv` into the SLV merge job, filtered to the current weighting year, ready for future use in splitting job-role filled-post estimates by employment status. Column names are defined in `EmployeeStatusRatesColumns`.
 
 - Added `discover_combined_schema` function in Polars Utils to generate combined schema from a partitioned dataset.
 

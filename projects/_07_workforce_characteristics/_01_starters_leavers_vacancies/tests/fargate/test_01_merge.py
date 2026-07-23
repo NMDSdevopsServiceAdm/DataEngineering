@@ -15,7 +15,6 @@ class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.mUtils.apply_employment_status_magic_numbers")
     @patch(f"{PATCH_PATH}.mUtils.join_datasets")
-    @patch(f"{PATCH_PATH}.mUtils.convert_ascwds_job_role_columns_to_rows")
     @patch(f"{PATCH_PATH}.pl.scan_csv")
     @patch(f"{PATCH_PATH}.expr.is_slv_job_role_column")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
@@ -24,7 +23,6 @@ class TestMain:
         scan_parquet_mock: Mock,
         is_slv_job_role_column_mock: Mock,
         scan_csv_mock: Mock,
-        convert_ascwds_job_role_columns_to_rows_mock: Mock,
         join_datasets_mock: Mock,
         apply_employment_status_magic_numbers_mock: Mock,
         sink_to_parquet_mock: Mock,

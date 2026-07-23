@@ -80,21 +80,20 @@ def main(
         expr.is_slv_job_role_column()
     )
 
-    weighting_year_column = "weighting_year"
     target_weighting_year = "2025/26"
 
     employee_status_rates_schema = pl.Schema(
         [
             (EmpStatRates.service, pl.Categorical()),
-            (weighting_year_column, pl.Categorical()),
+            (EmpStatRates.weighting_year, pl.Categorical()),
             (EmpStatRates.weighting_job_role, pl.Categorical()),
-            ("permanent", pl.String),
-            ("temporary", pl.String),
-            ("bank_or_pool", pl.String),
-            ("agency", pl.String),
-            ("other", pl.String),
-            ("filled_posts", pl.String),
-            ("weighting_date", pl.String),
+            (EmpStatRates.permanent, pl.String),
+            (EmpStatRates.temporary, pl.String),
+            (EmpStatRates.bank_or_pool, pl.String),
+            (EmpStatRates.agency, pl.String),
+            (EmpStatRates.other, pl.String),
+            (EmpStatRates.filled_posts, pl.String),
+            (EmpStatRates.weighting_date, pl.String),
             (EmpStatRates.emp_stat_perm, pl.Float32),
             (EmpStatRates.emp_stat_temp, pl.Float32),
             (EmpStatRates.emp_stat_bank_or_pool, pl.Float32),
@@ -104,7 +103,7 @@ def main(
     )
     employee_status_rates_output_columns = [
         EmpStatRates.service,
-        weighting_year_column,
+        EmpStatRates.weighting_year,
         EmpStatRates.weighting_job_role,
         EmpStatRates.emp_stat_perm,
         EmpStatRates.emp_stat_temp,
@@ -117,8 +116,8 @@ def main(
         pl.scan_csv(employee_status_rates_source, schema=employee_status_rates_schema)
         .select(employee_status_rates_output_columns)
         .filter(~pl.all_horizontal(pl.all().is_null()))
-        .filter(pl.col(weighting_year_column) == target_weighting_year)
-        .drop(weighting_year_column)
+        .filter(pl.col(EmpStatRates.weighting_year) == target_weighting_year)
+        .drop(EmpStatRates.weighting_year)
     )
 
     # TODO: Placeholder only
