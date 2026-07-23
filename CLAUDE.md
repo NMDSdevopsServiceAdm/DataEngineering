@@ -9,7 +9,24 @@ Skills for Care Workforce Intelligence Team. Builds reproducible AWS data pipeli
   - `jobs/` folders — legacy **PySpark**.
   - `fargate/` folders — **Polars**, the target for all new work.
 - We are mid-migration from PySpark to Polars. Do not introduce new PySpark code unless explicitly asked or working in a file already containing PySpark code. When migrating a function, add a comment on the old PySpark function pointing at its replacement: `# converted to polars -> filepath.py` (see `.github/PULL_REQUEST_TEMPLATE/polars_migration_template.md`).
-- Tests are mid-migration from `unittest` to `pytest`. Write new tests in pytest style (see Testing below). Don't mass-rewrite passing unittest tests — migrate opportunistically when you're already touching a file.
+- Tests are mid-migration from `unittest` to `pytest`. Write new tests in pytest style (see Testing below). See "Migration & opportunistic upgrade scope" below for how far an upgrade should extend when you're already touching old-format code.
+
+## Migration & opportunistic upgrade scope
+
+- **PySpark → Polars conversions:** you have free rein to improve the function's name, docstring, and test names/structure as part of the conversion — don't feel bound to preserve old naming just for continuity. See the `polars-migration` skill.
+- **Opportunistic upgrades generally** (unittest → pytest, old docstring style, unclear naming, etc.): scope the upgrade to the smallest unit that contains your actual change, escalating only as far as you've actually touched:
+  - Editing one function/method → upgrade just that function's docstring and its corresponding test(s).
+  - Editing a whole class → upgrade the whole class (all its methods, docstrings, and its test class).
+  - Editing a whole script/module → upgrade the whole file's docstrings and its test file.
+  - Editing at folder level (e.g. migrating a full pipeline stage) → upgrade everything within that folder.
+- Don't upgrade sibling functions/files you haven't otherwise touched just because they're nearby and old-format — that's still a mass-rewrite, just a smaller one.
+
+## Environment & workflow
+
+- Run `pipenv shell` (or prefix commands with `pipenv run`) to access this project's installed packages — don't assume they're on the system/global Python.
+- The `gh` CLI is not installed in this environment. Don't shell out to `gh`; if a GitHub API action is genuinely needed, say so explicitly rather than assuming it's available.
+- Branch names must be **16 characters or fewer**.
+- CI/CD automatically runs all new code plus the full unit test suite against full data once pushed to a branch. Local/manual validation should run the relevant unit tests and `terraform validate` where applicable — never attempt to deploy or run code against AWS directly; that's the CI/CD pipeline's job.
 
 ## Scale is the top constraint
 
@@ -24,41 +41,11 @@ Datasets here are large in both rows and columns, and OOM is a recurring real pr
 
 ### Polars streaming engine — what isn't covered yet
 
-`.collect(engine="streaming")` doesn't yet cover everything — some operations silently fall back to the in-memory engine, which defeats the point for large data. Below is what's **not yet natively streaming**, last checked 2026-07-14 against [pola-rs/polars#20947](https://github.com/pola-rs/polars/issues/20947) (the project's own tracking issue — check it, don't rely on general knowledge, since this moves fast). Assume anything not listed here streams natively.
-
-- **`.over()` (window functions — relevant to our PySpark→Polars window-function migration):** only `.over(mapping_strategy="group_to_rows")` translates to streaming. Plain `.over()` → group-by+join, and `.over(keys)` with sorted keys, do not yet. Before rewriting a plain `.over()` this way to chase streaming support, read the memory caveat just below — the group-by+join rewrite is not automatically a memory win.
-- **Out-of-core (i.e. runs in streaming mode but still needs to fit in memory):** `group_by`, equi-joins, `sort`.
-- **Aggregates:** `implode`, median/quantile, `str.join`.
-- **Other expressions:** `.replace()`, `is_last_distinct`/`is_unique`/`is_duplicated`, `reshape`, `qcut`, `sample`, `pct_change`, `interpolate_by`, `ewm_*_by`, `fill_null(strategy="min"/"max"/"mean")`, `search_sorted`, `random`, `rank`, `arg_sort`, `hist`, rolling functions (`rolling_sum`/`std`/`var`/etc.), `group_by_dynamic` with a sorted key.
-- **Sources/sinks:** `AnonymousScan`, anonymous sinks.
-
-**Refreshing this list:** re-check the issue every ~3 months, or immediately before relying on streaming mode for a pipeline that's OOM-prone and uses one of the operations above. Fetch the current checklist with:
-```
-curl -s https://api.github.com/repos/pola-rs/polars/issues/20947 | python3 -c "import json,sys; print(json.load(sys.stdin)['body'])"
-```
-(no auth needed — it's a public issue). Diff the checkboxes against this list and update it if anything's moved.
+`.collect(engine="streaming")` doesn't yet cover everything — some operations (notably plain `.over()`, `group_by`, equi-joins, `sort`, several aggregates/expressions — see the skill for the full list) silently fall back to the in-memory engine. Full checklist, refresh instructions, and the tracking issue link live in the `polars-streaming-check` skill (`.claude/skills/polars-streaming-check/`) — check there before relying on streaming mode for an OOM-prone pipeline.
 
 ### `.over()` vs join-based rewrites — "not streaming" ≠ "uses more memory"
 
-"Not on the streaming list above" is not a proxy for "will OOM" — they're different questions, and can point in opposite directions. Confirmed by direct measurement during a 2026-07-16 OOM investigation on the imputation pipeline:
-
-- `.over()`'s in-memory fallback computes and writes its result in place — measured at ~0 extra peak memory beyond holding the frame, whether it's a simple aggregate or an order-dependent shift/cumsum.
-- A join that **broadcasts a computed value back onto every row** (a left-join, or `join_asof` — the usual "streaming-friendly" `.over()` replacement) needs a hash/sorted structure *and* a new merged output frame. Measured several GB more peak memory than the equivalent `.over()` on a ~4M-row wide frame — real fan-out-free, 1:1 joins, not the row-fan-out case already flagged above. This is what caused a real production OOM in `merge_ascwds_and_pir_filled_post_submissions`. It was converted from `.over()` to "streaming-friendly" `join_asof`/`group_by`+join specifically to fix a memory issue, and that conversion made memory usage worse, not better.
-- Row-filtering joins (`how="semi"`/`"anti"`) avoid the merged-output cost since they don't attach new columns — this is why converting `split_dataset_for_imputation`'s `.over()` to a semi/anti join *did* fix an OOM there (see that function for a worked example). But recombining split frames afterwards (`pl.concat`) has its own real memory cost, so don't assume a join is free just because it's a semi/anti join.
-
-**Before converting a `.over()` to a join to fix a memory issue, compare — don't assume:**
-1. Check which engine actually runs each version: `POLARS_VERBOSE=1 python -c "your_lf.collect(engine='streaming')"` — a genuine streaming node (e.g. `sorted-group-by`) vs. a fallback (`in-memory-join`/`in-memory-map`). Node names alone don't tell you the memory cost, so:
-2. Measure actual peak memory for both versions, on a synthetic frame shaped like the real data (row count *and* column count — sort/join cost scales with frame width, not just row count):
-   ```python
-   import psutil
-   proc = psutil.Process()
-   before = proc.memory_info().peak_wset  # rss on Linux/Mac
-   result = candidate_lf.collect(engine="streaming")
-   print((proc.memory_info().peak_wset - before) / 1e6, "MB")
-   ```
-   Run each candidate in its own fresh process — peak memory only ever goes up within a process, so reusing one process across comparisons will contaminate later results with earlier peaks.
-
-**Temporary, remove after ~2026-10:** when you write or review code that chooses between `.over()` and a join-based rewrite, state which one you picked and why (streaming support, measured memory, row-filter vs column-broadcast). The team is still building intuition here — once we have enough real examples to trust default judgement, drop this instruction.
+Not being on the streaming list above is not a proxy for "will OOM" — a join that broadcasts a value onto every row (left-join, `join_asof`) can cost several GB *more* than the equivalent `.over()`'s in-memory fallback, even though the join looks "streaming-friendly." Semi/anti-join rewrites are the exception (no merged output), but `pl.concat` to recombine isn't free either. Full reasoning, worked examples, and the measurement snippet to compare before converting live in the `over-vs-join` skill (`.claude/skills/over-vs-join/`) — **temporary, remove after ~2026-10** once the team has enough real examples to trust default judgement.
 
 ## Polars style
 
@@ -97,14 +84,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 ## Testing
 
-- New tests: pytest, following the pattern already in use —
-  - a `class Test<Thing>:` wrapper (not `unittest.TestCase`)
-  - cases built via a small `@dataclass` holding an `id` plus test data, converted with `.as_pytest_param()`... `@pytest.mark.parametrize`
-  - descriptive scenario `id`s (e.g. `id="handles_nulls_in_rolling_window"`) instead of encoding data values into the test method name
-  - assert with `polars.testing.assert_frame_equal`
-- Name tests by behaviour/expectation, not by the specific input used.
-- One behaviour per test.
-- Cover the happy path, meaningful edge cases, and invalid input only where relevant — don't pad coverage with trivial cases.
+New tests: pytest, one behaviour per test, named by behaviour/expectation rather than input. Full pattern (class/dataclass/parametrize conventions, mocking rules, test-data storage) lives in the `pytest-pattern` skill (`.claude/skills/pytest-pattern/`).
 
 ## Division by zero
 
@@ -129,10 +109,7 @@ When making a substantive code change, keep [CHANGELOG.md](CHANGELOG.md)'s `## [
 
 ## When reviewing code
 
-- Review as a senior engineer: correctness, performance, maintainability — in that order of weight.
-- Don't rewrite whole blocks unless the approach is fundamentally flawed; don't suggest renames/restructuring unless the current version is genuinely unclear or harmful to maintainability.
-- Structure findings as: 1) Critical (correctness/data integrity/major perf risk), 2) Important (scalability/readability/maintainability), 3) Optional. If there's nothing critical, say so plainly rather than inventing improvements.
-- Explain impact concretely (e.g. "this skews the aggregation for X" / "this materialises the full frame before the filter, at N rows that's...").
+Review as a senior engineer: correctness, performance, maintainability — in that order of weight, with findings tiered Critical/Important/Optional. Full checklist (including the PR reviewer checklist) lives in the `review-checklist` skill (`.claude/skills/review-checklist/`).
 
 ## Ambiguity
 
