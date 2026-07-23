@@ -15,8 +15,6 @@ All notable changes to this project will be documented in this file.
 - Added placeholders to slv prepare job, a utils script for prep with placeholders and tests placeholders.
 
 ### Changed
-- Widened the ASC-WDS file-arrival polling in the orchestrator step function to check every 15 minutes for up to 15 hours, to accommodate ASC-WDS data now arriving much later than before.
-
 - Pull clean workplace columns into merge job within SLV pipeline.
 
 - Updated references from workplace data for 'reconciliation' process to 'SfC internal' as the dataset is used in multiple jobs
@@ -26,6 +24,8 @@ All notable changes to this project will be documented in this file.
 - Refactored bounding of total staff and worker record columns in `clean_ascwds_workplace.py` and added logic for bounding SLV columns.
 
 - Get Workplace data schema from `discover_combined_schema` within Clean Workplace Job. Updated tests for the same.
+
+- Widened the ASC-WDS file-arrival polling in the orchestrator step function to check every 15 minutes for up to 15 hours, to accommodate ASC-WDS data now arriving much later than before.
 
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
