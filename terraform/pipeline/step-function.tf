@@ -13,7 +13,7 @@ locals {
   # worker/workplace file-arrival check gives up and notifies.
   # NOTE: coupled to that Wait interval - if it changes, this number no longer
   # represents the same wall-clock timeout and should be revisited.
-  ascwds_polling_max_attempts = terraform.workspace == "main" ? 120 : 5
+  ascwds_polling_max_attempts = terraform.workspace == "main" ? 60 : 5
 }
 
 # Created explicitly as required by dynamic step functions
