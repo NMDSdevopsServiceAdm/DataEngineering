@@ -396,6 +396,7 @@ class TestMergeJobRoleColumns:
         "01": ["02"],
         "03": ["04", "05"],
         "06": ["07"],
+        "99": ["04", "05"],
     }
     test_lf = pl.LazyFrame(
         {
@@ -421,9 +422,11 @@ class TestMergeJobRoleColumns:
             AWPClean.job_role_01_employees: 3,
             AWPClean.job_role_03_employees: 12,
             AWPClean.job_role_06_employees: 6,
+            "jr99emp": 9,
             AWPClean.job_role_01_starters: 30,
             AWPClean.job_role_03_starters: 120,
             AWPClean.job_role_06_starters: None,
+            "jr99strt": 90,
             "not_a_job_role_column": "A",
         }
     )
@@ -431,4 +434,6 @@ class TestMergeJobRoleColumns:
     def test_function_returns_expected_data(self):
         returned_lf = job.merge_job_role_columns(self.test_lf, self.test_jr_mapping)
 
-        pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
+        pl_testing.assert_frame_equal(
+            returned_lf, self.expected_lf, check_column_order=False
+        )

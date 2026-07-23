@@ -303,7 +303,7 @@ def merge_job_role_columns(
     )
 
     lf = lf.with_columns(
-        legacy_replacement_expressions(job_role_mapping, job_role_suffixes),
+        merge_job_roles_expressions(job_role_mapping, job_role_suffixes),
     )
 
     old_roles = [old for olds in job_role_mapping.values() for old in olds]
@@ -312,7 +312,7 @@ def merge_job_role_columns(
     return lf
 
 
-def legacy_replacement_expressions(
+def merge_job_roles_expressions(
     job_role_mapping: dict[str, list[str]], slv_suffixes: list[str]
 ) -> Generator[pl.Expr, None, None]:
     """
@@ -332,13 +332,13 @@ def legacy_replacement_expressions(
         pl.Expr: Polars expressions for summing columns.
 
     """
-    for new, olds in job_role_mapping.items():
+    for role_to_keep, roles_to_merge in job_role_mapping.items():
         for suffix in slv_suffixes:
-            prefixes = [f"jr{new}"] + [f"jr{old}" for old in olds]
+            prefixes = [f"jr{role_to_keep}"] + [f"jr{old}" for old in roles_to_merge]
             cols = cs.starts_with(*prefixes) & cs.ends_with(suffix)
             yield (
                 pl.when(pl.all_horizontal(cols.is_null()))
                 .then(pl.lit(None))
                 .otherwise(pl.sum_horizontal(cols))
-                .alias(f"jr{new}{suffix}")
+                .alias(f"jr{role_to_keep}{suffix}")
             )
