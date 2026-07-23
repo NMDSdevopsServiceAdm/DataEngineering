@@ -1,6 +1,13 @@
+import polars_utils.cleaning_utils as cUtils
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as pUtils
 from polars_utils import utils
-from polars_utils.cleaning_utils import apply_categorical_labels
+
+unpublished_roles_mapping = {
+    "101": ["2", "3", "4", "24", "45", "47", "49", "50"], # other managers
+    "102": ["35", "37"], # other regulated professions
+    "103": ["10", "11", "22", "23", "38"], # other direct care
+    "104": ["25", "26", "27", "34", "36", "39", "40", "41", "42", "44", "46", "48", "51"], # other
+} # fmt: skip
 
 
 def main(
@@ -15,8 +22,9 @@ def main(
     """
     workplace_lf = utils.scan_parquet(cleaned_ascwds_workplace_source)
 
-    # TODO: 1796 - Placeholder only.
-    # pUtils.reduce_to_published_roles()
+    workplace_lf = cUtils.merge_job_role_columns(
+        workplace_lf, unpublished_roles_mapping
+    )
 
     # TODO: Backlog ticket/no number - Placeholder only.
     # pUtils.pivot_job_role_cols_to_rows()
