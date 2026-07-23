@@ -302,9 +302,15 @@ def merge_job_role_columns(
         {re.sub(r"^jr\d+", "", col) for col in job_role_cols if col.startswith("jr")}
     )
 
+    print("column names before merging:")
+    print(lf.collect_schema().names())
+
     lf = lf.with_columns(
         merge_job_roles_expressions(job_role_mapping, job_role_suffixes),
     )
+
+    print("column names after merging:")
+    print(lf.collect_schema().names())
 
     old_roles = [old for olds in job_role_mapping.values() for old in olds]
     lf = lf.drop(cs.starts_with(*[f"jr{role}" for role in old_roles]))
@@ -336,6 +342,9 @@ def merge_job_roles_expressions(
         for suffix in slv_suffixes:
             prefixes = [f"jr{role_to_keep}"] + [f"jr{old}" for old in roles_to_merge]
             cols = cs.starts_with(*prefixes) & cs.ends_with(suffix)
+
+            print(f"jr{role_to_keep}{suffix}")
+
             yield (
                 pl.when(pl.all_horizontal(cols.is_null()))
                 .then(pl.lit(None))

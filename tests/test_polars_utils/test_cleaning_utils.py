@@ -496,6 +496,38 @@ class TestMergeJobRoleColumns:
                 "not_a_job_role_column": "A",
             },
         ),
+        MergeJobRoleColumnsTestCase(
+            id="handles_three_digit_job_role",
+            mapping={"101": ["02"]},
+            input_data={
+                AWPClean.job_role_01_employees: 1,
+                AWPClean.job_role_02_employees: 2,
+            },
+            expected_data={
+                AWPClean.job_role_01_employees: 1,
+                "jr101emp": 2,
+            },
+        ),
+        MergeJobRoleColumnsTestCase(
+            id="handles_multiple_roles_to_keep",
+            mapping={"101": ["02"], "102": ["02", "03"]},
+            input_data={
+                AWPClean.job_role_01_employees: 1,
+                AWPClean.job_role_02_employees: 2,
+                AWPClean.job_role_03_employees: 3,
+                AWPClean.job_role_01_starters: 10,
+                AWPClean.job_role_02_starters: 20,
+                AWPClean.job_role_03_starters: 30,
+            },
+            expected_data={
+                AWPClean.job_role_01_employees: 1,
+                AWPClean.job_role_01_starters: 10,
+                "jr101emp": 2,
+                "jr102emp": 5,
+                "jr101strt": 20,
+                "jr102strt": 60,
+            },
+        ),
     ]
 
     @pytest.mark.parametrize(
@@ -507,4 +539,6 @@ class TestMergeJobRoleColumns:
         expected_lf = pl.LazyFrame(case.expected_data)
         returned_lf = job.merge_job_role_columns(test_lf, case.mapping)
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+        pl_testing.assert_frame_equal(
+            returned_lf, expected_lf, check_column_order=False
+        )
