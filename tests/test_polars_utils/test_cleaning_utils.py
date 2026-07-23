@@ -1,5 +1,7 @@
 import unittest
+from dataclasses import dataclass
 from datetime import date
+from typing import Any
 
 import polars as pl
 import polars.testing as pl_testing
@@ -391,49 +393,118 @@ class CastDateStringsToDatesTests(unittest.TestCase):
         pl_testing.assert_frame_equal(result_lf, input_lf)
 
 
+@dataclass
+class MergeJobRoleColumnsTestCase:
+    id: str
+    mapping: dict[str, list[str]]
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
 class TestMergeJobRoleColumns:
-    test_jr_mapping = {
-        "01": ["02"],
-        "03": ["04", "05"],
-        "06": ["07"],
-        "99": ["04", "05"],  # Role 99 does not exist in test data.
-    }
-    test_lf = pl.LazyFrame(
-        {
-            AWPClean.job_role_01_employees: 1,     # group 1 - sum single new and old
-            AWPClean.job_role_02_employees: 2,     # group 1 - sum single new and old
-            AWPClean.job_role_03_employees: 3,     # group 2 - sum single new and multiple old
-            AWPClean.job_role_04_employees: 4,     # group 2 - sum single new and multiple old
-            AWPClean.job_role_05_employees: 5,     # group 2 - sum single new and multiple old
-            AWPClean.job_role_06_employees: None,  # group 3 - sum null and value
-            AWPClean.job_role_07_employees: 6,     # group 3 - sum null and value
-            AWPClean.job_role_01_starters: 10,     # handles different column suffixes
-            AWPClean.job_role_02_starters: 20,     # handles different column suffixes
-            AWPClean.job_role_03_starters: 30,     # handles different column suffixes
-            AWPClean.job_role_04_starters: 40,     # handles different column suffixes
-            AWPClean.job_role_05_starters: 50,     # handles different column suffixes
-            AWPClean.job_role_06_starters: None,   # group 4 - sum null and null
-            AWPClean.job_role_07_starters: None,   # group 4 - sum null and null
-            "not_a_job_role_column": "A",
-        }
-    ) # fmt: skip
-    expected_lf = pl.LazyFrame(
-        {
-            AWPClean.job_role_01_employees: 3,
-            AWPClean.job_role_03_employees: 12,
-            AWPClean.job_role_06_employees: 6,
-            "jr99emp": 9,
-            AWPClean.job_role_01_starters: 30,
-            AWPClean.job_role_03_starters: 120,
-            AWPClean.job_role_06_starters: None,
-            "jr99strt": 90,
-            "not_a_job_role_column": "A",
-        }
+    merge_job_role_columns_test_cases = [
+        MergeJobRoleColumnsTestCase(
+            id="merges_one_role_to_one_role",
+            mapping={"01": ["02"]},
+            input_data={
+                AWPClean.job_role_01_employees: 1,
+                AWPClean.job_role_02_employees: 2,
+            },
+            expected_data={
+                AWPClean.job_role_01_employees: 3,
+            },
+        ),
+        MergeJobRoleColumnsTestCase(
+            id="merges_many_roles_to_one_role",
+            mapping={"01": ["02", "03"]},
+            input_data={
+                AWPClean.job_role_01_employees: 1,
+                AWPClean.job_role_02_employees: 2,
+                AWPClean.job_role_03_employees: 3,
+            },
+            expected_data={
+                AWPClean.job_role_01_employees: 6,
+            },
+        ),
+        MergeJobRoleColumnsTestCase(
+            id="ignores_null_values_in_sum",
+            mapping={"01": ["02"]},
+            input_data={
+                AWPClean.job_role_01_employees: 1,
+                AWPClean.job_role_02_employees: None,
+            },
+            expected_data={
+                AWPClean.job_role_01_employees: 1,
+            },
+        ),
+        MergeJobRoleColumnsTestCase(
+            id="returns_null_when_all_roles_are_null",
+            mapping={"01": ["02"]},
+            input_data={
+                AWPClean.job_role_01_employees: None,
+                AWPClean.job_role_02_employees: None,
+            },
+            expected_data={
+                AWPClean.job_role_01_employees: None,
+            },
+        ),
+        MergeJobRoleColumnsTestCase(
+            id="ignores_roles_in_mapping_but_not_in_input_data",
+            mapping={"01": ["02"]},
+            input_data={
+                AWPClean.job_role_01_employees: 1,
+            },
+            expected_data={
+                AWPClean.job_role_01_employees: 1,
+            },
+        ),
+        MergeJobRoleColumnsTestCase(
+            id="creates_target_role_when_missing",
+            mapping={"99": ["01", "02"]},
+            input_data={
+                AWPClean.job_role_01_employees: 1,
+                AWPClean.job_role_02_employees: 2,
+            },
+            expected_data={
+                "jr99emp": 3,
+            },
+        ),
+        MergeJobRoleColumnsTestCase(
+            id="merges_all_matching_suffixes",
+            mapping={"01": ["02"]},
+            input_data={
+                AWPClean.job_role_01_employees: 1,
+                AWPClean.job_role_02_employees: 2,
+                AWPClean.job_role_01_starters: 3,
+                AWPClean.job_role_02_starters: 4,
+            },
+            expected_data={
+                AWPClean.job_role_01_employees: 3,
+                AWPClean.job_role_01_starters: 7,
+            },
+        ),
+        MergeJobRoleColumnsTestCase(
+            id="handles_extra_columns_in_input_data",
+            mapping={"01": ["02"]},
+            input_data={
+                AWPClean.job_role_01_employees: 1,
+                AWPClean.job_role_02_employees: 2,
+                "not_a_job_role_column": "A",
+            },
+            expected_data={
+                AWPClean.job_role_01_employees: 3,
+                "not_a_job_role_column": "A",
+            },
+        ),
+    ]
+
+    @pytest.mark.parametrize(
+        "case",
+        [pytest.param(case, id=case.id) for case in merge_job_role_columns_test_cases],
     )
+    def test_merge_job_role_columns(self, case):
+        test_lf = pl.LazyFrame(case.input_data)
+        expected_lf = pl.LazyFrame(case.expected_data)
+        returned_lf = job.merge_job_role_columns(test_lf, case.mapping)
 
-    def test_function_returns_expected_data(self):
-        returned_lf = job.merge_job_role_columns(self.test_lf, self.test_jr_mapping)
-
-        pl_testing.assert_frame_equal(
-            returned_lf, self.expected_lf, check_column_order=False
-        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
