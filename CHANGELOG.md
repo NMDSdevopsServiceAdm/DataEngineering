@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file.
 
 - Added workplace and worker datasets to syncing to branch.
 
+- Added placeholders to slv prepare job, a utils script for prep with placeholders and tests placeholders.
+
 ### Changed
 - Pull clean workplace columns into merge job within SLV pipeline.
 
@@ -25,10 +27,13 @@ All notable changes to this project will be documented in this file.
 
 - Get Workplace data schema from `discover_combined_schema` within Clean Workplace Job. Updated tests for the same.
 
+- Renamed 'slv' datasets in AWS so they are grouped together in alphabetical order.
+
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
 
 - Fixed Schema mismatch error while generating grouped providers output.
+
 - Added missing error notifications for the CQC/ASC-WDS orchestrator and crawler-refresh steps in three ingestion pipelines, and a bounded timeout for the ASC-WDS worker/workplace file-arrival polling loops.
 
 ## [v2026.06.0] - 15/07/2026

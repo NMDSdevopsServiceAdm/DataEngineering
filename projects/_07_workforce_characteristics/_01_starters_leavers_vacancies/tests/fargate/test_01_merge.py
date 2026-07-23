@@ -51,7 +51,6 @@ class TestMain:
 
         # TODO: Uncomment these assertions when the placeholder functions are implemented
         is_slv_job_role_column_mock.assert_called_once()
-        # convert_ascwds_job_role_columns_to_rows_mock.assert_called_once()
         # join_datasets_mock.assert_called_once()
         # apply_employment_status_magic_numbers_mock.assert_called_once()
 
