@@ -179,7 +179,7 @@ def main(
         bounds.slv_expr,
     )
 
-    workplace_lf = wUtils.merge_legacy_job_roles(workplace_lf, legacy_job_roles_dict)
+    workplace_lf = cUtils.merge_job_role_columns(workplace_lf, legacy_job_roles_dict)
 
     utils.sink_to_parquet(workplace_lf, output_path=cleaned_workplace_destination)
 

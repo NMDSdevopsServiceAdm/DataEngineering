@@ -1,3 +1,4 @@
+import re
 from typing import Generator, List
 
 import polars as pl
@@ -275,3 +276,69 @@ def cast_date_strings_to_dates(
     return lf.with_columns(
         date_columns.str.strptime(pl.Date, raw_date_format, strict=False)
     )
+
+
+def merge_job_role_columns(
+    lf: pl.LazyFrame, job_role_mapping: dict[str, list[str]]
+) -> pl.LazyFrame:
+    """
+    Merge ASC-WDS workplace job role columns.
+
+    For each key job role code in job_role_mapping, sums the key job role
+    together with all the listed job role columns. This sum then replaces the
+    key job roles value. The listed job role columns are then dropped.
+
+    Args:
+        lf (pl.LazyFrame): ASC-WDS workplace LazyFrame.
+        job_role_mapping (dict[str, list[str]]): A mapping of job roles.
+            E.g. {role_to_merge_and_keep: [role_1_to_merge_and_drop, role_2_to_merge_and_drop...]}
+
+    Returns:
+        pl.LazyFrame: Input LazyFrame in which columns have been merged and
+            removed.
+    """
+    job_role_cols = lf.collect_schema().names()
+    job_role_suffixes = list(
+        {re.sub(r"^jr\d+", "", col) for col in job_role_cols if col.startswith("jr")}
+    )
+
+    lf = lf.with_columns(
+        legacy_replacement_expressions(job_role_mapping, job_role_suffixes),
+    )
+
+    old_roles = [old for olds in job_role_mapping.values() for old in olds]
+    lf = lf.drop(cs.starts_with(*[f"jr{role}" for role in old_roles]))
+
+    return lf
+
+
+def legacy_replacement_expressions(
+    job_role_mapping: dict[str, list[str]], slv_suffixes: list[str]
+) -> Generator[pl.Expr, None, None]:
+    """
+    A generator function that yields Polars expressions that sum
+    ASC-WDS workplace job role columns in the given mapping dictionary
+    that have the given slv_suffixes.
+
+    When all columns to sum are null then expression produces null.
+
+    Args:
+        job_role_mapping (dict[str, list[str]]): A mapping of job roles.
+            E.g. {role_to_merge_and_keep: [role_1_to_merge_and_drop, role_2_to_merge_and_drop...]}
+        slv_suffixes (list[str]): A list of ASC-WDS workplace job role column suffixes.
+            E.g. ["flag", "emp", "work"]
+
+    Yields:
+        pl.Expr: Polars expressions for summing columns.
+
+    """
+    for new, olds in job_role_mapping.items():
+        for suffix in slv_suffixes:
+            prefixes = [f"jr{new}"] + [f"jr{old}" for old in olds]
+            cols = cs.starts_with(*prefixes) & cs.ends_with(suffix)
+            yield (
+                pl.when(pl.all_horizontal(cols.is_null()))
+                .then(pl.lit(None))
+                .otherwise(pl.sum_horizontal(cols))
+                .alias(f"jr{new}{suffix}")
+            )

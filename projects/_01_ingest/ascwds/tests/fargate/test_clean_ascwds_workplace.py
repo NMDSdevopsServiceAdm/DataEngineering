@@ -18,7 +18,7 @@ class MainTests(unittest.TestCase):
     SFC_INTERNAL_DESTINATION = "some/other/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.wUtils.merge_legacy_job_roles")
+    @patch(f"{PATCH_PATH}.cUtils.merge_job_role_columns")
     @patch(f"{PATCH_PATH}.expr.is_slv_job_role_column")
     @patch(f"{PATCH_PATH}.utils.discover_combined_schema")
     @patch(f"{PATCH_PATH}.wUtils.remove_rows_with_duplicate_location_ids")
@@ -43,7 +43,7 @@ class MainTests(unittest.TestCase):
         remove_rows_with_duplicate_location_ids_mock: Mock,
         discover_combined_schema_mock: Mock,
         is_slv_job_role_column_mock: Mock,
-        merge_legacy_job_roles_mock: Mock,
+        merge_job_role_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         discover_combined_schema_mock.return_value = {
@@ -81,7 +81,7 @@ class MainTests(unittest.TestCase):
         remove_rows_with_duplicate_location_ids_mock.assert_called_once()
         discover_combined_schema_mock.assert_called_once_with(self.WORKPLACE_SOURCE)
         assert is_slv_job_role_column_mock.call_count == 2
-        merge_legacy_job_roles_mock.assert_called_once_with(
+        merge_job_role_columns_mock.assert_called_once_with(
             ANY, job.legacy_job_roles_dict
         )
 

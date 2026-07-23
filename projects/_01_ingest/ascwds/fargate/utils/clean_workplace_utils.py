@@ -1,6 +1,3 @@
-import re
-from typing import Generator
-
 import polars as pl
 import polars.selectors as cs
 
@@ -282,69 +279,3 @@ class BoundingExpressions:
         .otherwise(slv_bounding_cols)
         .name.keep()
     )
-
-
-def merge_legacy_job_roles(
-    lf: pl.LazyFrame, legacy_job_roles_dict: dict[str, list[str]]
-) -> pl.LazyFrame:
-    """
-    Merge ASC-WDS workplace job role columns.
-
-    For each key job role code in legacy_job_roles_dict, sums the key job role
-    together with all the listed job role columns. This sum then replaces the
-    key job roles value. The listed job role columns are then dropped.
-
-    Args:
-        lf (pl.LazyFrame): ASC-WDS workplace LazyFrame.
-        legacy_job_roles_dict (dict[str, list[str]]): A mapping of job roles. E.g.
-            {new: [old_1, old_2...]}
-
-    Returns:
-        pl.LazyFrame: Input LazyFrame in which columns have been merged and
-            removed.
-    """
-    job_role_cols = lf.collect_schema().names()
-    job_role_suffixes = list(
-        {re.sub(r"^jr\d+", "", col) for col in job_role_cols if col.startswith("jr")}
-    )
-
-    lf = lf.with_columns(
-        legacy_replacement_expressions(legacy_job_roles_dict, job_role_suffixes),
-    )
-
-    old_roles = [old for olds in legacy_job_roles_dict.values() for old in olds]
-    lf = lf.drop(cs.starts_with(*[f"jr{role}" for role in old_roles]))
-
-    return lf
-
-
-def legacy_replacement_expressions(
-    legacy_job_roles_dict: dict[str, list[str]], slv_suffixes: list[str]
-) -> Generator[pl.Expr, None, None]:
-    """
-    A generator function that yields Polars expressions that sum
-    ASC-WDS workplace job role columns in the given legacy_job_roles_dict
-    that have the given slv_suffixes.
-
-    When all columns to sum are null then expression produces null.
-
-    Args:
-        legacy_job_roles_dict (dict[str, list[str]]): A mapping of job roles.
-            E.g. {new: [old_1, old_2...]}
-        slv_suffixes (list[str]): A list of ASC-WDS workplace job role column suffixes.
-            E.g. ["flag", "emp", "work"]
-
-    Yields:
-        pl.Expr: Polars expressions for summing columns.
-
-    """
-    for new, olds in legacy_job_roles_dict.items():
-        for suffix in slv_suffixes:
-            prefixes = [f"jr{new}"] + [f"jr{old}" for old in olds]
-            cols = cs.starts_with(*prefixes) & cs.ends_with(suffix)
-            yield (
-                pl.when(pl.all_horizontal(cols.is_null()))
-                .then(pl.lit(None))
-                .otherwise(pl.sum_horizontal(cols))
-                .alias(f"jr{new}{suffix}")
-            )

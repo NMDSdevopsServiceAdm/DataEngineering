@@ -389,3 +389,46 @@ class CastDateStringsToDatesTests(unittest.TestCase):
         result_lf = job.cast_date_strings_to_dates(input_lf)
 
         pl_testing.assert_frame_equal(result_lf, input_lf)
+
+
+class TestMergeJobRoleColumns:
+    test_jr_mapping = {
+        "01": ["02"],
+        "03": ["04", "05"],
+        "06": ["07"],
+    }
+    test_lf = pl.LazyFrame(
+        {
+            AWPClean.job_role_01_employees: 1,     # group 1 - sum single new and old
+            AWPClean.job_role_02_employees: 2,     # group 1 - sum single new and old
+            AWPClean.job_role_03_employees: 3,     # group 2 - sum single new and multiple old
+            AWPClean.job_role_04_employees: 4,     # group 2 - sum single new and multiple old
+            AWPClean.job_role_05_employees: 5,     # group 2 - sum single new and multiple old
+            AWPClean.job_role_06_employees: None,  # group 3 - sum null and value
+            AWPClean.job_role_07_employees: 6,     # group 3 - sum null and value
+            AWPClean.job_role_01_starters: 10,     # handles different column suffixes
+            AWPClean.job_role_02_starters: 20,     # handles different column suffixes
+            AWPClean.job_role_03_starters: 30,     # handles different column suffixes
+            AWPClean.job_role_04_starters: 40,     # handles different column suffixes
+            AWPClean.job_role_05_starters: 50,     # handles different column suffixes
+            AWPClean.job_role_06_starters: None,   # group 4 - sum null and null
+            AWPClean.job_role_07_starters: None,   # group 4 - sum null and null
+            "not_a_job_role_column": "A",
+        }
+    ) # fmt: skip
+    expected_lf = pl.LazyFrame(
+        {
+            AWPClean.job_role_01_employees: 3,
+            AWPClean.job_role_03_employees: 12,
+            AWPClean.job_role_06_employees: 6,
+            AWPClean.job_role_01_starters: 30,
+            AWPClean.job_role_03_starters: 120,
+            AWPClean.job_role_06_starters: None,
+            "not_a_job_role_column": "A",
+        }
+    )
+
+    def test_function_returns_expected_data(self):
+        returned_lf = job.merge_job_role_columns(self.test_lf, self.test_jr_mapping)
+
+        pl_testing.assert_frame_equal(returned_lf, self.expected_lf)
