@@ -29,6 +29,8 @@ All notable changes to this project will be documented in this file.
 
 - Renamed 'slv' datasets in AWS so they are grouped together in alphabetical order.
 
+- Widened the ASC-WDS file-arrival polling in the orchestrator step function to check every 15 minutes for up to 15 hours on the main workspace, to accommodate ASC-WDS data now arriving much later than before, and made the polling interval and attempt count workspace-configurable so non-main workspaces poll every 10 seconds for up to 100 seconds instead.
+
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
 

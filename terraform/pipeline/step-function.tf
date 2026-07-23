@@ -8,12 +8,13 @@ locals {
   ind_cqc_job_role_estimates_dataset_name = terraform.workspace == "main" ? "ind_cqc_07_04_estimate_job_roles" : "main_ind_cqc_07_04_estimate_job_roles"
   ind_cqc_job_role_metadata_dataset_name  = terraform.workspace == "main" ? "ind_cqc_07_01_merge_metadata_job_roles" : "main_ind_cqc_07_01_merge_metadata_job_roles"
 
-  # Max polling attempts (at the Wait interval configured in "Wait For Worker"/
-  # "Wait For Workplace" in CQC-And-ASCWDS-Orchestrator.json) before the ASC-WDS
-  # worker/workplace file-arrival check gives up and notifies.
-  # NOTE: coupled to that Wait interval - if it changes, this number no longer
-  # represents the same wall-clock timeout and should be revisited.
-  ascwds_polling_max_attempts = terraform.workspace == "main" ? 120 : 5
+  # Max polling attempts and per-attempt wait (seconds) for the "Wait For Worker"/
+  # "Wait For Workplace" states in CQC-And-ASCWDS-Orchestrator.json, before the
+  # ASC-WDS worker/workplace file-arrival check gives up and notifies.
+  # Non-main workspaces poll faster and fewer times so a failure surfaces in
+  # seconds rather than tying up a dev run for over an hour.
+  ascwds_polling_max_attempts = terraform.workspace == "main" ? 60 : 5
+  ascwds_polling_wait_seconds = terraform.workspace == "main" ? 900 : 10
 }
 
 # Created explicitly as required by dynamic step functions
@@ -64,6 +65,7 @@ resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
     workforce_intelligence_state_machine_arn = aws_sfn_state_machine.workforce_intelligence_state_machine.arn
     pipeline_failure_lambda_function_arn     = aws_lambda_function.error_notification_lambda.arn
     ascwds_polling_max_attempts              = local.ascwds_polling_max_attempts
+    ascwds_polling_wait_seconds              = local.ascwds_polling_wait_seconds
   })
 
   depends_on = [
