@@ -6,6 +6,9 @@ from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.employment_status_rates_columns import (
+    EmploymentStatusRatesColumns as EmpStatRates,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 workplace_columns = [
@@ -50,6 +53,7 @@ def main(
     metadata_source: str,
     job_role_estimates_source: str,
     prepared_slv_dataset_source: str,
+    employment_status_rates_source: str,
     merged_data_destination: str,
 ) -> None:
     """
@@ -59,6 +63,7 @@ def main(
         metadata_source (str): path to the estimates ind cqc filled posts data
         job_role_estimates_source (str): path to the job role estimates data
         prepared_slv_dataset_source (str): path to the cleaned ascwds workplace data
+        employment_status_rates_source (str): path to the employment status rates csv
         merged_data_destination (str): destination for merged output
     """
 
@@ -73,6 +78,26 @@ def main(
     ).select(
         *[AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date],
         expr.is_slv_job_role_column()
+    )
+
+    # The source CSV is expected to already be trimmed to exactly these columns, in this
+    # order, and to only the current weighting year's rows — scan_csv's schema is matched
+    # positionally, not by name, so a reordered file would silently load into the wrong
+    # columns with no error.
+    employment_status_rates_schema = pl.Schema(
+        [
+            (EmpStatRates.service, pl.Categorical()),
+            (EmpStatRates.weighting_job_role, pl.Categorical()),
+            (EmpStatRates.emp_stat_perm, pl.Float32),
+            (EmpStatRates.emp_stat_temp, pl.Float32),
+            (EmpStatRates.emp_stat_bank_or_pool, pl.Float32),
+            (EmpStatRates.emp_stat_agency, pl.Float32),
+            (EmpStatRates.emp_stat_other, pl.Float32),
+        ]
+    )
+
+    employment_status_rates_lf = pl.scan_csv(
+        employment_status_rates_source, schema=employment_status_rates_schema
     )
 
     # TODO: Placeholder only
@@ -102,6 +127,10 @@ if __name__ == "__main__":
             "Source s3 directory for cleaned ascwds workplace data",
         ),
         (
+            "--employment_status_rates_source",
+            "Source s3 directory for employment status rates data",
+        ),
+        (
             "--merged_data_destination",
             "Destination s3 directory for merged data",
         ),
@@ -110,5 +139,6 @@ if __name__ == "__main__":
         metadata_source=args.metadata_source,
         job_role_estimates_source=args.job_role_estimates_source,
         prepared_slv_dataset_source=args.prepared_slv_dataset_source,
+        employment_status_rates_source=args.employment_status_rates_source,
         merged_data_destination=args.merged_data_destination,
     )
