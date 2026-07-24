@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added the production reshape of SLV job-role columns from wide to long format in the `_00_prepare` job, with matching validation checks and the `_01_merge` column-selection update needed to read the new shape.
+
 - Added a skeleton `_00_prepare` task (with validation) ahead of the merge step in the SLV pipeline, and rewired the merge step to read its output.
 
 - Added `discover_combined_schema` function in Polars Utils to generate combined schema from a partitioned dataset.

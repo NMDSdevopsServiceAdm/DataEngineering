@@ -1,0 +1,170 @@
+{
+  "Comment": "TEMPORARY - throwaway diagnostic pipeline isolating the ticket 1814 validate_00_prepare OOM. Runs diag_01-04 sequentially against the real _00_prepare output already produced in this workspace; each stage's own Catch stops the chain cleanly at the first experiment that reproduces the OOM instead of erroring out. Delete this file, the diag_0N_*.py scripts, fargate/utils/diag_helpers.py and their Dockerfile COPY lines once the root cause is isolated - none of this is meant to reach main.",
+  "StartAt": "Diag 1 - Read Parquet Only",
+  "States": {
+    "Diag 1 - Read Parquet Only": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${workforce_characteristics_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_07_workforce_characteristics-container",
+              "Command": [
+                "_01_starters_leavers_vacancies/fargate/diag_01_read_parquet_only.py",
+                "--bucket_name", "${dataset_bucket_name}",
+                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare/",
+                "--reports_path", "domain=data_validation_reports/dataset=diag_1814_oom/"
+              ]
+            }
+          ]
+        }
+      },
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Stopped After Diag 1 - Read Parquet Only",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "Diag 2 - Rows Distinct Only"
+    },
+    "Stopped After Diag 1 - Read Parquet Only": {
+      "Type": "Succeed"
+    },
+    "Diag 2 - Rows Distinct Only": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${workforce_characteristics_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_07_workforce_characteristics-container",
+              "Command": [
+                "_01_starters_leavers_vacancies/fargate/diag_02_rows_distinct_only.py",
+                "--bucket_name", "${dataset_bucket_name}",
+                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare/",
+                "--reports_path", "domain=data_validation_reports/dataset=diag_1814_oom/"
+              ]
+            }
+          ]
+        }
+      },
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Stopped After Diag 2 - Rows Distinct Only",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "Diag 3 - Cheap Checks Only"
+    },
+    "Stopped After Diag 2 - Rows Distinct Only": {
+      "Type": "Succeed"
+    },
+    "Diag 3 - Cheap Checks Only": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${workforce_characteristics_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_07_workforce_characteristics-container",
+              "Command": [
+                "_01_starters_leavers_vacancies/fargate/diag_03_cheap_checks_only.py",
+                "--bucket_name", "${dataset_bucket_name}",
+                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare/",
+                "--reports_path", "domain=data_validation_reports/dataset=diag_1814_oom/"
+              ]
+            }
+          ]
+        }
+      },
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Stopped After Diag 3 - Cheap Checks Only",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "Diag 4 - Full Instrumented"
+    },
+    "Stopped After Diag 3 - Cheap Checks Only": {
+      "Type": "Succeed"
+    },
+    "Diag 4 - Full Instrumented": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${polars_cluster_arn}",
+        "TaskDefinition": "${workforce_characteristics_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": ["${workforce_characteristics_security_group_id}"],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_07_workforce_characteristics-container",
+              "Command": [
+                "_01_starters_leavers_vacancies/fargate/diag_04_full_instrumented.py",
+                "--bucket_name", "${dataset_bucket_name}",
+                "--source_path", "domain=workforce_characteristics/dataset=ind_cqc_slv_00_prepare/",
+                "--compare_path", "domain=ASCWDS/dataset=workplace_cleaned/",
+                "--reports_path", "domain=data_validation_reports/dataset=diag_1814_oom/"
+              ]
+            }
+          ]
+        }
+      },
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Stopped After Diag 4 - Full Instrumented",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "All Diagnostics Completed"
+    },
+    "Stopped After Diag 4 - Full Instrumented": {
+      "Type": "Succeed"
+    },
+    "All Diagnostics Completed": {
+      "Type": "Succeed"
+    }
+  }
+}

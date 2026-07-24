@@ -12,19 +12,29 @@ class MainTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.apply_categorical_labels")
-    @patch(f"{PATCH_PATH}.pUtils.convert_job_role_strings_to_number_only")
-    @patch(f"{PATCH_PATH}.pUtils.pivot_job_role_cols_to_rows")
+    @patch(f"{PATCH_PATH}.pUtils.convert_job_role_columns_to_rows")
+    @patch(f"{PATCH_PATH}.pUtils.discover_job_role_codes")
     @patch(f"{PATCH_PATH}.pUtils.reduce_to_published_roles")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
         reduce_to_published_roles: Mock,
-        pivot_job_role_cols_to_rows: Mock,
-        convert_job_role_strings_to_number_only: Mock,
+        discover_job_role_codes_mock: Mock,
+        convert_job_role_columns_to_rows_mock: Mock,
         apply_categorical_labels: Mock,
         sink_to_parquet_mock: Mock,
     ):
+        discover_job_role_codes_mock.return_value = [
+            job.pUtils.JobRoleCodeColumns(
+                job_role_code="1",
+                employees="jr01emp",
+                starters="jr01strt",
+                leavers="jr01stop",
+                vacancies="jr01vacy",
+            ),
+        ]
+
         job.main(
             self.CLEANED_ASCWDS_WORKPLACE_SOURCE,
             self.PREPARED_DATA_DESTINATION,
@@ -32,10 +42,18 @@ class MainTests(unittest.TestCase):
 
         scan_parquet_mock.assert_called_once_with(self.CLEANED_ASCWDS_WORKPLACE_SOURCE)
 
+        scan_parquet_mock.return_value.select.assert_called_once_with(
+            *job.INDEX_COLUMNS, "jr01emp", "jr01strt", "jr01stop", "jr01vacy"
+        )
+
+        convert_job_role_columns_to_rows_mock.assert_called_once_with(
+            scan_parquet_mock.return_value.select.return_value,
+            job.INDEX_COLUMNS,
+            discover_job_role_codes_mock.return_value,
+        )
+
         # TODO: Uncomment these assertions when the placeholder functions are implemented
         # reduce_to_published_roles.assert_called_once()
-        # pivot_job_role_cols_to_rows.assert_called_once()
-        # convert_job_role_strings_to_number_only.assert_called_once()
         # apply_categorical_labels.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(

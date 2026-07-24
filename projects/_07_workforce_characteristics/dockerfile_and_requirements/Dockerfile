@@ -23,6 +23,16 @@ COPY projects/_07_workforce_characteristics/_01_starters_leavers_vacancies/farga
 COPY projects/_07_workforce_characteristics/_01_starters_leavers_vacancies/fargate/validate_02_clean.py /app/_01_starters_leavers_vacancies/fargate/validate_02_clean.py
 COPY projects/_07_workforce_characteristics/_01_starters_leavers_vacancies/fargate/validate_03_impute.py /app/_01_starters_leavers_vacancies/fargate/validate_03_impute.py
 COPY projects/_07_workforce_characteristics/_01_starters_leavers_vacancies/fargate/validate_04_estimate.py /app/_01_starters_leavers_vacancies/fargate/validate_04_estimate.py
+
+# TEMPORARY - ticket 1814 validate_00_prepare OOM isolation diagnostics.
+# Delete these 4 lines, the diag_0N_*.py scripts, fargate/utils/diag_helpers.py
+# and step-functions/dynamic/Ind-CQC-SLV-1814-oom-diag.json once the OOM root
+# cause has been isolated - none of this is meant to reach main.
+COPY projects/_07_workforce_characteristics/_01_starters_leavers_vacancies/fargate/diag_01_read_parquet_only.py /app/_01_starters_leavers_vacancies/fargate/diag_01_read_parquet_only.py
+COPY projects/_07_workforce_characteristics/_01_starters_leavers_vacancies/fargate/diag_02_rows_distinct_only.py /app/_01_starters_leavers_vacancies/fargate/diag_02_rows_distinct_only.py
+COPY projects/_07_workforce_characteristics/_01_starters_leavers_vacancies/fargate/diag_03_cheap_checks_only.py /app/_01_starters_leavers_vacancies/fargate/diag_03_cheap_checks_only.py
+COPY projects/_07_workforce_characteristics/_01_starters_leavers_vacancies/fargate/diag_04_full_instrumented.py /app/_01_starters_leavers_vacancies/fargate/diag_04_full_instrumented.py
+
 COPY projects/_07_workforce_characteristics/dockerfile_and_requirements/requirements.txt /app/requirements.txt
 
 RUN pip install --no-cache-dir -r requirements.txt
