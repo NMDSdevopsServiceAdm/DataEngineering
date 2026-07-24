@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class EmployeeStatusRatesColumns:
+class EmploymentStatusRatesColumns:
     service: str = "service"
     weighting_job_role: str = "weighting_job_role"
     emp_stat_perm: str = "emp_stat_perm"

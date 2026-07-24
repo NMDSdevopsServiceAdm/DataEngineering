@@ -9,7 +9,7 @@ class TestMain:
     METADATA_SOURCE = "some/source"
     JOB_ROLE_ESTIMATES_SOURCE = "another/source"
     PREPARED_SLV_DATASET_SOURCE = "other/source"
-    EMPLOYEE_STATUS_RATES_SOURCE = "employee/status/rates/source"
+    EMPLOYMENT_STATUS_RATES_SOURCE = "employment/status/rates/source"
     MERGED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
@@ -31,7 +31,7 @@ class TestMain:
             self.METADATA_SOURCE,
             self.JOB_ROLE_ESTIMATES_SOURCE,
             self.PREPARED_SLV_DATASET_SOURCE,
-            self.EMPLOYEE_STATUS_RATES_SOURCE,
+            self.EMPLOYMENT_STATUS_RATES_SOURCE,
             self.MERGED_DATA_DESTINATION,
         )
 
@@ -53,7 +53,7 @@ class TestMain:
         # apply_employment_status_magic_numbers_mock.assert_called_once()
 
         scan_csv_mock.assert_called_once_with(
-            self.EMPLOYEE_STATUS_RATES_SOURCE, schema=ANY
+            self.EMPLOYMENT_STATUS_RATES_SOURCE, schema=ANY
         )
 
         sink_to_parquet_mock.assert_called_once_with(
