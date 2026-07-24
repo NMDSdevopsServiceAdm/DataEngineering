@@ -31,6 +31,12 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
     rows_distinct(), matching the real fix in validate_00_prepare.py - see
     ticket 1814's isolation experiments for why rows_distinct() OOM'd here.
 
+    Records the duplicate count/fraction as its own checkpoint before running
+    has_no_duplicate_grain_rows() - a boolean .sum() is a cheap O(n)
+    reduction, unlike the .filter() the validator itself does further on, so
+    this isolates whether a high duplicate rate (not is_duplicated() itself)
+    is what's driving a second OOM here.
+
     Throwaway diagnostic for the ticket 1814 validate_00_prepare OOM - see the
     isolation plan, not part of the permanent pipeline.
 
@@ -49,6 +55,16 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         reports_path,
         "diag_02_after_read",
         row_count=source_df.height,
+    )
+
+    is_dup = source_df.select(GRAIN_COLUMNS).is_duplicated()
+    dup_count = int(is_dup.sum())
+    diag.write_checkpoint(
+        bucket_name,
+        reports_path,
+        "diag_02_after_duplicate_count",
+        dup_count=dup_count,
+        dup_fraction=dup_count / source_df.height,
     )
 
     validation = (
