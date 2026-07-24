@@ -244,6 +244,101 @@ class TestMakeColHasFewerNullsValidator(TestValidate):
         self.assertFalse(result_fail)
 
 
+class TestHasNoDuplicateGrainRows:
+    columns = ["someId", "my_date"]
+    bucket_name = "bucket"
+    reports_path = "reports"
+    extract_key = "s3://bucket/reports/duplicate_grain_rows.parquet"
+
+    @patch("polars_utils.utils.write_to_parquet", autospec=True)
+    @patch("boto3.client", autospec=True)
+    def test_returns_true_and_deletes_stale_extract_when_no_duplicates(
+        self, mock_s3_client, mock_write_parquet
+    ):
+        df = pl.DataFrame({"someId": ["1", "2"], "my_date": ["a", "b"]})
+        validator = vl.has_no_duplicate_grain_rows(
+            self.columns, self.bucket_name, self.reports_path
+        )
+
+        result = validator(df)
+
+        assert result is True
+        mock_write_parquet.assert_not_called()
+        mock_s3_client.return_value.delete_object.assert_called_once_with(
+            Bucket=self.bucket_name, Key="reports/duplicate_grain_rows.parquet"
+        )
+
+    @patch("polars_utils.utils.write_to_parquet", autospec=True)
+    @patch("boto3.client", autospec=True)
+    def test_returns_false_and_writes_all_instances_when_duplicates_present(
+        self, mock_s3_client, mock_write_parquet
+    ):
+        df = pl.DataFrame({"someId": ["1", "1", "2"], "my_date": ["a", "a", "b"]})
+        validator = vl.has_no_duplicate_grain_rows(
+            self.columns, self.bucket_name, self.reports_path
+        )
+
+        result = validator(df)
+
+        assert result is False
+        written_df = mock_write_parquet.call_args[0][0]
+        pl_testing.assert_frame_equal(
+            written_df, pl.DataFrame({"someId": ["1", "1"], "my_date": ["a", "a"]})
+        )
+        mock_write_parquet.assert_called_once_with(
+            written_df, self.extract_key, append=False
+        )
+
+    @patch("polars_utils.utils.write_to_parquet", autospec=True)
+    @patch("boto3.client", autospec=True)
+    def test_truncates_extract_to_max_rows_to_extract(
+        self, mock_s3_client, mock_write_parquet
+    ):
+        df = pl.DataFrame({"someId": ["1", "1", "1"], "my_date": ["a", "a", "a"]})
+        validator = vl.has_no_duplicate_grain_rows(
+            self.columns, self.bucket_name, self.reports_path, max_rows_to_extract=2
+        )
+
+        validator(df)
+
+        written_df = mock_write_parquet.call_args[0][0]
+        assert written_df.height == 2
+
+    @patch("polars_utils.utils.write_to_parquet", autospec=True)
+    @patch("boto3.client", autospec=True)
+    def test_rows_sharing_a_null_grain_value_are_treated_as_duplicates(
+        self, mock_s3_client, mock_write_parquet
+    ):
+        df = pl.DataFrame(
+            {"someId": [None, None], "my_date": ["a", "a"]},
+            schema={"someId": pl.String, "my_date": pl.String},
+        )
+        validator = vl.has_no_duplicate_grain_rows(
+            self.columns, self.bucket_name, self.reports_path
+        )
+
+        result = validator(df)
+
+        assert result is False
+
+    @patch("polars_utils.utils.write_to_parquet", autospec=True)
+    @patch("boto3.client", autospec=True)
+    def test_row_with_a_unique_null_grain_value_is_not_a_duplicate(
+        self, mock_s3_client, mock_write_parquet
+    ):
+        df = pl.DataFrame(
+            {"someId": [None, "1"], "my_date": ["a", "b"]},
+            schema={"someId": pl.String, "my_date": pl.String},
+        )
+        validator = vl.has_no_duplicate_grain_rows(
+            self.columns, self.bucket_name, self.reports_path
+        )
+
+        result = validator(df)
+
+        assert result is True
+
+
 class TestMakeConvertColToIntegersPreprocessor:
     def test_make_convert_col_to_integers_preprocessor(self):
         preprocessor = job.make_convert_col_to_integers_preprocessor(PartitionKeys.year)

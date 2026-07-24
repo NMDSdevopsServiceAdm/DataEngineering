@@ -70,8 +70,8 @@ def main(
             brief=f"Expects {expected_row_count} rows",
         )
         # index columns
-        .rows_distinct(
-            GRAIN_COLUMNS,
+        .specially(
+            vl.has_no_duplicate_grain_rows(GRAIN_COLUMNS, bucket_name, reports_path),
             brief="Grain should be unique per establishment, import date and job role",
         )
         # complete columns

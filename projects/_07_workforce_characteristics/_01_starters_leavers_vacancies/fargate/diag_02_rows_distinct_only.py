@@ -4,6 +4,7 @@ import pointblank as pb
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.diag_helpers as diag
 from polars_utils import utils
+from polars_utils.validation import actions as vl
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -19,12 +20,16 @@ GRAIN_COLUMNS = [
 
 
 def main(bucket_name: str, source_path: str, reports_path: str) -> None:
-    """Isolates the incremental memory cost of pointblank's rows_distinct() check.
+    """Isolates the incremental memory cost of the grain-uniqueness check.
 
     Runs the same eager read as diag_01_read_parquet_only.py, then only the
     high-cardinality grain-uniqueness check - no row_count_match or the other
-    checks. Comparing its peak RSS against diag_01's isolates what
-    rows_distinct() adds on top of the base materialisation.
+    checks. Comparing its peak RSS against diag_01's isolates what the check
+    adds on top of the base materialisation.
+
+    Uses has_no_duplicate_grain_rows() rather than pointblank's own
+    rows_distinct(), matching the real fix in validate_00_prepare.py - see
+    ticket 1814's isolation experiments for why rows_distinct() OOM'd here.
 
     Throwaway diagnostic for the ticket 1814 validate_00_prepare OOM - see the
     isolation plan, not part of the permanent pipeline.
@@ -48,7 +53,9 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
 
     validation = (
         pb.Validate(data=source_df, label="diag_02_rows_distinct_only")
-        .rows_distinct(GRAIN_COLUMNS)
+        .specially(
+            vl.has_no_duplicate_grain_rows(GRAIN_COLUMNS, bucket_name, reports_path)
+        )
         .interrogate()
     )
 

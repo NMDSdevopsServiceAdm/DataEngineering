@@ -172,6 +172,61 @@ def make_col_has_fewer_nulls_validator(
     return validate_col_has_fewer_nulls
 
 
+DEFAULT_MAX_DUPLICATE_ROWS_TO_EXTRACT = 1000
+
+
+def has_no_duplicate_grain_rows(
+    columns: list[str],
+    bucket_name: str,
+    reports_path: str,
+    max_rows_to_extract: int = DEFAULT_MAX_DUPLICATE_ROWS_TO_EXTRACT,
+) -> Callable[[pl.DataFrame], bool]:
+    """Creates a validation function which checks that no row is duplicated across `columns`.
+
+    Writes up to `max_rows_to_extract` duplicated rows directly to S3 on
+    failure - since pointblank's get_data_extracts() does not support custom
+    (specially) validations - bounding the worst case if a systemic bug
+    duplicates a large fraction of rows. Deletes any stale extract left by a
+    prior failing run once the check passes again.
+
+    Uses is_duplicated() rather than pointblank's own rows_distinct(): that
+    built-in check joins its per-group count back onto every original row and
+    converts a full per-row boolean column to a Python list, which is what
+    OOM'd at ~370M rows (see ticket 1814's isolation experiments).
+
+    Args:
+        columns (list[str]): the columns whose combination must be unique per row.
+        bucket_name (str): the bucket to write the duplicate-row extract to (or
+            clean up from, on a passing run).
+        reports_path (str): the folder (relative to the bucket) to write the
+            extract under.
+        max_rows_to_extract (int): the maximum number of duplicate rows to
+            write out on failure. Defaults to 1000.
+
+    Returns:
+        Callable[[pl.DataFrame], bool]: the inner function pointblank's
+        `.specially()` invokes with the validated DataFrame.
+    """
+    extract_key = f"{reports_path.strip('/')}/duplicate_grain_rows.parquet"
+
+    def inner_callable(df: pl.DataFrame) -> bool:
+        is_dup = df.select(columns).is_duplicated()
+        has_duplicates = is_dup.any()
+
+        s3_client = boto3.client("s3")
+        if has_duplicates:
+            dup_rows = df.filter(is_dup).head(max_rows_to_extract)
+            utils.write_to_parquet(
+                dup_rows, f"s3://{bucket_name}/{extract_key}", append=False
+            )
+        else:
+            s3_client.delete_object(Bucket=bucket_name, Key=extract_key)
+
+        return not has_duplicates
+
+    return inner_callable
+
+
 def make_convert_col_to_integers_preprocessor(
     column: str,
 ) -> Callable[[pl.DataFrame], pl.DataFrame]:

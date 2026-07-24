@@ -41,6 +41,7 @@ class ValidatePreparedSLVDataTests(unittest.TestCase):
             "jr01vacy": pl.Int32,
         }
 
+    @patch("boto3.client", autospec=True)
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
@@ -49,6 +50,7 @@ class ValidatePreparedSLVDataTests(unittest.TestCase):
         mock_read_parquet: Mock,
         mock_scan_parquet: Mock,
         mock_write_reports: Mock,
+        mock_s3_client: Mock,
     ):
         mock_read_parquet.return_value = self.source_df
         mock_scan_parquet.return_value.collect_schema.return_value = self.compare_schema
@@ -65,6 +67,7 @@ class ValidatePreparedSLVDataTests(unittest.TestCase):
         )
         mock_write_reports.assert_called_once()
 
+    @patch("boto3.client", autospec=True)
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
@@ -73,6 +76,7 @@ class ValidatePreparedSLVDataTests(unittest.TestCase):
         mock_read_parquet: Mock,
         mock_scan_parquet: Mock,
         mock_write_reports: Mock,
+        mock_s3_client: Mock,
     ):
         mock_read_parquet.return_value = self.source_df
         mock_scan_parquet.return_value.collect_schema.return_value = self.compare_schema
@@ -89,7 +93,7 @@ class ValidatePreparedSLVDataTests(unittest.TestCase):
 
         expected_assertions = {
             "row_count_match",
-            "rows_distinct",
+            "specially",
             "col_vals_not_null",
             "col_vals_between",
         }
