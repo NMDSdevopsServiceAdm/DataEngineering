@@ -2,15 +2,32 @@ import sys
 
 import pointblank as pb
 
+import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as pUtils
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_job_roles import (
+    AscwdsWorkplaceJobRolesColumns as AWPJobRoles,
+)
 
 COMPARE_COLS_TO_IMPORT = [
     AWPClean.establishment_id,
+]
+
+GRAIN_COLUMNS = [
+    AWPClean.establishment_id,
+    AWPClean.ascwds_workplace_import_date,
+    AWPJobRoles.job_role_code,
+]
+
+METRIC_COLUMNS = [
+    AWPJobRoles.employees,
+    AWPJobRoles.starters,
+    AWPJobRoles.leavers,
+    AWPJobRoles.vacancies,
 ]
 
 
@@ -29,11 +46,15 @@ def main(
         reports_path (str): the output path to write reports to
     """
     source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
-    compare_df = utils.read_parquet(
-        source=f"s3://{bucket_name}/{compare_path}",
-        selected_columns=COMPARE_COLS_TO_IMPORT,
-    )
-    expected_row_count = compare_df.height
+
+    # Single scan of compare_path, reused for both the schema-derived job-role
+    # count (independent of the output being validated, rather than counting
+    # distinct job_role_code values from source_df itself) and the row count.
+    compare_lf = utils.scan_parquet(source=f"s3://{bucket_name}/{compare_path}")
+    compare_schema = compare_lf.collect_schema()
+    job_role_code_count = len(pUtils.discover_job_role_codes(compare_schema))
+    compare_row_count = compare_lf.select(COMPARE_COLS_TO_IMPORT).collect().height
+    expected_row_count = compare_row_count * job_role_code_count
 
     validation = (
         pb.Validate(
@@ -47,6 +68,24 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
+        )
+        # index columns
+        .rows_distinct(
+            GRAIN_COLUMNS,
+            brief="Grain should be unique per establishment, import date and job role",
+        )
+        # complete columns
+        .col_vals_not_null(
+            columns=GRAIN_COLUMNS,
+            brief="Grain columns should contain no null values",
+        )
+        # numerical
+        .col_vals_between(
+            columns=METRIC_COLUMNS,
+            left=1,
+            right=998,
+            na_pass=True,
+            brief="Metrics should be between 1 and 998 where present.",
         ).interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)

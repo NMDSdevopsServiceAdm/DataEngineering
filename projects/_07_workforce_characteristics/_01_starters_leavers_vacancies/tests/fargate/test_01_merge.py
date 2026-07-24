@@ -1,55 +1,51 @@
-import unittest
 from unittest.mock import ANY, Mock, call, patch
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._01_merge as job
 
 PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._01_merge"
 
+METADATA_SOURCE = "some/source"
+JOB_ROLE_ESTIMATES_SOURCE = "another/source"
+PREPARED_SLV_DATASET_SOURCE = "other/source"
+MERGED_DATA_DESTINATION = "some/destination"
 
-class MainTests(unittest.TestCase):
-    METADATA_SOURCE = "some/source"
-    JOB_ROLE_ESTIMATES_SOURCE = "another/source"
-    PREPARED_SLV_DATASET_SOURCE = "other/source"
-    MERGED_DATA_DESTINATION = "some/destination"
 
+class TestMain:
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.mUtils.apply_employment_status_magic_numbers")
     @patch(f"{PATCH_PATH}.mUtils.join_datasets")
-    @patch(f"{PATCH_PATH}.expr.is_slv_job_role_column")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
-        is_slv_job_role_column_mock: Mock,
         join_datasets_mock: Mock,
         apply_employment_status_magic_numbers_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
-            self.METADATA_SOURCE,
-            self.JOB_ROLE_ESTIMATES_SOURCE,
-            self.PREPARED_SLV_DATASET_SOURCE,
-            self.MERGED_DATA_DESTINATION,
+            METADATA_SOURCE,
+            JOB_ROLE_ESTIMATES_SOURCE,
+            PREPARED_SLV_DATASET_SOURCE,
+            MERGED_DATA_DESTINATION,
         )
 
         assert len(scan_parquet_mock.call_args_list) == 3
 
         scan_calls = [
-            call(source=self.METADATA_SOURCE, selected_columns=job.metadata_columns),
+            call(source=METADATA_SOURCE, selected_columns=job.metadata_columns),
             call(
-                source=self.JOB_ROLE_ESTIMATES_SOURCE,
+                source=JOB_ROLE_ESTIMATES_SOURCE,
                 selected_columns=job.job_role_estimates_columns,
             ),
-            call(self.PREPARED_SLV_DATASET_SOURCE),
+            call(PREPARED_SLV_DATASET_SOURCE, selected_columns=job.workplace_columns),
         ]
         scan_parquet_mock.assert_has_calls(scan_calls)
 
         # TODO: Uncomment these assertions when the placeholder functions are implemented
-        is_slv_job_role_column_mock.assert_called_once()
         # join_datasets_mock.assert_called_once()
         # apply_employment_status_magic_numbers_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
-            output_path=self.MERGED_DATA_DESTINATION,
+            output_path=MERGED_DATA_DESTINATION,
         )
