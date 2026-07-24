@@ -1,6 +1,7 @@
 import polars as pl
 
 from polars_utils import utils
+from polars_utils.categorical_types import EstablishmentCatType
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.merge_utils import (
     join_estimates_to_ascwds,
     reduced_data_filter_expr,
@@ -25,7 +26,7 @@ metadata_columns = {
     IndCQC.number_of_beds: pl.Int16,
     IndCQC.imputed_registration_date: pl.Date,
     IndCQC.ascwds_workplace_import_date: pl.Date,
-    IndCQC.establishment_id: CatColType.EstablishmentCatType,
+    IndCQC.establishment_id: EstablishmentCatType,
     IndCQC.organisation_id: str,
     IndCQC.worker_records_bounded: pl.Int16,
     IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
@@ -42,14 +43,14 @@ metadata_columns = {
 }
 ascwds_columns_to_import = {
     IndCQC.ascwds_worker_import_date: pl.Date,
-    IndCQC.establishment_id: CatColType.EstablishmentCatType,
+    IndCQC.establishment_id: EstablishmentCatType,
     IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
     IndCQC.ascwds_job_role_counts: pl.Int16,
 }
 transformation_columns = {
     IndCQC.location_id: CatColType.LocationCatType,
     IndCQC.cqc_location_import_date: pl.Date,
-    IndCQC.establishment_id: CatColType.EstablishmentCatType,
+    IndCQC.establishment_id: EstablishmentCatType,
     IndCQC.ascwds_workplace_import_date: pl.Date,
     IndCQC.estimate_filled_posts: pl.Float32,
     IndCQC.estimate_filled_posts_source: CatColType.EstimatesFilledPostSourceEnumType,

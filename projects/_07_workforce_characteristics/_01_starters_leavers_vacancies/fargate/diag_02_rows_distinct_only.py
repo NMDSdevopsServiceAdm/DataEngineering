@@ -1,9 +1,14 @@
 import sys
 
+import pointblank as pb
 import polars as pl
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.diag_helpers as diag
 from polars_utils import utils
+from polars_utils.categorical_types import EstablishmentCatType
+from projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.categorical_types import (
+    JobRoleCatType,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -17,21 +22,22 @@ GRAIN_COLUMNS = [
     AWPJobRoles.job_role_code,
 ]
 
-MAX_ROWS_TO_EXTRACT = 1000
-
 
 def main(bucket_name: str, source_path: str, reports_path: str) -> None:
-    """Prototypes a group_by()+semi-join replacement for is_duplicated().
+    """Prototypes Categorical-encoded grain columns + pointblank's stock rows_distinct().
 
-    is_duplicated() was confirmed to be the OOM culprit, not the .filter()
-    extraction step originally suspected: diag_02_after_read now succeeds at
-    ~15.4GB peak RSS (matching diag_01), but diag_02_after_duplicate_count
-    (computed via source_df.select(GRAIN_COLUMNS).is_duplicated()) never
-    appears. This bypasses has_no_duplicate_grain_rows() entirely for this
-    diagnostic and instead prototypes SPEC.md's already-documented "Option 2"
-    fallback - group_by()+len() for detection, a how="semi" join (bounded to
-    MAX_ROWS_TO_EXTRACT duplicate-group keys) for the extract - to confirm it
-    avoids the OOM before changing the real validator.
+    Both is_duplicated() and a group_by()+semi-join replacement (this
+    script's two previous prototypes) were confirmed to OOM at production
+    scale regardless of algorithm - the group_by version OOM'd before even
+    reaching its own diag_02_after_group_by_check checkpoint, isolating the
+    real cost to hashing/grouping ~370M rows of String-typed grain columns,
+    not to any particular join/no-join design.
+
+    This prototype instead Categorical-encodes establishment_id/job_role_code
+    (matching the cast now applied upstream in _00_prepare.py/prepare_utils.py)
+    and reverts to pointblank's plain built-in .rows_distinct(), to confirm
+    that's what actually makes grain-uniqueness checking viable at this row
+    count, before applying the same change to the real validator.
 
     Throwaway diagnostic for the ticket 1814 validate_00_prepare OOM - see the
     isolation plan, not part of the permanent pipeline.
@@ -53,40 +59,25 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         row_count=source_df.height,
     )
 
-    dup_groups = (
-        source_df.select(GRAIN_COLUMNS)
-        .group_by(GRAIN_COLUMNS)
-        .len()
-        .filter(pl.col("len") > 1)
+    source_df = source_df.with_columns(
+        pl.col(AWPClean.establishment_id).cast(EstablishmentCatType),
+        pl.col(AWPJobRoles.job_role_code).cast(JobRoleCatType),
     )
-    dup_group_count = dup_groups.height
-    has_duplicates = dup_group_count > 0
+    diag.write_checkpoint(bucket_name, reports_path, "diag_02_after_categorical_cast")
+
+    validation = (
+        pb.Validate(data=source_df, label="diag_02_rows_distinct_only")
+        .rows_distinct(GRAIN_COLUMNS)
+        .interrogate()
+    )
+
     diag.write_checkpoint(
         bucket_name,
         reports_path,
-        "diag_02_after_group_by_check",
-        dup_group_count=dup_group_count,
-        has_duplicates=has_duplicates,
+        "diag_02_after_interrogate",
+        all_passed=validation.all_passed(),
     )
-
-    if has_duplicates:
-        dup_rows = source_df.join(
-            dup_groups.select(GRAIN_COLUMNS).head(MAX_ROWS_TO_EXTRACT),
-            on=GRAIN_COLUMNS,
-            how="semi",
-        ).head(MAX_ROWS_TO_EXTRACT)
-        diag.write_checkpoint(
-            bucket_name,
-            reports_path,
-            "diag_02_after_semi_join_extract",
-            extracted_row_count=dup_rows.height,
-        )
-
-    diag.write_checkpoint(bucket_name, reports_path, "diag_02_complete")
-    print(
-        f"has_duplicates={has_duplicates}, dup_group_count={dup_group_count}",
-        flush=True,
-    )
+    print(f"all_passed={validation.all_passed()}", flush=True)
 
 
 if __name__ == "__main__":

@@ -135,9 +135,6 @@ class CategoricalColumnTypes:
     LocationCatType = pl.Categorical(
         pl.Categories("location", namespace="filled_posts")
     )
-    EstablishmentCatType = pl.Categorical(
-        pl.Categories("establishment", namespace="filled_posts")
-    )
     ProviderCatType = pl.Categorical(
         pl.Categories("provider", namespace="filled_posts")
     )

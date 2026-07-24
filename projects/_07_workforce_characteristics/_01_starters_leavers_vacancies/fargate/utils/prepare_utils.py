@@ -5,6 +5,9 @@ import polars as pl
 import polars.selectors as cs
 
 from polars_utils import expressions as expr
+from projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.categorical_types import (
+    JobRoleCatType,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_job_roles import (
     AscwdsWorkplaceJobRolesColumns as AWPJobRoles,
 )
@@ -120,6 +123,13 @@ def convert_job_role_columns_to_rows(
     because upstream bounding already constrains these metrics to [1, 998]
     (see `BoundingExpressions.slv_lower_bound`/`slv_upper_bound`).
 
+    job_role_code is cast to Categorical (JobRoleCatType) at the same point,
+    for the same reason: encoding it once per discovered code here is far
+    cheaper than encoding it on the ~370M exploded rows afterwards. Hashing/
+    comparing this column as a raw String at that row count is what caused a
+    production OOM in validate_00_prepare.py's grain-uniqueness check (see
+    ticket 1814's SPEC.md addendum).
+
     Args:
         workplace_lf (pl.LazyFrame): the (already column-pruned) cleaned ASCWDS
             workplace LazyFrame, containing `index_cols` and the SLV job-role
@@ -136,7 +146,9 @@ def convert_job_role_columns_to_rows(
     """
     job_role_structs = [
         pl.struct(
-            pl.lit(cols.job_role_code).alias(AWPJobRoles.job_role_code),
+            pl.lit(cols.job_role_code)
+            .cast(JobRoleCatType)
+            .alias(AWPJobRoles.job_role_code),
             pl.col(cols.employees).cast(pl.Int16).alias(AWPJobRoles.employees),
             pl.col(cols.starters).cast(pl.Int16).alias(AWPJobRoles.starters),
             pl.col(cols.leavers).cast(pl.Int16).alias(AWPJobRoles.leavers),

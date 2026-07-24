@@ -1,5 +1,8 @@
+import polars as pl
+
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as pUtils
 from polars_utils import utils
+from polars_utils.categorical_types import EstablishmentCatType
 from polars_utils.cleaning_utils import apply_categorical_labels
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -18,6 +21,13 @@ def main(
     then converts the 4-metrics-per-code wide SLV block into one row per
     (establishment_id, ascwds_workplace_import_date, job_role_code).
 
+    establishment_id is cast to Categorical (EstablishmentCatType) here, on
+    the wide frame before the explode - job_role_code gets the equivalent
+    cast inside convert_job_role_columns_to_rows(). Hashing/comparing these
+    grain columns as raw Strings at the ~370M-row exploded scale is what
+    caused a production OOM in validate_00_prepare.py's grain-uniqueness
+    check (see ticket 1814's SPEC.md addendum).
+
     Args:
         cleaned_ascwds_workplace_source (str): path to the cleaned ascwds workplace data
         prepared_data_destination (str): destination for output
@@ -33,7 +43,9 @@ def main(
         for cols in job_role_columns
         for column in (cols.employees, cols.starters, cols.leavers, cols.vacancies)
     ]
-    workplace_lf = raw_lf.select(*INDEX_COLUMNS, *slv_source_columns)
+    workplace_lf = raw_lf.select(*INDEX_COLUMNS, *slv_source_columns).with_columns(
+        pl.col(AWPClean.establishment_id).cast(EstablishmentCatType)
+    )
 
     job_roles_lf = pUtils.convert_job_role_columns_to_rows(
         workplace_lf, INDEX_COLUMNS, job_role_columns
