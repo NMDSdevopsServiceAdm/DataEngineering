@@ -496,6 +496,16 @@ class TestMergeJobRoleColumns:
                 "not_a_job_role_column": "A",
             },
         ),
+        MergeJobRoleColumnsTestCase(
+            id="handles_job_roles_with_same_characters",
+            mapping={"101": ["10"]},
+            input_data={
+                AWPClean.job_role_10_employees: 10,
+            },
+            expected_data={
+                "jr101emp": 10,
+            },
+        ),
     ]
 
     @pytest.mark.parametrize(

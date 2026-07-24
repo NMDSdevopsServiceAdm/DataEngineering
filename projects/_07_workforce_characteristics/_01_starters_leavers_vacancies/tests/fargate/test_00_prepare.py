@@ -11,18 +11,18 @@ class MainTests(unittest.TestCase):
     PREPARED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.apply_categorical_labels")
+    @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
     @patch(f"{PATCH_PATH}.pUtils.convert_job_role_strings_to_number_only")
     @patch(f"{PATCH_PATH}.pUtils.pivot_job_role_cols_to_rows")
-    @patch(f"{PATCH_PATH}.pUtils.reduce_to_published_roles")
+    @patch(f"{PATCH_PATH}.cUtils.merge_job_role_columns")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
-        reduce_to_published_roles: Mock,
-        pivot_job_role_cols_to_rows: Mock,
-        convert_job_role_strings_to_number_only: Mock,
-        apply_categorical_labels: Mock,
+        merge_job_role_columns_mock: Mock,
+        pivot_job_role_cols_to_rows_mock: Mock,
+        convert_job_role_strings_to_number_only_mock: Mock,
+        apply_categorical_labels_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
         job.main(
@@ -33,10 +33,10 @@ class MainTests(unittest.TestCase):
         scan_parquet_mock.assert_called_once_with(self.CLEANED_ASCWDS_WORKPLACE_SOURCE)
 
         # TODO: Uncomment these assertions when the placeholder functions are implemented
-        # reduce_to_published_roles.assert_called_once()
-        # pivot_job_role_cols_to_rows.assert_called_once()
-        # convert_job_role_strings_to_number_only.assert_called_once()
-        # apply_categorical_labels.assert_called_once()
+        merge_job_role_columns_mock.assert_called_once()
+        # pivot_job_role_cols_to_rows_mock.assert_called_once()
+        # convert_job_role_strings_to_number_only_mock.assert_called_once()
+        # apply_categorical_labels_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,

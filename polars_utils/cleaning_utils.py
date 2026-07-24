@@ -307,7 +307,10 @@ def merge_job_role_columns(
     )
 
     old_roles = [old for olds in job_role_mapping.values() for old in olds]
-    lf = lf.drop(cs.starts_with(*[f"jr{role}" for role in old_roles]))
+    roles_to_drop = [
+        f"jr{role}{suffix}" for role in old_roles for suffix in job_role_suffixes
+    ]
+    lf = lf.drop(cs.by_name(*roles_to_drop, require_all=False))
 
     return lf
 
