@@ -22,8 +22,6 @@ If there's nothing critical, say so plainly rather than inventing improvements t
 
 ## Also check against the reviewer checklist (from the migration PR template)
 
-- PR solves the stated ticket requirements.
-- Outputs appear reasonable and understandable.
 - The overall approach is appropriate and not over-engineered.
 - No obvious scalability, performance, or interdependency concerns.
 - Tests appropriately cover the main behaviour and edge cases (see `pytest-pattern` skill for what "appropriate" looks like here).

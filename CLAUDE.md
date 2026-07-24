@@ -30,7 +30,7 @@ Skills for Care Workforce Intelligence Team. Builds reproducible AWS data pipeli
 
 ## Scale is the top constraint
 
-Datasets here are large in both rows and columns, and OOM is a recurring real problem. When writing or reviewing Polars code, correctness and "idiomatic" style are necessary but not sufficient — always also check for unnecessary materialisation. Concretely:
+Datasets here are large in both rows and columns — typically 4M+ rows and 20+ columns, as an order-of-magnitude anchor rather than a hard spec — and OOM is a recurring real problem. When writing or reviewing Polars code, correctness and "idiomatic" style are necessary but not sufficient — always also check for unnecessary materialisation. Concretely:
 
 - Keep the pipeline lazy end-to-end; use `scan_parquet` / `scan_csv`, not `read_*`; `.collect()` once, at the end, not mid-pipeline.
 - `.select()` / `.drop()` unneeded columns as early as possible — with wide datasets, column count matters as much as row count.
