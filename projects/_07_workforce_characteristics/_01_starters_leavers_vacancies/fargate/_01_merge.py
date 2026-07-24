@@ -80,20 +80,14 @@ def main(
         expr.is_slv_job_role_column()
     )
 
-    target_weighting_year = "2025/26"
-
+    # The source CSV is expected to already be trimmed to exactly these columns, in this
+    # order, and to only the current weighting year's rows — scan_csv's schema is matched
+    # positionally, not by name, so a reordered file would silently load into the wrong
+    # columns with no error.
     employee_status_rates_schema = pl.Schema(
         [
             (EmpStatRates.service, pl.Categorical()),
-            (EmpStatRates.weighting_year, pl.Categorical()),
             (EmpStatRates.weighting_job_role, pl.Categorical()),
-            (EmpStatRates.permanent, pl.String),
-            (EmpStatRates.temporary, pl.String),
-            (EmpStatRates.bank_or_pool, pl.String),
-            (EmpStatRates.agency, pl.String),
-            (EmpStatRates.other, pl.String),
-            (EmpStatRates.filled_posts, pl.String),
-            (EmpStatRates.weighting_date, pl.String),
             (EmpStatRates.emp_stat_perm, pl.Float32),
             (EmpStatRates.emp_stat_temp, pl.Float32),
             (EmpStatRates.emp_stat_bank_or_pool, pl.Float32),
@@ -101,24 +95,10 @@ def main(
             (EmpStatRates.emp_stat_other, pl.Float32),
         ]
     )
-    employee_status_rates_output_columns = [
-        EmpStatRates.service,
-        EmpStatRates.weighting_year,
-        EmpStatRates.weighting_job_role,
-        EmpStatRates.emp_stat_perm,
-        EmpStatRates.emp_stat_temp,
-        EmpStatRates.emp_stat_bank_or_pool,
-        EmpStatRates.emp_stat_agency,
-        EmpStatRates.emp_stat_other,
-    ]
 
-    employee_status_rates_lf = (
-        pl.scan_csv(employee_status_rates_source, schema=employee_status_rates_schema)
-        .select(employee_status_rates_output_columns)
-        .filter(~pl.all_horizontal(pl.all().is_null()))
-        .filter(pl.col(EmpStatRates.weighting_year) == target_weighting_year)
-        .drop(EmpStatRates.weighting_year)
-    )
+    employee_status_rates_lf = pl.scan_csv(
+        employee_status_rates_source, schema=employee_status_rates_schema
+    ).filter(~pl.all_horizontal(pl.all().is_null()))
 
     # TODO: Placeholder only
     # mUtils.join_datasets()
