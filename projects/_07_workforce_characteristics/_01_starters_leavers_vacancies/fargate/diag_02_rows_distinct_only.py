@@ -1,10 +1,9 @@
 import sys
 
-import pointblank as pb
+import polars as pl
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.diag_helpers as diag
 from polars_utils import utils
-from polars_utils.validation import actions as vl
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -18,24 +17,21 @@ GRAIN_COLUMNS = [
     AWPJobRoles.job_role_code,
 ]
 
+MAX_ROWS_TO_EXTRACT = 1000
+
 
 def main(bucket_name: str, source_path: str, reports_path: str) -> None:
-    """Isolates the incremental memory cost of the grain-uniqueness check.
+    """Prototypes a group_by()+semi-join replacement for is_duplicated().
 
-    Runs the same eager read as diag_01_read_parquet_only.py, then only the
-    high-cardinality grain-uniqueness check - no row_count_match or the other
-    checks. Comparing its peak RSS against diag_01's isolates what the check
-    adds on top of the base materialisation.
-
-    Uses has_no_duplicate_grain_rows() rather than pointblank's own
-    rows_distinct(), matching the real fix in validate_00_prepare.py - see
-    ticket 1814's isolation experiments for why rows_distinct() OOM'd here.
-
-    Records the duplicate count/fraction as its own checkpoint before running
-    has_no_duplicate_grain_rows() - a boolean .sum() is a cheap O(n)
-    reduction, unlike the .filter() the validator itself does further on, so
-    this isolates whether a high duplicate rate (not is_duplicated() itself)
-    is what's driving a second OOM here.
+    is_duplicated() was confirmed to be the OOM culprit, not the .filter()
+    extraction step originally suspected: diag_02_after_read now succeeds at
+    ~15.4GB peak RSS (matching diag_01), but diag_02_after_duplicate_count
+    (computed via source_df.select(GRAIN_COLUMNS).is_duplicated()) never
+    appears. This bypasses has_no_duplicate_grain_rows() entirely for this
+    diagnostic and instead prototypes SPEC.md's already-documented "Option 2"
+    fallback - group_by()+len() for detection, a how="semi" join (bounded to
+    MAX_ROWS_TO_EXTRACT duplicate-group keys) for the extract - to confirm it
+    avoids the OOM before changing the real validator.
 
     Throwaway diagnostic for the ticket 1814 validate_00_prepare OOM - see the
     isolation plan, not part of the permanent pipeline.
@@ -57,26 +53,40 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
         row_count=source_df.height,
     )
 
-    is_dup = source_df.select(GRAIN_COLUMNS).is_duplicated()
-    dup_count = int(is_dup.sum())
+    dup_groups = (
+        source_df.select(GRAIN_COLUMNS)
+        .group_by(GRAIN_COLUMNS)
+        .len()
+        .filter(pl.col("len") > 1)
+    )
+    dup_group_count = dup_groups.height
+    has_duplicates = dup_group_count > 0
     diag.write_checkpoint(
         bucket_name,
         reports_path,
-        "diag_02_after_duplicate_count",
-        dup_count=dup_count,
-        dup_fraction=dup_count / source_df.height,
+        "diag_02_after_group_by_check",
+        dup_group_count=dup_group_count,
+        has_duplicates=has_duplicates,
     )
 
-    validation = (
-        pb.Validate(data=source_df, label="diag_02_rows_distinct_only")
-        .specially(
-            vl.has_no_duplicate_grain_rows(GRAIN_COLUMNS, bucket_name, reports_path)
+    if has_duplicates:
+        dup_rows = source_df.join(
+            dup_groups.select(GRAIN_COLUMNS).head(MAX_ROWS_TO_EXTRACT),
+            on=GRAIN_COLUMNS,
+            how="semi",
+        ).head(MAX_ROWS_TO_EXTRACT)
+        diag.write_checkpoint(
+            bucket_name,
+            reports_path,
+            "diag_02_after_semi_join_extract",
+            extracted_row_count=dup_rows.height,
         )
-        .interrogate()
-    )
 
-    diag.write_checkpoint(bucket_name, reports_path, "diag_02_after_interrogate")
-    print(validation.get_json_report(), flush=True)
+    diag.write_checkpoint(bucket_name, reports_path, "diag_02_complete")
+    print(
+        f"has_duplicates={has_duplicates}, dup_group_count={dup_group_count}",
+        flush=True,
+    )
 
 
 if __name__ == "__main__":
