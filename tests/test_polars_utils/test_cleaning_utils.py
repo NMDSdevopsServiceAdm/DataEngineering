@@ -517,6 +517,4 @@ class TestMergeJobRoleColumns:
         expected_lf = pl.LazyFrame(case.expected_data)
         returned_lf = job.merge_job_role_columns(test_lf, case.mapping)
 
-        pl_testing.assert_frame_equal(
-            returned_lf, expected_lf, check_column_order=False
-        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
