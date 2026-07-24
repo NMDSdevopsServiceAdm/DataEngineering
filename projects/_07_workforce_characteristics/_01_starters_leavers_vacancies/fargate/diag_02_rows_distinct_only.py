@@ -24,20 +24,31 @@ GRAIN_COLUMNS = [
 
 
 def main(bucket_name: str, source_path: str, reports_path: str) -> None:
-    """Prototypes Categorical-encoded grain columns + pointblank's stock rows_distinct().
+    """Prototypes a narrow, grain-only load + Categorical + pointblank's stock rows_distinct().
 
-    Both is_duplicated() and a group_by()+semi-join replacement (this
-    script's two previous prototypes) were confirmed to OOM at production
-    scale regardless of algorithm - the group_by version OOM'd before even
-    reaching its own diag_02_after_group_by_check checkpoint, isolating the
-    real cost to hashing/grouping ~370M rows of String-typed grain columns,
-    not to any particular join/no-join design.
+    The previous prototype (Categorical-encoded grain columns, but loading
+    all 7 columns of the validated table) still OOM'd, dying somewhere after
+    the diag_02_after_categorical_cast checkpoint (~18.1GB peak RSS) inside
+    .rows_distinct().interrogate(). Reading pointblank's installed source
+    (_interrogation.py:783-804) shows why Categorical-encoding the grain
+    columns alone was never going to be enough: RowsDistinct's column-subset
+    prep (_utils.py:499-510) does not narrow the table to just the grain
+    columns - Interrogator.rows_distinct() joins its group-by count back onto
+    `self.x`, the FULL validated table (all 7 columns), not a 3-column grain
+    subset. That join reconstructs a full second copy of the entire table
+    regardless of grain-column dtype, and RowsDistinct.test() (line 1396)
+    converts the resulting boolean column to a Python list - both costs scale
+    with row count and total column width, not with how compact the grain
+    columns are encoded.
 
-    This prototype instead Categorical-encodes establishment_id/job_role_code
-    (matching the cast now applied upstream in _00_prepare.py/prepare_utils.py)
-    and reverts to pointblank's plain built-in .rows_distinct(), to confirm
-    that's what actually makes grain-uniqueness checking viable at this row
-    count, before applying the same change to the real validator.
+    This prototype instead loads ONLY GRAIN_COLUMNS via
+    utils.read_parquet(selected_columns=...) - true column projection at scan
+    time, not a post-read .select() - so pointblank's join operates on a
+    3-column table instead of a 7-column one, on top of the Categorical
+    encoding already confirmed cheap to apply. Matches the narrow-load
+    architecture already used elsewhere in this repo (e.g.
+    _07_estimate_filled_posts_by_job_role's validate_03_impute.py splits its
+    index-uniqueness check into its own narrowly-loaded pb.Validate call).
 
     Throwaway diagnostic for the ticket 1814 validate_00_prepare OOM - see the
     isolation plan, not part of the permanent pipeline.
@@ -50,12 +61,15 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
     """
     diag.write_checkpoint(bucket_name, reports_path, "diag_02_before_read")
 
-    source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
+    source_df = utils.read_parquet(
+        source=f"s3://{bucket_name}/{source_path}",
+        selected_columns=GRAIN_COLUMNS,
+    )
 
     diag.write_checkpoint(
         bucket_name,
         reports_path,
-        "diag_02_after_read",
+        "diag_02_after_narrow_read",
         row_count=source_df.height,
     )
 
