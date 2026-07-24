@@ -28,7 +28,3 @@ description: Use when choosing or reviewing between a Polars .over() window func
    ```
    Run each candidate in its **own fresh process** — peak memory only ever goes up within a process, so reusing one process across comparisons contaminates later results with earlier peaks.
 3. **State which option you picked and why** (streaming support, measured memory, row-filter vs column-broadcast) when you write or review this kind of change.
-
-## Retire this skill around 2026-10
-
-This guidance is temporary — CLAUDE.md flags it as "remove after ~2026-10" once the team has built enough real examples to trust default judgement without measuring each time. When that note is removed from CLAUDE.md, delete this skill too (or fold the still-useful parts into `polars-streaming-check`).

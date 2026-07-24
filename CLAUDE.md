@@ -45,7 +45,7 @@ Datasets here are large in both rows and columns — typically 4M+ rows and 20+ 
 
 ### `.over()` vs join-based rewrites — "not streaming" ≠ "uses more memory"
 
-Not being on the streaming list above is not a proxy for "will OOM" — a join that broadcasts a value onto every row (left-join, `join_asof`) can cost several GB *more* than the equivalent `.over()`'s in-memory fallback, even though the join looks "streaming-friendly." Semi/anti-join rewrites are the exception (no merged output), but `pl.concat` to recombine isn't free either. Full reasoning, worked examples, and the measurement snippet to compare before converting live in the `over-vs-join` skill (`.claude/skills/over-vs-join/`) — **temporary, remove after ~2026-10** once the team has enough real examples to trust default judgement.
+Not being on the streaming list above is not a proxy for "will OOM" — a join that broadcasts a value onto every row (left-join, `join_asof`) can cost several GB *more* than the equivalent `.over()`'s in-memory fallback, even though the join looks "streaming-friendly." Semi/anti-join rewrites are the exception (no merged output), but `pl.concat` to recombine isn't free either. Full reasoning, worked examples, and the measurement snippet to compare before converting live in the `over-vs-join` skill (`.claude/skills/over-vs-join/`).
 
 ## Polars style
 
