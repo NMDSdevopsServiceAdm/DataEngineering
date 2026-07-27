@@ -35,6 +35,8 @@ All notable changes to this project will be documented in this file.
 
 - Reduced the rows carried through the SLV prepare step to the same retention window the downstream job role estimates already use, and moved `reduced_data_filter_expr` into Polars Utils so both pipelines share one definition of that window.
 
+- Reduced the SLV prepare step further to one file per calendar month, matching the granularity the downstream job role estimates dataset already uses. Generalised the existing earliest-file-per-month reduction into a shared `earliest_file_per_month_filter_expr` in Polars Utils (alongside `reduced_data_filter_expr`) so both pipelines use the same definition, and updated its existing callers in the independent CQC clean job accordingly.
+
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
 

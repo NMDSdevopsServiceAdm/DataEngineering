@@ -156,3 +156,30 @@ def reduced_data_filter_expr(
     return (dt >= monthly_start) | (
         (dt < monthly_start) & (dt.dt.month().is_in(quarter_months))
     )
+
+
+def earliest_file_per_month_filter_expr(
+    date_col: str = IndCQC.cqc_location_import_date,
+) -> pl.Expr:
+    """
+    Build a Polars expression selecting only the earliest-dated row(s) of each calendar month.
+
+    This identifies the earliest date within each (year, month) group and keeps only rows
+    matching that date, reducing a dataset carrying multiple files per month down to one.
+
+    Returning an expression rather than a filtered LazyFrame lets callers attach it
+    directly to a `.filter()` chain alongside other predicates (e.g. reduced_data_filter_expr),
+    keeping the query lazy end-to-end.
+
+    Args:
+        date_col (str): Name of the date column to reduce on. Defaults to the CQC
+            location import date; datasets keyed on a different date column (e.g. the
+            SLV pipeline's ASCWDS workplace import date) pass their own.
+
+    Returns:
+        pl.Expr: A Polars boolean expression that can be used inside `.filter()` to select
+            rows whose date matches the minimum date within their (year, month) group.
+    """
+    dt = pl.col(date_col)
+
+    return dt == dt.min().over(dt.dt.year(), dt.dt.month())
