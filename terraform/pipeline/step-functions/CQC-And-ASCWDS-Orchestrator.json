@@ -94,7 +94,7 @@
                     },
                     "Wait For Worker": {
                       "Type": "Wait",
-                      "Seconds": 60,
+                      "Seconds": ${ascwds_polling_wait_seconds},
                       "Next": "Check Worker"
                    },
                     "Worker Timeout": {
@@ -160,7 +160,7 @@
                     },
                     "Wait For Workplace": {
                       "Type": "Wait",
-                      "Seconds": 60,
+                      "Seconds": ${ascwds_polling_wait_seconds},
                       "Next": "Check Workplace"
                     },
                     "Workplace Timeout": {
