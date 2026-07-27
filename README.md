@@ -37,6 +37,9 @@ pipenv install --dev
 pipenv shell
 ```
 
+Working in a git worktree instead? It starts with no Python environment, and says
+so only via a misleading `ModuleNotFoundError` — see [Working in a git worktree](./SETUP.md#working-in-a-git-worktree).
+
 ## Testing
 ```
 # Run all tests
@@ -66,7 +69,7 @@ terraform fmt -recursive  # Terraform
 - [NOTEBOOKS.md](./NOTEBOOKS.md) - Jupyter notebooks on Amazon Web Services EMR
 - [SETUP.md](./SETUP.md) - local environment and project setup
 - [STYLEGUIDE.md](./STYLEGUIDE.md) — naming, test writing, and docstring conventions
-- [WINDOWSSETUP.md](./WINDOWSSETUP.md) — instructions for setting up the project on Windows
+- [WindowsSetup.md](./WindowsSetup.md) — instructions for setting up the project on Windows
 
 ## Publications and Outputs
 The data and models produced by this repository feed into various reports, dashboards and monthly trackers and are available at:

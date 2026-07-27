@@ -11,6 +11,8 @@
 
 # ------ .env ------ #
 .env
+# temp files from scripts/setup_worktree.sh's .env writer, if a run is interrupted
+.env.*
 
 
 

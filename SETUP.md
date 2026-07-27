@@ -34,7 +34,7 @@ exit
 ```
 _Do not use `deactivate` or `source deactivate`_
 
-For detailed Windows setup, see [WindowsSetup.md](https://github.com/NMDSdevopsServiceAdm/DataEngineering/blob/main/WindowsSetup.md)
+For detailed Windows setup, see [WindowsSetup.md](./WindowsSetup.md)
 
 ## Working in a git worktree
 
@@ -45,7 +45,7 @@ worktree doesn't inherit the main checkout's. This doesn't fail loudly — the f
 pyenv defaults to, and ordinary imports then fail with `ModuleNotFoundError`,
 which reads like a broken code change rather than a missing environment.
 
-Run this once, from inside the new worktree:
+Run this once, from the root of the new worktree:
 
 ```
 bash scripts/setup_worktree.sh
@@ -54,11 +54,34 @@ bash scripts/setup_worktree.sh
 It points the worktree at the main checkout's existing virtualenv via a
 gitignored `.env`, copies `.vscode/` across (also gitignored, and needed for test
 discovery and format-on-save), and verifies the result. There's nothing to
-install and nothing to wait for.
+install and nothing to wait for. `--help` explains the two modes.
 
 Sharing one virtualenv is safe: it contains no repo code, so imports resolve
 against whichever worktree you run from. If the worktree's `Pipfile` or
 `Pipfile.lock` differs from the main checkout's, the script detects it and builds
-an isolated virtualenv instead — pass `--isolated` to force that. Pre-commit
-needs no per-worktree setup; `core.hooksPath` already points every worktree at the
-shared hooks directory.
+an isolated virtualenv instead — pass `--isolated` to force that. In isolated mode
+`.vscode/` is deliberately **not** copied, because the settings name the shared
+virtualenv by absolute path; run **Python: Select Interpreter** and pick the new
+one, or VS Code will keep running tests against the shared environment.
+
+Nothing re-checks after setup, so re-run the script if `Pipfile` or `Pipfile.lock`
+changes later — after a rebase, for instance. Otherwise the worktree quietly keeps
+using an environment that no longer matches its lockfile.
+
+Pre-commit needs no per-worktree setup: git resolves the hooks directory to the
+repository's common `.git/hooks` even from a linked worktree, and the installed
+hook names the main checkout's interpreter by absolute path.
+
+### Commands to avoid inside a shared worktree
+
+Because the virtualenv is shared, each of these acts on the main checkout's
+environment and so affects every other worktree too:
+
+| Command | What actually happens |
+|---------|----------------------|
+| `pipenv --rm` | Deletes the shared virtualenv, breaking every worktree and the pre-commit hook that names its interpreter by absolute path. Rebuilding costs ~1.2GB and several minutes. |
+| `pipenv install <pkg>` | Installs into the shared virtualenv, so other worktrees gain a package their `Pipfile.lock` doesn't list — code that depends on it passes locally and fails CI. |
+| `pipenv uninstall <pkg>` | Removes it for everyone, including worktrees whose lockfile still lists it. |
+| `pipenv clean` | Uninstalls whatever isn't in *this* worktree's lockfile, from everyone's environment. |
+
+To remove a finished worktree, use `git worktree remove` from the main checkout.

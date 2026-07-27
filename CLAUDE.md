@@ -11,6 +11,12 @@ Skills for Care Workforce Intelligence Team. Builds reproducible AWS data pipeli
 - We are mid-migration from PySpark to Polars. Do not introduce new PySpark code unless explicitly asked or working in a file already containing PySpark code. When migrating a function, add a comment on the old PySpark function pointing at its replacement: `# converted to polars -> filepath.py` (see `.github/PULL_REQUEST_TEMPLATE/polars_migration_template.md`).
 - Tests are mid-migration from `unittest` to `pytest`. Write new tests in pytest style (see Testing below). Don't mass-rewrite passing unittest tests — migrate opportunistically when you're already touching a file.
 
+## Environment
+
+Run Python through `pipenv run` — the bare system interpreter has some packages but not others, so it fails misleadingly rather than obviously.
+
+A fresh git worktree has **no virtualenv of its own**, and doesn't say so: the first `pipenv run` silently builds an empty one and ordinary imports then raise `ModuleNotFoundError`, which reads like a broken code change. Run `bash scripts/setup_worktree.sh` once from the worktree root before anything else. Note it makes the worktree share the main checkout's virtualenv, so `pipenv --rm`, `install`, `uninstall` and `clean` from inside a worktree affect every other worktree — see [SETUP.md](SETUP.md).
+
 ## Scale is the top constraint
 
 Datasets here are large in both rows and columns, and OOM is a recurring real problem. When writing or reviewing Polars code, correctness and "idiomatic" style are necessary but not sufficient — always also check for unnecessary materialisation. Concretely:
