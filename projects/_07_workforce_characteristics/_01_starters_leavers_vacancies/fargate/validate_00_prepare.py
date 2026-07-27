@@ -2,9 +2,6 @@ import sys
 
 import pointblank as pb
 
-# TEMPORARY - ticket 1820 memory instrumentation. Remove this import and every
-# dHelpers.write_checkpoint call below once the measurement has been taken.
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.diag_helpers as dHelpers
 from polars_utils import utils
 from polars_utils.filtering_utils import reduced_data_filter_expr
 from polars_utils.validation import actions as vl
@@ -38,28 +35,11 @@ def main(
         compare_path (str): the path to the dataset to compare against
         reports_path (str): the output path to write reports to
     """
-    dHelpers.write_checkpoint(bucket_name, reports_path, "start")
-
     source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
-    dHelpers.write_checkpoint(
-        bucket_name, reports_path, "source_read", row_count=source_df.height
-    )
-
     compare_df = utils.read_parquet(
         source=f"s3://{bucket_name}/{compare_path}",
         selected_columns=COMPARE_COLS_TO_IMPORT,
-    )
-    dHelpers.write_checkpoint(
-        bucket_name, reports_path, "compare_read", row_count=compare_df.height
-    )
-
-    compare_df = compare_df.filter(
-        reduced_data_filter_expr(date_col=AWPClean.ascwds_workplace_import_date)
-    )
-    dHelpers.write_checkpoint(
-        bucket_name, reports_path, "compare_filtered", row_count=compare_df.height
-    )
-
+    ).filter(reduced_data_filter_expr(date_col=AWPClean.ascwds_workplace_import_date))
     expected_row_count = compare_df.height
 
     validation = (
@@ -76,10 +56,7 @@ def main(
             brief=f"Expects {expected_row_count} rows",
         ).interrogate()
     )
-    dHelpers.write_checkpoint(bucket_name, reports_path, "interrogated")
-
     vl.write_reports(validation, bucket_name, reports_path)
-    dHelpers.write_checkpoint(bucket_name, reports_path, "end")
 
 
 if __name__ == "__main__":

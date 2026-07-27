@@ -36,15 +36,12 @@ class ValidatePreparedSLVDataTests(unittest.TestCase):
         ]  # fmt: skip
         self.compare_df = pl.DataFrame(compare_rows, compare_schema, orient="row")
 
-    # TEMPORARY - ticket 1820. Drop the dHelpers patch when the instrumentation goes.
-    @patch(f"{PATCH_PATH}.dHelpers.write_checkpoint")
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_validation_runs(
         self,
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
-        mock_write_checkpoint: Mock,
     ):
         mock_read_parquet.side_effect = [self.source_df, self.compare_df]
         job.main("bucket", "my/source/", "my/compare/", "my/reports/")
@@ -61,15 +58,12 @@ class ValidatePreparedSLVDataTests(unittest.TestCase):
         )
         mock_write_reports.assert_called_once()
 
-    # TEMPORARY - ticket 1820. Drop the dHelpers patch when the instrumentation goes.
-    @patch(f"{PATCH_PATH}.dHelpers.write_checkpoint")
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_validation_report_includes_expected_validations(
         self,
         mock_read_parquet: Mock,
         mock_write_reports: Mock,
-        mock_write_checkpoint: Mock,
     ):
         mock_read_parquet.side_effect = [self.source_df, self.compare_df]
 
