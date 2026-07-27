@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added `scripts/setup_worktree.sh` to give a new git worktree a working Python environment, pointing it at the main checkout's virtualenv rather than installing a fresh one, and documented it in SETUP.md.
+
 - Added a skeleton `_00_prepare` task (with validation) ahead of the merge step in the SLV pipeline, and rewired the merge step to read its output.
 
 - Added loading of `employee_status_rates.csv` into the SLV merge job, assumed pre-trimmed to the current weighting year and required columns, ready for future use in splitting job-role filled-post estimates by employment status. Column names are defined in `EmploymentStatusRatesColumns`.
