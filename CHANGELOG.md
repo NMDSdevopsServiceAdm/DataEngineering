@@ -33,6 +33,8 @@ All notable changes to this project will be documented in this file.
 
 - Widened the ASC-WDS file-arrival polling in the orchestrator step function to check every 15 minutes for up to 15 hours on the main workspace, to accommodate ASC-WDS data now arriving much later than before, and made the polling interval and attempt count workspace-configurable so non-main workspaces poll every 10 seconds for up to 100 seconds instead.
 
+- Reduced the rows carried through the SLV prepare step to the same retention window the downstream job role estimates already use, and moved `reduced_data_filter_expr` into Polars Utils so both pipelines share one definition of that window.
+
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
 
