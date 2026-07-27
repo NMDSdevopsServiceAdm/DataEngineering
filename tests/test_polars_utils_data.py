@@ -289,6 +289,17 @@ class RawDataAdjustmentsData:
 
 
 @dataclass
+class ReducedDataFilterCase:
+    id: str
+    today: date | None
+    fy_start_month: int
+    lookback_fy_years: int
+    quarter_months: tuple[int, ...]
+    input_data: list[date]
+    expected: list[bool]
+
+
+@dataclass
 class FilteringUtilsData:
     add_filtering_column_rows = [
         ("loc 1", 10.0),
@@ -338,3 +349,49 @@ class FilteringUtilsData:
         ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
         ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
     ] # fmt: skip
+
+    reduced_data_filter_test_cases = [
+        ReducedDataFilterCase(
+            id="default args",
+            today=date(2024, 6, 15),
+            fy_start_month=4,
+            lookback_fy_years=2,
+            quarter_months=(1, 4, 7, 10),
+            input_data=[
+                date(2021, 4, 1), # before monthly_start but quarterly rule matches -> included
+                date(2021, 5, 1), # before monthly_start, non-quarter -> excluded
+                date(2022, 3, 31), # before monthly_start and quarterly rule does not match -> excluded
+                date(2022, 4, 1), # at boundary (monthly_start) -> included
+                date(2023, 6, 1), # within range -> included
+            ],
+            expected=[True, False, False, True, True],
+        ),
+        ReducedDataFilterCase(
+            id="non_default_args",
+            today=date(2024, 6, 15),
+            fy_start_month=1,
+            lookback_fy_years=1,
+            quarter_months=(3, 6, 9, 12),
+            input_data=[
+                date(2022, 1, 1), # before monthly_start, non-quarter -> excluded
+                date(2022, 2, 1), # before monthly_start, non-quarter -> excluded
+                date(2022, 12, 1), # before monthly_start but quarterly rule matches -> included
+                date(2023, 3, 1), # before monthly_start and quarterly rule matches -> included
+                date(2024, 6, 1), # within range -> included
+            ],
+            expected=[False, False, True, True, True],
+        ),
+        ReducedDataFilterCase(
+            id="today_defaults_to_current_date",
+            today=None,
+            fy_start_month=4,
+            lookback_fy_years=2,
+            quarter_months=(1, 4, 7, 10),
+            input_data=[
+                date.today(),  # should be included as it's the current date
+                date(2021, 4, 1), # before monthly_start but quarterly rule matches -> included
+                date(2021, 5, 1), # before monthly_start, non-quarter -> excluded
+            ],
+            expected=[True, True, False],
+        ),
+    ]  # fmt: skip
