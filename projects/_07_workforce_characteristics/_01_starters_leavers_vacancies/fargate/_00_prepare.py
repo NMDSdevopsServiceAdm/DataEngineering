@@ -17,8 +17,7 @@ def main(
     """Load the cleaned ASCWDS workplace dataset, reduce it, and save it.
 
     Rows are reduced to the same retention window the downstream job role estimates
-    already use, so the two datasets line up at the merge step, and further reduced to
-    one file per calendar month to match that dataset's monthly granularity. The retention
+    already use, and further reduced to one file per calendar month. The retention
     filter is applied first even though the two reductions are order-independent (retention
     keeps or drops whole months, never partial ones): it's a cheap date-range predicate that
     lets most of the older history get discarded before the more expensive per-month-min

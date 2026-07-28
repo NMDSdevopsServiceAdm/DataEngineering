@@ -256,7 +256,7 @@ def add_aligned_date_column(
     return primary_df_with_aligned_dates
 
 
-# converted to polars -> polars_utils.cleaning_utils.reduce_dataset_to_earliest_file_per_month
+# converted to polars -> polars_utils.filtering_utils.earliest_file_per_month_filter_expr
 def reduce_dataset_to_earliest_file_per_month(df: DataFrame) -> DataFrame:
     """
     Reduce the dataset to the first file of every month.

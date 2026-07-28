@@ -4,9 +4,6 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -292,14 +289,6 @@ class ReducedDataFilterCase:
 
 
 @dataclass
-class EarliestFilePerMonthCase:
-    id: str
-    date_col: str
-    data: dict[str, list]
-    expected_data: dict[str, list]
-
-
-@dataclass
 class FilteringUtilsData:
     add_filtering_column_rows = [
         ("loc 1", 10.0),
@@ -396,56 +385,23 @@ class FilteringUtilsData:
         ),
     ]  # fmt: skip
 
-    earliest_file_per_month_test_cases = [
-        EarliestFilePerMonthCase(
-            id="default_date_col_reduces_to_earliest_file_per_month",
-            date_col=CQCLClean.cqc_location_import_date,
-            data={
-                CQCLClean.location_id: [
-                    "loc 1",
-                    "loc 2",
-                    "loc 3",
-                    "loc 4",
-                    "loc 5",
-                    "loc 6",
-                ],
-                CQCLClean.cqc_location_import_date: [
-                    date(2022, 1, 1),
-                    date(2022, 1, 5),
-                    date(2022, 2, 5),
-                    date(2022, 2, 7),
-                    date(2022, 3, 1),
-                    date(2022, 4, 2),
-                ],
-            },
-            expected_data={
-                CQCLClean.location_id: ["loc 1", "loc 3", "loc 5", "loc 6"],
-                CQCLClean.cqc_location_import_date: [
-                    date(2022, 1, 1),
-                    date(2022, 2, 5),
-                    date(2022, 3, 1),
-                    date(2022, 4, 2),
-                ],
-            },
-        ),
-        EarliestFilePerMonthCase(
-            id="custom_date_col_reduces_to_earliest_file_per_month",
-            date_col=AWPClean.ascwds_workplace_import_date,
-            data={
-                AWPClean.establishment_id: ["est 1", "est 2", "est 3", "est 4"],
-                AWPClean.ascwds_workplace_import_date: [
-                    date(2022, 1, 1),
-                    date(2022, 1, 5),
-                    date(2022, 2, 5),
-                    date(2022, 2, 7),
-                ],
-            },
-            expected_data={
-                AWPClean.establishment_id: ["est 1", "est 3"],
-                AWPClean.ascwds_workplace_import_date: [
-                    date(2022, 1, 1),
-                    date(2022, 2, 5),
-                ],
-            },
-        ),
-    ]
+    earliest_file_per_month_rows = {
+        CQCLClean.location_id: ["loc 1", "loc 2", "loc 3", "loc 4", "loc 5", "loc 6"],
+        CQCLClean.cqc_location_import_date: [
+            date(2022, 1, 1),
+            date(2022, 1, 5),
+            date(2022, 2, 5),
+            date(2022, 2, 7),
+            date(2022, 3, 1),
+            date(2022, 4, 2),
+        ],
+    }
+    expected_earliest_file_per_month_rows = {
+        CQCLClean.location_id: ["loc 1", "loc 3", "loc 5", "loc 6"],
+        CQCLClean.cqc_location_import_date: [
+            date(2022, 1, 1),
+            date(2022, 2, 5),
+            date(2022, 3, 1),
+            date(2022, 4, 2),
+        ],
+    }

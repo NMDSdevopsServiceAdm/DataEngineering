@@ -191,6 +191,10 @@ def main(
     vl.write_reports(validation, bucket_name, reports_path)
 
 
+# Note: this earliest-day-per-month logic duplicates the concept generalised into
+# polars_utils.filtering_utils.earliest_file_per_month_filter_expr (ticket 1822). Could be
+# unified if this function is changed to operate on a single date column instead of
+# separate year/month/day columns.
 def calculate_expected_size_of_merged_coverage_dataset(
     df: pl.DataFrame,
 ) -> int:
