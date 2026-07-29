@@ -25,7 +25,8 @@ def main(
     prepared_data_destination: str,
 ) -> None:
     """Load the cleaned ASCWDS workplace dataset and then:
-        - reduce data to quarterly import dates before two previous financial years
+        - reduce rows to quarterly import dates before two previous financial years
+          and then earliest import day per month.
         - merge unpublished roles into 'other' groups
 
     Args:

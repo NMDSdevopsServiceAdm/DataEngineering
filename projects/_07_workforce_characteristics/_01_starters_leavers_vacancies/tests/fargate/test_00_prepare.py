@@ -60,11 +60,14 @@ class TestPrepare:
 
         # TODO: Uncomment these assertions when the placeholder functions are implemented
         merge_job_role_columns_mock.assert_called_once()
+        merged_jr_cols_lf = merge_job_role_columns_mock.return_value
+        merged_jr_cols_lf.drop.assert_called_once()
+        dropped_cols_lf = merged_jr_cols_lf.drop.return_value
         # pivot_job_role_cols_to_rows_mock.assert_called_once()
         # convert_job_role_strings_to_number_only_mock.assert_called_once()
         # apply_categorical_labels_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=ANY,
+            lazy_df=dropped_cols_lf,
             output_path=self.PREPARED_DATA_DESTINATION,
         )
