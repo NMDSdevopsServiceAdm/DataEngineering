@@ -16,8 +16,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_values.categorical_column_values import AscwdsFilteringRule
 
-# The single source of truth for the grouped providers history dataset's shape.
-# Used both to build the new snapshot and to read/write that dataset.
 GROUPED_PROVIDER_SCHEMA = pl.Schema(
     [
         (IndCQC.cqc_location_import_date, pl.Date()),
