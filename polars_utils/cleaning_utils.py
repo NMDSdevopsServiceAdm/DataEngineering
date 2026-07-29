@@ -306,6 +306,8 @@ def merge_job_role_columns(
         merge_job_roles_expressions(job_role_mapping, job_role_suffixes),
     )
 
+    # Flatten job role lists from job_role_mapping into single list, format them
+    # to match column names, then drop those columns.
     old_roles = [old for olds in job_role_mapping.values() for old in olds]
     roles_to_drop = [
         f"jr{role}{suffix}" for role in old_roles for suffix in job_role_suffixes
