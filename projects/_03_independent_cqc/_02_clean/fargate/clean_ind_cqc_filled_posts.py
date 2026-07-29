@@ -2,6 +2,7 @@ import polars as pl
 
 import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
+from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
 from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
 )
@@ -68,7 +69,7 @@ def main(
     locations_lf = utils.scan_parquet(merged_ind_cqc_source)
     print("Merged independent CQC location LazyFrame read in")
 
-    locations_lf = cUtils.reduce_dataset_to_earliest_file_per_month(locations_lf)
+    locations_lf = locations_lf.filter(earliest_file_per_month_filter_expr())
 
     locations_lf = calculate_time_registered_for(locations_lf)
     locations_lf = calculate_time_since_dormant(locations_lf)

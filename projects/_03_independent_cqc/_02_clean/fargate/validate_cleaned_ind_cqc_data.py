@@ -3,9 +3,9 @@ import sys
 import pointblank as pb
 import polars as pl
 
-import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
 from polars_utils.expressions import str_length_cols
+from polars_utils.filtering_utils import earliest_file_per_month_filter_expr
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_posts_utils import (
@@ -296,7 +296,7 @@ def get_expected_row_count(lf: pl.LazyFrame) -> int:
     Returns:
         int: The height of the comparator LazyFrame.
     """
-    lf = cUtils.reduce_dataset_to_earliest_file_per_month(lf)
+    lf = lf.filter(earliest_file_per_month_filter_expr())
     lf = remove_dual_registration_cqc_care_homes(lf)
 
     return lf.collect().height
