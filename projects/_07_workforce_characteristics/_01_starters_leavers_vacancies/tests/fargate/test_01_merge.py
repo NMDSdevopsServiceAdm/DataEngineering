@@ -1,6 +1,10 @@
 from unittest.mock import ANY, Mock, call, patch
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._01_merge as job
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.slv_job_role_columns import SlvJobRoleColumns as SLVJR
 
 PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._01_merge"
 
@@ -16,12 +20,10 @@ class TestMain:
     @patch(f"{PATCH_PATH}.mUtils.apply_employment_status_magic_numbers")
     @patch(f"{PATCH_PATH}.mUtils.join_datasets")
     @patch(f"{PATCH_PATH}.pl.scan_csv")
-    @patch(f"{PATCH_PATH}.expr.is_slv_job_role_column")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
-        is_slv_job_role_column_mock: Mock,
         scan_csv_mock: Mock,
         join_datasets_mock: Mock,
         apply_employment_status_magic_numbers_mock: Mock,
@@ -43,12 +45,22 @@ class TestMain:
                 source=self.JOB_ROLE_ESTIMATES_SOURCE,
                 selected_columns=job.job_role_estimates_columns,
             ),
-            call(self.PREPARED_SLV_DATASET_SOURCE),
+            call(
+                self.PREPARED_SLV_DATASET_SOURCE,
+                selected_columns=[
+                    AWPClean.establishment_id,
+                    AWPClean.ascwds_workplace_import_date,
+                    SLVJR.job_role_code,
+                    SLVJR.employees,
+                    SLVJR.starters,
+                    SLVJR.leavers,
+                    SLVJR.vacancies,
+                ],
+            ),
         ]
         scan_parquet_mock.assert_has_calls(scan_calls)
 
         # TODO: Uncomment these assertions when the placeholder functions are implemented
-        is_slv_job_role_column_mock.assert_called_once()
         # join_datasets_mock.assert_called_once()
         # apply_employment_status_magic_numbers_mock.assert_called_once()
 

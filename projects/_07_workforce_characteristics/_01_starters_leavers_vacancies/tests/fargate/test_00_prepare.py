@@ -1,4 +1,4 @@
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import Mock, patch
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._00_prepare as job
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
@@ -14,7 +14,6 @@ class TestPrepare:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
-    @patch(f"{PATCH_PATH}.pUtils.convert_job_role_strings_to_number_only")
     @patch(f"{PATCH_PATH}.pUtils.pivot_job_role_cols_to_rows")
     @patch(f"{PATCH_PATH}.cUtils.merge_job_role_columns")
     @patch(f"{PATCH_PATH}.earliest_file_per_month_filter_expr")
@@ -27,7 +26,6 @@ class TestPrepare:
         earliest_file_per_month_filter_expr_mock: Mock,
         merge_job_role_columns_mock: Mock,
         pivot_job_role_cols_to_rows_mock: Mock,
-        convert_job_role_strings_to_number_only_mock: Mock,
         apply_categorical_labels_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -58,16 +56,18 @@ class TestPrepare:
             earliest_file_per_month_filter_expr_mock.return_value
         )
 
-        # TODO: Uncomment these assertions when the placeholder functions are implemented
         merge_job_role_columns_mock.assert_called_once()
         merged_jr_cols_lf = merge_job_role_columns_mock.return_value
         merged_jr_cols_lf.drop.assert_called_once()
         dropped_cols_lf = merged_jr_cols_lf.drop.return_value
-        # pivot_job_role_cols_to_rows_mock.assert_called_once()
-        # convert_job_role_strings_to_number_only_mock.assert_called_once()
+
+        pivot_job_role_cols_to_rows_mock.assert_called_once_with(dropped_cols_lf)
+        pivoted_lf = pivot_job_role_cols_to_rows_mock.return_value
+
+        # TODO: 1794 - uncomment when apply_categorical_labels is wired in.
         # apply_categorical_labels_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=dropped_cols_lf,
+            lazy_df=pivoted_lf,
             output_path=self.PREPARED_DATA_DESTINATION,
         )

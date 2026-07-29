@@ -28,6 +28,8 @@ def main(
         - reduce rows to quarterly import dates before two previous financial years
           and then earliest import day per month.
         - merge unpublished roles into 'other' groups
+        - reshape the wide job-role columns into one row per job role, with
+          employees/starters/leavers/vacancies metric columns
 
     Args:
         cleaned_ascwds_workplace_source (str): path to the cleaned ascwds workplace data
@@ -55,11 +57,7 @@ def main(
         cs.matches(r"^jr(28|29|30|31|32)(emp|strt|stop|vacy)$")
     )
 
-    # TODO: Backlog ticket/no number - Placeholder only.
-    # pUtils.pivot_job_role_cols_to_rows()
-
-    # TODO: 1795 - Placeholder only.
-    # pUtils.convert_job_role_strings_to_number_only()
+    workplace_lf = pUtils.pivot_job_role_cols_to_rows(workplace_lf)
 
     # TODO: 1794 - Placeholder only.
     # workplace_lf = apply_categorical_labels()

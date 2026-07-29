@@ -1,22 +1,62 @@
 import sys
 
 import pointblank as pb
+import polars as pl
 
 from polars_utils import utils
+from polars_utils.expressions import is_slv_job_role_column
 from polars_utils.filtering_utils import (
     earliest_file_per_month_filter_expr,
     reduced_data_filter_expr,
 )
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
+from projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils import (
+    JOB_ROLE_CODE_PATTERN,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.slv_job_role_columns import SlvJobRoleColumns as SLVJR
 
 COMPARE_COLS_TO_IMPORT = [
     AWPClean.establishment_id,
     AWPClean.ascwds_workplace_import_date,
 ]
+
+GRAIN_COLUMNS = [
+    AWPClean.establishment_id,
+    AWPClean.ascwds_workplace_import_date,
+    SLVJR.job_role_code,
+]
+
+
+def discover_job_role_code_count(schema: pl.Schema | dict[str, pl.DataType]) -> int:
+    """
+    Counts the distinct ASC-WDS job-role codes present in a wide schema.
+
+    Reuses the same `is_slv_job_role_column()` selector that
+    `pivot_job_role_cols_to_rows()` uses to discover codes, so the expected
+    row-count multiplier here can't drift out of step with the reshape's own
+    discovery logic.
+
+    Args:
+        schema (pl.Schema | dict[str, pl.DataType]): Schema of the wide,
+            pre-reshape ASC-WDS workplace dataset.
+
+    Returns:
+        int: Count of distinct job-role codes discovered.
+    """
+    job_role_columns = (
+        pl.LazyFrame(schema=schema)
+        .select(is_slv_job_role_column())
+        .collect_schema()
+        .names()
+    )
+    job_role_codes = {
+        JOB_ROLE_CODE_PATTERN.match(col).group(1) for col in job_role_columns
+    }
+    return len(job_role_codes)
 
 
 def main(
@@ -28,7 +68,9 @@ def main(
     The compare dataset is the unreduced cleaned ASCWDS workplace data, so the same
     reduction filters applied in _00_prepare are applied here before counting rows -
     otherwise the expected count would include the historical rows and duplicate
-    monthly files the prepare step deliberately drops.
+    monthly files the prepare step deliberately drops. The expected count is then
+    multiplied by the discovered job-role code count, since _00_prepare reshapes
+    one row per establishment/date into one row per (establishment, date, job role).
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset
@@ -39,9 +81,19 @@ def main(
         reports_path (str): the output path to write reports to
     """
     source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
+
+    # The union schema (not just the first file's) is used because job-role codes
+    # can be added/dropped over time, and a schema based on one file could silently
+    # under/over-count them.
+    compare_schema = utils.discover_combined_schema(
+        f"s3://{bucket_name}/{compare_path}"
+    )
+    job_role_code_count = discover_job_role_code_count(compare_schema)
+
     compare_df = (
         utils.read_parquet(
             source=f"s3://{bucket_name}/{compare_path}",
+            schema=compare_schema,
             selected_columns=COMPARE_COLS_TO_IMPORT,
         )
         .filter(
@@ -53,7 +105,7 @@ def main(
             )
         )
     )
-    expected_row_count = compare_df.height
+    expected_row_count = compare_df.height * job_role_code_count
 
     validation = (
         pb.Validate(
@@ -67,6 +119,11 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
+        )
+        # grain uniqueness
+        .rows_distinct(
+            columns_subset=GRAIN_COLUMNS,
+            brief="Primary key (establishment_id, ascwds_workplace_import_date, job_role_code) should be unique",
         ).interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)

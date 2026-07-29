@@ -1,7 +1,6 @@
 import polars as pl
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.merge_utils as mUtils
-from polars_utils import expressions as expr
 from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -10,6 +9,7 @@ from utils.column_names.employment_status_rates_columns import (
     EmploymentStatusRatesColumns as EmpStatRates,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.slv_job_role_columns import SlvJobRoleColumns as SLVJR
 
 workplace_columns = [
     AWPClean.establishment_id,
@@ -74,10 +74,16 @@ def main(
         source=job_role_estimates_source, selected_columns=job_role_estimates_columns
     )
     cleaned_ascwds_workplace_lf = utils.scan_parquet(
-        prepared_slv_dataset_source
-    ).select(
-        *[AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date],
-        expr.is_slv_job_role_column()
+        prepared_slv_dataset_source,
+        selected_columns=[
+            AWPClean.establishment_id,
+            AWPClean.ascwds_workplace_import_date,
+            SLVJR.job_role_code,
+            SLVJR.employees,
+            SLVJR.starters,
+            SLVJR.leavers,
+            SLVJR.vacancies,
+        ],
     )
 
     # The source CSV is expected to already be trimmed to exactly these columns, in this

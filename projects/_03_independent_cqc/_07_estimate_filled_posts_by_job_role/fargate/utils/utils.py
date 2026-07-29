@@ -3,6 +3,7 @@ from datetime import date
 
 import polars as pl
 
+from polars_utils.categorical_types import EstablishmentCatType
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
@@ -135,9 +136,7 @@ class CategoricalColumnTypes:
     LocationCatType = pl.Categorical(
         pl.Categories("location", namespace="filled_posts")
     )
-    EstablishmentCatType = pl.Categorical(
-        pl.Categories("establishment", namespace="filled_posts")
-    )
+    EstablishmentCatType = EstablishmentCatType
     ProviderCatType = pl.Categorical(
         pl.Categories("provider", namespace="filled_posts")
     )
