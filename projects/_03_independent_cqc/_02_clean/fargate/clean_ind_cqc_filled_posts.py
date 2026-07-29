@@ -9,6 +9,9 @@ from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_ca
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers import (
     clean_ascwds_filled_post_outliers,
 )
+from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.null_grouped_providers import (
+    GROUPED_PROVIDER_SCHEMA,
+)
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_care_home_outliers import (
     clean_capacity_tracker_care_home_outliers,
 )
@@ -30,27 +33,6 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import (
-    NullGroupedProviderColumns as NGPcol,
-)
-
-GROUPED_PROVIDER_SCHEMA = pl.Schema(
-    [
-        (IndCQC.cqc_location_import_date, pl.Date()),
-        (IndCQC.provider_id, pl.String()),
-        (NGPcol.count_of_cqc_locations_in_provider, pl.UInt32()),
-        (IndCQC.location_id, pl.String()),
-        (AWPClean.nmds_id, pl.String()),
-        (IndCQC.name, pl.String()),
-        (IndCQC.care_home, pl.String()),
-        (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
-        (IndCQC.number_of_beds, pl.Int64()),
-        (NGPcol.location_pir_average, pl.Float64()),
-        (NGPcol.grouped_provider_status, pl.String()),
-        (NGPcol.grp_prov_identified_date, pl.Date()),
-        (NGPcol.grp_prov_fixed_date, pl.Date()),
-    ]
-)
 
 
 def main(

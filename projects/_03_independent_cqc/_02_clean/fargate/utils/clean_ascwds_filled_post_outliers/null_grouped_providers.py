@@ -16,6 +16,26 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_values.categorical_column_values import AscwdsFilteringRule
 
+# The single source of truth for the grouped providers history dataset's shape.
+# Used both to build the new snapshot and to read/write that dataset.
+GROUPED_PROVIDER_SCHEMA = pl.Schema(
+    [
+        (IndCQC.cqc_location_import_date, pl.Date()),
+        (IndCQC.provider_id, pl.String()),
+        (NGPcol.count_of_cqc_locations_in_provider, pl.UInt32()),
+        (IndCQC.location_id, pl.String()),
+        (AWPClean.nmds_id, pl.String()),
+        (IndCQC.name, pl.String()),
+        (IndCQC.care_home, pl.String()),
+        (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+        (IndCQC.number_of_beds, pl.Int64()),
+        (NGPcol.location_pir_average, pl.Float64()),
+        (NGPcol.grouped_provider_status, pl.String()),
+        (NGPcol.grp_prov_identified_date, pl.Date()),
+        (NGPcol.grp_prov_fixed_date, pl.Date()),
+    ]
+)
+
 
 @dataclass
 class NullGroupedProvidersConfig:
@@ -82,7 +102,7 @@ def null_grouped_providers(
     new_grouped_providers = select_grouped_providers(lf)
     updated_grouped_providers_lf = update_grouped_providers_history(
         new_grouped_providers, grouped_providers_lf
-    )
+    ).select(GROUPED_PROVIDER_SCHEMA.names())
 
     ngp_cols = {field.name for field in fields(NGPcol())}
     columns_to_drop = [c for c in lf.collect_schema().names() if c in ngp_cols]
@@ -330,19 +350,6 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
         pl.LazyFrame: The filtered input LazyFrame with `grouped_provider_status`
             and `last_update_date` columns added.
     """
-    cols_to_select = [
-        IndCQC.cqc_location_import_date,
-        IndCQC.provider_id,
-        NGPcol.count_of_cqc_locations_in_provider,
-        IndCQC.location_id,
-        AWPClean.nmds_id,
-        IndCQC.name,
-        IndCQC.care_home,
-        IndCQC.ascwds_filled_posts_dedup,
-        IndCQC.number_of_beds,
-        NGPcol.location_pir_average,
-    ]
-
     was_nulled_as_grouped_provider = pl.col(IndCQC.ascwds_filtering_rule).is_in(
         [
             AscwdsFilteringRule.care_home_location_was_grouped_provider,
@@ -356,7 +363,6 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     return (
         lf.filter(was_nulled_as_grouped_provider)
         .filter(trunc_date_col == trunc_date_col.max())
-        .select(cols_to_select)
         .with_columns(
             pl.lit("problem").alias(NGPcol.grouped_provider_status),
             pl.col(IndCQC.cqc_location_import_date).alias(
@@ -364,6 +370,7 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
             ),
             pl.lit(None).cast(pl.Date).alias(NGPcol.grp_prov_fixed_date),
         )
+        .select(GROUPED_PROVIDER_SCHEMA.names())
     )
 
 
