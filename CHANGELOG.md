@@ -37,6 +37,8 @@ All notable changes to this project will be documented in this file.
 
 - Reduced the SLV prepare step further to one file per calendar month, matching the granularity the downstream job role estimates dataset already uses. Generalised the existing earliest-file-per-month reduction into a shared `earliest_file_per_month_filter_expr` in Polars Utils (alongside `reduced_data_filter_expr`) so both pipelines use the same definition, and updated its existing callers in the independent CQC clean job accordingly.
 
+- Called merge_job_role_columns in slv prepare job to reduce job role columns to only published roles plus 'other direct care/manager/etc'
+
 - Changed the grouped provider history to only record locations whose ASCWDS data was actually nulled by `null_care_home_grouped_providers`/`null_non_residential_grouped_providers`, rather than every structurally-potential grouped provider.
 
 ### Fixed
