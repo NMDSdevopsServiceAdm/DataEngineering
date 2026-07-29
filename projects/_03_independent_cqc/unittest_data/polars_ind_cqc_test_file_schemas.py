@@ -1006,15 +1006,16 @@ class NullGroupedProvidersSchema:
 
     select_grouped_providers_schema = pl.Schema(
         [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.provider_id, pl.String()),
-            (IndCQC.name, pl.String()),
             (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.provider_id, pl.String()),
+            (NGPcol.count_of_cqc_locations_in_provider, pl.UInt32()),
+            (IndCQC.location_id, pl.String()),
             (AWPClean.nmds_id, pl.String()),
-            (NGPcol.potential_grouped_provider, pl.Boolean()),
-            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
+            (IndCQC.name, pl.String()),
             (IndCQC.care_home, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
             (IndCQC.number_of_beds, pl.Int64()),
+            (NGPcol.location_pir_average, pl.Float64()),
         ]
     )
 

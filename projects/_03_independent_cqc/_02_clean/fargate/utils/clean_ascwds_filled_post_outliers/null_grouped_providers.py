@@ -331,15 +331,16 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
             and `last_update_date` columns added.
     """
     cols_to_select = [
-        IndCQC.location_id,
-        IndCQC.provider_id,
-        IndCQC.name,
         IndCQC.cqc_location_import_date,
+        IndCQC.provider_id,
+        NGPcol.count_of_cqc_locations_in_provider,
+        IndCQC.location_id,
         AWPClean.nmds_id,
-        NGPcol.potential_grouped_provider,
-        IndCQC.ascwds_filled_posts_dedup,
+        IndCQC.name,
         IndCQC.care_home,
+        IndCQC.ascwds_filled_posts_dedup,
         IndCQC.number_of_beds,
+        NGPcol.location_pir_average,
     ]
 
     was_nulled_as_grouped_provider = pl.col(IndCQC.ascwds_filtering_rule).is_in(
