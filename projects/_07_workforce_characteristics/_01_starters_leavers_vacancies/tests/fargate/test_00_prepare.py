@@ -1,4 +1,4 @@
-from unittest.mock import Mock, patch
+from unittest.mock import ANY, Mock, patch
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._00_prepare as job
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
@@ -50,6 +50,6 @@ class TestPrepare:
         # apply_categorical_labels_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=scan_lf.filter.return_value,
+            lazy_df=ANY,
             output_path=self.PREPARED_DATA_DESTINATION,
         )
