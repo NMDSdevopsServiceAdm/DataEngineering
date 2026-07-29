@@ -86,11 +86,13 @@ def null_grouped_providers(
 
     Args:
         lf (pl.LazyFrame): A polars LazyFrame with independent cqc data.
-        grouped_providers_lf (pl.LazyFrame): A polars LazyFrame containing existing grouped providers.
+        grouped_providers_lf (pl.LazyFrame): A polars LazyFrame containing
+            existing grouped providers.
 
     Returns:
         tuple[pl.LazyFrame, pl.LazyFrame]: The input LazyFrame with grouped
-            providers' data nulled and a LazyFrame of grouped providers whose data was nulled.
+            providers' data nulled and a LazyFrame of grouped providers whose
+            data was nulled.
     """
     lf = calculate_data_for_grouped_provider_identification(lf)
 
@@ -201,10 +203,12 @@ def null_care_home_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     beds in that particular location.
 
     Args:
-        lf (pl.LazyFrame): A polars LazyFrame with independent CQC data and ASCWDS data.
+        lf (pl.LazyFrame): A polars LazyFrame with independent CQC data and
+            ASCWDS data.
 
     Returns:
-        pl.LazyFrame: A polars LazyFrame with grouped providers' care home data nulled.
+        pl.LazyFrame: A polars LazyFrame with grouped providers' care home data
+            nulled.
     """
     location_identified_as_a_potential_grouped_provider = (
         pl.col(NGPcol.potential_grouped_provider) == True
@@ -344,11 +348,12 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Args:
         lf (pl.LazyFrame): A LazyFrame that has already been through
-            null_care_home_grouped_providers and null_non_residential_grouped_providers.
+            null_care_home_grouped_providers and
+            null_non_residential_grouped_providers.
 
     Returns:
-        pl.LazyFrame: The filtered input LazyFrame with `grouped_provider_status`
-            and `last_update_date` columns added.
+        pl.LazyFrame: The filtered input LazyFrame with
+            `grouped_provider_status` and `last_update_date` columns added.
     """
     was_nulled_as_grouped_provider = pl.col(IndCQC.ascwds_filtering_rule).is_in(
         [
