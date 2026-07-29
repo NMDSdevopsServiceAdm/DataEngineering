@@ -1,3 +1,6 @@
+import polars.selectors as cs
+
+import polars_utils.cleaning_utils as cUtils
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as pUtils
 from polars_utils import utils
 from polars_utils.cleaning_utils import apply_categorical_labels
@@ -9,22 +12,22 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 
+unpublished_roles_mapping = {
+    "1001": ["02", "03", "05", "24", "45", "47", "49", "50"], # other managers
+    "1002": ["35", "37"], # other regulated professions
+    "1003": ["10", "11", "23", "38"], # other direct care
+    "1004": ["25", "26", "27", "34", "36", "39", "40", "42", "44", "46", "48", "51"], # other
+} # fmt: skip
+
 
 def main(
     cleaned_ascwds_workplace_source: str,
     prepared_data_destination: str,
 ) -> None:
-    """Load the cleaned ASCWDS workplace dataset, reduce it, and save it.
-
-    Rows are reduced to the same retention window the downstream job role estimates
-    already use, and further reduced to one file per calendar month. The retention
-    filter is applied first even though the two reductions are order-independent (retention
-    keeps or drops whole months, never partial ones): it's a cheap date-range predicate that
-    lets most of the older history get discarded before the more expensive per-month-min
-    window used by the monthly reduction has to run over it. Both filters are attached
-    directly to the scan so the predicates are pushed down to the parquet source rather
-    than running over a materialised frame - this dataset is both long and wide, so
-    reading it in full before filtering is what we are avoiding.
+    """Load the cleaned ASCWDS workplace dataset and then:
+        - reduce rows to quarterly import dates before two previous financial years
+          and then earliest import day per month.
+        - merge unpublished roles into 'other' groups
 
     Args:
         cleaned_ascwds_workplace_source (str): path to the cleaned ascwds workplace data
@@ -42,8 +45,15 @@ def main(
         )
     )
 
-    # TODO: 1796 - Placeholder only.
-    # pUtils.reduce_to_published_roles()
+    workplace_lf = cUtils.merge_job_role_columns(
+        workplace_lf, unpublished_roles_mapping
+    )
+
+    # These columns refer to the toal for all job roles (28) and the total for job groups (29-32).
+    # They are not required because we only want job roles at this stage.
+    workplace_lf = workplace_lf.drop(
+        cs.matches(r"^jr(28|29|30|31|32)(emp|strt|stop|vacy)$")
+    )
 
     # TODO: Backlog ticket/no number - Placeholder only.
     # pUtils.pivot_job_role_cols_to_rows()
