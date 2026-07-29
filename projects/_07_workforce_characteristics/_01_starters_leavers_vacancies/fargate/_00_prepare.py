@@ -12,13 +12,6 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 
-unpublished_roles_mapping = {
-    "1001": ["02", "03", "05", "24", "45", "47", "49", "50"], # other managers
-    "1002": ["35", "37"], # other regulated professions
-    "1003": ["10", "11", "23", "38"], # other direct care
-    "1004": ["25", "26", "27", "34", "36", "39", "40", "42", "44", "46", "48", "51"], # other
-} # fmt: skip
-
 
 def main(
     cleaned_ascwds_workplace_source: str,
@@ -48,13 +41,13 @@ def main(
     )
 
     workplace_lf = cUtils.merge_job_role_columns(
-        workplace_lf, unpublished_roles_mapping
+        workplace_lf, pUtils.unpublished_roles_mapping
     )
 
     # These columns refer to the toal for all job roles (28) and the total for job groups (29-32).
     # They are not required because we only want job roles at this stage.
     workplace_lf = workplace_lf.drop(
-        cs.matches(r"^jr(28|29|30|31|32)(emp|strt|stop|vacy)$")
+        cs.matches(pUtils.JOB_ROLE_SUMMARY_COLUMNS_PATTERN)
     )
 
     workplace_lf = pUtils.pivot_job_role_cols_to_rows(workplace_lf)

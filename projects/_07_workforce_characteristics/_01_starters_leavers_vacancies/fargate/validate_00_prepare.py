@@ -2,7 +2,9 @@ import sys
 
 import pointblank as pb
 import polars as pl
+import polars.selectors as cs
 
+import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
 from polars_utils.expressions import is_slv_job_role_column
 from polars_utils.filtering_utils import (
@@ -13,6 +15,8 @@ from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils import (
     JOB_ROLE_CODE_PATTERN,
+    JOB_ROLE_SUMMARY_COLUMNS_PATTERN,
+    unpublished_roles_mapping,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -59,6 +63,38 @@ def discover_job_role_code_count(schema: pl.Schema | dict[str, pl.DataType]) -> 
     return len(job_role_codes)
 
 
+def discover_job_role_code_count_after_transforms(
+    raw_schema: pl.Schema | dict[str, pl.DataType],
+) -> int:
+    """
+    Counts the distinct job-role codes _00_prepare.py's pivot actually sees.
+
+    _00_prepare.py::main() runs two schema-level transforms - merge_job_role_columns()
+    (merging unpublished job-role codes into synthetic 1001-1004 codes) and a drop of
+    the jr28-32 total/summary columns - before it ever calls
+    pivot_job_role_cols_to_rows(). Counting codes against the raw, pre-transform
+    schema overcounts: it includes codes that get merged away or dropped and never
+    reach the pivot. This function replicates both transforms against a zero-row
+    LazyFrame built from raw_schema (schema-only - merge_job_role_columns() does no
+    aggregation, join, or row-value-dependent work, so it's safe with zero rows),
+    then counts codes on the resulting schema. Confirmed in production: a raw
+    schema of 52 job-role columns collapses to 25 after this merge+drop.
+
+    Args:
+        raw_schema (pl.Schema | dict[str, pl.DataType]): Schema of the wide, raw
+            (pre-merge, pre-drop) ASC-WDS workplace dataset, as returned by
+            discover_combined_schema() against the compare dataset.
+
+    Returns:
+        int: Count of distinct job-role codes remaining after replicating
+            _00_prepare.py's merge_job_role_columns() and jr28-32 drop.
+    """
+    lf = pl.LazyFrame(schema=raw_schema)
+    lf = cUtils.merge_job_role_columns(lf, unpublished_roles_mapping)
+    lf = lf.drop(cs.matches(JOB_ROLE_SUMMARY_COLUMNS_PATTERN))
+    return discover_job_role_code_count(lf.collect_schema())
+
+
 def main(
     bucket_name: str, source_path: str, compare_path: str, reports_path: str
 ) -> None:
@@ -71,6 +107,10 @@ def main(
     monthly files the prepare step deliberately drops. The expected count is then
     multiplied by the discovered job-role code count, since _00_prepare reshapes
     one row per establishment/date into one row per (establishment, date, job role).
+    That count must come from discover_job_role_code_count_after_transforms()
+    (which replicates _00_prepare's own merge_job_role_columns()+jr28-32 drop),
+    not from counting codes in the raw compare schema directly - otherwise the
+    expectation overcounts codes that never reach the pivot.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset
@@ -88,7 +128,7 @@ def main(
     compare_schema = utils.discover_combined_schema(
         f"s3://{bucket_name}/{compare_path}"
     )
-    job_role_code_count = discover_job_role_code_count(compare_schema)
+    job_role_code_count = discover_job_role_code_count_after_transforms(compare_schema)
 
     compare_df = (
         utils.read_parquet(

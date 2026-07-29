@@ -17,6 +17,17 @@ SUFFIX_TO_METRIC_COLUMN = {
     "vacy": SLVJR.vacancies,
 }
 
+# "Total, all roles" (28) and "total, job group" (29-32) summary columns -
+# these aren't real job roles, so _00_prepare.py drops them before pivoting.
+JOB_ROLE_SUMMARY_COLUMNS_PATTERN = r"^jr(28|29|30|31|32)(emp|strt|stop|vacy)$"
+
+unpublished_roles_mapping = {
+    "1001": ["02", "03", "05", "24", "45", "47", "49", "50"], # other managers
+    "1002": ["35", "37"], # other regulated professions
+    "1003": ["10", "11", "23", "38"], # other direct care
+    "1004": ["25", "26", "27", "34", "36", "39", "40", "42", "44", "46", "48", "51"], # other
+} # fmt: skip
+
 
 def pivot_job_role_cols_to_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
     """

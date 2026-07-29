@@ -18,7 +18,7 @@ All notable changes to this project will be documented in this file.
 
 - Added merge_job_role_columns function to polars_utils > cleaning_utils and called it in clean_ascwds_workplace job.
 
-- Implemented the SLV prepare job's job-role reshape (`pivot_job_role_cols_to_rows`), turning the wide `jrNN{emp,strt,stop,vacy}` job-role columns into one row per job role with `employees`/`starters`/`leavers`/`vacancies` columns, and updated the merge job's column selection and prepare validation to match. Removed the two now-redundant placeholder functions this replaces, and moved the shared `EstablishmentCatType` into a new `polars_utils/categorical_types.py` so the SLV and independent CQC pipelines use the same establishment_id type.
+- Implemented the SLV prepare job's job-role reshape (`pivot_job_role_cols_to_rows`), turning the wide `jrNN{emp,strt,stop,vacy}` job-role columns into one row per job role with `employees`/`starters`/`leavers`/`vacancies` columns, and updated the merge job's column selection and prepare validation to match. Removed the two now-redundant placeholder functions this replaces, and moved the shared `EstablishmentCatType` into a new `polars_utils/categorical_types.py` so the SLV and independent CQC pipelines use the same establishment_id type. Prepare validation's expected row count now correctly replicates the prepare job's own job-role code merging and summary-column dropping before counting codes, rather than counting against the raw pre-transform schema.
 
 ### Changed
 - Pull clean workplace columns into merge job within SLV pipeline.
