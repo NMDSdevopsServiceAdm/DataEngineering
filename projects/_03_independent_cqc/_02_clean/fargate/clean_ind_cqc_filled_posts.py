@@ -38,6 +38,7 @@ GROUPED_PROVIDER_SCHEMA = pl.Schema(
     [
         (IndCQC.location_id, pl.String()),
         (IndCQC.provider_id, pl.String()),
+        (IndCQC.name, pl.String()),
         (IndCQC.cqc_location_import_date, pl.Date()),
         (AWPClean.nmds_id, pl.String()),
         (NGPcol.potential_grouped_provider, pl.Boolean()),

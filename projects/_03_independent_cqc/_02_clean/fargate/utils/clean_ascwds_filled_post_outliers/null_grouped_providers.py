@@ -333,6 +333,7 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     cols_to_select = [
         IndCQC.location_id,
         IndCQC.provider_id,
+        IndCQC.name,
         IndCQC.cqc_location_import_date,
         AWPClean.nmds_id,
         NGPcol.potential_grouped_provider,

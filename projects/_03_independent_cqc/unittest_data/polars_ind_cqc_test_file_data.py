@@ -1099,13 +1099,13 @@ class NullGroupedProvidersData:
     # and loc 1's Jan row (below the minimum-size threshold) do not, so
     # select_grouped_providers should return exactly those 2 actually-nulled rows.
     null_grouped_providers_rows = [
-        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", "nmdsid_1", 13.0, 13.0, 4, 3.25, AscwdsFilteringRule.populated, 1.0),
-        ("loc 2", "prov 1", date(2024, 1, 1), "Y", None, None, None,  None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
-        ("loc 3", "prov 1", date(2024, 1, 1), "Y", None, None, None, None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
-        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", "nmdsid_1", 40.0, 40.0, 4, 10.0, AscwdsFilteringRule.populated, 1.0),
-        ("loc 2", "prov 1", date(2024, 2, 1), "Y", None, None, None, None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
-        ("loc 4", "prov 2", date(2024, 2, 1), "N", "estab 4", "nmdsid_2", 60.0, 60.0, None, None, AscwdsFilteringRule.populated, 10.0),
-        ("loc 5", "prov 2", date(2024, 2, 1), "N", None, None, None, None, None, None, AscwdsFilteringRule.missing_data, None),
+        ("loc 1", "prov 1", "Location One", date(2024, 1, 1), "Y", "estab 1", "nmdsid_1", 13.0, 13.0, 4, 3.25, AscwdsFilteringRule.populated, 1.0),
+        ("loc 2", "prov 1", "Location Two", date(2024, 1, 1), "Y", None, None, None,  None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
+        ("loc 3", "prov 1", "Location Three", date(2024, 1, 1), "Y", None, None, None, None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
+        ("loc 1", "prov 1", "Location One", date(2024, 2, 1), "Y", "estab 1", "nmdsid_1", 40.0, 40.0, 4, 10.0, AscwdsFilteringRule.populated, 1.0),
+        ("loc 2", "prov 1", "Location Two", date(2024, 2, 1), "Y", None, None, None, None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
+        ("loc 4", "prov 2", "Location Four", date(2024, 2, 1), "N", "estab 4", "nmdsid_2", 60.0, 60.0, None, None, AscwdsFilteringRule.populated, 10.0),
+        ("loc 5", "prov 2", "Location Five", date(2024, 2, 1), "N", None, None, None, None, None, None, AscwdsFilteringRule.missing_data, None),
     ] # fmt: skip
 
     input_grouped_provider_rows = [
@@ -1204,71 +1204,71 @@ class NullGroupedProvidersData:
         SelectGroupedProvidersCase(
             id="keeps_care_home_location_actually_nulled_at_max_import_date",
             input_rows=[
-                ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                ("1-004", "prov-1", "Location Four", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, AscwdsFilteringRule.care_home_location_was_grouped_provider),
             ],
             expected_rows=[
-                ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, "problem", date(2026, 2, 1), None),
+                ("1-004", "prov-1", "Location Four", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, "problem", date(2026, 2, 1), None),
             ],
         ),
         SelectGroupedProvidersCase(
             id="keeps_non_res_location_actually_nulled_at_max_import_date",
             input_rows=[
-                ("1-005", "prov-2", date(2026, 2, 1), "nmdsid_5", True, 1.0, "N", 0, AscwdsFilteringRule.non_res_location_was_grouped_provider),
+                ("1-005", "prov-2", "Location Five", date(2026, 2, 1), "nmdsid_5", True, 1.0, "N", 0, AscwdsFilteringRule.non_res_location_was_grouped_provider),
             ],
             expected_rows=[
-                ("1-005", "prov-2", date(2026, 2, 1), "nmdsid_5", True, 1.0, "N", 0, "problem", date(2026, 2, 1), None),
+                ("1-005", "prov-2", "Location Five", date(2026, 2, 1), "nmdsid_5", True, 1.0, "N", 0, "problem", date(2026, 2, 1), None),
             ],
         ),
         SelectGroupedProvidersCase(
             id="excludes_potential_grouped_provider_that_was_not_actually_nulled",
             input_rows=[
-                ("1-002", "prov-1", date(2026, 2, 1), "nmdsid_2", True, 1.0, "N", 0, AscwdsFilteringRule.populated),
+                ("1-002", "prov-1", "Location Two", date(2026, 2, 1), "nmdsid_2", True, 1.0, "N", 0, AscwdsFilteringRule.populated),
             ],
             expected_rows=[],
         ),
         SelectGroupedProvidersCase(
             id="excludes_location_nulled_at_an_earlier_import_date_than_the_latest_snapshot",
             input_rows=[
-                ("1-001", "prov-1", date(2026, 1, 1), "nmdsid_1", True, 1.0, "N", 0, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-                ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                ("1-001", "prov-1", "Location One", date(2026, 1, 1), "nmdsid_1", True, 1.0, "N", 0, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                ("1-004", "prov-1", "Location Four", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, AscwdsFilteringRule.care_home_location_was_grouped_provider),
             ],
             expected_rows=[
-                ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, "problem", date(2026, 2, 1), None),
+                ("1-004", "prov-1", "Location Four", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, "problem", date(2026, 2, 1), None),
             ],
         ),
         SelectGroupedProvidersCase(
             id="excludes_earlier_year_row_even_when_month_number_is_higher",
             input_rows=[
-                ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-                ("1-008", "prov-1", date(2025, 3, 1), "nmdsid_7", True, 1.0, "N", 0, AscwdsFilteringRule.non_res_location_was_grouped_provider),
+                ("1-004", "prov-1", "Location Four", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                ("1-008", "prov-1", "Location Eight", date(2025, 3, 1), "nmdsid_7", True, 1.0, "N", 0, AscwdsFilteringRule.non_res_location_was_grouped_provider),
             ],
             expected_rows=[
-                ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, "problem", date(2026, 2, 1), None),
+                ("1-004", "prov-1", "Location Four", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, "problem", date(2026, 2, 1), None),
             ],
         ),
     ]  # fmt: skip
 
     # All rows have grouped_provider_status = "problem" and last_update_date = their import date.
     new_grouped_providers_rows = [
-        ("1-001", "prov-1", date(2026, 2, 1), "nmds_1", True, 10.0, "N", 0, "problem", date(2026, 2, 1), None),
-        ("1-003", "prov-2", date(2026, 2, 1), "nmds_3", True, 30.0, "N", 0, "problem", date(2026, 2, 1), None),
-        ("1-004", "prov-3", date(2026, 2, 1), "nmds_4", True, 40.0, "N", 0, "problem", date(2026, 2, 1), None),
+        ("1-001", "prov-1", "Location One", date(2026, 2, 1), "nmds_1", True, 10.0, "N", 0, "problem", date(2026, 2, 1), None),
+        ("1-003", "prov-2", "Location Three", date(2026, 2, 1), "nmds_3", True, 30.0, "N", 0, "problem", date(2026, 2, 1), None),
+        ("1-004", "prov-3", "Location Four", date(2026, 2, 1), "nmds_4", True, 40.0, "N", 0, "problem", date(2026, 2, 1), None),
     ]  # fmt: skip
 
     # historical_grouped_providers_rows: what was previously saved to the grouped providers dataset.
     historical_grouped_providers_rows = [
-        ("1-001", "prov-1", date(2026, 1, 1), "nmds_1", True, 10.0, "N", 0, "problem", date(2026, 1, 1), None), # Still active problem — should be retained as-is (oldest kept, last_update_date stays same).
-        ("1-002", "prov-1", date(2026, 1, 1), "nmds_2", True, 20.0, "N", 0, "problem", date(2026, 1, 1), None), # Dropped off — not in new snapshot, should be flipped to "fixed".
-        ("1-003", "prov-2", date(2026, 1, 1), "nmds_3", True, 30.0, "N", 0, "fixed", date(2026, 1, 1), date(2026, 1, 1)), # Re-appearing — was fixed, now back as "problem" in new snapshot; new row appended.
+        ("1-001", "prov-1", "Location One", date(2026, 1, 1), "nmds_1", True, 10.0, "N", 0, "problem", date(2026, 1, 1), None), # Still active problem — should be retained as-is (oldest kept, last_update_date stays same).
+        ("1-002", "prov-1", "Location Two", date(2026, 1, 1), "nmds_2", True, 20.0, "N", 0, "problem", date(2026, 1, 1), None), # Dropped off — not in new snapshot, should be flipped to "fixed".
+        ("1-003", "prov-2", "Location Three", date(2026, 1, 1), "nmds_3", True, 30.0, "N", 0, "fixed", date(2026, 1, 1), date(2026, 1, 1)), # Re-appearing — was fixed, now back as "problem" in new snapshot; new row appended.
     ]  # fmt: skip
 
     # expected_update_grouped_providers_history_rows: full history after update.
     expected_update_grouped_providers_history_rows = [
-        ("1-001", "prov-1", date(2026, 1, 1), "nmds_1", True, 10.0, "N", 0, "problem", date(2026, 1, 1), None), # Retained — oldest "problem" record kept, last_update_date unchanged.
-        ("1-002", "prov-1", date(2026, 1, 1), "nmds_2", True, 20.0, "N", 0, "fixed", date(2026, 1, 1), date(2026, 2, 1)), # Flipped — was "problem", now "fixed" with last_update_date = new snapshot date.
-        ("1-003", "prov-2", date(2026, 1, 1), "nmds_3", True, 30.0, "N", 0, "fixed", date(2026, 1, 1), date(2026, 1, 1)), # Preserved — old "fixed" row kept as part of full history.
-        ("1-003", "prov-2", date(2026, 2, 1), "nmds_3", True, 30.0, "N", 0, "problem", date(2026, 2, 1), None), # Re-appeared — new "problem" row appended alongside the old "fixed" row.
-        ("1-004", "prov-3", date(2026, 2, 1), "nmds_4", True, 40.0, "N", 0, "problem", date(2026, 2, 1), None), # New — first time seen, added with "problem" status.
+        ("1-001", "prov-1", "Location One", date(2026, 1, 1), "nmds_1", True, 10.0, "N", 0, "problem", date(2026, 1, 1), None), # Retained — oldest "problem" record kept, last_update_date unchanged.
+        ("1-002", "prov-1", "Location Two", date(2026, 1, 1), "nmds_2", True, 20.0, "N", 0, "fixed", date(2026, 1, 1), date(2026, 2, 1)), # Flipped — was "problem", now "fixed" with last_update_date = new snapshot date.
+        ("1-003", "prov-2", "Location Three", date(2026, 1, 1), "nmds_3", True, 30.0, "N", 0, "fixed", date(2026, 1, 1), date(2026, 1, 1)), # Preserved — old "fixed" row kept as part of full history.
+        ("1-003", "prov-2", "Location Three", date(2026, 2, 1), "nmds_3", True, 30.0, "N", 0, "problem", date(2026, 2, 1), None), # Re-appeared — new "problem" row appended alongside the old "fixed" row.
+        ("1-004", "prov-3", "Location Four", date(2026, 2, 1), "nmds_4", True, 40.0, "N", 0, "problem", date(2026, 2, 1), None), # New — first time seen, added with "problem" status.
     ]  # fmt: skip
 
 
