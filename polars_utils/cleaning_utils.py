@@ -194,25 +194,6 @@ def calculate_filled_posts_per_bed_ratio(
     return lf
 
 
-def reduce_dataset_to_earliest_file_per_month(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Reduce the dataset to the first file of every month.
-
-    This function identifies the date of the first import date in each month and then filters the dataset to those import dates only.
-
-    Args:
-        lf (pl.LazyFrame): A lazyframe containing the partition keys year, month and day.
-
-    Returns:
-        pl.LazyFrame: A lazyframe with only the first import date of each month.
-    """
-    date_col = pl.col(IndCQC.cqc_location_import_date)
-
-    expr = date_col.min().over(date_col.dt.year(), date_col.dt.month())
-
-    return lf.filter(date_col == expr)
-
-
 def create_banded_bed_count_column(
     input_lf: pl.LazyFrame, new_col: str, splits: List[float]
 ) -> pl.LazyFrame:

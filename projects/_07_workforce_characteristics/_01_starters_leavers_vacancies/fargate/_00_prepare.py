@@ -3,7 +3,11 @@ import polars.selectors as cs
 import polars_utils.cleaning_utils as cUtils
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as pUtils
 from polars_utils import utils
-from polars_utils.filtering_utils import reduced_data_filter_expr
+from polars_utils.cleaning_utils import apply_categorical_labels
+from polars_utils.filtering_utils import (
+    earliest_file_per_month_filter_expr,
+    reduced_data_filter_expr,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -28,8 +32,16 @@ def main(
         cleaned_ascwds_workplace_source (str): path to the cleaned ascwds workplace data
         prepared_data_destination (str): destination for output
     """
-    workplace_lf = utils.scan_parquet(cleaned_ascwds_workplace_source).filter(
-        reduced_data_filter_expr(date_col=AWPClean.ascwds_workplace_import_date)
+    workplace_lf = (
+        utils.scan_parquet(cleaned_ascwds_workplace_source)
+        .filter(
+            reduced_data_filter_expr(date_col=AWPClean.ascwds_workplace_import_date)
+        )
+        .filter(
+            earliest_file_per_month_filter_expr(
+                date_col=AWPClean.ascwds_workplace_import_date
+            )
+        )
     )
 
     workplace_lf = cUtils.merge_job_role_columns(

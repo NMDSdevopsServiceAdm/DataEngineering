@@ -35,6 +35,8 @@ All notable changes to this project will be documented in this file.
 
 - Reduced the rows carried through the SLV prepare step to the same retention window the downstream job role estimates already use, and moved `reduced_data_filter_expr` into Polars Utils so both pipelines share one definition of that window.
 
+- Reduced the SLV prepare step further to one file per calendar month, matching the granularity the downstream job role estimates dataset already uses. Generalised the existing earliest-file-per-month reduction into a shared `earliest_file_per_month_filter_expr` in Polars Utils (alongside `reduced_data_filter_expr`) so both pipelines use the same definition, and updated its existing callers in the independent CQC clean job accordingly.
+
 - Widened the ASC-WDS file-arrival polling in the orchestrator step function to check every 15 minutes for up to 15 hours on the main workspace, to accommodate ASC-WDS data now arriving much later than before, and made the polling interval and attempt count workspace-configurable so non-main workspaces poll every 10 seconds for up to 100 seconds instead.
 
 - Reduced the rows carried through the SLV prepare step to the same retention window the downstream job role estimates already use, and moved `reduced_data_filter_expr` into Polars Utils so both pipelines share one definition of that window.

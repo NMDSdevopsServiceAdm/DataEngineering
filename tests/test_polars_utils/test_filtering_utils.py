@@ -255,3 +255,18 @@ class TestReducedDataFilterExpr:
         result = df.with_columns(expr.alias("keep"))
 
         assert result["keep"].to_list() == case.expected
+
+
+class TestEarliestFilePerMonthFilterExpr:
+    def test_returns_only_earliest_file_per_month(self):
+        test_lf = pl.LazyFrame(Data.earliest_file_per_month_rows)
+        expected_lf = pl.LazyFrame(Data.expected_earliest_file_per_month_rows)
+
+        returned_lf = test_lf.filter(job.earliest_file_per_month_filter_expr())
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_uses_the_passed_date_col(self):
+        expr = job.earliest_file_per_month_filter_expr("some_other_column")
+
+        assert set(expr.meta.root_names()) == {"some_other_column"}

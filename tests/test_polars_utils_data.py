@@ -4,6 +4,9 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
@@ -233,20 +236,6 @@ class CleaningUtilsData:
         ("1-000000010", 0.0, 0, CareHome.care_home, None),
         ("1-000000011", 4.0, 10, CareHome.not_care_home, None),
     ]
-    reduce_dataset_to_earliest_file_per_month_rows = [
-        ("loc 1", date(2022, 1, 1)),
-        ("loc 2", date(2022, 1, 5)),
-        ("loc 3", date(2022, 2, 5)),
-        ("loc 4", date(2022, 2, 7)),
-        ("loc 5", date(2022, 3, 1)),
-        ("loc 6", date(2022, 4, 2)),
-    ]
-    expected_reduce_dataset_to_earliest_file_per_month_rows = [
-        ("loc 1", date(2022, 1, 1)),
-        ("loc 3", date(2022, 2, 5)),
-        ("loc 5", date(2022, 3, 1)),
-        ("loc 6", date(2022, 4, 2)),
-    ]
     create_banded_bed_count_column_rows = [
         ("1-001", CareHome.care_home, 1),
         ("1-002", CareHome.care_home, 24),
@@ -395,3 +384,24 @@ class FilteringUtilsData:
             expected=[True, True, False],
         ),
     ]  # fmt: skip
+
+    earliest_file_per_month_rows = {
+        CQCLClean.location_id: ["loc 1", "loc 2", "loc 3", "loc 4", "loc 5", "loc 6"],
+        CQCLClean.cqc_location_import_date: [
+            date(2022, 1, 1),
+            date(2022, 1, 5),
+            date(2022, 2, 5),
+            date(2022, 2, 7),
+            date(2022, 3, 1),
+            date(2022, 4, 2),
+        ],
+    }
+    expected_earliest_file_per_month_rows = {
+        CQCLClean.location_id: ["loc 1", "loc 3", "loc 5", "loc 6"],
+        CQCLClean.cqc_location_import_date: [
+            date(2022, 1, 1),
+            date(2022, 2, 5),
+            date(2022, 3, 1),
+            date(2022, 4, 2),
+        ],
+    }
