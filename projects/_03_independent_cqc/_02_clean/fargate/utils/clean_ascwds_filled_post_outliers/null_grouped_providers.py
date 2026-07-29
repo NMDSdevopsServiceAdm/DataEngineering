@@ -109,7 +109,7 @@ def null_grouped_providers(
     ngp_cols = {field.name for field in fields(NGPcol())}
     columns_to_drop = [c for c in lf.collect_schema().names() if c in ngp_cols]
 
-    lf = lf.drop(*columns_to_drop)
+    lf = lf.drop(*columns_to_drop).drop(AWPClean.nmds_id)
 
     return lf, updated_grouped_providers_lf
 
