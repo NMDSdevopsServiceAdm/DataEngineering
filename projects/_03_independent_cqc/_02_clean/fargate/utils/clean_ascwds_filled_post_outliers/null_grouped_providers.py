@@ -70,19 +70,19 @@ def null_grouped_providers(
 
     Returns:
         tuple[pl.LazyFrame, pl.LazyFrame]: The input LazyFrame with grouped
-            providers' data nulled and a LazyFrame of potential grouped providers prior to nulling.
+            providers' data nulled and a LazyFrame of grouped providers whose data was nulled.
     """
     lf = calculate_data_for_grouped_provider_identification(lf)
 
     lf = identify_potential_grouped_providers(lf)
 
+    lf = null_care_home_grouped_providers(lf)
+    lf = null_non_residential_grouped_providers(lf)
+
     new_grouped_providers = select_grouped_providers(lf)
     updated_grouped_providers_lf = update_grouped_providers_history(
         new_grouped_providers, grouped_providers_lf
     )
-
-    lf = null_care_home_grouped_providers(lf)
-    lf = null_non_residential_grouped_providers(lf)
 
     ngp_cols = {field.name for field in fields(NGPcol())}
     columns_to_drop = [c for c in lf.collect_schema().names() if c in ngp_cols]
@@ -311,11 +311,20 @@ def null_non_residential_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
 def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Filters the input LazyFrame to the following:
-        - potential_grouped_provider is True
+        - ASCWDS data was actually nulled by null_care_home_grouped_providers or
+          null_non_residential_grouped_providers.
         - cqc_location_import_date equal to max year/month across dataset.
 
+    A location can be a potential_grouped_provider without its data being
+    nulled, since null_care_home_grouped_providers and
+    null_non_residential_grouped_providers only null the data when further
+    evidence (bed counts or PIR submissions) corroborates it. This function
+    must run after those two functions, so it can filter to only the
+    locations they actually nulled.
+
     Args:
-        lf (pl.LazyFrame): A LazyFrame with potential_grouped_provider column.
+        lf (pl.LazyFrame): A LazyFrame that has already been through
+            null_care_home_grouped_providers and null_non_residential_grouped_providers.
 
     Returns:
         pl.LazyFrame: The filtered input LazyFrame with `grouped_provider_status`
@@ -327,16 +336,23 @@ def select_grouped_providers(lf: pl.LazyFrame) -> pl.LazyFrame:
         IndCQC.cqc_location_import_date,
         AWPClean.nmds_id,
         NGPcol.potential_grouped_provider,
-        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.ascwds_filled_posts_dedup,
         IndCQC.care_home,
         IndCQC.number_of_beds,
     ]
+
+    was_nulled_as_grouped_provider = pl.col(IndCQC.ascwds_filtering_rule).is_in(
+        [
+            AscwdsFilteringRule.care_home_location_was_grouped_provider,
+            AscwdsFilteringRule.non_res_location_was_grouped_provider,
+        ]
+    )
 
     date_col = pl.col(IndCQC.cqc_location_import_date)
     trunc_date_col = date_col.dt.truncate("1mo")  # E.g. 2026-01-05 becomes 2026-01-01.
 
     return (
-        lf.filter(pl.col(NGPcol.potential_grouped_provider))
+        lf.filter(was_nulled_as_grouped_provider)
         .filter(trunc_date_col == trunc_date_col.max())
         .select(cols_to_select)
         .with_columns(

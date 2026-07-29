@@ -1084,14 +1084,28 @@ class NullFilledPostsUsingInvalidMissingDataCodeData:
 
 
 @dataclass
+class SelectGroupedProvidersCase:
+    id: str
+    input_rows: list[tuple]
+    expected_rows: list[tuple]
+
+
+@dataclass
 class NullGroupedProvidersData:
 
+    # Feb 2024 (the max date) is designed so that loc 1 (care home) and loc 4 (non-res)
+    # actually get nulled by null_care_home_grouped_providers /
+    # null_non_residential_grouped_providers, while loc 2, 3 and 5 (no ASCWDS data)
+    # and loc 1's Jan row (below the minimum-size threshold) do not, so
+    # select_grouped_providers should return exactly those 2 actually-nulled rows.
     null_grouped_providers_rows = [
         ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", "nmdsid_1", 13.0, 13.0, 4, 3.25, AscwdsFilteringRule.populated, 1.0),
         ("loc 2", "prov 1", date(2024, 1, 1), "Y", None, None, None,  None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
         ("loc 3", "prov 1", date(2024, 1, 1), "Y", None, None, None, None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
-        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", "nmdsid_1", 12.0, 12.0, 4, 3.0, AscwdsFilteringRule.populated, 1.0),
+        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", "nmdsid_1", 40.0, 40.0, 4, 10.0, AscwdsFilteringRule.populated, 1.0),
         ("loc 2", "prov 1", date(2024, 2, 1), "Y", None, None, None, None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
+        ("loc 4", "prov 2", date(2024, 2, 1), "N", "estab 4", "nmdsid_2", 60.0, 60.0, None, None, AscwdsFilteringRule.populated, 10.0),
+        ("loc 5", "prov 2", date(2024, 2, 1), "N", None, None, None, None, None, None, AscwdsFilteringRule.missing_data, None),
     ] # fmt: skip
 
     input_grouped_provider_rows = [
@@ -1184,20 +1198,55 @@ class NullGroupedProvidersData:
         ("1-008", CareHome.not_care_home, True, 50.0, None, 10.0, 2, 25.0, AscwdsFilteringRule.contained_invalid_missing_data_code),  # already filtered
     ] # fmt: skip
 
-    select_grouped_providers_rows = [
-        ("1-001", "prov-1", date(2026, 1, 1), "nmdsid_1", True, 1.0, "N", 0), # Grouped provider but undesired import date.
-        ("1-002", "prov-1", date(2026, 1, 1), "nmdsid_2", False, 1.0, "N", 0), # Not grouped provider and undesired import date.
-        ("1-003", "prov-1", date(2026, 2, 1), "nmdsid_3", False, 1.0, "N", 0), # Desired date but not grouped provider.
-        ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0), # Keep
-        ("1-005", "prov-2", date(2026, 2, 1), "nmdsid_5", True, 1.0, "N", 0), # Keep (different provider)
-        ("1-006", "prov-1", date(2025, 1, 1), "nmdsid_6", True, 1.0, "N", 0), # Incorrect date with lower year and month than desired.
-        ("1-008", "prov-1", date(2025, 3, 1), "nmdsid_7", True, 1.0, "N", 0), # Incorrect date with lower year and higher month than desired.
-    ] # fmt: skip
-
-    expected_select_grouped_providers_rows = [
-        ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, "problem", date(2026, 2, 1), None),
-        ("1-005", "prov-2", date(2026, 2, 1), "nmdsid_5", True, 1.0, "N", 0, "problem", date(2026, 2, 1), None),
-    ] # fmt: skip
+    # Each case includes an unrelated anchor row at the max import date (2026-02-01)
+    # so that the max-date filter has something real to compare against.
+    select_grouped_providers_test_cases = [
+        SelectGroupedProvidersCase(
+            id="keeps_care_home_location_actually_nulled_at_max_import_date",
+            input_rows=[
+                ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+            ],
+            expected_rows=[
+                ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, "problem", date(2026, 2, 1), None),
+            ],
+        ),
+        SelectGroupedProvidersCase(
+            id="keeps_non_res_location_actually_nulled_at_max_import_date",
+            input_rows=[
+                ("1-005", "prov-2", date(2026, 2, 1), "nmdsid_5", True, 1.0, "N", 0, AscwdsFilteringRule.non_res_location_was_grouped_provider),
+            ],
+            expected_rows=[
+                ("1-005", "prov-2", date(2026, 2, 1), "nmdsid_5", True, 1.0, "N", 0, "problem", date(2026, 2, 1), None),
+            ],
+        ),
+        SelectGroupedProvidersCase(
+            id="excludes_potential_grouped_provider_that_was_not_actually_nulled",
+            input_rows=[
+                ("1-002", "prov-1", date(2026, 2, 1), "nmdsid_2", True, 1.0, "N", 0, AscwdsFilteringRule.populated),
+            ],
+            expected_rows=[],
+        ),
+        SelectGroupedProvidersCase(
+            id="excludes_location_nulled_at_an_earlier_import_date_than_the_latest_snapshot",
+            input_rows=[
+                ("1-001", "prov-1", date(2026, 1, 1), "nmdsid_1", True, 1.0, "N", 0, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+            ],
+            expected_rows=[
+                ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, "problem", date(2026, 2, 1), None),
+            ],
+        ),
+        SelectGroupedProvidersCase(
+            id="excludes_earlier_year_row_even_when_month_number_is_higher",
+            input_rows=[
+                ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+                ("1-008", "prov-1", date(2025, 3, 1), "nmdsid_7", True, 1.0, "N", 0, AscwdsFilteringRule.non_res_location_was_grouped_provider),
+            ],
+            expected_rows=[
+                ("1-004", "prov-1", date(2026, 2, 1), "nmdsid_4", True, 1.0, "N", 0, "problem", date(2026, 2, 1), None),
+            ],
+        ),
+    ]  # fmt: skip
 
     # All rows have grouped_provider_status = "problem" and last_update_date = their import date.
     new_grouped_providers_rows = [
