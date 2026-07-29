@@ -3,6 +3,10 @@ import polars.selectors as cs
 import polars_utils.cleaning_utils as cUtils
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as pUtils
 from polars_utils import utils
+from polars_utils.filtering_utils import reduced_data_filter_expr
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 
 unpublished_roles_mapping = {
     "1001": ["02", "03", "05", "24", "45", "47", "49", "50"], # other managers
@@ -17,13 +21,16 @@ def main(
     prepared_data_destination: str,
 ) -> None:
     """Load the cleaned ASCWDS workplace dataset and then:
-        - Merge unpublished roles into 'other' groups
+        - reduce data to quarterly import dates before two previous financial years
+        - merge unpublished roles into 'other' groups
 
     Args:
         cleaned_ascwds_workplace_source (str): path to the cleaned ascwds workplace data
         prepared_data_destination (str): destination for output
     """
-    workplace_lf = utils.scan_parquet(cleaned_ascwds_workplace_source)
+    workplace_lf = utils.scan_parquet(cleaned_ascwds_workplace_source).filter(
+        reduced_data_filter_expr(date_col=AWPClean.ascwds_workplace_import_date)
+    )
 
     workplace_lf = cUtils.merge_job_role_columns(
         workplace_lf, unpublished_roles_mapping

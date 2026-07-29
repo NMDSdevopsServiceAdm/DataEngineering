@@ -1,12 +1,14 @@
-import unittest
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import Mock, patch
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._00_prepare as job
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 
 PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._00_prepare"
 
 
-class MainTests(unittest.TestCase):
+class TestPrepare:
     CLEANED_ASCWDS_WORKPLACE_SOURCE = "some/source"
     PREPARED_DATA_DESTINATION = "some/destination"
 
@@ -32,6 +34,15 @@ class MainTests(unittest.TestCase):
 
         scan_parquet_mock.assert_called_once_with(self.CLEANED_ASCWDS_WORKPLACE_SOURCE)
 
+        # The filter must hang off the scan itself, otherwise the predicate is not
+        # pushed down to the parquet source and the full dataset is read first.
+        scan_lf = scan_parquet_mock.return_value
+        scan_lf.filter.assert_called_once()
+        filter_expr = scan_lf.filter.call_args.args[0]
+        assert set(filter_expr.meta.root_names()) == {
+            AWPClean.ascwds_workplace_import_date
+        }
+
         # TODO: Uncomment these assertions when the placeholder functions are implemented
         merge_job_role_columns_mock.assert_called_once()
         # pivot_job_role_cols_to_rows_mock.assert_called_once()
@@ -39,6 +50,6 @@ class MainTests(unittest.TestCase):
         # apply_categorical_labels_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=ANY,
+            lazy_df=scan_lf.filter.return_value,
             output_path=self.PREPARED_DATA_DESTINATION,
         )
