@@ -113,7 +113,10 @@ def split_dataset_for_imputation(
         > 0
     ) & (care_home_filter_expr)
 
-    imputation_lf = lf.filter(locs_with_values_expr == True)
-    non_imputation_lf = lf.filter(locs_with_values_expr == False)
+    imputation_flag = "_imputation_flag"
+    lf = lf.with_columns(locs_with_values_expr.alias(imputation_flag))
+
+    imputation_lf = lf.filter(pl.col(imputation_flag)).drop(imputation_flag)
+    non_imputation_lf = lf.filter(~pl.col(imputation_flag)).drop(imputation_flag)
 
     return (imputation_lf, non_imputation_lf)
