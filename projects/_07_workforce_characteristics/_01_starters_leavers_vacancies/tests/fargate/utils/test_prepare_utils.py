@@ -11,6 +11,25 @@ from projects._07_workforce_characteristics.unittest_data.polars_slv_test_schema
 )
 
 
+class TestDiscoverJobRoleCodes:
+    def test_returns_sorted_distinct_codes(self):
+        schema = Schemas.synthetic_input_schema
+
+        assert job.discover_job_role_codes(schema) == ["02", "10", "20"]
+
+    def test_returns_empty_list_when_no_job_role_columns_found(self):
+        assert job.discover_job_role_codes(Schemas.zero_codes_input_schema) == []
+
+    def test_raises_value_error_not_attribute_error_on_pattern_mismatch(self):
+        schema = {
+            **Schemas.zero_codes_input_schema,
+            "jrXXemp": pl.Int32,
+        }
+
+        with pytest.raises(ValueError):
+            job.discover_job_role_codes(schema)
+
+
 class TestPivotJobRoleColsToRows:
     @pytest.mark.parametrize(
         "case",

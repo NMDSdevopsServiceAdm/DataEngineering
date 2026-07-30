@@ -50,13 +50,13 @@ def main(
         cs.matches(pUtils.JOB_ROLE_SUMMARY_COLUMNS_PATTERN)
     )
 
-    workplace_lf = pUtils.pivot_job_role_cols_to_rows(workplace_lf)
+    exploded_lf = pUtils.pivot_job_role_cols_to_rows(workplace_lf)
 
     # TODO: 1794 - Placeholder only.
-    # workplace_lf = apply_categorical_labels()
+    # exploded_lf = apply_categorical_labels()
 
     utils.sink_to_parquet(
-        lazy_df=workplace_lf,
+        lazy_df=exploded_lf,
         output_path=prepared_data_destination,
     )
 

@@ -6,7 +6,6 @@ import polars.selectors as cs
 
 import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
-from polars_utils.expressions import is_slv_job_role_column
 from polars_utils.filtering_utils import (
     earliest_file_per_month_filter_expr,
     reduced_data_filter_expr,
@@ -14,8 +13,8 @@ from polars_utils.filtering_utils import (
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils import (
-    JOB_ROLE_CODE_PATTERN,
     JOB_ROLE_SUMMARY_COLUMNS_PATTERN,
+    discover_job_role_codes,
     unpublished_roles_mapping,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
@@ -39,10 +38,9 @@ def discover_job_role_code_count(schema: pl.Schema | dict[str, pl.DataType]) -> 
     """
     Counts the distinct ASC-WDS job-role codes present in a wide schema.
 
-    Reuses the same `is_slv_job_role_column()` selector that
-    `pivot_job_role_cols_to_rows()` uses to discover codes, so the expected
-    row-count multiplier here can't drift out of step with the reshape's own
-    discovery logic.
+    Thin wrapper around `prepare_utils.discover_job_role_codes()`, so the
+    expected row-count multiplier here can't drift out of step with the
+    reshape's own discovery logic.
 
     Args:
         schema (pl.Schema | dict[str, pl.DataType]): Schema of the wide,
@@ -51,16 +49,7 @@ def discover_job_role_code_count(schema: pl.Schema | dict[str, pl.DataType]) -> 
     Returns:
         int: Count of distinct job-role codes discovered.
     """
-    job_role_columns = (
-        pl.LazyFrame(schema=schema)
-        .select(is_slv_job_role_column())
-        .collect_schema()
-        .names()
-    )
-    job_role_codes = {
-        JOB_ROLE_CODE_PATTERN.match(col).group(1) for col in job_role_columns
-    }
-    return len(job_role_codes)
+    return len(discover_job_role_codes(schema))
 
 
 def discover_job_role_code_count_after_transforms(
