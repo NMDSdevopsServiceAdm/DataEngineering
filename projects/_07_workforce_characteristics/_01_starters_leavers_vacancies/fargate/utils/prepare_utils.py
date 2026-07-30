@@ -33,25 +33,22 @@ def discover_job_role_codes(schema: pl.Schema | dict[str, pl.DataType]) -> list[
     """
     Discovers the distinct ASC-WDS job-role codes present in a wide schema.
 
-    Shared by `pivot_job_role_cols_to_rows()` and
-    `validate_00_prepare.discover_job_role_code_count()` so the two can't
-    silently drift out of step with each other's discovery logic. Returns an
-    empty list if no job-role columns are found - callers that consider this
-    an error (e.g. `pivot_job_role_cols_to_rows()`) raise on it themselves;
-    callers that treat it as a legitimate zero count (e.g.
-    `discover_job_role_code_count()`) don't have to catch anything.
+    Shared by `pivot_job_role_cols_to_rows()` and `discover_job_role_code_count()`
+    so their discovery logic can't drift apart. Returns an empty list rather
+    than raising when no job-role columns are found, since callers disagree on
+    whether that's an error.
 
     Args:
         schema (pl.Schema | dict[str, pl.DataType]): Schema of a wide ASC-WDS
             workplace dataset with `jrNN{emp,strt,stop,vacy}` job-role columns.
 
     Returns:
-        list[str]: Sorted, distinct job-role code strings (e.g. "01", "1001").
-            Empty if no job-role columns are found.
+        list[str]: Sorted, distinct job-role codes (e.g. "01", "1001"), or
+            empty if none are found.
 
     Raises:
-        ValueError: If a column selected by `is_slv_job_role_column()` doesn't
-            match the expected `jrNN{suffix}` naming pattern.
+        ValueError: If a selected column doesn't match the expected
+            `jrNN{suffix}` naming pattern.
     """
     job_role_columns = (
         pl.LazyFrame(schema=schema)
@@ -77,15 +74,13 @@ def pivot_job_role_cols_to_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Reshapes the wide ASC-WDS job-role columns into one row per job role.
 
-    For each job-role code discovered via `is_slv_job_role_column()`, builds a
-    struct of {job_role_code, employees, starters, leavers, vacancies}, then
-    concatenates one struct per code into a list column and explodes/unnests
-    it into rows - the "Candidate B" technique, proven at production scale
-    with no joins involved (a join-based alternative OOM'd immediately at
-    comparable scale). The output narrows to grain plus job-role metric
-    columns only; the other cleaned-workplace columns are dropped rather than
-    broadcast onto the exploded rows, which would multiply their memory cost
-    by the job-role count.
+    Builds one struct per job-role code ({job_role_code, employees, starters,
+    leavers, vacancies}), concatenates them into a list column, then
+    explodes/unnests into rows - a join-free technique (a join-based
+    alternative OOM'd at comparable scale). Only grain and job-role metric
+    columns are kept; other columns are dropped rather than broadcast onto
+    every exploded row, which would multiply their memory cost by the
+    job-role count.
 
     Args:
         lf (pl.LazyFrame): Cleaned ASC-WDS workplace LazyFrame with wide
@@ -94,12 +89,12 @@ def pivot_job_role_cols_to_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: One row per (establishment_id,
             ascwds_workplace_import_date, job_role_code), with
-            employees/starters/leavers/vacancies metric columns. Rows where
-            all four metrics are null are kept, not dropped.
+            employees/starters/leavers/vacancies columns. Rows where all four
+            metrics are null are kept, not dropped.
 
     Raises:
         ValueError: If no job-role columns are found, or if a discovered
-            column doesn't match the expected naming pattern - see
+            column doesn't match the expected pattern - see
             `discover_job_role_codes()`.
     """
     job_role_codes = discover_job_role_codes(lf.collect_schema())

@@ -58,16 +58,12 @@ def discover_job_role_code_count_after_transforms(
     """
     Counts the distinct job-role codes _00_prepare.py's pivot actually sees.
 
-    _00_prepare.py::main() runs two schema-level transforms - merge_job_role_columns()
-    (merging unpublished job-role codes into synthetic 1001-1004 codes) and a drop of
-    the jr28-32 total/summary columns - before it ever calls
-    pivot_job_role_cols_to_rows(). Counting codes against the raw, pre-transform
-    schema overcounts: it includes codes that get merged away or dropped and never
-    reach the pivot. This function replicates both transforms against a zero-row
-    LazyFrame built from raw_schema (schema-only - merge_job_role_columns() does no
-    aggregation, join, or row-value-dependent work, so it's safe with zero rows),
-    then counts codes on the resulting schema. Confirmed in production: a raw
-    schema of 52 job-role columns collapses to 25 after this merge+drop.
+    _00_prepare.py::main() merges unpublished job-role codes into synthetic
+    1001-1004 codes and drops the jr28-32 summary columns before pivoting, so
+    counting against the raw schema would overcount codes that never reach
+    the pivot. This replicates both transforms on a zero-row LazyFrame
+    (schema-only, so safe with no rows) before counting. Confirmed in
+    production: 52 raw job-role columns collapse to 25 after this step.
 
     Args:
         raw_schema (pl.Schema | dict[str, pl.DataType]): Schema of the wide, raw
@@ -87,19 +83,18 @@ def discover_job_role_code_count_after_transforms(
 def main(
     bucket_name: str, source_path: str, compare_path: str, reports_path: str
 ) -> None:
-    """Validates a dataset according to a set of provided rules and produces a
-        summary report as well as failure outputs.
+    """Validates a dataset and produces a summary report plus failure outputs.
 
-    The compare dataset is the unreduced cleaned ASCWDS workplace data, so the same
-    reduction filters applied in _00_prepare are applied here before counting rows -
-    otherwise the expected count would include the historical rows and duplicate
-    monthly files the prepare step deliberately drops. The expected count is then
-    multiplied by the discovered job-role code count, since _00_prepare reshapes
-    one row per establishment/date into one row per (establishment, date, job role).
-    That count must come from discover_job_role_code_count_after_transforms()
-    (which replicates _00_prepare's own merge_job_role_columns()+jr28-32 drop),
-    not from counting codes in the raw compare schema directly - otherwise the
-    expectation overcounts codes that never reach the pivot.
+    The compare dataset is the unreduced cleaned ASCWDS workplace data, so the
+    same reduction filters used in _00_prepare are applied here before
+    counting rows, otherwise the expected count would include the historical
+    rows and duplicate monthly files the prepare step deliberately drops. The
+    expected count is then multiplied by the job-role code count from
+    discover_job_role_code_count_after_transforms() - not the raw compare
+    schema directly - since _00_prepare reshapes one row per
+    establishment/date into one row per (establishment, date, job role), and
+    counting against the raw schema would overcount codes that never reach
+    the pivot.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset
