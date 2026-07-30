@@ -30,7 +30,7 @@ If there's nothing critical, say so plainly rather than inventing improvements t
 
 ## Validating a change
 
-If asked to validate before/during review, see CLAUDE.md's "Environment & workflow" section for what's in scope (tests + `terraform validate`, never deploying or running against AWS) and what tooling isn't available (`gh` CLI).
+If asked to validate before/during review, see CLAUDE.md's "Environment & workflow" section for what's in scope (tests + `terraform validate`, never deploying or running against AWS).
 
 ## Ambiguity
 
