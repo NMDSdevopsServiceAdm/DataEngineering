@@ -37,6 +37,12 @@ pipenv-uv-migrate -f Pipfile -t pyproject.toml
 uv lock
 ```
 
+7- Installing dependencies
+
+```
+uv sync
+```
+
 ### Dead-ends/ what didn't work
 
 - `uv tool install pipenv-uv-migrate`
