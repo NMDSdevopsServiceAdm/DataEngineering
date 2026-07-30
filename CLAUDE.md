@@ -24,7 +24,6 @@ Skills for Care Workforce Intelligence Team. Builds reproducible AWS data pipeli
 ## Environment & workflow
 
 - Run `pipenv shell` (or prefix commands with `pipenv run`) to access this project's installed packages — don't assume they're on the system/global Python.
-- The `gh` CLI is not installed in this environment. Don't shell out to `gh`; if a GitHub API action is genuinely needed, say so explicitly rather than assuming it's available.
 - Branch names must be **16 characters or fewer**.
 - CI/CD automatically runs all new code plus the full unit test suite against full data once pushed to a branch. Local/manual validation should run the relevant unit tests and `terraform validate` where applicable — never attempt to deploy or run code against AWS directly; that's the CI/CD pipeline's job.
 
