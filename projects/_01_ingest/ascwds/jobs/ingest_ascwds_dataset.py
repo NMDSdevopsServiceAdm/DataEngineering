@@ -7,6 +7,14 @@ os.environ["SPARK_VERSION"] = "3.5"
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
+from polars_utils.utils import (
+    construct_destination_path,
+    construct_s3_uri,
+    get_s3_objects_list,
+    identify_csv_delimiter,
+    is_csv,
+    read_partial_csv_content,
+)
 from utils import utils
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
@@ -27,7 +35,7 @@ def main(source: str, destination: str, dataset: str = "ascwds"):
     """
     bucket, prefix = utils.split_s3_uri(source)
 
-    if utils.is_csv(source):
+    if is_csv(source):
         ingest_single_file(source, bucket, prefix, destination, dataset)
     else:
         ingest_multiple_files(bucket, prefix, destination, dataset)
@@ -47,7 +55,7 @@ def ingest_single_file(
         dataset (str): The dataset type, either 'ascwds' or 'nmdssc'.
     """
     print("Single file provided to job. Handling single file.")
-    new_destination = utils.construct_destination_path(destination, prefix)
+    new_destination = construct_destination_path(destination, prefix)
     handle_job(source, bucket, prefix, new_destination, dataset)
 
 
@@ -62,14 +70,14 @@ def ingest_multiple_files(bucket: str, prefix: str, destination: str, dataset: s
         dataset (str): The dataset type, either 'ascwds' or 'nmdssc'.
     """
     print("Multiple files provided to job. Handling each file...")
-    objects_list = utils.get_s3_objects_list(bucket, prefix)
+    objects_list = get_s3_objects_list(bucket, prefix)
 
     print("Objects list:")
     print(objects_list)
 
     for key in objects_list:
-        new_source = utils.construct_s3_uri(bucket, key)
-        new_destination = utils.construct_destination_path(destination, key)
+        new_source = construct_s3_uri(bucket, key)
+        new_destination = construct_destination_path(destination, key)
         handle_job(new_source, bucket, key, new_destination, dataset)
 
 
@@ -93,8 +101,8 @@ def handle_job(
     Raises:
         ValueError: If chosen method does not match 'ascwds' or 'nmdssc'.
     """
-    file_sample = utils.read_partial_csv_content(source_bucket, source_key)
-    delimiter = utils.identify_csv_delimiter(file_sample)
+    file_sample = read_partial_csv_content(source_bucket, source_key)
+    delimiter = identify_csv_delimiter(file_sample)
 
     df = utils.read_csv(source, delimiter)
     if dataset == "ascwds":

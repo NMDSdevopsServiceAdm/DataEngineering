@@ -9,7 +9,8 @@ ENV PYTHONPATH=/app
 # Dependencies
 COPY polars_utils polars_utils
 COPY projects/_01_ingest/ascwds/fargate/utils projects/_01_ingest/ascwds/fargate/utils
-COPY utils utils
+COPY utils/column_names utils/column_names
+COPY utils/column_values utils/column_values
 
 # Copy all python jobs to WORKDIR
 COPY projects/_01_ingest/ascwds/fargate/*.py .

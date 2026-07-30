@@ -31,8 +31,8 @@ class IngestONSDataTests(SparkBaseTest):
             Data.expected_rows, Schemas.sample_schema
         )
 
-    @patch(f"{PATCH_PATH}.utils.read_partial_csv_content")
-    @patch(f"{PATCH_PATH}.utils.get_s3_objects_list")
+    @patch(f"{PATCH_PATH}.read_partial_csv_content")
+    @patch(f"{PATCH_PATH}.get_s3_objects_list")
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_csv")
     def test_main_runs_when_source_is_csv(
@@ -59,8 +59,8 @@ class IngestONSDataTests(SparkBaseTest):
             write_to_parquet_patch.call_args[0][1], self.TEST_NEW_DESTINATION
         )
 
-    @patch(f"{PATCH_PATH}.utils.read_partial_csv_content")
-    @patch(f"{PATCH_PATH}.utils.get_s3_objects_list")
+    @patch(f"{PATCH_PATH}.read_partial_csv_content")
+    @patch(f"{PATCH_PATH}.get_s3_objects_list")
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_csv")
     def test_main_runs_when_source_is_directory(
