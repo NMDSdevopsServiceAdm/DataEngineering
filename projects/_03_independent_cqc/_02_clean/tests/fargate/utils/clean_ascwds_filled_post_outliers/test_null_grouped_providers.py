@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 import projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.null_grouped_providers as job
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
@@ -85,20 +86,20 @@ class MainTests(unittest.TestCase):
     ):
         self.assertEqual(self.grouped_providers.collect().height, 2)
 
-    @patch(f"{PATCH_PATH}.null_non_residential_grouped_providers")
-    @patch(f"{PATCH_PATH}.null_care_home_grouped_providers")
     @patch(f"{PATCH_PATH}.update_grouped_providers_history")
     @patch(f"{PATCH_PATH}.select_grouped_providers")
+    @patch(f"{PATCH_PATH}.null_non_residential_grouped_providers")
+    @patch(f"{PATCH_PATH}.null_care_home_grouped_providers")
     @patch(f"{PATCH_PATH}.identify_potential_grouped_providers")
     @patch(f"{PATCH_PATH}.calculate_data_for_grouped_provider_identification")
     def test_null_grouped_providers_calls_functions(
         self,
         calculate_data_for_grouped_provider_identification_mock: Mock,
         identify_potential_grouped_providers_mock: Mock,
-        select_grouped_providers_mock: Mock,
-        update_grouped_providers_history_mock: Mock,
         null_care_home_grouped_providers_mock: Mock,
         null_non_residential_grouped_providers_mock: Mock,
+        select_grouped_providers_mock: Mock,
+        update_grouped_providers_history_mock: Mock,
     ):
         job.null_grouped_providers(self.test_lf, self.grouped_providers_lf)
 
@@ -106,10 +107,10 @@ class MainTests(unittest.TestCase):
             self.test_lf
         )
         identify_potential_grouped_providers_mock.assert_called_once()
-        select_grouped_providers_mock.assert_called_once()
-        update_grouped_providers_history_mock.assert_called_once()
         null_care_home_grouped_providers_mock.assert_called_once()
         null_non_residential_grouped_providers_mock.assert_called_once()
+        select_grouped_providers_mock.assert_called_once()
+        update_grouped_providers_history_mock.assert_called_once()
 
 
 class CalculateDataForGroupedProviderIdentificationTests(unittest.TestCase):
@@ -203,20 +204,28 @@ class NullNonResidentialGroupedProvidersTests(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), test_lf)
 
 
-class SelectGroupedProviders(unittest.TestCase):
-    def test_function_returns_expected_rows(self):
+class TestSelectGroupedProviders:
+    CASES = [
+        pytest.param(case, id=case.id)
+        for case in Data.select_grouped_providers_test_cases
+    ]
+
+    @pytest.mark.parametrize("case", CASES)
+    def test_function_returns_expected_rows(self, case):
         input_lf = pl.LazyFrame(
-            Data.select_grouped_providers_rows,
-            Schemas.select_grouped_providers_schema,
+            case.input_rows,
+            Schemas.select_grouped_providers_input_schema,
             orient="row",
         )
-        returned_lf = job.select_grouped_providers(input_lf)
         expected_lf = pl.LazyFrame(
-            Data.expected_select_grouped_providers_rows,
+            case.expected_rows,
             Schemas.final_grouped_providers_schema,
             orient="row",
         )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+        returned_lf = job.select_grouped_providers(input_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
 class UpdateGropupedProvidersHistory(unittest.TestCase):

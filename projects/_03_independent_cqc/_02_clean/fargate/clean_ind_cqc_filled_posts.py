@@ -9,6 +9,9 @@ from projects._03_independent_cqc._02_clean.fargate.utils.ascwds_filled_posts_ca
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers import (
     clean_ascwds_filled_post_outliers,
 )
+from projects._03_independent_cqc._02_clean.fargate.utils.clean_ascwds_filled_post_outliers.null_grouped_providers import (
+    GROUPED_PROVIDER_SCHEMA,
+)
 from projects._03_independent_cqc._02_clean.fargate.utils.clean_ct_outliers.clean_ct_care_home_outliers import (
     clean_capacity_tracker_care_home_outliers,
 )
@@ -26,29 +29,7 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_p
 from projects._03_independent_cqc._02_clean.fargate.utils.utils import (
     create_column_with_repeated_values_removed,
 )
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_names.ind_cqc_pipeline_columns import (
-    NullGroupedProviderColumns as NGPcol,
-)
-
-GROUPED_PROVIDER_SCHEMA = pl.Schema(
-    [
-        (IndCQC.location_id, pl.String()),
-        (IndCQC.provider_id, pl.String()),
-        (IndCQC.cqc_location_import_date, pl.Date()),
-        (AWPClean.nmds_id, pl.String()),
-        (NGPcol.potential_grouped_provider, pl.Boolean()),
-        (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
-        (IndCQC.care_home, pl.String()),
-        (IndCQC.number_of_beds, pl.Int64()),
-        (NGPcol.grouped_provider_status, pl.String()),
-        (NGPcol.grp_prov_identified_date, pl.Date()),
-        (NGPcol.grp_prov_fixed_date, pl.Date()),
-    ]
-)
 
 
 def main(
@@ -113,10 +94,9 @@ def main(
         grouped_providers_lf = pl.LazyFrame(schema=GROUPED_PROVIDER_SCHEMA)
         print("No existing grouped providers found, starting fresh")
 
-    locations_lf, grouped_providers = clean_ascwds_filled_post_outliers(
+    locations_lf, grouped_providers_lf = clean_ascwds_filled_post_outliers(
         locations_lf, grouped_providers_lf
     )
-    locations_lf = locations_lf.drop(AWPClean.nmds_id)
 
     locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
         locations_lf,
@@ -138,7 +118,7 @@ def main(
     )
 
     utils.sink_to_parquet(
-        grouped_providers,
+        grouped_providers_lf,
         grouped_providers_destination,
     )
 
