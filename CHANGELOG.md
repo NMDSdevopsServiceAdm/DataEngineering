@@ -19,6 +19,8 @@ All notable changes to this project will be documented in this file.
 - Added merge_job_role_columns function to polars_utils > cleaning_utils and called it in clean_ascwds_workplace job.
 
 ### Changed
+- Updated polars to 1.41.2 and pointblank to 0.24.0, and reworked `split_dataset_for_imputation` to materialise its filter condition into a column instead of duplicating it across two branches, to avoid a polars optimiser crash on the newer version.
+
 - Pull clean workplace columns into merge job within SLV pipeline.
 
 - Updated references from workplace data for 'reconciliation' process to 'SfC internal' as the dataset is used in multiple jobs
