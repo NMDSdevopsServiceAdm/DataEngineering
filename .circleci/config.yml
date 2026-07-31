@@ -80,48 +80,48 @@ jobs:
             apt-get install -y default-jre-headless
       - run:
           name: install dependencies
-          command: uv pip install --system -r <(uvx pipenv requirements --dev)
+          command: uv sync --locked
       # Download the pydeequ dependency and configure.
       - run:
             name: Fetch Spark JARs
-            command: python scripts/fetch_spark_dependencies.py
+            command: uv run python scripts/fetch_spark_dependencies.py
       - run:
           name: Run unit tests and generate coverage
           command: |
-            pytest \
+            uv run pytest \
               -n auto --dist loadfile \
               --cov=. \
               --cov-report=xml \
               --cov-report=html
       - run:
             name: Output Coverage Report
-            command: coverage report
+            command: uv run coverage report
 
   lint-python:
     docker:
-      - image: cimg/python:3.11.12
+      - image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
     resource_class: small
     steps:
       - checkout
       - run:
-          name: Install black
-          command: pip install black==25.1.0
+          name: Install lint tools
+          command: uv sync --locked
       - run:
           name: Check Python formatting
-          command: black . --check
+          command: uvx black@25.1.0 . --check
 
   lint-docstrings:
     docker:
-      - image: cimg/python:3.11.12
+      - image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
     resource_class: small
     steps:
       - checkout
       - run:
-          name: Install pydoclint
-          command: pip install pydoclint==0.6.10
+          name: Install lint tools
+          command: uv sync --locked
       - run:
           name: Check docstring formatting
-          command: pydoclint --style=google --quiet .
+          command: uvx pydoclint --style=google --quiet .
 
   lint-terraform:
     docker:
@@ -226,9 +226,12 @@ jobs:
           command: |
             wget https://repo1.maven.org/maven2/com/amazon/deequ/deequ/2.0.8-spark-3.5/deequ-2.0.8-spark-3.5.jar -O dependencies/deequ-2.0.8-spark-3.5.jar
       - run:
+          name: Install uv
+          command: pip install -U uv
+      - run:
           name: Package PyDeequ
           command: |
-            pip install -t ./target pydeequ==1.5.0
+            uv pip install --target ./target pydeequ==1.5.0
             cd target && zip -r pydeequ-1.5.0.zip pydeequ && cd ..
             mv target/pydeequ-1.5.0.zip dependencies/pydeequ-1.5.0.zip
             rm -rf target
