@@ -75,10 +75,6 @@ C:\jdk\bin
 C:\Terraform
 C:\Users\_your_name_\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\_your_name_\AppData\Local\Programs\Git\cmd
-C:\Users\_your_name_\.pyenv\pyenv-win\bin
-C:\Users\_your_name_\.pyenv\pyenv-win\shims
-C:\Users\_your_name_\AppData\Roaming\Python\Python311
-C:\Users\_your_name_\AppData\Roaming\Python\Python311\Scripts
 ```
 
 ### Adding user variables (requires IT):
@@ -90,9 +86,6 @@ C:\Users\_your_name_\AppData\Roaming\Python\Python311\Scripts
 ```
 C:\Users\_your_name_\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\_your_name_\AppData\Local\Programs\Git\cmd
-C:\Users\_your_name_\.pyenv\pyenv-win\bin
-C:\Users\_your_name_\AppData\Roaming\Python\Python311\
-C:\Users\_your_name_\AppData\Roaming\Python\Python311\Scripts
 %HADOOP_HOME%\bin
 ```
 
@@ -101,27 +94,6 @@ C:\Users\_your_name_\AppData\Roaming\Python\Python311\Scripts
 Variable name | Value
 --- | ---
 PYSPARK_PYTHON | python
-PYENV | C:\Users\_your_name_\.pyenv\pyenv-win\
-PYENV_ROOT | C:\Users\_your_name_\.pyenv\pyenv-win\
-PYENV_HOME | C:\Users\_your_name_\.pyenv\pyenv-win\
-
-
-### Python install (requires IT):
-1. If a version of Python which is not 3.11 is already installed on your computer then you will need to uninstall it
-
-2. Go to https://www.python.org/downloads/
-
-3. Select Ctrl+F and search for `3.11.9`
-
-4. Click on the `Download` button
-
-5. Scroll down and select `Windows installer (64-bit)`
-
-6. In your download folder, click on `python-3.11.9-amd64` and install Python manually (in order to change the file location to the location below)
-
-7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming\Python\Python311`
-
-**Note:** When you set the location for python to install, make sure it matches to the system and user variables for python path we set in the previous step.
 
 # The rest of the process should not require IT assistance
 
@@ -163,52 +135,6 @@ https://github.com/cdarlint/winutils
 5. Leave command prompt open for the next install
 
 
-### Pyenv install:
-<i>Note: The following pyenv instructions are from https://github.com/pyenv-win/pyenv-win</i>
-
-1. Paste `pip install pyenv-win --target %USERPROFILE%\\.pyenv` and click Enter
-
-2. You should get the message `Successfully installed pyenv-win-3.1.1`
-
-3. If you having an error on above command, try `pip install pyenv-win --target %USERPROFILE%\\.pyenv --no-user --upgrade`
-
-4. Run `pyenv install 3.11.12` to install the supported version
-
-5. Run `pyenv global 3.11.12` to set a Python version as the global version
-
-6. Check which Python version you are using and its path using `pyenv version`
-Output: `3.11.12 (set by C:\Users\.....\.pyenv\pyenv-win\version)`
-
-7. Check that Python is working using `python -c "import sys; print(sys.executable)"`
-Output: `C:\Users\.....\.pyenv\pyenv-win\versions\3.11.12\python.exe`
-
-8. Leave command prompt open for the next install
-
-
-### pipenv install:
-<i>Note: The following pipenv instructions are from https://www.pythontutorial.net/python-basics/install-pipenv-windows/</i>
-
-1. Before installing the pipenv tool, you need to have Python and pip installed on your computer. You can check these by entering
-`python -V` - which should return 'Python 3.11.12'
-`pip -V` - which should return 'pip xx.x from c:\users\.....'
-
-2. Paste `pip install pipenv` and click Enter
-
-3. Check pipenv has been installed correctly using `pipenv --version`
-
-4. If successful you should see something like `pipenv, version yyyy.mm.dd`
-
-5. If unsuccessful, check your PATH environment variables
-
-6. Leave command prompt open for the next install
-
-
-### Install boto3
-1. Enter `pip install boto3` into command prompt
-
-2. Close command prompt
-
-
 ### Install Terraform
 1.  Download Terraform from https://www.terraform.io/downloads (Amd64 version)
 
@@ -222,17 +148,24 @@ Output: `C:\Users\.....\.pyenv\pyenv-win\versions\3.11.12\python.exe`
 
 2. Type `git clone https://github.com/NMDSdevopsServiceAdm/DataEngineering.git` and Enter
 
-3. Keep Git Bash open
+3. Close Git Bash.
 
+### uv install:
+<i>Note: For further info on installing uv, see: https://docs.astral.sh/uv/getting-started/installation/</i>
+
+1. Download uv: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
+
+2. Set up the environment: `uv sync`
 
 ### Create virtual environment and install dependencies
-1. In Git Bash, enter `cd DataEngineering`
+<i>Note: For further info on installing uv, see: https://docs.astral.sh/uv/getting-started/installation/</i>
+1. Open Powershell, navigate to the DataEngineering folder: `cd DataEngineering`
 
-2. Enter `pipenv install --dev`
+2. Download uv: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
 
-3. To setup the pre-commit hooks, run `pipenv run pre-commit install` and then `pipenv update`
+3. Set up the environment: `uv sync`
 
-4. Close Git Bash
+4. Close Powershell.
 
 
 ### Install and set up VS Code
@@ -251,7 +184,7 @@ Python
 
 4. Point the python extension to the virtual environment by typing `Ctrl+Shift+P` to open the Command Palette
 
-5. Search for `Python: Select Interpreter` and select: `Python 3.11.12 ('DataEngineering-...')`
+5. Search for `Python: Select Interpreter` and select: `dataengineering (3.11.12) .\venv\Scripts\python.exe`
 
 6. You should now be able to see the Data Engineering project in VS code.
 
@@ -289,20 +222,51 @@ Python
 
 ```json
 {
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s", "./tests",
+        "-p", "test*.py"
+    ],
     "python.testing.pytestEnabled": true,
     "python.envFile": "${workspaceFolder}/.env",
-    "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true,
-    "python.formatting.provider": "black",
-    "python.formatting.blackPath": "C:\\Users\\_your_name_\\.virtualenvs\\DataEngineering-_your_code_\\Scripts\\black.exe",
+    "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+
+    // --- Formatting ---
+    "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
-    "python.linting.pylintEnabled": false,
-    "python.formatting.blackArgs": ["--line-length=120"],
-    "python.linting.flake8Args": [
-        "--max-line-length=120",
-        "--ignore=E402,F841,F401,E302,E305,W503",
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+        },
+    },
+    "isort.args":["--profile", "black"],
+
+    "circleci.filters.branchFilter": "allBranches",
+    "circleci.notifications.statusFilter": {
+        "canceled": false,
+        "error": true,
+        "failed": false,
+        "failing": false,
+        "not_run": false,
+        "on_hold": true,
+        "success": false,
+        "unauthorized": true
+    },
+    "[terraform]": {
+        "editor.defaultFormatter": "hashicorp.terraform",
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file"
+    },
+    "[terraform-vars]": {
+        "editor.defaultFormatter": "hashicorp.terraform",
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file"
+    },
+    "python-envs.defaultEnvManager": "ms-python.python:venv",
+    "python.testing.pytestArgs": [
+        "."
     ],
-    "editor.defaultFormatter": "ms-python.python",
+    "python.testing.unittestEnabled": false,
 }
 ```
 
@@ -318,10 +282,6 @@ Python
 
 5. Close and re-open VS Code and this error message should no longer appear
 
-
-### Install black
-
-1. In the terminal, type `pip install black` and Enter
 
 
 ### aws credentials

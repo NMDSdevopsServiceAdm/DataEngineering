@@ -5,8 +5,7 @@
 |------|---------|-----------|
 | Python 3.11.9 | https://www.python.org/downloads/ | https://www.python.org/downloads/ |
 | Git | https://github.com/git-guides/install-git | https://github.com/git-guides/install-git |
-| Pyenv | https://github.com/pyenv-win/pyenv-win | https://github.com/pyenv/pyenv |
-| Pipenv | https://www.pythontutorial.net/python-basics/install-pipenv-windows/ | https://pipenv-fork.readthedocs.io/en/latest/install.html |
+| uv | https://docs.astral.sh/uv/getting-started/installation/ | https://docs.astral.sh/uv/getting-started/installation/ |
 | Java JDK8 | https://www.java.com/en/download/ | https://www.java.com/en/download/ |
 
 ## MacOS Java Installation
@@ -20,18 +19,14 @@ brew update
 brew install adoptopenjdk8
 ```
 
-## Project setup
+## Project setup (Mac/Linux)
+This is currently untested as we have no Mac/Linux users on the team.
 ```
 git clone https://github.com/NMDSdevopsServiceAdm/DataEngineering.git
 cd DataEngineering
-pipenv install --dev
-pipenv shell
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv sync
 ```
 
-To exit the environment
-```
-exit
-```
-_Do not use `deactivate` or `source deactivate`_
 
 For detailed Windows setup, see [WindowsSetup.md](https://github.com/NMDSdevopsServiceAdm/DataEngineering/blob/main/WindowsSetup.md)
