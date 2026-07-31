@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import ANY, Mock, call, patch
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._01_merge as job
@@ -6,23 +5,24 @@ import projects._07_workforce_characteristics._01_starters_leavers_vacancies.far
 PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._01_merge"
 
 
-class MainTests(unittest.TestCase):
+class TestMain:
     METADATA_SOURCE = "some/source"
     JOB_ROLE_ESTIMATES_SOURCE = "another/source"
-    CLEANED_ASCWDS_WORKPLACE_SOURCE = "other/source"
+    PREPARED_SLV_DATASET_SOURCE = "other/source"
+    EMPLOYMENT_STATUS_RATES_SOURCE = "employment/status/rates/source"
     MERGED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.mUtils.apply_employment_status_magic_numbers")
     @patch(f"{PATCH_PATH}.mUtils.join_datasets")
-    @patch(f"{PATCH_PATH}.mUtils.convert_ascwds_job_role_columns_to_rows")
-    @patch(f"{PATCH_PATH}.mUtils.create_list_of_cols_for_ascwds")
+    @patch(f"{PATCH_PATH}.pl.scan_csv")
+    @patch(f"{PATCH_PATH}.expr.is_slv_job_role_column")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
-        create_list_of_cols_for_ascwds_mock: Mock,
-        convert_ascwds_job_role_columns_to_rows_mock: Mock,
+        is_slv_job_role_column_mock: Mock,
+        scan_csv_mock: Mock,
         join_datasets_mock: Mock,
         apply_employment_status_magic_numbers_mock: Mock,
         sink_to_parquet_mock: Mock,
@@ -30,7 +30,8 @@ class MainTests(unittest.TestCase):
         job.main(
             self.METADATA_SOURCE,
             self.JOB_ROLE_ESTIMATES_SOURCE,
-            self.CLEANED_ASCWDS_WORKPLACE_SOURCE,
+            self.PREPARED_SLV_DATASET_SOURCE,
+            self.EMPLOYMENT_STATUS_RATES_SOURCE,
             self.MERGED_DATA_DESTINATION,
         )
 
@@ -38,16 +39,22 @@ class MainTests(unittest.TestCase):
 
         scan_calls = [
             call(source=self.METADATA_SOURCE, selected_columns=job.metadata_columns),
-            call(self.JOB_ROLE_ESTIMATES_SOURCE),
-            call(self.CLEANED_ASCWDS_WORKPLACE_SOURCE),
+            call(
+                source=self.JOB_ROLE_ESTIMATES_SOURCE,
+                selected_columns=job.job_role_estimates_columns,
+            ),
+            call(self.PREPARED_SLV_DATASET_SOURCE),
         ]
         scan_parquet_mock.assert_has_calls(scan_calls)
 
         # TODO: Uncomment these assertions when the placeholder functions are implemented
-        # create_list_of_cols_for_ascwds_mock.assert_called_once()
-        # convert_ascwds_job_role_columns_to_rows_mock.assert_called_once()
+        is_slv_job_role_column_mock.assert_called_once()
         # join_datasets_mock.assert_called_once()
         # apply_employment_status_magic_numbers_mock.assert_called_once()
+
+        scan_csv_mock.assert_called_once_with(
+            self.EMPLOYMENT_STATUS_RATES_SOURCE, schema=ANY
+        )
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,

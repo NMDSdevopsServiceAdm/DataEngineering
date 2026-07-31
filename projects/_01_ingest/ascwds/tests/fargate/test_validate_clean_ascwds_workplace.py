@@ -46,6 +46,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
                 ASCWPClean.total_vacancies: "",
                 ASCWPClean.main_service_id: "",
                 ASCWPClean.version: "",
+                ASCWPClean.import_date: "",
                 ASCWPClean.ascwds_workplace_import_date: date(2000, 1, 1),
                 ASCWPClean.master_update_date_org: date(2000, 1, 1),
                 ASCWPClean.purge_date: date(2000, 1, 1),
@@ -84,6 +85,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
                 ASCWPClean.total_vacancies: pl.String,
                 ASCWPClean.main_service_id: pl.String,
                 ASCWPClean.version: pl.String,
+                ASCWPClean.import_date: pl.String,
                 ASCWPClean.ascwds_workplace_import_date: pl.Date,
                 ASCWPClean.master_update_date_org: pl.Date,
                 ASCWPClean.purge_date: pl.Date,
@@ -93,6 +95,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
                 ASCWPClean.worker_records_bounded: pl.Int32,
             },
         )
+        self.test_schema = {ASCWPClean.job_role_01_employees: pl.Int32}
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
@@ -124,7 +127,7 @@ class ValidateCleanASCWDSWorkplaceTests(unittest.TestCase):
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
         expected_assertions = {
-            # "col_schema_match",
+            "col_schema_match",
             "col_vals_not_null",
             "rows_distinct",
             "col_vals_between",

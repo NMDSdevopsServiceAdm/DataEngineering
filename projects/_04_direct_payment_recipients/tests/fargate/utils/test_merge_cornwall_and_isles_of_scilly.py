@@ -6,7 +6,7 @@ import polars.testing as pl_testing
 import pytest
 
 import projects._04_direct_payment_recipients.fargate.utils.estimate_direct_payments_utils.merge_cornwall_and_isles_of_scilly as job
-from projects._04_direct_payment_recipients.direct_payments_column_names import (
+from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 

@@ -1,3 +1,5 @@
+from datetime import date
+
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -92,3 +94,92 @@ def update_filtering_rule(
         expr = expr.cast(categorical_type)
 
     return lf.with_columns(expr.alias(filter_rule_col_name))
+
+
+def reduced_data_filter_expr(
+    today: date | None = None,
+    fy_start_month: int = 4,
+    lookback_fy_years: int = 2,
+    quarter_months: tuple[int, ...] = (1, 4, 7, 10),
+    date_col: str = IndCQC.cqc_location_import_date,
+) -> pl.Expr:
+    """
+    Build a Polars expression for filtering a reduced dataset using financial-year
+    windowing with quarterly sampling for older data.
+
+    The filter implements a two-tier retention strategy:
+
+    1. Full retention window:
+       Rows with dates greater than or equal to the start of the current financial
+       year minus `lookback_fy_years` are always included.
+
+    2. Historical sampling window:
+       Rows older than the full retention window are only included if their month
+       falls within `quarter_months` (e.g. quarterly snapshots).
+
+    This allows recent data to be fully retained while reducing storage and
+    processing cost for older data via periodic sampling.
+
+    Returning an expression rather than a filtered LazyFrame lets callers attach it
+    directly to a `scan_parquet`, so the predicate is pushed down to the parquet
+    source instead of running over a materialised frame.
+
+    Args:
+        today (date | None): Reference date used to compute financial year boundaries.
+            If None, defaults to the current system date.
+
+        fy_start_month (int): Month in which the financial year starts
+            (default is 4 for April).
+
+        lookback_fy_years (int): Number of financial years to retain in full before
+            applying sampling.
+
+        quarter_months (tuple[int, ...]): Months considered valid for quarterly sampling
+            of historical data (Defaults to Jan, Apr, Jul, and Oct).
+
+        date_col (str): Name of the date column the filter is applied to. Defaults to
+            the CQC location import date; datasets keyed on a different date column
+            (e.g. the SLV pipeline's ASCWDS workplace import date) pass their own.
+
+    Returns:
+        pl.Expr: A Polars boolean expression that can be used inside `.filter()` or
+            `.with_columns()` to select rows based on the reduced data strategy.
+    """
+    today: date = today or date.today()
+
+    fy_year = today.year if today.month >= fy_start_month else today.year - 1
+
+    monthly_start = date(fy_year - lookback_fy_years, fy_start_month, 1)
+
+    dt = pl.col(date_col)
+
+    return (dt >= monthly_start) | (
+        (dt < monthly_start) & (dt.dt.month().is_in(quarter_months))
+    )
+
+
+def earliest_file_per_month_filter_expr(
+    date_col: str = IndCQC.cqc_location_import_date,
+) -> pl.Expr:
+    """
+    Build a Polars expression selecting only the earliest-dated row(s) of each calendar month.
+
+    This identifies the earliest date within each (year, month) group and keeps only rows
+    matching that date, reducing a dataset carrying multiple files per month down to one.
+
+    Returning an expression rather than a filtered LazyFrame lets callers attach it
+    directly to a `.filter()` chain alongside other predicates (e.g. reduced_data_filter_expr),
+    keeping the query lazy end-to-end.
+
+    Args:
+        date_col (str): Name of the date column to reduce on. Defaults to the CQC
+            location import date; datasets keyed on a different date column (e.g. the
+            SLV pipeline's ASCWDS workplace import date) pass their own.
+
+    Returns:
+        pl.Expr: A Polars boolean expression that can be used inside `.filter()` to select
+            rows whose date matches the minimum date within their (year, month) group.
+    """
+    dt = pl.col(date_col)
+
+    return dt == dt.min().over(dt.dt.year(), dt.dt.month())

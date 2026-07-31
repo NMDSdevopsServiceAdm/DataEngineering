@@ -1,10 +1,22 @@
 import polars as pl
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.merge_utils as mUtils
+from polars_utils import expressions as expr
 from polars_utils import utils
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.employment_status_rates_columns import (
+    EmploymentStatusRatesColumns as EmpStatRates,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
-metadata_columns = {
+workplace_columns = [
+    AWPClean.establishment_id,
+    AWPClean.ascwds_workplace_import_date,
+]
+
+metadata_columns = [
     IndCQC.id_per_locationid_import_date,
     IndCQC.name,
     IndCQC.provider_id,
@@ -23,13 +35,25 @@ metadata_columns = {
     IndCQC.ascwds_pir_merged,
     IndCQC.ascwds_filtering_rule,
     IndCQC.estimate_filled_posts_source,
-}
+]
+
+job_role_estimates_columns = [
+    IndCQC.id_per_locationid_import_date_job_role,
+    IndCQC.location_id,
+    IndCQC.cqc_location_import_date,
+    IndCQC.primary_service_type,
+    IndCQC.id_per_locationid_import_date,
+    IndCQC.main_job_role_clean_labelled,
+    IndCQC.estimate_filled_posts_by_job_role_historically_reallocated,
+    IndCQC.main_job_group_labelled,
+]
 
 
 def main(
     metadata_source: str,
     job_role_estimates_source: str,
-    cleaned_ascwds_workplace_source: str,
+    prepared_slv_dataset_source: str,
+    employment_status_rates_source: str,
     merged_data_destination: str,
 ) -> None:
     """
@@ -38,20 +62,43 @@ def main(
     Args:
         metadata_source (str): path to the estimates ind cqc filled posts data
         job_role_estimates_source (str): path to the job role estimates data
-        cleaned_ascwds_workplace_source (str): path to the cleaned ascwds workplace data
+        prepared_slv_dataset_source (str): path to the cleaned ascwds workplace data
+        employment_status_rates_source (str): path to the employment status rates csv
         merged_data_destination (str): destination for merged output
     """
-    # TODO: Placeholder only
-    # mUtils.create_list_of_cols_for_ascwds()
 
     metadata_lf = utils.scan_parquet(
         source=metadata_source, selected_columns=metadata_columns
     )
-    job_role_estimates_lf = utils.scan_parquet(job_role_estimates_source)
-    cleaned_ascwds_workplace_lf = utils.scan_parquet(cleaned_ascwds_workplace_source)
+    job_role_estimates_lf = utils.scan_parquet(
+        source=job_role_estimates_source, selected_columns=job_role_estimates_columns
+    )
+    cleaned_ascwds_workplace_lf = utils.scan_parquet(
+        prepared_slv_dataset_source
+    ).select(
+        *[AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date],
+        expr.is_slv_job_role_column()
+    )
 
-    # TODO: Placeholder only
-    # mUtils.convert_ascwds_job_role_columns_to_rows()
+    # The source CSV is expected to already be trimmed to exactly these columns, in this
+    # order, and to only the current weighting year's rows — scan_csv's schema is matched
+    # positionally, not by name, so a reordered file would silently load into the wrong
+    # columns with no error.
+    employment_status_rates_schema = pl.Schema(
+        [
+            (EmpStatRates.service, pl.Categorical()),
+            (EmpStatRates.weighting_job_role, pl.Categorical()),
+            (EmpStatRates.emp_stat_perm, pl.Float32),
+            (EmpStatRates.emp_stat_temp, pl.Float32),
+            (EmpStatRates.emp_stat_bank_or_pool, pl.Float32),
+            (EmpStatRates.emp_stat_agency, pl.Float32),
+            (EmpStatRates.emp_stat_other, pl.Float32),
+        ]
+    )
+
+    employment_status_rates_lf = pl.scan_csv(
+        employment_status_rates_source, schema=employment_status_rates_schema
+    )
 
     # TODO: Placeholder only
     # mUtils.join_datasets()
@@ -76,8 +123,12 @@ if __name__ == "__main__":
             "Source s3 directory for job role estimates data",
         ),
         (
-            "--cleaned_ascwds_workplace_source",
+            "--prepared_slv_dataset_source",
             "Source s3 directory for cleaned ascwds workplace data",
+        ),
+        (
+            "--employment_status_rates_source",
+            "Source s3 directory for employment status rates data",
         ),
         (
             "--merged_data_destination",
@@ -87,6 +138,7 @@ if __name__ == "__main__":
     main(
         metadata_source=args.metadata_source,
         job_role_estimates_source=args.job_role_estimates_source,
-        cleaned_ascwds_workplace_source=args.cleaned_ascwds_workplace_source,
+        prepared_slv_dataset_source=args.prepared_slv_dataset_source,
+        employment_status_rates_source=args.employment_status_rates_source,
         merged_data_destination=args.merged_data_destination,
     )

@@ -4,7 +4,7 @@ os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
 
-from projects._04_direct_payment_recipients.direct_payments_column_names import (
+from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 from utils import utils

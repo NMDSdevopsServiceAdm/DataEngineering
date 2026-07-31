@@ -4,13 +4,9 @@ import polars as pl
 import polars.testing as pl_testing
 import pytest
 
-from polars_utils.expressions import (
-    has_value,
-    is_care_home,
-    is_dormant,
-    is_not_care_home,
-    percentage_share,
-    str_length_cols,
+import polars_utils.expressions as job
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 
 
@@ -33,37 +29,37 @@ class TestExpressions(unittest.TestCase):
 class TestHasValue(TestExpressions):
     def test_null_numeric(self):
         df = self.df_simple.with_columns(
-            has_value(self.df_simple, "a", "group").alias("has_value"),
+            job.has_value(self.df_simple, "a", "group").alias("has_value"),
         )
         self.assertEqual(df["has_value"].to_list(), [True, True, False, False])
 
     def test_non_null_numeric(self):
         df = self.df_simple.with_columns(
-            has_value(self.df_simple, "b", "group").alias("has_value"),
+            job.has_value(self.df_simple, "b", "group").alias("has_value"),
         )
         self.assertEqual(df["has_value"].to_list(), [True, True, True, True])
 
     def test_null_string(self):
         df = self.df_simple.with_columns(
-            has_value(self.df_simple, "c", "group").alias("has_value"),
+            job.has_value(self.df_simple, "c", "group").alias("has_value"),
         )
         self.assertEqual(df["has_value"].to_list(), [True, True, False, False])
 
     def test_non_null_string(self):
         df = self.df_simple.with_columns(
-            has_value(self.df_simple, "d", "group").alias("has_value"),
+            job.has_value(self.df_simple, "d", "group").alias("has_value"),
         )
         self.assertEqual(df["has_value"].to_list(), [True, True, True, True])
 
     def test_partial_list_column(self):
         df = self.df_simple.with_columns(
-            has_value(self.df_simple, "e", "group").alias("has_value"),
+            job.has_value(self.df_simple, "e", "group").alias("has_value"),
         )
         self.assertEqual(df["has_value"].to_list(), [True, True, False, False])
 
     def test_list_has_column(self):
         df = self.df_simple.with_columns(
-            has_value(self.df_simple, "f", "group").alias("has_value"),
+            job.has_value(self.df_simple, "f", "group").alias("has_value"),
         )
         self.assertEqual(df["has_value"].to_list(), [True, True, True, True])
 
@@ -72,7 +68,7 @@ class TestPercentageShare:
     def test_over_whole_dataset(self):
         input_lf = pl.LazyFrame({"vals": [1, 2, 2]})
         expected_lf = pl.LazyFrame({"ratios": [0.2, 0.4, 0.4]})
-        returned_lf = input_lf.select(percentage_share("vals").alias("ratios"))
+        returned_lf = input_lf.select(job.percentage_share("vals").alias("ratios"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     def test_over_groups(self):
@@ -88,7 +84,7 @@ class TestPercentageShare:
         )
         input_lf = expected_lf.select("group", "vals")
         returned_lf = input_lf.with_columns(
-            percentage_share("vals").over("group").alias("ratios"),
+            job.percentage_share("vals").over("group").alias("ratios"),
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
 
@@ -98,7 +94,7 @@ class TestPercentageShare:
         expression = pl.col("vals") - 10
         expected_lf = pl.LazyFrame({"ratios": [0.0, 0.125, 0.875]})
 
-        returned_lf = input_lf.select(percentage_share(expression).alias("ratios"))
+        returned_lf = input_lf.select(job.percentage_share(expression).alias("ratios"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     @pytest.mark.parametrize(
@@ -131,23 +127,23 @@ class TestPercentageShare:
     def test_edge_cases(self, input_, expected):
         input_lf = pl.LazyFrame({"values": input_}).cast(pl.Float64)
         expected_lf = pl.LazyFrame({"output": expected}).cast(pl.Float64)
-        returned_lf = input_lf.select(percentage_share("values").alias("output"))
+        returned_lf = input_lf.select(job.percentage_share("values").alias("output"))
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class TestStrLengthCols(TestExpressions):
     def test_single_column(self):
-        df = self.df_simple.select(str_length_cols(["c"]))
+        df = self.df_simple.select(job.str_length_cols(["c"]))
         self.assertEqual(df["c_length"].to_list(), [6, 3, None, None])
 
     def test_multiple_columns(self):
-        df = self.df_simple.with_columns(str_length_cols(["c", "d"]))
+        df = self.df_simple.with_columns(job.str_length_cols(["c", "d"]))
         self.assertEqual(df["c_length"].to_list(), [6, 3, None, None])
         self.assertEqual(df["d_length"].to_list(), [6, 3, None, 3])
 
     def test_empty_string(self):
         df = pl.DataFrame({"str_col": ["", "abc", None]}).with_columns(
-            str_length_cols(["str_col"])
+            job.str_length_cols(["str_col"])
         )
         self.assertEqual(df["str_col_length"].to_list(), [0, 3, None])
 
@@ -155,13 +151,13 @@ class TestStrLengthCols(TestExpressions):
         # Given
         df = pl.DataFrame({"num_col": [1, 2, 3]})
         with self.assertRaises(pl.exceptions.SchemaError):
-            df.with_columns(str_length_cols(["num_col"]))
+            df.with_columns(job.str_length_cols(["num_col"]))
 
 
 class TestIsCareHome(TestExpressions):
     def test_is_care_home(self):
         df = pl.DataFrame({"careHome": ["Y", "N", "Y", None]}).with_columns(
-            is_care_home().alias("is_care_home")
+            job.is_care_home().alias("is_care_home")
         )
         self.assertEqual(df["is_care_home"].to_list(), [True, False, True, None])
 
@@ -169,7 +165,7 @@ class TestIsCareHome(TestExpressions):
 class TestIsNotCareHome(TestExpressions):
     def test_is_not_care_home(self):
         df = pl.DataFrame({"careHome": ["Y", "N", "Y", None]}).with_columns(
-            is_not_care_home().alias("is_not_care_home")
+            job.is_not_care_home().alias("is_not_care_home")
         )
         self.assertEqual(df["is_not_care_home"].to_list(), [False, True, False, None])
 
@@ -177,9 +173,36 @@ class TestIsNotCareHome(TestExpressions):
 class TestIsDormant(TestExpressions):
     def test_is_dormant(self):
         df = pl.DataFrame({"dormancy": ["Y", "N", "Y", None]}).with_columns(
-            is_dormant().alias("is_dormant")
+            job.is_dormant().alias("is_dormant")
         )
         self.assertEqual(df["is_dormant"].to_list(), [True, False, True, None])
+
+
+class TestJrColsSelector(unittest.TestCase):
+    def test_selects_expected_columns(self):
+        test_lf = pl.LazyFrame(
+            {
+                AWPClean.job_role_01_employees: "1",
+                AWPClean.job_role_01_starters: "1",
+                AWPClean.job_role_01_leavers: "1",
+                AWPClean.job_role_01_vacancies: "1",
+                AWPClean.job_role_01_temporary: "1",
+                AWPClean.job_role_01_flag: "1",
+                "jr01permdate": "1",
+                "any_other_col": "1",
+            }
+        )
+        returned_cols = (
+            test_lf.select(job.is_slv_job_role_column()).collect_schema().names()
+        )
+        expected_cols = [
+            AWPClean.job_role_01_employees,
+            AWPClean.job_role_01_starters,
+            AWPClean.job_role_01_leavers,
+            AWPClean.job_role_01_vacancies,
+        ]
+
+        self.assertEqual(returned_cols, expected_cols)
 
 
 if __name__ == "__main__":

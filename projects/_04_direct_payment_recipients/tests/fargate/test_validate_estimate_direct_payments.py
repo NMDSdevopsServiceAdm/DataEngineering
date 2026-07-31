@@ -6,7 +6,7 @@ from unittest.mock import Mock, call, patch
 import polars as pl
 
 import projects._04_direct_payment_recipients.fargate.validate_estimate_direct_payments as job
-from projects._04_direct_payment_recipients.direct_payments_column_names import (
+from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 

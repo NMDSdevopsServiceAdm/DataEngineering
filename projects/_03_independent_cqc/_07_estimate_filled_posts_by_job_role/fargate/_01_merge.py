@@ -1,9 +1,9 @@
 import polars as pl
 
 from polars_utils import utils
+from polars_utils.filtering_utils import reduced_data_filter_expr
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.merge_utils import (
     join_estimates_to_ascwds,
-    reduced_data_filter_expr,
 )
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     CategoricalColumnTypes as CatColType,

@@ -74,111 +74,15 @@ class IngestASCWDSData:
 
 
 @dataclass
-class ASCWDSWorkplaceSchemas:
+class ASCWDSWorkerSchemas:
     workplace_schema = StructType(
         [
             StructField(AWP.location_id, StringType(), True),
             StructField(AWP.establishment_id, StringType(), True),
-            StructField(AWP.total_staff, StringType(), True),
-            StructField(AWP.worker_records, StringType(), True),
-            StructField(AWP.import_date, StringType(), True),
-            StructField(AWP.organisation_id, StringType(), True),
-            StructField(AWP.master_update_date, DateType(), True),
-            StructField(AWP.is_parent, StringType(), True),
-            StructField(AWP.parent_id, StringType(), True),
-            StructField(AWP.last_logged_in, StringType(), True),
-            StructField(AWP.nmds_id, StringType(), True),
-        ]
-    )
-
-    filter_test_account_when_orgid_present_schema = StructType(
-        [
-            StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.organisation_id, StringType(), True),
-        ]
-    )
-    filter_test_account_when_orgid_not_present_schema = StructType(
-        [
-            StructField(AWP.location_id, StringType(), True),
             StructField(AWP.import_date, StringType(), True),
         ]
     )
 
-    remove_white_space_from_nmdsid_schema = StructType(
-        [
-            StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.nmds_id, StringType(), True),
-        ]
-    )
-
-    location_schema = StructType(
-        [
-            StructField(AWP.location_id, StringType(), True),
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-            StructField(AWP.organisation_id, StringType(), True),
-        ]
-    )
-
-    mupddate_for_org_schema = StructType(
-        [
-            StructField(AWP.organisation_id, StringType(), True),
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-            StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.master_update_date, DateType(), True),
-        ]
-    )
-    expected_mupddate_for_org_schema = StructType(
-        [
-            *mupddate_for_org_schema,
-            StructField(AWPClean.master_update_date_org, DateType(), True),
-        ]
-    )
-
-    add_purge_data_col_schema = StructType(
-        [
-            StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.is_parent, StringType(), True),
-            StructField(AWP.master_update_date, DateType(), True),
-            StructField(AWPClean.master_update_date_org, DateType(), True),
-        ]
-    )
-    expected_add_purge_data_col_schema = StructType(
-        [
-            *add_purge_data_col_schema,
-            StructField(AWPClean.data_last_amended_date, DateType(), True),
-        ]
-    )
-
-    add_workplace_last_active_date_col_schema = StructType(
-        [
-            StructField(AWP.location_id, StringType(), True),
-            StructField(AWPClean.data_last_amended_date, DateType(), True),
-            StructField(AWPClean.last_logged_in_date, DateType(), True),
-        ]
-    )
-    expected_add_workplace_last_active_date_col_schema = StructType(
-        [
-            *add_workplace_last_active_date_col_schema,
-            StructField(AWPClean.workplace_last_active_date, DateType(), True),
-        ]
-    )
-
-    date_col_for_purging_schema = StructType(
-        [
-            StructField(AWP.location_id, StringType(), True),
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-        ]
-    )
-    expected_date_col_for_purging_schema = StructType(
-        [
-            *date_col_for_purging_schema,
-            StructField(AWPClean.purge_date, DateType(), True),
-        ]
-    )
-
-
-@dataclass
-class ASCWDSWorkerSchemas:
     worker_schema = StructType(
         [
             StructField(AWK.location_id, StringType(), True),
@@ -550,20 +454,6 @@ class ValidateASCWDSWorkerRawData:
             StructField(Keys.import_date, StringType(), True),
             StructField(AWKClean.worker_id, StringType(), True),
             StructField(AWKClean.main_job_role_id, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class ValidateASCWDSWorkplaceCleanedData:
-    cleaned_ascwds_workplace_schema = StructType(
-        [
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-            StructField(AWPClean.organisation_id, StringType(), True),
-            StructField(AWPClean.location_id, StringType(), True),
-            StructField(AWPClean.total_staff_bounded, IntegerType(), True),
-            StructField(AWPClean.worker_records_bounded, IntegerType(), True),
         ]
     )
 

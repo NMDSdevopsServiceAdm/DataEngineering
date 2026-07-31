@@ -50,6 +50,15 @@
                 "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
               }
             },
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "Next": "Publish error notification",
+                    "ResultPath": "$.error"
+                }
+            ],
             "Next": "Success"
         },
         "Success": {

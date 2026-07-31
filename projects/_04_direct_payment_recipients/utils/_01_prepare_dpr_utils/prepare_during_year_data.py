@@ -1,7 +1,7 @@
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
-from projects._04_direct_payment_recipients.direct_payments_column_names import (
+from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 

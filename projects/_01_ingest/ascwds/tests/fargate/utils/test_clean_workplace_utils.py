@@ -1,4 +1,3 @@
-import unittest
 from datetime import date
 
 import polars as pl
@@ -155,54 +154,19 @@ class TestAddMasterUpdateDateOrg:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
-class TestCreatePurgedLfsForReconciliationAndData:
-    @pytest.mark.parametrize(
-        "case",
-        [pytest.param(case, id=case.id) for case in Data.create_purged_lfs_test_cases],
-    )
-    def test_function_returns_expected_values(self, case):
-        test_lf = pl.LazyFrame(case.test_data, Schemas.test_schema, orient="row")
-
-        expected_workplace_lf = (
-            pl.LazyFrame(
-                case.expected_workplace_data, Schemas.test_schema, orient="row"
-            )
-            if case.expected_workplace_data is not None
-            else pl.LazyFrame(schema=Schemas.test_schema)
-        )
-        expected_recon_lf = (
-            pl.LazyFrame(case.expected_recon_data, Schemas.test_schema, orient="row")
-            if case.expected_recon_data is not None
-            else pl.LazyFrame(schema=Schemas.test_schema)
+class TestCreatePurgeDateColumns:
+    def test_function_returns_expected_values(self):
+        expected_lf = pl.LazyFrame(Data.expected_create_purge_date_columns_rows)
+        test_lf = expected_lf.drop(
+            AWPClean.master_update_date_org,
+            AWPClean.purge_date,
+            AWPClean.data_last_amended_date,
+            AWPClean.workplace_last_active_date,
         )
 
-        workplace_lf, recon_lf = job.create_purged_lfs_for_reconciliation_and_data(
-            test_lf
-        )
+        returned_lf = job.create_purge_date_columns(test_lf)
 
-        pl_testing.assert_frame_equal(
-            workplace_lf.select(Schemas.test_schema.keys()),
-            expected_workplace_lf,
-            check_row_order=False,
-        )
-        pl_testing.assert_frame_equal(
-            recon_lf.select(Schemas.test_schema.keys()),
-            expected_recon_lf,
-            check_row_order=False,
-        )
-
-    def test_returns_lazy_frames(self):
-        test_lf = pl.LazyFrame(
-            [("org1", date(2024, 6, 1), date(2024, 5, 1), "No", date(2024, 4, 1))],
-            schema=Schemas.test_schema,
-            orient="row",
-        )
-        workplace_lf, recon_lf = job.create_purged_lfs_for_reconciliation_and_data(
-            test_lf
-        )
-
-        assert isinstance(workplace_lf, pl.LazyFrame)
-        assert isinstance(recon_lf, pl.LazyFrame)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
 
 class TestApplyDataCorrections:
@@ -229,37 +193,55 @@ class TestApplyDataCorrections:
         pl_testing.assert_frame_equal(returned_lf, expected_workplace_lf)
 
 
-class JrColsSelectorTests(unittest.TestCase):
-    def test_selects_expected_columns(self):
+class TestBoundingExpressions:
+    def test_expression_bounds(self):
+        exprs = job.BoundingExpressions()
+        assert exprs.filled_posts_lower_bound == 1
+        assert exprs.slv_lower_bound == 1
+        assert exprs.slv_upper_bound == 998
+
+    def test_filled_posts_expression_bounds_values_to_valid_range(self):
+        exprs = job.BoundingExpressions()
         test_lf = pl.LazyFrame(
             {
-                AWPClean.job_role_01_employees: "1",
-                AWPClean.job_role_01_starters: "1",
-                AWPClean.job_role_01_leavers: "1",
-                AWPClean.job_role_01_vacancies: "1",
-                AWPClean.job_role_01_temporary: "1",
-                AWPClean.job_role_01_flag: "1",
-                "jr01permdate": "1",
-                "any_other_col": "1",
+                AWPClean.total_staff: [0, 5, None],
+                AWPClean.worker_records: [1, 0, 2],
             }
         )
-        returned_cols = test_lf.select(job.slv_cols_selector()).collect_schema().names()
-        expected_cols = [
-            AWPClean.job_role_01_employees,
-            AWPClean.job_role_01_starters,
-            AWPClean.job_role_01_leavers,
-            AWPClean.job_role_01_vacancies,
-        ]
+        expected_lf = pl.LazyFrame(
+            {
+                AWPClean.total_staff: [0, 5, None],
+                AWPClean.worker_records: [1, 0, 2],
+                f"{AWPClean.total_staff}_bounded": [None, 5, None],
+                f"{AWPClean.worker_records}_bounded": [1, None, 2],
+            }
+        )
 
-        self.assertEqual(returned_cols, expected_cols)
+        returned_lf = test_lf.with_columns(exprs.filled_posts_expr)
 
-    def test_ignores_non_string_job_role_columns(self):
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_slv_expression_bounds_values_to_valid_range(self):
+        exprs = job.BoundingExpressions()
         test_lf = pl.LazyFrame(
             {
-                "jr_int_strt": [1],  # int
-                "jr_str_strt": ["1"],  # string
+                AWPClean.job_role_01_employees: [0, 10, 1000, 500],
+                AWPClean.job_role_01_starters: [1, 2, 999, 1000],
+                AWPClean.job_role_01_leavers: [-1, 500, 998, 999],
+                AWPClean.job_role_01_vacancies: [0, 998, 999, 500],
+                AWPClean.job_role_01_temporary: [0, 1, 2, 3],  # Not an SLV column
             }
         )
-        returned_cols = test_lf.select(job.slv_cols_selector()).collect_schema().names()
+        expected_lf = pl.LazyFrame(
+            {
+                AWPClean.job_role_01_employees: [None, 10, None, 500],
+                AWPClean.job_role_01_starters: [1, 2, None, None],
+                AWPClean.job_role_01_leavers: [None, 500, 998, None],
+                AWPClean.job_role_01_vacancies: [None, 998, None, 500],
+                AWPClean.job_role_01_temporary: [0, 1, 2, 3],
+            }
+        )
 
-        self.assertEqual(returned_cols, ["jr_str_strt"])
+        returned_lf = test_lf.with_columns(exprs.slv_expr)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

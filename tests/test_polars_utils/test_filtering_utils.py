@@ -2,6 +2,7 @@ import unittest
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 from polars_utils import filtering_utils as job
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
@@ -228,3 +229,44 @@ class UpdateFilteringRuleTests(unittest.TestCase):
             orient="row",
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestReducedDataFilterExpr:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.reduced_data_filter_test_cases
+        ],
+    )
+    def test_function_returns_expected_values(self, case):
+        date_col = IndCQC.cqc_location_import_date
+
+        expr = job.reduced_data_filter_expr(
+            today=case.today,
+            fy_start_month=case.fy_start_month,
+            lookback_fy_years=case.lookback_fy_years,
+            quarter_months=case.quarter_months,
+            date_col=date_col,
+        )
+
+        df = pl.DataFrame({date_col: case.input_data})
+
+        result = df.with_columns(expr.alias("keep"))
+
+        assert result["keep"].to_list() == case.expected
+
+
+class TestEarliestFilePerMonthFilterExpr:
+    def test_returns_only_earliest_file_per_month(self):
+        test_lf = pl.LazyFrame(Data.earliest_file_per_month_rows)
+        expected_lf = pl.LazyFrame(Data.expected_earliest_file_per_month_rows)
+
+        returned_lf = test_lf.filter(job.earliest_file_per_month_filter_expr())
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_uses_the_passed_date_col(self):
+        expr = job.earliest_file_per_month_filter_expr("some_other_column")
+
+        assert set(expr.meta.root_names()) == {"some_other_column"}

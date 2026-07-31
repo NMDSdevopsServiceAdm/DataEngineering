@@ -10,7 +10,7 @@ from pyspark.sql.types import (
     StructType,
 )
 
-from projects._04_direct_payment_recipients.direct_payments_column_names import (
+from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (

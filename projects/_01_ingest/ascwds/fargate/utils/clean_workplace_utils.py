@@ -1,6 +1,7 @@
 import polars as pl
 import polars.selectors as cs
 
+import polars_utils.expressions as expr
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -180,26 +181,15 @@ def add_master_update_date_org(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
-def create_purged_lfs_for_reconciliation_and_data(
-    lf: pl.LazyFrame,
-) -> tuple[pl.LazyFrame, pl.LazyFrame]:
+def create_purge_date_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Remove rows which have not been updated/logged into since the purge date.
-
-    Rows in ASC-WDS workplace data are removed using master_update_date.
-    Rows in reconciliation data are removed using master_update_date and
-        last_logged_in_date (whichever is more recent).
-    Parent accounts use the most recent date from all accounts in that organisation.
+    Ochestrator function to create purge date columns for the input LazyFrame.
 
     Args:
-        lf (pl.LazyFrame): The ascwds_workplace_lf to be purged
+        lf (pl.LazyFrame): The input LazyFrame.
 
     Returns:
-        tuple[pl.LazyFrame, pl.LazyFrame]: A tuple of two LazyFrames:
-        - ascwds_workplace_lf where old data has been removed based on mupddate
-            date
-        - reconciliation_lf where old data has been removed based on the maximum
-            of mupddate and lastloggedin date
+        pl.LazyFrame: The LazyFrame with purge date columns added.
     """
     expr = PurgeWorkplaceDataExpressions()
     lf = add_master_update_date_org(lf)
@@ -210,14 +200,7 @@ def create_purged_lfs_for_reconciliation_and_data(
         expr.workplace_last_active_date,
     )
 
-    ascwds_workplace_lf = lf.filter(
-        pl.col(AWPClean.data_last_amended_date) >= pl.col(AWPClean.purge_date)
-    )
-    reconciliation_lf = lf.filter(
-        pl.col(AWPClean.workplace_last_active_date) >= pl.col(AWPClean.purge_date)
-    )
-
-    return ascwds_workplace_lf, reconciliation_lf
+    return lf
 
 
 def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -245,18 +228,54 @@ def apply_data_corrections(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf
 
 
-def slv_cols_selector() -> cs.Selector:
-    """
-    Returns a Selector for columns that are:
-     - string datatype
-     - start with 'jr'
-     - end with either 'emp', 'strt', 'stop' or 'vacy
-     - do not end with 'temp'
+class BoundingExpressions:
+    """Create Polars expressions that bound workplace metrics to valid ranges.
+
+    The class defines expressions for constraining filled-posts values and
+    starters, leavers, vacancies (SLV) job-role values to acceptable ranges.
+    These expressions are designed for use in lazy Polars pipelines and keep
+    the transformation logic declarative and readable.
+
+    Attributes:
+        filled_posts_bounding_cols (list[str]): Columns used in filled-posts
+            estimates needing bounding.
+        filled_posts_lower_bound (int): Minimum accepted value for filled-posts
+            columns.
+        slv_bounding_cols (pl.selectors.Selector): Selector for SLV job-role
+            columns.
+        slv_lower_bound (int): Minimum accepted value for SLV job-role columns.
+        slv_upper_bound (int): Maximum accepted value for SLV job-role columns.
+        filled_posts_expr (pl.Expr): Expression that bounds columns needed in
+            filled-posts estimates to the configured valid range and renaming.
+        slv_expr (pl.Expr): Expression that bounds SLV job-role columns to the
+            configured valid range while preserving the original column names.
     """
 
-    return (
-        cs.string()
-        & cs.starts_with("jr")
-        & cs.ends_with("emp", "strt", "stop", "vacy")
-        & ~cs.ends_with("temp")
+    filled_posts_bounding_cols: list[str] = [
+        AWPClean.total_staff,
+        AWPClean.worker_records,
+    ]
+    filled_posts_lower_bound: int = 1
+
+    slv_bounding_cols: pl.selectors.Selector = expr.is_slv_job_role_column()
+    slv_lower_bound: int = 1
+    slv_upper_bound: int = 998  # 999 has been used as code for not known
+
+    filled_posts_expr: pl.Expr = (
+        pl.when(pl.col(*filled_posts_bounding_cols) >= filled_posts_lower_bound)
+        .then(pl.col(*filled_posts_bounding_cols))
+        .otherwise(None)
+        .name.suffix("_bounded")
+    )
+
+    slv_expr: pl.Expr = (
+        (
+            pl.when(
+                (slv_bounding_cols.as_expr() < slv_lower_bound)
+                | (slv_bounding_cols.as_expr() > slv_upper_bound)
+            )
+        )
+        .then(None)
+        .otherwise(slv_bounding_cols)
+        .name.keep()
     )

@@ -16,9 +16,6 @@ def main(
     lf = utils.scan_parquet(merged_data_source)
 
     # TODO: Placeholder only
-    # cUtils.combine_job_role_rows()
-
-    # TODO: Placeholder only
     # cUtils.deduplicate_slv_over_time()
 
     utils.sink_to_parquet(
