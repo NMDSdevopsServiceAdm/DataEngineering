@@ -8,7 +8,7 @@ authors = [
 ]
 requires-python = ">=3.11,<3.12"
 dependencies = [
-    "black==26.1.0",
+    "black==25.1.0",
     "boto3==1.40.21",
     "numpy==2.3.2",
     "openpyxl==3.1.5",
@@ -55,3 +55,4 @@ python-preference = "only-managed"
 
 [tool.pydoclint]
 style = 'google'
+exclude = '\.venv|\.git|\.tox'
