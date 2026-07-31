@@ -56,11 +56,9 @@ def model_extrapolation(
     Raises:
         ValueError: If `extrapolation_method` is not "ratio" or "nominal".
     """
-    agg_lf = build_extrapolation_aggregates(
+    lf = build_extrapolation_aggregates(
         lf, column_with_null_values, model_to_extrapolate_from
     )
-
-    lf = lf.join(agg_lf, on=IndCqc.location_id, how="left")
 
     # Only keep model values when we actually have an observation
     lf = lf.with_columns(
@@ -133,17 +131,32 @@ def build_extrapolation_aggregates(
         pl.LazyFrame: Aggregated LazyFrame with one row per `location_id`,
         containing the required extrapolation metadata.
     """
-    return (
-        lf.filter(pl.col(value_col).is_not_null())
-        # polars_streaming: groupby+agg workaround; could be .min().over() and .max().over() when window functions support streaming
-        .group_by(IndCqc.location_id).agg(
-            [
-                pl.col(IMPORT_DATE).min().alias(TEMP.first_submission_time),
-                pl.col(IMPORT_DATE).max().alias(TEMP.final_submission_time),
-                pl.col(value_col).sort_by(IMPORT_DATE).first().alias(TEMP.first_value),
-                pl.col(model_col).sort_by(IMPORT_DATE).first().alias(TEMP.first_model),
-            ]
-        )
+    is_observed = pl.col(value_col).is_not_null()
+
+    first_submission_time_expr = (
+        pl.when(is_observed).then(pl.col(IMPORT_DATE)).min().over(IndCqc.location_id)
+    )
+    is_first_observed_row = is_observed & (
+        pl.col(IMPORT_DATE) == first_submission_time_expr
+    )
+
+    return lf.with_columns(
+        first_submission_time_expr.alias(TEMP.first_submission_time),
+        pl.when(is_observed)
+        .then(pl.col(IMPORT_DATE))
+        .max()
+        .over(IndCqc.location_id)
+        .alias(TEMP.final_submission_time),
+        pl.when(is_first_observed_row)
+        .then(pl.col(value_col))
+        .max()
+        .over(IndCqc.location_id)
+        .alias(TEMP.first_value),
+        pl.when(is_first_observed_row)
+        .then(pl.col(model_col))
+        .max()
+        .over(IndCqc.location_id)
+        .alias(TEMP.first_model),
     )
 
 
