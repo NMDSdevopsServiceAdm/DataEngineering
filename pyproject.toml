@@ -55,3 +55,4 @@ python-preference = "only-managed"
 
 [tool.pydoclint]
 style = 'google'
+exclude = '\.venv|\.git|\.tox'

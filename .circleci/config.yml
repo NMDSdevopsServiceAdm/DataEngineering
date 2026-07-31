@@ -99,12 +99,12 @@ jobs:
 
   lint-python:
     docker:
-      - image: cimg/python:3.11.12
+      - image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
     resource_class: small
     steps:
       - checkout
       - run:
-          name: Install black
+          name: Install lint tools
           command: uv sync --locked
       - run:
           name: Check Python formatting
@@ -112,16 +112,16 @@ jobs:
 
   lint-docstrings:
     docker:
-      - image: cimg/python:3.11.12
+      - image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
     resource_class: small
     steps:
       - checkout
       - run:
-          name: Install pydoclint
+          name: Install lint tools
           command: uv sync --locked
       - run:
           name: Check docstring formatting
-          command: uvx pydoclint --style=google --quiet --exclude '\.git|\.tox|\.venv' .
+          command: uvx pydoclint --style=google --quiet .
 
   lint-terraform:
     docker:
