@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added `new-ticket`, `commit-push`, and `open-pr` Claude Code skills to run the ticket workflow (branch → SPEC → commits → PR) consistently, and an output-style guideline in CLAUDE.md.
+
 - Added a skeleton `_00_prepare` task (with validation) ahead of the merge step in the SLV pipeline, and rewired the merge step to read its output.
 
 - Added `discover_combined_schema` function in Polars Utils to generate combined schema from a partitioned dataset.

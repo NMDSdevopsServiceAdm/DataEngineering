@@ -2,6 +2,10 @@
 
 Skills for Care Workforce Intelligence Team. Builds reproducible AWS data pipelines from adult social care workforce data (ASC-WDS). See [README.md](README.md) for full background.
 
+## Output style
+
+Keep responses concise — context is good, extra words are not. Default to short statements and bullets over prose paragraphs; don't restate information already visible in the diff, plan, or previous message. In interview-style flows (see the `new-ticket` skill), ask one focused question at a time rather than bundling several.
+
 ## Stack
 
 - Python 3.11.
@@ -26,6 +30,7 @@ Skills for Care Workforce Intelligence Team. Builds reproducible AWS data pipeli
 - Run `pipenv shell` (or prefix commands with `pipenv run`) to access this project's installed packages — don't assume they're on the system/global Python.
 - Branch names must be **16 characters or fewer**.
 - CI/CD automatically runs all new code plus the full unit test suite against full data once pushed to a branch. Local/manual validation should run the relevant unit tests and `terraform validate` where applicable — never attempt to deploy or run code against AWS directly; that's the CI/CD pipeline's job.
+- Ticket-driven workflow: branches follow `<trello-number>-<short-description>`, commits follow `<trello-number> - <Description>`. Use the `new-ticket`, `commit-push`, and `open-pr` skills to run the cycle consistently.
 
 ## Scale is the top constraint
 
