@@ -108,7 +108,7 @@ jobs:
           command: uv sync --locked
       - run:
           name: Check Python formatting
-          command: uvx black . --check
+          command: uvx black@25.1.0 . --check
 
   lint-docstrings:
     docker:
