@@ -80,48 +80,48 @@ jobs:
             apt-get install -y default-jre-headless
       - run:
           name: install dependencies
-          command: uv pip install --system -r <(uvx pipenv requirements --dev)
+          command: uv sync --locked
       # Download the pydeequ dependency and configure.
       - run:
             name: Fetch Spark JARs
-            command: python scripts/fetch_spark_dependencies.py
+            command: uv run python scripts/fetch_spark_dependencies.py
       - run:
           name: Run unit tests and generate coverage
           command: |
-            pytest \
+            uv run pytest \
               -n auto --dist loadfile \
               --cov=. \
               --cov-report=xml \
               --cov-report=html
       - run:
             name: Output Coverage Report
-            command: coverage report
+            command: uv run coverage report
 
   lint-python:
     docker:
-      - image: cimg/python:3.11.12
+      - image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
     resource_class: small
     steps:
       - checkout
       - run:
-          name: Install black
-          command: pip install black==25.1.0
+          name: Install lint tools
+          command: uv sync --locked --only-group lint --no-install-project
       - run:
           name: Check Python formatting
-          command: black . --check
+          command: uv run black . --check
 
   lint-docstrings:
     docker:
-      - image: cimg/python:3.11.12
+      - image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
     resource_class: small
     steps:
       - checkout
       - run:
-          name: Install pydoclint
-          command: pip install pydoclint==0.6.10
+          name: Install lint tools
+          command: uv sync --locked --only-group lint --no-install-project
       - run:
           name: Check docstring formatting
-          command: pydoclint --style=google --quiet .
+          command: uv run pydoclint --style=google --quiet .
 
   lint-terraform:
     docker:
