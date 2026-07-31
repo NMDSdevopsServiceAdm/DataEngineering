@@ -239,6 +239,7 @@ Python
         "source.organizeImports": "explicit"
         },
     },
+    "black-formatter.importStrategy": "fromEnvironment",
     "isort.args":["--profile", "black"],
 
     "circleci.filters.branchFilter": "allBranches",
