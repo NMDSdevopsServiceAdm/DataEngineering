@@ -108,7 +108,7 @@ jobs:
           command: uv sync --locked
       - run:
           name: Check Python formatting
-          command: black . --check
+          command: uvx black . --check
 
   lint-docstrings:
     docker:
@@ -121,7 +121,7 @@ jobs:
           command: uv sync --locked
       - run:
           name: Check docstring formatting
-          command: pydoclint --style=google --quiet .
+          command: uvx pydoclint --style=google --quiet .
 
   lint-terraform:
     docker:
@@ -228,7 +228,7 @@ jobs:
       - run:
           name: Package PyDeequ
           command: |
-            pip install -t ./target pydeequ==1.5.0
+            uv pip install -t ./target pydeequ==1.5.0
             cd target && zip -r pydeequ-1.5.0.zip pydeequ && cd ..
             mv target/pydeequ-1.5.0.zip dependencies/pydeequ-1.5.0.zip
             rm -rf target
