@@ -37,19 +37,26 @@ uvx pipenv-uv-migrate -f Pipfile -t pyproject.toml
 uv python pin 3.11.12
 ```
 
-6- Generate lock file
+7- Generate lock file
 
 ```
 uv lock
 ```
 
-7- Installing dependencies
+8- Installing dependencies
 
 ```
 uv sync
 ```
 
-8-
+9- Tried running a small test script
+
+```
+uv run test_uv_works.py --num 1
+```
+
+### Uninstall pipenv and pyenv
+
 
 ### Dead-ends/ what didn't work
 
