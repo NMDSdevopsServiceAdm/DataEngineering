@@ -57,6 +57,7 @@ terraform.tfvars
 
 # ------ python ------ #
 .python-version
+.venv/
 *.pyc
 .DS_Store
 .coverage
