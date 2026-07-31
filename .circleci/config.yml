@@ -121,7 +121,7 @@ jobs:
           command: uv sync --locked
       - run:
           name: Check docstring formatting
-          command: uvx pydoclint --style=google --quiet .
+          command: uvx pydoclint --style=google --quiet --exclude '\.git|\.tox|\.venv' .
 
   lint-terraform:
     docker:
@@ -226,9 +226,12 @@ jobs:
           command: |
             wget https://repo1.maven.org/maven2/com/amazon/deequ/deequ/2.0.8-spark-3.5/deequ-2.0.8-spark-3.5.jar -O dependencies/deequ-2.0.8-spark-3.5.jar
       - run:
+          name: Install uv
+          command: pip install -U uv
+      - run:
           name: Package PyDeequ
           command: |
-            uv pip install -t ./target pydeequ==1.5.0
+            uv pip install --target ./target pydeequ==1.5.0
             cd target && zip -r pydeequ-1.5.0.zip pydeequ && cd ..
             mv target/pydeequ-1.5.0.zip dependencies/pydeequ-1.5.0.zip
             rm -rf target
