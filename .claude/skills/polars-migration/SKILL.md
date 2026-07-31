@@ -22,9 +22,8 @@ This repo is mid-migration from PySpark (`jobs/`) to Polars (`fargate/`). When m
    ```python
    # converted to polars -> path/to/new_fargate_file.py
    ```
-7. **Follow the S3/Athena naming convention** when saving output:
-   `{dataset}_{sub_dataset_if_relevant}_{order_of_process_if_relevant}_{brief_description}` (e.g. `ind_cqc_02_cleaned`).
-8. **Update `CHANGELOG.md`** under `## [Unreleased]`, one bullet per piece of work (not per edit), in the matching subsection (`Added`/`Changed`/`Improved`/`Fixed`).
+7. **Follow the S3/Athena naming convention** when saving output — see CLAUDE.md's "Dataset naming in S3 / Athena" section.
+8. **Update `CHANGELOG.md`** — see CLAUDE.md's "Changelog" section for the format.
 9. **Remind the user of the PR-process steps that aren't yours to do**: request AI code review, move the Trello ticket to the PR column.
 
 Scope discipline: only migrate what's being asked. Don't mass-rewrite untouched PySpark files just because you're nearby, and don't refactor beyond what the migration needs (see the repo's general no-premature-abstraction guidance).

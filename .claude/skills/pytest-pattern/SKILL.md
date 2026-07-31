@@ -82,4 +82,4 @@ File naming: `test_<module>.py`, mirroring the module under test.
 
 ## Running tests locally
 
-Use `pipenv run pytest <path>` (or `pipenv shell` then plain `pytest`) — don't assume packages are on the system Python. Local runs are for validation only: CI/CD runs the full suite against full data automatically once pushed to a branch, so there's no need to chase full-suite/full-data runs locally.
+Use `pipenv run pytest <path>` (or `pipenv shell` then plain `pytest`) — see CLAUDE.md's "Environment & workflow" section for what's in scope locally vs CI/CD.
