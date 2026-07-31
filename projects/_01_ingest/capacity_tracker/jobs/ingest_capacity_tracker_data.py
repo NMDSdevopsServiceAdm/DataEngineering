@@ -5,21 +5,22 @@ os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
 
-from polars_utils.utils import (
+from utils import utils
+from utils.s3_file_utils import (
     construct_destination_path,
     construct_s3_uri,
     get_s3_objects_list,
     identify_csv_delimiter,
     is_csv,
     read_partial_csv_content,
+    split_s3_uri,
 )
-from utils import utils
 
 
 def main(source, destination):
     if is_csv(source):
         print("Single file provided to job. Handling single file.")
-        bucket, key = utils.split_s3_uri(source)
+        bucket, key = split_s3_uri(source)
         print(destination)
         new_destination = construct_destination_path(destination, key)
         print(new_destination)
@@ -27,7 +28,7 @@ def main(source, destination):
         return
 
     print("Multiple files provided to job. Handling each file...")
-    bucket, prefix = utils.split_s3_uri(source)
+    bucket, prefix = split_s3_uri(source)
     objects_list = get_s3_objects_list(bucket, prefix)
 
     print("Objects list:")

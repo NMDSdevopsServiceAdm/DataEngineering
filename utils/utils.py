@@ -117,12 +117,6 @@ def format_date_fields(df, date_column_identifier="date", raw_date_format=None):
     return df
 
 
-# converted to polars -> polars_utils.utils.py
-def split_s3_uri(uri):
-    bucket, prefix = uri.replace("s3://", "").split("/", 1)
-    return bucket, prefix
-
-
 def create_unix_timestamp_variable_from_date_column(
     df: DataFrame, date_col: str, date_format: str, new_col_name: str
 ) -> DataFrame:

@@ -7,20 +7,21 @@ os.environ["SPARK_VERSION"] = "3.5"
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
-from polars_utils.utils import (
-    construct_destination_path,
-    construct_s3_uri,
-    get_s3_objects_list,
-    identify_csv_delimiter,
-    is_csv,
-    read_partial_csv_content,
-)
 from utils import utils
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
+)
+from utils.s3_file_utils import (
+    construct_destination_path,
+    construct_s3_uri,
+    get_s3_objects_list,
+    identify_csv_delimiter,
+    is_csv,
+    read_partial_csv_content,
+    split_s3_uri,
 )
 
 
@@ -33,7 +34,7 @@ def main(source: str, destination: str, dataset: str = "ascwds"):
         destination (str): The destination directory for outputting parquet files.
         dataset (str): The dataset type, either 'ascwds' or 'nmdssc'. Defaults to 'ascwds'.
     """
-    bucket, prefix = utils.split_s3_uri(source)
+    bucket, prefix = split_s3_uri(source)
 
     if is_csv(source):
         ingest_single_file(source, bucket, prefix, destination, dataset)

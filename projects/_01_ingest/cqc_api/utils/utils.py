@@ -2,7 +2,7 @@ import csv
 
 import boto3
 
-from polars_utils.utils import split_s3_uri
+from utils.s3_file_utils import split_s3_uri
 
 
 def read_manual_postcode_corrections_csv_to_dict(

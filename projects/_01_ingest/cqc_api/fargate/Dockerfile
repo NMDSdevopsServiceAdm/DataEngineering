@@ -18,6 +18,7 @@ COPY utils/column_values utils/column_values
 COPY utils/value_labels utils/value_labels
 COPY utils/aws_secrets_manager_utilities.py utils/aws_secrets_manager_utilities.py
 COPY utils/cqc_local_authority_provider_ids.py utils/cqc_local_authority_provider_ids.py
+COPY utils/s3_file_utils.py utils/s3_file_utils.py
 
 # Copy all python jobs to WORKDIR
 COPY projects/_01_ingest/cqc_api/fargate/*.py .
