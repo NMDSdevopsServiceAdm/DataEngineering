@@ -521,6 +521,7 @@ name = "dataengineering"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "black" },
     { name = "boto3" },
     { name = "css-inline" },
     { name = "numpy" },
@@ -529,6 +530,7 @@ dependencies = [
     { name = "pointblank" },
     { name = "polars" },
     { name = "pydeequ" },
+    { name = "pydoclint" },
     { name = "pyspark" },
     { name = "ratelimit" },
     { name = "requests" },
@@ -553,13 +555,10 @@ dev = [
     { name = "pytest-xdist" },
     { name = "s3fs" },
 ]
-lint = [
-    { name = "black" },
-    { name = "pydoclint" },
-]
 
 [package.metadata]
 requires-dist = [
+    { name = "black", specifier = "==26.1.0" },
     { name = "boto3", specifier = "==1.40.21" },
     { name = "css-inline", specifier = "==0.17.0" },
     { name = "numpy", specifier = "==2.3.2" },
@@ -568,6 +567,7 @@ requires-dist = [
     { name = "pointblank", specifier = "==0.13.1" },
     { name = "polars", specifier = "==1.38.1" },
     { name = "pydeequ", specifier = "==1.5.0" },
+    { name = "pydoclint", specifier = "==0.6.11" },
     { name = "pyspark", specifier = "==3.5.4" },
     { name = "ratelimit", specifier = "==2.2.1" },
     { name = "requests", specifier = "==2.32.5" },
@@ -591,10 +591,6 @@ dev = [
     { name = "pytest-watch", specifier = "==4.2.0" },
     { name = "pytest-xdist", specifier = "==3.8.0" },
     { name = "s3fs", specifier = "==0.4.2" },
-]
-lint = [
-    { name = "black", specifier = "==26.1.0" },
-    { name = "pydoclint", specifier = "==0.6.11" },
 ]
 
 [[package]]

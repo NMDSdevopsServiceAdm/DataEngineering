@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "black==26.1.0",
     "boto3==1.40.21",
     "numpy==2.3.2",
     "openpyxl==3.1.5",
@@ -15,6 +16,7 @@ dependencies = [
     "pointblank==0.13.1",
     "polars==1.38.1",
     "pydeequ==1.5.0",
+    "pydoclint==0.6.11",
     "pyspark==3.5.4",
     "ratelimit==2.2.1",
     "requests==2.32.5",
@@ -47,14 +49,9 @@ dev = [
     "s3fs==0.4.2",
     "aws-mfa-v2",
 ]
-lint = [
-    "black==26.1.0",
-    "pydoclint==0.6.11",
-]
 
 [tool.uv]
 python-preference = "only-managed"
-default-groups = ["dev", "lint"]
 
 [tool.pydoclint]
 style = 'google'

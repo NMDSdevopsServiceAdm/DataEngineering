@@ -99,29 +99,29 @@ jobs:
 
   lint-python:
     docker:
-      - image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
+      - image: cimg/python:3.11.12
     resource_class: small
     steps:
       - checkout
       - run:
-          name: Install lint tools
-          command: uv sync --locked --only-group lint --no-install-project
+          name: Install black
+          command: uv sync --locked
       - run:
           name: Check Python formatting
-          command: uv run black . --check
+          command: black . --check
 
   lint-docstrings:
     docker:
-      - image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
+      - image: cimg/python:3.11.12
     resource_class: small
     steps:
       - checkout
       - run:
-          name: Install lint tools
-          command: uv sync --locked --only-group lint --no-install-project
+          name: Install pydoclint
+          command: uv sync --locked
       - run:
           name: Check docstring formatting
-          command: uv run pydoclint --style=google --quiet .
+          command: pydoclint --style=google --quiet .
 
   lint-terraform:
     docker:
