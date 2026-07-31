@@ -40,6 +40,8 @@ All notable changes to this project will be documented in this file.
 - Called merge_job_role_columns in slv prepare job to reduce job role columns to only published roles plus
   'other direct care/manager/etc'
 
+- Migrated dependency and tool management to `uv`
+
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
 
