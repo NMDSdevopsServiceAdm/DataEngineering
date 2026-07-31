@@ -32,7 +32,7 @@ if __name__ == "__main__":
     print("Spark job 'validate_ascwds_workplace_raw_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    (raw_ascwds_workplace_source, report_destination) = utils.collect_arguments(
+    raw_ascwds_workplace_source, report_destination = utils.collect_arguments(
         (
             "--raw_ascwds_workplace_source",
             "Source s3 directory for parquet ascwds workplace raw dataset",

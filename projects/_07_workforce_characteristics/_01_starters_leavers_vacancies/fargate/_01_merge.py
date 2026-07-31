@@ -77,7 +77,7 @@ def main(
         prepared_slv_dataset_source
     ).select(
         *[AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date],
-        expr.is_slv_job_role_column()
+        expr.is_slv_job_role_column(),
     )
 
     # The source CSV is expected to already be trimmed to exactly these columns, in this
