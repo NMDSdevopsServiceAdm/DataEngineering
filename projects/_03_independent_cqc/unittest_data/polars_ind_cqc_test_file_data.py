@@ -959,31 +959,21 @@ class CleanUtilsData:
 
 @dataclass
 class ForwardFillLatestKnownValue:
-    last_known_latest_per_location_rows = [
-        ("loc-1", date(2025, 1, 1), 10),
-        ("loc-1", date(2025, 1, 2), 20),
-        ("loc-1", date(2025, 1, 3), 15),
-        ("loc-2", date(2025, 1, 1), 5),
-        ("loc-2", date(2025, 1, 3), 15),
-        ("loc-2", date(2025, 1, 4), 12),
-    ]
-
     expected_last_known_latest_per_location_rows = [
-        ("loc-1", date(2025, 1, 3), 15),
-        ("loc-2", date(2025, 1, 4), 12),
-    ]
-
-    last_known_ignores_null_rows = [
-        ("loc-1", date(2025, 1, 1), 10),
-        ("loc-1", date(2025, 1, 2), None),
-        ("loc-1", date(2025, 1, 3), None),
-        ("loc-2", date(2025, 1, 1), None),
-        ("loc-2", date(2025, 1, 3), 15),
+        ("loc-1", date(2025, 1, 1), 10, date(2025, 1, 3), 15),
+        ("loc-1", date(2025, 1, 2), 20, date(2025, 1, 3), 15),
+        ("loc-1", date(2025, 1, 3), 15, date(2025, 1, 3), 15),
+        ("loc-2", date(2025, 1, 1), 5, date(2025, 1, 4), 12),
+        ("loc-2", date(2025, 1, 3), 15, date(2025, 1, 4), 12),
+        ("loc-2", date(2025, 1, 4), 12, date(2025, 1, 4), 12),
     ]
 
     expected_last_known_ignores_null_rows = [
-        ("loc-1", date(2025, 1, 1), 10),
-        ("loc-2", date(2025, 1, 3), 15),
+        ("loc-1", date(2025, 1, 1), 10, date(2025, 1, 1), 10),
+        ("loc-1", date(2025, 1, 2), None, date(2025, 1, 1), 10),
+        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 1), 10),
+        ("loc-2", date(2025, 1, 1), None, date(2025, 1, 3), 15),
+        ("loc-2", date(2025, 1, 3), 15, date(2025, 1, 3), 15),
     ]
 
     forward_fill_within_days_rows = [
