@@ -31,7 +31,7 @@ if __name__ == "__main__":
     print("Spark job 'validate_pir_api_cleaned_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    cleaned_cqc_pir_source, report_destination = utils.collect_arguments(
+    (cleaned_cqc_pir_source, report_destination) = utils.collect_arguments(
         (
             "--cleaned_cqc_pir_source",
             "Source s3 directory for parquet pir api cleaned dataset",
