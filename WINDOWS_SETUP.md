@@ -283,6 +283,10 @@ Python
 5. Close and re-open VS Code and this error message should no longer appear
 
 
+### Activate pre-commit hooks
+
+1. To get pre-commit hooks to work in VS Code as well as in the terminal, run `uvx pre-commit install`.
+
 
 ### aws credentials
 
