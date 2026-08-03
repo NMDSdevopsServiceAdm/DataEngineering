@@ -1,6 +1,6 @@
 ---
 name: new-ticket
-description: Use when starting a new piece of work — "/new-ticket", "start a new ticket", "let's start on card #1234". Runs branch check → short interview → hands off to Plan Mode for the SPEC. Pairs with the `commit-push` and `open-pr` skills for the rest of the cycle.
+description: Use when starting a new piece of work — "/new-ticket", "start a new ticket", "let's start on ticket 1234". Runs branch check → short interview → hands off to Plan Mode for the SPEC. Pairs with the `commit-push` and `open-pr` skills for the rest of the cycle.
 ---
 
 # Starting a new ticket
