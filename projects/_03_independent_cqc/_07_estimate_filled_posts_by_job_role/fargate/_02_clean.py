@@ -2,11 +2,9 @@ import polars as pl
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils as cUtils
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from polars_utils.filtering_utils import (
     add_filtering_rule_column,
-)
-from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
-    CategoricalColumnTypes as CatColType,
 )
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     add_job_role_groups_column,
