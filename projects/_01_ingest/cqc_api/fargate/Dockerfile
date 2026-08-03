@@ -18,6 +18,7 @@ COPY utils utils
 COPY projects/_01_ingest/cqc_api/fargate/*.py .
 
 COPY docker_requirements/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY projects/_01_ingest/cqc_api/fargate/requirements-extra.txt .
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-extra.txt
 
 ENTRYPOINT ["python"]

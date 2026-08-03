@@ -19,7 +19,7 @@ All notable changes to this project will be documented in this file.
 - Added merge_job_role_columns function to polars_utils > cleaning_utils and called it in clean_ascwds_workplace job.
 
 ### Changed
-- Updated polars to 1.41.2 and pointblank to 0.24.0, and reworked `split_dataset_for_imputation` to materialise its filter condition into a column instead of duplicating it across two branches, to avoid a polars optimiser crash on the newer version.
+- Updated polars to 1.41.2 and pointblank to 0.24.0, and reworked `split_dataset_for_imputation` to materialise its filter condition into a column instead of duplicating it across two branches, to avoid a polars optimiser crash on the newer version. Fargate Docker requirements are now split between a shared `docker_requirements/requirements.txt` for deps common to every project and small per-project `requirements-extra.txt` files for the two projects with additional deps (cqc_api; _04_model), instead of one shared file installing every project's deps everywhere.
 
 - Pull clean workplace columns into merge job within SLV pipeline.
 

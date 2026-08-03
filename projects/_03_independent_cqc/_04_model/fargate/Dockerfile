@@ -17,6 +17,7 @@ COPY utils/column_values /app/utils/column_values/
 COPY projects/_03_independent_cqc/_04_model/fargate/*.py .
 
 COPY docker_requirements/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY projects/_03_independent_cqc/_04_model/fargate/requirements-extra.txt .
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-extra.txt
 
 ENTRYPOINT ["python"]
