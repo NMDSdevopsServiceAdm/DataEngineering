@@ -82,4 +82,4 @@ File naming: `test_<module>.py`, mirroring the module under test.
 
 ## Running tests locally
 
-Use `pipenv run pytest <path>` (or `pipenv shell` then plain `pytest`) — see CLAUDE.md's "Environment & workflow" section for what's in scope locally vs CI/CD.
+Use `uv run pytest <path>` — see CLAUDE.md's "Environment & workflow" section for what's in scope locally vs CI/CD.

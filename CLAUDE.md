@@ -27,7 +27,7 @@ Keep responses concise — context is good, extra words are not. Default to shor
 
 ## Environment & workflow
 
-- Run `pipenv shell` (or prefix commands with `pipenv run`) to access this project's installed packages — don't assume they're on the system/global Python.
+- Run `uv sync` once to install dependencies, then prefix commands with `uv run` (e.g. `uv run pytest`) to access this project's installed packages — don't assume they're on the system/global Python.
 - Branch names must be **16 characters or fewer**.
 - CI/CD automatically runs all new code plus the full unit test suite against full data once pushed to a branch. Local/manual validation should run the relevant unit tests and `terraform validate` where applicable — never attempt to deploy or run code against AWS directly; that's the CI/CD pipeline's job.
 - Ticket-driven workflow: branches follow `<trello-number>-<short-description>`, commits follow `<trello-number> - <Description>`. Use the `new-ticket`, `commit-push`, and `open-pr` skills to run the cycle consistently.
