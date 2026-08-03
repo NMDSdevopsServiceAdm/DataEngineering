@@ -43,6 +43,9 @@ All notable changes to this project will be documented in this file.
 
 - Moved the non-PySpark helper functions into `utils/s3_file_utils.py`. Removed the unused `get_model_name` function, and narrowed the ASC-WDS and CQC API Fargate Dockerfiles to stop copying the whole `utils/` tree.
 
+- Migrated dependency and tool management to `uv`
+
+
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
 
