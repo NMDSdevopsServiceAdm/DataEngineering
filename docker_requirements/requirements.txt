@@ -1,3 +1,7 @@
+# Common Fargate dependencies shared by every project's Dockerfile.
+# Project-specific extras live alongside their own Dockerfile instead of here:
+#   - projects/_01_ingest/cqc_api/fargate/requirements-extra.txt
+#   - projects/_03_independent_cqc/_04_model/fargate/requirements-extra.txt
 boto3==1.40.21
 css_inline==0.17.0
 pointblank==0.24.0
