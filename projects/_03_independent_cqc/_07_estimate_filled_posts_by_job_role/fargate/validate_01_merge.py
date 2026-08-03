@@ -5,12 +5,10 @@ import pointblank as pb
 import polars as pl
 
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes
 from polars_utils.filtering_utils import reduced_data_filter_expr
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
-    CategoricalColumnTypes,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatValues,
