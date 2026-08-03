@@ -1,21 +1,9 @@
 repos:
-  - repo: https://github.com/psf/black
-    rev: 25.1.0
-    hooks:
-      - id: black
-        language_version: python3
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.2.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
-
-  - repo: https://github.com/jsh9/pydoclint
-    rev: 0.5.9
-    hooks:
-      - id: pydoclint
-        args: [--style=google, --quiet]
 
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: "v1.105.0"
@@ -29,3 +17,22 @@ repos:
         entry: bash scripts/prevent_show_usage.sh
         language: system
         types: [python]
+
+      - id: black
+        name: black
+        entry: uv run black
+        language: system
+        types: [python]
+
+      - id: pydoclint
+        name: pydoclint
+        entry: uv run pydoclint --style=google --quiet
+        language: system
+        types: [python]
+
+      - id: uv-lock
+        name: uv-lock
+        entry: uv lock --check
+        language: system
+        files: ^pyproject\.toml$
+        pass_filenames: false
