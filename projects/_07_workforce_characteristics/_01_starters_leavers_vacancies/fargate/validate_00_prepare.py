@@ -3,6 +3,10 @@ import sys
 import pointblank as pb
 
 from polars_utils import utils
+from polars_utils.filtering_utils import (
+    earliest_file_per_month_filter_expr,
+    reduced_data_filter_expr,
+)
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
@@ -11,6 +15,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 
 COMPARE_COLS_TO_IMPORT = [
     AWPClean.establishment_id,
+    AWPClean.ascwds_workplace_import_date,
 ]
 
 
@@ -19,6 +24,11 @@ def main(
 ) -> None:
     """Validates a dataset according to a set of provided rules and produces a
         summary report as well as failure outputs.
+
+    The compare dataset is the unreduced cleaned ASCWDS workplace data, so the same
+    reduction filters applied in _00_prepare are applied here before counting rows -
+    otherwise the expected count would include the historical rows and duplicate
+    monthly files the prepare step deliberately drops.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset
@@ -29,9 +39,19 @@ def main(
         reports_path (str): the output path to write reports to
     """
     source_df = utils.read_parquet(source=f"s3://{bucket_name}/{source_path}")
-    compare_df = utils.read_parquet(
-        source=f"s3://{bucket_name}/{compare_path}",
-        selected_columns=COMPARE_COLS_TO_IMPORT,
+    compare_df = (
+        utils.read_parquet(
+            source=f"s3://{bucket_name}/{compare_path}",
+            selected_columns=COMPARE_COLS_TO_IMPORT,
+        )
+        .filter(
+            reduced_data_filter_expr(date_col=AWPClean.ascwds_workplace_import_date)
+        )
+        .filter(
+            earliest_file_per_month_filter_expr(
+                date_col=AWPClean.ascwds_workplace_import_date
+            )
+        )
     )
     expected_row_count = compare_df.height
 

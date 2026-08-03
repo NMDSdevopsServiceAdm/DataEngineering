@@ -4,6 +4,9 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_names.data_labels_columns import DataLabelsColumns as DLC
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
@@ -233,20 +236,6 @@ class CleaningUtilsData:
         ("1-000000010", 0.0, 0, CareHome.care_home, None),
         ("1-000000011", 4.0, 10, CareHome.not_care_home, None),
     ]
-    reduce_dataset_to_earliest_file_per_month_rows = [
-        ("loc 1", date(2022, 1, 1)),
-        ("loc 2", date(2022, 1, 5)),
-        ("loc 3", date(2022, 2, 5)),
-        ("loc 4", date(2022, 2, 7)),
-        ("loc 5", date(2022, 3, 1)),
-        ("loc 6", date(2022, 4, 2)),
-    ]
-    expected_reduce_dataset_to_earliest_file_per_month_rows = [
-        ("loc 1", date(2022, 1, 1)),
-        ("loc 3", date(2022, 2, 5)),
-        ("loc 5", date(2022, 3, 1)),
-        ("loc 6", date(2022, 4, 2)),
-    ]
     create_banded_bed_count_column_rows = [
         ("1-001", CareHome.care_home, 1),
         ("1-002", CareHome.care_home, 24),
@@ -286,6 +275,17 @@ class RawDataAdjustmentsData:
     ]
 
     expected_locations_data = locations_data_without_rows_to_remove
+
+
+@dataclass
+class ReducedDataFilterCase:
+    id: str
+    today: date | None
+    fy_start_month: int
+    lookback_fy_years: int
+    quarter_months: tuple[int, ...]
+    input_data: list[date]
+    expected: list[bool]
 
 
 @dataclass
@@ -338,3 +338,70 @@ class FilteringUtilsData:
         ("loc 1", 10.0, 9.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier),
         ("loc 2", 10.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
     ] # fmt: skip
+
+    reduced_data_filter_test_cases = [
+        ReducedDataFilterCase(
+            id="default args",
+            today=date(2024, 6, 15),
+            fy_start_month=4,
+            lookback_fy_years=2,
+            quarter_months=(1, 4, 7, 10),
+            input_data=[
+                date(2021, 4, 1), # before monthly_start but quarterly rule matches -> included
+                date(2021, 5, 1), # before monthly_start, non-quarter -> excluded
+                date(2022, 3, 31), # before monthly_start and quarterly rule does not match -> excluded
+                date(2022, 4, 1), # at boundary (monthly_start) -> included
+                date(2023, 6, 1), # within range -> included
+            ],
+            expected=[True, False, False, True, True],
+        ),
+        ReducedDataFilterCase(
+            id="non_default_args",
+            today=date(2024, 6, 15),
+            fy_start_month=1,
+            lookback_fy_years=1,
+            quarter_months=(3, 6, 9, 12),
+            input_data=[
+                date(2022, 1, 1), # before monthly_start, non-quarter -> excluded
+                date(2022, 2, 1), # before monthly_start, non-quarter -> excluded
+                date(2022, 12, 1), # before monthly_start but quarterly rule matches -> included
+                date(2023, 3, 1), # before monthly_start and quarterly rule matches -> included
+                date(2024, 6, 1), # within range -> included
+            ],
+            expected=[False, False, True, True, True],
+        ),
+        ReducedDataFilterCase(
+            id="today_defaults_to_current_date",
+            today=None,
+            fy_start_month=4,
+            lookback_fy_years=2,
+            quarter_months=(1, 4, 7, 10),
+            input_data=[
+                date.today(),  # should be included as it's the current date
+                date(2021, 4, 1), # before monthly_start but quarterly rule matches -> included
+                date(2021, 5, 1), # before monthly_start, non-quarter -> excluded
+            ],
+            expected=[True, True, False],
+        ),
+    ]  # fmt: skip
+
+    earliest_file_per_month_rows = {
+        CQCLClean.location_id: ["loc 1", "loc 2", "loc 3", "loc 4", "loc 5", "loc 6"],
+        CQCLClean.cqc_location_import_date: [
+            date(2022, 1, 1),
+            date(2022, 1, 5),
+            date(2022, 2, 5),
+            date(2022, 2, 7),
+            date(2022, 3, 1),
+            date(2022, 4, 2),
+        ],
+    }
+    expected_earliest_file_per_month_rows = {
+        CQCLClean.location_id: ["loc 1", "loc 3", "loc 5", "loc 6"],
+        CQCLClean.cqc_location_import_date: [
+            date(2022, 1, 1),
+            date(2022, 2, 5),
+            date(2022, 3, 1),
+            date(2022, 4, 2),
+        ],
+    }

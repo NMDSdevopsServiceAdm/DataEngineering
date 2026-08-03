@@ -27,12 +27,12 @@ class MainTests(CleanIndFilledPostsTests):
     @patch(f"{PATCH_PATH}.remove_dual_registration_cqc_care_homes")
     @patch(f"{PATCH_PATH}.calculate_time_registered_for")
     @patch(f"{PATCH_PATH}.calculate_time_since_dormant")
-    @patch(f"{PATCH_PATH}.cUtils.reduce_dataset_to_earliest_file_per_month")
+    @patch(f"{PATCH_PATH}.earliest_file_per_month_filter_expr")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main(
         self,
         scan_parquet_mock: Mock,
-        reduce_dataset_to_earliest_file_per_month_mock: Mock,
+        earliest_file_per_month_filter_expr_mock: Mock,
         calculate_time_since_dormant_mock: Mock,
         calculate_time_registered_for_mock: Mock,
         remove_dual_registration_cqc_care_homes_mock: Mock,
@@ -61,7 +61,7 @@ class MainTests(CleanIndFilledPostsTests):
             self.GROUPED_PROVIDERS_DESTINATION,
         )
 
-        reduce_dataset_to_earliest_file_per_month_mock.assert_called_once()
+        earliest_file_per_month_filter_expr_mock.assert_called_once()
         calculate_time_registered_for_mock.assert_called_once()
         calculate_time_since_dormant_mock.assert_called_once()
         remove_dual_registration_cqc_care_homes_mock.assert_called_once()

@@ -194,25 +194,6 @@ def calculate_filled_posts_per_bed_ratio(
     return lf
 
 
-def reduce_dataset_to_earliest_file_per_month(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Reduce the dataset to the first file of every month.
-
-    This function identifies the date of the first import date in each month and then filters the dataset to those import dates only.
-
-    Args:
-        lf (pl.LazyFrame): A lazyframe containing the partition keys year, month and day.
-
-    Returns:
-        pl.LazyFrame: A lazyframe with only the first import date of each month.
-    """
-    date_col = pl.col(IndCQC.cqc_location_import_date)
-
-    expr = date_col.min().over(date_col.dt.year(), date_col.dt.month())
-
-    return lf.filter(date_col == expr)
-
-
 def create_banded_bed_count_column(
     input_lf: pl.LazyFrame, new_col: str, splits: List[float]
 ) -> pl.LazyFrame:
@@ -306,8 +287,13 @@ def merge_job_role_columns(
         merge_job_roles_expressions(job_role_mapping, job_role_suffixes),
     )
 
+    # Flatten job role lists from job_role_mapping into single list, format them
+    # to match column names, then drop those columns.
     old_roles = [old for olds in job_role_mapping.values() for old in olds]
-    lf = lf.drop(cs.starts_with(*[f"jr{role}" for role in old_roles]))
+    roles_to_drop = [
+        f"jr{role}{suffix}" for role in old_roles for suffix in job_role_suffixes
+    ]
+    lf = lf.drop(cs.by_name(*roles_to_drop, require_all=False))
 
     return lf
 

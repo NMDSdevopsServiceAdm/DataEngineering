@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 
 - Added a skeleton `_00_prepare` task (with validation) ahead of the merge step in the SLV pipeline, and rewired the merge step to read its output.
 
+- Added loading of `employee_status_rates.csv` into the SLV merge job, assumed pre-trimmed to the current weighting year and required columns, ready for future use in splitting job-role filled-post estimates by employment status. Column names are defined in `EmploymentStatusRatesColumns`.
+
 - Added `discover_combined_schema` function in Polars Utils to generate combined schema from a partitioned dataset.
 
 - Added workplace and worker datasets to syncing to branch.
@@ -30,6 +32,18 @@ All notable changes to this project will be documented in this file.
 - Get Workplace data schema from `discover_combined_schema` within Clean Workplace Job. Updated tests for the same.
 
 - Renamed 'slv' datasets in AWS so they are grouped together in alphabetical order.
+
+- Widened the ASC-WDS file-arrival polling in the orchestrator step function to check every 15 minutes for up to 15 hours on the main workspace, to accommodate ASC-WDS data now arriving much later than before, and made the polling interval and attempt count workspace-configurable so non-main workspaces poll every 10 seconds for up to 100 seconds instead.
+
+- Reduced the rows carried through the SLV prepare step to the same retention window the downstream job role estimates already use, and moved `reduced_data_filter_expr` into Polars Utils so both pipelines share one definition of that window.
+
+- Reduced the SLV prepare step further to one file per calendar month, matching the granularity the downstream job role estimates dataset already uses. Generalised the existing earliest-file-per-month reduction into a shared `earliest_file_per_month_filter_expr` in Polars Utils (alongside `reduced_data_filter_expr`) so both pipelines use the same definition, and updated its existing callers in the independent CQC clean job accordingly.
+
+- Called merge_job_role_columns in slv prepare job to reduce job role columns to only published roles plus 'other direct care/manager/etc'
+
+- Changed the grouped provider history to only record locations whose ASCWDS data was actually nulled by `null_care_home_grouped_providers`/`null_non_residential_grouped_providers`, rather than every structurally-potential grouped provider. Also reordered columns for ease of usage, and made `GROUPED_PROVIDER_SCHEMA` the single source of truth.
+
+- Migrated dependency and tool management to `uv`
 
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.

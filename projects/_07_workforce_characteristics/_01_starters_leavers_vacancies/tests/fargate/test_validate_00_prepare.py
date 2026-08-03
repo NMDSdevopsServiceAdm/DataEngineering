@@ -1,5 +1,6 @@
 import json
 import unittest
+from datetime import date
 from unittest.mock import Mock, call, patch
 
 import polars as pl
@@ -21,7 +22,23 @@ class ValidatePreparedSLVDataTests(unittest.TestCase):
             ("1-001"),
         ]  # fmt: skip
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
-        self.compare_df = self.source_df.select([AWPClean.establishment_id])
+
+        # The compare frame is the unreduced cleaned ASCWDS data, so it carries rows
+        # the reduction filters drop. Dates are chosen to stay stable as time passes:
+        # January always survives (quarterly sampling) and a pre-window May never does.
+        # 1-003 shares January with 1-001 but has a later date, so it's dropped by the
+        # earliest-file-per-month filter rather than the retention filter - proving the
+        # monthly reduction itself is exercised here, not just retention.
+        compare_schema = {
+            AWPClean.establishment_id: pl.String,
+            AWPClean.ascwds_workplace_import_date: pl.Date,
+        }
+        compare_rows = [
+            ("1-001", date(2026, 1, 1)),
+            ("1-003", date(2026, 1, 15)),  # same month as 1-001, later date -> dropped by monthly filter
+            ("1-002", date(2020, 5, 1)),
+        ]  # fmt: skip
+        self.compare_df = pl.DataFrame(compare_rows, compare_schema, orient="row")
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")

@@ -292,22 +292,6 @@ class CalculateFilledPostsPerBedRatioTests(unittest.TestCase):
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
-class ReduceDatasetToEarliestFilePerMonthTests(unittest.TestCase):
-    def test_reduce_dataset_to_earliest_file_per_month_returns_correct_rows(self):
-        test_lf = pl.LazyFrame(
-            Data.reduce_dataset_to_earliest_file_per_month_rows,
-            Schemas.reduce_dataset_to_earliest_file_per_month_schema,
-            orient="row",
-        )
-        returned_lf = job.reduce_dataset_to_earliest_file_per_month(test_lf)
-        expected_lf = pl.LazyFrame(
-            Data.expected_reduce_dataset_to_earliest_file_per_month_rows,
-            Schemas.reduce_dataset_to_earliest_file_per_month_schema,
-            orient="row",
-        )
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
-
-
 class CreateBandedBedCountColumnTests(unittest.TestCase):
     def test_create_banded_bed_count_column(self):
         expected_lf = pl.LazyFrame(
@@ -494,6 +478,16 @@ class TestMergeJobRoleColumns:
             expected_data={
                 AWPClean.job_role_01_employees: 3,
                 "not_a_job_role_column": "A",
+            },
+        ),
+        MergeJobRoleColumnsTestCase(
+            id="handles_job_roles_with_same_characters",
+            mapping={"101": ["10"]},
+            input_data={
+                AWPClean.job_role_10_employees: 10,
+            },
+            expected_data={
+                "jr101emp": 10,
             },
         ),
     ]
