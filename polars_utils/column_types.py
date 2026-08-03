@@ -13,6 +13,8 @@ from utils.column_values.categorical_columns_by_dataset import (
 
 @dataclass
 class CategoricalColumnTypes:
+    """Reusable polars Categorical and Enum dtype constants."""
+
     LocationCatType = pl.Categorical(
         pl.Categories("location", namespace="filled_posts")
     )
