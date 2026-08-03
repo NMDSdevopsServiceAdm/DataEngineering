@@ -40,10 +40,10 @@ uv sync
 ## Testing
 ```
 # Run all tests
-uvx pytest
+uv run pytest
 
 # Watch tests
-uvx pytest-watch
+uv run pytest-watch
 ```
 
 ## Linting
