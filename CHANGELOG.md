@@ -45,6 +45,9 @@ All notable changes to this project will be documented in this file.
 
 - Migrated dependency and tool management to `uv`
 
+### Improved
+- Replaced the fan-out join that broadcast the primary service rate of change trendline back onto every location row with an `.over()`-based broadcast computed in place, reducing peak memory in the imputation pipeline.
+
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
 
