@@ -123,7 +123,7 @@ def model_primary_service_rate_of_change_trendline(
         .alias(TempCol.previous_period_interpolated)
     )
 
-    roc_lf = clean_non_residential_rate_of_change(roc_lf)
+    # roc_lf = clean_non_residential_rate_of_change(roc_lf)
 
     roc_lf = calculate_rolling_sums(roc_lf, days, aggregation_group_cols)
 
