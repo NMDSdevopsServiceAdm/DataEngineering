@@ -227,6 +227,13 @@ def clean_non_residential_rate_of_change(
     rows. A lower threshold for percentage change is also calculated as the
     reciprocal of the upper percentage change threshold.
 
+    Rows outside the qualifying population (see below) are masked to null
+    rather than filtered out before the percentile thresholds are computed,
+    so the thresholds are evaluated as part of the same lazy chain as the
+    rest of the frame rather than requiring an early collect. If no rows
+    qualify, both thresholds are null and non-residential rows are only kept
+    via the small-location passthrough below.
+
     Small locations are removed from the threshold calculations as minor changes
     in these locations can result in large percentage changes which would widen
     the thresholds and reduce the effectiveness of the cleaning. However, small
@@ -261,26 +268,35 @@ def clean_non_residential_rate_of_change(
         ]
     )
 
-    abs_change_upper_threshold, perc_change_upper_threshold = (
-        lf.filter(
-            is_non_res
-            & pl.col(prev).is_not_null()
-            & pl.col(curr).is_not_null()
-            & (
-                (pl.col(prev) > SMALL_NON_RES_THRESHOLD)
-                | (pl.col(curr) > SMALL_NON_RES_THRESHOLD)
-            )
-            & (pl.col(prev) != pl.col(curr))
+    qualifying_row_expr = (
+        is_non_res
+        & pl.col(prev).is_not_null()
+        & pl.col(curr).is_not_null()
+        & (
+            (pl.col(prev) > SMALL_NON_RES_THRESHOLD)
+            | (pl.col(curr) > SMALL_NON_RES_THRESHOLD)
         )
-        .select(
-            [
-                pl.col(TempCol.abs_change).quantile(abs_percentile),
-                pl.col(TempCol.perc_change).quantile(perc_percentile),
-            ]
-        )
-        .collect()
-        .row(0)
+        & (pl.col(prev) != pl.col(curr))
     )
+
+    lf = lf.with_columns(
+        [
+            pl.when(qualifying_row_expr)
+            .then(pl.col(TempCol.abs_change))
+            .otherwise(None)
+            .quantile(abs_percentile)
+            .alias(TempCol.abs_pct),
+            pl.when(qualifying_row_expr)
+            .then(pl.col(TempCol.perc_change))
+            .otherwise(None)
+            .quantile(perc_percentile)
+            .alias(TempCol.perc_pct),
+        ]
+    )
+
+    abs_change_upper_threshold = pl.col(TempCol.abs_pct)
+    perc_change_upper_threshold = pl.col(TempCol.perc_pct)
+    perc_change_lower_threshold = 1 / perc_change_upper_threshold
 
     is_small_non_res = (
         is_non_res
@@ -288,16 +304,14 @@ def clean_non_residential_rate_of_change(
         & (pl.col(curr) <= SMALL_NON_RES_THRESHOLD)
     )
 
-    if abs_change_upper_threshold is None or perc_change_upper_threshold is None:
-        is_valid_non_res = pl.lit(False)
-    else:
-        perc_change_lower_threshold = 1 / perc_change_upper_threshold
-        is_valid_non_res = (
-            is_non_res
-            & (pl.col(TempCol.abs_change) <= abs_change_upper_threshold)
-            & (pl.col(TempCol.perc_change) <= perc_change_upper_threshold)
-            & (pl.col(TempCol.perc_change) >= perc_change_lower_threshold)
-        )
+    is_valid_non_res = (
+        is_non_res
+        & abs_change_upper_threshold.is_not_null()
+        & perc_change_upper_threshold.is_not_null()
+        & (pl.col(TempCol.abs_change) <= abs_change_upper_threshold)
+        & (pl.col(TempCol.perc_change) <= perc_change_upper_threshold)
+        & (pl.col(TempCol.perc_change) >= perc_change_lower_threshold)
+    )
 
     keep = is_care_home | is_small_non_res | is_valid_non_res
 
@@ -314,7 +328,7 @@ def clean_non_residential_rate_of_change(
             .cast(pl.Float32)
             .alias(TempCol.current_period_cleaned),
         ]
-    ).drop(TempCol.abs_change, TempCol.perc_change)
+    ).drop(TempCol.abs_change, TempCol.perc_change, TempCol.abs_pct, TempCol.perc_pct)
 
 
 def calculate_trendline(
