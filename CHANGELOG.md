@@ -18,6 +18,8 @@ All notable changes to this project will be documented in this file.
 
 - Added merge_job_role_columns function to polars_utils > cleaning_utils and called it in clean_ascwds_workplace job.
 
+- Added `PublishedJobRoleID` categorical values class defining the canonical set of published ASC-WDS job role codes.
+
 ### Changed
 - Pull clean workplace columns into merge job within SLV pipeline.
 

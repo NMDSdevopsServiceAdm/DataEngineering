@@ -279,6 +279,27 @@ class MainJobRoleID(ColumnValues):
 
 
 @dataclass
+class PublishedJobRoleID(ColumnValues):
+    """The possible values of the published job role code column in the SLV job-role merge/reshape"""
+
+    senior_management: str = "1"
+    registered_manager: str = "4"
+    social_worker: str = "6"
+    senior_care_worker: str = "7"
+    care_worker: str = "8"
+    community_support_and_outreach: str = "9"
+    occupational_therapist: str = "15"
+    registered_nurse: str = "16"
+    allied_health_professional: str = "17"
+    deputy_manager: str = "43"
+    support_worker: str = "52"
+    other_managers: str = "1001"
+    other_regulated_professions: str = "1002"
+    other_direct_care: str = "1003"
+    other: str = "1004"
+
+
+@dataclass
 class Region(ColumnValues):
     """The possible values of the region columns in ONS data"""
 
