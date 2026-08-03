@@ -13,7 +13,7 @@ description: Use when a ticket's work is ready for review — "/open-pr", "open 
    - `polars_migration_template.md` if the diff contains a `# converted to polars ->` marker.
    - `standard_template.md` otherwise.
 4. Populate it:
-   - Trello link — only the ticket number is embedded in the branch name, so confirm/paste the actual link with the user rather than guessing it.
+   - Trello link — fill in the ticket number (parsed from the branch name) using the template's placeholder format, e.g. `Trello ticket [#1234](add link)`, and leave `(add link)` as-is. Don't ask the user for the URL or try to populate it.
    - Description of the work.
    - Testing checklist, ticked to what was actually done.
    - "Code reviewed by AI" — ticked, since step 2 just did it.
