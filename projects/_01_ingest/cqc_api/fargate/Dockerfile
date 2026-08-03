@@ -17,7 +17,7 @@ COPY utils utils
 # Copy all python jobs to WORKDIR
 COPY projects/_01_ingest/cqc_api/fargate/*.py .
 
-COPY projects/_01_ingest/cqc_api/fargate/requirements.txt .
+COPY docker_requirements/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 ENTRYPOINT ["python"]

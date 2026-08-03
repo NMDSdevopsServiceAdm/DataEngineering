@@ -15,9 +15,7 @@ COPY utils/value_labels /app/utils/value_labels
 # Copy python jobs to WORKDIR
 COPY projects/_02_sfc_internal/cqc_coverage/fargate/*.py .
 
-COPY pyproject.toml .
-RUN pip install uv
-RUN uv export --format requirements.txt --output-file requirements.txt
+COPY docker_requirements/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 ENTRYPOINT ["python"]
