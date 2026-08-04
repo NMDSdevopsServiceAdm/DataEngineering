@@ -309,7 +309,7 @@ def merge_legacy_job_role_columns(
     )
 
     lf = lf.with_columns(
-        _merge_legacy_job_roles_expressions(job_role_mapping, job_role_suffixes),
+        merge_legacy_job_roles_expressions(job_role_mapping, job_role_suffixes),
     )
 
     # Flatten job role lists from job_role_mapping into single list, format them
@@ -323,7 +323,7 @@ def merge_legacy_job_role_columns(
     return lf
 
 
-def _merge_legacy_job_roles_expressions(
+def merge_legacy_job_roles_expressions(
     job_role_mapping: dict[str, list[str]], slv_suffixes: list[str]
 ) -> Generator[pl.Expr, None, None]:
     """

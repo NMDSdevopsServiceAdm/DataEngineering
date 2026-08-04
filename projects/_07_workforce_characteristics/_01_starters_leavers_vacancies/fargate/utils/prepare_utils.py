@@ -31,7 +31,7 @@ def reduce_to_published_roles(
     )
 
     lf = lf.with_columns(
-        _reduce_to_published_roles_expressions(job_role_mapping, job_role_suffixes),
+        reduce_to_published_roles_expressions(job_role_mapping, job_role_suffixes),
     )
 
     # Flatten job role lists from job_role_mapping into single list, format them
@@ -45,7 +45,7 @@ def reduce_to_published_roles(
     return lf
 
 
-def _reduce_to_published_roles_expressions(
+def reduce_to_published_roles_expressions(
     job_role_mapping: dict[str, list[str]], slv_suffixes: list[str]
 ) -> Generator[pl.Expr, None, None]:
     """
