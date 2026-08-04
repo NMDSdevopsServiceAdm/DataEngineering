@@ -1,6 +1,5 @@
 import polars.selectors as cs
 
-import polars_utils.cleaning_utils as cUtils
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as pUtils
 from polars_utils import utils
 from polars_utils.cleaning_utils import apply_categorical_labels
@@ -45,7 +44,7 @@ def main(
         )
     )
 
-    workplace_lf = cUtils.merge_job_role_columns(
+    workplace_lf = pUtils.reduce_to_published_roles(
         workplace_lf, unpublished_roles_mapping
     )
 

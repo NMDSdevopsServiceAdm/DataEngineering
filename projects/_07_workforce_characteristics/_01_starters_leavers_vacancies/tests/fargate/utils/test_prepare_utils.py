@@ -1,11 +1,123 @@
+from dataclasses import dataclass
+from typing import Any
+
+import polars as pl
+import polars.testing as pl_testing
+import pytest
+
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as job
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 
 PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils"
 
 
+@dataclass
+class ReduceToPublishedRolesTestCase:
+    id: str
+    mapping: dict[str, list[str]]
+    input_data: dict[str, Any]
+    expected_data: dict[str, Any]
+
+
 class TestReduceToPublishedRoles:
-    def test_reduce_to_published_roles(self):
-        pass
+    reduce_to_published_roles_test_cases = [
+        ReduceToPublishedRolesTestCase(
+            id="merges_one_role_to_one_role",
+            mapping={"1001": ["02"]},
+            input_data={
+                AWPClean.job_role_02_employees: 2,
+            },
+            expected_data={
+                "jr1001emp": 2,
+            },
+        ),
+        ReduceToPublishedRolesTestCase(
+            id="merges_many_roles_to_one_role",
+            mapping={"1001": ["02", "03"]},
+            input_data={
+                AWPClean.job_role_02_employees: 2,
+                AWPClean.job_role_03_employees: 3,
+            },
+            expected_data={
+                "jr1001emp": 5,
+            },
+        ),
+        ReduceToPublishedRolesTestCase(
+            id="ignores_null_values_in_sum",
+            mapping={"1001": ["02"]},
+            input_data={
+                "jr1001emp": 1,
+                AWPClean.job_role_02_employees: None,
+            },
+            expected_data={
+                "jr1001emp": 1,
+            },
+        ),
+        ReduceToPublishedRolesTestCase(
+            id="returns_null_when_all_roles_are_null",
+            mapping={"1001": ["02"]},
+            input_data={
+                "jr1001emp": None,
+                AWPClean.job_role_02_employees: None,
+            },
+            expected_data={
+                "jr1001emp": None,
+            },
+        ),
+        ReduceToPublishedRolesTestCase(
+            id="ignores_roles_in_mapping_but_not_in_input_data",
+            mapping={"1001": ["02"]},
+            input_data={
+                "jr1001emp": 1,
+            },
+            expected_data={
+                "jr1001emp": 1,
+            },
+        ),
+        ReduceToPublishedRolesTestCase(
+            id="merges_all_matching_suffixes",
+            mapping={"1001": ["02"]},
+            input_data={
+                "jr1001emp": 1,
+                AWPClean.job_role_02_employees: 2,
+                "jr1001strt": 3,
+                AWPClean.job_role_02_starters: 4,
+            },
+            expected_data={
+                "jr1001emp": 3,
+                "jr1001strt": 7,
+            },
+        ),
+        ReduceToPublishedRolesTestCase(
+            id="handles_extra_columns_in_input_data",
+            mapping={"1001": ["02"]},
+            input_data={
+                "jr1001emp": 1,
+                AWPClean.job_role_02_employees: 2,
+                "not_a_job_role_column": "A",
+            },
+            expected_data={
+                "jr1001emp": 3,
+                "not_a_job_role_column": "A",
+            },
+        ),
+    ]
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in reduce_to_published_roles_test_cases
+        ],
+    )
+    def test_reduce_to_published_roles(self, case):
+        test_lf = pl.LazyFrame(case.input_data)
+        expected_lf = pl.LazyFrame(case.expected_data)
+        returned_lf = job.reduce_to_published_roles(test_lf, case.mapping)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class TestPivotJobRoleColsToRows:
