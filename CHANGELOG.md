@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added `new-ticket`, `commit-push`, and `open-pr` Claude Code skills to run the ticket workflow (branch → SPEC → commits → PR) consistently, and an output-style guideline in CLAUDE.md. Trimmed the existing skills to cross-reference CLAUDE.md/PR templates instead of restating them, and updated remaining `pipenv` mentions to their `uv` equivalents.
+
 - Added a skeleton `_00_prepare` task (with validation) ahead of the merge step in the SLV pipeline, and rewired the merge step to read its output.
 
 - Added loading of `employee_status_rates.csv` into the SLV merge job, assumed pre-trimmed to the current weighting year and required columns, ready for future use in splitting job-role filled-post estimates by employment status. Column names are defined in `EmploymentStatusRatesColumns`.
@@ -19,6 +21,8 @@ All notable changes to this project will be documented in this file.
 - Added merge_job_role_columns function to polars_utils > cleaning_utils and called it in clean_ascwds_workplace job.
 
 ### Changed
+- Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
+
 - Pull clean workplace columns into merge job within SLV pipeline.
 
 - Updated references from workplace data for 'reconciliation' process to 'SfC internal' as the dataset is used in multiple jobs
@@ -44,6 +48,9 @@ All notable changes to this project will be documented in this file.
 - Moved the non-PySpark helper functions into `utils/s3_file_utils.py`, then relocated the ones only used within ingestion (`is_csv`, `identify_csv_delimiter`, `read_partial_csv_content`, `get_s3_objects_list`, `get_file_directory`, `construct_s3_uri`, `construct_destination_path`) to `projects/_01_ingest/utils/utils.py`, imported as `iUtils`, since `split_s3_uri` is the only one also needed outside `_01_ingest` (by `polars_utils/utils.py`). Removed the unused `get_model_name` function, and narrowed the ASC-WDS and CQC API Fargate Dockerfiles to stop copying the whole `utils/` tree.
 
 - Migrated dependency and tool management to `uv`
+
+### Improved
+- Replaced the fan-out join that broadcast the primary service rate of change trendline back onto every location row with an `.over()`-based broadcast computed in place, reducing peak memory in the imputation pipeline.
 
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.

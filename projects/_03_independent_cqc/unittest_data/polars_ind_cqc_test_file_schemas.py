@@ -2,11 +2,9 @@ from dataclasses import dataclass
 
 import polars as pl
 
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils import (
     FilterJobRoleGroupExpressions as TempCols,
-)
-from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
-    CategoricalColumnTypes as CatColType,
 )
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
@@ -1689,6 +1687,8 @@ class ModelRateOfChangeSchemas:
         IndCQC.primary_service_type: pl.String,
         IndCQC.number_of_beds_banded_roc: pl.Int32,
         IndCQC.cqc_location_import_date: pl.Date,
+        ROC_TempCol.current_period_cleaned: pl.Float32,
+        ROC_TempCol.previous_period_cleaned: pl.Float32,
         ROC_TempCol.rolling_current_sum: pl.Float32,
         ROC_TempCol.rolling_previous_sum: pl.Float32,
     }
