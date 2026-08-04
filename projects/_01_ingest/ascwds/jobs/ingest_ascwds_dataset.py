@@ -7,21 +7,13 @@ os.environ["SPARK_VERSION"] = "3.5"
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
-from utils import utils
+from projects._01_ingest.utils import utils as iUtils
+from utils import s3_file_utils, utils
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
-)
-from utils.s3_file_utils import (
-    construct_destination_path,
-    construct_s3_uri,
-    get_s3_objects_list,
-    identify_csv_delimiter,
-    is_csv,
-    read_partial_csv_content,
-    split_s3_uri,
 )
 
 
@@ -34,9 +26,9 @@ def main(source: str, destination: str, dataset: str = "ascwds"):
         destination (str): The destination directory for outputting parquet files.
         dataset (str): The dataset type, either 'ascwds' or 'nmdssc'. Defaults to 'ascwds'.
     """
-    bucket, prefix = split_s3_uri(source)
+    bucket, prefix = s3_file_utils.split_s3_uri(source)
 
-    if is_csv(source):
+    if iUtils.is_csv(source):
         ingest_single_file(source, bucket, prefix, destination, dataset)
     else:
         ingest_multiple_files(bucket, prefix, destination, dataset)
@@ -56,7 +48,7 @@ def ingest_single_file(
         dataset (str): The dataset type, either 'ascwds' or 'nmdssc'.
     """
     print("Single file provided to job. Handling single file.")
-    new_destination = construct_destination_path(destination, prefix)
+    new_destination = iUtils.construct_destination_path(destination, prefix)
     handle_job(source, bucket, prefix, new_destination, dataset)
 
 
@@ -71,14 +63,14 @@ def ingest_multiple_files(bucket: str, prefix: str, destination: str, dataset: s
         dataset (str): The dataset type, either 'ascwds' or 'nmdssc'.
     """
     print("Multiple files provided to job. Handling each file...")
-    objects_list = get_s3_objects_list(bucket, prefix)
+    objects_list = iUtils.get_s3_objects_list(bucket, prefix)
 
     print("Objects list:")
     print(objects_list)
 
     for key in objects_list:
-        new_source = construct_s3_uri(bucket, key)
-        new_destination = construct_destination_path(destination, key)
+        new_source = iUtils.construct_s3_uri(bucket, key)
+        new_destination = iUtils.construct_destination_path(destination, key)
         handle_job(new_source, bucket, key, new_destination, dataset)
 
 
@@ -102,8 +94,8 @@ def handle_job(
     Raises:
         ValueError: If chosen method does not match 'ascwds' or 'nmdssc'.
     """
-    file_sample = read_partial_csv_content(source_bucket, source_key)
-    delimiter = identify_csv_delimiter(file_sample)
+    file_sample = iUtils.read_partial_csv_content(source_bucket, source_key)
+    delimiter = iUtils.identify_csv_delimiter(file_sample)
 
     df = utils.read_csv(source, delimiter)
     if dataset == "ascwds":

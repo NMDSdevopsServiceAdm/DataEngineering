@@ -41,7 +41,7 @@ All notable changes to this project will be documented in this file.
 
 - Changed the grouped provider history to only record locations whose ASCWDS data was actually nulled by `null_care_home_grouped_providers`/`null_non_residential_grouped_providers`, rather than every structurally-potential grouped provider. Also reordered columns for ease of usage, and made `GROUPED_PROVIDER_SCHEMA` the single source of truth.
 
-- Moved the non-PySpark helper functions into `utils/s3_file_utils.py`. Removed the unused `get_model_name` function, and narrowed the ASC-WDS and CQC API Fargate Dockerfiles to stop copying the whole `utils/` tree.
+- Moved the non-PySpark helper functions into `utils/s3_file_utils.py`, then relocated the ones only used within ingestion (`is_csv`, `identify_csv_delimiter`, `read_partial_csv_content`, `get_s3_objects_list`, `get_file_directory`, `construct_s3_uri`, `construct_destination_path`) to `projects/_01_ingest/utils/utils.py`, imported as `iUtils`, since `split_s3_uri` is the only one also needed outside `_01_ingest` (by `polars_utils/utils.py`). Removed the unused `get_model_name` function, and narrowed the ASC-WDS and CQC API Fargate Dockerfiles to stop copying the whole `utils/` tree.
 
 - Migrated dependency and tool management to `uv`
 
