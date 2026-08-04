@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added `new-ticket`, `commit-push`, and `open-pr` Claude Code skills to run the ticket workflow (branch → SPEC → commits → PR) consistently, and an output-style guideline in CLAUDE.md. Trimmed the existing skills to cross-reference CLAUDE.md/PR templates instead of restating them, and updated remaining `pipenv` mentions to their `uv` equivalents.
+
 - Added a skeleton `_00_prepare` task (with validation) ahead of the merge step in the SLV pipeline, and rewired the merge step to read its output.
 
 - Added loading of `employee_status_rates.csv` into the SLV merge job, assumed pre-trimmed to the current weighting year and required columns, ready for future use in splitting job-role filled-post estimates by employment status. Column names are defined in `EmploymentStatusRatesColumns`.
@@ -19,6 +21,8 @@ All notable changes to this project will be documented in this file.
 - Added merge_job_role_columns function to polars_utils > cleaning_utils and called it in clean_ascwds_workplace job.
 
 ### Changed
+- Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
+
 - Pull clean workplace columns into merge job within SLV pipeline.
 
 - Updated references from workplace data for 'reconciliation' process to 'SfC internal' as the dataset is used in multiple jobs
@@ -40,6 +44,8 @@ All notable changes to this project will be documented in this file.
 - Called merge_job_role_columns in slv prepare job to reduce job role columns to only published roles plus 'other direct care/manager/etc'
 
 - Changed the grouped provider history to only record locations whose ASCWDS data was actually nulled by `null_care_home_grouped_providers`/`null_non_residential_grouped_providers`, rather than every structurally-potential grouped provider. Also reordered columns for ease of usage, and made `GROUPED_PROVIDER_SCHEMA` the single source of truth.
+
+- Migrated dependency and tool management to `uv`
 
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.

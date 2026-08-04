@@ -33,23 +33,23 @@ This project builds reproducible data pipelines in Amazon Web Services to:
 ```
 git clone https://github.com/NMDSdevopsServiceAdm/DataEngineering.git
 cd DataEngineering
-pipenv install --dev
-pipenv shell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+uv sync
 ```
 
 ## Testing
 ```
 # Run all tests
-pytest
+uv run pytest
 
 # Watch tests
-pytest-watch
+uv run pytest-watch
 ```
 
 ## Linting
 ```
-black .                   # Python
-pydoclint .               # Docstring
+uvx black .                   # Python
+uvx pydoclint .               # Docstring
 terraform fmt -recursive  # Terraform
 ```
 

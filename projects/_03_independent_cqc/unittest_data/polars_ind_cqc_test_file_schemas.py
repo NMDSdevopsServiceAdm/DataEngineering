@@ -2,11 +2,9 @@ from dataclasses import dataclass
 
 import polars as pl
 
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.clean_utils import (
     FilterJobRoleGroupExpressions as TempCols,
-)
-from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
-    CategoricalColumnTypes as CatColType,
 )
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
