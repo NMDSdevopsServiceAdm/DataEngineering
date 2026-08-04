@@ -4,6 +4,9 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
+import polars as pl
+
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -16,7 +19,12 @@ from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     CareHome,
     ContemporaryCSSR,
+    EstimateFilledPostsSource,
     JobRoleFilteringRule,
+    PrimaryServiceType,
+)
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
 )
 
 
@@ -405,3 +413,93 @@ class FilteringUtilsData:
             date(2022, 4, 2),
         ],
     }
+
+
+@dataclass
+class CategoricalColumnTypeCase:
+    id: str
+    actual: Any
+    expected: Any
+
+
+@dataclass
+class ColumnTypesData:
+    categorical_column_type_cases = [
+        CategoricalColumnTypeCase(
+            id="location_cat_type_uses_filled_posts_namespace",
+            actual=CatColType.LocationCatType,
+            expected=pl.Categorical(
+                pl.Categories("location", namespace="filled_posts")
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="establishment_cat_type_uses_filled_posts_namespace",
+            actual=CatColType.EstablishmentCatType,
+            expected=pl.Categorical(
+                pl.Categories("establishment", namespace="filled_posts")
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="provider_cat_type_uses_filled_posts_namespace",
+            actual=CatColType.ProviderCatType,
+            expected=pl.Categorical(
+                pl.Categories("provider", namespace="filled_posts")
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="brand_cat_type_uses_filled_posts_namespace",
+            actual=CatColType.BrandCatType,
+            expected=pl.Categorical(pl.Categories("brand", namespace="filled_posts")),
+        ),
+        CategoricalColumnTypeCase(
+            id="job_role_enum_type_matches_main_job_role_labels_values",
+            actual=CatColType.JobRoleEnumType,
+            expected=pl.Enum(
+                CatVals.main_job_role_labels_column_values.categorical_values
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="job_group_enum_type_matches_main_job_group_labels_values",
+            actual=CatColType.JobGroupEnumType,
+            expected=pl.Enum(
+                CatVals.main_job_group_labels_column_values.categorical_values
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="estimates_filled_post_source_enum_type_covers_all_sources",
+            actual=CatColType.EstimatesFilledPostSourceEnumType,
+            expected=pl.Enum(
+                [
+                    EstimateFilledPostsSource.imputed_pir_filled_posts_model,
+                    EstimateFilledPostsSource.ascwds_pir_merged,
+                    EstimateFilledPostsSource.imputed_posts_care_home_model,
+                    EstimateFilledPostsSource.care_home_model,
+                    EstimateFilledPostsSource.imputed_posts_non_res_combined_model,
+                    EstimateFilledPostsSource.non_res_combined_model,
+                    EstimateFilledPostsSource.posts_rolling_average_model,
+                ]
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="primary_service_enum_type_covers_all_service_types",
+            actual=CatColType.PrimaryServiceEnumType,
+            expected=pl.Enum(
+                [
+                    PrimaryServiceType.care_home_only,
+                    PrimaryServiceType.care_home_with_nursing,
+                    PrimaryServiceType.non_residential,
+                ]
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="job_role_filtering_rule_cat_type_uses_uint8_physical_type",
+            actual=CatColType.JobRoleFilteringRuleCatType,
+            expected=pl.Categorical(
+                pl.Categories(
+                    "job_role_filtering_rule",
+                    namespace="filled_posts",
+                    physical=pl.UInt8,
+                )
+            ),
+        ),
+    ]

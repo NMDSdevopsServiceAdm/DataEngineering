@@ -3,6 +3,7 @@ import polars.testing as pl_testing
 import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as job
+from polars_utils.column_types import CategoricalColumnTypes
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     ImputeJobRoleData as Data,
 )
@@ -59,8 +60,8 @@ class TestAddJobRoleGroupsColumn:
             )
         ]
         expected_schema = {
-            IndCQC.main_job_role_clean_labelled: job.CategoricalColumnTypes.JobRoleEnumType,
-            self.job_group_col: job.CategoricalColumnTypes.JobGroupEnumType,
+            IndCQC.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
+            self.job_group_col: CategoricalColumnTypes.JobGroupEnumType,
         }
         expected_lf = pl.LazyFrame(
             data=expected_data, schema=expected_schema, orient="row"
