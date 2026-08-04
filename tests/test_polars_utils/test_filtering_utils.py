@@ -5,9 +5,7 @@ import polars.testing as pl_testing
 import pytest
 
 from polars_utils import filtering_utils as job
-from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
-    CategoricalColumnTypes as CatColType,
-)
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from tests.test_polars_utils_data import FilteringUtilsData as Data
 from tests.test_polars_utils_schemas import FilteringUtilsSchemas as Schemas
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC

@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added `new-ticket`, `commit-push`, and `open-pr` Claude Code skills to run the ticket workflow (branch → SPEC → commits → PR) consistently, and an output-style guideline in CLAUDE.md. Trimmed the existing skills to cross-reference CLAUDE.md/PR templates instead of restating them, and updated remaining `pipenv` mentions to their `uv` equivalents.
+
 - Added a skeleton `_00_prepare` task (with validation) ahead of the merge step in the SLV pipeline, and rewired the merge step to read its output.
 
 - Added loading of `employee_status_rates.csv` into the SLV merge job, assumed pre-trimmed to the current weighting year and required columns, ready for future use in splitting job-role filled-post estimates by employment status. Column names are defined in `EmploymentStatusRatesColumns`.
@@ -19,7 +21,9 @@ All notable changes to this project will be documented in this file.
 - Added merge_job_role_columns function to polars_utils > cleaning_utils and called it in clean_ascwds_workplace job.
 
 ### Changed
-- Updated polars to 1.41.2 and pointblank to 0.24.0, and reworked `split_dataset_for_imputation` to materialise its filter condition into a column instead of duplicating it across two branches, to avoid a polars optimiser crash on the newer version.
+- Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
+
+- Updated polars to 1.41.2 and pointblank to 0.24.0, and reworked `split_dataset_for_imputation` to materialise its filter condition into a column instead of duplicating it across two branches, to avoid a polars optimiser crash on the newer version. Fargate Docker requirements are now split between a shared `docker_requirements/requirements.txt` for deps common to every project and small per-project `requirements-extra.txt` files for the two projects with additional deps (cqc_api; _04_model), instead of one shared file installing every project's deps everywhere.
 
 - Pull clean workplace columns into merge job within SLV pipeline.
 
@@ -44,6 +48,9 @@ All notable changes to this project will be documented in this file.
 - Changed the grouped provider history to only record locations whose ASCWDS data was actually nulled by `null_care_home_grouped_providers`/`null_non_residential_grouped_providers`, rather than every structurally-potential grouped provider. Also reordered columns for ease of usage, and made `GROUPED_PROVIDER_SCHEMA` the single source of truth.
 
 - Migrated dependency and tool management to `uv`
+
+### Improved
+- Replaced the fan-out join that broadcast the primary service rate of change trendline back onto every location row with an `.over()`-based broadcast computed in place, reducing peak memory in the imputation pipeline.
 
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.

@@ -100,6 +100,11 @@ def split_dataset_for_imputation(
         Tuple[pl.LazyFrame, pl.LazyFrame]: A tuple containing two LazyFrames:
             - imputation_lf: LazyFrame with rows meeting the criteria for imputation.
             - non_imputation_lf: LazyFrame with rows not meeting the criteria.
+
+    Note:
+        The filter expression is materialised into a column once rather than
+        computed inline in each `.filter()` call, to avoid a polars optimiser
+        panic (and redundant computation) from filtering on it twice.
     """
     if care_home:
         care_home_filter_expr: pl.Expr = is_care_home()
