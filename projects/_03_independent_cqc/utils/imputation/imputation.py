@@ -106,14 +106,23 @@ def split_dataset_for_imputation(
     else:
         care_home_filter_expr: pl.Expr = is_not_care_home()
 
-    locs_with_values_expr = (
-        pl.col(column_with_null_values)
-        .count()
-        .over([IndCqc.location_id, IndCqc.care_home])
-        > 0
-    ) & (care_home_filter_expr)
+    groups_with_values = (
+        lf.filter(pl.col(column_with_null_values).is_not_null())
+        .filter(care_home_filter_expr)
+        .select([IndCqc.location_id, IndCqc.care_home])
+        .unique()
+    )
 
-    imputation_lf = lf.filter(locs_with_values_expr == True)
-    non_imputation_lf = lf.filter(locs_with_values_expr == False)
+    imputation_lf = lf.join(
+        groups_with_values,
+        on=[IndCqc.location_id, IndCqc.care_home],
+        how="semi",
+    )
+
+    non_imputation_lf = lf.join(
+        groups_with_values,
+        on=[IndCqc.location_id, IndCqc.care_home],
+        how="anti",
+    )
 
     return (imputation_lf, non_imputation_lf)

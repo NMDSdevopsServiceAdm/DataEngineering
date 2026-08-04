@@ -23,7 +23,8 @@ COPY utils/s3_file_utils.py utils/s3_file_utils.py
 # Copy all python jobs to WORKDIR
 COPY projects/_01_ingest/cqc_api/fargate/*.py .
 
-COPY projects/_01_ingest/cqc_api/fargate/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY docker_requirements/requirements.txt .
+COPY projects/_01_ingest/cqc_api/fargate/requirements-extra.txt .
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-extra.txt
 
 ENTRYPOINT ["python"]

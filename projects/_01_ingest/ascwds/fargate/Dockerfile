@@ -16,7 +16,7 @@ COPY utils/s3_file_utils.py utils/s3_file_utils.py
 # Copy all python jobs to WORKDIR
 COPY projects/_01_ingest/ascwds/fargate/*.py .
 
-COPY projects/_01_ingest/ascwds/fargate/requirements.txt .
+COPY docker_requirements/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 ENTRYPOINT ["python"]

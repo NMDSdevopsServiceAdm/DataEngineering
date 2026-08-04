@@ -18,7 +18,7 @@ COPY utils/value_labels /app/utils/value_labels
 COPY projects/_04_direct_payment_recipients/fargate/estimate_direct_payments.py /app/estimate_direct_payments.py
 COPY projects/_04_direct_payment_recipients/fargate/validate_estimate_direct_payments.py /app/validate_estimate_direct_payments.py
 
-COPY projects/_04_direct_payment_recipients/Dockerfile_and_requirements/requirements.txt /app/requirements.txt
+COPY docker_requirements/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 ENTRYPOINT ["python"]
