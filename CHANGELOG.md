@@ -20,6 +20,8 @@ All notable changes to this project will be documented in this file.
 
 - Added merge_job_role_columns function to polars_utils > cleaning_utils and called it in clean_ascwds_workplace job.
 
+- Added `PublishedJobRoleLabels` categorical values class defining the canonical set of published ASC-WDS job role labels.
+
 ### Changed
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
 
