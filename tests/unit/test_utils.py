@@ -1,11 +1,9 @@
 import unittest
 from datetime import date, datetime
 from enum import Enum
-from io import BytesIO
 from pathlib import Path
 
 import boto3
-from botocore.response import StreamingBody
 from botocore.stub import Stubber
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
@@ -91,10 +89,6 @@ class UtilsTests(SparkBaseTest):
     )
     example_parquet_path = "tests/test_data/example_parquet.parquet"
 
-    # increase length of string to simulate realistic file size
-    hundred_percent_string_boost = 100
-    smaller_string_boost = 35
-
     def setUp(self):
         self.df = self.spark.read.csv(self.test_csv_path, header=True)
         self.df_with_extra_col = self.spark.read.csv(
@@ -115,194 +109,6 @@ class UtilsTests(SparkBaseTest):
 
 
 class GeneralUtilsTests(UtilsTests):
-    def test_get_s3_objects_list_returns_all_objects(self):
-        partial_response = {
-            "Contents": [
-                {
-                    "Key": "version=1.0.0/import_date=20210101/some-data-file.csv",
-                    "Size": 123,
-                },
-                {
-                    "Key": "version=1.0.0/import_date=20210101/some-other-data-file.csv",
-                    "Size": 100,
-                },
-                {
-                    "Key": "version=1.0.0/import_date=20210101/some-other-other-data-file.csv",
-                    "Size": 150,
-                },
-            ]
-        }
-
-        expected_params = {
-            "Bucket": "test-bucket",
-            "Prefix": "version=1.0.0/import_date=20210101/",
-        }
-
-        stubber = StubberClass(StubberType.resource)
-        stubber.add_response("list_objects", partial_response, expected_params)
-
-        object_list = utils.get_s3_objects_list(
-            "test-bucket",
-            "version=1.0.0/import_date=20210101/",
-            stubber.get_s3_resource(),
-        )
-
-        print(f"S3 object list {object_list}")
-        self.assertEqual(
-            object_list,
-            [
-                "version=1.0.0/import_date=20210101/some-data-file.csv",
-                "version=1.0.0/import_date=20210101/some-other-data-file.csv",
-                "version=1.0.0/import_date=20210101/some-other-other-data-file.csv",
-            ],
-        )
-        self.assertEqual(len(object_list), 3)
-
-    def test_get_s3_objects_doesnt_return_directories(self):
-        partial_response = {
-            "Contents": [
-                {
-                    "Key": "version=1.0.0/import_date=20210101/some-data-file.csv",
-                    "Size": 123,
-                },
-                {"Key": "version=1.0.0/import_date=20210101/", "Size": 0},
-                {
-                    "Key": "version=1.0.0/import_date=20210101/some-other-other-data-file.csv",
-                    "Size": 100,
-                },
-            ]
-        }
-
-        expected_params = {
-            "Bucket": "test-bucket",
-            "Prefix": "version=1.0.0/import_date=20210101/",
-        }
-
-        stubber = StubberClass(StubberType.resource)
-        stubber.add_response("list_objects", partial_response, expected_params)
-
-        object_list = utils.get_s3_objects_list(
-            "test-bucket",
-            "version=1.0.0/import_date=20210101/",
-            stubber.get_s3_resource(),
-        )
-
-        print(f"S3 object list {object_list}")
-        self.assertEqual(
-            object_list,
-            [
-                "version=1.0.0/import_date=20210101/some-data-file.csv",
-                "version=1.0.0/import_date=20210101/some-other-other-data-file.csv",
-            ],
-        )
-        self.assertEqual(len(object_list), 2)
-
-    def test_get_s3_objects_list_returns_filtered_objects(self):
-        partial_response = {
-            "Contents": [
-                {
-                    "Key": "version=1.0.0/import_date=20210101/some-data-file.csv",
-                    "Size": 123,
-                }
-            ]
-        }
-
-        expected_params = {
-            "Bucket": "test-bucket",
-            "Prefix": "version=1.0.0/import_date=20210101/",
-        }
-
-        stubber = StubberClass(StubberType.resource)
-        stubber.add_response("list_objects", partial_response, expected_params)
-
-        object_list = utils.get_s3_objects_list(
-            "test-bucket",
-            "version=1.0.0/import_date=20210101/",
-            stubber.get_s3_resource(),
-        )
-
-        print(f"S3 object list {object_list}")
-        self.assertEqual(
-            object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv"]
-        )
-        self.assertEqual(len(object_list), 1)
-
-    def test_get_model_name_returns_model_name(self):
-        path_to_model = (
-            "s3://sfc-bucket/models/care_home_jobs_prediction/1.0.0/subfolder/"
-        )
-        model_name = utils.get_model_name(path_to_model)
-        expected_model_name = "care_home_jobs_prediction"
-
-        self.assertEqual(expected_model_name, model_name)
-
-    def test_read_partial_csv_content(self):
-        body_data = "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species"
-
-        body_encoded = body_data.encode("utf-8")
-        byte_string_length = len(body_encoded)
-
-        body = StreamingBody(BytesIO(body_encoded), byte_string_length)
-
-        partial_response = {
-            "Body": body,
-            "ContentLength": byte_string_length * self.hundred_percent_string_boost,
-        }
-
-        expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
-
-        stubber = StubberClass(StubberType.client)
-        stubber.add_response("get_object", partial_response, expected_params)
-
-        obj_partial_content = utils.read_partial_csv_content(
-            "test-bucket", "my-test/key/", stubber.get_s3_client()
-        )
-
-        print(f"Object partial content: {obj_partial_content}")
-        self.assertEqual(
-            obj_partial_content,
-            "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species",
-        )
-
-    def test_read_partial_csv_less_content(self):
-        body_data = "period|establishmentid|tribalid|tribalid_worker|parentid|orgid|nmdsid|workerid|wkplacestat|createddate|updateddate|savedate|cqcpermission|lapermission|regtype|"
-        body_encoded = body_data.encode("utf-8")
-        byte_string_length = len(body_encoded)
-
-        body = StreamingBody(BytesIO(body_encoded), byte_string_length)
-
-        partial_response = {
-            "Body": body,
-            "ContentLength": byte_string_length * self.smaller_string_boost,
-        }
-
-        expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
-
-        stubber = StubberClass(StubberType.client)
-        stubber.add_response("get_object", partial_response, expected_params)
-
-        obj_partial_content = utils.read_partial_csv_content(
-            "test-bucket", "my-test/key/", stubber.get_s3_client()
-        )
-
-        print(f"Object partial content: {obj_partial_content}")
-        self.assertEqual(
-            obj_partial_content,
-            "period|establishmentid|tribalid|tribalid_worker|parenti",
-        )
-
-    def test_identify_csv_delimiter_can_identify_comma(self):
-        sample = "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species"
-        delimiter = utils.identify_csv_delimiter(sample)
-
-        self.assertEqual(delimiter, ",")
-
-    def test_identify_csv_delimiter_can_identify_pipe(self):
-        sample = "period|establishmentid|tribalid|parentid|orgid|nmdsid|wkplacestat|estabcreateddate|logincount_month|"
-        delimiter = utils.identify_csv_delimiter(sample)
-
-        self.assertEqual(delimiter, "|")
-
     def test_generate_s3_datasets_dir_date_path_changes_version_when_version_number_is_passed(
         self,
     ):
@@ -624,57 +430,6 @@ class GeneralUtilsTests(UtilsTests):
         ).collect()
         returned_data = returned_df.collect()
         self.assertEqual(expected_data, returned_data)
-
-    def test_is_csv(self):
-        csv_name = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv"
-        csv_test = utils.is_csv(csv_name)
-        self.assertTrue(csv_test)
-
-    def test_is_csv_for_non_csv(self):
-        csv_name_without_extention = (
-            "Provision - March 2013 - IND - NMDS-SC - ASCWDS format"
-        )
-        csv_test = utils.is_csv(csv_name_without_extention)
-        self.assertFalse(csv_test)
-
-    # converted to polars -> tests.test_polars_utils.test_utils.py
-    def test_split_s3_uri(self):
-        s3_uri = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/"
-        bucket_name, prefix = utils.split_s3_uri(s3_uri)
-
-        self.assertEqual(bucket_name, "sfc-data-engineering-raw")
-        self.assertEqual(prefix, "domain=ASCWDS/dataset=workplace/")
-
-    def test_construct_s3_uri(self):
-        uri = utils.construct_s3_uri(
-            "sfc-data-engineering-raw",
-            "domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv",
-        )
-
-        self.assertEqual(
-            uri,
-            "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv",
-        )
-
-    def test_get_file_directory(self):
-        path = utils.get_file_directory(
-            "domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv"
-        )
-
-        self.assertEqual(
-            path,
-            "domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331",
-        )
-
-    def test_construct_new_destination_path(self):
-        destination = "s3://sfc-main-datasets/"
-        key = "domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/workers.csv"
-        destination_path = utils.construct_destination_path(destination, key)
-
-        self.assertEqual(
-            destination_path,
-            "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331",
-        )
 
     def test_create_unix_timestamp_variable_from_date_column(self):
         column_schema = StructType(
