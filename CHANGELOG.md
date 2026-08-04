@@ -20,6 +20,8 @@ All notable changes to this project will be documented in this file.
 
 - Added merge_job_role_columns function to polars_utils > cleaning_utils and called it in clean_ascwds_workplace job.
 
+- Converted merge_ascwds_and_pir_filled_post_submissions to polars.
+
 ### Changed
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
 
@@ -46,6 +48,12 @@ All notable changes to this project will be documented in this file.
 - Changed the grouped provider history to only record locations whose ASCWDS data was actually nulled by `null_care_home_grouped_providers`/`null_non_residential_grouped_providers`, rather than every structurally-potential grouped provider. Also reordered columns for ease of usage, and made `GROUPED_PROVIDER_SCHEMA` the single source of truth.
 
 - Migrated dependency and tool management to `uv`
+
+- Changed split_dataset_for_imputation to use semi/anti joins instead of .over()
+
+- Changed build_extrapolation_aggregates to use .over() instead of filter > group-by > agg > join
+
+- Changed return_last_known_value to use .over() instead of filter > group-by > agg > join
 
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
@@ -95,8 +103,6 @@ All notable changes to this project will be documented in this file.
 - Added `apply_data_corrections` function to null out empty/whitespace string values and legacy `parent_permission` value `3` in ASC-WDS workplace data. Added tests for the same.
 
 - Added column selection to clean_ascwds_workplace to get workplace job role columns into dataset.
-
-- Converted merge_ascwds_and_pir_filled_post_submissions to polars.
 
 ### Changed
 - Refactored job group filter to use magic numbers for outlier bounds.

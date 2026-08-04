@@ -1879,11 +1879,3 @@ class CombineASCWDSAndPIRSchemas:
         IndCQC.ascwds_pir_merged: pl.Float32,
         IndCQC.pir_filled_posts_model: pl.Float32,
     }
-
-    drop_temporary_columns_schema = {
-        IndCQC.location_id: pl.String,
-        IndCQC.last_ascwds_submission: pl.Date,
-        IndCQC.last_pir_submission: pl.Date,
-        IndCQC.ascwds_filled_posts_dedup_clean_repeated: pl.Float32,
-    }
-    expected_drop_temporary_columns = [IndCQC.location_id]

@@ -111,16 +111,14 @@ def build_extrapolation_aggregates(
     lf: pl.LazyFrame, value_col: str, model_col: str
 ) -> pl.LazyFrame:
     """
-    Compute per-group aggregates required for extrapolation.
+    Add per-location extrapolation boundary values as columns on every row.
 
-    This function filters to rows where `value_col` is non-null and calculates,
-    for each `location_id`:
-        - The first and last submission timestamps
-        - The first observed value of `value_col`
-        - The corresponding first value of the model column
-
-    These aggregates are later joined back to the original dataset to support
-    backward extrapolation and boundary detection.
+    For each `location_id`, computes the first and last submission dates where
+    `value_col` is non-null, and the `value_col`/`model_col` values observed on
+    that first submission date. These are added as new columns rather than
+    aggregated into a separate LazyFrame, so no join is needed to bring them
+    back onto the full dataset — cheaper than the group_by+join equivalent
+    since it avoids materialising and merging a second frame.
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame containing time series data.
@@ -128,8 +126,9 @@ def build_extrapolation_aggregates(
         model_col (str): Column containing model values used for extrapolation.
 
     Returns:
-        pl.LazyFrame: Aggregated LazyFrame with one row per `location_id`,
-        containing the required extrapolation metadata.
+        pl.LazyFrame: The input LazyFrame with four extra columns —
+            `first_submission_time`, `final_submission_time`, `first_value`, and
+            `first_model` — repeated across every row for a given `location_id`.
     """
     is_observed = pl.col(value_col).is_not_null()
 
