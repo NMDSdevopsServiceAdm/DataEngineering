@@ -49,11 +49,11 @@ class TestModelPrimaryServiceRateOfChangeTrendline:
 
 class TestCalculateRollingSums:
     @pytest.mark.parametrize(
-        "input_data, expected_data",
+        "input_data, expected_data, group_cols",
         [case.as_pytest_param() for case in Data.calculate_rolling_sums_test_cases],
     )
     def test_calculate_rolling_sums_returns_expected_output(
-        self, input_data, expected_data
+        self, input_data, expected_data, group_cols
     ):
         expected_lf = pl.LazyFrame(
             expected_data,
@@ -68,7 +68,8 @@ class TestCalculateRollingSums:
         returned_lf = job.calculate_rolling_sums(
             input_lf,
             days=3,
-            group_cols=[
+            group_cols=group_cols
+            or [
                 IndCQC.location_id,
                 IndCQC.primary_service_type,
                 IndCQC.number_of_beds_banded_roc,
@@ -110,11 +111,11 @@ class TestCleanNonResidentialRateOfChange:
 
 class TestCalculateTrendline:
     @pytest.mark.parametrize(
-        "input_data, expected_data",
+        "input_data, expected_data, group_cols",
         [case.as_pytest_param() for case in Data.calculate_trendline_test_cases],
     )
     def test_calculate_trendline_returns_expected_output(
-        self, input_data, expected_data
+        self, input_data, expected_data, group_cols
     ):
         expected_lf = pl.LazyFrame(
             expected_data,
@@ -129,7 +130,8 @@ class TestCalculateTrendline:
         returned_lf = job.calculate_trendline(
             input_lf,
             out_col=IndCQC.ascwds_rate_of_change_trendline_model,
-            group_cols=[
+            group_cols=group_cols
+            or [
                 IndCQC.primary_service_type,
                 IndCQC.number_of_beds_banded_roc,
             ],

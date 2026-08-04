@@ -28,20 +28,23 @@ def model_primary_service_rate_of_change_trendline(
 
     The steps in this function are:
     1. Create a banded bed count column for grouping.
-    2. Prepare the data by selecting relevant columns and calculating
-        submission counts.
-    3. Filter to eligible rows (consistent care home status with at least two
-        submissions).
-    4. Apply interpolation to the current period values where needed.
-    5. Calculate the previous period values using a lag.
-    6. Clean the rate of change values for non-residential locations using
+    2. Null-mask the value column for ineligible rows (inconsistent care home
+        status, or fewer than two submissions) rather than filtering them out,
+        so every row of `lf` stays present throughout and the trendline can be
+        broadcast back onto it with `.over()` instead of a join.
+    3. Apply interpolation to the current period values where needed.
+    4. Calculate the previous period values using a lag.
+    5. Clean the rate of change values for non-residential locations using
         percentile-based thresholds.
-    7. Calculate rolling sums of current and previous values over the specified
+    6. Calculate rolling sums of current and previous values over the specified
         number of days, grouped by service type and bed band.
-    8. Compute the single period rate of change as the ratio of rolling current
+    7. Compute the single period rate of change as the ratio of rolling current
         sum to rolling previous sum.
-    9. Calculate the trendline by taking the cumulative product of the single
-        period rate of change values, grouped by service type and bed band.
+    8. Calculate the trendline by taking the cumulative product of the single
+        period rate of change values, grouped by service type and bed band,
+        broadcasting the result onto every row (eligible or not) that shares a
+        service type, bed band, and import date. Rows with no eligible peer at
+        all for their group and date fall back to 1.0.
 
     Example:
         Given a rate of change sequence:
@@ -73,34 +76,22 @@ def model_primary_service_rate_of_change_trendline(
         IndCqc.number_of_beds_banded_roc,
     ]
 
-    roc_lf = (
-        lf.select(
-            IndCqc.location_id,
-            IndCqc.care_home,
-            IndCqc.care_home_status_count,
-            IndCqc.primary_service_type,
-            IndCqc.number_of_beds_banded_roc,
-            IndCqc.cqc_location_import_date,
-            value_col,
-        )
-        .rename({value_col: TempCol.current_period})
-        .with_columns(
-            pl.len()
-            .over([IndCqc.location_id, IndCqc.care_home])
-            .alias(TempCol.submission_count)
-        )
-    )
-
     # The measurements differ for care home vs non-residential so only locations
-    # with a single care home status are included.
+    # with a single care home status contribute.
     # At least two submissions are required to measure change.
-    roc_lf = roc_lf.filter(
-        (pl.col(IndCqc.care_home_status_count) == 1)
-        & (pl.col(TempCol.submission_count) >= 2)
+    is_eligible = (pl.col(IndCqc.care_home_status_count) == 1) & (
+        pl.len().over([IndCqc.location_id, IndCqc.care_home]) >= 2
     )
 
-    roc_lf = model_interpolation(
-        roc_lf,
+    lf = lf.with_columns(
+        pl.when(is_eligible)
+        .then(pl.col(value_col))
+        .otherwise(None)
+        .alias(TempCol.current_period)
+    )
+
+    lf = model_interpolation(
+        lf,
         TempCol.current_period,
         method="straight",
         new_column_name=TempCol.current_period_interpolated,
@@ -114,7 +105,7 @@ def model_primary_service_rate_of_change_trendline(
         .alias(TempCol.current_period_interpolated)
     )
 
-    roc_lf = roc_lf.with_columns(
+    lf = lf.with_columns(
         pl.col(TempCol.current_period_interpolated)
         .sort_by(IndCqc.cqc_location_import_date)
         .shift(1)
@@ -123,11 +114,11 @@ def model_primary_service_rate_of_change_trendline(
         .alias(TempCol.previous_period_interpolated)
     )
 
-    roc_lf = clean_non_residential_rate_of_change(roc_lf)
+    lf = clean_non_residential_rate_of_change(lf)
 
-    roc_lf = calculate_rolling_sums(roc_lf, days, aggregation_group_cols)
+    lf = calculate_rolling_sums(lf, days, aggregation_group_cols)
 
-    roc_lf = roc_lf.with_columns(
+    lf = lf.with_columns(
         pl.when(pl.col(TempCol.rolling_previous_sum) != 0)
         .then(
             pl.col(TempCol.rolling_current_sum) / pl.col(TempCol.rolling_previous_sum)
@@ -136,17 +127,16 @@ def model_primary_service_rate_of_change_trendline(
         .alias(IndCqc.single_period_rate_of_change)
     ).drop(TempCol.rolling_current_sum, TempCol.rolling_previous_sum)
 
-    roc_lf = calculate_trendline(roc_lf, out_col, aggregation_group_cols)
+    lf = calculate_trendline(lf, out_col, aggregation_group_cols)
 
-    lf = lf.join(
-        roc_lf,
-        [
-            IndCqc.primary_service_type,
-            IndCqc.number_of_beds_banded_roc,
-            IndCqc.cqc_location_import_date,
-        ],
-        "left",
-    ).drop(IndCqc.number_of_beds_banded_roc)
+    lf = lf.drop(
+        IndCqc.number_of_beds_banded_roc,
+        TempCol.current_period,
+        TempCol.current_period_interpolated,
+        TempCol.previous_period_interpolated,
+        TempCol.current_period_cleaned,
+        TempCol.previous_period_cleaned,
+    )
 
     return lf.with_columns(pl.col(out_col).fill_null(1.0))
 
@@ -157,28 +147,22 @@ def calculate_rolling_sums(
     group_cols: list[str],
 ) -> pl.LazyFrame:
     """
-    Calculates the rolling sum of the current and previous period values
-    partitioned by primary service type.
+    Adds the rolling sum of the current and previous period values, broadcast
+    onto every row via `.over()`, partitioned by primary service type.
 
-    The rolling sum is calculated over a specified number of days, and the input
-    rows are sorted by the grouping columns and import date to ensure stable and
-    deterministic results even when input rows arrive out of order.
-
-    The function first filters the input LazyFrame to include only rows where
-    both the current and previous period interpolated values are known
-    (non-null). It then computes the rolling sum of the current and previous
-    period values over the defined period. Finally, it drops duplicate rows
-    based on the partitioning columns and import date to ensure one row per
-    primary service type, number of beds band, and time period, and drops
-    non-aggregated columns that are no longer needed for subsequent
-    calculations.
-
-    Rolling returns one row per contributing source row so `.unique()` is used
-    to deduplicate to one row per group and import date.
+    The rolling sum is calculated over a specified number of days using
+    `rolling_sum_by`, which reasons off the import date column's actual values
+    rather than physical row position, so no upfront sort is needed. Only rows
+    where both the current and previous period cleaned values are known
+    (non-null) contribute their value to the sum — an unpaired first
+    submission, or a null-masked ineligible row, contributes nothing, matching
+    the previous row-filtering behaviour without removing rows. Every row,
+    including rows that don't themselves contribute, still receives the
+    correct broadcast sum for its own group and import date.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame containing the current and
-            previous period values.
+            previous period cleaned values.
         days (int): The number of days over which to compute the rolling sum.
         group_cols (list[str]): The columns to group by for the rolling sum
             calculation.
@@ -187,28 +171,28 @@ def calculate_rolling_sums(
         pl.LazyFrame: The LazyFrame with the rolling sums of current and
             previous period values added.
     """
-    return (
-        lf.filter(
-            pl.col(TempCol.current_period_cleaned).is_not_null()
-            & pl.col(TempCol.previous_period_cleaned).is_not_null()
-        )
-        .sort(group_cols + [IndCqc.cqc_location_import_date])
-        .rolling(
-            index_column=IndCqc.cqc_location_import_date,
-            period=f"{days}d",
-            group_by=group_cols,
-        )
-        .agg(
-            [
-                pl.sum(TempCol.current_period_cleaned)
-                .cast(pl.Float32)
-                .alias(TempCol.rolling_current_sum),
-                pl.sum(TempCol.previous_period_cleaned)
-                .cast(pl.Float32)
-                .alias(TempCol.rolling_previous_sum),
-            ]
-        )
-    ).unique(group_cols + [IndCqc.cqc_location_import_date])
+    paired = (
+        pl.col(TempCol.current_period_cleaned).is_not_null()
+        & pl.col(TempCol.previous_period_cleaned).is_not_null()
+    )
+    window = f"{days}d"
+
+    return lf.with_columns(
+        pl.when(paired)
+        .then(pl.col(TempCol.current_period_cleaned))
+        .otherwise(None)
+        .rolling_sum_by(by=IndCqc.cqc_location_import_date, window_size=window)
+        .over(group_cols)
+        .cast(pl.Float32)
+        .alias(TempCol.rolling_current_sum),
+        pl.when(paired)
+        .then(pl.col(TempCol.previous_period_cleaned))
+        .otherwise(None)
+        .rolling_sum_by(by=IndCqc.cqc_location_import_date, window_size=window)
+        .over(group_cols)
+        .cast(pl.Float32)
+        .alias(TempCol.rolling_previous_sum),
+    )
 
 
 def clean_non_residential_rate_of_change(
@@ -343,9 +327,17 @@ def calculate_trendline(
     calculated by taking the exponential of the sum of the logarithms of the
     values.
 
-    The input rows are sorted by the grouping columns and import date before the
-    cumulative sum is computed. This ensures stable and deterministic trendline
-    values even when input rows arrive out of order.
+    Multiple rows can share the same group_cols and import date (e.g. many
+    locations under one primary service/bed band triple), each already carrying
+    an identical single_period_rate_of_change broadcast by calculate_rolling_sums.
+    Only the first row of each such tie (by row order, since `.over()` uses
+    `order_by` rather than a physical sort) is allowed to contribute that date's
+    value to the cumulative sum, the rest contribute 0.0 — this avoids
+    double-counting a date once per tied row, while every row in the tie still
+    ends up with the same cumulative total once the whole date has been counted.
+    A null rate (no eligible data at all for that group and date) nulls out the
+    contribution for every row sharing the tie, not just the first, so the whole
+    group of rows falls through to the caller's `fill_null(1.0)`.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame.
@@ -356,11 +348,20 @@ def calculate_trendline(
         pl.LazyFrame: The LazyFrame with the trendline column added.
     """
     rate_col = IndCqc.single_period_rate_of_change
+    date_col = IndCqc.cqc_location_import_date
 
-    rolling_product = pl.col(rate_col).log().cum_sum().over(group_cols).exp()
-
-    return (
-        lf.sort(group_cols + [IndCqc.cqc_location_import_date])
-        .with_columns(rolling_product.alias(out_col))
-        .drop(rate_col)
+    is_first_of_date_group = (
+        pl.cum_count(date_col).over(group_cols + [date_col], order_by=date_col) == 1
     )
+
+    contribution = (
+        pl.when(pl.col(rate_col).is_null())
+        .then(None)
+        .when(is_first_of_date_group)
+        .then(pl.col(rate_col).log())
+        .otherwise(0.0)
+    )
+
+    rolling_product = contribution.cum_sum().over(group_cols, order_by=date_col).exp()
+
+    return lf.with_columns(rolling_product.alias(out_col)).drop(rate_col)
