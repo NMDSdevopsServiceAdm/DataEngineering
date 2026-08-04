@@ -49,6 +49,9 @@ All notable changes to this project will be documented in this file.
 
 - Migrated dependency and tool management to `uv`
 
+### Improved
+- Replaced the fan-out join that broadcast the primary service rate of change trendline back onto every location row with an `.over()`-based broadcast computed in place, reducing peak memory in the imputation pipeline.
+
 - Changed split_dataset_for_imputation to use semi/anti joins instead of .over()
 
 - Changed build_extrapolation_aggregates to use .over() instead of filter > group-by > agg > join

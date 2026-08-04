@@ -1679,6 +1679,8 @@ class ModelRateOfChangeSchemas:
         IndCQC.primary_service_type: pl.String,
         IndCQC.number_of_beds_banded_roc: pl.Int32,
         IndCQC.cqc_location_import_date: pl.Date,
+        ROC_TempCol.current_period_cleaned: pl.Float32,
+        ROC_TempCol.previous_period_cleaned: pl.Float32,
         ROC_TempCol.rolling_current_sum: pl.Float32,
         ROC_TempCol.rolling_previous_sum: pl.Float32,
     }

@@ -2789,9 +2789,12 @@ class ModelRateOfChangeInputOutputTestCase:
     id: str
     input_data: list[Any]
     expected_data: list[Any]
+    group_cols: Optional[list[str]] = None
 
     def as_pytest_param(self):
-        return pytest.param(self.input_data, self.expected_data, id=self.id)
+        return pytest.param(
+            self.input_data, self.expected_data, self.group_cols, id=self.id
+        )
 
 
 @dataclass
@@ -2879,9 +2882,9 @@ class ModelRateOfChangeData:
                 ("1-001", "CHO", 10, date(2026, 1, 3), 3.3, 2.7),
             ],
             expected_data=[
-                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
-                ("1-001", "CHO", 10, date(2026, 1, 2), 5.7, 5.0),
-                ("1-001", "CHO", 10, date(2026, 1, 3), 9.0, 7.7),
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0, 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 2.7, 3.0, 5.7, 5.0),
+                ("1-001", "CHO", 10, date(2026, 1, 3), 3.3, 2.7, 9.0, 7.7),
             ],
         ),
         ModelRateOfChangeInputOutputTestCase(
@@ -2893,10 +2896,10 @@ class ModelRateOfChangeData:
                 ("1-002", "NR",  20, date(2026, 1, 2), 1.2, 1.0),
             ],
             expected_data=[
-                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
-                ("1-001", "CHO", 10, date(2026, 1, 2), 5.7, 5.0),
-                ("1-002", "NR",  20, date(2026, 1, 1), 1.0, 1.5),
-                ("1-002", "NR",  20, date(2026, 1, 2), 2.2, 2.5),
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0, 3.0, 2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 2.7, 3.0, 5.7, 5.0),
+                ("1-002", "NR",  20, date(2026, 1, 1), 1.0, 1.5, 1.0, 1.5),
+                ("1-002", "NR",  20, date(2026, 1, 2), 1.2, 1.0, 2.2, 2.5),
             ],
         ),
         ModelRateOfChangeInputOutputTestCase(
@@ -2909,11 +2912,26 @@ class ModelRateOfChangeData:
                 ("1-001", "CHO", 10, date(2026, 1, 5), 2.6, 6.0),
             ],
             expected_data=[
-                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0,  2.0),
-                ("1-001", "CHO", 10, date(2026, 1, 2), 5.9,  5.0), # sum of 1st - 2nd Jan (tests based on a 3 day window)
-                ("1-001", "CHO", 10, date(2026, 1, 3), 8.7,  9.0), # sum of 1st - 3rd Jan
-                ("1-001", "CHO", 10, date(2026, 1, 4), 8.4, 12.0), # sum of 2nd - 4th Jan
-                ("1-001", "CHO", 10, date(2026, 1, 5), 8.1, 15.0), # sum of 3rd - 5th Jan
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0, 3.0,  2.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 2.9, 3.0, 5.9,  5.0), # sum of 1st - 2nd Jan (tests based on a 3 day window)
+                ("1-001", "CHO", 10, date(2026, 1, 3), 2.8, 4.0, 8.7,  9.0), # sum of 1st - 3rd Jan
+                ("1-001", "CHO", 10, date(2026, 1, 4), 2.7, 5.0, 8.4, 12.0), # sum of 2nd - 4th Jan
+                ("1-001", "CHO", 10, date(2026, 1, 5), 2.6, 6.0, 8.1, 15.0), # sum of 3rd - 5th Jan
+            ],
+        ),
+        ModelRateOfChangeInputOutputTestCase(
+            id="fan_out_across_locations_shares_rolling_sum",
+            group_cols=[IndCQC.primary_service_type, IndCQC.number_of_beds_banded_roc],
+            input_data=[
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0),
+                ("1-002", "CHO", 10, date(2026, 1, 1), 1.0, 1.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 2.0, 1.0),
+            ],
+            expected_data=[
+                # both 1-001 and 1-002 share (CHO, 10, 1st Jan) so both broadcast the same combined sum
+                ("1-001", "CHO", 10, date(2026, 1, 1), 3.0, 2.0, 4.0, 3.0),
+                ("1-002", "CHO", 10, date(2026, 1, 1), 1.0, 1.0, 4.0, 3.0),
+                ("1-001", "CHO", 10, date(2026, 1, 2), 2.0, 1.0, 6.0, 4.0),
             ],
         ),
     ] # fmt: skip
@@ -2977,6 +2995,36 @@ class ModelRateOfChangeData:
                 ("CHO", 2, date(2026, 1, 2), 1.1),
                 ("NR", 1, date(2026, 1, 1), 1.0),
                 ("NR", 1, date(2026, 1, 2), 0.8),
+            ],
+        ),
+        ModelRateOfChangeInputOutputTestCase(
+            id="duplicate_group_and_date_rows_share_trendline",
+            input_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), 1.2),
+                ("CHO", 1, date(2026, 1, 2), 1.2),  # fan-out: two locations, one triple
+                ("CHO", 1, date(2026, 1, 3), 1.0),
+            ],
+            expected_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), 1.2),
+                ("CHO", 1, date(2026, 1, 2), 1.2),
+                ("CHO", 1, date(2026, 1, 3), 1.2),
+            ],
+        ),
+        ModelRateOfChangeInputOutputTestCase(
+            id="null_rate_nulls_every_row_sharing_the_tie",
+            input_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), None),
+                ("CHO", 1, date(2026, 1, 2), None),  # no eligible peer for this triple
+                ("CHO", 1, date(2026, 1, 3), 1.1),
+            ],
+            expected_data=[
+                ("CHO", 1, date(2026, 1, 1), 1.0),
+                ("CHO", 1, date(2026, 1, 2), None),
+                ("CHO", 1, date(2026, 1, 2), None),
+                ("CHO", 1, date(2026, 1, 3), 1.1),
             ],
         ),
     ]
