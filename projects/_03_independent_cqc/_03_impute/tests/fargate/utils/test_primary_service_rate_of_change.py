@@ -1,5 +1,4 @@
 import math
-from datetime import date
 
 import polars as pl
 import polars.testing as pl_testing
@@ -13,7 +12,6 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas
     ModelRateOfChangeSchemas as Schemas,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import CareHome
 
 
 class TestModelPrimaryServiceRateOfChangeTrendline:
@@ -83,51 +81,26 @@ class TestCalculateRollingSums:
 
 class TestCleanNonResidentialRateOfChange:
     @pytest.mark.parametrize(
-        "expected_data",
+        "case",
         [
-            case.as_pytest_param()
+            pytest.param(case, id=case.id)
             for case in Data.clean_non_residential_rate_of_change_test_cases
         ],
     )
-    def test_clean_non_residential_rate_of_change_returns_expected_output(
-        self, expected_data
-    ):
+    def test_clean_non_residential_rate_of_change_returns_expected_output(self, case):
         expected_lf = pl.LazyFrame(
-            expected_data,
+            case.data,
             Schemas.expected_clean_non_residential_rate_of_change_schema,
             orient="row",
         )
         input_lf = expected_lf.drop(
             job.TempCol.previous_period_cleaned, job.TempCol.current_period_cleaned
         )
-        returned_lf = job.clean_non_residential_rate_of_change(input_lf)
-        pl_testing.assert_frame_equal(
-            returned_lf,
-            expected_lf,
-            check_row_order=False,
-        )
-
-    def test_large_non_residential_change_above_percentile_is_rejected(self):
-        expected_data = [
-            ("2-001", CareHome.not_care_home, date(2026, 1, 1), 20.0, 21.0, 20.0, 21.0),
-            ("2-002", CareHome.not_care_home, date(2026, 1, 2), 20.0, 21.0, 20.0, 21.0),
-            ("2-003", CareHome.not_care_home, date(2026, 1, 3), 20.0, 21.0, 20.0, 21.0),
-            ("2-004", CareHome.not_care_home, date(2026, 1, 4), 20.0, 21.0, 20.0, 21.0),
-            ("2-005", CareHome.not_care_home, date(2026, 1, 5), 20.0, 100.0, None, None),
-        ]  # fmt: skip
-        expected_lf = pl.LazyFrame(
-            expected_data,
-            Schemas.expected_clean_non_residential_rate_of_change_schema,
-            orient="row",
-        )
-        input_lf = expected_lf.drop(
-            job.TempCol.previous_period_cleaned, job.TempCol.current_period_cleaned
-        )
-
         returned_lf = job.clean_non_residential_rate_of_change(
-            input_lf, abs_percentile=0.5, perc_percentile=0.5
+            input_lf,
+            abs_percentile=case.abs_percentile,
+            perc_percentile=case.perc_percentile,
         )
-
         pl_testing.assert_frame_equal(
             returned_lf,
             expected_lf,
