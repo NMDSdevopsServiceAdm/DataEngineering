@@ -1,6 +1,9 @@
 import unittest
 
-from utils.column_values.categorical_column_values import Dormancy, PublishedJobRoleID
+from utils.column_values.categorical_column_values import (
+    Dormancy,
+    PublishedJobRoleLabels,
+)
 
 
 class ListValuesTests(unittest.TestCase):
@@ -78,25 +81,25 @@ class CountValuesTests(unittest.TestCase):
         )
 
 
-class TestPublishedJobRoleID:
-    def test_pins_the_published_job_role_id_values(self):
-        test_object = PublishedJobRoleID("test_column")
+class TestPublishedJobRoleLabels:
+    def test_pins_the_published_job_role_label_values(self):
+        test_object = PublishedJobRoleLabels("test_column")
         expected_values = [
-            "1",
-            "4",
-            "6",
-            "7",
-            "8",
-            "9",
-            "15",
-            "16",
-            "17",
-            "43",
-            "52",
-            "1001",
-            "1002",
-            "1003",
-            "1004",
+            "senior_management",
+            "registered_manager",
+            "social_worker",
+            "senior_care_worker",
+            "care_worker",
+            "community_support_and_outreach",
+            "occupational_therapist",
+            "registered_nurse",
+            "allied_health_professional",
+            "deputy_manager",
+            "support_worker",
+            "other_managers",
+            "other_regulated_professions",
+            "other_direct_care",
+            "other",
         ]
         assert test_object.categorical_values == expected_values
 

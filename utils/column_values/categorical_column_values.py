@@ -279,24 +279,26 @@ class MainJobRoleID(ColumnValues):
 
 
 @dataclass
-class PublishedJobRoleID(ColumnValues):
-    """The possible values of the published job role code column in the SLV job-role merge/reshape"""
+class PublishedJobRoleLabels(ColumnValues):
+    """The possible values of the published job role label column in the SLV job-role merge/reshape"""
 
-    senior_management: str = "1"
-    registered_manager: str = "4"
-    social_worker: str = "6"
-    senior_care_worker: str = "7"
-    care_worker: str = "8"
-    community_support_and_outreach: str = "9"
-    occupational_therapist: str = "15"
-    registered_nurse: str = "16"
-    allied_health_professional: str = "17"
-    deputy_manager: str = "43"
-    support_worker: str = "52"
-    other_managers: str = "1001"
-    other_regulated_professions: str = "1002"
-    other_direct_care: str = "1003"
-    other: str = "1004"
+    senior_management: str = MainJobRoleLabels.senior_management
+    registered_manager: str = MainJobRoleLabels.registered_manager
+    social_worker: str = MainJobRoleLabels.social_worker
+    senior_care_worker: str = MainJobRoleLabels.senior_care_worker
+    care_worker: str = MainJobRoleLabels.care_worker
+    community_support_and_outreach: str = (
+        MainJobRoleLabels.community_support_and_outreach
+    )
+    occupational_therapist: str = MainJobRoleLabels.occupational_therapist
+    registered_nurse: str = MainJobRoleLabels.registered_nurse
+    allied_health_professional: str = MainJobRoleLabels.allied_health_professional
+    deputy_manager: str = MainJobRoleLabels.deputy_manager
+    support_worker: str = MainJobRoleLabels.support_worker
+    other_managers: str = "other_managers"
+    other_regulated_professions: str = "other_regulated_professions"
+    other_direct_care: str = "other_direct_care"
+    other: str = "other"
 
 
 @dataclass
