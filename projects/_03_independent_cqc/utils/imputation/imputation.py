@@ -100,28 +100,29 @@ def split_dataset_for_imputation(
         Tuple[pl.LazyFrame, pl.LazyFrame]: A tuple containing two LazyFrames:
             - imputation_lf: LazyFrame with rows meeting the criteria for imputation.
             - non_imputation_lf: LazyFrame with rows not meeting the criteria.
-
-    Note:
-        The filter expression is materialised into a column once rather than
-        computed inline in each `.filter()` call, to avoid a polars optimiser
-        panic (and redundant computation) from filtering on it twice.
     """
     if care_home:
         care_home_filter_expr: pl.Expr = is_care_home()
     else:
         care_home_filter_expr: pl.Expr = is_not_care_home()
 
-    locs_with_values_expr = (
-        pl.col(column_with_null_values)
-        .count()
-        .over([IndCqc.location_id, IndCqc.care_home])
-        > 0
-    ) & (care_home_filter_expr)
+    groups_with_values = (
+        lf.filter(pl.col(column_with_null_values).is_not_null())
+        .filter(care_home_filter_expr)
+        .select([IndCqc.location_id, IndCqc.care_home])
+        .unique()
+    )
 
-    imputation_flag = "_imputation_flag"
-    lf = lf.with_columns(locs_with_values_expr.alias(imputation_flag))
+    imputation_lf = lf.join(
+        groups_with_values,
+        on=[IndCqc.location_id, IndCqc.care_home],
+        how="semi",
+    )
 
-    imputation_lf = lf.filter(pl.col(imputation_flag)).drop(imputation_flag)
-    non_imputation_lf = lf.filter(~pl.col(imputation_flag)).drop(imputation_flag)
+    non_imputation_lf = lf.join(
+        groups_with_values,
+        on=[IndCqc.location_id, IndCqc.care_home],
+        how="anti",
+    )
 
     return (imputation_lf, non_imputation_lf)
