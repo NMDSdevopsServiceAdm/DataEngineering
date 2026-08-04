@@ -123,7 +123,7 @@ def model_primary_service_rate_of_change_trendline(
         .alias(TempCol.previous_period_interpolated)
     )
 
-    roc_lf = clean_non_residential_rate_of_change(roc_lf)
+    # roc_lf = clean_non_residential_rate_of_change(roc_lf)
 
     roc_lf = calculate_rolling_sums(roc_lf, days, aggregation_group_cols)
 
@@ -261,28 +261,26 @@ def clean_non_residential_rate_of_change(
         ]
     )
 
-    abs_change_upper_threshold = 5
-    perc_change_upper_threshold = 1.0
-    # (
-    #     lf.filter(
-    #         is_non_res
-    #         & pl.col(prev).is_not_null()
-    #         & pl.col(curr).is_not_null()
-    #         & (
-    #             (pl.col(prev) > SMALL_NON_RES_THRESHOLD)
-    #             | (pl.col(curr) > SMALL_NON_RES_THRESHOLD)
-    #         )
-    #         & (pl.col(prev) != pl.col(curr))
-    #     )
-    #     .select(
-    #         [
-    #             pl.col(TempCol.abs_change).quantile(abs_percentile),
-    #             pl.col(TempCol.perc_change).quantile(perc_percentile),
-    #         ]
-    #     )
-    #     .collect()
-    #     .row(0)
-    # )
+    abs_change_upper_threshold, perc_change_upper_threshold = (
+        lf.filter(
+            is_non_res
+            & pl.col(prev).is_not_null()
+            & pl.col(curr).is_not_null()
+            & (
+                (pl.col(prev) > SMALL_NON_RES_THRESHOLD)
+                | (pl.col(curr) > SMALL_NON_RES_THRESHOLD)
+            )
+            & (pl.col(prev) != pl.col(curr))
+        )
+        .select(
+            [
+                pl.col(TempCol.abs_change).quantile(abs_percentile),
+                pl.col(TempCol.perc_change).quantile(perc_percentile),
+            ]
+        )
+        .collect()
+        .row(0)
+    )
 
     is_small_non_res = (
         is_non_res
