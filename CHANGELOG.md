@@ -22,8 +22,10 @@ All notable changes to this project will be documented in this file.
 
 - Added `PublishedJobRoleLabels` categorical values class defining the canonical set of published ASC-WDS job role labels.
 
+- Added `continue-ticket` and `post-merge-cleanup` Claude Code skills to the repo (moved over from a personal skills directory, unchanged) so resuming a ticket or tidying up after a merge follows the same shared workflow as `new-ticket`/`commit-push`/`open-pr`.
+
 ### Changed
-- Consolidated the personal `new-ticket` and `commit-and-push` Claude Code skills back into their repo-level counterparts (kept the worktree/SPEC.md/memory-seeding workflow and no-reconfirm push, adopted the repo's Plan-Mode interview and ticket-number commit format), and moved `continue-ticket`/`post-merge-cleanup` into the repo so all ticket-lifecycle skills live in one shared place.
+- Consolidated the personal `new-ticket` and `commit-and-push` Claude Code skills back into their repo-level counterparts: kept the worktree/SPEC.md/memory-seeding workflow and no-reconfirm push, adopted the repo's Plan-Mode interview and ticket-number commit format. Also updated `open-pr` to confirm separately before any push it triggers itself (rather than inheriting `commit-push`'s implicit consent) and to open PRs as drafts by default, matching the convention `continue-ticket` already assumed.
 
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
 
