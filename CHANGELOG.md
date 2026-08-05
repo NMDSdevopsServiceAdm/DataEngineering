@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 
 - Added `PublishedJobRoleLabels` categorical values class defining the canonical set of published ASC-WDS job role labels.
 
+- Added `relabel_job_role_columns` to the SLV prepare job, renaming merged `jrNN` job role columns to their published labels, and a matching validation check confirming the rename completed.
+
 ### Changed
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
 

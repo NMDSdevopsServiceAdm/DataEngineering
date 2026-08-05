@@ -80,6 +80,7 @@ class ValidatePreparedSLVDataTests(unittest.TestCase):
 
         expected_assertions = {
             "row_count_match",
+            "specially",
         }
 
         for assertion in expected_assertions:

@@ -1,7 +1,10 @@
+import re
 import sys
 
 import pointblank as pb
+import polars as pl
 
+import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as pUtils
 from polars_utils import utils
 from polars_utils.filtering_utils import (
     earliest_file_per_month_filter_expr,
@@ -12,11 +15,48 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
+    AscwdsWorkerValueLabelsMainjrid,
+)
 
 COMPARE_COLS_TO_IMPORT = [
     AWPClean.establishment_id,
     AWPClean.ascwds_workplace_import_date,
 ]
+
+RAW_JOB_ROLE_CODE_COLUMN_PATTERN = re.compile(r"^jr\d+(emp|strt|stop|vacy)$")
+
+KNOWN_JOB_ROLE_LABELS = set(AscwdsWorkerValueLabelsMainjrid.labels_dict.values()) | set(
+    pUtils.SYNTHETIC_JOB_ROLE_LABELS.values()
+)
+
+
+def no_leftover_raw_job_role_code_columns(df: pl.DataFrame) -> bool:
+    """Checks that no jrNN{suffix}-coded job role columns remain in df.
+
+    Args:
+        df (pl.DataFrame): the dataframe to check
+
+    Returns:
+        bool: True if no columns match the raw jrNN{suffix} code shape
+    """
+    return not any(RAW_JOB_ROLE_CODE_COLUMN_PATTERN.match(col) for col in df.columns)
+
+
+def has_published_job_role_label_columns(df: pl.DataFrame) -> bool:
+    """Checks that at least one column is named after a known published job role label.
+
+    Args:
+        df (pl.DataFrame): the dataframe to check
+
+    Returns:
+        bool: True if at least one column starts with a known job role label
+    """
+    return any(
+        col.startswith(f"{label}_")
+        for col in df.columns
+        for label in KNOWN_JOB_ROLE_LABELS
+    )
 
 
 def main(
@@ -67,7 +107,17 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        ).interrogate()
+        )
+        # job role relabelling
+        .specially(
+            no_leftover_raw_job_role_code_columns,
+            brief="No leftover jrNN-coded job role columns should remain after relabelling",
+        )
+        .specially(
+            has_published_job_role_label_columns,
+            brief="Job role columns should be present, named after their published labels",
+        )
+        .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
 
