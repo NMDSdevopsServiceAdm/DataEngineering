@@ -11,7 +11,6 @@ import polars.selectors as cs
 from botocore.exceptions import ClientError
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.s3_file_utils import split_s3_uri
 
 SCHEMA_DISCOVERY_MAX_WORKERS = 20
 
@@ -292,6 +291,20 @@ def list_s3_parquet_import_dates(s3_prefix: str) -> list[int]:
                 dates.append(date_val)
 
     return sorted(dates)
+
+
+def split_s3_uri(uri: str) -> tuple[str, str]:
+    """
+    Converts a given string of an s3 uri into its bucket and key names
+
+    Args:
+        uri (str): The s3 uri to be split.
+
+    Returns:
+        tuple[str, str]: A tuple of the bucket and key substrings from the s3 uri.
+    """
+    bucket, prefix = uri.replace("s3://", "").split("/", 1)
+    return bucket, prefix
 
 
 def discover_combined_schema(source: str) -> pl.Schema:

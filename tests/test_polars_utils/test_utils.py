@@ -623,6 +623,15 @@ class SendSnsNotificationTests(TestUtils):
         self.assertEqual("2025-06-19", utils.parse_arg_by_type("2025-06-19"))
 
 
+class TestSplitS3Uri(TestUtils):
+    def test_split_s3_uri(self):
+        s3_uri = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/"
+        bucket_name, key_name = utils.split_s3_uri(s3_uri)
+
+        self.assertEqual(bucket_name, "sfc-data-engineering-raw")
+        self.assertEqual(key_name, "domain=ASCWDS/dataset=workplace/")
+
+
 class TestFilterToMaximumValueInColumn(TestUtils):
     def setUp(self) -> None:
         super().setUp()
