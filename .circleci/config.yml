@@ -78,9 +78,6 @@ jobs:
           command: |
             apt-get update
             apt-get install -y default-jre-headless
-      - restore_cache:
-          keys:
-            - v1-test-deps-{{ checksum "uv.lock" }}
       - run:
           name: install dependencies
           command: uv sync --locked
@@ -88,11 +85,6 @@ jobs:
       - run:
             name: Fetch Spark JARs
             command: uv run python scripts/fetch_spark_dependencies.py
-      - save_cache:
-          key: v1-test-deps-{{ checksum "uv.lock" }}
-          paths:
-            - /root/.cache/uv
-            - /root/.ivy2
       - run:
           name: Run unit tests and generate coverage
           command: |
