@@ -23,7 +23,6 @@ target "delta_cqc" {
   dockerfile = "./projects/_01_ingest/cqc_api/fargate/Dockerfile"
   tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/cqc:${SANITISED_CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
-  no-cache = true
 }
 
 target "ingest_ascwds" {
@@ -31,7 +30,6 @@ target "ingest_ascwds" {
   dockerfile = "./projects/_01_ingest/ascwds/fargate/Dockerfile"
   tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/ascwds:${SANITISED_CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
-  no-cache = true
 }
 
 target "_02_sfc_internal" {
@@ -39,7 +37,6 @@ target "_02_sfc_internal" {
   dockerfile = "./projects/_02_sfc_internal/cqc_coverage/fargate/Dockerfile"
   tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/02_sfc_internal:${SANITISED_CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
-  no-cache = true
 }
 
 target "_03_independent_cqc" {
@@ -47,7 +44,6 @@ target "_03_independent_cqc" {
   dockerfile = "./projects/_03_independent_cqc/Dockerfile_and_requirements/Dockerfile"
   tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/03_independent_cqc:${SANITISED_CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
-  no-cache = true
 }
 
 target "_03_independent_cqc_model" {
@@ -55,7 +51,6 @@ target "_03_independent_cqc_model" {
   dockerfile = "./projects/_03_independent_cqc/_04_model/fargate/Dockerfile"
   tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/03_independent_cqc_model:${SANITISED_CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
-  no-cache = true
 }
 
 target "_04_direct_payments" {
@@ -63,7 +58,6 @@ target "_04_direct_payments" {
   dockerfile = "./projects/_04_direct_payment_recipients/Dockerfile_and_requirements/Dockerfile"
   tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/04_direct_payments:${SANITISED_CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
-  no-cache = true
 }
 
 target "_07_workforce_characteristics" {
@@ -71,5 +65,4 @@ target "_07_workforce_characteristics" {
   dockerfile = "./projects/_07_workforce_characteristics/dockerfile_and_requirements/Dockerfile"
   tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/07_workforce_characteristics:${SANITISED_CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
-  no-cache = true
 }

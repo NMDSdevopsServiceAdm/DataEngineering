@@ -54,6 +54,8 @@ All notable changes to this project will be documented in this file.
 - Migrated dependency and tool management to `uv`
 
 ### Improved
+- Reduced CircleCI credit usage by removing `no-cache = true` from all `docker-bake.hcl` image targets, so the already-enabled Docker layer caching actually takes effect, and by caching the `test` job's `uv` and Spark/Ivy dependency downloads, keyed on `uv.lock`.
+
 - Replaced the fan-out join that broadcast the primary service rate of change trendline back onto every location row with an `.over()`-based broadcast computed in place, reducing peak memory in the imputation pipeline.
 
 - Removed mid-pipeline LazyFrame collects from the PIR-to-filled-posts ratio and non-residential rate-of-change cleaning steps in the imputation pipeline, computing them as lazy expressions instead so the query stays fused end-to-end.
