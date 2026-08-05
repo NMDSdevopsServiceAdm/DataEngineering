@@ -3,35 +3,36 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.5"
 
-from utils import utils
+from projects._01_ingest.utils import utils as iUtils
+from utils import s3_file_utils, utils
 
 
 def main(source, destination):
-    if utils.is_csv(source):
+    if iUtils.is_csv(source):
         print("Single file provided to job. Handling single file.")
-        bucket, key = utils.split_s3_uri(source)
+        bucket, key = s3_file_utils.split_s3_uri(source)
         print(destination)
-        new_destination = utils.construct_destination_path(destination, key)
+        new_destination = iUtils.construct_destination_path(destination, key)
         print(new_destination)
         handle_job(source, bucket, key, new_destination)
         return
 
     print("Multiple files provided to job. Handling each file...")
-    bucket, prefix = utils.split_s3_uri(source)
-    objects_list = utils.get_s3_objects_list(bucket, prefix)
+    bucket, prefix = s3_file_utils.split_s3_uri(source)
+    objects_list = iUtils.get_s3_objects_list(bucket, prefix)
 
     print("Objects list:")
     print(objects_list)
 
     for key in objects_list:
-        new_source = utils.construct_s3_uri(bucket, key)
-        new_destination = utils.construct_destination_path(destination, key)
+        new_source = iUtils.construct_s3_uri(bucket, key)
+        new_destination = iUtils.construct_destination_path(destination, key)
         handle_job(new_source, bucket, key, new_destination)
 
 
 def handle_job(source: str, source_bucket: str, source_key: str, destination: str):
-    file_sample = utils.read_partial_csv_content(source_bucket, source_key)
-    delimiter = utils.identify_csv_delimiter(file_sample)
+    file_sample = iUtils.read_partial_csv_content(source_bucket, source_key)
+    delimiter = iUtils.identify_csv_delimiter(file_sample)
     ingest_dataset(source, destination, delimiter)
 
 

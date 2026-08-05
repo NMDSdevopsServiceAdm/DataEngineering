@@ -130,5 +130,5 @@ class TestComputeGlobalRatio:
             orient="row",
         )
 
-        ratio = job.compute_global_ratio(lf)
+        ratio = lf.select(job.compute_global_ratio()).collect().item()
         assert ratio == pytest.approx(case.expected_ratio)
