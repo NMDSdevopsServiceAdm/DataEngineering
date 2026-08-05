@@ -41,17 +41,21 @@ def no_leftover_raw_job_role_code_columns(df: pl.DataFrame) -> bool:
 def has_all_published_job_role_label_columns(df: pl.DataFrame) -> bool:
     """Checks that every published job role label has a corresponding column in df.
 
+    Compares against the exact label portion of each column (everything
+    before its trailing `_{suffix}`), not a prefix match - several labels
+    share a prefix (`other`, `other_managers`, `other_regulated_professions`,
+    `other_direct_care`), so a `startswith` check would let a sibling label's
+    column mask a missing one.
+
     Args:
         df (pl.DataFrame): the dataframe to check
 
     Returns:
         bool: True if every published job role label has at least one
-            column starting with it
+            matching column
     """
-    return all(
-        any(col.startswith(f"{label}_") for col in df.columns)
-        for label in PUBLISHED_JOB_ROLE_LABELS
-    )
+    column_labels = {col.rsplit("_", 1)[0] for col in df.columns}
+    return all(label in column_labels for label in PUBLISHED_JOB_ROLE_LABELS)
 
 
 def main(

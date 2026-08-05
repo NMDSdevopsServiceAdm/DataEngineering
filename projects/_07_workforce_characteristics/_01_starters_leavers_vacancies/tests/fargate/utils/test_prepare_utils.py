@@ -75,6 +75,7 @@ class TestRelabelJobRoleColumns:
             "16",
             "17",
             "43",
+            "52",
             "1001",
             "1002",
             "1003",
