@@ -245,3 +245,19 @@ class TestBoundingExpressions:
         returned_lf = test_lf.with_columns(exprs.slv_expr)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+
+class TestMergeLegacyJobRoleColumns:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.merge_legacy_job_role_columns_test_cases
+        ],
+    )
+    def test_merge_legacy_job_role_columns(self, case):
+        test_lf = pl.LazyFrame(case.input_data)
+        expected_lf = pl.LazyFrame(case.expected_data)
+        returned_lf = job.merge_legacy_job_role_columns(test_lf, case.mapping)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
