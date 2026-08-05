@@ -82,24 +82,26 @@ class TestCalculateRollingSums:
 
 class TestCleanNonResidentialRateOfChange:
     @pytest.mark.parametrize(
-        "expected_data",
+        "case",
         [
-            case.as_pytest_param()
+            pytest.param(case, id=case.id)
             for case in Data.clean_non_residential_rate_of_change_test_cases
         ],
     )
-    def test_clean_non_residential_rate_of_change_returns_expected_output(
-        self, expected_data
-    ):
+    def test_clean_non_residential_rate_of_change_returns_expected_output(self, case):
         expected_lf = pl.LazyFrame(
-            expected_data,
+            case.data,
             Schemas.expected_clean_non_residential_rate_of_change_schema,
             orient="row",
         )
         input_lf = expected_lf.drop(
             job.TempCol.previous_period_cleaned, job.TempCol.current_period_cleaned
         )
-        returned_lf = job.clean_non_residential_rate_of_change(input_lf)
+        returned_lf = job.clean_non_residential_rate_of_change(
+            input_lf,
+            abs_percentile=case.abs_percentile,
+            perc_percentile=case.perc_percentile,
+        )
         pl_testing.assert_frame_equal(
             returned_lf,
             expected_lf,

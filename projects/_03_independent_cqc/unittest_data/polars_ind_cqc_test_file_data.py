@@ -2815,6 +2815,8 @@ class ModelRateOfChangeInputOutputTestCase:
 class ModelRateOfChangeOutputOnlyTestCase:
     id: str
     data: list[Any]
+    abs_percentile: float = 0.99
+    perc_percentile: float = 0.99
 
     def as_pytest_param(self):
         return pytest.param(self.data, id=self.id)
@@ -2973,6 +2975,18 @@ class ModelRateOfChangeData:
             data=[
                 ("1-001", CareHome.care_home, date(2026, 1, 1), 10.0, 1000.0, 10.0, 1000.0),
             ],
+        ),
+        ModelRateOfChangeOutputOnlyTestCase(
+            id="large_non_residential_change_above_percentile_is_rejected",
+            data=[
+                ("2-001", CareHome.not_care_home, date(2026, 1, 1), 20.0, 21.0, 20.0, 21.0),
+                ("2-002", CareHome.not_care_home, date(2026, 1, 2), 20.0, 21.0, 20.0, 21.0),
+                ("2-003", CareHome.not_care_home, date(2026, 1, 3), 20.0, 21.0, 20.0, 21.0),
+                ("2-004", CareHome.not_care_home, date(2026, 1, 4), 20.0, 21.0, 20.0, 21.0),
+                ("2-005", CareHome.not_care_home, date(2026, 1, 5), 20.0, 100.0, None, None), # outlier: rejected by median threshold
+            ],
+            abs_percentile=0.5,
+            perc_percentile=0.5,
         ),
     ] # fmt: skip
 
