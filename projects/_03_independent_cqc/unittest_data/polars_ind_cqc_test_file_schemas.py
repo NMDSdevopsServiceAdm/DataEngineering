@@ -859,16 +859,11 @@ class ForwardFillLatestKnownValue:
     last_known_date: str = "last_known_date"
     last_known_value: str = "last_known_value"
 
-    input_return_last_known_value_locations_schema = pl.Schema(
+    expected_return_last_known_value_locations_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.cqc_location_import_date, pl.Date()),
             (col_to_forward_fill, pl.Int64()),
-        ]
-    )
-    expected_return_last_known_value_locations_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
             (last_known_date, pl.Date()),
             (last_known_value, pl.Int64()),
         ]
