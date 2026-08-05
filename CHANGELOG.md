@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added dependency caching (`uv` and Spark/Ivy JARs, keyed on `uv.lock`) to the `test` job, plus timing output around the `install dependencies` and `Fetch Spark JARs` steps, to measure whether caching actually reduces the job's runtime before deciding whether to keep it (split out from 1852 pending that data).
+
 - Added `new-ticket`, `commit-push`, and `open-pr` Claude Code skills to run the ticket workflow (branch → SPEC → commits → PR) consistently, and an output-style guideline in CLAUDE.md. Trimmed the existing skills to cross-reference CLAUDE.md/PR templates instead of restating them, and updated remaining `pipenv` mentions to their `uv` equivalents.
 
 - Added a skeleton `_00_prepare` task (with validation) ahead of the merge step in the SLV pipeline, and rewired the merge step to read its output.
