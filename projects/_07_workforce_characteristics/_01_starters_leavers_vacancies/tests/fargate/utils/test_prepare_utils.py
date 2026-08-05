@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 import polars as pl
 import polars.testing as pl_testing
 import pytest
@@ -34,62 +32,19 @@ class TestPivotJobRoleColsToRows:
         pass
 
 
-@dataclass
-class RelabelJobRoleColumnsTestCase:
-    id: str
-    input_columns: list[str]
-    expected_columns: list[str]
-
-    def as_pytest_param(self):
-        return pytest.param(self.input_columns, self.expected_columns, id=self.id)
-
-
-relabel_job_role_columns_cases = [
-    RelabelJobRoleColumnsTestCase(
-        id="known_code_renames_to_published_label_and_suffix",
-        input_columns=["jr01emp"],
-        expected_columns=["senior_management_emp"],
-    ),
-    RelabelJobRoleColumnsTestCase(
-        id="suffix_is_derived_per_column_not_a_fixed_list",
-        input_columns=["jr04strt", "jr06stop", "jr07vacy"],
-        expected_columns=["registered_manager_strt", "social_worker_stop", "senior_care_worker_vacy"],
-    ),
-    RelabelJobRoleColumnsTestCase(
-        id="synthetic_merged_codes_rename_via_synthetic_dict",
-        input_columns=["jr1001emp", "jr1002strt", "jr1003stop", "jr1004vacy"],
-        expected_columns=[
-            "other_managers_emp",
-            "other_regulated_professions_strt",
-            "other_direct_care_stop",
-            "other_vacy",
-        ],
-    ),
-    RelabelJobRoleColumnsTestCase(
-        id="non_jr_prefixed_columns_are_left_untouched",
-        input_columns=["establishment_id", "jr08emp"],
-        expected_columns=["establishment_id", "care_worker_emp"],
-    ),
-    RelabelJobRoleColumnsTestCase(
-        id="no_job_role_columns_present_is_a_no_op",
-        input_columns=["establishment_id", "ascwds_workplace_import_date"],
-        expected_columns=["establishment_id", "ascwds_workplace_import_date"],
-    ),
-]  # fmt: skip
-
-
 class TestRelabelJobRoleColumns:
     @pytest.mark.parametrize(
-        "input_columns,expected_columns",
-        [case.as_pytest_param() for case in relabel_job_role_columns_cases],
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.relabel_job_role_columns_test_cases
+        ],
     )
-    def test_function_renames_columns_as_expected(
-        self, input_columns: list[str], expected_columns: list[str]
-    ):
-        test_data = [tuple(range(len(input_columns)))]
+    def test_function_renames_columns_as_expected(self, case):
+        test_data = [tuple(range(len(case.input_columns)))]
         test_lf = pl.LazyFrame(
             test_data,
-            schema={col: pl.Int64 for col in input_columns},
+            schema={col: pl.Int64 for col in case.input_columns},
             orient="row",
         )
 
@@ -97,7 +52,7 @@ class TestRelabelJobRoleColumns:
 
         expected_lf = pl.LazyFrame(
             test_data,
-            schema={col: pl.Int64 for col in expected_columns},
+            schema={col: pl.Int64 for col in case.expected_columns},
             orient="row",
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
