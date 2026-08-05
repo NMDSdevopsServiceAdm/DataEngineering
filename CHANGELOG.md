@@ -23,6 +23,8 @@ All notable changes to this project will be documented in this file.
 - Added `PublishedJobRoleLabels` categorical values class defining the canonical set of published ASC-WDS job role labels.
 
 ### Changed
+- Consolidated the personal `new-ticket` and `commit-and-push` Claude Code skills back into their repo-level counterparts (kept the worktree/SPEC.md/memory-seeding workflow and no-reconfirm push, adopted the repo's Plan-Mode interview and ticket-number commit format), and moved `continue-ticket`/`post-merge-cleanup` into the repo so all ticket-lifecycle skills live in one shared place.
+
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
 
 - Updated polars to 1.41.2 and pointblank to 0.24.0, and reworked `split_dataset_for_imputation` to use a semi/anti join instead of an `.over()`-based window filter, avoiding both a polars optimiser crash on the newer version and reducing peak memory under the streaming engine. Fargate Docker requirements are now split between a shared `docker_requirements/requirements.txt` for deps common to every project and small per-project `requirements-extra.txt` files for the two projects with additional deps (cqc_api; _04_model), instead of one shared file installing every project's deps everywhere.
