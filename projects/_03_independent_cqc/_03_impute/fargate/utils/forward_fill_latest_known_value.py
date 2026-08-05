@@ -53,13 +53,11 @@ def forward_fill_latest_known_value(
         pl.LazyFrame: The polars LazyFrame with null values in `col_to_repeat`
             replaced where appropriate.
     """
-    last_known_lf = return_last_known_value(lf, col_to_forward_fill)
+    lf = return_last_known_value(lf, col_to_forward_fill)
 
-    last_known_lf = add_size_based_forward_fill_days(
-        last_known_lf, TempCols.last_known_value, SIZE_BASED_FORWARD_FILL_DAYS
+    lf = add_size_based_forward_fill_days(
+        lf, TempCols.last_known_value, SIZE_BASED_FORWARD_FILL_DAYS
     )
-
-    lf = lf.join(last_known_lf, on=IndCQC.location_id, how="left")
 
     forward_fill_lf = forward_fill(lf, col_to_forward_fill)
 
@@ -117,21 +115,26 @@ def return_last_known_value(
         pl.LazyFrame: A polars LazyFrame with last known non-null value and the
             date when it has the last non-null value.
     """
-    lf_with_last_known = (
-        lf.filter(pl.col(col_to_forward_fill).is_not_null())
-        .sort(IndCQC.cqc_location_import_date)
-        # polars_streaming: groupby+agg workaround; could be .max().over() when window functions support streaming
-        .group_by(IndCQC.location_id)
-        .agg(
-            [
-                pl.col(IndCQC.cqc_location_import_date)
-                .last()
-                .alias(TempCols.last_known_date),
-                pl.col(col_to_forward_fill).last().alias(TempCols.last_known_value),
-            ]
-        )
+    is_observed = pl.col(col_to_forward_fill).is_not_null()
+
+    last_known_date_expr = (
+        pl.when(is_observed)
+        .then(pl.col(IndCQC.cqc_location_import_date))
+        .max()
+        .over(IndCQC.location_id)
     )
-    return lf_with_last_known
+    is_last_observed_row = is_observed & (
+        pl.col(IndCQC.cqc_location_import_date) == last_known_date_expr
+    )
+
+    return lf.with_columns(
+        last_known_date_expr.alias(TempCols.last_known_date),
+        pl.when(is_last_observed_row)
+        .then(pl.col(col_to_forward_fill))
+        .max()
+        .over(IndCQC.location_id)
+        .alias(TempCols.last_known_value),
+    )
 
 
 def forward_fill(lf: pl.LazyFrame, col_to_forward_fill: str) -> pl.LazyFrame:
