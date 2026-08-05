@@ -20,26 +20,32 @@ class ReturnLastKnownValueTests(unittest.TestCase):
     def test_last_known_returns_latest_non_null_value_per_location(
         self,
     ):
+        test_lf = pl.LazyFrame(
+            data=Data.last_known_latest_per_location_rows,
+            schema=Schemas.input_return_last_known_value_locations_schema,
+            orient="row",
+        )
         expected_lf = pl.LazyFrame(
             data=Data.expected_last_known_latest_per_location_rows,
             schema=Schemas.expected_return_last_known_value_locations_schema,
             orient="row",
         )
-        test_lf = expected_lf.drop(["last_known_date", "last_known_value"])
-
         returned_lf = job.return_last_known_value(test_lf, "col_to_forward_fill")
         pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), expected_lf)
 
     def test_last_known_ignores_null_values_when_identifying_last_known(
         self,
     ):
+        test_lf = pl.LazyFrame(
+            data=Data.last_known_ignores_null_rows,
+            schema=Schemas.input_return_last_known_value_locations_schema,
+            orient="row",
+        )
         expected_lf = pl.LazyFrame(
             data=Data.expected_last_known_ignores_null_rows,
             schema=Schemas.expected_return_last_known_value_locations_schema,
             orient="row",
         )
-        test_lf = expected_lf.drop(["last_known_date", "last_known_value"])
-
         returned_lf = job.return_last_known_value(test_lf, "col_to_forward_fill")
         pl_testing.assert_frame_equal(returned_lf.sort(IndCQC.location_id), expected_lf)
 

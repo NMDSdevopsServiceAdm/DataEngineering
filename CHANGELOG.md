@@ -22,8 +22,12 @@ All notable changes to this project will be documented in this file.
 
 - Converted merge_ascwds_and_pir_filled_post_submissions to polars.
 
+- Added `PublishedJobRoleLabels` categorical values class defining the canonical set of published ASC-WDS job role labels.
+
 ### Changed
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
+
+- Updated polars to 1.41.2 and pointblank to 0.24.0, and reworked `split_dataset_for_imputation` to use a semi/anti join instead of an `.over()`-based window filter, avoiding both a polars optimiser crash on the newer version and reducing peak memory under the streaming engine. Fargate Docker requirements are now split between a shared `docker_requirements/requirements.txt` for deps common to every project and small per-project `requirements-extra.txt` files for the two projects with additional deps (cqc_api; _04_model), instead of one shared file installing every project's deps everywhere.
 
 - Pull clean workplace columns into merge job within SLV pipeline.
 
@@ -47,16 +51,14 @@ All notable changes to this project will be documented in this file.
 
 - Changed the grouped provider history to only record locations whose ASCWDS data was actually nulled by `null_care_home_grouped_providers`/`null_non_residential_grouped_providers`, rather than every structurally-potential grouped provider. Also reordered columns for ease of usage, and made `GROUPED_PROVIDER_SCHEMA` the single source of truth.
 
+- Moved the non-PySpark helper functions into `utils/s3_file_utils.py`, then relocated the ones only used within ingestion (`is_csv`, `identify_csv_delimiter`, `read_partial_csv_content`, `get_s3_objects_list`, `get_file_directory`, `construct_s3_uri`, `construct_destination_path`) to `projects/_01_ingest/utils/utils.py`, imported as `iUtils`, since `split_s3_uri` is the only one also needed outside `_01_ingest` (by `polars_utils/utils.py`). Removed the unused `get_model_name` function, and narrowed the ASC-WDS and CQC API Fargate Dockerfiles to stop copying the whole `utils/` tree.
+
 - Migrated dependency and tool management to `uv`
 
 ### Improved
 - Replaced the fan-out join that broadcast the primary service rate of change trendline back onto every location row with an `.over()`-based broadcast computed in place, reducing peak memory in the imputation pipeline.
 
-- Changed split_dataset_for_imputation to use semi/anti joins instead of .over()
-
-- Changed build_extrapolation_aggregates to use .over() instead of filter > group-by > agg > join
-
-- Changed return_last_known_value to use .over() instead of filter > group-by > agg > join
+- Removed mid-pipeline LazyFrame collects from the PIR-to-filled-posts ratio and non-residential rate-of-change cleaning steps in the imputation pipeline, computing them as lazy expressions instead so the query stays fused end-to-end.
 
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.

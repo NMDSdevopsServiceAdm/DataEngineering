@@ -101,7 +101,6 @@ def split_dataset_for_imputation(
             - imputation_lf: LazyFrame with rows meeting the criteria for imputation.
             - non_imputation_lf: LazyFrame with rows not meeting the criteria.
     """
-
     if care_home:
         care_home_filter_expr: pl.Expr = is_care_home()
     else:

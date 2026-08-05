@@ -56,9 +56,11 @@ def model_extrapolation(
     Raises:
         ValueError: If `extrapolation_method` is not "ratio" or "nominal".
     """
-    lf = build_extrapolation_aggregates(
+    agg_lf = build_extrapolation_aggregates(
         lf, column_with_null_values, model_to_extrapolate_from
     )
+
+    lf = lf.join(agg_lf, on=IndCqc.location_id, how="left")
 
     # Only keep model values when we actually have an observation
     lf = lf.with_columns(
@@ -111,14 +113,16 @@ def build_extrapolation_aggregates(
     lf: pl.LazyFrame, value_col: str, model_col: str
 ) -> pl.LazyFrame:
     """
-    Add per-location extrapolation boundary values as columns on every row.
+    Compute per-group aggregates required for extrapolation.
 
-    For each `location_id`, computes the first and last submission dates where
-    `value_col` is non-null, and the `value_col`/`model_col` values observed on
-    that first submission date. These are added as new columns rather than
-    aggregated into a separate LazyFrame, so no join is needed to bring them
-    back onto the full dataset — cheaper than the group_by+join equivalent
-    since it avoids materialising and merging a second frame.
+    This function filters to rows where `value_col` is non-null and calculates,
+    for each `location_id`:
+        - The first and last submission timestamps
+        - The first observed value of `value_col`
+        - The corresponding first value of the model column
+
+    These aggregates are later joined back to the original dataset to support
+    backward extrapolation and boundary detection.
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame containing time series data.
@@ -126,36 +130,20 @@ def build_extrapolation_aggregates(
         model_col (str): Column containing model values used for extrapolation.
 
     Returns:
-        pl.LazyFrame: The input LazyFrame with four extra columns —
-            `first_submission_time`, `final_submission_time`, `first_value`, and
-            `first_model` — repeated across every row for a given `location_id`.
+        pl.LazyFrame: Aggregated LazyFrame with one row per `location_id`,
+        containing the required extrapolation metadata.
     """
-    is_observed = pl.col(value_col).is_not_null()
-
-    first_submission_time_expr = (
-        pl.when(is_observed).then(pl.col(IMPORT_DATE)).min().over(IndCqc.location_id)
-    )
-    is_first_observed_row = is_observed & (
-        pl.col(IMPORT_DATE) == first_submission_time_expr
-    )
-
-    return lf.with_columns(
-        first_submission_time_expr.alias(TEMP.first_submission_time),
-        pl.when(is_observed)
-        .then(pl.col(IMPORT_DATE))
-        .max()
-        .over(IndCqc.location_id)
-        .alias(TEMP.final_submission_time),
-        pl.when(is_first_observed_row)
-        .then(pl.col(value_col))
-        .max()
-        .over(IndCqc.location_id)
-        .alias(TEMP.first_value),
-        pl.when(is_first_observed_row)
-        .then(pl.col(model_col))
-        .max()
-        .over(IndCqc.location_id)
-        .alias(TEMP.first_model),
+    return (
+        lf.filter(pl.col(value_col).is_not_null())
+        # polars_streaming: groupby+agg workaround; could be .min().over() and .max().over() when window functions support streaming
+        .group_by(IndCqc.location_id).agg(
+            [
+                pl.col(IMPORT_DATE).min().alias(TEMP.first_submission_time),
+                pl.col(IMPORT_DATE).max().alias(TEMP.final_submission_time),
+                pl.col(value_col).sort_by(IMPORT_DATE).first().alias(TEMP.first_value),
+                pl.col(model_col).sort_by(IMPORT_DATE).first().alias(TEMP.first_model),
+            ]
+        )
     )
 
 

@@ -5,7 +5,7 @@ import boto3
 import polars as pl
 
 import polars_utils.cleaning_utils as cUtils
-from polars_utils.utils import split_s3_uri
+from utils.s3_file_utils import split_s3_uri
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
