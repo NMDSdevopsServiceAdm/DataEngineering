@@ -79,7 +79,7 @@ def compute_global_ratio(df: DataFrame) -> float:
     return posts_sum / people_sum
 
 
-# converted to polars -> projects\_03_independent_cqc\_03_impute\fargate\utils\combine_ascwds_and_pir.py
+# TO DO - write polars code here - projects\_03_independent_cqc\_03_impute\fargate\utils\combine_ascwds_and_pir.py
 def merge_ascwds_and_pir_filled_post_submissions(df: DataFrame) -> DataFrame:
     """
     Merges ASCWDS and PIR filled post estimates based on recently and similarity thresholds and stores in a new column.
@@ -107,7 +107,6 @@ def merge_ascwds_and_pir_filled_post_submissions(df: DataFrame) -> DataFrame:
     return df
 
 
-# converted to polars -> projects\_03_independent_cqc\_03_impute\fargate\utils\combine_ascwds_and_pir.py
 def create_repeated_ascwds_clean_column(df: DataFrame) -> DataFrame:
     """
     Creates a column containing cleaned ascwds filled posts filled forwards.
@@ -132,7 +131,6 @@ def create_repeated_ascwds_clean_column(df: DataFrame) -> DataFrame:
     return df
 
 
-# converted to polars -> projects\_03_independent_cqc\_03_impute\fargate\utils\combine_ascwds_and_pir.py
 def create_last_submission_columns(df: DataFrame) -> DataFrame:
     """
     Creates columns containing the latest submission dates by location id for ascwds and pir data.
@@ -172,7 +170,6 @@ def create_last_submission_columns(df: DataFrame) -> DataFrame:
     return df
 
 
-# converted to polars -> projects\_03_independent_cqc\_03_impute\fargate\utils\combine_ascwds_and_pir.py
 def create_ascwds_pir_merged_column(df: DataFrame) -> DataFrame:
     """
     Merges ASCWDS and PIR filled post estimates based on recently and similarity thresholds and stores in a new column.
@@ -224,7 +221,6 @@ def create_ascwds_pir_merged_column(df: DataFrame) -> DataFrame:
     return df
 
 
-# converted to polars -> projects\_03_independent_cqc\_03_impute\fargate\utils\combine_ascwds_and_pir.py
 def include_pir_if_never_submitted_ascwds(df: DataFrame) -> DataFrame:
     """
     Updates the 'ascwds_pir_merged' column to use PIR filled posts model values for locations who have never submitted ASC-WDS data.
@@ -256,7 +252,6 @@ def include_pir_if_never_submitted_ascwds(df: DataFrame) -> DataFrame:
     return df
 
 
-# converted to polars -> projects\_03_independent_cqc\_03_impute\fargate\utils\combine_ascwds_and_pir.py
 def drop_temporary_columns(df: DataFrame) -> DataFrame:
     """
     Drops temporary columns from the blend pir and ascwds function.

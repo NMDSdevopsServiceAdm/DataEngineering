@@ -5,9 +5,6 @@ import polars as pl
 from polars_utils import cleaning_utils as cUtils
 from polars_utils import utils
 from polars_utils.expressions import is_care_home
-from projects._03_independent_cqc._03_impute.fargate.utils.combine_ascwds_and_pir import (
-    merge_ascwds_and_pir_filled_post_submissions,
-)
 from projects._03_independent_cqc._03_impute.fargate.utils.convert_pir_people_to_filled_posts import (
     convert_pir_to_filled_posts,
 )
@@ -36,7 +33,6 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         destination (str): s3 path to save the output data
     """
     lf = utils.scan_parquet(cleaned_ind_cqc_source)
-
     print("Cleaned IND CQC LazyFrame read in")
 
     lf = forward_fill_latest_known_value(lf, IndCQC.ascwds_filled_posts_dedup_clean)
@@ -67,16 +63,17 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
 
     lf = convert_pir_to_filled_posts(lf)
 
-    lf = merge_ascwds_and_pir_filled_post_submissions(lf)
+    # merge_ascwds_and_pir_filled_post_submissions
 
-    lf = model_imputation(
-        lf,
-        IndCQC.ascwds_pir_merged,
-        IndCQC.ascwds_rate_of_change_trendline_model,
-        IndCQC.imputed_filled_post_model,
-        care_home=False,
-        extrapolation_method="ratio",
-    )
+    # Uncomment this call when merge_ascwds_and_pir_filled_post_submissions is converted to polars.
+    # lf = model_imputation(
+    #     lf,
+    #     IndCQC.ascwds_pir_merged,
+    #     IndCQC.ascwds_rate_of_change_trendline_model,
+    #     IndCQC.imputed_filled_post_model,
+    #     care_home=False,
+    #     extrapolation_method="ratio",
+    # )
 
     lf = model_imputation(
         lf,
