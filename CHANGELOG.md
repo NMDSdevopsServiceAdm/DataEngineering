@@ -55,6 +55,8 @@ All notable changes to this project will be documented in this file.
 
 - Split the shared `merge_job_role_columns` function in Polars Utils into two independent copies, one per calling pipeline: `merge_legacy_job_role_columns` in the ASCWDS ingest clean job, and `reduce_to_published_roles` in the SLV prepare job. This removes the shared dependency ahead of a future refactor of the SLV pipeline's job role handling.
 
+- Reworked `reduce_to_published_roles` in the SLV prepare job to derive which raw ASC-WDS job role codes are published versus fold into an 'other' group from the team's own `PublishedJobRoleLabels`/job-group definitions, instead of a hand-maintained mapping dict that needed manual upkeep whenever ASC-WDS's raw job role codes changed.
+
 ### Improved
 - Replaced the fan-out join that broadcast the primary service rate of change trendline back onto every location row with an `.over()`-based broadcast computed in place, reducing peak memory in the imputation pipeline.
 

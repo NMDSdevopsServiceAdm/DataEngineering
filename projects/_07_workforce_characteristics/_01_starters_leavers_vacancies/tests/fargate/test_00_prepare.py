@@ -57,17 +57,22 @@ class TestPrepare:
         retention_filtered_lf.filter.assert_called_once_with(
             earliest_file_per_month_filter_expr_mock.return_value
         )
+        month_filtered_lf = retention_filtered_lf.filter.return_value
+
+        # The job-role totals columns (28-32) are dropped before reduce_to_published_roles
+        # runs, since they aren't real job role codes and would otherwise fail its
+        # uncatalogued-code check.
+        month_filtered_lf.drop.assert_called_once()
+        dropped_totals_lf = month_filtered_lf.drop.return_value
 
         # TODO: Uncomment these assertions when the placeholder functions are implemented
-        reduce_to_published_roles_mock.assert_called_once()
+        reduce_to_published_roles_mock.assert_called_once_with(dropped_totals_lf)
         merged_jr_cols_lf = reduce_to_published_roles_mock.return_value
-        merged_jr_cols_lf.drop.assert_called_once()
-        dropped_cols_lf = merged_jr_cols_lf.drop.return_value
         # pivot_job_role_cols_to_rows_mock.assert_called_once()
         # convert_job_role_strings_to_number_only_mock.assert_called_once()
         # apply_categorical_labels_mock.assert_called_once()
 
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=dropped_cols_lf,
+            lazy_df=merged_jr_cols_lf,
             output_path=self.PREPARED_DATA_DESTINATION,
         )
