@@ -6,8 +6,6 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Added dependency caching (`uv` and Spark/Ivy JARs, keyed on `uv.lock`) to the `test` job.
-
 - Added `new-ticket`, `commit-push`, and `open-pr` Claude Code skills to run the ticket workflow (branch → SPEC → commits → PR) consistently, and an output-style guideline in CLAUDE.md. Trimmed the existing skills to cross-reference CLAUDE.md/PR templates instead of restating them, and updated remaining `pipenv` mentions to their `uv` equivalents.
 
 - Added a skeleton `_00_prepare` task (with validation) ahead of the merge step in the SLV pipeline, and rewired the merge step to read its output.
@@ -58,6 +56,8 @@ All notable changes to this project will be documented in this file.
 - Split the shared `merge_job_role_columns` function in Polars Utils into two independent copies, one per calling pipeline: `merge_legacy_job_role_columns` in the ASCWDS ingest clean job, and `reduce_to_published_roles` in the SLV prepare job. This removes the shared dependency ahead of a future refactor of the SLV pipeline's job role handling.
 
 ### Improved
+- Added dependency caching (`uv` and Spark/Ivy JARs, keyed on `uv.lock`) to the CircleCI `test` job, cutting the `install dependencies` and `Fetch Spark JARs` steps' combined time (including cache restore/save overhead) from ~43s to ~20-23s per run, measured directly across cache-hit and forced cache-miss runs.
+
 - Replaced the fan-out join that broadcast the primary service rate of change trendline back onto every location row with an `.over()`-based broadcast computed in place, reducing peak memory in the imputation pipeline.
 
 - Removed mid-pipeline LazyFrame collects from the PIR-to-filled-posts ratio and non-residential rate-of-change cleaning steps in the imputation pipeline, computing them as lazy expressions instead so the query stays fused end-to-end.

@@ -83,11 +83,11 @@ jobs:
             - v1-test-deps-{{ checksum "uv.lock" }}
       - run:
           name: install dependencies
-          command: time uv sync --locked
+          command: uv sync --locked
       # Download the pydeequ dependency and configure.
       - run:
             name: Fetch Spark JARs
-            command: time uv run python scripts/fetch_spark_dependencies.py
+            command: uv run python scripts/fetch_spark_dependencies.py
       - save_cache:
           key: v1-test-deps-{{ checksum "uv.lock" }}
           paths:
