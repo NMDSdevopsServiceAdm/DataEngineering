@@ -40,7 +40,7 @@ class TestJobRoleCodeDerivation:
         assert "02" not in job.PUBLISHED_JOB_ROLE_CODES
 
     def test_unpublished_role_code_maps_to_expected_other_role_code(self):
-        assert "02" in job.OTHER_ROLE_CODE_TO_UNPUBLISHED_JOB_ROLE_CODES["1001"]
+        assert job.CODE_TO_OTHER_ROLE_CODE["02"] == "1001"
 
 
 class TestPivotJobRoleColsToRows:
