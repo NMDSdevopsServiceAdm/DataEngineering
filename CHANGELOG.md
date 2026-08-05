@@ -49,16 +49,24 @@ All notable changes to this project will be documented in this file.
 
 - Changed the grouped provider history to only record locations whose ASCWDS data was actually nulled by `null_care_home_grouped_providers`/`null_non_residential_grouped_providers`, rather than every structurally-potential grouped provider. Also reordered columns for ease of usage, and made `GROUPED_PROVIDER_SCHEMA` the single source of truth.
 
-- Moved the non-PySpark helper functions into `utils/s3_file_utils.py`, then relocated the ones only used within ingestion (`is_csv`, `identify_csv_delimiter`, `read_partial_csv_content`, `get_s3_objects_list`, `get_file_directory`, `construct_s3_uri`, `construct_destination_path`) to `projects/_01_ingest/utils/utils.py`, imported as `iUtils`, since `split_s3_uri` is the only one also needed outside `_01_ingest` (by `polars_utils/utils.py`). Removed the unused `get_model_name` function, and narrowed the ASC-WDS and CQC API Fargate Dockerfiles to stop copying the whole `utils/` tree.
+- Moved the non-PySpark ingestion related helper functions (`is_csv`, `identify_csv_delimiter`, `read_partial_csv_content`, `get_s3_objects_list`, `get_file_directory`, `construct_s3_uri`, `construct_destination_path`) into `projects/_01_ingest/utils/utils.py`. Removed the unused `get_model_name` function, and narrowed the ASC-WDS and CQC API Fargate Dockerfiles to stop copying the whole `utils/` tree.
 
 - Migrated dependency and tool management to `uv`
+
+- Split the shared `merge_job_role_columns` function in Polars Utils into two independent copies, one per calling pipeline: `merge_legacy_job_role_columns` in the ASCWDS ingest clean job, and `reduce_to_published_roles` in the SLV prepare job. This removes the shared dependency ahead of a future refactor of the SLV pipeline's job role handling.
 
 ### Improved
 - Reduced CircleCI credit usage by removing `no-cache = true` from all `docker-bake.hcl` image targets, so the already-enabled Docker layer caching actually takes effect instead of every image rebuilding from scratch on every push.
 
+- Added dependency caching (`uv` and Spark/Ivy JARs, keyed on `uv.lock`) to the CircleCI `test` job, saving ~10-13s per run on the `install dependencies` and `Fetch Spark JARs` steps versus no caching at all, measured directly across cache-hit and forced cache-miss runs including restore/save overhead.
+
 - Replaced the fan-out join that broadcast the primary service rate of change trendline back onto every location row with an `.over()`-based broadcast computed in place, reducing peak memory in the imputation pipeline.
 
 - Removed mid-pipeline LazyFrame collects from the PIR-to-filled-posts ratio and non-residential rate-of-change cleaning steps in the imputation pipeline, computing them as lazy expressions instead so the query stays fused end-to-end.
+
+- Changed build_extrapolation_aggregates to use .over() instead of filter > group-by > agg > join
+
+- Changed return_last_known_value to use .over() instead of filter > group-by > agg > join
 
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.

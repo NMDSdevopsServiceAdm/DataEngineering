@@ -959,31 +959,21 @@ class CleanUtilsData:
 
 @dataclass
 class ForwardFillLatestKnownValue:
-    last_known_latest_per_location_rows = [
-        ("loc-1", date(2025, 1, 1), 10),
-        ("loc-1", date(2025, 1, 2), 20),
-        ("loc-1", date(2025, 1, 3), 15),
-        ("loc-2", date(2025, 1, 1), 5),
-        ("loc-2", date(2025, 1, 3), 15),
-        ("loc-2", date(2025, 1, 4), 12),
-    ]
-
     expected_last_known_latest_per_location_rows = [
-        ("loc-1", date(2025, 1, 3), 15),
-        ("loc-2", date(2025, 1, 4), 12),
-    ]
-
-    last_known_ignores_null_rows = [
-        ("loc-1", date(2025, 1, 1), 10),
-        ("loc-1", date(2025, 1, 2), None),
-        ("loc-1", date(2025, 1, 3), None),
-        ("loc-2", date(2025, 1, 1), None),
-        ("loc-2", date(2025, 1, 3), 15),
+        ("loc-1", date(2025, 1, 1), 10, date(2025, 1, 3), 15),
+        ("loc-1", date(2025, 1, 2), 20, date(2025, 1, 3), 15),
+        ("loc-1", date(2025, 1, 3), 15, date(2025, 1, 3), 15),
+        ("loc-2", date(2025, 1, 1), 5, date(2025, 1, 4), 12),
+        ("loc-2", date(2025, 1, 3), 15, date(2025, 1, 4), 12),
+        ("loc-2", date(2025, 1, 4), 12, date(2025, 1, 4), 12),
     ]
 
     expected_last_known_ignores_null_rows = [
-        ("loc-1", date(2025, 1, 1), 10),
-        ("loc-2", date(2025, 1, 3), 15),
+        ("loc-1", date(2025, 1, 1), 10, date(2025, 1, 1), 10),
+        ("loc-1", date(2025, 1, 2), None, date(2025, 1, 1), 10),
+        ("loc-1", date(2025, 1, 3), None, date(2025, 1, 1), 10),
+        ("loc-2", date(2025, 1, 1), None, date(2025, 1, 3), 15),
+        ("loc-2", date(2025, 1, 3), 15, date(2025, 1, 3), 15),
     ]
 
     forward_fill_within_days_rows = [
@@ -2660,18 +2650,14 @@ class ModelExtrapolation:
         ("1-001", date(2026, 1, 1), None, 10.0, None, None),
     ]
 
-    extrapolation_aggregates_rows = [
-        ("1-001", date(2026, 1, 1), None, 10.0),
-        ("1-001", date(2026, 2, 1), 10.0, 20.0),
-        ("1-001", date(2026, 3, 1), 20.0, 30.0),
-        ("1-002", date(2026, 1, 1), 15.0, 40.0),
-        ("1-002", date(2026, 2, 1), None, 50.0),
-        ("1-003", date(2026, 1, 1), None, None),
-    ]
     expected_extrapolation_aggregates_rows = [
-        ("1-001", date(2026, 2, 1), date(2026, 3, 1), 10.0, 20.0),
-        ("1-002", date(2026, 1, 1), date(2026, 1, 1), 15.0, 40.0),
-    ]
+        ("1-001", date(2026, 1, 1), None, 10.0, date(2026, 2, 1), date(2026, 3, 1), 10.0, 20.0),
+        ("1-001", date(2026, 2, 1), 10.0, 20.0, date(2026, 2, 1), date(2026, 3, 1), 10.0, 20.0),
+        ("1-001", date(2026, 3, 1), 20.0, 30.0, date(2026, 2, 1), date(2026, 3, 1), 10.0, 20.0),
+        ("1-002", date(2026, 1, 1), 15.0, 40.0, date(2026, 1, 1), date(2026, 1, 1), 15.0, 40.0),
+        ("1-002", date(2026, 2, 1), None, 50.0, date(2026, 1, 1), date(2026, 1, 1), 15.0, 40.0),
+        ("1-003", date(2026, 1, 1), None, None, None, None, None, None),
+    ] # fmt: skip
 
     get_previous_value_test_cases = [
         ExtrapolationTestCase(
