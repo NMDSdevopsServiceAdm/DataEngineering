@@ -1,4 +1,3 @@
-import dataclasses
 import re
 from typing import Generator
 
@@ -15,46 +14,36 @@ from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
 
-_COLUMN_VALUES_BASE_FIELD_NAMES = {
-    "column_name",
-    "value_to_remove",
-    "contains_null_values",
-}
 
+def _codes(column_values_cls) -> dict[str, str]:
+    """Return {field_name: code} for a ColumnValues subclass's own fields.
 
-def _field_name_to_code(column_values_cls) -> dict[str, str]:
-    """Return {field_name: default_value} for a ColumnValues subclass's own fields.
-
-    Reads class-level dataclass field defaults directly rather than instantiating
-    the class, since `ColumnValues` requires a `column_name` to instantiate and
-    these code lists span many raw columns, not one.
+    `vars()` on a dataclass returns only that class's own attributes, not
+    inherited ones, so this naturally excludes ColumnValues' base fields
+    (column_name, value_to_remove, contains_null_values) without needing to
+    name them.
     """
     return {
-        field.name: field.default
-        for field in dataclasses.fields(column_values_cls)
-        if field.name not in _COLUMN_VALUES_BASE_FIELD_NAMES
+        name: value
+        for name, value in vars(column_values_cls).items()
+        if not name.startswith("_")
     }
 
 
-_MAIN_JOB_ROLE_ID_BY_FIELD = _field_name_to_code(MainJobRoleID)
-_MAIN_JOB_ROLE_LABEL_BY_FIELD = _field_name_to_code(MainJobRoleLabels)
+_role_id_by_name = _codes(MainJobRoleID)
+_role_label_by_name = _codes(MainJobRoleLabels)
 
-# Excludes PublishedJobRoleLabels' 4 synthetic other_* fields, which have no
-# MainJobRoleID equivalent.
-_PUBLISHED_JOB_ROLE_FIELD_NAMES = set(
-    _field_name_to_code(PublishedJobRoleLabels)
-) & set(_MAIN_JOB_ROLE_ID_BY_FIELD)
+# PublishedJobRoleLabels' 4 synthetic other_* fields have no MainJobRoleID
+# equivalent, so intersecting drops them without needing to name them either.
+_published_names = set(_codes(PublishedJobRoleLabels)) & set(_role_id_by_name)
 
-# Every raw ASC-WDS job role code this team has catalogued, zero-padded to match
-# real column names (MainJobRoleID stores bare codes, e.g. "1", not "01").
-ALL_CATALOGUED_JOB_ROLE_CODES = {
-    code.zfill(2) for code in _MAIN_JOB_ROLE_ID_BY_FIELD.values()
-}
+# Every raw ASC-WDS job role code this team has catalogued, zero-padded to
+# match real column names (MainJobRoleID stores bare codes, e.g. "1", not "01").
+_ALL_CATALOGUED_JOB_ROLE_CODES = {code.zfill(2) for code in _role_id_by_name.values()}
 
 # Published roles are left untouched by reduce_to_published_roles.
 PUBLISHED_JOB_ROLE_CODES = {
-    _MAIN_JOB_ROLE_ID_BY_FIELD[field_name].zfill(2)
-    for field_name in _PUBLISHED_JOB_ROLE_FIELD_NAMES
+    _role_id_by_name[name].zfill(2) for name in _published_names
 }
 
 # Job group -> synthetic "other_*" job role code it merges into. These 4 codes
@@ -62,35 +51,28 @@ PUBLISHED_JOB_ROLE_CODES = {
 # independently introduces its own reference to these same 4 codes for a later
 # column-relabelling step - this is deliberate, accepted duplication, not to be
 # unified here.
-_JOB_GROUP_TO_OTHER_ROLE_CODE = {
+_other_role_code_by_job_group = {
     JobGroupLabels.managers: "1001",
     JobGroupLabels.regulated_professions: "1002",
     JobGroupLabels.direct_care: "1003",
     JobGroupLabels.other: "1004",
 }
 
-# Raw code -> synthetic other_* code it folds into. Only covers codes with both
-# a MainJobRoleLabels entry and a job-group classification, excluding published
-# roles. `technician` (code 22) and `care_navigator` (code 41) exist in
-# MainJobRoleID but have neither - they are already merged upstream into other
-# codes by clean_ascwds_workplace.py's legacy_job_roles_dict during ASCWDS
-# ingest cleaning, so they never reach this function as their own columns.
-_UNPUBLISHED_JOB_ROLE_CODE_TO_OTHER_ROLE_CODE = {
-    _MAIN_JOB_ROLE_ID_BY_FIELD[field_name].zfill(2): _JOB_GROUP_TO_OTHER_ROLE_CODE[
-        AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict[label]
-    ]
-    for field_name, label in _MAIN_JOB_ROLE_LABEL_BY_FIELD.items()
-    if field_name not in _PUBLISHED_JOB_ROLE_FIELD_NAMES
-}
-
-# Grouped the other way round, {other_role_code: [unpublished_codes]}, which is
-# the shape reduce_to_published_roles_expressions sums over.
+# {other_role_code: [unpublished_raw_codes]}, the shape
+# reduce_to_published_roles_expressions sums over. Built from every
+# MainJobRoleLabels role that isn't published, bucketed via its job group.
+# `technician` (code 22) and `care_navigator` (code 41) exist in MainJobRoleID
+# but have no MainJobRoleLabels entry, so this loop never sees them - they're
+# already merged upstream into other codes by clean_ascwds_workplace.py's
+# legacy_job_roles_dict during ASCWDS ingest cleaning, before this stage runs.
 OTHER_ROLE_CODE_TO_UNPUBLISHED_JOB_ROLE_CODES: dict[str, list[str]] = {}
-for _raw_code, _other_code in sorted(
-    _UNPUBLISHED_JOB_ROLE_CODE_TO_OTHER_ROLE_CODE.items()
-):
+for _name, _label in sorted(_role_label_by_name.items()):
+    if _name in _published_names:
+        continue
+    _job_group = AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict[_label]
+    _other_code = _other_role_code_by_job_group[_job_group]
     OTHER_ROLE_CODE_TO_UNPUBLISHED_JOB_ROLE_CODES.setdefault(_other_code, []).append(
-        _raw_code
+        _role_id_by_name[_name].zfill(2)
     )
 
 
@@ -127,7 +109,11 @@ def reduce_to_published_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
         ),
     )
 
-    unpublished_roles = list(_UNPUBLISHED_JOB_ROLE_CODE_TO_OTHER_ROLE_CODE)
+    unpublished_roles = [
+        code
+        for codes in OTHER_ROLE_CODE_TO_UNPUBLISHED_JOB_ROLE_CODES.values()
+        for code in codes
+    ]
     roles_to_drop = [
         f"jr{role}{suffix}"
         for role in unpublished_roles
@@ -149,7 +135,7 @@ def _raise_if_uncatalogued_job_role_codes(job_role_cols: list[str]) -> None:
         ValueError: If one or more codes aren't catalogued.
     """
     codes = {re.match(r"^jr(\d+)", col).group(1) for col in job_role_cols}
-    unknown_codes = codes - ALL_CATALOGUED_JOB_ROLE_CODES
+    unknown_codes = codes - _ALL_CATALOGUED_JOB_ROLE_CODES
     if unknown_codes:
         raise ValueError(
             f"Unrecognised ASC-WDS job role code(s) {sorted(unknown_codes)} found in "
