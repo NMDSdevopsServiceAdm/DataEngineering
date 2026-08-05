@@ -8,7 +8,7 @@ from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
 from projects._01_ingest.utils import utils as iUtils
-from utils import s3_file_utils, utils
+from utils import utils
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
@@ -26,7 +26,7 @@ def main(source: str, destination: str, dataset: str = "ascwds"):
         destination (str): The destination directory for outputting parquet files.
         dataset (str): The dataset type, either 'ascwds' or 'nmdssc'. Defaults to 'ascwds'.
     """
-    bucket, prefix = s3_file_utils.split_s3_uri(source)
+    bucket, prefix = utils.split_s3_uri(source)
 
     if iUtils.is_csv(source):
         ingest_single_file(source, bucket, prefix, destination, dataset)
