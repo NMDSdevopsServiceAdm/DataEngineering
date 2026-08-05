@@ -3,7 +3,7 @@ from typing import Any
 
 import boto3
 
-from utils import s3_file_utils
+from polars_utils.utils import split_s3_uri
 
 TWO_MB = 2000000
 
@@ -132,6 +132,6 @@ def construct_destination_path(destination: str, key: str) -> str:
     Returns:
         str: The constructed destination s3 uri.
     """
-    destination_bucket = s3_file_utils.split_s3_uri(destination)[0]
+    destination_bucket = split_s3_uri(destination)[0]
     dir_path = get_file_directory(key)
     return construct_s3_uri(destination_bucket, dir_path)

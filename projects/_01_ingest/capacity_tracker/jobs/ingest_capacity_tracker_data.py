@@ -6,13 +6,13 @@ os.environ["SPARK_VERSION"] = "3.5"
 from pyspark.sql import DataFrame
 
 from projects._01_ingest.utils import utils as iUtils
-from utils import s3_file_utils, utils
+from utils import utils
 
 
 def main(source, destination):
     if iUtils.is_csv(source):
         print("Single file provided to job. Handling single file.")
-        bucket, key = s3_file_utils.split_s3_uri(source)
+        bucket, key = utils.split_s3_uri(source)
         print(destination)
         new_destination = iUtils.construct_destination_path(destination, key)
         print(new_destination)
@@ -20,7 +20,7 @@ def main(source, destination):
         return
 
     print("Multiple files provided to job. Handling each file...")
-    bucket, prefix = s3_file_utils.split_s3_uri(source)
+    bucket, prefix = utils.split_s3_uri(source)
     objects_list = iUtils.get_s3_objects_list(bucket, prefix)
 
     print("Objects list:")
