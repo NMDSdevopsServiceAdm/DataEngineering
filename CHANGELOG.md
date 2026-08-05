@@ -60,6 +60,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed mid-pipeline LazyFrame collects from the PIR-to-filled-posts ratio and non-residential rate-of-change cleaning steps in the imputation pipeline, computing them as lazy expressions instead so the query stays fused end-to-end.
 
+- Changed build_extrapolation_aggregates to use .over() instead of filter > group-by > agg > join
+
 - Changed return_last_known_value to use .over() instead of filter > group-by > agg > join
 
 ### Fixed
