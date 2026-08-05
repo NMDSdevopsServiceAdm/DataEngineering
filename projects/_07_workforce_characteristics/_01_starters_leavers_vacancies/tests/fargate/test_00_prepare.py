@@ -13,10 +13,10 @@ class TestPrepare:
     PREPARED_DATA_DESTINATION = "some/destination"
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
-    @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
+    @patch(f"{PATCH_PATH}.apply_categorical_labels")
     @patch(f"{PATCH_PATH}.pUtils.convert_job_role_strings_to_number_only")
     @patch(f"{PATCH_PATH}.pUtils.pivot_job_role_cols_to_rows")
-    @patch(f"{PATCH_PATH}.cUtils.merge_job_role_columns")
+    @patch(f"{PATCH_PATH}.pUtils.reduce_to_published_roles")
     @patch(f"{PATCH_PATH}.earliest_file_per_month_filter_expr")
     @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
@@ -25,7 +25,7 @@ class TestPrepare:
         scan_parquet_mock: Mock,
         reduced_data_filter_expr_mock: Mock,
         earliest_file_per_month_filter_expr_mock: Mock,
-        merge_job_role_columns_mock: Mock,
+        reduce_to_published_roles_mock: Mock,
         pivot_job_role_cols_to_rows_mock: Mock,
         convert_job_role_strings_to_number_only_mock: Mock,
         apply_categorical_labels_mock: Mock,
@@ -59,8 +59,8 @@ class TestPrepare:
         )
 
         # TODO: Uncomment these assertions when the placeholder functions are implemented
-        merge_job_role_columns_mock.assert_called_once()
-        merged_jr_cols_lf = merge_job_role_columns_mock.return_value
+        reduce_to_published_roles_mock.assert_called_once()
+        merged_jr_cols_lf = reduce_to_published_roles_mock.return_value
         merged_jr_cols_lf.drop.assert_called_once()
         dropped_cols_lf = merged_jr_cols_lf.drop.return_value
         # pivot_job_role_cols_to_rows_mock.assert_called_once()

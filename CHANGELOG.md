@@ -53,6 +53,8 @@ All notable changes to this project will be documented in this file.
 
 - Migrated dependency and tool management to `uv`
 
+- Split the shared `merge_job_role_columns` function in Polars Utils into two independent copies, one per calling pipeline: `merge_legacy_job_role_columns` in the ASCWDS ingest clean job, and `reduce_to_published_roles` in the SLV prepare job. This removes the shared dependency ahead of a future refactor of the SLV pipeline's job role handling.
+
 ### Improved
 - Replaced the fan-out join that broadcast the primary service rate of change trendline back onto every location row with an `.over()`-based broadcast computed in place, reducing peak memory in the imputation pipeline.
 
