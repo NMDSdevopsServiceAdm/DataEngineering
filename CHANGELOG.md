@@ -58,9 +58,13 @@ All notable changes to this project will be documented in this file.
 - Split the shared `merge_job_role_columns` function in Polars Utils into two independent copies, one per calling pipeline: `merge_legacy_job_role_columns` in the ASCWDS ingest clean job, and `reduce_to_published_roles` in the SLV prepare job. This removes the shared dependency ahead of a future refactor of the SLV pipeline's job role handling.
 
 ### Improved
+- Added dependency caching (`uv` and Spark/Ivy JARs, keyed on `uv.lock`) to the CircleCI `test` job, saving ~10-13s per run on the `install dependencies` and `Fetch Spark JARs` steps versus no caching at all, measured directly across cache-hit and forced cache-miss runs including restore/save overhead.
+
 - Replaced the fan-out join that broadcast the primary service rate of change trendline back onto every location row with an `.over()`-based broadcast computed in place, reducing peak memory in the imputation pipeline.
 
 - Removed mid-pipeline LazyFrame collects from the PIR-to-filled-posts ratio and non-residential rate-of-change cleaning steps in the imputation pipeline, computing them as lazy expressions instead so the query stays fused end-to-end.
+
+- Changed build_extrapolation_aggregates to use .over() instead of filter > group-by > agg > join
 
 - Changed return_last_known_value to use .over() instead of filter > group-by > agg > join
 
