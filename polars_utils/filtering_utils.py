@@ -183,3 +183,21 @@ def earliest_file_per_month_filter_expr(
     dt = pl.col(date_col)
 
     return dt == dt.min().over(dt.dt.year(), dt.dt.month())
+
+
+def not_null_filter_expr(column: str) -> pl.Expr:
+    """
+    Build a Polars expression selecting only rows where `column` is not null.
+
+    Returning an expression rather than a filtered LazyFrame lets callers attach it
+    directly to a `.filter()` chain alongside other predicates (e.g.
+    reduced_data_filter_expr), keeping the query lazy end-to-end.
+
+    Args:
+        column (str): Name of the column to check for non-null values.
+
+    Returns:
+        pl.Expr: A Polars boolean expression that can be used inside `.filter()` to
+            select rows where `column` is populated.
+    """
+    return pl.col(column).is_not_null()

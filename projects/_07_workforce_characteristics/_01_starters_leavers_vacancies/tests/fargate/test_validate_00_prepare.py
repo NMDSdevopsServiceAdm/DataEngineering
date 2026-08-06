@@ -16,10 +16,11 @@ PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacanc
 class ValidatePreparedSLVDataTests(unittest.TestCase):
     def setUp(self) -> None:
         source_schema = {
+            AWPClean.location_id: pl.String,
             AWPClean.establishment_id: pl.String,
         }
         source_rows = [
-            ("1-001"),
+            ("Loc-001", "1-001"),
         ]  # fmt: skip
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
 
@@ -30,13 +31,14 @@ class ValidatePreparedSLVDataTests(unittest.TestCase):
         # earliest-file-per-month filter rather than the retention filter - proving the
         # monthly reduction itself is exercised here, not just retention.
         compare_schema = {
+            AWPClean.location_id: pl.String,
             AWPClean.establishment_id: pl.String,
             AWPClean.ascwds_workplace_import_date: pl.Date,
         }
         compare_rows = [
-            ("1-001", date(2026, 1, 1)),
-            ("1-003", date(2026, 1, 15)),  # same month as 1-001, later date -> dropped by monthly filter
-            ("1-002", date(2020, 5, 1)),
+            ("Loc-001", "1-001", date(2026, 1, 1)),
+            ("Loc-003", "1-003", date(2026, 1, 15)),  # same month as 1-001, later date -> dropped by monthly filter
+            ("Loc-002", "1-002", date(2020, 5, 1)),
         ]  # fmt: skip
         self.compare_df = pl.DataFrame(compare_rows, compare_schema, orient="row")
 
@@ -80,6 +82,7 @@ class ValidatePreparedSLVDataTests(unittest.TestCase):
 
         expected_assertions = {
             "row_count_match",
+            "specially",
         }
 
         for assertion in expected_assertions:
@@ -88,6 +91,37 @@ class ValidatePreparedSLVDataTests(unittest.TestCase):
                 assertion_types_present,
                 f"{assertion} not found in validation report",
             )
+
+
+class TestNoLeftoverRawJobRoleCodeColumns:
+    def test_true_when_no_raw_job_role_code_columns_remain(self):
+        df = pl.DataFrame(schema={AWPClean.establishment_id: pl.String})
+
+        assert job.no_leftover_raw_job_role_code_columns(df)
+
+    def test_false_when_a_raw_jrNN_column_remains(self):
+        df = pl.DataFrame(schema={"jr01emp": pl.Int64})
+
+        assert not job.no_leftover_raw_job_role_code_columns(df)
+
+
+class TestHasAllPublishedJobRoleLabelColumns:
+    def test_true_when_every_published_label_has_a_column(self):
+        columns = [f"{label}_emp" for label in job.PUBLISHED_JOB_ROLE_LABELS]
+        df = pl.DataFrame(schema={col: pl.Int64 for col in columns})
+
+        assert job.has_all_published_job_role_label_columns(df)
+
+    def test_false_when_missing_label_shares_a_prefix_with_present_siblings(self):
+        # "other", "other_managers", "other_regulated_professions", and
+        # "other_direct_care" all share the "other_" prefix - pins that a
+        # missing "other" column isn't masked by its siblings being present.
+        present_labels = [
+            label for label in job.PUBLISHED_JOB_ROLE_LABELS if label != "other"
+        ]
+        df = pl.DataFrame(schema={f"{label}_emp": pl.Int64 for label in present_labels})
+
+        assert not job.has_all_published_job_role_label_columns(df)
 
 
 if __name__ == "__main__":
