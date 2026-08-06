@@ -220,6 +220,50 @@
                   }
                 },
                 {
+                  "StartAt": "Bake-off rolling ratio",
+                  "States": {
+                    "Bake-off rolling ratio": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${independent_cqc_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${independent_cqc_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "_03_independent_cqc-container",
+                              "Command": [
+                                "bakeoff_rolling_ratio.py",
+                                "--cleaned_data_source", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_02_clean_job_roles/",
+                                "--bakeoff_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_03_rolling_ratio_bakeoff/",
+                                "--bakeoff_by_service_destination", "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_03_rolling_ratio_bakeoff_by_service/"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "Catch": [
+                        {
+                          "ErrorEquals": ["States.ALL"],
+                          "Next": "Bake-off skipped"
+                        }
+                      ],
+                      "End": true
+                    },
+                    "Bake-off skipped": {
+                      "Type": "Succeed"
+                    }
+                  }
+                },
+                {
                   "StartAt": "Validate Cleaned Data",
                   "States": {
                     "Validate Cleaned Data": {
