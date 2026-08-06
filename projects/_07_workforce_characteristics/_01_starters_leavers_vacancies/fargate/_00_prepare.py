@@ -39,9 +39,7 @@ def main(
 
     # These columns refer to the total for all job roles (28) and the total for job groups (29-32).
     # They are not real ASC-WDS job role codes (not in MainJobRoleID), so they must be
-    # dropped before reduce_to_published_roles runs - otherwise its uncatalogued-code
-    # check would reject them. Matches every suffix, not just emp/strt/stop/vacy, since
-    # these totals aren't job roles regardless of suffix.
+    # dropped before reduce_to_published_roles runs.
     workplace_lf = workplace_lf.drop(cs.matches(r"^jr(28|29|30|31|32)"))
 
     workplace_lf = pUtils.reduce_to_published_roles(workplace_lf)

@@ -45,13 +45,13 @@ class TestReduceToPublishedRoles:
 
 class TestJobRoleCodeDerivation:
     def test_published_role_code_is_in_published_job_role_codes(self):
-        assert "01" in job.PUBLISHED_JOB_ROLE_CODES
+        assert "01" in job.published_job_role_codes_and_labels.keys()
 
     def test_unpublished_role_code_is_not_in_published_job_role_codes(self):
-        assert "02" not in job.PUBLISHED_JOB_ROLE_CODES
+        assert "02" not in job.published_job_role_codes_and_labels.keys()
 
     def test_unpublished_role_code_maps_to_expected_other_role_code(self):
-        assert job.CODE_TO_OTHER_ROLE_CODE["02"] == "1001"
+        assert job.job_role_code_to_other_bucket_code["02"] == "1001"
 
 
 class TestPivotJobRoleColsToRows:
