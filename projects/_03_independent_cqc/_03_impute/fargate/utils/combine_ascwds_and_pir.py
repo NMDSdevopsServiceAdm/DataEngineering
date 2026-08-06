@@ -54,10 +54,10 @@ def create_repeated_ascwds_clean_column(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: A LazyFrame with an extra column containing ascwds filled posts filled forwards.
     """
-    return lf.sort(IndCQC.cqc_location_import_date).with_columns(
+    return lf.with_columns(
         pl.col(IndCQC.ascwds_filled_posts_dedup_clean)
         .forward_fill()
-        .over(IndCQC.location_id)
+        .over(IndCQC.location_id, order_by=IndCQC.cqc_location_import_date)
         .alias(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
     )
 
