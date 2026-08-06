@@ -1,5 +1,7 @@
 from unittest.mock import ANY, Mock, patch
 
+import polars.selectors as cs
+
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._00_prepare as job
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -61,8 +63,13 @@ class TestPrepare:
 
         # The job-role totals columns (28-32) are dropped before reduce_to_published_roles
         # runs, since they aren't real job role codes and would otherwise fail its
-        # uncatalogued-code check.
+        # uncatalogued-code check. Polars selectors overload `==` to build a new
+        # expression rather than compare equal/unequal, so `assert_called_once_with`
+        # can't be used directly here (it raises on the ambiguous-truth-value check) -
+        # compare reprs instead.
         month_filtered_lf.drop.assert_called_once()
+        actual_drop_selector = month_filtered_lf.drop.call_args.args[0]
+        assert repr(actual_drop_selector) == repr(cs.matches(r"^jr(28|29|30|31|32)"))
         dropped_totals_lf = month_filtered_lf.drop.return_value
 
         # TODO: Uncomment these assertions when the placeholder functions are implemented

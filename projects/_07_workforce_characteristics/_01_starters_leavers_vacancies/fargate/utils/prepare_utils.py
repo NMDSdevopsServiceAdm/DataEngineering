@@ -24,7 +24,9 @@ other_role_code_by_job_group = {
     JobGroupLabels.other: "1004",
 }
 
-# Excludes `technician`(22)/`care_navigator`(41) which are already merged upstream
+# Excludes codes clean_ascwds_workplace.py's legacy_job_roles_dict already merges
+# upstream during ASCWDS ingest cleaning (e.g. `technician`(22)/`care_navigator`(41)),
+# since they're not expected to reach this stage as their own columns.
 all_zero_filled_job_role_codes_and_labels: dict[str, str] = {
     code.zfill(2): label
     for code, label in AscwdsWorkerValueLabelsMainjrid.labels_dict.items()
@@ -38,13 +40,20 @@ published_job_role_codes_and_labels: dict[str, str] = {
     if label in published_job_role_labels
 }
 
-job_role_code_to_other_bucket_code = {
-    code: other_role_code_by_job_group[
-        AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict[label]
-    ]
-    for code, label in all_zero_filled_job_role_codes_and_labels.items()
-    if label not in published_job_role_labels
-}
+job_role_code_to_other_bucket_code: dict[str, str] = {}
+for _code, _label in all_zero_filled_job_role_codes_and_labels.items():
+    if _label in published_job_role_labels:
+        continue
+    if _label not in AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict:
+        raise KeyError(
+            f"Job role label {_label!r} (code {_code}) is in "
+            "AscwdsWorkerValueLabelsMainjrid.labels_dict but has no entry in "
+            "AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict. Add it there, "
+            "or as a new published role in PublishedJobRoleLabels, before this module "
+            "can be imported."
+        )
+    _job_group = AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict[_label]
+    job_role_code_to_other_bucket_code[_code] = other_role_code_by_job_group[_job_group]
 
 JOB_ROLE_COLUMN_PATTERN = re.compile(r"^jr(\d+)([a-z]+)$")
 
