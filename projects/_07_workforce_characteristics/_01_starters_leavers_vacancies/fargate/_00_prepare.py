@@ -2,7 +2,6 @@ import polars.selectors as cs
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as pUtils
 from polars_utils import utils
-from polars_utils.cleaning_utils import apply_categorical_labels
 from polars_utils.filtering_utils import (
     earliest_file_per_month_filter_expr,
     not_null_filter_expr,
@@ -29,6 +28,7 @@ def main(
         - reduce rows to quarterly import dates before two previous financial years
           and then earliest import day per month.
         - merge unpublished roles into 'other' groups
+        - relabel job role columns from jrNN codes to published labels
 
     Args:
         cleaned_ascwds_workplace_source (str): path to the cleaned ascwds workplace data
@@ -60,11 +60,7 @@ def main(
     # TODO: Backlog ticket/no number - Placeholder only.
     # pUtils.pivot_job_role_cols_to_rows()
 
-    # TODO: 1795 - Placeholder only.
-    # pUtils.convert_job_role_strings_to_number_only()
-
-    # TODO: 1794 - Placeholder only.
-    # workplace_lf = apply_categorical_labels()
+    workplace_lf = pUtils.relabel_job_role_columns(workplace_lf)
 
     utils.sink_to_parquet(
         lazy_df=workplace_lf,

@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 
 - Added `PublishedJobRoleLabels` categorical values class defining the canonical set of published ASC-WDS job role labels.
 
+- Added `relabel_job_role_columns` to the SLV prepare job, renaming merged `jrNN` job role columns to their published labels, and matching validation checks confirming no leftover `jrNN` columns remain and every published job role label has a column. Also added the SLV prepare job's Dockerfile `COPY` for `utils/value_labels/ascwds_worker`, needed by the new relabelling import but missing from the image.
+
 - Added a reusable `not_null_filter_expr` to Polars Utils, and used it in the SLV prepare step to exclude ASCWDS workplace records for non-CQC locations (null `location_id`).
 
 ### Changed
