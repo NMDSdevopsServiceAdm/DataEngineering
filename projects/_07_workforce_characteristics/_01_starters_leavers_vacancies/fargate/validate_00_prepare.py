@@ -17,6 +17,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 COMPARE_COLS_TO_IMPORT = [
     AWPClean.establishment_id,
     AWPClean.ascwds_workplace_import_date,
+    AWPClean.location_id,
 ]
 
 
