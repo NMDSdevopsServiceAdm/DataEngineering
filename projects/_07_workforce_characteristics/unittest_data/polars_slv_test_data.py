@@ -10,7 +10,6 @@ from utils.column_values.categorical_column_values import PublishedJobRoleLabels
 @dataclass
 class ReduceToPublishedRolesTestCase:
     id: str
-    mapping: dict[str, list[str]]
     input_data: dict[str, Any]
     expected_data: dict[str, Any]
 
@@ -26,106 +25,93 @@ class RelabelJobRoleColumnsTestCase:
 class TestPrepareUtilsData:
     reduce_to_published_roles_test_cases = [
         ReduceToPublishedRolesTestCase(
-            id="merges_one_role_to_one_role",
-            mapping={"01": ["02"]},
+            id="leaves_published_role_untouched",
             input_data={
-                AWPClean.job_role_01_employees: 1,
-                AWPClean.job_role_02_employees: 2,
+                AWPClean.job_role_01_employees: 1,  # senior_management - published
             },
             expected_data={
-                AWPClean.job_role_01_employees: 3,
+                AWPClean.job_role_01_employees: 1,
             },
         ),
         ReduceToPublishedRolesTestCase(
-            id="merges_many_roles_to_one_role",
-            mapping={"01": ["02", "03"]},
+            id="folds_single_unpublished_role_into_its_job_group",
             input_data={
-                AWPClean.job_role_01_employees: 1,
-                AWPClean.job_role_02_employees: 2,
-                AWPClean.job_role_03_employees: 3,
+                AWPClean.job_role_35_employees: 5,  # safeguarding_officer -> regulated_professions
             },
             expected_data={
-                AWPClean.job_role_01_employees: 6,
+                "jr1002emp": 5,
+            },
+        ),
+        ReduceToPublishedRolesTestCase(
+            id="sums_multiple_unpublished_roles_into_same_job_group",
+            input_data={
+                AWPClean.job_role_02_employees: 2,  # middle_management -> managers
+                AWPClean.job_role_03_employees: 3,  # first_line_manager -> managers
+            },
+            expected_data={
+                "jr1001emp": 5,
+            },
+        ),
+        ReduceToPublishedRolesTestCase(
+            id="folds_direct_care_group_role_into_its_job_group",
+            input_data={
+                AWPClean.job_role_10_employees: 7,  # employment_support -> direct_care
+            },
+            expected_data={
+                "jr1003emp": 7,
+            },
+        ),
+        ReduceToPublishedRolesTestCase(
+            id="folds_other_group_role_into_its_job_group",
+            input_data={
+                AWPClean.job_role_25_employees: 4,  # admin_staff -> other
+            },
+            expected_data={
+                "jr1004emp": 4,
             },
         ),
         ReduceToPublishedRolesTestCase(
             id="ignores_null_values_in_sum",
-            mapping={"01": ["02"]},
             input_data={
-                AWPClean.job_role_01_employees: 1,
-                AWPClean.job_role_02_employees: None,
-            },
-            expected_data={
-                AWPClean.job_role_01_employees: 1,
-            },
-        ),
-        ReduceToPublishedRolesTestCase(
-            id="returns_null_when_all_roles_are_null",
-            mapping={"01": ["02"]},
-            input_data={
-                AWPClean.job_role_01_employees: None,
-                AWPClean.job_role_02_employees: None,
-            },
-            expected_data={
-                AWPClean.job_role_01_employees: None,
-            },
-        ),
-        ReduceToPublishedRolesTestCase(
-            id="ignores_roles_in_mapping_but_not_in_input_data",
-            mapping={"01": ["02"]},
-            input_data={
-                AWPClean.job_role_01_employees: 1,
-            },
-            expected_data={
-                AWPClean.job_role_01_employees: 1,
-            },
-        ),
-        ReduceToPublishedRolesTestCase(
-            id="creates_target_role_when_missing",
-            mapping={"99": ["01", "02"]},
-            input_data={
-                AWPClean.job_role_01_employees: 1,
                 AWPClean.job_role_02_employees: 2,
+                AWPClean.job_role_03_employees: None,
             },
             expected_data={
-                "jr99emp": 3,
+                "jr1001emp": 2,
+            },
+        ),
+        ReduceToPublishedRolesTestCase(
+            id="returns_null_when_all_unpublished_roles_are_null",
+            input_data={
+                AWPClean.job_role_02_employees: None,
+                AWPClean.job_role_03_employees: None,
+            },
+            expected_data={
+                "jr1001emp": None,
             },
         ),
         ReduceToPublishedRolesTestCase(
             id="merges_all_matching_suffixes",
-            mapping={"01": ["02"]},
             input_data={
-                AWPClean.job_role_01_employees: 1,
                 AWPClean.job_role_02_employees: 2,
-                AWPClean.job_role_01_starters: 3,
+                AWPClean.job_role_03_employees: 3,
                 AWPClean.job_role_02_starters: 4,
+                AWPClean.job_role_03_starters: 5,
             },
             expected_data={
-                AWPClean.job_role_01_employees: 3,
-                AWPClean.job_role_01_starters: 7,
+                "jr1001emp": 5,
+                "jr1001strt": 9,
             },
         ),
         ReduceToPublishedRolesTestCase(
-            id="handles_extra_columns_in_input_data",
-            mapping={"01": ["02"]},
+            id="handles_extra_non_job_role_columns_in_input_data",
             input_data={
                 AWPClean.job_role_01_employees: 1,
-                AWPClean.job_role_02_employees: 2,
                 "not_a_job_role_column": "A",
             },
             expected_data={
-                AWPClean.job_role_01_employees: 3,
+                AWPClean.job_role_01_employees: 1,
                 "not_a_job_role_column": "A",
-            },
-        ),
-        ReduceToPublishedRolesTestCase(
-            id="handles_job_roles_with_same_characters",
-            mapping={"101": ["10"]},
-            input_data={
-                AWPClean.job_role_10_employees: 10,
-            },
-            expected_data={
-                "jr101emp": 10,
             },
         ),
     ]

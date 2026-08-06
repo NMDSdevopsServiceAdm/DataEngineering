@@ -22,9 +22,46 @@ class TestReduceToPublishedRoles:
     def test_reduce_to_published_roles(self, case):
         test_lf = pl.LazyFrame(case.input_data)
         expected_lf = pl.LazyFrame(case.expected_data)
-        returned_lf = job.reduce_to_published_roles(test_lf, case.mapping)
+        returned_lf = job.reduce_to_published_roles(test_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_raises_value_error_for_uncatalogued_job_role_code(self):
+        test_lf = pl.LazyFrame(
+            {"jr98emp": 1}
+        )  # not an AscwdsWorkerValueLabelsMainjrid code
+
+        with pytest.raises(ValueError, match="98"):
+            job.reduce_to_published_roles(test_lf)
+
+    def test_raises_value_error_for_technician_and_care_navigator_codes(self):
+        # 22 (technician) and 41 (care_navigator) have no label/job-group entry,
+        # so they're treated the same as any other uncatalogued code. They're
+        # already merged upstream before reaching this function in practice.
+        test_lf = pl.LazyFrame({"jr22emp": 1, "jr41emp": 2})
+
+        with pytest.raises(ValueError, match="22"):
+            job.reduce_to_published_roles(test_lf)
+
+
+class TestJobRoleCodeDerivation:
+    def test_published_role_code_is_in_published_job_role_codes(self):
+        assert "01" in job.published_job_role_codes_and_labels.keys()
+
+    def test_unpublished_role_code_is_not_in_published_job_role_codes(self):
+        assert "02" not in job.published_job_role_codes_and_labels.keys()
+
+    def test_unpublished_role_code_maps_to_expected_other_role_code(self):
+        assert job.job_role_code_to_other_bucket_code["02"] == "1001"
+
+    def test_every_catalogued_code_is_published_or_bucketed_exactly_once(self):
+        published_codes = set(job.published_job_role_codes_and_labels)
+        bucketed_codes = set(job.job_role_code_to_other_bucket_code)
+
+        assert not (published_codes & bucketed_codes)
+        assert published_codes | bucketed_codes == set(
+            job.all_zero_filled_job_role_codes_and_labels
+        )
 
 
 class TestPivotJobRoleColsToRows:

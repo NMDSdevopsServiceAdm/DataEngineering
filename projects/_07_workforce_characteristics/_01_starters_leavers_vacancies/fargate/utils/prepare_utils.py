@@ -1,15 +1,20 @@
 import re
-from typing import Generator
 
 import polars as pl
-import polars.selectors as cs
 
-from utils.column_values.categorical_column_values import PublishedJobRoleLabels
+from utils.column_values.categorical_column_values import (
+    JobGroupLabels,
+    PublishedJobRoleLabels,
+)
+from utils.column_values.categorical_columns_by_dataset import (
+    SLVPrepareCategoricalValues,
+)
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
+)
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid,
 )
-
-JOB_ROLE_COLUMN_PATTERN = re.compile(r"^jr(\d+)([a-z]+)$")
 
 SYNTHETIC_JOB_ROLE_LABELS = {
     "1001": PublishedJobRoleLabels.other_managers,
@@ -19,76 +24,104 @@ SYNTHETIC_JOB_ROLE_LABELS = {
 }
 
 
-def reduce_to_published_roles(
-    lf: pl.LazyFrame, job_role_mapping: dict[str, list[str]]
-) -> pl.LazyFrame:
+other_role_code_by_job_group = {
+    JobGroupLabels.managers: "1001",
+    JobGroupLabels.regulated_professions: "1002",
+    JobGroupLabels.direct_care: "1003",
+    JobGroupLabels.other: "1004",
+}
+
+# Excludes codes clean_ascwds_workplace.py's legacy_job_roles_dict already merges
+# upstream during ASCWDS ingest cleaning (e.g. `technician`(22)/`care_navigator`(41)),
+# since they're not expected to reach this stage as their own columns.
+all_zero_filled_job_role_codes_and_labels: dict[str, str] = {
+    code.zfill(2): label
+    for code, label in AscwdsWorkerValueLabelsMainjrid.labels_dict.items()
+}
+published_job_role_labels = (
+    SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
+)
+published_job_role_codes_and_labels: dict[str, str] = {
+    code: label
+    for code, label in all_zero_filled_job_role_codes_and_labels.items()
+    if label in published_job_role_labels
+}
+
+job_role_code_to_other_bucket_code: dict[str, str] = {}
+for _code, _label in all_zero_filled_job_role_codes_and_labels.items():
+    if _label in published_job_role_labels:
+        continue
+    if _label not in AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict:
+        raise KeyError(
+            f"Job role label {_label!r} (code {_code}) is in "
+            "AscwdsWorkerValueLabelsMainjrid.labels_dict but has no entry in "
+            "AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict. Add it there, "
+            "or as a new published role in PublishedJobRoleLabels, before this module "
+            "can be imported."
+        )
+    _job_group = AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict[_label]
+    job_role_code_to_other_bucket_code[_code] = other_role_code_by_job_group[_job_group]
+
+JOB_ROLE_COLUMN_PATTERN = re.compile(r"^jr(\d+)([a-z]+)$")
+
+
+def reduce_to_published_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Merge ASC-WDS workplace job role columns down to published roles.
 
-    For each key job role code in job_role_mapping, sums the key job role
-    together with all the listed job role columns. This sum then replaces the
-    key job roles value. The listed job role columns are then dropped, leaving
-    only published roles plus the 'other' groups (other_dc/other_man etc.).
+    Published job roles (PublishedJobRoleLabels) are left untouched. Every
+    other catalogued raw job role (AscwdsWorkerValueLabelsMainjrid) is summed
+    into whichever of the 4 'other_*' synthetic roles (jr1001/jr1002/jr1003/
+    jr1004) its job group (AscwdsWorkerValueLabelsJobGroup) maps to, then
+    dropped. A sum is null only when all of its contributing columns are null.
 
     Args:
         lf (pl.LazyFrame): ASC-WDS workplace LazyFrame.
-        job_role_mapping (dict[str, list[str]]): A mapping of job roles.
-            E.g. {role_to_merge_and_keep: [role_1_to_merge_and_drop, role_2_to_merge_and_drop...]}
 
     Returns:
-        pl.LazyFrame: Input LazyFrame in which columns have been merged and
-            removed.
+        pl.LazyFrame: Input LazyFrame in which unpublished job role columns
+            have been merged into the other_* roles and removed.
+
+    Raises:
+        ValueError: If a job role column's code isn't in
+            AscwdsWorkerValueLabelsMainjrid.labels_dict (an ASC-WDS code this
+            team hasn't catalogued yet).
     """
-    job_role_cols = lf.collect_schema().names()
-    job_role_suffixes = list(
-        {re.sub(r"^jr\d+", "", col) for col in job_role_cols if col.startswith("jr")}
-    )
+    job_role_matches = {
+        col: JOB_ROLE_COLUMN_PATTERN.match(col)
+        for col in lf.collect_schema().names()
+        if col.startswith("jr")
+    }
+
+    unknown_codes = {
+        match.group(1) for match in job_role_matches.values()
+    } - all_zero_filled_job_role_codes_and_labels.keys()
+    if unknown_codes:
+        raise ValueError(
+            f"Unrecognised ASC-WDS job role code(s) {sorted(unknown_codes)} found in "
+            "input columns. Add them to AscwdsWorkerValueLabelsMainjrid.labels_dict and "
+            "classify them (either as a new published role in PublishedJobRoleLabels, "
+            "or via AscwdsWorkerValueLabelsJobGroup) before running "
+            "reduce_to_published_roles."
+        )
+
+    merge_groups: dict[tuple[str, str], list[str]] = {}
+    for col, match in job_role_matches.items():
+        code, suffix = match.groups()
+        other_role_code = job_role_code_to_other_bucket_code.get(code)
+        if other_role_code:
+            merge_groups.setdefault((other_role_code, suffix), []).append(col)
 
     lf = lf.with_columns(
-        reduce_to_published_roles_expressions(job_role_mapping, job_role_suffixes),
+        pl.when(pl.all_horizontal(pl.col(source_cols).is_null()))
+        .then(pl.lit(None))
+        .otherwise(pl.sum_horizontal(source_cols))
+        .alias(f"jr{other_role_code}{suffix}")
+        for (other_role_code, suffix), source_cols in merge_groups.items()
     )
-
-    # Flatten job role lists from job_role_mapping into single list, format them
-    # to match column names, then drop those columns.
-    old_roles = [old for olds in job_role_mapping.values() for old in olds]
-    roles_to_drop = [
-        f"jr{role}{suffix}" for role in old_roles for suffix in job_role_suffixes
-    ]
-    lf = lf.drop(cs.by_name(*roles_to_drop, require_all=False))
+    lf = lf.drop([col for source_cols in merge_groups.values() for col in source_cols])
 
     return lf
-
-
-def reduce_to_published_roles_expressions(
-    job_role_mapping: dict[str, list[str]], slv_suffixes: list[str]
-) -> Generator[pl.Expr, None, None]:
-    """
-    A generator function that yields Polars expressions that sum
-    ASC-WDS workplace job role columns in the given mapping dictionary
-    that have the given slv_suffixes.
-
-    When all columns to sum are null then expression produces null.
-
-    Args:
-        job_role_mapping (dict[str, list[str]]): A mapping of job roles.
-            E.g. {role_to_merge_and_keep: [role_1_to_merge_and_drop, role_2_to_merge_and_drop...]}
-        slv_suffixes (list[str]): A list of ASC-WDS workplace job role column suffixes.
-            E.g. ["flag", "emp", "work"]
-
-    Yields:
-        pl.Expr: Polars expressions for summing columns.
-
-    """
-    for role_to_keep, roles_to_merge in job_role_mapping.items():
-        for suffix in slv_suffixes:
-            prefixes = [f"jr{role_to_keep}"] + [f"jr{old}" for old in roles_to_merge]
-            cols = cs.starts_with(*prefixes) & cs.ends_with(suffix)
-            yield (
-                pl.when(pl.all_horizontal(cols.is_null()))
-                .then(pl.lit(None))
-                .otherwise(pl.sum_horizontal(cols))
-                .alias(f"jr{role_to_keep}{suffix}")
-            )
 
 
 def pivot_job_role_cols_to_rows():

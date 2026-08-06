@@ -39,6 +39,7 @@ from utils.column_values.categorical_column_values import (
     ParentPermission,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
+    PublishedJobRoleLabels,
     Region,
     RegistrationStatus,
     RegistrationType,
@@ -285,4 +286,11 @@ class DiagnosticOnKnownFilledPostsCategoricalValues:
     estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
         IndCQC.estimate_filled_posts_source,
         value_to_remove=EstimateFilledPostsSource.ascwds_pir_merged,
+    )
+
+
+@dataclass
+class SLVPrepareCategoricalValues:
+    published_job_role_labels_column_values = PublishedJobRoleLabels(
+        AWKClean.main_job_role_clean_labelled
     )

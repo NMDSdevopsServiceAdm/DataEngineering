@@ -1,5 +1,7 @@
 from unittest.mock import Mock, patch
 
+import polars.selectors as cs
+
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._00_prepare as job
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -60,14 +62,25 @@ class TestPrepare:
         retention_filtered_lf.filter.assert_called_once_with(
             earliest_file_per_month_filter_expr_mock.return_value
         )
+        month_filtered_lf = retention_filtered_lf.filter.return_value
 
-        reduce_to_published_roles_mock.assert_called_once()
+        # The job-role totals columns (28-32) are dropped before reduce_to_published_roles
+        # runs, since they aren't real job role codes and would otherwise fail its
+        # uncatalogued-code check. Polars selectors overload `==` to build a new
+        # expression rather than compare equal/unequal, so `assert_called_once_with`
+        # can't be used directly here (it raises on the ambiguous-truth-value check) -
+        # compare reprs instead.
+        month_filtered_lf.drop.assert_called_once()
+        actual_drop_selector = month_filtered_lf.drop.call_args.args[0]
+        assert repr(actual_drop_selector) == repr(cs.matches(r"^jr(28|29|30|31|32)"))
+        dropped_totals_lf = month_filtered_lf.drop.return_value
+
+        reduce_to_published_roles_mock.assert_called_once_with(dropped_totals_lf)
         merged_jr_cols_lf = reduce_to_published_roles_mock.return_value
-        merged_jr_cols_lf.drop.assert_called_once()
-        dropped_cols_lf = merged_jr_cols_lf.drop.return_value
+        # TODO: Uncomment when pivot_job_role_cols_to_rows is implemented.
         # pivot_job_role_cols_to_rows_mock.assert_called_once()
 
-        relabel_job_role_columns_mock.assert_called_once_with(dropped_cols_lf)
+        relabel_job_role_columns_mock.assert_called_once_with(merged_jr_cols_lf)
         relabelled_lf = relabel_job_role_columns_mock.return_value
 
         sink_to_parquet_mock.assert_called_once_with(
