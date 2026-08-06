@@ -20,6 +20,8 @@ All notable changes to this project will be documented in this file.
 
 - Added merge_job_role_columns function to polars_utils > cleaning_utils and called it in clean_ascwds_workplace job.
 
+- Converted merge_ascwds_and_pir_filled_post_submissions to polars.
+
 - Added `PublishedJobRoleLabels` categorical values class defining the canonical set of published ASC-WDS job role labels.
 
 - Added `relabel_job_role_columns` to the SLV prepare job, renaming merged `jrNN` job role columns to their published labels, and matching validation checks confirming no leftover `jrNN` columns remain and every published job role label has a column. Also added the SLV prepare job's Dockerfile `COPY` for `utils/value_labels/ascwds_worker`, needed by the new relabelling import but missing from the image.
