@@ -107,13 +107,13 @@ def relabel_job_role_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     it keeps working if new suffixes are introduced upstream. Real ASC-WDS
     codes are looked up in the raw-data mapping
     (AscwdsWorkerValueLabelsMainjrid.labels_dict); the four synthetic codes
-    produced by merge_job_role_columns are looked up in
+    produced by reduce_to_published_roles are looked up in
     SYNTHETIC_JOB_ROLE_LABELS instead. Columns not matching the jrNN{suffix}
     shape are left untouched.
 
     Args:
-        lf (pl.LazyFrame): LazyFrame with jrNN{suffix} columns, after the
-            job-role merge and before any pivot.
+        lf (pl.LazyFrame): LazyFrame with jrNN{suffix} columns reduced to
+            published roles, before any pivot.
 
     Returns:
         pl.LazyFrame: Input LazyFrame with job role columns renamed to

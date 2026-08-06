@@ -91,6 +91,18 @@ class ValidatePreparedSLVDataTests(unittest.TestCase):
             )
 
 
+class TestNoLeftoverRawJobRoleCodeColumns:
+    def test_true_when_no_raw_job_role_code_columns_remain(self):
+        df = pl.DataFrame(schema={AWPClean.establishment_id: pl.String})
+
+        assert job.no_leftover_raw_job_role_code_columns(df)
+
+    def test_false_when_a_raw_jrNN_column_remains(self):
+        df = pl.DataFrame(schema={"jr01emp": pl.Int64})
+
+        assert not job.no_leftover_raw_job_role_code_columns(df)
+
+
 class TestHasAllPublishedJobRoleLabelColumns:
     def test_true_when_every_published_label_has_a_column(self):
         columns = [f"{label}_emp" for label in job.PUBLISHED_JOB_ROLE_LABELS]

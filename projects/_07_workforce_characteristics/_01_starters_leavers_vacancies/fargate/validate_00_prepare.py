@@ -1,9 +1,9 @@
-import re
 import sys
 
 import pointblank as pb
 import polars as pl
 
+import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as pUtils
 from polars_utils import utils
 from polars_utils.filtering_utils import (
     earliest_file_per_month_filter_expr,
@@ -21,13 +21,16 @@ COMPARE_COLS_TO_IMPORT = [
     AWPClean.ascwds_workplace_import_date,
 ]
 
-RAW_JOB_ROLE_CODE_COLUMN_PATTERN = re.compile(r"^jr\d+(emp|strt|stop|vacy)$")
-
 PUBLISHED_JOB_ROLE_LABELS = PublishedJobRoleLabels("job_role_label").categorical_values
 
 
 def no_leftover_raw_job_role_code_columns(df: pl.DataFrame) -> bool:
     """Checks that no jrNN{suffix}-coded job role columns remain in df.
+
+    Reuses pUtils.JOB_ROLE_COLUMN_PATTERN (the same pattern
+    relabel_job_role_columns matches on) rather than a separate, narrower
+    pattern here - keeps the two in lockstep so a new suffix can't slip past
+    this check just because it wasn't listed twice.
 
     Args:
         df (pl.DataFrame): the dataframe to check
@@ -35,7 +38,7 @@ def no_leftover_raw_job_role_code_columns(df: pl.DataFrame) -> bool:
     Returns:
         bool: True if no columns match the raw jrNN{suffix} code shape
     """
-    return not any(RAW_JOB_ROLE_CODE_COLUMN_PATTERN.match(col) for col in df.columns)
+    return not any(pUtils.JOB_ROLE_COLUMN_PATTERN.match(col) for col in df.columns)
 
 
 def has_all_published_job_role_label_columns(df: pl.DataFrame) -> bool:
