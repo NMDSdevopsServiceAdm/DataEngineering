@@ -22,6 +22,7 @@ def main(
           and then earliest import day per month.
         - merge unpublished roles into 'other' groups
         - relabel job role columns from jrNN codes to published labels
+        - pivot job role columns into one row per job role
 
     Args:
         cleaned_ascwds_workplace_source (str): path to the cleaned ascwds workplace data
@@ -46,14 +47,11 @@ def main(
     workplace_lf = workplace_lf.drop(cs.matches(r"^jr(28|29|30|31|32)"))
 
     workplace_lf = pUtils.reduce_to_published_roles(workplace_lf)
-
-    # TODO: Backlog ticket/no number - Placeholder only.
-    # pUtils.pivot_job_role_cols_to_rows()
-
     workplace_lf = pUtils.relabel_job_role_columns(workplace_lf)
+    workplace_job_role_lf = pUtils.pivot_job_role_cols_to_rows(workplace_lf)
 
     utils.sink_to_parquet(
-        lazy_df=workplace_lf,
+        lazy_df=workplace_job_role_lf,
         output_path=prepared_data_destination,
     )
 

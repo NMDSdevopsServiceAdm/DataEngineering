@@ -15,7 +15,10 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_values.categorical_column_values import PublishedJobRoleLabels
+from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_values.categorical_columns_by_dataset import (
+    SLVPrepareCategoricalValues,
+)
 
 COMPARE_COLS_TO_IMPORT = [
     AWPClean.establishment_id,
@@ -23,7 +26,10 @@ COMPARE_COLS_TO_IMPORT = [
     AWPClean.location_id,
 ]
 
-PUBLISHED_JOB_ROLE_LABELS = PublishedJobRoleLabels("job_role_label").categorical_values
+PUBLISHED_JOB_ROLE_LABELS_VALUES = (
+    SLVPrepareCategoricalValues.published_job_role_labels_column_values
+)
+PUBLISHED_JOB_ROLE_LABELS = PUBLISHED_JOB_ROLE_LABELS_VALUES.categorical_values
 
 
 def no_leftover_raw_job_role_code_columns(df: pl.DataFrame) -> bool:
@@ -41,26 +47,6 @@ def no_leftover_raw_job_role_code_columns(df: pl.DataFrame) -> bool:
         bool: True if no columns match the raw jrNN{suffix} code shape
     """
     return not any(pUtils.JOB_ROLE_COLUMN_PATTERN.match(col) for col in df.columns)
-
-
-def has_all_published_job_role_label_columns(df: pl.DataFrame) -> bool:
-    """Checks that every published job role label has a corresponding column in df.
-
-    Compares against the exact label portion of each column (everything
-    before its trailing `_{suffix}`), not a prefix match - several labels
-    share a prefix (`other`, `other_managers`, `other_regulated_professions`,
-    `other_direct_care`), so a `startswith` check would let a sibling label's
-    column mask a missing one.
-
-    Args:
-        df (pl.DataFrame): the dataframe to check
-
-    Returns:
-        bool: True if every published job role label has at least one
-            matching column
-    """
-    column_labels = {col.rsplit("_", 1)[0] for col in df.columns}
-    return all(label in column_labels for label in PUBLISHED_JOB_ROLE_LABELS)
 
 
 def main(
@@ -98,7 +84,8 @@ def main(
             )
         )
     )
-    expected_row_count = compare_df.height
+    # Each pre-pivot row explodes into one row per published job role label.
+    expected_row_count = compare_df.height * len(PUBLISHED_JOB_ROLE_LABELS)
 
     validation = (
         pb.Validate(
@@ -118,9 +105,27 @@ def main(
             no_leftover_raw_job_role_code_columns,
             brief="No leftover jrNN-coded job role columns should remain after relabelling",
         )
+        # job role pivot grain
+        .rows_distinct(
+            columns_subset=[
+                AWPClean.establishment_id,
+                AWPClean.ascwds_workplace_import_date,
+                SLVCols.job_role_label,
+            ],
+            brief="Primary key (establishment_id, ascwds_workplace_import_date, "
+            "job_role_label) should be unique",
+        )
+        .col_vals_in_set(
+            SLVCols.job_role_label,
+            PUBLISHED_JOB_ROLE_LABELS,
+        )
         .specially(
-            has_all_published_job_role_label_columns,
-            brief="Job role columns should be present, named after their published labels",
+            vl.is_unique_count_equal(
+                SLVCols.job_role_label,
+                PUBLISHED_JOB_ROLE_LABELS_VALUES.count_of_categorical_values,
+            ),
+            brief=f"{SLVCols.job_role_label} should have exactly "
+            f"{PUBLISHED_JOB_ROLE_LABELS_VALUES.count_of_categorical_values} distinct values",
         )
         .interrogate()
     )

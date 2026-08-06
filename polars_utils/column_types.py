@@ -8,6 +8,7 @@ from utils.column_values.categorical_column_values import (
 )
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
+    SLVPrepareCategoricalValues,
 )
 
 
@@ -30,6 +31,9 @@ class CategoricalColumnTypes:
     )
     JobGroupEnumType = pl.Enum(
         CatVals.main_job_group_labels_column_values.categorical_values
+    )
+    PublishedJobRoleLabelEnumType = pl.Enum(
+        SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
     )
     EstimatesFilledPostSourceEnumType = pl.Enum(
         [

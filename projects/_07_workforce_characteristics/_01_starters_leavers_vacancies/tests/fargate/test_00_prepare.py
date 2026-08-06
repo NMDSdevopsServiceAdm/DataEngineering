@@ -77,13 +77,14 @@ class TestPrepare:
 
         reduce_to_published_roles_mock.assert_called_once_with(dropped_totals_lf)
         merged_jr_cols_lf = reduce_to_published_roles_mock.return_value
-        # TODO: Uncomment when pivot_job_role_cols_to_rows is implemented.
-        # pivot_job_role_cols_to_rows_mock.assert_called_once()
 
         relabel_job_role_columns_mock.assert_called_once_with(merged_jr_cols_lf)
         relabelled_lf = relabel_job_role_columns_mock.return_value
 
+        pivot_job_role_cols_to_rows_mock.assert_called_once_with(relabelled_lf)
+        pivoted_lf = pivot_job_role_cols_to_rows_mock.return_value
+
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=relabelled_lf,
+            lazy_df=pivoted_lf,
             output_path=self.PREPARED_DATA_DESTINATION,
         )

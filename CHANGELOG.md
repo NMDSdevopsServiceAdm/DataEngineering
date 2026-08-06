@@ -28,6 +28,8 @@ All notable changes to this project will be documented in this file.
 
 - Added a reusable `not_null_filter_expr` to Polars Utils, and used it in the SLV prepare step to exclude ASCWDS workplace records for non-CQC locations (null `location_id`).
 
+- Added `pivot_job_role_cols_to_rows` to the SLV prepare job, reshaping wide per-job-role columns into one row per establishment/date/job-role label, wired in after job-role relabelling; updated the merge step and prepare validation to match the new long-format output.
+
 ### Changed
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
 

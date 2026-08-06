@@ -3,9 +3,14 @@ import polars.testing as pl_testing
 import pytest
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as job
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._07_workforce_characteristics.unittest_data.polars_slv_test_data import (
     TestPrepareUtilsData as Data,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_column_values import PublishedJobRoleLabels
 
 PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils"
@@ -65,8 +70,53 @@ class TestJobRoleCodeDerivation:
 
 
 class TestPivotJobRoleColsToRows:
-    def test_pivot_job_role_cols_to_rows(self):
-        pass
+    @pytest.mark.parametrize(
+        "case",
+        [
+            pytest.param(case, id=case.id)
+            for case in Data.pivot_job_role_cols_to_rows_test_cases
+        ],
+    )
+    def test_pivot_job_role_cols_to_rows(self, case):
+        test_lf = pl.LazyFrame(case.input_data)
+        expected_lf = pl.LazyFrame(case.expected_data).with_columns(
+            pl.col(AWPClean.establishment_id).cast(CatColType.EstablishmentCatType),
+            pl.col(SLVCols.job_role_label).cast(
+                CatColType.PublishedJobRoleLabelEnumType
+            ),
+            pl.col(SLVCols.employees).cast(pl.Int16),
+            pl.col(SLVCols.starters).cast(pl.Int16),
+            pl.col(SLVCols.leavers).cast(pl.Int16),
+            pl.col(SLVCols.vacancies).cast(pl.Int16),
+        )
+
+        returned_lf = job.pivot_job_role_cols_to_rows(test_lf)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+    def test_output_has_expected_dtypes(self):
+        case = Data.pivot_job_role_cols_to_rows_test_cases[0]
+        test_lf = pl.LazyFrame(case.input_data)
+
+        returned_schema = job.pivot_job_role_cols_to_rows(test_lf).collect_schema()
+
+        assert returned_schema[AWPClean.establishment_id] == CatColType.EstablishmentCatType  # fmt: skip
+        assert returned_schema[SLVCols.job_role_label] == CatColType.PublishedJobRoleLabelEnumType  # fmt: skip
+        assert returned_schema[SLVCols.employees] == pl.Int16
+        assert returned_schema[SLVCols.starters] == pl.Int16
+        assert returned_schema[SLVCols.leavers] == pl.Int16
+        assert returned_schema[SLVCols.vacancies] == pl.Int16
+
+    def test_raises_value_error_when_no_job_role_columns_found(self):
+        test_lf = pl.LazyFrame(
+            {
+                AWPClean.establishment_id: ["1"],
+                AWPClean.ascwds_workplace_import_date: [None],
+            }
+        )
+
+        with pytest.raises(ValueError):
+            job.pivot_job_role_cols_to_rows(test_lf)
 
 
 class TestRelabelJobRoleColumns:
