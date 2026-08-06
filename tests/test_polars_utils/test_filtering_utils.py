@@ -268,3 +268,18 @@ class TestEarliestFilePerMonthFilterExpr:
         expr = job.earliest_file_per_month_filter_expr("some_other_column")
 
         assert set(expr.meta.root_names()) == {"some_other_column"}
+
+
+class TestNotNullFilterExpr:
+    def test_returns_only_rows_where_column_is_not_null(self):
+        test_lf = pl.LazyFrame({"location_id": [1, None, 3]})
+        expected_lf = pl.LazyFrame({"location_id": [1, 3]})
+
+        returned_lf = test_lf.filter(job.not_null_filter_expr("location_id"))
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_uses_the_passed_column(self):
+        expr = job.not_null_filter_expr("some_other_column")
+
+        assert set(expr.meta.root_names()) == {"some_other_column"}

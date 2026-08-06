@@ -4,6 +4,7 @@ import projects._07_workforce_characteristics._01_starters_leavers_vacancies.far
 from polars_utils import utils
 from polars_utils.filtering_utils import (
     earliest_file_per_month_filter_expr,
+    not_null_filter_expr,
     reduced_data_filter_expr,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
@@ -23,6 +24,7 @@ def main(
     prepared_data_destination: str,
 ) -> None:
     """Load the cleaned ASCWDS workplace dataset and then:
+        - remove rows with a null location_id (ASCWDS includes non-CQC locations).
         - reduce rows to quarterly import dates before two previous financial years
           and then earliest import day per month.
         - merge unpublished roles into 'other' groups
@@ -34,6 +36,7 @@ def main(
     """
     workplace_lf = (
         utils.scan_parquet(cleaned_ascwds_workplace_source)
+        .filter(not_null_filter_expr(column=AWPClean.location_id))
         .filter(
             reduced_data_filter_expr(date_col=AWPClean.ascwds_workplace_import_date)
         )

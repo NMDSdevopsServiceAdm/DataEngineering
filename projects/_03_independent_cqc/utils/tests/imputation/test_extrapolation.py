@@ -98,20 +98,22 @@ class TestExtrapolationWhenInvalidMethod:
 
 class TestBuildExtrapolationAggregates:
     def test_returns_correct_aggregates_per_location(self):
-        input_lf = pl.LazyFrame(
-            Data.extrapolation_aggregates_rows,
-            Schemas.extrapolation_aggregates_schema,
-            orient="row",
-        )
-
-        returned_lf = job.build_extrapolation_aggregates(
-            input_lf, IndCQC.ascwds_pir_merged, IndCQC.posts_rolling_average_model
-        )
-
         expected_lf = pl.LazyFrame(
             Data.expected_extrapolation_aggregates_rows,
             Schemas.expected_extrapolation_aggregates_schema,
             orient="row",
+        )
+        input_lf = expected_lf.drop(
+            [
+                ExtrapCol.first_submission_time,
+                ExtrapCol.final_submission_time,
+                ExtrapCol.first_value,
+                ExtrapCol.first_model,
+            ]
+        )
+
+        returned_lf = job.build_extrapolation_aggregates(
+            input_lf, IndCQC.ascwds_pir_merged, IndCQC.posts_rolling_average_model
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)

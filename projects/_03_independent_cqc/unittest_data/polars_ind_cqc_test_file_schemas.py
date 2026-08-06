@@ -1615,14 +1615,11 @@ class ModelExtrapolation:
         IndCQC.extrapolation_model: pl.Float32,
     }
 
-    extrapolation_aggregates_schema = {
+    expected_extrapolation_aggregates_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.ascwds_pir_merged: pl.Float32,
         IndCQC.posts_rolling_average_model: pl.Float32,
-    }
-    expected_extrapolation_aggregates_schema = {
-        IndCQC.location_id: pl.String,
         ExtrapCol.first_submission_time: pl.Date,
         ExtrapCol.final_submission_time: pl.Date,
         ExtrapCol.first_value: pl.Float32,
