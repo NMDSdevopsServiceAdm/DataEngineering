@@ -53,6 +53,24 @@ class TestPrepareUtilsData:
             },
         ),
         ReduceToPublishedRolesTestCase(
+            id="folds_direct_care_group_role_into_its_job_group",
+            input_data={
+                AWPClean.job_role_10_employees: 7,  # employment_support -> direct_care
+            },
+            expected_data={
+                "jr1003emp": 7,
+            },
+        ),
+        ReduceToPublishedRolesTestCase(
+            id="folds_other_group_role_into_its_job_group",
+            input_data={
+                AWPClean.job_role_25_employees: 4,  # admin_staff -> other
+            },
+            expected_data={
+                "jr1004emp": 4,
+            },
+        ),
+        ReduceToPublishedRolesTestCase(
             id="ignores_null_values_in_sum",
             input_data={
                 AWPClean.job_role_02_employees: 2,

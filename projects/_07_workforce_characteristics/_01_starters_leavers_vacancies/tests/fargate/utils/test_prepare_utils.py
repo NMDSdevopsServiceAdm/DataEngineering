@@ -54,6 +54,15 @@ class TestJobRoleCodeDerivation:
     def test_unpublished_role_code_maps_to_expected_other_role_code(self):
         assert job.job_role_code_to_other_bucket_code["02"] == "1001"
 
+    def test_every_catalogued_code_is_published_or_bucketed_exactly_once(self):
+        published_codes = set(job.published_job_role_codes_and_labels)
+        bucketed_codes = set(job.job_role_code_to_other_bucket_code)
+
+        assert not (published_codes & bucketed_codes)
+        assert published_codes | bucketed_codes == set(
+            job.all_zero_filled_job_role_codes_and_labels
+        )
+
 
 class TestPivotJobRoleColsToRows:
     def test_pivot_job_role_cols_to_rows(self):
