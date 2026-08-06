@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 
 - Added `PublishedJobRoleLabels` categorical values class defining the canonical set of published ASC-WDS job role labels.
 
+- Added a reusable `not_null_filter_expr` to Polars Utils, and used it in the SLV prepare step to exclude ASCWDS workplace records for non-CQC locations (null `location_id`).
+
 ### Changed
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
 
@@ -74,8 +76,6 @@ All notable changes to this project will be documented in this file.
 - Fixed Schema mismatch error while generating grouped providers output.
 
 - Added missing error notifications for the CQC/ASC-WDS orchestrator and crawler-refresh steps in three ingestion pipelines, and a bounded timeout for the ASC-WDS worker/workplace file-arrival polling loops.
-
-- Fixed the SLV prepare step to exclude ASCWDS workplace records for non-CQC locations (null `location_id`), adding a reusable `not_null_filter_expr` to Polars Utils.
 
 ## [v2026.06.0] - 15/07/2026
 
