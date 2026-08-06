@@ -26,9 +26,20 @@ class TestReduceToPublishedRoles:
         pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     def test_raises_value_error_for_uncatalogued_job_role_code(self):
-        test_lf = pl.LazyFrame({"jr98emp": 1})  # 98 isn't a MainJobRoleID code
+        test_lf = pl.LazyFrame(
+            {"jr98emp": 1}
+        )  # not an AscwdsWorkerValueLabelsMainjrid code
 
         with pytest.raises(ValueError, match="98"):
+            job.reduce_to_published_roles(test_lf)
+
+    def test_raises_value_error_for_technician_and_care_navigator_codes(self):
+        # 22 (technician) and 41 (care_navigator) have no label/job-group entry,
+        # so they're treated the same as any other uncatalogued code. They're
+        # already merged upstream before reaching this function in practice.
+        test_lf = pl.LazyFrame({"jr22emp": 1, "jr41emp": 2})
+
+        with pytest.raises(ValueError, match="22"):
             job.reduce_to_published_roles(test_lf)
 
 
