@@ -16,10 +16,11 @@ PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacanc
 class ValidatePreparedSLVDataTests(unittest.TestCase):
     def setUp(self) -> None:
         source_schema = {
+            AWPClean.location_id: pl.String,
             AWPClean.establishment_id: pl.String,
         }
         source_rows = [
-            ("1-001"),
+            ("Loc-001", "1-001"),
         ]  # fmt: skip
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
 
@@ -30,13 +31,14 @@ class ValidatePreparedSLVDataTests(unittest.TestCase):
         # earliest-file-per-month filter rather than the retention filter - proving the
         # monthly reduction itself is exercised here, not just retention.
         compare_schema = {
+            AWPClean.location_id: pl.String,
             AWPClean.establishment_id: pl.String,
             AWPClean.ascwds_workplace_import_date: pl.Date,
         }
         compare_rows = [
-            ("1-001", date(2026, 1, 1)),
-            ("1-003", date(2026, 1, 15)),  # same month as 1-001, later date -> dropped by monthly filter
-            ("1-002", date(2020, 5, 1)),
+            ("Loc-001", "1-001", date(2026, 1, 1)),
+            ("Loc-003", "1-003", date(2026, 1, 15)),  # same month as 1-001, later date -> dropped by monthly filter
+            ("Loc-002", "1-002", date(2020, 5, 1)),
         ]  # fmt: skip
         self.compare_df = pl.DataFrame(compare_rows, compare_schema, orient="row")
 

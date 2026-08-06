@@ -5,6 +5,7 @@ import pointblank as pb
 from polars_utils import utils
 from polars_utils.filtering_utils import (
     earliest_file_per_month_filter_expr,
+    not_null_filter_expr,
     reduced_data_filter_expr,
 )
 from polars_utils.validation import actions as vl
@@ -44,6 +45,7 @@ def main(
             source=f"s3://{bucket_name}/{compare_path}",
             selected_columns=COMPARE_COLS_TO_IMPORT,
         )
+        .filter(not_null_filter_expr(column=AWPClean.location_id))
         .filter(
             reduced_data_filter_expr(date_col=AWPClean.ascwds_workplace_import_date)
         )
