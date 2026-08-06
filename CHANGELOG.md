@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 
 - Added `PublishedJobRoleLabels` categorical values class defining the canonical set of published ASC-WDS job role labels.
 
+- Added a reusable `not_null_filter_expr` to Polars Utils, and used it in the SLV prepare step to exclude ASCWDS workplace records for non-CQC locations (null `location_id`).
+
 ### Changed
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
 

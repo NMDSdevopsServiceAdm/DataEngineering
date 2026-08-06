@@ -19,10 +19,12 @@ class TestPrepare:
     @patch(f"{PATCH_PATH}.pUtils.reduce_to_published_roles")
     @patch(f"{PATCH_PATH}.earliest_file_per_month_filter_expr")
     @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
+    @patch(f"{PATCH_PATH}.not_null_filter_expr")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
+        not_null_filter_expr_mock: Mock,
         reduced_data_filter_expr_mock: Mock,
         earliest_file_per_month_filter_expr_mock: Mock,
         reduce_to_published_roles_mock: Mock,
@@ -38,6 +40,7 @@ class TestPrepare:
 
         scan_parquet_mock.assert_called_once_with(self.CLEANED_ASCWDS_WORKPLACE_SOURCE)
 
+        not_null_filter_expr_mock.assert_called_once_with(column=AWPClean.location_id)
         reduced_data_filter_expr_mock.assert_called_once_with(
             date_col=AWPClean.ascwds_workplace_import_date
         )
@@ -45,15 +48,17 @@ class TestPrepare:
             date_col=AWPClean.ascwds_workplace_import_date
         )
 
-        # The retention filter must run before the monthly reduction (cheap predicate
-        # first, so it can discard rows before the more expensive per-month-min window
-        # runs), and both must hang off the scan chain itself, otherwise the predicates
-        # are not pushed down to the parquet source and the full dataset is read first.
+        # The null-location filter runs first (cheapest predicate), then the retention
+        # filter, then the monthly reduction (most expensive), and all three must hang
+        # off the scan chain itself, otherwise the predicates are not pushed down to
+        # the parquet source and the full dataset is read first.
         scan_lf = scan_parquet_mock.return_value
-        scan_lf.filter.assert_called_once_with(
+        scan_lf.filter.assert_called_once_with(not_null_filter_expr_mock.return_value)
+        location_filtered_lf = scan_lf.filter.return_value
+        location_filtered_lf.filter.assert_called_once_with(
             reduced_data_filter_expr_mock.return_value
         )
-        retention_filtered_lf = scan_lf.filter.return_value
+        retention_filtered_lf = location_filtered_lf.filter.return_value
         retention_filtered_lf.filter.assert_called_once_with(
             earliest_file_per_month_filter_expr_mock.return_value
         )
