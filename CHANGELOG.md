@@ -75,6 +75,8 @@ All notable changes to this project will be documented in this file.
 
 - Added missing error notifications for the CQC/ASC-WDS orchestrator and crawler-refresh steps in three ingestion pipelines, and a bounded timeout for the ASC-WDS worker/workplace file-arrival polling loops.
 
+- Fixed the SLV prepare step to exclude ASCWDS workplace records for non-CQC locations (null `location_id`), adding a reusable `not_null_filter_expr` to Polars Utils.
+
 ## [v2026.06.0] - 15/07/2026
 
 ### Added
