@@ -6,7 +6,12 @@ RUN mkdir -p /polars_scratch && chmod 777 /polars_scratch
 ENV POLARS_TEMP_DIR=/polars_scratch
 ENV PYTHONPATH=/app
 
-# Dependencies
+# Dependencies. Installed before any source is copied so that a source-only
+# change doesn't invalidate the pip layer.
+COPY docker_requirements/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Shared libraries
 COPY projects/_03_independent_cqc/_01_merge/fargate/utils /app/projects/_03_independent_cqc/_01_merge/fargate/utils
 COPY projects/_03_independent_cqc/_02_clean/fargate/utils /app/projects/_03_independent_cqc/_02_clean/fargate/utils
 COPY projects/_03_independent_cqc/_03_impute/fargate/utils /app/projects/_03_independent_cqc/_03_impute/fargate/utils
@@ -40,8 +45,5 @@ COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_03_impute.py /app/validate_03_impute.py
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/validate_04_estimates.py /app/validate_04_estimates.py
 COPY projects/_03_independent_cqc/_09_archive_estimates/fargate/archive_filled_posts_estimates.py /app/archive_filled_posts_estimates.py
-
-COPY docker_requirements/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
 
 ENTRYPOINT ["python"]
