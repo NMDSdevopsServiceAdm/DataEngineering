@@ -18,7 +18,7 @@ def build_variants(rows: list[tuple]) -> pl.DataFrame:
     """Run the location level steps over a small hand-built ratio series."""
     lf = pl.LazyFrame(rows, schema=INPUT_SCHEMA, orient="row")
     lf = job.add_fill_boundaries(lf)
-    lf = job.add_capped_interpolation(lf, job.INTERPOLATION_CAP_DAYS)
+    lf = job.add_capped_interpolation(lf, job.INTERPOLATION_CAPS)
     lf = job.add_variant_ratios(lf)
     return lf.sort(
         IndCQC.location_id,
@@ -35,7 +35,7 @@ def values_for(df: pl.DataFrame, variant_name: str) -> list:
 
 
 class TestCappedInterpolation:
-    def test_interpolates_across_a_gap_within_the_cap(self):
+    def test_interpolates_by_date_not_row_position(self):
         df = build_variants(
             [
                 ("1", "care_worker", date(2024, 1, 1), 0.4),
@@ -43,98 +43,115 @@ class TestCappedInterpolation:
                 ("1", "care_worker", date(2024, 3, 1), 0.6),
             ]
         )
-        # 2024-02-01 sits 31 days into a 60 day gap, so by date rather than by row position.
-        assert values_for(df, "none") == [0.4, round(0.4 + 0.2 * 31 / 60, 4), 0.6]
+        # 2024-02-01 sits 31 days into a 60 day gap, so 31/60 of the way, not halfway.
+        assert values_for(df, "edge12_interp24") == [
+            0.4,
+            round(0.4 + 0.2 * 31 / 60, 4),
+            0.6,
+        ]
 
-    def test_leaves_a_gap_beyond_the_cap_null(self):
+    def test_gap_between_the_two_caps_splits_the_variants(self):
+        # Three years: beyond the 24mo cap, inside the 60mo one. This is the axis under test.
         df = build_variants(
             [
                 ("1", "care_worker", date(2020, 1, 1), 0.4),
-                ("1", "care_worker", date(2022, 1, 1), None),
-                ("1", "care_worker", date(2024, 1, 1), 0.6),
+                ("1", "care_worker", date(2021, 7, 1), None),
+                ("1", "care_worker", date(2023, 1, 1), 0.6),
             ]
         )
-        assert values_for(df, "none") == [0.4, None, 0.6]
+        assert values_for(df, "edge12_interp24")[1] is None
+        assert values_for(df, "edge12_interp60")[1] is not None
 
-    def test_edge_fill_does_not_reach_into_an_interior_gap(self):
+    def test_gap_beyond_every_cap_stays_null(self):
         df = build_variants(
             [
-                ("1", "care_worker", date(2020, 1, 1), 0.4),
-                ("1", "care_worker", date(2022, 1, 1), None),
+                ("1", "care_worker", date(2014, 1, 1), 0.4),
+                ("1", "care_worker", date(2019, 1, 1), None),
                 ("1", "care_worker", date(2024, 1, 1), 0.6),
             ]
         )
-        assert values_for(df, "indefinite") == [0.4, None, 0.6]
+        assert values_for(df, "edge12_interp60") == [0.4, None, 0.6]
+
+    def test_edge_fill_never_reaches_an_interior_gap(self):
+        df = build_variants(
+            [
+                ("1", "care_worker", date(2014, 1, 1), 0.4),
+                ("1", "care_worker", date(2019, 1, 1), None),
+                ("1", "care_worker", date(2024, 1, 1), 0.6),
+            ]
+        )
+        assert values_for(df, "edge24_interp24") == [0.4, None, 0.6]
 
 
 class TestEdgeFillLimit:
-    def test_fills_on_the_limit_day_and_not_the_day_after(self):
+    def test_fills_on_the_limit_date_and_not_the_day_after(self):
         df = build_variants(
             [
                 ("1", "care_worker", date(2024, 1, 1), 0.5),
-                ("1", "care_worker", date(2024, 7, 2), None),  # 183 days later
-                ("1", "care_worker", date(2024, 7, 3), None),  # 184 days later
+                ("1", "care_worker", date(2025, 1, 1), None),  # exactly 12 months
+                ("1", "care_worker", date(2025, 1, 2), None),  # one day past
             ]
         )
-        assert values_for(df, "fill_6m") == [0.5, 0.5, None]
+        assert values_for(df, "edge12_interp24") == [0.5, 0.5, None]
 
     def test_backward_fill_uses_the_same_limit(self):
         df = build_variants(
             [
-                ("1", "care_worker", date(2023, 7, 2), None),  # 183 days before
-                ("1", "care_worker", date(2023, 7, 1), None),  # 184 days before
+                ("1", "care_worker", date(2022, 12, 31), None),  # one day past
+                ("1", "care_worker", date(2023, 1, 1), None),  # exactly 12 months
                 ("1", "care_worker", date(2024, 1, 1), 0.5),
             ]
         )
-        assert values_for(df, "fill_6m") == [None, 0.5, 0.5]
+        assert values_for(df, "edge12_interp24") == [None, 0.5, 0.5]
 
-    def test_none_variant_leaves_both_edges_null(self):
+    def test_longer_limit_reaches_further(self):
         df = build_variants(
             [
-                ("1", "care_worker", date(2023, 12, 1), None),
                 ("1", "care_worker", date(2024, 1, 1), 0.5),
-                ("1", "care_worker", date(2024, 2, 1), None),
+                ("1", "care_worker", date(2025, 7, 1), None),  # 18 months later
             ]
         )
-        assert values_for(df, "none") == [None, 0.5, None]
+        assert values_for(df, "edge12_interp24") == [0.5, None]
+        assert values_for(df, "edge24_interp24") == [0.5, 0.5]
 
-    def test_indefinite_variant_fills_both_edges(self):
+    def test_a_leap_year_does_not_shorten_the_limit(self):
+        # 2023-03-01 to 2024-03-01 is 366 days because 2024 is a leap year, so a 365 day
+        # limit would miss this submission entirely. A calendar limit does not.
         df = build_variants(
             [
-                ("1", "care_worker", date(2014, 1, 1), None),
-                ("1", "care_worker", date(2024, 1, 1), 0.5),
-                ("1", "care_worker", date(2034, 1, 1), None),
+                ("1", "care_worker", date(2023, 3, 1), 0.5),
+                ("1", "care_worker", date(2024, 3, 1), None),
             ]
         )
-        assert values_for(df, "indefinite") == [0.5, 0.5, 0.5]
+        assert values_for(df, "edge12_interp24") == [0.5, 0.5]
 
 
 class TestEdgeFillAcrossDateAxisChange:
-    def test_six_months_reaches_two_quarterly_rows(self):
+    def test_twelve_months_reaches_four_quarterly_rows(self):
         df = build_variants(
             [
                 ("1", "care_worker", date(2015, 1, 1), 0.5),
-                ("1", "care_worker", date(2015, 4, 1), None),  # 90 days
-                ("1", "care_worker", date(2015, 7, 1), None),  # 181 days
-                ("1", "care_worker", date(2015, 10, 1), None),  # 273 days
+                ("1", "care_worker", date(2015, 4, 1), None),
+                ("1", "care_worker", date(2015, 7, 1), None),
+                ("1", "care_worker", date(2015, 10, 1), None),
+                ("1", "care_worker", date(2016, 1, 1), None),  # exactly 12 months
+                ("1", "care_worker", date(2016, 4, 1), None),  # beyond
             ]
         )
-        assert values_for(df, "fill_6m") == [0.5, 0.5, 0.5, None]
+        assert values_for(df, "edge12_interp24") == [0.5] * 5 + [None]
 
-    def test_six_months_reaches_six_monthly_rows(self):
+    def test_twelve_months_reaches_twelve_monthly_rows(self):
+        dates = [date(2024, m, 1) for m in range(1, 13)] + [
+            date(2025, 1, 1),  # exactly 12 months
+            date(2025, 2, 1),  # beyond
+        ]
         df = build_variants(
             [
-                ("1", "care_worker", date(2024, 1, 1), 0.5),
-                ("1", "care_worker", date(2024, 2, 1), None),
-                ("1", "care_worker", date(2024, 3, 1), None),
-                ("1", "care_worker", date(2024, 4, 1), None),
-                ("1", "care_worker", date(2024, 5, 1), None),
-                ("1", "care_worker", date(2024, 6, 1), None),
-                ("1", "care_worker", date(2024, 7, 1), None),  # 182 days
-                ("1", "care_worker", date(2024, 8, 1), None),  # 213 days
+                ("1", "care_worker", d, 0.5 if d == date(2024, 1, 1) else None)
+                for d in dates
             ]
         )
-        assert values_for(df, "fill_6m") == [0.5] * 7 + [None]
+        assert values_for(df, "edge12_interp24") == [0.5] * 13 + [None]
 
 
 class TestBaseVariant:
@@ -152,7 +169,7 @@ class TestBaseVariant:
 
 
 class TestAllRolesOrNoneInvariant:
-    def test_roles_are_populated_and_null_together(self):
+    def build_two_role_series(self) -> pl.DataFrame:
         rows = []
         for role, first, second in (
             ("care_worker", 0.6, 0.8),
@@ -167,53 +184,39 @@ class TestAllRolesOrNoneInvariant:
                     ("1", role, date(2029, 1, 1), None),
                 ]
             )
-        df = build_variants(rows)
+        return build_variants(rows)
+
+    def test_roles_are_populated_and_null_together(self):
+        df = self.build_two_role_series()
 
         for variant in job.VARIANTS:
             column = job.measure_col(variant, job.BakeoffCols.ratio)
-            populated = df.select(
-                pl.col(column).is_not_null().alias("populated"),
-                pl.col(IndCQC.main_job_role_clean_labelled),
-                pl.col(IndCQC.cqc_location_import_date),
+            per_date = (
+                df.select(
+                    pl.col(column).is_not_null().alias("populated"),
+                    pl.col(IndCQC.cqc_location_import_date),
+                )
+                .group_by(IndCQC.cqc_location_import_date)
+                .agg(pl.col("populated").n_unique())
             )
-            per_date = populated.group_by(IndCQC.cqc_location_import_date).agg(
-                pl.col("populated").n_unique()
-            )
-            assert per_date.get_column("populated").to_list() == [
-                1,
-                1,
-                1,
-                1,
-                1,
-            ], f"{variant.name} populated one role but not the other"
+            assert (
+                per_date.get_column("populated").to_list() == [1] * 5
+            ), f"{variant.name} populated one role but not the other"
 
     def test_populated_rows_still_sum_to_one_across_roles(self):
-        rows = []
-        for role, first, second in (
-            ("care_worker", 0.6, 0.8),
-            ("supervisor", 0.4, 0.2),
-        ):
-            rows.extend(
-                [
-                    ("1", role, date(2023, 12, 1), None),
-                    ("1", role, date(2024, 1, 1), first),
-                    ("1", role, date(2024, 2, 1), None),
-                    ("1", role, date(2024, 3, 1), second),
-                ]
-            )
-        df = build_variants(rows)
-
+        df = self.build_two_role_series()
         column = job.measure_col(
-            next(v for v in job.VARIANTS if v.name == "fill_6m"),
+            next(v for v in job.VARIANTS if v.name == "edge12_interp24"),
             job.BakeoffCols.ratio,
         )
         totals = (
-            df.group_by(IndCQC.cqc_location_import_date)
+            df.filter(pl.col(column).is_not_null())
+            .group_by(IndCQC.cqc_location_import_date)
             .agg(pl.col(column).sum())
             .get_column(column)
             .to_list()
         )
-        assert [round(total, 4) for total in totals] == [1.0, 1.0, 1.0, 1.0]
+        assert [round(total, 4) for total in totals] == [1.0] * len(totals)
 
 
 SOURCE_SCHEMA = {

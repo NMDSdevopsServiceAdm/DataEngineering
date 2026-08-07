@@ -11,9 +11,11 @@ Two deliberate deviations from production worth knowing about:
   production uses. An all-zero submission should already be nulled by `filter_job_role_group_equal_zero`,
   so this ought to be a no-op — but the unguarded version yields NaN, and one NaN would poison every
   rolling sum in its stratum and silently destroy the comparison.
-- All fill and cap limits are day-based, never `.forward_fill(limit=n)`. The date axis is monthly for
-  roughly the last three financial years and quarterly before that, so a row-based limit would mean
-  a different calendar span depending on the era.
+- All fill and cap limits are calendar durations, never `.forward_fill(limit=n)` and never day
+  counts. The date axis is monthly for roughly the last three financial years and quarterly before
+  that, so a row-based limit would mean a different calendar span depending on the era; and because
+  the import date's day of month drifts, a day count lands either side of the intended boundary
+  depending on when in the month a workplace happened to submit.
 """
 
 from dataclasses import dataclass
@@ -32,12 +34,12 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 IMPORT_DATE: str = IndCQC.cqc_location_import_date
 JOB_ROLE_GROUPS: list[str] = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
 
-# Gap between two known values beyond which we stop believing a straight line between them.
-# Deliberately not a bake-off axis: the null_interior_rows diagnostic measures what raising it
-# would buy, and we decide from the charts.
-INTERPOLATION_CAP_DAYS: int = 730
-
-ROLLING_WINDOWS: tuple[str, ...] = ("6mo", "12mo")
+# All periods below are Polars calendar durations rather than day counts. The import date axis
+# has a drifting day of month (it is the earliest file in each calendar month, not the 1st), so
+# "two years" expressed as 730 days lands either side of the intended boundary depending on where
+# in the month each submission fell. Calendar arithmetic means exactly what it says and needs no
+# leap year fudge.
+ROLLING_WINDOWS: tuple[str, ...] = ("6mo",)
 
 
 @dataclass(frozen=True)
@@ -72,8 +74,23 @@ class TempCols:
     last_known_value: str = "_last_known_value"
     prev_known_date: str = "_prev_known_date"
     next_known_date: str = "_next_known_date"
-    interpolated: str = "_interpolated"
     is_interior: str = "_is_interior"
+
+
+def interpolated_col(cap: str) -> str:
+    """
+    Name the interpolated column for one cap length.
+
+    Variants sharing a cap share a column, so the interpolation is computed once per distinct
+    cap rather than once per variant.
+
+    Args:
+        cap (str): Polars calendar duration for the cap, e.g. "24mo".
+
+    Returns:
+        str: The column name.
+    """
+    return f"_interpolated_{cap}"
 
 
 @dataclass(frozen=True)
@@ -83,8 +100,10 @@ class Variant:
 
     Attributes:
         name (str): Label emitted in the `variant` column.
-        fill_days (Optional[int]): Symmetric edge fill limit in days. 0 disables the fill
-            entirely; None fills indefinitely.
+        interp_cap (Optional[str]): Longest gap between two known values that is still
+            interpolated, as a calendar duration. None interpolates any gap.
+        edge_fill (Optional[str]): Symmetric limit for repeating the first and last known
+            values outside the known range. None disables the fill entirely.
         weighted (bool): True to weight each workplace by its estimated filled posts, False
             to treat every submission equally.
         legacy (bool): True to reproduce production exactly — positional `.interpolate()`
@@ -92,21 +111,27 @@ class Variant:
     """
 
     name: str
-    fill_days: Optional[int]
+    interp_cap: Optional[str]
+    edge_fill: Optional[str]
     weighted: bool
     legacy: bool
 
 
-# `base` is today's production behaviour. The five that follow are unweighted, date-aware and
-# capped, so `base -> indefinite` isolates the weighting and cap change while
-# `indefinite -> the rest` isolates the edge fill, which is the axis under investigation.
+# `base` is today's production behaviour and the reference every other line is read against.
+# The rest are a 2x2 over the two levers, which act on disjoint rows — interpolation only ever
+# fills interior gaps, edge fill only ever fills outside the known range — so the cross tells us
+# whether they interact as well as what each does alone. Indefinite edge fill is deliberately
+# absent: it is the behaviour we are moving away from, and `base` already shows it.
 VARIANTS: tuple[Variant, ...] = (
-    Variant("base", fill_days=None, weighted=True, legacy=True),
-    Variant("indefinite", fill_days=None, weighted=False, legacy=False),
-    Variant("none", fill_days=0, weighted=False, legacy=False),
-    Variant("fill_6m", fill_days=183, weighted=False, legacy=False),
-    Variant("fill_12m", fill_days=365, weighted=False, legacy=False),
-    Variant("fill_24m", fill_days=730, weighted=False, legacy=False),
+    Variant("base", interp_cap=None, edge_fill=None, weighted=True, legacy=True),
+    Variant("edge12_interp24", "24mo", "12mo", weighted=False, legacy=False),
+    Variant("edge12_interp60", "60mo", "12mo", weighted=False, legacy=False),
+    Variant("edge24_interp24", "24mo", "24mo", weighted=False, legacy=False),
+    Variant("edge24_interp60", "60mo", "24mo", weighted=False, legacy=False),
+)
+
+INTERPOLATION_CAPS: tuple[str, ...] = tuple(
+    dict.fromkeys(v.interp_cap for v in VARIANTS if not v.legacy and v.interp_cap)
 )
 
 
@@ -189,25 +214,22 @@ def add_fill_boundaries(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
-def add_capped_interpolation(lf: pl.LazyFrame, cap_days: int) -> pl.LazyFrame:
+def add_capped_interpolation(lf: pl.LazyFrame, caps: tuple[str, ...]) -> pl.LazyFrame:
     """
-    Add date-aware interpolated values, only where the gap being spanned is short enough.
+    Add date-aware interpolated values, one column per cap length.
 
     Uses `interpolate_by` rather than `interpolate` so values are placed by date rather than by
     row position — which matters because the import date axis switches from quarterly to monthly
-    partway through the series.
+    partway through the series. The interpolation itself is computed once and then gated per cap,
+    so extra caps cost one Float32 column each rather than another pass over the data.
 
     Args:
         lf (pl.LazyFrame): Dataset with the boundary columns present.
-        cap_days (int): Longest gap between two known values that will still be interpolated.
+        caps (tuple[str, ...]): Cap lengths as Polars calendar durations, e.g. ("24mo", "60mo").
 
     Returns:
-        pl.LazyFrame: The dataset with the interpolated column added.
+        pl.LazyFrame: The dataset with one interpolated column per cap.
     """
-    gap_days = (
-        pl.col(TempCols.next_known_date) - pl.col(TempCols.prev_known_date)
-    ).dt.total_days()
-
     interpolated = (
         pl.col(BakeoffCols.ratio)
         .interpolate_by(pl.col(IMPORT_DATE))
@@ -215,10 +237,16 @@ def add_capped_interpolation(lf: pl.LazyFrame, cap_days: int) -> pl.LazyFrame:
     )
 
     return lf.with_columns(
-        pl.when(gap_days <= cap_days)
-        .then(interpolated)
-        .cast(pl.Float32)
-        .alias(TempCols.interpolated)
+        [
+            pl.when(
+                pl.col(TempCols.next_known_date)
+                <= pl.col(TempCols.prev_known_date).dt.offset_by(cap)
+            )
+            .then(interpolated)
+            .cast(pl.Float32)
+            .alias(interpolated_col(cap))
+            for cap in caps
+        ]
     )
 
 
@@ -226,8 +254,10 @@ def variant_expression(variant: Variant) -> pl.Expr:
     """
     Build the filled ratio expression for one variant.
 
-    Non-legacy variants coalesce the known value, then the capped interpolation, then an
-    edge fill applied only outside the known range and only within the variant's day limit.
+    Non-legacy variants coalesce the known value, then the interpolation for their cap, then an
+    edge fill applied only outside the known range and only within the variant's limit. Limits
+    are calendar durations, so "24mo" means exactly two calendar years from the known value
+    regardless of leap years or where in the month the submission fell.
 
     Args:
         variant (Variant): The variant to build an expression for.
@@ -248,23 +278,20 @@ def variant_expression(variant: Variant) -> pl.Expr:
             .alias(ratio_col)
         )
 
-    candidates = [pl.col(BakeoffCols.ratio), pl.col(TempCols.interpolated)]
+    candidates = [
+        pl.col(BakeoffCols.ratio),
+        pl.col(interpolated_col(variant.interp_cap)),
+    ]
 
-    if variant.fill_days != 0:
-        after_last = pl.col(IMPORT_DATE) > pl.col(TempCols.last_known_date)
-        before_first = pl.col(IMPORT_DATE) < pl.col(TempCols.first_known_date)
-
-        if variant.fill_days is not None:
-            after_last = after_last & (
-                (pl.col(IMPORT_DATE) - pl.col(TempCols.last_known_date)).dt.total_days()
-                <= variant.fill_days
-            )
-            before_first = before_first & (
-                (
-                    pl.col(TempCols.first_known_date) - pl.col(IMPORT_DATE)
-                ).dt.total_days()
-                <= variant.fill_days
-            )
+    if variant.edge_fill is not None:
+        after_last = (pl.col(IMPORT_DATE) > pl.col(TempCols.last_known_date)) & (
+            pl.col(IMPORT_DATE)
+            <= pl.col(TempCols.last_known_date).dt.offset_by(variant.edge_fill)
+        )
+        before_first = (pl.col(IMPORT_DATE) < pl.col(TempCols.first_known_date)) & (
+            pl.col(IMPORT_DATE)
+            >= pl.col(TempCols.first_known_date).dt.offset_by(f"-{variant.edge_fill}")
+        )
 
         candidates.append(
             pl.when(after_last)
@@ -588,5 +615,5 @@ def prepare_variants(lf: pl.LazyFrame) -> pl.LazyFrame:
     lf = lf.with_columns(estimate_filled_posts_size_group_expression())
     lf = add_job_role_ratios(lf)
     lf = add_fill_boundaries(lf)
-    lf = add_capped_interpolation(lf, INTERPOLATION_CAP_DAYS)
+    lf = add_capped_interpolation(lf, INTERPOLATION_CAPS)
     return add_variant_ratios(lf)

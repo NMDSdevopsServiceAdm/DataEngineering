@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Added a temporary bake-off job to the job role pipeline which compares six ways of filling ASC-WDS job role ratios before the rolling ratio is calculated, alongside diagnostics showing how much real data sits behind each one, so the alternatives can be charted before we choose how to extrapolate job role estimates over time.
+- Added a temporary bake-off job to the job role pipeline which compares different ways of filling ASC-WDS job role ratios before the rolling ratio is calculated, varying both how far a known value is carried beyond a workplace's own submissions and how large a gap between submissions is still interpolated, alongside diagnostics showing how much real data sits behind each one, so the alternatives can be charted before we choose how to extrapolate job role estimates over time.
 
 - Added `new-ticket`, `commit-push`, and `open-pr` Claude Code skills to run the ticket workflow (branch → SPEC → commits → PR) consistently, and an output-style guideline in CLAUDE.md. Trimmed the existing skills to cross-reference CLAUDE.md/PR templates instead of restating them, and updated remaining `pipenv` mentions to their `uv` equivalents.
 
