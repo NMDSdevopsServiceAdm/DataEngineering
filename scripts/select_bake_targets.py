@@ -378,6 +378,14 @@ def _parse_arguments(argv: Optional[Sequence[str]]) -> argparse.Namespace:
         help=f"Ref the branch forked from. Defaults to {DEFAULT_DIFF_BASE}.",
     )
     parser.add_argument(
+        "--region",
+        # Passed to boto3 explicitly rather than left to the environment:
+        # botocore reads AWS_DEFAULT_REGION, not the AWS_REGION the rest of this
+        # repo's CI config sets.
+        default=os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION"),
+        help="AWS region holding the ECR repositories. Defaults to $AWS_REGION.",
+    )
+    parser.add_argument(
         "--repo-root",
         type=Path,
         default=Path(__file__).resolve().parent.parent,
@@ -415,13 +423,22 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         int: Process exit code.
     """
     arguments = _parse_arguments(argv)
-    if arguments.image_tag is None and not arguments.skip_ecr_check:
-        print(
-            "--image-tag (or $SANITISED_CIRCLE_BRANCH) is required unless "
-            "--skip-ecr-check is passed.",
-            file=sys.stderr,
-        )
-        return 2
+    if not arguments.skip_ecr_check:
+        missing_arguments = [
+            name
+            for name, value in [
+                ("--image-tag", arguments.image_tag),
+                ("--region", arguments.region),
+            ]
+            if value is None
+        ]
+        if missing_arguments:
+            print(
+                f"{', '.join(missing_arguments)} (or the matching environment "
+                "variable) is required unless --skip-ecr-check is passed.",
+                file=sys.stderr,
+            )
+            return 2
 
     targets = load_bake_targets(arguments.repo_root)
     changed_paths = (
@@ -429,11 +446,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         if arguments.changed_paths is not None
         else changed_paths_since(arguments.diff_base, arguments.repo_root)
     )
+    ecr_client = (
+        None
+        if arguments.skip_ecr_check
+        else boto3.client("ecr", region_name=arguments.region)
+    )
     selected = select_targets(
         targets,
         changed_paths,
         image_tag=arguments.image_tag,
-        ecr_client=None if arguments.skip_ecr_check else boto3.client("ecr"),
+        ecr_client=ecr_client,
     )
 
     print(" ".join(selected))
