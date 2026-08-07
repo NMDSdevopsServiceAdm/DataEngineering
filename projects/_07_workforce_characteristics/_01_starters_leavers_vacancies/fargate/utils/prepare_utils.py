@@ -129,25 +129,15 @@ def reduce_to_published_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf
 
 
-def pivot_job_role_cols_to_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
+def reshape_job_role_cols_to_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
     """Reshapes wide per-job-role columns into one row per job role.
 
-    Must run after relabel_job_role_columns: that step has already enforced
-    every job role column's prefix is one of the 15 known
-    PublishedJobRoleLabels values, which is what lets this function trust
-    published_job_role_labels as its column-discovery source rather than
-    pattern-matching raw codes.
-
-    Uses a struct-per-label -> concat_list -> explode -> unnest reshape (no
-    joins, no group_by) - proven in prior production testing to hold ~14GB
-    peak RSS at ~6.6M-row/210-col scale, versus an immediate OOM for an
-    unpivot()+join alternative at the same scale.
-
-    Grain columns (establishment_id, job_role_label) are cast to
-    Categorical/Enum here, not left as String - required to avoid the OOM
-    previously hit in this exact reshape's downstream grain-uniqueness
-    check at ~370M output rows, confirmed to be caused by hashing/grouping
-    String grain columns at that cardinality.
+    Must run after relabel_job_role_columns, which guarantees every job role
+    column's prefix is one of the known PublishedJobRoleLabels values - this
+    function trusts that instead of pattern-matching raw codes. Grain columns
+    (establishment_id, job_role_label) are Categorical/Enum rather than
+    String to keep downstream uniqueness checks cheap at this dataset's
+    scale.
 
     Args:
         lf (pl.LazyFrame): LazyFrame with columns already relabelled to
@@ -212,7 +202,7 @@ def relabel_job_role_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Args:
         lf (pl.LazyFrame): LazyFrame with jrNN{suffix} columns reduced to
-            published roles, before any pivot.
+            published roles, before any reshape.
 
     Returns:
         pl.LazyFrame: Input LazyFrame with job role columns renamed to

@@ -24,13 +24,13 @@ class RelabelJobRoleColumnsTestCase:
 
 
 @dataclass
-class PivotJobRoleColsToRowsTestCase:
+class ReshapeJobRoleColsToRowsTestCase:
     id: str
     input_data: dict[str, Any]
     expected_data: dict[str, Any]
 
 
-# All 15 published labels, in PublishedJobRoleLabels' own field order. The pivot
+# All 15 published labels, in PublishedJobRoleLabels' own field order. The reshape
 # unconditionally references every label's 4 metric columns (trusting that the raw
 # ASC-WDS schema always declares them), so any functional test case needs the full set.
 _ALL_PUBLISHED_LABELS = [
@@ -53,7 +53,7 @@ _ALL_PUBLISHED_LABELS = [
 _ALL_NULL_LABEL = PublishedJobRoleLabels.other  # exercises the dense-null-row case
 
 
-def _build_pivot_job_role_cols_to_rows_case() -> PivotJobRoleColsToRowsTestCase:
+def _build_reshape_job_role_cols_to_rows_case() -> ReshapeJobRoleColsToRowsTestCase:
     establishment_id = "1"
     import_date = date(2024, 1, 1)
 
@@ -80,7 +80,7 @@ def _build_pivot_job_role_cols_to_rows_case() -> PivotJobRoleColsToRowsTestCase:
         SLVCols.leavers: [row[3] for row in expected_rows],
         SLVCols.vacancies: [row[4] for row in expected_rows],
     }
-    return PivotJobRoleColsToRowsTestCase(
+    return ReshapeJobRoleColsToRowsTestCase(
         id="reshapes_all_labels_and_keeps_dense_row_when_a_labels_metrics_are_all_null",
         input_data=input_data,
         expected_data=expected_data,
@@ -89,8 +89,8 @@ def _build_pivot_job_role_cols_to_rows_case() -> PivotJobRoleColsToRowsTestCase:
 
 @dataclass
 class TestPrepareUtilsData:
-    pivot_job_role_cols_to_rows_test_cases = [
-        _build_pivot_job_role_cols_to_rows_case(),
+    reshape_job_role_cols_to_rows_test_cases = [
+        _build_reshape_job_role_cols_to_rows_case(),
     ]
 
     reduce_to_published_roles_test_cases = [

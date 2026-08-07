@@ -16,7 +16,7 @@ class TestPrepare:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.pUtils.relabel_job_role_columns")
-    @patch(f"{PATCH_PATH}.pUtils.pivot_job_role_cols_to_rows")
+    @patch(f"{PATCH_PATH}.pUtils.reshape_job_role_cols_to_rows")
     @patch(f"{PATCH_PATH}.pUtils.reduce_to_published_roles")
     @patch(f"{PATCH_PATH}.earliest_file_per_month_filter_expr")
     @patch(f"{PATCH_PATH}.reduced_data_filter_expr")
@@ -29,7 +29,7 @@ class TestPrepare:
         reduced_data_filter_expr_mock: Mock,
         earliest_file_per_month_filter_expr_mock: Mock,
         reduce_to_published_roles_mock: Mock,
-        pivot_job_role_cols_to_rows_mock: Mock,
+        reshape_job_role_cols_to_rows_mock: Mock,
         relabel_job_role_columns_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -81,10 +81,10 @@ class TestPrepare:
         relabel_job_role_columns_mock.assert_called_once_with(merged_jr_cols_lf)
         relabelled_lf = relabel_job_role_columns_mock.return_value
 
-        pivot_job_role_cols_to_rows_mock.assert_called_once_with(relabelled_lf)
-        pivoted_lf = pivot_job_role_cols_to_rows_mock.return_value
+        reshape_job_role_cols_to_rows_mock.assert_called_once_with(relabelled_lf)
+        reshaped_lf = reshape_job_role_cols_to_rows_mock.return_value
 
         sink_to_parquet_mock.assert_called_once_with(
-            lazy_df=pivoted_lf,
+            lazy_df=reshaped_lf,
             output_path=self.PREPARED_DATA_DESTINATION,
         )

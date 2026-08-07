@@ -79,7 +79,7 @@ def main(
             )
         )
     )
-    # Each pre-pivot row explodes into one row per published job role label.
+    # Each pre-reshape row explodes into one row per published job role label.
     expected_row_count = compare_df.height * len(
         SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
     )
@@ -102,7 +102,7 @@ def main(
             no_leftover_raw_job_role_code_columns,
             brief="No leftover jrNN-coded job role columns should remain after relabelling",
         )
-        # job role pivot grain
+        # job role reshape grain
         .rows_distinct(
             columns_subset=[
                 AWPClean.establishment_id,

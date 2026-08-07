@@ -69,15 +69,15 @@ class TestJobRoleCodeDerivation:
         )
 
 
-class TestPivotJobRoleColsToRows:
+class TestReshapeJobRoleColsToRows:
     @pytest.mark.parametrize(
         "case",
         [
             pytest.param(case, id=case.id)
-            for case in Data.pivot_job_role_cols_to_rows_test_cases
+            for case in Data.reshape_job_role_cols_to_rows_test_cases
         ],
     )
-    def test_pivot_job_role_cols_to_rows(self, case):
+    def test_reshape_job_role_cols_to_rows(self, case):
         test_lf = pl.LazyFrame(case.input_data)
         expected_lf = pl.LazyFrame(case.expected_data).with_columns(
             pl.col(AWPClean.establishment_id).cast(CatColType.EstablishmentCatType),
@@ -90,15 +90,15 @@ class TestPivotJobRoleColsToRows:
             pl.col(SLVCols.vacancies).cast(pl.Int16),
         )
 
-        returned_lf = job.pivot_job_role_cols_to_rows(test_lf)
+        returned_lf = job.reshape_job_role_cols_to_rows(test_lf)
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
     def test_output_has_expected_dtypes(self):
-        case = Data.pivot_job_role_cols_to_rows_test_cases[0]
+        case = Data.reshape_job_role_cols_to_rows_test_cases[0]
         test_lf = pl.LazyFrame(case.input_data)
 
-        returned_schema = job.pivot_job_role_cols_to_rows(test_lf).collect_schema()
+        returned_schema = job.reshape_job_role_cols_to_rows(test_lf).collect_schema()
 
         assert returned_schema[AWPClean.establishment_id] == CatColType.EstablishmentCatType  # fmt: skip
         assert returned_schema[SLVCols.job_role_label] == CatColType.PublishedJobRoleLabelEnumType  # fmt: skip
