@@ -42,6 +42,7 @@ COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/
 COPY projects/_03_independent_cqc/_09_archive_estimates/fargate/archive_filled_posts_estimates.py /app/archive_filled_posts_estimates.py
 
 COPY docker_requirements/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY projects/_03_independent_cqc/Dockerfile_and_requirements/requirements-extra.txt .
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-extra.txt
 
 ENTRYPOINT ["python"]

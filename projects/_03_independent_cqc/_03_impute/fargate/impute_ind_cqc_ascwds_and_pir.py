@@ -14,6 +14,10 @@ from projects._03_independent_cqc._03_impute.fargate.utils.convert_pir_people_to
 from projects._03_independent_cqc._03_impute.fargate.utils.forward_fill_latest_known_value import (
     forward_fill_latest_known_value,
 )
+from projects._03_independent_cqc._03_impute.fargate.utils.memory_monitor import (
+    log_query_plan,
+    profile_step,
+)
 from projects._03_independent_cqc._03_impute.fargate.utils.primary_service_rate_of_change import (
     model_primary_service_rate_of_change_trendline,
 )
@@ -31,22 +35,36 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
     """
     Impute values into ASC-WDS, PIR and Capacity Tracker data.
 
+    Every step is wrapped in `profile_step` for temporary memory-spike
+    investigation: it logs elapsed time plus periodic/peak RSS, so a future
+    out-of-memory kill leaves a trail of which step was running and for how
+    long. The pipeline stays lazy end-to-end (no step below calls `.collect()`)
+    so most steps will log ~0s and no RSS movement - only `sink_to_parquet`
+    actually executes the accumulated plan, which is why its query plan is
+    logged once, immediately before it runs.
+
     Args:
         cleaned_ind_cqc_source (str): s3 path to the cleaned ind cqc data
         destination (str): s3 path to save the output data
     """
-    lf = utils.scan_parquet(cleaned_ind_cqc_source)
+    with profile_step("scan_parquet"):
+        lf = utils.scan_parquet(cleaned_ind_cqc_source)
     print("Cleaned IND CQC LazyFrame read in")
 
-    lf = forward_fill_latest_known_value(lf, IndCQC.ascwds_filled_posts_dedup_clean)
+    with profile_step("forward_fill:ascwds_filled_posts_dedup_clean"):
+        lf = forward_fill_latest_known_value(lf, IndCQC.ascwds_filled_posts_dedup_clean)
 
-    lf = forward_fill_latest_known_value(lf, IndCQC.pir_people_directly_employed_dedup)
+    with profile_step("forward_fill:pir_people_directly_employed_dedup"):
+        lf = forward_fill_latest_known_value(
+            lf, IndCQC.pir_people_directly_employed_dedup
+        )
 
-    lf = cUtils.calculate_filled_posts_per_bed_ratio(
-        lf,
-        IndCQC.ascwds_filled_posts_dedup_clean,
-        IndCQC.filled_posts_per_bed_ratio,
-    )
+    with profile_step("calculate_filled_posts_per_bed_ratio"):
+        lf = cUtils.calculate_filled_posts_per_bed_ratio(
+            lf,
+            IndCQC.ascwds_filled_posts_dedup_clean,
+            IndCQC.filled_posts_per_bed_ratio,
+        )
 
     lf = lf.with_columns(
         pl.when(is_care_home())
@@ -56,35 +74,40 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         .alias(IndCQC.combined_ratio_and_filled_posts)
     )
 
-    lf = model_primary_service_rate_of_change_trendline(
-        lf,
-        IndCQC.combined_ratio_and_filled_posts,
-        NumericalValues.number_of_days_in_window,
-        IndCQC.ascwds_rate_of_change_trendline_model,
-        max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
-    )
+    with profile_step("model_roc_trendline:ascwds"):
+        lf = model_primary_service_rate_of_change_trendline(
+            lf,
+            IndCQC.combined_ratio_and_filled_posts,
+            NumericalValues.number_of_days_in_window,
+            IndCQC.ascwds_rate_of_change_trendline_model,
+            max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
+        )
 
-    lf = convert_pir_to_filled_posts(lf)
+    with profile_step("convert_pir_to_filled_posts"):
+        lf = convert_pir_to_filled_posts(lf)
 
-    lf = merge_ascwds_and_pir_filled_post_submissions(lf)
+    with profile_step("merge_ascwds_and_pir_filled_post_submissions"):
+        lf = merge_ascwds_and_pir_filled_post_submissions(lf)
 
-    lf = model_imputation(
-        lf,
-        IndCQC.ascwds_pir_merged,
-        IndCQC.ascwds_rate_of_change_trendline_model,
-        IndCQC.imputed_filled_post_model,
-        care_home=False,
-        extrapolation_method="ratio",
-    )
+    with profile_step("model_imputation:ascwds_pir_merged"):
+        lf = model_imputation(
+            lf,
+            IndCQC.ascwds_pir_merged,
+            IndCQC.ascwds_rate_of_change_trendline_model,
+            IndCQC.imputed_filled_post_model,
+            care_home=False,
+            extrapolation_method="ratio",
+        )
 
-    lf = model_imputation(
-        lf,
-        IndCQC.filled_posts_per_bed_ratio,
-        IndCQC.ascwds_rate_of_change_trendline_model,
-        IndCQC.imputed_filled_posts_per_bed_ratio_model,
-        care_home=True,
-        extrapolation_method="ratio",
-    )
+    with profile_step("model_imputation:filled_posts_per_bed_ratio"):
+        lf = model_imputation(
+            lf,
+            IndCQC.filled_posts_per_bed_ratio,
+            IndCQC.ascwds_rate_of_change_trendline_model,
+            IndCQC.imputed_filled_posts_per_bed_ratio_model,
+            care_home=True,
+            extrapolation_method="ratio",
+        )
 
     # model_calculate_rolling_average - posts_rolling_average_model
 
@@ -112,31 +135,34 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         .alias(IndCQC.ct_combined_care_home_and_non_res)
     )
 
-    lf = model_primary_service_rate_of_change_trendline(
-        lf,
-        IndCQC.ct_combined_care_home_and_non_res,
-        NumericalValues.number_of_days_in_window,
-        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
-        max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
-    )
+    with profile_step("model_roc_trendline:ct_combined_care_home_and_non_res"):
+        lf = model_primary_service_rate_of_change_trendline(
+            lf,
+            IndCQC.ct_combined_care_home_and_non_res,
+            NumericalValues.number_of_days_in_window,
+            IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+            max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
+        )
 
-    lf = model_imputation(
-        lf,
-        IndCQC.ct_care_home_total_employed_cleaned,
-        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
-        IndCQC.ct_care_home_total_employed_imputed,
-        care_home=True,
-        extrapolation_method="ratio",
-    )
+    with profile_step("model_imputation:ct_care_home_total_employed_cleaned"):
+        lf = model_imputation(
+            lf,
+            IndCQC.ct_care_home_total_employed_cleaned,
+            IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+            IndCQC.ct_care_home_total_employed_imputed,
+            care_home=True,
+            extrapolation_method="ratio",
+        )
 
-    lf = model_imputation(
-        lf,
-        IndCQC.ct_non_res_care_workers_employed_cleaned,
-        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
-        IndCQC.ct_non_res_care_workers_employed_imputed,
-        care_home=False,
-        extrapolation_method="ratio",
-    )
+    with profile_step("model_imputation:ct_non_res_care_workers_employed_cleaned"):
+        lf = model_imputation(
+            lf,
+            IndCQC.ct_non_res_care_workers_employed_cleaned,
+            IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+            IndCQC.ct_non_res_care_workers_employed_imputed,
+            care_home=False,
+            extrapolation_method="ratio",
+        )
 
     lf = lf.with_columns(
         utils.nullify_ct_values_previous_to_first_submission(
@@ -149,10 +175,12 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
 
     print(f"Exporting as parquet to {destination}")
 
-    utils.sink_to_parquet(
-        lf,
-        destination,
-    )
+    with profile_step("sink_to_parquet"):
+        log_query_plan("sink_to_parquet", lf)
+        utils.sink_to_parquet(
+            lf,
+            destination,
+        )
 
     print("Completed imputing independent CQC ASCWDS and PIR")
 
