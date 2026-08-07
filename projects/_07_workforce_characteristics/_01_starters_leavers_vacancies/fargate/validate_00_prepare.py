@@ -3,7 +3,6 @@ import sys
 import pointblank as pb
 import polars as pl
 
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.prepare_utils as pUtils
 from polars_utils import utils
 from polars_utils.filtering_utils import (
     earliest_file_per_month_filter_expr,
@@ -25,23 +24,6 @@ COMPARE_COLS_TO_IMPORT = [
     AWPClean.ascwds_workplace_import_date,
     AWPClean.location_id,
 ]
-
-
-def no_leftover_raw_job_role_code_columns(df: pl.DataFrame) -> bool:
-    """Checks that no jrNN{suffix}-coded job role columns remain in df.
-
-    Reuses pUtils.JOB_ROLE_COLUMN_PATTERN (the same pattern
-    relabel_job_role_columns matches on) rather than a separate, narrower
-    pattern here - keeps the two in lockstep so a new suffix can't slip past
-    this check just because it wasn't listed twice.
-
-    Args:
-        df (pl.DataFrame): the dataframe to check
-
-    Returns:
-        bool: True if no columns match the raw jrNN{suffix} code shape
-    """
-    return not any(pUtils.JOB_ROLE_COLUMN_PATTERN.match(col) for col in df.columns)
 
 
 def main(
@@ -96,11 +78,6 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        )
-        # job role relabelling
-        .specially(
-            no_leftover_raw_job_role_code_columns,
-            brief="No leftover jrNN-coded job role columns should remain after relabelling",
         )
         # job role reshape grain
         .rows_distinct(

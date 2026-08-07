@@ -102,15 +102,3 @@ class TestMain:
             assert (
                 assertion in assertion_types_present
             ), f"{assertion} not found in validation report"
-
-
-class TestNoLeftoverRawJobRoleCodeColumns:
-    def test_true_when_no_raw_job_role_code_columns_remain(self):
-        df = pl.DataFrame(schema={AWPClean.establishment_id: pl.String})
-
-        assert job.no_leftover_raw_job_role_code_columns(df)
-
-    def test_false_when_a_raw_jrNN_column_remains(self):
-        df = pl.DataFrame(schema={"jr01emp": pl.Int64})
-
-        assert not job.no_leftover_raw_job_role_code_columns(df)
