@@ -48,7 +48,10 @@ jobs:
   # executor has no python, and this keeps the costly executor off the skip path.
   decide-images:
     docker:
-      - image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
+      # cimg rather than the uv image the lint jobs use: this job shells out to
+      # git, and the uv image has no git binary. The script only needs boto3, so
+      # there's nothing to gain from the project's full environment either.
+      - image: cimg/python:3.11.12
     resource_class: small
     environment:
       AWS_REGION: eu-west-2
@@ -65,19 +68,19 @@ jobs:
             git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
       - run:
           name: Install dependencies
-          command: uv sync --locked
+          command: pip install boto3==1.40.21
       - run:
           name: Select bake targets
           command: |
-            # botocore picks the role up from these directly, so this job doesn't
-            # need the aws-cli orb installed on top of a slim image.
+            # botocore assumes the role from these directly, so this job doesn't
+            # need the aws-cli orb just to read one ECR tag.
             echo "$CIRCLE_OIDC_TOKEN_V2" > /tmp/oidc-token
             export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/oidc-token
             export AWS_ROLE_SESSION_NAME=decide-images
             # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
             export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
             mkdir -p /tmp/bake
-            uv run python scripts/select_bake_targets.py > /tmp/bake/targets
+            python scripts/select_bake_targets.py > /tmp/bake/targets
             echo "Targets to build: $(cat /tmp/bake/targets)"
       - persist_to_workspace:
           # Namespaced, because later jobs attach this same workspace at the
