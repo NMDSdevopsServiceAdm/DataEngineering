@@ -42,11 +42,81 @@ commands:
 
 
 jobs:
+  # Works out which docker-bake targets this push actually needs, so
+  # task-containerisation can skip the expensive remote-docker setup entirely
+  # when nothing relevant changed. Deliberately a separate job: the docker:latest
+  # executor has no python, and this keeps the costly executor off the skip path.
+  decide-images:
+    docker:
+      - image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
+    resource_class: small
+    environment:
+      AWS_REGION: eu-west-2
+    steps:
+      - checkout
+      - run:
+          name: Fetch main
+          command: |
+            # The merge-base diff needs main's history, which checkout may not
+            # have fetched.
+            if [ -f .git/shallow ]; then
+              git fetch --unshallow origin
+            fi
+            git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+      - run:
+          name: Install dependencies
+          command: uv sync --locked
+      - run:
+          name: Select bake targets
+          command: |
+            # botocore picks the role up from these directly, so this job doesn't
+            # need the aws-cli orb installed on top of a slim image.
+            echo "$CIRCLE_OIDC_TOKEN_V2" > /tmp/oidc-token
+            export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/oidc-token
+            export AWS_ROLE_SESSION_NAME=decide-images
+            # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
+            mkdir -p /tmp/bake
+            uv run python scripts/select_bake_targets.py > /tmp/bake/targets
+            echo "Targets to build: $(cat /tmp/bake/targets)"
+      - persist_to_workspace:
+          # Namespaced, because later jobs attach this same workspace at the
+          # repo root and a bare "targets" file there reads as repo content.
+          root: /tmp
+          paths:
+            - bake/targets
+
   task-containerisation:
+    parameters:
+      select_targets:
+        type: boolean
+        default: false
+        description: >
+          Dev only. Use decide-images' target list, skipping the build when
+          nothing relevant changed. Main always bakes every target, because a
+          merge-base diff against main is empty by definition there.
     docker:
       - image: docker:latest
     steps:
       - checkout
+      - when:
+          condition: << parameters.select_targets >>
+          steps:
+            - attach_workspace:
+                at: /tmp
+            - run:
+                name: Skip build if no image needs rebuilding
+                command: |
+                  # Must run before setup_remote_docker -- that step is what
+                  # makes this job expensive, so halting after it saves nothing.
+                  # Tests the content, not the file size -- an empty result is
+                  # still a one byte file thanks to the trailing newline.
+                  if [ ! -f /tmp/bake/targets ]; then
+                    echo "No target list found. Building every target."
+                  elif [ -z "$(cat /tmp/bake/targets)" ]; then
+                    echo "No docker build context changed and every image is already in ECR. Skipping build."
+                    circleci-agent step halt
+                  fi
       - setup_remote_docker:
           docker_layer_caching: true
       - aws-cli/setup:
@@ -63,7 +133,9 @@ jobs:
             echo "Rebuilding lambdas and pushing to ECR."
             # Needed for docker-bake. This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
             export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
-            docker buildx bake all --push
+            # No target list (main, or an absent file) means build everything.
+            BAKE_TARGETS=$(cat /tmp/bake/targets 2>/dev/null || echo all)
+            docker buildx bake $BAKE_TARGETS --push
 
   test:
     docker:
@@ -365,8 +437,16 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
+      - decide-images:
+          context: non-prod
+          filters:
+            branches:
+              ignore: main
       - task-containerisation:
           context: non-prod
+          select_targets: true
+          requires:
+            - decide-images
           filters:
             branches:
               ignore: main

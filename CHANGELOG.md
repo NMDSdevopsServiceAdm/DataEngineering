@@ -31,6 +31,8 @@ All notable changes to this project will be documented in this file.
 - Added a reusable `not_null_filter_expr` to Polars Utils, and used it in the SLV prepare step to exclude ASCWDS workplace records for non-CQC locations (null `location_id`).
 
 ### Changed
+- Reduced CircleCI credit consumption by only building the docker images a branch actually affects. A new `decide-images` job works out which `docker-bake` targets a push changed, deriving each target's trigger paths from its Dockerfile's own `COPY` sources, and includes any target with no image in ECR under the branch tag yet. `task-containerisation` then skips entirely when nothing relevant changed, and otherwise bakes only the affected targets instead of all seven. Applies to branch builds only; merges to main still build everything.
+
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
 
 - Updated polars to 1.41.2 and pointblank to 0.24.0, and reworked `split_dataset_for_imputation` to use a semi/anti join instead of an `.over()`-based window filter, avoiding both a polars optimiser crash on the newer version and reducing peak memory under the streaming engine. Fargate Docker requirements are now split between a shared `docker_requirements/requirements.txt` for deps common to every project and small per-project `requirements-extra.txt` files for the two projects with additional deps (cqc_api; _04_model), instead of one shared file installing every project's deps everywhere.
