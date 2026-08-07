@@ -159,6 +159,22 @@ jobs:
       - run:
           name: install dependencies
           command: uv sync --locked
+      # Runs the selector's CLI against the repo's real bake file and
+      # Dockerfiles. The unit tests cover the selection logic; this covers main()
+      # and catches a bake file or Dockerfile edit the parser can't read, which
+      # would otherwise only surface in decide-images on somebody's next push.
+      # --skip-ecr-check because this job has no AWS credentials.
+      - run:
+          name: Smoke test bake target selection
+          command: |
+            SELECTED=$(uv run python scripts/select_bake_targets.py \
+              --skip-ecr-check \
+              --changed-path docker_requirements/requirements.txt)
+            echo "Selected: ${SELECTED}"
+            if [ -z "${SELECTED}" ]; then
+              echo "Every image installs docker_requirements/requirements.txt, so a change to it must select every target." >&2
+              exit 1
+            fi
       # Download the pydeequ dependency and configure.
       - run:
             name: Fetch Spark JARs

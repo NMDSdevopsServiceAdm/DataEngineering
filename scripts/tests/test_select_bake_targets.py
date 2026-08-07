@@ -285,6 +285,17 @@ class TestLoadBakeTargets:
         assert all(target.ecr_repository for target in targets)
         assert all(target.trigger_paths for target in targets)
 
+    def test_every_real_target_depends_on_the_shared_requirements_file(self):
+        # Every image installs docker_requirements/requirements.txt, so a change
+        # to it must rebuild all of them. A parser that silently stopped reading
+        # one Dockerfile's COPY lines would show up here as a skipped rebuild.
+        repo_root = Path(job.__file__).resolve().parent.parent
+        targets = job.load_bake_targets(repo_root)
+
+        selected = job.select_targets(targets, ["docker_requirements/requirements.txt"])
+
+        assert selected == [target.name for target in targets]
+
 
 class TestTargetsMissingFromEcr:
     def test_returns_targets_without_an_image_for_this_tag(self, fake_repo: Path):
