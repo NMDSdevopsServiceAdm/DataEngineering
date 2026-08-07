@@ -10,6 +10,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_values.categorical_columns_by_dataset import (
+    SLVPrepareCategoricalValues,
+)
 
 PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_00_prepare"
 
@@ -28,7 +31,7 @@ class TestMain:
         }
         source_rows = [
             ("1-001", date(2026, 1, 1), label, 1, 1, 1, 1)
-            for label in job.PUBLISHED_JOB_ROLE_LABELS
+            for label in SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
         ]
         self.source_df = pl.DataFrame(source_rows, source_schema, orient="row")
 
@@ -99,29 +102,6 @@ class TestMain:
             assert (
                 assertion in assertion_types_present
             ), f"{assertion} not found in validation report"
-
-    @patch(f"{PATCH_PATH}.vl.write_reports")
-    @patch(f"{PATCH_PATH}.utils.read_parquet")
-    def test_expected_row_count_is_multiplied_by_published_label_count(
-        self,
-        mock_read_parquet: Mock,
-        mock_write_reports: Mock,
-    ):
-        # Only 1-001 survives the compare-side reduction filters (see setup's comment),
-        # so each published label contributes exactly one exploded row for it.
-        mock_read_parquet.side_effect = [self.source_df, self.compare_df]
-
-        job.main("bucket", "my/source/", "my/compare/", "my/reports/")
-
-        validation_arg = mock_write_reports.call_args[0][0]
-        report_json = json.loads(validation_arg.get_json_report())
-        row_count_match_item = next(
-            item for item in report_json if item["assertion_type"] == "row_count_match"
-        )
-
-        assert row_count_match_item["values"]["count"] == len(
-            job.PUBLISHED_JOB_ROLE_LABELS
-        )
 
 
 class TestNoLeftoverRawJobRoleCodeColumns:

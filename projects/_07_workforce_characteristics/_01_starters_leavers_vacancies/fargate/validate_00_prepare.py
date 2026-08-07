@@ -26,11 +26,6 @@ COMPARE_COLS_TO_IMPORT = [
     AWPClean.location_id,
 ]
 
-PUBLISHED_JOB_ROLE_LABELS_VALUES = (
-    SLVPrepareCategoricalValues.published_job_role_labels_column_values
-)
-PUBLISHED_JOB_ROLE_LABELS = PUBLISHED_JOB_ROLE_LABELS_VALUES.categorical_values
-
 
 def no_leftover_raw_job_role_code_columns(df: pl.DataFrame) -> bool:
     """Checks that no jrNN{suffix}-coded job role columns remain in df.
@@ -85,7 +80,9 @@ def main(
         )
     )
     # Each pre-pivot row explodes into one row per published job role label.
-    expected_row_count = compare_df.height * len(PUBLISHED_JOB_ROLE_LABELS)
+    expected_row_count = compare_df.height * len(
+        SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
+    )
 
     validation = (
         pb.Validate(
@@ -115,19 +112,20 @@ def main(
             brief="Primary key (establishment_id, ascwds_workplace_import_date, "
             "job_role_label) should be unique",
         )
+        # categorical
         .col_vals_in_set(
             SLVCols.job_role_label,
-            PUBLISHED_JOB_ROLE_LABELS,
+            SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values,
         )
+        # distinct values
         .specially(
             vl.is_unique_count_equal(
                 SLVCols.job_role_label,
-                PUBLISHED_JOB_ROLE_LABELS_VALUES.count_of_categorical_values,
+                SLVPrepareCategoricalValues.published_job_role_labels_column_values.count_of_categorical_values,
             ),
             brief=f"{SLVCols.job_role_label} should have exactly "
-            f"{PUBLISHED_JOB_ROLE_LABELS_VALUES.count_of_categorical_values} distinct values",
-        )
-        .interrogate()
+            f"{SLVPrepareCategoricalValues.published_job_role_labels_column_values.count_of_categorical_values} distinct values",
+        ).interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
 

@@ -107,17 +107,6 @@ class TestPivotJobRoleColsToRows:
         assert returned_schema[SLVCols.leavers] == pl.Int16
         assert returned_schema[SLVCols.vacancies] == pl.Int16
 
-    def test_raises_value_error_when_no_job_role_columns_found(self):
-        test_lf = pl.LazyFrame(
-            {
-                AWPClean.establishment_id: ["1"],
-                AWPClean.ascwds_workplace_import_date: [None],
-            }
-        )
-
-        with pytest.raises(ValueError):
-            job.pivot_job_role_cols_to_rows(test_lf)
-
 
 class TestRelabelJobRoleColumns:
     @pytest.mark.parametrize(

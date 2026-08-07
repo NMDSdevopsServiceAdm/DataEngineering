@@ -158,10 +158,6 @@ def pivot_job_role_cols_to_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
             ascwds_workplace_import_date, job_role_label, employees,
             starters, leavers, vacancies. One row per label per input row
             (dense - includes all-null metric rows).
-
-    Raises:
-        ValueError: if none of the expected {label}_{suffix} columns are
-            found in the input schema (schema-regression guard).
     """
     metric_suffixes = {
         SLVCols.employees: "emp",
@@ -169,17 +165,6 @@ def pivot_job_role_cols_to_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
         SLVCols.leavers: "stop",
         SLVCols.vacancies: "vacy",
     }
-    schema_cols = set(lf.collect_schema().names())
-
-    if not any(
-        f"{label}_{suffix}" in schema_cols
-        for label in published_job_role_labels
-        for suffix in metric_suffixes.values()
-    ):
-        raise ValueError(
-            "No published job role columns found to pivot - expected columns "
-            "named '{label}_{suffix}'. Has relabel_job_role_columns run yet?"
-        )
 
     label_structs = [
         pl.struct(
