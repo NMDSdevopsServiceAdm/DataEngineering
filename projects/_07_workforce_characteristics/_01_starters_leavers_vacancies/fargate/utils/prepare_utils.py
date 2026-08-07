@@ -134,8 +134,9 @@ def reshape_job_role_cols_to_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Must run after relabel_job_role_columns, which guarantees every job role
     column's prefix is one of the known PublishedJobRoleLabels values - this
-    function trusts that instead of pattern-matching raw codes. Grain columns
-    (establishment_id, job_role_label) are Categorical/Enum rather than
+    function trusts that instead of pattern-matching raw codes. Of the grain
+    columns (establishment_id, ascwds_workplace_import_date, job_role_label),
+    establishment_id and job_role_label are Categorical/Enum rather than
     String to keep downstream uniqueness checks cheap at this dataset's
     scale.
 

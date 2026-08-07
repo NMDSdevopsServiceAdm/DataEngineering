@@ -94,19 +94,6 @@ class TestReshapeJobRoleColsToRows:
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
-    def test_output_has_expected_dtypes(self):
-        case = Data.reshape_job_role_cols_to_rows_test_cases[0]
-        test_lf = pl.LazyFrame(case.input_data)
-
-        returned_schema = job.reshape_job_role_cols_to_rows(test_lf).collect_schema()
-
-        assert returned_schema[AWPClean.establishment_id] == CatColType.EstablishmentCatType  # fmt: skip
-        assert returned_schema[SLVCols.job_role_label] == CatColType.PublishedJobRoleLabelEnumType  # fmt: skip
-        assert returned_schema[SLVCols.employees] == pl.Int16
-        assert returned_schema[SLVCols.starters] == pl.Int16
-        assert returned_schema[SLVCols.leavers] == pl.Int16
-        assert returned_schema[SLVCols.vacancies] == pl.Int16
-
 
 class TestRelabelJobRoleColumns:
     @pytest.mark.parametrize(
