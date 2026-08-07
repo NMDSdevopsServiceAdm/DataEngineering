@@ -73,6 +73,13 @@ def main(
     job_role_estimates_lf = utils.scan_parquet(
         source=job_role_estimates_source, selected_columns=job_role_estimates_columns
     )
+
+    job_role_estimates_lf = job_role_estimates_lf.join(
+        metadata_lf,
+        on=IndCQC.id_per_locationid_import_date,
+        how="left",
+    )
+
     cleaned_ascwds_workplace_lf = utils.scan_parquet(
         prepared_slv_dataset_source
     ).select(
