@@ -14,6 +14,9 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     mock_data = Mock(name="data")
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
+    @patch(f"{PATCH_PATH}.estimate_non_res_capacity_tracker_filled_posts")
+    @patch(f"{PATCH_PATH}.set_min_value")
+    @patch(f"{PATCH_PATH}.utils.coalesce_with_source_labels")
     @patch(f"{PATCH_PATH}.model_imputation")
     @patch(f"{PATCH_PATH}.combine_non_res_with_and_without_dormancy_models")
     @patch(f"{PATCH_PATH}.enrich_with_model_predictions")
@@ -24,8 +27,12 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         enrich_with_model_predictions_mock: Mock,
         combine_non_res_with_and_without_dormancy_models_mcok: Mock,
         model_imputation: Mock,
+        coalesce_with_source_labels_mock: Mock,
+        set_min_value_mock: Mock,
+        estimate_non_res_capacity_tracker_filled_posts_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
+        coalesce_with_source_labels_mock.return_value = (Mock(), Mock())
 
         job.main(
             self.TEST_BUCKET_NAME,
@@ -39,7 +46,12 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         )
         self.assertEqual(enrich_with_model_predictions_mock.call_count, 3)
         combine_non_res_with_and_without_dormancy_models_mcok.assert_called_once()
-        self.assertEqual(model_imputation.call_count, 1)
+        self.assertEqual(model_imputation.call_count, 3)
+        coalesce_with_source_labels_mock.assert_called_once()
+        set_min_value_mock.assert_called_once_with(
+            ANY, job.IndCQC.estimate_filled_posts, 1.0
+        )
+        estimate_non_res_capacity_tracker_filled_posts_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
