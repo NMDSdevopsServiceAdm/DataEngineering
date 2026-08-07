@@ -103,10 +103,10 @@ class Variant:
 VARIANTS: tuple[Variant, ...] = (
     Variant("base", fill_days=None, weighted=True, legacy=True),
     Variant("indefinite", fill_days=None, weighted=False, legacy=False),
-    # Variant("none", fill_days=0, weighted=False, legacy=False),
-    # Variant("fill_6m", fill_days=183, weighted=False, legacy=False),
-    # Variant("fill_12m", fill_days=365, weighted=False, legacy=False),
-    # Variant("fill_24m", fill_days=730, weighted=False, legacy=False),
+    Variant("none", fill_days=0, weighted=False, legacy=False),
+    Variant("fill_6m", fill_days=183, weighted=False, legacy=False),
+    Variant("fill_12m", fill_days=365, weighted=False, legacy=False),
+    Variant("fill_24m", fill_days=730, weighted=False, legacy=False),
 )
 
 
