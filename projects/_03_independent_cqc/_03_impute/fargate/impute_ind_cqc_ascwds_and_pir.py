@@ -109,31 +109,58 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
             extrapolation_method="ratio",
         )
 
-    # model_calculate_rolling_average - posts_rolling_average_model
+    with profile_step(
+        "with_columns: calculate_rolling_average imputed_filled_post_model"
+    ):
+        lf = lf.with_columns(
+            calculate_rolling_average(
+                IndCQC.imputed_filled_post_model,
+                f"{NumericalValues.number_of_days_in_window}d",
+                [IndCQC.primary_service_type],
+            ).alias(IndCQC.posts_rolling_average_model)
+        )
 
-    # create_banded_bed_count_column
+    with profile_step("create_banded_bed_count_column"):
+        lf = cUtils.create_banded_bed_count_column(
+            lf,
+            IndCQC.number_of_beds_banded_for_rolling_avg,
+            [0, 1, 10, 15, 20, 25, 50, float("Inf")],
+        )
 
-    # model_calculate_rolling_average - banded_bed_ratio_rolling_average_model
+    with profile_step(
+        "with_columns: calculate_rolling_average imputed_filled_posts_per_bed_ratio_model"
+    ):
+        lf = lf.with_columns(
+            calculate_rolling_average(
+                IndCQC.imputed_filled_posts_per_bed_ratio_model,
+                f"{NumericalValues.number_of_days_in_window}d",
+                [
+                    IndCQC.primary_service_type,
+                    IndCQC.number_of_beds_banded_for_rolling_avg,
+                ],
+            ).alias(IndCQC.banded_bed_ratio_rolling_average_model)
+        )
 
-    # convert_care_home_ratios_to_posts - unhash after `model_calculate_rolling_average` converted
-    # lf = lf.with_columns(
-    #     pl.when(is_care_home())
-    #     .then(
-    #         pl.col(IndCQC.banded_bed_ratio_rolling_average_model)
-    #         * pl.col(IndCQC.number_of_beds)
-    #     )
-    #     .otherwise(pl.col(IndCQC.posts_rolling_average_model))
-    #     .cast(pl.Float32)
-    #     .alias(IndCQC.posts_rolling_average_model)
-    # )
+    with profile_step("with_columns: posts_rolling_average_model"):
+        lf = lf.with_columns(
+            pl.when(is_care_home())
+            .then(
+                pl.col(IndCQC.banded_bed_ratio_rolling_average_model)
+                * pl.col(IndCQC.number_of_beds)
+            )
+            .otherwise(pl.col(IndCQC.posts_rolling_average_model))
+            .cast(pl.Float32)
+            .alias(IndCQC.posts_rolling_average_model)
+        )
 
-    lf = lf.with_columns(
-        pl.when(is_care_home())
-        .then(pl.col(IndCQC.ct_care_home_total_employed_cleaned))
-        .otherwise(pl.col(IndCQC.ct_non_res_care_workers_employed_cleaned))
-        .cast(pl.Float32)
-        .alias(IndCQC.ct_combined_care_home_and_non_res)
-    )
+    with profile_step("with_columns: ct_combined_care_home_and_non_res"):
+        lf = lf.with_columns(
+            pl.when(is_care_home())
+            .then(pl.col(IndCQC.ct_care_home_total_employed_cleaned))
+            .otherwise(pl.col(IndCQC.ct_non_res_care_workers_employed_cleaned))
+            .cast(pl.Float32)
+            .alias(IndCQC.ct_combined_care_home_and_non_res)
+        )
 
     with profile_step("model_roc_trendline:ct_combined_care_home_and_non_res"):
         lf = model_primary_service_rate_of_change_trendline(
@@ -176,7 +203,7 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
     print(f"Exporting as parquet to {destination}")
 
     with profile_step("sink_to_parquet"):
-        log_query_plan("sink_to_parquet", lf)
+        # log_query_plan("sink_to_parquet", lf)
         utils.sink_to_parquet(
             lf,
             destination,
