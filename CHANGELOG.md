@@ -81,6 +81,8 @@ All notable changes to this project will be documented in this file.
 - Changed return_last_known_value to use .over() instead of filter > group-by > agg > join
 
 ### Fixed
+- Fixed an out-of-memory crash in the independent CQC impute job's rolling-average step by replacing an `Expr.rolling().over()` implementation with a narrowed, sorted, grouped-rolling rewrite.
+
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
 
 - Fixed Schema mismatch error while generating grouped providers output.
