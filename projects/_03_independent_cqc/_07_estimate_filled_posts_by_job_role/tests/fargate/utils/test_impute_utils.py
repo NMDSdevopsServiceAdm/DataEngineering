@@ -71,11 +71,11 @@ class TestAddFillBoundaries:
     def test_boundaries_describe_each_job_role_series(self):
         input_lf = pl.LazyFrame(
             data=[
-                # A gap, so the previous and next known dates differ from the row's own date.
+                # A gap, so the nearest known dates differ from the row's own date.
                 ("1", "care_worker", date(2024, 1, 1), 0.4),
                 ("1", "care_worker", date(2024, 2, 1), None),
                 ("1", "care_worker", date(2024, 3, 1), 0.6),
-                # A different job role for the same workplace keeps its own boundaries.
+                # A second job role with its own boundaries.
                 ("1", "registered_nurse", date(2024, 1, 1), None),
                 ("1", "registered_nurse", date(2024, 2, 1), 0.9),
                 ("1", "registered_nurse", date(2024, 3, 1), None),
@@ -110,7 +110,7 @@ class TestAddFillBoundaries:
             returned_df.get_column(job.TempCols.last_known_value).to_list()
             == [pytest.approx(0.6)] * 3 + [pytest.approx(0.9)] * 3
         )
-        # The row inside the gap is bounded by the known dates either side of it.
+        # The row inside the gap is bounded by the dates either side of it.
         assert returned_df.get_column(job.TempCols.previous_known_date).to_list() == [
             date(2024, 1, 1),
             date(2024, 1, 1),
@@ -172,8 +172,7 @@ class TestCreateASCWDSJobRoleRollingRatio:
             IndCQC.ascwds_job_role_rolling_ratio,
             IndCQC.estimate_filled_posts_size_group,
         )
-        # The capped ratios are also returned but have their own test class, so are excluded
-        # here to keep these cases focused on the rolling ratio.
+        # Capped ratios are also returned, but have their own test class.
         returned_lf = job.create_ascwds_job_role_rolling_ratio(input_lf).select(
             Schemas.create_ascwds_job_role_rolling_ratio_expected_schema.keys()
         )
@@ -199,8 +198,8 @@ class TestCreateASCWDSJobRoleRollingRatio:
         totals = (
             job.create_ascwds_job_role_rolling_ratio(input_lf)
             .collect()
-            # One row per job role first: every workplace in a stratum carries the same ratio,
-            # and deduplicating on the ratio itself would collapse roles that happen to match.
+            # One row per job role first; deduplicating on the ratio would collapse
+            # roles that happen to match.
             .unique(subset=stratum + [IndCQC.main_job_role_clean_labelled])
             .group_by(stratum)
             .agg(pl.col(IndCQC.ascwds_job_role_rolling_ratio).sum())

@@ -7,19 +7,11 @@ from polars_utils.expressions import percentage_share
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import PrimaryServiceType
 
-# Limits on how far a known job role ratio is trusted when building the trendline. Chosen by the
-# ticket 1859 bake-off, which compared these regimes against full production data: 24 months of
-# carry-forward plugs most gaps without freezing a workplace's mix indefinitely, and a 60 month
-# interpolation cap recovers the bulk of the base that a shorter cap withholds.
-#
-# Both are calendar durations rather than day counts, and deliberately so. The import date is the
-# earliest file in each calendar month, so its day of month drifts; the axis is quarterly before
-# roughly the last three financial years; and 365 days falls short of a year across a leap year.
-# Day counts and row counts both mean the wrong thing here.
-EDGE_FILL_PERIOD: str = "24mo"
-INTERPOLATION_CAP_PERIOD: str = "60mo"
+# How far a known job role ratio is carried, and the widest gap that is interpolated.
+EDGE_FILL_PERIOD: str = "2y"
+INTERPOLATION_CAP_PERIOD: str = "5y"
 
-# A workplace's series of ratios for one job role, which is the grain every fill works within.
+# The grain every fill works within: one workplace's series for one job role.
 JOB_ROLE_GROUPS: list[str] = [
     IndCQC.location_id,
     IndCQC.main_job_role_clean_labelled,
@@ -199,16 +191,10 @@ def estimate_filled_posts_size_group_expression() -> pl.Expr:
 
 def add_fill_boundaries(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Add the edges of each workplace's known job role ratios, as columns on every row.
+    Add the first and last known ratio and date, and the nearest known date either side of
+    every row, for each workplace and job role.
 
-    For each workplace and job role this finds the first and last dates a ratio was known, the
-    values observed on those two dates, and the nearest known date either side of every row.
-    Together these say where a series starts and ends and how wide the gap containing any given
-    row is, which is what both of the time limits are then applied to.
-
-    The first and last known values are picked out with a masked `max` rather than a sort: the
-    mask leaves a single non-null value per group, so the `max` is only a way of broadcasting
-    that one value onto every row of the group.
+    The masked `max` broadcasts a single non-null value onto every row of the group.
 
     Args:
         estimated_job_role_posts_lf(pl.LazyFrame): dataset containing job role ratios
@@ -251,18 +237,9 @@ def add_capped_ascwds_job_role_ratios(
     """
     Fill job role ratios within time limits, as the input to the trendline.
 
-    This is a deliberately partial fill, separate from `imputed_ascwds_job_role_ratios`. Its
-    only purpose is to give the rolling ratio enough base to be stable while still letting it
-    move over time, so both limits are calendar bounded rather than open ended:
-
-    - a gap between two known values is interpolated only if it spans no more than
-      `INTERPOLATION_CAP_PERIOD`
-    - the first and last known values are carried outside the known range for no more than
-      `EDGE_FILL_PERIOD`
-
-    Interpolation uses `interpolate_by` rather than `interpolate` so values are positioned by
-    date rather than by row, which matters because the import date axis switches from quarterly
-    to monthly partway through the series.
+    Gaps are interpolated by date if they span no more than `INTERPOLATION_CAP_PERIOD`, and the
+    first and last known values are carried outside the known range for no more than
+    `EDGE_FILL_PERIOD`.
 
     Args:
         estimated_job_role_posts_lf(pl.LazyFrame): dataset containing job role ratios
@@ -313,27 +290,17 @@ def create_ascwds_job_role_rolling_ratio(
     """
     Create rolling ASC-WDS job role ratios over a 6-month period.
 
-    The ratio is the mean job role share of the workplaces contributing to the combination of:
-    - primary service type
-    - estimated filled posts size group
-    - cleaned main job role label
+    The ratio is the mean capped job role share across the workplaces contributing to a primary
+    service type, estimated filled posts size group and cleaned main job role label. Each
+    workplace counts once per month it contributes, regardless of size.
 
-    Every workplace counts once per month it contributes, regardless of size. This is the right
-    weighting because the ratio is later multiplied by a single location's estimated filled
-    posts, so what is wanted is the share for a workplace of that type rather than the share of
-    all posts in the group, which would bias small workplaces towards the mix of large ones.
+    Ratios are summed and counted separately so the rolling window divides one total by the
+    other. The result sums to 1 across job roles without explicit normalisation, because a
+    workplace has all of its job role ratios populated or none of them.
 
-    Ratios are summed and counted separately before the rolling window is applied, because
-    averaging monthly averages would be wrong when months carry different numbers of workplaces.
-    The result sums to 1 across job roles without any explicit normalisation, because a
-    workplace either has all of its job role ratios populated or none of them, so the
-    contributing row count is identical for every role.
-
-    Monthly totals are pre-aggregated to keep processing within the Polars streaming engine and
-    reduce the volume of data used in the rolling calculation. The rolling ratio is then
-    calculated on this small aggregated dataset before joining back onto the original
-    location-level dataset. This is valid because all locations sharing the same primary service
-    type, size group, and import date will receive an identical ratio regardless.
+    Pre-aggregating before the rolling calculation keeps processing within the Polars streaming
+    engine, and is valid because every location sharing a service type, size group and import
+    date receives the same ratio.
 
     Args:
         estimated_job_role_posts_lf(pl.LazyFrame): dataset to calculate ratio on
@@ -359,7 +326,7 @@ def create_ascwds_job_role_rolling_ratio(
     order_key = IndCQC.cqc_location_import_date
     monthly_groups = rolling_groups + [order_key]
 
-    # STEP A: Pre-aggregate to monthly totals and contributing workplace counts.
+    # STEP A: Total the ratios and count the contributing workplaces per month.
     # polars_streaming: groupby-agg pre-aggregation workaround; data reduction allows streaming but limits flexibility
     monthly_totals_lf = estimated_job_role_posts_lf.group_by(monthly_groups).agg(
         pl.col(IndCQC.ascwds_job_role_ratios_capped).sum().alias(TempCols.ratio_total),
@@ -369,7 +336,7 @@ def create_ascwds_job_role_rolling_ratio(
         .alias(TempCols.contributing_rows),
     )
 
-    # STEP B: Sort and compute rolling 6-month sums on small dataset
+    # STEP B: Roll both totals over 6 months on the small dataset.
     # polars_streaming: .rolling() with groupby requires pre-aggregation workaround; could use .over() for grouped rolling windows when streaming is supported
     rolling_agg_lf = (
         monthly_totals_lf.sort(*rolling_groups, order_key)
@@ -380,10 +347,8 @@ def create_ascwds_job_role_rolling_ratio(
         )
     )
 
-    # STEP C: Calculate the mean share on the significantly smaller aggregated dataset before
-    # the join. A group with no contributing workplaces would divide zero by zero, so it is left
-    # null and then filled with the group's own nearest known ratio. Job roles all fall null
-    # together, so every role fills from the same date and the ratios still sum to 1.
+    # STEP C: Divide one total by the other, carrying the nearest known ratio into any group
+    # with no contributing workplaces.
     rolling_agg_lf = rolling_agg_lf.with_columns(
         pl.when(pl.col(TempCols.contributing_rows) > 0)
         .then(pl.col(TempCols.ratio_total) / pl.col(TempCols.contributing_rows))
@@ -400,9 +365,8 @@ def create_ascwds_job_role_rolling_ratio(
         TempCols.ratio_total, TempCols.contributing_rows
     )
 
-    # STEP D: Join the ratio back to the full location level dataset, dropping the temporary
-    # columns which exist only to build the trendline. Collect the field defaults rather than
-    # the field names, since the two differ here.
+    # STEP D: Join back to the location level dataset and drop the temporary columns. Field
+    # defaults hold the column names, which differ from the field names.
     columns_to_drop = [field.default for field in fields(TempCols)]
 
     return estimated_job_role_posts_lf.join(

@@ -183,7 +183,7 @@ class TestSumRollingRatiosAcrossJobRoles:
         )
 
     def test_workplaces_sharing_a_group_are_counted_once(self):
-        # Two workplaces carry the same pair of ratios; the total is per group, not per row.
+        # The total is per group, not per row.
         rows = [
             ("non-residential", "NR 1 to 24", date(2026, 1, 1), "care_worker", loc, 0.3)
             for loc in ("1-001", "1-002")
@@ -201,7 +201,7 @@ class TestSumRollingRatiosAcrossJobRoles:
         assert self.totals_for(rows) == [1.0]
 
     def test_job_roles_sharing_a_ratio_both_count(self):
-        # Deduplicating on the ratio rather than the job role would collapse these to 0.5.
+        # Deduplicating on the ratio would collapse these to 0.5.
         rows = [
             ("non-residential", "NR 1 to 24", date(2026, 1, 1), "care_worker", "1-001", 0.5),
             ("non-residential", "NR 1 to 24", date(2026, 1, 1), "registered_nurse", "1-001", 0.5),
