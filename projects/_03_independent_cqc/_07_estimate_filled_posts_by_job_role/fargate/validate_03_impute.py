@@ -36,6 +36,7 @@ OTHER_VALIDATION_COLS_TO_IMPORT = [
     IndCqcColumns.imputed_ascwds_job_role_ratios,
     IndCqcColumns.imputed_ascwds_job_role_counts,
     IndCqcColumns.estimate_filled_posts_size_group,
+    IndCqcColumns.ascwds_job_role_ratios_capped,
     IndCqcColumns.ascwds_job_role_rolling_ratio,
 ]
 
@@ -78,6 +79,7 @@ OTHER_VAL_EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.imputed_ascwds_job_role_ratios: "Float32",
         IndCqcColumns.imputed_ascwds_job_role_counts: "Float32",
         IndCqcColumns.estimate_filled_posts_size_group: "String",
+        IndCqcColumns.ascwds_job_role_ratios_capped: "Float32",
         IndCqcColumns.ascwds_job_role_rolling_ratio: "Float32",
     }
 )
@@ -339,12 +341,13 @@ def other_validation(
             columns=[
                 IndCqcColumns.ascwds_job_role_ratios,
                 IndCqcColumns.imputed_ascwds_job_role_ratios,
+                IndCqcColumns.ascwds_job_role_ratios_capped,
                 IndCqcColumns.ascwds_job_role_rolling_ratio,
             ],
             left=0,
             right=1,
             na_pass=True,
-            brief="ascwds_job_role_ratios, imputed_ascwds_job_role_ratios and ascwds_job_role_rolling_ratio should be between 0 and 1 where present",
+            brief="ascwds_job_role_ratios, imputed_ascwds_job_role_ratios, ascwds_job_role_ratios_capped and ascwds_job_role_rolling_ratio should be between 0 and 1 where present",
         )
         # The rolling ratio is a mean of workplace shares which self-normalises only because
         # every workplace has all of its job role ratios populated or none of them. If that

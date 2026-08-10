@@ -19,12 +19,17 @@ from utils.column_values.categorical_column_values import PrimaryServiceType
 EDGE_FILL_PERIOD: str = "24mo"
 INTERPOLATION_CAP_PERIOD: str = "60mo"
 
+# A workplace's series of ratios for one job role, which is the grain every fill works within.
+JOB_ROLE_GROUPS: list[str] = [
+    IndCQC.location_id,
+    IndCQC.main_job_role_clean_labelled,
+]
+
 
 @dataclass
 class TempCols:
     """The names of the temporary columns used while building the trendline."""
 
-    capped_ratio: str = "capped_ascwds_job_role_ratios"
     first_known_date: str = "first_known_date"
     last_known_date: str = "last_known_date"
     first_known_value: str = "first_known_value"
@@ -192,11 +197,59 @@ def estimate_filled_posts_size_group_expression() -> pl.Expr:
     return expr.alias(IndCQC.estimate_filled_posts_size_group)
 
 
+def add_fill_boundaries(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Add the edges of each workplace's known job role ratios, as columns on every row.
+
+    For each workplace and job role this finds the first and last dates a ratio was known, the
+    values observed on those two dates, and the nearest known date either side of every row.
+    Together these say where a series starts and ends and how wide the gap containing any given
+    row is, which is what both of the time limits are then applied to.
+
+    The first and last known values are picked out with a masked `max` rather than a sort: the
+    mask leaves a single non-null value per group, so the `max` is only a way of broadcasting
+    that one value onto every row of the group.
+
+    Args:
+        estimated_job_role_posts_lf(pl.LazyFrame): dataset containing job role ratios
+
+    Returns:
+        pl.LazyFrame: dataset with the boundary columns added
+    """
+    order_key = IndCQC.cqc_location_import_date
+
+    is_known = pl.col(IndCQC.ascwds_job_role_ratios).is_not_null()
+    known_date = pl.when(is_known).then(pl.col(order_key))
+    first_known_date = known_date.min().over(JOB_ROLE_GROUPS)
+    last_known_date = known_date.max().over(JOB_ROLE_GROUPS)
+
+    return estimated_job_role_posts_lf.with_columns(
+        first_known_date.alias(TempCols.first_known_date),
+        last_known_date.alias(TempCols.last_known_date),
+        pl.when(is_known & (pl.col(order_key) == first_known_date))
+        .then(pl.col(IndCQC.ascwds_job_role_ratios))
+        .max()
+        .over(JOB_ROLE_GROUPS)
+        .alias(TempCols.first_known_value),
+        pl.when(is_known & (pl.col(order_key) == last_known_date))
+        .then(pl.col(IndCQC.ascwds_job_role_ratios))
+        .max()
+        .over(JOB_ROLE_GROUPS)
+        .alias(TempCols.last_known_value),
+        known_date.forward_fill()
+        .over(JOB_ROLE_GROUPS, order_by=order_key)
+        .alias(TempCols.previous_known_date),
+        known_date.backward_fill()
+        .over(JOB_ROLE_GROUPS, order_by=order_key)
+        .alias(TempCols.next_known_date),
+    )
+
+
 def add_capped_ascwds_job_role_ratios(
     estimated_job_role_posts_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
     """
-    Fill job role ratios within time limits, as temporary input to the trendline.
+    Fill job role ratios within time limits, as the input to the trendline.
 
     This is a deliberately partial fill, separate from `imputed_ascwds_job_role_ratios`. Its
     only purpose is to give the rolling ratio enough base to be stable while still letting it
@@ -215,36 +268,11 @@ def add_capped_ascwds_job_role_ratios(
         estimated_job_role_posts_lf(pl.LazyFrame): dataset containing job role ratios
 
     Returns:
-        pl.LazyFrame: dataset with an additional temporary column of capped ratios
+        pl.LazyFrame: dataset with an additional column of capped ratios
     """
-    job_role_groups = [IndCQC.location_id, IndCQC.main_job_role_clean_labelled]
     order_key = IndCQC.cqc_location_import_date
 
-    is_known = pl.col(IndCQC.ascwds_job_role_ratios).is_not_null()
-    known_date = pl.when(is_known).then(pl.col(order_key))
-    first_known_date = known_date.min().over(job_role_groups)
-    last_known_date = known_date.max().over(job_role_groups)
-
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        first_known_date.alias(TempCols.first_known_date),
-        last_known_date.alias(TempCols.last_known_date),
-        pl.when(is_known & (pl.col(order_key) == first_known_date))
-        .then(pl.col(IndCQC.ascwds_job_role_ratios))
-        .max()
-        .over(job_role_groups)
-        .alias(TempCols.first_known_value),
-        pl.when(is_known & (pl.col(order_key) == last_known_date))
-        .then(pl.col(IndCQC.ascwds_job_role_ratios))
-        .max()
-        .over(job_role_groups)
-        .alias(TempCols.last_known_value),
-        known_date.forward_fill()
-        .over(job_role_groups, order_by=order_key)
-        .alias(TempCols.previous_known_date),
-        known_date.backward_fill()
-        .over(job_role_groups, order_by=order_key)
-        .alias(TempCols.next_known_date),
-    )
+    estimated_job_role_posts_lf = add_fill_boundaries(estimated_job_role_posts_lf)
 
     within_interpolation_cap = pl.col(TempCols.next_known_date) <= pl.col(
         TempCols.previous_known_date
@@ -253,7 +281,7 @@ def add_capped_ascwds_job_role_ratios(
     interpolated = (
         pl.col(IndCQC.ascwds_job_role_ratios)
         .interpolate_by(pl.col(order_key))
-        .over(job_role_groups, order_by=order_key)
+        .over(JOB_ROLE_GROUPS, order_by=order_key)
     )
 
     within_forward_fill = (pl.col(order_key) > pl.col(TempCols.last_known_date)) & (
@@ -275,7 +303,7 @@ def add_capped_ascwds_job_role_ratios(
             .then(pl.col(TempCols.first_known_value)),
         )
         .cast(pl.Float32)
-        .alias(TempCols.capped_ratio)
+        .alias(IndCQC.ascwds_job_role_ratios_capped)
     )
 
 
@@ -334,8 +362,8 @@ def create_ascwds_job_role_rolling_ratio(
     # STEP A: Pre-aggregate to monthly totals and contributing workplace counts.
     # polars_streaming: groupby-agg pre-aggregation workaround; data reduction allows streaming but limits flexibility
     monthly_totals_lf = estimated_job_role_posts_lf.group_by(monthly_groups).agg(
-        pl.col(TempCols.capped_ratio).sum().alias(TempCols.ratio_total),
-        pl.col(TempCols.capped_ratio)
+        pl.col(IndCQC.ascwds_job_role_ratios_capped).sum().alias(TempCols.ratio_total),
+        pl.col(IndCQC.ascwds_job_role_ratios_capped)
         .is_not_null()
         .sum()
         .alias(TempCols.contributing_rows),

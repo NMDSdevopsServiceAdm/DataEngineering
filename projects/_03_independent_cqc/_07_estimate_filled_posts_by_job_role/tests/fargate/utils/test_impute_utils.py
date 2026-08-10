@@ -67,6 +67,68 @@ class TestGetPercentageShareRatios:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
 
 
+class TestAddFillBoundaries:
+    def test_boundaries_describe_each_job_role_series(self):
+        input_lf = pl.LazyFrame(
+            data=[
+                # A gap, so the previous and next known dates differ from the row's own date.
+                ("1", "care_worker", date(2024, 1, 1), 0.4),
+                ("1", "care_worker", date(2024, 2, 1), None),
+                ("1", "care_worker", date(2024, 3, 1), 0.6),
+                # A different job role for the same workplace keeps its own boundaries.
+                ("1", "registered_nurse", date(2024, 1, 1), None),
+                ("1", "registered_nurse", date(2024, 2, 1), 0.9),
+                ("1", "registered_nurse", date(2024, 3, 1), None),
+            ],
+            schema={
+                IndCQC.location_id: pl.String,
+                IndCQC.main_job_role_clean_labelled: pl.String,
+                IndCQC.cqc_location_import_date: pl.Date,
+                IndCQC.ascwds_job_role_ratios: pl.Float32,
+            },
+            orient="row",
+        )
+        returned_df = (
+            job.add_fill_boundaries(input_lf)
+            .sort(IndCQC.main_job_role_clean_labelled, IndCQC.cqc_location_import_date)
+            .collect()
+        )
+
+        assert (
+            returned_df.get_column(job.TempCols.first_known_date).to_list()
+            == [date(2024, 1, 1)] * 3 + [date(2024, 2, 1)] * 3
+        )
+        assert (
+            returned_df.get_column(job.TempCols.last_known_date).to_list()
+            == [date(2024, 3, 1)] * 3 + [date(2024, 2, 1)] * 3
+        )
+        assert (
+            returned_df.get_column(job.TempCols.first_known_value).to_list()
+            == [pytest.approx(0.4)] * 3 + [pytest.approx(0.9)] * 3
+        )
+        assert (
+            returned_df.get_column(job.TempCols.last_known_value).to_list()
+            == [pytest.approx(0.6)] * 3 + [pytest.approx(0.9)] * 3
+        )
+        # The row inside the gap is bounded by the known dates either side of it.
+        assert returned_df.get_column(job.TempCols.previous_known_date).to_list() == [
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 3, 1),
+            None,
+            date(2024, 2, 1),
+            date(2024, 2, 1),
+        ]
+        assert returned_df.get_column(job.TempCols.next_known_date).to_list() == [
+            date(2024, 1, 1),
+            date(2024, 3, 1),
+            date(2024, 3, 1),
+            date(2024, 2, 1),
+            date(2024, 2, 1),
+            None,
+        ]
+
+
 class TestAddCappedASCWDSJobRoleRatios:
     @pytest.mark.parametrize(
         "add_capped_ascwds_job_role_ratios_data",
@@ -83,7 +145,7 @@ class TestAddCappedASCWDSJobRoleRatios:
             Schemas.add_capped_ascwds_job_role_ratios_expected_schema,
             orient="row",
         )
-        input_lf = expected_lf.drop(job.TempCols.capped_ratio)
+        input_lf = expected_lf.drop(IndCQC.ascwds_job_role_ratios_capped)
         returned_lf = job.add_capped_ascwds_job_role_ratios(input_lf).select(
             Schemas.add_capped_ascwds_job_role_ratios_expected_schema.keys()
         )
@@ -110,7 +172,11 @@ class TestCreateASCWDSJobRoleRollingRatio:
             IndCQC.ascwds_job_role_rolling_ratio,
             IndCQC.estimate_filled_posts_size_group,
         )
-        returned_lf = job.create_ascwds_job_role_rolling_ratio(input_lf)
+        # The capped ratios are also returned but have their own test class, so are excluded
+        # here to keep these cases focused on the rolling ratio.
+        returned_lf = job.create_ascwds_job_role_rolling_ratio(input_lf).select(
+            Schemas.create_ascwds_job_role_rolling_ratio_expected_schema.keys()
+        )
         pl_testing.assert_frame_equal(
             returned_lf, expected_lf, check_column_order=False, rel_tol=0.0001
         )

@@ -1464,7 +1464,7 @@ class ImputeJobRoleSchemas:
         IndCQC.main_job_role_clean_labelled: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.ascwds_job_role_ratios: pl.Float32,
-        "capped_ascwds_job_role_ratios": pl.Float32,  # extra col
+        IndCQC.ascwds_job_role_ratios_capped: pl.Float32,  # extra col
     }
 
 
