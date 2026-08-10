@@ -34,11 +34,12 @@ from botocore.exceptions import ClientError
 BAKE_FILE: str = "docker-bake.hcl"
 DEFAULT_DIFF_BASE: str = "origin/main"
 
-# ECR reports both of these when a branch has no image yet -- a brand new
-# target's repository may not exist at all.
-_ECR_ABSENT_ERROR_CODES: frozenset[str] = frozenset(
-    ["ImageNotFoundException", "RepositoryNotFoundException"]
-)
+# Only a missing image means "not built for this branch yet". A missing
+# repository is deliberately not treated that way: the repositories are created
+# by hand in AWS and aren't per-branch, so one being absent is a setup problem,
+# not a first build. Conflating the two silently rebuilt everything.
+_ECR_IMAGE_ABSENT_ERROR_CODE: str = "ImageNotFoundException"
+_ECR_REPOSITORY_ABSENT_ERROR_CODE: str = "RepositoryNotFoundException"
 
 # Block bodies are matched up to a closing brace in the first column, not up to
 # the first `}` -- tag values contain `${AWS_ACCOUNT_ID}` interpolations.
@@ -255,8 +256,10 @@ def targets_missing_from_ecr(
         set[str]: Names of the targets with no image under `image_tag`.
 
     Raises:
-        ClientError: If ECR fails for any reason other than the image or its
-            repository being absent.
+        RuntimeError: If a repository doesn't exist, which points at the
+            credentials rather than at the repository.
+        ClientError: If ECR fails for any reason other than the image being
+            absent.
     """
     missing: set[str] = set()
     for target in targets:
@@ -266,7 +269,16 @@ def targets_missing_from_ecr(
                 imageIds=[{"imageTag": image_tag}],
             )
         except ClientError as error:
-            if error.response["Error"]["Code"] not in _ECR_ABSENT_ERROR_CODES:
+            error_code = error.response["Error"]["Code"]
+            if error_code == _ECR_REPOSITORY_ABSENT_ERROR_CODE:
+                raise RuntimeError(
+                    f"ECR repository {target.ecr_repository!r} not found. These "
+                    "repositories are created by hand in AWS and aren't "
+                    "per-branch, so either these credentials are for the wrong "
+                    "account, or a new bake target has been added without "
+                    "creating its repository."
+                ) from error
+            if error_code != _ECR_IMAGE_ABSENT_ERROR_CODE:
                 raise
             missing.add(target.name)
 

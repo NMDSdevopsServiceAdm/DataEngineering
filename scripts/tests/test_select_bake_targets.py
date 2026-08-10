@@ -316,6 +316,28 @@ class TestTargetsMissingFromEcr:
 
         assert missing == set()
 
+    def test_raises_when_a_repository_is_missing(self, fake_repo: Path):
+        # Repositories are created by hand in AWS and aren't per-branch, so an
+        # absent one is a setup problem. Treating it as "not built yet" silently
+        # rebuilt everything instead of failing.
+        targets = job.load_bake_targets(fake_repo)
+        ecr_client = Mock(
+            describe_images=Mock(
+                side_effect=ClientError(
+                    {
+                        "Error": {
+                            "Code": "RepositoryNotFoundException",
+                            "Message": "does not exist",
+                        }
+                    },
+                    "DescribeImages",
+                )
+            )
+        )
+
+        with pytest.raises(RuntimeError, match="not found"):
+            job.targets_missing_from_ecr(targets, "my-branch", ecr_client)
+
     def test_reraises_errors_other_than_a_missing_image(self, fake_repo: Path):
         targets = job.load_bake_targets(fake_repo)
         ecr_client = Mock(

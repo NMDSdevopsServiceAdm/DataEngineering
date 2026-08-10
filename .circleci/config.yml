@@ -72,6 +72,11 @@ jobs:
       - run:
           name: Select bake targets
           command: |
+            # UNSET old keys to force botocore to use OIDC. Without this it
+            # authenticates with the context's static keys, which reach a
+            # different account and report every repository as missing.
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
             # botocore assumes the role from these directly, so this job doesn't
             # need the aws-cli orb just to read one ECR tag.
             echo "$CIRCLE_OIDC_TOKEN_V2" > /tmp/oidc-token
