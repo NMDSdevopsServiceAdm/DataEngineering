@@ -16,12 +16,10 @@ class TestMain:
     @patch(f"{PATCH_PATH}.mUtils.apply_employment_status_magic_numbers")
     @patch(f"{PATCH_PATH}.mUtils.join_datasets")
     @patch(f"{PATCH_PATH}.pl.scan_csv")
-    @patch(f"{PATCH_PATH}.expr.is_slv_job_role_column")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
-        is_slv_job_role_column_mock: Mock,
         scan_csv_mock: Mock,
         join_datasets_mock: Mock,
         apply_employment_status_magic_numbers_mock: Mock,
@@ -47,7 +45,6 @@ class TestMain:
         scan_parquet_mock.assert_any_call(self.PREPARED_SLV_DATASET_SOURCE)
 
         # TODO: Uncomment these assertions when the placeholder functions are implemented
-        is_slv_job_role_column_mock.assert_called_once()
         # join_datasets_mock.assert_called_once()
         # apply_employment_status_magic_numbers_mock.assert_called_once()
 

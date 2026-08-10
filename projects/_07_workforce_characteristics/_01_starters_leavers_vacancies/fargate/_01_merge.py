@@ -1,7 +1,6 @@
 import polars as pl
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.merge_utils as mUtils
-from polars_utils import expressions as expr
 from polars_utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -80,12 +79,7 @@ def main(
         how="left",
     )
 
-    cleaned_ascwds_workplace_lf = utils.scan_parquet(
-        prepared_slv_dataset_source
-    ).select(
-        *[AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date],
-        expr.is_slv_job_role_column(),
-    )
+    cleaned_ascwds_workplace_lf = utils.scan_parquet(prepared_slv_dataset_source)
 
     # The source CSV is expected to already be trimmed to exactly these columns, in this
     # order, and to only the current weighting year's rows — scan_csv's schema is matched
