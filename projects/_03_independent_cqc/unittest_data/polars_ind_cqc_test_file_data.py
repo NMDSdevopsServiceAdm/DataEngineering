@@ -2013,7 +2013,7 @@ class ImputeJobRoleData:
         ),
     ]  # fmt: skip
 
-    add_capped_ascwds_job_role_ratios_test_cases = [
+    add_imputed_job_role_ratios_for_trendline_test_cases = [
         # Limits are calendar durations, so the boundary is a date rather than a day count.
         ImputeJobRoleTestCase(
             id="when_edge_fill_reaches_its_limit",

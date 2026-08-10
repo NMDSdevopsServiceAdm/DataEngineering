@@ -129,25 +129,25 @@ class TestAddFillBoundaries:
         ]
 
 
-class TestAddCappedASCWDSJobRoleRatios:
+class TestAddImputedJobRoleRatiosForTrendline:
     @pytest.mark.parametrize(
-        "add_capped_ascwds_job_role_ratios_data",
+        "add_imputed_job_role_ratios_for_trendline_data",
         [
             case.as_pytest_param()
-            for case in Data.add_capped_ascwds_job_role_ratios_test_cases
+            for case in Data.add_imputed_job_role_ratios_for_trendline_test_cases
         ],
     )
-    def test_add_capped_ascwds_job_role_ratios(
-        self, add_capped_ascwds_job_role_ratios_data
+    def test_add_imputed_job_role_ratios_for_trendline(
+        self, add_imputed_job_role_ratios_for_trendline_data
     ):
         expected_lf = pl.LazyFrame(
-            add_capped_ascwds_job_role_ratios_data,
-            Schemas.add_capped_ascwds_job_role_ratios_expected_schema,
+            add_imputed_job_role_ratios_for_trendline_data,
+            Schemas.add_imputed_job_role_ratios_for_trendline_expected_schema,
             orient="row",
         )
-        input_lf = expected_lf.drop(IndCQC.ascwds_job_role_ratios_capped)
-        returned_lf = job.add_capped_ascwds_job_role_ratios(input_lf).select(
-            Schemas.add_capped_ascwds_job_role_ratios_expected_schema.keys()
+        input_lf = expected_lf.drop(IndCQC.imputed_job_role_ratios_for_trendline)
+        returned_lf = job.add_imputed_job_role_ratios_for_trendline(input_lf).select(
+            Schemas.add_imputed_job_role_ratios_for_trendline_expected_schema.keys()
         )
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
 
@@ -172,7 +172,7 @@ class TestCreateASCWDSJobRoleRollingRatio:
             IndCQC.ascwds_job_role_rolling_ratio,
             IndCQC.estimate_filled_posts_size_group,
         )
-        # Capped ratios are also returned, but have their own test class.
+        # The trendline ratios are also returned, but have their own test class.
         returned_lf = job.create_ascwds_job_role_rolling_ratio(input_lf).select(
             Schemas.create_ascwds_job_role_rolling_ratio_expected_schema.keys()
         )

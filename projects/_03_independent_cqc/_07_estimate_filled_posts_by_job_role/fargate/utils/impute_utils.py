@@ -231,11 +231,11 @@ def add_fill_boundaries(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFra
     )
 
 
-def add_capped_ascwds_job_role_ratios(
+def add_imputed_job_role_ratios_for_trendline(
     estimated_job_role_posts_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
     """
-    Fill job role ratios within time limits, as the input to the trendline.
+    Impute job role ratios within time limits, for use by the trendline only.
 
     Gaps are interpolated by date if they span no more than `INTERPOLATION_CAP_PERIOD`, and the
     first and last known values are carried outside the known range for no more than
@@ -245,7 +245,7 @@ def add_capped_ascwds_job_role_ratios(
         estimated_job_role_posts_lf(pl.LazyFrame): dataset containing job role ratios
 
     Returns:
-        pl.LazyFrame: dataset with an additional column of capped ratios
+        pl.LazyFrame: dataset with an additional column of ratios for the trendline
     """
     order_key = IndCQC.cqc_location_import_date
 
@@ -280,7 +280,7 @@ def add_capped_ascwds_job_role_ratios(
             .then(pl.col(TempCols.first_known_value)),
         )
         .cast(pl.Float32)
-        .alias(IndCQC.ascwds_job_role_ratios_capped)
+        .alias(IndCQC.imputed_job_role_ratios_for_trendline)
     )
 
 
@@ -290,7 +290,7 @@ def create_ascwds_job_role_rolling_ratio(
     """
     Create rolling ASC-WDS job role ratios over a 6-month period.
 
-    The ratio is the mean capped job role share across the workplaces contributing to a primary
+    The ratio is the mean trendline job role share across the workplaces contributing to a primary
     service type, estimated filled posts size group and cleaned main job role label. Each
     workplace counts once per month it contributes, regardless of size.
 
@@ -314,7 +314,7 @@ def create_ascwds_job_role_rolling_ratio(
         estimate_filled_posts_size_group_expression()
     )
 
-    estimated_job_role_posts_lf = add_capped_ascwds_job_role_ratios(
+    estimated_job_role_posts_lf = add_imputed_job_role_ratios_for_trendline(
         estimated_job_role_posts_lf
     )
 
@@ -329,8 +329,10 @@ def create_ascwds_job_role_rolling_ratio(
     # STEP A: Total the ratios and count the contributing workplaces per month.
     # polars_streaming: groupby-agg pre-aggregation workaround; data reduction allows streaming but limits flexibility
     monthly_totals_lf = estimated_job_role_posts_lf.group_by(monthly_groups).agg(
-        pl.col(IndCQC.ascwds_job_role_ratios_capped).sum().alias(TempCols.ratio_total),
-        pl.col(IndCQC.ascwds_job_role_ratios_capped)
+        pl.col(IndCQC.imputed_job_role_ratios_for_trendline)
+        .sum()
+        .alias(TempCols.ratio_total),
+        pl.col(IndCQC.imputed_job_role_ratios_for_trendline)
         .is_not_null()
         .sum()
         .alias(TempCols.contributing_rows),

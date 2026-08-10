@@ -56,7 +56,6 @@ class IndCqcColumns:
     ascwds_job_role_counts: str = "ascwds_job_role_counts"
     ascwds_job_role_counts_temporary: str = "ascwds_job_role_counts_temporary"
     ascwds_job_role_ratios: str = "ascwds_job_role_ratios"
-    ascwds_job_role_ratios_capped: str = ascwds_job_role_ratios + "_capped"
     ascwds_job_role_ratios_filtered: str = ascwds_job_role_ratios + "_filtered"
     ascwds_job_role_ratios_temporary: str = "ascwds_job_role_ratios_temporary"
     ascwds_job_role_ratios_exploded: str = "ascwds_job_role_ratios_exploded"
@@ -210,6 +209,7 @@ class IndCqcColumns:
     )
     imputed_ascwds_job_role_counts: str = "imputed_ascwds_job_role_counts"
     imputed_ascwds_job_role_ratios: str = "imputed_ascwds_job_role_ratios"
+    imputed_job_role_ratios_for_trendline: str = "imputed_job_role_ratios_for_trendline"
     imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
     imputed_posts_non_res_combined_model: str = "imputed_posts_non_res_combined_model"

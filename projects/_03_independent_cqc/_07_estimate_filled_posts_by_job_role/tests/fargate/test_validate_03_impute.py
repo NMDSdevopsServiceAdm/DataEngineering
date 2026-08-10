@@ -28,7 +28,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.imputed_ascwds_job_role_ratios: pl.Float32,
             IndCqcColumns.imputed_ascwds_job_role_counts: pl.Float32,
             IndCqcColumns.estimate_filled_posts_size_group: pl.String,
-            IndCqcColumns.ascwds_job_role_ratios_capped: pl.Float32,
+            IndCqcColumns.imputed_job_role_ratios_for_trendline: pl.Float32,
             IndCqcColumns.ascwds_job_role_rolling_ratio: pl.Float32,
         }
         source_rows = [
