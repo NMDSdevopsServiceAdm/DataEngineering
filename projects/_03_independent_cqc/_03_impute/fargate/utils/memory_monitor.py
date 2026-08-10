@@ -62,6 +62,28 @@ def profile_step(label: str, interval_seconds: float = 5) -> Iterator[None]:
         )
 
 
+def checkpoint(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Forces immediate materialization of a LazyFrame, then re-wraps it as lazy.
+
+    Temporary diagnostic aid: while the pipeline stays lazy, every step fuses
+    into one execution at the terminal sink call, so `profile_step` around
+    each step only measures the fused whole, not that step individually.
+    Checkpointing after a step forces its execution to happen there and then,
+    making `profile_step`'s timing/RSS attributable to that specific step.
+    This intentionally breaks cross-step operator fusion/pushdown, so it
+    should only be used for this memory-spike investigation, not left in
+    production code.
+
+    Args:
+        lf (pl.LazyFrame): The LazyFrame to materialize.
+
+    Returns:
+        pl.LazyFrame: A new LazyFrame wrapping the materialized DataFrame.
+    """
+    return lf.collect().lazy()
+
+
 def log_query_plan(label: str, lf: pl.LazyFrame) -> None:
     """
     Logs the optimized Polars query plan for a LazyFrame.

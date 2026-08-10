@@ -15,7 +15,7 @@ from projects._03_independent_cqc._03_impute.fargate.utils.forward_fill_latest_k
     forward_fill_latest_known_value,
 )
 from projects._03_independent_cqc._03_impute.fargate.utils.memory_monitor import (
-    log_query_plan,
+    checkpoint,
     profile_step,
 )
 from projects._03_independent_cqc._03_impute.fargate.utils.primary_service_rate_of_change import (
@@ -36,12 +36,13 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
     Impute values into ASC-WDS, PIR and Capacity Tracker data.
 
     Every step is wrapped in `profile_step` for temporary memory-spike
-    investigation: it logs elapsed time plus periodic/peak RSS, so a future
-    out-of-memory kill leaves a trail of which step was running and for how
-    long. The pipeline stays lazy end-to-end (no step below calls `.collect()`)
-    so most steps will log ~0s and no RSS movement - only `sink_to_parquet`
-    actually executes the accumulated plan, which is why its query plan is
-    logged once, immediately before it runs.
+    investigation: it logs elapsed time plus periodic/peak RSS. Each step also
+    ends with `checkpoint(lf)`, which forces that step to materialize
+    immediately instead of staying lazy - without this, every step fuses into
+    one execution at `sink_to_parquet` and `profile_step` can only measure the
+    fused whole, not which step actually caused a memory spike. Both are
+    temporary diagnostic aids and should be removed once the investigation is
+    done.
 
     Args:
         cleaned_ind_cqc_source (str): s3 path to the cleaned ind cqc data
@@ -49,15 +50,18 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
     """
     with profile_step("scan_parquet"):
         lf = utils.scan_parquet(cleaned_ind_cqc_source)
+        lf = checkpoint(lf)
     print("Cleaned IND CQC LazyFrame read in")
 
     with profile_step("forward_fill:ascwds_filled_posts_dedup_clean"):
         lf = forward_fill_latest_known_value(lf, IndCQC.ascwds_filled_posts_dedup_clean)
+        lf = checkpoint(lf)
 
     with profile_step("forward_fill:pir_people_directly_employed_dedup"):
         lf = forward_fill_latest_known_value(
             lf, IndCQC.pir_people_directly_employed_dedup
         )
+        lf = checkpoint(lf)
 
     with profile_step("calculate_filled_posts_per_bed_ratio"):
         lf = cUtils.calculate_filled_posts_per_bed_ratio(
@@ -65,14 +69,17 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
             IndCQC.ascwds_filled_posts_dedup_clean,
             IndCQC.filled_posts_per_bed_ratio,
         )
+        lf = checkpoint(lf)
 
-    lf = lf.with_columns(
-        pl.when(is_care_home())
-        .then(pl.col(IndCQC.filled_posts_per_bed_ratio))
-        .otherwise(pl.col(IndCQC.ascwds_filled_posts_dedup_clean))
-        .cast(pl.Float32)
-        .alias(IndCQC.combined_ratio_and_filled_posts)
-    )
+    with profile_step("with_columns: combined_ratio_and_filled_posts"):
+        lf = lf.with_columns(
+            pl.when(is_care_home())
+            .then(pl.col(IndCQC.filled_posts_per_bed_ratio))
+            .otherwise(pl.col(IndCQC.ascwds_filled_posts_dedup_clean))
+            .cast(pl.Float32)
+            .alias(IndCQC.combined_ratio_and_filled_posts)
+        )
+        lf = checkpoint(lf)
 
     with profile_step("model_roc_trendline:ascwds"):
         lf = model_primary_service_rate_of_change_trendline(
@@ -82,12 +89,15 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
             IndCQC.ascwds_rate_of_change_trendline_model,
             max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
         )
+        lf = checkpoint(lf)
 
     with profile_step("convert_pir_to_filled_posts"):
         lf = convert_pir_to_filled_posts(lf)
+        lf = checkpoint(lf)
 
     with profile_step("merge_ascwds_and_pir_filled_post_submissions"):
         lf = merge_ascwds_and_pir_filled_post_submissions(lf)
+        lf = checkpoint(lf)
 
     with profile_step("model_imputation:ascwds_pir_merged"):
         lf = model_imputation(
@@ -98,6 +108,7 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
             care_home=False,
             extrapolation_method="ratio",
         )
+        lf = checkpoint(lf)
 
     with profile_step("model_imputation:filled_posts_per_bed_ratio"):
         lf = model_imputation(
@@ -108,6 +119,7 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
             care_home=True,
             extrapolation_method="ratio",
         )
+        lf = checkpoint(lf)
 
     with profile_step(
         "with_columns: calculate_rolling_average imputed_filled_post_model"
@@ -119,6 +131,7 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
                 [IndCQC.primary_service_type],
             ).alias(IndCQC.posts_rolling_average_model)
         )
+        lf = checkpoint(lf)
 
     with profile_step("create_banded_bed_count_column"):
         lf = cUtils.create_banded_bed_count_column(
@@ -126,6 +139,7 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
             IndCQC.number_of_beds_banded_for_rolling_avg,
             [0, 1, 10, 15, 20, 25, 50, float("Inf")],
         )
+        lf = checkpoint(lf)
 
     with profile_step(
         "with_columns: calculate_rolling_average imputed_filled_posts_per_bed_ratio_model"
@@ -140,6 +154,7 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
                 ],
             ).alias(IndCQC.banded_bed_ratio_rolling_average_model)
         )
+        lf = checkpoint(lf)
 
     with profile_step("with_columns: posts_rolling_average_model"):
         lf = lf.with_columns(
@@ -152,6 +167,7 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
             .cast(pl.Float32)
             .alias(IndCQC.posts_rolling_average_model)
         )
+        lf = checkpoint(lf)
 
     with profile_step("with_columns: ct_combined_care_home_and_non_res"):
         lf = lf.with_columns(
@@ -161,6 +177,7 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
             .cast(pl.Float32)
             .alias(IndCQC.ct_combined_care_home_and_non_res)
         )
+        lf = checkpoint(lf)
 
     with profile_step("model_roc_trendline:ct_combined_care_home_and_non_res"):
         lf = model_primary_service_rate_of_change_trendline(
@@ -170,6 +187,7 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
             IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
             max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
         )
+        lf = checkpoint(lf)
 
     with profile_step("model_imputation:ct_care_home_total_employed_cleaned"):
         lf = model_imputation(
@@ -180,6 +198,7 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
             care_home=True,
             extrapolation_method="ratio",
         )
+        lf = checkpoint(lf)
 
     with profile_step("model_imputation:ct_non_res_care_workers_employed_cleaned"):
         lf = model_imputation(
@@ -190,20 +209,22 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
             care_home=False,
             extrapolation_method="ratio",
         )
+        lf = checkpoint(lf)
 
-    lf = lf.with_columns(
-        utils.nullify_ct_values_previous_to_first_submission(
-            [
-                IndCQC.ct_care_home_total_employed_imputed,
-                IndCQC.ct_non_res_care_workers_employed_imputed,
-            ],
+    with profile_step("with_columns: nullify_ct_values_previous_to_first_submission"):
+        lf = lf.with_columns(
+            utils.nullify_ct_values_previous_to_first_submission(
+                [
+                    IndCQC.ct_care_home_total_employed_imputed,
+                    IndCQC.ct_non_res_care_workers_employed_imputed,
+                ],
+            )
         )
-    )
+        lf = checkpoint(lf)
 
     print(f"Exporting as parquet to {destination}")
 
     with profile_step("sink_to_parquet"):
-        # log_query_plan("sink_to_parquet", lf)
         utils.sink_to_parquet(
             lf,
             destination,
