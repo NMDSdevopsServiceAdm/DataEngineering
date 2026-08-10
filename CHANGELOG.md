@@ -67,6 +67,9 @@ All notable changes to this project will be documented in this file.
 
 - Reworked `reduce_to_published_roles` in the SLV prepare job to derive which raw ASC-WDS job role codes are published versus fold into an 'other' group from the team's own `PublishedJobRoleLabels`/job-group definitions, instead of a hand-maintained mapping dict that needed manual upkeep whenever ASC-WDS's raw job role codes changed.
 
+- Uncommented remaining function in polars imputation. This caused oom error when calling calculate_rolling_average
+  specifically, therefore refactored that function to use agg() instead of over(). Memory issue was still unresolved therefore added collect().lazy() to split the jobs execution plan. Both changes were required.
+
 ### Improved
 - Reduced CircleCI credit usage by removing `no-cache = true` from all `docker-bake.hcl` image targets, so the already-enabled Docker layer caching actually takes effect instead of every image rebuilding from scratch on every push.
 
@@ -81,8 +84,6 @@ All notable changes to this project will be documented in this file.
 - Changed return_last_known_value to use .over() instead of filter > group-by > agg > join
 
 ### Fixed
-- Fixed an out-of-memory crash in the independent CQC impute job's rolling-average step by replacing an `Expr.rolling().over()` implementation with a narrowed, sorted, grouped-rolling rewrite.
-
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
 
 - Fixed Schema mismatch error while generating grouped providers output.

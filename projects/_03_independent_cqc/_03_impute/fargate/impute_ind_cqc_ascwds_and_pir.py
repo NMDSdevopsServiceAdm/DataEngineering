@@ -200,13 +200,12 @@ def calculate_rolling_average(
 
     Rewritten from an `Expr.rolling().over()` implementation, which caused a
     production OOM: that combination keeps a per-window-function cache alive
-    for the whole frame (pola-rs/polars#20783), and this pipeline's partition
-    columns are low-cardinality (a handful of service types/bed bands), so
-    each partition held millions of rows. This version narrows to only the
-    columns the calculation needs, sorts (required for grouped rolling),
-    computes the rolling mean via the native grouped-rolling API, then joins
-    the small per-partition-per-date result back onto the full frame -
-    joining a tiny lookup table is far cheaper than running the window
+    for the whole frame, and this pipeline's partition columns are low-cardinality
+    (a handful of service types/bed bands), so each partition held millions of rows.
+    This version narrows to only the columns the calculation needs, sorts
+    (required for grouped rolling), computes the rolling mean via the native
+    grouped-rolling API, then joins the small per-partition-per-date result back
+    onto the full frame - joining a tiny lookup table is far cheaper than running the window
     function across every other column in the frame.
 
     Args:
