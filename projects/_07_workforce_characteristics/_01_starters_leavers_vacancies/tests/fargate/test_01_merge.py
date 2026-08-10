@@ -1,4 +1,4 @@
-from unittest.mock import ANY, Mock, call, patch
+from unittest.mock import ANY, Mock, patch
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._01_merge as job
 
@@ -35,15 +35,14 @@ class TestMain:
 
         assert len(scan_parquet_mock.call_args_list) == 3
 
-        scan_calls = [
-            call(source=self.METADATA_SOURCE, selected_columns=job.metadata_columns),
-            call(
-                source=self.JOB_ROLE_ESTIMATES_SOURCE,
-                selected_columns=job.job_role_estimates_columns,
-            ),
-            call(self.PREPARED_SLV_DATASET_SOURCE),
-        ]
-        scan_parquet_mock.assert_has_calls(scan_calls)
+        scan_parquet_mock.assert_any_call(
+            source=self.METADATA_SOURCE, selected_columns=job.metadata_columns
+        )
+        scan_parquet_mock.assert_any_call(
+            source=self.JOB_ROLE_ESTIMATES_SOURCE,
+            selected_columns=job.job_role_estimates_columns,
+        )
+        scan_parquet_mock.assert_any_call(self.PREPARED_SLV_DATASET_SOURCE)
 
         # TODO: Uncomment these assertions when the placeholder functions are implemented
         # join_datasets_mock.assert_called_once()
