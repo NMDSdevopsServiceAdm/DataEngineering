@@ -86,6 +86,12 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         extrapolation_method="ratio",
     )
 
+    # Collect here: model_imputation's unique()+join+concat pattern (used
+    # twice above) is non-streaming. Without this, it fuses into one huge
+    # execution alongside everything else in the pipeline and OOMs on the
+    # production 60GB task.
+    lf = lf.collect().lazy()
+
     lf = calculate_rolling_average(
         lf,
         IndCQC.imputed_filled_post_model,
@@ -155,6 +161,11 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         care_home=False,
         extrapolation_method="ratio",
     )
+
+    # Collect here for the same reason as above - the second pair of
+    # model_imputation calls has the same non-streaming unique()+join+concat
+    # cost and would otherwise fuse into the final sink_to_parquet execution.
+    lf = lf.collect().lazy()
 
     lf = lf.with_columns(
         utils.nullify_ct_values_previous_to_first_submission(
