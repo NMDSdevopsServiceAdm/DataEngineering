@@ -3,7 +3,7 @@ from typing import Any
 
 import boto3
 
-from polars_utils.utils import split_s3_uri
+from utils.utils import split_s3_uri
 
 TWO_MB = 2000000
 
