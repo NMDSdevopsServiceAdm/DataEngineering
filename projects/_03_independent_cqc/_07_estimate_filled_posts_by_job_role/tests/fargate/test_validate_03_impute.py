@@ -163,5 +163,59 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
         )
 
 
+class TestSumRollingRatiosAcrossJobRoles:
+    schema = {
+        IndCqcColumns.primary_service_type: pl.String,
+        IndCqcColumns.estimate_filled_posts_size_group: pl.String,
+        IndCqcColumns.cqc_location_import_date: pl.Date,
+        IndCqcColumns.main_job_role_clean_labelled: pl.String,
+        IndCqcColumns.location_id: pl.String,
+        IndCqcColumns.ascwds_job_role_rolling_ratio: pl.Float32,
+    }
+
+    def totals_for(self, rows: list[tuple]) -> list:
+        df = pl.DataFrame(rows, self.schema, orient="row")
+        return (
+            job.sum_rolling_ratios_across_job_roles(df)
+            .get_column(IndCqcColumns.ascwds_job_role_rolling_ratio)
+            .to_list()
+        )
+
+    def test_workplaces_sharing_a_group_are_counted_once(self):
+        # Two workplaces carry the same pair of ratios; the total is per group, not per row.
+        rows = [
+            ("non-residential", "NR 1 to 24", date(2026, 1, 1), "care_worker", loc, 0.3)
+            for loc in ("1-001", "1-002")
+        ] + [
+            (
+                "non-residential",
+                "NR 1 to 24",
+                date(2026, 1, 1),
+                "registered_nurse",
+                loc,
+                0.7,
+            )
+            for loc in ("1-001", "1-002")
+        ]
+        assert self.totals_for(rows) == [1.0]
+
+    def test_job_roles_sharing_a_ratio_both_count(self):
+        # Deduplicating on the ratio rather than the job role would collapse these to 0.5.
+        rows = [
+            ("non-residential", "NR 1 to 24", date(2026, 1, 1), "care_worker", "1-001", 0.5),
+            ("non-residential", "NR 1 to 24", date(2026, 1, 1), "registered_nurse", "1-001", 0.5),
+        ]  # fmt: skip
+        assert self.totals_for(rows) == [1.0]
+
+    def test_groups_are_totalled_independently(self):
+        rows = [
+            ("non-residential", "NR 1 to 24", date(2026, 1, 1), "care_worker", "1-001", 0.4),
+            ("non-residential", "NR 1 to 24", date(2026, 1, 1), "registered_nurse", "1-001", 0.6),
+            ("non-residential", "NR 1 to 24", date(2026, 2, 1), "care_worker", "1-001", 0.2),
+            ("non-residential", "NR 1 to 24", date(2026, 2, 1), "registered_nurse", "1-001", 0.8),
+        ]  # fmt: skip
+        assert sorted(self.totals_for(rows)) == [1.0, 1.0]
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

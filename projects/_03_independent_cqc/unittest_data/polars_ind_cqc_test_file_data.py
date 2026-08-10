@@ -1958,51 +1958,100 @@ class ImputeJobRoleData:
     ]  # fmt: skip
 
     create_ascwds_job_role_rolling_ratio_test_cases = [
+        # Both workplaces share a size group but differ in size, so an unweighted mean (0.3)
+        # is distinguishable from the post-weighted equivalent (0.236).
         ImputeJobRoleTestCase(
             id="when_one_primary_service_present",
             data=[
-                (1, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 4.0, "CHWN 1 to 19", 1.0, 0.4),
-                (2, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, "CHWN 1 to 19", 2.0, 0.6),
-                (3, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 4.0, "CHWN 1 to 19", 3.0, 0.4),
-                (4, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, "CHWN 1 to 19", 4.0, 0.6),
-                (5, "1000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 4.0, "CHWN 1 to 19", None, 0.4),
-                (6, "1000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, "CHWN 1 to 19", None, 0.6),
-                (7, "2000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 4.0, "CHWN 1 to 19", None, 0.4),
-                (8, "2000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, "CHWN 1 to 19", None, 0.6),
-                (9, "1000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 4.0, "CHWN 1 to 19", 5.0, 0.44444),
-                (10, "1000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, "CHWN 1 to 19", 6.0, 0.55556),
-                (11, "2000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 4.0, "CHWN 1 to 19", 7.0, 0.44444),
-                (12, "2000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, "CHWN 1 to 19", 8.0, 0.55556),
+                (1, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 4.0, 0.4, "CHWN 1 to 19", 0.3),
+                (2, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, 0.6, "CHWN 1 to 19", 0.7),
+                (3, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 18.0, 0.2, "CHWN 1 to 19", 0.3),
+                (4, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 18.0, 0.8, "CHWN 1 to 19", 0.7),
+                (5, "1000", date(2024, 2, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 4.0, 0.6, "CHWN 1 to 19", 0.5),
+                (6, "1000", date(2024, 2, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, 0.4, "CHWN 1 to 19", 0.5),
+                (7, "2000", date(2024, 2, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 18.0, 0.8, "CHWN 1 to 19", 0.5),
+                (8, "2000", date(2024, 2, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 18.0, 0.2, "CHWN 1 to 19", 0.5),
             ],
         ),
+        # Each stratum holds one workplace, so each receives its own shares back.
         ImputeJobRoleTestCase(
             id="when_multiple_primary_services_present",
             data=[
-                (1, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 4.0, "CHWN 1 to 19", 1.0, 0.33333),
-                (2, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, "CHWN 1 to 19", 2.0, 0.66667),
-                (3, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 8.0, "COH 1 to 9", 3.0, 0.428571),
-                (4, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 8.0, "COH 1 to 9", 4.0, 0.571429),
-                (5, "1000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 4.0, "CHWN 1 to 19", None, 0.333333),
-                (6, "1000", date(2024, 1, 2), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, "CHWN 1 to 19", None, 0.666667),
-                (7, "2000", date(2024, 1, 2), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 8.0, "COH 1 to 9", None, 0.428571),
-                (8, "2000", date(2024, 1, 2), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 8.0, "COH 1 to 9", None, 0.571429),
-                (9, "1000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 4.0, "CHWN 1 to 19", 5.0, 0.428571),
-                (10, "1000", date(2024, 1, 3), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, "CHWN 1 to 19", 6.0, 0.571429),
-                (11, "2000", date(2024, 1, 3), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 8.0, "COH 1 to 9", 7.0, 0.454545 ),
-                (12, "2000", date(2024, 1, 3), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 8.0, "COH 1 to 9", 8.0, 0.545455),
+                (1, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 4.0, 0.4, "CHWN 1 to 19", 0.4),
+                (2, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, 0.6, "CHWN 1 to 19", 0.6),
+                (3, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 8.0, 0.2, "COH 1 to 9", 0.2),
+                (4, "2000", date(2024, 1, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 8.0, 0.8, "COH 1 to 9", 0.8),
+                (5, "1000", date(2024, 2, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 4.0, 0.6, "CHWN 1 to 19", 0.5),
+                (6, "1000", date(2024, 2, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0, 0.4, "CHWN 1 to 19", 0.5),
+                (7, "2000", date(2024, 2, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 8.0, 0.4, "COH 1 to 9", 0.3),
+                (8, "2000", date(2024, 2, 1), PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 8.0, 0.6, "COH 1 to 9", 0.7),
             ],
         ),
+        # The second date is eight months later, so the first date falls outside its window.
         ImputeJobRoleTestCase(
             id="when_days_not_within_rolling_window",
             data=[
-                (1, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 8.0, "CHWN 1 to 19", 1.0, 0.1),
-                (2, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 8.0, "CHWN 1 to 19", 2.0, 0.2),
-                (3, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_care_worker, 8.0, "CHWN 1 to 19", 3.0, 0.3),
-                (4, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_management, 8.0, "CHWN 1 to 19", 4.0, 0.4),
-                (5, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 8.0, "CHWN 1 to 19", 5.0, 0.192308),
-                (6, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 8.0, "CHWN 1 to 19", 6.0, 0.230769),
-                (7, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_care_worker, 8.0, "CHWN 1 to 19", 7.0, 0.269231),
-                (8, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_management, 8.0, "CHWN 1 to 19", 8.0, 0.307692),
+                (1, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 8.0, 0.3, "CHWN 1 to 19", 0.3),
+                (2, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 8.0, 0.7, "CHWN 1 to 19", 0.7),
+                (3, "1000", date(2024, 9, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 8.0, 0.9, "CHWN 1 to 19", 0.9),
+                (4, "1000", date(2024, 9, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 8.0, 0.1, "CHWN 1 to 19", 0.1),
+            ],
+        ),
+        # The nine year gap exceeds the interpolation cap and the middle date is interior, so no
+        # workplace contributes to it. The stratum keeps its own last known ratio, and because
+        # every job role falls null together the carried ratios still sum to 1.
+        ImputeJobRoleTestCase(
+            id="when_stratum_has_no_contributing_workplaces",
+            data=[
+                (1, "1000", date(2015, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 8.0, 0.3, "CHWN 1 to 19", 0.3),
+                (2, "1000", date(2015, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 8.0, 0.7, "CHWN 1 to 19", 0.7),
+                (3, "1000", date(2020, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 8.0, None, "CHWN 1 to 19", 0.3),
+                (4, "1000", date(2020, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 8.0, None, "CHWN 1 to 19", 0.7),
+                (5, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 8.0, 0.9, "CHWN 1 to 19", 0.9),
+                (6, "1000", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 8.0, 0.1, "CHWN 1 to 19", 0.1),
+            ],
+        ),
+    ]  # fmt: skip
+
+    add_capped_ascwds_job_role_ratios_test_cases = [
+        # Limits are calendar durations, so the boundary is a date rather than a day count.
+        ImputeJobRoleTestCase(
+            id="when_edge_fill_reaches_its_limit",
+            data=[
+                ("1", MainJobRoleLabels.care_worker, date(2024, 1, 1), 0.5, 0.5),
+                ("1", MainJobRoleLabels.care_worker, date(2026, 1, 1), None, 0.5),
+                ("1", MainJobRoleLabels.care_worker, date(2026, 1, 2), None, None),
+            ],
+        ),
+        # 2023-03-01 to 2024-03-01 is 366 days, so a 365 day limit would drop this submission.
+        ImputeJobRoleTestCase(
+            id="when_a_leap_year_falls_inside_the_edge_fill",
+            data=[
+                ("1", MainJobRoleLabels.care_worker, date(2023, 3, 1), 0.5, 0.5),
+                ("1", MainJobRoleLabels.care_worker, date(2024, 3, 1), None, 0.5),
+            ],
+        ),
+        # A three year gap is interpolated by date; an eight year gap exceeds the cap, and edge
+        # fill never reaches an interior gap.
+        ImputeJobRoleTestCase(
+            id="when_gaps_sit_either_side_of_the_interpolation_cap",
+            data=[
+                ("1", MainJobRoleLabels.care_worker, date(2020, 1, 1), 0.4, 0.4),
+                ("1", MainJobRoleLabels.care_worker, date(2021, 7, 1), None, 0.499817),
+                ("1", MainJobRoleLabels.care_worker, date(2023, 1, 1), 0.6, 0.6),
+                ("2", MainJobRoleLabels.care_worker, date(2014, 1, 1), 0.4, 0.4),
+                ("2", MainJobRoleLabels.care_worker, date(2018, 1, 1), None, None),
+                ("2", MainJobRoleLabels.care_worker, date(2022, 1, 1), 0.6, 0.6),
+            ],
+        ),
+        # On the quarterly part of the axis a 24 month limit reaches eight quarterly rows.
+        ImputeJobRoleTestCase(
+            id="when_the_date_axis_is_quarterly",
+            data=[
+                ("1", MainJobRoleLabels.care_worker, date(2015, 1, 1), 0.5, 0.5),
+                ("1", MainJobRoleLabels.care_worker, date(2016, 1, 1), None, 0.5),
+                ("1", MainJobRoleLabels.care_worker, date(2017, 1, 1), None, 0.5),
+                ("1", MainJobRoleLabels.care_worker, date(2017, 4, 1), None, None),
             ],
         ),
     ]  # fmt: skip

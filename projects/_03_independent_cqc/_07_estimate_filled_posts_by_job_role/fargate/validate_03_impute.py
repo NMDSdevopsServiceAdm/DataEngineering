@@ -100,6 +100,29 @@ def count_nulls(df: pl.DataFrame) -> pl.DataFrame:
     )
 
 
+def sum_rolling_ratios_across_job_roles(df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Helper function to total the rolling ratio across job roles within each group.
+
+    Every workplace sharing a primary service type, size group and import date receives the
+    same rolling ratio, so the frame is reduced to one row per job role before totalling.
+    """
+
+    group_columns = [
+        IndCqcColumns.primary_service_type,
+        IndCqcColumns.estimate_filled_posts_size_group,
+        IndCqcColumns.cqc_location_import_date,
+    ]
+
+    return (
+        df.unique(
+            subset=group_columns + [IndCqcColumns.main_job_role_clean_labelled],
+        )
+        .group_by(group_columns)
+        .agg(pl.col(IndCqcColumns.ascwds_job_role_rolling_ratio).sum())
+    )
+
+
 def main(
     bucket_name: str, source_path: str, compare_path: str, reports_path: str
 ) -> None:
@@ -322,6 +345,17 @@ def other_validation(
             right=1,
             na_pass=True,
             brief="ascwds_job_role_ratios, imputed_ascwds_job_role_ratios and ascwds_job_role_rolling_ratio should be between 0 and 1 where present",
+        )
+        # The rolling ratio is a mean of workplace shares which self-normalises only because
+        # every workplace has all of its job role ratios populated or none of them. If that
+        # ever stops holding the ratios stay individually plausible but no longer describe a
+        # whole workforce, so total them explicitly rather than trusting the property.
+        .col_vals_between(
+            pre=sum_rolling_ratios_across_job_roles,
+            columns=IndCqcColumns.ascwds_job_role_rolling_ratio,
+            left=0.999,
+            right=1.001,
+            brief="ascwds_job_role_rolling_ratio should sum to 1 across job roles within each primary service type, size group and import date",
         )
         # Date plausibility
         .col_vals_ge(

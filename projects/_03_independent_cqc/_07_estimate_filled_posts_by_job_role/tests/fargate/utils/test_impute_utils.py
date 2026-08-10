@@ -67,6 +67,29 @@ class TestGetPercentageShareRatios:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.001)
 
 
+class TestAddCappedASCWDSJobRoleRatios:
+    @pytest.mark.parametrize(
+        "add_capped_ascwds_job_role_ratios_data",
+        [
+            case.as_pytest_param()
+            for case in Data.add_capped_ascwds_job_role_ratios_test_cases
+        ],
+    )
+    def test_add_capped_ascwds_job_role_ratios(
+        self, add_capped_ascwds_job_role_ratios_data
+    ):
+        expected_lf = pl.LazyFrame(
+            add_capped_ascwds_job_role_ratios_data,
+            Schemas.add_capped_ascwds_job_role_ratios_expected_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop(job.TempCols.capped_ratio)
+        returned_lf = job.add_capped_ascwds_job_role_ratios(input_lf).select(
+            Schemas.add_capped_ascwds_job_role_ratios_expected_schema.keys()
+        )
+        pl_testing.assert_frame_equal(returned_lf, expected_lf, rel_tol=0.0001)
+
+
 class TestCreateASCWDSJobRoleRollingRatio:
     @pytest.mark.parametrize(
         "create_ascwds_job_role_rolling_ratio_data",
@@ -91,6 +114,34 @@ class TestCreateASCWDSJobRoleRollingRatio:
         pl_testing.assert_frame_equal(
             returned_lf, expected_lf, check_column_order=False, rel_tol=0.0001
         )
+
+    def test_ratios_sum_to_one_across_job_roles(self):
+        expected_lf = pl.LazyFrame(
+            Data.create_ascwds_job_role_rolling_ratio_test_cases[0].data,
+            Schemas.create_ascwds_job_role_rolling_ratio_expected_schema,
+            orient="row",
+        )
+        input_lf = expected_lf.drop(
+            IndCQC.ascwds_job_role_rolling_ratio,
+            IndCQC.estimate_filled_posts_size_group,
+        )
+        stratum = [
+            IndCQC.primary_service_type,
+            IndCQC.estimate_filled_posts_size_group,
+            IndCQC.cqc_location_import_date,
+        ]
+        totals = (
+            job.create_ascwds_job_role_rolling_ratio(input_lf)
+            .collect()
+            # One row per job role first: every workplace in a stratum carries the same ratio,
+            # and deduplicating on the ratio itself would collapse roles that happen to match.
+            .unique(subset=stratum + [IndCQC.main_job_role_clean_labelled])
+            .group_by(stratum)
+            .agg(pl.col(IndCQC.ascwds_job_role_rolling_ratio).sum())
+            .get_column(IndCQC.ascwds_job_role_rolling_ratio)
+            .to_list()
+        )
+        assert [round(total, 4) for total in totals] == [1.0] * len(totals)
 
 
 class TestEstimateFilledPostsSizeGroupExpression:
