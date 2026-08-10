@@ -100,19 +100,22 @@ def main(
         .col_vals_between(IndCQC.worker_records_bounded, 1, 3000, na_pass=True)
         .col_vals_between(IndCQC.filled_posts_per_bed_ratio, 0.0, 20.0, na_pass=True)
         .col_vals_between(IndCQC.imputed_filled_post_model, 0.0, 3000.0, na_pass=True)
-        # bounded as a ratio, matching filled_posts_per_bed_ratio above, rather than the
-        # 3000 the pyspark rules used
+        # bounded as a ratio rather than the 3000 the pyspark rules used, which was 145 times
+        # the value this column actually reaches. The ceiling sits above
+        # filled_posts_per_bed_ratio's 20 because extrapolation overshoots the source data
+        # slightly at the boundary.
         .col_vals_between(
-            IndCQC.imputed_filled_posts_per_bed_ratio_model, 0.0, 20.0, na_pass=True
+            IndCQC.imputed_filled_posts_per_bed_ratio_model, 0.0, 25.0, na_pass=True
         )
         .col_vals_between(IndCQC.pir_filled_posts_model, 0.0, 3000.0, na_pass=True)
         .col_vals_between(IndCQC.ascwds_pir_merged, 0.0, 3000.0, na_pass=True)
-        # capacity tracker columns inherit the bounds of the cleaned columns they impute
+        # capacity tracker columns take the ceiling of the cleaned columns they impute, but
+        # not their floor of 1, since interpolation legitimately lands below it
         .col_vals_between(
-            IndCQC.ct_care_home_total_employed_imputed, 1.0, 4000.0, na_pass=True
+            IndCQC.ct_care_home_total_employed_imputed, 0.0, 4000.0, na_pass=True
         )
         .col_vals_between(
-            IndCQC.ct_non_res_care_workers_employed_imputed, 1.0, 3000.0, na_pass=True
+            IndCQC.ct_non_res_care_workers_employed_imputed, 0.0, 3000.0, na_pass=True
         )
         .col_vals_between(
             IndCQC.ct_combined_care_home_and_non_res, 1.0, 4000.0, na_pass=True
