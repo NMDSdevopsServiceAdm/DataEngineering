@@ -157,6 +157,9 @@ def reshape_job_role_cols_to_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
         SLVCols.vacancies: "vacy",
     }
 
+    # One struct per published label, e.g. {job_role_label: "care_worker",
+    # employees: 5, starters: 1, leavers: 0, vacancies: 2} - concat_list+explode
+    # below turns this list-of-structs-per-row into one row per label.
     label_structs = [
         pl.struct(
             pl.lit(label).alias(SLVCols.job_role_label),

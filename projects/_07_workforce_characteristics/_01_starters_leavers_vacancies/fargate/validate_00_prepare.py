@@ -1,7 +1,6 @@
 import sys
 
 import pointblank as pb
-import polars as pl
 
 from polars_utils import utils
 from polars_utils.filtering_utils import (
