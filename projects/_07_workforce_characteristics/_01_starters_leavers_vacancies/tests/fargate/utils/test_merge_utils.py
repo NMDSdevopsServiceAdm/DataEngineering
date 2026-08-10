@@ -50,31 +50,6 @@ class TestCollapseJobRoleEstimatesToPublishedLabels:
         )
 
 
-class TestJoinDatasets:
-    @pytest.mark.parametrize(
-        "case",
-        [pytest.param(case, id=case.id) for case in Data.join_datasets_test_cases],
-    )
-    def test_joins_slv_metrics_onto_job_role_estimates(self, case):
-        job_role_estimates_lf = pl.LazyFrame(case.job_role_estimates_data)
-        cleaned_ascwds_workplace_lf = pl.LazyFrame(case.cleaned_ascwds_workplace_data)
-        expected_lf = pl.LazyFrame(
-            case.expected_data,
-            schema_overrides={col: pl.Int64 for col in SLV_METRIC_COLUMNS},
-        )
-
-        returned_lf = job.join_datasets(
-            job_role_estimates_lf, cleaned_ascwds_workplace_lf
-        )
-
-        pl_testing.assert_frame_equal(
-            returned_lf,
-            expected_lf,
-            check_row_order=False,
-            check_column_order=False,
-        )
-
-
 class TestApplyEmploymentStatusMagicNumbers:
     def test_apply_employment_status_magic_numbers(self):
         pass

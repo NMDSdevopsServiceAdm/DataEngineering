@@ -19,11 +19,11 @@ COMPARE_COLS_TO_IMPORT = [
 def calculate_expected_row_count(compare_df: pl.DataFrame) -> int:
     """Derives the expected merged row count from the pre-collapse compare dataset.
 
-    compare_df is job_role_estimates_source at its original 37-granular-role grain,
-    but _01_merge collapses job role estimates down to the 15 published job role
+    compare_df is job_role_estimates_source at its original row count with all job roles,
+    but _01_merge collapses job role estimates down to the published job role
     labels (see merge_utils.collapse_job_role_estimates_to_published_labels) before
-    joining, so the merged output has 15 rows per location/import-date group rather
-    than compare_df's original 37.
+    joining, so the merged output has fewer rows per location/import-date group rather
+    than compare_df's original.
 
     Args:
         compare_df (pl.DataFrame): job_role_estimates_source, selected down to

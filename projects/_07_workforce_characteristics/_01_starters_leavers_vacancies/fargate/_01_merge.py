@@ -112,8 +112,14 @@ def main(
         employment_status_rates_source, schema=employment_status_rates_schema
     )
 
-    job_role_estimates_lf = mUtils.join_datasets(
-        job_role_estimates_lf, cleaned_ascwds_workplace_lf
+    job_role_estimates_lf = job_role_estimates_lf.join(
+        cleaned_ascwds_workplace_lf,
+        on=[
+            IndCQC.establishment_id,
+            IndCQC.ascwds_workplace_import_date,
+            SLVCols.job_role_label,
+        ],
+        how="left",
     )
 
     # TODO: Placeholder only
