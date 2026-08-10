@@ -18,8 +18,10 @@ from utils.column_values.categorical_column_values import (
     JobRoleFilteringRule,
     MainJobRoleLabels,
     PrimaryServiceType,
+    PrimaryServiceTypeSecondLevel,
     Region,
     Sector,
+    Services,
 )
 
 
@@ -466,11 +468,153 @@ class ValidateEstimatedIndCQCFilledPostsData:
     ]
 
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
     ] # fmt: skip
+
+
+@dataclass
+class CareHomeMatchesPrimaryServiceTypeTestCase:
+    id: str
+    care_home: str
+    primary_service_type: str
+    expected: bool
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(
+            self.care_home, self.primary_service_type, self.expected, id=self.id
+        )
+
+
+@dataclass
+class ServicesOfferedRuleTestCase:
+    id: str
+    primary_service_type_second_level: str
+    services_offered: list
+    expected: bool
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(
+            self.primary_service_type_second_level,
+            self.services_offered,
+            self.expected,
+            id=self.id,
+        )
+
+
+@dataclass
+class ValidationUtilsData:
+    care_home_matches_primary_service_type_test_cases = [
+        CareHomeMatchesPrimaryServiceTypeTestCase(
+            id="not_care_home_and_non_residential_is_valid",
+            care_home=CareHome.not_care_home,
+            primary_service_type=PrimaryServiceType.non_residential,
+            expected=True,
+        ),
+        CareHomeMatchesPrimaryServiceTypeTestCase(
+            id="care_home_and_care_home_with_nursing_is_valid",
+            care_home=CareHome.care_home,
+            primary_service_type=PrimaryServiceType.care_home_with_nursing,
+            expected=True,
+        ),
+        CareHomeMatchesPrimaryServiceTypeTestCase(
+            id="care_home_and_care_home_only_is_valid",
+            care_home=CareHome.care_home,
+            primary_service_type=PrimaryServiceType.care_home_only,
+            expected=True,
+        ),
+        CareHomeMatchesPrimaryServiceTypeTestCase(
+            id="care_home_and_non_residential_is_invalid",
+            care_home=CareHome.care_home,
+            primary_service_type=PrimaryServiceType.non_residential,
+            expected=False,
+        ),
+    ]
+
+    shared_lives_services_offered_test_cases = [
+        ServicesOfferedRuleTestCase(
+            id="rule_does_not_apply_when_not_shared_lives",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_only,
+            services_offered=[Services.care_home_service_without_nursing],
+            expected=True,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="valid_when_shared_lives_and_services_offered_contains_shared_lives",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.shared_lives,
+            services_offered=[Services.shared_lives],
+            expected=True,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="invalid_when_shared_lives_and_services_offered_missing_shared_lives",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.shared_lives,
+            services_offered=[Services.care_home_service_without_nursing],
+            expected=False,
+        ),
+    ]
+
+    care_home_with_nursing_services_offered_test_cases = [
+        ServicesOfferedRuleTestCase(
+            id="rule_does_not_apply_when_not_care_home_with_nursing",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_only,
+            services_offered=[Services.care_home_service_without_nursing],
+            expected=True,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="valid_when_services_offered_contains_nursing_and_not_shared_lives",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_with_nursing,
+            services_offered=[Services.care_home_service_with_nursing],
+            expected=True,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="invalid_when_services_offered_missing_nursing",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_with_nursing,
+            services_offered=[Services.care_home_service_without_nursing],
+            expected=False,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="invalid_when_services_offered_also_contains_shared_lives",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_with_nursing,
+            services_offered=[
+                Services.care_home_service_with_nursing,
+                Services.shared_lives,
+            ],
+            expected=False,
+        ),
+    ]
+
+    care_home_without_nursing_services_offered_test_cases = [
+        ServicesOfferedRuleTestCase(
+            id="rule_does_not_apply_when_not_care_home_without_nursing",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_with_nursing,
+            services_offered=[Services.care_home_service_with_nursing],
+            expected=True,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="valid_when_services_offered_contains_only_without_nursing",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_only,
+            services_offered=[Services.care_home_service_without_nursing],
+            expected=True,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="invalid_when_services_offered_missing_without_nursing",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_only,
+            services_offered=[Services.shared_lives],
+            expected=False,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="invalid_when_services_offered_also_contains_with_nursing",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_only,
+            services_offered=[
+                Services.care_home_service_without_nursing,
+                Services.care_home_service_with_nursing,
+            ],
+            expected=False,
+        ),
+    ]
 
 
 @dataclass

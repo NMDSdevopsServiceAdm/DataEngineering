@@ -67,6 +67,8 @@ All notable changes to this project will be documented in this file.
 
 - Completed the Polars migration of functions within `estimate_ind_cqc_filled_posts.py`.
 
+- Updated pointblank validation for the estimates job within the Ind CQC pipeline, and added the custom validation rules that hadn't been converted from PySpark yet.
+
 ### Improved
 - Reduced CircleCI credit usage by removing `no-cache = true` from all `docker-bake.hcl` image targets, so the already-enabled Docker layer caching actually takes effect instead of every image rebuilding from scratch on every push.
 
