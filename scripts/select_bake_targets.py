@@ -294,9 +294,23 @@ def select_targets(
         list[str]: Target names to bake, in bake-file order. Empty means the
             build can be skipped entirely.
     """
-    selected = targets_with_changes(targets, changed_paths)
+    # Materialised because it's logged as well as iterated.
+    changed_paths = list(changed_paths)
+
+    changed_targets = targets_with_changes(targets, changed_paths)
+    _log(f"changed files: {sorted(changed_paths)}")
+    _log(f"targets with changes: {sorted(changed_targets)}")
+
+    missing_targets: set[str] = set()
     if ecr_client is not None:
-        selected |= targets_missing_from_ecr(targets, image_tag, ecr_client)
+        _log(
+            "querying ECR repositories: "
+            f"{sorted(target.ecr_repository for target in targets)}"
+        )
+        missing_targets = targets_missing_from_ecr(targets, image_tag, ecr_client)
+        _log(f"targets with no {image_tag!r} image in ECR: {sorted(missing_targets)}")
+
+    selected = changed_targets | missing_targets
 
     return [target.name for target in targets if target.name in selected]
 
@@ -326,6 +340,19 @@ def changed_paths_since(diff_base: str, repo_root: Path) -> list[str]:
     )
 
     return completed.stdout.split()
+
+
+def _log(message: str) -> None:
+    """
+    Write a diagnostic line to stderr.
+
+    Stderr specifically: stdout carries the target list, which CI redirects
+    into the workspace file.
+
+    Args:
+        message (str): The line to write.
+    """
+    print(message, file=sys.stderr)
 
 
 def _normalise_path(path: str) -> str:
