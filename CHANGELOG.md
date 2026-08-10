@@ -87,6 +87,8 @@ All notable changes to this project will be documented in this file.
 
 - Added missing error notifications for the CQC/ASC-WDS orchestrator and crawler-refresh steps in three ingestion pipelines, and a bounded timeout for the ASC-WDS worker/workplace file-arrival polling loops.
 
+- Fixed a broken import in the shared ingestion utils that caused the ASC-WDS, Capacity Tracker, CQC PIR, and ONS PySpark Glue ingestion jobs to fail with `ModuleNotFoundError: No module named 'polars'`. Inlined the affected `split_s3_uri` helper instead of importing it, so this file no longer depends on PySpark/pydeequ either.
+
 ## [v2026.06.0] - 15/07/2026
 
 ### Added
