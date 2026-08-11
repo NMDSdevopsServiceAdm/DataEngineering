@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass
 from unittest.mock import Mock, call, patch
 
 import polars as pl
@@ -17,30 +18,43 @@ PUBLISHED_ROLE_COUNT = len(
 )
 
 
+@dataclass
+class CalculateExpectedRowCount:
+    id: str
+    input_data: list[int]
+    expected_row_count: int
+
+
+calculate_expected_row_count_test_cases = [
+    CalculateExpectedRowCount(
+        id="single_group_multiple_granular_roles",
+        input_data=[1, 1],  # list of id's
+        expected_row_count=PUBLISHED_ROLE_COUNT,
+    ),
+    CalculateExpectedRowCount(
+        id="multiple_groups_counted_once_each",
+        input_data=[1, 1, 2],  # list of id's
+        expected_row_count=PUBLISHED_ROLE_COUNT * 2,
+    ),
+]
+
+
 class TestCalculateExpectedRowCount:
     @pytest.mark.parametrize(
-        "location_import_date_ids, expected_row_count",
+        "case",
         [
-            pytest.param(
-                [1, 1], PUBLISHED_ROLE_COUNT, id="single_group_multiple_granular_roles"
-            ),
-            pytest.param(
-                [1, 1, 2],
-                PUBLISHED_ROLE_COUNT * 2,
-                id="multiple_groups_counted_once_each",
-            ),
+            pytest.param(case, id=case.id)
+            for case in calculate_expected_row_count_test_cases
         ],
     )
-    def test_multiplies_distinct_groups_by_published_role_count(
-        self, location_import_date_ids, expected_row_count
-    ):
+    def test_multiplies_distinct_groups_by_published_role_count(self, case):
         compare_df = pl.DataFrame(
-            {IndCqcColumns.id_per_locationid_import_date: location_import_date_ids}
+            {IndCqcColumns.id_per_locationid_import_date: case.input_data}
         )
 
         returned_row_count = job.calculate_expected_row_count(compare_df)
 
-        assert returned_row_count == expected_row_count
+        assert returned_row_count == case.expected_row_count
 
 
 class TestMain:
