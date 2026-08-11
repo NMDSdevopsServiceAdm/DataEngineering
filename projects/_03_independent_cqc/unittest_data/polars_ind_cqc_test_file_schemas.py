@@ -639,43 +639,6 @@ class CleanIndCQCSchema:
         ]
     )
 
-    filter_to_care_homes_with_known_beds_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.care_home, pl.String()),
-            (IndCQC.number_of_beds, pl.Int64()),
-        ]
-    )
-
-    average_beds_per_location_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.number_of_beds, pl.Int64()),
-        ]
-    )
-
-    expected_average_beds_per_location_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            ("avg_beds", pl.Int64()),
-        ]
-    )
-
-    replace_null_beds_with_average_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.Utf8),
-            (IndCQC.number_of_beds, pl.Int64),
-            ("avg_beds", pl.Int64),
-        ]
-    )
-
-    expected_replace_null_beds_with_average_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.Utf8),
-            (IndCQC.number_of_beds, pl.Int64),
-        ]
-    )
-
     calculate_time_registered_for_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
@@ -1076,42 +1039,21 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
         ]
     )
 
-    calculate_average_filled_posts_schema = pl.Schema(
+    calculate_expected_filled_posts_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
+            (IndCQC.number_of_beds, pl.Int64()),
             (IndCQC.number_of_beds_banded, pl.Float64()),
             (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
         ]
     )
 
-    expected_calculate_average_filled_posts_schema = pl.Schema(
-        [
-            (IndCQC.number_of_beds_banded, pl.Float64()),
-            (IndCQC.avg_filled_posts_per_bed_ratio, pl.Float64()),
-        ]
-    )
-
-    calculate_expected_filled_posts_base_schema = pl.Schema(
+    expected_calculate_expected_filled_posts_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),
             (IndCQC.number_of_beds, pl.Int64()),
             (IndCQC.number_of_beds_banded, pl.Float64()),
-        ]
-    )
-
-    calculate_expected_filled_posts_join_schema = pl.Schema(
-        [
-            (IndCQC.number_of_beds_banded, pl.Float64()),
-            (IndCQC.avg_filled_posts_per_bed_ratio, pl.Float64()),
-        ]
-    )
-
-    expected_filled_posts_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            (IndCQC.number_of_beds, pl.Int64()),
-            (IndCQC.number_of_beds_banded, pl.Float64()),
-            (IndCQC.avg_filled_posts_per_bed_ratio, pl.Float64()),
+            (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
             (IndCQC.expected_filled_posts, pl.Float64()),
         ]
     )

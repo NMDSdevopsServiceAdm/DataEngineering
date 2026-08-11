@@ -80,6 +80,8 @@ All notable changes to this project will be documented in this file.
 
 - Replaced the fan-out join that broadcast the primary service rate of change trendline back onto every location row with an `.over()`-based broadcast computed in place, reducing peak memory in the imputation pipeline.
 
+- Replaced several `group_by`+`join` broadcast-back workarounds with `.over()` across the ASCWDS workplace, direct payments extrapolation, job role imputation, and CQC bed-count/winsorization cleaning steps, reducing peak memory for each.
+
 - Removed mid-pipeline LazyFrame collects from the PIR-to-filled-posts ratio and non-residential rate-of-change cleaning steps in the imputation pipeline, computing them as lazy expressions instead so the query stays fused end-to-end.
 
 - Changed build_extrapolation_aggregates to use .over() instead of filter > group-by > agg > join
