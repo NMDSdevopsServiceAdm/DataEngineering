@@ -17,7 +17,8 @@ COMPARE_COLS_TO_IMPORT = [
 
 
 def calculate_expected_row_count(compare_df: pl.DataFrame) -> int:
-    """Derives the expected merged row count from the pre-collapse compare dataset.
+    """
+    Derives the expected merged row count from the pre-collapse compare dataset.
 
     compare_df is job_role_estimates_source at its original row count with all job roles,
     but _01_merge collapses job role estimates down to the published job role
@@ -26,8 +27,7 @@ def calculate_expected_row_count(compare_df: pl.DataFrame) -> int:
     than compare_df's original.
 
     Args:
-        compare_df (pl.DataFrame): job_role_estimates_source, selected down to
-            id_per_locationid_import_date.
+        compare_df (pl.DataFrame): job_role_estimates_source.
 
     Returns:
         int: distinct location/import-date groups in compare_df, multiplied by the
@@ -46,10 +46,6 @@ def main(
 ) -> None:
     """Validates a dataset according to a set of provided rules and produces a
         summary report as well as failure outputs.
-
-    The compare dataset is job_role_estimates_source at its pre-collapse grain, so
-    the expected row count is derived rather than taken as compare_df's raw row
-    count - see calculate_expected_row_count.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset
