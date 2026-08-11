@@ -11,12 +11,12 @@ def create_imputed_ascwds_job_role_counts(
     estimated_job_role_posts_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
     """
-    Impute job role ratios by interpolation forward fill and backward fill.
+    Impute job role ratios per location and job role by interpolation, forward fill,
+    and backward fill, then broadcast the result back onto every row with `.over()`.
 
-    Broadcasts the imputed ratio back onto every row with `.over()` rather than a
-    groupby-agg-explode-join: a join that broadcasts a computed value onto every row
-    costs more peak memory than `.over()`'s in-place fallback (see the `over-vs-join`
-    skill).
+    The frame is sorted by (location_id, job_role, date) before the `.over()` call,
+    since its default mapping strategy writes results back in original row order and
+    would otherwise misassign values on unsorted input.
 
     Args:
         estimated_job_role_posts_lf(pl.LazyFrame): dataset to impute
@@ -35,7 +35,6 @@ def create_imputed_ascwds_job_role_counts(
 
     imputed_ratios = (
         pl.col(IndCQC.ascwds_job_role_ratios)
-        .sort_by(order_key)
         .interpolate()
         .forward_fill()
         .backward_fill()
@@ -43,9 +42,10 @@ def create_imputed_ascwds_job_role_counts(
         .alias(IndCQC.imputed_ascwds_job_role_ratios)
     )
 
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
-        imputed_ratios
-    )
+    # Must be sorted before the .over() call above — see docstring.
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(
+        *impute_groups, order_key
+    ).with_columns(imputed_ratios)
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         pl.col(IndCQC.estimate_filled_posts)
