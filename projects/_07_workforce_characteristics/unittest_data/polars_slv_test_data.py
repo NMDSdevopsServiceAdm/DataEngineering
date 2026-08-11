@@ -456,9 +456,7 @@ class TestMergeUtilsData:
                 IndCQC.primary_service_type: [
                     PrimaryServiceType.care_home_with_nursing
                 ],
-                IndCQC.main_job_role_clean_labelled: [
-                    MainJobRoleLabels.employment_support
-                ],
+                IndCQC.main_job_role_clean_labelled: [MainJobRoleLabels.care_worker],
                 IndCQC.main_job_group_labelled: [JobGroupLabels.direct_care],
                 METRIC: [7.0],
             },
