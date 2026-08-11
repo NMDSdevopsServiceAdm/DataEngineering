@@ -25,17 +25,32 @@ orbs:
   aws-cli: circleci/aws-cli@5.4.1
 
 commands:
+  export_sanitised_branch:
+    description: "Compute the terraform-workspace-safe branch name into a file later steps in this job can source"
+    parameters:
+      branch:
+        type: string
+        default: "${CIRCLE_BRANCH}"
+    steps:
+      - run:
+          name: Compute sanitised branch name
+          command: |
+            # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
+            BRANCH="<< parameters.branch >>"
+            SANITISED_CIRCLE_BRANCH=$(echo ${BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
+            echo "export SANITISED_CIRCLE_BRANCH=${SANITISED_CIRCLE_BRANCH}" > /tmp/sanitised_branch.env
+
   initialise_terraform:
     description: "Set up the terraform backend for terraform jobs"
     steps:
+      - export_sanitised_branch
       - run:
           name: Initialise terraform
           command: |
             # UNSET old keys to force AWS CLI to use OIDC
             unset AWS_ACCESS_KEY_ID
             unset AWS_SECRET_ACCESS_KEY
-            # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
-            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
+            . /tmp/sanitised_branch.env
             cd terraform/pipeline
             terraform init -input=false -backend-config=../${AWS_ENV}.s3.tfbackend
             terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
@@ -66,6 +81,7 @@ jobs:
               git fetch --unshallow origin
             fi
             git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+      - export_sanitised_branch
       - run:
           name: Install dependencies
           command: pip install boto3==1.40.21
@@ -82,8 +98,7 @@ jobs:
             echo "$CIRCLE_OIDC_TOKEN_V2" > /tmp/oidc-token
             export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/oidc-token
             export AWS_ROLE_SESSION_NAME=decide-images
-            # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
-            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
+            . /tmp/sanitised_branch.env
             mkdir -p /tmp/bake
             python scripts/select_bake_targets.py > /tmp/bake/targets
             echo "Targets to build: $(cat /tmp/bake/targets)"
@@ -107,6 +122,7 @@ jobs:
       - image: docker:latest
     steps:
       - checkout
+      - export_sanitised_branch
       - when:
           condition: << parameters.select_targets >>
           steps:
@@ -145,8 +161,7 @@ jobs:
             # Authenticate Docker to ECR
             aws ecr get-login-password --region eu-west-2 | docker login -u AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
             echo "Rebuilding lambdas and pushing to ECR."
-            # Needed for docker-bake. This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
-            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
+            . /tmp/sanitised_branch.env
             # No target list (main, or an absent file) means build everything.
             BAKE_TARGETS=$(cat /tmp/bake/targets 2>/dev/null || echo all)
             docker buildx bake $BAKE_TARGETS --push
@@ -401,13 +416,17 @@ jobs:
       - aws-cli/setup:
           role_arn: $AWS_ROLE_ARN
           region: $AWS_REGION
+      # This job runs off a GitHub Actions delete webhook via pipeline
+      # parameters, not a normal branch push, so CIRCLE_BRANCH isn't set the
+      # usual way -- GHA_Meta carries the branch name instead.
+      - export_sanitised_branch:
+          branch: << pipeline.parameters.GHA_Meta >>
       - run:
           name: terraform destroy
           command: |
             unset AWS_ACCESS_KEY_ID
             unset AWS_SECRET_ACCESS_KEY
-            export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
-            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
+            . /tmp/sanitised_branch.env
             # --- Safeguard to never destroy main ---
             if [ "$SANITISED_CIRCLE_BRANCH" = "main" ]; then
               echo "Skipping destroy for main branch"
@@ -425,10 +444,9 @@ jobs:
           command: |
             unset AWS_ACCESS_KEY_ID
             unset AWS_SECRET_ACCESS_KEY
+            . /tmp/sanitised_branch.env
             cd terraform/pipeline
             terraform workspace select default
-            export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
-            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
             terraform workspace delete ${SANITISED_CIRCLE_BRANCH}
 
 
