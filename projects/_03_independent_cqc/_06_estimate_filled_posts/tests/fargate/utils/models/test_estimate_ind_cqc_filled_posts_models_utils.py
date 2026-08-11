@@ -3,6 +3,7 @@ from unittest.mock import ANY, Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
+import pytest
 
 from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models import (
     utils as job,
@@ -13,6 +14,7 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     EstimateFilledPostsModelsUtils as Schemas,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 PATCH_PATH: str = (
     "projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.utils"
@@ -137,6 +139,26 @@ class EnrichWithModelPredictionsTest(unittest.TestCase):
         pl_testing.assert_frame_equal(
             returned_lf, self.expected_enriched_non_res_lf, check_row_order=False
         )
+
+
+class TestSetMinValue:
+    @pytest.mark.parametrize(
+        "prediction, min_value, expected_prediction",
+        [case.as_pytest_param() for case in Data.set_min_value_test_cases],
+    )
+    def test_function_returns_expected_value(
+        self, prediction, min_value, expected_prediction
+    ):
+        test_lf = pl.LazyFrame(
+            [(prediction,)], Schemas.set_min_value_schema, orient="row"
+        )
+        expected_lf = pl.LazyFrame(
+            [(expected_prediction,)], Schemas.set_min_value_schema, orient="row"
+        )
+
+        returned_lf = job.set_min_value(test_lf, IndCqc.prediction, min_value)
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class JoinModelPredictionsTests(unittest.TestCase):

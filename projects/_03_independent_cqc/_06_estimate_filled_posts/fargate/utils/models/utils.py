@@ -44,6 +44,25 @@ def enrich_with_model_predictions(
     return ind_cqc_with_predictions_lf
 
 
+def set_min_value(
+    lf: pl.LazyFrame, col_name: str, min_value: float | None = 1.0
+) -> pl.LazyFrame:
+    """
+    Clips values in the specified column to a minimum, leaving nulls untouched.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame containing the specified column.
+        col_name (str): The name of the column to set the minimum value for.
+        min_value (float | None): The minimum value allowed in the specified
+            column. If None, no minimum is applied.
+
+    Returns:
+        pl.LazyFrame: The LazyFrame with the specified column clipped to the
+        minimum value.
+    """
+    return lf.with_columns(pl.col(col_name).clip(lower_bound=min_value))
+
+
 def join_model_predictions(
     lf: pl.LazyFrame,
     predictions_lf: pl.LazyFrame,

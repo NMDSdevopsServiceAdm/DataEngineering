@@ -1,9 +1,13 @@
 from polars_utils import utils
+from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.estimate_non_res_ct_filled_posts import (
+    estimate_non_res_capacity_tracker_filled_posts,
+)
 from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.non_res_with_and_without_dormancy_combined import (
     combine_non_res_with_and_without_dormancy_models,
 )
 from projects._03_independent_cqc._06_estimate_filled_posts.fargate.utils.models.utils import (
     enrich_with_model_predictions,
+    set_min_value,
 )
 from projects._03_independent_cqc.utils.imputation.imputation import model_imputation
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -97,24 +101,23 @@ def main(
 
     lf = combine_non_res_with_and_without_dormancy_models(lf)
 
-    # Uncommented these call when ascwds_pir_merged has been converted to polars.
-    # lf = model_imputation(
-    #     lf,
-    #     IndCQC.ascwds_pir_merged,
-    #     IndCQC.care_home_model,
-    #     IndCQC.imputed_posts_care_home_model,
-    #     care_home=True,
-    #     extrapolation_method="nominal",
-    # )
+    lf = model_imputation(
+        lf,
+        IndCQC.ascwds_pir_merged,
+        IndCQC.care_home_model,
+        IndCQC.imputed_posts_care_home_model,
+        care_home=True,
+        extrapolation_method="nominal",
+    )
 
-    # lf = model_imputation(
-    #     lf,
-    #     IndCQC.ascwds_pir_merged,
-    #     IndCQC.non_res_combined_model,
-    #     IndCQC.imputed_posts_non_res_combined_model,
-    #     care_home=False,
-    #     extrapolation_method="nominal",
-    # )
+    lf = model_imputation(
+        lf,
+        IndCQC.ascwds_pir_merged,
+        IndCQC.non_res_combined_model,
+        IndCQC.imputed_posts_non_res_combined_model,
+        care_home=False,
+        extrapolation_method="nominal",
+    )
 
     lf = model_imputation(
         lf,
@@ -125,11 +128,23 @@ def main(
         extrapolation_method="nominal",
     )
 
-    # merge_columns_in_order
+    value_expr, source_expr = utils.coalesce_with_source_labels(
+        cols=[
+            IndCQC.ascwds_pir_merged,
+            IndCQC.imputed_posts_care_home_model,
+            IndCQC.care_home_model,
+            IndCQC.imputed_posts_non_res_combined_model,
+            IndCQC.imputed_pir_filled_posts_model,
+            IndCQC.non_res_combined_model,
+            IndCQC.posts_rolling_average_model,
+        ],
+        name=IndCQC.estimate_filled_posts,
+    )
+    lf = lf.with_columns([value_expr, source_expr])
 
-    # set_min_value
+    lf = set_min_value(lf, IndCQC.estimate_filled_posts, 1.0)
 
-    # estimate_non_res_capacity_tracker_filled_posts
+    lf = estimate_non_res_capacity_tracker_filled_posts(lf)
 
     utils.sink_to_parquet(
         lf,
