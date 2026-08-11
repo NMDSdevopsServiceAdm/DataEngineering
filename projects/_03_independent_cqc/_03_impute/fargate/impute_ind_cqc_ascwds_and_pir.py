@@ -86,23 +86,47 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         extrapolation_method="ratio",
     )
 
-    # model_calculate_rolling_average - posts_rolling_average_model
+    # Collect here: model_imputation's unique()+join+concat pattern (used
+    # twice above) is non-streaming. Without this, it fuses into one huge
+    # execution alongside everything else in the pipeline and OOMs on the
+    # production 60GB task.
+    lf = lf.collect().lazy()
 
-    # create_banded_bed_count_column
+    lf = lf.with_columns(
+        calculate_rolling_average(
+            IndCQC.imputed_filled_post_model,
+            f"{NumericalValues.number_of_days_in_window}d",
+            [IndCQC.primary_service_type],
+        ).alias(IndCQC.posts_rolling_average_model)
+    )
 
-    # model_calculate_rolling_average - banded_bed_ratio_rolling_average_model
+    lf = cUtils.create_banded_bed_count_column(
+        lf,
+        IndCQC.number_of_beds_banded_for_rolling_avg,
+        [0, 1, 10, 15, 20, 25, 50, float("Inf")],
+    )
 
-    # convert_care_home_ratios_to_posts - unhash after `model_calculate_rolling_average` converted
-    # lf = lf.with_columns(
-    #     pl.when(is_care_home())
-    #     .then(
-    #         pl.col(IndCQC.banded_bed_ratio_rolling_average_model)
-    #         * pl.col(IndCQC.number_of_beds)
-    #     )
-    #     .otherwise(pl.col(IndCQC.posts_rolling_average_model))
-    #     .cast(pl.Float32)
-    #     .alias(IndCQC.posts_rolling_average_model)
-    # )
+    lf = lf.with_columns(
+        calculate_rolling_average(
+            IndCQC.imputed_filled_posts_per_bed_ratio_model,
+            f"{NumericalValues.number_of_days_in_window}d",
+            [
+                IndCQC.primary_service_type,
+                IndCQC.number_of_beds_banded_for_rolling_avg,
+            ],
+        ).alias(IndCQC.banded_bed_ratio_rolling_average_model)
+    )
+
+    lf = lf.with_columns(
+        pl.when(is_care_home())
+        .then(
+            pl.col(IndCQC.banded_bed_ratio_rolling_average_model)
+            * pl.col(IndCQC.number_of_beds)
+        )
+        .otherwise(pl.col(IndCQC.posts_rolling_average_model))
+        .cast(pl.Float32)
+        .alias(IndCQC.posts_rolling_average_model)
+    )
 
     lf = lf.with_columns(
         pl.when(is_care_home())
@@ -137,6 +161,11 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         care_home=False,
         extrapolation_method="ratio",
     )
+
+    # Collect here for the same reason as above - the second pair of
+    # model_imputation calls has the same non-streaming unique()+join+concat
+    # cost and would otherwise fuse into the final sink_to_parquet execution.
+    lf = lf.collect().lazy()
 
     lf = lf.with_columns(
         utils.nullify_ct_values_previous_to_first_submission(
