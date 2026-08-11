@@ -2,6 +2,11 @@ import re
 
 import polars as pl
 
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     PublishedJobRoleLabels,
@@ -124,12 +129,67 @@ def reduce_to_published_roles(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf
 
 
-def pivot_job_role_cols_to_rows():
+def reshape_job_role_cols_to_rows(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Reshapes wide per-job-role columns into one row per job role.
+
+    Must run after relabel_job_role_columns, which guarantees every job role
+    column's prefix is one of the known PublishedJobRoleLabels values - this
+    function trusts that instead of pattern-matching raw codes. Of the grain
+    columns (establishment_id, ascwds_workplace_import_date, job_role_label),
+    establishment_id and job_role_label are Categorical/Enum rather than
+    String to keep downstream uniqueness checks cheap at this dataset's
+    scale.
+
+    Args:
+        lf (pl.LazyFrame): LazyFrame with columns already relabelled to
+            {published_label}_{suffix} shape.
+
+    Returns:
+        pl.LazyFrame: long-format LazyFrame with columns establishment_id,
+            ascwds_workplace_import_date, job_role_label, employees,
+            starters, leavers, vacancies. One row per label per input row
+            (dense - includes all-null metric rows).
     """
-    Placeholder function to pivot job role columns into rows to create column
-    for job role number and columns for emps, starters, leavers and vacancies.
-    """
-    pass
+    metric_suffixes = {
+        SLVCols.employees: "emp",
+        SLVCols.starters: "strt",
+        SLVCols.leavers: "stop",
+        SLVCols.vacancies: "vacy",
+    }
+
+    # One struct per published label, e.g. {job_role_label: "care_worker",
+    # employees: 5, starters: 1, leavers: 0, vacancies: 2} - concat_list+explode
+    # below turns this list-of-structs-per-row into one row per label.
+    label_structs = [
+        pl.struct(
+            pl.lit(label).alias(SLVCols.job_role_label),
+            *[
+                pl.col(f"{label}_{suffix}").alias(metric)
+                for metric, suffix in metric_suffixes.items()
+            ],
+        )
+        for label in published_job_role_labels
+    ]
+
+    return (
+        lf.select(
+            AWPClean.establishment_id,
+            AWPClean.ascwds_workplace_import_date,
+            pl.concat_list(label_structs).alias("_job_role_struct_list"),
+        )
+        .explode("_job_role_struct_list")
+        .unnest("_job_role_struct_list")
+        .with_columns(
+            pl.col(AWPClean.establishment_id).cast(CatColType.EstablishmentCatType),
+            pl.col(SLVCols.job_role_label).cast(
+                CatColType.PublishedJobRoleLabelEnumType
+            ),
+            pl.col(SLVCols.employees).cast(pl.Int16),
+            pl.col(SLVCols.starters).cast(pl.Int16),
+            pl.col(SLVCols.leavers).cast(pl.Int16),
+            pl.col(SLVCols.vacancies).cast(pl.Int16),
+        )
+    )
 
 
 def relabel_job_role_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -146,7 +206,7 @@ def relabel_job_role_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Args:
         lf (pl.LazyFrame): LazyFrame with jrNN{suffix} columns reduced to
-            published roles, before any pivot.
+            published roles, before any reshape.
 
     Returns:
         pl.LazyFrame: Input LazyFrame with job role columns renamed to
