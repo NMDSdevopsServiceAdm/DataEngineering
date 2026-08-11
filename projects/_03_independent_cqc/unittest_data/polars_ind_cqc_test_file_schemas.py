@@ -1263,6 +1263,12 @@ class NullLongitudinalOutliersSchema:
 
 @dataclass
 class EstimateFilledPostsModelsUtils:
+    set_min_value_schema = pl.Schema(
+        {
+            IndCQC.prediction: pl.Float64,
+        }
+    )
+
     enrich_model_ind_cqc_schema = pl.Schema(
         {
             IndCQC.location_id: pl.String,
