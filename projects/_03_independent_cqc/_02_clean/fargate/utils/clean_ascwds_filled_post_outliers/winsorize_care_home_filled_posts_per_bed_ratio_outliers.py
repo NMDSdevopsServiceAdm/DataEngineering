@@ -78,7 +78,9 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
     care_homes_lf = filter_lf_to_care_homes_with_known_beds_and_filled_posts(input_lf)
     data_not_relevant_to_filter_lf = select_data_not_in_subset(input_lf, care_homes_lf)
 
-    care_homes_lf = calculate_expected_filled_posts_based_on_number_of_beds(care_homes_lf)
+    care_homes_lf = calculate_expected_filled_posts_based_on_number_of_beds(
+        care_homes_lf
+    )
 
     care_homes_lf = calculate_filled_post_standardised_residual(care_homes_lf)
 

@@ -51,14 +51,18 @@ def model_extrapolation(direct_payments_lf: pl.LazyFrame) -> pl.LazyFrame:
         .first()
         .over(DP.LA_AREA)
     )
-    first_mean = pl.col(DP.ESTIMATE_USING_MEAN).filter(is_first_year).first().over(DP.LA_AREA)
+    first_mean = (
+        pl.col(DP.ESTIMATE_USING_MEAN).filter(is_first_year).first().over(DP.LA_AREA)
+    )
     last_value = (
         pl.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
         .filter(is_last_year)
         .first()
         .over(DP.LA_AREA)
     )
-    last_mean = pl.col(DP.ESTIMATE_USING_MEAN).filter(is_last_year).first().over(DP.LA_AREA)
+    last_mean = (
+        pl.col(DP.ESTIMATE_USING_MEAN).filter(is_last_year).first().over(DP.LA_AREA)
+    )
 
     before_first = pl.col(DP.YEAR_AS_INTEGER) < pl.col(DP.FIRST_YEAR_WITH_DATA)
     after_last = pl.col(DP.YEAR_AS_INTEGER) > pl.col(DP.LAST_YEAR_WITH_DATA)
