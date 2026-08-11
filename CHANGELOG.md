@@ -72,6 +72,8 @@ All notable changes to this project will be documented in this file.
 - Reworked `reduce_to_published_roles` in the SLV prepare job to derive which raw ASC-WDS job role codes are published versus fold into an 'other' group from the team's own `PublishedJobRoleLabels`/job-group definitions, instead of a hand-maintained mapping dict that needed manual upkeep whenever ASC-WDS's raw job role codes changed.
 
 ### Improved
+- Replaced groupby-agg-explode-join broadcasts with `.over()` in the job role imputation utils, reducing peak memory in the Estimate Filled Posts by Job Role imputation step. The frame is now explicitly sorted by location, job role, and date beforehand, so imputed ratios broadcast onto the correct rows regardless of source row order.
+
 - Reduced CircleCI credit usage by removing `no-cache = true` from all `docker-bake.hcl` image targets, so the already-enabled Docker layer caching actually takes effect instead of every image rebuilding from scratch on every push.
 
 - Added dependency caching (`uv` and Spark/Ivy JARs, keyed on `uv.lock`) to the CircleCI `test` job, saving ~10-13s per run on the `install dependencies` and `Fetch Spark JARs` steps versus no caching at all, measured directly across cache-hit and forced cache-miss runs including restore/save overhead.
