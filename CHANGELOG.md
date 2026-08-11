@@ -33,6 +33,8 @@ All notable changes to this project will be documented in this file.
 - Added `reshape_job_role_cols_to_rows` to the SLV prepare job, reshaping wide per-job-role columns into one row per establishment/date/job-role label, wired in after job-role relabelling; updated the merge step and prepare validation to match the new long-format output.
 
 ### Changed
+- Increased the `cqc-api` Fargate task's resources from 8 vCPU/60GB to 16 vCPU/64GB to fix OOM errors in `cqc_locations_4_full_clean.py`.
+
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
 
 - Updated polars to 1.41.2 and pointblank to 0.24.0, and reworked `split_dataset_for_imputation` to use a semi/anti join instead of an `.over()`-based window filter, avoiding both a polars optimiser crash on the newer version and reducing peak memory under the streaming engine. Fargate Docker requirements are now split between a shared `docker_requirements/requirements.txt` for deps common to every project and small per-project `requirements-extra.txt` files for the two projects with additional deps (cqc_api; _04_model), instead of one shared file installing every project's deps everywhere.
