@@ -1,4 +1,3 @@
-import unittest
 from dataclasses import dataclass
 from unittest.mock import ANY, Mock, patch
 
@@ -20,7 +19,7 @@ PATCH_PATH = (
 )
 
 
-class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
+class TestImputeIndCqcAscwdsAndPir:
     TEST_CLEANED_IND_CQC_DATA_SOURCE = "some/directory"
     TEST_DESTINATION = "some/other/directory"
 
@@ -28,6 +27,8 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.utils.nullify_ct_values_previous_to_first_submission")
+    @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
+    @patch(f"{PATCH_PATH}.calculate_rolling_average")
     @patch(f"{PATCH_PATH}.model_imputation")
     @patch(f"{PATCH_PATH}.merge_ascwds_and_pir_filled_post_submissions")
     @patch(f"{PATCH_PATH}.convert_pir_to_filled_posts")
@@ -44,6 +45,8 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
         convert_pir_to_filled_posts_mock: Mock,
         merge_ascwds_and_pir_filled_post_submissions_mock: Mock,
         model_imputation_mock: Mock,
+        calculate_rolling_average_mock: Mock,
+        create_banded_bed_count_column_mock: Mock,
         nullify_ct_values_previous_to_first_submission_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -54,12 +57,14 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
         )
 
         scan_parquet_mock.assert_called_once()
-        self.assertEqual(forward_fill_latest_known_value_mock.call_count, 2)
+        assert forward_fill_latest_known_value_mock.call_count == 2
         calculate_filled_posts_per_bed_ratio_mock.assert_called_once()
-        self.assertEqual(model_roc_trendline_mock.call_count, 2)
+        assert model_roc_trendline_mock.call_count == 2
         convert_pir_to_filled_posts_mock.assert_called_once()
         merge_ascwds_and_pir_filled_post_submissions_mock.assert_called_once()
-        self.assertEqual(model_imputation_mock.call_count, 4)
+        assert model_imputation_mock.call_count == 4
+        assert calculate_rolling_average_mock.call_count == 2
+        create_banded_bed_count_column_mock.assert_called_once()
         nullify_ct_values_previous_to_first_submission_mock.assert_called_once()
         sink_to_parquet_mock.assert_called_once_with(
             ANY,
