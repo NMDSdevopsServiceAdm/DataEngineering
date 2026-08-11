@@ -23,7 +23,6 @@ dependencies = [
     "scikit-learn==1.7.1",
     "urllib3==2.5.0",
     "css-inline==0.17.0",
-    "psutil>=7.2.2",
 ]
 
 [project.scripts]
