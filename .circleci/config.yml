@@ -119,6 +119,13 @@ jobs:
                   # makes this job expensive, so halting after it saves nothing.
                   # Tests the content, not the file size -- an empty result is
                   # still a one byte file thanks to the trailing newline.
+                  # The missing-file branch can't fire today -- select_targets
+                  # is only true here in the dev workflow, which hard-requires
+                  # decide-images, so the workspace always has this file on
+                  # success. Kept as a defensive fallback for if select_targets
+                  # is ever wired up without that requirement: building
+                  # everything is a safer failure mode than silently building
+                  # nothing.
                   if [ ! -f /tmp/bake/targets ]; then
                     echo "No target list found. Building every target."
                   elif [ -z "$(cat /tmp/bake/targets)" ]; then

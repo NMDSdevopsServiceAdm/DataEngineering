@@ -206,6 +206,11 @@ class TestParseCopySources:
 
         assert sources == ["first.py", "second.py"]
 
+    def test_returns_every_source_from_a_line_continued_copy(self):
+        sources = job.parse_copy_sources("COPY first.py \\\n    second.py /app/\n")
+
+        assert sources == ["first.py", "second.py"]
+
     def test_ignores_copy_flags(self):
         sources = job.parse_copy_sources("COPY --from=builder /out /app/out\n")
 

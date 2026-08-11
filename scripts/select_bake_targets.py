@@ -351,7 +351,7 @@ def changed_paths_since(diff_base: str, repo_root: Path) -> list[str]:
         check=True,
     )
 
-    return completed.stdout.split()
+    return completed.stdout.splitlines()
 
 
 def _log(message: str) -> None:
