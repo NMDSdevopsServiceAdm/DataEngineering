@@ -202,6 +202,8 @@ def calculate_rolling_average(
     production OOM: that combination keeps a per-window-function cache alive
     for the whole frame, and this pipeline's partition columns are low-cardinality
     (a handful of service types/bed bands), so each partition held millions of rows.
+    Investigating the memory usage of this functions during runtime showed it
+    increased by ~10GB per 5 seconds before reaching 60GB limit.
     This version narrows to only the columns the calculation needs, sorts
     (required for grouped rolling), computes the rolling mean via the native
     grouped-rolling API, then joins the small per-partition-per-date result back
