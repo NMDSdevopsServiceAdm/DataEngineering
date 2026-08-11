@@ -33,6 +33,8 @@ All notable changes to this project will be documented in this file.
 - Added `reshape_job_role_cols_to_rows` to the SLV prepare job, reshaping wide per-job-role columns into one row per establishment/date/job-role label, wired in after job-role relabelling; updated the merge step and prepare validation to match the new long-format output.
 
 ### Changed
+- Increased the `cqc-api` Fargate task's resources from 8 vCPU/60GB to 16 vCPU/64GB to fix OOM errors in `cqc_locations_4_full_clean.py`.
+
 - Changed how the ASC-WDS job role rolling ratio is built. It is now based on a temporary set of ratios which only carries a workplace's known job role split for up to two years beyond their submissions and only fills gaps of up to five years between them, rather than repeating it indefinitely, so the ratio reflects how the workforce actually changes over time. Each workplace now counts once regardless of size, so the ratio describes a typical workplace of that type rather than being dominated by the largest ones. These temporary ratios are saved alongside the rest of the output as `imputed_job_role_ratios_for_trendline`, so they can be checked in Athena if the rolling ratio ever looks wrong, but they are not used to produce any estimate. Job role estimates for workplaces which have submitted data are unaffected.
 
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
@@ -88,6 +90,8 @@ All notable changes to this project will be documented in this file.
 - Fixed Schema mismatch error while generating grouped providers output.
 
 - Added missing error notifications for the CQC/ASC-WDS orchestrator and crawler-refresh steps in three ingestion pipelines, and a bounded timeout for the ASC-WDS worker/workplace file-arrival polling loops.
+
+- Fixed a broken import in the shared ingestion utils that caused the ASC-WDS, Capacity Tracker, CQC PIR, and ONS PySpark Glue ingestion jobs to fail with `ModuleNotFoundError: No module named 'polars'`. Inlined the affected `split_s3_uri` helper instead of importing it, so this file no longer depends on PySpark/pydeequ either.
 
 ## [v2026.06.0] - 15/07/2026
 

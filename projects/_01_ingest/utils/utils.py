@@ -3,8 +3,6 @@ from typing import Any
 
 import boto3
 
-from polars_utils.utils import split_s3_uri
-
 TWO_MB = 2000000
 
 
@@ -117,6 +115,21 @@ def construct_s3_uri(bucket_name: str, key: str) -> str:
     """
     trimmed_bucket_name = bucket_name.strip()
     return f"s3://{trimmed_bucket_name}/{key}"
+
+
+# converted to polars -> polars_utils.utils.py
+def split_s3_uri(uri: str) -> tuple[str, str]:
+    """
+    Converts a given string of an s3 uri into its bucket and key names
+
+    Args:
+        uri (str): The s3 uri to be split.
+
+    Returns:
+        tuple[str, str]: A tuple of the bucket and key substrings from the s3 uri.
+    """
+    bucket, prefix = uri.replace("s3://", "").split("/", 1)
+    return bucket, prefix
 
 
 def construct_destination_path(destination: str, key: str) -> str:
