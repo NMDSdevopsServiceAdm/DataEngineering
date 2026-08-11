@@ -14,13 +14,23 @@ METRIC = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
 
 
 class TestRolesSharedByBothJobRoleTaxonomies:
-    def test_contains_every_role_common_to_both_taxonomies_and_nothing_else(self):
-        granular_roles = set(CatColType.JobRoleEnumType.categories)
-        published_roles = set(CatColType.PublishedJobRoleLabelEnumType.categories)
+    all_job_roles = set(CatColType.JobRoleEnumType.categories)
+    published_roles = set(CatColType.PublishedJobRoleLabelEnumType.categories)
 
-        for role in granular_roles | published_roles:
-            is_in_both = role in granular_roles and role in published_roles
+    def test_contains_every_role_common_to_both_taxonomies_and_nothing_else(self):
+        for role in self.all_job_roles | self.published_roles:
+            is_in_both = role in self.all_job_roles and role in self.published_roles
             assert (role in job.ROLES_SHARED_BY_BOTH_JOB_ROLE_TAXONOMIES) == is_in_both
+
+    def test_length_is_less_than_all_job_roles(self):
+        assert len(job.ROLES_SHARED_BY_BOTH_JOB_ROLE_TAXONOMIES) < len(
+            self.all_job_roles
+        )
+
+    def test_length_is_less_than_published_roles(self):
+        assert len(job.ROLES_SHARED_BY_BOTH_JOB_ROLE_TAXONOMIES) < len(
+            self.published_roles
+        )
 
 
 class TestCollapseJobRoleEstimatesToPublishedLabels:
