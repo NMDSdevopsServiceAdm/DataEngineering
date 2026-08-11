@@ -14,7 +14,6 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.mUtils.apply_employment_status_magic_numbers")
-    @patch(f"{PATCH_PATH}.mUtils.join_datasets")
     @patch(f"{PATCH_PATH}.pl.scan_csv")
     @patch(f"{PATCH_PATH}.mUtils.collapse_job_role_estimates_to_published_labels")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
@@ -23,7 +22,6 @@ class TestMain:
         scan_parquet_mock: Mock,
         collapse_job_role_estimates_to_published_labels_mock: Mock,
         scan_csv_mock: Mock,
-        join_datasets_mock: Mock,
         apply_employment_status_magic_numbers_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -49,7 +47,6 @@ class TestMain:
         )
 
         collapse_job_role_estimates_to_published_labels_mock.assert_called_once()
-        join_datasets_mock.assert_called_once()
 
         # TODO: Uncomment when the placeholder function is implemented
         # apply_employment_status_magic_numbers_mock.assert_called_once()
