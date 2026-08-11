@@ -67,6 +67,8 @@ All notable changes to this project will be documented in this file.
 
 - Reworked `reduce_to_published_roles` in the SLV prepare job to derive which raw ASC-WDS job role codes are published versus fold into an 'other' group from the team's own `PublishedJobRoleLabels`/job-group definitions, instead of a hand-maintained mapping dict that needed manual upkeep whenever ASC-WDS's raw job role codes changed.
 
+- Consolidated the file/S3-path helper functions duplicated across `utils/utils.py`, `polars_utils/utils.py`, and `projects/_01_ingest/utils/utils.py` (including three copies of `split_s3_uri`) into a single dependency-light `utils/file_utils.py`, importable by both PySpark and Polars code without pulling in the other framework. Updated every consumer to import from the new module, deleted the now-empty `projects/_01_ingest/utils/utils.py`, and added the missing Dockerfile `COPY utils/file_utils.py` to every Fargate image that depends on it via `polars_utils`.
+
 ### Improved
 - Reduced CircleCI credit usage by removing `no-cache = true` from all `docker-bake.hcl` image targets, so the already-enabled Docker layer caching actually takes effect instead of every image rebuilding from scratch on every push.
 
