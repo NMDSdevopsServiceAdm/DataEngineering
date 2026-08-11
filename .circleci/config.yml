@@ -125,8 +125,7 @@ jobs:
                     echo "No docker build context changed and every image is already in ECR. Skipping build."
                     circleci-agent step halt
                   fi
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
       - aws-cli/setup:
           role_arn: $AWS_ROLE_ARN
           region: $AWS_REGION
