@@ -10,23 +10,16 @@ from utils.column_values.categorical_column_values import (
 
 # Roles that exist under the same name in both job-role taxonomies in play here: the
 # 37-category scheme job_role_estimates_lf.main_job_role_clean_labelled uses
-# (EstimatedIndCQCFilledPostsByJobRoleCategoricalValues) and the 15-category published
-# scheme cleaned_ascwds_workplace_lf.job_role_label uses (SLVPrepareCategoricalValues).
-# Every other granular role has no equivalent in the published scheme and must be
+# (CatColType.JobRoleEnumType) and the 15-category published scheme
+# cleaned_ascwds_workplace_lf.job_role_label uses (CatColType.PublishedJobRoleLabelEnumType).
+# Derived from the two Enums' own category lists (rather than hand-maintained) so this
+# stays correct if either taxonomy changes - mirrors how
+# prepare_utils.reduce_to_published_roles derives its own published/unpublished split.
+# Every role outside this overlap has no equivalent in the published scheme and must be
 # bucketed into one of the 4 'other_*' groups instead.
-ROLES_SHARED_BY_BOTH_JOB_ROLE_TAXONOMIES = {
-    PublishedJobRoleLabels.allied_health_professional,
-    PublishedJobRoleLabels.care_worker,
-    PublishedJobRoleLabels.community_support_and_outreach,
-    PublishedJobRoleLabels.deputy_manager,
-    PublishedJobRoleLabels.occupational_therapist,
-    PublishedJobRoleLabels.registered_manager,
-    PublishedJobRoleLabels.registered_nurse,
-    PublishedJobRoleLabels.senior_care_worker,
-    PublishedJobRoleLabels.senior_management,
-    PublishedJobRoleLabels.social_worker,
-    PublishedJobRoleLabels.support_worker,
-}
+ROLES_SHARED_BY_BOTH_JOB_ROLE_TAXONOMIES = set(
+    CatColType.JobRoleEnumType.categories
+) & set(CatColType.PublishedJobRoleLabelEnumType.categories)
 
 
 def collapse_job_role_estimates_to_published_labels(

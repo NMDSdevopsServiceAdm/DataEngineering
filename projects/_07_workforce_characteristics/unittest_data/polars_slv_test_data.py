@@ -395,14 +395,6 @@ class CollapseJobRoleEstimatesToPublishedLabelsTestCase:
     expected_data: dict[str, Any]
 
 
-@dataclass
-class JoinDatasetsTestCase:
-    id: str
-    job_role_estimates_data: dict[str, Any]
-    cleaned_ascwds_workplace_data: dict[str, Any]
-    expected_data: dict[str, Any]
-
-
 METRIC = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
 
 

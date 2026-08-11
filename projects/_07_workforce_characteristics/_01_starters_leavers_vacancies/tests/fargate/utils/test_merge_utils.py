@@ -10,16 +10,17 @@ from projects._07_workforce_characteristics.unittest_data.polars_slv_test_data i
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
-PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.merge_utils"
-
 METRIC = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
 
-SLV_METRIC_COLUMNS = [
-    SLVCols.employees,
-    SLVCols.starters,
-    SLVCols.leavers,
-    SLVCols.vacancies,
-]
+
+class TestRolesSharedByBothJobRoleTaxonomies:
+    def test_contains_every_role_common_to_both_taxonomies_and_nothing_else(self):
+        granular_roles = set(CatColType.JobRoleEnumType.categories)
+        published_roles = set(CatColType.PublishedJobRoleLabelEnumType.categories)
+
+        for role in granular_roles | published_roles:
+            is_in_both = role in granular_roles and role in published_roles
+            assert (role in job.ROLES_SHARED_BY_BOTH_JOB_ROLE_TAXONOMIES) == is_in_both
 
 
 class TestCollapseJobRoleEstimatesToPublishedLabels:
