@@ -14,14 +14,14 @@ class TestMain:
 
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.mUtils.apply_employment_status_magic_numbers")
-    @patch(f"{PATCH_PATH}.mUtils.join_datasets")
     @patch(f"{PATCH_PATH}.pl.scan_csv")
+    @patch(f"{PATCH_PATH}.mUtils.collapse_job_role_estimates_to_published_labels")
     @patch(f"{PATCH_PATH}.utils.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
+        collapse_job_role_estimates_to_published_labels_mock: Mock,
         scan_csv_mock: Mock,
-        join_datasets_mock: Mock,
         apply_employment_status_magic_numbers_mock: Mock,
         sink_to_parquet_mock: Mock,
     ):
@@ -42,10 +42,13 @@ class TestMain:
             source=self.JOB_ROLE_ESTIMATES_SOURCE,
             selected_columns=job.job_role_estimates_columns,
         )
-        scan_parquet_mock.assert_any_call(self.PREPARED_SLV_DATASET_SOURCE)
+        scan_parquet_mock.assert_any_call(
+            self.PREPARED_SLV_DATASET_SOURCE, selected_columns=job.workplace_columns
+        )
 
-        # TODO: Uncomment these assertions when the placeholder functions are implemented
-        # join_datasets_mock.assert_called_once()
+        collapse_job_role_estimates_to_published_labels_mock.assert_called_once()
+
+        # TODO: Uncomment when the placeholder function is implemented
         # apply_employment_status_magic_numbers_mock.assert_called_once()
 
         scan_csv_mock.assert_called_once_with(

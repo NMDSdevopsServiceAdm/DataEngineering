@@ -32,6 +32,8 @@ All notable changes to this project will be documented in this file.
 
 - Added `reshape_job_role_cols_to_rows` to the SLV prepare job, reshaping wide per-job-role columns into one row per establishment/date/job-role label, wired in after job-role relabelling; updated the merge step and prepare validation to match the new long-format output.
 
+- Joined employees/starters/leavers/vacancies onto the job role estimates in the SLV merge job. Since the two datasets use different job-role taxonomies (37 granular ASC-WDS roles vs. 15 published roles), job role estimates are first collapsed onto the published roles before joining. Updated the merge validation's expected row count to account for the collapse.
+
 ### Changed
 - Increased the `cqc-api` Fargate task's resources from 8 vCPU/60GB to 16 vCPU/64GB to fix OOM errors in `cqc_locations_4_full_clean.py`.
 
