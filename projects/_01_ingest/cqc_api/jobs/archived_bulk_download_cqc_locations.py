@@ -7,7 +7,7 @@ os.environ["SPARK_VERSION"] = "3.5"
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 from schemas.cqc_location_schema import LOCATION_SCHEMA
 from utils import aws_secrets_manager_utilities as ars
-from utils import utils
+from utils import file_utils, utils
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as ColNames,
 )
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         ),
     )
     todays_date = date.today()
-    destination = utils.generate_s3_datasets_dir_date_path(
+    destination = file_utils.generate_s3_dir(
         destination_prefix=destination_prefix,
         domain="CQC",
         dataset="locations_api",

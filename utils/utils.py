@@ -34,23 +34,6 @@ class SetupSpark(object):
 get_spark = SetupSpark()
 
 
-def generate_s3_datasets_dir_date_path(
-    destination_prefix,
-    domain,
-    dataset,
-    date,
-    version="1.0.0",
-):
-    # A refactored version of this function, using Polars rather than PySpark, is available in polars_utils/utils.py
-    year = f"{date.year}"
-    month = f"{date.month:02d}"
-    day = f"{date.day:02d}"
-    import_date = year + month + day
-    output_dir = f"{destination_prefix}/domain={domain}/dataset={dataset}/version={version}/year={year}/month={month}/day={day}/import_date={import_date}/"
-    print(f"Generated output s3 dir: {output_dir}")
-    return output_dir
-
-
 def read_from_parquet(
     data_source: str,
     selected_columns: List[str] = None,
@@ -115,12 +98,6 @@ def format_date_fields(df, date_column_identifier="date", raw_date_format=None):
             df = df.withColumn(date_column, F.to_date(date_column, raw_date_format))
 
     return df
-
-
-# converted to polars -> polars_utils.utils.py
-def split_s3_uri(uri):
-    bucket, prefix = uri.replace("s3://", "").split("/", 1)
-    return bucket, prefix
 
 
 def create_unix_timestamp_variable_from_date_column(
