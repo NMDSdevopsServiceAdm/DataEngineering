@@ -67,8 +67,8 @@ All notable changes to this project will be documented in this file.
 
 - Reworked `reduce_to_published_roles` in the SLV prepare job to derive which raw ASC-WDS job role codes are published versus fold into an 'other' group from the team's own `PublishedJobRoleLabels`/job-group definitions, instead of a hand-maintained mapping dict that needed manual upkeep whenever ASC-WDS's raw job role codes changed.
 
-- Uncommented remaining function in polars imputation. This caused oom error when calling calculate_rolling_average
-  specifically, therefore refactored that function to use agg() instead of over().
+- Refactored calculate_rolling_average to be more memory efficient. Calls to the function are still commented out.
+  I've prepared the calls for being uncommented and the patch/mock tests, and removed unittest dependency in the tests.
 
 ### Improved
 - Reduced CircleCI credit usage by removing `no-cache = true` from all `docker-bake.hcl` image targets, so the already-enabled Docker layer caching actually takes effect instead of every image rebuilding from scratch on every push.
