@@ -32,7 +32,11 @@ All notable changes to this project will be documented in this file.
 
 - Added `reshape_job_role_cols_to_rows` to the SLV prepare job, reshaping wide per-job-role columns into one row per establishment/date/job-role label, wired in after job-role relabelling; updated the merge step and prepare validation to match the new long-format output.
 
+- Joined employees/starters/leavers/vacancies onto the job role estimates in the SLV merge job. Since the two datasets use different job-role taxonomies (37 granular ASC-WDS roles vs. 15 published roles), job role estimates are first collapsed onto the published roles before joining. Updated the merge validation's expected row count to account for the collapse.
+
 ### Changed
+- Increased the `cqc-api` Fargate task's resources from 8 vCPU/60GB to 16 vCPU/64GB to fix OOM errors in `cqc_locations_4_full_clean.py`.
+
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
 
 - Updated polars to 1.41.2 and pointblank to 0.24.0, and reworked `split_dataset_for_imputation` to use a semi/anti join instead of an `.over()`-based window filter, avoiding both a polars optimiser crash on the newer version and reducing peak memory under the streaming engine. Fargate Docker requirements are now split between a shared `docker_requirements/requirements.txt` for deps common to every project and small per-project `requirements-extra.txt` files for the two projects with additional deps (cqc_api; _04_model), instead of one shared file installing every project's deps everywhere.
@@ -69,7 +73,14 @@ All notable changes to this project will be documented in this file.
 
 - Consolidated the file/S3-path helper functions duplicated across `utils/utils.py`, `polars_utils/utils.py`, and `projects/_01_ingest/utils/utils.py` (including three copies of `split_s3_uri`) into a single dependency-light `utils/file_utils.py`, importable by both PySpark and Polars code without pulling in the other framework. Updated every consumer to import from the new module, deleted the now-empty `projects/_01_ingest/utils/utils.py`, and added the missing Dockerfile `COPY utils/file_utils.py` to every Fargate image that depends on it via `polars_utils`.
 
+- Completed the Polars migration of functions within `estimate_ind_cqc_filled_posts.py`.
+
+- Refactored calculate_rolling_average to be more memory efficient. Calls to the function are still commented out.
+  I've prepared the calls for being uncommented and the patch/mock tests, and removed unittest dependency in the tests.
+
 ### Improved
+- Replaced groupby-agg-explode-join broadcasts with `.over()` in the job role imputation utils, reducing peak memory in the Estimate Filled Posts by Job Role imputation step. The frame is now explicitly sorted by location, job role, and date beforehand, so imputed ratios broadcast onto the correct rows regardless of source row order.
+
 - Reduced CircleCI credit usage by removing `no-cache = true` from all `docker-bake.hcl` image targets, so the already-enabled Docker layer caching actually takes effect instead of every image rebuilding from scratch on every push.
 
 - Added dependency caching (`uv` and Spark/Ivy JARs, keyed on `uv.lock`) to the CircleCI `test` job, saving ~10-13s per run on the `install dependencies` and `Fetch Spark JARs` steps versus no caching at all, measured directly across cache-hit and forced cache-miss runs including restore/save overhead.

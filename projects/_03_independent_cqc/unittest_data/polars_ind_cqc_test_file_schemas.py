@@ -777,6 +777,35 @@ class ImputeIndCqcAscwdsAndPirSchema:
         ]
     )
 
+    expected_multiple_partition_columns_rolling_average_schema = pl.Schema(
+        [
+            (IndCQC.primary_service_type, pl.String()),
+            (IndCQC.number_of_beds_banded_for_rolling_avg, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.imputed_filled_post_model, pl.Float64()),
+            (IndCQC.posts_rolling_average_model, pl.Float64()),
+        ]
+    )
+
+    expected_rolling_average_with_null_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.posts_rolling_average_model, pl.Float64()),
+        ]
+    )
+
+    expected_rolling_average_preserves_other_columns_schema = pl.Schema(
+        [
+            (IndCQC.location_id, pl.String()),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.cqc_sector, pl.String()),
+            (IndCQC.ascwds_filled_posts_dedup_clean, pl.Float64()),
+            (IndCQC.posts_rolling_average_model, pl.Float64()),
+        ]
+    )
+
 
 @dataclass
 class ArchiveFilledPostsEstimates:
@@ -1263,6 +1292,12 @@ class NullLongitudinalOutliersSchema:
 
 @dataclass
 class EstimateFilledPostsModelsUtils:
+    set_min_value_schema = pl.Schema(
+        {
+            IndCQC.prediction: pl.Float64,
+        }
+    )
+
     enrich_model_ind_cqc_schema = pl.Schema(
         {
             IndCQC.location_id: pl.String,
