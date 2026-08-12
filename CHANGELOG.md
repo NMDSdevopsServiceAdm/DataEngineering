@@ -76,6 +76,8 @@ All notable changes to this project will be documented in this file.
 - Refactored calculate_rolling_average to be more memory efficient. Calls to the function are still commented out.
   I've prepared the calls for being uncommented and the patch/mock tests, and removed unittest dependency in the tests.
 
+- Renamed the SLV pipeline's `job_role_label` column to `published_job_role_label`, to make explicit that it only ever holds canonical published job role labels.
+
 ### Improved
 - Replaced groupby-agg-explode-join broadcasts with `.over()` in the job role imputation utils, reducing peak memory in the Estimate Filled Posts by Job Role imputation step. The frame is now explicitly sorted by location, job role, and date beforehand, so imputed ratios broadcast onto the correct rows regardless of source row order.
 
