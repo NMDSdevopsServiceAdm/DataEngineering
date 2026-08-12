@@ -533,6 +533,18 @@ class ValidationUtilsData:
             primary_service_type=PrimaryServiceType.non_residential,
             expected=False,
         ),
+        CareHomeMatchesPrimaryServiceTypeTestCase(
+            id="not_care_home_and_care_home_with_nursing_is_invalid",
+            care_home=CareHome.not_care_home,
+            primary_service_type=PrimaryServiceType.care_home_with_nursing,
+            expected=False,
+        ),
+        CareHomeMatchesPrimaryServiceTypeTestCase(
+            id="not_care_home_and_care_home_only_is_invalid",
+            care_home=CareHome.not_care_home,
+            primary_service_type=PrimaryServiceType.care_home_only,
+            expected=False,
+        ),
     ]
 
     shared_lives_services_offered_test_cases = [
@@ -611,6 +623,15 @@ class ValidationUtilsData:
             services_offered=[
                 Services.care_home_service_without_nursing,
                 Services.care_home_service_with_nursing,
+            ],
+            expected=False,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="invalid_when_services_offered_also_contains_shared_lives",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_only,
+            services_offered=[
+                Services.care_home_service_without_nursing,
+                Services.shared_lives,
             ],
             expected=False,
         ),
