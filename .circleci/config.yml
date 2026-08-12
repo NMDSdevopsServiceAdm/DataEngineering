@@ -32,17 +32,11 @@ commands:
         type: string
         default: ""
         description: >
-          Only needed when CIRCLE_BRANCH isn't set the normal way (e.g.
-          terraform-destroy, which runs off a GitHub delete webhook via
-          pipeline parameters instead of a real push). Passed through this
-          step's environment: key rather than spliced into the command
-          text -- pipeline parameters can hold arbitrary characters (a
-          branch name can contain ", $(), even ;), and CircleCI's <<...>>
-          templating is a raw compile-time text substitution, so splicing
-          an attacker-influenceable value directly into a shell command
-          string is a command-injection risk. environment: sets it as
-          literal env-var data instead, which the shell can only read, not
-          re-parse as syntax.
+          Only needed when CIRCLE_BRANCH isn't set normally (e.g.
+          terraform-destroy, driven by a GitHub delete webhook). Passed via
+          this step's environment: key rather than spliced into command:
+          text -- pipeline parameters can contain shell metacharacters, and
+          environment: values are never re-parsed as shell syntax.
     steps:
       - run:
           name: Compute sanitised branch name
@@ -71,15 +65,13 @@ commands:
 
 
 jobs:
-  # Works out which docker-bake targets this push actually needs, so
-  # task-containerisation can skip the expensive remote-docker setup entirely
-  # when nothing relevant changed. Deliberately a separate job: the docker:latest
-  # executor has no python, and this keeps the costly executor off the skip path.
+  # Works out which docker-bake targets this push needs, so
+  # task-containerisation can skip setup_remote_docker entirely when nothing
+  # changed. Separate job because docker:latest has no python.
   decide-images:
     docker:
-      # cimg rather than the uv image the lint jobs use: this job shells out to
-      # git, and the uv image has no git binary. The script only needs boto3, so
-      # there's nothing to gain from the project's full environment either.
+      # cimg over the lint jobs' uv image: this job needs git, which that
+      # image lacks, and only needs boto3 so the fuller env buys nothing.
       - image: cimg/python:3.11.12
     resource_class: small
     environment:
@@ -145,17 +137,11 @@ jobs:
             - run:
                 name: Skip build if no image needs rebuilding
                 command: |
-                  # Must run before setup_remote_docker -- that step is what
-                  # makes this job expensive, so halting after it saves nothing.
-                  # Tests the content, not the file size -- an empty result is
-                  # still a one byte file thanks to the trailing newline.
-                  # The missing-file branch can't fire today -- select_targets
-                  # is only true here in the dev workflow, which hard-requires
-                  # decide-images, so the workspace always has this file on
-                  # success. Kept as a defensive fallback for if select_targets
-                  # is ever wired up without that requirement: building
-                  # everything is a safer failure mode than silently building
-                  # nothing.
+                  # Must run before setup_remote_docker, or halting saves nothing.
+                  # Checks content not size -- an empty result is still 1 byte.
+                  # Missing-file case can't fire today (decide-images is a hard
+                  # requirement here) -- kept as a defensive fallback that builds
+                  # everything rather than silently building nothing.
                   if [ ! -f /tmp/bake/targets ]; then
                     echo "No target list found. Building every target."
                   elif [ -z "$(cat /tmp/bake/targets)" ]; then
@@ -430,9 +416,8 @@ jobs:
       - aws-cli/setup:
           role_arn: $AWS_ROLE_ARN
           region: $AWS_REGION
-      # This job runs off a GitHub Actions delete webhook via pipeline
-      # parameters, not a normal branch push, so CIRCLE_BRANCH isn't set the
-      # usual way -- GHA_Meta carries the branch name instead.
+      # Runs off a GitHub delete webhook via pipeline parameters, not a
+      # normal push, so CIRCLE_BRANCH isn't set -- GHA_Meta carries it instead.
       - export_sanitised_branch:
           branch_override: << pipeline.parameters.GHA_Meta >>
       - run:
