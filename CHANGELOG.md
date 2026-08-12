@@ -86,6 +86,8 @@ All notable changes to this project will be documented in this file.
 
 - Changed return_last_known_value to use .over() instead of filter > group-by > agg > join
 
+- Cast `care_home`, `dormancy`, `cqc_sector`, `primary_service_type`, `primary_service_type_second_level`, `current_rural_urban_ind_11` and the contemporary/current geography columns (region, CSSR, sub ICB, ICB, ICB region) to `Categorical`/`Enum` in the IND CQC merge job, so every downstream IND CQC pipeline stage inherits the narrower dtype regardless of which engine cleaned the original source. Added the corresponding named dtype constants to `polars_utils/column_types.py`.
+
 ### Fixed
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
 

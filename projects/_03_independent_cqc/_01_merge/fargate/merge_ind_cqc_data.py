@@ -1,6 +1,7 @@
 import polars as pl
 
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._03_independent_cqc._01_merge.fargate.utils.merge_utils import (
     join_data_into_cqc_lf,
 )
@@ -91,6 +92,26 @@ cleaned_ct_care_home_columns_to_import = [
     CTCHClean.ct_care_home_total_employed,
 ]
 
+# Cast low-cardinality columns to Categorical/Enum here so the narrower dtype
+# survives into every downstream IND CQC pipeline stage, regardless of which
+# engine (PySpark or Polars) cleaned the original source.
+columns_to_cast_to_categorical_or_enum = {
+    CQCLClean.care_home: CatColType.CareHomeEnumType,
+    CQCLClean.dormancy: CatColType.DormancyEnumType,
+    CQCLClean.cqc_sector: CatColType.CqcSectorEnumType,
+    CQCLClean.primary_service_type: CatColType.PrimaryServiceEnumType,
+    CQCLClean.primary_service_type_second_level: CatColType.PrimaryServiceTypeSecondLevelEnumType,
+    ONSClean.current_rural_urban_ind_11: CatColType.CurrentRuralUrbanInd11EnumType,
+    ONSClean.contemporary_region: CatColType.ContemporaryRegionCatType,
+    ONSClean.contemporary_cssr: CatColType.ContemporaryCssrCatType,
+    ONSClean.contemporary_sub_icb: CatColType.ContemporarySubIcbCatType,
+    ONSClean.contemporary_icb: CatColType.ContemporaryIcbCatType,
+    ONSClean.contemporary_icb_region: CatColType.ContemporaryIcbRegionCatType,
+    ONSClean.current_region: CatColType.CurrentRegionCatType,
+    ONSClean.current_cssr: CatColType.CurrentCssrCatType,
+    ONSClean.current_icb: CatColType.CurrentIcbCatType,
+}
+
 
 def main(
     cleaned_cqc_location_source: str,
@@ -179,6 +200,10 @@ def main(
         CTCHClean.care_home,
     )
     print("Cleaned capacity tracker care home LazyFrame joined in")
+
+    independent_cqc_lf = independent_cqc_lf.with_columns(
+        utils.cast_to_schema(columns_to_cast_to_categorical_or_enum)
+    )
 
     utils.sink_to_parquet(
         independent_cqc_lf,
