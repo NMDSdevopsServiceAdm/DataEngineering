@@ -71,6 +71,9 @@ All notable changes to this project will be documented in this file.
 
 - Completed the Polars migration of functions within `estimate_ind_cqc_filled_posts.py`.
 
+- Refactored calculate_rolling_average to be more memory efficient. Calls to the function are still commented out.
+  I've prepared the calls for being uncommented and the patch/mock tests, and removed unittest dependency in the tests.
+
 ### Improved
 - Replaced groupby-agg-explode-join broadcasts with `.over()` in the job role imputation utils, reducing peak memory in the Estimate Filled Posts by Job Role imputation step. The frame is now explicitly sorted by location, job role, and date beforehand, so imputed ratios broadcast onto the correct rows regardless of source row order.
 

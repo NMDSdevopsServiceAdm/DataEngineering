@@ -803,6 +803,24 @@ class ImputeIndCqcAscwdsAndPirData:
         ("1-002", date(2023, 1, 5), 30.0, 25.0),
     ]
 
+    expected_multiple_partition_columns_rolling_average_rows = [
+        ("Care home with nursing", "0", date(2023, 1, 1), 10.0, 10.0),
+        ("Care home with nursing", "0", date(2023, 1, 2), 20.0, 15.0),
+        ("Care home with nursing", "1", date(2023, 1, 1), 100.0, 100.0),
+        ("Care home with nursing", "1", date(2023, 1, 2), 200.0, 150.0),
+    ]
+
+    expected_rolling_average_with_null_rows = [
+        ("1-001", date(2023, 1, 1), 10.0, 10.0),
+        ("1-001", date(2023, 1, 2), None, 10.0),
+        ("1-001", date(2023, 1, 3), 20.0, 15.0),
+    ]
+
+    expected_rolling_average_preserves_other_columns_rows = [
+        ("1-001", date(2023, 1, 1), "South East", 10.0, 10.0),
+        ("1-001", date(2023, 1, 2), "South East", 20.0, 15.0),
+    ]
+
 
 @dataclass
 class ArchiveFilledPostsEstimates:
