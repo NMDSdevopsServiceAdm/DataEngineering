@@ -4,9 +4,13 @@ from datetime import date
 from unittest.mock import Mock, call, patch
 
 import polars as pl
+import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_03_impute as job
 from polars_utils.column_types import CategoricalColumnTypes
+from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
+    SumRollingRatiosAcrossJobRolesData as Data,
+)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.validate_03_impute"
@@ -173,48 +177,23 @@ class TestSumRollingRatiosAcrossJobRoles:
         IndCqcColumns.ascwds_job_role_rolling_ratio: pl.Float32,
     }
 
-    def totals_for(self, rows: list[tuple]) -> list:
+    @pytest.mark.parametrize(
+        "rows,expected_totals",
+        [
+            case.as_pytest_param()
+            for case in Data.sum_rolling_ratios_across_job_roles_test_cases
+        ],
+    )
+    def test_totals_match_expected(self, rows, expected_totals):
         df = pl.DataFrame(rows, self.schema, orient="row")
-        return (
+
+        returned_totals = (
             job.sum_rolling_ratios_across_job_roles(df)
             .get_column(IndCqcColumns.ascwds_job_role_rolling_ratio)
             .to_list()
         )
 
-    def test_workplaces_sharing_a_group_are_counted_once(self):
-        # The total is per group, not per row.
-        rows = [
-            ("non-residential", "NR 1 to 24", date(2026, 1, 1), "care_worker", loc, 0.3)
-            for loc in ("1-001", "1-002")
-        ] + [
-            (
-                "non-residential",
-                "NR 1 to 24",
-                date(2026, 1, 1),
-                "registered_nurse",
-                loc,
-                0.7,
-            )
-            for loc in ("1-001", "1-002")
-        ]
-        assert self.totals_for(rows) == [1.0]
-
-    def test_job_roles_sharing_a_ratio_both_count(self):
-        # Deduplicating on the ratio would collapse these to 0.5.
-        rows = [
-            ("non-residential", "NR 1 to 24", date(2026, 1, 1), "care_worker", "1-001", 0.5),
-            ("non-residential", "NR 1 to 24", date(2026, 1, 1), "registered_nurse", "1-001", 0.5),
-        ]  # fmt: skip
-        assert self.totals_for(rows) == [1.0]
-
-    def test_groups_are_totalled_independently(self):
-        rows = [
-            ("non-residential", "NR 1 to 24", date(2026, 1, 1), "care_worker", "1-001", 0.4),
-            ("non-residential", "NR 1 to 24", date(2026, 1, 1), "registered_nurse", "1-001", 0.6),
-            ("non-residential", "NR 1 to 24", date(2026, 2, 1), "care_worker", "1-001", 0.2),
-            ("non-residential", "NR 1 to 24", date(2026, 2, 1), "registered_nurse", "1-001", 0.8),
-        ]  # fmt: skip
-        assert sorted(self.totals_for(rows)) == [1.0, 1.0]
+        assert sorted(returned_totals) == pytest.approx(sorted(expected_totals))
 
 
 if __name__ == "__main__":

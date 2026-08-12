@@ -2062,6 +2062,61 @@ class ImputeJobRoleData:
 
 
 @dataclass
+class SumRollingRatiosTestCase:
+    id: str
+    rows: list[tuple]
+    expected_totals: list[float]
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(self.rows, self.expected_totals, id=self.id)
+
+
+@dataclass
+class SumRollingRatiosAcrossJobRolesData:
+    sum_rolling_ratios_across_job_roles_test_cases = [
+        SumRollingRatiosTestCase(
+            id="workplaces_sharing_a_group_are_counted_once",
+            rows=[
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.care_worker,      "1-001", 0.3),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.care_worker,      "1-002", 0.3),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-001", 0.7),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-002", 0.7),
+            ],
+            expected_totals=[1.0],
+        ),
+        SumRollingRatiosTestCase(
+            id="job_roles_sharing_a_ratio_both_count",
+            rows=[
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.care_worker,      "1-001", 0.4),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-001", 0.6),
+            ],
+            expected_totals=[1.0],
+        ),
+        SumRollingRatiosTestCase(
+            id="groups_are_totalled_independently",
+            rows=[
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.care_worker,      "1-001", 0.4),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-001", 0.5),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 2), MainJobRoleLabels.care_worker,      "1-001", 0.2),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 2), MainJobRoleLabels.registered_nurse, "1-001", 0.5),
+            ],
+            expected_totals=[0.9, 0.7],
+        ),
+        SumRollingRatiosTestCase(
+            id="groups_differing_on_every_group_column_are_kept_separate",
+            rows=[
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.care_worker,      "1-001", 0.1),
+                (PrimaryServiceType.care_home_only,  "Group 1", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-001", 0.2),
+                (PrimaryServiceType.care_home_only,  "Group 2", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-001", 0.3),
+                (PrimaryServiceType.care_home_only,  "Group 2", date(2026, 1, 2), MainJobRoleLabels.registered_nurse, "1-001", 0.4),
+            ],
+            expected_totals=[0.1, 0.2, 0.3, 0.4],
+        ),
+    ]  # fmt: skip
+
+
+@dataclass
 class EstimateFilledPostsByJobRoleEstimateUtilsTestCases:
     id: str
     expected_data: list[tuple]
