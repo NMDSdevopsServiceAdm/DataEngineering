@@ -72,6 +72,8 @@ All notable changes to this project will be documented in this file.
 - Completed the Polars migration of functions within `estimate_ind_cqc_filled_posts.py`.
 
 ### Improved
+- Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum in the ASCWDS workplace and CQC locations/providers cleaning jobs, so every downstream consumer of that cleaned data inherits the narrower dtype instead of re-discovering it.
+
 - Replaced groupby-agg-explode-join broadcasts with `.over()` in the job role imputation utils, reducing peak memory in the Estimate Filled Posts by Job Role imputation step. The frame is now explicitly sorted by location, job role, and date beforehand, so imputed ratios broadcast onto the correct rows regardless of source row order.
 
 - Reduced CircleCI credit usage by removing `no-cache = true` from all `docker-bake.hcl` image targets, so the already-enabled Docker layer caching actually takes effect instead of every image rebuilding from scratch on every push.

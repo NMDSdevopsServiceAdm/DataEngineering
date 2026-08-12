@@ -21,10 +21,10 @@ from utils.column_values.categorical_column_values import (
     ContemporaryCSSR,
     EstimateFilledPostsSource,
     JobRoleFilteringRule,
-    PrimaryServiceType,
 )
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
+    LocationsApiCleanedCategoricalValues as CQCLocationCatVals,
     SLVPrepareCategoricalValues,
 )
 
@@ -427,30 +427,30 @@ class CategoricalColumnTypeCase:
 class ColumnTypesData:
     categorical_column_type_cases = [
         CategoricalColumnTypeCase(
-            id="location_cat_type_uses_filled_posts_namespace",
+            id="location_cat_type_uses_cqc_location_namespace",
             actual=CatColType.LocationCatType,
             expected=pl.Categorical(
-                pl.Categories("location", namespace="filled_posts")
+                pl.Categories("location", namespace="cqc_location")
             ),
         ),
         CategoricalColumnTypeCase(
-            id="establishment_cat_type_uses_filled_posts_namespace",
+            id="establishment_cat_type_uses_ascwds_workplace_namespace",
             actual=CatColType.EstablishmentCatType,
             expected=pl.Categorical(
-                pl.Categories("establishment", namespace="filled_posts")
+                pl.Categories("establishment", namespace="ascwds_workplace")
             ),
         ),
         CategoricalColumnTypeCase(
-            id="provider_cat_type_uses_filled_posts_namespace",
+            id="provider_cat_type_uses_cqc_location_namespace",
             actual=CatColType.ProviderCatType,
             expected=pl.Categorical(
-                pl.Categories("provider", namespace="filled_posts")
+                pl.Categories("provider", namespace="cqc_location")
             ),
         ),
         CategoricalColumnTypeCase(
-            id="brand_cat_type_uses_filled_posts_namespace",
+            id="brand_cat_type_uses_cqc_location_namespace",
             actual=CatColType.BrandCatType,
-            expected=pl.Categorical(pl.Categories("brand", namespace="filled_posts")),
+            expected=pl.Categorical(pl.Categories("brand", namespace="cqc_location")),
         ),
         CategoricalColumnTypeCase(
             id="job_role_enum_type_matches_main_job_role_labels_values",
@@ -492,11 +492,7 @@ class ColumnTypesData:
             id="primary_service_enum_type_covers_all_service_types",
             actual=CatColType.PrimaryServiceEnumType,
             expected=pl.Enum(
-                [
-                    PrimaryServiceType.care_home_only,
-                    PrimaryServiceType.care_home_with_nursing,
-                    PrimaryServiceType.non_residential,
-                ]
+                CQCLocationCatVals.primary_service_type_column_values.categorical_values
             ),
         ),
         CategoricalColumnTypeCase(
