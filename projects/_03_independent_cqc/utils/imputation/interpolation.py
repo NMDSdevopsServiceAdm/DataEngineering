@@ -53,7 +53,9 @@ def model_interpolation(
         )
 
     elif method == "straight":
-        lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
+        # order_by is required here: this used to rely on lf already being
+        # sorted by calculate_proportion_of_days_between_submissions, which
+        # no longer sorts the full frame (see its docstring).
         lf = lf.with_columns(
             (
                 pl.when(pl.col(column_with_null_values).is_not_null())
@@ -61,7 +63,7 @@ def model_interpolation(
                 .otherwise(None)
                 .shift(1)
                 .forward_fill()
-                .over(IndCqc.location_id)
+                .over(IndCqc.location_id, order_by=IndCqc.cqc_location_import_date)
             ).alias(IndCqc.previous_non_null_value)
         )
 
@@ -101,6 +103,11 @@ def calculate_residuals(
     specified columns, then backward fills the residual into rows where
     either of the specified columns are null.
 
+    The backward fill is ordered via `over(..., order_by=...)` rather than a
+    preceding `lf.sort(...)`, since `lf` can be ~70+ columns wide here and a
+    full-frame sort materialises the whole width; ordering within the window
+    function only touches the columns actually used.
+
     Args:
         lf (pl.LazyFrame): The input LazyFrame containing the data.
         first_column (str): The name of the first column that contains values.
@@ -110,14 +117,14 @@ def calculate_residuals(
         pl.LazyFrame: The LazyFrame with the calculated residuals in a new
             column.
     """
-    lf = lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
-
     residual_expr = pl.when(
         pl.col(first_column).is_not_null() & pl.col(second_column).is_not_null()
     ).then(pl.col(first_column) - pl.col(second_column))
 
     lf = lf.with_columns(
-        residual_expr.backward_fill().over(IndCqc.location_id).alias(IndCqc.residual)
+        residual_expr.backward_fill()
+        .over(IndCqc.location_id, order_by=IndCqc.cqc_location_import_date)
+        .alias(IndCqc.residual)
     )
     return lf
 
@@ -129,6 +136,11 @@ def calculate_proportion_of_days_between_submissions(
     Calculates the proportion of days between consecutive non-null values
     based on cqc_location_import_date.
 
+    The forward/backward fills are ordered via `over(..., order_by=...)`
+    rather than a preceding `lf.sort(...)`, since `lf` can be ~70+ columns
+    wide here and a full-frame sort materialises the whole width; ordering
+    within the window function only touches the columns actually used.
+
     Args:
         lf (pl.LazyFrame): The input LazyFrame containing the data.
         column_with_null_values (str): The name of the column that contains
@@ -139,12 +151,15 @@ def calculate_proportion_of_days_between_submissions(
             (days_between_submissions and proportion_of_days_between_submissions)
             added.
     """
-    lf = lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
     val_not_null_date = pl.when(pl.col(column_with_null_values).is_not_null()).then(
         pl.col(IndCqc.cqc_location_import_date)
     )
-    previous_submission_date = val_not_null_date.forward_fill().over(IndCqc.location_id)
-    next_submission_date = val_not_null_date.backward_fill().over(IndCqc.location_id)
+    previous_submission_date = val_not_null_date.forward_fill().over(
+        IndCqc.location_id, order_by=IndCqc.cqc_location_import_date
+    )
+    next_submission_date = val_not_null_date.backward_fill().over(
+        IndCqc.location_id, order_by=IndCqc.cqc_location_import_date
+    )
 
     condition = pl.col(IndCqc.cqc_location_import_date).is_between(
         previous_submission_date, next_submission_date, "none"
