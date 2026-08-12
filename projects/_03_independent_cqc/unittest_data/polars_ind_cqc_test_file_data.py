@@ -635,6 +635,16 @@ class ValidationUtilsData:
             ],
             expected=False,
         ),
+        ServicesOfferedRuleTestCase(
+            id="invalid_when_services_offered_contains_both_excluded_services",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_only,
+            services_offered=[
+                Services.care_home_service_without_nursing,
+                Services.shared_lives,
+                Services.care_home_service_with_nursing,
+            ],
+            expected=False,
+        ),
     ]
 
 
