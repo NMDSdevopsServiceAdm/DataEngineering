@@ -35,8 +35,6 @@ All notable changes to this project will be documented in this file.
 - Joined employees/starters/leavers/vacancies onto the job role estimates in the SLV merge job. Since the two datasets use different job-role taxonomies (37 granular ASC-WDS roles vs. 15 published roles), job role estimates are first collapsed onto the published roles before joining. Updated the merge validation's expected row count to account for the collapse.
 
 ### Changed
-- Increased the `cqc-api` Fargate task's resources from 8 vCPU/60GB to 16 vCPU/64GB to fix OOM errors in `cqc_locations_4_full_clean.py`.
-
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
 
 - Updated polars to 1.41.2 and pointblank to 0.24.0, and reworked `split_dataset_for_imputation` to use a semi/anti join instead of an `.over()`-based window filter, avoiding both a polars optimiser crash on the newer version and reducing peak memory under the streaming engine. Fargate Docker requirements are now split between a shared `docker_requirements/requirements.txt` for deps common to every project and small per-project `requirements-extra.txt` files for the two projects with additional deps (cqc_api; _04_model), instead of one shared file installing every project's deps everywhere.
@@ -101,6 +99,8 @@ All notable changes to this project will be documented in this file.
 - Added missing error notifications for the CQC/ASC-WDS orchestrator and crawler-refresh steps in three ingestion pipelines, and a bounded timeout for the ASC-WDS worker/workplace file-arrival polling loops.
 
 - Fixed a broken import in the shared ingestion utils that caused the ASC-WDS, Capacity Tracker, CQC PIR, and ONS PySpark Glue ingestion jobs to fail with `ModuleNotFoundError: No module named 'polars'`. Inlined the affected `split_s3_uri` helper instead of importing it, so this file no longer depends on PySpark/pydeequ either.
+
+- Fixed the `cqc-api` Fargate task's OOM in `cqc_locations_4_full_clean.py` by forcing the postcode join to materialize before the matched/unmatched split, instead of the temporary fix of increasing the task's resources.
 
 ## [v2026.06.0] - 15/07/2026
 
