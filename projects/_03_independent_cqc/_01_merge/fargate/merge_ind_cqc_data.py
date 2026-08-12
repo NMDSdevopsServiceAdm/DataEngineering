@@ -92,24 +92,21 @@ cleaned_ct_care_home_columns_to_import = [
     CTCHClean.ct_care_home_total_employed,
 ]
 
-# Cast low-cardinality columns to Categorical/Enum here so the narrower dtype
-# survives into every downstream IND CQC pipeline stage, regardless of which
-# engine (PySpark or Polars) cleaned the original source.
 columns_to_cast_to_categorical_or_enum = {
     CQCLClean.care_home: CatColType.CareHomeEnumType,
     CQCLClean.dormancy: CatColType.DormancyEnumType,
     CQCLClean.cqc_sector: CatColType.CqcSectorEnumType,
     CQCLClean.primary_service_type: CatColType.PrimaryServiceEnumType,
-    CQCLClean.primary_service_type_second_level: CatColType.PrimaryServiceTypeSecondLevelEnumType,
+    CQCLClean.primary_service_type_second_level: CatColType.PrimaryServiceTypeSecondLevelCatType,
     ONSClean.current_rural_urban_ind_11: CatColType.CurrentRuralUrbanInd11EnumType,
-    ONSClean.contemporary_region: CatColType.ContemporaryRegionCatType,
-    ONSClean.contemporary_cssr: CatColType.ContemporaryCssrCatType,
+    ONSClean.contemporary_region: CatColType.RegionCatType,
+    ONSClean.contemporary_cssr: CatColType.CssrCatType,
     ONSClean.contemporary_sub_icb: CatColType.ContemporarySubIcbCatType,
-    ONSClean.contemporary_icb: CatColType.ContemporaryIcbCatType,
+    ONSClean.contemporary_icb: CatColType.IcbCatType,
     ONSClean.contemporary_icb_region: CatColType.ContemporaryIcbRegionCatType,
-    ONSClean.current_region: CatColType.CurrentRegionCatType,
-    ONSClean.current_cssr: CatColType.CurrentCssrCatType,
-    ONSClean.current_icb: CatColType.CurrentIcbCatType,
+    ONSClean.current_region: CatColType.RegionCatType,
+    ONSClean.current_cssr: CatColType.CssrCatType,
+    ONSClean.current_icb: CatColType.IcbCatType,
 }
 
 

@@ -4,12 +4,9 @@ import polars as pl
 
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
-    PrimaryServiceType,
 )
 from utils.column_values.categorical_columns_by_dataset import (
-    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
     LocationsApiCleanedCategoricalValues as CQCLocationCatVals,
-    SLVPrepareCategoricalValues,
 )
 
 
@@ -17,71 +14,28 @@ from utils.column_values.categorical_columns_by_dataset import (
 class CategoricalColumnTypes:
     """Reusable polars Categorical and Enum dtype constants."""
 
-    # ASCWDS workplace
-    EstablishmentCatType = pl.Categorical(
-        pl.Categories("establishment", namespace="ascwds_workplace")
-    )
-
-    # CQC locations
+    BrandCatType = pl.Categorical(pl.Categories("brand", namespace="filled_posts"))
     CareHomeEnumType = pl.Enum(
         CQCLocationCatVals.care_home_column_values.categorical_values
     )
-    DormancyEnumType = pl.Enum(
-        CQCLocationCatVals.dormancy_column_values.categorical_values
+    ContemporaryIcbRegionCatType = pl.Categorical(
+        pl.Categories("contemporary_icb_region", namespace="filled_posts")
+    )
+    ContemporarySubIcbCatType = pl.Categorical(
+        pl.Categories("contemporary_sub_icb", namespace="filled_posts")
     )
     CqcSectorEnumType = pl.Enum(
         CQCLocationCatVals.sector_column_values.categorical_values
     )
-    PrimaryServiceEnumType = pl.Enum(
-        CQCLocationCatVals.primary_service_type_column_values.categorical_values
-    )
-    PrimaryServiceTypeSecondLevelEnumType = pl.Enum(
-        CQCLocationCatVals.primary_service_type_second_level_column_values.categorical_values
-    )
+    CssrCatType = pl.Categorical(pl.Categories("cssr", namespace="filled_posts"))
     CurrentRuralUrbanInd11EnumType = pl.Enum(
         CQCLocationCatVals.current_rui_column_values.categorical_values
     )
-    BrandCatType = pl.Categorical(pl.Categories("brand", namespace="cqc_location"))
-    LocationCatType = pl.Categorical(
-        pl.Categories("location", namespace="cqc_location")
+    DormancyEnumType = pl.Enum(
+        CQCLocationCatVals.dormancy_column_values.categorical_values
     )
-    ProviderCatType = pl.Categorical(
-        pl.Categories("provider", namespace="cqc_location")
-    )
-    ContemporaryRegionCatType = pl.Categorical(
-        pl.Categories("contemporary_region", namespace="ons_postcode_directory")
-    )
-    ContemporaryCssrCatType = pl.Categorical(
-        pl.Categories("contemporary_cssr", namespace="ons_postcode_directory")
-    )
-    ContemporarySubIcbCatType = pl.Categorical(
-        pl.Categories("contemporary_sub_icb", namespace="ons_postcode_directory")
-    )
-    ContemporaryIcbCatType = pl.Categorical(
-        pl.Categories("contemporary_icb", namespace="ons_postcode_directory")
-    )
-    ContemporaryIcbRegionCatType = pl.Categorical(
-        pl.Categories("contemporary_icb_region", namespace="ons_postcode_directory")
-    )
-    CurrentRegionCatType = pl.Categorical(
-        pl.Categories("current_region", namespace="ons_postcode_directory")
-    )
-    CurrentCssrCatType = pl.Categorical(
-        pl.Categories("current_cssr", namespace="ons_postcode_directory")
-    )
-    CurrentIcbCatType = pl.Categorical(
-        pl.Categories("current_icb", namespace="ons_postcode_directory")
-    )
-
-    # Estimate Filled Posts pipeline
-    JobRoleEnumType = pl.Enum(
-        CatVals.main_job_role_labels_column_values.categorical_values
-    )
-    JobGroupEnumType = pl.Enum(
-        CatVals.main_job_group_labels_column_values.categorical_values
-    )
-    PublishedJobRoleLabelEnumType = pl.Enum(
-        SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
+    EstablishmentCatType = pl.Categorical(
+        pl.Categories("establishment", namespace="filled_posts")
     )
     EstimatesFilledPostSourceEnumType = pl.Enum(
         [
@@ -94,8 +48,29 @@ class CategoricalColumnTypes:
             EstimateFilledPostsSource.posts_rolling_average_model,
         ]
     )
+    IcbCatType = pl.Categorical(pl.Categories("icb", namespace="filled_posts"))
+    JobGroupCatType = pl.Categorical(
+        pl.Categories("job_group", namespace="filled_posts")
+    )
+    JobRoleCatType = pl.Categorical(pl.Categories("job_role", namespace="filled_posts"))
     JobRoleFilteringRuleCatType = pl.Categorical(
         pl.Categories(
             "job_role_filtering_rule", namespace="filled_posts", physical=pl.UInt8
         )
     )
+    LocationCatType = pl.Categorical(
+        pl.Categories("location", namespace="filled_posts")
+    )
+    PrimaryServiceEnumType = pl.Enum(
+        CQCLocationCatVals.primary_service_type_column_values.categorical_values
+    )
+    PrimaryServiceTypeSecondLevelCatType = pl.Categorical(
+        pl.Categories("primary_service_type_second_level", namespace="filled_posts")
+    )
+    ProviderCatType = pl.Categorical(
+        pl.Categories("provider", namespace="filled_posts")
+    )
+    PublishedJobRoleLabelCatType = pl.Categorical(
+        pl.Categories("published_job_role_label", namespace="filled_posts")
+    )
+    RegionCatType = pl.Categorical(pl.Categories("region", namespace="filled_posts"))

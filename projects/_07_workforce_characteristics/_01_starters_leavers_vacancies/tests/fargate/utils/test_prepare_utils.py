@@ -82,7 +82,7 @@ class TestReshapeJobRoleColsToRows:
         expected_lf = pl.LazyFrame(case.expected_data).with_columns(
             pl.col(AWPClean.establishment_id).cast(CatColType.EstablishmentCatType),
             pl.col(SLVCols.job_role_label).cast(
-                CatColType.PublishedJobRoleLabelEnumType
+                CatColType.PublishedJobRoleLabelCatType
             ),
             pl.col(SLVCols.employees).cast(pl.Int16),
             pl.col(SLVCols.starters).cast(pl.Int16),

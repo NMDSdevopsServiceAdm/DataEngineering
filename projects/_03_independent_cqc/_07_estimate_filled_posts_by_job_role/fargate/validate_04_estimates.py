@@ -68,7 +68,7 @@ EXPECTED_SCHEMA = pb.Schema(
         ),
         IndCqcColumns.id_per_locationid_import_date: "UInt32",
         IndCqcColumns.main_job_role_clean_labelled: str(
-            CategoricalColumnTypes.JobRoleEnumType
+            CategoricalColumnTypes.JobRoleCatType
         ),
         IndCqcColumns.ascwds_job_role_counts: "Int16",
         IndCqcColumns.job_role_filtering_rule: str(
@@ -87,7 +87,7 @@ EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.estimate_filled_posts_from_all_job_roles: "Float64",
         IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles: "Float64",
         IndCqcColumns.main_job_group_labelled: str(
-            CategoricalColumnTypes.JobGroupEnumType
+            CategoricalColumnTypes.JobGroupCatType
         ),
         PartitionKeys.year: "Int64",
     }

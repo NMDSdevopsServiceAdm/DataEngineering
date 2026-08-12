@@ -23,9 +23,7 @@ from utils.column_values.categorical_column_values import (
     JobRoleFilteringRule,
 )
 from utils.column_values.categorical_columns_by_dataset import (
-    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
     LocationsApiCleanedCategoricalValues as CQCLocationCatVals,
-    SLVPrepareCategoricalValues,
 )
 
 
@@ -430,47 +428,47 @@ class ColumnTypesData:
             id="location_cat_type",
             actual=CatColType.LocationCatType,
             expected=pl.Categorical(
-                pl.Categories("location", namespace="cqc_location")
+                pl.Categories("location", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
             id="establishment_cat_type",
             actual=CatColType.EstablishmentCatType,
             expected=pl.Categorical(
-                pl.Categories("establishment", namespace="ascwds_workplace")
+                pl.Categories("establishment", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
             id="provider_cat_type",
             actual=CatColType.ProviderCatType,
             expected=pl.Categorical(
-                pl.Categories("provider", namespace="cqc_location")
+                pl.Categories("provider", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
             id="brand_cat_type",
             actual=CatColType.BrandCatType,
-            expected=pl.Categorical(pl.Categories("brand", namespace="cqc_location")),
+            expected=pl.Categorical(pl.Categories("brand", namespace="filled_posts")),
         ),
         CategoricalColumnTypeCase(
-            id="job_role_enum_type",
-            actual=CatColType.JobRoleEnumType,
-            expected=pl.Enum(
-                CatVals.main_job_role_labels_column_values.categorical_values
+            id="job_role_cat_type",
+            actual=CatColType.JobRoleCatType,
+            expected=pl.Categorical(
+                pl.Categories("job_role", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
-            id="job_group_enum_type",
-            actual=CatColType.JobGroupEnumType,
-            expected=pl.Enum(
-                CatVals.main_job_group_labels_column_values.categorical_values
+            id="job_group_cat_type",
+            actual=CatColType.JobGroupCatType,
+            expected=pl.Categorical(
+                pl.Categories("job_group", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
-            id="published_job_role_label_enum_type",
-            actual=CatColType.PublishedJobRoleLabelEnumType,
-            expected=pl.Enum(
-                SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
+            id="published_job_role_label_cat_type",
+            actual=CatColType.PublishedJobRoleLabelCatType,
+            expected=pl.Categorical(
+                pl.Categories("published_job_role_label", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
@@ -528,10 +526,12 @@ class ColumnTypesData:
             ),
         ),
         CategoricalColumnTypeCase(
-            id="primary_service_type_second_level_enum_type",
-            actual=CatColType.PrimaryServiceTypeSecondLevelEnumType,
-            expected=pl.Enum(
-                CQCLocationCatVals.primary_service_type_second_level_column_values.categorical_values
+            id="primary_service_type_second_level_cat_type",
+            actual=CatColType.PrimaryServiceTypeSecondLevelCatType,
+            expected=pl.Categorical(
+                pl.Categories(
+                    "primary_service_type_second_level", namespace="filled_posts"
+                )
             ),
         ),
         CategoricalColumnTypeCase(
@@ -542,63 +542,32 @@ class ColumnTypesData:
             ),
         ),
         CategoricalColumnTypeCase(
-            id="contemporary_region_cat_type",
-            actual=CatColType.ContemporaryRegionCatType,
-            expected=pl.Categorical(
-                pl.Categories("contemporary_region", namespace="ons_postcode_directory")
-            ),
+            id="region_cat_type",
+            actual=CatColType.RegionCatType,
+            expected=pl.Categorical(pl.Categories("region", namespace="filled_posts")),
         ),
         CategoricalColumnTypeCase(
-            id="contemporary_cssr_cat_type",
-            actual=CatColType.ContemporaryCssrCatType,
-            expected=pl.Categorical(
-                pl.Categories("contemporary_cssr", namespace="ons_postcode_directory")
-            ),
+            id="cssr_cat_type",
+            actual=CatColType.CssrCatType,
+            expected=pl.Categorical(pl.Categories("cssr", namespace="filled_posts")),
+        ),
+        CategoricalColumnTypeCase(
+            id="icb_cat_type",
+            actual=CatColType.IcbCatType,
+            expected=pl.Categorical(pl.Categories("icb", namespace="filled_posts")),
         ),
         CategoricalColumnTypeCase(
             id="contemporary_sub_icb_cat_type",
             actual=CatColType.ContemporarySubIcbCatType,
             expected=pl.Categorical(
-                pl.Categories(
-                    "contemporary_sub_icb", namespace="ons_postcode_directory"
-                )
-            ),
-        ),
-        CategoricalColumnTypeCase(
-            id="contemporary_icb_cat_type",
-            actual=CatColType.ContemporaryIcbCatType,
-            expected=pl.Categorical(
-                pl.Categories("contemporary_icb", namespace="ons_postcode_directory")
+                pl.Categories("contemporary_sub_icb", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
             id="contemporary_icb_region_cat_type",
             actual=CatColType.ContemporaryIcbRegionCatType,
             expected=pl.Categorical(
-                pl.Categories(
-                    "contemporary_icb_region", namespace="ons_postcode_directory"
-                )
-            ),
-        ),
-        CategoricalColumnTypeCase(
-            id="current_region_cat_type",
-            actual=CatColType.CurrentRegionCatType,
-            expected=pl.Categorical(
-                pl.Categories("current_region", namespace="ons_postcode_directory")
-            ),
-        ),
-        CategoricalColumnTypeCase(
-            id="current_cssr_cat_type",
-            actual=CatColType.CurrentCssrCatType,
-            expected=pl.Categorical(
-                pl.Categories("current_cssr", namespace="ons_postcode_directory")
-            ),
-        ),
-        CategoricalColumnTypeCase(
-            id="current_icb_cat_type",
-            actual=CatColType.CurrentIcbCatType,
-            expected=pl.Categorical(
-                pl.Categories("current_icb", namespace="ons_postcode_directory")
+                pl.Categories("contemporary_icb_region", namespace="filled_posts")
             ),
         ),
     ]

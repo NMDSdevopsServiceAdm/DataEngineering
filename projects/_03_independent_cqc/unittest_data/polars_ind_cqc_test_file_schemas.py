@@ -358,20 +358,20 @@ class MergeIndCQCSchemas:
             (IndCQC.primary_service_type, CatColType.PrimaryServiceEnumType),
             (
                 IndCQC.primary_service_type_second_level,
-                CatColType.PrimaryServiceTypeSecondLevelEnumType,
+                CatColType.PrimaryServiceTypeSecondLevelCatType,
             ),
             (
                 IndCQC.current_rural_urban_indicator_2011,
                 CatColType.CurrentRuralUrbanInd11EnumType,
             ),
-            (IndCQC.contemporary_region, CatColType.ContemporaryRegionCatType),
-            (IndCQC.contemporary_cssr, CatColType.ContemporaryCssrCatType),
+            (IndCQC.contemporary_region, CatColType.RegionCatType),
+            (IndCQC.contemporary_cssr, CatColType.CssrCatType),
             (IndCQC.contemporary_sub_icb, CatColType.ContemporarySubIcbCatType),
-            (IndCQC.contemporary_icb, CatColType.ContemporaryIcbCatType),
+            (IndCQC.contemporary_icb, CatColType.IcbCatType),
             (IndCQC.contemporary_icb_region, CatColType.ContemporaryIcbRegionCatType),
-            (IndCQC.current_region, CatColType.CurrentRegionCatType),
-            (IndCQC.current_cssr, CatColType.CurrentCssrCatType),
-            (IndCQC.current_icb, CatColType.CurrentIcbCatType),
+            (IndCQC.current_region, CatColType.RegionCatType),
+            (IndCQC.current_cssr, CatColType.CssrCatType),
+            (IndCQC.current_icb, CatColType.IcbCatType),
             (IndCQC.cqc_pir_import_date, pl.Date()),
             ("pir_col", pl.String()),
             (IndCQC.ascwds_workplace_import_date, pl.Date()),
@@ -1753,8 +1753,8 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
-        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
-        IndCQC.main_job_group_labelled: CatColType.JobGroupEnumType,
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
+        IndCQC.main_job_group_labelled: CatColType.JobGroupCatType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
@@ -1762,8 +1762,8 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
-        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
-        IndCQC.main_job_group_labelled: CatColType.JobGroupEnumType,
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
+        IndCQC.main_job_group_labelled: CatColType.JobGroupCatType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
@@ -1771,8 +1771,8 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.provider_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
-        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
-        IndCQC.main_job_group_labelled: CatColType.JobGroupEnumType,
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
+        IndCQC.main_job_group_labelled: CatColType.JobGroupCatType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
@@ -1780,8 +1780,8 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.provider_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
-        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
-        IndCQC.main_job_group_labelled: CatColType.JobGroupEnumType,
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
+        IndCQC.main_job_group_labelled: CatColType.JobGroupCatType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
@@ -1789,8 +1789,8 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.brand_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
-        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
-        IndCQC.main_job_group_labelled: CatColType.JobGroupEnumType,
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
+        IndCQC.main_job_group_labelled: CatColType.JobGroupCatType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
@@ -1798,8 +1798,8 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
         IndCQC.brand_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
-        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
-        IndCQC.main_job_group_labelled: CatColType.JobGroupEnumType,
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
+        IndCQC.main_job_group_labelled: CatColType.JobGroupCatType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
@@ -1832,8 +1832,8 @@ class EstimateFilledPostsByJobRoleCleanUtilsSchemas:
 
     test_job_role_group_equal_zero_schema = {
         IndCQC.id_per_locationid_import_date: pl.UInt32,
-        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
-        IndCQC.main_job_group_labelled: CatColType.JobGroupEnumType,
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
+        IndCQC.main_job_group_labelled: CatColType.JobGroupCatType,
         IndCQC.ascwds_job_role_counts: pl.Int64,
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }
@@ -1850,7 +1850,7 @@ class EstimateFilledPostsByJobRoleCleanSchemas:
         IndCQC.estimate_filled_posts: pl.Float32,
         IndCQC.estimate_filled_posts_source: CatColType.EstimatesFilledPostSourceEnumType,
         IndCQC.ascwds_job_role_counts: pl.Int16,
-        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
         IndCQC.registered_manager_names: pl.List(str),
     }
 
@@ -1862,7 +1862,7 @@ class EstimateFilledPostsByJobRoleCleanSchemas:
         IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
         IndCQC.estimate_filled_posts: pl.Float32,
         IndCQC.ascwds_job_role_counts: pl.Int16,
-        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
+        IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
         IndCQC.registered_manager_names: pl.List(str),
         IndCQC.job_role_filtering_rule: CatColType.JobRoleFilteringRuleCatType,
     }

@@ -25,7 +25,7 @@ estimates_by_job_role_schema = {
     IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
     IndCQC.registered_manager_names: pl.List(str),
     IndCQC.ascwds_filled_posts_dedup_clean: pl.Float32,
-    IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
+    IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
     IndCQC.ascwds_job_role_counts: pl.Int16,
 }
 
