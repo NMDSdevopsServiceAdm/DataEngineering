@@ -11,10 +11,12 @@ def create_imputed_ascwds_job_role_counts(
     estimated_job_role_posts_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
     """
-    Impute job role ratios by interpolation forward fill and backward fill.
+    Impute job role ratios per location and job role by interpolation, forward fill,
+    and backward fill, then broadcast the result back onto every row with `.over()`.
 
-    Uses groupby-agg-explode pattern to keep processing within polars streaming
-    engine.
+    The frame is sorted by (location_id, job_role, date) before the `.over()` call,
+    since its default mapping strategy writes results back in original row order and
+    would otherwise misassign values on unsorted input.
 
     Args:
         estimated_job_role_posts_lf(pl.LazyFrame): dataset to impute
@@ -33,31 +35,17 @@ def create_imputed_ascwds_job_role_counts(
 
     imputed_ratios = (
         pl.col(IndCQC.ascwds_job_role_ratios)
-        .sort_by(order_key)
         .interpolate()
         .forward_fill()
         .backward_fill()
+        .over(impute_groups)
         .alias(IndCQC.imputed_ascwds_job_role_ratios)
     )
 
-    impute_agg_lf = (
-        # polars_streaming: groupby-agg-explode workaround; should be .over() when window functions support streaming
-        estimated_job_role_posts_lf.group_by(impute_groups)
-        .agg(
-            # Sort the join key in the same manner as the imputed values.
-            pl.col(IndCQC.id_per_locationid_import_date_job_role).sort_by(order_key),
-            imputed_ratios,
-        )
-        .explode(
-            IndCQC.id_per_locationid_import_date_job_role,
-            IndCQC.imputed_ascwds_job_role_ratios,
-        )
-        .drop(impute_groups)
-    )
-
-    estimated_job_role_posts_lf = estimated_job_role_posts_lf.join(
-        impute_agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
-    )
+    # Must be sorted before the .over() call above — see docstring.
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.sort(
+        *impute_groups, order_key
+    ).with_columns(imputed_ratios)
 
     estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
         pl.col(IndCQC.estimate_filled_posts)
@@ -74,9 +62,11 @@ def get_percent_share_ratios(
     groups: Optional[list[str]] = None,
 ) -> pl.LazyFrame:
     """
-    Calculate ratios over location and date using groupby-agg-explode pattern.
+    Calculate ratios over location and date, broadcasting via `.over()`.
 
-    Using groupby-agg-explode ensures it can be processed with the streaming engine.
+    `.over()` computes and writes its result in place; the equivalent groupby-agg-
+    explode-join would cost more peak memory for the same reason a join-based
+    `.over()` replacement does (see the `over-vs-join` skill).
 
     Args:
         estimated_job_role_posts_lf(pl.LazyFrame): dataset to calculate ratios over. Must contain location_id and cqc_location_import_date_columns for grouping
@@ -90,23 +80,8 @@ def get_percent_share_ratios(
     if groups is None:
         groups = [IndCQC.location_id, IndCQC.cqc_location_import_date]
 
-    # Groupby-agg-explode on only necessary subset, before joining back on id_per_locationid_import_date_job_role.
-    # polars_streaming: groupby-agg-explode workaround; could be replaced with .over() and simpler join when window functions support streaming
-    ratios_agg_lf = (
-        estimated_job_role_posts_lf.group_by(groups)
-        .agg(
-            pl.col(
-                IndCQC.id_per_locationid_import_date_job_role
-            ),  # Keep to align during explode
-            percentage_share(input_col).cast(pl.Float32).alias(output_col),
-        )
-        .explode(IndCQC.id_per_locationid_import_date_job_role, output_col)
-        # Drop groups to prevent duplicate columns after join.
-        .drop(groups)
-    )
-
-    return estimated_job_role_posts_lf.join(
-        ratios_agg_lf, on=IndCQC.id_per_locationid_import_date_job_role, how="left"
+    return estimated_job_role_posts_lf.with_columns(
+        percentage_share(input_col).cast(pl.Float32).over(groups).alias(output_col)
     )
 
 

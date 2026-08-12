@@ -4,29 +4,28 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.5"
 
-from projects._01_ingest.utils import utils as iUtils
 from schemas.cqc_pir_schema import PIR_SCHEMA
-from utils import utils
+from utils import file_utils, utils
 
 
 def main(source, destination):
-    if iUtils.is_csv(source):
+    if file_utils.is_csv(source):
         print("Single file provided to job. Handling single file.")
-        bucket, key = utils.split_s3_uri(source)
-        new_destination = iUtils.construct_destination_path(destination, key)
+        bucket, key = file_utils.split_s3_uri(source)
+        new_destination = file_utils.construct_destination_path(destination, key)
         ingest_pir_dataset(source, new_destination, PIR_SCHEMA)
         return
 
     print("Multiple files provided to job. Handling each file...")
-    bucket, prefix = utils.split_s3_uri(source)
-    objects_list = iUtils.get_s3_objects_list(bucket, prefix)
+    bucket, prefix = file_utils.split_s3_uri(source)
+    objects_list = file_utils.get_s3_objects_list(bucket, prefix)
 
     print("Objects list:")
     print(objects_list)
 
     for key in objects_list:
-        new_source = iUtils.construct_s3_uri(bucket, key)
-        new_destination = iUtils.construct_destination_path(destination, key)
+        new_source = file_utils.construct_s3_uri(bucket, key)
+        new_destination = file_utils.construct_destination_path(destination, key)
         ingest_pir_dataset(new_source, new_destination, PIR_SCHEMA)
 
 

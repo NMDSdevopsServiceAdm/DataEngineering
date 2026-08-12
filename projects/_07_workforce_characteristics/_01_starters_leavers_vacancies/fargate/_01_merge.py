@@ -9,10 +9,16 @@ from utils.column_names.employment_status_rates_columns import (
     EmploymentStatusRatesColumns as EmpStatRates,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
 workplace_columns = [
     AWPClean.establishment_id,
     AWPClean.ascwds_workplace_import_date,
+    SLVCols.job_role_label,
+    SLVCols.employees,
+    SLVCols.starters,
+    SLVCols.leavers,
+    SLVCols.vacancies,
 ]
 
 metadata_columns = [
@@ -37,7 +43,6 @@ metadata_columns = [
 ]
 
 job_role_estimates_columns = [
-    IndCQC.id_per_locationid_import_date_job_role,
     IndCQC.location_id,
     IndCQC.cqc_location_import_date,
     IndCQC.primary_service_type,
@@ -73,13 +78,19 @@ def main(
         source=job_role_estimates_source, selected_columns=job_role_estimates_columns
     )
 
+    job_role_estimates_lf = mUtils.collapse_job_role_estimates_to_published_labels(
+        job_role_estimates_lf
+    )
+
     job_role_estimates_lf = job_role_estimates_lf.join(
         metadata_lf,
         on=IndCQC.id_per_locationid_import_date,
         how="left",
     )
 
-    cleaned_ascwds_workplace_lf = utils.scan_parquet(prepared_slv_dataset_source)
+    cleaned_ascwds_workplace_lf = utils.scan_parquet(
+        prepared_slv_dataset_source, selected_columns=workplace_columns
+    )
 
     # The source CSV is expected to already be trimmed to exactly these columns, in this
     # order, and to only the current weighting year's rows — scan_csv's schema is matched
@@ -101,8 +112,15 @@ def main(
         employment_status_rates_source, schema=employment_status_rates_schema
     )
 
-    # TODO: Placeholder only
-    # mUtils.join_datasets()
+    job_role_estimates_lf = job_role_estimates_lf.join(
+        cleaned_ascwds_workplace_lf,
+        on=[
+            IndCQC.establishment_id,
+            IndCQC.ascwds_workplace_import_date,
+            SLVCols.job_role_label,
+        ],
+        how="left",
+    )
 
     # TODO: Placeholder only
     # mUtils.apply_employment_status_magic_numbers()
