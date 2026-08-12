@@ -28,15 +28,29 @@ commands:
   export_sanitised_branch:
     description: "Compute the terraform-workspace-safe branch name into a file later steps in this job can source"
     parameters:
-      branch:
+      branch_override:
         type: string
-        default: "${CIRCLE_BRANCH}"
+        default: ""
+        description: >
+          Only needed when CIRCLE_BRANCH isn't set the normal way (e.g.
+          terraform-destroy, which runs off a GitHub delete webhook via
+          pipeline parameters instead of a real push). Passed through this
+          step's environment: key rather than spliced into the command
+          text -- pipeline parameters can hold arbitrary characters (a
+          branch name can contain ", $(), even ;), and CircleCI's <<...>>
+          templating is a raw compile-time text substitution, so splicing
+          an attacker-influenceable value directly into a shell command
+          string is a command-injection risk. environment: sets it as
+          literal env-var data instead, which the shell can only read, not
+          re-parse as syntax.
     steps:
       - run:
           name: Compute sanitised branch name
+          environment:
+            RAW_BRANCH_OVERRIDE: << parameters.branch_override >>
           command: |
             # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
-            BRANCH="<< parameters.branch >>"
+            BRANCH="${RAW_BRANCH_OVERRIDE:-$CIRCLE_BRANCH}"
             SANITISED_CIRCLE_BRANCH=$(echo ${BRANCH:0:30} | tr -c "[:alnum:]\n" "-" | tr "[:upper:]" "[:lower:]")
             echo "export SANITISED_CIRCLE_BRANCH=${SANITISED_CIRCLE_BRANCH}" > /tmp/sanitised_branch.env
 
@@ -420,7 +434,7 @@ jobs:
       # parameters, not a normal branch push, so CIRCLE_BRANCH isn't set the
       # usual way -- GHA_Meta carries the branch name instead.
       - export_sanitised_branch:
-          branch: << pipeline.parameters.GHA_Meta >>
+          branch_override: << pipeline.parameters.GHA_Meta >>
       - run:
           name: terraform destroy
           command: |
