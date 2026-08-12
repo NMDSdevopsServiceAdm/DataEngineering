@@ -86,41 +86,43 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         extrapolation_method="ratio",
     )
 
-    lf = calculate_rolling_average(
-        lf,
-        IndCQC.imputed_filled_post_model,
-        f"{NumericalValues.number_of_days_in_window}d",
-        [IndCQC.primary_service_type],
-        IndCQC.posts_rolling_average_model,
-    )
+    # Uncomment these function once other functions in impute job are more memory efficient.
 
-    lf = cUtils.create_banded_bed_count_column(
-        lf,
-        IndCQC.number_of_beds_banded_for_rolling_avg,
-        [0, 1, 10, 15, 20, 25, 50, float("Inf")],
-    )
+    # lf = calculate_rolling_average(
+    #     lf,
+    #     IndCQC.imputed_filled_post_model,
+    #     f"{NumericalValues.number_of_days_in_window}d",
+    #     [IndCQC.primary_service_type],
+    #     IndCQC.posts_rolling_average_model,
+    # )
 
-    lf = calculate_rolling_average(
-        lf,
-        IndCQC.imputed_filled_posts_per_bed_ratio_model,
-        f"{NumericalValues.number_of_days_in_window}d",
-        [
-            IndCQC.primary_service_type,
-            IndCQC.number_of_beds_banded_for_rolling_avg,
-        ],
-        IndCQC.banded_bed_ratio_rolling_average_model,
-    )
+    # lf = cUtils.create_banded_bed_count_column(
+    #     lf,
+    #     IndCQC.number_of_beds_banded_for_rolling_avg,
+    #     [0, 1, 10, 15, 20, 25, 50, float("Inf")],
+    # )
 
-    lf = lf.with_columns(
-        pl.when(is_care_home())
-        .then(
-            pl.col(IndCQC.banded_bed_ratio_rolling_average_model)
-            * pl.col(IndCQC.number_of_beds)
-        )
-        .otherwise(pl.col(IndCQC.posts_rolling_average_model))
-        .cast(pl.Float32)
-        .alias(IndCQC.posts_rolling_average_model)
-    )
+    # lf = calculate_rolling_average(
+    #     lf,
+    #     IndCQC.imputed_filled_posts_per_bed_ratio_model,
+    #     f"{NumericalValues.number_of_days_in_window}d",
+    #     [
+    #         IndCQC.primary_service_type,
+    #         IndCQC.number_of_beds_banded_for_rolling_avg,
+    #     ],
+    #     IndCQC.banded_bed_ratio_rolling_average_model,
+    # )
+
+    # lf = lf.with_columns(
+    #     pl.when(is_care_home())
+    #     .then(
+    #         pl.col(IndCQC.banded_bed_ratio_rolling_average_model)
+    #         * pl.col(IndCQC.number_of_beds)
+    #     )
+    #     .otherwise(pl.col(IndCQC.posts_rolling_average_model))
+    #     .cast(pl.Float32)
+    #     .alias(IndCQC.posts_rolling_average_model)
+    # )
 
     lf = lf.with_columns(
         pl.when(is_care_home())
