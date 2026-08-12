@@ -554,6 +554,9 @@ class CleanIndCQCData:
         ("1-000000003", date(2023, 3, 1), "Y", 1),
         ("1-000000004", date(2023, 1, 1), "Y", 1),
         ("1-000000004", date(2023, 2, 1), "Y", 3),
+        ("1-000000005", date(2023, 1, 1), "Y", 2),
+        ("1-000000005", date(2023, 2, 1), "Y", 3),
+        ("1-000000005", date(2023, 3, 1), "Y", None),
     ]
 
     expected_populate_missing_care_home_number_of_beds_rows = [
@@ -564,44 +567,9 @@ class CleanIndCQCData:
         ("1-000000003", date(2023, 3, 1), "Y", 1),
         ("1-000000004", date(2023, 1, 1), "Y", 1),
         ("1-000000004", date(2023, 2, 1), "Y", 3),
-    ]
-
-    filter_to_care_homes_with_known_beds_rows = [
-        ("1-000000001", "Y", None),
-        ("1-000000002", "N", None),
-        ("1-000000003", "Y", 1),
-        ("1-000000004", "N", 1),
-    ]
-
-    expected_filter_to_care_homes_with_known_beds_rows = [
-        ("1-000000003", "Y", 1),
-    ]
-
-    average_beds_per_location_rows = [
-        ("1-000000001", 1),
-        ("1-000000002", 2),
-        ("1-000000002", 3),
-        ("1-000000003", 2),
-        ("1-000000003", 3),
-        ("1-000000003", 4),
-    ]
-
-    expected_average_beds_per_location_rows = [
-        ("1-000000001", 1),
-        ("1-000000002", 2),
-        ("1-000000003", 3),
-    ]
-
-    replace_null_beds_with_average_rows = [
-        ("1-000000001", None, None),
-        ("1-000000002", None, 1),
-        ("1-000000003", 2, 2),
-    ]
-
-    expected_replace_null_beds_with_average_rows = [
-        ("1-000000001", None),
-        ("1-000000002", 1),
-        ("1-000000003", 2),
+        ("1-000000005", date(2023, 1, 1), "Y", 2),
+        ("1-000000005", date(2023, 2, 1), "Y", 3),
+        ("1-000000005", date(2023, 3, 1), "Y", 2),
     ]
 
     calculate_time_registered_same_day_rows = [
@@ -1426,30 +1394,16 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
         ("1-000000003", "data"),
     ]
 
-    calculate_average_filled_posts_rows = [
-        ("1", 0.0, 1.1357),
-        ("2", 0.0, 1.3579),
-        ("3", 1.0, 1.123456789),
+    calculate_expected_filled_posts_rows = [
+        ("1", 7, 0.0, 1.1357),
+        ("2", 75, 0.0, 1.3579),
+        ("3", 20, 1.0, 1.123456789),
     ]
 
-    expected_calculate_average_filled_posts_rows = [
-        (0.0, 1.2468),
-        (1.0, 1.123456789),
-    ]
-
-    base_filled_posts_rows = [
-        ("1", 7, 0.0),
-        ("2", 75, 1.0),
-    ]
-
-    join_filled_posts_rows = [
-        (0.0, 1.11111),
-        (1.0, 1.0101),
-    ]
-
-    expected_filled_posts_rows = [
-        ("1", 7, 0.0, 1.11111, 7.77777),
-        ("2", 75, 1.0, 1.0101, 75.7575),
+    expected_calculate_expected_filled_posts_rows = [
+        ("1", 7, 0.0, 1.1357, 8.7276),
+        ("2", 75, 0.0, 1.3579, 93.51),
+        ("3", 20, 1.0, 1.123456789, 22.46913578),
     ]
 
     calculate_standardised_residuals_rows = [
