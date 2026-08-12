@@ -71,8 +71,6 @@ All notable changes to this project will be documented in this file.
 
 - Completed the Polars migration of functions within `estimate_ind_cqc_filled_posts.py`.
 
-- Completed the Polars migration of functions within `estimate_ind_cqc_filled_posts.py`.
-
 - Refactored calculate_rolling_average to be more memory efficient. Calls to the function are still commented out.
   I've prepared the calls for being uncommented and the patch/mock tests, and removed unittest dependency in the tests.
 
