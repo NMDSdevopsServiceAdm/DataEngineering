@@ -1737,7 +1737,60 @@ class NullLongitudinalOutliersData:
 
 
 @dataclass
+class SetMinValueTestCase:
+    id: str
+    prediction: Optional[float]
+    min_value: Optional[float]
+    expected_prediction: Optional[float]
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(
+            self.prediction, self.min_value, self.expected_prediction, id=self.id
+        )
+
+
+@dataclass
 class EstimateFilledPostsModelsUtils:
+    set_min_value_test_cases = [
+        SetMinValueTestCase(
+            id="replaces_value_below_min_value",
+            prediction=-7.5,
+            min_value=2.0,
+            expected_prediction=2.0,
+        ),
+        SetMinValueTestCase(
+            id="replaces_value_with_default_min_value_when_not_set",
+            prediction=0.5,
+            min_value=1.0,
+            expected_prediction=1.0,
+        ),
+        SetMinValueTestCase(
+            id="replaces_value_with_greatest_when_min_value_is_negative",
+            prediction=-7.5,
+            min_value=-5.0,
+            expected_prediction=-5.0,
+        ),
+        SetMinValueTestCase(
+            id="does_not_replace_value_when_min_value_is_none",
+            prediction=1.5,
+            min_value=None,
+            expected_prediction=1.5,
+        ),
+        SetMinValueTestCase(
+            id="does_not_replace_value_above_min_value",
+            prediction=1.5,
+            min_value=1.0,
+            expected_prediction=1.5,
+        ),
+        SetMinValueTestCase(
+            id="does_not_replace_null_prediction",
+            prediction=None,
+            min_value=1.0,
+            expected_prediction=None,
+        ),
+    ]
+
     enrich_model_ind_cqc_rows = [
         ("1-001", date(2025, 1, 1), CareHome.not_care_home, None),
         ("1-002", date(2025, 1, 1), CareHome.not_care_home, None),
