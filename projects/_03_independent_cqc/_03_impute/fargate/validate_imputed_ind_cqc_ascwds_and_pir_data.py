@@ -105,16 +105,16 @@ def main(
         )
         .col_vals_between(IndCQC.pir_filled_posts_model, 0.0, 3000.0, na_pass=True)
         .col_vals_between(IndCQC.ascwds_pir_merged, 0.0, 3000.0, na_pass=True)
-        # imputed capacity tracker columns have no floor of 1 like the cleaned columns they
-        # impute, as interpolation lands below it
+        .col_vals_between(
+            IndCQC.ct_combined_care_home_and_non_res, 1.0, 4000.0, na_pass=True
+        )
+        # the imputed capacity tracker columns have no floor of 1 like the cleaned columns
+        # they impute, as interpolation lands below it
         .col_vals_between(
             IndCQC.ct_care_home_total_employed_imputed, 0.0, 4000.0, na_pass=True
         )
         .col_vals_between(
             IndCQC.ct_non_res_care_workers_employed_imputed, 0.0, 3000.0, na_pass=True
-        )
-        .col_vals_between(
-            IndCQC.ct_combined_care_home_and_non_res, 1.0, 4000.0, na_pass=True
         )
         .col_vals_between(
             IndCQC.ascwds_rate_of_change_trendline_model, 0.5, 2.0, na_pass=True
@@ -185,13 +185,23 @@ def main(
             CatValues.ascwds_filtering_rule_column_values.categorical_values,
         )
         # cross-column relationships
-        # non-residential is exactly the primary service type of the non-care-homes
         .col_vals_expr(
             expr=(
-                is_not_care_home()
-                == (
-                    pl.col(IndCQC.primary_service_type)
-                    == pl.lit(PrimaryServiceType.non_residential)
+                (
+                    is_not_care_home()
+                    & (
+                        pl.col(IndCQC.primary_service_type)
+                        == pl.lit(PrimaryServiceType.non_residential)
+                    )
+                )
+                | (
+                    is_care_home()
+                    & pl.col(IndCQC.primary_service_type).is_in(
+                        [
+                            PrimaryServiceType.care_home_with_nursing,
+                            PrimaryServiceType.care_home_only,
+                        ]
+                    )
                 )
             ),
             brief=f"{IndCQC.care_home} and {IndCQC.primary_service_type} should be related",

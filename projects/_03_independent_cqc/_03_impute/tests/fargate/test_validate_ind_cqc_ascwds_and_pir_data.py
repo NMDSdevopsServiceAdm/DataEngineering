@@ -36,12 +36,12 @@ def compare_df() -> pl.DataFrame:
 
 
 class TestMain:
-    @patch(f"{PATCH_PATH}.utils.read_parquet")
     @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_validation_runs(
         self,
-        write_reports_mock: Mock,
         read_parquet_mock: Mock,
+        write_reports_mock: Mock,
         source_df: pl.DataFrame,
         compare_df: pl.DataFrame,
     ):
@@ -60,12 +60,12 @@ class TestMain:
         )
         write_reports_mock.assert_called_once()
 
-    @patch(f"{PATCH_PATH}.utils.read_parquet")
     @patch(f"{PATCH_PATH}.vl.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_validation_report_includes_expected_validations(
         self,
-        write_reports_mock: Mock,
         read_parquet_mock: Mock,
+        write_reports_mock: Mock,
         source_df: pl.DataFrame,
         compare_df: pl.DataFrame,
     ):
