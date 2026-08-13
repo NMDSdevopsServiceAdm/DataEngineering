@@ -12,6 +12,7 @@ from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     CareHome,
     CTFilteringRule,
+    CurrentCSSR,
     Dormancy,
     EstimateFilledPostsSource,
     JobGroupLabels,
@@ -20,6 +21,7 @@ from utils.column_values.categorical_column_values import (
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
     Region,
+    RUI,
     Sector,
     Services,
 )
@@ -315,10 +317,10 @@ class ValidateModel01FeaturesData:
 @dataclass
 class MergeIndCQCData:
     cqc_location_data = [
-        ("1-001", date(2024, 1, 1), "Y", Sector.independent),
-        ("1-002", date(2024, 1, 1), "Y", Sector.local_authority),
-        ("1-003", date(2024, 1, 1), "N", Sector.independent),
-    ]
+        ("1-001", date(2024, 1, 1), "Y", Sector.independent, Dormancy.not_dormant, PrimaryServiceType.non_residential, PrimaryServiceTypeSecondLevel.non_residential, RUI.urban_major, Region.london, CurrentCSSR.barnet, "sub_icb_value", "icb_value", "icb_region_value", Region.eastern, CurrentCSSR.bedford, "icb_value"),
+        ("1-002", date(2024, 1, 1), "Y", Sector.local_authority, Dormancy.not_dormant, PrimaryServiceType.non_residential, PrimaryServiceTypeSecondLevel.non_residential, RUI.urban_major, Region.london, CurrentCSSR.barnet, "sub_icb_value", "icb_value", "icb_region_value", Region.eastern, CurrentCSSR.bedford, "icb_value"),
+        ("1-003", date(2024, 1, 1), "N", Sector.independent, Dormancy.not_dormant, PrimaryServiceType.non_residential, PrimaryServiceTypeSecondLevel.non_residential, RUI.urban_major, Region.london, CurrentCSSR.barnet, "sub_icb_value", "icb_value", "icb_region_value", Region.eastern, CurrentCSSR.bedford, "icb_value"),
+    ] # fmt: skip
     cqc_pir_data = [
         ("1-001", date(2024, 1, 1), "Y", "pir_value"),
         ("1-003", date(2024, 1, 1), "N", "pir_value"),
@@ -337,8 +339,8 @@ class MergeIndCQCData:
     ]
 
     expected_data = [
-        ("1-001", date(2024, 1, 1), "Y", Sector.independent, date(2024, 1, 1), "pir_value", date(2024, 1, 1), "ascwds_value", date(2024, 1, 1), "ct_non_res_value", date(2024, 1, 1), "ct_care_home_value"),
-        ("1-003", date(2024, 1, 1), "N", Sector.independent, date(2024, 1, 1), "pir_value", date(2024, 1, 1), "ascwds_value", date(2024, 1, 1), "ct_non_res_value", date(2024, 1, 1), "ct_care_home_value"),
+        ("1-001", date(2024, 1, 1), "Y", Sector.independent, Dormancy.not_dormant, PrimaryServiceType.non_residential, PrimaryServiceTypeSecondLevel.non_residential, RUI.urban_major, Region.london, CurrentCSSR.barnet, "sub_icb_value", "icb_value", "icb_region_value", Region.eastern, CurrentCSSR.bedford, "icb_value", date(2024, 1, 1), "pir_value", date(2024, 1, 1), "ascwds_value", date(2024, 1, 1), "ct_non_res_value", date(2024, 1, 1), "ct_care_home_value"),
+        ("1-003", date(2024, 1, 1), "N", Sector.independent, Dormancy.not_dormant, PrimaryServiceType.non_residential, PrimaryServiceTypeSecondLevel.non_residential, RUI.urban_major, Region.london, CurrentCSSR.barnet, "sub_icb_value", "icb_value", "icb_region_value", Region.eastern, CurrentCSSR.bedford, "icb_value", date(2024, 1, 1), "pir_value", date(2024, 1, 1), "ascwds_value", date(2024, 1, 1), "ct_non_res_value", date(2024, 1, 1), "ct_care_home_value"),
     ] # fmt: skip
 
 

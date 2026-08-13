@@ -105,6 +105,8 @@ All notable changes to this project will be documented in this file.
 
 - Changed return_last_known_value to use .over() instead of filter > group-by > agg > join
 
+- Cast low-cardinality columns to `Categorical`/`Enum` in the IND CQC merge job, and added the named dtype constants to `polars_utils/column_types.py`.
+
 ### Fixed
 - Widened the lower limit on the difference between `estimate_filled_posts` and `estimate_filled_posts_from_all_job_roles` from -0.0002 to -0.002, so float32 drift in the job role sum no longer fails the check on large locations.
 
