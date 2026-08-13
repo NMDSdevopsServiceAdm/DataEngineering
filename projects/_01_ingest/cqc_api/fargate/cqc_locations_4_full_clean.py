@@ -118,10 +118,10 @@ def main(
         pl.col(CQCLClean.dormancy).cast(CategoricalColumnTypes.DormancyEnumType),
         pl.col(CQCLClean.cqc_sector).cast(CategoricalColumnTypes.CqcSectorEnumType),
         pl.col(CQCLClean.primary_service_type_second_level).cast(
-            CategoricalColumnTypes.PrimaryServiceTypeSecondLevelEnumType
+            CategoricalColumnTypes.PrimaryServiceTypeSecondLevelCatType
         ),
         pl.col(CQCLClean.current_rural_urban_ind_11).cast(
-            CategoricalColumnTypes.CurrentRuralUrbanInd11EnumType
+            CategoricalColumnTypes.OnsRuralUrbanInd11EnumType
         ),
         pl.col(CQCLClean.specialism_dementia).cast(
             CategoricalColumnTypes.SpecialismDementiaCatType
@@ -133,25 +133,19 @@ def main(
             CategoricalColumnTypes.SpecialismMentalHealthCatType
         ),
         pl.col(CQCLClean.contemporary_region).cast(
-            CategoricalColumnTypes.ContemporaryRegionCatType
+            CategoricalColumnTypes.OnsRegionCatType
         ),
-        pl.col(CQCLClean.contemporary_cssr).cast(
-            CategoricalColumnTypes.ContemporaryCssrCatType
-        ),
+        pl.col(CQCLClean.contemporary_cssr).cast(CategoricalColumnTypes.OnsCssrCatType),
         pl.col(CQCLClean.contemporary_sub_icb).cast(
-            CategoricalColumnTypes.ContemporarySubIcbCatType
+            CategoricalColumnTypes.OnsSubIcbCatType
         ),
-        pl.col(CQCLClean.contemporary_icb).cast(
-            CategoricalColumnTypes.ContemporaryIcbCatType
-        ),
+        pl.col(CQCLClean.contemporary_icb).cast(CategoricalColumnTypes.OnsIcbCatType),
         pl.col(CQCLClean.contemporary_icb_region).cast(
-            CategoricalColumnTypes.ContemporaryIcbRegionCatType
+            CategoricalColumnTypes.OnsIcbRegionCatType
         ),
-        pl.col(CQCLClean.current_region).cast(
-            CategoricalColumnTypes.CurrentRegionCatType
-        ),
-        pl.col(CQCLClean.current_cssr).cast(CategoricalColumnTypes.CurrentCssrCatType),
-        pl.col(CQCLClean.current_icb).cast(CategoricalColumnTypes.CurrentIcbCatType),
+        pl.col(CQCLClean.current_region).cast(CategoricalColumnTypes.OnsRegionCatType),
+        pl.col(CQCLClean.current_cssr).cast(CategoricalColumnTypes.OnsCssrCatType),
+        pl.col(CQCLClean.current_icb).cast(CategoricalColumnTypes.OnsIcbCatType),
     )
 
     utils.sink_to_parquet(

@@ -18,28 +18,28 @@ class CategoricalColumnTypes:
 
     # ASCWDS workplace
     EstablishmentCatType = pl.Categorical(
-        pl.Categories("establishment", namespace="ascwds_workplace")
+        pl.Categories("establishment", namespace="filled_posts")
     )
     EstablishmentTypeCatType = pl.Categorical(
-        pl.Categories("establishment_type", namespace="ascwds_workplace")
+        pl.Categories("establishment_type", namespace="filled_posts")
     )
     IsBulkUploaderCatType = pl.Categorical(
-        pl.Categories("is_bulk_uploader", namespace="ascwds_workplace")
+        pl.Categories("is_bulk_uploader", namespace="filled_posts")
     )
     IsParentCatType = pl.Categorical(
-        pl.Categories("is_parent", namespace="ascwds_workplace")
+        pl.Categories("is_parent", namespace="filled_posts")
     )
     LaPermissionCatType = pl.Categorical(
-        pl.Categories("la_permission", namespace="ascwds_workplace")
+        pl.Categories("la_permission", namespace="filled_posts")
     )
     MainServiceIdCatType = pl.Categorical(
-        pl.Categories("main_service_id", namespace="ascwds_workplace")
+        pl.Categories("main_service_id", namespace="filled_posts")
     )
     RegionIdCatType = pl.Categorical(
-        pl.Categories("region_id", namespace="ascwds_workplace")
+        pl.Categories("region_id", namespace="filled_posts")
     )
     RegistrationTypeCatType = pl.Categorical(
-        pl.Categories("registration_type", namespace="ascwds_workplace")
+        pl.Categories("registration_type", namespace="filled_posts")
     )
 
     # CQC locations ingest cleaning
@@ -55,56 +55,43 @@ class CategoricalColumnTypes:
     PrimaryServiceEnumType = pl.Enum(
         CQCLocationCatVals.primary_service_type_column_values.categorical_values
     )
-    PrimaryServiceTypeSecondLevelEnumType = pl.Enum(
-        CQCLocationCatVals.primary_service_type_second_level_column_values.categorical_values
+    PrimaryServiceTypeSecondLevelCatType = pl.Categorical(
+        pl.Categories("primary_service_type_second_level", namespace="filled_posts")
     )
-    CurrentRuralUrbanInd11EnumType = pl.Enum(
+    OnsRuralUrbanInd11EnumType = pl.Enum(
         CQCLocationCatVals.current_rui_column_values.categorical_values
     )
-    BrandCatType = pl.Categorical(pl.Categories("brand", namespace="cqc_location"))
+    BrandCatType = pl.Categorical(pl.Categories("brand", namespace="filled_posts"))
     LocationCatType = pl.Categorical(
-        pl.Categories("location", namespace="cqc_location")
+        pl.Categories("location", namespace="filled_posts")
     )
     ProviderCatType = pl.Categorical(
-        pl.Categories("provider", namespace="cqc_location")
+        pl.Categories("provider", namespace="filled_posts")
     )
     SpecialismDementiaCatType = pl.Categorical(
-        pl.Categories("specialism_dementia", namespace="cqc_location")
+        pl.Categories("specialism_dementia", namespace="filled_posts")
     )
     SpecialismLearningDisabilitiesCatType = pl.Categorical(
-        pl.Categories("specialism_learning_disabilities", namespace="cqc_location")
+        pl.Categories("specialism_learning_disabilities", namespace="filled_posts")
     )
     SpecialismMentalHealthCatType = pl.Categorical(
-        pl.Categories("specialism_mental_health", namespace="cqc_location")
+        pl.Categories("specialism_mental_health", namespace="filled_posts")
     )
-    ContemporaryRegionCatType = pl.Categorical(
-        pl.Categories("contemporary_region", namespace="ons_postcode_directory")
+    OnsRegionCatType = pl.Categorical(
+        pl.Categories("ons_region", namespace="filled_posts")
     )
-    ContemporaryCssrCatType = pl.Categorical(
-        pl.Categories("contemporary_cssr", namespace="ons_postcode_directory")
+    OnsCssrCatType = pl.Categorical(pl.Categories("ons_cssr", namespace="filled_posts"))
+    OnsSubIcbCatType = pl.Categorical(
+        pl.Categories("ons_sub_icb", namespace="filled_posts")
     )
-    ContemporarySubIcbCatType = pl.Categorical(
-        pl.Categories("contemporary_sub_icb", namespace="ons_postcode_directory")
-    )
-    ContemporaryIcbCatType = pl.Categorical(
-        pl.Categories("contemporary_icb", namespace="ons_postcode_directory")
-    )
-    ContemporaryIcbRegionCatType = pl.Categorical(
-        pl.Categories("contemporary_icb_region", namespace="ons_postcode_directory")
-    )
-    CurrentRegionCatType = pl.Categorical(
-        pl.Categories("current_region", namespace="ons_postcode_directory")
-    )
-    CurrentCssrCatType = pl.Categorical(
-        pl.Categories("current_cssr", namespace="ons_postcode_directory")
-    )
-    CurrentIcbCatType = pl.Categorical(
-        pl.Categories("current_icb", namespace="ons_postcode_directory")
+    OnsIcbCatType = pl.Categorical(pl.Categories("ons_icb", namespace="filled_posts"))
+    OnsIcbRegionCatType = pl.Categorical(
+        pl.Categories("ons_icb_region", namespace="filled_posts")
     )
 
     # CQC providers
     ProviderTypeCatType = pl.Categorical(
-        pl.Categories("type", namespace="cqc_provider")
+        pl.Categories("type", namespace="filled_posts")
     )
     RegistrationStatusEnumType = pl.Enum(
         CQCLocationCatVals.registration_status_column_values.categorical_values

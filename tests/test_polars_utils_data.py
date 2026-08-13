@@ -430,27 +430,27 @@ class ColumnTypesData:
             id="location_cat_type",
             actual=CatColType.LocationCatType,
             expected=pl.Categorical(
-                pl.Categories("location", namespace="cqc_location")
+                pl.Categories("location", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
             id="establishment_cat_type",
             actual=CatColType.EstablishmentCatType,
             expected=pl.Categorical(
-                pl.Categories("establishment", namespace="ascwds_workplace")
+                pl.Categories("establishment", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
             id="provider_cat_type",
             actual=CatColType.ProviderCatType,
             expected=pl.Categorical(
-                pl.Categories("provider", namespace="cqc_location")
+                pl.Categories("provider", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
             id="brand_cat_type",
             actual=CatColType.BrandCatType,
-            expected=pl.Categorical(pl.Categories("brand", namespace="cqc_location")),
+            expected=pl.Categorical(pl.Categories("brand", namespace="filled_posts")),
         ),
         CategoricalColumnTypeCase(
             id="job_role_enum_type",
@@ -504,6 +504,76 @@ class ColumnTypesData:
                     namespace="filled_posts",
                     physical=pl.UInt8,
                 )
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="care_home_enum_type",
+            actual=CatColType.CareHomeEnumType,
+            expected=pl.Enum(
+                CQCLocationCatVals.care_home_column_values.categorical_values
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="dormancy_enum_type",
+            actual=CatColType.DormancyEnumType,
+            expected=pl.Enum(
+                CQCLocationCatVals.dormancy_column_values.categorical_values
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="cqc_sector_enum_type",
+            actual=CatColType.CqcSectorEnumType,
+            expected=pl.Enum(
+                CQCLocationCatVals.sector_column_values.categorical_values
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="primary_service_type_second_level_cat_type",
+            actual=CatColType.PrimaryServiceTypeSecondLevelCatType,
+            expected=pl.Categorical(
+                pl.Categories(
+                    "primary_service_type_second_level", namespace="filled_posts"
+                )
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="ons_rural_urban_ind_11_enum_type",
+            actual=CatColType.OnsRuralUrbanInd11EnumType,
+            expected=pl.Enum(
+                CQCLocationCatVals.current_rui_column_values.categorical_values
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="ons_region_cat_type",
+            actual=CatColType.OnsRegionCatType,
+            expected=pl.Categorical(
+                pl.Categories("ons_region", namespace="filled_posts")
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="ons_cssr_cat_type",
+            actual=CatColType.OnsCssrCatType,
+            expected=pl.Categorical(
+                pl.Categories("ons_cssr", namespace="filled_posts")
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="ons_icb_cat_type",
+            actual=CatColType.OnsIcbCatType,
+            expected=pl.Categorical(pl.Categories("ons_icb", namespace="filled_posts")),
+        ),
+        CategoricalColumnTypeCase(
+            id="ons_sub_icb_cat_type",
+            actual=CatColType.OnsSubIcbCatType,
+            expected=pl.Categorical(
+                pl.Categories("ons_sub_icb", namespace="filled_posts")
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="ons_icb_region_cat_type",
+            actual=CatColType.OnsIcbRegionCatType,
+            expected=pl.Categorical(
+                pl.Categories("ons_icb_region", namespace="filled_posts")
             ),
         ),
     ]
