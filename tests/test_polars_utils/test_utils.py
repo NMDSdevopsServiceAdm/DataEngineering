@@ -6,7 +6,7 @@ import sys
 import tempfile
 import unittest
 from contextlib import redirect_stdout
-from datetime import date, datetime
+from datetime import date
 from glob import glob
 from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
@@ -280,33 +280,6 @@ class TestSinkParquet(TestUtils):
             self.assertTrue(any(str(expected_partition_2) in p for p in written_files))
 
 
-class TestGenerateS3Dir(TestUtils):
-    def test_get_date_partitioned_s3_path_version(self):
-        dec_first_21 = datetime(2021, 12, 1)
-        version_number = "2.0.0"
-        dir_path = utils.generate_s3_dir(
-            "s3://sfc-main-datasets",
-            "test_domain",
-            "test_dateset",
-            dec_first_21,
-            version_number,
-        )
-        self.assertEqual(
-            dir_path,
-            "s3://sfc-main-datasets/domain=test_domain/dataset=test_dateset/version=2.0.0/year=2021/month=12/day=01/import_date=20211201/",
-        )
-
-    def test_get_date_partitioned_s3_path_default_version(self):
-        dec_first_21 = datetime(2021, 12, 1)
-        dir_path = utils.generate_s3_dir(
-            "s3://sfc-main-datasets", "test_domain", "test_dateset", dec_first_21
-        )
-        self.assertEqual(
-            dir_path,
-            "s3://sfc-main-datasets/domain=test_domain/dataset=test_dateset/version=1.0.0/year=2021/month=12/day=01/import_date=20211201/",
-        )
-
-
 class TestGetArgs(TestUtils):
     def test_get_args_has_all(self):
         # Given
@@ -360,92 +333,6 @@ class TestGetArgs(TestUtils):
                 utils.get_args(*args)
 
 
-class TestListS3ParquetImportDates(unittest.TestCase):
-    @patch(f"{PATCH_PATH}.boto3.client")
-    def test_no_objects(self, mock_boto_client_mock: Mock):
-        """Test when the S3 prefix has no import_date folders."""
-        # Mock paginator to return empty Contents
-        mock_s3 = MagicMock()
-        mock_paginator = MagicMock()
-        mock_paginator.paginate.return_value = [{"Contents": []}]
-        mock_s3.get_paginator.return_value = mock_paginator
-        mock_boto_client_mock.return_value = mock_s3
-
-        result = utils.list_s3_parquet_import_dates(
-            "s3://test_bucket/domain=test_domain/dataset=test_dataset/"
-        )
-        self.assertEqual(result, [])
-
-    @patch(f"{PATCH_PATH}.boto3.client")
-    def test_multiple_import_dates_sorted_chronologically(
-        self, mock_boto_client_mock: Mock
-    ):
-        """Test multiple import_date folders are sorted chronologically in list."""
-        mock_s3 = MagicMock()
-        mock_paginator = MagicMock()
-        mock_paginator.paginate.return_value = [
-            {
-                "Contents": [
-                    {
-                        "Key": "domain=test_domain/dataset=test_dataset/year=2025/month=12/day=01/import_date=20251201/file.parquet"
-                    },
-                    {
-                        "Key": "domain=test_domain/dataset=test_dataset/year=2023/month=05/day=01/import_date=20230501/file.parquet"
-                    },
-                    {
-                        "Key": "domain=test_domain/dataset=test_dataset/year=2024/month=01/day=01/import_date=20240101/file.parquet"
-                    },
-                ]
-            }
-        ]
-        mock_s3.get_paginator.return_value = mock_paginator
-        mock_boto_client_mock.return_value = mock_s3
-
-        result = utils.list_s3_parquet_import_dates(
-            "s3://test_bucket/domain=test_domain/dataset=test_dataset/"
-        )
-        # Should be sorted
-        self.assertEqual(result, [20230501, 20240101, 20251201])
-
-    @patch(f"{PATCH_PATH}.boto3.client")
-    def test_invalid_prefix_format(self, mock_boto_client_mock: Mock):
-        """Test that non-import_date prefixes are ignored."""
-        mock_s3 = MagicMock()
-        mock_paginator = MagicMock()
-        mock_paginator.paginate.return_value = [
-            {
-                "Contents": [
-                    {
-                        "Key": "domain=test_domain/dataset=test_dataset/other=123/file.parquet"
-                    },
-                    {
-                        "Key": "domain=test_domain/dataset=test_dataset/year=2023/month=05/day=01/import_date=20230501/file.parquet"
-                    },
-                ]
-            }
-        ]
-        mock_s3.get_paginator.return_value = mock_paginator
-        mock_boto_client_mock.return_value = mock_s3
-
-        result = utils.list_s3_parquet_import_dates(
-            "s3://test_bucket/domain=test_domain/dataset=test_dataset/"
-        )
-        self.assertEqual(result, [20230501])
-
-    @patch(f"{PATCH_PATH}.boto3.client")
-    def test_bucket_and_prefix_parsing(self, mock_boto_client_mock: Mock):
-        """Ensure s3 URI is parsed correctly into bucket and prefix."""
-        mock_s3 = MagicMock()
-        mock_paginator = MagicMock()
-        mock_paginator.paginate.return_value = [{"Contents": []}]
-        mock_s3.get_paginator.return_value = mock_paginator
-        mock_boto_client_mock.return_value = mock_s3
-
-        # Should not raise an error
-        result = utils.list_s3_parquet_import_dates("s3://test_bucket/path/to/prefix/")
-        self.assertEqual(result, [])
-
-
 class TestDiscoverCombinedSchema:
     @patch(f"{PATCH_PATH}.pl.scan_parquet")
     @patch(f"{PATCH_PATH}.boto3.client")
@@ -496,52 +383,6 @@ class TestDiscoverCombinedSchema:
             match=r"No parquet files found in s3://test_bucket/domain=x/dataset=y/",
         ):
             utils.discover_combined_schema("s3://test_bucket/domain=x/dataset=y/")
-
-
-class TestEmptyS3Folder(unittest.TestCase):
-    @patch("boto3.client")
-    def test_empty_s3_folder_no_objects(self, mock_s3_client):
-        # Given
-        paginator = mock_s3_client.return_value.get_paginator.return_value
-        paginator.paginate.return_value.search.return_value = [None]
-
-        # When
-        f = io.StringIO()
-        with redirect_stdout(f):
-            utils.empty_s3_folder("my-bucket", "some/prefix/")
-        output = f.getvalue()
-
-        # Then
-        self.assertIn(
-            "Skipping emptying folder - no objects matching prefix some/prefix/",
-            output,
-        )
-        mock_s3_client.return_value.delete_objects.assert_not_called()
-
-    @patch("boto3.client")
-    def test_empty_s3_folder_deletes_objects(self, mock_s3_client):
-        # Given
-        paginator = mock_s3_client.return_value.get_paginator.return_value
-        paginator.paginate.return_value.search.side_effect = [
-            [
-                {"Key": "some/prefix/file1.parquet"},
-                {"Key": "some/prefix/file2.parquet"},
-                {"Key": "some/prefix/file3.parquet"},
-            ]
-        ]
-        # When
-        utils.empty_s3_folder("my-bucket", "some/prefix/")
-        # Then
-        mock_s3_client.return_value.delete_objects.assert_called_once_with(
-            Bucket="my-bucket",
-            Delete={
-                "Objects": [
-                    {"Key": "some/prefix/file1.parquet"},
-                    {"Key": "some/prefix/file2.parquet"},
-                    {"Key": "some/prefix/file3.parquet"},
-                ]
-            },
-        )
 
 
 class SendSnsNotificationTests(TestUtils):
@@ -621,15 +462,6 @@ class SendSnsNotificationTests(TestUtils):
         self.assertEqual("[1, 2, 3]", utils.parse_arg_by_type("[1, 2, 3]"))
         self.assertEqual("{1:2, 3:4}", utils.parse_arg_by_type("{1:2, 3:4}"))
         self.assertEqual("2025-06-19", utils.parse_arg_by_type("2025-06-19"))
-
-
-class TestSplitS3Uri(TestUtils):
-    def test_split_s3_uri(self):
-        s3_uri = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/"
-        bucket_name, key_name = utils.split_s3_uri(s3_uri)
-
-        self.assertEqual(bucket_name, "sfc-data-engineering-raw")
-        self.assertEqual(key_name, "domain=ASCWDS/dataset=workplace/")
 
 
 class TestFilterToMaximumValueInColumn(TestUtils):

@@ -25,64 +25,56 @@ def model_extrapolation(direct_payments_lf: pl.LazyFrame) -> pl.LazyFrame:
             - estimate_using_extrapolation_ratio: extrapolated proportion for years
                 outside the known data range, null for years within the range.
     """
-    first_value = "first_value"
-    first_mean = "first_mean"
-    last_value = "last_value"
-    last_mean = "last_mean"
+    has_data = pl.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).is_not_null()
 
-    boundaries_lf = (
-        direct_payments_lf.filter(
-            pl.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).is_not_null()
-        )
-        # polars_streaming: groupby-agg-join workaround; could be .min().over() and .max().over() when window functions support streaming
-        .group_by(DP.LA_AREA).agg(
-            pl.col(DP.YEAR_AS_INTEGER)
-            .min()
-            .cast(pl.Int32)
-            .alias(DP.FIRST_YEAR_WITH_DATA),
-            pl.col(DP.YEAR_AS_INTEGER)
-            .max()
-            .cast(pl.Int32)
-            .alias(DP.LAST_YEAR_WITH_DATA),
-        )
-    )
-    direct_payments_lf = direct_payments_lf.join(
-        boundaries_lf, on=DP.LA_AREA, how="left"
+    direct_payments_lf = direct_payments_lf.with_columns(
+        pl.col(DP.YEAR_AS_INTEGER)
+        .filter(has_data)
+        .min()
+        .cast(pl.Int32)
+        .over(DP.LA_AREA)
+        .alias(DP.FIRST_YEAR_WITH_DATA),
+        pl.col(DP.YEAR_AS_INTEGER)
+        .filter(has_data)
+        .max()
+        .cast(pl.Int32)
+        .over(DP.LA_AREA)
+        .alias(DP.LAST_YEAR_WITH_DATA),
     )
 
-    first_values_lf = direct_payments_lf.filter(
-        pl.col(DP.YEAR_AS_INTEGER) == pl.col(DP.FIRST_YEAR_WITH_DATA)
-    ).select(
-        DP.LA_AREA,
-        pl.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).alias(first_value),
-        pl.col(DP.ESTIMATE_USING_MEAN).alias(first_mean),
-    )
+    is_first_year = pl.col(DP.YEAR_AS_INTEGER) == pl.col(DP.FIRST_YEAR_WITH_DATA)
+    is_last_year = pl.col(DP.YEAR_AS_INTEGER) == pl.col(DP.LAST_YEAR_WITH_DATA)
 
-    last_values_lf = direct_payments_lf.filter(
-        pl.col(DP.YEAR_AS_INTEGER) == pl.col(DP.LAST_YEAR_WITH_DATA)
-    ).select(
-        DP.LA_AREA,
-        pl.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).alias(last_value),
-        pl.col(DP.ESTIMATE_USING_MEAN).alias(last_mean),
+    first_value = (
+        pl.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+        .filter(is_first_year)
+        .first()
+        .over(DP.LA_AREA)
     )
-
-    direct_payments_lf = direct_payments_lf.join(
-        first_values_lf, on=DP.LA_AREA, how="left"
-    ).join(last_values_lf, on=DP.LA_AREA, how="left")
+    first_mean = (
+        pl.col(DP.ESTIMATE_USING_MEAN).filter(is_first_year).first().over(DP.LA_AREA)
+    )
+    last_value = (
+        pl.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+        .filter(is_last_year)
+        .first()
+        .over(DP.LA_AREA)
+    )
+    last_mean = (
+        pl.col(DP.ESTIMATE_USING_MEAN).filter(is_last_year).first().over(DP.LA_AREA)
+    )
 
     before_first = pl.col(DP.YEAR_AS_INTEGER) < pl.col(DP.FIRST_YEAR_WITH_DATA)
     after_last = pl.col(DP.YEAR_AS_INTEGER) > pl.col(DP.LAST_YEAR_WITH_DATA)
 
-    mean_ratio_first = pl.col(DP.ESTIMATE_USING_MEAN) / pl.col(first_mean)
-    mean_ratio_last = pl.col(DP.ESTIMATE_USING_MEAN) / pl.col(last_mean)
+    mean_ratio_first = pl.col(DP.ESTIMATE_USING_MEAN) / first_mean
+    mean_ratio_last = pl.col(DP.ESTIMATE_USING_MEAN) / last_mean
 
-    direct_payments_lf = direct_payments_lf.with_columns(
+    return direct_payments_lf.with_columns(
         pl.when(before_first)
-        .then(mean_ratio_first * pl.col(first_value))
+        .then(mean_ratio_first * first_value)
         .when(after_last)
-        .then(mean_ratio_last * pl.col(last_value))
+        .then(mean_ratio_last * last_value)
         .otherwise(None)
         .alias(DP.ESTIMATE_USING_EXTRAPOLATION_RATIO)
     )
-
-    return direct_payments_lf.drop(last_mean, first_value, first_mean, last_value)

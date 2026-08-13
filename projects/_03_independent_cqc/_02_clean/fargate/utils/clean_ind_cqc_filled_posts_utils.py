@@ -3,8 +3,6 @@ import polars as pl
 from polars_utils.expressions import is_care_home, is_dormant, is_not_care_home
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
-average_number_of_beds: str = "avg_beds"
-
 
 def calculate_time_registered_for(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
@@ -251,69 +249,20 @@ def populate_missing_care_home_number_of_beds(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: A polars LazyFrame.
     """
-    care_home_lf = filter_to_care_homes_with_known_beds(lf)
-    avg_beds_per_loc_lf = average_beds_per_location(care_home_lf)
-    lf = lf.join(avg_beds_per_loc_lf, IndCQC.location_id, "left")
-    lf = replace_null_beds_with_average(lf)
-    return lf
-
-
-def filter_to_care_homes_with_known_beds(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Filters the LazyFrame to care homes where the number_of_beds value is not
-    null.
-
-    Args:
-        lf (pl.LazyFrame): A polars LazyFrame containing number_of_beds column.
-
-    Returns:
-        pl.LazyFrame: A polars LazyFrame containing only care homes with
-        non-null number_of_beds values.
-    """
-    return lf.filter(is_care_home()).filter(pl.col(IndCQC.number_of_beds).is_not_null())
-
-
-def average_beds_per_location(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Calculates average beds per location.
-
-    Args:
-        lf (pl.LazyFrame): A polars LazyFrame containing number_of_beds column.
-
-    Returns:
-        pl.LazyFrame: A polars LazyFrame with average beds per location.
-    """
-    # polars_streaming: groupby+agg workaround; could be .mean().over() when window functions support streaming
-    return (
-        lf.group_by(IndCQC.location_id)
-        .agg(pl.col(IndCQC.number_of_beds).mean().alias(average_number_of_beds))
-        .with_columns(pl.col(average_number_of_beds).cast(pl.Int64))
-        .select(
-            IndCQC.location_id,
-            average_number_of_beds,
-        )
+    known_beds = is_care_home() & pl.col(IndCQC.number_of_beds).is_not_null()
+    average_beds_per_location = (
+        pl.col(IndCQC.number_of_beds)
+        .filter(known_beds)
+        .mean()
+        .cast(pl.Int64)
+        .over(IndCQC.location_id)
     )
-
-
-def replace_null_beds_with_average(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """
-    Replaces value of number_of_beds with average value per location for the
-    records where number_of_beds is null.
-
-    Args:
-        lf (pl.LazyFrame): A polars LazyFrame containing number_of_beds and
-            average_number_of_beds columns.
-
-    Returns:
-        pl.LazyFrame: A polars LazyFrame with number_of_beds column replaced
-            with average_number_of_beds if value was null.
-    """
     return lf.with_columns(
         pl.coalesce(
             pl.col(IndCQC.number_of_beds),
-            pl.col(average_number_of_beds),
+            average_beds_per_location,
         ).alias(IndCQC.number_of_beds)
-    ).drop(average_number_of_beds)
+    )
 
 
 def calculate_care_home_status_count(lf: pl.LazyFrame) -> pl.LazyFrame:
