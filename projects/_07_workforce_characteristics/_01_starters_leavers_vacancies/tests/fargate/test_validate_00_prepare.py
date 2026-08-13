@@ -23,7 +23,7 @@ class TestMain:
         source_schema = {
             AWPClean.establishment_id: pl.String,
             AWPClean.ascwds_workplace_import_date: pl.Date,
-            SLVCols.job_role_label: pl.String,
+            SLVCols.published_job_role_label: pl.String,
             SLVCols.employees: pl.Int64,
             SLVCols.starters: pl.Int64,
             SLVCols.leavers: pl.Int64,
