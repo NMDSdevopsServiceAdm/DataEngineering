@@ -6,9 +6,7 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
 )
 from utils.column_values.categorical_columns_by_dataset import (
-    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
     LocationsApiCleanedCategoricalValues as CQCLocationCatVals,
-    SLVPrepareCategoricalValues,
 )
 
 
@@ -49,12 +47,10 @@ class CategoricalColumnTypes:
     IsParentCatType = pl.Categorical(
         pl.Categories("is_parent", namespace="filled_posts")
     )
-    JobGroupEnumType = pl.Enum(
-        CatVals.main_job_group_labels_column_values.categorical_values
+    JobGroupCatType = pl.Categorical(
+        pl.Categories("job_group", namespace="filled_posts")
     )
-    JobRoleEnumType = pl.Enum(
-        CatVals.main_job_role_labels_column_values.categorical_values
-    )
+    JobRoleCatType = pl.Categorical(pl.Categories("job_role", namespace="filled_posts"))
     JobRoleFilteringRuleCatType = pl.Categorical(
         pl.Categories(
             "job_role_filtering_rule", namespace="filled_posts", physical=pl.UInt8
@@ -95,8 +91,8 @@ class CategoricalColumnTypes:
     ProviderTypeCatType = pl.Categorical(
         pl.Categories("type", namespace="filled_posts")
     )
-    PublishedJobRoleLabelEnumType = pl.Enum(
-        SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
+    PublishedJobRoleLabelCatType = pl.Categorical(
+        pl.Categories("published_job_role_label", namespace="filled_posts")
     )
     RegionIdCatType = pl.Categorical(
         pl.Categories("region_id", namespace="filled_posts")

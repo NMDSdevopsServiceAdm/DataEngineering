@@ -1,6 +1,7 @@
 import polars as pl
 
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._03_independent_cqc._01_merge.fargate.utils.merge_utils import (
     join_data_into_cqc_lf,
 )
@@ -91,6 +92,23 @@ cleaned_ct_care_home_columns_to_import = [
     CTCHClean.ct_care_home_total_employed,
 ]
 
+columns_to_cast_to_categorical_or_enum = {
+    CQCLClean.care_home: CatColType.CareHomeEnumType,
+    CQCLClean.dormancy: CatColType.DormancyEnumType,
+    CQCLClean.cqc_sector: CatColType.CqcSectorEnumType,
+    CQCLClean.primary_service_type: CatColType.PrimaryServiceEnumType,
+    CQCLClean.primary_service_type_second_level: CatColType.PrimaryServiceTypeSecondLevelCatType,
+    ONSClean.current_rural_urban_ind_11: CatColType.OnsRuralUrbanInd11EnumType,
+    ONSClean.contemporary_region: CatColType.OnsRegionCatType,
+    ONSClean.contemporary_cssr: CatColType.OnsCssrCatType,
+    ONSClean.contemporary_sub_icb: CatColType.OnsSubIcbCatType,
+    ONSClean.contemporary_icb: CatColType.OnsIcbCatType,
+    ONSClean.contemporary_icb_region: CatColType.OnsIcbRegionCatType,
+    ONSClean.current_region: CatColType.OnsRegionCatType,
+    ONSClean.current_cssr: CatColType.OnsCssrCatType,
+    ONSClean.current_icb: CatColType.OnsIcbCatType,
+}
+
 
 def main(
     cleaned_cqc_location_source: str,
@@ -179,6 +197,10 @@ def main(
         CTCHClean.care_home,
     )
     print("Cleaned capacity tracker care home LazyFrame joined in")
+
+    independent_cqc_lf = independent_cqc_lf.with_columns(
+        utils.cast_to_schema(columns_to_cast_to_categorical_or_enum)
+    )
 
     utils.sink_to_parquet(
         independent_cqc_lf,

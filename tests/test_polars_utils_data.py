@@ -23,9 +23,7 @@ from utils.column_values.categorical_column_values import (
     JobRoleFilteringRule,
 )
 from utils.column_values.categorical_columns_by_dataset import (
-    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
     LocationsApiCleanedCategoricalValues as CQCLocationCatVals,
-    SLVPrepareCategoricalValues,
 )
 
 
@@ -453,24 +451,24 @@ class ColumnTypesData:
             expected=pl.Categorical(pl.Categories("brand", namespace="filled_posts")),
         ),
         CategoricalColumnTypeCase(
-            id="job_role_enum_type",
-            actual=CatColType.JobRoleEnumType,
-            expected=pl.Enum(
-                CatVals.main_job_role_labels_column_values.categorical_values
+            id="job_role_cat_type",
+            actual=CatColType.JobRoleCatType,
+            expected=pl.Categorical(
+                pl.Categories("job_role", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
-            id="job_group_enum_type",
-            actual=CatColType.JobGroupEnumType,
-            expected=pl.Enum(
-                CatVals.main_job_group_labels_column_values.categorical_values
+            id="job_group_cat_type",
+            actual=CatColType.JobGroupCatType,
+            expected=pl.Categorical(
+                pl.Categories("job_group", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
-            id="published_job_role_label_enum_type",
-            actual=CatColType.PublishedJobRoleLabelEnumType,
-            expected=pl.Enum(
-                SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
+            id="published_job_role_label_cat_type",
+            actual=CatColType.PublishedJobRoleLabelCatType,
+            expected=pl.Categorical(
+                pl.Categories("published_job_role_label", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(

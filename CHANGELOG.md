@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added the missing validation checks to the imputed independent CQC pointblank validation job, covering the imputed and capacity tracker model columns, the rate of change trendlines, and the relationship between `careHome` and `primary_service_type`.
+
+- Added a validation check that `ascwds_job_role_rolling_ratio` sums to 1 across job roles within each primary service type, size group and import date group.
+
 - Joined job role estimates with metadata (on `id_per_locationid_import_date`) in the SLV merge job.
 
 - Added `new-ticket`, `commit-push`, and `open-pr` Claude Code skills to run the ticket workflow (branch → SPEC → commits → PR) consistently, and an output-style guideline in CLAUDE.md. Trimmed the existing skills to cross-reference CLAUDE.md/PR templates instead of restating them, and updated remaining `pipenv` mentions to their `uv` equivalents.
@@ -32,7 +36,11 @@ All notable changes to this project will be documented in this file.
 
 - Added `reshape_job_role_cols_to_rows` to the SLV prepare job, reshaping wide per-job-role columns into one row per establishment/date/job-role label, wired in after job-role relabelling; updated the merge step and prepare validation to match the new long-format output.
 
+- Joined employees/starters/leavers/vacancies onto the job role estimates in the SLV merge job. Since the two datasets use different job-role taxonomies (37 granular ASC-WDS roles vs. 15 published roles), job role estimates are first collapsed onto the published roles before joining. Updated the merge validation's expected row count to account for the collapse.
+
 ### Changed
+- Reduced CircleCI credit consumption in `task-containerisation`. A new `decide-images` job works out which `docker-bake` targets a push changed, deriving each target's trigger paths from its Dockerfile's own `COPY` sources, and includes any target with no image in ECR under the branch tag yet. `task-containerisation` then skips entirely when nothing relevant changed, and otherwise bakes only the affected targets instead of all seven. Also removed Docker Layer Caching from the job: measurement showed it's billed as a flat ~200-credit surcharge for being declared, regardless of whether it does anything, so dropping it saves roughly 90% of the job's cost on both build and skip paths. Applies to branch builds only; merges to main still build everything. Also reordered all seven fargate Dockerfiles to install dependencies before copying job source, so a source-only change no longer invalidates the `pip install` layer. Deduplicated the branch-name-sanitising logic that was copy-pasted across five CircleCI steps into a single shared command, and fixed a shell-injection risk in `terraform-destroy`'s use of it: a crafted branch name could previously break out of a quoted shell string spliced from CircleCI pipeline parameters, so that value is now passed through the step's `environment:` key instead, which is never re-parsed as shell syntax.
+
 - Increased the `cqc-api` Fargate task's resources from 8 vCPU/60GB to 16 vCPU/64GB to fix OOM errors in `cqc_locations_4_full_clean.py`.
 
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
@@ -69,7 +77,16 @@ All notable changes to this project will be documented in this file.
 
 - Reworked `reduce_to_published_roles` in the SLV prepare job to derive which raw ASC-WDS job role codes are published versus fold into an 'other' group from the team's own `PublishedJobRoleLabels`/job-group definitions, instead of a hand-maintained mapping dict that needed manual upkeep whenever ASC-WDS's raw job role codes changed.
 
+- Consolidated the file/S3-path helper functions duplicated across `utils/utils.py`, `polars_utils/utils.py`, and `projects/_01_ingest/utils/utils.py` (including three copies of `split_s3_uri`) into a single dependency-light `utils/file_utils.py`, importable by both PySpark and Polars code without pulling in the other framework. Updated every consumer to import from the new module, deleted the now-empty `projects/_01_ingest/utils/utils.py`, and added the missing Dockerfile `COPY utils/file_utils.py` to every Fargate image that depends on it via `polars_utils`.
+
 - Completed the Polars migration of functions within `estimate_ind_cqc_filled_posts.py`.
+
+- Refactored calculate_rolling_average to be more memory efficient. Calls to the function are still commented out.
+  I've prepared the calls for being uncommented and the patch/mock tests, and removed unittest dependency in the tests.
+
+- Renamed the SLV pipeline's `job_role_label` column to `published_job_role_label`, to make explicit that it only ever holds canonical published job role labels.
+
+- Updated pointblank validation for the estimates job within the Ind CQC pipeline, and added the custom validation rules that hadn't been converted from PySpark yet.
 
 ### Improved
 - Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum in the ASCWDS workplace and CQC locations/providers cleaning jobs.
@@ -82,13 +99,19 @@ All notable changes to this project will be documented in this file.
 
 - Replaced the fan-out join that broadcast the primary service rate of change trendline back onto every location row with an `.over()`-based broadcast computed in place, reducing peak memory in the imputation pipeline.
 
+- Replaced several `group_by`+`join` broadcast-back workarounds with `.over()` across the ASCWDS workplace, direct payments extrapolation, and CQC bed-count/winsorization cleaning steps, reducing peak memory for each.
+
 - Removed mid-pipeline LazyFrame collects from the PIR-to-filled-posts ratio and non-residential rate-of-change cleaning steps in the imputation pipeline, computing them as lazy expressions instead so the query stays fused end-to-end.
 
 - Changed build_extrapolation_aggregates to use .over() instead of filter > group-by > agg > join
 
 - Changed return_last_known_value to use .over() instead of filter > group-by > agg > join
 
+- Cast low-cardinality columns to `Categorical`/`Enum` in the IND CQC merge job, and added the named dtype constants to `polars_utils/column_types.py`.
+
 ### Fixed
+- Widened the lower limit on the difference between `estimate_filled_posts` and `estimate_filled_posts_from_all_job_roles` from -0.0002 to -0.002, so float32 drift in the job role sum no longer fails the check on large locations.
+
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
 
 - Fixed Schema mismatch error while generating grouped providers output.

@@ -1,5 +1,4 @@
 import argparse
-import re
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date
@@ -11,6 +10,7 @@ import polars.selectors as cs
 from botocore.exceptions import ClientError
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.file_utils import split_s3_uri
 
 SCHEMA_DISCOVERY_MAX_WORKERS = 20
 
@@ -227,86 +227,6 @@ def get_args(*args: tuple) -> argparse.Namespace:
         raise argparse.ArgumentError(None, "Error parsing argument")
 
 
-def generate_s3_dir(
-    destination_prefix: str,
-    domain: str,
-    dataset: str,
-    date: date,
-    version: str = "1.0.0",
-) -> str:
-    """Generates an s3 URI from componant parts of the address and prints the location to stdout (standard output stream).
-
-    Example:
-        generate_s3_dir("s3://my-bucket", "my-domain", "my-dataset", date.today(), "1.0.0")
-        returns "s3://my-bucket/domain=my-domain/dataset=my-dataset/version=1.0.0/year=YYYY/month=MM/day=DD/import_date=YYYYMMDD/"
-
-    Args:
-        destination_prefix(str): The address of the s3 bucket.
-        domain(str): The value of the domain key for the URI path.
-        dataset(str): The value of the dataset key for the URI path.
-        date(date): The date to be used to construct the import_date, year, month, and day partition values for the URI path.
-        version(str): The value of the version key for the URI path. Defaults to "1.0.0".
-
-    Returns:
-        str: The desired s3 URI
-    """
-    year = f"{date.year}"
-    month = f"{date.month:02d}"
-    day = f"{date.day:02d}"
-    import_date = year + month + day
-    output_dir = f"{destination_prefix}/domain={domain}/dataset={dataset}/version={version}/year={year}/month={month}/day={day}/import_date={import_date}/"
-    print(f"Generated output s3 dir: {output_dir}")
-    return output_dir
-
-
-def list_s3_parquet_import_dates(s3_prefix: str) -> list[int]:
-    """
-    List import_dates present in a partitioned S3 path.
-
-    Args:
-        s3_prefix (str): Base S3 path to the full flattened dataset.
-
-    Returns:
-        list[int]: Sorted list of import_date integers.
-    """
-
-    match_uri = re.match(r"s3://([^/]+)/(.+)", s3_prefix)
-    if not match_uri:
-        return []
-
-    bucket = match_uri.group(1)
-    prefix = match_uri.group(2).rstrip("/")
-
-    s3_client = boto3.client("s3")
-    paginator = s3_client.get_paginator("list_objects_v2")
-    pages = paginator.paginate(Bucket=bucket, Prefix=prefix + "/")
-
-    dates = []
-    for page in pages:
-        for obj in page.get("Contents", []):
-            key = obj["Key"]
-            m = re.search(r"import_date=(\d{8})", key)
-            if m:
-                date_val = int(m.group(1))
-                dates.append(date_val)
-
-    return sorted(dates)
-
-
-def split_s3_uri(uri: str) -> tuple[str, str]:
-    """
-    Converts a given string of an s3 uri into its bucket and key names
-
-    Args:
-        uri (str): The s3 uri to be split.
-
-    Returns:
-        tuple[str, str]: A tuple of the bucket and key substrings from the s3 uri.
-    """
-    bucket, prefix = uri.replace("s3://", "").split("/", 1)
-    return bucket, prefix
-
-
 def discover_combined_schema(source: str) -> pl.Schema:
     """
     Builds the union of every column found across all parquet files under a
@@ -355,37 +275,6 @@ def discover_combined_schema(source: str) -> pl.Schema:
         raise FileNotFoundError(f"No parquet files found in {source}")
 
     return pl.Schema(schema)
-
-
-def empty_s3_folder(bucket_name: str, prefix: str) -> None:
-    """Empties a folder in a s3 bucket.
-
-    S3 files Keys are full file paths (including the 'folder') so this function uses
-    the prefix to determine the contents of a folder and deletes them.
-
-    Example:
-        empty_s3_folder("my-bucket", "path/to/my/folder/")
-
-    Args:
-        bucket_name (str): the bucket containing the directory to empty
-            - cannot be the main dataset bucket
-        prefix (str): the path prefix which constitutes the 'folder' to empty
-    """
-    s3_client = boto3.client("s3")
-    paginator = s3_client.get_paginator("list_objects_v2")
-    pages = paginator.paginate(Bucket=bucket_name, Prefix=prefix)
-    to_delete = []
-    for item in pages.search("Contents"):
-        if item is not None:
-            to_delete.append({"Key": item["Key"]})
-
-    if not to_delete:
-        print(f"Skipping emptying folder - no objects matching prefix {prefix}")
-        return
-
-    keys_str = "\n".join([obj["Key"] for obj in to_delete])
-    print(f"Deleting {len(to_delete):} objects:\n{keys_str}")
-    s3_client.delete_objects(Bucket=bucket_name, Delete={"Objects": to_delete})
 
 
 def send_sns_notification(

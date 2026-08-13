@@ -12,14 +12,18 @@ from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     CareHome,
     CTFilteringRule,
+    CurrentCSSR,
     Dormancy,
     EstimateFilledPostsSource,
     JobGroupLabels,
     JobRoleFilteringRule,
     MainJobRoleLabels,
     PrimaryServiceType,
+    PrimaryServiceTypeSecondLevel,
     Region,
+    RUI,
     Sector,
+    Services,
 )
 
 
@@ -313,10 +317,10 @@ class ValidateModel01FeaturesData:
 @dataclass
 class MergeIndCQCData:
     cqc_location_data = [
-        ("1-001", date(2024, 1, 1), "Y", Sector.independent),
-        ("1-002", date(2024, 1, 1), "Y", Sector.local_authority),
-        ("1-003", date(2024, 1, 1), "N", Sector.independent),
-    ]
+        ("1-001", date(2024, 1, 1), "Y", Sector.independent, Dormancy.not_dormant, PrimaryServiceType.non_residential, PrimaryServiceTypeSecondLevel.non_residential, RUI.urban_major, Region.london, CurrentCSSR.barnet, "sub_icb_value", "icb_value", "icb_region_value", Region.eastern, CurrentCSSR.bedford, "icb_value"),
+        ("1-002", date(2024, 1, 1), "Y", Sector.local_authority, Dormancy.not_dormant, PrimaryServiceType.non_residential, PrimaryServiceTypeSecondLevel.non_residential, RUI.urban_major, Region.london, CurrentCSSR.barnet, "sub_icb_value", "icb_value", "icb_region_value", Region.eastern, CurrentCSSR.bedford, "icb_value"),
+        ("1-003", date(2024, 1, 1), "N", Sector.independent, Dormancy.not_dormant, PrimaryServiceType.non_residential, PrimaryServiceTypeSecondLevel.non_residential, RUI.urban_major, Region.london, CurrentCSSR.barnet, "sub_icb_value", "icb_value", "icb_region_value", Region.eastern, CurrentCSSR.bedford, "icb_value"),
+    ] # fmt: skip
     cqc_pir_data = [
         ("1-001", date(2024, 1, 1), "Y", "pir_value"),
         ("1-003", date(2024, 1, 1), "N", "pir_value"),
@@ -335,8 +339,8 @@ class MergeIndCQCData:
     ]
 
     expected_data = [
-        ("1-001", date(2024, 1, 1), "Y", Sector.independent, date(2024, 1, 1), "pir_value", date(2024, 1, 1), "ascwds_value", date(2024, 1, 1), "ct_non_res_value", date(2024, 1, 1), "ct_care_home_value"),
-        ("1-003", date(2024, 1, 1), "N", Sector.independent, date(2024, 1, 1), "pir_value", date(2024, 1, 1), "ascwds_value", date(2024, 1, 1), "ct_non_res_value", date(2024, 1, 1), "ct_care_home_value"),
+        ("1-001", date(2024, 1, 1), "Y", Sector.independent, Dormancy.not_dormant, PrimaryServiceType.non_residential, PrimaryServiceTypeSecondLevel.non_residential, RUI.urban_major, Region.london, CurrentCSSR.barnet, "sub_icb_value", "icb_value", "icb_region_value", Region.eastern, CurrentCSSR.bedford, "icb_value", date(2024, 1, 1), "pir_value", date(2024, 1, 1), "ascwds_value", date(2024, 1, 1), "ct_non_res_value", date(2024, 1, 1), "ct_care_home_value"),
+        ("1-003", date(2024, 1, 1), "N", Sector.independent, Dormancy.not_dormant, PrimaryServiceType.non_residential, PrimaryServiceTypeSecondLevel.non_residential, RUI.urban_major, Region.london, CurrentCSSR.barnet, "sub_icb_value", "icb_value", "icb_region_value", Region.eastern, CurrentCSSR.bedford, "icb_value", date(2024, 1, 1), "pir_value", date(2024, 1, 1), "ascwds_value", date(2024, 1, 1), "ct_non_res_value", date(2024, 1, 1), "ct_care_home_value"),
     ] # fmt: skip
 
 
@@ -448,11 +452,15 @@ class ValidateImputedIndCqcAscwdsAndPir:
         ("1-000000002", date(2024, 2, 1)),
     ]
 
+    # location 1 is a care home and location 2 is not, so both branches of the care_home
+    # dependent checks are exercised. Each location's second import date leaves the model
+    # columns null, covering the na_pass path. The imputed capacity tracker values are
+    # deliberately below 1, which the cleaned columns they impute cannot be.
     imputed_ind_cqc_ascwds_and_pir_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  1.0,  5.0,  5.0,  None, 1.0,  5.0,  1.0,  0.5,  None),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, 5.0,  5.0,  5.0,  5.0,  None, 5.0,  1.0,  None, 0.5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  None, None, None, None, None, None, None, None, None),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, None, None, None, None, None, None, None, None, None),
     ] # fmt: skip
 
 
@@ -466,11 +474,184 @@ class ValidateEstimatedIndCQCFilledPostsData:
     ]
 
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 5.0, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, [Services.care_home_service_without_nursing]),
     ] # fmt: skip
+
+
+@dataclass
+class CareHomeMatchesPrimaryServiceTypeTestCase:
+    id: str
+    care_home: str
+    primary_service_type: str
+    expected: bool
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(
+            self.care_home, self.primary_service_type, self.expected, id=self.id
+        )
+
+
+@dataclass
+class ServicesOfferedRuleTestCase:
+    id: str
+    primary_service_type_second_level: str
+    services_offered: list
+    expected: bool
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(
+            self.primary_service_type_second_level,
+            self.services_offered,
+            self.expected,
+            id=self.id,
+        )
+
+
+@dataclass
+class ValidationUtilsData:
+    care_home_matches_primary_service_type_test_cases = [
+        CareHomeMatchesPrimaryServiceTypeTestCase(
+            id="not_care_home_and_non_residential_is_valid",
+            care_home=CareHome.not_care_home,
+            primary_service_type=PrimaryServiceType.non_residential,
+            expected=True,
+        ),
+        CareHomeMatchesPrimaryServiceTypeTestCase(
+            id="care_home_and_care_home_with_nursing_is_valid",
+            care_home=CareHome.care_home,
+            primary_service_type=PrimaryServiceType.care_home_with_nursing,
+            expected=True,
+        ),
+        CareHomeMatchesPrimaryServiceTypeTestCase(
+            id="care_home_and_care_home_only_is_valid",
+            care_home=CareHome.care_home,
+            primary_service_type=PrimaryServiceType.care_home_only,
+            expected=True,
+        ),
+        CareHomeMatchesPrimaryServiceTypeTestCase(
+            id="care_home_and_non_residential_is_invalid",
+            care_home=CareHome.care_home,
+            primary_service_type=PrimaryServiceType.non_residential,
+            expected=False,
+        ),
+        CareHomeMatchesPrimaryServiceTypeTestCase(
+            id="not_care_home_and_care_home_with_nursing_is_invalid",
+            care_home=CareHome.not_care_home,
+            primary_service_type=PrimaryServiceType.care_home_with_nursing,
+            expected=False,
+        ),
+        CareHomeMatchesPrimaryServiceTypeTestCase(
+            id="not_care_home_and_care_home_only_is_invalid",
+            care_home=CareHome.not_care_home,
+            primary_service_type=PrimaryServiceType.care_home_only,
+            expected=False,
+        ),
+    ]
+
+    shared_lives_services_offered_test_cases = [
+        ServicesOfferedRuleTestCase(
+            id="rule_does_not_apply_when_not_shared_lives",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_only,
+            services_offered=[Services.care_home_service_without_nursing],
+            expected=True,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="valid_when_shared_lives_and_services_offered_contains_shared_lives",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.shared_lives,
+            services_offered=[Services.shared_lives],
+            expected=True,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="invalid_when_shared_lives_and_services_offered_missing_shared_lives",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.shared_lives,
+            services_offered=[Services.care_home_service_without_nursing],
+            expected=False,
+        ),
+    ]
+
+    care_home_with_nursing_services_offered_test_cases = [
+        ServicesOfferedRuleTestCase(
+            id="rule_does_not_apply_when_not_care_home_with_nursing",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_only,
+            services_offered=[Services.care_home_service_without_nursing],
+            expected=True,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="valid_when_services_offered_contains_nursing_and_not_shared_lives",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_with_nursing,
+            services_offered=[Services.care_home_service_with_nursing],
+            expected=True,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="invalid_when_services_offered_missing_nursing",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_with_nursing,
+            services_offered=[Services.care_home_service_without_nursing],
+            expected=False,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="invalid_when_services_offered_also_contains_shared_lives",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_with_nursing,
+            services_offered=[
+                Services.care_home_service_with_nursing,
+                Services.shared_lives,
+            ],
+            expected=False,
+        ),
+    ]
+
+    care_home_without_nursing_services_offered_test_cases = [
+        ServicesOfferedRuleTestCase(
+            id="rule_does_not_apply_when_not_care_home_without_nursing",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_with_nursing,
+            services_offered=[Services.care_home_service_with_nursing],
+            expected=True,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="valid_when_services_offered_contains_only_without_nursing",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_only,
+            services_offered=[Services.care_home_service_without_nursing],
+            expected=True,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="invalid_when_services_offered_missing_without_nursing",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_only,
+            services_offered=[Services.shared_lives],
+            expected=False,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="invalid_when_services_offered_also_contains_with_nursing",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_only,
+            services_offered=[
+                Services.care_home_service_without_nursing,
+                Services.care_home_service_with_nursing,
+            ],
+            expected=False,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="invalid_when_services_offered_also_contains_shared_lives",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_only,
+            services_offered=[
+                Services.care_home_service_without_nursing,
+                Services.shared_lives,
+            ],
+            expected=False,
+        ),
+        ServicesOfferedRuleTestCase(
+            id="invalid_when_services_offered_contains_both_excluded_services",
+            primary_service_type_second_level=PrimaryServiceTypeSecondLevel.care_home_only,
+            services_offered=[
+                Services.care_home_service_without_nursing,
+                Services.shared_lives,
+                Services.care_home_service_with_nursing,
+            ],
+            expected=False,
+        ),
+    ]
 
 
 @dataclass
@@ -554,6 +735,9 @@ class CleanIndCQCData:
         ("1-000000003", date(2023, 3, 1), "Y", 1),
         ("1-000000004", date(2023, 1, 1), "Y", 1),
         ("1-000000004", date(2023, 2, 1), "Y", 3),
+        ("1-000000005", date(2023, 1, 1), "Y", 2),
+        ("1-000000005", date(2023, 2, 1), "Y", 3),
+        ("1-000000005", date(2023, 3, 1), "Y", None),
     ]
 
     expected_populate_missing_care_home_number_of_beds_rows = [
@@ -564,44 +748,9 @@ class CleanIndCQCData:
         ("1-000000003", date(2023, 3, 1), "Y", 1),
         ("1-000000004", date(2023, 1, 1), "Y", 1),
         ("1-000000004", date(2023, 2, 1), "Y", 3),
-    ]
-
-    filter_to_care_homes_with_known_beds_rows = [
-        ("1-000000001", "Y", None),
-        ("1-000000002", "N", None),
-        ("1-000000003", "Y", 1),
-        ("1-000000004", "N", 1),
-    ]
-
-    expected_filter_to_care_homes_with_known_beds_rows = [
-        ("1-000000003", "Y", 1),
-    ]
-
-    average_beds_per_location_rows = [
-        ("1-000000001", 1),
-        ("1-000000002", 2),
-        ("1-000000002", 3),
-        ("1-000000003", 2),
-        ("1-000000003", 3),
-        ("1-000000003", 4),
-    ]
-
-    expected_average_beds_per_location_rows = [
-        ("1-000000001", 1),
-        ("1-000000002", 2),
-        ("1-000000003", 3),
-    ]
-
-    replace_null_beds_with_average_rows = [
-        ("1-000000001", None, None),
-        ("1-000000002", None, 1),
-        ("1-000000003", 2, 2),
-    ]
-
-    expected_replace_null_beds_with_average_rows = [
-        ("1-000000001", None),
-        ("1-000000002", 1),
-        ("1-000000003", 2),
+        ("1-000000005", date(2023, 1, 1), "Y", 2),
+        ("1-000000005", date(2023, 2, 1), "Y", 3),
+        ("1-000000005", date(2023, 3, 1), "Y", 2),
     ]
 
     calculate_time_registered_same_day_rows = [
@@ -801,6 +950,24 @@ class ImputeIndCqcAscwdsAndPirData:
         ("1-002", date(2023, 1, 1), 10.0, 10.0),
         ("1-002", date(2023, 1, 3), 20.0, 15.0),
         ("1-002", date(2023, 1, 5), 30.0, 25.0),
+    ]
+
+    expected_multiple_partition_columns_rolling_average_rows = [
+        ("Care home with nursing", "0", date(2023, 1, 1), 10.0, 10.0),
+        ("Care home with nursing", "0", date(2023, 1, 2), 20.0, 15.0),
+        ("Care home with nursing", "1", date(2023, 1, 1), 100.0, 100.0),
+        ("Care home with nursing", "1", date(2023, 1, 2), 200.0, 150.0),
+    ]
+
+    expected_rolling_average_with_null_rows = [
+        ("1-001", date(2023, 1, 1), 10.0, 10.0),
+        ("1-001", date(2023, 1, 2), None, 10.0),
+        ("1-001", date(2023, 1, 3), 20.0, 15.0),
+    ]
+
+    expected_rolling_average_preserves_other_columns_rows = [
+        ("1-001", date(2023, 1, 1), "South East", 10.0, 10.0),
+        ("1-001", date(2023, 1, 2), "South East", 20.0, 15.0),
     ]
 
 
@@ -1408,30 +1575,16 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
         ("1-000000003", "data"),
     ]
 
-    calculate_average_filled_posts_rows = [
-        ("1", 0.0, 1.1357),
-        ("2", 0.0, 1.3579),
-        ("3", 1.0, 1.123456789),
+    calculate_expected_filled_posts_rows = [
+        ("1", 7, 0.0, 1.1357),
+        ("2", 75, 0.0, 1.3579),
+        ("3", 20, 1.0, 1.123456789),
     ]
 
-    expected_calculate_average_filled_posts_rows = [
-        (0.0, 1.2468),
-        (1.0, 1.123456789),
-    ]
-
-    base_filled_posts_rows = [
-        ("1", 7, 0.0),
-        ("2", 75, 1.0),
-    ]
-
-    join_filled_posts_rows = [
-        (0.0, 1.11111),
-        (1.0, 1.0101),
-    ]
-
-    expected_filled_posts_rows = [
-        ("1", 7, 0.0, 1.11111, 7.77777),
-        ("2", 75, 1.0, 1.0101, 75.7575),
+    expected_calculate_expected_filled_posts_rows = [
+        ("1", 7, 0.0, 1.1357, 8.7276),
+        ("2", 75, 0.0, 1.3579, 93.51),
+        ("3", 20, 1.0, 1.123456789, 22.46913578),
     ]
 
     calculate_standardised_residuals_rows = [
@@ -2057,6 +2210,61 @@ class ImputeJobRoleData:
                 (7, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_care_worker, 8.0, "CHWN 1 to 19", 7.0, 0.269231),
                 (8, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_management, 8.0, "CHWN 1 to 19", 8.0, 0.307692),
             ],
+        ),
+    ]  # fmt: skip
+
+
+@dataclass
+class SumRollingRatiosTestCase:
+    id: str
+    rows: list[tuple]
+    expected_totals: list[float]
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(self.rows, self.expected_totals, id=self.id)
+
+
+@dataclass
+class SumRollingRatiosAcrossJobRolesData:
+    sum_rolling_ratios_across_job_roles_test_cases = [
+        SumRollingRatiosTestCase(
+            id="workplaces_sharing_a_group_are_counted_once",
+            rows=[
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.care_worker,      "1-001", 0.3),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.care_worker,      "1-002", 0.3),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-001", 0.7),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-002", 0.7),
+            ],
+            expected_totals=[1.0],
+        ),
+        SumRollingRatiosTestCase(
+            id="job_roles_sharing_a_ratio_both_count",
+            rows=[
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.care_worker,      "1-001", 0.4),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-001", 0.6),
+            ],
+            expected_totals=[1.0],
+        ),
+        SumRollingRatiosTestCase(
+            id="groups_are_totalled_independently",
+            rows=[
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.care_worker,      "1-001", 0.4),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-001", 0.5),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 2), MainJobRoleLabels.care_worker,      "1-001", 0.2),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 2), MainJobRoleLabels.registered_nurse, "1-001", 0.5),
+            ],
+            expected_totals=[0.9, 0.7],
+        ),
+        SumRollingRatiosTestCase(
+            id="groups_differing_on_every_group_column_are_kept_separate",
+            rows=[
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.care_worker,      "1-001", 0.1),
+                (PrimaryServiceType.care_home_only,  "Group 1", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-001", 0.2),
+                (PrimaryServiceType.care_home_only,  "Group 2", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-001", 0.3),
+                (PrimaryServiceType.care_home_only,  "Group 2", date(2026, 1, 2), MainJobRoleLabels.registered_nurse, "1-001", 0.4),
+            ],
+            expected_totals=[0.1, 0.2, 0.3, 0.4],
         ),
     ]  # fmt: skip
 

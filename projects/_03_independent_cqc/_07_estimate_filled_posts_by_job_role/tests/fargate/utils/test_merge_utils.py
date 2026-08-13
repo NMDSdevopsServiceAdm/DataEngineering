@@ -3,6 +3,7 @@ import polars.testing as pl_testing
 import pytest
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.merge_utils as job
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
     TestJoinEstimatesToAscwds as Data,
 )
@@ -19,7 +20,7 @@ def mock_roles(monkeypatch):
         job,
         "create_job_role_lazyframe",
         lambda: pl.LazyFrame(
-            roles, {job.job_role_labels: pl.Enum(roles)}, orient="row"
+            roles, {job.job_role_labels: CatColType.JobRoleCatType}, orient="row"
         ),
     )
 
@@ -65,7 +66,7 @@ class TestJoinEstimatesToAscwds:
 class TestCreateJobRoleLazyFrame:
     def test_create_job_role_lazyframe_schema_rowcount_and_order(self):
         expected_lf = pl.LazyFrame(
-            roles, {job.job_role_labels: pl.Enum(roles)}, orient="row"
+            roles, {job.job_role_labels: CatColType.JobRoleCatType}, orient="row"
         )
         returned_lf = job.create_job_role_lazyframe()
 

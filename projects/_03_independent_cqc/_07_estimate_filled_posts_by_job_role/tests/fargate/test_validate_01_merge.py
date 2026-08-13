@@ -26,7 +26,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.primary_service_type: CategoricalColumnTypes.PrimaryServiceEnumType,
             IndCqcColumns.estimate_filled_posts: pl.Float32,
             IndCqcColumns.estimate_filled_posts_source: CategoricalColumnTypes.EstimatesFilledPostSourceEnumType,
-            IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
+            IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleCatType,
             IndCqcColumns.ascwds_filled_posts_dedup_clean: pl.Float32,
             IndCqcColumns.ascwds_job_role_counts: pl.Int16,
         }
