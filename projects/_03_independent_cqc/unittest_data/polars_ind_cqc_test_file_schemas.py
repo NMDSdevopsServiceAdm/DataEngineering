@@ -554,6 +554,18 @@ class ValidateImputedIndCqcAscwdsAndPir:
             (IndCQC.ascwds_rate_of_change_trendline_model, pl.Float32()),
             (IndCQC.pir_people_directly_employed_cleaned, pl.Int64()),
             (IndCQC.filled_posts_per_bed_ratio, pl.Float64()),
+            (IndCQC.combined_ratio_and_filled_posts, pl.Float32()),
+            (IndCQC.pir_filled_posts_model, pl.Float64()),
+            (IndCQC.ascwds_pir_merged, pl.Float64()),
+            (IndCQC.imputed_filled_post_model, pl.Float32()),
+            (IndCQC.imputed_filled_posts_per_bed_ratio_model, pl.Float32()),
+            (IndCQC.ct_combined_care_home_and_non_res, pl.Float32()),
+            (
+                IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+                pl.Float32(),
+            ),
+            (IndCQC.ct_care_home_total_employed_imputed, pl.Float32()),
+            (IndCQC.ct_non_res_care_workers_employed_imputed, pl.Float32()),
         ]
     )
 

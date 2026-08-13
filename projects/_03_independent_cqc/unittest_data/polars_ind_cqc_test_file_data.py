@@ -450,11 +450,15 @@ class ValidateImputedIndCqcAscwdsAndPir:
         ("1-000000002", date(2024, 2, 1)),
     ]
 
+    # location 1 is a care home and location 2 is not, so both branches of the care_home
+    # dependent checks are exercised. Each location's second import date leaves the model
+    # columns null, covering the na_pass path. The imputed capacity tracker values are
+    # deliberately below 1, which the cleaned columns they impute cannot be.
     imputed_ind_cqc_ascwds_and_pir_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  1.0,  5.0,  5.0,  None, 1.0,  5.0,  1.0,  0.5,  None),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, 5.0,  5.0,  5.0,  5.0,  None, 5.0,  1.0,  None, 0.5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, date(2024, 1, 1), "Y", 5,    PrimaryServiceType.care_home_only,  date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, 5.0,  None, None, None, None, None, None, None, None, None),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "N", "prov_1", Sector.independent, date(2024, 1, 1), "Y", None, PrimaryServiceType.non_residential, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", "lsoa", "msoa", 5, 5, "ascwds_filtering_rule", "source", 5.0, 5, 1.0, 5, None, None, None, None, None, None, None, None, None, None),
     ] # fmt: skip
 
 
@@ -2204,6 +2208,61 @@ class ImputeJobRoleData:
                 (7, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_care_worker, 8.0, "CHWN 1 to 19", 7.0, 0.269231),
                 (8, "1000", date(2024, 7, 5), PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.senior_management, 8.0, "CHWN 1 to 19", 8.0, 0.307692),
             ],
+        ),
+    ]  # fmt: skip
+
+
+@dataclass
+class SumRollingRatiosTestCase:
+    id: str
+    rows: list[tuple]
+    expected_totals: list[float]
+
+    def as_pytest_param(self):
+        """Return test case as pytest ParameterSet."""
+        return pytest.param(self.rows, self.expected_totals, id=self.id)
+
+
+@dataclass
+class SumRollingRatiosAcrossJobRolesData:
+    sum_rolling_ratios_across_job_roles_test_cases = [
+        SumRollingRatiosTestCase(
+            id="workplaces_sharing_a_group_are_counted_once",
+            rows=[
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.care_worker,      "1-001", 0.3),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.care_worker,      "1-002", 0.3),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-001", 0.7),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-002", 0.7),
+            ],
+            expected_totals=[1.0],
+        ),
+        SumRollingRatiosTestCase(
+            id="job_roles_sharing_a_ratio_both_count",
+            rows=[
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.care_worker,      "1-001", 0.4),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-001", 0.6),
+            ],
+            expected_totals=[1.0],
+        ),
+        SumRollingRatiosTestCase(
+            id="groups_are_totalled_independently",
+            rows=[
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.care_worker,      "1-001", 0.4),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-001", 0.5),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 2), MainJobRoleLabels.care_worker,      "1-001", 0.2),
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 2), MainJobRoleLabels.registered_nurse, "1-001", 0.5),
+            ],
+            expected_totals=[0.9, 0.7],
+        ),
+        SumRollingRatiosTestCase(
+            id="groups_differing_on_every_group_column_are_kept_separate",
+            rows=[
+                (PrimaryServiceType.non_residential, "Group 1", date(2026, 1, 1), MainJobRoleLabels.care_worker,      "1-001", 0.1),
+                (PrimaryServiceType.care_home_only,  "Group 1", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-001", 0.2),
+                (PrimaryServiceType.care_home_only,  "Group 2", date(2026, 1, 1), MainJobRoleLabels.registered_nurse, "1-001", 0.3),
+                (PrimaryServiceType.care_home_only,  "Group 2", date(2026, 1, 2), MainJobRoleLabels.registered_nurse, "1-001", 0.4),
+            ],
+            expected_totals=[0.1, 0.2, 0.3, 0.4],
         ),
     ]  # fmt: skip
 

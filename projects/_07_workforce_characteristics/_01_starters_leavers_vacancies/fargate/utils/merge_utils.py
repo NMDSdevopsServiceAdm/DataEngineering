@@ -66,11 +66,11 @@ def collapse_job_role_estimates_to_published_labels(
             .otherwise(pl.lit(PublishedJobRoleLabels.other))
         )
         .cast(CatColType.PublishedJobRoleLabelEnumType)
-        .alias(SLVCols.job_role_label)
+        .alias(SLVCols.published_job_role_label)
     )
 
     return published_role_lf.group_by(
-        IndCQC.id_per_locationid_import_date, SLVCols.job_role_label
+        IndCQC.id_per_locationid_import_date, SLVCols.published_job_role_label
     ).agg(
         pl.col(IndCQC.location_id).first(),
         pl.col(IndCQC.cqc_location_import_date).first(),
