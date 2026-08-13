@@ -41,7 +41,7 @@ metadata_columns = {
 ascwds_columns_to_import = {
     IndCQC.ascwds_worker_import_date: pl.Date,
     IndCQC.establishment_id: CatColType.EstablishmentCatType,
-    IndCQC.main_job_role_clean_labelled: CatColType.JobRoleEnumType,
+    IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
     IndCQC.ascwds_job_role_counts: pl.Int16,
 }
 transformation_columns = {

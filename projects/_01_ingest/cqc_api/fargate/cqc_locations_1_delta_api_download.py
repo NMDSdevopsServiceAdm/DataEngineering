@@ -13,6 +13,7 @@ import polars as pl
 from polars_utils import utils
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
+from utils import file_utils
 from utils.aws_secrets_manager_utilities import get_secret
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as ColNames,
@@ -128,7 +129,7 @@ if __name__ == "__main__":
     print(f"Running cqc locations delta api download job")
 
     date_today = date.today()
-    destination = utils.generate_s3_dir(
+    destination = file_utils.generate_s3_dir(
         destination_prefix=args.destination_prefix,
         domain="CQC",
         dataset="cqc_locations_01_delta_api",

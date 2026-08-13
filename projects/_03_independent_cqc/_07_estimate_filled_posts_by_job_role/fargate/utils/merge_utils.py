@@ -1,5 +1,6 @@
 import polars as pl
 
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
@@ -67,6 +68,6 @@ def create_job_role_lazyframe() -> pl.LazyFrame:
     rows = [(v,) for v in values]
     return pl.LazyFrame(
         data=rows,
-        schema={job_role_labels: pl.Enum(values)},
+        schema={job_role_labels: CatColType.JobRoleCatType},
         orient="row",
     )

@@ -1,5 +1,5 @@
 import unittest
-from datetime import date, datetime
+from datetime import date
 from enum import Enum
 from pathlib import Path
 
@@ -109,35 +109,6 @@ class UtilsTests(SparkBaseTest):
 
 
 class GeneralUtilsTests(UtilsTests):
-    def test_generate_s3_datasets_dir_date_path_changes_version_when_version_number_is_passed(
-        self,
-    ):
-        dec_first_21 = datetime(2021, 12, 1)
-        version_number = "2.0.0"
-        dir_path = utils.generate_s3_datasets_dir_date_path(
-            "s3://sfc-main-datasets",
-            "test_domain",
-            "test_dateset",
-            dec_first_21,
-            version_number,
-        )
-        self.assertEqual(
-            dir_path,
-            "s3://sfc-main-datasets/domain=test_domain/dataset=test_dateset/version=2.0.0/year=2021/month=12/day=01/import_date=20211201/",
-        )
-
-    def test_generate_s3_datasets_dir_date_path_uses_version_one_when_no_version_number_is_passed(
-        self,
-    ):
-        dec_first_21 = datetime(2021, 12, 1)
-        dir_path = utils.generate_s3_datasets_dir_date_path(
-            "s3://sfc-main-datasets", "test_domain", "test_dateset", dec_first_21
-        )
-        self.assertEqual(
-            dir_path,
-            "s3://sfc-main-datasets/domain=test_domain/dataset=test_dateset/version=1.0.0/year=2021/month=12/day=01/import_date=20211201/",
-        )
-
     def test_read_csv(self):
         df = utils.read_csv(self.test_csv_path)
         self.assertEqual(df.columns, ["col_a", "col_b", "col_c", "date_col"])
@@ -430,13 +401,6 @@ class GeneralUtilsTests(UtilsTests):
         ).collect()
         returned_data = returned_df.collect()
         self.assertEqual(expected_data, returned_data)
-
-    def test_split_s3_uri(self):
-        s3_uri = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/"
-        bucket_name, prefix = utils.split_s3_uri(s3_uri)
-
-        self.assertEqual(bucket_name, "sfc-data-engineering-raw")
-        self.assertEqual(prefix, "domain=ASCWDS/dataset=workplace/")
 
     def test_create_unix_timestamp_variable_from_date_column(self):
         column_schema = StructType(

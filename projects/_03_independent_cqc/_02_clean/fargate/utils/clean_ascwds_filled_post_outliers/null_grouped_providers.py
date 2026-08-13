@@ -3,6 +3,7 @@ from dataclasses import dataclass, fields
 import polars as pl
 
 import polars_utils.cleaning_utils as pUtils
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from polars_utils.expressions import is_care_home, is_not_care_home
 from polars_utils.filtering_utils import (
     update_filtering_rule,
@@ -24,7 +25,7 @@ GROUPED_PROVIDER_SCHEMA = pl.Schema(
         (IndCQC.location_id, pl.String()),
         (AWPClean.nmds_id, pl.String()),
         (IndCQC.name, pl.String()),
-        (IndCQC.care_home, pl.String()),
+        (IndCQC.care_home, CatColType.CareHomeEnumType),
         (IndCQC.ascwds_filled_posts_dedup, pl.Float64()),
         (IndCQC.number_of_beds, pl.Int64()),
         (NGPcol.location_pir_average, pl.Float64()),

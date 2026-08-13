@@ -6,10 +6,16 @@ RUN mkdir -p /polars_scratch && chmod 777 /polars_scratch
 ENV POLARS_TEMP_DIR=/polars_scratch
 ENV PYTHONPATH=/app
 
-# Dependencies
+# Dependencies. Installed before any source is copied so that a source-only
+# change doesn't invalidate the pip layer.
+COPY docker_requirements/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Shared libraries
 COPY projects/_04_direct_payment_recipients/fargate/utils /app/projects/_04_direct_payment_recipients/fargate/utils
 COPY projects/_04_direct_payment_recipients/direct_payments_config_polars.py /app/projects/_04_direct_payment_recipients/direct_payments_config_polars.py
 COPY polars_utils /app/polars_utils
+COPY utils/file_utils.py /app/utils/file_utils.py
 COPY utils/column_names /app/utils/column_names/
 COPY utils/column_values /app/utils/column_values/
 COPY utils/value_labels /app/utils/value_labels
@@ -17,8 +23,5 @@ COPY utils/value_labels /app/utils/value_labels
 # Copy python jobs to WORKDIR
 COPY projects/_04_direct_payment_recipients/fargate/estimate_direct_payments.py /app/estimate_direct_payments.py
 COPY projects/_04_direct_payment_recipients/fargate/validate_estimate_direct_payments.py /app/validate_estimate_direct_payments.py
-
-COPY docker_requirements/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
 
 ENTRYPOINT ["python"]

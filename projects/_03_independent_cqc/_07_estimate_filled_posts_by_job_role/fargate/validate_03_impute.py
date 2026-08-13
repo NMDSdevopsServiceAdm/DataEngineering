@@ -53,7 +53,7 @@ INDEX_VAL_EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.location_id: str(CategoricalColumnTypes.LocationCatType),
         IndCqcColumns.cqc_location_import_date: "Date",
         IndCqcColumns.main_job_role_clean_labelled: str(
-            CategoricalColumnTypes.JobRoleEnumType
+            CategoricalColumnTypes.JobRoleCatType
         ),
     }
 )
@@ -65,7 +65,7 @@ OTHER_VAL_EXPECTED_SCHEMA = pb.Schema(
         IndCqcColumns.location_id: str(CategoricalColumnTypes.LocationCatType),
         IndCqcColumns.cqc_location_import_date: "Date",
         IndCqcColumns.main_job_role_clean_labelled: str(
-            CategoricalColumnTypes.JobRoleEnumType
+            CategoricalColumnTypes.JobRoleCatType
         ),
         IndCqcColumns.primary_service_type: str(
             CategoricalColumnTypes.PrimaryServiceEnumType
@@ -104,9 +104,11 @@ def count_nulls(df: pl.DataFrame) -> pl.DataFrame:
 
 def sum_rolling_ratios_across_job_roles(df: pl.DataFrame) -> pl.DataFrame:
     """
-    Helper function to total the rolling ratio across job roles within each group.
+    Helper function to total the rolling ratio across job roles within each
+    group.
 
-    Reduces to one row per job role first, since every workplace in a group shares a ratio.
+    Reduces to one row per job role first, since every workplace in a group
+    shares a ratio.
     """
 
     group_columns = [
@@ -349,6 +351,13 @@ def other_validation(
             brief="ascwds_job_role_ratios, imputed_ascwds_job_role_ratios, imputed_job_role_ratios_for_trendline and ascwds_job_role_rolling_ratio should be between 0 and 1 where present",
         )
         # Guards the property the unweighted mean relies on to self-normalise.
+        .col_vals_between(
+            pre=sum_rolling_ratios_across_job_roles,
+            columns=IndCqcColumns.ascwds_job_role_rolling_ratio,
+            left=0.999,
+            right=1.001,
+            brief="ascwds_job_role_rolling_ratio should sum to 1 across job roles within each primary service type, size group and import date",
+        )
         .col_vals_between(
             pre=sum_rolling_ratios_across_job_roles,
             columns=IndCqcColumns.ascwds_job_role_rolling_ratio,
