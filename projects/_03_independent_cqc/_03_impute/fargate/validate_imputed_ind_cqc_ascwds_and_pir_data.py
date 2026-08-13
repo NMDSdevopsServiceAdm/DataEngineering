@@ -89,7 +89,7 @@ def main(
                 IndCQC.cqc_location_import_date,
             ],
         )
-        # between (inclusive)
+        # numerical
         .col_vals_between(Validation.location_id_length, 3, 14)
         .col_vals_between(IndCQC.number_of_beds, 1, 500, na_pass=True)
         .col_vals_between(
@@ -99,7 +99,6 @@ def main(
         .col_vals_between(IndCQC.worker_records_bounded, 1, 3000, na_pass=True)
         .col_vals_between(IndCQC.filled_posts_per_bed_ratio, 0.0, 20.0, na_pass=True)
         .col_vals_between(IndCQC.imputed_filled_post_model, 0.0, 3000.0, na_pass=True)
-        # above filled_posts_per_bed_ratio's 20 because extrapolation overshoots it slightly
         .col_vals_between(
             IndCQC.imputed_filled_posts_per_bed_ratio_model, 0.0, 25.0, na_pass=True
         )
@@ -108,8 +107,6 @@ def main(
         .col_vals_between(
             IndCQC.ct_combined_care_home_and_non_res, 1.0, 4000.0, na_pass=True
         )
-        # the imputed capacity tracker columns have no floor of 1 like the cleaned columns
-        # they impute, as interpolation lands below it
         .col_vals_between(
             IndCQC.ct_care_home_total_employed_imputed, 0.0, 4000.0, na_pass=True
         )
@@ -134,8 +131,7 @@ def main(
             ),
             brief=f"{IndCQC.combined_ratio_and_filled_posts} should be between 0 and 20 for care homes and between 0 and 3000 otherwise",
         )
-        # posts_rolling_average_model is unvalidated until model_calculate_rolling_average is
-        # migrated and the impute job starts producing it
+        # TODO: validation for posts_rolling_average_model
         # categorical
         .col_vals_in_set(
             IndCQC.care_home,

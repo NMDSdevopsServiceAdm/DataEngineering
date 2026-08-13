@@ -306,10 +306,6 @@ def other_validation(
             na_pass=True,
             brief="Ratios should be between 0 and 1 where present. Difference between estimate_filled_posts and estimate_filled_posts_from_all_job_roles should be between 0 and 1 where present",
         )
-        # The lower limit absorbs float32 drift in the job role sum. That drift is relative to
-        # location size (3e-7 measured, higher when the per-role roundings align) whereas this
-        # limit is absolute, so it is headroom over the drift seen at current data scale, not a
-        # guaranteed bound. A relative limit would be the durable fix.
         .col_vals_between(
             columns=IndCqcColumns.difference_estimate_filled_posts_and_from_all_job_roles,
             left=-0.002,
