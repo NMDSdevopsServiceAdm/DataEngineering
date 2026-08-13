@@ -21,9 +21,6 @@ class CategoricalColumnTypes:
     CqcSectorEnumType = pl.Enum(
         CQCLocationCatVals.sector_column_values.categorical_values
     )
-    CurrentRuralUrbanInd11EnumType = pl.Enum(
-        CQCLocationCatVals.current_rui_column_values.categorical_values
-    )
     DormancyEnumType = pl.Enum(
         CQCLocationCatVals.dormancy_column_values.categorical_values
     )
@@ -53,8 +50,6 @@ class CategoricalColumnTypes:
     LocationCatType = pl.Categorical(
         pl.Categories("location", namespace="filled_posts")
     )
-    # Shared between the current and contemporary columns for each geography:
-    # current geographies are always a subset of contemporary ones.
     OnsCssrCatType = pl.Categorical(pl.Categories("ons_cssr", namespace="filled_posts"))
     OnsIcbCatType = pl.Categorical(pl.Categories("ons_icb", namespace="filled_posts"))
     OnsIcbRegionCatType = pl.Categorical(
@@ -62,6 +57,9 @@ class CategoricalColumnTypes:
     )
     OnsRegionCatType = pl.Categorical(
         pl.Categories("ons_region", namespace="filled_posts")
+    )
+    OnsRuralUrbanInd11EnumType = pl.Enum(
+        CQCLocationCatVals.current_rui_column_values.categorical_values
     )
     OnsSubIcbCatType = pl.Categorical(
         pl.Categories("ons_sub_icb", namespace="filled_posts")

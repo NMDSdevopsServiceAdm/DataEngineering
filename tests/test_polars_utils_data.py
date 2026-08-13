@@ -535,8 +535,8 @@ class ColumnTypesData:
             ),
         ),
         CategoricalColumnTypeCase(
-            id="current_rural_urban_ind_11_enum_type",
-            actual=CatColType.CurrentRuralUrbanInd11EnumType,
+            id="ons_rural_urban_ind_11_enum_type",
+            actual=CatColType.OnsRuralUrbanInd11EnumType,
             expected=pl.Enum(
                 CQCLocationCatVals.current_rui_column_values.categorical_values
             ),

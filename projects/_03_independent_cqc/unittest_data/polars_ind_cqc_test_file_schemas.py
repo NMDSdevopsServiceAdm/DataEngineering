@@ -362,7 +362,7 @@ class MergeIndCQCSchemas:
             ),
             (
                 IndCQC.current_rural_urban_indicator_2011,
-                CatColType.CurrentRuralUrbanInd11EnumType,
+                CatColType.OnsRuralUrbanInd11EnumType,
             ),
             (IndCQC.contemporary_region, CatColType.OnsRegionCatType),
             (IndCQC.contemporary_cssr, CatColType.OnsCssrCatType),
@@ -1443,7 +1443,6 @@ class EstimateNonResCapacityTrackerFilledPostsSchemas:
 
 @dataclass
 class TestJoinEstimatesToAscwds:
-    TEST_ROLES = ["role_a", "role_b"]
     estimates_schema = pl.Schema(
         {
             IndCQC.id_per_locationid_import_date: pl.Int32,
@@ -1455,14 +1454,14 @@ class TestJoinEstimatesToAscwds:
         {
             IndCQC.ascwds_workplace_import_date: pl.String,
             IndCQC.establishment_id: pl.String,
-            IndCQC.main_job_role_clean_labelled: pl.Enum(TEST_ROLES),
+            IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
             "value": pl.Float64,
         }
     )
     expected_schema = pl.Schema(
         {
             IndCQC.id_per_locationid_import_date: pl.Int32,
-            IndCQC.main_job_role_clean_labelled: pl.Enum(TEST_ROLES),
+            IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
             "value": pl.Float64,
         }
     )
@@ -1594,9 +1593,7 @@ class EstimateFilledPostsByJobRoleEstimateUtilsSchemas:
             IndCQC.id_per_locationid_import_date: pl.Int32,
             IndCQC.location_id: pl.String,
             IndCQC.cqc_location_import_date: pl.Date,
-            IndCQC.main_job_role_clean_labelled: pl.Enum(
-                CatVals.main_job_role_labels_column_values.categorical_values
-            ),
+            IndCQC.main_job_role_clean_labelled: CatColType.JobRoleCatType,
             IndCQC.estimate_filled_posts_by_job_role_manager_adjusted: pl.Float32,
             IndCQC.estimate_filled_posts_by_job_role_historically_reallocated: pl.Float32,
         }

@@ -98,7 +98,7 @@ columns_to_cast_to_categorical_or_enum = {
     CQCLClean.cqc_sector: CatColType.CqcSectorEnumType,
     CQCLClean.primary_service_type: CatColType.PrimaryServiceEnumType,
     CQCLClean.primary_service_type_second_level: CatColType.PrimaryServiceTypeSecondLevelCatType,
-    ONSClean.current_rural_urban_ind_11: CatColType.CurrentRuralUrbanInd11EnumType,
+    ONSClean.current_rural_urban_ind_11: CatColType.OnsRuralUrbanInd11EnumType,
     ONSClean.contemporary_region: CatColType.OnsRegionCatType,
     ONSClean.contemporary_cssr: CatColType.OnsCssrCatType,
     ONSClean.contemporary_sub_icb: CatColType.OnsSubIcbCatType,
