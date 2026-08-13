@@ -6,6 +6,7 @@ import pointblank as pb
 import polars as pl
 
 from polars_utils import utils
+from utils import file_utils
 
 
 def write_reports(validation: pb.Validate, bucket_name: str, reports_path: str) -> None:
@@ -23,7 +24,7 @@ def write_reports(validation: pb.Validate, bucket_name: str, reports_path: str) 
         AssertionError: in case of the dataset failing the validation rules
     """
     reports_path = reports_path.strip("/")
-    utils.empty_s3_folder(bucket_name, reports_path)
+    file_utils.empty_s3_folder(bucket_name, reports_path)
 
     report = validation.get_tabular_report()
 

@@ -22,6 +22,8 @@ module "cqc-api" {
   ecr_repo_name = "fargate/cqc"
   cluster_arn   = aws_ecs_cluster.polars_cluster.arn
   tag_name      = terraform.workspace
+  cpu_size      = 16384
+  ram_size      = 65536
   environment = [
     { "name" : "AWS_REGION", "value" : "eu-west-2" },
     { "name" : "CQC_SECRET_NAME", "value" : "cqc_api_primary_key" }

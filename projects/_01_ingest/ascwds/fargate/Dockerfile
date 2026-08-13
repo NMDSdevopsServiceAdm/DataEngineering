@@ -8,6 +8,7 @@ ENV PYTHONPATH=/app
 
 # Dependencies
 COPY polars_utils polars_utils
+COPY utils/file_utils.py utils/file_utils.py
 COPY projects/_01_ingest/ascwds/fargate/utils projects/_01_ingest/ascwds/fargate/utils
 COPY utils/column_names utils/column_names
 COPY utils/column_values utils/column_values
