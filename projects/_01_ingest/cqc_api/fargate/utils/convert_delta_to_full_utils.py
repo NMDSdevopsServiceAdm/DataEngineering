@@ -1,6 +1,7 @@
 import polars as pl
 
 from polars_utils import utils
+from utils import file_utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
@@ -22,8 +23,8 @@ def allocate_import_dates(
     Returns:
         tuple[list[str], list[str]]: List of import_dates to process and a list of dates already processed.
     """
-    all_dates = utils.list_s3_parquet_import_dates(delta_flattened_s3_uri)
-    processed_dates = utils.list_s3_parquet_import_dates(full_flattened_s3_uri)
+    all_dates = file_utils.list_s3_parquet_import_dates(delta_flattened_s3_uri)
+    processed_dates = file_utils.list_s3_parquet_import_dates(full_flattened_s3_uri)
 
     dates_to_process = [d for d in all_dates if d not in processed_dates]
 

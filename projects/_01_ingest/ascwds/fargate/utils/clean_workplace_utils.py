@@ -159,10 +159,7 @@ class PurgeWorkplaceDataExpressions:
 
 
 def add_master_update_date_org(lf: pl.LazyFrame) -> pl.LazyFrame:
-    """Join the org-level max master_update_date onto the input frame.
-
-    Implemented as a group_by + join rather than a window expression to
-    preserve compatibility with Polars streaming execution.
+    """Add the org-level max master_update_date onto the input frame.
 
     Args:
         lf (pl.LazyFrame): Input lazy frame containing workplace records.
@@ -170,17 +167,11 @@ def add_master_update_date_org(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: Input frame with ``master_update_date_org`` column added.
     """
-    # polars_streaming: groupby+join workaround; could be .max().over() when window functions support streaming
-    org_max = lf.group_by(
-        AWPClean.organisation_id, AWPClean.ascwds_workplace_import_date
-    ).agg(
-        pl.col(AWPClean.master_update_date).max().alias(AWPClean.master_update_date_org)
-    )
-
-    return lf.join(
-        org_max,
-        on=[AWPClean.organisation_id, AWPClean.ascwds_workplace_import_date],
-        how="left",
+    return lf.with_columns(
+        pl.col(AWPClean.master_update_date)
+        .max()
+        .over(AWPClean.organisation_id, AWPClean.ascwds_workplace_import_date)
+        .alias(AWPClean.master_update_date_org)
     )
 
 

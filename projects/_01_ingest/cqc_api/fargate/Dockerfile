@@ -14,6 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt -r requirements-extra.txt
 
 # Shared libraries
 COPY polars_utils polars_utils
+COPY utils/file_utils.py utils/file_utils.py
 COPY projects/_01_ingest/cqc_api/fargate/utils projects/_01_ingest/cqc_api/fargate/utils
 COPY projects/_01_ingest/cqc_api/utils/cqc_api.py projects/_01_ingest/cqc_api/utils/cqc_api.py
 COPY projects/_01_ingest/cqc_api/utils/validate_cqc_locations.py projects/_01_ingest/cqc_api/utils/validate_cqc_locations.py

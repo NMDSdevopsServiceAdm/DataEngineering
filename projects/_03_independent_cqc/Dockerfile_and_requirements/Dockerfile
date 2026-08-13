@@ -21,6 +21,7 @@ COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/
 COPY projects/_03_independent_cqc/_09_archive_estimates/fargate/utils /app/projects/_03_independent_cqc/_09_archive_estimates/fargate/utils
 COPY projects/_03_independent_cqc/utils /app/projects/_03_independent_cqc/utils
 COPY polars_utils /app/polars_utils
+COPY utils/file_utils.py /app/utils/file_utils.py
 COPY utils/column_names /app/utils/column_names/
 COPY utils/column_values /app/utils/column_values/
 COPY utils/value_labels /app/utils/value_labels
