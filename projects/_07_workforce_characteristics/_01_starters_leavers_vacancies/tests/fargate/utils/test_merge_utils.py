@@ -46,7 +46,7 @@ class TestCollapseJobRoleEstimatesToPublishedLabels:
         expected_lf = pl.LazyFrame(
             case.expected_data, schema_overrides={METRIC: pl.Float64}
         ).with_columns(
-            pl.col(SLVCols.job_role_label).cast(
+            pl.col(SLVCols.published_job_role_label).cast(
                 CatColType.PublishedJobRoleLabelEnumType
             )
         )

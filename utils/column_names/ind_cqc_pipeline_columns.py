@@ -68,7 +68,6 @@ class IndCqcColumns:
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
     average_percentage_residual: str = "average_percentage_residual"
-    avg_filled_posts_per_bed_ratio: str = "avg_filled_posts_per_bed_ratio"
     banded_bed_ratio_rolling_average_model: str = (
         "banded_bed_ratio_rolling_average_model"
     )

@@ -83,23 +83,23 @@ def main(
             columns_subset=[
                 AWPClean.establishment_id,
                 AWPClean.ascwds_workplace_import_date,
-                SLVCols.job_role_label,
+                SLVCols.published_job_role_label,
             ],
             brief="Primary key (establishment_id, ascwds_workplace_import_date, "
-            "job_role_label) should be unique",
+            "published_job_role_label) should be unique",
         )
         # categorical
         .col_vals_in_set(
-            SLVCols.job_role_label,
+            SLVCols.published_job_role_label,
             SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values,
         )
         # distinct values
         .specially(
             vl.is_unique_count_equal(
-                SLVCols.job_role_label,
+                SLVCols.published_job_role_label,
                 SLVPrepareCategoricalValues.published_job_role_labels_column_values.count_of_categorical_values,
             ),
-            brief=f"{SLVCols.job_role_label} should have exactly "
+            brief=f"{SLVCols.published_job_role_label} should have exactly "
             f"{SLVPrepareCategoricalValues.published_job_role_labels_column_values.count_of_categorical_values} distinct values",
         ).interrogate()
     )
