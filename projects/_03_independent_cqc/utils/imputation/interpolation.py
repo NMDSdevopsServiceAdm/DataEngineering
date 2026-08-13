@@ -89,6 +89,13 @@ def model_interpolation(
         IndCqc.residual,
     )
 
+    # Callers rely on the returned frame being sorted by [location_id,
+    # cqc_location_import_date] (e.g. model_primary_service_rate_of_change_trendline's
+    # rolling_sum_by). This consolidates what used to be two internal full-frame
+    # sorts (one each in calculate_proportion_of_days_between_submissions and
+    # calculate_residuals) into a single sort here.
+    lf = lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
+
     return lf
 
 
