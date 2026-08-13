@@ -121,14 +121,13 @@ def group_rural_urban_sparse_categories(lf: pl.LazyFrame) -> pl.LazyFrame:
     Returns:
         pl.LazyFrame: LazyFrame with the new rural urban indicator column with recoded sparse categories.
     """
+    rural_urban_indicator = pl.col(IndCQC.current_rural_urban_indicator_2011).cast(
+        pl.String
+    )
     return lf.with_columns(
-        pl.when(
-            pl.col(IndCQC.current_rural_urban_indicator_2011)
-            .str.to_lowercase()
-            .str.contains("sparse")
-        )
+        pl.when(rural_urban_indicator.str.to_lowercase().str.contains("sparse"))
         .then(pl.lit("Sparse setting"))
-        .otherwise(pl.col(IndCQC.current_rural_urban_indicator_2011))
+        .otherwise(rural_urban_indicator)
         .alias(IndCQC.current_rural_urban_indicator_2011_for_non_res_model)
     )
 

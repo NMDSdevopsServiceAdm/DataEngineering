@@ -78,12 +78,8 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
     care_homes_lf = filter_lf_to_care_homes_with_known_beds_and_filled_posts(input_lf)
     data_not_relevant_to_filter_lf = select_data_not_in_subset(input_lf, care_homes_lf)
 
-    avg_filled_posts_per_banded_bed_count_lf = (
-        calculate_average_filled_posts_per_banded_bed_count(care_homes_lf)
-    )
-
     care_homes_lf = calculate_expected_filled_posts_based_on_number_of_beds(
-        care_homes_lf, avg_filled_posts_per_banded_bed_count_lf
+        care_homes_lf
     )
 
     care_homes_lf = calculate_filled_post_standardised_residual(care_homes_lf)
@@ -165,70 +161,36 @@ def select_data_not_in_subset(
     return output_lf
 
 
-def calculate_average_filled_posts_per_banded_bed_count(
-    input_lf: pl.LazyFrame,
-) -> pl.LazyFrame:
-    """
-    Calculate the average filled posts per bed ratio for each banded bed count.
-
-    This function groups the input LazyFrame by the number of banded beds and
-    calculates the average filled posts per bed ratio for each group.
-
-    Args:
-        input_lf (pl.LazyFrame): A LazyFrame containing the columns
-            'number_of_beds_banded' and 'filled_posts_per_bed_ratio'.
-
-    Returns:
-        pl.LazyFrame: A LazyFrame with the number of banded beds and the
-            corresponding average filled posts per bed ratio.
-    """
-    # polars_streaming: groupby+agg workaround; could be .mean().over() when window functions support streaming
-    output_lf = input_lf.group_by(IndCQC.number_of_beds_banded).agg(
-        pl.col(IndCQC.filled_posts_per_bed_ratio)
-        .mean()
-        .alias(IndCQC.avg_filled_posts_per_bed_ratio)
-    )
-
-    return output_lf
-
-
 def calculate_expected_filled_posts_based_on_number_of_beds(
     lf: pl.LazyFrame,
-    join_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
     """
     Calculates the expected number of filled posts based on the number of beds
     and average filled posts per bed ratio.
 
-    This function joins the input LazyFrame with another LazyFrame containing
-    the average filled posts per bed ratio for each banded bed count. It then
-    calculates the expected number of filled posts for each row by multiplying
-    the number of beds by the average filled posts per bed ratio.
+    This function calculates the average filled posts per bed ratio for each
+    banded bed count, then calculates the expected number of filled posts for
+    each row by multiplying the number of beds by that average.
 
     Args:
-        lf (pl.LazyFrame): A LazyFrame containing the columns 'number_of_beds'
-            and 'number_of_beds_banded'.
-        join_lf (pl.LazyFrame): A LazyFrame containing the columns
-            'number_of_beds_banded' and 'avg_filled_posts_per_bed_ratio'.
+        lf (pl.LazyFrame): A LazyFrame containing the columns 'number_of_beds',
+            'number_of_beds_banded' and 'filled_posts_per_bed_ratio'.
 
     Returns:
         pl.LazyFrame: A LazyFrame with the additional column
         'expected_filled_posts'.
     """
-    lf = lf.join(
-        join_lf,
-        on=IndCQC.number_of_beds_banded,
-        how="left",
+    avg_filled_posts_per_bed_ratio = (
+        pl.col(IndCQC.filled_posts_per_bed_ratio)
+        .mean()
+        .over(IndCQC.number_of_beds_banded)
     )
 
-    lf = lf.with_columns(
-        (
-            pl.col(IndCQC.number_of_beds)
-            * pl.col(IndCQC.avg_filled_posts_per_bed_ratio)
-        ).alias(IndCQC.expected_filled_posts)
+    return lf.with_columns(
+        (pl.col(IndCQC.number_of_beds) * avg_filled_posts_per_bed_ratio).alias(
+            IndCQC.expected_filled_posts
+        )
     )
-
-    return lf
 
 
 def calculate_filled_post_standardised_residual(

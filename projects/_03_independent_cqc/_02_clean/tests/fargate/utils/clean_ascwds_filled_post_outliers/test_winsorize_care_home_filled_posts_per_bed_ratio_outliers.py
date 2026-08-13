@@ -120,44 +120,21 @@ class SelectDataNotInSubsetTests(unittest.TestCase):
         )
 
 
-class CalculateAverageFilledPostsPerBandedBedCount(unittest.TestCase):
-    def test_function_returns_expected_values(self):
+class TestCalculateExpectedFilledPostsBasedOnNumberOfBeds:
+    def test_multiplies_number_of_beds_by_average_ratio_within_its_band(self):
         test_lf = pl.LazyFrame(
-            data=Data.calculate_average_filled_posts_rows,
-            schema=Schemas.calculate_average_filled_posts_schema,
-            orient="row",
-        )
-        returned_lf = job.calculate_average_filled_posts_per_banded_bed_count(test_lf)
-        expected_lf = pl.LazyFrame(
-            data=Data.expected_calculate_average_filled_posts_rows,
-            schema=Schemas.expected_calculate_average_filled_posts_schema,
-            orient="row",
-        )
-        pl_testing.assert_frame_equal(
-            returned_lf.sort(IndCQC.number_of_beds_banded), expected_lf
-        )
-
-
-class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(unittest.TestCase):
-    def test_function_returns_expected_values(self):
-        test_base_lf = pl.LazyFrame(
-            data=Data.base_filled_posts_rows,
-            schema=Schemas.calculate_expected_filled_posts_base_schema,
-            orient="row",
-        )
-        test_join_lf = pl.LazyFrame(
-            data=Data.join_filled_posts_rows,
-            schema=Schemas.calculate_expected_filled_posts_join_schema,
+            data=Data.calculate_expected_filled_posts_rows,
+            schema=Schemas.calculate_expected_filled_posts_schema,
             orient="row",
         )
 
         returned_lf = job.calculate_expected_filled_posts_based_on_number_of_beds(
-            test_base_lf, test_join_lf
+            test_lf
         )
 
         expected_lf = pl.LazyFrame(
-            data=Data.expected_filled_posts_rows,
-            schema=Schemas.expected_filled_posts_schema,
+            data=Data.expected_calculate_expected_filled_posts_rows,
+            schema=Schemas.expected_calculate_expected_filled_posts_schema,
             orient="row",
         )
 

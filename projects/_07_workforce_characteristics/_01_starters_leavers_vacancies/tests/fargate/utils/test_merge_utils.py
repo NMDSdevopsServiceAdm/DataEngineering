@@ -9,13 +9,19 @@ from projects._07_workforce_characteristics.unittest_data.polars_slv_test_data i
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
+    SLVPrepareCategoricalValues,
+)
 
 METRIC = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
 
 
 class TestRolesSharedByBothJobRoleTaxonomies:
-    all_job_roles = set(CatColType.JobRoleEnumType.categories)
-    published_roles = set(CatColType.PublishedJobRoleLabelEnumType.categories)
+    all_job_roles = set(CatVals.main_job_role_labels_column_values.categorical_values)
+    published_roles = set(
+        SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
+    )
 
     def test_contains_every_role_common_to_both_taxonomies_and_nothing_else(self):
         for role in self.all_job_roles | self.published_roles:
@@ -46,8 +52,8 @@ class TestCollapseJobRoleEstimatesToPublishedLabels:
         expected_lf = pl.LazyFrame(
             case.expected_data, schema_overrides={METRIC: pl.Float64}
         ).with_columns(
-            pl.col(SLVCols.job_role_label).cast(
-                CatColType.PublishedJobRoleLabelEnumType
+            pl.col(SLVCols.published_job_role_label).cast(
+                CatColType.PublishedJobRoleLabelCatType
             )
         )
 
