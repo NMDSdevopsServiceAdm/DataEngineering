@@ -92,23 +92,6 @@ cleaned_ct_care_home_columns_to_import = [
     CTCHClean.ct_care_home_total_employed,
 ]
 
-columns_to_cast_to_categorical_or_enum = {
-    CQCLClean.care_home: CatColType.CareHomeEnumType,
-    CQCLClean.dormancy: CatColType.DormancyEnumType,
-    CQCLClean.cqc_sector: CatColType.CqcSectorEnumType,
-    CQCLClean.primary_service_type: CatColType.PrimaryServiceEnumType,
-    CQCLClean.primary_service_type_second_level: CatColType.PrimaryServiceTypeSecondLevelCatType,
-    ONSClean.current_rural_urban_ind_11: CatColType.OnsRuralUrbanInd11EnumType,
-    ONSClean.contemporary_region: CatColType.OnsRegionCatType,
-    ONSClean.contemporary_cssr: CatColType.OnsCssrCatType,
-    ONSClean.contemporary_sub_icb: CatColType.OnsSubIcbCatType,
-    ONSClean.contemporary_icb: CatColType.OnsIcbCatType,
-    ONSClean.contemporary_icb_region: CatColType.OnsIcbRegionCatType,
-    ONSClean.current_region: CatColType.OnsRegionCatType,
-    ONSClean.current_cssr: CatColType.OnsCssrCatType,
-    ONSClean.current_icb: CatColType.OnsIcbCatType,
-}
-
 
 def main(
     cleaned_cqc_location_source: str,
@@ -130,16 +113,19 @@ def main(
         cleaned_ct_care_home_source (str): s3 path to the cleaned capacity tracker care home data
         destination (str): s3 path to save the output data
     """
+    # care_home is cast on every source here, before the joins below, since it's
+    # used as a join key: joining an Enum column against a still-String one raises
+    # a dtype mismatch error, so every side needs the same dtype ahead of the join.
     cleaned_cqc_location_lf = utils.scan_parquet(
         cleaned_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,
-    )
+    ).with_columns(pl.col(CQCLClean.care_home).cast(CatColType.CareHomeEnumType))
     print("Cleaned CQC location LazyFrame read in")
 
     cleaned_cqc_pir_lf = utils.scan_parquet(
         cleaned_cqc_pir_source,
         selected_columns=cleaned_cqc_pir_columns_to_import,
-    )
+    ).with_columns(pl.col(CQCPIRClean.care_home).cast(CatColType.CareHomeEnumType))
     print("Cleaned CQC PIR LazyFrame read in")
 
     cleaned_ascwds_workplace_lf = utils.scan_parquet(
@@ -150,13 +136,13 @@ def main(
 
     cleaned_ct_non_res_lf = utils.scan_parquet(
         cleaned_ct_non_res_source, selected_columns=cleaned_ct_non_res_columns_to_import
-    )
+    ).with_columns(pl.col(CTNRClean.care_home).cast(CatColType.CareHomeEnumType))
     print("Cleaned capacity tracker non-residential LazyFrame read in")
 
     cleaned_ct_care_home_lf = utils.scan_parquet(
         cleaned_ct_care_home_source,
         selected_columns=cleaned_ct_care_home_columns_to_import,
-    )
+    ).with_columns(pl.col(CTCHClean.care_home).cast(CatColType.CareHomeEnumType))
     print("Cleaned capacity tracker care home LazyFrame read in")
 
     independent_cqc_lf = cleaned_cqc_location_lf.filter(
@@ -197,10 +183,6 @@ def main(
         CTCHClean.care_home,
     )
     print("Cleaned capacity tracker care home LazyFrame joined in")
-
-    independent_cqc_lf = independent_cqc_lf.with_columns(
-        utils.cast_to_schema(columns_to_cast_to_categorical_or_enum)
-    )
 
     utils.sink_to_parquet(
         independent_cqc_lf,

@@ -117,6 +117,9 @@ def main(
         pl.col(CQCLClean.care_home).cast(CategoricalColumnTypes.CareHomeEnumType),
         pl.col(CQCLClean.dormancy).cast(CategoricalColumnTypes.DormancyEnumType),
         pl.col(CQCLClean.cqc_sector).cast(CategoricalColumnTypes.CqcSectorEnumType),
+        pl.col(CQCLClean.primary_service_type).cast(
+            CategoricalColumnTypes.PrimaryServiceEnumType
+        ),
         pl.col(CQCLClean.primary_service_type_second_level).cast(
             CategoricalColumnTypes.PrimaryServiceTypeSecondLevelCatType
         ),
