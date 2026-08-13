@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added the missing validation checks to the imputed independent CQC pointblank validation job, covering the imputed and capacity tracker model columns, the rate of change trendlines, and the relationship between `careHome` and `primary_service_type`.
+
 - Added a validation check that `ascwds_job_role_rolling_ratio` sums to 1 across job roles within each primary service type, size group and import date group.
 
 - Joined job role estimates with metadata (on `id_per_locationid_import_date`) in the SLV merge job.
@@ -102,6 +104,8 @@ All notable changes to this project will be documented in this file.
 - Changed return_last_known_value to use .over() instead of filter > group-by > agg > join
 
 ### Fixed
+- Widened the lower limit on the difference between `estimate_filled_posts` and `estimate_filled_posts_from_all_job_roles` from -0.0002 to -0.002, so float32 drift in the job role sum no longer fails the check on large locations.
+
 - Fixed the Transform ASCWDS Data pipeline, which was failing due to an incorrect dataset name in Terraform and the clean workplace job dropping the `import_date` column that the clean worker job depends on. Corrected the Terraform dataset name and removed the drop statement for `import_date`.
 
 - Fixed Schema mismatch error while generating grouped providers output.
