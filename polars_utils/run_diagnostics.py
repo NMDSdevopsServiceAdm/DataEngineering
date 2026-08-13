@@ -18,6 +18,14 @@ class RunDiagnostics:
     survives even if the process is killed (e.g. by the OOM killer) before
     it can flush anything to disk or the container's own log stream.
 
+    `POLARS_VERBOSE` must already be set to "1" in the process environment
+    *before this process starts* (e.g. on the throwaway task's Fargate
+    environment block) for streaming-fallback notices to actually appear in
+    the stderr capture below. Setting it via `os.environ` inside `start()` is
+    too late: Polars' Rust core reads the flag once, and by the time `start()`
+    runs, `polars` is already imported (this module alone imports it at the
+    top) - `start()` only warns if it looks unset, it can't fix it.
+
     Args:
         job_name (str): Name of the job being diagnosed, used to group this
             run's objects under a stable S3 prefix.
@@ -58,7 +66,14 @@ class RunDiagnostics:
         Returns:
             RunDiagnostics: self, so this can be chained onto construction.
         """
-        os.environ["POLARS_VERBOSE"] = "1"
+        if os.environ.get("POLARS_VERBOSE") != "1":
+            print(
+                "WARNING: run_diagnostics - POLARS_VERBOSE is not set to '1' in "
+                "this process's environment. Polars is already imported by this "
+                "point, so setting it now would have no effect - set it before "
+                "the process starts (e.g. on the task definition) or Polars "
+                "streaming-fallback notices won't appear in the stderr capture."
+            )
         self._start_stderr_capture()
         self._start_sampler()
         return self

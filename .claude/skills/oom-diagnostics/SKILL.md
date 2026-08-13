@@ -14,6 +14,15 @@ them). Every sample and checkpoint is written to S3 immediately, not
 buffered, so evidence survives the process getting SIGKILLed by the OOM
 killer before anything else could flush.
 
+**`POLARS_VERBOSE=1` must be set in the process environment *before the
+process starts*** — e.g. on the throwaway task's Fargate `environment` block
+(see step 3 below), not left for `RunDiagnostics` to set. Polars' Rust core
+reads the flag once, and by the time any Python code (including `start()`)
+runs, `polars` has already been imported — setting the env var at that point
+is too late. `start()` only warns if it looks unset; it can't fix it for you.
+Without this, the stderr capture mechanism still works, it just has nothing
+Polars-related to catch.
+
 ## This is a flexible starting point, not a frozen API
 
 It's fine to adapt `run_diagnostics.py` in-branch for a specific
@@ -68,7 +77,9 @@ candidates against real production data (see its unmerged branch
    image, sized deliberately for what you're measuring (1881 pinned its
    prototype task to the *real* job's pre-stopgap sizing so results reflected
    the true OOM boundary — raise the sizing choice with the user rather than
-   assuming a default is right):
+   assuming a default is right). Set `POLARS_VERBOSE=1` here, in the task's
+   own `environment` block — this is the only place it can actually take
+   effect (see the callout above):
 
    ```hcl
    module "my-job-proto" {
@@ -79,7 +90,10 @@ candidates against real production data (see its unmerged branch
      tag_name      = terraform.workspace
      cpu_size      = 8192                     # match whatever you're measuring against
      ram_size      = 61440
-     environment   = [{ "name" : "AWS_REGION", "value" : "eu-west-2" }]
+     environment   = [
+       { "name" : "AWS_REGION", "value" : "eu-west-2" },
+       { "name" : "POLARS_VERBOSE", "value" : "1" },
+     ]
    }
    ```
 

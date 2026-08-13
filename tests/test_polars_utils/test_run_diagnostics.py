@@ -99,7 +99,8 @@ class TestCheckpoint:
 
 class TestStartAndStop:
     @mock_aws
-    def test_start_sets_polars_verbose_env_var(self):
+    def test_start_warns_when_polars_verbose_not_already_set(self, monkeypatch, capsys):
+        monkeypatch.delenv("POLARS_VERBOSE", raising=False)
         create_pipeline_resources_bucket()
         diagnostics = job.RunDiagnostics(
             JOB_NAME, DATASETS_BUCKET, sample_interval_seconds=0.05
@@ -107,7 +108,23 @@ class TestStartAndStop:
 
         diagnostics.start()
         try:
-            assert os.environ["POLARS_VERBOSE"] == "1"
+            assert "POLARS_VERBOSE" in capsys.readouterr().out
+        finally:
+            diagnostics.stop()
+
+    @mock_aws
+    def test_start_does_not_warn_when_polars_verbose_already_set(
+        self, monkeypatch, capsys
+    ):
+        monkeypatch.setenv("POLARS_VERBOSE", "1")
+        create_pipeline_resources_bucket()
+        diagnostics = job.RunDiagnostics(
+            JOB_NAME, DATASETS_BUCKET, sample_interval_seconds=0.05
+        )
+
+        diagnostics.start()
+        try:
+            assert capsys.readouterr().out == ""
         finally:
             diagnostics.stop()
 
