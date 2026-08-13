@@ -181,28 +181,31 @@ def add_fill_boundaries(estimated_job_role_posts_lf: pl.LazyFrame) -> pl.LazyFra
 
     is_known = pl.col(IndCQC.ascwds_job_role_ratios).is_not_null()
     known_date = pl.when(is_known).then(pl.col(order_key))
-    first_known_date = known_date.min().over(JOB_ROLE_GROUPS)
-    last_known_date = known_date.max().over(JOB_ROLE_GROUPS)
 
-    return estimated_job_role_posts_lf.with_columns(
-        first_known_date.alias(TempCols.first_known_date),
-        last_known_date.alias(TempCols.last_known_date),
-        pl.when(is_known & (pl.col(order_key) == first_known_date))
-        .then(pl.col(IndCQC.ascwds_job_role_ratios))
-        .max()
-        .over(JOB_ROLE_GROUPS)
-        .alias(TempCols.first_known_value),
-        pl.when(is_known & (pl.col(order_key) == last_known_date))
-        .then(pl.col(IndCQC.ascwds_job_role_ratios))
-        .max()
-        .over(JOB_ROLE_GROUPS)
-        .alias(TempCols.last_known_value),
+    estimated_job_role_posts_lf = estimated_job_role_posts_lf.with_columns(
+        known_date.min().over(JOB_ROLE_GROUPS).alias(TempCols.first_known_date),
+        known_date.max().over(JOB_ROLE_GROUPS).alias(TempCols.last_known_date),
         known_date.forward_fill()
         .over(JOB_ROLE_GROUPS, order_by=order_key)
         .alias(TempCols.previous_known_date),
         known_date.backward_fill()
         .over(JOB_ROLE_GROUPS, order_by=order_key)
         .alias(TempCols.next_known_date),
+    )
+
+    # Reads the boundary dates as columns rather than repeating their expressions, which would
+    # make Polars compute those two windows a second time.
+    return estimated_job_role_posts_lf.with_columns(
+        pl.when(is_known & (pl.col(order_key) == pl.col(TempCols.first_known_date)))
+        .then(pl.col(IndCQC.ascwds_job_role_ratios))
+        .max()
+        .over(JOB_ROLE_GROUPS)
+        .alias(TempCols.first_known_value),
+        pl.when(is_known & (pl.col(order_key) == pl.col(TempCols.last_known_date)))
+        .then(pl.col(IndCQC.ascwds_job_role_ratios))
+        .max()
+        .over(JOB_ROLE_GROUPS)
+        .alias(TempCols.last_known_value),
     )
 
 
