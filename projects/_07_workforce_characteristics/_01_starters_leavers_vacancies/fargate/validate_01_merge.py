@@ -7,6 +7,7 @@ from polars_utils import utils
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
@@ -14,6 +15,21 @@ from utils.column_values.categorical_columns_by_dataset import (
 COMPARE_COLS_TO_IMPORT = [
     IndCqcColumns.id_per_locationid_import_date,
 ]
+
+METRIC = IndCqcColumns.estimate_filled_posts_by_job_role_historically_reallocated
+
+EMPLOYMENT_STATUS_SPLIT_COLUMNS = [
+    SLVCols.filled_posts_perm,
+    SLVCols.filled_posts_temp,
+    SLVCols.filled_posts_bank_or_pool,
+    SLVCols.filled_posts_agency,
+    SLVCols.filled_posts_other,
+]
+
+# A fixed absolute tolerance recurs as float32 drift scales with magnitude, not row
+# count (see ticket 1864, validate_04_estimates.py) — this check scales with METRIC
+# instead. ~1e-5 comfortably covers float32 accumulation over 5 summed terms.
+EMPLOYMENT_STATUS_SUM_RELATIVE_TOLERANCE = 1e-5
 
 
 def calculate_expected_row_count(compare_df: pl.DataFrame) -> int:
@@ -74,8 +90,33 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        ).interrogate()
+        )
+        # employment status split columns (temporary, ticket 1838 — see
+        # merge_utils.apply_employment_status_magic_numbers)
+        .col_vals_ge(
+            columns=EMPLOYMENT_STATUS_SPLIT_COLUMNS,
+            value=0,
+            na_pass=True,
+            brief="Employment status split columns are non-negative",
+        )
     )
+    for column in EMPLOYMENT_STATUS_SPLIT_COLUMNS:
+        # col_vals_expr has no na_pass param, so nulls are passed explicitly in the expr.
+        validation = validation.col_vals_expr(
+            expr=(pl.col(column) <= pl.col(METRIC)) | pl.col(column).is_null(),
+            brief=f"{column} does not exceed {METRIC}",
+        )
+
+    sum_of_splits = sum(pl.col(column) for column in EMPLOYMENT_STATUS_SPLIT_COLUMNS)
+    validation = validation.col_vals_expr(
+        expr=(
+            (sum_of_splits - pl.col(METRIC)).abs()
+            <= pl.col(METRIC).abs() * EMPLOYMENT_STATUS_SUM_RELATIVE_TOLERANCE
+        )
+        | sum_of_splits.is_null(),
+        brief="Employment status splits sum back to the filled-post metric",
+    ).interrogate()
+
     vl.write_reports(validation, bucket_name, reports_path)
 
 

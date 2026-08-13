@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Implemented `apply_employment_status_magic_numbers` in the SLV merge job: splits the job-role filled-post estimate into 5 employment-status components using the CSV rates loaded previously, plus a column comparing ASCWDS employees against the permanent+temporary split for error tracking. Added validation to check the split columns are non-negative, don't exceed the source estimate, and sum back to it within a relative tolerance. This is a temporary stopgap ahead of a dedicated employment status estimation pipeline, expected to be removed within a few months.
+
 - Added a validation check that `ascwds_job_role_rolling_ratio` sums to 1 across job roles within each primary service type, size group and import date group.
 
 - Joined job role estimates with metadata (on `id_per_locationid_import_date`) in the SLV merge job.

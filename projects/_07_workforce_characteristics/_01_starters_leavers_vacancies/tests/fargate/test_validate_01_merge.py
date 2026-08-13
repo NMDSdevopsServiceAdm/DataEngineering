@@ -7,6 +7,7 @@ import pytest
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.validate_01_merge as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
@@ -64,7 +65,15 @@ class TestMain:
             {IndCqcColumns.id_per_locationid_import_date: [1, 1]}
         )
         self.source_df = pl.DataFrame(
-            {IndCqcColumns.location_id: ["1-001"] * PUBLISHED_ROLE_COUNT}
+            {
+                IndCqcColumns.location_id: ["1-001"] * PUBLISHED_ROLE_COUNT,
+                job.METRIC: [10.0] * PUBLISHED_ROLE_COUNT,
+                SLVCols.filled_posts_perm: [5.0] * PUBLISHED_ROLE_COUNT,
+                SLVCols.filled_posts_temp: [2.0] * PUBLISHED_ROLE_COUNT,
+                SLVCols.filled_posts_bank_or_pool: [1.5] * PUBLISHED_ROLE_COUNT,
+                SLVCols.filled_posts_agency: [1.0] * PUBLISHED_ROLE_COUNT,
+                SLVCols.filled_posts_other: [0.5] * PUBLISHED_ROLE_COUNT,
+            }
         )
 
     @patch(f"{PATCH_PATH}.vl.write_reports")
@@ -107,3 +116,5 @@ class TestMain:
         assertion_types_present = {item["assertion_type"] for item in report_json}
 
         assert "row_count_match" in assertion_types_present
+        assert "col_vals_ge" in assertion_types_present
+        assert "col_vals_expr" in assertion_types_present
