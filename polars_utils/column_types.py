@@ -18,16 +18,9 @@ class CategoricalColumnTypes:
     CareHomeEnumType = pl.Enum(
         CQCLocationCatVals.care_home_column_values.categorical_values
     )
-    ContemporaryIcbRegionCatType = pl.Categorical(
-        pl.Categories("contemporary_icb_region", namespace="filled_posts")
-    )
-    ContemporarySubIcbCatType = pl.Categorical(
-        pl.Categories("contemporary_sub_icb", namespace="filled_posts")
-    )
     CqcSectorEnumType = pl.Enum(
         CQCLocationCatVals.sector_column_values.categorical_values
     )
-    CssrCatType = pl.Categorical(pl.Categories("cssr", namespace="filled_posts"))
     CurrentRuralUrbanInd11EnumType = pl.Enum(
         CQCLocationCatVals.current_rui_column_values.categorical_values
     )
@@ -48,7 +41,6 @@ class CategoricalColumnTypes:
             EstimateFilledPostsSource.posts_rolling_average_model,
         ]
     )
-    IcbCatType = pl.Categorical(pl.Categories("icb", namespace="filled_posts"))
     JobGroupCatType = pl.Categorical(
         pl.Categories("job_group", namespace="filled_posts")
     )
@@ -60,6 +52,19 @@ class CategoricalColumnTypes:
     )
     LocationCatType = pl.Categorical(
         pl.Categories("location", namespace="filled_posts")
+    )
+    # Shared between the current and contemporary columns for each geography:
+    # current geographies are always a subset of contemporary ones.
+    OnsCssrCatType = pl.Categorical(pl.Categories("ons_cssr", namespace="filled_posts"))
+    OnsIcbCatType = pl.Categorical(pl.Categories("ons_icb", namespace="filled_posts"))
+    OnsIcbRegionCatType = pl.Categorical(
+        pl.Categories("ons_icb_region", namespace="filled_posts")
+    )
+    OnsRegionCatType = pl.Categorical(
+        pl.Categories("ons_region", namespace="filled_posts")
+    )
+    OnsSubIcbCatType = pl.Categorical(
+        pl.Categories("ons_sub_icb", namespace="filled_posts")
     )
     PrimaryServiceEnumType = pl.Enum(
         CQCLocationCatVals.primary_service_type_column_values.categorical_values
@@ -73,4 +78,3 @@ class CategoricalColumnTypes:
     PublishedJobRoleLabelCatType = pl.Categorical(
         pl.Categories("published_job_role_label", namespace="filled_posts")
     )
-    RegionCatType = pl.Categorical(pl.Categories("region", namespace="filled_posts"))

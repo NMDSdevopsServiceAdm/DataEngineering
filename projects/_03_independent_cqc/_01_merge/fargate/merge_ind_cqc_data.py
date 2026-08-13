@@ -99,14 +99,14 @@ columns_to_cast_to_categorical_or_enum = {
     CQCLClean.primary_service_type: CatColType.PrimaryServiceEnumType,
     CQCLClean.primary_service_type_second_level: CatColType.PrimaryServiceTypeSecondLevelCatType,
     ONSClean.current_rural_urban_ind_11: CatColType.CurrentRuralUrbanInd11EnumType,
-    ONSClean.contemporary_region: CatColType.RegionCatType,
-    ONSClean.contemporary_cssr: CatColType.CssrCatType,
-    ONSClean.contemporary_sub_icb: CatColType.ContemporarySubIcbCatType,
-    ONSClean.contemporary_icb: CatColType.IcbCatType,
-    ONSClean.contemporary_icb_region: CatColType.ContemporaryIcbRegionCatType,
-    ONSClean.current_region: CatColType.RegionCatType,
-    ONSClean.current_cssr: CatColType.CssrCatType,
-    ONSClean.current_icb: CatColType.IcbCatType,
+    ONSClean.contemporary_region: CatColType.OnsRegionCatType,
+    ONSClean.contemporary_cssr: CatColType.OnsCssrCatType,
+    ONSClean.contemporary_sub_icb: CatColType.OnsSubIcbCatType,
+    ONSClean.contemporary_icb: CatColType.OnsIcbCatType,
+    ONSClean.contemporary_icb_region: CatColType.OnsIcbRegionCatType,
+    ONSClean.current_region: CatColType.OnsRegionCatType,
+    ONSClean.current_cssr: CatColType.OnsCssrCatType,
+    ONSClean.current_icb: CatColType.OnsIcbCatType,
 }
 
 

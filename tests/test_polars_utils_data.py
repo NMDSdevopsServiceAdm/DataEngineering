@@ -542,32 +542,36 @@ class ColumnTypesData:
             ),
         ),
         CategoricalColumnTypeCase(
-            id="region_cat_type",
-            actual=CatColType.RegionCatType,
-            expected=pl.Categorical(pl.Categories("region", namespace="filled_posts")),
-        ),
-        CategoricalColumnTypeCase(
-            id="cssr_cat_type",
-            actual=CatColType.CssrCatType,
-            expected=pl.Categorical(pl.Categories("cssr", namespace="filled_posts")),
-        ),
-        CategoricalColumnTypeCase(
-            id="icb_cat_type",
-            actual=CatColType.IcbCatType,
-            expected=pl.Categorical(pl.Categories("icb", namespace="filled_posts")),
-        ),
-        CategoricalColumnTypeCase(
-            id="contemporary_sub_icb_cat_type",
-            actual=CatColType.ContemporarySubIcbCatType,
+            id="ons_region_cat_type",
+            actual=CatColType.OnsRegionCatType,
             expected=pl.Categorical(
-                pl.Categories("contemporary_sub_icb", namespace="filled_posts")
+                pl.Categories("ons_region", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
-            id="contemporary_icb_region_cat_type",
-            actual=CatColType.ContemporaryIcbRegionCatType,
+            id="ons_cssr_cat_type",
+            actual=CatColType.OnsCssrCatType,
             expected=pl.Categorical(
-                pl.Categories("contemporary_icb_region", namespace="filled_posts")
+                pl.Categories("ons_cssr", namespace="filled_posts")
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="ons_icb_cat_type",
+            actual=CatColType.OnsIcbCatType,
+            expected=pl.Categorical(pl.Categories("ons_icb", namespace="filled_posts")),
+        ),
+        CategoricalColumnTypeCase(
+            id="ons_sub_icb_cat_type",
+            actual=CatColType.OnsSubIcbCatType,
+            expected=pl.Categorical(
+                pl.Categories("ons_sub_icb", namespace="filled_posts")
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="ons_icb_region_cat_type",
+            actual=CatColType.OnsIcbRegionCatType,
+            expected=pl.Categorical(
+                pl.Categories("ons_icb_region", namespace="filled_posts")
             ),
         ),
     ]
