@@ -608,6 +608,7 @@ class ValidateEstimatedIndCQCFilledPostsSchemas:
             (IndCQC.non_res_with_dormancy_model, pl.Float64()),
             (IndCQC.non_res_without_dormancy_model, pl.Float64()),
             (IndCQC.imputed_pir_filled_posts_model, pl.Float64()),
+            (IndCQC.services_offered, pl.List(pl.String())),
         ]
     )
 
