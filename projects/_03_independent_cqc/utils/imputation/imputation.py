@@ -26,10 +26,13 @@ def model_imputation(
 
     Eligibility for imputation is flagged per row (based on the care_home
     status of the location and only for locations who have at least one
-    non-null value); extrapolation and interpolation run across the whole
-    LazyFrame regardless, since out-of-scope rows are already null in
-    `column_with_null_values` and so naturally coalesce back to null, but the
-    final imputed value is only kept where the flag is set.
+    non-null value). Extrapolation and interpolation run across the whole
+    LazyFrame, grouped by `[location_id, care_home]` rather than
+    `location_id` alone — a location's `care_home` status can change between
+    import dates (it's re-derived from `primary_service_type` on every
+    import), so grouping by `location_id` alone would mix a location's
+    differently-flagged periods into the same calculation. The final imputed
+    value is only kept where the eligibility flag is set.
 
     The imputation model is carried out in two steps, extrapolation and
     interpolation, which both populate null values based on the rate of change
@@ -51,17 +54,20 @@ def model_imputation(
         pl.LazyFrame: The LazyFrame with the added column imputed_column_name.
     """
     lf = flag_rows_eligible_for_imputation(lf, column_with_null_values, care_home)
+    group_columns = [IndCqc.location_id, IndCqc.care_home]
 
     lf = model_extrapolation(
         lf,
         column_with_null_values,
         model_column_name,
         extrapolation_method,
+        group_columns=group_columns,
     )
     lf = model_interpolation(
         lf,
         column_with_null_values,
         method="trend",
+        group_columns=group_columns,
     )
 
     lf = lf.with_columns(

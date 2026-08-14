@@ -47,7 +47,7 @@ All notable changes to this project will be documented in this file.
 
 - Pull clean workplace columns into merge job within SLV pipeline.
 
-- Reworked `model_imputation` so `flag_rows_eligible_for_imputation` (formerly `split_dataset_for_imputation`) adds a boolean eligibility column to a single LazyFrame instead of splitting it into two frames that were later `pl.concat`-ed back together, to reduce query plan growth across the impute job's four sequential `model_imputation` calls.
+- Reworked `model_imputation` so `flag_rows_eligible_for_imputation` (formerly `split_dataset_for_imputation`) adds a boolean eligibility column to a single LazyFrame instead of splitting it into two frames that were later `pl.concat`-ed back together, reducing query plan growth across the impute job's four sequential `model_imputation` calls. `model_extrapolation`/`model_interpolation` gained an optional `group_columns` parameter (defaulting to `[location_id]`, unchanged for their other caller) so `model_imputation` can group by `[location_id, care_home]` instead — needed because a location's `care_home` status can change between import dates, so grouping by `location_id` alone would mix a location's differently-flagged periods into the same extrapolation/interpolation calculation.
 
 - Updated references from workplace data for 'reconciliation' process to 'SfC internal' as the dataset is used in multiple jobs
 

@@ -3042,6 +3042,15 @@ class ModelImputation:
                 ("1-002", date(2023, 3, 1), CareHome.care_home, None, 3.0, None),
             ],
         ),
+        ModelImputationTestCase(
+            id="when_location_changes_care_home_status_only_the_matching_period_is_imputed",
+            expected_data=[
+                ("1-001", date(2023, 1, 1), CareHome.not_care_home, None, 1.0, None),
+                ("1-001", date(2023, 2, 1), CareHome.not_care_home, None, 2.0, None),
+                ("1-001", date(2023, 3, 1), CareHome.care_home, 50.0, 3.0, None),
+                ("1-001", date(2023, 4, 1), CareHome.care_home, None, 4.0, None),
+            ],
+        ),
     ] # fmt: skip
 
 

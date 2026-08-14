@@ -1,3 +1,4 @@
+from datetime import date
 from unittest.mock import MagicMock
 
 import polars as pl
@@ -72,6 +73,63 @@ class TestCalculateResiduals:
         )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
+
+
+class TestCalculateResidualsGroupColumns:
+    GROUP = "group"
+    FIRST = "first"
+    SECOND = "second"
+
+    def build_input_lf(self):
+        return pl.LazyFrame(
+            {
+                IndCqc.location_id: ["1-001"] * 4,
+                IndCqc.cqc_location_import_date: [
+                    date(2023, 1, 1),
+                    date(2023, 2, 1),
+                    date(2023, 3, 1),
+                    date(2023, 4, 1),
+                ],
+                self.GROUP: ["A", "A", "B", "B"],
+                self.FIRST: [None, None, 10.0, None],
+                self.SECOND: [None, None, 5.0, None],
+            }
+        )
+
+    def test_default_group_columns_lets_other_groups_within_a_location_backward_fill_from_each_other(
+        self,
+    ):
+        returned_lf = job.calculate_residuals(
+            self.build_input_lf(), self.FIRST, self.SECOND
+        )
+        group_a_residuals = (
+            returned_lf.filter(pl.col(self.GROUP) == "A")
+            .select(IndCqc.residual)
+            .collect()
+            .to_series()
+            .to_list()
+        )
+
+        assert group_a_residuals == [5.0, 5.0]
+
+    def test_group_columns_parameter_stops_other_groups_within_a_location_backward_filling_from_each_other(
+        self,
+    ):
+        returned_lf = job.calculate_residuals(
+            self.build_input_lf(),
+            self.FIRST,
+            self.SECOND,
+            group_columns=[IndCqc.location_id, self.GROUP],
+        )
+        group_a_residuals = (
+            returned_lf.filter(pl.col(self.GROUP) == "A")
+            .select(IndCqc.residual)
+            .collect()
+            .to_series()
+            .to_list()
+        )
+
+        assert group_a_residuals == [None, None]
 
 
 class TestCalculateProportionOfTimeBetweenSubmissions:
