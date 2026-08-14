@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
-from unittest.mock import Mock, patch
+from unittest.mock import ANY, Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
@@ -13,6 +13,7 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     ModelImputation as Schemas,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
 
 PATCH_PATH = "projects._03_independent_cqc.utils.imputation.imputation"
@@ -47,8 +48,18 @@ class TestModelImputationFunctionality:
         )
 
         flag_rows_eligible_for_imputation_mock.assert_called_once()
+
+        expected_group_columns = [IndCqc.location_id, IndCqc.care_home]
         model_extrapolation_mock.assert_called_once()
+        assert (
+            model_extrapolation_mock.call_args.kwargs["group_columns"]
+            == expected_group_columns
+        )
         model_interpolation_mock.assert_called_once()
+        assert (
+            model_interpolation_mock.call_args.kwargs["group_columns"]
+            == expected_group_columns
+        )
 
 
 class TestModelImputationResults:
