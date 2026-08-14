@@ -23,9 +23,8 @@ def model_extrapolation(
     after the last known submission are extrapolated, either by nominal or ratio
     method as specified in 'extrapolation_method'.
 
-    The process consists of: - Computing per-group (location_id) aggregates such
-    as first/last submission
-      dates and first submitted values
+    The process consists of: - Computing per-group aggregates such
+    as first/last submission dates and first submitted values
     - Deriving previous submitted values within each group
     - Applying either ratio-based or nominal extrapolation logic
     - Producing two output columns:

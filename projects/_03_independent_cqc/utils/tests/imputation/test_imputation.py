@@ -129,7 +129,7 @@ class TestFlagRowsEligibleForImputation:
         ]
         input_lf = pl.LazyFrame(
             data=input_data,
-            schema=Schemas.input_split_dataset_for_imputation_schema,
+            schema=Schemas.input_flag_rows_eligible_for_imputation_schema,
             orient="row",
         )
         expected_data = [
