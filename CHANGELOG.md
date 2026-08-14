@@ -47,6 +47,8 @@ All notable changes to this project will be documented in this file.
 
 - Pull clean workplace columns into merge job within SLV pipeline.
 
+- Reworked `model_imputation` so `flag_rows_eligible_for_imputation` (formerly `split_dataset_for_imputation`) adds a boolean eligibility column to a single LazyFrame instead of splitting it into two frames that were later `pl.concat`-ed back together, to reduce query plan growth across the impute job's four sequential `model_imputation` calls.
+
 - Updated references from workplace data for 'reconciliation' process to 'SfC internal' as the dataset is used in multiple jobs
 
 - Removed PySpark version of `clean_ascwds_workplace_data.py` and replaced with the Polars version in the pipeline

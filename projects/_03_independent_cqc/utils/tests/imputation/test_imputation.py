@@ -1,4 +1,5 @@
-import unittest
+from dataclasses import dataclass
+from typing import Any
 from unittest.mock import Mock, patch
 
 import polars as pl
@@ -12,40 +13,30 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     ModelImputation as Schemas,
 )
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CareHome
 
 PATCH_PATH = "projects._03_independent_cqc.utils.imputation.imputation"
 
 
-class TestModelImputationFunctionality(unittest.TestCase):
-    def setUp(self):
-        self.imputed_lf = pl.LazyFrame(
-            [],
-            Schemas.expected_model_imputation_schema,
-            orient="row",
-        )
-        self.non_imputed_lf = pl.LazyFrame(
-            [],
-            Schemas.expected_model_imputation_schema,
-            orient="row",
-        )
-
+class TestModelImputationFunctionality:
     @patch(f"{PATCH_PATH}.model_interpolation")
     @patch(f"{PATCH_PATH}.model_extrapolation")
-    @patch(f"{PATCH_PATH}.split_dataset_for_imputation")
+    @patch(f"{PATCH_PATH}.flag_rows_eligible_for_imputation")
     def test_function_has_expected_calls(
         self,
-        split_dataset_for_imputation_mock: Mock,
+        flag_rows_eligible_for_imputation_mock: Mock,
         model_extrapolation_mock: Mock,
         model_interpolation_mock: Mock,
     ):
-        split_dataset_for_imputation_mock.return_value = (
-            self.imputed_lf,
-            self.non_imputed_lf,
+        flagged_lf = pl.LazyFrame(
+            [],
+            Schemas.expected_model_imputation_schema,
+            orient="row",
         )
-        model_extrapolation_mock.return_value = self.imputed_lf
-        model_interpolation_mock.return_value = self.imputed_lf
+        flag_rows_eligible_for_imputation_mock.return_value = flagged_lf
+        model_extrapolation_mock.return_value = flagged_lf
+        model_interpolation_mock.return_value = flagged_lf
+
         job.model_imputation(
             Mock(name="input_lf"),
             Data.column_with_null_values_name,
@@ -55,7 +46,7 @@ class TestModelImputationFunctionality(unittest.TestCase):
             extrapolation_method="nominal",
         )
 
-        split_dataset_for_imputation_mock.assert_called_once()
+        flag_rows_eligible_for_imputation_mock.assert_called_once()
         model_extrapolation_mock.assert_called_once()
         model_interpolation_mock.assert_called_once()
 
@@ -88,66 +79,76 @@ class TestModelImputationResults:
         )
 
 
-class SplitDatasetForImputationTests(unittest.TestCase):
-    def test_function_returns_expected_data(self):
+@dataclass
+class FlagRowsEligibleForImputationTestCase:
+    id: str
+    care_home: bool
+    expected_eligible_row_ids: list[int]
 
+    def as_pytest_param(self):
+        return pytest.param(
+            (self.care_home, self.expected_eligible_row_ids), id=self.id
+        )
+
+
+flag_rows_eligible_for_imputation_test_cases = [
+    FlagRowsEligibleForImputationTestCase(
+        id="flags_care_home_locations_with_at_least_one_value",
+        care_home=True,
+        expected_eligible_row_ids=[1, 2, 3],
+    ),
+    FlagRowsEligibleForImputationTestCase(
+        id="flags_non_care_home_locations_with_at_least_one_value",
+        care_home=False,
+        expected_eligible_row_ids=[6, 7, 8],
+    ),
+]
+
+
+class TestFlagRowsEligibleForImputation:
+    @pytest.mark.parametrize(
+        "test_case",
+        [
+            case.as_pytest_param()
+            for case in flag_rows_eligible_for_imputation_test_cases
+        ],
+    )
+    def test_function_flags_expected_rows(self, test_case: tuple[bool, list[int]]):
+        care_home, expected_eligible_row_ids = test_case
+        input_data: list[Any] = [
+            (1, "1-001", CareHome.care_home, 10.0),
+            (2, "1-001", CareHome.care_home, None),
+            (3, "1-002", CareHome.care_home, 10.0),
+            (4, "1-003", CareHome.care_home, None),
+            (5, "1-003", CareHome.care_home, None),
+            (6, "1-004", CareHome.not_care_home, 10.0),
+            (7, "1-004", CareHome.not_care_home, None),
+            (8, "1-005", CareHome.not_care_home, 10.0),
+            (9, "1-006", CareHome.not_care_home, None),
+            (10, "1-006", CareHome.not_care_home, None),
+        ]
         input_lf = pl.LazyFrame(
-            data=[
-                (1, "1-001", CareHome.care_home, 10.0),
-                (2, "1-001", CareHome.care_home, None),
-                (3, "1-002", CareHome.care_home, 10.0),
-                (4, "1-003", CareHome.care_home, None),
-                (5, "1-003", CareHome.care_home, None),
-                (6, "1-004", CareHome.not_care_home, 10.0),
-                (7, "1-004", CareHome.not_care_home, None),
-                (8, "1-005", CareHome.not_care_home, 10.0),
-                (9, "1-006", CareHome.not_care_home, None),
-                (10, "1-006", CareHome.not_care_home, None),
-            ],
+            data=input_data,
             schema=Schemas.input_split_dataset_for_imputation_schema,
             orient="row",
         )
-        returned_imputed_when_care_home, returned_non_imputed_when_care_home = (
-            job.split_dataset_for_imputation(
-                input_lf,
-                Data.column_with_null_values_name,
-                care_home=True,
-            )
-        )
-        returned_imputed_when_not_care_home, returned_non_imputed_when_not_care_home = (
-            job.split_dataset_for_imputation(
-                input_lf,
-                Data.column_with_null_values_name,
-                care_home=False,
-            )
+        expected_data = [
+            row + (row[0] in expected_eligible_row_ids,) for row in input_data
+        ]
+        expected_lf = pl.LazyFrame(
+            data=expected_data,
+            schema=Schemas.expected_flag_rows_eligible_for_imputation_schema,
+            orient="row",
         )
 
-        row_id = "row_id"
-        self.assertEqual(
-            returned_imputed_when_care_home.select(row_id)
-            .collect()
-            .to_series()
-            .to_list(),
-            [1, 2, 3],
+        returned_lf = job.flag_rows_eligible_for_imputation(
+            input_lf,
+            Data.column_with_null_values_name,
+            care_home=care_home,
         )
-        self.assertEqual(
-            returned_non_imputed_when_care_home.select(row_id)
-            .collect()
-            .to_series()
-            .to_list(),
-            [4, 5, 6, 7, 8, 9, 10],
-        )
-        self.assertEqual(
-            returned_imputed_when_not_care_home.select(row_id)
-            .collect()
-            .to_series()
-            .to_list(),
-            [6, 7, 8],
-        )
-        self.assertEqual(
-            returned_non_imputed_when_not_care_home.select(row_id)
-            .collect()
-            .to_series()
-            .to_list(),
-            [1, 2, 3, 4, 5, 9, 10],
+
+        pl_testing.assert_frame_equal(
+            returned_lf,
+            expected_lf,
+            check_row_order=False,
         )

@@ -33,6 +33,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     ExtrapolationColumns as ExtrapCol,
 )
+from utils.column_names.ind_cqc_pipeline_columns import Imputation
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
@@ -1667,6 +1668,14 @@ class ModelImputation:
         IndCQC.location_id: pl.String,
         IndCQC.care_home: pl.String,
         "null_values": pl.Float32,
+    }
+
+    expected_flag_rows_eligible_for_imputation_schema = {
+        "row_id": pl.Int8,
+        IndCQC.location_id: pl.String,
+        IndCQC.care_home: pl.String,
+        "null_values": pl.Float32,
+        Imputation.eligible_for_imputation: pl.Boolean,
     }
 
 

@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import polars as pl
 
 from polars_utils.expressions import is_care_home, is_not_care_home
@@ -9,6 +7,7 @@ from projects._03_independent_cqc.utils.imputation.extrapolation import (
 from projects._03_independent_cqc.utils.imputation.interpolation import (
     model_interpolation,
 )
+from utils.column_names.ind_cqc_pipeline_columns import Imputation
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
 
@@ -25,10 +24,12 @@ def model_imputation(
     Create a new column of imputed values based on known values and null values
     being extrapolated and interpolated.
 
-    This function first splits the dataset into two, one which is relevant for
-    imputation (based on the care_home status of the location and only for
-    locations who have at least one non-null value) and another which includes
-    all other rows not relevant to imputation.
+    Eligibility for imputation is flagged per row (based on the care_home
+    status of the location and only for locations who have at least one
+    non-null value); extrapolation and interpolation run across the whole
+    LazyFrame regardless, since out-of-scope rows are already null in
+    `column_with_null_values` and so naturally coalesce back to null, but the
+    final imputed value is only kept where the flag is set.
 
     The imputation model is carried out in two steps, extrapolation and
     interpolation, which both populate null values based on the rate of change
@@ -49,27 +50,28 @@ def model_imputation(
     Returns:
         pl.LazyFrame: The LazyFrame with the added column imputed_column_name.
     """
-    imputed_lf, non_imputed_lf = split_dataset_for_imputation(
-        lf, column_with_null_values, care_home
-    )
+    lf = flag_rows_eligible_for_imputation(lf, column_with_null_values, care_home)
 
-    imputed_lf = model_extrapolation(
-        imputed_lf,
+    lf = model_extrapolation(
+        lf,
         column_with_null_values,
         model_column_name,
         extrapolation_method,
     )
-    imputed_lf = model_interpolation(
-        imputed_lf,
+    lf = model_interpolation(
+        lf,
         column_with_null_values,
         method="trend",
     )
 
-    imputed_lf = imputed_lf.with_columns(
-        pl.coalesce(
-            column_with_null_values,
-            IndCqc.extrapolation_model,
-            IndCqc.interpolation_model,
+    lf = lf.with_columns(
+        pl.when(pl.col(Imputation.eligible_for_imputation))
+        .then(
+            pl.coalesce(
+                column_with_null_values,
+                IndCqc.extrapolation_model,
+                IndCqc.interpolation_model,
+            )
         )
         .cast(pl.Float32)
         .alias(imputed_column_name)
@@ -77,17 +79,24 @@ def model_imputation(
         IndCqc.extrapolation_forwards,
         IndCqc.extrapolation_model,
         IndCqc.interpolation_model,
+        Imputation.eligible_for_imputation,
     )
 
-    return pl.concat([imputed_lf, non_imputed_lf], how="diagonal")
+    return lf
 
 
-def split_dataset_for_imputation(
+def flag_rows_eligible_for_imputation(
     lf: pl.LazyFrame, column_with_null_values: str, care_home: bool
-) -> Tuple[pl.LazyFrame, pl.LazyFrame]:
+) -> pl.LazyFrame:
     """
-    Splits the LazyFrame into two based on the presence of non-null values in a
-    column_with_null_values and whether care_home is True or False.
+    Adds a boolean column flagging rows eligible for imputation.
+
+    A row is eligible when its care_home status matches `care_home` and its
+    location has at least one non-null value in `column_with_null_values`.
+    The flag is added as a column on the full input LazyFrame (via a single
+    broadcast left-join) rather than splitting the LazyFrame in two, so that
+    repeated calls to `model_imputation` don't fork and re-concatenate the
+    query plan on every call.
 
     Args:
         lf (pl.LazyFrame): The input LazyFrame.
@@ -97,9 +106,8 @@ def split_dataset_for_imputation(
             for non residential.
 
     Returns:
-        Tuple[pl.LazyFrame, pl.LazyFrame]: A tuple containing two LazyFrames:
-            - imputation_lf: LazyFrame with rows meeting the criteria for imputation.
-            - non_imputation_lf: LazyFrame with rows not meeting the criteria.
+        pl.LazyFrame: The input LazyFrame with an added boolean column,
+            `Imputation.eligible_for_imputation`.
     """
     if care_home:
         care_home_filter_expr: pl.Expr = is_care_home()
@@ -111,18 +119,11 @@ def split_dataset_for_imputation(
         .filter(care_home_filter_expr)
         .select([IndCqc.location_id, IndCqc.care_home])
         .unique()
+        .with_columns(pl.lit(True).alias(Imputation.eligible_for_imputation))
     )
 
-    imputation_lf = lf.join(
+    return lf.join(
         groups_with_values,
         on=[IndCqc.location_id, IndCqc.care_home],
-        how="semi",
-    )
-
-    non_imputation_lf = lf.join(
-        groups_with_values,
-        on=[IndCqc.location_id, IndCqc.care_home],
-        how="anti",
-    )
-
-    return (imputation_lf, non_imputation_lf)
+        how="left",
+    ).with_columns(pl.col(Imputation.eligible_for_imputation).fill_null(False))
