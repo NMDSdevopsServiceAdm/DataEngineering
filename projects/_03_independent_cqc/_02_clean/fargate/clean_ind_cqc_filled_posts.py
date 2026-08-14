@@ -26,9 +26,6 @@ from projects._03_independent_cqc._02_clean.fargate.utils.clean_ind_cqc_filled_p
     remove_dual_registration_cqc_care_homes,
     replace_zero_beds_with_null,
 )
-from projects._03_independent_cqc._02_clean.fargate.utils.utils import (
-    create_column_with_repeated_values_removed,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
@@ -62,15 +59,18 @@ def main(
 
     locations_lf = calculate_ascwds_filled_posts(locations_lf)
 
-    locations_lf = create_column_with_repeated_values_removed(
+    locations_lf = cUtils.remove_repeated_values_over_time(
         locations_lf,
-        IndCQC.ascwds_filled_posts,
-        IndCQC.ascwds_filled_posts_dedup,
-    )
-    locations_lf = create_column_with_repeated_values_removed(
-        locations_lf,
-        IndCQC.pir_people_directly_employed_cleaned,
-        IndCQC.pir_people_directly_employed_dedup,
+        columns_to_clean=[
+            IndCQC.ascwds_filled_posts,
+            IndCQC.pir_people_directly_employed_cleaned,
+        ],
+        partition_by_column=IndCQC.location_id,
+        date_column=IndCQC.cqc_location_import_date,
+        new_column_names={
+            IndCQC.ascwds_filled_posts: IndCQC.ascwds_filled_posts_dedup,
+            IndCQC.pir_people_directly_employed_cleaned: IndCQC.pir_people_directly_employed_dedup,
+        },
     )
 
     locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(

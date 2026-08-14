@@ -37,6 +37,15 @@ class CleaningUtilsTestCase:
 
 
 @dataclass
+class RemoveRepeatedValuesOverTimeTestCase:
+    id: str
+    test_data: dict[str, Any]
+    partition_by_column: str
+    date_column: str
+    expected_data: dict[str, Any]
+
+
+@dataclass
 class CleaningUtilsData:
     align_dates_primary_rows = [
         (date(2019, 1, 1), date(2021, 1, 15), date(2020, 1, 8), date(2021, 1, 15)),
@@ -257,6 +266,107 @@ class CleaningUtilsData:
         ("1-004", CareHome.not_care_home, None, 0.0),
         ("1-005", CareHome.not_care_home, 20, 0.0),
     ]
+
+    remove_repeated_values_over_time_test_cases = [
+        RemoveRepeatedValuesOverTimeTestCase(
+            id="values_deduplicated_when_partitioned_by_location_id",
+            test_data={
+                "location_id": [
+                    "1-0001", "1-0001", "1-0001", "1-0001",
+                    "1-0002", "1-0002", "1-0002", "1-0002",
+                ],
+                "date": [
+                    date(2023, 2, 1), date(2023, 3, 1), date(2023, 4, 1), date(2023, 8, 1),
+                    date(2023, 2, 1), date(2023, 4, 1), date(2024, 1, 1), date(2024, 2, 1),
+                ],
+                "value": [1, 2, 2, 3, 3, 9, 3, 3],
+            },
+            partition_by_column="location_id",
+            date_column="date",
+            expected_data={
+                "location_id": [
+                    "1-0001", "1-0001", "1-0001", "1-0001",
+                    "1-0002", "1-0002", "1-0002", "1-0002",
+                ],
+                "date": [
+                    date(2023, 2, 1), date(2023, 3, 1), date(2023, 4, 1), date(2023, 8, 1),
+                    date(2023, 2, 1), date(2023, 4, 1), date(2024, 1, 1), date(2024, 2, 1),
+                ],
+                "value": [1, 2, 2, 3, 3, 9, 3, 3],
+                "value_deduplicated": [1, 2, None, 3, 3, 9, 3, None],
+            },
+        ),  # fmt: skip
+        RemoveRepeatedValuesOverTimeTestCase(
+            id="values_deduplicated_when_partition_and_date_columns_are_not_ind_cqc_specific",
+            test_data={
+                "establishment_id": ["EST1", "EST1", "EST1", "EST2", "EST2"],
+                "ascwds_workplace_import_date": [
+                    date(2023, 1, 1), date(2023, 2, 1), date(2023, 3, 1),
+                    date(2023, 1, 1), date(2023, 2, 1),
+                ],
+                "value": [5, 5, 6, 2, 3],
+            },
+            partition_by_column="establishment_id",
+            date_column="ascwds_workplace_import_date",
+            expected_data={
+                "establishment_id": ["EST1", "EST1", "EST1", "EST2", "EST2"],
+                "ascwds_workplace_import_date": [
+                    date(2023, 1, 1), date(2023, 2, 1), date(2023, 3, 1),
+                    date(2023, 1, 1), date(2023, 2, 1),
+                ],
+                "value": [5, 5, 6, 2, 3],
+                "value_deduplicated": [5, None, 6, 2, 3],
+            },
+        ),  # fmt: skip
+    ]
+
+    remove_repeated_values_over_time_multiple_columns_rows = {
+        "location_id": ["1-0001", "1-0001", "1-0001", "1-0002", "1-0002"],
+        "date": [
+            date(2023, 1, 1), date(2023, 2, 1), date(2023, 3, 1),
+            date(2023, 1, 1), date(2023, 2, 1),
+        ],
+        "first_value": [1, 1, 2, 5, 5],
+        "second_value": ["a", "b", "b", "x", "x"],
+    }  # fmt: skip
+    expected_remove_repeated_values_over_time_multiple_columns_rows = {
+        **remove_repeated_values_over_time_multiple_columns_rows,
+        "first_value_deduplicated": [1, None, 2, 5, None],
+        "second_value_deduplicated": ["a", "b", None, "x", None],
+    }
+
+    remove_repeated_values_over_time_new_column_names_rows = {
+        "location_id": ["1-0001", "1-0001", "1-0002"],
+        "date": [date(2023, 1, 1), date(2023, 2, 1), date(2023, 1, 1)],
+        "value": [1, 1, 2],
+    }
+    expected_remove_repeated_values_over_time_new_column_names_rows = {
+        **remove_repeated_values_over_time_new_column_names_rows,
+        "value_dedup": [1, None, 2],
+    }
+
+    remove_repeated_values_over_time_keep_original_false_rows = {
+        "location_id": ["1-0001", "1-0001", "1-0002"],
+        "date": [date(2023, 1, 1), date(2023, 2, 1), date(2023, 1, 1)],
+        "value": [1, 1, 2],
+    }
+    expected_remove_repeated_values_over_time_keep_original_false_rows = {
+        "location_id": ["1-0001", "1-0001", "1-0002"],
+        "date": [date(2023, 1, 1), date(2023, 2, 1), date(2023, 1, 1)],
+        "value_deduplicated": [1, None, 2],
+    }
+
+    remove_repeated_values_over_time_selector_rows = {
+        "location_id": ["1-0001", "1-0001", "1-0002"],
+        "date": [date(2023, 1, 1), date(2023, 2, 1), date(2023, 1, 1)],
+        "value_a": [1, 1, 2],
+        "value_b": ["x", "y", "y"],
+    }
+    expected_remove_repeated_values_over_time_selector_rows = {
+        **remove_repeated_values_over_time_selector_rows,
+        "value_a_deduplicated": [1, None, 2],
+        "value_b_deduplicated": ["x", "y", "y"],
+    }
 
 
 @dataclass

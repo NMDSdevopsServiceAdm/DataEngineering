@@ -1,4 +1,4 @@
-from typing import Generator, List
+from typing import Generator, List, Optional
 
 import polars as pl
 import polars.selectors as cs
@@ -256,3 +256,63 @@ def cast_date_strings_to_dates(
     return lf.with_columns(
         date_columns.str.strptime(pl.Date, raw_date_format, strict=False)
     )
+
+
+def remove_repeated_values_over_time(
+    lf: pl.LazyFrame,
+    columns_to_clean: list[str] | cs.Selector,
+    partition_by_column: str,
+    date_column: str,
+    new_column_names: Optional[dict[str, str]] = None,
+    keep_original_columns: bool = True,
+) -> pl.LazyFrame:
+    """
+    Replaces consecutive repeated values with null, for one or more columns at once.
+
+    For each column, rows are ordered by date_column within each partition_by_column
+    group. A value is kept only the first time it appears in a run; later repeats of
+    the same value are replaced with null.
+
+    Args:
+        lf (pl.LazyFrame): The LazyFrame to clean.
+        columns_to_clean (list[str] | cs.Selector): Column names, or a selector.
+        partition_by_column (str): Column identifying each entity (e.g. location_id,
+            establishment_id).
+        date_column (str): Column to order rows by within each partition.
+        new_column_names (Optional[dict[str, str]]): Optional {old_name: new_name}
+            mapping. Columns not listed default to "<original>_deduplicated".
+        keep_original_columns (bool): If True, keeps both the original and
+            deduplicated columns. If False, drops the original columns once the
+            deduplicated versions are created.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with one new deduplicated column per input
+            column, and the originals kept or dropped per keep_original_columns.
+    """
+    new_column_names = new_column_names or {}
+    columns = (
+        lf.select(columns_to_clean).collect_schema().names()
+        if not isinstance(columns_to_clean, list)
+        else columns_to_clean
+    )
+
+    dedup_exprs = []
+    for column in columns:
+        last_value = pl.col(column).shift(1).over(
+            partition_by=partition_by_column,
+            order_by=[partition_by_column, date_column],
+        )
+        new_name = new_column_names.get(column, f"{column}_deduplicated")
+        dedup_exprs.append(
+            pl.when(last_value.is_null() | (pl.col(column) != last_value))
+            .then(pl.col(column))
+            .otherwise(None)
+            .alias(new_name)
+        )
+
+    lf = lf.with_columns(dedup_exprs)
+
+    if not keep_original_columns:
+        lf = lf.drop(columns)
+
+    return lf

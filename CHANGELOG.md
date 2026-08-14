@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Extracted the independent CQC clean job's repeated-value deduplication into a reusable `remove_repeated_values_over_time` function in Polars Utils (generalised to multiple columns and configurable partition/date columns), and used it to implement the SLV clean job's `deduplicate_slv_over_time`.
+
 - Added the missing validation checks to the imputed independent CQC pointblank validation job, covering the imputed and capacity tracker model columns, the rate of change trendlines, and the relationship between `careHome` and `primary_service_type`.
 
 - Added a validation check that `ascwds_job_role_rolling_ratio` sums to 1 across job roles within each primary service type, size group and import date group.

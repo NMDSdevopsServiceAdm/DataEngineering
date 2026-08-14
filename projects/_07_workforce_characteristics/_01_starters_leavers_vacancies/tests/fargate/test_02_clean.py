@@ -25,9 +25,7 @@ class MainTests(unittest.TestCase):
         )
 
         scan_parquet_mock.assert_called_once_with(self.MERGED_DATA_SOURCE)
-
-        # TODO: Uncomment these assertions when the placeholder functions are implemented
-        # deduplicate_slv_over_time_mock.assert_called_once()
+        deduplicate_slv_over_time_mock.assert_called_once_with(scan_parquet_mock.return_value)
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,

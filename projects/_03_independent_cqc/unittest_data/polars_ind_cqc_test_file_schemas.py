@@ -856,38 +856,6 @@ class CleanFilteringUtilsSchemas:
 
 
 @dataclass
-class CleanUtilsSchemas:
-    locations_with_repeated_value_schema = pl.Schema(
-        [
-            (IndCQC.location_id, pl.String()),
-            ("integer_column", pl.Int64()),
-            (IndCQC.cqc_location_import_date, pl.Date()),
-        ]
-    )
-
-    expected_locations_without_repeated_values_schema = pl.Schema(
-        list(locations_with_repeated_value_schema.items())
-        + [
-            ("integer_column_deduplicated", pl.Int64()),
-        ]
-    )
-    providers_with_repeated_value_schema = pl.Schema(
-        [
-            (IndCQC.provider_id, pl.String()),
-            ("integer_column", pl.Int64()),
-            (IndCQC.cqc_location_import_date, pl.Date()),
-        ]
-    )
-
-    expected_providers_without_repeated_values_schema = pl.Schema(
-        list(providers_with_repeated_value_schema.items())
-        + [
-            ("integer_column_deduplicated", pl.Int64()),
-        ]
-    )
-
-
-@dataclass
 class ForwardFillLatestKnownValue:
     col_to_forward_fill: str = "col_to_forward_fill"
     days_to_forward_fill: str = "days_to_forward_fill"

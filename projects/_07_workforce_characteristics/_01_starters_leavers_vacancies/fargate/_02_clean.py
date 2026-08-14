@@ -15,8 +15,7 @@ def main(
     """
     lf = utils.scan_parquet(merged_data_source)
 
-    # TODO: Placeholder only
-    # cUtils.deduplicate_slv_over_time()
+    lf = cUtils.deduplicate_slv_over_time(lf)
 
     utils.sink_to_parquet(
         lazy_df=lf,
