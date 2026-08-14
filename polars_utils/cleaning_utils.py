@@ -298,9 +298,13 @@ def remove_repeated_values_over_time(
 
     dedup_exprs = []
     for column in columns:
-        last_value = pl.col(column).shift(1).over(
-            partition_by=partition_by_column,
-            order_by=[partition_by_column, date_column],
+        last_value = (
+            pl.col(column)
+            .shift(1)
+            .over(
+                partition_by=partition_by_column,
+                order_by=[partition_by_column, date_column],
+            )
         )
         new_name = new_column_names.get(column, f"{column}_deduplicated")
         dedup_exprs.append(

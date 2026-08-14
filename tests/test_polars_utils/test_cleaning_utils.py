@@ -241,7 +241,9 @@ class TestRemoveRepeatedValuesOverTime:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
     def test_multiple_columns_are_deduplicated_in_a_single_call(self):
-        test_lf = pl.LazyFrame(Data.remove_repeated_values_over_time_multiple_columns_rows)
+        test_lf = pl.LazyFrame(
+            Data.remove_repeated_values_over_time_multiple_columns_rows
+        )
 
         returned_lf = job.remove_repeated_values_over_time(
             test_lf,
@@ -257,7 +259,9 @@ class TestRemoveRepeatedValuesOverTime:
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
     def test_new_column_names_overrides_the_default_deduplicated_suffix(self):
-        test_lf = pl.LazyFrame(Data.remove_repeated_values_over_time_new_column_names_rows)
+        test_lf = pl.LazyFrame(
+            Data.remove_repeated_values_over_time_new_column_names_rows
+        )
 
         returned_lf = job.remove_repeated_values_over_time(
             test_lf,

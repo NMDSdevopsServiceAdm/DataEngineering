@@ -25,7 +25,9 @@ class MainTests(unittest.TestCase):
         )
 
         scan_parquet_mock.assert_called_once_with(self.MERGED_DATA_SOURCE)
-        deduplicate_slv_over_time_mock.assert_called_once_with(scan_parquet_mock.return_value)
+        deduplicate_slv_over_time_mock.assert_called_once_with(
+            scan_parquet_mock.return_value
+        )
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
