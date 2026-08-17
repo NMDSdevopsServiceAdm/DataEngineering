@@ -21,11 +21,9 @@ from utils.column_values.categorical_column_values import (
     ContemporaryCSSR,
     EstimateFilledPostsSource,
     JobRoleFilteringRule,
-    PrimaryServiceType,
 )
 from utils.column_values.categorical_columns_by_dataset import (
-    EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
-    SLVPrepareCategoricalValues,
+    LocationsApiCleanedCategoricalValues as CQCLocationCatVals,
 )
 
 
@@ -427,54 +425,54 @@ class CategoricalColumnTypeCase:
 class ColumnTypesData:
     categorical_column_type_cases = [
         CategoricalColumnTypeCase(
-            id="location_cat_type_uses_filled_posts_namespace",
+            id="location_cat_type",
             actual=CatColType.LocationCatType,
             expected=pl.Categorical(
                 pl.Categories("location", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
-            id="establishment_cat_type_uses_filled_posts_namespace",
+            id="establishment_cat_type",
             actual=CatColType.EstablishmentCatType,
             expected=pl.Categorical(
                 pl.Categories("establishment", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
-            id="provider_cat_type_uses_filled_posts_namespace",
+            id="provider_cat_type",
             actual=CatColType.ProviderCatType,
             expected=pl.Categorical(
                 pl.Categories("provider", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
-            id="brand_cat_type_uses_filled_posts_namespace",
+            id="brand_cat_type",
             actual=CatColType.BrandCatType,
             expected=pl.Categorical(pl.Categories("brand", namespace="filled_posts")),
         ),
         CategoricalColumnTypeCase(
-            id="job_role_enum_type_matches_main_job_role_labels_values",
-            actual=CatColType.JobRoleEnumType,
-            expected=pl.Enum(
-                CatVals.main_job_role_labels_column_values.categorical_values
+            id="job_role_cat_type",
+            actual=CatColType.JobRoleCatType,
+            expected=pl.Categorical(
+                pl.Categories("job_role", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
-            id="job_group_enum_type_matches_main_job_group_labels_values",
-            actual=CatColType.JobGroupEnumType,
-            expected=pl.Enum(
-                CatVals.main_job_group_labels_column_values.categorical_values
+            id="job_group_cat_type",
+            actual=CatColType.JobGroupCatType,
+            expected=pl.Categorical(
+                pl.Categories("job_group", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
-            id="published_job_role_label_enum_type_matches_published_job_role_labels_values",
-            actual=CatColType.PublishedJobRoleLabelEnumType,
-            expected=pl.Enum(
-                SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
+            id="published_job_role_label_cat_type",
+            actual=CatColType.PublishedJobRoleLabelCatType,
+            expected=pl.Categorical(
+                pl.Categories("published_job_role_label", namespace="filled_posts")
             ),
         ),
         CategoricalColumnTypeCase(
-            id="estimates_filled_post_source_enum_type_covers_all_sources",
+            id="estimates_filled_post_source_enum_type",
             actual=CatColType.EstimatesFilledPostSourceEnumType,
             expected=pl.Enum(
                 [
@@ -489,18 +487,14 @@ class ColumnTypesData:
             ),
         ),
         CategoricalColumnTypeCase(
-            id="primary_service_enum_type_covers_all_service_types",
+            id="primary_service_enum_type",
             actual=CatColType.PrimaryServiceEnumType,
             expected=pl.Enum(
-                [
-                    PrimaryServiceType.care_home_only,
-                    PrimaryServiceType.care_home_with_nursing,
-                    PrimaryServiceType.non_residential,
-                ]
+                CQCLocationCatVals.primary_service_type_column_values.categorical_values
             ),
         ),
         CategoricalColumnTypeCase(
-            id="job_role_filtering_rule_cat_type_uses_uint8_physical_type",
+            id="job_role_filtering_rule_cat_type",
             actual=CatColType.JobRoleFilteringRuleCatType,
             expected=pl.Categorical(
                 pl.Categories(
@@ -508,6 +502,76 @@ class ColumnTypesData:
                     namespace="filled_posts",
                     physical=pl.UInt8,
                 )
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="care_home_enum_type",
+            actual=CatColType.CareHomeEnumType,
+            expected=pl.Enum(
+                CQCLocationCatVals.care_home_column_values.categorical_values
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="dormancy_enum_type",
+            actual=CatColType.DormancyEnumType,
+            expected=pl.Enum(
+                CQCLocationCatVals.dormancy_column_values.categorical_values
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="cqc_sector_enum_type",
+            actual=CatColType.CqcSectorEnumType,
+            expected=pl.Enum(
+                CQCLocationCatVals.sector_column_values.categorical_values
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="primary_service_type_second_level_cat_type",
+            actual=CatColType.PrimaryServiceTypeSecondLevelCatType,
+            expected=pl.Categorical(
+                pl.Categories(
+                    "primary_service_type_second_level", namespace="filled_posts"
+                )
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="ons_rural_urban_ind_11_enum_type",
+            actual=CatColType.OnsRuralUrbanInd11EnumType,
+            expected=pl.Enum(
+                CQCLocationCatVals.current_rui_column_values.categorical_values
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="ons_region_cat_type",
+            actual=CatColType.OnsRegionCatType,
+            expected=pl.Categorical(
+                pl.Categories("ons_region", namespace="filled_posts")
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="ons_cssr_cat_type",
+            actual=CatColType.OnsCssrCatType,
+            expected=pl.Categorical(
+                pl.Categories("ons_cssr", namespace="filled_posts")
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="ons_icb_cat_type",
+            actual=CatColType.OnsIcbCatType,
+            expected=pl.Categorical(pl.Categories("ons_icb", namespace="filled_posts")),
+        ),
+        CategoricalColumnTypeCase(
+            id="ons_sub_icb_cat_type",
+            actual=CatColType.OnsSubIcbCatType,
+            expected=pl.Categorical(
+                pl.Categories("ons_sub_icb", namespace="filled_posts")
+            ),
+        ),
+        CategoricalColumnTypeCase(
+            id="ons_icb_region_cat_type",
+            actual=CatColType.OnsIcbRegionCatType,
+            expected=pl.Categorical(
+                pl.Categories("ons_icb_region", namespace="filled_posts")
             ),
         ),
     ]
