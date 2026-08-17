@@ -1,6 +1,8 @@
 import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
 
@@ -20,8 +22,8 @@ def main(
     lf = cUtils.remove_repeated_values_over_time(
         lf,
         columns_to_clean=[SLVCols.starters, SLVCols.leavers, SLVCols.vacancies],
-        partition_by_columns=[IndCQC.location_id, SLVCols.published_job_role_label],
-        date_column=IndCQC.cqc_location_import_date,
+        partition_by_columns=[AWPClean.establishment_id, SLVCols.published_job_role_label],
+        date_column=AWPClean.ascwds_workplace_import_date,
     )
 
     utils.sink_to_parquet(
