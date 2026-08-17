@@ -397,10 +397,12 @@ jobs:
             aws s3 sync "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=CQC/dataset=pir_cleaned/" "s3://$BRANCH_DATASET_BUCKET/domain=CQC/dataset=pir_cleaned/" --delete
+            aws s3 sync "s3://sfc-1890-dedup-slv-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_02_cleaned_data/" "s3://$BRANCH_DATASET_BUCKET/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_02_cleaned_data/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_06_estimated_filled_posts/" "s3://$BRANCH_DATASET_BUCKET/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_06_estimated_filled_posts/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_04_estimate_job_roles/" "s3://$BRANCH_DATASET_BUCKET/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_07_04_estimate_job_roles/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_07_01_merge_metadata_job_roles/" "s3://$BRANCH_DATASET_BUCKET/domain=ind_cqc_filled_posts/dataset=main_ind_cqc_07_01_merge_metadata_job_roles/" --delete
             aws s3 sync "s3://sfc-main-datasets/domain=workforce_characteristics/dataset=empstat_rates/" "s3://$BRANCH_DATASET_BUCKET/domain=workforce_characteristics/dataset=empstat_rates/" --delete
+            aws s3 sync "s3://sfc-1890-dedup-slv-datasets/domain=workforce_characteristics/dataset=ind_cqc_slv_02_clean/" "s3://$BRANCH_DATASET_BUCKET/domain=workforce_characteristics/dataset=main_ind_cqc_slv_02_clean/" --delete
       - run:
           name: Copy models to non-prod dataset
           command: |
