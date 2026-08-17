@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a per-branch raw data landing bucket (mirroring prod's `sfc-data-engineering-raw`), seeded with one sample CSV per ingest type at deploy time, so raw ingest steps and their EventBridge triggers can be tested end-to-end on a branch.
 
 ### Changed
 

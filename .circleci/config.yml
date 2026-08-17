@@ -326,11 +326,19 @@ jobs:
             unset AWS_SECRET_ACCESS_KEY
             cd terraform/pipeline
             echo $(terraform output --raw datasets_bucket_name) > datasets_bucket_name
+      - run:
+          name: save raw bucket name
+          command: |
+            unset AWS_ACCESS_KEY_ID
+            unset AWS_SECRET_ACCESS_KEY
+            cd terraform/pipeline
+            echo $(terraform output --raw raw_bucket_name) > raw_bucket_name
       - persist_to_workspace:
           root: .
           paths:
             - ./terraform/pipeline/pipeline_resources_bucket_name
             - ./terraform/pipeline/datasets_bucket_name
+            - ./terraform/pipeline/raw_bucket_name
 
   deploy-dependencies:
     docker:
@@ -383,6 +391,7 @@ jobs:
             unset AWS_SECRET_ACCESS_KEY
             echo 'export BRANCH_DATASET_BUCKET=$(cat terraform/pipeline/datasets_bucket_name)' >> "$BASH_ENV"
             echo 'export BRANCH_RESOURCES_BUCKET=$(cat terraform/pipeline/pipeline_resources_bucket_name)' >> "$BASH_ENV"
+            echo 'export BRANCH_RAW_BUCKET=$(cat terraform/pipeline/raw_bucket_name)' >> "$BASH_ENV"
       - run:
           name: Copy main datasets to non-prod dataset bucket
           command: |
@@ -405,6 +414,30 @@ jobs:
           name: Copy models to non-prod dataset
           command: |
             aws s3 sync "s3://sfc-main-pipeline-resources/models/" "s3://$BRANCH_RESOURCES_BUCKET/models/"
+      - run:
+          name: Seed non-prod raw bucket with one sample CSV per type
+          command: |
+            # Copies only the most recently uploaded object under each prefix, since
+            # this branch bucket only needs a snapshot to exercise ingest against, not
+            # full history - and hardcoding a specific filename here would silently
+            # break as soon as prod's real raw filenames move on.
+            copy_latest_object() {
+              local prefix="$1"
+              local key
+              key=$(aws s3 ls "s3://sfc-data-engineering-raw/${prefix}" | sort | tail -n 1 | awk '{print $4}')
+              if [ -n "$key" ]; then
+                aws s3 cp "s3://sfc-data-engineering-raw/${prefix}${key}" "s3://$BRANCH_RAW_BUCKET/${prefix}${key}"
+              else
+                echo "No object found under ${prefix}, skipping" >&2
+              fi
+            }
+
+            copy_latest_object "domain=ASCWDS/dataset=worker/"
+            copy_latest_object "domain=ASCWDS/dataset=workplace/"
+            copy_latest_object "domain=CQC/dataset=pir/"
+            copy_latest_object "domain=ONS/dataset=postcode_directory/"
+            copy_latest_object "domain=capacity_tracker/dataset=capacity_tracker_care_home/"
+            copy_latest_object "domain=capacity_tracker/dataset=capacity_tracker_non_res/"
 
   terraform-destroy:
     working_directory: /tmp/project

@@ -96,7 +96,7 @@ resource "aws_iam_policy" "glue_jobs_read_raw_s3_data_policy" {
           "s3:GetObject"
         ],
         "Resource" : [
-          "arn:aws:s3:::sfc-data-engineering-raw/*",
+          "arn:aws:s3:::${local.raw_bucket_name}/*",
           "arn:aws:s3:::sfc-main-datasets/*"
         ]
       }

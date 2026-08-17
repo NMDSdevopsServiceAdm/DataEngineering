@@ -6,6 +6,10 @@ output "datasets_bucket_name" {
   value = module.datasets_bucket.bucket_name
 }
 
+output "raw_bucket_name" {
+  value = local.raw_bucket_name
+}
+
 output "account_id" {
   value = data.aws_caller_identity.current.account_id
 }
