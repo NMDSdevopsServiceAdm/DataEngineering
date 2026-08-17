@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Improved
+
+### Fixed
+
+## [v2026.07.0] - 17/08/2026
+
+### Added
 - Added the missing validation checks to the imputed independent CQC pointblank validation job, covering the imputed and capacity tracker model columns, the rate of change trendlines, and the relationship between `careHome` and `primary_service_type`.
 
 - Added a validation check that `ascwds_job_role_rolling_ratio` sums to 1 across job roles within each primary service type, size group and import date group.
@@ -40,8 +50,6 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Reduced CircleCI credit consumption in `task-containerisation`. A new `decide-images` job works out which `docker-bake` targets a push changed, deriving each target's trigger paths from its Dockerfile's own `COPY` sources, and includes any target with no image in ECR under the branch tag yet. `task-containerisation` then skips entirely when nothing relevant changed, and otherwise bakes only the affected targets instead of all seven. Also removed Docker Layer Caching from the job: measurement showed it's billed as a flat ~200-credit surcharge for being declared, regardless of whether it does anything, so dropping it saves roughly 90% of the job's cost on both build and skip paths. Applies to branch builds only; merges to main still build everything. Also reordered all seven fargate Dockerfiles to install dependencies before copying job source, so a source-only change no longer invalidates the `pip install` layer. Deduplicated the branch-name-sanitising logic that was copy-pasted across five CircleCI steps into a single shared command, and fixed a shell-injection risk in `terraform-destroy`'s use of it: a crafted branch name could previously break out of a quoted shell string spliced from CircleCI pipeline parameters, so that value is now passed through the step's `environment:` key instead, which is never re-parsed as shell syntax.
-
-- Increased the `cqc-api` Fargate task's resources from 8 vCPU/60GB to 16 vCPU/64GB to fix OOM errors in `cqc_locations_4_full_clean.py`.
 
 - Moved the `CategoricalColumnTypes` polars dtype constants from the Estimate Filled Posts by Job Role fargate job into Polars Utils, so they're available repo-wide without importing from that project.
 
@@ -119,6 +127,8 @@ All notable changes to this project will be documented in this file.
 - Added missing error notifications for the CQC/ASC-WDS orchestrator and crawler-refresh steps in three ingestion pipelines, and a bounded timeout for the ASC-WDS worker/workplace file-arrival polling loops.
 
 - Fixed a broken import in the shared ingestion utils that caused the ASC-WDS, Capacity Tracker, CQC PIR, and ONS PySpark Glue ingestion jobs to fail with `ModuleNotFoundError: No module named 'polars'`. Inlined the affected `split_s3_uri` helper instead of importing it, so this file no longer depends on PySpark/pydeequ either.
+
+- Fixed the `cqc-api` Fargate task's OOM in `cqc_locations_4_full_clean.py` by forcing the postcode join to materialize before the matched/unmatched split, instead of the temporary fix of increasing the task's resources.
 
 ## [v2026.06.0] - 15/07/2026
 
