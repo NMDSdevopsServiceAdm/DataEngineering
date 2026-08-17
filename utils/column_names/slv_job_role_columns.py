@@ -13,4 +13,4 @@ class SLVJobRoleColumns:
     filled_posts_bank_or_pool: str = "filled_posts_bank_or_pool"
     filled_posts_agency: str = "filled_posts_agency"
     filled_posts_other: str = "filled_posts_other"
-    employment_status_estimate_error: str = "employment_status_estimate_error"
+    calculated_employees: str = "calculated_employees"

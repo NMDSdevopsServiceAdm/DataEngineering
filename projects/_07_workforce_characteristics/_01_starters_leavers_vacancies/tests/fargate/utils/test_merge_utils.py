@@ -74,7 +74,7 @@ EXPECTED_SCHEMA_OVERRIDES = {
     SLVCols.filled_posts_bank_or_pool: pl.Float64,
     SLVCols.filled_posts_agency: pl.Float64,
     SLVCols.filled_posts_other: pl.Float64,
-    SLVCols.employment_status_estimate_error: pl.Float64,
+    SLVCols.calculated_employees: pl.Float64,
 }
 
 
@@ -90,10 +90,11 @@ class TestApplyEmploymentStatusMagicNumbers:
         job_role_estimates_lf = pl.LazyFrame(
             case.job_role_estimates_data,
             schema_overrides=JOB_ROLE_ESTIMATES_SCHEMA_OVERRIDES,
+            orient="row",
         )
         employment_status_rates_lf = pl.LazyFrame(case.employment_status_rates_data)
         expected_lf = pl.LazyFrame(
-            case.expected_data, schema_overrides=EXPECTED_SCHEMA_OVERRIDES
+            case.expected_data, schema_overrides=EXPECTED_SCHEMA_OVERRIDES, orient="row"
         )
 
         returned_lf = job.apply_employment_status_magic_numbers(

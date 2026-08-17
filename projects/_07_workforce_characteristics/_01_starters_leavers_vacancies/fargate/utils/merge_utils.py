@@ -137,7 +137,7 @@ def apply_employment_status_magic_numbers(
 
     Returns:
         pl.LazyFrame: job_role_estimates_lf with 5 new filled-post-by-employment-status
-            columns and an employment_status_estimate_error column.
+            columns and an calculated_employees column.
     """
     metric = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
 
@@ -195,8 +195,7 @@ def apply_employment_status_magic_numbers(
     )
 
     return job_role_estimates_lf.with_columns(
-        (
-            pl.col(SLVCols.employees)
-            - (pl.col(SLVCols.filled_posts_perm) + pl.col(SLVCols.filled_posts_temp))
-        ).alias(SLVCols.employment_status_estimate_error)
+        (pl.col(SLVCols.filled_posts_perm) + pl.col(SLVCols.filled_posts_temp)).alias(
+            SLVCols.calculated_employees
+        )
     )

@@ -708,7 +708,7 @@ class TestMergeUtilsData:
                 SLVCols.filled_posts_bank_or_pool: [15.0],
                 SLVCols.filled_posts_agency: [10.0],
                 SLVCols.filled_posts_other: [5.0],
-                SLVCols.employment_status_estimate_error: [-20.0],
+                SLVCols.calculated_employees: [70.0],
             },
         ),
         ApplyEmploymentStatusMagicNumbersTestCase(
@@ -756,7 +756,7 @@ class TestMergeUtilsData:
                 SLVCols.filled_posts_bank_or_pool: [2.0, 0.0],
                 SLVCols.filled_posts_agency: [2.0, 0.0],
                 SLVCols.filled_posts_other: [1.0, 0.0],
-                SLVCols.employment_status_estimate_error: [-1.0, 2.0],
+                SLVCols.calculated_employees: [5.0, 8.0],
             },
         ),
         ApplyEmploymentStatusMagicNumbersTestCase(
@@ -786,7 +786,7 @@ class TestMergeUtilsData:
                 SLVCols.filled_posts_bank_or_pool: [None],
                 SLVCols.filled_posts_agency: [None],
                 SLVCols.filled_posts_other: [None],
-                SLVCols.employment_status_estimate_error: [None],
+                SLVCols.calculated_employees: [None],
             },
         ),
     ]
