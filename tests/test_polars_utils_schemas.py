@@ -81,6 +81,79 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    remove_repeated_values_over_time_schema = pl.Schema(
+        [
+            ("location_id", pl.String()),
+            ("date", pl.Date()),
+            ("value", pl.Int64()),
+        ]
+    )
+    expected_remove_repeated_values_over_time_schema = pl.Schema(
+        list(remove_repeated_values_over_time_schema.items())
+        + [
+            ("value_deduplicated", pl.Int64()),
+        ]
+    )
+    expected_remove_repeated_values_over_time_custom_name_schema = pl.Schema(
+        list(remove_repeated_values_over_time_schema.items())
+        + [
+            ("value_dedup", pl.Int64()),
+        ]
+    )
+    expected_remove_repeated_values_over_time_keep_original_false_schema = pl.Schema(
+        [
+            ("location_id", pl.String()),
+            ("date", pl.Date()),
+            ("value_deduplicated", pl.Int64()),
+        ]
+    )
+
+    remove_repeated_values_over_time_generic_columns_schema = pl.Schema(
+        [
+            ("establishment_id", pl.String()),
+            ("ascwds_workplace_import_date", pl.Date()),
+            ("value", pl.Int64()),
+        ]
+    )
+    expected_remove_repeated_values_over_time_generic_columns_schema = pl.Schema(
+        list(remove_repeated_values_over_time_generic_columns_schema.items())
+        + [
+            ("value_deduplicated", pl.Int64()),
+        ]
+    )
+
+    remove_repeated_values_over_time_multiple_columns_schema = pl.Schema(
+        [
+            ("location_id", pl.String()),
+            ("date", pl.Date()),
+            ("first_value", pl.Int64()),
+            ("second_value", pl.String()),
+        ]
+    )
+    expected_remove_repeated_values_over_time_multiple_columns_schema = pl.Schema(
+        list(remove_repeated_values_over_time_multiple_columns_schema.items())
+        + [
+            ("first_value_deduplicated", pl.Int64()),
+            ("second_value_deduplicated", pl.String()),
+        ]
+    )
+
+    remove_repeated_values_over_time_selector_schema = pl.Schema(
+        [
+            ("location_id", pl.String()),
+            ("date", pl.Date()),
+            ("value_a", pl.Int64()),
+            ("value_b", pl.String()),
+        ]
+    )
+    expected_remove_repeated_values_over_time_selector_schema = pl.Schema(
+        list(remove_repeated_values_over_time_selector_schema.items())
+        + [
+            ("value_a_deduplicated", pl.Int64()),
+            ("value_b_deduplicated", pl.String()),
+        ]
+    )
+
 
 @dataclass
 class RawDataAdjustmentsSchemas:

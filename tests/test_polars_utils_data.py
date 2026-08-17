@@ -27,6 +27,8 @@ from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CQCLocationCatVals,
 )
 
+from tests.test_polars_utils_schemas import CleaningUtilsSchemas as Schemas
+
 
 @dataclass
 class CleaningUtilsTestCase:
@@ -40,11 +42,13 @@ class CleaningUtilsTestCase:
 @dataclass
 class RemoveRepeatedValuesOverTimeTestCase:
     id: str
-    test_data: dict[str, Any]
+    test_data: list[Any]
+    test_schema: pl.Schema
     columns_to_clean: list[str] | cs.Selector
     partition_by_column: str
     date_column: str
-    expected_data: dict[str, Any]
+    expected_data: list[Any]
+    expected_schema: pl.Schema
     new_column_names: Optional[dict[str, str]] = None
     keep_original_columns: bool = True
 
@@ -274,157 +278,151 @@ class CleaningUtilsData:
     remove_repeated_values_over_time_test_cases = [
         RemoveRepeatedValuesOverTimeTestCase(
             id="values_deduplicated_when_partitioned_by_location_id",
-            test_data={
-                "location_id": [
-                    "1-0001", "1-0001", "1-0001", "1-0001",
-                    "1-0002", "1-0002", "1-0002", "1-0002",
-                ],
-                "date": [
-                    date(2023, 2, 1), date(2023, 3, 1), date(2023, 4, 1), date(2023, 8, 1),
-                    date(2023, 2, 1), date(2023, 4, 1), date(2024, 1, 1), date(2024, 2, 1),
-                ],
-                "value": [1, 2, 2, 3, 3, 9, 3, 3],
-            },
+            test_data=[
+                ("1-0001", date(2023, 2, 1), 1),
+                ("1-0001", date(2023, 3, 1), 2),
+                ("1-0001", date(2023, 4, 1), 2),
+                ("1-0001", date(2023, 8, 1), 3),
+                ("1-0002", date(2023, 2, 1), 3),
+                ("1-0002", date(2023, 4, 1), 9),
+                ("1-0002", date(2024, 1, 1), 3),
+                ("1-0002", date(2024, 2, 1), 3),
+            ],
+            test_schema=Schemas.remove_repeated_values_over_time_schema,
             columns_to_clean=["value"],
             partition_by_column="location_id",
             date_column="date",
-            expected_data={
-                "location_id": [
-                    "1-0001", "1-0001", "1-0001", "1-0001",
-                    "1-0002", "1-0002", "1-0002", "1-0002",
-                ],
-                "date": [
-                    date(2023, 2, 1), date(2023, 3, 1), date(2023, 4, 1), date(2023, 8, 1),
-                    date(2023, 2, 1), date(2023, 4, 1), date(2024, 1, 1), date(2024, 2, 1),
-                ],
-                "value": [1, 2, 2, 3, 3, 9, 3, 3],
-                "value_deduplicated": [1, 2, None, 3, 3, 9, 3, None],
-            },
-        ),  # fmt: skip
+            expected_data=[
+                ("1-0001", date(2023, 2, 1), 1, 1),
+                ("1-0001", date(2023, 3, 1), 2, 2),
+                ("1-0001", date(2023, 4, 1), 2, None),
+                ("1-0001", date(2023, 8, 1), 3, 3),
+                ("1-0002", date(2023, 2, 1), 3, 3),
+                ("1-0002", date(2023, 4, 1), 9, 9),
+                ("1-0002", date(2024, 1, 1), 3, 3),
+                ("1-0002", date(2024, 2, 1), 3, None),
+            ],
+            expected_schema=Schemas.expected_remove_repeated_values_over_time_schema,
+        ),
         RemoveRepeatedValuesOverTimeTestCase(
             id="output_unchanged_when_no_consecutive_values_repeat",
-            test_data={
-                "location_id": ["1-0001", "1-0001", "1-0001", "1-0001"],
-                "date": [
-                    date(2023, 2, 1), date(2023, 3, 1), date(2023, 4, 1), date(2023, 8, 1),
-                ],
-                "value": [1, 2, 1, 3],
-            },
+            test_data=[
+                ("1-0001", date(2023, 2, 1), 1),
+                ("1-0001", date(2023, 3, 1), 2),
+                ("1-0001", date(2023, 4, 1), 1),
+                ("1-0001", date(2023, 8, 1), 3),
+            ],
+            test_schema=Schemas.remove_repeated_values_over_time_schema,
             columns_to_clean=["value"],
             partition_by_column="location_id",
             date_column="date",
-            expected_data={
-                "location_id": ["1-0001", "1-0001", "1-0001", "1-0001"],
-                "date": [
-                    date(2023, 2, 1), date(2023, 3, 1), date(2023, 4, 1), date(2023, 8, 1),
-                ],
-                "value": [1, 2, 1, 3],
-                "value_deduplicated": [1, 2, 1, 3],
-            },
-        ),  # fmt: skip
+            expected_data=[
+                ("1-0001", date(2023, 2, 1), 1, 1),
+                ("1-0001", date(2023, 3, 1), 2, 2),
+                ("1-0001", date(2023, 4, 1), 1, 1),
+                ("1-0001", date(2023, 8, 1), 3, 3),
+            ],
+            expected_schema=Schemas.expected_remove_repeated_values_over_time_schema,
+        ),
         RemoveRepeatedValuesOverTimeTestCase(
             id="values_deduplicated_when_partition_and_date_columns_are_not_ind_cqc_specific",
-            test_data={
-                "establishment_id": ["EST1", "EST1", "EST1", "EST2", "EST2"],
-                "ascwds_workplace_import_date": [
-                    date(2023, 1, 1), date(2023, 2, 1), date(2023, 3, 1),
-                    date(2023, 1, 1), date(2023, 2, 1),
-                ],
-                "value": [5, 5, 6, 2, 3],
-            },
+            test_data=[
+                ("EST1", date(2023, 1, 1), 5),
+                ("EST1", date(2023, 2, 1), 5),
+                ("EST1", date(2023, 3, 1), 6),
+                ("EST2", date(2023, 1, 1), 2),
+                ("EST2", date(2023, 2, 1), 3),
+            ],
+            test_schema=Schemas.remove_repeated_values_over_time_generic_columns_schema,
             columns_to_clean=["value"],
             partition_by_column="establishment_id",
             date_column="ascwds_workplace_import_date",
-            expected_data={
-                "establishment_id": ["EST1", "EST1", "EST1", "EST2", "EST2"],
-                "ascwds_workplace_import_date": [
-                    date(2023, 1, 1), date(2023, 2, 1), date(2023, 3, 1),
-                    date(2023, 1, 1), date(2023, 2, 1),
-                ],
-                "value": [5, 5, 6, 2, 3],
-                "value_deduplicated": [5, None, 6, 2, 3],
-            },
-        ),  # fmt: skip
+            expected_data=[
+                ("EST1", date(2023, 1, 1), 5, 5),
+                ("EST1", date(2023, 2, 1), 5, None),
+                ("EST1", date(2023, 3, 1), 6, 6),
+                ("EST2", date(2023, 1, 1), 2, 2),
+                ("EST2", date(2023, 2, 1), 3, 3),
+            ],
+            expected_schema=Schemas.expected_remove_repeated_values_over_time_generic_columns_schema,
+        ),
         RemoveRepeatedValuesOverTimeTestCase(
             id="multiple_columns_are_deduplicated_in_a_single_call",
-            test_data={
-                "location_id": ["1-0001", "1-0001", "1-0001", "1-0002", "1-0002"],
-                "date": [
-                    date(2023, 1, 1), date(2023, 2, 1), date(2023, 3, 1),
-                    date(2023, 1, 1), date(2023, 2, 1),
-                ],
-                "first_value": [1, 1, 2, 5, 5],
-                "second_value": ["a", "b", "b", "x", "x"],
-            },
+            test_data=[
+                ("1-0001", date(2023, 1, 1), 1, "a"),
+                ("1-0001", date(2023, 2, 1), 1, "b"),
+                ("1-0001", date(2023, 3, 1), 2, "b"),
+                ("1-0002", date(2023, 1, 1), 5, "x"),
+                ("1-0002", date(2023, 2, 1), 5, "x"),
+            ],
+            test_schema=Schemas.remove_repeated_values_over_time_multiple_columns_schema,
             columns_to_clean=["first_value", "second_value"],
             partition_by_column="location_id",
             date_column="date",
-            expected_data={
-                "location_id": ["1-0001", "1-0001", "1-0001", "1-0002", "1-0002"],
-                "date": [
-                    date(2023, 1, 1), date(2023, 2, 1), date(2023, 3, 1),
-                    date(2023, 1, 1), date(2023, 2, 1),
-                ],
-                "first_value": [1, 1, 2, 5, 5],
-                "second_value": ["a", "b", "b", "x", "x"],
-                "first_value_deduplicated": [1, None, 2, 5, None],
-                "second_value_deduplicated": ["a", "b", None, "x", None],
-            },
-        ),  # fmt: skip
+            expected_data=[
+                ("1-0001", date(2023, 1, 1), 1, "a", 1, "a"),
+                ("1-0001", date(2023, 2, 1), 1, "b", None, "b"),
+                ("1-0001", date(2023, 3, 1), 2, "b", 2, None),
+                ("1-0002", date(2023, 1, 1), 5, "x", 5, "x"),
+                ("1-0002", date(2023, 2, 1), 5, "x", None, None),
+            ],
+            expected_schema=Schemas.expected_remove_repeated_values_over_time_multiple_columns_schema,
+        ),
         RemoveRepeatedValuesOverTimeTestCase(
             id="new_column_names_overrides_the_default_deduplicated_suffix",
-            test_data={
-                "location_id": ["1-0001", "1-0001", "1-0002"],
-                "date": [date(2023, 1, 1), date(2023, 2, 1), date(2023, 1, 1)],
-                "value": [1, 1, 2],
-            },
+            test_data=[
+                ("1-0001", date(2023, 1, 1), 1),
+                ("1-0001", date(2023, 2, 1), 1),
+                ("1-0002", date(2023, 1, 1), 2),
+            ],
+            test_schema=Schemas.remove_repeated_values_over_time_schema,
             columns_to_clean=["value"],
             partition_by_column="location_id",
             date_column="date",
             new_column_names={"value": "value_dedup"},
-            expected_data={
-                "location_id": ["1-0001", "1-0001", "1-0002"],
-                "date": [date(2023, 1, 1), date(2023, 2, 1), date(2023, 1, 1)],
-                "value": [1, 1, 2],
-                "value_dedup": [1, None, 2],
-            },
+            expected_data=[
+                ("1-0001", date(2023, 1, 1), 1, 1),
+                ("1-0001", date(2023, 2, 1), 1, None),
+                ("1-0002", date(2023, 1, 1), 2, 2),
+            ],
+            expected_schema=Schemas.expected_remove_repeated_values_over_time_custom_name_schema,
         ),
         RemoveRepeatedValuesOverTimeTestCase(
             id="keep_original_columns_false_drops_the_original_columns",
-            test_data={
-                "location_id": ["1-0001", "1-0001", "1-0002"],
-                "date": [date(2023, 1, 1), date(2023, 2, 1), date(2023, 1, 1)],
-                "value": [1, 1, 2],
-            },
+            test_data=[
+                ("1-0001", date(2023, 1, 1), 1),
+                ("1-0001", date(2023, 2, 1), 1),
+                ("1-0002", date(2023, 1, 1), 2),
+            ],
+            test_schema=Schemas.remove_repeated_values_over_time_schema,
             columns_to_clean=["value"],
             partition_by_column="location_id",
             date_column="date",
             keep_original_columns=False,
-            expected_data={
-                "location_id": ["1-0001", "1-0001", "1-0002"],
-                "date": [date(2023, 1, 1), date(2023, 2, 1), date(2023, 1, 1)],
-                "value_deduplicated": [1, None, 2],
-            },
+            expected_data=[
+                ("1-0001", date(2023, 1, 1), 1),
+                ("1-0001", date(2023, 2, 1), None),
+                ("1-0002", date(2023, 1, 1), 2),
+            ],
+            expected_schema=Schemas.expected_remove_repeated_values_over_time_keep_original_false_schema,
         ),
         RemoveRepeatedValuesOverTimeTestCase(
             id="accepts_a_selector_as_well_as_a_list_of_column_names",
-            test_data={
-                "location_id": ["1-0001", "1-0001", "1-0002"],
-                "date": [date(2023, 1, 1), date(2023, 2, 1), date(2023, 1, 1)],
-                "value_a": [1, 1, 2],
-                "value_b": ["x", "y", "y"],
-            },
+            test_data=[
+                ("1-0001", date(2023, 1, 1), 1, "x"),
+                ("1-0001", date(2023, 2, 1), 1, "y"),
+                ("1-0002", date(2023, 1, 1), 2, "y"),
+            ],
+            test_schema=Schemas.remove_repeated_values_over_time_selector_schema,
             columns_to_clean=cs.starts_with("value_"),
             partition_by_column="location_id",
             date_column="date",
-            expected_data={
-                "location_id": ["1-0001", "1-0001", "1-0002"],
-                "date": [date(2023, 1, 1), date(2023, 2, 1), date(2023, 1, 1)],
-                "value_a": [1, 1, 2],
-                "value_b": ["x", "y", "y"],
-                "value_a_deduplicated": [1, None, 2],
-                "value_b_deduplicated": ["x", "y", "y"],
-            },
+            expected_data=[
+                ("1-0001", date(2023, 1, 1), 1, "x", 1, "x"),
+                ("1-0001", date(2023, 2, 1), 1, "y", None, "y"),
+                ("1-0002", date(2023, 1, 1), 2, "y", 2, "y"),
+            ],
+            expected_schema=Schemas.expected_remove_repeated_values_over_time_selector_schema,
         ),
     ]
 

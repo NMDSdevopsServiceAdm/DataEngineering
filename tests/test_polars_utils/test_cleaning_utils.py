@@ -226,7 +226,7 @@ class TestRemoveRepeatedValuesOverTime:
         ],
     )
     def test_remove_repeated_values_over_time(self, case):
-        test_lf = pl.LazyFrame(case.test_data)
+        test_lf = pl.LazyFrame(case.test_data, case.test_schema, orient="row")
 
         returned_lf = job.remove_repeated_values_over_time(
             test_lf,
@@ -237,7 +237,7 @@ class TestRemoveRepeatedValuesOverTime:
             keep_original_columns=case.keep_original_columns,
         )
 
-        expected_lf = pl.LazyFrame(case.expected_data)
+        expected_lf = pl.LazyFrame(case.expected_data, case.expected_schema, orient="row")
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
