@@ -12,7 +12,11 @@ redirect — Polars' Rust engine writes streaming-fallback notices straight to
 OS stderr, bypassing `sys.stderr`, so a plain Python redirect won't catch
 them). Every sample and checkpoint is written to S3 immediately, not
 buffered, so evidence survives the process getting SIGKILLed by the OOM
-killer before anything else could flush.
+killer before anything else could flush. Stderr lines are the one exception —
+they're batched and flushed every `stderr_flush_interval_seconds` (default
+1s) rather than one S3 write per line, since Polars' verbose output can
+arrive fast enough that a synchronous per-line S3 call would back up the
+underlying pipe and stall the very process being diagnosed.
 
 **`POLARS_VERBOSE=1` must be set in the process environment *before the
 process starts*** — e.g. on the throwaway task's Fargate `environment` block
@@ -26,8 +30,9 @@ Polars-related to catch.
 ## This is a flexible starting point, not a frozen API
 
 It's fine to adapt `run_diagnostics.py` in-branch for a specific
-investigation — tune `sample_interval_seconds`, add fields to the snapshot
-payload, drop a part you don't need. The version on `main` is the stable
+investigation — tune `sample_interval_seconds` or
+`stderr_flush_interval_seconds`, add fields to the snapshot payload, drop a
+part you don't need. The version on `main` is the stable
 baseline everyone else starts from — **never commit a modification back to
 it without asking the user first**, even if it worked well for your
 investigation.

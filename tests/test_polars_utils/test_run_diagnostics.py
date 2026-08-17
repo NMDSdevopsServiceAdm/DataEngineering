@@ -1,6 +1,5 @@
 import json
 import os
-import time
 
 import boto3
 import polars as pl
@@ -37,6 +36,11 @@ class TestInit:
         diagnostics = job.RunDiagnostics(JOB_NAME, DATASETS_BUCKET)
 
         assert diagnostics.prefix.startswith(f"diagnostics/{JOB_NAME}/")
+
+    def test_sanitises_slashes_in_job_name(self):
+        diagnostics = job.RunDiagnostics("cqc/locations", DATASETS_BUCKET)
+
+        assert diagnostics.prefix.startswith("diagnostics/cqc-locations/")
 
 
 class TestCheckpoint:
@@ -96,6 +100,50 @@ class TestCheckpoint:
 
         assert "explain" not in body
 
+    @mock_aws
+    def test_sanitises_slashes_in_stage_name(self):
+        create_pipeline_resources_bucket()
+        diagnostics = job.RunDiagnostics(JOB_NAME, DATASETS_BUCKET)
+
+        diagnostics.checkpoint("step/1 restructure")
+
+        s3 = boto3.client("s3", region_name="eu-west-2")
+        objects = s3.list_objects_v2(
+            Bucket=PIPELINE_RESOURCES_BUCKET,
+            Prefix=f"{diagnostics.prefix}/checkpoints/",
+        )
+        keys = [obj["Key"] for obj in objects.get("Contents", [])]
+        assert len(keys) == 1
+        assert "/" not in keys[0].removeprefix(f"{diagnostics.prefix}/checkpoints/")
+
+    @mock_aws
+    def test_num_threads_excludes_run_diagnostics_own_background_threads(self):
+        create_pipeline_resources_bucket()
+        diagnostics = job.RunDiagnostics(
+            JOB_NAME, DATASETS_BUCKET, sample_interval_seconds=60
+        )
+
+        diagnostics.checkpoint("before_start")
+        diagnostics.start()
+        try:
+            diagnostics.checkpoint("after_start")
+        finally:
+            diagnostics.stop()
+
+        s3 = boto3.client("s3", region_name="eu-west-2")
+        keys = [
+            obj["Key"]
+            for obj in s3.list_objects_v2(
+                Bucket=PIPELINE_RESOURCES_BUCKET,
+                Prefix=f"{diagnostics.prefix}/checkpoints/",
+            )["Contents"]
+        ]
+        bodies = [read_json_object(PIPELINE_RESOURCES_BUCKET, key) for key in keys]
+        before = next(b for b in bodies if b["stage"] == "before_start")
+        after = next(b for b in bodies if b["stage"] == "after_start")
+
+        assert after["num_threads"] == before["num_threads"]
+
 
 class TestStartAndStop:
     @mock_aws
@@ -140,6 +188,7 @@ class TestStartAndStop:
 
         assert not diagnostics._sampler_thread.is_alive()
         assert not diagnostics._stderr_thread.is_alive()
+        assert not diagnostics._stderr_flush_thread.is_alive()
 
 
 class TestStderrCapture:
@@ -150,22 +199,50 @@ class TestStderrCapture:
             JOB_NAME, DATASETS_BUCKET, sample_interval_seconds=60
         )
         diagnostics.start()
-
         try:
             os.write(2, b"polars streaming fallback notice\n")
-            time.sleep(0.2)
-
-            s3 = boto3.client("s3", region_name="eu-west-2")
-            objects = s3.list_objects_v2(
-                Bucket=PIPELINE_RESOURCES_BUCKET,
-                Prefix=f"{diagnostics.prefix}/stderr/",
-            )
-            keys = [obj["Key"] for obj in objects.get("Contents", [])]
-            assert len(keys) == 1
-
-            body = s3.get_object(Bucket=PIPELINE_RESOURCES_BUCKET, Key=keys[0])[
-                "Body"
-            ].read()
-            assert b"polars streaming fallback notice" in body
         finally:
             diagnostics.stop()
+
+        s3 = boto3.client("s3", region_name="eu-west-2")
+        objects = s3.list_objects_v2(
+            Bucket=PIPELINE_RESOURCES_BUCKET,
+            Prefix=f"{diagnostics.prefix}/stderr/",
+        )
+        keys = [obj["Key"] for obj in objects.get("Contents", [])]
+        assert len(keys) == 1
+
+        body = s3.get_object(Bucket=PIPELINE_RESOURCES_BUCKET, Key=keys[0])[
+            "Body"
+        ].read()
+        assert b"polars streaming fallback notice" in body
+
+    @mock_aws
+    def test_batches_multiple_stderr_lines_into_one_flush(self):
+        create_pipeline_resources_bucket()
+        diagnostics = job.RunDiagnostics(
+            JOB_NAME,
+            DATASETS_BUCKET,
+            sample_interval_seconds=60,
+            stderr_flush_interval_seconds=60,
+        )
+        diagnostics.start()
+        try:
+            os.write(2, b"line one\n")
+            os.write(2, b"line two\n")
+            os.write(2, b"line three\n")
+        finally:
+            diagnostics.stop()
+
+        s3 = boto3.client("s3", region_name="eu-west-2")
+        objects = s3.list_objects_v2(
+            Bucket=PIPELINE_RESOURCES_BUCKET,
+            Prefix=f"{diagnostics.prefix}/stderr/",
+        )
+        keys = [obj["Key"] for obj in objects.get("Contents", [])]
+        assert len(keys) == 1  # batched into a single flush, not one object per line
+
+        body = s3.get_object(Bucket=PIPELINE_RESOURCES_BUCKET, Key=keys[0])[
+            "Body"
+        ].read()
+        assert body.count(b"\n") == 3
