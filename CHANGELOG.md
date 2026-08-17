@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
 
 ### Improved
 
