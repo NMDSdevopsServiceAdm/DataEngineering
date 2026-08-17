@@ -237,7 +237,9 @@ class TestRemoveRepeatedValuesOverTime:
             keep_original_columns=case.keep_original_columns,
         )
 
-        expected_lf = pl.LazyFrame(case.expected_data, case.expected_schema, orient="row")
+        expected_lf = pl.LazyFrame(
+            case.expected_data, case.expected_schema, orient="row"
+        )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 

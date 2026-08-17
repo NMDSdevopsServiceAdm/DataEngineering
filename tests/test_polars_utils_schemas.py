@@ -116,15 +116,11 @@ class CleaningUtilsSchemas:
             ("value", pl.Int64()),
         ]
     )
-    expected_remove_repeated_values_over_time_multiple_partition_columns_schema = (
-        pl.Schema(
-            list(
-                remove_repeated_values_over_time_multiple_partition_columns_schema.items()
-            )
-            + [
-                ("value_deduplicated", pl.Int64()),
-            ]
-        )
+    expected_remove_repeated_values_over_time_multiple_partition_columns_schema = pl.Schema(
+        list(remove_repeated_values_over_time_multiple_partition_columns_schema.items())
+        + [
+            ("value_deduplicated", pl.Int64()),
+        ]
     )
 
     remove_repeated_values_over_time_generic_columns_schema = pl.Schema(
