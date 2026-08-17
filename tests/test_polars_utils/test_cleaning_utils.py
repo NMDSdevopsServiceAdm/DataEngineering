@@ -231,7 +231,7 @@ class TestRemoveRepeatedValuesOverTime:
         returned_lf = job.remove_repeated_values_over_time(
             test_lf,
             columns_to_clean=case.columns_to_clean,
-            partition_by_column=case.partition_by_column,
+            partition_by_columns=case.partition_by_columns,
             date_column=case.date_column,
             new_column_names=case.new_column_names,
             keep_original_columns=case.keep_original_columns,

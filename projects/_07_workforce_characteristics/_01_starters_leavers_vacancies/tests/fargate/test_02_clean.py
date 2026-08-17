@@ -32,7 +32,10 @@ class MainTests(unittest.TestCase):
         remove_repeated_values_over_time_mock.assert_called_once_with(
             scan_parquet_mock.return_value,
             columns_to_clean=[SLVCols.starters, SLVCols.leavers, SLVCols.vacancies],
-            partition_by_column=AWPClean.establishment_id,
+            partition_by_columns=[
+                AWPClean.establishment_id,
+                SLVCols.published_job_role_label,
+            ],
             date_column=AWPClean.ascwds_workplace_import_date,
         )
 

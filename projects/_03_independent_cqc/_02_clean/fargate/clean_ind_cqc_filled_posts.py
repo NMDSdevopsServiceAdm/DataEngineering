@@ -65,7 +65,7 @@ def main(
             IndCQC.ascwds_filled_posts,
             IndCQC.pir_people_directly_employed_cleaned,
         ],
-        partition_by_column=IndCQC.location_id,
+        partition_by_columns=IndCQC.location_id,
         date_column=IndCQC.cqc_location_import_date,
         new_column_names={
             IndCQC.ascwds_filled_posts: IndCQC.ascwds_filled_posts_dedup,

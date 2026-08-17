@@ -45,7 +45,7 @@ class RemoveRepeatedValuesOverTimeTestCase:
     test_data: list[Any]
     test_schema: pl.Schema
     columns_to_clean: list[str] | cs.Selector
-    partition_by_column: str
+    partition_by_columns: str | list[str]
     date_column: str
     expected_data: list[Any]
     expected_schema: pl.Schema
@@ -290,7 +290,7 @@ class CleaningUtilsData:
             ],
             test_schema=Schemas.remove_repeated_values_over_time_schema,
             columns_to_clean=["value"],
-            partition_by_column="location_id",
+            partition_by_columns="location_id",
             date_column="date",
             expected_data=[
                 ("1-0001", date(2023, 2, 1), 1, 1),
@@ -314,7 +314,7 @@ class CleaningUtilsData:
             ],
             test_schema=Schemas.remove_repeated_values_over_time_schema,
             columns_to_clean=["value"],
-            partition_by_column="location_id",
+            partition_by_columns="location_id",
             date_column="date",
             expected_data=[
                 ("1-0001", date(2023, 2, 1), 1, 1),
@@ -335,7 +335,7 @@ class CleaningUtilsData:
             ],
             test_schema=Schemas.remove_repeated_values_over_time_generic_columns_schema,
             columns_to_clean=["value"],
-            partition_by_column="establishment_id",
+            partition_by_columns="establishment_id",
             date_column="ascwds_workplace_import_date",
             expected_data=[
                 ("EST1", date(2023, 1, 1), 5, 5),
@@ -357,7 +357,7 @@ class CleaningUtilsData:
             ],
             test_schema=Schemas.remove_repeated_values_over_time_multiple_columns_schema,
             columns_to_clean=["first_value", "second_value"],
-            partition_by_column="location_id",
+            partition_by_columns="location_id",
             date_column="date",
             expected_data=[
                 ("1-0001", date(2023, 1, 1), 1, "a", 1, "a"),
@@ -377,7 +377,7 @@ class CleaningUtilsData:
             ],
             test_schema=Schemas.remove_repeated_values_over_time_schema,
             columns_to_clean=["value"],
-            partition_by_column="location_id",
+            partition_by_columns="location_id",
             date_column="date",
             new_column_names={"value": "value_dedup"},
             expected_data=[
@@ -396,7 +396,7 @@ class CleaningUtilsData:
             ],
             test_schema=Schemas.remove_repeated_values_over_time_schema,
             columns_to_clean=["value"],
-            partition_by_column="location_id",
+            partition_by_columns="location_id",
             date_column="date",
             keep_original_columns=False,
             expected_data=[
@@ -415,7 +415,7 @@ class CleaningUtilsData:
             ],
             test_schema=Schemas.remove_repeated_values_over_time_selector_schema,
             columns_to_clean=cs.starts_with("value_"),
-            partition_by_column="location_id",
+            partition_by_columns="location_id",
             date_column="date",
             expected_data=[
                 ("1-0001", date(2023, 1, 1), 1, "x", 1, "x"),
@@ -423,6 +423,26 @@ class CleaningUtilsData:
                 ("1-0002", date(2023, 1, 1), 2, "y", 2, "y"),
             ],
             expected_schema=Schemas.expected_remove_repeated_values_over_time_selector_schema,
+        ),
+        RemoveRepeatedValuesOverTimeTestCase(
+            id="values_deduplicated_independently_per_combination_of_multiple_partition_columns",
+            test_data=[
+                ("1-0001", "care_worker", date(2023, 1, 1), 5),
+                ("1-0001", "care_worker", date(2023, 2, 1), 5),
+                ("1-0001", "registered_nurse", date(2023, 1, 1), 5),
+                ("1-0001", "registered_nurse", date(2023, 2, 1), 5),
+            ],
+            test_schema=Schemas.remove_repeated_values_over_time_multiple_partition_columns_schema,
+            columns_to_clean=["value"],
+            partition_by_columns=["location_id", "job_role"],
+            date_column="date",
+            expected_data=[
+                ("1-0001", "care_worker", date(2023, 1, 1), 5, 5),
+                ("1-0001", "care_worker", date(2023, 2, 1), 5, None),
+                ("1-0001", "registered_nurse", date(2023, 1, 1), 5, 5),
+                ("1-0001", "registered_nurse", date(2023, 2, 1), 5, None),
+            ],
+            expected_schema=Schemas.expected_remove_repeated_values_over_time_multiple_partition_columns_schema,
         ),
     ]
 
