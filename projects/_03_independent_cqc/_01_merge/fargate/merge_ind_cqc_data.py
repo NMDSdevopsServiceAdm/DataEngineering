@@ -114,8 +114,7 @@ def main(
         destination (str): s3 path to save the output data
     """
     # care_home is cast on every source here, before the joins below, since it's
-    # used as a join key: joining an Enum column against a still-String one raises
-    # a dtype mismatch error, so every side needs the same dtype ahead of the join.
+    # used as a join key
     cleaned_cqc_location_lf = utils.scan_parquet(
         cleaned_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,

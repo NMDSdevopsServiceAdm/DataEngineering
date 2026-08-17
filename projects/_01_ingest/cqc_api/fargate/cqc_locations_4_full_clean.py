@@ -111,8 +111,7 @@ def main(
         manual_postcode_corrections_source,
     )
 
-    # Low-cardinality, repeatedly-keyed columns narrowed to Categorical/Enum here so the
-    # dtype survives into every downstream consumer of this cleaned parquet output.
+    # Cast to Categorical/Enum here so it's saved in the output parquet file.
     cqc_reg_lf = cqc_reg_lf.with_columns(
         pl.col(CQCLClean.care_home).cast(CategoricalColumnTypes.CareHomeEnumType),
         pl.col(CQCLClean.dormancy).cast(CategoricalColumnTypes.DormancyEnumType),

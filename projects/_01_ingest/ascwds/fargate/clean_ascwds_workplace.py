@@ -132,8 +132,7 @@ def main(
         add_as_new_column=False,
     )
 
-    # Low-cardinality, repeatedly-keyed columns narrowed to Categorical here so the
-    # dtype survives into every downstream consumer of this cleaned parquet output.
+    # Cast to Categorical/Enum here so it's saved in the output parquet file.
     lf = lf.with_columns(
         pl.col(AWPClean.region_id).cast(CategoricalColumnTypes.RegionIdCatType),
         pl.col(AWPClean.establishment_type).cast(
