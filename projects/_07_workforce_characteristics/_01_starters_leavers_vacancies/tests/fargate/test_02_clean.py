@@ -2,9 +2,7 @@ import unittest
 from unittest.mock import ANY, Mock, patch
 
 import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._02_clean as job
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
 PATCH_PATH = "projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate._02_clean"
@@ -33,10 +31,10 @@ class MainTests(unittest.TestCase):
             scan_parquet_mock.return_value,
             columns_to_clean=[SLVCols.starters, SLVCols.leavers, SLVCols.vacancies],
             partition_by_columns=[
-                AWPClean.establishment_id,
+                IndCQC.location_id,
                 SLVCols.published_job_role_label,
             ],
-            date_column=AWPClean.ascwds_workplace_import_date,
+            date_column=IndCQC.cqc_location_import_date,
         )
 
         sink_to_parquet_mock.assert_called_once_with(
