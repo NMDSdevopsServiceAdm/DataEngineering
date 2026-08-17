@@ -389,53 +389,6 @@ class TestPrepareUtilsData:
 
 
 @dataclass
-class DeduplicateSlvOverTimeTestCase:
-    id: str
-    input_data: dict[str, Any]
-    expected_data: dict[str, Any]
-
-
-@dataclass
-class TestCleanUtilsData:
-    deduplicate_slv_over_time_test_cases = [
-        DeduplicateSlvOverTimeTestCase(
-            id="nulls_repeated_starters_leavers_vacancies_values_within_each_establishment",
-            input_data={
-                AWPClean.establishment_id: ["1", "1", "1", "2", "2"],
-                AWPClean.ascwds_workplace_import_date: [
-                    date(2024, 1, 1),
-                    date(2024, 2, 1),
-                    date(2024, 3, 1),
-                    date(2024, 1, 1),
-                    date(2024, 2, 1),
-                ],
-                SLVCols.employees: [2, 2, 3, 9, 9],
-                SLVCols.starters: [1, 1, 2, 5, 5],
-                SLVCols.leavers: [3, 4, 4, 7, 8],
-                SLVCols.vacancies: [0, 0, 0, 1, 2],
-            },
-            expected_data={
-                AWPClean.establishment_id: ["1", "1", "1", "2", "2"],
-                AWPClean.ascwds_workplace_import_date: [
-                    date(2024, 1, 1),
-                    date(2024, 2, 1),
-                    date(2024, 3, 1),
-                    date(2024, 1, 1),
-                    date(2024, 2, 1),
-                ],
-                SLVCols.employees: [2, 2, 3, 9, 9],
-                SLVCols.starters: [1, 1, 2, 5, 5],
-                SLVCols.leavers: [3, 4, 4, 7, 8],
-                SLVCols.vacancies: [0, 0, 0, 1, 2],
-                f"{SLVCols.starters}_deduplicated": [1, None, 2, 5, None],
-                f"{SLVCols.leavers}_deduplicated": [3, 4, None, 7, 8],
-                f"{SLVCols.vacancies}_deduplicated": [0, None, None, 1, 2],
-            },
-        ),
-    ]
-
-
-@dataclass
 class CollapseJobRoleEstimatesToPublishedLabelsTestCase:
     id: str
     input_data: dict[str, Any]

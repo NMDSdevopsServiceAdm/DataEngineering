@@ -1,5 +1,9 @@
-import projects._07_workforce_characteristics._01_starters_leavers_vacancies.fargate.utils.clean_utils as cUtils
+import polars_utils.cleaning_utils as cUtils
 from polars_utils import utils
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 
 
 def main(
@@ -15,7 +19,12 @@ def main(
     """
     lf = utils.scan_parquet(merged_data_source)
 
-    lf = cUtils.deduplicate_slv_over_time(lf)
+    lf = cUtils.remove_repeated_values_over_time(
+        lf,
+        columns_to_clean=[SLVCols.starters, SLVCols.leavers, SLVCols.vacancies],
+        partition_by_column=AWPClean.establishment_id,
+        date_column=AWPClean.ascwds_workplace_import_date,
+    )
 
     utils.sink_to_parquet(
         lazy_df=lf,
