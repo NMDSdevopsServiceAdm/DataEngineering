@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Improved
+- Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.
 
 ### Fixed
 
@@ -97,8 +98,6 @@ All notable changes to this project will be documented in this file.
 - Updated pointblank validation for the estimates job within the Ind CQC pipeline, and added the custom validation rules that hadn't been converted from PySpark yet.
 
 ### Improved
-- Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.
-
 - Replaced groupby-agg-explode-join broadcasts with `.over()` in the job role imputation utils, reducing peak memory in the Estimate Filled Posts by Job Role imputation step. The frame is now explicitly sorted by location, job role, and date beforehand, so imputed ratios broadcast onto the correct rows regardless of source row order.
 
 - Reduced CircleCI credit usage by removing `no-cache = true` from all `docker-bake.hcl` image targets, so the already-enabled Docker layer caching actually takes effect instead of every image rebuilding from scratch on every push.
