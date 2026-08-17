@@ -2,7 +2,6 @@ import unittest
 from datetime import date
 
 import polars as pl
-import polars.selectors as cs
 import polars.testing as pl_testing
 import pytest
 
@@ -226,89 +225,19 @@ class TestRemoveRepeatedValuesOverTime:
             for case in Data.remove_repeated_values_over_time_test_cases
         ],
     )
-    def test_consecutive_repeated_values_are_nulled_within_each_partition(self, case):
+    def test_remove_repeated_values_over_time(self, case):
         test_lf = pl.LazyFrame(case.test_data)
 
         returned_lf = job.remove_repeated_values_over_time(
             test_lf,
-            columns_to_clean=["value"],
+            columns_to_clean=case.columns_to_clean,
             partition_by_column=case.partition_by_column,
             date_column=case.date_column,
+            new_column_names=case.new_column_names,
+            keep_original_columns=case.keep_original_columns,
         )
 
         expected_lf = pl.LazyFrame(case.expected_data)
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
-
-    def test_multiple_columns_are_deduplicated_in_a_single_call(self):
-        test_lf = pl.LazyFrame(
-            Data.remove_repeated_values_over_time_multiple_columns_rows
-        )
-
-        returned_lf = job.remove_repeated_values_over_time(
-            test_lf,
-            columns_to_clean=["first_value", "second_value"],
-            partition_by_column="location_id",
-            date_column="date",
-        )
-
-        expected_lf = pl.LazyFrame(
-            Data.expected_remove_repeated_values_over_time_multiple_columns_rows
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
-
-    def test_new_column_names_overrides_the_default_deduplicated_suffix(self):
-        test_lf = pl.LazyFrame(
-            Data.remove_repeated_values_over_time_new_column_names_rows
-        )
-
-        returned_lf = job.remove_repeated_values_over_time(
-            test_lf,
-            columns_to_clean=["value"],
-            partition_by_column="location_id",
-            date_column="date",
-            new_column_names={"value": "value_dedup"},
-        )
-
-        expected_lf = pl.LazyFrame(
-            Data.expected_remove_repeated_values_over_time_new_column_names_rows
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
-
-    def test_keep_original_columns_false_drops_the_original_columns(self):
-        test_lf = pl.LazyFrame(
-            Data.remove_repeated_values_over_time_keep_original_false_rows
-        )
-
-        returned_lf = job.remove_repeated_values_over_time(
-            test_lf,
-            columns_to_clean=["value"],
-            partition_by_column="location_id",
-            date_column="date",
-            keep_original_columns=False,
-        )
-
-        expected_lf = pl.LazyFrame(
-            Data.expected_remove_repeated_values_over_time_keep_original_false_rows
-        )
-
-        pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
-
-    def test_accepts_a_selector_as_well_as_a_list_of_column_names(self):
-        test_lf = pl.LazyFrame(Data.remove_repeated_values_over_time_selector_rows)
-
-        returned_lf = job.remove_repeated_values_over_time(
-            test_lf,
-            columns_to_clean=cs.starts_with("value_"),
-            partition_by_column="location_id",
-            date_column="date",
-        )
-
-        expected_lf = pl.LazyFrame(
-            Data.expected_remove_repeated_values_over_time_selector_rows
-        )
 
         pl_testing.assert_frame_equal(returned_lf, expected_lf, check_row_order=False)
 
