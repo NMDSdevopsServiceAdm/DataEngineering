@@ -29,20 +29,16 @@ Polars-related to catch.
 
 ## This is a flexible starting point, not a frozen API
 
-It's fine to adapt `run_diagnostics.py` in-branch for a specific
-investigation — tune `sample_interval_seconds` or
-`stderr_flush_interval_seconds`, add fields to the snapshot payload, drop a
-part you don't need. The version on `main` is the stable
-baseline everyone else starts from — **never commit a modification back to
-it without asking the user first**, even if it worked well for your
-investigation.
+It's fine to adapt `run_diagnostics.py` in-branch for one investigation —
+tune the intervals, add snapshot fields, drop what you don't need. `main`'s
+version is the shared baseline: **never commit a modification back to it
+without asking the user first**, even if it worked well for you.
 
 ## Setting up a throwaway diagnostics task
 
 Run instrumented code as its own throwaway Fargate task — never by editing
 the real job in place. This is the pattern ticket 1881 used to measure 8 fix
-candidates against real production data (see its unmerged branch
-`1881-cqc-loc-fix`, commits `e19194253`/`b889604e1`/`32ac4d38d`):
+candidates against real production data:
 
 1. **Copy the job** (or just the stage under investigation) into a new
    `<job>_prototype.py` in the same `fargate/` folder, docstring clearly
@@ -69,97 +65,53 @@ candidates against real production data (see its unmerged branch
 
    If the suspect logic is nested in helper functions, thread
    `diagnostics: RunDiagnostics | None = None` through as an optional param
-   and guard every call with `if diagnostics:` — see `postcode_matcher.py` on
-   the same branch for the multi-call-site version of this. Point the
-   script's output at a **distinctly-named destination** so a throwaway run
-   can never clobber the real pipeline's output.
+   and guard every call with `if diagnostics:`. Point the script's output at
+   a **distinctly-named destination** so a throwaway run can never clobber
+   the real pipeline's output.
 
-2. **Dockerfile**: usually no change needed — the existing
-   `COPY .../fargate/*.py .` wildcard already picks up the new script. Check
-   this before assuming otherwise.
+2. **Dockerfile**: check whether this pipeline's Dockerfile copies files with
+   a `*.py` wildcard or lists them individually — only the wildcard case
+   needs no change. E.g. `_03_independent_cqc`'s shared Dockerfile lists
+   every job file individually, so a new prototype script there needs an
+   explicit `COPY` line added.
 
-3. **Terraform**: add a new Fargate task module, reusing the real job's ECR
-   image, sized deliberately for what you're measuring (1881 pinned its
-   prototype task to the *real* job's pre-stopgap sizing so results reflected
-   the true OOM boundary — raise the sizing choice with the user rather than
-   assuming a default is right). Set `POLARS_VERBOSE=1` here, in the task's
-   own `environment` block — this is the only place it can actually take
-   effect (see the callout above):
-
-   ```hcl
-   module "my-job-proto" {
-     source        = "../modules/fargate-task"
-     task_name     = "my-job-proto"
-     ecr_repo_name = "fargate/my-job"        # same image as the real task
-     cluster_arn   = aws_ecs_cluster.polars_cluster.arn
-     tag_name      = terraform.workspace
-     cpu_size      = 8192                     # match whatever you're measuring against
-     ram_size      = 61440
-     environment   = [
-       { "name" : "AWS_REGION", "value" : "eu-west-2" },
-       { "name" : "POLARS_VERBOSE", "value" : "1" },
-     ]
-   }
-   ```
-
-   Then wire it into `terraform/pipeline/step-function.tf` in all 3 places:
-   the `sf_pipelines` template vars (`task_arn`, `security_group_id`), and
-   both IAM policy `Resource` lists (the `ecs:RunTask` list, and the
-   task/exec role ARN list).
+3. **Terraform**: add a new Fargate task module to `terraform/pipeline/fargate.tf`,
+   following an existing `module` block's structure — same `ecr_repo_name`
+   (reuses the real job's image), sized deliberately for what you're
+   measuring (1881 pinned its prototype task to the *real* job's pre-stopgap
+   sizing so results reflected the true OOM boundary — raise the sizing
+   choice with the user rather than assuming a default is right), and set
+   `POLARS_VERBOSE=1` in the task's own `environment` block — the only place
+   it can actually take effect (see the callout above). Then wire the new
+   task into `terraform/pipeline/step-function.tf` in all 3 places: the
+   `sf_pipelines` template vars (`task_arn`, `security_group_id`), and both
+   IAM policy `Resource` lists (the `ecs:RunTask` list, and the task/exec
+   role ARN list).
 
 4. **Step Function**: add a new manual-start-only definition under
-   `terraform/pipeline/step-functions/dynamic/`, referencing the new task:
-
-   ```json
-   {
-     "Comment": "Throwaway: measure X. Not auto-triggered - start manually. Delete once the investigation concludes.",
-     "StartAt": "Run prototype",
-     "States": {
-       "Run prototype": {
-         "Type": "Task",
-         "Resource": "arn:aws:states:::ecs:runTask.sync",
-         "Parameters": {
-           "Cluster": "${polars_cluster_arn}",
-           "TaskDefinition": "${my_job_proto_task_arn}",
-           "LaunchType": "FARGATE",
-           "NetworkConfiguration": {
-             "AwsvpcConfiguration": {
-               "Subnets": ${public_subnet_ids},
-               "SecurityGroups": ["${my_job_proto_security_group_id}"],
-               "AssignPublicIp": "ENABLED"
-             }
-           },
-           "Overrides": {
-             "ContainerOverrides": [{
-               "Name": "my-job-proto-container",
-               "Command": ["my_job_prototype.py", "--destination", "${dataset_bucket_uri}/domain=.../dataset=..._prototype/"]
-             }]
-           }
-         },
-         "End": true
-       }
-     }
-   }
-   ```
+   `terraform/pipeline/step-functions/dynamic/`, following an existing
+   definition's structure, referencing the new task's ARN vars and pointing
+   `Command` args at the distinctly-named output. Add a `TimeoutSeconds` to
+   the task state so a stuck run can't block a branch teardown indefinitely
+   (see the callout below).
 
 5. **CircleCI**: check `.circleci/config.yml`'s `copy-main-data` job for every
    input your prototype script reads — add any missing `aws s3 sync` line so
-   the branch bucket actually has the data before the task runs:
-
-   ```
-   aws s3 sync "s3://sfc-main-datasets/domain=.../dataset=.../" "s3://$BRANCH_DATASET_BUCKET/domain=.../dataset=.../" --delete
-   ```
+   the branch bucket actually has the data before the task runs.
 
 6. **Run it manually** — start the Step Function execution by hand; never
-   auto-triggered by an orchestrator.
+   auto-triggered by an orchestrator. **Before merging or closing this
+   branch** (which triggers `terraform destroy` in CI), confirm the
+   execution has finished, or stop it manually — nothing here times a run
+   out early, and a still-running task can make destroy fail trying to tear
+   down infra it's still using.
 
 ### Comparing candidate implementations
 
 This same infra generalizes beyond root-causing one OOM: parameterize the
 prototype script with an env var (1881 used `FIX_VARIANT`), give each
 candidate its own Step Function definition and distinctly-named output
-destination, all pointed at the one throwaway task. That's how 1881 measured
-8 fix candidates against real production data in a single spike.
+destination, all pointed at the one throwaway task.
 
 ### Cleanup
 
@@ -186,10 +138,9 @@ there rather than reconstructing it.
 
 ## Reading back the output
 
-There's no AWS access from this Claude Code environment, so give the user a
-ready-to-run command with the bucket/prefix already filled in (from the
-branch name and the printed run ID), using `--profile non-prod` (this repo's
-AWS CLI convention — see `DEPLOY.md`):
+No AWS access from this environment — give a ready-to-run command with the
+bucket/prefix already filled in (from the branch name and the printed run
+ID), `--profile non-prod` per `DEPLOY.md`'s AWS CLI convention:
 
 ```bash
 aws s3 sync "s3://sfc-<branch>-pipeline-resources/diagnostics/<job_name>/<run_id>/" ./diagnostics/<run_id>/ --profile non-prod
