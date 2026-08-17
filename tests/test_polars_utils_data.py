@@ -297,6 +297,26 @@ class CleaningUtilsData:
             },
         ),  # fmt: skip
         RemoveRepeatedValuesOverTimeTestCase(
+            id="output_unchanged_when_no_consecutive_values_repeat",
+            test_data={
+                "location_id": ["1-0001", "1-0001", "1-0001", "1-0001"],
+                "date": [
+                    date(2023, 2, 1), date(2023, 3, 1), date(2023, 4, 1), date(2023, 8, 1),
+                ],
+                "value": [1, 2, 1, 3],
+            },
+            partition_by_column="location_id",
+            date_column="date",
+            expected_data={
+                "location_id": ["1-0001", "1-0001", "1-0001", "1-0001"],
+                "date": [
+                    date(2023, 2, 1), date(2023, 3, 1), date(2023, 4, 1), date(2023, 8, 1),
+                ],
+                "value": [1, 2, 1, 3],
+                "value_deduplicated": [1, 2, 1, 3],
+            },
+        ),  # fmt: skip
+        RemoveRepeatedValuesOverTimeTestCase(
             id="values_deduplicated_when_partition_and_date_columns_are_not_ind_cqc_specific",
             test_data={
                 "establishment_id": ["EST1", "EST1", "EST1", "EST2", "EST2"],
