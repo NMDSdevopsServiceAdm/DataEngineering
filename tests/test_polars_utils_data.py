@@ -49,8 +49,6 @@ class RemoveRepeatedValuesOverTimeTestCase:
     date_column: str
     expected_data: list[Any]
     expected_schema: pl.Schema
-    new_column_names: Optional[dict[str, str]] = None
-    keep_original_columns: bool = True
 
 
 @dataclass
@@ -367,44 +365,6 @@ class CleaningUtilsData:
                 ("1-0002", date(2023, 2, 1), 5, "x", None, None),
             ],
             expected_schema=Schemas.expected_remove_repeated_values_over_time_multiple_columns_schema,
-        ),
-        RemoveRepeatedValuesOverTimeTestCase(
-            id="new_column_names_overrides_the_default_deduplicated_suffix",
-            test_data=[
-                ("1-0001", date(2023, 1, 1), 1),
-                ("1-0001", date(2023, 2, 1), 1),
-                ("1-0002", date(2023, 1, 1), 2),
-            ],
-            test_schema=Schemas.remove_repeated_values_over_time_schema,
-            columns_to_clean=["value"],
-            partition_by_columns="location_id",
-            date_column="date",
-            new_column_names={"value": "value_dedup"},
-            expected_data=[
-                ("1-0001", date(2023, 1, 1), 1, 1),
-                ("1-0001", date(2023, 2, 1), 1, None),
-                ("1-0002", date(2023, 1, 1), 2, 2),
-            ],
-            expected_schema=Schemas.expected_remove_repeated_values_over_time_custom_name_schema,
-        ),
-        RemoveRepeatedValuesOverTimeTestCase(
-            id="keep_original_columns_false_drops_the_original_columns",
-            test_data=[
-                ("1-0001", date(2023, 1, 1), 1),
-                ("1-0001", date(2023, 2, 1), 1),
-                ("1-0002", date(2023, 1, 1), 2),
-            ],
-            test_schema=Schemas.remove_repeated_values_over_time_schema,
-            columns_to_clean=["value"],
-            partition_by_columns="location_id",
-            date_column="date",
-            keep_original_columns=False,
-            expected_data=[
-                ("1-0001", date(2023, 1, 1), 1),
-                ("1-0001", date(2023, 2, 1), None),
-                ("1-0002", date(2023, 1, 1), 2),
-            ],
-            expected_schema=Schemas.expected_remove_repeated_values_over_time_keep_original_false_schema,
         ),
         RemoveRepeatedValuesOverTimeTestCase(
             id="accepts_a_selector_as_well_as_a_list_of_column_names",

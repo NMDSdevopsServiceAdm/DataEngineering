@@ -233,8 +233,6 @@ class TestRemoveRepeatedValuesOverTime:
             columns_to_clean=case.columns_to_clean,
             partition_by_columns=case.partition_by_columns,
             date_column=case.date_column,
-            new_column_names=case.new_column_names,
-            keep_original_columns=case.keep_original_columns,
         )
 
         expected_lf = pl.LazyFrame(

@@ -94,20 +94,6 @@ class CleaningUtilsSchemas:
             ("value_deduplicated", pl.Int64()),
         ]
     )
-    expected_remove_repeated_values_over_time_custom_name_schema = pl.Schema(
-        list(remove_repeated_values_over_time_schema.items())
-        + [
-            ("value_dedup", pl.Int64()),
-        ]
-    )
-    expected_remove_repeated_values_over_time_keep_original_false_schema = pl.Schema(
-        [
-            ("location_id", pl.String()),
-            ("date", pl.Date()),
-            ("value_deduplicated", pl.Int64()),
-        ]
-    )
-
     remove_repeated_values_over_time_multiple_partition_columns_schema = pl.Schema(
         [
             ("location_id", pl.String()),

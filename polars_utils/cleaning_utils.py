@@ -1,4 +1,4 @@
-from typing import Generator, List, Optional
+from typing import Generator, List
 
 import polars as pl
 import polars.selectors as cs
@@ -263,15 +263,14 @@ def remove_repeated_values_over_time(
     columns_to_clean: list[str] | cs.Selector,
     partition_by_columns: str | list[str],
     date_column: str,
-    new_column_names: Optional[dict[str, str]] = None,
-    keep_original_columns: bool = True,
 ) -> pl.LazyFrame:
     """
     Replaces consecutive repeated values with null, for one or more columns at once.
 
     For each column, rows are ordered by date_column within each partition_by_columns
     group. A value is kept only the first time it appears in a run; later repeats of
-    the same value are replaced with null.
+    the same value are replaced with null. Each column's deduplicated values are added
+    as a new "<original>_deduplicated" column; the original columns are kept unchanged.
 
     Args:
         lf (pl.LazyFrame): The LazyFrame to clean.
@@ -280,17 +279,11 @@ def remove_repeated_values_over_time(
             timeline (e.g. location_id, or [establishment_id, published_job_role_label]
             when a single entity has multiple independent timelines).
         date_column (str): Column to order rows by within each partition.
-        new_column_names (Optional[dict[str, str]]): Optional {old_name: new_name}
-            mapping. Columns not listed default to "<original>_deduplicated".
-        keep_original_columns (bool): If True, keeps both the original and
-            deduplicated columns. If False, drops the original columns once the
-            deduplicated versions are created.
 
     Returns:
-        pl.LazyFrame: The input LazyFrame with one new deduplicated column per input
-            column, and the originals kept or dropped per keep_original_columns.
+        pl.LazyFrame: The input LazyFrame with one new "<original>_deduplicated"
+            column per input column.
     """
-    new_column_names = new_column_names or {}
     columns = (
         lf.select(columns_to_clean).collect_schema().names()
         if not isinstance(columns_to_clean, list)
@@ -312,17 +305,11 @@ def remove_repeated_values_over_time(
                 order_by=[*partition_by_columns_list, date_column],
             )
         )
-        new_name = new_column_names.get(column, f"{column}_deduplicated")
         dedup_exprs.append(
             pl.when(last_value.is_null() | (pl.col(column) != last_value))
             .then(pl.col(column))
             .otherwise(None)
-            .alias(new_name)
+            .alias(f"{column}_deduplicated")
         )
 
-    lf = lf.with_columns(dedup_exprs)
-
-    if not keep_original_columns:
-        lf = lf.drop(columns)
-
-    return lf
+    return lf.with_columns(dedup_exprs)

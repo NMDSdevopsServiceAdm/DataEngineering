@@ -67,10 +67,6 @@ def main(
         ],
         partition_by_columns=IndCQC.location_id,
         date_column=IndCQC.cqc_location_import_date,
-        new_column_names={
-            IndCQC.ascwds_filled_posts: IndCQC.ascwds_filled_posts_dedup,
-            IndCQC.pir_people_directly_employed_cleaned: IndCQC.pir_people_directly_employed_dedup,
-        },
     )
 
     locations_lf = cUtils.calculate_filled_posts_per_bed_ratio(
