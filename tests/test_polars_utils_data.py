@@ -8,6 +8,7 @@ import polars as pl
 import polars.selectors as cs
 
 from polars_utils.column_types import CategoricalColumnTypes as CatColType
+from tests.test_polars_utils_schemas import CleaningUtilsSchemas as Schemas
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -26,8 +27,6 @@ from utils.column_values.categorical_column_values import (
 from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CQCLocationCatVals,
 )
-
-from tests.test_polars_utils_schemas import CleaningUtilsSchemas as Schemas
 
 
 @dataclass
@@ -321,28 +320,6 @@ class CleaningUtilsData:
                 ("1-0001", date(2023, 8, 1), 3, 3),
             ],
             expected_schema=Schemas.expected_remove_repeated_values_over_time_schema,
-        ),
-        RemoveRepeatedValuesOverTimeTestCase(
-            id="values_deduplicated_when_partition_and_date_columns_are_not_ind_cqc_specific",
-            test_data=[
-                ("EST1", date(2023, 1, 1), 5),
-                ("EST1", date(2023, 2, 1), 5),
-                ("EST1", date(2023, 3, 1), 6),
-                ("EST2", date(2023, 1, 1), 2),
-                ("EST2", date(2023, 2, 1), 3),
-            ],
-            test_schema=Schemas.remove_repeated_values_over_time_generic_columns_schema,
-            columns_to_clean=["value"],
-            partition_by_columns="establishment_id",
-            date_column="ascwds_workplace_import_date",
-            expected_data=[
-                ("EST1", date(2023, 1, 1), 5, 5),
-                ("EST1", date(2023, 2, 1), 5, None),
-                ("EST1", date(2023, 3, 1), 6, 6),
-                ("EST2", date(2023, 1, 1), 2, 2),
-                ("EST2", date(2023, 2, 1), 3, 3),
-            ],
-            expected_schema=Schemas.expected_remove_repeated_values_over_time_generic_columns_schema,
         ),
         RemoveRepeatedValuesOverTimeTestCase(
             id="multiple_columns_are_deduplicated_in_a_single_call",

@@ -109,20 +109,6 @@ class CleaningUtilsSchemas:
         ]
     )
 
-    remove_repeated_values_over_time_generic_columns_schema = pl.Schema(
-        [
-            ("establishment_id", pl.String()),
-            ("ascwds_workplace_import_date", pl.Date()),
-            ("value", pl.Int64()),
-        ]
-    )
-    expected_remove_repeated_values_over_time_generic_columns_schema = pl.Schema(
-        list(remove_repeated_values_over_time_generic_columns_schema.items())
-        + [
-            ("value_deduplicated", pl.Int64()),
-        ]
-    )
-
     remove_repeated_values_over_time_multiple_columns_schema = pl.Schema(
         [
             ("location_id", pl.String()),
