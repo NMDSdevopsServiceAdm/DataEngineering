@@ -22,15 +22,9 @@ def model_imputation(
     Create a new column of imputed values based on known values and null values
     being extrapolated and interpolated.
 
-    Eligibility for imputation is flagged per row (based on the care_home
-    status of the location and only for locations who have at least one
-    non-null value). Extrapolation and interpolation run across the whole
-    LazyFrame, grouped by `[location_id, care_home]` rather than
-    `location_id` alone — a location's `care_home` status can change between
-    import dates (it's re-derived from `primary_service_type` on every
-    import), so grouping by `location_id` alone would mix a location's
-    differently-flagged periods into the same calculation. The final imputed
-    value is only kept where the eligibility flag is set.
+    Extrapolation and interpolation run across the whole LazyFrame, grouped by
+    `[location_id, care_home]`. The final imputed values are coalesced into
+    'imputed_column_name' based on the given care_home argument.
 
     The imputation model is carried out in two steps, extrapolation and
     interpolation, which both populate null values based on the rate of change

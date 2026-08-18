@@ -33,9 +33,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     ExtrapolationColumns as ExtrapCol,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    Imputation,
-)
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
@@ -1656,8 +1653,6 @@ class ModelExtrapolation:
 
 @dataclass
 class ModelImputation:
-    row_id = "row_id"
-
     expected_model_imputation_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
