@@ -143,62 +143,61 @@ class TestGetPreviousValue:
 
 
 class TestModelExtrapolationGroupColumns:
-    GROUP = "group"
+    group_col = "group_col"
+    input_lf = pl.LazyFrame(
+        {
+            IndCQC.location_id: ["1-001"] * 4,
+            IndCQC.cqc_location_import_date: [
+                date(2023, 1, 1),
+                date(2023, 2, 1),
+                date(2023, 3, 1),
+                date(2023, 4, 1),
+            ],
+            group_col: ["A", "A", "B", "B"],
+            IndCQC.ascwds_pir_merged: [10.0, None, None, None],
+            IndCQC.posts_rolling_average_model: [1.0, 1.0, 1.0, 1.0],
+        }
+    )
 
-    def build_input_lf(self):
-        return pl.LazyFrame(
+    def test_default_group_columns_extrapolates_over_locationid_only(
+        self,
+    ):
+        returned_lf = job.model_extrapolation(
+            self.input_lf,
+            column_with_null_values=IndCQC.ascwds_pir_merged,
+            model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
+            extrapolation_method="nominal",
+        ).select(IndCQC.location_id, IndCQC.extrapolation_model)
+
+        expected_lf = pl.LazyFrame(
             {
                 IndCQC.location_id: ["1-001"] * 4,
-                IndCQC.cqc_location_import_date: [
-                    date(2023, 1, 1),
-                    date(2023, 2, 1),
-                    date(2023, 3, 1),
-                    date(2023, 4, 1),
-                ],
-                self.GROUP: ["A", "A", "B", "B"],
-                IndCQC.ascwds_pir_merged: [10.0, None, None, None],
-                IndCQC.posts_rolling_average_model: [1.0, 1.0, 1.0, 1.0],
+                IndCQC.extrapolation_model: [None, 10.0, 10.0, 10.0],
             }
         )
 
-    def test_default_group_columns_lets_other_groups_within_a_location_extrapolate_from_each_other(
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_group_columns_parameter_extrapolates_over_given_groups(
         self,
     ):
         returned_lf = job.model_extrapolation(
-            self.build_input_lf(),
+            self.input_lf,
             column_with_null_values=IndCQC.ascwds_pir_merged,
             model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
             extrapolation_method="nominal",
-        )
-        group_b_values = (
-            returned_lf.filter(pl.col(self.GROUP) == "B")
-            .select(IndCQC.extrapolation_model)
-            .collect()
-            .to_series()
-            .to_list()
+            group_columns=[IndCQC.location_id, self.group_col],
+        ).select(IndCQC.location_id, self.group_col, IndCQC.extrapolation_model)
+
+        expected_lf = pl.LazyFrame(
+            {
+                IndCQC.location_id: ["1-001"] * 4,
+                self.group_col: ["A", "A", "B", "B"],
+                IndCQC.extrapolation_model: [None, 10.0, None, None],
+            }
         )
 
-        assert all(value is not None for value in group_b_values)
-
-    def test_group_columns_parameter_stops_other_groups_within_a_location_extrapolating_from_each_other(
-        self,
-    ):
-        returned_lf = job.model_extrapolation(
-            self.build_input_lf(),
-            column_with_null_values=IndCQC.ascwds_pir_merged,
-            model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
-            extrapolation_method="nominal",
-            group_columns=[IndCQC.location_id, self.GROUP],
-        )
-        group_b_values = (
-            returned_lf.filter(pl.col(self.GROUP) == "B")
-            .select(IndCQC.extrapolation_model)
-            .collect()
-            .to_series()
-            .to_list()
-        )
-
-        assert all(value is None for value in group_b_values)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class TestExtrapolationCalculationExpressions:
