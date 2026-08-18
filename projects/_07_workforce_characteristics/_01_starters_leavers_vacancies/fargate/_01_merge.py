@@ -14,7 +14,7 @@ from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 workplace_columns = [
     AWPClean.establishment_id,
     AWPClean.ascwds_workplace_import_date,
-    SLVCols.job_role_label,
+    SLVCols.published_job_role_label,
     SLVCols.employees,
     SLVCols.starters,
     SLVCols.leavers,
@@ -117,7 +117,7 @@ def main(
         on=[
             IndCQC.establishment_id,
             IndCQC.ascwds_workplace_import_date,
-            SLVCols.job_role_label,
+            SLVCols.published_job_role_label,
         ],
         how="left",
     )

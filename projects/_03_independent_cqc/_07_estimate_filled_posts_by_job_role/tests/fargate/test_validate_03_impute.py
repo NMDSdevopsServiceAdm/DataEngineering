@@ -23,7 +23,7 @@ class ValidateJobRoleEstimatesTests(unittest.TestCase):
             IndCqcColumns.id_per_locationid_import_date_job_role: pl.UInt32,
             IndCqcColumns.location_id: CategoricalColumnTypes.LocationCatType,
             IndCqcColumns.cqc_location_import_date: pl.Date,
-            IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleEnumType,
+            IndCqcColumns.main_job_role_clean_labelled: CategoricalColumnTypes.JobRoleCatType,
             IndCqcColumns.primary_service_type: CategoricalColumnTypes.PrimaryServiceEnumType,
             IndCqcColumns.estimate_filled_posts: pl.Float32,
             IndCqcColumns.ascwds_job_role_counts: pl.Int16,

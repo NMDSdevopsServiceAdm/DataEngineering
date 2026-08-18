@@ -44,7 +44,7 @@ EXPECTED_SCHEMA = pb.Schema(
             CategoricalColumnTypes.PrimaryServiceEnumType
         ),
         IndCqcColumns.main_job_role_clean_labelled: str(
-            CategoricalColumnTypes.JobRoleEnumType
+            CategoricalColumnTypes.JobRoleCatType
         ),
         IndCqcColumns.ascwds_job_role_counts: "Int16",
         IndCqcColumns.job_role_filtering_rule: str(

@@ -1,6 +1,7 @@
 import polars as pl
 
 from polars_utils import utils
+from polars_utils.column_types import CategoricalColumnTypes as CatColType
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils import (
     HistoricJobRoleAdjustmentConfig as Config,
 )
@@ -142,7 +143,7 @@ def reallocate_historical_filled_posts_by_job_role(lf: pl.LazyFrame) -> pl.LazyF
     )
 
     lf_adjusted = lf_adjusted.with_columns(
-        pl.col(IndCQC.main_job_role_clean_labelled).cast(pl.Enum(all_job_roles))
+        pl.col(IndCQC.main_job_role_clean_labelled).cast(CatColType.JobRoleCatType)
     )
 
     lf_adjusted = lf_adjusted.drop(IndCQC.cqc_location_import_date)

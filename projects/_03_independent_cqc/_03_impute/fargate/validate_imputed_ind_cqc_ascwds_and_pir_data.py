@@ -1,13 +1,15 @@
 import sys
 
 import pointblank as pb
+import polars as pl
 
 from polars_utils import utils
-from polars_utils.expressions import str_length_cols
+from polars_utils.expressions import is_care_home, is_not_care_home, str_length_cols
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.validation_table_columns import Validation
+from utils.column_values.categorical_column_values import PrimaryServiceType
 from utils.column_values.categorical_columns_by_dataset import (
     ImputedIndCqcAscwdsAndPirCategoricalValues as CatValues,
 )
@@ -22,6 +24,9 @@ def main(
     bucket_name: str, source_path: str, reports_path: str, compare_path: str
 ) -> None:
     """Validates a dataset according to a set of provided rules and produces a summary report as well as failure outputs.
+
+    This dataset runs close to the task's memory limit, so every check is kept elementwise over
+    columns already held in `source_df` rather than rescanning or joining.
 
     Args:
         bucket_name (str): the bucket (name only) in which to source the dataset and output the report to
@@ -84,7 +89,7 @@ def main(
                 IndCQC.cqc_location_import_date,
             ],
         )
-        # between (inclusive)
+        # numerical
         .col_vals_between(Validation.location_id_length, 3, 14)
         .col_vals_between(IndCQC.number_of_beds, 1, 500, na_pass=True)
         .col_vals_between(
@@ -93,10 +98,40 @@ def main(
         .col_vals_between(IndCQC.total_staff_bounded, 1, 3000, na_pass=True)
         .col_vals_between(IndCQC.worker_records_bounded, 1, 3000, na_pass=True)
         .col_vals_between(IndCQC.filled_posts_per_bed_ratio, 0.0, 20.0, na_pass=True)
-        # .col_vals_between(IndCQC.posts_rolling_average_model, 0.0, 3000.0)
-        # .col_vals_between(IndCQC.imputed_filled_post_model, 0.0, 3000.0)
-        # .col_vals_between(IndCQC.imputed_filled_posts_per_bed_ratio_model, 0.0, 3000.0)
-        # .col_vals_between(IndCQC.pir_filled_posts_model, 0.0, 3000.0)
+        .col_vals_between(IndCQC.imputed_filled_post_model, 0.0, 3000.0, na_pass=True)
+        .col_vals_between(
+            IndCQC.imputed_filled_posts_per_bed_ratio_model, 0.0, 25.0, na_pass=True
+        )
+        .col_vals_between(IndCQC.pir_filled_posts_model, 0.0, 3000.0, na_pass=True)
+        .col_vals_between(IndCQC.ascwds_pir_merged, 0.0, 3000.0, na_pass=True)
+        .col_vals_between(
+            IndCQC.ct_combined_care_home_and_non_res, 1.0, 4000.0, na_pass=True
+        )
+        .col_vals_between(
+            IndCQC.ct_care_home_total_employed_imputed, 0.0, 4000.0, na_pass=True
+        )
+        .col_vals_between(
+            IndCQC.ct_non_res_care_workers_employed_imputed, 0.0, 3000.0, na_pass=True
+        )
+        .col_vals_between(
+            IndCQC.ascwds_rate_of_change_trendline_model, 0.5, 2.0, na_pass=True
+        )
+        .col_vals_between(
+            IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+            0.5,
+            2.0,
+            na_pass=True,
+        )
+        .col_vals_expr(
+            expr=(
+                pl.col(IndCQC.combined_ratio_and_filled_posts).is_null()
+                | pl.col(IndCQC.combined_ratio_and_filled_posts).is_between(
+                    0.0, pl.when(is_care_home()).then(20.0).otherwise(3000.0)
+                )
+            ),
+            brief=f"{IndCQC.combined_ratio_and_filled_posts} should be between 0 and 20 for care homes and between 0 and 3000 otherwise",
+        )
+        # TODO: validation for posts_rolling_average_model
         # categorical
         .col_vals_in_set(
             IndCQC.care_home,
@@ -144,6 +179,28 @@ def main(
         .col_vals_in_set(
             IndCQC.ascwds_filtering_rule,
             CatValues.ascwds_filtering_rule_column_values.categorical_values,
+        )
+        # cross-column relationships
+        .col_vals_expr(
+            expr=(
+                (
+                    is_not_care_home()
+                    & (
+                        pl.col(IndCQC.primary_service_type)
+                        == pl.lit(PrimaryServiceType.non_residential)
+                    )
+                )
+                | (
+                    is_care_home()
+                    & pl.col(IndCQC.primary_service_type).is_in(
+                        [
+                            PrimaryServiceType.care_home_with_nursing,
+                            PrimaryServiceType.care_home_only,
+                        ]
+                    )
+                )
+            ),
+            brief=f"{IndCQC.care_home} and {IndCQC.primary_service_type} should be related",
         )
         # distinct values
         .specially(

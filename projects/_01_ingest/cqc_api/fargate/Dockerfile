@@ -6,7 +6,13 @@ RUN mkdir -p /polars_scratch && chmod 777 /polars_scratch
 ENV POLARS_TEMP_DIR=/polars_scratch
 ENV PYTHONPATH=/app
 
-# Dependencies
+# Dependencies. Installed before any source is copied so that a source-only
+# change doesn't invalidate the pip layer.
+COPY docker_requirements/requirements.txt .
+COPY projects/_01_ingest/cqc_api/fargate/requirements-extra.txt .
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-extra.txt
+
+# Shared libraries
 COPY polars_utils polars_utils
 COPY utils/file_utils.py utils/file_utils.py
 COPY projects/_01_ingest/cqc_api/fargate/utils projects/_01_ingest/cqc_api/fargate/utils
@@ -22,9 +28,5 @@ COPY utils/cqc_local_authority_provider_ids.py utils/cqc_local_authority_provide
 
 # Copy all python jobs to WORKDIR
 COPY projects/_01_ingest/cqc_api/fargate/*.py .
-
-COPY docker_requirements/requirements.txt .
-COPY projects/_01_ingest/cqc_api/fargate/requirements-extra.txt .
-RUN pip install --no-cache-dir -r requirements.txt -r requirements-extra.txt
 
 ENTRYPOINT ["python"]
