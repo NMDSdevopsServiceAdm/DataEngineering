@@ -52,7 +52,7 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         pl.when(is_care_home())
         .then(pl.col(IndCQC.filled_posts_per_bed_ratio))
         .otherwise(pl.col(IndCQC.ascwds_filled_posts_dedup_clean))
-        .cast(pl.Float64)
+        .cast(pl.Float32)
         .alias(IndCQC.combined_ratio_and_filled_posts)
     )
 
@@ -120,7 +120,7 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
     #         * pl.col(IndCQC.number_of_beds)
     #     )
     #     .otherwise(pl.col(IndCQC.posts_rolling_average_model))
-    #     .cast(pl.Float64)
+    #     .cast(pl.Float32)
     #     .alias(IndCQC.posts_rolling_average_model)
     # )
 
@@ -128,7 +128,7 @@ def main(cleaned_ind_cqc_source: str, destination: str) -> None:
         pl.when(is_care_home())
         .then(pl.col(IndCQC.ct_care_home_total_employed_cleaned))
         .otherwise(pl.col(IndCQC.ct_non_res_care_workers_employed_cleaned))
-        .cast(pl.Float64)
+        .cast(pl.Float32)
         .alias(IndCQC.ct_combined_care_home_and_non_res)
     )
 
