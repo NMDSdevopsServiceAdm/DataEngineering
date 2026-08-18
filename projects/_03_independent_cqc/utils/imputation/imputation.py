@@ -75,7 +75,7 @@ def model_imputation(
                 IndCqc.interpolation_model,
             )
         )
-        .cast(pl.Float64)
+        .cast(pl.Float32)
         .alias(imputed_column_name)
     ).drop(
         IndCqc.extrapolation_forwards,
