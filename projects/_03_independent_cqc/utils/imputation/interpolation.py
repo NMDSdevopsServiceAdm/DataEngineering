@@ -11,7 +11,7 @@ def model_interpolation(
     method: str,
     new_column_name: Optional[str] = IndCqc.interpolation_model,
     max_days_between_submissions: Optional[int] = None,
-    group_columns: List[str] = [IndCqc.location_id],
+    group_columns: Optional[List[str]] = None,
 ) -> pl.LazyFrame:
     """
     Perform interpolation on a column with null values and adds as a new column
@@ -33,12 +33,12 @@ def model_interpolation(
         max_days_between_submissions (Optional[int]): Maximum allowed days between
             submissions to apply interpolation. If None, interpolation is
             applied to all rows.
-        group_columns (List[str]): Columns to partition the per-group
-            calculations by. Defaults to `[location_id]` alone. A caller
-            should widen this when a location's own attributes can change
-            over time (e.g. `care_home` status), so that periods with
-            different attribute values don't get mixed into the same
-            interpolation group.
+        group_columns (Optional[List[str]]): Columns to partition the
+            per-group calculations by. Defaults to `[location_id]` alone
+            when None. A caller should widen this when a location's own
+            attributes can change over time (e.g. `care_home` status), so
+            that periods with different attribute values don't get mixed
+            into the same interpolation group.
 
     Returns:
         pl.LazyFrame: The LazyFrame with the interpolated values in the
@@ -47,6 +47,8 @@ def model_interpolation(
     Raises:
         ValueError: If chosen method does not match 'straight' or 'trend'.
     """
+    group_columns = group_columns or [IndCqc.location_id]
+
     lf = calculate_proportion_of_days_between_submissions(
         lf, column_with_null_values, group_columns
     )
@@ -105,7 +107,7 @@ def calculate_residuals(
     lf: pl.LazyFrame,
     first_column: str,
     second_column: str,
-    group_columns: List[str] = [IndCqc.location_id],
+    group_columns: Optional[List[str]] = None,
 ) -> pl.LazyFrame:
     """
     Calculate the residual between two non-null values (first_column minus
@@ -119,13 +121,15 @@ def calculate_residuals(
         lf (pl.LazyFrame): The input LazyFrame containing the data.
         first_column (str): The name of the first column that contains values.
         second_column (str): The name of the second column that contains values.
-        group_columns (List[str]): Columns to partition the calculation by.
-            Defaults to `[location_id]` alone.
+        group_columns (Optional[List[str]]): Columns to partition the
+            calculation by. Defaults to `[location_id]` alone when None.
 
     Returns:
         pl.LazyFrame: The LazyFrame with the calculated residuals in a new
             column.
     """
+    group_columns = group_columns or [IndCqc.location_id]
+
     lf = lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
 
     residual_expr = pl.when(
@@ -141,7 +145,7 @@ def calculate_residuals(
 def calculate_proportion_of_days_between_submissions(
     lf: pl.LazyFrame,
     column_with_null_values: str,
-    group_columns: List[str] = [IndCqc.location_id],
+    group_columns: Optional[List[str]] = None,
 ) -> pl.LazyFrame:
     """
     Calculates the proportion of days between consecutive non-null values
@@ -151,14 +155,16 @@ def calculate_proportion_of_days_between_submissions(
         lf (pl.LazyFrame): The input LazyFrame containing the data.
         column_with_null_values (str): The name of the column that contains
             null values.
-        group_columns (List[str]): Columns to partition the calculation by.
-            Defaults to `[location_id]` alone.
+        group_columns (Optional[List[str]]): Columns to partition the
+            calculation by. Defaults to `[location_id]` alone when None.
 
     Returns:
         pl.LazyFrame: The LazyFrame with the new columns
             (days_between_submissions and proportion_of_days_between_submissions)
             added.
     """
+    group_columns = group_columns or [IndCqc.location_id]
+
     lf = lf.sort([IndCqc.location_id, IndCqc.cqc_location_import_date])
     val_not_null_date = pl.when(pl.col(column_with_null_values).is_not_null()).then(
         pl.col(IndCqc.cqc_location_import_date)
