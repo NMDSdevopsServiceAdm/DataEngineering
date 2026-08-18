@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+- Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
+
+### Improved
+
+### Fixed
+
+## [v2026.07.0] - 17/08/2026
+
+### Added
 - Added the missing validation checks to the imputed independent CQC pointblank validation job, covering the imputed and capacity tracker model columns, the rate of change trendlines, and the relationship between `careHome` and `primary_service_type`.
 
 - Added a validation check that `ascwds_job_role_rolling_ratio` sums to 1 across job roles within each primary service type, size group and import date group.
