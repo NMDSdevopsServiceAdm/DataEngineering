@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Extracted the independent CQC clean job's repeated-value deduplication into a reusable `remove_repeated_values_over_time` function in Polars Utils (generalised to multiple columns and configurable partition/date columns), and used it in the SLV clean job to deduplicate starters, leavers and vacancies over time.
 
 ### Changed
 - Disabled S3 versioning on the pipeline resources bucket in non-prod environments, matching the datasets bucket's existing behaviour.
