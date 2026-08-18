@@ -1656,6 +1656,8 @@ class ModelExtrapolation:
 
 @dataclass
 class ModelImputation:
+    row_id = "row_id"
+
     expected_model_imputation_schema = {
         IndCQC.location_id: pl.String,
         IndCQC.cqc_location_import_date: pl.Date,
@@ -1666,14 +1668,14 @@ class ModelImputation:
     }
 
     input_flag_rows_eligible_for_imputation_schema = {
-        "row_id": pl.Int8,
+        row_id: pl.Int8,
         IndCQC.location_id: pl.String,
         IndCQC.care_home: pl.String,
         "null_values": pl.Float32,
     }
 
     expected_flag_rows_eligible_for_imputation_schema = {
-        "row_id": pl.Int8,
+        row_id: pl.Int8,
         IndCQC.location_id: pl.String,
         IndCQC.care_home: pl.String,
         "null_values": pl.Float32,
