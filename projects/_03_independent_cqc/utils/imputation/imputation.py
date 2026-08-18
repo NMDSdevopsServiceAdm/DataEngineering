@@ -7,9 +7,7 @@ from projects._03_independent_cqc.utils.imputation.extrapolation import (
 from projects._03_independent_cqc.utils.imputation.interpolation import (
     model_interpolation,
 )
-from utils.column_names.ind_cqc_pipeline_columns import Imputation
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from utils.column_values.categorical_column_values import CareHome
 
 
 def model_imputation(
@@ -92,47 +90,3 @@ def model_imputation(
     )
 
     return lf
-
-
-def flag_rows_eligible_for_imputation(
-    lf: pl.LazyFrame, column_with_null_values: str, care_home: bool
-) -> pl.LazyFrame:
-    """
-    Adds a boolean column flagging rows eligible for imputation.
-
-    A row is eligible when its care_home status matches `care_home` and its
-    location has at least one non-null value in `column_with_null_values`.
-    The flag is added as a column on the full input LazyFrame (via a single
-    broadcast left-join) rather than splitting the LazyFrame in two, so that
-    repeated calls to `model_imputation` don't fork and re-concatenate the
-    query plan on every call.
-
-    Args:
-        lf (pl.LazyFrame): The input LazyFrame.
-        column_with_null_values (str): The name of the column to check for
-            non-null values.
-        care_home (bool): True if imputation is for care homes, False if it is
-            for non residential.
-
-    Returns:
-        pl.LazyFrame: The input LazyFrame with an added boolean column,
-            `Imputation.eligible_for_imputation`.
-    """
-    if care_home:
-        care_home_filter_expr: pl.Expr = is_care_home()
-    else:
-        care_home_filter_expr: pl.Expr = is_not_care_home()
-
-    groups_with_values = (
-        lf.filter(pl.col(column_with_null_values).is_not_null())
-        .filter(care_home_filter_expr)
-        .select([IndCqc.location_id, IndCqc.care_home])
-        .unique()
-        .with_columns(pl.lit(True).alias(Imputation.eligible_for_imputation))
-    )
-
-    return lf.join(
-        groups_with_values,
-        on=[IndCqc.location_id, IndCqc.care_home],
-        how="left",
-    ).with_columns(pl.col(Imputation.eligible_for_imputation).fill_null(False))

@@ -1667,21 +1667,6 @@ class ModelImputation:
         "imputed_values": pl.Float32,
     }
 
-    input_flag_rows_eligible_for_imputation_schema = {
-        row_id: pl.Int8,
-        IndCQC.location_id: pl.String,
-        IndCQC.care_home: pl.String,
-        "null_values": pl.Float32,
-    }
-
-    expected_flag_rows_eligible_for_imputation_schema = {
-        row_id: pl.Int8,
-        IndCQC.location_id: pl.String,
-        IndCQC.care_home: pl.String,
-        "null_values": pl.Float32,
-        Imputation.eligible_for_imputation: pl.Boolean,
-    }
-
 
 @dataclass
 class ModelRateOfChangeSchemas:

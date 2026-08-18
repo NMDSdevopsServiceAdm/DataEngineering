@@ -416,13 +416,6 @@ class ExtrapolationColumns:
 
 
 @dataclass
-class Imputation:
-    """The name of the temporary column used to flag rows eligible for imputation."""
-
-    eligible_for_imputation: str = "_eligible_for_imputation"
-
-
-@dataclass
 class ModelRegistryKeys:
     auto_retrain: str = "auto_retrain"
     dependent: str = "dependent"
