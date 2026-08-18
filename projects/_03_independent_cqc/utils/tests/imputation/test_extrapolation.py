@@ -143,9 +143,12 @@ class TestGetPreviousValue:
 
 
 class TestModelExtrapolationGroupColumns:
+    row_id = "row_id"
     group_col = "group_col"
+
     input_lf = pl.LazyFrame(
         {
+            row_id: [1, 2, 3, 4],
             IndCQC.location_id: ["1-001"] * 4,
             IndCQC.cqc_location_import_date: [
                 date(2023, 1, 1),
@@ -167,16 +170,19 @@ class TestModelExtrapolationGroupColumns:
             column_with_null_values=IndCQC.ascwds_pir_merged,
             model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
             extrapolation_method="nominal",
-        ).select(IndCQC.location_id, IndCQC.extrapolation_model)
+        )
 
         expected_lf = pl.LazyFrame(
             {
-                IndCQC.location_id: ["1-001"] * 4,
+                self.row_id: [1, 2, 3, 4],
                 IndCQC.extrapolation_model: [None, 10.0, 10.0, 10.0],
             }
         )
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+        pl_testing.assert_frame_equal(
+            returned_lf.select(self.row_id, IndCQC.extrapolation_model),
+            expected_lf,
+        )
 
     def test_group_columns_parameter_extrapolates_over_given_groups(
         self,
@@ -187,17 +193,19 @@ class TestModelExtrapolationGroupColumns:
             model_to_extrapolate_from=IndCQC.posts_rolling_average_model,
             extrapolation_method="nominal",
             group_columns=[IndCQC.location_id, self.group_col],
-        ).select(IndCQC.location_id, self.group_col, IndCQC.extrapolation_model)
+        )
 
         expected_lf = pl.LazyFrame(
             {
-                IndCQC.location_id: ["1-001"] * 4,
-                self.group_col: ["A", "A", "B", "B"],
+                self.row_id: [1, 2, 3, 4],
                 IndCQC.extrapolation_model: [None, 10.0, None, None],
             }
         )
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+        pl_testing.assert_frame_equal(
+            returned_lf.select(self.row_id, IndCQC.extrapolation_model),
+            expected_lf,
+        )
 
 
 class TestExtrapolationCalculationExpressions:

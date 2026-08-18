@@ -92,31 +92,31 @@ class TestModelImputationResults:
 
 
 class TestFlagRowsEligibleForImputation:
-    def test_function_flags_expected_rows(self):
-        input_lf = pl.LazyFrame(
-            data=[
-                (1, "1-001", CareHome.care_home, 10.0),
-                (2, "1-001", CareHome.care_home, None),
-                (3, "1-002", CareHome.care_home, 10.0),
-                (4, "1-003", CareHome.care_home, None),
-                (5, "1-003", CareHome.care_home, None),
-                (6, "1-004", CareHome.not_care_home, 10.0),
-                (7, "1-004", CareHome.not_care_home, None),
-                (8, "1-005", CareHome.not_care_home, 10.0),
-                (9, "1-006", CareHome.not_care_home, None),
-                (10, "1-006", CareHome.not_care_home, None),
-            ],
-            schema=Schemas.input_flag_rows_eligible_for_imputation_schema,
-            orient="row",
-        )
+    input_lf = pl.LazyFrame(
+        data=[
+            (1, "1-001", CareHome.care_home, 10.0),
+            (2, "1-001", CareHome.care_home, None),
+            (3, "1-002", CareHome.care_home, 10.0),
+            (4, "1-003", CareHome.care_home, None),
+            (5, "1-003", CareHome.care_home, None),
+            (6, "1-004", CareHome.not_care_home, 10.0),
+            (7, "1-004", CareHome.not_care_home, None),
+            (8, "1-005", CareHome.not_care_home, 10.0),
+            (9, "1-006", CareHome.not_care_home, None),
+            (10, "1-006", CareHome.not_care_home, None),
+        ],
+        schema=Schemas.input_flag_rows_eligible_for_imputation_schema,
+        orient="row",
+    )
 
+    def test_function_flags_expected_rows(self):
         returned_when_care_home_lf = job.flag_rows_eligible_for_imputation(
-            input_lf,
+            self.input_lf,
             Data.column_with_null_values_name,
             care_home=True,
         )
         returned_when_not_care_home_lf = job.flag_rows_eligible_for_imputation(
-            input_lf,
+            self.input_lf,
             Data.column_with_null_values_name,
             care_home=False,
         )

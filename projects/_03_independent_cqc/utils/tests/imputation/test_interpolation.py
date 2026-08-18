@@ -76,60 +76,59 @@ class TestCalculateResiduals:
 
 
 class TestCalculateResidualsGroupColumns:
-    GROUP = "group"
-    FIRST = "first"
-    SECOND = "second"
+    row_id = "row_id"
+    group_col = "group_col"
+    first_col = "first_col"
+    second_col = "second_col"
 
-    def build_input_lf(self):
-        return pl.LazyFrame(
-            {
-                IndCqc.location_id: ["1-001"] * 4,
-                IndCqc.cqc_location_import_date: [
-                    date(2023, 1, 1),
-                    date(2023, 2, 1),
-                    date(2023, 3, 1),
-                    date(2023, 4, 1),
-                ],
-                self.GROUP: ["A", "A", "B", "B"],
-                self.FIRST: [None, None, 10.0, None],
-                self.SECOND: [None, None, 5.0, None],
-            }
-        )
+    input_lf = pl.LazyFrame(
+        {
+            row_id: [1, 2, 3, 4],
+            IndCqc.location_id: ["1-001"] * 4,
+            IndCqc.cqc_location_import_date: [
+                date(2023, 1, 1),
+                date(2023, 2, 1),
+                date(2023, 3, 1),
+                date(2023, 4, 1),
+            ],
+            group_col: ["A", "A", "B", "B"],
+            first_col: [None, None, 10.0, None],
+            second_col: [None, None, 5.0, None],
+        }
+    )
 
-    def test_default_group_columns_lets_other_groups_within_a_location_backward_fill_from_each_other(
+    def test_default_group_columns_backfills_residual_over_locationid(
         self,
     ):
         returned_lf = job.calculate_residuals(
-            self.build_input_lf(), self.FIRST, self.SECOND
-        )
-        group_a_residuals = (
-            returned_lf.filter(pl.col(self.GROUP) == "A")
-            .select(IndCqc.residual)
-            .collect()
-            .to_series()
-            .to_list()
+            self.input_lf, self.first_col, self.second_col
         )
 
-        assert group_a_residuals == [5.0, 5.0]
+        expected_lf = pl.LazyFrame(
+            {self.row_id: [1, 2, 3, 4], IndCqc.residual: [5.0, 5.0, 5.0, None]}
+        )
 
-    def test_group_columns_parameter_stops_other_groups_within_a_location_backward_filling_from_each_other(
+        pl_testing.assert_frame_equal(
+            returned_lf.select(self.row_id, IndCqc.residual), expected_lf
+        )
+
+    def test_group_columns_parameter_backfills_residual_over_given_groups(
         self,
     ):
         returned_lf = job.calculate_residuals(
-            self.build_input_lf(),
-            self.FIRST,
-            self.SECOND,
-            group_columns=[IndCqc.location_id, self.GROUP],
-        )
-        group_a_residuals = (
-            returned_lf.filter(pl.col(self.GROUP) == "A")
-            .select(IndCqc.residual)
-            .collect()
-            .to_series()
-            .to_list()
+            self.input_lf,
+            self.first_col,
+            self.second_col,
+            group_columns=[IndCqc.location_id, self.group_col],
         )
 
-        assert group_a_residuals == [None, None]
+        expected_lf = pl.LazyFrame(
+            {self.row_id: [1, 2, 3, 4], IndCqc.residual: [None, None, 5.0, None]}
+        )
+
+        pl_testing.assert_frame_equal(
+            returned_lf.select(self.row_id, IndCqc.residual), expected_lf
+        )
 
 
 class TestCalculateProportionOfTimeBetweenSubmissions:
