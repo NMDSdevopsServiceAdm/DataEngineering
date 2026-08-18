@@ -55,6 +55,11 @@ def model_imputation(
     """
     group_columns = [IndCqc.location_id, IndCqc.care_home]
 
+    if care_home:
+        care_home_filter_expr: pl.Expr = is_care_home()
+    else:
+        care_home_filter_expr: pl.Expr = is_not_care_home()
+
     lf = model_extrapolation(
         lf,
         column_with_null_values,
@@ -70,7 +75,7 @@ def model_imputation(
     )
 
     lf = lf.with_columns(
-        pl.when(pl.col(IndCqc.care_home) == care_home)
+        pl.when(care_home_filter_expr)
         .then(
             pl.coalesce(
                 column_with_null_values,
