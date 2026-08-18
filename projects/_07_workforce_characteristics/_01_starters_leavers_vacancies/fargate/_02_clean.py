@@ -17,6 +17,8 @@ def main(
     """
     lf = utils.scan_parquet(merged_data_source)
 
+    # Remove rows where starters, leavers, and vacancies are repeated over time
+    # for the same location and published job role.
     lf = cUtils.remove_repeated_values_over_time(
         lf,
         columns_to_clean=[SLVCols.starters, SLVCols.leavers, SLVCols.vacancies],
