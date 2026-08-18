@@ -697,7 +697,7 @@ class TestMergeUtilsData:
             id="splits_filled_post_metric_by_employment_status_rates",
             job_role_estimates_data={
                 IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                SLVCols.job_role_label: [PublishedJobRoleLabels.care_worker],
+                SLVCols.published_job_role_label: [PublishedJobRoleLabels.care_worker],
                 METRIC: [100.0],
                 SLVCols.employees: [50],
             },
@@ -712,7 +712,7 @@ class TestMergeUtilsData:
             },
             expected_data={
                 IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                SLVCols.job_role_label: [PublishedJobRoleLabels.care_worker],
+                SLVCols.published_job_role_label: [PublishedJobRoleLabels.care_worker],
                 METRIC: [100.0],
                 SLVCols.employees: [50],
                 SLVCols.filled_posts_perm: [50.0],
@@ -730,7 +730,7 @@ class TestMergeUtilsData:
                     PrimaryServiceType.care_home_only,
                     PrimaryServiceType.care_home_with_nursing,
                 ],
-                SLVCols.job_role_label: [
+                SLVCols.published_job_role_label: [
                     PublishedJobRoleLabels.community_support_and_outreach,
                     PublishedJobRoleLabels.other,
                 ],
@@ -757,7 +757,7 @@ class TestMergeUtilsData:
                     PrimaryServiceType.care_home_only,
                     PrimaryServiceType.care_home_with_nursing,
                 ],
-                SLVCols.job_role_label: [
+                SLVCols.published_job_role_label: [
                     PublishedJobRoleLabels.community_support_and_outreach,
                     PublishedJobRoleLabels.other,
                 ],
@@ -775,7 +775,7 @@ class TestMergeUtilsData:
             id="propagates_null_metric_to_all_split_columns_and_the_error_column",
             job_role_estimates_data={
                 IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                SLVCols.job_role_label: [PublishedJobRoleLabels.care_worker],
+                SLVCols.published_job_role_label: [PublishedJobRoleLabels.care_worker],
                 METRIC: [None],
                 SLVCols.employees: [5],
             },
@@ -790,7 +790,7 @@ class TestMergeUtilsData:
             },
             expected_data={
                 IndCQC.primary_service_type: [PrimaryServiceType.non_residential],
-                SLVCols.job_role_label: [PublishedJobRoleLabels.care_worker],
+                SLVCols.published_job_role_label: [PublishedJobRoleLabels.care_worker],
                 METRIC: [None],
                 SLVCols.employees: [5],
                 SLVCols.filled_posts_perm: [None],

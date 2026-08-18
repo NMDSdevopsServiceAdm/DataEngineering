@@ -11,6 +11,8 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.slv_job_role_columns import SLVJobRoleColumns as SLVCols
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
+)
+from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
 
@@ -69,7 +71,7 @@ class TestCollapseJobRoleEstimatesToPublishedLabels:
 
 JOB_ROLE_ESTIMATES_SCHEMA_OVERRIDES = {
     IndCQC.primary_service_type: CatColType.PrimaryServiceEnumType,
-    SLVCols.job_role_label: CatColType.PublishedJobRoleLabelEnumType,
+    SLVCols.published_job_role_label: CatColType.PublishedJobRoleLabelCatType,
     METRIC: pl.Float64,
 }
 

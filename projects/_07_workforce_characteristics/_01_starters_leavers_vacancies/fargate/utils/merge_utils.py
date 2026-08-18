@@ -13,6 +13,8 @@ from utils.column_values.categorical_column_values import (
 )
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsByJobRoleCategoricalValues as CatVals,
+)
+from utils.column_values.categorical_columns_by_dataset import (
     SLVPrepareCategoricalValues,
 )
 
@@ -159,8 +161,8 @@ def apply_employment_status_magic_numbers(
         pl.col(EmpStatRates.weighting_job_role)
         .cast(pl.String)
         .replace_strict(CSV_WEIGHTING_JOB_ROLE_TO_PUBLISHED_JOB_ROLE_LABEL)
-        .cast(CatColType.PublishedJobRoleLabelEnumType)
-        .alias(SLVCols.job_role_label),
+        .cast(CatColType.PublishedJobRoleLabelCatType)
+        .alias(SLVCols.published_job_role_label),
         pl.col(EmpStatRates.emp_stat_perm),
         pl.col(EmpStatRates.emp_stat_temp),
         pl.col(EmpStatRates.emp_stat_bank_or_pool),
@@ -171,7 +173,7 @@ def apply_employment_status_magic_numbers(
     job_role_estimates_lf = (
         job_role_estimates_lf.join(
             mapped_rates_lf,
-            on=[IndCQC.primary_service_type, SLVCols.job_role_label],
+            on=[IndCQC.primary_service_type, SLVCols.published_job_role_label],
             how="left",
         )
         .with_columns(
