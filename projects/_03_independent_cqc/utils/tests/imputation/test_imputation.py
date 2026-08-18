@@ -23,10 +23,8 @@ PATCH_PATH = "projects._03_independent_cqc.utils.imputation.imputation"
 class TestModelImputationFunctionality:
     @patch(f"{PATCH_PATH}.model_interpolation")
     @patch(f"{PATCH_PATH}.model_extrapolation")
-    @patch(f"{PATCH_PATH}.flag_rows_eligible_for_imputation")
     def test_function_has_expected_calls(
         self,
-        flag_rows_eligible_for_imputation_mock: Mock,
         model_extrapolation_mock: Mock,
         model_interpolation_mock: Mock,
     ):
@@ -35,7 +33,6 @@ class TestModelImputationFunctionality:
             Schemas.expected_model_imputation_schema,
             orient="row",
         )
-        flag_rows_eligible_for_imputation_mock.return_value = flagged_lf
         model_extrapolation_mock.return_value = flagged_lf
         model_interpolation_mock.return_value = flagged_lf
 
@@ -47,8 +44,6 @@ class TestModelImputationFunctionality:
             care_home=False,
             extrapolation_method="nominal",
         )
-
-        flag_rows_eligible_for_imputation_mock.assert_called_once()
 
         expected_group_columns = [IndCqc.location_id, IndCqc.care_home]
         model_extrapolation_mock.assert_called_once()

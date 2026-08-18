@@ -53,7 +53,6 @@ def model_imputation(
     Returns:
         pl.LazyFrame: The LazyFrame with the added column imputed_column_name.
     """
-    # lf = flag_rows_eligible_for_imputation(lf, column_with_null_values, care_home)
     group_columns = [IndCqc.location_id, IndCqc.care_home]
 
     lf = model_extrapolation(
@@ -85,7 +84,6 @@ def model_imputation(
         IndCqc.extrapolation_forwards,
         IndCqc.extrapolation_model,
         IndCqc.interpolation_model,
-        Imputation.eligible_for_imputation,
     )
 
     return lf
