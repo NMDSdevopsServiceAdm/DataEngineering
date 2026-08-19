@@ -78,13 +78,13 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.workplace_last_active_date,
     AWPClean.purge_date,
 ]
-cqc_ratings_columns_to_import = [
-    AWPClean.location_id,
-    CQCRatingsColumns.date,
-    CQCRatingsColumns.overall_rating,
-    CQCRatingsColumns.latest_rating_flag,
-    CQCRatingsColumns.current_or_historic,
-]
+# cqc_ratings_columns_to_import = [
+#     AWPClean.location_id,
+#     CQCRatingsColumns.date,
+#     CQCRatingsColumns.overall_rating,
+#     CQCRatingsColumns.latest_rating_flag,
+#     CQCRatingsColumns.current_or_historic,
+# ]
 cleaned_cqc_providers_columns_to_import = [
     CQCPClean.provider_id,
     CQCPClean.name,
@@ -116,10 +116,10 @@ def main(
         ascwds_workplace_df
     )
 
-    cqc_ratings_df = utils.read_from_parquet(
-        cqc_ratings_source,
-        selected_columns=cqc_ratings_columns_to_import,
-    )
+    # cqc_ratings_df = utils.read_from_parquet(
+    #     cqc_ratings_source,
+    #     selected_columns=cqc_ratings_columns_to_import,
+    # )
     cqc_providers_df = utils.read_from_parquet(
         cleaned_cqc_providers_source,
         selected_columns=cleaned_cqc_providers_columns_to_import,
@@ -160,9 +160,9 @@ def main(
         merged_coverage_df
     )
 
-    merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
-        merged_coverage_df, cqc_ratings_df
-    )
+    # merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
+    #     merged_coverage_df, cqc_ratings_df
+    # )
 
     merged_coverage_df = add_columns_for_locality_manager_dashboard(merged_coverage_df)
     merged_coverage_df = join_provider_name_into_merged_coverage_df(
