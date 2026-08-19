@@ -356,6 +356,7 @@ def final_column_selection(df: DataFrame) -> DataFrame:
         ReconColumn.phone,
         ReconColumn.workplace_id,
     ).sort(ReconColumn.description, ReconColumn.nmds)
+    return df
 
 
 def add_removed_by_purge_date_filter_column(df: DataFrame) -> DataFrame:
