@@ -26,9 +26,6 @@ EMPLOYMENT_STATUS_SPLIT_COLUMNS = [
     SLVCols.estimated_emp_stat_other,
 ]
 
-# A fixed absolute tolerance recurs as float32 drift scales with magnitude, not row
-# count (see ticket 1864, validate_04_estimates.py) — this check scales with METRIC
-# instead. ~1e-5 comfortably covers float32 accumulation over 5 summed terms.
 EMPLOYMENT_STATUS_SUM_RELATIVE_TOLERANCE = 1e-5
 
 
@@ -90,17 +87,13 @@ def main(
         .row_count_match(
             expected_row_count,
             brief=f"Expects {expected_row_count} rows",
-        )
-        # employment status split columns (temporary, ticket 1838 — see
-        # merge_utils.apply_employment_status_magic_numbers)
-        .col_vals_ge(
+        ).col_vals_ge(
             columns=EMPLOYMENT_STATUS_SPLIT_COLUMNS,
             value=0,
             brief="Employment status split columns are non-negative",
         )
     )
     for column in EMPLOYMENT_STATUS_SPLIT_COLUMNS:
-        # col_vals_expr has no na_pass param, so nulls are passed explicitly in the expr.
         validation = validation.col_vals_expr(
             expr=(pl.col(column) <= pl.col(METRIC)) | pl.col(column).is_null(),
             brief=f"{column} does not exceed {METRIC}",

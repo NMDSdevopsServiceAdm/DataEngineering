@@ -26,9 +26,6 @@ ROLES_SHARED_BY_BOTH_JOB_ROLE_TAXONOMIES = set(
     SLVPrepareCategoricalValues.published_job_role_labels_column_values.categorical_values
 )
 
-# Temporary stopgap (ticket 1838) — remove alongside apply_employment_status_magic_numbers
-# once a dedicated employment status estimation pipeline exists. The rates CSV's labels
-# don't match this pipeline's primary_service_type/job_role_label values verbatim.
 CSV_SERVICE_TO_PRIMARY_SERVICE_TYPE: dict[str, str] = {
     "CQC Care only home": PrimaryServiceType.care_home_only,
     "CQC Care home with nursing": PrimaryServiceType.care_home_with_nursing,
@@ -78,12 +75,6 @@ def collapse_job_role_estimates_to_published_labels(
             across whichever granular roles collapsed into each published label.
     """
     metric = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
-
-    # polars_streaming: .replace() falls back to the in-memory engine therefore
-    # when/then chain has been used instead.
-
-    # .otherwise(other) is safe here because job role estimates validation checks
-    #  main_job_group_labelled has expected job group labels.
 
     published_role_lf = job_role_estimates_lf.with_columns(
         pl.when(
@@ -150,9 +141,6 @@ def apply_employment_status_magic_numbers(
     """
     metric = IndCQC.estimate_filled_posts_by_job_role_historically_reallocated
 
-    # polars_streaming: .replace_strict() falls back to the in-memory engine, but
-    # employment_status_rates_lf is the ~45-row rates CSV, not job_role_estimates_lf,
-    # so the fallback has no meaningful memory impact here.
     mapped_rates_lf = employment_status_rates_lf.select(
         pl.col(EmpStatRates.service)
         .cast(pl.String)
