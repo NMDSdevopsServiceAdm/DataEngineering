@@ -16,6 +16,8 @@ All notable changes to this project will be documented in this file.
 ### Improved
 - Cast low-cardinality, repeatedly-keyed columns to Categorical/Enum across the ASCWDS workplace, CQC locations/providers, and IND CQC merge jobs, fixing a `care_home` join-key mismatch along the way.
 
+- Removed a dead `lf.sort()` call (its result was never reassigned) and a further sort in `model_interpolation` that duplicated ordering already guaranteed earlier in the same call. An `over(..., order_by=...)` alternative to the module's remaining sorts was measured as higher, not lower, peak memory (Polars already collapses the repeated sorts into one), so those were left as-is.
+
 ### Fixed
 
 ## [v2026.07.0] - 17/08/2026
